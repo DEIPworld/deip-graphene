@@ -9,6 +9,8 @@ compile_commands.json
 moc_*
 *.moc
 hardfork.hpp
+cmake-build-debug
+build
 
 lcov
 
@@ -44,9 +46,18 @@ witness_node_data_dir
 
 *.wallet
 
+#Mergetool
+*.orig
+
+#Python
 *.pyc
 *.pyo
 *.egg-info/
+
+#IDE
 .vscode/
+.idea/
+*.user
 .vs/
 *.vcxproj*
+*.cbp
