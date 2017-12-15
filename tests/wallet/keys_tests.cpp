@@ -1,11 +1,11 @@
 #include <boost/test/unit_test.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
-#include <scorum/protocol/types.hpp>
-#include <scorum/wallet/wallet.hpp>
+#include <deip/protocol/types.hpp>
+#include <deip/wallet/wallet.hpp>
 
-namespace sp = scorum::protocol;
-namespace sw = scorum::wallet;
+namespace sp = deip::protocol;
+namespace sw = deip::wallet;
 
 class keys_fixture
 {

@@ -1,9 +1,9 @@
-#include <scorum/chain/database.hpp>
-#include <scorum/chain/witness_objects.hpp>
+#include <deip/chain/database.hpp>
+#include <deip/chain/witness_objects.hpp>
 
-#include <scorum/protocol/config.hpp>
+#include <deip/protocol/config.hpp>
 
-namespace scorum {
+namespace deip {
 namespace chain {
 
 void database::_reset_virtual_schedule_time()
@@ -74,11 +74,11 @@ void database::update_witness_schedule()
     //    if( _db.head_block_num() == wso.next_shuffle_block_num )
     //    {
 
-    if ((_db.head_block_num() % SCORUM_MAX_WITNESSES) == 0) // wso.next_shuffle_block_num )
+    if ((_db.head_block_num() % deip_MAX_WITNESSES) == 0) // wso.next_shuffle_block_num )
     {
         const witness_schedule_object& wso = _db.get_witness_schedule_object();
         vector<account_name_type> active_witnesses;
-        active_witnesses.reserve(SCORUM_MAX_WITNESSES);
+        active_witnesses.reserve(deip_MAX_WITNESSES);
 
         /// Add the highest voted witnesses
         flat_set<witness_id_type> selected_voted;
@@ -102,7 +102,7 @@ void database::update_witness_schedule()
         auto sitr = schedule_idx.begin();
         vector<decltype(sitr)> processed_witnesses;
         for (auto witness_count = selected_voted.size();
-             sitr != schedule_idx.end() && witness_count < SCORUM_MAX_WITNESSES; ++sitr)
+             sitr != schedule_idx.end() && witness_count < deip_MAX_WITNESSES; ++sitr)
         {
             new_virtual_time = sitr->virtual_scheduled_time; /// everyone advances to at least this time
             processed_witnesses.push_back(sitr);
@@ -143,10 +143,10 @@ void database::update_witness_schedule()
             _reset_virtual_schedule_time();
         }
 
-        size_t expected_active_witnesses = std::min(size_t(SCORUM_MAX_WITNESSES), widx.size());
+        size_t expected_active_witnesses = std::min(size_t(deip_MAX_WITNESSES), widx.size());
         FC_ASSERT(active_witnesses.size() == expected_active_witnesses,
                   "number of active witnesses does not equal expected_active_witnesses=${expected_active_witnesses}",
-                  ("active_witnesses.size()", active_witnesses.size())("SCORUM_MAX_WITNESSES", SCORUM_MAX_WITNESSES)(
+                  ("active_witnesses.size()", active_witnesses.size())("deip_MAX_WITNESSES", deip_MAX_WITNESSES)(
                       "expected_active_witnesses", expected_active_witnesses));
 
         auto majority_version = wso.majority_version;
@@ -224,7 +224,7 @@ void database::update_witness_schedule()
                 _wso.current_shuffled_witnesses[i] = active_witnesses[i];
             }
 
-            for (size_t i = active_witnesses.size(); i < SCORUM_MAX_WITNESSES; i++)
+            for (size_t i = active_witnesses.size(); i < deip_MAX_WITNESSES; i++)
             {
                 _wso.current_shuffled_witnesses[i] = account_name_type();
             }
@@ -259,4 +259,4 @@ void database::update_witness_schedule()
     }
 }
 } // namespace chain
-} // namespace scorum
+} // namespace deip

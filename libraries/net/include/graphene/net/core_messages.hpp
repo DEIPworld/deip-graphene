@@ -24,7 +24,7 @@
 #pragma once
 
 #include <graphene/net/config.hpp>
-#include <scorum/protocol/block.hpp>
+#include <deip/protocol/block.hpp>
 
 #include <fc/crypto/ripemd160.hpp>
 #include <fc/crypto/elliptic.hpp>
@@ -40,10 +40,10 @@
 
 namespace graphene {
 namespace net {
-using scorum::protocol::signed_transaction;
-using scorum::protocol::block_id_type;
-using scorum::protocol::transaction_id_type;
-using scorum::protocol::signed_block;
+using deip::protocol::signed_transaction;
+using deip::protocol::block_id_type;
+using deip::protocol::transaction_id_type;
+using deip::protocol::signed_block;
 
 typedef fc::ecc::public_key_data node_id_t;
 typedef fc::ripemd160 item_hash_t;

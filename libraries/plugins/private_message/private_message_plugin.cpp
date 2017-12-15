@@ -22,21 +22,21 @@
  * THE SOFTWARE.
  */
 
-#include <scorum/private_message/private_message_evaluators.hpp>
-#include <scorum/private_message/private_message_operations.hpp>
-#include <scorum/private_message/private_message_plugin.hpp>
+#include <deip/private_message/private_message_evaluators.hpp>
+#include <deip/private_message/private_message_operations.hpp>
+#include <deip/private_message/private_message_plugin.hpp>
 
-#include <scorum/app/impacted.hpp>
+#include <deip/app/impacted.hpp>
 
-#include <scorum/protocol/config.hpp>
+#include <deip/protocol/config.hpp>
 
-#include <scorum/chain/database.hpp>
-#include <scorum/chain/generic_custom_operation_interpreter.hpp>
+#include <deip/chain/database.hpp>
+#include <deip/chain/generic_custom_operation_interpreter.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/thread/thread.hpp>
 
-namespace scorum {
+namespace deip {
 namespace private_message {
 
 namespace detail {
@@ -47,13 +47,13 @@ public:
     private_message_plugin_impl(private_message_plugin& _plugin);
     virtual ~private_message_plugin_impl();
 
-    scorum::chain::database& database()
+    deip::chain::database& database()
     {
         return _self.database();
     }
 
     private_message_plugin& _self;
-    std::shared_ptr<generic_custom_operation_interpreter<scorum::private_message::private_message_plugin_operation>>
+    std::shared_ptr<generic_custom_operation_interpreter<deip::private_message::private_message_plugin_operation>>
         _custom_operation_interpreter;
     flat_map<string, string> _tracked_accounts;
 };
@@ -62,7 +62,7 @@ private_message_plugin_impl::private_message_plugin_impl(private_message_plugin&
     : _self(_plugin)
 {
     _custom_operation_interpreter = std::
-        make_shared<generic_custom_operation_interpreter<scorum::private_message::private_message_plugin_operation>>(
+        make_shared<generic_custom_operation_interpreter<deip::private_message::private_message_plugin_operation>>(
             database());
 
     _custom_operation_interpreter->register_evaluator<private_message_evaluator>(&_self);
@@ -188,6 +188,6 @@ flat_map<string, string> private_message_plugin::tracked_accounts() const
 }
 }
 
-SCORUM_DEFINE_PLUGIN(private_message, scorum::private_message::private_message_plugin)
+deip_DEFINE_PLUGIN(private_message, deip::private_message::private_message_plugin)
 
-DEFINE_OPERATION_TYPE(scorum::private_message::private_message_plugin_operation)
+DEFINE_OPERATION_TYPE(deip::private_message::private_message_plugin_operation)

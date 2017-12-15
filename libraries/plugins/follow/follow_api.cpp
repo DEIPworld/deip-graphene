@@ -1,8 +1,8 @@
-#include <scorum/chain/account_object.hpp>
+#include <deip/chain/account_object.hpp>
 
-#include <scorum/follow/follow_api.hpp>
+#include <deip/follow/follow_api.hpp>
 
-namespace scorum {
+namespace deip {
 namespace follow {
 
 namespace detail {
@@ -18,7 +18,7 @@ inline void set_what(vector<follow_type>& what, uint16_t bitmask)
 class follow_api_impl
 {
 public:
-    follow_api_impl(scorum::app::application& _app)
+    follow_api_impl(deip::app::application& _app)
         : app(_app)
     {
     }
@@ -38,7 +38,7 @@ public:
 
     vector<account_reputation> get_account_reputations(string lower_bound_name, uint32_t limit) const;
 
-    scorum::app::application& app;
+    deip::app::application& app;
 };
 
 vector<follow_api_obj>
@@ -276,7 +276,7 @@ vector<account_reputation> follow_api_impl::get_account_reputations(string lower
 
 } // detail
 
-follow_api::follow_api(const scorum::app::api_context& ctx)
+follow_api::follow_api(const deip::app::api_context& ctx)
 {
     my = std::make_shared<detail::follow_api_impl>(ctx.app);
 }
@@ -362,4 +362,4 @@ vector<pair<account_name_type, uint32_t>> follow_api::get_blog_authors(const acc
     });
 }
 }
-} // scorum::follow
+} // deip::follow

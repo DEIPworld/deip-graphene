@@ -1,21 +1,21 @@
 
-#include <scorum/app/application.hpp>
-#include <scorum/app/plugin.hpp>
+#include <deip/app/application.hpp>
+#include <deip/app/plugin.hpp>
 
 #include <sstream>
 #include <string>
 
-namespace scorum {
+namespace deip {
 namespace example_plugin {
 
-class hello_api_plugin : public scorum::app::plugin
+class hello_api_plugin : public deip::app::plugin
 {
 public:
     /**
      * The plugin requires a constructor which takes app.  This is called regardless of whether the plugin is loaded.
      * The app parameter should be passed up to the superclass constructor.
      */
-    hello_api_plugin(scorum::app::application* app);
+    hello_api_plugin(deip::app::application* app);
 
     /**
      * Plugin is destroyed via base class pointer, so a virtual destructor must be provided.
@@ -40,7 +40,7 @@ public:
     std::string get_message();
 
 private:
-    scorum::app::application* _app;
+    deip::app::application* _app;
     std::string _message;
     uint32_t _plugin_call_count = 0;
 };
@@ -48,7 +48,7 @@ private:
 class hello_api_api
 {
 public:
-    hello_api_api(const scorum::app::api_context& ctx);
+    hello_api_api(const deip::app::api_context& ctx);
 
     /**
      * Called immediately after the constructor.  If the API class uses enable_shared_from_this,
@@ -59,19 +59,19 @@ public:
     std::string get_message();
 
 private:
-    scorum::app::application& _app;
+    deip::app::application& _app;
     uint32_t _api_call_count = 0;
 };
 }
 }
 
-FC_API(scorum::example_plugin::hello_api_api, (get_message))
+FC_API(deip::example_plugin::hello_api_api, (get_message))
 
-namespace scorum {
+namespace deip {
 namespace example_plugin {
 
-hello_api_plugin::hello_api_plugin(scorum::app::application* app)
-    : scorum::app::plugin(app)
+hello_api_plugin::hello_api_plugin(deip::app::application* app)
+    : deip::app::plugin(app)
 {
 }
 hello_api_plugin::~hello_api_plugin()
@@ -100,7 +100,7 @@ std::string hello_api_plugin::get_message()
     return result.str();
 }
 
-hello_api_api::hello_api_api(const scorum::app::api_context& ctx)
+hello_api_api::hello_api_api(const deip::app::api_context& ctx)
     : _app(ctx.app)
 {
 }
@@ -120,8 +120,8 @@ std::string hello_api_api::get_message()
 }
 
 /**
- * The SCORUM_DEFINE_PLUGIN() macro will define a scorum::plugin::create_hello_api_plugin()
+ * The deip_DEFINE_PLUGIN() macro will define a deip::plugin::create_hello_api_plugin()
  * factory method which is expected by the manifest.
  */
 
-SCORUM_DEFINE_PLUGIN(hello_api, scorum::example_plugin::hello_api_plugin)
+deip_DEFINE_PLUGIN(hello_api, deip::example_plugin::hello_api_plugin)

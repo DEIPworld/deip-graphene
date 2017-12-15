@@ -1,19 +1,19 @@
-#include <scorum/blockchain_statistics/blockchain_statistics_api.hpp>
+#include <deip/blockchain_statistics/blockchain_statistics_api.hpp>
 
-#include <scorum/app/impacted.hpp>
-#include <scorum/chain/account_object.hpp>
-#include <scorum/chain/comment_object.hpp>
-#include <scorum/chain/history_object.hpp>
+#include <deip/app/impacted.hpp>
+#include <deip/chain/account_object.hpp>
+#include <deip/chain/comment_object.hpp>
+#include <deip/chain/history_object.hpp>
 
-#include <scorum/chain/database.hpp>
-#include <scorum/chain/operation_notification.hpp>
+#include <deip/chain/database.hpp>
+#include <deip/chain/operation_notification.hpp>
 
-namespace scorum {
+namespace deip {
 namespace blockchain_statistics {
 
 namespace detail {
 
-using namespace scorum::protocol;
+using namespace deip::protocol;
 
 class blockchain_statistics_plugin_impl
 {
@@ -60,8 +60,8 @@ struct operation_process
         _db.modify(_bucket, [&](bucket_object& b) {
             b.transfers++;
 
-            if (op.amount.symbol == SCORUM_SYMBOL)
-                b.scorum_transferred += op.amount.amount;
+            if (op.amount.symbol == deip_SYMBOL)
+                b.deip_transferred += op.amount.amount;
             else
                 b.sbd_transferred += op.amount.amount;
         });
@@ -123,7 +123,7 @@ struct operation_process
     {
         _db.modify(_bucket, [&](bucket_object& b) {
             b.payouts++;
-            b.scr_paid_to_authors += op.scorum_payout.amount;
+            b.scr_paid_to_authors += op.deip_payout.amount;
             b.vests_paid_to_authors += op.vesting_payout.amount;
         });
     }
@@ -137,7 +137,7 @@ struct operation_process
     {
         _db.modify(_bucket, [&](bucket_object& b) {
             b.transfers_to_vesting++;
-            b.scorum_vested += op.amount.amount;
+            b.deip_vested += op.amount.amount;
         });
     }
 
@@ -147,7 +147,7 @@ struct operation_process
 
         _db.modify(_bucket, [&](bucket_object& b) {
             b.vesting_withdrawals_processed++;
-            if (op.deposited.symbol == SCORUM_SYMBOL)
+            if (op.deposited.symbol == deip_SYMBOL)
                 b.vests_withdrawn += op.withdrawn.amount;
             else
                 b.vests_transferred += op.withdrawn.amount;
@@ -266,7 +266,7 @@ void blockchain_statistics_plugin_impl::pre_operation(const operation_notificati
             const auto& account = db.get_account(op.account);
             const auto& bucket = db.get(bucket_id);
 
-            auto new_vesting_withdrawal_rate = op.vesting_shares.amount / SCORUM_VESTING_WITHDRAW_INTERVALS;
+            auto new_vesting_withdrawal_rate = op.vesting_shares.amount / deip_VESTING_WITHDRAW_INTERVALS;
             if (op.vesting_shares.amount > 0 && new_vesting_withdrawal_rate == 0)
                 new_vesting_withdrawal_rate = 1;
 
@@ -377,6 +377,6 @@ uint32_t blockchain_statistics_plugin::get_max_history_per_bucket() const
     return _my->_maximum_history_per_bucket_size;
 }
 }
-} // scorum::blockchain_statistics
+} // deip::blockchain_statistics
 
-SCORUM_DEFINE_PLUGIN(blockchain_statistics, scorum::blockchain_statistics::blockchain_statistics_plugin);
+deip_DEFINE_PLUGIN(blockchain_statistics, deip::blockchain_statistics::blockchain_statistics_plugin);

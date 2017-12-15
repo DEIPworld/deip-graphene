@@ -1,8 +1,8 @@
-#include <scorum/protocol/operations.hpp>
+#include <deip/protocol/operations.hpp>
 
-#include <scorum/protocol/operation_util_impl.hpp>
+#include <deip/protocol/operation_util_impl.hpp>
 
-namespace scorum {
+namespace deip {
 namespace protocol {
 
 struct is_market_op_visitor
@@ -43,6 +43,6 @@ bool is_virtual_operation(const operation& op)
     return op.visit(is_vop_visitor());
 }
 }
-} // scorum::protocol
+} // deip::protocol
 
-DEFINE_OPERATION_TYPE(scorum::protocol::operation)
+DEFINE_OPERATION_TYPE(deip::protocol::operation)

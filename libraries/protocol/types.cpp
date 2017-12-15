@@ -1,12 +1,12 @@
-#include <scorum/protocol/config.hpp>
-#include <scorum/protocol/types.hpp>
+#include <deip/protocol/config.hpp>
+#include <deip/protocol/types.hpp>
 
 #include <fc/crypto/base58.hpp>
 #include <fc/crypto/ripemd160.hpp>
 #include <fc/exception/exception.hpp>
 #include <fc/io/raw.hpp>
 
-namespace scorum {
+namespace deip {
 namespace protocol {
 
 public_key_type::public_key_type()
@@ -22,7 +22,7 @@ public_key_type::public_key_type(const std::string& base58str)
 {
     // TODO:  Refactor syntactic checks into static is_valid()
     //        to make public_key_type API more similar to address API
-    std::string prefix(SCORUM_ADDRESS_PREFIX);
+    std::string prefix(deip_ADDRESS_PREFIX);
 
     const size_t prefix_len = prefix.size();
     FC_ASSERT(base58str.size() > prefix_len);
@@ -49,7 +49,7 @@ public_key_type::operator std::string() const
     k.data = key_data;
     k.check = fc::ripemd160::hash(k.data.data, k.data.size())._hash[0];
     auto data = fc::raw::pack(k);
-    return SCORUM_ADDRESS_PREFIX + fc::to_base58(data.data(), data.size());
+    return deip_ADDRESS_PREFIX + fc::to_base58(data.data(), data.size());
 }
 
 bool operator==(const public_key_type& p1, const fc::ecc::public_key& p2)
@@ -82,7 +82,7 @@ extended_public_key_type::extended_public_key_type(const fc::ecc::extended_publi
 
 extended_public_key_type::extended_public_key_type(const std::string& base58str)
 {
-    std::string prefix(SCORUM_ADDRESS_PREFIX);
+    std::string prefix(deip_ADDRESS_PREFIX);
 
     const size_t prefix_len = prefix.size();
     FC_ASSERT(base58str.size() > prefix_len);
@@ -104,7 +104,7 @@ extended_public_key_type::operator std::string() const
     k.data = key_data;
     k.check = fc::ripemd160::hash(k.data.data, k.data.size())._hash[0];
     auto data = fc::raw::pack(k);
-    return SCORUM_ADDRESS_PREFIX + fc::to_base58(data.data(), data.size());
+    return deip_ADDRESS_PREFIX + fc::to_base58(data.data(), data.size());
 }
 
 bool operator==(const extended_public_key_type& p1, const fc::ecc::extended_public_key& p2)
@@ -137,7 +137,7 @@ extended_private_key_type::extended_private_key_type(const fc::ecc::extended_pri
 
 extended_private_key_type::extended_private_key_type(const std::string& base58str)
 {
-    std::string prefix(SCORUM_ADDRESS_PREFIX);
+    std::string prefix(deip_ADDRESS_PREFIX);
 
     const size_t prefix_len = prefix.size();
     FC_ASSERT(base58str.size() > prefix_len);
@@ -159,7 +159,7 @@ extended_private_key_type::operator std::string() const
     k.data = key_data;
     k.check = fc::ripemd160::hash(k.data.data, k.data.size())._hash[0];
     auto data = fc::raw::pack(k);
-    return SCORUM_ADDRESS_PREFIX + fc::to_base58(data.data(), data.size());
+    return deip_ADDRESS_PREFIX + fc::to_base58(data.data(), data.size());
 }
 
 bool operator==(const extended_private_key_type& p1, const fc::ecc::extended_public_key& p2)
@@ -177,37 +177,37 @@ bool operator!=(const extended_private_key_type& p1, const extended_private_key_
     return p1.key_data != p2.key_data;
 }
 }
-} // scorum::protocol
+} // deip::protocol
 
 namespace fc {
 using namespace std;
-void to_variant(const scorum::protocol::public_key_type& var, fc::variant& vo)
+void to_variant(const deip::protocol::public_key_type& var, fc::variant& vo)
 {
     vo = std::string(var);
 }
 
-void from_variant(const fc::variant& var, scorum::protocol::public_key_type& vo)
+void from_variant(const fc::variant& var, deip::protocol::public_key_type& vo)
 {
-    vo = scorum::protocol::public_key_type(var.as_string());
+    vo = deip::protocol::public_key_type(var.as_string());
 }
 
-void to_variant(const scorum::protocol::extended_public_key_type& var, fc::variant& vo)
+void to_variant(const deip::protocol::extended_public_key_type& var, fc::variant& vo)
 {
     vo = std::string(var);
 }
 
-void from_variant(const fc::variant& var, scorum::protocol::extended_public_key_type& vo)
+void from_variant(const fc::variant& var, deip::protocol::extended_public_key_type& vo)
 {
-    vo = scorum::protocol::extended_public_key_type(var.as_string());
+    vo = deip::protocol::extended_public_key_type(var.as_string());
 }
 
-void to_variant(const scorum::protocol::extended_private_key_type& var, fc::variant& vo)
+void to_variant(const deip::protocol::extended_private_key_type& var, fc::variant& vo)
 {
     vo = std::string(var);
 }
 
-void from_variant(const fc::variant& var, scorum::protocol::extended_private_key_type& vo)
+void from_variant(const fc::variant& var, deip::protocol::extended_private_key_type& vo)
 {
-    vo = scorum::protocol::extended_private_key_type(var.as_string());
+    vo = deip::protocol::extended_private_key_type(var.as_string());
 }
 } // fc

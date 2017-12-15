@@ -1,34 +1,34 @@
-#include <scorum/chain/database.hpp>
-#include <scorum/chain/genesis_state.hpp>
-#include <scorum/chain/dbs_budget.hpp>
-#include <scorum/chain/dbs_reward.hpp>
+#include <deip/chain/database.hpp>
+#include <deip/chain/genesis_state.hpp>
+#include <deip/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_reward.hpp>
 
-#include <scorum/chain/account_object.hpp>
-#include <scorum/chain/block_summary_object.hpp>
-#include <scorum/chain/chain_property_object.hpp>
-#include <scorum/chain/scorum_objects.hpp>
+#include <deip/chain/account_object.hpp>
+#include <deip/chain/block_summary_object.hpp>
+#include <deip/chain/chain_property_object.hpp>
+#include <deip/chain/deip_objects.hpp>
 
-#include <scorum/chain/pool/reward_pool.hpp>
+#include <deip/chain/pool/reward_pool.hpp>
 
 #include <fc/io/json.hpp>
 
-#define SCORUM_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
-#define SCORUM_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
-#define SCORUM_DEFAULT_INIT_SUPPLY (1000000u)
+#define deip_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
+#define deip_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
+#define deip_DEFAULT_INIT_SUPPLY (1000000u)
 
-namespace scorum {
+namespace deip {
 namespace chain {
 namespace utils {
 
-using namespace scorum::protocol;
+using namespace deip::protocol;
 
 void generate_default_genesis_state(genesis_state_type& genesis)
 {
-    const sp::public_key_type init_public_key(SCORUM_DEFAULT_INIT_PUBLIC_KEY);
+    const sp::public_key_type init_public_key(deip_DEFAULT_INIT_PUBLIC_KEY);
 
-    genesis.init_supply = SCORUM_DEFAULT_INIT_SUPPLY;
-    genesis.init_rewards_supply = SCORUM_REWARDS_INITIAL_SUPPLY;
-    genesis.initial_timestamp = SCORUM_DEFAULT_GENESIS_TIME;
+    genesis.init_supply = deip_DEFAULT_INIT_SUPPLY;
+    genesis.init_rewards_supply = deip_REWARDS_INITIAL_SUPPLY;
+    genesis.initial_timestamp = deip_DEFAULT_GENESIS_TIME;
 
     genesis.accounts.push_back({ "initdelegate", "", init_public_key, genesis.init_supply, uint64_t(0) });
 
@@ -101,7 +101,7 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
         create<account_object>([&](account_object& a) {
             a.name = account.name;
             a.memo_key = account.public_key;
-            a.balance = asset(account.scr_amount, SCORUM_SYMBOL);
+            a.balance = asset(account.scr_amount, deip_SYMBOL);
             a.json_metadata = "{created_at: 'GENESIS'}";
             a.recovery_account = account.recovery_account;
         });
@@ -151,10 +151,10 @@ void database::init_genesis_global_property_object(const genesis_state_type& gen
         gpo.time = get_genesis_time();
         gpo.recent_slots_filled = fc::uint128::max_value();
         gpo.participation_count = 128;
-        gpo.current_supply = asset(genesis_state.init_supply, SCORUM_SYMBOL);
-        gpo.maximum_block_size = SCORUM_MAX_BLOCK_SIZE;
+        gpo.current_supply = asset(genesis_state.init_supply, deip_SYMBOL);
+        gpo.maximum_block_size = deip_MAX_BLOCK_SIZE;
 
-        gpo.total_reward_fund_scorum = asset(0, SCORUM_SYMBOL);
+        gpo.total_reward_fund_deip = asset(0, deip_SYMBOL);
         gpo.total_reward_shares2 = 0;
     });
 }
@@ -164,11 +164,11 @@ void database::init_genesis_rewards(const genesis_state_type& genesis_state)
     const auto& gpo = get_dynamic_global_properties();
 
     auto post_rf = create<reward_fund_object>([&](reward_fund_object& rfo) {
-        rfo.name = SCORUM_POST_REWARD_FUND_NAME;
+        rfo.name = deip_POST_REWARD_FUND_NAME;
         rfo.last_update = head_block_time();
-        rfo.percent_curation_rewards = SCORUM_1_PERCENT * 25;
-        rfo.percent_content_rewards = SCORUM_100_PERCENT;
-        rfo.reward_balance = gpo.total_reward_fund_scorum;
+        rfo.percent_curation_rewards = deip_1_PERCENT * 25;
+        rfo.percent_content_rewards = deip_100_PERCENT;
+        rfo.reward_balance = gpo.total_reward_fund_deip;
         rfo.author_reward_curve = curve_id::linear;
         rfo.curation_reward_curve = curve_id::square_root;
     });
@@ -182,14 +182,14 @@ void database::init_genesis_rewards(const genesis_state_type& genesis_state)
     dbs_budget& budget_service = obtain_service<dbs_budget>();
 
     asset initial_reward_pool_supply(genesis_state.init_rewards_supply.amount
-                                         * SCORUM_GUARANTED_REWARD_SUPPLY_PERIOD_IN_DAYS
-                                         / SCORUM_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS,
+                                         * deip_GUARANTED_REWARD_SUPPLY_PERIOD_IN_DAYS
+                                         / deip_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS,
                                      genesis_state.init_rewards_supply.symbol);
-    fc::time_point deadline = get_genesis_time() + fc::days(SCORUM_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS);
+    fc::time_point deadline = get_genesis_time() + fc::days(deip_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS);
 
     reward_service.create_pool(initial_reward_pool_supply);
     budget_service.create_fund_budget(genesis_state.init_rewards_supply - initial_reward_pool_supply, deadline);
 }
 
 } // namespace chain
-} // namespace scorum
+} // namespace deip

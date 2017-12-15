@@ -1,9 +1,9 @@
-#include <scorum/chain/dbs_account.hpp>
-#include <scorum/chain/database.hpp>
+#include <deip/chain/dbs_account.hpp>
+#include <deip/chain/database.hpp>
 
-#include <scorum/chain/dbs_witness.hpp>
+#include <deip/chain/dbs_witness.hpp>
 
-namespace scorum {
+namespace deip {
 namespace chain {
 
 dbs_account::dbs_account(database& db)
@@ -61,7 +61,7 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
                                                              const authority& posting,
                                                              const asset& fee)
 {
-    FC_ASSERT(fee.symbol == SCORUM_SYMBOL, "invalid asset type (symbol)");
+    FC_ASSERT(fee.symbol == deip_SYMBOL, "invalid asset type (symbol)");
 
     const auto& props = db_impl().get_dynamic_global_properties();
     const auto& creator = get_account(creator_name);
@@ -107,7 +107,7 @@ const account_object& dbs_account::create_account_with_delegation(const account_
                                                                   const asset& delegation,
                                                                   const optional<time_point_sec>& now)
 {
-    FC_ASSERT(fee.symbol == SCORUM_SYMBOL, "invalid asset type (symbol)");
+    FC_ASSERT(fee.symbol == deip_SYMBOL, "invalid asset type (symbol)");
     FC_ASSERT(delegation.symbol == VESTS_SYMBOL, "invalid asset type (symbol)");
 
     const auto& props = db_impl().get_dynamic_global_properties();
@@ -150,7 +150,7 @@ const account_object& dbs_account::create_account_with_delegation(const account_
             vdo.delegator = creator_name;
             vdo.delegatee = new_account_name;
             vdo.vesting_shares = delegation;
-            vdo.min_delegation_time = t + SCORUM_CREATE_ACCOUNT_DELEGATION_TIME;
+            vdo.min_delegation_time = t + deip_CREATE_ACCOUNT_DELEGATION_TIME;
         });
     }
 
@@ -206,7 +206,7 @@ void dbs_account::update_owner_authority(const account_object& account,
 {
     _time t = _get_now(now);
 
-    if (db_impl().head_block_num() >= SCORUM_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM)
+    if (db_impl().head_block_num() >= deip_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM)
     {
         db_impl().create<owner_authority_history_object>([&](owner_authority_history_object& hist) {
             hist.account = account.name;
@@ -222,36 +222,36 @@ void dbs_account::update_owner_authority(const account_object& account,
                      });
 }
 
-void dbs_account::increase_balance(const account_object& account, const asset& scorums)
+void dbs_account::increase_balance(const account_object& account, const asset& deips)
 {
-    FC_ASSERT(scorums.symbol == SCORUM_SYMBOL, "invalid asset type (symbol)");
-    db_impl().modify(account, [&](account_object& acnt) { acnt.balance += scorums; });
+    FC_ASSERT(deips.symbol == deip_SYMBOL, "invalid asset type (symbol)");
+    db_impl().modify(account, [&](account_object& acnt) { acnt.balance += deips; });
 }
 
-void dbs_account::decrease_balance(const account_object& account, const asset& scorums)
+void dbs_account::decrease_balance(const account_object& account, const asset& deips)
 {
-    increase_balance(account, -scorums);
+    increase_balance(account, -deips);
 }
 
-void dbs_account::increase_reward_balance(const account_object& account, const asset& scorums)
+void dbs_account::increase_reward_balance(const account_object& account, const asset& deips)
 {
-    FC_ASSERT(scorums.symbol == SCORUM_SYMBOL, "invalid asset type (symbol)");
-    db_impl().modify(account, [&](account_object& acnt) { acnt.reward_scorum_balance += scorums; });
+    FC_ASSERT(deips.symbol == deip_SYMBOL, "invalid asset type (symbol)");
+    db_impl().modify(account, [&](account_object& acnt) { acnt.reward_deip_balance += deips; });
 }
 
-void dbs_account::decrease_reward_balance(const account_object& account, const asset& scorums)
+void dbs_account::decrease_reward_balance(const account_object& account, const asset& deips)
 {
-    increase_reward_balance(account, -scorums);
+    increase_reward_balance(account, -deips);
 }
 
-void dbs_account::increase_vesting_shares(const account_object& account, const asset& vesting, const asset& scorums)
+void dbs_account::increase_vesting_shares(const account_object& account, const asset& vesting, const asset& deips)
 {
     FC_ASSERT(vesting.symbol == VESTS_SYMBOL, "invalid asset type (symbol)");
-    FC_ASSERT(scorums.symbol == SCORUM_SYMBOL, "invalid asset type (symbol)");
+    FC_ASSERT(deips.symbol == deip_SYMBOL, "invalid asset type (symbol)");
     db_impl().modify(account, [&](account_object& a) {
         a.vesting_shares += vesting;
         a.reward_vesting_balance -= vesting;
-        a.reward_vesting_scorum -= scorums;
+        a.reward_vesting_deip -= deips;
     });
 }
 
@@ -383,7 +383,7 @@ void dbs_account::create_account_recovery(const account_name_type& account_to_re
         db_impl().create<account_recovery_request_object>([&](account_recovery_request_object& req) {
             req.account_to_recover = account_to_recover;
             req.new_owner_authority = new_owner_authority;
-            req.expires = t + SCORUM_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
+            req.expires = t + deip_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
         });
     }
     else if (new_owner_authority.weight_threshold == 0) // Cancel Request if authority is open
@@ -398,7 +398,7 @@ void dbs_account::create_account_recovery(const account_name_type& account_to_re
 
         db_impl().modify(*request, [&](account_recovery_request_object& req) {
             req.new_owner_authority = new_owner_authority;
-            req.expires = t + SCORUM_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
+            req.expires = t + deip_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
         });
     }
 }
@@ -452,14 +452,14 @@ void dbs_account::change_recovery_account(const account_object& account_to_recov
         db_impl().create<change_recovery_account_request_object>([&](change_recovery_account_request_object& req) {
             req.account_to_recover = account_to_recover.name;
             req.recovery_account = new_recovery_account_name;
-            req.effective_on = t + SCORUM_OWNER_AUTH_RECOVERY_PERIOD;
+            req.effective_on = t + deip_OWNER_AUTH_RECOVERY_PERIOD;
         });
     }
     else if (account_to_recover.recovery_account != new_recovery_account_name) // Change existing request
     {
         db_impl().modify(*request, [&](change_recovery_account_request_object& req) {
             req.recovery_account = new_recovery_account_name;
-            req.effective_on = t + SCORUM_OWNER_AUTH_RECOVERY_PERIOD;
+            req.effective_on = t + deip_OWNER_AUTH_RECOVERY_PERIOD;
         });
     }
     else // Request exists and changing back to current recovery account
@@ -471,9 +471,9 @@ void dbs_account::change_recovery_account(const account_object& account_to_recov
 void dbs_account::update_voting_proxy(const account_object& account, const optional<account_object>& proxy_account)
 {
     /// remove all current votes
-    std::array<share_type, SCORUM_MAX_PROXY_RECURSION_DEPTH + 1> delta;
+    std::array<share_type, deip_MAX_PROXY_RECURSION_DEPTH + 1> delta;
     delta[0] = -account.vesting_shares.amount;
-    for (int i = 0; i < SCORUM_MAX_PROXY_RECURSION_DEPTH; ++i)
+    for (int i = 0; i < deip_MAX_PROXY_RECURSION_DEPTH; ++i)
         delta[i + 1] = -account.proxied_vsf_votes[i];
 
     adjust_proxied_witness_votes(account, delta);
@@ -481,7 +481,7 @@ void dbs_account::update_voting_proxy(const account_object& account, const optio
     if (proxy_account.valid())
     {
         flat_set<account_id_type> proxy_chain({ account.id, (*proxy_account).id });
-        proxy_chain.reserve(SCORUM_MAX_PROXY_RECURSION_DEPTH + 1);
+        proxy_chain.reserve(deip_MAX_PROXY_RECURSION_DEPTH + 1);
 
         /// check for proxy loops and fail to update the proxy if it would create a loop
         auto cprox = &(*proxy_account);
@@ -490,7 +490,7 @@ void dbs_account::update_voting_proxy(const account_object& account, const optio
             const auto next_proxy = get_account(cprox->proxy);
             FC_ASSERT(proxy_chain.insert(next_proxy.id).second, "This proxy would create a proxy loop.");
             cprox = &next_proxy;
-            FC_ASSERT(proxy_chain.size() <= SCORUM_MAX_PROXY_RECURSION_DEPTH, "Proxy chain is too long.");
+            FC_ASSERT(proxy_chain.size() <= deip_MAX_PROXY_RECURSION_DEPTH, "Proxy chain is too long.");
         }
 
         /// clear all individual vote records
@@ -499,25 +499,25 @@ void dbs_account::update_voting_proxy(const account_object& account, const optio
         db_impl().modify(account, [&](account_object& a) { a.proxy = (*proxy_account).name; });
 
         /// add all new votes
-        for (int i = 0; i <= SCORUM_MAX_PROXY_RECURSION_DEPTH; ++i)
+        for (int i = 0; i <= deip_MAX_PROXY_RECURSION_DEPTH; ++i)
             delta[i] = -delta[i];
         adjust_proxied_witness_votes(account, delta);
     }
     else
     { /// we are clearing the proxy which means we simply update the account
         db_impl().modify(account,
-                         [&](account_object& a) { a.proxy = account_name_type(SCORUM_PROXY_TO_SELF_ACCOUNT); });
+                         [&](account_object& a) { a.proxy = account_name_type(deip_PROXY_TO_SELF_ACCOUNT); });
     }
 }
 
-asset dbs_account::create_vesting(const account_object& to_account, const asset& scorum, bool to_reward_balance)
+asset dbs_account::create_vesting(const account_object& to_account, const asset& deip, bool to_reward_balance)
 {
     try
     {
         const auto& cprops = db_impl().get_dynamic_global_properties();
 
         /**
-         *  The ratio of total_vesting_shares / total_vesting_fund_scorum should not
+         *  The ratio of total_vesting_shares / total_vesting_fund_deip should not
          *  change as the result of the user adding funds
          *
          *  V / C  = (V+Vn) / (C+Cn)
@@ -530,13 +530,13 @@ asset dbs_account::create_vesting(const account_object& to_account, const asset&
          *  128 bit math is requred due to multiplying of 64 bit numbers. This is done in asset and price.
          */
         asset new_vesting
-            = scorum * (to_reward_balance ? cprops.get_reward_vesting_share_price() : cprops.get_vesting_share_price());
+            = deip * (to_reward_balance ? cprops.get_reward_vesting_share_price() : cprops.get_vesting_share_price());
 
         db_impl().modify(to_account, [&](account_object& to) {
             if (to_reward_balance)
             {
                 to.reward_vesting_balance += new_vesting;
-                to.reward_vesting_scorum += scorum;
+                to.reward_vesting_deip += deip;
             }
             else
                 to.vesting_shares += new_vesting;
@@ -546,11 +546,11 @@ asset dbs_account::create_vesting(const account_object& to_account, const asset&
             if (to_reward_balance)
             {
                 props.pending_rewarded_vesting_shares += new_vesting;
-                props.pending_rewarded_vesting_scorum += scorum;
+                props.pending_rewarded_vesting_deip += deip;
             }
             else
             {
-                props.total_vesting_fund_scorum += scorum;
+                props.total_vesting_fund_deip += deip;
                 props.total_vesting_shares += new_vesting;
             }
         });
@@ -560,7 +560,7 @@ asset dbs_account::create_vesting(const account_object& to_account, const asset&
 
         return new_vesting;
     }
-    FC_CAPTURE_AND_RETHROW((to_account.name)(scorum))
+    FC_CAPTURE_AND_RETHROW((to_account.name)(deip))
 }
 
 void dbs_account::clear_witness_votes(const account_object& account)
@@ -578,20 +578,20 @@ void dbs_account::clear_witness_votes(const account_object& account)
 }
 
 void dbs_account::adjust_proxied_witness_votes(
-    const account_object& account, const std::array<share_type, SCORUM_MAX_PROXY_RECURSION_DEPTH + 1>& delta, int depth)
+    const account_object& account, const std::array<share_type, deip_MAX_PROXY_RECURSION_DEPTH + 1>& delta, int depth)
 {
     dbs_witness& witness_service = db().obtain_service<dbs_witness>();
 
-    if (account.proxy != SCORUM_PROXY_TO_SELF_ACCOUNT)
+    if (account.proxy != deip_PROXY_TO_SELF_ACCOUNT)
     {
         /// nested proxies are not supported, vote will not propagate
-        if (depth >= SCORUM_MAX_PROXY_RECURSION_DEPTH)
+        if (depth >= deip_MAX_PROXY_RECURSION_DEPTH)
             return;
 
         const auto& proxy = get_account(account.proxy);
 
         db_impl().modify(proxy, [&](account_object& a) {
-            for (int i = SCORUM_MAX_PROXY_RECURSION_DEPTH - depth - 1; i >= 0; --i)
+            for (int i = deip_MAX_PROXY_RECURSION_DEPTH - depth - 1; i >= 0; --i)
             {
                 a.proxied_vsf_votes[i + depth] += delta[i];
             }
@@ -602,7 +602,7 @@ void dbs_account::adjust_proxied_witness_votes(
     else
     {
         share_type total_delta = 0;
-        for (int i = SCORUM_MAX_PROXY_RECURSION_DEPTH - depth; i >= 0; --i)
+        for (int i = deip_MAX_PROXY_RECURSION_DEPTH - depth; i >= 0; --i)
             total_delta += delta[i];
         witness_service.adjust_witness_votes(account, total_delta);
     }
@@ -612,10 +612,10 @@ void dbs_account::adjust_proxied_witness_votes(const account_object& account, sh
 {
     dbs_witness& witness_service = db().obtain_service<dbs_witness>();
 
-    if (account.proxy != SCORUM_PROXY_TO_SELF_ACCOUNT)
+    if (account.proxy != deip_PROXY_TO_SELF_ACCOUNT)
     {
         /// nested proxies are not supported, vote will not propagate
-        if (depth >= SCORUM_MAX_PROXY_RECURSION_DEPTH)
+        if (depth >= deip_MAX_PROXY_RECURSION_DEPTH)
             return;
 
         const auto& proxy = get_account(account.proxy);

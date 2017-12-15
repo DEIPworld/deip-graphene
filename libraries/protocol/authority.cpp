@@ -1,7 +1,7 @@
-#include <scorum/protocol/authority.hpp>
+#include <deip/protocol/authority.hpp>
 #include <cctype>
 
-namespace scorum {
+namespace deip {
 namespace protocol {
 
 // authority methods
@@ -55,15 +55,15 @@ void authority::validate() const
 
 bool is_valid_account_name(const string& name)
 {
-#if SCORUM_MIN_ACCOUNT_NAME_LENGTH < 3
+#if deip_MIN_ACCOUNT_NAME_LENGTH < 3
 #error This is_valid_account_name implementation implicitly enforces minimum name length of 3.
 #endif
 
     const size_t len = name.size();
-    if (len < SCORUM_MIN_ACCOUNT_NAME_LENGTH)
+    if (len < deip_MIN_ACCOUNT_NAME_LENGTH)
         return false;
 
-    if (len > SCORUM_MAX_ACCOUNT_NAME_LENGTH)
+    if (len > deip_MAX_ACCOUNT_NAME_LENGTH)
         return false;
 
     size_t begin = 0;
@@ -100,4 +100,4 @@ bool operator==(const authority& a, const authority& b)
 }
 
 } // namespace protocol
-} // namespace scorum
+} // namespace deip

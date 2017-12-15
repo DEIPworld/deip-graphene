@@ -38,11 +38,11 @@
 
 #include <graphene/utilities/key_conversion.hpp>
 
-#include <scorum/app/api.hpp>
-#include <scorum/protocol/protocol.hpp>
-#include <scorum/wallet/wallet.hpp>
-#include <scorum/chain/genesis_state.hpp>
-#include <scorum/egenesis/egenesis.hpp>
+#include <deip/app/api.hpp>
+#include <deip/protocol/protocol.hpp>
+#include <deip/wallet/wallet.hpp>
+#include <deip/chain/genesis_state.hpp>
+#include <deip/egenesis/egenesis.hpp>
 
 #include <fc/interprocess/signals.hpp>
 #include <boost/program_options.hpp>
@@ -60,9 +60,9 @@
 #endif
 
 using namespace graphene::utilities;
-using namespace scorum::app;
-using namespace scorum::chain;
-using namespace scorum::wallet;
+using namespace deip::app;
+using namespace deip::chain;
+using namespace deip::wallet;
 using namespace std;
 namespace bpo = boost::program_options;
 
@@ -150,7 +150,7 @@ int main(int argc, char** argv)
             }
             else
             {
-                wdata.chain_id = scorum::egenesis::get_egenesis_chain_id();
+                wdata.chain_id = deip::egenesis::get_egenesis_chain_id();
                 std::cout << "Starting a new wallet with chain ID " << wdata.chain_id.str() << " (from egenesis)\n";
             }
         }

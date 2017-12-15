@@ -1,10 +1,10 @@
-#include <scorum/app/api_context.hpp>
-#include <scorum/app/application.hpp>
-#include <scorum/app/database_api.hpp>
+#include <deip/app/api_context.hpp>
+#include <deip/app/application.hpp>
+#include <deip/app/database_api.hpp>
 
-#include <scorum/protocol/get_config.hpp>
+#include <deip/protocol/get_config.hpp>
 
-#include <scorum/chain/util/reward.hpp>
+#include <deip/chain/util/reward.hpp>
 
 #include <fc/bloom_filter.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -18,11 +18,11 @@
 #include <cfenv>
 #include <iostream>
 
-#include <scorum/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_budget.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
-namespace scorum {
+namespace deip {
 namespace app {
 
 class database_api_impl;
@@ -30,7 +30,7 @@ class database_api_impl;
 class database_api_impl : public std::enable_shared_from_this<database_api_impl>
 {
 public:
-    database_api_impl(const scorum::app::api_context& ctx);
+    database_api_impl(const deip::app::api_context& ctx);
     ~database_api_impl();
 
     // Subscriptions
@@ -79,8 +79,8 @@ public:
 
     std::function<void(const fc::variant&)> _block_applied_callback;
 
-    scorum::chain::database& _db;
-    std::shared_ptr<scorum::follow::follow_api> _follow_api;
+    deip::chain::database& _db;
+    std::shared_ptr<deip::follow::follow_api> _follow_api;
 
     boost::signals2::scoped_connection _block_applied_connection;
 
@@ -143,7 +143,7 @@ void database_api_impl::set_block_applied_callback(std::function<void(const vari
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-database_api::database_api(const scorum::app::api_context& ctx)
+database_api::database_api(const deip::app::api_context& ctx)
     : my(new database_api_impl(ctx))
 {
 }
@@ -152,7 +152,7 @@ database_api::~database_api()
 {
 }
 
-database_api_impl::database_api_impl(const scorum::app::api_context& ctx)
+database_api_impl::database_api_impl(const deip::app::api_context& ctx)
     : _db(*ctx.app.chain_database())
 {
     wlog("creating database api ${x}", ("x", int64_t(this)));
@@ -162,7 +162,7 @@ database_api_impl::database_api_impl(const scorum::app::api_context& ctx)
     try
     {
         ctx.app.get_plugin<follow::follow_plugin>(FOLLOW_PLUGIN_NAME);
-        _follow_api = std::make_shared<scorum::follow::follow_api>(ctx);
+        _follow_api = std::make_shared<deip::follow::follow_api>(ctx);
     }
     catch (fc::assert_exception)
     {
@@ -246,7 +246,7 @@ fc::variant_object database_api::get_config() const
 
 fc::variant_object database_api_impl::get_config() const
 {
-    return scorum::protocol::get_config();
+    return deip::protocol::get_config();
 }
 
 dynamic_global_property_api_obj database_api::get_dynamic_global_properties() const
@@ -373,7 +373,7 @@ vector<account_id_type> database_api_impl::get_account_references(account_id_typ
 {
     /*const auto& idx = _db.get_index<account_index>();
     const auto& aidx = dynamic_cast<const primary_index<account_index>&>(idx);
-    const auto& refs = aidx.get_secondary_index<scorum::chain::account_member_index>();
+    const auto& refs = aidx.get_secondary_index<deip::chain::account_member_index>();
     auto itr = refs.account_to_account_memberships.find(account_id);
     vector<account_id_type> result;
 
@@ -383,7 +383,7 @@ vector<account_id_type> database_api_impl::get_account_references(account_id_typ
        for( auto item : itr->second ) result.push_back(item);
     }
     return result;*/
-    FC_ASSERT(false, "database_api::get_account_references --- Needs to be refactored for scorum.");
+    FC_ASSERT(false, "database_api::get_account_references --- Needs to be refactored for deip.");
 }
 
 vector<optional<account_api_obj>> database_api::lookup_account_names(const vector<string>& account_names) const
@@ -696,7 +696,7 @@ set<public_key_type> database_api_impl::get_required_signatures(const signed_tra
         [&](string account_name) {
             return authority(_db.get<account_authority_object, by_account>(account_name).posting);
         },
-        SCORUM_MAX_SIG_CHECK_DEPTH);
+        deip_MAX_SIG_CHECK_DEPTH);
     //   wdump((result));
     return result;
 }
@@ -730,7 +730,7 @@ set<public_key_type> database_api_impl::get_potential_signatures(const signed_tr
                 result.insert(k);
             return authority(auth);
         },
-        SCORUM_MAX_SIG_CHECK_DEPTH);
+        deip_MAX_SIG_CHECK_DEPTH);
 
     //   wdump((result));
     return result;
@@ -753,7 +753,7 @@ bool database_api_impl::verify_authority(const signed_transaction& trx) const
                          [&](string account_name) {
                              return authority(_db.get<account_authority_object, by_account>(account_name).posting);
                          },
-                         SCORUM_MAX_SIG_CHECK_DEPTH);
+                         deip_MAX_SIG_CHECK_DEPTH);
     return true;
 }
 
@@ -866,7 +866,7 @@ void database_api::set_pending_payout(discussion& d) const
     auto itr = cidx.lower_bound(d.id);
     if (itr != cidx.end() && itr->comment == d.id)
     {
-        d.promoted = asset(itr->promoted_balance, SCORUM_SYMBOL);
+        d.promoted = asset(itr->promoted_balance, deip_SYMBOL);
     }
     asset pot = my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)).reward_balance;
     u256 total_r2 = to256(my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)).recent_claims);
@@ -875,7 +875,7 @@ void database_api::set_pending_payout(discussion& d) const
         uint128_t vshares;
         const auto& rf = my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink));
         vshares = d.net_rshares.value > 0
-            ? scorum::chain::util::evaluate_reward_curve(d.net_rshares.value, rf.author_reward_curve)
+            ? deip::chain::util::evaluate_reward_curve(d.net_rshares.value, rf.author_reward_curve)
             : 0;
 
         u256 r2 = to256(vshares); // to256(abs_net_rshares);
@@ -890,7 +890,7 @@ void database_api::set_pending_payout(discussion& d) const
         }
     }
 
-    if (d.parent_author != SCORUM_ROOT_POST_PARENT)
+    if (d.parent_author != deip_ROOT_POST_PARENT)
         d.cashout_time = my->_db.calculate_discussion_payout_time(my->_db.get<comment_object>(d.id));
 
     if (d.body.size() > 1024 * 128)
@@ -940,8 +940,8 @@ vector<budget_api_obj> database_api::get_budgets(const set<string>& names) const
 
 vector<budget_api_obj> database_api_impl::get_budgets(const set<string>& names) const
 {
-    FC_ASSERT(names.size() <= SCORUM_LIMIT_API_BUDGETS_LIST_SIZE, "names size must be less or equal than ${1}",
-              ("1", SCORUM_LIMIT_API_BUDGETS_LIST_SIZE));
+    FC_ASSERT(names.size() <= deip_LIMIT_API_BUDGETS_LIST_SIZE, "names size must be less or equal than ${1}",
+              ("1", deip_LIMIT_API_BUDGETS_LIST_SIZE));
 
     vector<budget_api_obj> results;
 
@@ -950,7 +950,7 @@ vector<budget_api_obj> database_api_impl::get_budgets(const set<string>& names) 
     for (const auto& name : names)
     {
         auto budgets = budget_service.get_budgets(name);
-        if (results.size() + budgets.size() > SCORUM_LIMIT_API_BUDGETS_LIST_SIZE)
+        if (results.size() + budgets.size() > deip_LIMIT_API_BUDGETS_LIST_SIZE)
         {
             break;
         }
@@ -971,8 +971,8 @@ set<string> database_api::lookup_budget_owners(const string& lower_bound_name, u
 
 set<string> database_api_impl::lookup_budget_owners(const string& lower_bound_name, uint32_t limit) const
 {
-    FC_ASSERT(limit <= SCORUM_LIMIT_API_BUDGETS_LIST_SIZE, "limit must be less or equal than ${1}",
-              ("1", SCORUM_LIMIT_API_BUDGETS_LIST_SIZE));
+    FC_ASSERT(limit <= deip_LIMIT_API_BUDGETS_LIST_SIZE, "limit must be less or equal than ${1}",
+              ("1", deip_LIMIT_API_BUDGETS_LIST_SIZE));
 
     chain::dbs_budget& budget_service = _db.obtain_service<chain::dbs_budget>();
 
@@ -1162,7 +1162,7 @@ vector<discussion> database_api::get_discussions(const discussion_query& query,
         try
         {
             result.push_back(get_discussion(tidx_itr->comment, truncate_body));
-            result.back().promoted = asset(tidx_itr->promoted_balance, SCORUM_SYMBOL);
+            result.back().promoted = asset(tidx_itr->promoted_balance, deip_SYMBOL);
 
             if (filter(result.back()))
             {
@@ -1255,7 +1255,7 @@ vector<discussion> database_api::get_discussions_by_promoted(const discussion_qu
         auto parent = get_parent(query);
 
         const auto& tidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_parent_promoted>();
-        auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, share_type(SCORUM_MAX_SHARE_SUPPLY)));
+        auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, share_type(deip_MAX_SHARE_SUPPLY)));
 
         return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body, filter_default, exit_default,
                                [](const tags::tag_object& t) { return t.promoted_balance == 0; });
@@ -2142,4 +2142,4 @@ annotated_signed_transaction database_api::get_transaction(transaction_id_type i
 #endif
 }
 } // namespace app
-} // namespace scorum
+} // namespace deip

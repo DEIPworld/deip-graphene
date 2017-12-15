@@ -24,14 +24,14 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <scorum/protocol/exceptions.hpp>
+#include <deip/protocol/exceptions.hpp>
 
-#include <scorum/chain/database.hpp>
-#include <scorum/chain/scorum_objects.hpp>
-#include <scorum/chain/history_object.hpp>
-#include <scorum/chain/genesis_state.hpp>
+#include <deip/chain/database.hpp>
+#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/history_object.hpp>
+#include <deip/chain/genesis_state.hpp>
 
-#include <scorum/account_history/account_history_plugin.hpp>
+#include <deip/account_history/account_history_plugin.hpp>
 
 #include <graphene/utilities/tempdir.hpp>
 
@@ -39,9 +39,9 @@
 
 #include "database_fixture.hpp"
 
-using namespace scorum;
-using namespace scorum::chain;
-using namespace scorum::protocol;
+using namespace deip;
+using namespace deip::chain;
+using namespace deip::protocol;
 
 BOOST_AUTO_TEST_SUITE(block_tests)
 
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(generate_empty_blocks)
                                   database::skip_nothing);
 
             // TODO:  Change this test when we correct #406
-            // n.b. we generate SCORUM_MIN_UNDO_HISTORY+1 extra blocks which will be discarded on save
+            // n.b. we generate deip_MIN_UNDO_HISTORY+1 extra blocks which will be discarded on save
             for (uint32_t i = 1;; ++i)
             {
                 BOOST_CHECK(db.head_block_id() == b.id());
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE(fork_blocks)
             b.transactions.back().operations.emplace_back(transfer_operation());
             b.sign(init_account_priv_key);
             BOOST_CHECK_EQUAL(b.block_num(), uint32_t(14));
-            SCORUM_CHECK_THROW(PUSH_BLOCK(db1, b), fc::exception);
+            deip_CHECK_THROW(PUSH_BLOCK(db1, b), fc::exception);
         }
         BOOST_CHECK_EQUAL(db1.head_block_num(), uint32_t(13));
         BOOST_CHECK_EQUAL(db1.head_block_id().str(), db1_tip);
@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE(switch_forks_undo_create)
         cop.owner = authority(1, init_account_pub_key, 1);
         cop.active = cop.owner;
         trx.operations.push_back(cop);
-        trx.set_expiration(db1.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        trx.set_expiration(db1.head_block_time() + deip_MAX_TIME_UNTIL_EXPIRATION);
         trx.sign(init_account_priv_key, db1.get_chain_id());
         PUSH_TX(db1, trx);
         //*/
@@ -293,10 +293,10 @@ BOOST_AUTO_TEST_CASE(switch_forks_undo_create)
         b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key,
                                database::skip_nothing);
         db1.push_block(b);
-        SCORUM_REQUIRE_THROW(db2.get(alice_id), std::exception);
+        deip_REQUIRE_THROW(db2.get(alice_id), std::exception);
         db1.get(alice_id); /// it should be included in the pending state
         db1.clear_pending(); // clear it so that we can verify it was properly removed from pending state.
-        SCORUM_REQUIRE_THROW(db1.get(alice_id), std::exception);
+        deip_REQUIRE_THROW(db1.get(alice_id), std::exception);
 
         PUSH_TX(db2, trx);
 
@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE(duplicate_transactions)
         cop.owner = authority(1, init_account_pub_key, 1);
         cop.active = cop.owner;
         trx.operations.push_back(cop);
-        trx.set_expiration(db1.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        trx.set_expiration(db1.head_block_time() + deip_MAX_TIME_UNTIL_EXPIRATION);
         trx.sign(init_account_priv_key, db1.get_chain_id());
         PUSH_TX(db1, trx, skip_sigs);
 
@@ -348,22 +348,22 @@ BOOST_AUTO_TEST_CASE(duplicate_transactions)
         transfer_operation t;
         t.from = TEST_INIT_DELEGATE_NAME;
         t.to = "alice";
-        t.amount = asset(500, SCORUM_SYMBOL);
+        t.amount = asset(500, deip_SYMBOL);
         trx.operations.push_back(t);
-        trx.set_expiration(db1.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        trx.set_expiration(db1.head_block_time() + deip_MAX_TIME_UNTIL_EXPIRATION);
         trx.sign(init_account_priv_key, db1.get_chain_id());
         PUSH_TX(db1, trx, skip_sigs);
 
-        SCORUM_CHECK_THROW(PUSH_TX(db1, trx, skip_sigs), fc::exception);
+        deip_CHECK_THROW(PUSH_TX(db1, trx, skip_sigs), fc::exception);
 
         auto b
             = db1.generate_block(db1.get_slot_time(1), db1.get_scheduled_witness(1), init_account_priv_key, skip_sigs);
         PUSH_BLOCK(db2, b, skip_sigs);
 
-        SCORUM_CHECK_THROW(PUSH_TX(db1, trx, skip_sigs), fc::exception);
-        SCORUM_CHECK_THROW(PUSH_TX(db2, trx, skip_sigs), fc::exception);
-        BOOST_CHECK_EQUAL(db1.get_balance("alice", SCORUM_SYMBOL).amount.value, 500);
-        BOOST_CHECK_EQUAL(db2.get_balance("alice", SCORUM_SYMBOL).amount.value, 500);
+        deip_CHECK_THROW(PUSH_TX(db1, trx, skip_sigs), fc::exception);
+        deip_CHECK_THROW(PUSH_TX(db2, trx, skip_sigs), fc::exception);
+        BOOST_CHECK_EQUAL(db1.get_balance("alice", deip_SYMBOL).amount.value, 500);
+        BOOST_CHECK_EQUAL(db2.get_balance("alice", deip_SYMBOL).amount.value, 500);
     }
     catch (fc::exception& e)
     {
@@ -399,7 +399,7 @@ BOOST_AUTO_TEST_CASE(tapos)
         cop.owner = authority(1, init_account_pub_key, 1);
         cop.active = cop.owner;
         trx.operations.push_back(cop);
-        trx.set_expiration(db1.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        trx.set_expiration(db1.head_block_time() + deip_MAX_TIME_UNTIL_EXPIRATION);
         trx.sign(init_account_priv_key, db1.get_chain_id());
 
         BOOST_TEST_MESSAGE("Pushing Pending Transaction");
@@ -413,7 +413,7 @@ BOOST_AUTO_TEST_CASE(tapos)
         transfer_operation t;
         t.from = TEST_INIT_DELEGATE_NAME;
         t.to = "alice";
-        t.amount = asset(50, SCORUM_SYMBOL);
+        t.amount = asset(50, deip_SYMBOL);
         trx.operations.push_back(t);
         trx.set_expiration(db1.head_block_time() + fc::seconds(2));
         trx.sign(init_account_priv_key, db1.get_chain_id());
@@ -451,7 +451,7 @@ BOOST_FIXTURE_TEST_CASE(optional_tapos, clean_database_fixture)
         transfer_operation op;
         op.from = "alice";
         op.to = "bob";
-        op.amount = asset(1000, SCORUM_SYMBOL);
+        op.amount = asset(1000, deip_SYMBOL);
         signed_transaction tx;
         tx.operations.push_back(op);
 
@@ -460,14 +460,14 @@ BOOST_FIXTURE_TEST_CASE(optional_tapos, clean_database_fixture)
         tx.ref_block_num = 0;
         tx.ref_block_prefix = 0;
         tx.signatures.clear();
-        tx.set_expiration(db.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        tx.set_expiration(db.head_block_time() + deip_MAX_TIME_UNTIL_EXPIRATION);
         tx.sign(alice_private_key, db.get_chain_id());
         PUSH_TX(db, tx);
 
         BOOST_TEST_MESSAGE("proper ref_block_num, ref_block_prefix");
 
         tx.signatures.clear();
-        tx.set_expiration(db.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        tx.set_expiration(db.head_block_time() + deip_MAX_TIME_UNTIL_EXPIRATION);
         tx.sign(alice_private_key, db.get_chain_id());
         PUSH_TX(db, tx, database::skip_transaction_dupe_check);
 
@@ -476,27 +476,27 @@ BOOST_FIXTURE_TEST_CASE(optional_tapos, clean_database_fixture)
         tx.ref_block_num = 0;
         tx.ref_block_prefix = 0x12345678;
         tx.signatures.clear();
-        tx.set_expiration(db.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        tx.set_expiration(db.head_block_time() + deip_MAX_TIME_UNTIL_EXPIRATION);
         tx.sign(alice_private_key, db.get_chain_id());
-        SCORUM_REQUIRE_THROW(PUSH_TX(db, tx, database::skip_transaction_dupe_check), fc::exception);
+        deip_REQUIRE_THROW(PUSH_TX(db, tx, database::skip_transaction_dupe_check), fc::exception);
 
         BOOST_TEST_MESSAGE("ref_block_num=1, ref_block_prefix=12345678");
 
         tx.ref_block_num = 1;
         tx.ref_block_prefix = 0x12345678;
         tx.signatures.clear();
-        tx.set_expiration(db.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        tx.set_expiration(db.head_block_time() + deip_MAX_TIME_UNTIL_EXPIRATION);
         tx.sign(alice_private_key, db.get_chain_id());
-        SCORUM_REQUIRE_THROW(PUSH_TX(db, tx, database::skip_transaction_dupe_check), fc::exception);
+        deip_REQUIRE_THROW(PUSH_TX(db, tx, database::skip_transaction_dupe_check), fc::exception);
 
         BOOST_TEST_MESSAGE("ref_block_num=9999, ref_block_prefix=12345678");
 
         tx.ref_block_num = 9999;
         tx.ref_block_prefix = 0x12345678;
         tx.signatures.clear();
-        tx.set_expiration(db.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        tx.set_expiration(db.head_block_time() + deip_MAX_TIME_UNTIL_EXPIRATION);
         tx.sign(alice_private_key, db.get_chain_id());
-        SCORUM_REQUIRE_THROW(PUSH_TX(db, tx, database::skip_transaction_dupe_check), fc::exception);
+        deip_REQUIRE_THROW(PUSH_TX(db, tx, database::skip_transaction_dupe_check), fc::exception);
     }
     catch (fc::exception& e)
     {
@@ -516,9 +516,9 @@ BOOST_FIXTURE_TEST_CASE(double_sign_check, clean_database_fixture)
         transfer_operation t;
         t.from = TEST_INIT_DELEGATE_NAME;
         t.to = "bob";
-        t.amount = asset(amount, SCORUM_SYMBOL);
+        t.amount = asset(amount, deip_SYMBOL);
         trx.operations.push_back(t);
-        trx.set_expiration(db.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        trx.set_expiration(db.head_block_time() + deip_MAX_TIME_UNTIL_EXPIRATION);
         trx.validate();
 
         db.push_transaction(trx, ~0);
@@ -526,22 +526,22 @@ BOOST_FIXTURE_TEST_CASE(double_sign_check, clean_database_fixture)
         trx.operations.clear();
         t.from = "bob";
         t.to = TEST_INIT_DELEGATE_NAME;
-        t.amount = asset(amount, SCORUM_SYMBOL);
+        t.amount = asset(amount, deip_SYMBOL);
         trx.operations.push_back(t);
         trx.validate();
 
         BOOST_TEST_MESSAGE("Verify that not-signing causes an exception");
-        SCORUM_REQUIRE_THROW(db.push_transaction(trx, 0), fc::exception);
+        deip_REQUIRE_THROW(db.push_transaction(trx, 0), fc::exception);
 
         BOOST_TEST_MESSAGE("Verify that double-signing causes an exception");
         trx.sign(bob_private_key, db.get_chain_id());
         trx.sign(bob_private_key, db.get_chain_id());
-        SCORUM_REQUIRE_THROW(db.push_transaction(trx, 0), tx_duplicate_sig);
+        deip_REQUIRE_THROW(db.push_transaction(trx, 0), tx_duplicate_sig);
 
         BOOST_TEST_MESSAGE("Verify that signing with an extra, unused key fails");
         trx.signatures.pop_back();
         trx.sign(generate_private_key("bogus"), db.get_chain_id());
-        SCORUM_REQUIRE_THROW(db.push_transaction(trx, 0), tx_irrelevant_sig);
+        deip_REQUIRE_THROW(db.push_transaction(trx, 0), tx_irrelevant_sig);
 
         BOOST_TEST_MESSAGE("Verify that signing once with the proper key passes");
         trx.signatures.pop_back();
@@ -608,13 +608,13 @@ BOOST_FIXTURE_TEST_CASE(rsf_missed_blocks, clean_database_fixture)
             return result;
         };
 
-        auto pct = [](uint32_t x) -> uint32_t { return uint64_t(SCORUM_100_PERCENT) * x / 128; };
+        auto pct = [](uint32_t x) -> uint32_t { return uint64_t(deip_100_PERCENT) * x / 128; };
 
         BOOST_TEST_MESSAGE("checking initial participation rate");
         BOOST_CHECK_EQUAL(rsf(),
                           "1111111111111111111111111111111111111111111111111111111111111111"
                           "1111111111111111111111111111111111111111111111111111111111111111");
-        BOOST_CHECK_EQUAL(db.witness_participation_rate(), uint32_t(SCORUM_100_PERCENT));
+        BOOST_CHECK_EQUAL(db.witness_participation_rate(), uint32_t(deip_100_PERCENT));
 
         BOOST_TEST_MESSAGE("Generating a block skipping 1");
         generate_block(~database::skip_fork_db, init_account_priv_key, 1);
@@ -714,7 +714,7 @@ BOOST_FIXTURE_TEST_CASE(skip_block, clean_database_fixture)
         BOOST_REQUIRE(db.head_block_num() == 2);
 
         int init_block_num = db.head_block_num();
-        int miss_blocks = fc::minutes(1).to_seconds() / SCORUM_BLOCK_INTERVAL;
+        int miss_blocks = fc::minutes(1).to_seconds() / deip_BLOCK_INTERVAL;
         auto witness = db.get_scheduled_witness(miss_blocks);
         auto block_time = db.get_slot_time(miss_blocks);
         db.generate_block(block_time, witness, init_account_priv_key, 0);
@@ -726,7 +726,7 @@ BOOST_FIXTURE_TEST_CASE(skip_block, clean_database_fixture)
         generate_block();
 
         BOOST_CHECK_EQUAL(db.head_block_num(), uint32_t(init_block_num + 2));
-        BOOST_CHECK(db.head_block_time() == block_time + SCORUM_BLOCK_INTERVAL);
+        BOOST_CHECK(db.head_block_time() == block_time + deip_BLOCK_INTERVAL);
     }
     FC_LOG_AND_RETHROW();
 }
@@ -748,8 +748,8 @@ BOOST_FIXTURE_TEST_CASE( hardfork_test, database_fixture )
          if( arg == "--show-test-names" )
             std::cout << "running test " << boost::unit_test::framework::current_test_case().p_name << std::endl;
       }
-      auto ahplugin = app.register_plugin< scorum::account_history::account_history_plugin >();
-      db_plugin = app.register_plugin< scorum::plugin::debug_node::debug_node_plugin >();
+      auto ahplugin = app.register_plugin< deip::account_history::account_history_plugin >();
+      db_plugin = app.register_plugin< deip::plugin::debug_node::debug_node_plugin >();
       init_account_pub_key = init_account_priv_key.get_public_key();
 
       boost::program_options::variables_map options;
@@ -767,12 +767,12 @@ BOOST_FIXTURE_TEST_CASE( hardfork_test, database_fixture )
       vest( "initdelegate", 10000 );
 
       // Fill up the rest of the required miners
-      for( int i = SCORUM_NUM_INIT_MINERS; i < SCORUM_MAX_WITNESSES; i++ )
+      for( int i = deip_NUM_INIT_MINERS; i < deip_MAX_WITNESSES; i++ )
       {
-         account_create( SCORUM_INIT_MINER_NAME + fc::to_string( i ), init_account_pub_key );
-         fund( SCORUM_INIT_MINER_NAME + fc::to_string( i ), SCORUM_MIN_PRODUCER_REWARD.amount.value );
-         witness_create( SCORUM_INIT_MINER_NAME + fc::to_string( i ), init_account_priv_key, "foo.bar",
-init_account_pub_key, SCORUM_MIN_PRODUCER_REWARD.amount );
+         account_create( deip_INIT_MINER_NAME + fc::to_string( i ), init_account_pub_key );
+         fund( deip_INIT_MINER_NAME + fc::to_string( i ), deip_MIN_PRODUCER_REWARD.amount.value );
+         witness_create( deip_INIT_MINER_NAME + fc::to_string( i ), init_account_priv_key, "foo.bar",
+init_account_pub_key, deip_MIN_PRODUCER_REWARD.amount );
       }
 
       validate_database();
@@ -784,13 +784,13 @@ init_account_pub_key, SCORUM_MIN_PRODUCER_REWARD.amount );
 
       BOOST_TEST_MESSAGE( "Check hardfork not applied at genesis" );
       BOOST_REQUIRE( db.has_hardfork( 0 ) );
-      BOOST_REQUIRE( !db.has_hardfork( SCORUM_HARDFORK_0_1 ) );
+      BOOST_REQUIRE( !db.has_hardfork( deip_HARDFORK_0_1 ) );
 
       BOOST_TEST_MESSAGE( "Generate blocks up to the hardfork time and check hardfork still not applied" );
-      generate_blocks( fc::time_point_sec( SCORUM_HARDFORK_0_1_TIME - SCORUM_BLOCK_INTERVAL ), true );
+      generate_blocks( fc::time_point_sec( deip_HARDFORK_0_1_TIME - deip_BLOCK_INTERVAL ), true );
 
       BOOST_REQUIRE( db.has_hardfork( 0 ) );
-      BOOST_REQUIRE( !db.has_hardfork( SCORUM_HARDFORK_0_1 ) );
+      BOOST_REQUIRE( !db.has_hardfork( deip_HARDFORK_0_1 ) );
 
       BOOST_TEST_MESSAGE( "Generate a block and check hardfork is applied" );
       generate_block();
@@ -800,7 +800,7 @@ init_account_pub_key, SCORUM_MIN_PRODUCER_REWARD.amount );
       itr--;
 
       BOOST_REQUIRE( db.has_hardfork( 0 ) );
-      BOOST_REQUIRE( db.has_hardfork( SCORUM_HARDFORK_0_1 ) );
+      BOOST_REQUIRE( db.has_hardfork( deip_HARDFORK_0_1 ) );
       BOOST_REQUIRE( get_last_operations( 1 )[0].get< custom_operation >().data == vector< char >( op_msg.begin(),
 op_msg.end() ) );
       BOOST_REQUIRE( db.get(itr->op).timestamp == db.head_block_time() );
@@ -812,10 +812,10 @@ op_msg.end() ) );
       itr--;
 
       BOOST_REQUIRE( db.has_hardfork( 0 ) );
-      BOOST_REQUIRE( db.has_hardfork( SCORUM_HARDFORK_0_1 ) );
+      BOOST_REQUIRE( db.has_hardfork( deip_HARDFORK_0_1 ) );
       BOOST_REQUIRE( get_last_operations( 1 )[0].get< custom_operation >().data == vector< char >( op_msg.begin(),
 op_msg.end() ) );
-      BOOST_REQUIRE( db.get(itr->op).timestamp == db.head_block_time() - SCORUM_BLOCK_INTERVAL );
+      BOOST_REQUIRE( db.get(itr->op).timestamp == db.head_block_time() - deip_BLOCK_INTERVAL );
    }
    FC_LOG_AND_RETHROW()
 }

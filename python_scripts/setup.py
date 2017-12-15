@@ -1,11 +1,11 @@
 from setuptools import setup
 
-setup( name='scorumdebugnode',
+setup( name='deipdebugnode',
        version='0.1',
-       description='A wrapper for launching and interacting with a Scorum Debug Node',
-       url='https://github.com/scorum',
-       author='Scorum',
+       description='A wrapper for launching and interacting with a Deip Debug Node',
+       url='https://gitlab.com/DEIP/deip-blockchain/',
+       author='Deip',
        author_email='', # <---- REPLACE !!!!
        license='See LICENSE.md',
-       packages=['scorumdebugnode'],
+       packages=['deipdebugnode'],
        zip_safe=False )

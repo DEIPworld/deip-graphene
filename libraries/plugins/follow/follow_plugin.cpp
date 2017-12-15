@@ -1,16 +1,16 @@
-#include <scorum/follow/follow_api.hpp>
-#include <scorum/follow/follow_objects.hpp>
-#include <scorum/follow/follow_operations.hpp>
+#include <deip/follow/follow_api.hpp>
+#include <deip/follow/follow_objects.hpp>
+#include <deip/follow/follow_operations.hpp>
 
-#include <scorum/app/impacted.hpp>
+#include <deip/app/impacted.hpp>
 
-#include <scorum/protocol/config.hpp>
+#include <deip/protocol/config.hpp>
 
-#include <scorum/chain/database.hpp>
-#include <scorum/chain/generic_custom_operation_interpreter.hpp>
-#include <scorum/chain/operation_notification.hpp>
-#include <scorum/chain/account_object.hpp>
-#include <scorum/chain/comment_object.hpp>
+#include <deip/chain/database.hpp>
+#include <deip/chain/generic_custom_operation_interpreter.hpp>
+#include <deip/chain/operation_notification.hpp>
+#include <deip/chain/account_object.hpp>
+#include <deip/chain/comment_object.hpp>
 
 #include <graphene/schema/schema.hpp>
 #include <graphene/schema/schema_impl.hpp>
@@ -20,12 +20,12 @@
 
 #include <memory>
 
-namespace scorum {
+namespace deip {
 namespace follow {
 
 namespace detail {
 
-using namespace scorum::protocol;
+using namespace deip::protocol;
 
 class follow_plugin_impl
 {
@@ -37,7 +37,7 @@ public:
 
     void plugin_initialize();
 
-    scorum::chain::database& database()
+    deip::chain::database& database()
     {
         return _self.database();
     }
@@ -46,7 +46,7 @@ public:
     void post_operation(const operation_notification& op_obj);
 
     follow_plugin& _self;
-    std::shared_ptr<generic_custom_operation_interpreter<scorum::follow::follow_plugin_operation>>
+    std::shared_ptr<generic_custom_operation_interpreter<deip::follow::follow_plugin_operation>>
         _custom_operation_interpreter;
 };
 
@@ -54,7 +54,7 @@ void follow_plugin_impl::plugin_initialize()
 {
     // Each plugin needs its own evaluator registry.
     _custom_operation_interpreter
-        = std::make_shared<generic_custom_operation_interpreter<scorum::follow::follow_plugin_operation>>(database());
+        = std::make_shared<generic_custom_operation_interpreter<deip::follow::follow_plugin_operation>>(database());
 
     // Add each operation evaluator to the registry
     _custom_operation_interpreter->register_evaluator<follow_evaluator>(&_self);
@@ -412,8 +412,8 @@ void follow_plugin::plugin_startup()
     app().register_api_factory<follow_api>("follow_api");
 }
 }
-} // scorum::follow
+} // deip::follow
 
-SCORUM_DEFINE_PLUGIN(follow, scorum::follow::follow_plugin)
+deip_DEFINE_PLUGIN(follow, deip::follow::follow_plugin)
 
-// DEFINE_OPERATION_TYPE( scorum::follow::follow_plugin_operation )
+// DEFINE_OPERATION_TYPE( deip::follow::follow_plugin_operation )

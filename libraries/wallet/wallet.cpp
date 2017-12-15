@@ -2,15 +2,15 @@
 #include <graphene/utilities/key_conversion.hpp>
 #include <graphene/utilities/words.hpp>
 
-#include <scorum/app/api.hpp>
-#include <scorum/protocol/base.hpp>
-#include <scorum/follow/follow_operations.hpp>
-#include <scorum/private_message/private_message_operations.hpp>
-#include <scorum/wallet/wallet.hpp>
-#include <scorum/wallet/api_documentation.hpp>
-#include <scorum/wallet/reflect_util.hpp>
+#include <deip/app/api.hpp>
+#include <deip/protocol/base.hpp>
+#include <deip/follow/follow_operations.hpp>
+#include <deip/private_message/private_message_operations.hpp>
+#include <deip/wallet/wallet.hpp>
+#include <deip/wallet/api_documentation.hpp>
+#include <deip/wallet/reflect_util.hpp>
 
-#include <scorum/account_by_key/account_by_key_api.hpp>
+#include <deip/account_by_key/account_by_key_api.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -60,10 +60,10 @@
 
 #define BRAIN_KEY_WORD_COUNT 16
 
-namespace scorum {
+namespace deip {
 namespace wallet {
 
-using scorum::wallet::utils::derive_private_key;
+using deip::wallet::utils::derive_private_key;
 
 namespace detail {
 
@@ -348,7 +348,7 @@ public:
         result["participation"] = (100 * dynamic_props.recent_slots_filled.popcount()) / 128.0;
         result["account_creation_fee"] = _remote_db->get_chain_properties().account_creation_fee;
         result["post_reward_fund"]
-            = fc::variant(_remote_db->get_reward_fund(SCORUM_POST_REWARD_FUND_NAME)).get_object();
+            = fc::variant(_remote_db->get_reward_fund(deip_POST_REWARD_FUND_NAME)).get_object();
         return result;
     }
 
@@ -360,10 +360,10 @@ public:
             client_version = client_version.substr(pos + 1);
 
         fc::mutable_variant_object result;
-        result["blockchain_version"] = SCORUM_BLOCKCHAIN_VERSION;
+        result["blockchain_version"] = deip_BLOCKCHAIN_VERSION;
         result["client_version"] = client_version;
-        result["scorum_revision"] = graphene::utilities::git_revision_sha;
-        result["scorum_revision_age"] = fc::get_approximate_relative_time_string(
+        result["deip_revision"] = graphene::utilities::git_revision_sha;
+        result["deip_revision_age"] = fc::get_approximate_relative_time_string(
             fc::time_point_sec(graphene::utilities::git_revision_unix_timestamp));
         result["fc_revision"] = fc::git_revision_sha;
         result["fc_revision_age"]
@@ -388,7 +388,7 @@ public:
         {
             auto v = _remote_api->get_version();
             result["server_blockchain_version"] = v.blockchain_version;
-            result["server_scorum_revision"] = v.scorum_revision;
+            result["server_deip_revision"] = v.deip_revision;
             result["server_fc_revision"] = v.fc_revision;
         }
         catch (fc::exception&)
@@ -443,7 +443,7 @@ public:
         fc::optional<fc::ecc::private_key> optional_private_key = wif_to_key(wif_key);
         if (!optional_private_key)
             FC_THROW("Invalid private key");
-        scorum::chain::public_key_type wif_pub_key = optional_private_key->get_public_key();
+        deip::chain::public_key_type wif_pub_key = optional_private_key->get_public_key();
 
         _keys[wif_pub_key] = wif_key;
         return true;
@@ -516,7 +516,7 @@ public:
         for (int key_index = 0;; ++key_index)
         {
             fc::ecc::private_key derived_private_key = derive_private_key(key_to_wif(parent_key), key_index);
-            scorum::chain::public_key_type derived_public_key = derived_private_key.get_public_key();
+            deip::chain::public_key_type derived_public_key = derived_private_key.get_public_key();
             if (_keys.find(derived_public_key) == _keys.end())
             {
                 if (number_of_consecutive_unused_keys)
@@ -554,9 +554,9 @@ public:
             int memo_key_index = find_first_unused_derived_key_index(active_privkey);
             fc::ecc::private_key memo_privkey = derive_private_key(key_to_wif(active_privkey), memo_key_index);
 
-            scorum::chain::public_key_type owner_pubkey = owner_privkey.get_public_key();
-            scorum::chain::public_key_type active_pubkey = active_privkey.get_public_key();
-            scorum::chain::public_key_type memo_pubkey = memo_privkey.get_public_key();
+            deip::chain::public_key_type owner_pubkey = owner_privkey.get_public_key();
+            deip::chain::public_key_type active_pubkey = active_privkey.get_public_key();
+            deip::chain::public_key_type memo_pubkey = memo_privkey.get_public_key();
 
             account_create_operation account_create_op;
 
@@ -609,7 +609,7 @@ public:
 
     void set_transaction_expiration(uint32_t tx_expiration_seconds)
     {
-        FC_ASSERT(tx_expiration_seconds < SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        FC_ASSERT(tx_expiration_seconds < deip_MAX_TIME_UNTIL_EXPIRATION);
         _tx_expiration_seconds = tx_expiration_seconds;
     }
 
@@ -746,7 +746,7 @@ public:
             [&](const string& account_name) -> const authority& {
                 return (get_account_from_lut(account_name).posting);
             },
-            SCORUM_MAX_SIG_CHECK_DEPTH);
+            deip_MAX_SIG_CHECK_DEPTH);
 
         for (const public_key_type& k : minimal_signing_keys)
         {
@@ -786,11 +786,11 @@ public:
             std::stringstream out;
 
             auto accounts = result.as<vector<account_api_obj>>();
-            asset total_scorum;
+            asset total_deip;
             asset total_vest(0, VESTS_SYMBOL);
             for (const auto& a : accounts)
             {
-                total_scorum += a.balance;
+                total_deip += a.balance;
                 total_vest += a.vesting_shares;
                 out << std::left << std::setw(17) << std::string(a.name) << std::right << std::setw(18)
                     << fc::variant(a.balance).as_string() << " " << std::right << std::setw(26)
@@ -798,7 +798,7 @@ public:
             }
             out << "-------------------------------------------------------------------------\n";
             out << std::left << std::setw(17) << "TOTAL" << std::right << std::setw(18)
-                << fc::variant(total_scorum).as_string() << " " << std::right << std::setw(26)
+                << fc::variant(total_deip).as_string() << " " << std::right << std::setw(26)
                 << fc::variant(total_vest).as_string() << "\n";
             return out.str();
         };
@@ -1295,7 +1295,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys(const std::str
         op.memo_key = memo;
         op.json_metadata = json_meta;
         op.fee = my->_remote_db->get_chain_properties().account_creation_fee
-            * asset(SCORUM_CREATE_ACCOUNT_WITH_SCORUM_MODIFIER, SCORUM_SYMBOL);
+            * asset(deip_CREATE_ACCOUNT_WITH_deip_MODIFIER, deip_SYMBOL);
 
         signed_transaction tx;
         tx.operations.push_back(op);
@@ -1312,7 +1312,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys(const std::str
  * wallet.
  */
 annotated_signed_transaction wallet_api::create_account_with_keys_delegated(const std::string& creator,
-                                                                            const asset& scorum_fee,
+                                                                            const asset& deip_fee,
                                                                             const asset& delegated_vests,
                                                                             const string& newname,
                                                                             const string& json_meta,
@@ -1333,7 +1333,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys_delegated(cons
         op.posting = authority(1, posting, 1);
         op.memo_key = memo;
         op.json_metadata = json_meta;
-        op.fee = scorum_fee;
+        op.fee = deip_fee;
         op.delegation = delegated_vests;
 
         signed_transaction tx;
@@ -1735,7 +1735,7 @@ annotated_signed_transaction wallet_api::create_account(const std::string& creat
  *  will be controlable by this wallet.
  */
 annotated_signed_transaction wallet_api::create_account_delegated(const std::string& creator,
-                                                                  const asset& scorum_fee,
+                                                                  const asset& deip_fee,
                                                                   const asset& delegated_vests,
                                                                   const std::string& newname,
                                                                   const std::string& json_meta,
@@ -1752,7 +1752,7 @@ annotated_signed_transaction wallet_api::create_account_delegated(const std::str
         import_key(active.wif_priv_key);
         import_key(posting.wif_priv_key);
         import_key(memo.wif_priv_key);
-        return create_account_with_keys_delegated(creator, scorum_fee, delegated_vests, newname, json_meta,
+        return create_account_with_keys_delegated(creator, deip_fee, delegated_vests, newname, json_meta,
                                                   owner.pub_key, active.pub_key, posting.pub_key, memo.pub_key,
                                                   broadcast);
     }
@@ -1937,7 +1937,7 @@ annotated_signed_transaction wallet_api::escrow_transfer(const std::string& from
                                                          const std::string& to,
                                                          const std::string& agent,
                                                          uint32_t escrow_id,
-                                                         const asset& scorum_amount,
+                                                         const asset& deip_amount,
                                                          const asset& fee,
                                                          time_point_sec ratification_deadline,
                                                          time_point_sec escrow_expiration,
@@ -1950,7 +1950,7 @@ annotated_signed_transaction wallet_api::escrow_transfer(const std::string& from
     op.to = to;
     op.agent = agent;
     op.escrow_id = escrow_id;
-    op.scorum_amount = scorum_amount;
+    op.deip_amount = deip_amount;
     op.fee = fee;
     op.ratification_deadline = ratification_deadline;
     op.escrow_expiration = escrow_expiration;
@@ -2014,7 +2014,7 @@ annotated_signed_transaction wallet_api::escrow_release(const std::string& from,
                                                         const std::string& who,
                                                         const std::string& receiver,
                                                         uint32_t escrow_id,
-                                                        const asset& scorum_amount,
+                                                        const asset& deip_amount,
                                                         bool broadcast)
 {
     FC_ASSERT(!is_locked());
@@ -2025,7 +2025,7 @@ annotated_signed_transaction wallet_api::escrow_release(const std::string& from,
     op.who = who;
     op.receiver = receiver;
     op.escrow_id = escrow_id;
-    op.scorum_amount = scorum_amount;
+    op.deip_amount = deip_amount;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2141,14 +2141,14 @@ annotated_signed_transaction wallet_api::decline_voting_rights(const std::string
 }
 
 annotated_signed_transaction wallet_api::claim_reward_balance(const std::string& account,
-                                                              const asset& reward_scorum,
+                                                              const asset& reward_deip,
                                                               const asset& reward_vests,
                                                               bool broadcast)
 {
     FC_ASSERT(!is_locked());
     claim_reward_balance_operation op;
     op.account = account;
-    op.reward_scorum = reward_scorum;
+    op.reward_deip = reward_deip;
     op.reward_vests = reward_vests;
 
     signed_transaction tx;
@@ -2222,7 +2222,7 @@ annotated_signed_transaction wallet_api::vote(
     op.voter = voter;
     op.author = author;
     op.permlink = permlink;
-    op.weight = weight * SCORUM_1_PERCENT;
+    op.weight = weight * deip_1_PERCENT;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2239,7 +2239,7 @@ void wallet_api::set_transaction_expiration(uint32_t seconds)
 annotated_signed_transaction
 wallet_api::challenge(const std::string& challenger, const std::string& challenged, bool broadcast)
 {
-    // SCORUM: TODO: remove whole method
+    // DEIP: TODO: remove whole method
     FC_ASSERT(false, "Challenge is disabled");
     /*
     FC_ASSERT( !is_locked() );
@@ -2323,7 +2323,7 @@ annotated_signed_transaction wallet_api::send_private_message(
 
     custom_operation op;
     op.required_auths.insert(from);
-    op.id = SCORUM_PRIVATE_MESSAGE_COP_ID;
+    op.id = deip_PRIVATE_MESSAGE_COP_ID;
 
     private_message_operation pmo;
     pmo.from = from;
@@ -2565,4 +2565,4 @@ brain_key_info suggest_brain_key()
 
 } // namespace utils
 } // namespace wallet
-} // namespace scorum
+} // namespace deip

@@ -21,15 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <scorum/witness/witness_objects.hpp>
-#include <scorum/witness/witness_operations.hpp>
-#include <scorum/witness/witness_plugin.hpp>
+#include <deip/witness/witness_objects.hpp>
+#include <deip/witness/witness_operations.hpp>
+#include <deip/witness/witness_plugin.hpp>
 
-#include <scorum/chain/account_object.hpp>
-#include <scorum/chain/database.hpp>
-#include <scorum/chain/database_exceptions.hpp>
-#include <scorum/chain/generic_custom_operation_interpreter.hpp>
-#include <scorum/chain/scorum_objects.hpp>
+#include <deip/chain/account_object.hpp>
+#include <deip/chain/database.hpp>
+#include <deip/chain/database_exceptions.hpp>
+#include <deip/chain/generic_custom_operation_interpreter.hpp>
+#include <deip/chain/deip_objects.hpp>
 
 #include <fc/time.hpp>
 
@@ -43,7 +43,7 @@
 
 #define DISTANCE_CALC_PRECISION (10000)
 
-namespace scorum {
+namespace deip {
 namespace witness {
 
 namespace bpo = boost::program_options;
@@ -54,13 +54,13 @@ using std::vector;
 using protocol::signed_transaction;
 using chain::account_object;
 
-void new_chain_banner(const scorum::chain::database& db)
+void new_chain_banner(const deip::chain::database& db)
 {
     std::cerr << "\n"
                  "********************************\n"
                  "*                              *\n"
                  "*   ------- NEW CHAIN ------   *\n"
-                 "*   -   Welcome to Scorum!  -   *\n"
+                 "*   -   Welcome to Deip!  -   *\n"
                  "*   ------------------------   *\n"
                  "*                              *\n"
                  "********************************\n"
@@ -69,7 +69,7 @@ void new_chain_banner(const scorum::chain::database& db)
 }
 
 namespace detail {
-using namespace scorum::chain;
+using namespace deip::chain;
 
 class witness_plugin_impl
 {
@@ -116,7 +116,7 @@ struct comment_options_extension_visitor
 
     void operator()(const comment_payout_beneficiaries& cpb) const
     {
-        SCORUM_ASSERT(cpb.beneficiaries.size() <= 8, chain::plugin_exception,
+        deip_ASSERT(cpb.beneficiaries.size() <= 8, chain::plugin_exception,
                       "Cannot specify more than 8 beneficiaries.");
     }
 };
@@ -154,27 +154,27 @@ void check_memo(const string& memo, const account_object& account, const account
     for (auto& key_weight_pair : auth.owner.key_auths)
     {
         for (auto& key : keys)
-            SCORUM_ASSERT(key_weight_pair.first != key, chain::plugin_exception,
+            deip_ASSERT(key_weight_pair.first != key, chain::plugin_exception,
                           "Detected private owner key in memo field. You should change your owner keys.");
     }
 
     for (auto& key_weight_pair : auth.active.key_auths)
     {
         for (auto& key : keys)
-            SCORUM_ASSERT(key_weight_pair.first != key, chain::plugin_exception,
+            deip_ASSERT(key_weight_pair.first != key, chain::plugin_exception,
                           "Detected private active key in memo field. You should change your active keys.");
     }
 
     for (auto& key_weight_pair : auth.posting.key_auths)
     {
         for (auto& key : keys)
-            SCORUM_ASSERT(key_weight_pair.first != key, chain::plugin_exception,
+            deip_ASSERT(key_weight_pair.first != key, chain::plugin_exception,
                           "Detected private posting key in memo field. You should change your posting keys.");
     }
 
     const auto& memo_key = account.memo_key;
     for (auto& key : keys)
-        SCORUM_ASSERT(memo_key != key, chain::plugin_exception,
+        deip_ASSERT(memo_key != key, chain::plugin_exception,
                       "Detected private memo key in memo field. You should change your memo key.");
 }
 
@@ -207,14 +207,14 @@ struct operation_visitor
 
     void operator()(const comment_operation& o) const
     {
-        if (o.parent_author != SCORUM_ROOT_POST_PARENT)
+        if (o.parent_author != deip_ROOT_POST_PARENT)
         {
             const auto& parent = _db.find_comment(o.parent_author, o.parent_permlink);
 
             if (parent != nullptr)
-                SCORUM_ASSERT(parent->depth < SCORUM_SOFT_MAX_COMMENT_DEPTH, chain::plugin_exception,
+                deip_ASSERT(parent->depth < deip_SOFT_MAX_COMMENT_DEPTH, chain::plugin_exception,
                               "Comment is nested ${x} posts deep, maximum depth is ${y}.",
-                              ("x", parent->depth)("y", SCORUM_SOFT_MAX_COMMENT_DEPTH));
+                              ("x", parent->depth)("y", deip_SOFT_MAX_COMMENT_DEPTH));
         }
 
         auto itr = _db.find<comment_object, by_permlink>(boost::make_tuple(o.author, o.permlink));
@@ -223,7 +223,7 @@ struct operation_visitor
         {
             auto edit_lock = _db.find<content_edit_lock_object, by_account>(o.author);
 
-            SCORUM_ASSERT(edit_lock != nullptr && _db.head_block_time() < edit_lock->lock_time, chain::plugin_exception,
+            deip_ASSERT(edit_lock != nullptr && _db.head_block_time() < edit_lock->lock_time, chain::plugin_exception,
                           "The comment is archived");
         }
     }
@@ -282,10 +282,10 @@ void witness_plugin_impl::on_block(const signed_block& b)
     {
         db.create<reserve_ratio_object>([&](reserve_ratio_object& r) {
             r.average_block_size = 0;
-            r.current_reserve_ratio = SCORUM_MAX_RESERVE_RATIO * RESERVE_RATIO_PRECISION;
-            r.max_virtual_bandwidth = (uint128_t(SCORUM_MAX_BLOCK_SIZE) * SCORUM_MAX_RESERVE_RATIO
-                                       * SCORUM_BANDWIDTH_PRECISION * SCORUM_BANDWIDTH_AVERAGE_WINDOW_SECONDS)
-                / SCORUM_BLOCK_INTERVAL;
+            r.current_reserve_ratio = deip_MAX_RESERVE_RATIO * RESERVE_RATIO_PRECISION;
+            r.max_virtual_bandwidth = (uint128_t(deip_MAX_BLOCK_SIZE) * deip_MAX_RESERVE_RATIO
+                                       * deip_BANDWIDTH_PRECISION * deip_BANDWIDTH_AVERAGE_WINDOW_SECONDS)
+                / deip_BLOCK_INTERVAL;
         });
     }
     else
@@ -328,8 +328,8 @@ void witness_plugin_impl::on_block(const signed_block& b)
                         += std::max(RESERVE_RATIO_MIN_INCREMENT,
                                     (r.current_reserve_ratio * distance) / (distance - DISTANCE_CALC_PRECISION));
 
-                    if (r.current_reserve_ratio > SCORUM_MAX_RESERVE_RATIO * RESERVE_RATIO_PRECISION)
-                        r.current_reserve_ratio = SCORUM_MAX_RESERVE_RATIO * RESERVE_RATIO_PRECISION;
+                    if (r.current_reserve_ratio > deip_MAX_RESERVE_RATIO * RESERVE_RATIO_PRECISION)
+                        r.current_reserve_ratio = deip_MAX_RESERVE_RATIO * RESERVE_RATIO_PRECISION;
                 }
 
                 if (old_reserve_ratio != r.current_reserve_ratio)
@@ -340,8 +340,8 @@ void witness_plugin_impl::on_block(const signed_block& b)
 
                 r.max_virtual_bandwidth
                     = (uint128_t(max_block_size) * uint128_t(r.current_reserve_ratio)
-                       * uint128_t(SCORUM_BANDWIDTH_PRECISION * SCORUM_BANDWIDTH_AVERAGE_WINDOW_SECONDS))
-                    / (SCORUM_BLOCK_INTERVAL * RESERVE_RATIO_PRECISION);
+                       * uint128_t(deip_BANDWIDTH_PRECISION * deip_BANDWIDTH_AVERAGE_WINDOW_SECONDS))
+                    / (deip_BLOCK_INTERVAL * RESERVE_RATIO_PRECISION);
             }
         });
     }
@@ -368,15 +368,15 @@ void witness_plugin_impl::update_account_bandwidth(const account_object& a,
         }
 
         share_type new_bandwidth;
-        share_type trx_bandwidth = trx_size * SCORUM_BANDWIDTH_PRECISION;
+        share_type trx_bandwidth = trx_size * deip_BANDWIDTH_PRECISION;
         auto delta_time = (_db.head_block_time() - band->last_bandwidth_update).to_seconds();
 
-        if (delta_time > SCORUM_BANDWIDTH_AVERAGE_WINDOW_SECONDS)
+        if (delta_time > deip_BANDWIDTH_AVERAGE_WINDOW_SECONDS)
             new_bandwidth = 0;
         else
             new_bandwidth
-                = (((SCORUM_BANDWIDTH_AVERAGE_WINDOW_SECONDS - delta_time) * fc::uint128(band->average_bandwidth.value))
-                   / SCORUM_BANDWIDTH_AVERAGE_WINDOW_SECONDS)
+                = (((deip_BANDWIDTH_AVERAGE_WINDOW_SECONDS - delta_time) * fc::uint128(band->average_bandwidth.value))
+                   / deip_BANDWIDTH_AVERAGE_WINDOW_SECONDS)
                       .to_uint64();
 
         new_bandwidth += trx_bandwidth;
@@ -395,8 +395,8 @@ void witness_plugin_impl::update_account_bandwidth(const account_object& a,
         has_bandwidth = (account_vshares * max_virtual_bandwidth) > (account_average_bandwidth * total_vshares);
 
         if (_db.is_producing())
-            SCORUM_ASSERT(has_bandwidth, chain::plugin_exception,
-                          "Account: ${account} bandwidth limit exceeded. Please wait to transact or power up SCORUM.",
+            deip_ASSERT(has_bandwidth, chain::plugin_exception,
+                          "Account: ${account} bandwidth limit exceeded. Please wait to transact or power up DEIP.",
                           ("account", a.name)("account_vshares", account_vshares)("account_average_bandwidth",
                                                                                   account_average_bandwidth)(
                               "max_virtual_bandwidth", max_virtual_bandwidth)("total_vesting_shares", total_vshares));
@@ -435,7 +435,7 @@ void witness_plugin::plugin_set_program_options(boost::program_options::options_
                                        bpo::bool_switch()->notifier([this](bool e) { _production_enabled = e; }),
                                        "Enable block production, even if the chain is stale.")(
         "required-participation", bpo::bool_switch()->notifier([this](int e) {
-            _required_witness_participation = uint32_t(e * SCORUM_1_PERCENT);
+            _required_witness_participation = uint32_t(e * deip_1_PERCENT);
         }),
         "Percent of witnesses (0-99) that must be participating in order to produce blocks")(
         "witness,w", bpo::value<vector<string>>()->composing()->multitoken(),
@@ -501,7 +501,7 @@ void witness_plugin::plugin_startup()
             {
                 if (d.head_block_num() == 0)
                     new_chain_banner(d);
-                _production_skip_flags |= scorum::chain::database::skip_undo_history_check;
+                _production_skip_flags |= deip::chain::database::skip_undo_history_check;
             }
             schedule_production_loop();
         }
@@ -556,7 +556,7 @@ block_production_condition::block_production_condition_enum witness_plugin::bloc
         // We're trying to exit. Go ahead and let this one out.
         throw;
     }
-    catch (const scorum::chain::unknown_hardfork_exception& e)
+    catch (const deip::chain::unknown_hardfork_exception& e)
     {
         // Hit a hardfork that the current node know nothing about, stop production and inform user
         elog("${e}\nNode may be out of date...", ("e", e.to_detail_string()));
@@ -657,7 +657,7 @@ witness_plugin::maybe_produce_block(fc::mutable_variant_object& capture)
     auto itr = witness_by_name.find(scheduled_witness);
 
     fc::time_point_sec scheduled_time = db.get_slot_time(slot);
-    scorum::protocol::public_key_type scheduled_key = itr->signing_key;
+    deip::protocol::public_key_type scheduled_key = itr->signing_key;
     auto private_key_itr = _private_keys.find(scheduled_key);
 
     if (private_key_itr == _private_keys.end())
@@ -670,7 +670,7 @@ witness_plugin::maybe_produce_block(fc::mutable_variant_object& capture)
     uint32_t prate = db.witness_participation_rate();
     if (prate < _required_witness_participation)
     {
-        capture("pct", uint32_t(100 * uint64_t(prate) / SCORUM_1_PERCENT));
+        capture("pct", uint32_t(100 * uint64_t(prate) / deip_1_PERCENT));
         return block_production_condition::low_participation;
     }
 
@@ -704,6 +704,6 @@ witness_plugin::maybe_produce_block(fc::mutable_variant_object& capture)
     return block_production_condition::exception_producing_block;
 }
 }
-} // scorum::witness
+} // deip::witness
 
-SCORUM_DEFINE_PLUGIN(witness, scorum::witness::witness_plugin)
+deip_DEFINE_PLUGIN(witness, deip::witness::witness_plugin)

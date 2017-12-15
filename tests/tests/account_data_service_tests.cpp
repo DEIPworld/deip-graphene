@@ -1,12 +1,12 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <scorum/chain/account_object.hpp>
-#include <scorum/chain/dbs_account.hpp>
+#include <deip/chain/account_object.hpp>
+#include <deip/chain/dbs_account.hpp>
 
 #include "database_fixture.hpp"
 
-namespace scorum {
+namespace deip {
 namespace chain {
 
 private_key_type generate_private_key(const std::string& str)
@@ -26,13 +26,13 @@ public:
     void create_account()
     {
         data_service.create_account_by_faucets("user", "initdelegate", public_key, "", authority(), authority(),
-                                               authority(), asset(0, SCORUM_SYMBOL));
+                                               authority(), asset(0, deip_SYMBOL));
     }
 
     share_type calc_fee()
     {
         return std::max(db.get_witness_schedule_object().median_props.account_creation_fee.amount
-                            * SCORUM_CREATE_ACCOUNT_WITH_SCORUM_MODIFIER,
+                            * deip_CREATE_ACCOUNT_WITH_deip_MODIFIER,
                         share_type(100));
     }
 
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(fail_on_second_creation)
 
         BOOST_CHECK_THROW(
             data_service.create_account_by_faucets("user", "initdelegate", public_key, "", authority(), authority(),
-                                                   authority(), asset(0, SCORUM_SYMBOL)),
+                                                   authority(), asset(0, deip_SYMBOL)),
             boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<std::logic_error>>);
     }
     FC_LOG_AND_RETHROW()
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(check_fee_after_creation)
         const share_type fee = calc_fee();
 
         data_service.create_account_by_faucets("user", "initdelegate", public_key, "", authority(), authority(),
-                                               authority(), asset(fee, SCORUM_SYMBOL));
+                                               authority(), asset(fee, deip_SYMBOL));
 
         BOOST_CHECK(db.get_account("initdelegate").balance == asset(balance_before_creation.amount - fee));
     }
@@ -114,6 +114,6 @@ BOOST_AUTO_TEST_CASE(check_fee_after_creation)
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace chain
-} // namespace scorum
+} // namespace deip
 
 #endif
