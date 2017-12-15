@@ -1,11 +1,11 @@
 
 
-#include <scorum/plugins/auth_util/auth_util_api.hpp>
-#include <scorum/plugins/auth_util/auth_util_plugin.hpp>
+#include <deip/plugins/auth_util/auth_util_api.hpp>
+#include <deip/plugins/auth_util/auth_util_plugin.hpp>
 
 #include <string>
 
-namespace scorum {
+namespace deip {
 namespace plugin {
 namespace auth_util {
 
@@ -36,6 +36,6 @@ void auth_util_plugin::plugin_shutdown()
 }
 }
 }
-} // scorum::plugin::auth_util
+} // deip::plugin::auth_util
 
-SCORUM_DEFINE_PLUGIN(auth_util, scorum::plugin::auth_util::auth_util_plugin)
+DEIP_DEFINE_PLUGIN(auth_util, deip::plugin::auth_util::auth_util_plugin)

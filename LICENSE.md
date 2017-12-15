@@ -1,7 +1,7 @@
-Copyright (c) 2017 Scorum Ltd, and contributors.
+Copyright (c) 2017 Deip Ltd, and contributors.
 
 The following license applies to code contained within this repository that is 
-created by Scorum Ltd. Other copy right holders have licensed dependencies 
+created by Deip Ltd. Other copy right holders have licensed dependencies 
 such as Steem, Graphene under their own individual licenses.
 
 The MIT License 

@@ -1,7 +1,7 @@
-#include <scorum/chain/dbs_base_impl.hpp>
-#include <scorum/chain/database.hpp>
+#include <deip/chain/dbs_base_impl.hpp>
+#include <deip/chain/database.hpp>
 
-namespace scorum {
+namespace deip {
 namespace chain {
 
 // dbs_base

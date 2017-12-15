@@ -1,10 +1,10 @@
-#include <scorum/chain/dbs_witness.hpp>
-#include <scorum/chain/database.hpp>
+#include <deip/chain/dbs_witness.hpp>
+#include <deip/chain/database.hpp>
 
-#include <scorum/chain/witness_objects.hpp>
-#include <scorum/chain/account_object.hpp>
+#include <deip/chain/witness_objects.hpp>
+#include <deip/chain/account_object.hpp>
 
-namespace scorum {
+namespace deip {
 namespace chain {
 
 dbs_witness::dbs_witness(database& db)
@@ -72,4 +72,4 @@ void dbs_witness::adjust_witness_vote(const witness_object& witness, share_type 
     });
 }
 } // namespace chain
-} // namespace scorum
+} // namespace deip

@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <scorum/egenesis/egenesis.hpp>
+#include <deip/egenesis/egenesis.hpp>
 
-namespace scorum {
+namespace deip {
 namespace egenesis {
 
-scorum::protocol::chain_id_type get_egenesis_chain_id()
+deip::protocol::chain_id_type get_egenesis_chain_id()
 {
-    return scorum::protocol::chain_id_type();
+    return deip::protocol::chain_id_type();
 }
 
 void compute_egenesis_json(std::string& result)
@@ -42,4 +42,4 @@ fc::sha256 get_egenesis_json_hash()
 }
 
 } // namespace egenesis
-} // namespace scorum
+} // namespace deip

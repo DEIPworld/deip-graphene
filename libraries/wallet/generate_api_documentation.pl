@@ -13,10 +13,10 @@ my $outFile = new IO::File($outputFileName, "w")
 my $fileHeader = <<'END';
 /** GENERATED FILE **/
 #include <set>
-#include <scorum/wallet/api_documentation.hpp>
-#include <scorum/wallet/wallet.hpp>
+#include <deip/wallet/api_documentation.hpp>
+#include <deip/wallet/wallet.hpp>
 
-namespace scorum { namespace wallet {
+namespace deip { namespace wallet {
    namespace detail
    {
       struct api_method_name_collector_visitor
@@ -38,7 +38,7 @@ $outFile->print($fileHeader);
 
 for my $class (@{$doxydocs->{classes}})
 {
-  if ($class->{name} eq 'scorum::wallet::wallet_api')
+  if ($class->{name} eq 'deip::wallet::wallet_api')
   {
     for my $member (@{$class->{public_methods}->{members}})
     {
@@ -84,7 +84,7 @@ my $fileFooter = <<'END';
           ++iter;
    }
 
-} } // end namespace scorum::wallet
+} } // end namespace deip::wallet
 END
 $outFile->print($fileFooter);
 $outFile->close();

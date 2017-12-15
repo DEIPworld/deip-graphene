@@ -1,14 +1,14 @@
 
-#include <scorum/chain/database.hpp>
-#include <scorum/chain/global_property_object.hpp>
+#include <deip/chain/database.hpp>
+#include <deip/chain/global_property_object.hpp>
 
-#include <scorum/plugins/block_info/block_info.hpp>
-#include <scorum/plugins/block_info/block_info_api.hpp>
-#include <scorum/plugins/block_info/block_info_plugin.hpp>
+#include <deip/plugins/block_info/block_info.hpp>
+#include <deip/plugins/block_info/block_info_api.hpp>
+#include <deip/plugins/block_info/block_info_plugin.hpp>
 
 #include <string>
 
-namespace scorum {
+namespace deip {
 namespace plugin {
 namespace block_info {
 
@@ -60,6 +60,6 @@ void block_info_plugin::on_applied_block(const chain::signed_block& b)
 }
 }
 }
-} // scorum::plugin::block_info
+} // deip::plugin::block_info
 
-SCORUM_DEFINE_PLUGIN(block_info, scorum::plugin::block_info::block_info_plugin)
+DEIP_DEFINE_PLUGIN(block_info, deip::plugin::block_info::block_info_plugin)

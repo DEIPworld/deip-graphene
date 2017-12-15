@@ -21,16 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <scorum/app/api.hpp>
-#include <scorum/app/api_access.hpp>
-#include <scorum/app/application.hpp>
-#include <scorum/app/plugin.hpp>
+#include <deip/app/api.hpp>
+#include <deip/app/api_access.hpp>
+#include <deip/app/application.hpp>
+#include <deip/app/plugin.hpp>
 
-#include <scorum/chain/scorum_objects.hpp>
-#include <scorum/chain/scorum_object_types.hpp>
-#include <scorum/chain/database_exceptions.hpp>
-#include <scorum/chain/genesis_state.hpp>
-#include <scorum/egenesis/egenesis.hpp>
+#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/deip_object_types.hpp>
+#include <deip/chain/database_exceptions.hpp>
+#include <deip/chain/genesis_state.hpp>
+#include <deip/egenesis/egenesis.hpp>
 
 #include <fc/time.hpp>
 
@@ -60,7 +60,7 @@
 
 #include <boost/range/adaptor/reversed.hpp>
 
-namespace scorum {
+namespace deip {
 namespace app {
 
 using graphene::net::item_hash_t;
@@ -273,7 +273,7 @@ public:
         _self->register_api_factory<network_broadcast_api>("network_broadcast_api");
     }
 
-    void compute_genesis_state(scorum::chain::genesis_state_type& genesis_state)
+    void compute_genesis_state(deip::chain::genesis_state_type& genesis_state)
     {
         std::string genesis_str;
 
@@ -285,7 +285,7 @@ public:
         }
         else
         {
-            scorum::egenesis::compute_egenesis_json(genesis_str);
+            deip::egenesis::compute_egenesis_json(genesis_str);
         }
 
         FC_ASSERT(!genesis_str.empty());
@@ -325,7 +325,7 @@ public:
             if (!read_only)
             {
                 _self->_read_only = false;
-                ilog("Starting Scorum node in write mode.");
+                ilog("Starting Deip node in write mode.");
                 _max_block_age = _options->at("max-block-age").as<int32_t>();
 
                 if (_options->count("resync-blockchain"))
@@ -383,7 +383,7 @@ public:
             }
             else
             {
-                ilog("Starting Scorum node in read mode.");
+                ilog("Starting Deip node in read mode.");
                 _chain_db->open(_data_dir / "blockchain", _shared_dir, _shared_file_size,
                                 chainbase::database::read_only, genesis_state);
 
@@ -567,7 +567,7 @@ public:
 
                     return result;
                 }
-                catch (const scorum::chain::unlinkable_block_exception& e)
+                catch (const deip::chain::unlinkable_block_exception& e)
                 {
                     // translate to a graphene::net exception
                     fc_elog(fc::logger::get("sync"), "Error when pushing block, current head block is ${head3}:\n${e}",
@@ -1001,7 +1001,7 @@ public:
     const bpo::variables_map* _options = nullptr;
     api_access _apiaccess;
 
-    std::shared_ptr<scorum::chain::database> _chain_db;
+    std::shared_ptr<deip::chain::database> _chain_db;
     std::shared_ptr<graphene::net::node> _p2p_network;
     std::shared_ptr<fc::http::websocket_server> _websocket_server;
     std::shared_ptr<fc::http::websocket_tls_server> _websocket_tls_server;
@@ -1350,4 +1350,4 @@ void application::startup_plugins()
 }
 
 } // namespace app
-} // namespace scorum
+} // namespace deip

@@ -1,9 +1,9 @@
-#include <scorum/protocol/block.hpp>
+#include <deip/protocol/block.hpp>
 #include <fc/io/raw.hpp>
 #include <fc/bitutil.hpp>
 #include <algorithm>
 
-namespace scorum {
+namespace deip {
 namespace protocol {
 digest_type block_header::digest() const
 {
@@ -68,4 +68,4 @@ checksum_type signed_block::calculate_merkle_root() const
     return checksum_type::hash(ids[0]);
 }
 }
-} // scorum::protocol
+} // deip::protocol

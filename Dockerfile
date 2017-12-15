@@ -1,6 +1,6 @@
 FROM phusion/baseimage:0.9.19
 
-#ARG SCORUMD_BLOCKCHAIN=https://example.com/scorumd-blockchain.tbz2
+#ARG DEIPD_BLOCKCHAIN=https://example.com/deipd-blockchain.tbz2
 
 ENV LANG=en_US.UTF-8
 
@@ -38,16 +38,16 @@ RUN \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     pip3 install gcovr
 
-ADD . /usr/local/src/scorum
+ADD . /usr/local/src/deip
 
 RUN \
-    cd /usr/local/src/scorum && \
+    cd /usr/local/src/deip && \
     git submodule update --init --recursive && \
     mkdir build && \
     cd build && \
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_SCORUM_TESTNET=ON \
+        -DBUILD_DEIP_TESTNET=ON \
         -DLOW_MEMORY_NODE=OFF \
         -DCLEAR_VOTES=ON \
         -DSKIP_BY_TX_ID=ON \
@@ -56,21 +56,21 @@ RUN \
     ./tests/chain_test && \
     ./tests/wallet_tests && \
     ./programs/util/test_fixed_string && \
-    cd /usr/local/src/scorum && \
+    cd /usr/local/src/deip && \
     doxygen && \
     programs/build_helpers/check_reflect.py && \
     programs/build_helpers/get_config_check.sh && \
-    rm -rf /usr/local/src/scorum/build
+    rm -rf /usr/local/src/deip/build
 
 RUN \
-    cd /usr/local/src/scorum && \
+    cd /usr/local/src/deip && \
     git submodule update --init --recursive && \
     mkdir build && \
     cd build && \
     cmake \
         -DCMAKE_BUILD_TYPE=Debug \
         -DENABLE_COVERAGE_TESTING=ON \
-        -DBUILD_SCORUM_TESTNET=ON \
+        -DBUILD_DEIP_TESTNET=ON \
         -DLOW_MEMORY_NODE=OFF \
         -DCLEAR_VOTES=ON \
         -DSKIP_BY_TX_ID=ON \
@@ -80,48 +80,48 @@ RUN \
     ./tests/wallet_tests && \
     mkdir -p /var/cobertura && \
     gcovr --object-directory="../" --root=../ --xml-pretty --gcov-exclude=".*tests.*" --gcov-exclude=".*fc.*" --gcov-exclude=".*app*" --gcov-exclude=".*net*" --gcov-exclude=".*plugins*" --gcov-exclude=".*schema*" --gcov-exclude=".*time*" --gcov-exclude=".*utilities*" --gcov-exclude=".*wallet*" --gcov-exclude=".*programs*" --output="/var/cobertura/coverage.xml" && \
-    cd /usr/local/src/scorum && \
-    rm -rf /usr/local/src/scorum/build
+    cd /usr/local/src/deip && \
+    rm -rf /usr/local/src/deip/build
 
 RUN \
-    cd /usr/local/src/scorum && \
+    cd /usr/local/src/deip && \
     git submodule update --init --recursive && \
     mkdir build && \
     cd build && \
     cmake \
-        -DCMAKE_INSTALL_PREFIX=/usr/local/scorumd-default \
+        -DCMAKE_INSTALL_PREFIX=/usr/local/deipd-default \
         -DCMAKE_BUILD_TYPE=Release \
         -DLOW_MEMORY_NODE=ON \
         -DCLEAR_VOTES=ON \
         -DSKIP_BY_TX_ID=ON \
-        -DBUILD_SCORUM_TESTNET=OFF \
+        -DBUILD_DEIP_TESTNET=OFF \
         .. \
     && \
     make -j$(nproc) && \
     make install && \
     cd .. && \
-    ( /usr/local/scorumd-default/bin/scorumd --version \
+    ( /usr/local/deipd-default/bin/deipd --version \
       | grep -o '[0-9]*\.[0-9]*\.[0-9]*' \
       && echo '_' \
       && git rev-parse --short HEAD ) \
       | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g' \
-      > /etc/scorumdversion && \
-    cat /etc/scorumdversion && \
+      > /etc/deipdversion && \
+    cat /etc/deipdversion && \
     rm -rfv build && \
     mkdir build && \
     cd build && \
     cmake \
-        -DCMAKE_INSTALL_PREFIX=/usr/local/scorumd-full \
+        -DCMAKE_INSTALL_PREFIX=/usr/local/deipd-full \
         -DCMAKE_BUILD_TYPE=Release \
         -DLOW_MEMORY_NODE=OFF \
         -DCLEAR_VOTES=OFF \
         -DSKIP_BY_TX_ID=ON \
-        -DBUILD_SCORUM_TESTNET=OFF \
+        -DBUILD_DEIP_TESTNET=OFF \
         .. \
     && \
     make -j$(nproc) && \
     make install && \
-    rm -rf /usr/local/src/scorum
+    rm -rf /usr/local/src/deip
 
 RUN \
     apt-get remove -y \
@@ -171,18 +171,18 @@ RUN \
         /usr/include \
         /usr/local/include
 
-RUN useradd -s /bin/bash -m -d /var/lib/scorumd scorumd
+RUN useradd -s /bin/bash -m -d /var/lib/deipd deipd
 
-RUN mkdir /var/cache/scorumd && \
-    chown scorumd:scorumd -R /var/cache/scorumd
+RUN mkdir /var/cache/deipd && \
+    chown deipd:deipd -R /var/cache/deipd
 
 # add blockchain cache to image
-#ADD $SCORUMD_BLOCKCHAIN /var/cache/scorumd/blocks.tbz2
+#ADD $DEIPD_BLOCKCHAIN /var/cache/deipd/blocks.tbz2
 
-ENV HOME /var/lib/scorumd
-RUN chown scorumd:scorumd -R /var/lib/scorumd
+ENV HOME /var/lib/deipd
+RUN chown deipd:deipd -R /var/lib/deipd
 
-VOLUME ["/var/lib/scorumd"]
+VOLUME ["/var/lib/deipd"]
 
 # rpc service:
 EXPOSE 8090
@@ -190,26 +190,26 @@ EXPOSE 8090
 EXPOSE 2001
 
 # add seednodes from documentation to image
-ADD doc/seednodes.txt /etc/scorumd/seednodes.txt
+ADD doc/seednodes.txt /etc/deipd/seednodes.txt
 
 # the following adds lots of logging info to stdout
-ADD contrib/config-for-docker.ini /etc/scorumd/config.ini
-ADD contrib/fullnode.config.ini /etc/scorumd/fullnode.config.ini
+ADD contrib/config-for-docker.ini /etc/deipd/config.ini
+ADD contrib/fullnode.config.ini /etc/deipd/fullnode.config.ini
 
 # add normal startup script that starts via sv
-ADD contrib/scorumd.run /usr/local/bin/scorum-sv-run.sh
-RUN chmod +x /usr/local/bin/scorum-sv-run.sh
+ADD contrib/deipd.run /usr/local/bin/deip-sv-run.sh
+RUN chmod +x /usr/local/bin/deip-sv-run.sh
 
 # add nginx templates
-ADD contrib/scorumd.nginx.conf /etc/nginx/scorumd.nginx.conf
+ADD contrib/deipd.nginx.conf /etc/nginx/deipd.nginx.conf
 ADD contrib/healthcheck.conf.template /etc/nginx/healthcheck.conf.template
 
 # add PaaS startup script and service script
-ADD contrib/startpaasscorumd.sh /usr/local/bin/startpaasscorumd.sh
+ADD contrib/startpaasdeipd.sh /usr/local/bin/startpaasdeipd.sh
 ADD contrib/paas-sv-run.sh /usr/local/bin/paas-sv-run.sh
 ADD contrib/sync-sv-run.sh /usr/local/bin/sync-sv-run.sh
 ADD contrib/healthcheck.sh /usr/local/bin/healthcheck.sh
-RUN chmod +x /usr/local/bin/startpaasscorumd.sh
+RUN chmod +x /usr/local/bin/startpaasdeipd.sh
 RUN chmod +x /usr/local/bin/paas-sv-run.sh
 RUN chmod +x /usr/local/bin/sync-sv-run.sh
 RUN chmod +x /usr/local/bin/healthcheck.sh
@@ -218,6 +218,6 @@ RUN chmod +x /usr/local/bin/healthcheck.sh
 # this enables exitting of the container when the writer node dies
 # for PaaS mode (elasticbeanstalk, etc)
 # AWS EB Docker requires a non-daemonized entrypoint
-ADD contrib/scorumdentrypoint.sh /usr/local/bin/scorumdentrypoint.sh
-RUN chmod +x /usr/local/bin/scorumdentrypoint.sh
-CMD /usr/local/bin/scorumdentrypoint.sh
+ADD contrib/deipdentrypoint.sh /usr/local/bin/deipdentrypoint.sh
+RUN chmod +x /usr/local/bin/deipdentrypoint.sh
+CMD /usr/local/bin/deipdentrypoint.sh

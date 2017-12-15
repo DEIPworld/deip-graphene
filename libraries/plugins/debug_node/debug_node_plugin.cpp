@@ -1,8 +1,8 @@
 
-#include <scorum/app/application.hpp>
-#include <scorum/app/plugin.hpp>
-#include <scorum/plugins/debug_node/debug_node_api.hpp>
-#include <scorum/plugins/debug_node/debug_node_plugin.hpp>
+#include <deip/app/application.hpp>
+#include <deip/app/plugin.hpp>
+#include <deip/plugins/debug_node/debug_node_api.hpp>
+#include <deip/plugins/debug_node/debug_node_plugin.hpp>
 
 #include <fc/io/buffered_iostream.hpp>
 #include <fc/io/fstream.hpp>
@@ -17,7 +17,7 @@
 #include <sstream>
 #include <string>
 
-namespace scorum {
+namespace deip {
 namespace plugin {
 namespace debug_node {
 
@@ -208,7 +208,7 @@ uint32_t debug_node_plugin::debug_generate_blocks(
         return 0;
 
     fc::optional<fc::ecc::private_key> debug_private_key;
-    scorum::chain::public_key_type debug_public_key;
+    deip::chain::public_key_type debug_public_key;
     if (debug_key != "")
     {
         debug_private_key = graphene::utilities::wif_to_key(debug_key);
@@ -216,7 +216,7 @@ uint32_t debug_node_plugin::debug_generate_blocks(
         debug_public_key = debug_private_key->get_public_key();
     }
 
-    scorum::chain::database& db = database();
+    deip::chain::database& db = database();
     uint32_t slot = miss_blocks + 1, produced = 0;
     while (produced < count)
     {
@@ -224,7 +224,7 @@ uint32_t debug_node_plugin::debug_generate_blocks(
         std::string scheduled_witness_name = db.get_scheduled_witness(slot);
         fc::time_point_sec scheduled_time = db.get_slot_time(slot);
         const chain::witness_object& scheduled_witness = db.get_witness(scheduled_witness_name);
-        scorum::chain::public_key_type scheduled_key = scheduled_witness.signing_key;
+        deip::chain::public_key_type scheduled_key = scheduled_witness.signing_key;
         if (debug_key != "")
         {
             if (logging)
@@ -268,7 +268,7 @@ uint32_t debug_node_plugin::debug_generate_blocks_until(const std::string& debug
                                                         uint32_t skip,
                                                         private_key_storage* key_storage)
 {
-    scorum::chain::database& db = database();
+    deip::chain::database& db = database();
 
     if (db.head_block_time() >= head_block_time)
         return 0;
@@ -367,4 +367,4 @@ void debug_node_plugin::plugin_shutdown()
 }
 }
 
-SCORUM_DEFINE_PLUGIN(debug_node, scorum::plugin::debug_node::debug_node_plugin)
+DEIP_DEFINE_PLUGIN(debug_node, deip::plugin::debug_node::debug_node_plugin)

@@ -1,11 +1,11 @@
 #include <boost/test/unit_test.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
-#include <scorum/protocol/types.hpp>
-#include <scorum/wallet/wallet.hpp>
+#include <deip/protocol/types.hpp>
+#include <deip/wallet/wallet.hpp>
 
-namespace sp = scorum::protocol;
-namespace sw = scorum::wallet;
+namespace sp = deip::protocol;
+namespace sw = deip::wallet;
 
 class keys_fixture
 {
@@ -14,7 +14,7 @@ public:
     // this data generated in cli wallet with "suggest_brain_key"
     const std::string secret = "PHANIC TRIBRAC WASHPOT BISTATE CHOCHO GUNJ UNSOUR EARLY MUSHER REITBOK BURLAP AUXOTOX SNIB BLONDE PAPESS OARMAN";
     const std::string wif = "5JSc8Dgi9mxNnVmz5S2eG28pENy1GNLnvpL8dMa1K1eUdtLK6oe";
-    const std::string pub_key_str = "SCR6dZ53sSZPEdyb7CgL6gppML5hCpMwvaEMUFe9Rt89euPv6DPg6";
+    const std::string pub_key_str = "DEIP6dZ53sSZPEdyb7CgL6gppML5hCpMwvaEMUFe9Rt89euPv6DPg6";
     // clang-format on
 };
 

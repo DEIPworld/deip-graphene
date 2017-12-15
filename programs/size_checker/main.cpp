@@ -27,7 +27,7 @@
 #include <fc/variant.hpp>
 #include <fc/variant_object.hpp>
 
-#include <scorum/protocol/protocol.hpp>
+#include <deip/protocol/protocol.hpp>
 
 #include <algorithm>
 #include <iostream>
@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-using namespace scorum::protocol;
+using namespace deip::protocol;
 
 std::vector<fc::variant_object> g_op_types;
 
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 {
     try
     {
-        scorum::protocol::operation op;
+        deip::protocol::operation op;
 
         std::vector<uint64_t> witnesses;
         witnesses.resize(50);

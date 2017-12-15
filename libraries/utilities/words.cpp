@@ -1461,7 +1461,7 @@ const const_char_ptr word_list[]
         "escudo",  "esculin", "esere",   "eserine", "esexual", "eshin",   "esker",   "esne",    "esodic",  "esotery",
         "espadon", "esparto", "espave",  "espial",  "espier",  "espinal", "espino",  "esplees", "espouse", "espy",
         "esquire", "ess",     "essang",  "essay",   "essayer", "essed",   "essence", "essency", "essling", "essoin",
-        "estadal", "estadio", "estado",  "estamp",  "estate",  "escorum", "ester",   "estevin", "estival", "estmark",
+        "estadal", "estadio", "estado",  "estamp",  "estate",  "edeip", "ester",   "estevin", "estival", "estmark",
         "estoc",   "estoile", "estop",   "estrade", "estray",  "estre",   "estreat", "estrepe", "estrin",  "estriol",
         "estrone", "estrous", "estrual", "estuary", "estufa",  "estuous", "estus",   "eta",     "etacism", "etacist",
         "etalon",  "etamine", "etch",    "etcher",  "etching", "eternal", "etesian", "ethal",   "ethanal", "ethane",

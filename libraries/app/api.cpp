@@ -23,16 +23,16 @@
  */
 #include <cctype>
 
-#include <scorum/app/api.hpp>
-#include <scorum/app/api_access.hpp>
-#include <scorum/app/application.hpp>
-#include <scorum/app/impacted.hpp>
+#include <deip/app/api.hpp>
+#include <deip/app/api_access.hpp>
+#include <deip/app/application.hpp>
+#include <deip/app/impacted.hpp>
 
-#include <scorum/protocol/get_config.hpp>
+#include <deip/protocol/get_config.hpp>
 
-#include <scorum/chain/database.hpp>
-#include <scorum/chain/scorum_objects.hpp>
-#include <scorum/chain/transaction_object.hpp>
+#include <deip/chain/database.hpp>
+#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/transaction_object.hpp>
 #include <fc/time.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
@@ -43,7 +43,7 @@
 #include <graphene/utilities/git_revision.hpp>
 #include <fc/git_revision.hpp>
 
-namespace scorum {
+namespace deip {
 namespace app {
 
 login_api::login_api(const api_context& ctx)
@@ -118,9 +118,9 @@ fc::api_ptr login_api::get_api_by_name(const string& api_name) const
     return it->second;
 }
 
-scorum_version_info login_api::get_version()
+deip_version_info login_api::get_version()
 {
-    return scorum_version_info(fc::string(SCORUM_BLOCKCHAIN_VERSION), fc::string(graphene::utilities::git_revision_sha),
+    return deip_version_info(fc::string(DEIP_BLOCKCHAIN_VERSION), fc::string(graphene::utilities::git_revision_sha),
                                fc::string(fc::git_revision_sha));
 }
 
@@ -336,4 +336,4 @@ void network_node_api::set_advanced_node_parameters(const fc::variant_object& pa
     return _app.p2p_node()->set_advanced_node_parameters(params);
 }
 }
-} // scorum::app
+} // deip::app
