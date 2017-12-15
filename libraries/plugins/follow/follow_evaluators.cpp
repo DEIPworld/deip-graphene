@@ -1,10 +1,10 @@
-#include <deip/follow/follow_operations.hpp>
-#include <deip/follow/follow_objects.hpp>
+#include <scorum/follow/follow_operations.hpp>
+#include <scorum/follow/follow_objects.hpp>
 
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/comment_object.hpp>
+#include <scorum/chain/account_object.hpp>
+#include <scorum/chain/comment_object.hpp>
 
-namespace deip {
+namespace scorum {
 namespace follow {
 
 void follow_evaluator::do_apply(const follow_operation& o)
@@ -213,4 +213,4 @@ void reblog_evaluator::do_apply(const reblog_operation& o)
     FC_CAPTURE_AND_RETHROW((o))
 }
 }
-} // deip::follow
+} // scorum::follow

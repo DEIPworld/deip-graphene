@@ -1,26 +1,26 @@
-#include <deip/account_history/account_history_plugin.hpp>
+#include <scorum/account_history/account_history_plugin.hpp>
 
-#include <deip/app/impacted.hpp>
+#include <scorum/app/impacted.hpp>
 
-#include <deip/protocol/config.hpp>
+#include <scorum/protocol/config.hpp>
 
-#include <deip/chain/database.hpp>
-#include <deip/chain/operation_notification.hpp>
-#include <deip/chain/history_object.hpp>
+#include <scorum/chain/database.hpp>
+#include <scorum/chain/operation_notification.hpp>
+#include <scorum/chain/history_object.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/thread/thread.hpp>
 
 #include <boost/algorithm/string.hpp>
 
-#define deip_NAMESPACE_PREFIX "deip::protocol::"
+#define SCORUM_NAMESPACE_PREFIX "scorum::protocol::"
 
-namespace deip {
+namespace scorum {
 namespace account_history {
 
 namespace detail {
 
-using namespace deip::protocol;
+using namespace scorum::protocol;
 
 class account_history_plugin_impl
 {
@@ -31,7 +31,7 @@ public:
     }
     virtual ~account_history_plugin_impl();
 
-    deip::chain::database& database()
+    scorum::chain::database& database()
     {
         return _self.database();
     }
@@ -135,7 +135,7 @@ struct operation_visitor_filter : operation_visitor
 void account_history_plugin_impl::on_operation(const operation_notification& note)
 {
     flat_set<account_name_type> impacted;
-    deip::chain::database& db = database();
+    scorum::chain::database& db = database();
 
     const operation_object* new_obj = nullptr;
     app::operation_get_impacted_accounts(note.op, impacted);
@@ -235,7 +235,7 @@ void account_history_plugin::plugin_initialize(const boost::program_options::var
             for (const string& op : ops)
             {
                 if (op.size())
-                    my->_op_list.insert(deip_NAMESPACE_PREFIX + op);
+                    my->_op_list.insert(SCORUM_NAMESPACE_PREFIX + op);
             }
         }
 
@@ -253,7 +253,7 @@ void account_history_plugin::plugin_initialize(const boost::program_options::var
             for (const string& op : ops)
             {
                 if (op.size())
-                    my->_op_list.insert(deip_NAMESPACE_PREFIX + op);
+                    my->_op_list.insert(SCORUM_NAMESPACE_PREFIX + op);
             }
         }
 
@@ -275,4 +275,4 @@ flat_map<account_name_type, account_name_type> account_history_plugin::tracked_a
 }
 }
 
-deip_DEFINE_PLUGIN(account_history, deip::account_history::account_history_plugin)
+SCORUM_DEFINE_PLUGIN(account_history, scorum::account_history::account_history_plugin)

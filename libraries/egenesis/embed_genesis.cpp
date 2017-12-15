@@ -38,11 +38,11 @@
 #include <fc/string.hpp>
 #include <fc/io/fstream.hpp>
 #include <fc/io/json.hpp>
-#include <deip/chain/genesis_state.hpp>
-#include <deip/protocol/types.hpp>
+#include <scorum/chain/genesis_state.hpp>
+#include <scorum/protocol/types.hpp>
 
-namespace sp = deip::protocol;
-namespace sc = deip::chain;
+namespace sp = scorum::protocol;
+namespace sc = scorum::chain;
 
 static const std::string generated_file_banner = "// +---------------------------------------------+\n"
                                                  "// | This file was automatically generated       |\n"
@@ -51,7 +51,7 @@ static const std::string generated_file_banner = "// +--------------------------
 
 // clang-format off
 
-namespace deip { namespace app { namespace detail {
+namespace scorum { namespace app { namespace detail {
 sc::genesis_state_type create_example_genesis();
 }}}
 
@@ -192,7 +192,7 @@ void load_genesis(const boost::program_options::variables_map& options, egenesis
     else
     {
         sc::genesis_state_type genesis;
-        deip::chain::utils::generate_default_genesis_state(genesis);
+        scorum::chain::utils::generate_default_genesis_state(genesis);
         info.genesis = genesis;
     }
 }
@@ -261,7 +261,7 @@ int main(int argc, char** argv)
     namespace bfs = boost::filesystem;
 
     int main_return = 0;
-    bpo::options_description cli_options("Deip Chain Identifier");
+    bpo::options_description cli_options("Scorum Chain Identifier");
 
     // clang-format off
     cli_options.add_options()

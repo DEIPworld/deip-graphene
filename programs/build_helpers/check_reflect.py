@@ -56,16 +56,16 @@ for k, v in name2members_doxygen.items():
 
 re_reflect = re.compile(r"""
 FC_REFLECT\s*[(]
-\s*(deip::[a-zA-Z0-9_:]+)
+\s*(scorum::[a-zA-Z0-9_:]+)
 \s*,
 ((?:\s*[(]\s*[a-zA-Z0-9_]+\s*[)])*)
 """, re.VERBOSE)
 
 re_reflect_derived = re.compile(r"""
 FC_REFLECT_DERIVED\s*[(]
-\s*(deip::[a-zA-Z0-9_:]+)
+\s*(scorum::[a-zA-Z0-9_:]+)
 \s*,
-\s*[(]\s*((?:graphene|deip)::[a-zA-Z0-9_:]+)\s*[)]
+\s*[(]\s*((?:graphene|scorum)::[a-zA-Z0-9_:]+)\s*[)]
 \s*,
 ((?:\s*[(]\s*[a-zA-Z0-9_]+\s*[)])*)
 """, re.VERBOSE)

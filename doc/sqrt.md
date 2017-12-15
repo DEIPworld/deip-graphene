@@ -1,7 +1,7 @@
 
 # Introduction
 
-In this document we derive the approximate integer square root function used by Deip for the curation curve
+In this document we derive the approximate integer square root function used by Scorum for the curation curve
 
 # MSB function
 

@@ -1,10 +1,10 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fc/io/json.hpp>
-#include <deip/chain/genesis_state.hpp>
+#include <scorum/chain/genesis_state.hpp>
 
-namespace sc = deip::chain;
-namespace sp = deip::protocol;
+namespace sc = scorum::chain;
+namespace sp = scorum::protocol;
 
 BOOST_AUTO_TEST_SUITE(deserialize_genesis_state)
 

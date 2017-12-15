@@ -24,7 +24,7 @@
 #include <graphene/net/peer_connection.hpp>
 #include <graphene/net/exceptions.hpp>
 #include <graphene/net/config.hpp>
-#include <deip/protocol/config.hpp>
+#include <scorum/protocol/config.hpp>
 
 #include <fc/thread/thread.hpp>
 
@@ -550,7 +550,7 @@ bool peer_connection::is_inventory_advertised_to_us_list_full() const
     // to give us some wiggle room)
     return inventory_peer_advertised_to_us.size()
         > GRAPHENE_NET_MAX_INVENTORY_SIZE_IN_MINUTES * GRAPHENE_NET_MAX_TRX_PER_SECOND * 60
-        + (GRAPHENE_NET_MAX_INVENTORY_SIZE_IN_MINUTES + 1) * 60 / deip_BLOCK_INTERVAL;
+        + (GRAPHENE_NET_MAX_INVENTORY_SIZE_IN_MINUTES + 1) * 60 / SCORUM_BLOCK_INTERVAL;
 }
 
 bool peer_connection::performing_firewall_check() const

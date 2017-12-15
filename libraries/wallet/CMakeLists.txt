@@ -1,4 +1,4 @@
-file(GLOB HEADERS "include/deip/wallet/*.hpp")
+file(GLOB HEADERS "include/scorum/wallet/*.hpp")
 
 find_package( Perl )
 find_package( Doxygen )
@@ -8,7 +8,7 @@ if( PERL_FOUND AND DOXYGEN_FOUND AND NOT "${CMAKE_GENERATOR}" STREQUAL "Ninja" )
   add_custom_command( OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/doxygen/perlmod/DoxyDocs.pm
                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                       COMMAND ${DOXYGEN_EXECUTABLE}
-                      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/include/deip/wallet/wallet.hpp )
+                      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile ${CMAKE_CURRENT_SOURCE_DIR}/include/scorum/wallet/wallet.hpp )
 
   add_custom_command( OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/api_documentation.cpp
                       COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/generate_api_documentation.pl ${CMAKE_CURRENT_BINARY_DIR}/api_documentation.cpp.new
@@ -23,20 +23,20 @@ else()
                       DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/api_documentation_standin.cpp )
 endif()
 
-add_library( deip_wallet wallet.cpp ${CMAKE_CURRENT_BINARY_DIR}/api_documentation.cpp ${HEADERS} )
-# I don't know why deip_app is required twice in the following line, I just know the linker breaks if it isn't.
-target_link_libraries( deip_wallet PRIVATE deip_app graphene_net deip_chain deip_protocol graphene_utilities fc deip_private_message deip_app deip_follow deip_account_by_key ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} )
-target_include_directories( deip_wallet PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" )
+add_library( scorum_wallet wallet.cpp ${CMAKE_CURRENT_BINARY_DIR}/api_documentation.cpp ${HEADERS} )
+# I don't know why scorum_app is required twice in the following line, I just know the linker breaks if it isn't.
+target_link_libraries( scorum_wallet PRIVATE scorum_app graphene_net scorum_chain scorum_protocol graphene_utilities fc scorum_private_message scorum_app scorum_follow scorum_account_by_key ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} )
+target_include_directories( scorum_wallet PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
 if(MSVC)
   set_source_files_properties( wallet.cpp PROPERTIES COMPILE_FLAGS "/bigobj" )
 endif(MSVC)
 
 install( TARGETS
-   deip_wallet
+   scorum_wallet
 
    RUNTIME DESTINATION bin
    LIBRARY DESTINATION lib
    ARCHIVE DESTINATION lib
 )
-install( FILES ${HEADERS} DESTINATION "include/deip/wallet" )
+install( FILES ${HEADERS} DESTINATION "include/scorum/wallet" )

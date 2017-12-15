@@ -1,6 +1,6 @@
-#include <deip/chain/shared_authority.hpp>
+#include <scorum/chain/shared_authority.hpp>
 
-namespace deip {
+namespace scorum {
 namespace chain {
 
 shared_authority::operator authority() const
@@ -99,4 +99,4 @@ bool operator==(const shared_authority& a, const authority& b)
     return authority(a) == b;
 }
 }
-} // deip::chain
+} // scorum::chain

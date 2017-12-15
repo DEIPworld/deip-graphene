@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <deip/protocol/protocol.hpp>
-#include <deip/chain/deip_objects.hpp>
+#include <scorum/protocol/protocol.hpp>
+#include <scorum/chain/scorum_objects.hpp>
 #include <fc/smart_ref_impl.hpp>
 #include <iostream>
 
-using namespace deip::chain;
-using namespace deip::protocol;
+using namespace scorum::chain;
+using namespace scorum::protocol;
 
 using std::string;
 using std::map;
@@ -56,7 +56,7 @@ string remove_namespace(string str)
     str = remove_tail_if(str, '_', "t");
     str = remove_tail_if(str, '_', "object");
     str = remove_tail_if(str, '_', "type");
-    str = remove_namespace_if(str, "deip::chain");
+    str = remove_namespace_if(str, "scorum::chain");
     str = remove_namespace_if(str, "chainbase");
     str = remove_namespace_if(str, "std");
     str = remove_namespace_if(str, "fc");
@@ -70,7 +70,7 @@ template <typename T> void generate_serializer();
 template <typename T> void register_serializer();
 
 map<string, size_t> st;
-deip::vector<std::function<void()>> serializers;
+scorum::vector<std::function<void()>> serializers;
 
 bool register_serializer(const string& name, std::function<void()> sr)
 {

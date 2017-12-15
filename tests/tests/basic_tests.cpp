@@ -24,10 +24,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/database.hpp>
-#include <deip/protocol/protocol.hpp>
+#include <scorum/chain/database.hpp>
+#include <scorum/protocol/protocol.hpp>
 
-#include <deip/protocol/deip_operations.hpp>
+#include <scorum/protocol/scorum_operations.hpp>
 
 #include <fc/crypto/digest.hpp>
 #include <fc/crypto/hex.hpp>
@@ -38,9 +38,9 @@
 
 #include "database_fixture.hpp"
 
-using namespace deip;
-using namespace deip::chain;
-using namespace deip::protocol;
+using namespace scorum;
+using namespace scorum::chain;
+using namespace scorum::protocol;
 
 BOOST_FIXTURE_TEST_SUITE(basic_tests, clean_database_fixture)
 

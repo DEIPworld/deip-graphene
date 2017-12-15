@@ -1,13 +1,13 @@
-#include <deip/chain/database.hpp>
-#include <deip/protocol/block.hpp>
+#include <scorum/chain/database.hpp>
+#include <scorum/protocol/block.hpp>
 #include <fc/io/raw.hpp>
 
 int main(int argc, char** argv, char** envp)
 {
     try
     {
-        // deip::chain::database db;
-        deip::chain::block_log log;
+        // scorum::chain::database db;
+        scorum::chain::block_log log;
 
         fc::temp_directory temp_dir(".");
 
@@ -16,9 +16,9 @@ int main(int argc, char** argv, char** envp)
 
         idump((log.head()));
 
-        deip::protocol::signed_block b1;
+        scorum::protocol::signed_block b1;
         b1.witness = "alice";
-        b1.previous = deip::protocol::block_id_type();
+        b1.previous = scorum::protocol::block_id_type();
 
         log.append(b1);
         log.flush();
@@ -26,7 +26,7 @@ int main(int argc, char** argv, char** envp)
         idump((log.head()));
         idump((fc::raw::pack_size(b1)));
 
-        deip::protocol::signed_block b2;
+        scorum::protocol::signed_block b2;
         b2.witness = "bob";
         b2.previous = b1.id();
 

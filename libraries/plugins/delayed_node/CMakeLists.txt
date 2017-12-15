@@ -1,11 +1,11 @@
-file(GLOB HEADERS "include/deip/delayed_node/*.hpp")
+file(GLOB HEADERS "include/scorum/delayed_node/*.hpp")
 
-add_library( deip_delayed_node
+add_library( scorum_delayed_node
              delayed_node_plugin.cpp
            )
 
-target_link_libraries( deip_delayed_node deip_chain deip_protocol deip_app )
-target_include_directories( deip_delayed_node
+target_link_libraries( scorum_delayed_node scorum_chain scorum_protocol scorum_app )
+target_include_directories( scorum_delayed_node
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
 if(MSVC)
@@ -13,7 +13,7 @@ if(MSVC)
 endif(MSVC)
 
 install( TARGETS
-   deip_delayed_node
+   scorum_delayed_node
 
    RUNTIME DESTINATION bin
    LIBRARY DESTINATION lib

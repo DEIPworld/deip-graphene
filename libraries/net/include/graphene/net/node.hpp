@@ -27,7 +27,7 @@
 #include <graphene/net/message.hpp>
 #include <graphene/net/peer_database.hpp>
 
-#include <deip/protocol/types.hpp>
+#include <scorum/protocol/types.hpp>
 
 #include <list>
 
@@ -35,7 +35,7 @@ namespace graphene {
 namespace net {
 
 using fc::variant_object;
-using deip::protocol::chain_id_type;
+using scorum::protocol::chain_id_type;
 
 namespace detail {
 class node_impl;
@@ -277,8 +277,8 @@ public:
     void set_advanced_node_parameters(const fc::variant_object& params);
     fc::variant_object get_advanced_node_parameters();
     message_propagation_data get_transaction_propagation_data(
-        const deip::protocol::transaction_id_type& transaction_id);
-    message_propagation_data get_block_propagation_data(const deip::protocol::block_id_type& block_id);
+        const scorum::protocol::transaction_id_type& transaction_id);
+    message_propagation_data get_block_propagation_data(const scorum::protocol::block_id_type& block_id);
     node_id_t get_node_id() const;
     void set_allowed_peers(const std::vector<node_id_t>& allowed_peers);
 

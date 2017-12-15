@@ -1,4 +1,4 @@
-#include <deip/protocol/asset.hpp>
+#include <scorum/protocol/asset.hpp>
 #include <boost/rational.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 
@@ -12,7 +12,7 @@ index : field
    7  : \0
 */
 
-namespace deip {
+namespace scorum {
 namespace protocol {
 typedef boost::multiprecision::int128_t int128_t;
 
@@ -201,11 +201,11 @@ price operator/(const asset& base, const asset& quote)
 
 price price::max(asset_symbol_type base, asset_symbol_type quote)
 {
-    return asset(share_type(deip_MAX_SHARE_SUPPLY), base) / asset(share_type(1), quote);
+    return asset(share_type(SCORUM_MAX_SHARE_SUPPLY), base) / asset(share_type(1), quote);
 }
 price price::min(asset_symbol_type base, asset_symbol_type quote)
 {
-    return asset(1, base) / asset(deip_MAX_SHARE_SUPPLY, quote);
+    return asset(1, base) / asset(SCORUM_MAX_SHARE_SUPPLY, quote);
 }
 
 bool price::is_null() const
@@ -224,4 +224,4 @@ void price::validate() const
     FC_CAPTURE_AND_RETHROW((base)(quote))
 }
 }
-} // deip::protocol
+} // scorum::protocol

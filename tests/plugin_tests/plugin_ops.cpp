@@ -1,19 +1,19 @@
 #ifdef IS_TEST_NET
-#include <deip/app/plugin.hpp>
-#include <deip/chain/generic_custom_operation_interpreter.hpp>
-#include <deip/chain/account_object.hpp>
+#include <scorum/app/plugin.hpp>
+#include <scorum/chain/generic_custom_operation_interpreter.hpp>
+#include <scorum/chain/account_object.hpp>
 
 #include <boost/test/unit_test.hpp>
 
 #include "../common/database_fixture.hpp"
 
-using namespace deip::chain;
-using namespace deip::chain::test;
+using namespace scorum::chain;
+using namespace scorum::chain::test;
 /*
-namespace deip { namespace plugin_tests {
+namespace scorum { namespace plugin_tests {
 
-using namespace deip::app;
-using namespace deip::chain;
+using namespace scorum::app;
+using namespace scorum::chain;
 
 struct test_a_operation : base_operation
 {
@@ -76,16 +76,16 @@ test_plugin::test_plugin( application* app ) : plugin( app )
    database().set_custom_operation_interpreter( plugin_name(), _evaluator_registry );
 }
 
-} } // deip::plugin_tests
+} } // scorum::plugin_tests
 
-deip_DEFINE_PLUGIN( test, deip::plugin_tests::test_plugin )
+SCORUM_DEFINE_PLUGIN( test, scorum::plugin_tests::test_plugin )
 
-FC_REFLECT( deip::plugin_tests::test_a_operation, (account) )
-FC_REFLECT( deip::plugin_tests::test_b_operation, (account) )
+FC_REFLECT( scorum::plugin_tests::test_a_operation, (account) )
+FC_REFLECT( scorum::plugin_tests::test_b_operation, (account) )
 
-DECLARE_OPERATION_TYPE( deip::plugin_tests::test_op );
-FC_REFLECT_TYPENAME( deip::plugin_tests::test_op );
-DEFINE_OPERATION_TYPE( deip::plugin_tests::test_op );
+DECLARE_OPERATION_TYPE( scorum::plugin_tests::test_op );
+FC_REFLECT_TYPENAME( scorum::plugin_tests::test_op );
+DEFINE_OPERATION_TYPE( scorum::plugin_tests::test_op );
 */
 
 BOOST_FIXTURE_TEST_SUITE(plugin_ops, clean_database_fixture);

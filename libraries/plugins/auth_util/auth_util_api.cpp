@@ -1,19 +1,19 @@
 
-#include <deip/app/api_context.hpp>
-#include <deip/app/application.hpp>
+#include <scorum/app/api_context.hpp>
+#include <scorum/app/application.hpp>
 
-#include <deip/protocol/authority.hpp>
-#include <deip/protocol/sign_state.hpp>
+#include <scorum/protocol/authority.hpp>
+#include <scorum/protocol/sign_state.hpp>
 
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/database.hpp>
+#include <scorum/chain/account_object.hpp>
+#include <scorum/chain/database.hpp>
 
-#include <deip/plugins/auth_util/auth_util_api.hpp>
-#include <deip/plugins/auth_util/auth_util_plugin.hpp>
+#include <scorum/plugins/auth_util/auth_util_api.hpp>
+#include <scorum/plugins/auth_util/auth_util_plugin.hpp>
 
 #include <fc/container/flat.hpp>
 
-namespace deip {
+namespace scorum {
 namespace plugin {
 namespace auth_util {
 
@@ -24,21 +24,21 @@ namespace detail {
 class auth_util_api_impl
 {
 public:
-    auth_util_api_impl(deip::app::application& _app);
+    auth_util_api_impl(scorum::app::application& _app);
     void check_authority_signature(const check_authority_signature_params& args,
                                    check_authority_signature_result& result);
 
-    std::shared_ptr<deip::plugin::auth_util::auth_util_plugin> get_plugin();
+    std::shared_ptr<scorum::plugin::auth_util::auth_util_plugin> get_plugin();
 
-    deip::app::application& app;
+    scorum::app::application& app;
 };
 
-auth_util_api_impl::auth_util_api_impl(deip::app::application& _app)
+auth_util_api_impl::auth_util_api_impl(scorum::app::application& _app)
     : app(_app)
 {
 }
 
-std::shared_ptr<deip::plugin::auth_util::auth_util_plugin> auth_util_api_impl::get_plugin()
+std::shared_ptr<scorum::plugin::auth_util::auth_util_plugin> auth_util_api_impl::get_plugin()
 {
     return app.get_plugin<auth_util_plugin>("auth_util");
 }
@@ -89,7 +89,7 @@ void auth_util_api_impl::check_authority_signature(const check_authority_signatu
 
 } // detail
 
-auth_util_api::auth_util_api(const deip::app::api_context& ctx)
+auth_util_api::auth_util_api(const scorum::app::api_context& ctx)
 {
     my = std::make_shared<detail::auth_util_api_impl>(ctx.app);
 }
@@ -106,4 +106,4 @@ check_authority_signature_result auth_util_api::check_authority_signature(check_
 }
 }
 }
-} // deip::plugin::auth_util
+} // scorum::plugin::auth_util

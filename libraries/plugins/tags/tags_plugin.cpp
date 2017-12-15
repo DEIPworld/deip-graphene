@@ -1,14 +1,14 @@
-#include <deip/tags/tags_plugin.hpp>
+#include <scorum/tags/tags_plugin.hpp>
 
-#include <deip/app/impacted.hpp>
+#include <scorum/app/impacted.hpp>
 
-#include <deip/protocol/config.hpp>
+#include <scorum/protocol/config.hpp>
 
-#include <deip/chain/database.hpp>
-#include <deip/chain/hardfork.hpp>
-#include <deip/chain/operation_notification.hpp>
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/comment_object.hpp>
+#include <scorum/chain/database.hpp>
+#include <scorum/chain/hardfork.hpp>
+#include <scorum/chain/operation_notification.hpp>
+#include <scorum/chain/account_object.hpp>
+#include <scorum/chain/comment_object.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/thread/thread.hpp>
@@ -18,12 +18,12 @@
 #include <boost/range/iterator_range.hpp>
 #include <boost/algorithm/string.hpp>
 
-namespace deip {
+namespace scorum {
 namespace tags {
 
 namespace detail {
 
-using namespace deip::protocol;
+using namespace scorum::protocol;
 
 class tags_plugin_impl
 {
@@ -34,7 +34,7 @@ public:
     }
     virtual ~tags_plugin_impl();
 
-    deip::chain::database& database()
+    scorum::chain::database& database()
     {
         return _self.database();
     }
@@ -386,9 +386,9 @@ struct operation_visitor
 
     void operator()(const transfer_operation& op) const
     {
-        // DEIP: changed from null account
-        // if( op.to == deip_NULL_ACCOUNT && op.amount.symbol == deip_SYMBOL )
-        if (op.to == "" && op.amount.symbol == deip_SYMBOL)
+        // SCORUM: changed from null account
+        // if( op.to == SCORUM_NULL_ACCOUNT && op.amount.symbol == SCORUM_SYMBOL )
+        if (op.to == "" && op.amount.symbol == SCORUM_SYMBOL)
         {
             vector<string> part;
             part.reserve(4);
@@ -526,6 +526,6 @@ void tags_plugin::plugin_startup()
 {
 }
 }
-} /// deip::tags
+} /// scorum::tags
 
-deip_DEFINE_PLUGIN(tags, deip::tags::tags_plugin)
+SCORUM_DEFINE_PLUGIN(tags, scorum::tags::tags_plugin)

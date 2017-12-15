@@ -1,7 +1,7 @@
 
-#include <deip/protocol/sign_state.hpp>
+#include <scorum/protocol/sign_state.hpp>
 
-namespace deip {
+namespace scorum {
 namespace protocol {
 
 bool sign_state::signed_by(const public_key_type& k)
@@ -85,4 +85,4 @@ sign_state::sign_state(const flat_set<public_key_type>& sigs,
     approved_by.insert("temp");
 }
 }
-} // deip::protocol
+} // scorum::protocol

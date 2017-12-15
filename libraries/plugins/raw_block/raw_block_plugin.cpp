@@ -1,11 +1,11 @@
 
 
-#include <deip/plugins/raw_block/raw_block_api.hpp>
-#include <deip/plugins/raw_block/raw_block_plugin.hpp>
+#include <scorum/plugins/raw_block/raw_block_api.hpp>
+#include <scorum/plugins/raw_block/raw_block_plugin.hpp>
 
 #include <string>
 
-namespace deip {
+namespace scorum {
 namespace plugin {
 namespace raw_block {
 
@@ -36,6 +36,6 @@ void raw_block_plugin::plugin_shutdown()
 }
 }
 }
-} // deip::plugin::raw_block
+} // scorum::plugin::raw_block
 
-deip_DEFINE_PLUGIN(raw_block, deip::plugin::raw_block::raw_block_plugin)
+SCORUM_DEFINE_PLUGIN(raw_block, scorum::plugin::raw_block::raw_block_plugin)

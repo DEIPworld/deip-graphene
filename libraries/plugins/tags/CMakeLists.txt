@@ -1,14 +1,14 @@
-file(GLOB HEADERS "include/deip/tags/*.hpp")
+file(GLOB HEADERS "include/scorum/tags/*.hpp")
 
-add_library( deip_tags
+add_library( scorum_tags
              tags_plugin.cpp )
 
-target_link_libraries( deip_tags deip_chain deip_protocol deip_app )
-target_include_directories( deip_tags
+target_link_libraries( scorum_tags scorum_chain scorum_protocol scorum_app )
+target_include_directories( scorum_tags
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
 install( TARGETS
-   deip_tags
+   scorum_tags
 
    RUNTIME DESTINATION bin
    LIBRARY DESTINATION lib

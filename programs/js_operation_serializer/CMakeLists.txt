@@ -5,13 +5,13 @@ endif()
 
 target_link_libraries( js_operation_serializer
                        PRIVATE
-                       deip_app
+                       scorum_app
                        graphene_net
-                       deip_chain
-                       deip_protocol
-                       deip_egenesis_none
+                       scorum_chain
+                       scorum_protocol
+                       scorum_egenesis_none
                        graphene_utilities
-                       deip_wallet
+                       scorum_wallet
                        fc
                        ${CMAKE_DL_LIBS}
                        ${PLATFORM_SPECIFIC_LIBS} )

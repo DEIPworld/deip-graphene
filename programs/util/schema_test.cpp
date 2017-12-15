@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/deip_objects.hpp>
+#include <scorum/chain/account_object.hpp>
+#include <scorum/chain/scorum_objects.hpp>
 
 using namespace graphene::db;
 
@@ -45,8 +45,8 @@ int main(int argc, char** argv, char** envp)
 {
     std::vector<std::shared_ptr<abstract_schema>> schemas;
 
-    schemas.push_back(get_schema_for_type<deip::chain::account_object>());
-    schemas.push_back(get_schema_for_type<deip::chain::comment_object>());
+    schemas.push_back(get_schema_for_type<scorum::chain::account_object>());
+    schemas.push_back(get_schema_for_type<scorum::chain::comment_object>());
     add_dependent_schemas(schemas);
 
     for (const std::shared_ptr<abstract_schema>& s : schemas)

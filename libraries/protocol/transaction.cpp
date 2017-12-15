@@ -1,6 +1,6 @@
 
-#include <deip/protocol/transaction.hpp>
-#include <deip/protocol/exceptions.hpp>
+#include <scorum/protocol/transaction.hpp>
+#include <scorum/protocol/exceptions.hpp>
 
 #include <fc/io/raw.hpp>
 #include <fc/bitutil.hpp>
@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-namespace deip {
+namespace scorum {
 namespace protocol {
 
 digest_type signed_transaction::merkle_digest() const
@@ -40,7 +40,7 @@ void transaction::validate() const
         operation_validate(op);
 }
 
-deip::protocol::transaction_id_type deip::protocol::transaction::id() const
+scorum::protocol::transaction_id_type scorum::protocol::transaction::id() const
 {
     auto h = digest();
     transaction_id_type result;
@@ -48,7 +48,7 @@ deip::protocol::transaction_id_type deip::protocol::transaction::id() const
     return result;
 }
 
-const signature_type& deip::protocol::signed_transaction::sign(const private_key_type& key,
+const signature_type& scorum::protocol::signed_transaction::sign(const private_key_type& key,
                                                                  const chain_id_type& chain_id)
 {
     digest_type h = sig_digest(chain_id);
@@ -56,7 +56,7 @@ const signature_type& deip::protocol::signed_transaction::sign(const private_key
     return signatures.back();
 }
 
-signature_type deip::protocol::signed_transaction::sign(const private_key_type& key,
+signature_type scorum::protocol::signed_transaction::sign(const private_key_type& key,
                                                           const chain_id_type& chain_id) const
 {
     digest_type::encoder enc;
@@ -125,12 +125,12 @@ void verify_authority(const vector<operation>& ops,
                 s.approved_by.insert(id);
             for (auto id : required_posting)
             {
-                deip_ASSERT(s.check_authority(id) || s.check_authority(get_active(id))
+                SCORUM_ASSERT(s.check_authority(id) || s.check_authority(get_active(id))
                                   || s.check_authority(get_owner(id)),
                               tx_missing_posting_auth, "Missing Posting Authority ${id}",
                               ("id", id)("posting", get_posting(id))("active", get_active(id))("owner", get_owner(id)));
             }
-            deip_ASSERT(!s.remove_unused_signatures(), tx_irrelevant_sig, "Unnecessary signature(s) detected");
+            SCORUM_ASSERT(!s.remove_unused_signatures(), tx_irrelevant_sig, "Unnecessary signature(s) detected");
             return;
         }
 
@@ -144,24 +144,24 @@ void verify_authority(const vector<operation>& ops,
 
         for (const auto& auth : other)
         {
-            deip_ASSERT(s.check_authority(auth), tx_missing_other_auth, "Missing Authority",
+            SCORUM_ASSERT(s.check_authority(auth), tx_missing_other_auth, "Missing Authority",
                           ("auth", auth)("sigs", sigs));
         }
 
         // fetch all of the top level authorities
         for (auto id : required_active)
         {
-            deip_ASSERT(s.check_authority(id) || s.check_authority(get_owner(id)), tx_missing_active_auth,
+            SCORUM_ASSERT(s.check_authority(id) || s.check_authority(get_owner(id)), tx_missing_active_auth,
                           "Missing Active Authority ${id}", ("id", id)("auth", get_active(id))("owner", get_owner(id)));
         }
 
         for (auto id : required_owner)
         {
-            deip_ASSERT(owner_approvals.find(id) != owner_approvals.end() || s.check_authority(get_owner(id)),
+            SCORUM_ASSERT(owner_approvals.find(id) != owner_approvals.end() || s.check_authority(get_owner(id)),
                           tx_missing_owner_auth, "Missing Owner Authority ${id}", ("id", id)("auth", get_owner(id)));
         }
 
-        deip_ASSERT(!s.remove_unused_signatures(), tx_irrelevant_sig, "Unnecessary signature(s) detected");
+        SCORUM_ASSERT(!s.remove_unused_signatures(), tx_irrelevant_sig, "Unnecessary signature(s) detected");
     }
     FC_CAPTURE_AND_RETHROW((ops)(sigs))
 }
@@ -174,7 +174,7 @@ flat_set<public_key_type> signed_transaction::get_signature_keys(const chain_id_
         flat_set<public_key_type> result;
         for (const auto& sig : signatures)
         {
-            deip_ASSERT(result.insert(fc::ecc::public_key(sig, d)).second, tx_duplicate_sig,
+            SCORUM_ASSERT(result.insert(fc::ecc::public_key(sig, d)).second, tx_duplicate_sig,
                           "Duplicate Signature detected");
         }
         return result;
@@ -254,7 +254,7 @@ set<public_key_type> signed_transaction::minimize_required_signatures(const chai
         result.erase(k);
         try
         {
-            deip::protocol::verify_authority(operations, result, get_active, get_owner, get_posting, max_recursion);
+            scorum::protocol::verify_authority(operations, result, get_active, get_owner, get_posting, max_recursion);
             continue; // element stays erased if verify_authority is ok
         }
         catch (const tx_missing_owner_auth& e)
@@ -282,10 +282,10 @@ void signed_transaction::verify_authority(const chain_id_type& chain_id,
 {
     try
     {
-        deip::protocol::verify_authority(operations, get_signature_keys(chain_id), get_active, get_owner, get_posting,
+        scorum::protocol::verify_authority(operations, get_signature_keys(chain_id), get_active, get_owner, get_posting,
                                            max_recursion);
     }
     FC_CAPTURE_AND_RETHROW((*this))
 }
 }
-} // deip::protocol
+} // scorum::protocol

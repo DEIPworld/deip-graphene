@@ -1,7 +1,7 @@
-#include <deip/chain/dbservice.hpp>
+#include <scorum/chain/dbservice.hpp>
 #include <chainbase/chainbase.hpp>
 
-namespace deip {
+namespace scorum {
 namespace chain {
 
 dbservice::dbservice(database& db)

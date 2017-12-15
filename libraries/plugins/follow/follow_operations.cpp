@@ -1,8 +1,8 @@
-#include <deip/follow/follow_operations.hpp>
+#include <scorum/follow/follow_operations.hpp>
 
-#include <deip/protocol/operation_util_impl.hpp>
+#include <scorum/protocol/operation_util_impl.hpp>
 
-namespace deip {
+namespace scorum {
 namespace follow {
 
 void follow_operation::validate() const
@@ -15,6 +15,6 @@ void reblog_operation::validate() const
     FC_ASSERT(account != author, "You cannot reblog your own content");
 }
 }
-} // deip::follow
+} // scorum::follow
 
-DEFINE_OPERATION_TYPE(deip::follow::follow_plugin_operation)
+DEFINE_OPERATION_TYPE(scorum::follow::follow_plugin_operation)

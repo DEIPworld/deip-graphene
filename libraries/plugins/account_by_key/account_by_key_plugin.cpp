@@ -1,14 +1,14 @@
-#include <deip/account_by_key/account_by_key_plugin.hpp>
-#include <deip/account_by_key/account_by_key_objects.hpp>
+#include <scorum/account_by_key/account_by_key_plugin.hpp>
+#include <scorum/account_by_key/account_by_key_objects.hpp>
 
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/database.hpp>
-#include <deip/chain/operation_notification.hpp>
+#include <scorum/chain/account_object.hpp>
+#include <scorum/chain/database.hpp>
+#include <scorum/chain/operation_notification.hpp>
 
 #include <graphene/schema/schema.hpp>
 #include <graphene/schema/schema_impl.hpp>
 
-namespace deip {
+namespace scorum {
 namespace account_by_key {
 
 namespace detail {
@@ -21,7 +21,7 @@ public:
     {
     }
 
-    deip::chain::database& database()
+    scorum::chain::database& database()
     {
         return _self.database();
     }
@@ -214,7 +214,7 @@ void account_by_key_plugin_impl::post_operation(const operation_notification& no
 
 } // detail
 
-account_by_key_plugin::account_by_key_plugin(deip::app::application* app)
+account_by_key_plugin::account_by_key_plugin(scorum::app::application* app)
     : plugin(app)
     , my(new detail::account_by_key_plugin_impl(*this))
 {
@@ -245,6 +245,6 @@ void account_by_key_plugin::plugin_startup()
     app().register_api_factory<account_by_key_api>("account_by_key_api");
 }
 }
-} // deip::account_by_key
+} // scorum::account_by_key
 
-deip_DEFINE_PLUGIN(account_by_key, deip::account_by_key::account_by_key_plugin)
+SCORUM_DEFINE_PLUGIN(account_by_key, scorum::account_by_key::account_by_key_plugin)

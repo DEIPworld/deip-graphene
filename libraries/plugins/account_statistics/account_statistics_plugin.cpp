@@ -1,11 +1,11 @@
-#include <deip/account_statistics/account_statistics_api.hpp>
+#include <scorum/account_statistics/account_statistics_api.hpp>
 
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/comment_object.hpp>
+#include <scorum/chain/account_object.hpp>
+#include <scorum/chain/comment_object.hpp>
 
-#include <deip/chain/database.hpp>
+#include <scorum/chain/database.hpp>
 
-namespace deip {
+namespace scorum {
 namespace account_statistics {
 
 namespace detail {
@@ -121,6 +121,6 @@ const flat_set<std::string>& account_statistics_plugin::get_tracked_accounts() c
     return _my->_tracked_accounts;
 }
 }
-} // deip::account_statistics
+} // scorum::account_statistics
 
-deip_DEFINE_PLUGIN(account_statistics, deip::account_statistics::account_statistics_plugin);
+SCORUM_DEFINE_PLUGIN(account_statistics, scorum::account_statistics::account_statistics_plugin);

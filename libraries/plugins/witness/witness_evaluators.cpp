@@ -1,9 +1,9 @@
-#include <deip/witness/witness_operations.hpp>
-#include <deip/witness/witness_objects.hpp>
+#include <scorum/witness/witness_operations.hpp>
+#include <scorum/witness/witness_objects.hpp>
 
-#include <deip/chain/comment_object.hpp>
+#include <scorum/chain/comment_object.hpp>
 
-namespace deip {
+namespace scorum {
 namespace witness {
 
 void enable_content_editing_evaluator::do_apply(const enable_content_editing_operation& o)
@@ -28,4 +28,4 @@ void enable_content_editing_evaluator::do_apply(const enable_content_editing_ope
     FC_CAPTURE_AND_RETHROW((o))
 }
 }
-} // deip::witness
+} // scorum::witness

@@ -1,12 +1,12 @@
 #pragma once
 
-#include <deip/app/application.hpp>
-#include <deip/chain/database.hpp>
-#include <deip/chain/genesis_state.hpp>
+#include <scorum/app/application.hpp>
+#include <scorum/chain/database.hpp>
+#include <scorum/chain/genesis_state.hpp>
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>
 
-#include <deip/plugins/debug_node/debug_node_plugin.hpp>
+#include <scorum/plugins/debug_node/debug_node_plugin.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
 
@@ -16,10 +16,10 @@
 
 using namespace graphene::db;
 
-namespace deip {
+namespace scorum {
 namespace chain {
 
-using namespace deip::protocol;
+using namespace scorum::protocol;
 
 void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state);
 
@@ -27,7 +27,7 @@ struct database_fixture
 {
     // the reason we use an app is to exercise the indexes of built-in
     //   plugins
-    deip::app::application app;
+    scorum::app::application app;
     chain::database& db;
     genesis_state_type genesis_state;
     signed_transaction trx;
@@ -40,7 +40,7 @@ struct database_fixture
     const std::string debug_key;
     const uint32_t default_skip;
 
-    std::shared_ptr<deip::plugin::debug_node::debug_node_plugin> db_plugin;
+    std::shared_ptr<scorum::plugin::debug_node::debug_node_plugin> db_plugin;
 
     optional<fc::temp_directory> data_dir;
 
@@ -87,7 +87,7 @@ struct database_fixture
 
     void fund(const string& account_name, const share_type& amount = 500000);
     void fund(const string& account_name, const asset& amount);
-    void transfer(const string& from, const string& to, const share_type& deip);
+    void transfer(const string& from, const string& to, const share_type& scorum);
     void convert(const string& account_name, const asset& amount);
     void vest(const string& from, const share_type& amount);
     void vest(const string& account, const asset& amount);
@@ -132,4 +132,4 @@ bool _push_block(database& db, const signed_block& b, uint32_t skip_flags = 0);
 void _push_transaction(database& db, const signed_transaction& tx, uint32_t skip_flags = 0);
 } // namespace test
 } // namespace chain
-} // namespace deip
+} // namespace scorum

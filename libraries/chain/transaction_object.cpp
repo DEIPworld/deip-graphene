@@ -1,6 +1,6 @@
-#include <deip/chain/transaction_object.hpp>
+#include <scorum/chain/transaction_object.hpp>
 
-namespace deip {
+namespace scorum {
 namespace chain {
 
 const object* transaction_index::create(const std::function<void(object*)>& constructor, object_id_type)
@@ -68,4 +68,4 @@ const object* transaction_index::get(object_id_type id) const
     return &*itr;
 }
 }
-} // deip::chain
+} // scorum::chain

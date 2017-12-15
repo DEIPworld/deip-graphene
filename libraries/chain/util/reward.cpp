@@ -1,8 +1,8 @@
 
-#include <deip/chain/util/reward.hpp>
-#include <deip/chain/util/uint256.hpp>
+#include <scorum/chain/util/reward.hpp>
+#include <scorum/chain/util/uint256.hpp>
 
-namespace deip {
+namespace scorum {
 namespace chain {
 namespace util {
 
@@ -44,13 +44,13 @@ uint64_t get_rshare_reward(const comment_reward_context& ctx)
         FC_ASSERT(ctx.rshares > 0);
         FC_ASSERT(ctx.total_reward_shares2 > 0);
 
-        u256 rf(ctx.total_reward_fund_deip.amount.value);
+        u256 rf(ctx.total_reward_fund_scorum.amount.value);
         u256 total_claims = to256(ctx.total_reward_shares2);
 
         // idump( (ctx) );
 
         u256 claim = to256(evaluate_reward_curve(ctx.rshares.value, ctx.reward_curve));
-        claim = (claim * ctx.reward_weight) / deip_100_PERCENT;
+        claim = (claim * ctx.reward_weight) / SCORUM_100_PERCENT;
 
         u256 payout_u256 = (rf * claim) / total_claims;
         FC_ASSERT(payout_u256 <= u256(uint64_t(std::numeric_limits<int64_t>::max())));
@@ -59,9 +59,9 @@ uint64_t get_rshare_reward(const comment_reward_context& ctx)
         if (is_comment_payout_dust(payout))
             payout = 0;
 
-        asset max_deip = ctx.max_scr;
+        asset max_scorum = ctx.max_scr;
 
-        payout = std::min(payout, uint64_t(max_deip.amount.value));
+        payout = std::min(payout, uint64_t(max_scorum.amount.value));
 
         return payout;
     }
@@ -92,4 +92,4 @@ uint128_t evaluate_reward_curve(const uint128_t& rshares, const curve_id& curve)
 }
 }
 }
-} // deip::chain::util
+} // scorum::chain::util

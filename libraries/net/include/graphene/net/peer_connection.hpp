@@ -210,7 +210,7 @@ public:
     fc::optional<fc::time_point_sec> fc_git_revision_unix_timestamp;
     fc::optional<std::string> platform;
     fc::optional<uint32_t> bitness;
-    fc::optional<deip::protocol::chain_id_type> chain_id;
+    fc::optional<scorum::protocol::chain_id_type> chain_id;
 
     // for inbound connections, these fields record what the peer sent us in
     // its hello message.  For outbound, they record what we sent the peer
