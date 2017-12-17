@@ -1,10 +1,10 @@
-# Introducing Deip
+# Introducing DEIP
 
 Deip is an spots media blockchain with Delegated Proof of Stake consensus
 algorithm.
 
   - Currency symbol DEIP
-  - No emission
+  - Fixed supply, first 20 years of emission starting from 8% and going down to 0% with step of 0.4% per years
 
 # Public Announcement & Discussion
 
