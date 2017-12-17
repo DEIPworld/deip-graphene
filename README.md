@@ -5,6 +5,7 @@ algorithm.
 
   - Currency symbol DEIP
   - Fixed supply, first 20 years of emission starting from 8% and going down to 0% with step of 0.4% per years
+  - Expertise emission goes forever, but after 20 years corresponding amount to cryptocurrency will be fixed
 
 # Public Announcement & Discussion
 
