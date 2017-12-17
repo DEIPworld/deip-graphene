@@ -10,10 +10,10 @@
 
 #include <graphene/utilities/key_conversion.hpp>
 
-#include <scorum/protocol/types.hpp>
-#include <scorum/protocol/authority.hpp>
+#include <deip/protocol/types.hpp>
+#include <deip/protocol/authority.hpp>
 
-#include <scorum/chain/shared_authority.hpp>
+#include <deip/chain/shared_authority.hpp>
 
 #include <boost/interprocess/managed_mapped_file.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
@@ -88,7 +88,7 @@ struct book
         , author(al)
         , pages(0)
         , prize(0)
-        , auth(bip::allocator<scorum::chain::shared_authority, bip::managed_mapped_file::segment_manager>(
+        , auth(bip::allocator<deip::chain::shared_authority, bip::managed_mapped_file::segment_manager>(
               al.get_segment_manager()))
         , deq(basic_string_allocator(al.get_segment_manager()))
     {
@@ -99,7 +99,7 @@ struct book
     fc::shared_string author;
     int32_t pages;
     int32_t prize;
-    scorum::chain::shared_authority auth;
+    deip::chain::shared_authority auth;
     bip::deque<fc::shared_string, basic_string_allocator> deq;
 
     book(const fc::shared_string::allocator_type& al)
@@ -107,7 +107,7 @@ struct book
         , author(al)
         , pages(0)
         , prize(0)
-        , auth(bip::allocator<scorum::chain::shared_authority, bip::managed_mapped_file::segment_manager>(
+        , auth(bip::allocator<deip::chain::shared_authority, bip::managed_mapped_file::segment_manager>(
               al.get_segment_manager()))
         , deq(basic_string_allocator(al.get_segment_manager()))
     {
@@ -162,7 +162,7 @@ int main(int argc, char** argv, char** envp)
         }
 
         // b.pages = pbc->size();
-        // b.auth = scorum::chain::authority( 1, "dan", pbc->size() );
+        // b.auth = deip::chain::authority( 1, "dan", pbc->size() );
         pbc->emplace(
             [&](book& b) {
                 b.name = "emplace name";

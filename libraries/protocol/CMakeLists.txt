@@ -1,14 +1,14 @@
-file(GLOB HEADERS "include/scorum/protocol/*.hpp")
+file(GLOB HEADERS "include/deip/protocol/*.hpp")
 
 ## SORT .cpp by most likely to change / break compile
-add_library( scorum_protocol
+add_library( deip_protocol
 
              types.cpp
              authority.cpp
              operations.cpp
              sign_state.cpp
              operation_util_impl.cpp
-             scorum_operations.cpp
+             deip_operations.cpp
              transaction.cpp
              block.cpp
              asset.cpp
@@ -18,16 +18,16 @@ add_library( scorum_protocol
              ${HEADERS}
            )
 
-target_link_libraries( scorum_protocol fc )
-target_include_directories( scorum_protocol
+target_link_libraries( deip_protocol fc )
+target_include_directories( deip_protocol
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include" )
 
 INSTALL( TARGETS
-   scorum_protocol
+   deip_protocol
 
    RUNTIME DESTINATION bin
    LIBRARY DESTINATION lib
    ARCHIVE DESTINATION lib
 )
 
-INSTALL( FILES ${HEADERS} DESTINATION "include/scorum/protocol" )
+INSTALL( FILES ${HEADERS} DESTINATION "include/deip/protocol" )

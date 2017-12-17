@@ -1,4 +1,4 @@
-# Building Scorum
+# Building Deip
 
 ## Compile-Time Options (cmake)
 
@@ -10,7 +10,7 @@ running tests, it is recommended to build as release.
 
 ### LOW_MEMORY_NODE=[OFF/ON]
 
-Builds scorumd to be a consensus-only low memory node. Data and fields not
+Builds deipd to be a consensus-only low memory node. Data and fields not
 needed for consensus are not stored in the object database.  This option is
 recommended for witnesses and seed-nodes.
 
@@ -18,9 +18,9 @@ recommended for witnesses and seed-nodes.
 
 Clears old votes from memory that are no longer required for consensus.
 
-### BUILD_SCORUM_TESTNET=[OFF/ON]
+### BUILD_DEIP_TESTNET=[OFF/ON]
 
-Builds scorum for use in a private testnet. Also required for building unit tests.
+Builds deip for use in a private testnet. Also required for building unit tests.
 
 ### SKIP_BY_TX_ID=[OFF/ON]
 
@@ -32,13 +32,13 @@ huge gain if you do not need this functionality.
 
 We ship a Dockerfile.  This builds both common node type binaries.
 
-    git clone https://gitlab.scorum.com/blockchain/node.git
-    cd scorum
-    docker build -t scorum/scorum .
+    git clone https://gitlab.deip.com/blockchain/node.git
+    cd deip
+    docker build -t deip/deip .
 
 ## Building on Ubuntu 16.04
 
-For Ubuntu 16.04 users, after installing the right packages with `apt` Scorum
+For Ubuntu 16.04 users, after installing the right packages with `apt` Deip
 will build out of the box without further effort:
 
     # Required packages
@@ -78,13 +78,13 @@ will build out of the box without further effort:
         libreadline-dev \
         perl
 
-    git clone https://gitlab.scorum.com/blockchain/node.git
-    cd scorum
+    git clone https://gitlab.deip.com/blockchain/node.git
+    cd deip
     git submodule update --init --recursive
     mkdir build
     cd build
     cmake -DCMAKE_BUILD_TYPE=Release ..
-    make -j$(nproc) scorumd
+    make -j$(nproc) deipd
     make -j$(nproc) cli_wallet
     # optional
     make install  # defaults to /usr/local
@@ -115,14 +115,14 @@ Here are the required packages:
         python3-jinja2
 
 The Boost provided in the Ubuntu 14.04 package manager (Boost 1.55) is too old.
-Scorum requires Boost 1.58 (as in Ubuntu 16.04) and works with versions up to 1.60 (including).
-So building Scorum on Ubuntu 14.04 requires downloading and installing a more recent
+Deip requires Boost 1.58 (as in Ubuntu 16.04) and works with versions up to 1.60 (including).
+So building Deip on Ubuntu 14.04 requires downloading and installing a more recent
 version of Boost.
 
 According to [this mailing list
 post](http://boost.2283326.n4.nabble.com/1-58-1-bugfix-release-necessary-td4674686.html),
 Boost 1.58 is not compatible with gcc 4.8 (the default C++ compiler for
-Ubuntu 14.04) when compiling in C++11 mode (which Scorum does).
+Ubuntu 14.04) when compiling in C++11 mode (which Deip does).
 So we will use Boost 1.60.
 
 Here is how to build and install Boost 1.60 into your user's home directory
@@ -139,14 +139,14 @@ Here is how to build and install Boost 1.60 into your user's home directory
     ./bootstrap.sh "--prefix=$BOOST_ROOT"
     ./b2 install
 
-Then the instructions are the same as for scorum:
+Then the instructions are the same as for deip:
 
-    git clone https://gitlab.scorum.com/blockchain/node.git
-    cd scorum
+    git clone https://gitlab.deip.com/blockchain/node.git
+    cd deip
     git submodule update --init --recursive
     mkdir build && cd build
     cmake -DCMAKE_BUILD_TYPE=Release ..
-    make -j$(nproc) scorumd
+    make -j$(nproc) deipd
     make -j$(nproc) cli_wallet
 
 ## Building on macOS X
@@ -167,7 +167,7 @@ Install Homebrew by following the instructions here: http://brew.sh/
    brew doctor
    brew update
 
-### Install scorum dependencies:
+### Install deip dependencies:
 
     brew install \
         autoconf \
@@ -181,7 +181,7 @@ Install Homebrew by following the instructions here: http://brew.sh/
         python3-jinja2
 
 Note: brew recently updated to boost 1.61.0, which is not yet supported by
-scorum. Until then, this will allow you to install boost 1.60.0.
+deip. Until then, this will allow you to install boost 1.60.0.
 
 *Optional.* To use TCMalloc in LevelDB:
 
@@ -194,8 +194,8 @@ scorum. Until then, this will allow you to install boost 1.60.0.
 
 ### Clone the Repository
 
-    git clone https://gitlab.scorum.com/blockchain/node.git
-    cd scorum
+    git clone https://gitlab.deip.com/blockchain/node.git
+    cd deip
 
 ### Compile
 
@@ -209,15 +209,15 @@ scorum. Until then, this will allow you to install boost 1.60.0.
 
 Also, some useful build targets for `make` are:
 
-    scorumd
+    deipd
     chain_test
     cli_wallet
 
 e.g.:
 
-    make -j$(sysctl -n hw.logicalcpu) scorumd
+    make -j$(sysctl -n hw.logicalcpu) deipd
 
-This will only build `scorumd`.
+This will only build `deipd`.
 
 ## To build with TEST_NET
 
@@ -227,7 +227,7 @@ This will only build `scorumd`.
     git submodule update --init --recursive
     mkdir build 
     cd build
-    cmake -DBOOST_ROOT="$BOOST_ROOT" -DCMAKE_BUILD_TYPE=Debug . -DBUILD_SCORUM_TEST_NET=ON
+    cmake -DBOOST_ROOT="$BOOST_ROOT" -DCMAKE_BUILD_TYPE=Debug . -DBUILD_DEIP_TEST_NET=ON
     make -j$(sysctl -n hw.logicalcpu) chain_test
 
 ## Building on Other Platforms

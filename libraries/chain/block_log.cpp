@@ -1,11 +1,11 @@
-#include <scorum/chain/block_log.hpp>
+#include <deip/chain/block_log.hpp>
 #include <fstream>
 #include <fc/io/raw.hpp>
 
 #define LOG_READ (std::ios::in | std::ios::binary)
 #define LOG_WRITE (std::ios::out | std::ios::binary | std::ios::app)
 
-namespace scorum {
+namespace deip {
 namespace chain {
 
 namespace detail {
@@ -312,4 +312,4 @@ void block_log::construct_index()
     FC_LOG_AND_RETHROW()
 }
 }
-} // scorum::chain
+} // deip::chain

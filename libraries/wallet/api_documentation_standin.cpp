@@ -23,10 +23,10 @@
  */
 #include <iomanip>
 #include <boost/algorithm/string/join.hpp>
-#include <scorum/wallet/wallet.hpp>
-#include <scorum/wallet/api_documentation.hpp>
+#include <deip/wallet/wallet.hpp>
+#include <deip/wallet/api_documentation.hpp>
 
-namespace scorum {
+namespace deip {
 namespace wallet {
 namespace detail {
 namespace {
@@ -83,4 +83,4 @@ api_documentation::api_documentation()
               std::inserter(method_descriptions, method_descriptions.end()));
 }
 }
-} // end namespace scorum::wallet
+} // end namespace deip::wallet

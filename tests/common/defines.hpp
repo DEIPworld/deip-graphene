@@ -5,13 +5,13 @@
 #define TEST_CHAIN_ID fc::sha256::hash("testnet")
 #define TEST_SHARED_MEM_SIZE_8MB (1024 * 1024 * 8)
 #define TEST_INITIAL_SUPPLY (10000000000ll)
-#define TEST_REWARD_INITIAL_SUPPLY asset(SCORUM_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS* SCORUM_BLOCKS_PER_DAY)
+#define TEST_REWARD_INITIAL_SUPPLY asset(DEIP_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS* DEIP_BLOCKS_PER_DAY)
 #define TEST_GENESIS_TIMESTAMP (1431700000)
 #define TEST_INIT_DELEGATE_NAME "initdelegate"
 
-#define PUSH_TX scorum::chain::test::_push_transaction
+#define PUSH_TX deip::chain::test::_push_transaction
 
-#define PUSH_BLOCK scorum::chain::test::_push_block
+#define PUSH_BLOCK deip::chain::test::_push_block
 
 // See below
 #define REQUIRE_OP_VALIDATION_SUCCESS(op, field, value)                                                                \
@@ -30,7 +30,7 @@
         db.push_transaction(trx, ~0);                                                                                  \
     }
 
-/*#define SCORUM_REQUIRE_THROW( expr, exc_type )          \
+/*#define DEIP_REQUIRE_THROW( expr, exc_type )          \
 {                                                         \
    std::string req_throw_info = fc::json::to_string(      \
       fc::mutable_variant_object()                        \
@@ -40,32 +40,32 @@
       ("exc_type", #exc_type)                             \
       );                                                  \
    if( fc::enable_record_assert_trip )                    \
-      std::cout << "SCORUM_REQUIRE_THROW begin "        \
+      std::cout << "DEIP_REQUIRE_THROW begin "        \
          << req_throw_info << std::endl;                  \
    BOOST_REQUIRE_THROW( expr, exc_type );                 \
    if( fc::enable_record_assert_trip )                    \
-      std::cout << "SCORUM_REQUIRE_THROW end "          \
+      std::cout << "DEIP_REQUIRE_THROW end "          \
          << req_throw_info << std::endl;                  \
 }*/
 
-#define SCORUM_REQUIRE_THROW(expr, exc_type) BOOST_REQUIRE_THROW(expr, exc_type);
+#define DEIP_REQUIRE_THROW(expr, exc_type) BOOST_REQUIRE_THROW(expr, exc_type);
 
-#define SCORUM_CHECK_THROW(expr, exc_type)                                                                             \
+#define DEIP_CHECK_THROW(expr, exc_type)                                                                             \
     {                                                                                                                  \
         std::string req_throw_info = fc::json::to_string(fc::mutable_variant_object()("source_file", __FILE__)(        \
             "source_lineno", __LINE__)("expr", #expr)("exc_type", #exc_type));                                         \
         if (fc::enable_record_assert_trip)                                                                             \
-            std::cout << "SCORUM_CHECK_THROW begin " << req_throw_info << std::endl;                                   \
+            std::cout << "DEIP_CHECK_THROW begin " << req_throw_info << std::endl;                                   \
         BOOST_CHECK_THROW(expr, exc_type);                                                                             \
         if (fc::enable_record_assert_trip)                                                                             \
-            std::cout << "SCORUM_CHECK_THROW end " << req_throw_info << std::endl;                                     \
+            std::cout << "DEIP_CHECK_THROW end " << req_throw_info << std::endl;                                     \
     }
 
 #define REQUIRE_OP_VALIDATION_FAILURE_2(op, field, value, exc_type)                                                    \
     {                                                                                                                  \
         const auto temp = op.field;                                                                                    \
         op.field = value;                                                                                              \
-        SCORUM_REQUIRE_THROW(op.validate(), exc_type);                                                                 \
+        DEIP_REQUIRE_THROW(op.validate(), exc_type);                                                                 \
         op.field = temp;                                                                                               \
     }
 #define REQUIRE_OP_VALIDATION_FAILURE(op, field, value) REQUIRE_OP_VALIDATION_FAILURE_2(op, field, value, fc::exception)
@@ -76,7 +76,7 @@
         op.field = value;                                                                                              \
         trx.operations.back() = op;                                                                                    \
         op.field = bak;                                                                                                \
-        SCORUM_REQUIRE_THROW(db.push_transaction(trx, ~0), exc_type);                                                  \
+        DEIP_REQUIRE_THROW(db.push_transaction(trx, ~0), exc_type);                                                  \
     }
 
 #define REQUIRE_THROW_WITH_VALUE(op, field, value) REQUIRE_THROW_WITH_VALUE_2(op, field, value, fc::exception)
@@ -117,21 +117,21 @@
 // test case defines
 #if BOOST_VERSION >= 106000 // boost ver. >= 1.60.0
 
-#define SCORUM_AUTO_TU_REGISTRAR(test_name)                                                                            \
+#define DEIP_AUTO_TU_REGISTRAR(test_name)                                                                            \
     BOOST_AUTO_TU_REGISTRAR(test_name)                                                                                 \
     (boost::unit_test::make_test_case(&BOOST_AUTO_TC_INVOKER(test_name), #test_name, __FILE__, __LINE__),              \
      boost::unit_test::decorator::collector::instance());
 
 #else // boost ver. <1.60.0
 
-#define SCORUM_AUTO_TU_REGISTRAR(test_name)                                                                            \
+#define DEIP_AUTO_TU_REGISTRAR(test_name)                                                                            \
     BOOST_AUTO_TU_REGISTRAR(test_name)                                                                                 \
     (boost::unit_test::make_test_case(&BOOST_AUTO_TC_INVOKER(test_name), #test_name),                                  \
      boost::unit_test::ut_detail::auto_tc_exp_fail<BOOST_AUTO_TC_UNIQUE_ID(test_name)>::instance()->value());
 
 #endif
 
-#define SCORUM_TEST_CASE(test_name)                                                                                    \
+#define DEIP_TEST_CASE(test_name)                                                                                    \
     struct test_name : public BOOST_AUTO_TEST_CASE_FIXTURE                                                             \
     {                                                                                                                  \
         void test_method()                                                                                             \
@@ -158,6 +158,6 @@
     {                                                                                                                  \
     };                                                                                                                 \
                                                                                                                        \
-    SCORUM_AUTO_TU_REGISTRAR(test_name)                                                                                \
+    DEIP_AUTO_TU_REGISTRAR(test_name)                                                                                \
                                                                                                                        \
     void test_name::test_method_override()

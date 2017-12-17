@@ -1,11 +1,11 @@
-file(GLOB HEADERS "include/scorum/plugins/block_info/*.hpp")
+file(GLOB HEADERS "include/deip/plugins/block_info/*.hpp")
 
-add_library( scorum_block_info
+add_library( deip_block_info
              ${HEADERS}
              block_info_plugin.cpp
              block_info_api.cpp
            )
 
-target_link_libraries( scorum_block_info scorum_app scorum_chain scorum_protocol fc )
-target_include_directories( scorum_block_info
+target_link_libraries( deip_block_info deip_app deip_chain deip_protocol fc )
+target_include_directories( deip_block_info
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" )

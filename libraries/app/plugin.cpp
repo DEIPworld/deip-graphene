@@ -22,11 +22,11 @@
  * THE SOFTWARE.
  */
 
-#include <scorum/app/plugin.hpp>
+#include <deip/app/plugin.hpp>
 
 #include <fc/vector.hpp>
 
-namespace scorum {
+namespace deip {
 namespace app {
 
 plugin::plugin(application* app)
@@ -66,4 +66,4 @@ void plugin::plugin_set_program_options(boost::program_options::options_descript
     return;
 }
 }
-} // scorum::app
+} // deip::app

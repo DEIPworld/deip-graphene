@@ -24,8 +24,8 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <scorum/chain/scorum_objects.hpp>
-#include <scorum/chain/database.hpp>
+#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/database.hpp>
 
 #include <fc/crypto/digest.hpp>
 #include <fc/crypto/elliptic.hpp>
@@ -35,9 +35,9 @@
 
 #include <cmath>
 
-using namespace scorum;
-using namespace scorum::chain;
-using namespace scorum::protocol;
+using namespace deip;
+using namespace deip::chain;
+using namespace deip::protocol;
 
 BOOST_FIXTURE_TEST_SUITE(serialization_tests, clean_database_fixture)
 
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(serialization_raw_test)
         transfer_operation op;
         op.from = "alice";
         op.to = "bob";
-        op.amount = asset(100, SCORUM_SYMBOL);
+        op.amount = asset(100, DEIP_SYMBOL);
 
         trx.operations.push_back(op);
         auto packed = fc::raw::pack(trx);
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(serialization_json_test)
         transfer_operation op;
         op.from = "alice";
         op.to = "bob";
-        op.amount = asset(100, SCORUM_SYMBOL);
+        op.amount = asset(100, DEIP_SYMBOL);
 
         fc::variant test(op.amount);
         auto tmp = test.as<asset>();
@@ -125,27 +125,27 @@ BOOST_AUTO_TEST_CASE(asset_test)
         BOOST_CHECK_EQUAL(asset().to_string(), "0.000 TESTS");
 
         BOOST_TEST_MESSAGE("Asset Test");
-        asset scorum = asset::from_string("123.456 TESTS");
+        asset deip = asset::from_string("123.456 TESTS");
         asset tmp = asset::from_string("0.456 TESTS");
         BOOST_CHECK_EQUAL(tmp.amount.value, 456);
         tmp = asset::from_string("0.056 TESTS");
         BOOST_CHECK_EQUAL(tmp.amount.value, 56);
 
-        BOOST_CHECK(std::abs(scorum.to_real() - 123.456) < 0.0005);
-        BOOST_CHECK_EQUAL(scorum.amount.value, 123456);
-        BOOST_CHECK_EQUAL(scorum.decimals(), 3);
-        BOOST_CHECK_EQUAL(scorum.symbol_name(), "TESTS");
-        BOOST_CHECK_EQUAL(scorum.to_string(), "123.456 TESTS");
-        BOOST_CHECK_EQUAL(scorum.symbol, SCORUM_SYMBOL);
-        BOOST_CHECK_EQUAL(asset(50, SCORUM_SYMBOL).to_string(), "0.050 TESTS");
-        BOOST_CHECK_EQUAL(asset(50000, SCORUM_SYMBOL).to_string(), "50.000 TESTS");
+        BOOST_CHECK(std::abs(deip.to_real() - 123.456) < 0.0005);
+        BOOST_CHECK_EQUAL(deip.amount.value, 123456);
+        BOOST_CHECK_EQUAL(deip.decimals(), 3);
+        BOOST_CHECK_EQUAL(deip.symbol_name(), "TESTS");
+        BOOST_CHECK_EQUAL(deip.to_string(), "123.456 TESTS");
+        BOOST_CHECK_EQUAL(deip.symbol, DEIP_SYMBOL);
+        BOOST_CHECK_EQUAL(asset(50, DEIP_SYMBOL).to_string(), "0.050 TESTS");
+        BOOST_CHECK_EQUAL(asset(50000, DEIP_SYMBOL).to_string(), "50.000 TESTS");
 
-        BOOST_CHECK_THROW(scorum.set_decimals(100), fc::exception);
-        char* scorum_sy = (char*)&scorum.symbol;
-        scorum_sy[0] = 100;
-        BOOST_CHECK_THROW(scorum.decimals(), fc::exception);
-        scorum_sy[6] = 'A';
-        scorum_sy[7] = 'A';
+        BOOST_CHECK_THROW(deip.set_decimals(100), fc::exception);
+        char* deip_sy = (char*)&deip.symbol;
+        deip_sy[0] = 100;
+        BOOST_CHECK_THROW(deip.decimals(), fc::exception);
+        deip_sy[6] = 'A';
+        deip_sy[7] = 'A';
 
         auto check_sym = [](const asset& a) -> std::string {
             auto symbol = a.symbol_name();
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(asset_test)
             return symbol;
         };
 
-        BOOST_CHECK_THROW(check_sym(scorum), fc::exception);
+        BOOST_CHECK_THROW(check_sym(deip), fc::exception);
         BOOST_CHECK_THROW(asset::from_string("1.00000000000000000000 TESTS"), fc::exception);
         BOOST_CHECK_THROW(asset::from_string("1.000TESTS"), fc::exception);
         BOOST_CHECK_THROW(asset::from_string("1. 333 TESTS"),
@@ -259,19 +259,19 @@ BOOST_AUTO_TEST_CASE(version_test)
         BOOST_REQUIRE(ver == version(12, 34, 56));
 
         ver_str = fc::variant("256.0.0");
-        SCORUM_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
+        DEIP_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
 
         ver_str = fc::variant("0.256.0");
-        SCORUM_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
+        DEIP_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
 
         ver_str = fc::variant("0.0.65536");
-        SCORUM_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
+        DEIP_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
 
         ver_str = fc::variant("1.0");
-        SCORUM_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
+        DEIP_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
 
         ver_str = fc::variant("1.0.0.1");
-        SCORUM_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
+        DEIP_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
     }
     FC_LOG_AND_RETHROW();
 }
@@ -304,20 +304,20 @@ BOOST_AUTO_TEST_CASE(hardfork_version_test)
         BOOST_REQUIRE(ver == hardfork_version(12, 34));
 
         ver_str = fc::variant("256.0.0");
-        SCORUM_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
+        DEIP_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
 
         ver_str = fc::variant("0.256.0");
-        SCORUM_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
+        DEIP_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
 
         ver_str = fc::variant("0.0.1");
         fc::from_variant(ver_str, ver);
         BOOST_REQUIRE(ver == hardfork_version(0, 0));
 
         ver_str = fc::variant("1.0");
-        SCORUM_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
+        DEIP_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
 
         ver_str = fc::variant("1.0.0.1");
-        SCORUM_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
+        DEIP_REQUIRE_THROW(fc::from_variant(ver_str, ver), fc::exception);
     }
     FC_LOG_AND_RETHROW();
 }

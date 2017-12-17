@@ -1,18 +1,18 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <scorum/chain/scorum_objects.hpp>
+#include <deip/chain/deip_objects.hpp>
 
-#include <scorum/chain/dbs_account.hpp>
-#include <scorum/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_account.hpp>
+#include <deip/chain/dbs_budget.hpp>
 
 #include "database_fixture.hpp"
 
 #include <limits>
 
-using namespace scorum;
-using namespace scorum::chain;
-using namespace scorum::protocol;
+using namespace deip;
+using namespace deip::chain;
+using namespace deip::protocol;
 using fc::string;
 
 //
@@ -27,7 +27,7 @@ public:
         create_budget_op.owner = "alice";
         create_budget_op.content_permlink = BUDGET_CONTENT_PERMLINK;
         create_budget_op.deadline = default_deadline;
-        create_budget_op.balance = asset(BUDGET_BALANCE_DEFAULT, SCORUM_SYMBOL);
+        create_budget_op.balance = asset(BUDGET_BALANCE_DEFAULT, DEIP_SYMBOL);
         close_budget_op.budget_id = 1;
         close_budget_op.owner = "alice";
     }
@@ -36,35 +36,35 @@ public:
     close_budget_operation close_budget_op;
 
     const int BUDGET_BALANCE_DEFAULT = 200;
-    const char* BUDGET_CONTENT_PERMLINK = "https://github.com/scorum/scorum/blob/master/README.md";
+    const char* BUDGET_CONTENT_PERMLINK = "https://gitlab.com/DEIP/deip-blockchain/blob/master/README.md";
 };
 
 BOOST_FIXTURE_TEST_SUITE(budget_operation_check, budget_operation_check_fixture)
 
-SCORUM_TEST_CASE(create_budget_operation_check)
+DEIP_TEST_CASE(create_budget_operation_check)
 {
     BOOST_REQUIRE_NO_THROW(create_budget_op.validate());
 }
 
-SCORUM_TEST_CASE(create_budget_operation_check_invalid_balance_amount)
+DEIP_TEST_CASE(create_budget_operation_check_invalid_balance_amount)
 {
-    create_budget_op.balance = asset(0, SCORUM_SYMBOL);
+    create_budget_op.balance = asset(0, DEIP_SYMBOL);
 
     BOOST_REQUIRE_THROW(create_budget_op.validate(), fc::assert_exception);
 
-    create_budget_op.balance = asset(-BUDGET_BALANCE_DEFAULT, SCORUM_SYMBOL);
+    create_budget_op.balance = asset(-BUDGET_BALANCE_DEFAULT, DEIP_SYMBOL);
 
     BOOST_REQUIRE_THROW(create_budget_op.validate(), fc::assert_exception);
 }
 
-SCORUM_TEST_CASE(create_budget_operation_check_invalid_balance_currency)
+DEIP_TEST_CASE(create_budget_operation_check_invalid_balance_currency)
 {
     create_budget_op.balance = asset(BUDGET_BALANCE_DEFAULT, VESTS_SYMBOL);
 
     BOOST_REQUIRE_THROW(create_budget_op.validate(), fc::assert_exception);
 }
 
-SCORUM_TEST_CASE(create_budget_operation_check_invalid_owner_name)
+DEIP_TEST_CASE(create_budget_operation_check_invalid_owner_name)
 {
     create_budget_op.owner = "";
 
@@ -75,19 +75,19 @@ SCORUM_TEST_CASE(create_budget_operation_check_invalid_owner_name)
     BOOST_REQUIRE_THROW(create_budget_op.validate(), fc::assert_exception);
 }
 
-SCORUM_TEST_CASE(create_budget_operation_check_invalid_content_permlink)
+DEIP_TEST_CASE(create_budget_operation_check_invalid_content_permlink)
 {
     create_budget_op.content_permlink = "\xff\x20\xbf";
 
     BOOST_REQUIRE_THROW(create_budget_op.validate(), fc::assert_exception);
 }
 
-SCORUM_TEST_CASE(close_budget_operation_check)
+DEIP_TEST_CASE(close_budget_operation_check)
 {
     BOOST_REQUIRE_NO_THROW(close_budget_op.validate());
 }
 
-SCORUM_TEST_CASE(close_budget_operation_check_invalid_owner_name)
+DEIP_TEST_CASE(close_budget_operation_check_invalid_owner_name)
 {
     close_budget_op.owner = "";
 
@@ -133,7 +133,7 @@ private_key_type budget_transaction_check_fixture::alice_create_budget(const ass
 
     signed_transaction tx;
 
-    tx.set_expiration(db.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+    tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
     tx.operations.push_back(op);
 
     BOOST_REQUIRE_NO_THROW(tx.sign(alice_private_key, db.get_chain_id()));
@@ -148,9 +148,9 @@ private_key_type budget_transaction_check_fixture::alice_create_budget(const ass
 
 BOOST_FIXTURE_TEST_SUITE(budget_transaction_check, budget_transaction_check_fixture)
 
-SCORUM_TEST_CASE(create_budget_check)
+DEIP_TEST_CASE(create_budget_check)
 {
-    asset balance(BUDGET_BALANCE_DEFAULT, SCORUM_SYMBOL);
+    asset balance(BUDGET_BALANCE_DEFAULT, DEIP_SYMBOL);
 
     BOOST_REQUIRE_NO_THROW(alice_create_budget(balance));
 
@@ -164,9 +164,9 @@ SCORUM_TEST_CASE(create_budget_check)
     BOOST_REQUIRE_NO_THROW(validate_database());
 }
 
-SCORUM_TEST_CASE(close_budget_check)
+DEIP_TEST_CASE(close_budget_check)
 {
-    private_key_type alice_private_key = alice_create_budget(asset(BUDGET_BALANCE_DEFAULT, SCORUM_SYMBOL));
+    private_key_type alice_private_key = alice_create_budget(asset(BUDGET_BALANCE_DEFAULT, DEIP_SYMBOL));
 
     const budget_object& budget = (*budget_service.get_budgets("alice").cbegin());
 
@@ -178,7 +178,7 @@ SCORUM_TEST_CASE(close_budget_check)
 
     signed_transaction tx;
 
-    tx.set_expiration(db.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+    tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
     tx.operations.push_back(close_op);
 
     BOOST_REQUIRE_NO_THROW(tx.sign(alice_private_key, db.get_chain_id()));

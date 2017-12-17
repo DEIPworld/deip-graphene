@@ -3,12 +3,12 @@
 
 #include <graphene/utilities/tempdir.hpp>
 
-#include <scorum/chain/scorum_objects.hpp>
-#include <scorum/chain/history_object.hpp>
-#include <scorum/account_history/account_history_plugin.hpp>
-#include <scorum/witness/witness_plugin.hpp>
-#include <scorum/chain/genesis_state.hpp>
-#include <scorum/chain/dbs_account.hpp>
+#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/history_object.hpp>
+#include <deip/account_history/account_history_plugin.hpp>
+#include <deip/witness/witness_plugin.hpp>
+#include <deip/chain/genesis_state.hpp>
+#include <deip/chain/dbs_account.hpp>
 
 #include <fc/crypto/digest.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -19,7 +19,7 @@
 
 #include "database_fixture.hpp"
 
-namespace scorum {
+namespace deip {
 namespace chain {
 
 void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
@@ -67,9 +67,9 @@ clean_database_fixture::clean_database_fixture()
             if (arg == "--show-test-names")
                 std::cout << "running test " << boost::unit_test::framework::current_test_case().p_name << std::endl;
         }
-        auto ahplugin = app.register_plugin<scorum::account_history::account_history_plugin>();
-        db_plugin = app.register_plugin<scorum::plugin::debug_node::debug_node_plugin>();
-        auto wit_plugin = app.register_plugin<scorum::witness::witness_plugin>();
+        auto ahplugin = app.register_plugin<deip::account_history::account_history_plugin>();
+        db_plugin = app.register_plugin<deip::plugin::debug_node::debug_node_plugin>();
+        auto wit_plugin = app.register_plugin<deip::witness::witness_plugin>();
 
         boost::program_options::variables_map options;
 
@@ -81,7 +81,7 @@ clean_database_fixture::clean_database_fixture()
         open_database();
 
         generate_block();
-        db.set_hardfork(SCORUM_NUM_HARDFORKS);
+        db.set_hardfork(DEIP_NUM_HARDFORKS);
         generate_block();
 
         // ahplugin->plugin_startup();
@@ -89,12 +89,12 @@ clean_database_fixture::clean_database_fixture()
         vest(TEST_INIT_DELEGATE_NAME, 10000);
 
         // Fill up the rest of the required miners
-        for (int i = SCORUM_NUM_INIT_DELEGATES; i < SCORUM_MAX_WITNESSES; i++)
+        for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
         {
             account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
-            fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), SCORUM_MIN_PRODUCER_REWARD.amount.value);
+            fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), DEIP_MIN_PRODUCER_REWARD.amount.value);
             witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
-                           init_account_pub_key, SCORUM_MIN_PRODUCER_REWARD.amount);
+                           init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount);
         }
 
         validate_database();
@@ -146,18 +146,18 @@ void clean_database_fixture::resize_shared_mem(uint64_t size)
     boost::program_options::variables_map options;
 
     generate_block();
-    db.set_hardfork(SCORUM_NUM_HARDFORKS);
+    db.set_hardfork(DEIP_NUM_HARDFORKS);
     generate_block();
 
     vest(TEST_INIT_DELEGATE_NAME, 10000);
 
     // Fill up the rest of the required miners
-    for (int i = SCORUM_NUM_INIT_DELEGATES; i < SCORUM_MAX_WITNESSES; i++)
+    for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
     {
         account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
-        fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), SCORUM_MIN_PRODUCER_REWARD.amount.value);
+        fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), DEIP_MIN_PRODUCER_REWARD.amount.value);
         witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
-                       init_account_pub_key, SCORUM_MIN_PRODUCER_REWARD.amount);
+                       init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount);
     }
 
     validate_database();
@@ -171,7 +171,7 @@ live_database_fixture::live_database_fixture()
         _chain_dir = fc::current_path() / "test_blockchain";
         FC_ASSERT(fc::exists(_chain_dir), "Requires blockchain to test on in ./test_blockchain");
 
-        auto ahplugin = app.register_plugin<scorum::account_history::account_history_plugin>();
+        auto ahplugin = app.register_plugin<deip::account_history::account_history_plugin>();
         ahplugin->plugin_initialize(boost::program_options::variables_map());
 
         db.open(_chain_dir, _chain_dir, 0, 0, genesis_state);
@@ -256,7 +256,7 @@ void database_fixture::generate_blocks(uint32_t block_count)
 void database_fixture::generate_blocks(fc::time_point_sec timestamp, bool miss_intermediate_blocks)
 {
     db_plugin->debug_generate_blocks_until(debug_key, timestamp, miss_intermediate_blocks, default_skip);
-    BOOST_REQUIRE((db.head_block_time() - timestamp).to_seconds() < SCORUM_BLOCK_INTERVAL);
+    BOOST_REQUIRE((db.head_block_time() - timestamp).to_seconds() < DEIP_BLOCK_INTERVAL);
 }
 
 const account_object& database_fixture::account_create(const string& name,
@@ -273,7 +273,7 @@ const account_object& database_fixture::account_create(const string& name,
         account_create_with_delegation_operation op;
         op.new_account_name = name;
         op.creator = creator;
-        op.fee = asset(fee, SCORUM_SYMBOL);
+        op.fee = asset(fee, DEIP_SYMBOL);
         op.delegation = asset(0, VESTS_SYMBOL);
         op.owner = authority(1, key, 1);
         op.active = authority(1, key, 1);
@@ -283,7 +283,7 @@ const account_object& database_fixture::account_create(const string& name,
 
         trx.operations.push_back(op);
 
-        trx.set_expiration(db.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
         trx.sign(creator_key, db.get_chain_id());
         trx.validate();
         db.push_transaction(trx, 0);
@@ -304,7 +304,7 @@ database_fixture::account_create(const string& name, const public_key_type& key,
     {
         return account_create(name, TEST_INIT_DELEGATE_NAME, init_account_priv_key,
                               std::max(db.get_witness_schedule_object().median_props.account_creation_fee.amount
-                                           * SCORUM_CREATE_ACCOUNT_WITH_SCORUM_MODIFIER,
+                                           * DEIP_CREATE_ACCOUNT_WITH_DEIP_MODIFIER,
                                        share_type(100)),
                               key, post_key, "");
     }
@@ -328,10 +328,10 @@ const witness_object& database_fixture::witness_create(const string& owner,
         op.owner = owner;
         op.url = url;
         op.block_signing_key = signing_key;
-        op.fee = asset(fee, SCORUM_SYMBOL);
+        op.fee = asset(fee, DEIP_SYMBOL);
 
         trx.operations.push_back(op);
-        trx.set_expiration(db.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
         trx.sign(owner_key, db.get_chain_id());
         trx.validate();
         db.push_transaction(trx, 0);
@@ -359,12 +359,12 @@ void database_fixture::fund(const string& account_name, const asset& amount)
         db_plugin->debug_update(
             [=](database& db) {
                 db.modify(db.get_account(account_name), [&](account_object& a) {
-                    if (amount.symbol == SCORUM_SYMBOL)
+                    if (amount.symbol == DEIP_SYMBOL)
                         a.balance += amount;
                 });
 
                 db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object& gpo) {
-                    if (amount.symbol == SCORUM_SYMBOL)
+                    if (amount.symbol == DEIP_SYMBOL)
                         gpo.current_supply += amount;
                 });
             },
@@ -383,7 +383,7 @@ void database_fixture::transfer(const string& from, const string& to, const shar
         op.amount = amount;
 
         trx.operations.push_back(op);
-        trx.set_expiration(db.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
         trx.validate();
         db.push_transaction(trx, ~0);
         trx.operations.clear();
@@ -398,10 +398,10 @@ void database_fixture::vest(const string& from, const share_type& amount)
         transfer_to_vesting_operation op;
         op.from = from;
         op.to = "";
-        op.amount = asset(amount, SCORUM_SYMBOL);
+        op.amount = asset(amount, DEIP_SYMBOL);
 
         trx.operations.push_back(op);
-        trx.set_expiration(db.head_block_time() + SCORUM_MAX_TIME_UNTIL_EXPIRATION);
+        trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
         trx.validate();
         db.push_transaction(trx, ~0);
         trx.operations.clear();
@@ -411,7 +411,7 @@ void database_fixture::vest(const string& from, const share_type& amount)
 
 void database_fixture::vest(const string& account, const asset& amount)
 {
-    if (amount.symbol != SCORUM_SYMBOL)
+    if (amount.symbol != DEIP_SYMBOL)
         return;
 
     db_plugin->debug_update(
@@ -458,7 +458,7 @@ vector<operation> database_fixture::get_last_operations(uint32_t num_ops)
     while (itr != acc_hist_idx.begin() && ops.size() < num_ops)
     {
         itr--;
-        ops.push_back(fc::raw::unpack<scorum::chain::operation>(db.get(itr->op).serialized_op));
+        ops.push_back(fc::raw::unpack<deip::chain::operation>(db.get(itr->op).serialized_op));
     }
 
     return ops;
@@ -491,4 +491,4 @@ void _push_transaction(database& db, const signed_transaction& tx, uint32_t skip
 
 } // namespace test
 } // namespace chain
-} // namespace scorum
+} // namespace deip

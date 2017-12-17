@@ -1,6 +1,6 @@
-#ifndef SCORUM_HARDFORK_0_1
-#define SCORUM_HARDFORK_0_1 1
+#ifndef DEIP_HARDFORK_0_1
+#define DEIP_HARDFORK_0_1 1
 // 4/25/2016 17:30:00 GMT
-#define SCORUM_HARDFORK_0_1_TIME 1461605400
-#define SCORUM_HARDFORK_0_1_VERSION hardfork_version( 0, 1 )
+#define DEIP_HARDFORK_0_1_TIME 1461605400
+#define DEIP_HARDFORK_0_1_VERSION hardfork_version( 0, 1 )
 #endif

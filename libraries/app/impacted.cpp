@@ -22,17 +22,17 @@
  * THE SOFTWARE.
  */
 
-#include <scorum/protocol/authority.hpp>
+#include <deip/protocol/authority.hpp>
 
-#include <scorum/app/impacted.hpp>
+#include <deip/app/impacted.hpp>
 
 #include <fc/utility.hpp>
 
-namespace scorum {
+namespace deip {
 namespace app {
 
 using namespace fc;
-using namespace scorum::protocol;
+using namespace deip::protocol;
 
 // TODO:  Review all of these, especially no-ops
 struct get_impacted_account_visitor

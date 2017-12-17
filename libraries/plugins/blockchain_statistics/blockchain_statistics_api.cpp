@@ -1,13 +1,13 @@
-#include <scorum/blockchain_statistics/blockchain_statistics_api.hpp>
+#include <deip/blockchain_statistics/blockchain_statistics_api.hpp>
 
-namespace scorum {
+namespace deip {
 namespace blockchain_statistics {
 
 namespace detail {
 class blockchain_statistics_api_impl
 {
 public:
-    blockchain_statistics_api_impl(scorum::app::application& app)
+    blockchain_statistics_api_impl(deip::app::application& app)
         : _app(app)
     {
     }
@@ -16,7 +16,7 @@ public:
     statistics get_stats_for_interval(fc::time_point_sec start, fc::time_point_sec end) const;
     statistics get_lifetime_stats() const;
 
-    scorum::app::application& _app;
+    deip::app::application& _app;
 };
 
 statistics blockchain_statistics_api_impl::get_stats_for_time(fc::time_point_sec open, uint32_t interval) const
@@ -70,7 +70,7 @@ statistics blockchain_statistics_api_impl::get_lifetime_stats() const
 }
 } // detail
 
-blockchain_statistics_api::blockchain_statistics_api(const scorum::app::api_context& ctx)
+blockchain_statistics_api::blockchain_statistics_api(const deip::app::api_context& ctx)
 {
     my = std::make_shared<detail::blockchain_statistics_api_impl>(ctx.app);
 }
@@ -101,7 +101,7 @@ statistics& statistics::operator+=(const bucket_object& b)
     this->operations += b.operations;
     this->transactions += b.transactions;
     this->transfers += b.transfers;
-    this->scorum_transferred += b.scorum_transferred;
+    this->deip_transferred += b.deip_transferred;
     this->sbd_transferred += b.sbd_transferred;
     this->sbd_paid_as_interest += b.sbd_paid_as_interest;
     this->accounts_created += b.paid_accounts_created + b.mined_accounts_created;
@@ -126,11 +126,11 @@ statistics& statistics::operator+=(const bucket_object& b)
     this->new_reply_votes += b.new_reply_votes;
     this->changed_reply_votes += b.changed_reply_votes;
     this->payouts += b.payouts;
-    this->scr_paid_to_authors += b.scr_paid_to_authors;
+    this->deip_paid_to_authors += b.deip_paid_to_authors;
     this->vests_paid_to_authors += b.vests_paid_to_authors;
     this->vests_paid_to_curators += b.vests_paid_to_curators;
     this->transfers_to_vesting += b.transfers_to_vesting;
-    this->scorum_vested += b.scorum_vested;
+    this->deip_vested += b.deip_vested;
     this->new_vesting_withdrawal_requests += b.new_vesting_withdrawal_requests;
     this->vesting_withdraw_rate_delta += b.vesting_withdraw_rate_delta;
     this->modified_vesting_withdrawal_requests += b.modified_vesting_withdrawal_requests;
@@ -141,7 +141,7 @@ statistics& statistics::operator+=(const bucket_object& b)
     this->sbd_conversion_requests_created += b.sbd_conversion_requests_created;
     this->sbd_to_be_converted += b.sbd_to_be_converted;
     this->sbd_conversion_requests_filled += b.sbd_conversion_requests_filled;
-    this->scorum_converted += b.scorum_converted;
+    this->deip_converted += b.deip_converted;
     this->limit_orders_created += b.limit_orders_created;
     this->limit_orders_filled += b.limit_orders_filled;
     this->limit_orders_cancelled += b.limit_orders_cancelled;
@@ -151,4 +151,4 @@ statistics& statistics::operator+=(const bucket_object& b)
     return (*this);
 }
 }
-} // scorum::blockchain_statistics
+} // deip::blockchain_statistics

@@ -5,7 +5,7 @@
 From the root of the repository:
 
     docker build --rm=false \
-        -t scoruminc/ci-test-environment:latest \
+        -t deipinc/ci-test-environment:latest \
         -f tests/scripts/Dockerfile.testenv .
 
 ## To Run The Tests
@@ -13,13 +13,13 @@ From the root of the repository:
 (Also in the root of the repository.)
 
     docker build --rm=false \
-        -t scoruminc/scorum-test \
+        -t deipinc/deip-test \
         -f Dockerfile.test .
 
 ## To Troubleshoot Failing Tests
 
     docker run -ti \
-        scoruminc/ci-test-environment:latest \
+        deipinc/ci-test-environment:latest \
         /bin/bash
 
 Then, inside the container:
@@ -27,21 +27,21 @@ Then, inside the container:
 (These steps are taken from `/Dockerfile.test` in the
 repository root.)
 
-    git clone https://github.com/scorum/scorum.git \
-        /usr/local/src/scorum
-    cd /usr/local/src/scorum
+    git clone https://gitlab.com/DEIP/deip-blockchain \
+        /usr/local/src/deip
+    cd /usr/local/src/deip
     git checkout <branch> # e.g. 123-feature
     git submodule update --init --recursive
     mkdir build
     cd build
     cmake \
         -DCMAKE_BUILD_TYPE=Debug \
-        -DBUILD_SCORUM_TESTNET=ON \
+        -DBUILD_DEIP_TESTNET=ON \
         -DLOW_MEMORY_NODE=OFF \
         -DCLEAR_VOTES=ON \
         ..
     make -j$(nproc) chain_test
     ./tests/chain_test
-    cd /usr/local/src/scorum
+    cd /usr/local/src/deip
     doxygen
     programs/build_helpers/check_reflect.py
