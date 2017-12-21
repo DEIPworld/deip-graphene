@@ -1,0 +1,8 @@
+//
+// Created by akulik on 12/21/17.
+//
+
+#ifndef DEIP_DISCIPLINE_OBJECT_HPP
+#define DEIP_DISCIPLINE_OBJECT_HPP
+
+#endif //DEIP_DISCIPLINE_OBJECT_HPP
