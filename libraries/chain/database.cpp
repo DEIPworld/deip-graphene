@@ -1673,6 +1673,7 @@ void database::initialize_indexes()
     add_index<vesting_delegation_index>();
     add_index<vesting_delegation_expiration_index>();
     add_index<budget_index>();
+    add_index<proposal_index>();
 
     _plugin_index_signal();
 }

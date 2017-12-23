@@ -10,6 +10,7 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_proposal.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1435,6 +1436,13 @@ void close_budget_evaluator::do_apply(const close_budget_operation& op)
     const budget_object& budget = budget_service.get_budget(budget_id_type(op.budget_id));
 
     budget_service.close_budget(budget);
+}
+
+void proposal_create_operation::do_apply(const proposal_create_operation& op)
+{
+    dbs_budget& budget_service = _db.obtain_service<dbs_budget>();
+
+
 }
 
 } // namespace chain

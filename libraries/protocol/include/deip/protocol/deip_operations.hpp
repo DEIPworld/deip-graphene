@@ -779,6 +779,25 @@ struct close_budget_operation : public base_operation
     }
 };
 
+struct proposal_create_operation : public base_operation
+{
+    typedef scorum::protocol::proposal_action_type action_t;
+    typedef scorum::protocol::proposal_life_time_type lifetime_t;
+
+    account_name_type voter;
+    string json; ///< must be proper utf8 / JSON string.
+
+    fc::optional<fc::enum_type<uint8_t, action_t>> action;
+    fc::optional<fc::enum_type<uint8_t, lifetime_t>> lifetime;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(voter);
+    }
+
+    void validate() const;
+};
+
 } // namespace protocol
 } // namespace deip
 

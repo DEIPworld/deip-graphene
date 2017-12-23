@@ -349,5 +349,11 @@ void close_budget_operation::validate() const
 {
     validate_account_name(owner);
 }
+
+void proposal_create_operation::validate() const
+{
+    validate_account_name(voter);
+}
+
 }
 } // deip::protocol
