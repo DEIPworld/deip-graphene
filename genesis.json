@@ -33,14 +33,17 @@
 	}],
 
 	"disciplines": [{
+		"id": 0,
 		"name": "Mathematics",
 		"votes_in_last_ten_weeks": 100,
 		"parent_id": null
 	}, {
+		"id": 1,
 		"name": "Physics",
 		"votes_in_last_ten_weeks": 250,
 		"parent_id": null
 	}, {
+		"id": 2,
 		"name": "Chemistry",
 		"votes_in_last_ten_weeks": 42,
 		"parent_id": null
