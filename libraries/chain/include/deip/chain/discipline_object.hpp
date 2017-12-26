@@ -31,7 +31,7 @@ public:
 
     id_type id;
     discipline_id_type parent_id;
-    fc::shared_string name;
+    discipline_name_type name;
     share_type votes_in_last_ten_weeks;
 };
 
@@ -45,7 +45,7 @@ typedef multi_index_container<discipline_object,
                            &discipline_object::id>>,
             ordered_unique<tag<by_discipline_name>,
                     member<discipline_object,
-                           fc::shared_string ,
+                           discipline_name_type ,
                            &discipline_object::name>>,
             ordered_non_unique<tag<by_parent_id>,
                     member<discipline_object,

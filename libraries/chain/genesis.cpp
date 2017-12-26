@@ -7,6 +7,7 @@
 #include <deip/chain/block_summary_object.hpp>
 #include <deip/chain/chain_property_object.hpp>
 #include <deip/chain/deip_objects.hpp>
+#include <deip/chain/discipline_object.hpp>
 
 #include <deip/chain/pool/reward_pool.hpp>
 
@@ -189,6 +190,22 @@ void database::init_genesis_rewards(const genesis_state_type& genesis_state)
 
     reward_service.create_pool(initial_reward_pool_supply);
     budget_service.create_fund_budget(genesis_state.init_rewards_supply - initial_reward_pool_supply, deadline);
+}
+
+void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
+{
+    const vector<genesis_state_type::discipline_type>& disciplines = genesis_state.disciplines;
+
+    for (auto& discipline : disciplines)
+    {
+        FC_ASSERT(!discipline.name.empty(), "Discipline 'name' should not be empty.");
+
+        create<discipline_object>([&](discipline_object& d) {
+            d.name = discipline.name;
+            d.parent_id = discipline.parent_id;
+            d.votes_in_last_ten_weeks = discipline.votes_in_last_ten_weeks;
+        });
+    }
 }
 
 } // namespace chain

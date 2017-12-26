@@ -28,6 +28,7 @@ using deip::protocol::block_id_type;
 using deip::protocol::chain_id_type;
 using deip::protocol::share_type;
 using deip::protocol::transaction_id_type;
+using deip::protocol::discipline_name_type;
 
 struct by_id;
 
