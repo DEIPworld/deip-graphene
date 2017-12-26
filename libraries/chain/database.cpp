@@ -17,6 +17,7 @@
 #include <deip/chain/operation_notification.hpp>
 #include <deip/chain/budget_objects.hpp>
 #include <deip/chain/genesis_state.hpp>
+#include <deip/chain/discipline_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1673,6 +1674,7 @@ void database::initialize_indexes()
     add_index<vesting_delegation_index>();
     add_index<vesting_delegation_expiration_index>();
     add_index<budget_index>();
+    add_index<discipline_index>();
 
     _plugin_index_signal();
 }
