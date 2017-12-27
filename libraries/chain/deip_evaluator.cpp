@@ -1440,11 +1440,9 @@ void close_budget_evaluator::do_apply(const close_budget_operation& op)
 
 void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
 {
-    //proposal_create_operation& budget_service = _db.obtain_service<dbs_budget>();
-
     dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
 
-    proposal_service.create_proposal(op.action, op.json, op.voter, op.lifetime);
+    proposal_service.create_proposal(op.action, op.data, op.creator, op.expiration_time, op.quorum_percent);
 }
 
 } // namespace chain

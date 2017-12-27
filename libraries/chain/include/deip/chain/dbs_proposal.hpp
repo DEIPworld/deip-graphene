@@ -25,7 +25,6 @@ protected:
 public:
 
     typedef deip::protocol::proposal_action_type action_t;
-    typedef deip::protocol::proposal_life_time_type lifetime_t;
     typedef deip::protocol::account_name_type account_t;
 
     /** Get proposal by id
@@ -43,7 +42,8 @@ public:
     const proposal_object& create_proposal(const action_t action,
                                            const std::string json_data,
                                            const account_t initiator,
-                                           const lifetime_t lifetime);
+                                           const fc::time_point_sec expiration_time,
+                                           const int quorum_percent);
 };
 
 } // namespace chain

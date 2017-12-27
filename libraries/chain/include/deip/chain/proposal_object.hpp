@@ -9,7 +9,6 @@ namespace chain {
 class proposal_object : public object<proposal_object_type, proposal_object>
 {
     typedef deip::protocol::proposal_action_type action_t;
-    typedef deip::protocol::proposal_life_time_type lifetime_t;
     typedef deip::protocol::account_name_type account_t;
 
 public:
@@ -22,9 +21,11 @@ public:
     proposal_id_type id;
 
     action_t action;
-    lifetime_t lifetime;
-    account_t initiator;
-    std::string json;
+    fc::time_point_sec creation_time;
+    fc::time_point_sec expiration_time;
+    account_t creator;
+    std::string data;
+    int quorum_percent;
 };
 
 typedef multi_index_container<proposal_object,
@@ -39,6 +40,6 @@ typedef multi_index_container<proposal_object,
 } // namespace deip
 
 
-FC_REFLECT(deip::chain::proposal_object, (id)(action)(lifetime)(initiator)(json))
+FC_REFLECT(deip::chain::proposal_object, (id)(action)(creation_time)(expiration_time)(creator)(data))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::proposal_object, deip::chain::proposal_index)

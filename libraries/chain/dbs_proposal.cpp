@@ -17,15 +17,18 @@ const proposal_object& dbs_proposal::get_proposal(proposal_id_type id) const
 }
 
 const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_t action,
-                                       const std::string json_data,
-                                       const dbs_proposal::account_t initiator,
-                                       const dbs_proposal::lifetime_t lifetime)
+                                                     const std::string json_data,
+                                                     const dbs_proposal::account_t creator,
+                                                     const fc::time_point_sec expiration_time,
+                                                     const int quorum_percent)
 {
     const proposal_object& new_proposal = db_impl().create<proposal_object>([&](proposal_object& proposal) {
         proposal.action = action;
-        proposal.json = json_data;
-        proposal.initiator = initiator;
-        proposal.lifetime = lifetime;
+        proposal.data = json_data;
+        proposal.creator = creator;
+        proposal.creation_time = fc::time_point_sec();
+        proposal.expiration_time = expiration_time;
+        proposal.quorum_percent = quorum_percent;
     });
 
     return new_proposal;

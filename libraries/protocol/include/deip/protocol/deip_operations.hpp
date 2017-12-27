@@ -782,18 +782,13 @@ struct close_budget_operation : public base_operation
 struct proposal_create_operation : public base_operation
 {
     typedef deip::protocol::proposal_action_type action_t;
-    typedef deip::protocol::proposal_life_time_type lifetime_t;
 
-    account_name_type voter;
-    string json; ///< must be proper utf8 / JSON string.
+    account_name_type creator;
+    string data; ///< must be proper utf8 / JSON string.
 
     action_t action;
-    lifetime_t lifetime;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(voter);
-    }
+    fc::time_point_sec expiration_time;
+    int quorum_percent;
 
     void validate() const;
 };
@@ -870,6 +865,6 @@ FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(deleg
 FC_REFLECT( deip::protocol::create_budget_operation, (owner)(content_permlink)(balance)(deadline) )
 FC_REFLECT( deip::protocol::close_budget_operation, (budget_id)(owner) )
 
-FC_REFLECT( deip::protocol::proposal_create_operation, (voter)(json)(action)(lifetime) )
+FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(data)(action)(expiration_time)(quorum_percent) )
 
 // clang-format on
