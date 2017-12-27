@@ -1,11 +1,11 @@
 #pragma once
 
 #include <deip/chain/dbs_base_impl.hpp>
+#include <deip/chain/proposal_object.hpp>
+#include <deip/chain/account_object.hpp>
 
 namespace deip {
 namespace chain {
-
-using deip::protocol::asset;
 
 class proposal_object;
 
@@ -18,6 +18,26 @@ protected:
 
 public:
 
+    typedef deip::protocol::proposal_action_type action_t;
+    typedef deip::protocol::proposal_life_time_type lifetime_t;
+    typedef deip::protocol::account_name_type account_t;
+
+    /** Get proposal by id
+     */
+    const proposal_object& get_proposal(proposal_id_type id) const;
+
+    /** Create proposal object.
+     *
+     * @param action - type of proposal
+     * @param json_data - data attached to particular action type
+     * @param initiator - person who promote this proposal
+     * @param lifetime - lifetime of proposal !!!(will be changed to end date)
+     * @returns proposal object
+     */
+    const proposal_object& create_proposal(const action_t action,
+                                           const std::string json_data,
+                                           const account_t initiator,
+                                           const lifetime_t lifetime);
 };
 
 } // namespace chain
