@@ -79,7 +79,7 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_genesis_witnesses(genesis_state);
         init_genesis_witness_schedule(genesis_state);
         init_genesis_global_property_object(genesis_state);
-        init_genesis_rewards(genesis_state);
+        init_genesis_disciplines(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
@@ -160,7 +160,7 @@ void database::init_genesis_global_property_object(const genesis_state_type& gen
     });
 }
 
-void database::init_genesis_rewards(const genesis_state_type& genesis_state)
+/*void database::init_genesis_rewards(const genesis_state_type& genesis_state)
 {
     const auto& gpo = get_dynamic_global_properties();
 
@@ -190,7 +190,7 @@ void database::init_genesis_rewards(const genesis_state_type& genesis_state)
 
     reward_service.create_pool(initial_reward_pool_supply);
     budget_service.create_fund_budget(genesis_state.init_rewards_supply - initial_reward_pool_supply, deadline);
-}
+}*/
 
 void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
 {

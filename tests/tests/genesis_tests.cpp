@@ -69,9 +69,9 @@ BOOST_AUTO_TEST_CASE(check_initial_supply)
 BOOST_AUTO_TEST_CASE(check_discipline_fields)
 {
     const std::string genesis_str = "{\"disciplines\":[{"
-                                    "\"id\":1,
+                                    "\"id\":1,"
                                     "\"name\":\"physics\","
-                                    "\"parent_id\":NULL,"
+                                    "\"parent_id\":0,"
                                     "\"votes_in_last_ten_weeks\":100"
                                     "}]}";
 
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(check_discipline_fields)
     sc::genesis_state_type::discipline_type discipline = genesis_state.disciplines.front();
 
     BOOST_CHECK(discipline.name == "physics");
-    BOOST_CHECK(discipline.parent_id == NULL);
+    BOOST_CHECK(discipline.parent_id == 0);
     BOOST_CHECK(discipline.votes_in_last_ten_weeks == 100);
 }
 

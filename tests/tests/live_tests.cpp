@@ -153,7 +153,7 @@ magnitude );
    FC_LOG_AND_RETHROW()
 }*/
 
-BOOST_AUTO_TEST_CASE(retally_votes)
+/*BOOST_AUTO_TEST_CASE(retally_votes)
 {
     try
     {
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(retally_votes)
         }
     }
     FC_LOG_AND_RETHROW()
-}
+}*/
 
 BOOST_AUTO_TEST_SUITE_END()
 
