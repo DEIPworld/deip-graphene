@@ -371,6 +371,11 @@ public:
      */
     map<uint32_t, applied_operation> get_account_history(string account, uint64_t from, uint32_t limit) const;
 
+    /////////////////
+    // Disciplines //
+    /////////////////
+    vector<discipline_api_obj> get_all_disciplines() const;
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -494,6 +499,9 @@ FC_API(deip::app::database_api,
     // Budget
    (get_budgets)
    (lookup_budget_owners)
+
+   // Disciplines
+   (get_all_disciplines)
 )
 
 // clang-format on
