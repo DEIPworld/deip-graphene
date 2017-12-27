@@ -195,7 +195,7 @@ FC_REFLECT(deip::protocol::extended_public_key_type::binary_key, (check)(data))
 FC_REFLECT(deip::protocol::extended_private_key_type, (key_data))
 FC_REFLECT(deip::protocol::extended_private_key_type::binary_key, (check)(data))
 
-FC_REFLECT_ENUM(scorum::protocol::proposal_action_type, (start_new_research)
+FC_REFLECT_ENUM(deip::protocol::proposal_action_type,   (start_new_research)
                                                         (invite_member)
                                                         (dropout_member)
                                                         (send_funds)
@@ -207,7 +207,7 @@ FC_REFLECT_ENUM(scorum::protocol::proposal_action_type, (start_new_research)
                                                         (offer_research_tokens)
                                                         (accept_research_tokens_offer)
                                                         (initiate_research_token_sale))
-FC_REFLECT_ENUM(scorum::protocol::proposal_life_time_type, (day)(week))
+FC_REFLECT_ENUM(deip::protocol::proposal_life_time_type, (day)(week))
 
 FC_REFLECT_TYPENAME(deip::protocol::share_type)
 

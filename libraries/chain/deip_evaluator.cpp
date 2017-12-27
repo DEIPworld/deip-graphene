@@ -1438,11 +1438,13 @@ void close_budget_evaluator::do_apply(const close_budget_operation& op)
     budget_service.close_budget(budget);
 }
 
-void proposal_create_operation::do_apply(const proposal_create_operation& op)
+void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
 {
-    dbs_budget& budget_service = _db.obtain_service<dbs_budget>();
+    //proposal_create_operation& budget_service = _db.obtain_service<dbs_budget>();
 
+    dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
 
+    proposal_service.create_proposal(op.action, op.json, op.voter, op.lifetime);
 }
 
 } // namespace chain

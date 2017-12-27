@@ -16,6 +16,7 @@
 #include <deip/chain/shared_db_merkle.hpp>
 #include <deip/chain/operation_notification.hpp>
 #include <deip/chain/budget_objects.hpp>
+#include <deip/chain/proposal_object.hpp>
 #include <deip/chain/genesis_state.hpp>
 
 #include <deip/chain/util/asset.hpp>

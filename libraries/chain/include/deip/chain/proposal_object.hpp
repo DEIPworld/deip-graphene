@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deip/chain/deip_object_types.hpp>
+#include <boost/multi_index/composite_key.hpp>
 
 namespace deip {
 namespace chain {
@@ -26,19 +27,18 @@ public:
     std::string json;
 };
 
-using proposal_index = multi_index_container<proposal_object,
+typedef multi_index_container<proposal_object,
                                                 indexed_by<ordered_unique<tag<by_id>, 
                                                                 member<proposal_object, 
                                                                         proposal_id_type, 
                                                                         &proposal_object::id>>>,
-                                                allocator<proposal_object>>;
+                                                allocator<proposal_object>>
+    proposal_index;
 
 } // namespace chain
 } // namespace deip
 
 
-FC_REFLECT( deip::chain::proposal_object,
-            (id)
-           )
+FC_REFLECT(deip::chain::proposal_object, (id)(action)(lifetime)(initiator)(json))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::proposal_object, deip::chain::proposal_index)

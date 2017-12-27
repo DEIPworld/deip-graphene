@@ -8,6 +8,7 @@
 #include <deip/chain/transaction_object.hpp>
 #include <deip/chain/witness_objects.hpp>
 #include <deip/chain/budget_objects.hpp>
+#include <deip/chain/proposal_object.hpp>
 
 #include <deip/tags/tags_plugin.hpp>
 

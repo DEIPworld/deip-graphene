@@ -1,6 +1,11 @@
 #pragma once
 
 #include <deip/chain/dbs_base_impl.hpp>
+
+#include <vector>
+#include <set>
+#include <functional>
+
 #include <deip/chain/proposal_object.hpp>
 #include <deip/chain/account_object.hpp>
 
@@ -13,6 +18,7 @@ class dbs_proposal : public dbs_base
 {
     friend class dbservice_dbs_factory;
 
+    dbs_proposal() = delete;
 protected:
     explicit dbs_proposal(database& db);
 

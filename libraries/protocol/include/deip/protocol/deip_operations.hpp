@@ -787,8 +787,8 @@ struct proposal_create_operation : public base_operation
     account_name_type voter;
     string json; ///< must be proper utf8 / JSON string.
 
-    fc::optional<fc::enum_type<uint8_t, action_t>> action;
-    fc::optional<fc::enum_type<uint8_t, lifetime_t>> lifetime;
+    action_t action;
+    lifetime_t lifetime;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
@@ -869,5 +869,7 @@ FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(deleg
 
 FC_REFLECT( deip::protocol::create_budget_operation, (owner)(content_permlink)(balance)(deadline) )
 FC_REFLECT( deip::protocol::close_budget_operation, (budget_id)(owner) )
+
+FC_REFLECT( deip::protocol::proposal_create_operation, (voter)(json)(action)(lifetime) )
 
 // clang-format on
