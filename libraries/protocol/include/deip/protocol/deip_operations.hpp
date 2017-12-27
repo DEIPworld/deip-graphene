@@ -781,8 +781,8 @@ struct close_budget_operation : public base_operation
 
 struct proposal_create_operation : public base_operation
 {
-    typedef scorum::protocol::proposal_action_type action_t;
-    typedef scorum::protocol::proposal_life_time_type lifetime_t;
+    typedef deip::protocol::proposal_action_type action_t;
+    typedef deip::protocol::proposal_life_time_type lifetime_t;
 
     account_name_type voter;
     string json; ///< must be proper utf8 / JSON string.

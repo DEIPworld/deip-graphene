@@ -7,6 +7,10 @@ namespace chain {
 
 class proposal_object : public object<proposal_object_type, proposal_object>
 {
+    typedef deip::protocol::proposal_action_type action_t;
+    typedef deip::protocol::proposal_life_time_type lifetime_t;
+    typedef deip::protocol::account_name_type account_t;
+
 public:
     template <typename Constructor, typename Allocator> proposal_object(Constructor&& c, allocator<Allocator> a)
     {
@@ -15,6 +19,11 @@ public:
 
 public:
     proposal_id_type id;
+
+    action_t action;
+    lifetime_t lifetime;
+    account_t initiator;
+    std::string json;
 };
 
 using proposal_index = multi_index_container<proposal_object,
