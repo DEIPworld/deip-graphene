@@ -28,6 +28,7 @@ add_library( deip_chain
              dbs_reward.cpp
              dbs_witness.cpp
              dbs_budget.cpp
+             dbs_discipline.cpp
 
              deip_evaluator.cpp
 

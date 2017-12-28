@@ -5,6 +5,7 @@
 
 #include <deip/protocol/types.hpp>
 #include <deip/protocol/asset.hpp>
+#include <deip/chain/deip_object_types.hpp>
 
 #include <fc/reflect/reflect.hpp>
 
@@ -12,6 +13,7 @@ namespace deip {
 namespace chain {
 
 namespace sp = deip::protocol;
+namespace dc = deip::chain;
 
 struct genesis_state_type
 {
@@ -30,6 +32,14 @@ struct genesis_state_type
         sp::public_key_type block_signing_key;
     };
 
+    struct discipline_type
+    {
+        dc::discipline_id_type id;
+        std::string name;
+        sp::share_type votes_in_last_ten_weeks;
+        dc::discipline_id_type parent_id;
+    };
+
     genesis_state_type()
         : init_supply(0)
     {
@@ -45,6 +55,7 @@ struct genesis_state_type
     time_point_sec initial_timestamp;
     std::vector<account_type> accounts;
     std::vector<witness_type> witness_candidates;
+    std::vector<discipline_type> disciplines;
 
     sp::chain_id_type initial_chain_id;
 };
@@ -69,11 +80,16 @@ FC_REFLECT(deip::chain::genesis_state_type::witness_type,
            (owner_name)
            (block_signing_key))
 
+FC_REFLECT(deip::chain::genesis_state_type::discipline_type,
+           (name)
+           (votes_in_last_ten_weeks))
+
 FC_REFLECT(deip::chain::genesis_state_type,
            (init_supply)
            (init_rewards_supply)
            (initial_timestamp)
            (accounts)
            (witness_candidates)
+           (disciplines)
            (initial_chain_id))
 // clang-format on
