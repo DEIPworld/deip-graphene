@@ -2183,5 +2183,22 @@ discipline_api_obj database_api::get_discipline_by_name(const discipline_name_ty
     });
 }
 
+vector<discipline_api_obj> database_api::get_disciplines_by_parent_id(const discipline_id_type parent_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<discipline_api_obj> results;
+
+        chain::dbs_discipline &discipline_service = my->_db.obtain_service<chain::dbs_discipline>();
+
+        auto disciplines = discipline_service.get_disciplines_by_parent_id(parent_id);
+
+        for (const chain::discipline_object &discipline : disciplines) {
+            results.push_back(discipline_api_obj(discipline));
+        }
+
+        return results;
+    });
+}
+
 } // namespace app
 } // namespace deip

@@ -377,6 +377,7 @@ public:
     vector<discipline_api_obj> get_all_disciplines() const;
     discipline_api_obj get_discipline(const discipline_id_type id) const;
     discipline_api_obj get_discipline_by_name(const discipline_name_type name) const;
+    vector<discipline_api_obj> get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -506,6 +507,7 @@ FC_API(deip::app::database_api,
    (get_all_disciplines)
    (get_discipline)
    (get_discipline_by_name)
+   (get_disciplines_by_parent_id)
 )
 
 // clang-format on

@@ -32,11 +32,15 @@ public:
 
     /** Get discipline by id
     */
-    const discipline_object& get_discipline(discipline_id_type id) const;
+    const discipline_object& get_discipline(const discipline_id_type id) const;
 
     /** Get discipline by name
     */
-    const discipline_object& get_discipline_by_name(discipline_name_type name) const;
+    const discipline_object& get_discipline_by_name(const discipline_name_type& name) const;
+
+    /** Get discipline by parent_id
+    */
+    discipline_refs_type get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
 };
 } // namespace chain
 } // namespace deip
