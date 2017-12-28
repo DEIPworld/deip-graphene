@@ -20,16 +20,16 @@ public:
     void create_disciplines()
     {
         db.create<discipline_object>([&](discipline_object& d) {
-            d.id = 0;
+            d.id = 1;
             d.name = "Physics";
-            d.parent_id = NULL;
+            d.parent_id = 0;
             d.votes_in_last_ten_weeks = 100;
         });
 
         db.create<discipline_object>([&](discipline_object& d) {
-            d.id = 1;
+            d.id = 2;
             d.name = "Mathematics";
-            d.parent_id = NULL;
+            d.parent_id = 0;
             d.votes_in_last_ten_weeks = 150;
         });
 
@@ -65,9 +65,9 @@ BOOST_AUTO_TEST_CASE(get_discipline)
     {
         create_disciplines();
 
-        const discipline_object& discipline = data_service.get_discipline(0);
+        const discipline_object& discipline = data_service.get_discipline(1);
 
-        BOOST_CHECK(discipline.id == 0 && discipline.name == "Physics");
+        BOOST_CHECK(discipline.id == 1 && discipline.name == "Physics");
     }
     FC_LOG_AND_RETHROW()
 }
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(get_disciplines_by_parent_id)
             discipline_objects.push_back(discipline);
         }
 
-        BOOST_CHECK(discipline_objects.size() == 1 && discipline_objects[0].id == 2);
+        BOOST_CHECK(discipline_objects.size() == 1 && discipline_objects[0].id == 3);
     }
     FC_LOG_AND_RETHROW()
 }

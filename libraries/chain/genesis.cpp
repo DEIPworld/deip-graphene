@@ -199,6 +199,7 @@ void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
     for (auto& discipline : disciplines)
     {
         FC_ASSERT(!discipline.name.empty(), "Discipline 'name' should not be empty.");
+        FC_ASSERT(discipline.id != 0, "Creation of root discipline with id = 0 is not allowed.");
 
         create<discipline_object>([&](discipline_object& d) {
             d.id = discipline.id;
