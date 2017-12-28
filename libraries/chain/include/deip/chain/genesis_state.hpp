@@ -34,6 +34,7 @@ struct genesis_state_type
 
     struct discipline_type
     {
+        dc::discipline_id_type id;
         std::string name;
         sp::share_type votes_in_last_ten_weeks;
         dc::discipline_id_type parent_id;
