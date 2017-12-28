@@ -41,27 +41,27 @@
 		"id": 2,
 		"name": "Physics",
 		"votes_in_last_ten_weeks": 250,
-		"parent_id": null
+		"parent_id": 0
 	}, {
 		"id": 3,
 		"name": "Chemistry",
 		"votes_in_last_ten_weeks": 42,
-		"parent_id": null
+		"parent_id": 0
 	}, {
 		"id" : 4,
 		"name": "Biology",
 		"votes_in_last_ten_weeks": 70,
-		"parent_id": null
+		"parent_id": 0
 	}, {
 		"id": 5,
 		"name": "Computer Science",
 		"votes_in_last_ten_weeks": 310,
-		"parent_id": null
+		"parent_id": 0
 	}, {
 		"id": 6,
 		"name": "Medicine",
 		"votes_in_last_ten_weeks": 90,
-		"parent_id": null
+		"parent_id": 0
 	}, {
 		"id": 7,
 		"name": "Pure Mathematics",
@@ -76,6 +76,6 @@
 		"id": 9,
 		"name": "Law",
 		"votes_in_last_ten_weeks": 5,
-		"parent_id": null
+		"parent_id": 0
 	}]
 }
