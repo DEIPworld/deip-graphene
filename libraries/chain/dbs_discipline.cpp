@@ -32,6 +32,10 @@ const discipline_object& dbs_discipline::get_discipline(discipline_id_type id) c
     return db_impl().get<discipline_object>(id);
 }
 
+const discipline_object& dbs_discipline::get_discipline_by_name(discipline_name_type name) const
+{
+    return db_impl().get<discipline_object, by_discipline_name>(name);
+}
 
 } //namespace chain
 } //namespace deip

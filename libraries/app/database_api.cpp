@@ -77,6 +77,8 @@ public:
 
     // Disciplines
     vector<discipline_api_obj> get_all_disciplines() const;
+    discipline_api_obj get_discipline(const discipline_id_type id) const;
+    discipline_api_obj get_discipline_by_name(const discipline_name_type name) const;
 
     // signal handlers
     void on_applied_block(const chain::signed_block& b);
@@ -2160,6 +2162,24 @@ vector<discipline_api_obj> database_api::get_all_disciplines() const
         }
 
         return results;
+    });
+}
+
+discipline_api_obj database_api::get_discipline(const discipline_id_type id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_discipline &discipline_service = my->_db.obtain_service<chain::dbs_discipline>();
+
+        return discipline_service.get_discipline(id);
+    });
+}
+
+discipline_api_obj database_api::get_discipline_by_name(const discipline_name_type name) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_discipline &discipline_service = my->_db.obtain_service<chain::dbs_discipline>();
+
+        return discipline_service.get_discipline_by_name(name);
     });
 }
 

@@ -33,6 +33,10 @@ public:
     /** Get discipline by id
     */
     const discipline_object& get_discipline(discipline_id_type id) const;
+
+    /** Get discipline by name
+    */
+    const discipline_object& get_discipline_by_name(discipline_name_type name) const;
 };
 } // namespace chain
 } // namespace deip
