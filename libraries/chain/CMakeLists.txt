@@ -29,6 +29,7 @@ add_library( deip_chain
              dbs_witness.cpp
              dbs_budget.cpp
              dbs_proposal.cpp
+             dbs_research_group.cpp
 
              deip_evaluator.cpp
 
