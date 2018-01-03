@@ -122,7 +122,7 @@ typedef oid<vesting_delegation_expiration_object> vesting_delegation_expiration_
 typedef oid<budget_object> budget_id_type;
 typedef oid<proposal_object> proposal_id_type;
 typedef oid<research_group_object> research_group_id_type;
-    typedef oid<research_group_token_object> research_group_token_id_type;
+typedef oid<research_group_token_object> research_group_token_id_type;
 
 enum bandwidth_type
 {
