@@ -717,19 +717,6 @@ struct decline_voting_rights_operation : public base_operation
     void validate() const;
 };
 
-struct claim_reward_balance_operation : public base_operation
-{
-    account_name_type account;
-    asset reward_deip;
-    asset reward_vests;
-
-    void get_required_posting_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(account);
-    }
-    void validate() const;
-};
-
 /**
  * Delegate vesting shares from one account to the other. The vesting shares are still owned
  * by the original account, but content voting rights and bandwidth allocation are transferred
@@ -845,7 +832,6 @@ FC_REFLECT( deip::protocol::request_account_recovery_operation, (recovery_accoun
 FC_REFLECT( deip::protocol::recover_account_operation, (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions) )
 FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) )
 FC_REFLECT( deip::protocol::decline_voting_rights_operation, (account)(decline) )
-FC_REFLECT( deip::protocol::claim_reward_balance_operation, (account)(reward_deip)(reward_vests) )
 FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) )
 
 FC_REFLECT( deip::protocol::create_budget_operation, (owner)(content_permlink)(balance)(deadline) )

@@ -59,10 +59,7 @@ public:
     void increase_balance(const account_object& account, const asset& deips);
     void decrease_balance(const account_object& account, const asset& deips);
 
-    void increase_reward_balance(const account_object& account, const asset& deips);
-    void decrease_reward_balance(const account_object& account, const asset& deips);
-
-    void increase_vesting_shares(const account_object& account, const asset& vesting, const asset& deips);
+    void increase_vesting_shares(const account_object& account, const asset& vesting);
 
     void increase_delegated_vesting_shares(const account_object& account, const asset& vesting);
 
@@ -121,7 +118,7 @@ public:
     * @param to_reward_balance
     * @return the sbd created and deposited to_account, may return DEIP if there is no median feed
     */
-    asset create_vesting(const account_object& to_account, const asset &deip, bool to_reward_balance = false);
+    asset create_vesting(const account_object& to_account, const asset &deip);
 
     /** clears all vote records for a particular account but does not update the
     * witness vote totals.  Vote totals should be updated first via a call to
