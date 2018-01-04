@@ -781,12 +781,10 @@ struct close_budget_operation : public base_operation
 
 struct proposal_create_operation : public base_operation
 {
-    typedef deip::protocol::proposal_action_type action_t;
-
     account_name_type creator;
     string data; ///< must be proper utf8 / JSON string.
 
-    action_t action;
+    deip::protocol::proposal_action_type action;
     fc::time_point_sec expiration_time;
     int quorum_percent;
 
