@@ -29,7 +29,7 @@ public:
         c(*this);
     }
 
-    id_type id;
+    discipline_id_type id;
     discipline_id_type parent_id;
     discipline_name_type name;
     share_type votes_in_last_ten_weeks;
