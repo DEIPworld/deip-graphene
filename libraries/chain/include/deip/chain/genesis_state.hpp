@@ -81,8 +81,10 @@ FC_REFLECT(deip::chain::genesis_state_type::witness_type,
            (block_signing_key))
 
 FC_REFLECT(deip::chain::genesis_state_type::discipline_type,
+           (id)
            (name)
-           (votes_in_last_ten_weeks))
+           (votes_in_last_ten_weeks)
+           (parent_id))
 
 FC_REFLECT(deip::chain::genesis_state_type,
            (init_supply)
