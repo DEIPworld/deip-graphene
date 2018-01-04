@@ -354,5 +354,9 @@ void proposal_create_operation::validate() const
 {
 }
 
+void create_research_group_operation::validate() const
+{
+}
+
 }
 } // deip::protocol

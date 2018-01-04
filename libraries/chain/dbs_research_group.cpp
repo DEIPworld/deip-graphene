@@ -15,11 +15,11 @@ const research_group_object& dbs_research_group::get_research_group(research_gro
     return db_impl().get<research_group_object>(id);
 }
 
-const research_group_object& dbs_research_group::create_research_group(const fc::shared_string permlink,
-                                                   const fc::shared_string description) {
+const research_group_object& dbs_research_group::create_research_group(const string permlink,
+                                                                       const string description) {
     const research_group_object& new_research_group = db_impl().create<research_group_object>([&](research_group_object& research_group) {
-        research_group.permlink = permlink;
-        research_group.desciption = description;
+        fc::from_string(research_group.permlink, permlink);
+        fc::from_string(research_group.desciption, description);
     });
 
     return new_research_group;

@@ -11,6 +11,7 @@
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_budget.hpp>
 #include <deip/chain/dbs_proposal.hpp>
+#include <deip/chain/dbs_research_group.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1445,5 +1446,13 @@ void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
     proposal_service.create_proposal(op.action, op.data, op.creator, op.expiration_time, op.quorum_percent);
 }
 
+void create_research_group_evaluator::do_apply(const create_research_group_operation& op)
+{
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    research_group_service.create_research_group(op.permlink,
+                                                 op.desciption);
+}
+
 } // namespace chain
-} // namespace deip
+} // namespace deip 

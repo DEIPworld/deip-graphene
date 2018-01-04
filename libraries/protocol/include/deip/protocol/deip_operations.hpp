@@ -5,6 +5,7 @@
 
 #include <fc/utf8.hpp>
 #include <fc/crypto/equihash.hpp>
+#include <fc/shared_string.hpp>
 
 namespace deip {
 namespace protocol {
@@ -791,7 +792,7 @@ struct proposal_create_operation : public base_operation
     void validate() const;
 };
 
-struct research_group_create_operation : public base_operation
+struct create_research_group_operation : public base_operation
 {
     string permlink;
     string desciption;
@@ -872,5 +873,5 @@ FC_REFLECT( deip::protocol::create_budget_operation, (owner)(content_permlink)(b
 FC_REFLECT( deip::protocol::close_budget_operation, (budget_id)(owner) )
 
 FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(data)(action)(expiration_time)(quorum_percent) )
-
+FC_REFLECT( deip::protocol::create_research_group_operation, (permlink)(desciption) )
 // clang-format on

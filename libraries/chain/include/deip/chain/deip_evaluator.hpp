@@ -40,5 +40,6 @@ DEFINE_EVALUATOR(delegate_vesting_shares)
 DEFINE_EVALUATOR(create_budget)
 DEFINE_EVALUATOR(close_budget)
 DEFINE_EVALUATOR(proposal_create)
+DEFINE_EVALUATOR(create_research_group)
 }
 } // deip::chain

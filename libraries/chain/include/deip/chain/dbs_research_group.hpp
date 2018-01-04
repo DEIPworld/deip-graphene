@@ -32,7 +32,7 @@ public:
      *
      * @returns research group object
      */
-    const research_group_object& create_research_group(const fc::shared_string permlink, const fc::shared_string description);
+    const research_group_object& create_research_group(const string permlink, const string description);
 };
 
 class dbs_research_group_token : public dbs_base
