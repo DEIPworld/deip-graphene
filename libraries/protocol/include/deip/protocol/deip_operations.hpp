@@ -791,6 +791,14 @@ struct proposal_create_operation : public base_operation
     void validate() const;
 };
 
+struct research_group_create_operation : public base_operation
+{
+    string permlink;
+    string desciption;
+
+    void validate() const;
+};
+
 } // namespace protocol
 } // namespace deip
 
