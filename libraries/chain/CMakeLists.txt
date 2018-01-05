@@ -30,6 +30,7 @@ add_library( deip_chain
              dbs_budget.cpp
              dbs_proposal.cpp
              dbs_research_group.cpp
+             dbs_discipline.cpp
 
              deip_evaluator.cpp
 

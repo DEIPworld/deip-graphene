@@ -78,6 +78,7 @@ typedef fc::sha256 digest_type;
 typedef fc::ecc::compact_signature signature_type;
 typedef safe<int64_t> share_type;
 typedef uint16_t weight_type;
+typedef fc::fixed_string_16 discipline_name_type;
 
 struct public_key_type
 {

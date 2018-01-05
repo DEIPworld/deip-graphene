@@ -9,6 +9,7 @@
 #include <deip/chain/witness_objects.hpp>
 #include <deip/chain/budget_objects.hpp>
 #include <deip/chain/proposal_object.hpp>
+#include <deip/chain/discipline_object.hpp>
 
 #include <deip/tags/tags_plugin.hpp>
 
@@ -472,6 +473,26 @@ struct budget_api_obj
     uint32_t last_allocated_block;
 };
 
+struct discipline_api_obj
+{
+    discipline_api_obj(const chain::discipline_object& d)
+        : id(d.id._id)
+        ,  parent_id(d.parent_id._id)
+        ,  name(d.name)
+        ,  votes_in_last_ten_weeks(d.votes_in_last_ten_weeks)
+    {}
+
+    // because fc::variant require for temporary object
+    discipline_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t parent_id;
+    string name;
+    share_type votes_in_last_ten_weeks;
+};
+
 } // namespace app
 } // namespace deip
 
@@ -563,5 +584,12 @@ FC_REFLECT( deip::app::budget_api_obj,
             (per_block)
             (last_allocated_block)
           )
+
+FC_REFLECT( deip::app::discipline_api_obj,
+            (id)
+            (parent_id)
+            (name)
+            (votes_in_last_ten_weeks)
+)
 
 // clang-format on

@@ -19,6 +19,7 @@
 #include <deip/chain/proposal_object.hpp>
 #include <deip/chain/genesis_state.hpp>
 #include <deip/chain/research_group_object.hpp>
+#include <deip/chain/discipline_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1679,6 +1680,7 @@ void database::initialize_indexes()
     add_index<proposal_index>();
     add_index<research_group_index>();
     add_index<research_group_token_index>();
+    add_index<discipline_index>();
 
     _plugin_index_signal();
 }
