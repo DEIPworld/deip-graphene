@@ -23,6 +23,8 @@ public:
 
     fc::shared_string permlink;
     fc::shared_string desciption;
+
+    share_type total_tokens_amount;
 };
 
 class research_group_token_object : public object<research_group_token_object_type, research_group_token_object>
@@ -94,7 +96,7 @@ typedef multi_index_container<research_group_token_object,
 
   
 
-FC_REFLECT(deip::chain::research_group_object, (id)(permlink)(desciption))
+FC_REFLECT(deip::chain::research_group_object, (id)(permlink)(desciption)(total_tokens_amount))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_group_object, deip::chain::research_group_index)
 
