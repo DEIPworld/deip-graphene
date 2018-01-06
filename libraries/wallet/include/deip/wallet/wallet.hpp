@@ -990,11 +990,6 @@ public:
                                                const discipline_id_type& target_discipline,
                                                const bool broadcast);
 
-    /**
-     *  Close the budget. The budget rest is returned to the owner's account
-     */
-    annotated_signed_transaction close_budget(const int64_t id, const std::string& budget_owner, const bool broadcast);
-
 public:
     fc::signal<void(bool)> lock_changed;
 
@@ -1093,7 +1088,6 @@ FC_API( deip::wallet::wallet_api,
         (decline_voting_rights)
         (claim_reward_balance)
         (create_budget)
-        (close_budget)
 
         // private message api
         (send_private_message)

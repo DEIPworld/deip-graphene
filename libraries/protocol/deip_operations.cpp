@@ -343,10 +343,5 @@ void create_budget_operation::validate() const
     FC_ASSERT(is_asset_type(balance, DEIP_SYMBOL), "Balance must be DEIP");
     FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Balance must be positive");
 }
-
-void close_budget_operation::validate() const
-{
-    validate_account_name(owner);
-}
 }
 } // deip::protocol

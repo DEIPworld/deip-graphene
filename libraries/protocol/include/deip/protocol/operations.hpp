@@ -48,7 +48,6 @@ typedef fc::static_variant<vote_operation,
                            account_create_with_delegation_operation,
 
                            create_budget_operation,
-                           close_budget_operation,
 
                            /// virtual operations
                            author_reward_operation,

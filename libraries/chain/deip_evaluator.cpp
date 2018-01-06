@@ -1422,14 +1422,5 @@ void create_budget_evaluator::do_apply(const create_budget_operation& op)
     budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, op.target_discipline);
 }
 
-void close_budget_evaluator::do_apply(const close_budget_operation& op)
-{
-    dbs_budget& budget_service = _db.obtain_service<dbs_budget>();
-
-    const budget_object& budget = budget_service.get_budget(budget_id_type(op.budget_id));
-
-    budget_service.close_budget(budget);
-}
-
 } // namespace chain
 } // namespace deip

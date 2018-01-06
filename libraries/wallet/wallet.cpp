@@ -2508,23 +2508,6 @@ annotated_signed_transaction wallet_api::create_budget(const std::string& budget
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction
-wallet_api::close_budget(const int64_t id, const std::string& budget_owner, const bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    close_budget_operation op;
-
-    op.budget_id = id;
-    op.owner = budget_owner;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
 namespace utils {
 
 fc::ecc::private_key derive_private_key(const std::string& prefix_string, int sequence_number)
