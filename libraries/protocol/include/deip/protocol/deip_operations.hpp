@@ -756,11 +756,10 @@ struct create_budget_operation : public base_operation
 {
     account_name_type owner;
     asset balance;
-    
 
-    discipline_id_type target_discipline;
-    uint32_t start_block = 0;
-    uint32_t end_block = 0;
+    discipline_name_type target_discipline;
+    uint32_t start_block;
+    uint32_t end_block;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -838,6 +837,6 @@ FC_REFLECT( deip::protocol::decline_voting_rights_operation, (account)(decline) 
 FC_REFLECT( deip::protocol::claim_reward_balance_operation, (account)(reward_deip)(reward_vests) )
 FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) )
 
-FC_REFLECT( deip::protocol::create_budget_operation, (owner)(content_permlink)(balance)(deadline) )
+FC_REFLECT( deip::protocol::create_budget_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
 
 // clang-format on

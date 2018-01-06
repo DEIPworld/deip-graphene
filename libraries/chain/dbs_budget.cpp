@@ -64,15 +64,6 @@ dbs_budget::budget_refs_type dbs_budget::get_budgets(const account_name_type& ow
     return ret;
 }
 
-const budget_object& dbs_budget::get_fund_budget() const
-{
-    budget_refs_type fund_budget = get_budgets(DEIP_ROOT_POST_PARENT);
-
-    FC_ASSERT(!fund_budget.empty(), "fund_budget_object is not created");
-
-    return fund_budget[0];
-}
-
 const budget_object& dbs_budget::get_budget(budget_id_type id) const
 {
     return db_impl().get<budget_object>(id);
@@ -82,7 +73,7 @@ const budget_object& dbs_budget::create_grant(const account_object& owner,
                                        const asset& balance,
                                        const uint32_t& start_block, 
                                        const uint32_t& end_block,
-                                       const iscipline_id_type& target_discipline)
+                                       const discipline_id_type& target_discipline)
 {
     // clang-format off
     FC_ASSERT(balance.symbol == DEIP_SYMBOL, "invalid asset type (symbol)");
@@ -94,24 +85,27 @@ const budget_object& dbs_budget::create_grant(const account_object& owner,
 
     const dynamic_global_property_object& props = db_impl().get_dynamic_global_properties();
     auto head_block_num = props.head_block_number;
-    if (start_block < head_block_num){
-        start_block = head_block_num;
+    uint32_t start = start_block;
+    if (start < head_block_num){
+        start = head_block_num;
     }
-    FC_ASSERT(start_block < end_block, "grant start block should be before end block");
+    
+    FC_ASSERT(start < end_block, "grant start block should be before end block");
     //Withdraw fund from account
     dbs_account& account_service = db().obtain_service<dbs_account>();
     account_service.decrease_balance(owner, balance);
-
-    share_type per_block = balance / (end_block - start_block);
+    
+    share_type per_block(balance.amount);
+    per_block /= (end_block - start);
 
     FC_ASSERT(per_block >= DEIP_MIN_GRANT_PER_BLOCK,
             "We can't proceed grant that spend less than ${1} per block", ("1", DEIP_LIMIT_BUDGETS_PER_OWNER));
 
     const budget_object& new_budget = db_impl().create<budget_object>([&](budget_object& budget) {
-        budget.owner = owner;
+        budget.owner = owner.name;
         budget.target_discipline = target_discipline;
-        budget.created = props.head_block_time;
-        budget.start_block = start_block;
+        budget.created = props.time;
+        budget.start_block = start;
         budget.end_block = end_block;
         budget.balance = balance;
         budget.per_block = per_block;
@@ -119,13 +113,13 @@ const budget_object& dbs_budget::create_grant(const account_object& owner,
     return new_budget;
 }
 
-asset dbs_budget::allocate_cash(const budget_object& budget)
+asset dbs_budget::allocate_funds(const budget_object& budget)
 {
-    auto amount = asset(std::max(budget.per_block, budget.balance), DEIP_SYMBOL);
+    auto amount = asset(std::max(budget.per_block, budget.balance.amount), DEIP_SYMBOL);
     db_impl().modify(budget, [&](budget_object& b) {
         b.balance -= amount;
     });
-    if (b.balance == 0){
+    if (budget.balance.amount == 0){
         db_impl().remove(budget);
     }
     return amount;

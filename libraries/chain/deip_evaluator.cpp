@@ -10,6 +10,7 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_discipline.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1414,12 +1415,13 @@ void create_budget_evaluator::do_apply(const create_budget_operation& op)
 {
     dbs_budget& budget_service = _db.obtain_service<dbs_budget>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
-
+    dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     account_service.check_account_existence(op.owner);
-
     const auto& owner = account_service.get_account(op.owner);
-
-    budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, op.target_discipline);
+    auto discipline = discipline_service.get_discipline_by_name(op.target_discipline);
+    //DEIP: need to make this check working
+    //FC_ASSERT(discipline != nullptr, "Target discipline doesn't exist");
+    budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id);
 }
 
 } // namespace chain

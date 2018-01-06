@@ -72,7 +72,7 @@ public:
      *
      * @param budget the budget that is distributed
      */
-    asset allocate_cash(const budget_object& budget);
+    asset allocate_funds(const budget_object& budget);
 
 private:
     uint64_t _get_budgets_count(const account_name_type& owner) const;

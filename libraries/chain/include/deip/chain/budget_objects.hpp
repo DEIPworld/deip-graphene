@@ -23,7 +23,7 @@ class budget_object : public object<budget_object_type, budget_object>
 public:
 
     template <typename Constructor, typename Allocator>
-    budget_object(Constructor&& c, allocator<Allocator> a): content_permlink(a)
+    budget_object(Constructor&& c, allocator<Allocator> a)
     {
         c(*this);
     }
@@ -60,7 +60,7 @@ typedef multi_index_container<budget_object,
 }
 
 FC_REFLECT( deip::chain::budget_object,
-             (id)(owner)(target_research)(target_discipline)(research_specific)(created)(balance)(per_block)(start_block)(end_block)
+             (id)(owner)(target_discipline)(created)(balance)(per_block)(start_block)(end_block)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::budget_object, deip::chain::budget_index )
