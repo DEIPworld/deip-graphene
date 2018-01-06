@@ -2485,19 +2485,21 @@ vector<budget_api_obj> wallet_api::get_budgets(const std::string& account_name)
 }
 
 annotated_signed_transaction wallet_api::create_budget(const std::string& budget_owner,
-                                                       const std::string& content_permlink,
-                                                       const asset& balance,
-                                                       const time_point_sec deadline,
-                                                       const bool broadcast)
+                                               const asset& balance,
+                                               const uint32_t& start_block,
+                                               const uint32_t& end_block,
+                                               const discipline_id_type& target_discipline,
+                                               const bool broadcast);
 {
     FC_ASSERT(!is_locked());
 
     create_budget_operation op;
 
     op.owner = budget_owner;
-    op.content_permlink = content_permlink;
+    op.target_discipline = target_discipline;
     op.balance = balance;
-    op.deadline = deadline;
+    op.start_block = start_block;
+    op.end_block = end_block;
 
     signed_transaction tx;
     tx.operations.push_back(op);

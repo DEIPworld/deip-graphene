@@ -984,9 +984,10 @@ public:
      *  @param broadcast
      */
     annotated_signed_transaction create_budget(const std::string& budget_owner,
-                                               const std::string& content_permlink,
                                                const asset& balance,
-                                               const time_point_sec deadline,
+                                               const uint32_t& start_block,
+                                               const uint32_t& enf_block,
+                                               const discipline_id_type& target_discipline,
                                                const bool broadcast);
 
     /**

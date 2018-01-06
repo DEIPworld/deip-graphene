@@ -340,7 +340,6 @@ void delegate_vesting_shares_operation::validate() const
 void create_budget_operation::validate() const
 {
     validate_account_name(owner);
-    validate_permlink(content_permlink);
     FC_ASSERT(is_asset_type(balance, DEIP_SYMBOL), "Balance must be DEIP");
     FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Balance must be positive");
 }

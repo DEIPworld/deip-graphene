@@ -755,10 +755,12 @@ struct delegate_vesting_shares_operation : public base_operation
 struct create_budget_operation : public base_operation
 {
     account_name_type owner;
-    string content_permlink;
-
     asset balance;
-    time_point_sec deadline;
+    
+
+    discipline_id_type target_discipline;
+    uint32_t start_block = 0;
+    uint32_t end_block = 0;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
