@@ -38,6 +38,10 @@ public:
     */
     const discipline_object& get_discipline_by_name(const discipline_name_type& name) const;
 
+    /** Finds discipline by name
+    */
+    const discipline_object* find_discipline_by_name(const discipline_name_type& name) const;
+
     /** Get discipline by parent_id
     */
     discipline_refs_type get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
