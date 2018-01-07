@@ -22,13 +22,11 @@ protected:
     explicit dbs_discipline(database &db);
 
 public:
-    using discipline_refs_type = std::vector<std::reference_wrapper<const discipline_object>>;
-
     /** Lists all disciplines.
     *
     * @returns a list of discipline objects
     */
-    discipline_refs_type get_disciplines() const;
+    std::vector<const discipline_object> get_disciplines() const;
 
     /** Get discipline by id
     */
@@ -40,7 +38,7 @@ public:
 
     /** Get discipline by parent_id
     */
-    discipline_refs_type get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
+    std::vector<const discipline_object> get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
 };
 } // namespace chain
 } // namespace deip
