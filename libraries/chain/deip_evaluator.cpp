@@ -1442,6 +1442,17 @@ void close_budget_evaluator::do_apply(const close_budget_operation& op)
 void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
 {
     dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    const uint32_t _lifetime_min = DAYS_TO_SECONDS(1);
+    const uint32_t _lifetime_max = DAYS_TO_SECONDS(10);
+
+    FC_ASSERT((op.expiration_time.sec_since_epoch() - fc::time_point_sec().sec_since_epoch() <= _lifetime_max && op.expiration_time.sec_since_epoch() - fc::time_point_sec().sec_since_epoch() >= _lifetime_min),
+             "Proposal life time is not in range of ${min} - ${max} seconds.",
+             ("min", _lifetime_min)("max", _lifetime_max));
+
+    FC_ASSERT(account_service.is_exists(op.creator), "Account \"${account_name}\" must exist.",
+              ("account_name", op.creator));
 
     // quorum_percent should be taken from research_group_object
     proposal_service.create_proposal(op.action, op.data, op.creator, op.expiration_time, op.quorum_percent);
