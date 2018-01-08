@@ -34,6 +34,19 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
     return new_proposal;
 }
 
+const proposal_vote_object& dbs_proposal::create_vote(const dbs_proposal::account_t voter,
+                                                      const deip::chain::share_type weight,
+                                                      const proposal_id_type id)
+{
+    const proposal_vote_object& new_proposal_vote = db_impl().create<proposal_vote_object>([&](proposal_vote_object& proposal_vote) {
+        proposal_vote.voter = voter;
+        proposal_vote.weight = weight;
+        proposal_vote.proposal_id = id;
+    });
+
+    return new_proposal_vote;
+}
+
 } // namespace chain
 } // namespace deip
 

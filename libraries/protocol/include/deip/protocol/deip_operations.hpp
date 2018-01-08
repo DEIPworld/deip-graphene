@@ -3,9 +3,12 @@
 #include <deip/protocol/block_header.hpp>
 #include <deip/protocol/asset.hpp>
 
+#include <deip/chain/deip_object_types.hpp>
+
 #include <fc/utf8.hpp>
 #include <fc/crypto/equihash.hpp>
 #include <fc/shared_string.hpp>
+
 
 namespace deip {
 namespace protocol {
@@ -800,6 +803,15 @@ struct create_research_group_operation : public base_operation
     void validate() const;
 };
 
+struct proposal_vote_operation : public base_operation
+{
+    account_name_type voter;
+    deip::chain::proposal_id_type proposal_id;
+
+    void validate() const;
+};
+
+
 } // namespace protocol
 } // namespace deip
 
@@ -874,4 +886,5 @@ FC_REFLECT( deip::protocol::close_budget_operation, (budget_id)(owner) )
 
 FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(data)(action)(expiration_time)(quorum_percent) )
 FC_REFLECT( deip::protocol::create_research_group_operation, (permlink)(desciption) )
+FC_REFLECT( deip::protocol::proposal_vote_operation, (voter))
 // clang-format on

@@ -49,6 +49,9 @@ public:
      */
     const research_group_token_object& get_research_group_token(research_group_token_id_type id) const;
 
+    /* Get research group token by owner */
+
+    const research_group_token_object& get_research_group_token_by_account_type(account_name_type account_t) const;
     /** Create research_group_token object.
      *
      * @returns research group token object

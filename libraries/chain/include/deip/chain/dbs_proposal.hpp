@@ -8,6 +8,7 @@
 
 #include <deip/chain/proposal_object.hpp>
 #include <deip/chain/account_object.hpp>
+#include <deip/chain/proposal_vote_object.hpp>
 
 namespace deip {
 namespace chain {
@@ -44,6 +45,15 @@ public:
                                            const account_t initiator,
                                            const fc::time_point_sec expiration_time,
                                            const int quorum_percent);
+
+    /* Create proposal vote object
+     * @param voter - person who vote
+     * @param weight - weight of persons vote
+     * @param id - id of proposal
+     * */
+    const proposal_vote_object& create_vote(const account_t voter,
+                                            const deip::chain::share_type weight,
+                                            const proposal_id_type id);
 };
 
 } // namespace chain
