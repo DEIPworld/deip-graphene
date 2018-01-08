@@ -44,6 +44,18 @@ public:
                                            const account_t initiator,
                                            const fc::time_point_sec expiration_time,
                                            const int quorum_percent);
+
+    void remove(const proposal_object& proposal);
+
+    bool is_exist(proposal_id_type proposal_id);
+
+    void vote_for(const protocol::account_name_type& voter, const proposal_object& proposal);
+
+    size_t get_votes(const proposal_object& proposal);
+
+    bool is_expired(const proposal_object& proposal);
+
+    void clear_expired_proposals();
 };
 
 } // namespace chain

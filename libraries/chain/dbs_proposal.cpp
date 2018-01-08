@@ -34,6 +34,42 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
     return new_proposal;
 }
 
+void dbs_proposal::remove(const proposal_object& proposal)
+{
+    db_impl().remove(proposal);
+}
+
+bool dbs_proposal::is_exist(proposal_id_type proposal_id)
+{
+    auto proposal = db_impl().find<proposal_object, by_id>(proposal_id);
+    return (proposal == nullptr) ? true : false;
+}
+
+void dbs_proposal::vote_for(const protocol::account_name_type& voter, const proposal_object& proposal)
+{
+    db_impl().modify(proposal, [&](proposal_object& p) { p.voted_accounts.insert(voter); });
+}
+
+size_t dbs_proposal::get_votes(const proposal_object& proposal)
+{
+    return proposal.voted_accounts.size();
+}
+
+bool dbs_proposal::is_expired(const proposal_object& proposal)
+{
+    return (_get_now() > proposal.expiration_time) ? true : false;
+}
+
+void dbs_proposal::clear_expired_proposals()
+{
+    const auto& proposal_expiration_index = db_impl().get_index<proposal_index>().indices().get<by_expiration_time>();
+
+    while (!proposal_expiration_index.empty() && is_expired(*proposal_expiration_index.begin()))
+    {
+        db_impl().remove(*proposal_expiration_index.begin());
+    }
+}
+
 } // namespace chain
 } // namespace deip
 

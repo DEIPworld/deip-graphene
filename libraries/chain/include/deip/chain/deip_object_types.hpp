@@ -31,6 +31,7 @@ using deip::protocol::transaction_id_type;
 using deip::protocol::discipline_name_type;
 
 struct by_id;
+struct by_expiration_time;
 
 enum object_type
 {
