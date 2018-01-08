@@ -43,6 +43,7 @@
 
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_witness.hpp>
+#include <deip/chain/dbs_proposal.hpp>
 
 namespace deip {
 namespace chain {
@@ -1903,6 +1904,8 @@ void database::_apply_block(const signed_block& next_block)
         account_recovery_processing();
         expire_escrow_ratification();
         process_decline_voting_rights();
+
+        this->obtain_service<dbs_proposal>().clear_expired_proposals();
 
         process_hardforks();
 

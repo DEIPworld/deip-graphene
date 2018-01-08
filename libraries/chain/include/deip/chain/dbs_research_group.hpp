@@ -55,8 +55,11 @@ public:
      */
 
     const research_group_token_object& create_research_group_token(const research_group_id_type research_group,
-                                                                   const share_type share,
+                                                                   const share_type amount,
                                                                    const account_name_type account_name);
+
+    void add_share_to_research_group_token(const share_type amount, 
+                                           const research_group_token_object& research_group_token);
 };
 
 } // namespace chain
