@@ -49,6 +49,9 @@ public:
      */
     const research_group_token_object& get_research_group_token(research_group_token_id_type id) const;
 
+    const research_group_token_object& get_research_group_token(const account_name_type account_name, 
+                                                                const research_group_id_type research_group_id) const;
+
     /** Create research_group_token object.
      *
      * @returns research group token object
@@ -57,6 +60,11 @@ public:
     const research_group_token_object& create_research_group_token(const research_group_id_type research_group,
                                                                    const share_type amount,
                                                                    const account_name_type account_name);
+
+    void remove_token_object(const account_object& account, research_group_id_type research_group_id);
+
+    bool token_exists(const account_name_type& account_name, 
+                      research_group_id_type research_group_id) const;
 
     void add_share_to_research_group_token(const share_type amount, 
                                            const research_group_token_object& research_group_token);

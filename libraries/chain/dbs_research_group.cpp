@@ -1,4 +1,5 @@
 #include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_account.hpp>
 #include <deip/chain/database.hpp>
 
 #include <tuple>
@@ -34,6 +35,11 @@ const research_group_token_object& dbs_research_group_token::get_research_group_
     return db_impl().get<research_group_token_object>(id);
 }
 
+const research_group_token_object& dbs_research_group_token::get_research_group_token(const account_name_type account_name, 
+                                                                                      const research_group_id_type research_group_id) const {
+    return db_impl().get<research_group_token_object, by_owner>(boost::make_tuple(account_name, research_group_id));
+}
+
 const research_group_token_object& dbs_research_group_token::create_research_group_token(const research_group_id_type research_group_id,
                                                                                          const share_type amount,
                                                                                          const account_name_type account_name) {
@@ -48,6 +54,23 @@ const research_group_token_object& dbs_research_group_token::create_research_gro
     db_impl().modify(research_group, [&](research_group_object& rg) { rg.total_tokens_amount += amount; });
 
     return new_research_group_token;
+}
+
+bool dbs_research_group_token::token_exists(const account_name_type& account_name, 
+                                            research_group_id_type research_group_id) const
+{
+    const auto& idx = db_impl().get_index<research_group_token_index>().indices().get<by_owner>();
+    return idx.find(boost::make_tuple(account_name, research_group_id)) != idx.cend();
+}
+
+void dbs_research_group_token::remove_token_object(const account_object& account, 
+                                                   research_group_id_type research_group_id)
+{
+    FC_ASSERT(token_exists(account.name, research_group_id), "Token does not exist.");
+
+    const research_group_token_object& token = get_research_group_token(account.name, research_group_id);
+
+    db_impl().remove(token);
 }
 
 void dbs_research_group_token::add_share_to_research_group_token(const share_type amount, 
