@@ -584,7 +584,7 @@ block_production_condition::block_production_condition_enum witness_plugin::bloc
         // ilog("Not producing block because slot has not yet arrived");
         break;
     case block_production_condition::no_private_key:
-        ilog("Not producing block for ${scheduled_witness} because I don't have the private key for ${scheduled_key}",
+        elog("Not producing block for ${scheduled_witness} because I don't have the private key for ${scheduled_key}",
              (capture));
         break;
     case block_production_condition::low_participation:

@@ -24,6 +24,7 @@ public:
     fc::shared_string permlink;
     fc::shared_string desciption;
 
+    u_int16_t quorum_percent;
     share_type total_tokens_amount;
     flat_set<research_group_token_object> research_group_tokens;
 };

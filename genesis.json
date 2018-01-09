@@ -4,7 +4,7 @@
 	"accounts": [{
 		"name": "initdelegate",
 		"recovery_account": "",
-		"public_key": "DEIP5bgzuweaHx231escVuPVxgudSyUWdKAH7fKgxZfp3nKSirzFRa",
+		"public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ",
 		"deip_amount": 1000,
 		"sp_amount": 0
 	}, {
@@ -23,7 +23,7 @@
 
 	"witness_candidates": [{
 		"owner_name": "initdelegate",
-		"block_signing_key": "DEIP5bgzuweaHx231escVuPVxgudSyUWdKAH7fKgxZfp3nKSirzFRa"
+		"block_signing_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ"
 	}, {
 		"owner_name": "alice",
 		"block_signing_key": "DEIP76dCCDk6HVdjCZG144sHzVHReoDcjtNh7CkxSXF6TeKPW2YK2c"

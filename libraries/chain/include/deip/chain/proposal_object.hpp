@@ -26,7 +26,8 @@ public:
     fc::time_point_sec expiration_time;
     account_t creator;
     std::string data;
-    int quorum_percent;
+    u_int16_t quorum_percent;
+    share_type current_votes_amount;
 
     flat_set<account_name_type> voted_accounts;
 };
@@ -64,7 +65,7 @@ typedef multi_index_container<proposal_object,
 } // namespace deip
 
 
-FC_REFLECT(deip::chain::proposal_object, (id)(research_group_id)(action)(creation_time)(expiration_time)(creator)(data))
+FC_REFLECT(deip::chain::proposal_object, (id)(research_group_id)(action)(creation_time)(expiration_time)(creator)(data)(quorum_percent)(current_votes_amount))
 
 FC_REFLECT(deip::chain::exclude_member_proposal_data_type, (research_group_id)(name))
 

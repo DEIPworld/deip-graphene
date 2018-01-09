@@ -1473,10 +1473,21 @@ void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
     proposal_object proposal = proposal_vote_service.get_proposal(op.proposal_id);
 
     dbs_research_group_token& research_group_token_service = _db.obtain_service<dbs_research_group_token>();
-
     share_type weight = research_group_token_service.get_research_group_token(op.voter, proposal.research_group_id).amount;
 
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    share_type total_tokens_amount = research_group_service.get_research_group(proposal.research_group_id).total_tokens_amount;
+
     const proposal_vote_object& proposal_vote = proposal_vote_service.create_vote(op.voter, weight, op.proposal_id);
+
+    _db._temporary_public_impl().modify(
+            proposal, [&](proposal_object& obj) { obj.current_votes_amount += proposal_vote.weight; });
+
+
+    if (proposal.current_votes_amount / total_tokens_amount < (share_type)proposal.quorum_percent)
+    {}
+    else
+    {}
 }
 
 } // namespace chain
