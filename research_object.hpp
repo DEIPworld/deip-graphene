@@ -66,7 +66,7 @@ typedef multi_index_container<research_object,
 }
 
 FC_REFLECT(deip::chain::research_object,
-                        (id)(permlink)
+                        (id)(permlink)(discipline_ids)
             )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::reearch_object, deip::chain::research_index)
