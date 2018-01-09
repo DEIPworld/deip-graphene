@@ -19,7 +19,7 @@ namespace chain{
             c(*this);
         }
     public:
-        proposal_vote_id_type vote_id;
+        proposal_vote_id_type id;
         proposal_id_type proposal_id;
 
         fc::time_point_sec voting_time;
@@ -31,13 +31,13 @@ namespace chain{
             indexed_by<ordered_unique<tag<by_id>,
                     member<proposal_vote_object,
                             proposal_vote_id_type,
-                            &proposal_vote_object::vote_id>>>,
+                            &proposal_vote_object::id>>>,
             allocator<proposal_vote_object>>
             proposal_vote_index;
 
 } // namespace chain
 } // namespace deip
 
-FC_REFLECT(deip::chain::proposal_vote_object, (vote_id)(proposal_id)(voting_time)(voter)(vote_percent))
+FC_REFLECT(deip::chain::proposal_vote_object, (id)(proposal_id)(voting_time)(voter)(weight))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::proposal_vote_object, deip::chain::proposal_vote_index)
