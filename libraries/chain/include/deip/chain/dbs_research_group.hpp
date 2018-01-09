@@ -51,7 +51,6 @@ public:
 
     const research_group_token_object& get_research_group_token(const account_name_type account_name, 
                                                                 const research_group_id_type research_group_id) const;
-
     /** Create research_group_token object.
      *
      * @returns research group token object

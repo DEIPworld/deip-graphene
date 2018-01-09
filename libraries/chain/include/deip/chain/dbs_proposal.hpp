@@ -8,6 +8,7 @@
 
 #include <deip/chain/proposal_object.hpp>
 #include <deip/chain/account_object.hpp>
+#include <deip/chain/proposal_vote_object.hpp>
 
 namespace deip {
 namespace chain {
@@ -49,13 +50,20 @@ public:
 
     bool is_exist(proposal_id_type proposal_id);
 
-    void vote_for(const protocol::account_name_type& voter, const proposal_object& proposal);
-
     size_t get_votes(const proposal_object& proposal);
 
     bool is_expired(const proposal_object& proposal);
 
     void clear_expired_proposals();
+
+    /* Create proposal vote object
+     * @param voter - person who vote
+     * @param weight - weight of persons vote
+     * @param id - id of proposal
+     * */
+    const proposal_vote_object& create_vote(const account_t voter,
+                                            const deip::chain::share_type weight,
+                                            const proposal_id_type id);
 };
 
 } // namespace chain

@@ -358,5 +358,12 @@ void create_research_group_operation::validate() const
 {
 }
 
+void proposal_vote_operation::validate() const
+{
+    validate_account_name(voter);
+
+}
+
+
 }
 } // deip::protocol

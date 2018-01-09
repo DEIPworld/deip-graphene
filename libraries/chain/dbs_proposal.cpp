@@ -45,11 +45,6 @@ bool dbs_proposal::is_exist(proposal_id_type proposal_id)
     return proposal != nullptr;
 }
 
-void dbs_proposal::vote_for(const protocol::account_name_type& voter, const proposal_object& proposal)
-{
-    db_impl().modify(proposal, [&](proposal_object& p) { p.voted_accounts.insert(voter); });
-}
-
 size_t dbs_proposal::get_votes(const proposal_object& proposal)
 {
     return proposal.voted_accounts.size();
@@ -68,6 +63,19 @@ void dbs_proposal::clear_expired_proposals()
     {
         db_impl().remove(*proposal_expiration_index.begin());
     }
+}
+
+const proposal_vote_object& dbs_proposal::create_vote(const dbs_proposal::account_t voter,
+                                                      const deip::chain::share_type weight,
+                                                      const proposal_id_type id)
+{
+    const proposal_vote_object& new_proposal_vote = db_impl().create<proposal_vote_object>([&](proposal_vote_object& proposal_vote) {
+        proposal_vote.voter = voter;
+        proposal_vote.weight = weight;
+        proposal_vote.proposal_id = id;
+    });
+
+    return new_proposal_vote;
 }
 
 } // namespace chain

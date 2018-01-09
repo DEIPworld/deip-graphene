@@ -571,7 +571,7 @@ block_production_condition::block_production_condition_enum witness_plugin::bloc
     switch (result)
     {
     case block_production_condition::produced:
-        ilog("Generated block #${n} with timestamp ${t} at time ${c} by ${w}", (capture));
+        elog("Generated block #${n} with timestamp ${t} at time ${c} by ${w}", (capture));
         break;
     case block_production_condition::not_synced:
         // ilog("Not producing block because production is disabled until we receive a recent block (see:

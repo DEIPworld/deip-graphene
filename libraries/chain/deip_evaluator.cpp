@@ -1466,5 +1466,18 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
                                                  op.desciption);
 }
 
+void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
+{
+    dbs_proposal& proposal_vote_service = _db.obtain_service<dbs_proposal>();
+
+    proposal_object proposal = proposal_vote_service.get_proposal(op.proposal_id);
+
+    dbs_research_group_token& research_group_token_service = _db.obtain_service<dbs_research_group_token>();
+
+    share_type weight = research_group_token_service.get_research_group_token(op.voter, proposal.research_group_id).amount;
+
+    const proposal_vote_object& proposal_vote = proposal_vote_service.create_vote(op.voter, weight, op.proposal_id);
+}
+
 } // namespace chain
 } // namespace deip 

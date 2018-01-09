@@ -20,6 +20,7 @@ public:
 public:
     proposal_id_type id;
 
+    research_group_id_type research_group_id;
     action_t action;
     fc::time_point_sec creation_time;
     fc::time_point_sec expiration_time;
@@ -63,7 +64,7 @@ typedef multi_index_container<proposal_object,
 } // namespace deip
 
 
-FC_REFLECT(deip::chain::proposal_object, (id)(action)(creation_time)(expiration_time)(creator)(data))
+FC_REFLECT(deip::chain::proposal_object, (id)(research_group_id)(action)(creation_time)(expiration_time)(creator)(data))
 
 FC_REFLECT(deip::chain::exclude_member_proposal_data_type, (research_group_id)(name))
 

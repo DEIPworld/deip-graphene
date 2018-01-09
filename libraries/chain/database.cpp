@@ -1633,6 +1633,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_budget_evaluator>();
     _my->_evaluator_registry.register_evaluator<close_budget_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
+    _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>();
 }
 
 void database::set_custom_operation_interpreter(const std::string& id,
