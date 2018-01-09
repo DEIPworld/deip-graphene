@@ -639,7 +639,7 @@ bool dbs_account::is_exists(const account_name_type& account)
 {
     auto acc = db_impl().find<account_object, by_name>(account);
     
-    return acc == nullptr ? false : true;
+    return acc != nullptr;
 }
 
 }

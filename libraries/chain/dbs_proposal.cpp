@@ -42,7 +42,7 @@ void dbs_proposal::remove(const proposal_object& proposal)
 bool dbs_proposal::is_exist(proposal_id_type proposal_id)
 {
     auto proposal = db_impl().find<proposal_object, by_id>(proposal_id);
-    return (proposal == nullptr) ? true : false;
+    return proposal != nullptr;
 }
 
 void dbs_proposal::vote_for(const protocol::account_name_type& voter, const proposal_object& proposal)
@@ -57,7 +57,7 @@ size_t dbs_proposal::get_votes(const proposal_object& proposal)
 
 bool dbs_proposal::is_expired(const proposal_object& proposal)
 {
-    return (_get_now() > proposal.expiration_time) ? true : false;
+    return _get_now() > proposal.expiration_time;
 }
 
 void dbs_proposal::clear_expired_proposals()
