@@ -30,6 +30,23 @@ public:
     flat_set<account_name_type> voted_accounts;
 };
 
+struct exclude_member_proposal_data_type
+{
+    research_group_id_type research_group_id;
+    deip::protocol::account_name_type name;
+
+    exclude_member_proposal_data_type()
+    {
+    }
+
+    exclude_member_proposal_data_type(const research_group_id_type& research_group_id,
+                                      const deip::protocol::account_name_type& name)
+        : research_group_id(research_group_id),
+          name(name)
+    {
+    }
+};
+
 typedef multi_index_container<proposal_object,
                                                 indexed_by<ordered_unique<tag<by_id>, 
                                                                 member<proposal_object, 
@@ -47,5 +64,7 @@ typedef multi_index_container<proposal_object,
 
 
 FC_REFLECT(deip::chain::proposal_object, (id)(action)(creation_time)(expiration_time)(creator)(data))
+
+FC_REFLECT(deip::chain::exclude_member_proposal_data_type, (research_group_id)(name))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::proposal_object, deip::chain::proposal_index)
