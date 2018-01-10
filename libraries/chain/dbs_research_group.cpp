@@ -63,12 +63,12 @@ bool dbs_research_group_token::token_exists(const account_name_type& account_nam
     return idx.find(boost::make_tuple(account_name, research_group_id)) != idx.cend();
 }
 
-void dbs_research_group_token::remove_token_object(const account_object& account, 
+void dbs_research_group_token::remove_token_object(const account_name_type& account_name,
                                                    research_group_id_type research_group_id)
 {
-    FC_ASSERT(token_exists(account.name, research_group_id), "Token does not exist.");
+    FC_ASSERT(token_exists(account_name, research_group_id), "Token does not exist.");
 
-    const research_group_token_object& token = get_research_group_token(account.name, research_group_id);
+    const research_group_token_object& token = get_research_group_token(account_name, research_group_id);
 
     const research_group_object& research_group = db().obtain_service<dbs_research_group>().get_research_group(research_group_id);
 

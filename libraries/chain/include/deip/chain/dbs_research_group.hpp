@@ -60,7 +60,7 @@ public:
                                                                    const share_type amount,
                                                                    const account_name_type account_name);
 
-    void remove_token_object(const account_object& account, research_group_id_type research_group_id);
+    void remove_token_object(const account_name_type& account_name, research_group_id_type research_group_id);
 
     bool token_exists(const account_name_type& account_name, 
                       research_group_id_type research_group_id) const;

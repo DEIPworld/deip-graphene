@@ -6,6 +6,7 @@
 #include <fc/utf8.hpp>
 #include <fc/crypto/equihash.hpp>
 #include <fc/shared_string.hpp>
+#include <fc/io/json.hpp>
 
 namespace deip {
 namespace protocol {
