@@ -26,6 +26,21 @@ const research_group_object& dbs_research_group::create_research_group(const str
     return new_research_group;
 }
 
+void dbs_research_group::change_quorum_group_object(u_int16_t quorum_percent, research_group_id_type research_group_id)
+{
+    FC_ASSERT(group_exists(research_group_id), "Group does not exist.");
+
+    const research_group_object& research_group = db().obtain_service<dbs_research_group>().get_research_group(research_group_id);
+
+    db_impl().modify(research_group, [&](research_group_object& rg) { rg.quorum_percent = quorum_percent; });
+}
+
+bool dbs_research_group::group_exists(research_group_id_type research_group_id) const
+{
+    const auto& idx = db_impl().get_index<research_group_index>().indices().get<by_id>();
+    return idx.find(research_group_id) != idx.cend();
+}
+
 dbs_research_group_token::dbs_research_group_token(database& db)
     : _base_type(db)
 {

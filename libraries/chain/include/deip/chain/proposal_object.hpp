@@ -49,6 +49,18 @@ struct exclude_member_proposal_data_type
     }
 };
 
+struct change_quorum_proposal_data_type
+{
+    research_group_id_type research_group_id;
+    u_int16_t quorum_percent;
+
+    change_quorum_proposal_data_type(){}
+
+    change_quorum_proposal_data_type(const research_group_id_type& research_group_id,
+                                     const u_int16_t quorum_percent) : research_group_id(research_group_id),
+                                                                       quorum_percent(quorum_percent){}
+};
+
 typedef multi_index_container<proposal_object,
                                                 indexed_by<ordered_unique<tag<by_id>, 
                                                                 member<proposal_object, 
@@ -68,5 +80,7 @@ typedef multi_index_container<proposal_object,
 FC_REFLECT(deip::chain::proposal_object, (id)(research_group_id)(action)(creation_time)(expiration_time)(creator)(data)(quorum_percent)(current_votes_amount))
 
 FC_REFLECT(deip::chain::exclude_member_proposal_data_type, (research_group_id)(name))
+
+FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::proposal_object, deip::chain::proposal_index)

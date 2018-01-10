@@ -33,6 +33,10 @@ public:
      * @returns research group object
      */
     const research_group_object& create_research_group(const string permlink, const string description);
+
+    void change_quorum_group_object(u_int16_t quorum_percent, research_group_id_type research_group_id);
+
+    bool group_exists(research_group_id_type research_group_id) const;
 };
 
 class dbs_research_group_token : public dbs_base

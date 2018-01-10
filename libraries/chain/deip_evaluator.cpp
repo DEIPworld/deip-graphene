@@ -1513,6 +1513,10 @@ void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
                 break;
             }
             case deip::protocol::proposal_action_type::change_quorum: {
+                change_quorum_proposal_data_type change_quorum_data = fc::json::from_string(
+                        proposal.data).as<change_quorum_proposal_data_type>();
+                research_group_service.change_quorum_group_object(change_quorum_data.quorum_percent,
+                                                                  change_quorum_data.research_group_id);
                 break;
             }
             case deip::protocol::proposal_action_type::change_research_review_share_percent: {
