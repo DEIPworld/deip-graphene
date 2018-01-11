@@ -30,6 +30,7 @@ add_library( deip_chain
              dbs_budget.cpp
              dbs_discipline.cpp
              dbs_research.cpp
+             dbs_research_discipline_relation.cpp
 
              deip_evaluator.cpp
 
