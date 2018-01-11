@@ -26,7 +26,7 @@ public:
     *
     * @returns new vote object
     */
-    const vote_object& create_research_vote(const optional<discipline_id_type>& discipline_id,
+    const vote_object& create_research_vote(const discipline_id_type& discipline_id,
                     const account_name_type& voter,
                     const int64_t& research_id,
                     const share_type& weight,
@@ -36,7 +36,7 @@ public:
     *
     * @returns new vote object
     */
-    const vote_object& create_material_vote(const optional<discipline_id_type>& discipline_id,
+    const vote_object& create_material_vote(const discipline_id_type& discipline_id,
                                       const account_name_type& voter,
                                       const int64_t& material_id,
                                       const share_type& weight,
@@ -46,14 +46,14 @@ public:
     *
     * @returns new vote object
     */
-    const vote_object& create_review_vote(const optional<discipline_id_type>& discipline_id,
+    const vote_object& create_review_vote(const discipline_id_type& discipline_id,
                                       const account_name_type& voter,
                                       const int64_t& review_id,
                                       const share_type& weight,
                                       const time_point_sec& voting_time);
 
 private:
-    const vote_object& create_vote(const optional<discipline_id_type>& discipline_id,
+    const vote_object& create_vote(const discipline_id_type& discipline_id,
                                    const account_name_type& voter,
                                    const share_type& weight,
                                    const time_point_sec& voting_time);

@@ -61,18 +61,6 @@ typedef multi_index_container<vote_object,
                         member<vote_object,
                                 discipline_id_type,
                                 &vote_object::discipline_id>>,
-//                ordered_non_unique<tag<by_research_id>,
-//                        member<vote_object,
-//                                int64_t,
-//                                &vote_object::research_id>>,
-//                ordered_non_unique<tag<by_material_id>,
-//                        member<vote_object,
-//                                int64_t,
-//                                &vote_object::material_id>>,
-//                ordered_non_unique<tag<by_review_id>,
-//                        member<vote_object,
-//                                int64_t,
-//                                &vote_object::review_id>>,
                 ordered_non_unique<tag<by_discpline_id_voting_time>,
                         composite_key<vote_object,
                                 member<vote_object,
@@ -86,14 +74,14 @@ typedef multi_index_container<vote_object,
                                         &vote_object::id>>,
                         composite_key_compare<std::less<discipline_id_type>,
                                 std::greater<time_point_sec>,
-                                std::less<vote_id_type>>>,
+                                std::less<vote_id_type>>>>,
         allocator<vote_object>>
         vote_index;
 }
 }
 
 FC_REFLECT( deip::chain::vote_object,
-            (id)(discipline_id)(voter)(research_id)(material_id)(review_id)(amount)(weight)(voting_time)
+            (id)(discipline_id)(voter)(research_id)(material_id)(review_id)(weight)(voting_time)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::vote_object, deip::chain::vote_index )
