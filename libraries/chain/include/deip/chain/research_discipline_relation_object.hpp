@@ -38,6 +38,7 @@ public:
 
 struct by_research_id;
 struct by_discipline_id;
+struct by_research_and_discipline;
 
 typedef multi_index_container<research_discipline_relation_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -48,11 +49,18 @@ typedef multi_index_container<research_discipline_relation_object,
                         member<research_discipline_relation_object,
                                 research_id_type,
                                 &research_discipline_relation_object::research_id>>,
-                ordered_unique<tag<by_discipline_id>,
+                ordered_non_unique<tag<by_discipline_id>,
                         member<research_discipline_relation_object,
                                 discipline_id_type,
-                                &research_discipline_relation_object::discipline_id>>>,
-
+                                &research_discipline_relation_object::discipline_id>>,
+                ordered_unique<tag<by_research_and_discipline>,
+                        composite_key<research_discipline_relation_object,
+                                member<research_discipline_relation_object,
+                                        research_id_type,
+                                                &research_discipline_relation_object::research_id>,
+                                member<research_discipline_relation_object,
+                                        discipline_id_type,
+                                        &research_discipline_relation_object::discipline_id>>>>,
         allocator<research_discipline_relation_object>>
         research_discipline_relation_index;
 }
