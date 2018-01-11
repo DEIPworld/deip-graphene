@@ -30,28 +30,27 @@ public:
     }
 
     vote_id_type id;
-    optional<discipline_id_type> discipline_id;
-    account_id_type owner_id;
+    discipline_id_type discipline_id;
+    account_name_type voter;
     optional<id_type> research_id;
     optional<id_type> material_id;
     optional<id_type> review_id;
-    share_type amount;
     share_type weight;
     time_point_sec voting_time;
 };
 
 struct by_discipline_id;
 struct by_discpline_id_voting_time;
-struct by_discpline_id_voting_time_owner;
+struct by_discpline_id_voting_time_voter;
 struct by_research_id;
 struct by_research_id_voting_time;
-struct by_research_id_voting_time_owner;
+struct by_research_id_voting_time_voter;
 struct by_material_id;
 struct by_material_id_voting_time;
-struct by_material_id_voting_time_owner;
+struct by_material_id_voting_time_voter;
 struct by_review_id;
 struct by_review_id_voting_time;
-struct by_review_id_voting_time_owner;
+struct by_review_id_voting_time_voter;
 
 typedef multi_index_container<vote_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -60,20 +59,20 @@ typedef multi_index_container<vote_object,
                         &vote_object::id>>,
                 ordered_non_unique<tag<by_discipline_id>,
                         member<vote_object,
-                                optional<discipline_id_type> ,
+                                optional<discipline_id_type>,
                                 &vote_object::discipline_id>>,
-                ordered_non_unique<tag<by_research_id>,
-                        member<vote_object,
-                                optional<int64_t>,
-                                &vote_object::research_id>>,
-                ordered_non_unique<tag<by_material_id>,
-                        member<vote_object,
-                                optional<int64_t> ,
-                                &vote_object::material_id>>,
-                ordered_non_unique<tag<by_review_id>,
-                        member<vote_object,
-                                optional<int64_t> ,
-                                &vote_object::review_id>>,
+//                ordered_non_unique<tag<by_research_id>,
+//                        member<vote_object,
+//                                int64_t,
+//                                &vote_object::research_id>>,
+//                ordered_non_unique<tag<by_material_id>,
+//                        member<vote_object,
+//                                int64_t,
+//                                &vote_object::material_id>>,
+//                ordered_non_unique<tag<by_review_id>,
+//                        member<vote_object,
+//                                int64_t,
+//                                &vote_object::review_id>>,
                 ordered_non_unique<tag<by_discpline_id_voting_time>,
                         composite_key<vote_object,
                                 member<vote_object,
@@ -94,7 +93,7 @@ typedef multi_index_container<vote_object,
 }
 
 FC_REFLECT( deip::chain::vote_object,
-            (id)(discipline_id)(owner_id)(research_id)(material_id)(review_id)(amount)(weight)(voting_time)
+            (id)(discipline_id)(voter)(research_id)(material_id)(review_id)(amount)(weight)(voting_time)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::vote_object, deip::chain::vote_index )
