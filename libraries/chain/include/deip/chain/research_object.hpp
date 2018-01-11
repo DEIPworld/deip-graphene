@@ -10,8 +10,6 @@
 
 #include <boost/multi_index/composite_key.hpp>
 
-#include <deip/chain/discipline_object.hpp>
-
 #include <numeric>
 
 #include <vector>
@@ -35,8 +33,7 @@ public:
     }
 
     id_type id;
-    discipline_id_type discipline_ids;
-    vector <discipline_id_type> disciplines_ids;
+    discipline_id_type discipline_id;
     fc::shared_string name;
     fc::shared_string abstract;
 
@@ -53,24 +50,24 @@ struct by_discipline_id;
 typedef multi_index_container<research_object,
                 indexed_by<ordered_unique<tag<by_id>,
                             member<research_object,
-                                    research_id,
-                                    &research_object::id>>
-                            ordered_unique<tag<by_permlink>
+                                    research_id_type,
+                                    &research_object::id>>,
+                            ordered_unique<tag<by_permlink>,
                             member<research_object,
                                     string,
-                                    &research_object::permlink>>
+                                    &research_object::permlink>>,
                             ordered_unique<tag<by_discipline_id>,
                             member<research_object,
-                                    discipline_id,
-                                    &research_object::discipline_ids>>>,
-                                    
+                                    discipline_id_type,
+                                    &research_object::discipline_id>>>,
+
                                     allocator<research_object>>
                                     research_index;
 }
 }
 
 FC_REFLECT(deip::chain::research_object,
-                        (id)(permlink)(discipline_ids)
+                        (id)(name)(permlink)(discipline_id)(abstract)(created)(is_finished)(owned_tokens)
             )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_object, deip::chain::research_index)

@@ -1,13 +1,13 @@
 #include <deip/chain/dbs_research.hpp>
 #include <deip/chain/database.hpp>
-#include <deip/chain/dbs_base_impl.hpp>
 
-#include <tuple>
 
 namespace deip{
 namespace chain{
 
 dbs_research::dbs_research(database &db) : _base_type(db)
+{
+}
 
 
 dbs_research::research_refs_type dbs_research::get_researchs() const
