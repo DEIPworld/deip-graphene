@@ -135,8 +135,6 @@ BOOST_AUTO_TEST_CASE(update_votes_count_delta)
 
         int delta = 50;
 
-        const auto& relation = data_service.get_research_discipline_relations_by_research_and_discipline(RESEARCH_ONE, DISCIPLINE_MATH);
-
         const auto& updated_relation = data_service.update_votes_count(RESEARCH_ONE, DISCIPLINE_PHYSICS, delta);
 
         BOOST_CHECK(updated_relation.votes_count == (VOTES_COUNT + delta));
@@ -151,8 +149,6 @@ BOOST_AUTO_TEST_CASE(update_votes_count_negative_delta_expect_error)
         create_research_discipline_relations();
 
         int delta = -150;
-
-        const auto& relation = data_service.get_research_discipline_relations_by_research_and_discipline(RESEARCH_ONE, DISCIPLINE_MATH);
 
         BOOST_CHECK_THROW(data_service.update_votes_count(RESEARCH_ONE, DISCIPLINE_PHYSICS, delta), fc::assert_exception);
     }
