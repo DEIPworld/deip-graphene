@@ -10,7 +10,7 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 }
 
 
-dbs_research::research_refs_type dbs_research::get_researchs() const
+dbs_research::research_refs_type dbs_research::get_researches() const
 {
     research_refs_type ret;
 
@@ -37,7 +37,7 @@ const research_object& dbs_research::get_research_by_permlink(const string & per
     return db_impl().get<research_object, by_permlink>(permlink);
 }
 
-const research_object& dbs_research::get_research_by_discipline_id(const discipline_id_type discipline_ids) const
+const research_object& dbs_research::get_research_by_discipline_id(const discipline_id_type& discipline_ids) const
 {
     return db_impl().get<research_object, by_discipline_id>(discipline_ids);
 }
