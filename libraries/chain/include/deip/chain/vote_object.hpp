@@ -30,9 +30,9 @@ public:
     }
 
     vote_id_type id;
-    discipline_id_type discipline_id;
+    optional<discipline_id_type> discipline_id;
     account_name_type voter;
-    optional<id_type> research_id;
+    optional<research_id_type> research_id;
     optional<id_type> material_id;
     optional<id_type> review_id;
     share_type weight;
@@ -40,17 +40,30 @@ public:
 };
 
 struct by_discipline_id;
-struct by_discpline_id_voting_time;
-struct by_discpline_id_voting_time_voter;
 struct by_research_id;
-struct by_research_id_voting_time;
-struct by_research_id_voting_time_voter;
 struct by_material_id;
-struct by_material_id_voting_time;
-struct by_material_id_voting_time_voter;
 struct by_review_id;
-struct by_review_id_voting_time;
-struct by_review_id_voting_time_voter;
+struct by_voter;
+
+struct optional_discipline_id_extractor
+{
+    typedef optional<discipline_id_type> result_type;
+
+    result_type operator()(const vote_object& v) const
+    {
+        return v.discipline_id;
+    }
+};
+
+struct optional_research_id_extractor
+{
+    typedef optional<research_id_type> result_type;
+
+    result_type operator()(const vote_object& v) const
+    {
+        return v.research_id;
+    }
+};
 
 typedef multi_index_container<vote_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -58,23 +71,13 @@ typedef multi_index_container<vote_object,
                         vote_id_type,
                         &vote_object::id>>,
                 ordered_non_unique<tag<by_discipline_id>,
+                        optional_discipline_id_extractor>,
+                ordered_non_unique<tag<by_research_id>,
+                        optional_research_id_extractor>,
+                ordered_non_unique<tag<by_voter>,
                         member<vote_object,
-                                discipline_id_type,
-                                &vote_object::discipline_id>>,
-                ordered_non_unique<tag<by_discpline_id_voting_time>,
-                        composite_key<vote_object,
-                                member<vote_object,
-                                        discipline_id_type,
-                                        &vote_object::discipline_id>,
-                                member<vote_object,
-                                        time_point_sec,
-                                        &vote_object::voting_time>,
-                                member<vote_object,
-                                        vote_id_type,
-                                        &vote_object::id>>,
-                        composite_key_compare<std::less<discipline_id_type>,
-                                std::greater<time_point_sec>,
-                                std::less<vote_id_type>>>>,
+                                account_name_type,
+                                &vote_object::voter>>>,
         allocator<vote_object>>
         vote_index;
 }

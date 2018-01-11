@@ -11,7 +11,39 @@ dbs_vote::dbs_vote(database &db)
 {
 }
 
-const vote_object& dbs_vote::create_research_vote(const discipline_id_type& discipline_id,
+dbs_vote::vote_refs_type dbs_vote::get_votes_by_discipline(const optional<discipline_id_type>& discipline_id) const
+{
+    vote_refs_type ret;
+
+    auto it_pair = db_impl().get_index<vote_index>().indicies().get<by_discipline_id>().equal_range(discipline_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_vote::vote_refs_type dbs_vote::get_votes_by_research(const optional<research_id_type>& research_id) const
+{
+    vote_refs_type ret;
+
+    auto it_pair = db_impl().get_index<vote_index>().indicies().get<by_research_id>().equal_range(research_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+const vote_object& dbs_vote::create_research_vote(const optional<discipline_id_type>& discipline_id,
                                   const account_name_type& voter,
                                   const int64_t& research_id,
                                   const share_type& weight,
@@ -26,7 +58,7 @@ const vote_object& dbs_vote::create_research_vote(const discipline_id_type& disc
     return vote;
 }
 
-const vote_object& dbs_vote::create_material_vote(const discipline_id_type& discipline_id,
+const vote_object& dbs_vote::create_material_vote(const optional<discipline_id_type>& discipline_id,
                                                   const account_name_type& voter,
                                                   const int64_t& material_id,
                                                   const share_type& weight,
@@ -41,7 +73,7 @@ const vote_object& dbs_vote::create_material_vote(const discipline_id_type& disc
     return vote;
 }
 
-const vote_object& dbs_vote::create_review_vote(const discipline_id_type& discipline_id,
+const vote_object& dbs_vote::create_review_vote(const optional<discipline_id_type>& discipline_id,
                                                   const account_name_type& voter,
                                                   const int64_t& review_id,
                                                   const share_type& weight,
@@ -56,13 +88,13 @@ const vote_object& dbs_vote::create_review_vote(const discipline_id_type& discip
     return vote;
 }
 
-const vote_object& dbs_vote::create_vote(const discipline_id_type& discipline_id,
+const vote_object& dbs_vote::create_vote(const optional<discipline_id_type>& discipline_id,
                                                   const account_name_type& voter,
                                                   const share_type& weight,
                                                   const time_point_sec& voting_time)
 {
     FC_ASSERT(weight != 0, "Cannot vote with 0 weight");
-    FC_ASSERT(voting_time > db_impl().head_block_time(), "Voting time cannot be in future");
+    FC_ASSERT(voting_time <= db_impl().head_block_time(), "Voting time cannot be in future");
 
     const auto& new_vote = db_impl().create<vote_object>([&](vote_object& v) {
         v.discipline_id = discipline_id;
