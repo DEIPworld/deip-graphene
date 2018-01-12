@@ -1437,5 +1437,32 @@ void close_budget_evaluator::do_apply(const close_budget_operation& op)
     budget_service.close_budget(budget);
 }
 
+void create_research_evaluator::do_apply(const create_research_operation &op)
+{
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    account_service.check_account_existence(op.owner);
+
+    optional<string> content_permlink;
+    if (!op.content_permlink.empty())
+    {
+        content_permlink = op.content_permlink;
+    }
+
+    const auto& owner = account_service.get_account(op.owner);
+
+    // validate disciplines
+    // for each discipline create object research_discipline_relation_service
+
+    research_service.create_research(owner, op.research_id, op.research_group_id, op.authors_names,
+                                     op.discipline_ids, op.research_name, op.research_permlink,
+                                     op.research_abstract_content, op.abstract_references, op.percent_for_review);
+    
+    //Create research_token_object
+    //Create research_content_object
+}
+
 } // namespace chain
 } // namespace deip
