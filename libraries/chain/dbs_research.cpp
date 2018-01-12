@@ -10,7 +10,7 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 }
 
 const research_object& dbs_research::create(const string &name, const string &abstract, const string &permlink,
-                                            const int64_t &research_group_id, const uint8_t &percent_for_review)
+                                            const int64_t &research_group_id, const uint32_t &percent_for_review)
 {
     const auto& new_research = db_impl().create<research_object>([&](research_object& r) {
         fc::from_string(r.name, name);
@@ -47,7 +47,7 @@ const research_object& dbs_research::get_research(const research_id_type& id) co
     return db_impl().get<research_object>(id);
 }
 
-const research_object& dbs_research::get_research_by_permlink(const fc::shared_string& permlink) const
+const research_object& dbs_research::get_research_by_permlink(const string& permlink) const
 {
     return db_impl().get<research_object, by_permlink>(permlink);
 }

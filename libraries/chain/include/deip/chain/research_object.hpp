@@ -9,6 +9,7 @@
 #include <deip/chain/shared_authority.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
+#include <boost/multi_index/hashed_index.hpp>
 
 #include <numeric>
 
@@ -58,9 +59,11 @@ typedef multi_index_container<research_object,
                                     research_id_type,
                                     &research_object::id>>,
                         ordered_unique<tag<by_permlink>,
-                            member<research_object,
-                                    fc::shared_string,
-                                    &research_object::permlink>>,
+                                composite_key<research_object,
+                                        member<research_object,
+                                                fc::shared_string,
+                                                &research_object::permlink>>,
+                                composite_key_compare<fc::strcmp_less>>,
                         ordered_non_unique<tag<is_finished>,
                                 member<research_object,
                                         bool,
