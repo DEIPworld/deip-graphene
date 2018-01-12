@@ -349,5 +349,19 @@ void close_budget_operation::validate() const
 {
     validate_account_name(owner);
 }
+
+void create_research_operation::validate() const
+{
+    validate_account_name(owner);
+
+    for each (account_name_type temp in authors_names)
+        {
+            validate_account_name(temp);
+        }
+    
+    validate_permlink(research_permlink);
+
+    FC_ASSERT((percent_for_review < 51 && percent_for_review > 4), "Percent for review must be 5-50%");
+}
 }
 } // deip::protocol
