@@ -159,12 +159,12 @@ DEIP_TEST_CASE(budget_creation_limit)
 
     for (int ci = 0; ci < DEIP_LIMIT_BUDGETS_PER_OWNER; ++ci)
     {
-        BOOST_REQUIRE_NO_THROW(budget_service.create_grant(bob, BUDGET_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
+        BOOST_REQUIRE_NO_THROW(budget_service.create_grant(bob, balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
     }
 
     BOOST_CHECK(bob.balance.amount == (BOB_ACCOUNT_BUDGET - DEIP_LIMIT_BUDGETS_PER_OWNER * balance.amount));
 
-    BOOST_REQUIRE_THROW(budget_service.create_grant(bob, BUDGET_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
+    BOOST_REQUIRE_THROW(budget_service.create_grant(bob, balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
 }
 
 DEIP_TEST_CASE(get_all_budgets)
