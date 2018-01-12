@@ -135,7 +135,6 @@ BOOST_FIXTURE_TEST_SUITE(budget_transaction_check, budget_transaction_check_fixt
 //     BOOST_REQUIRE(budget.owner == "alice");
 //     // BOOST_REQUIRE(!budget.content_permlink.compare(BUDGET_CONTENT_PERMLINK));
 //     BOOST_REQUIRE(budget.balance == balance);
-//     // BOOST_REQUIRE(budget.deadline == default_deadline);
 
 //     BOOST_REQUIRE_NO_THROW(validate_database());
 // }

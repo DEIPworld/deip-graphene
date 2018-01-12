@@ -76,7 +76,6 @@ BOOST_FIXTURE_TEST_SUITE(budget_service_check, budget_service_check_fixture)
 DEIP_TEST_CASE(is_const_ref_to_same_memory)
 {
     asset balance(BUDGET_BALANCE_DEFAULT, DEIP_SYMBOL);
-    time_point_sec deadline(default_deadline);
 
     const auto& budget = budget_service.create_grant(alice, BUDGET_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE);
 
@@ -106,7 +105,6 @@ DEIP_TEST_CASE(owned_budget_creation)
 DEIP_TEST_CASE(second_owned_budget_creation)
 {
     asset balance(BUDGET_BALANCE_DEFAULT, DEIP_SYMBOL);
-    time_point_sec deadline(default_deadline);
 
     auto reqired_alice_balance = alice.balance.amount;
 
@@ -129,7 +127,6 @@ DEIP_TEST_CASE(second_owned_budget_creation)
 DEIP_TEST_CASE(owned_budget_creation_asserts)
 {
     asset balance(BUDGET_BALANCE_DEFAULT, DEIP_SYMBOL);
-    time_point_sec deadline(default_deadline);
 
     BOOST_CHECK_THROW(budget_service.create_grant(fake, BUDGET_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
 
