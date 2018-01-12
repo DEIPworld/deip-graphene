@@ -9,6 +9,22 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 {
 }
 
+const research_object& dbs_research::create(const string &name, const string &abstract, const string &permlink,
+                                            const int64_t &research_group_id, const uint8_t &percent_for_review)
+{
+    const auto& new_research = db_impl().create<research_object>([&](research_object& r) {
+        fc::from_string(r.name, name);
+        fc::from_string(r.abstract, abstract);
+        fc::from_string(r.permlink, permlink);
+        r.research_group_id = research_group_id;
+        r.percent_for_review = percent_for_review;
+        r.is_finished = false;
+        r.owned_tokens = DEIP_100_PERCENT;
+        r.created = db_impl().head_block_time();
+    });
+
+    return new_research;
+}
 
 dbs_research::research_refs_type dbs_research::get_researches() const
 {
@@ -26,19 +42,14 @@ dbs_research::research_refs_type dbs_research::get_researches() const
     return ret;
 }
 
-const research_object& dbs_research::get_research(const research_id_type id) const
+const research_object& dbs_research::get_research(const research_id_type& id) const
 {
     return db_impl().get<research_object>(id);
 }
 
-const research_object& dbs_research::get_research_by_permlink(const string & permlink) const
+const research_object& dbs_research::get_research_by_permlink(const fc::shared_string& permlink) const
 {
     return db_impl().get<research_object, by_permlink>(permlink);
-}
-
-const research_object& dbs_research::get_research_by_discipline_id(const discipline_id_type& discipline_ids) const
-{
-    return db_impl().get<research_object, by_discipline_id>(discipline_ids);
 }
 
 }

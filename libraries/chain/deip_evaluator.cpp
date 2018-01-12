@@ -1445,14 +1445,16 @@ void create_research_evaluator::do_apply(const create_research_operation &op)
     dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
+    for (const auto& author : op.authors) {
+        account_service.check_account_existence(author);
+    }
 
-    // validate disciplines
-    // for each discipline create object research_discipline_relation_service
+    const auto& research = research_service.create(op.name, op.abstract_content, op.permlink, op.research_group_id, op.percent_for_review);
 
-//    research_service.create_research(owner, op.research_id, op.research_group_id, op.authors_names,
-//                                     op.discipline_ids, op.research_name, op.research_permlink,
-//                                     op.research_abstract_content, op.abstract_references, op.percent_for_review);
-    
+    for (const auto& discipline_id : op.disciplines_ids) {
+        research_discipline_relation_service.create(research.id, discipline_id);
+    }
+
     //Create research_token_object
     //Create research_content_object
 }

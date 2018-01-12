@@ -22,13 +22,14 @@ public:
 
     using research_refs_type = std::vector<std::reference_wrapper<const research_object>>;
 
+    const research_object& create(const string& name, const string& abstract, const string& permlink,
+                                  const int64_t& research_group_id, const uint8_t& percent_for_review);
+
     research_refs_type get_researches() const;
 
-    const research_object& get_research(const research_id_type id) const;
+    const research_object& get_research(const research_id_type& id) const;
 
-    const research_object& get_research_by_permlink(const string& permlink) const;
-
-    const research_object& get_research_by_discipline_id(const discipline_id_type& discipline_ids) const;
+    const research_object& get_research_by_permlink(const fc::shared_string& permlink) const;
 };
 }
 }

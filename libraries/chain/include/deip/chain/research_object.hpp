@@ -28,38 +28,43 @@ public:
 
     template <typename Constructor, typename Allocator>
     research_object(Constructor &&c, allocator<Allocator> a)
+            : name(a)
+            ,  abstract(a)
+            ,  permlink(a)
     {
         c(*this);
     }
 
-    id_type id;
-    discipline_id_type discipline_id;
+    research_id_type id;
+    id_type research_group_id;
     fc::shared_string name;
     fc::shared_string abstract;
+    fc::shared_string permlink;
 
     time_point_sec created;
 
     bool is_finished;
-    string permlink;
+
     share_type owned_tokens;
+    share_type percent_for_review;
 };
 
 struct by_permlink;
-struct by_discipline_id;
+struct is_finished;
 
 typedef multi_index_container<research_object,
                 indexed_by<ordered_unique<tag<by_id>,
                             member<research_object,
                                     research_id_type,
                                     &research_object::id>>,
-                            ordered_unique<tag<by_permlink>,
+                        ordered_unique<tag<by_permlink>,
                             member<research_object,
-                                    string,
+                                    fc::shared_string,
                                     &research_object::permlink>>,
-                            ordered_unique<tag<by_discipline_id>,
-                            member<research_object,
-                                    discipline_id_type,
-                                    &research_object::discipline_id>>>,
+                        ordered_non_unique<tag<is_finished>,
+                                member<research_object,
+                                        bool,
+                                        &research_object::is_finished>>>,
 
                                     allocator<research_object>>
                                     research_index;
@@ -67,7 +72,7 @@ typedef multi_index_container<research_object,
 }
 
 FC_REFLECT(deip::chain::research_object,
-                        (id)(name)(permlink)(discipline_id)(abstract)(created)(is_finished)(owned_tokens)
+                        (id)(name)(research_group_id)(permlink)(abstract)(created)(is_finished)(owned_tokens)(percent_for_review)
             )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_object, deip::chain::research_index)

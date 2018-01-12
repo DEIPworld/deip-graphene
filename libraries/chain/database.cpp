@@ -19,6 +19,7 @@
 #include <deip/chain/genesis_state.hpp>
 #include <deip/chain/discipline_object.hpp>
 #include <deip/chain/research_discipline_relation_object.hpp>
+#include <deip/chain/research_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1678,6 +1679,7 @@ void database::initialize_indexes()
     add_index<budget_index>();
     add_index<discipline_index>();
     add_index<research_discipline_relation_index>();
+    add_index<research_index>();
 
     _plugin_index_signal();
 }
