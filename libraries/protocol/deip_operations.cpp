@@ -352,16 +352,16 @@ void close_budget_operation::validate() const
 
 void create_research_operation::validate() const
 {
-    validate_account_name(owner);
-
-    for each (account_name_type temp in authors_names)
-        {
-            validate_account_name(temp);
-        }
+    for (const account_name_type& author : authors)
+    {
+        validate_account_name(author);
+    }
     
-    validate_permlink(research_permlink);
+    validate_permlink(permlink);
 
-    FC_ASSERT((percent_for_review < 51 && percent_for_review > 4), "Percent for review must be 5-50%");
+    FC_ASSERT(!name.empty(), "Research name cannot be empty");
+    FC_ASSERT(disciplines_ids.size() > 0, "Research should be linked to at least 1 discipline");
+    FC_ASSERT(percent_for_review <= 50 && percent_for_review >=5, "Percent for review must be 5-50%");
 }
 }
 } // deip::protocol

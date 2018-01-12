@@ -24,7 +24,6 @@ dbs_research::research_refs_type dbs_research::get_researches() const
     }
 
     return ret;
-
 }
 
 const research_object& dbs_research::get_research(const research_id_type id) const
