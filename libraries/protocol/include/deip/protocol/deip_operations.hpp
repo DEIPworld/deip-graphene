@@ -779,6 +779,22 @@ struct close_budget_operation : public base_operation
     }
 };
 
+struct create_research_operation : public base_operation
+{   
+    account_name_type owner;
+    id_type research_id;
+    id_type research_group_id;
+    vector <account_name_type> authors_names;
+    vector <discipline_id_type> discipline_ids;
+    std::string research_name;
+    std::string research_permlink;
+    std::string research_abstract_content;
+    vector <id_type> abstract_references;
+    uint8_t percent_for_review;
+
+    void validate() const;
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -850,5 +866,16 @@ FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(deleg
 
 FC_REFLECT( deip::protocol::create_budget_operation, (owner)(content_permlink)(balance)(deadline) )
 FC_REFLECT( deip::protocol::close_budget_operation, (budget_id)(owner) )
+
+FC_REFLECT( deip::protocol::create_research_operation, (owner)
+                                                        (research_id)
+                                                        (research_group_id)
+                                                        (authors_names)
+                                                        (discipline_ids)
+                                                        (research_name)
+                                                        (research_permlink)
+                                                        (research_abstract_content)
+                                                        (abstract_references)
+                                                        (percent_for_review) )
 
 // clang-format on
