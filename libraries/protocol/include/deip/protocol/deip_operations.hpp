@@ -788,7 +788,7 @@ struct create_research_operation : public base_operation
     std::string permlink;
     std::string abstract_content;
     vector <int64_t> abstract_references;
-    uint8_t percent_for_review;
+    uint32_t percent_for_review;
 
     void validate() const;
 };

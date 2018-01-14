@@ -361,7 +361,7 @@ void create_research_operation::validate() const
 
     FC_ASSERT(!name.empty(), "Research name cannot be empty");
     FC_ASSERT(disciplines_ids.size() > 0, "Research should be linked to at least 1 discipline");
-    FC_ASSERT(percent_for_review <= 50 && percent_for_review >=5, "Percent for review must be 5-50%");
+    FC_ASSERT(percent_for_review >= 5 * DEIP_1_PERCENT && percent_for_review <= 50 * DEIP_1_PERCENT, "Percent for review must be 5-50%");
 }
 }
 } // deip::protocol
