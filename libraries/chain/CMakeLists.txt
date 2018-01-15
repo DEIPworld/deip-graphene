@@ -29,6 +29,8 @@ add_library( deip_chain
              dbs_witness.cpp
              dbs_budget.cpp
              dbs_discipline.cpp
+             dbs_expert_token.cpp
+
 
              deip_evaluator.cpp
 
