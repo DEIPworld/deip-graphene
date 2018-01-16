@@ -2,7 +2,8 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/database.hpp>
 
-#include <tuple>
+
+
 
 namespace deip {
 namespace chain {
@@ -86,6 +87,8 @@ void dbs_research_group_token::remove_token_object(const account_name_type& acco
     const research_group_token_object& token = get_research_group_token(account_name, research_group_id);
 
     const research_group_object& research_group = db().obtain_service<dbs_research_group>().get_research_group(research_group_id);
+
+
 
     db_impl().modify(research_group, [&](research_group_object& rg) { rg.total_tokens_amount -= token.amount; });
 

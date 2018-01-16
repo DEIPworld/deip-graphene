@@ -784,6 +784,7 @@ struct close_budget_operation : public base_operation
 struct proposal_create_operation : public base_operation
 {
     account_name_type creator;
+    int64_t research_group_id;
     string data; ///< must be proper utf8 / JSON string.
 
     deip::protocol::proposal_action_type action;
@@ -805,6 +806,7 @@ struct proposal_vote_operation : public base_operation
 {
     account_name_type voter;
     int64_t proposal_id;
+    int64_t research_group_id;
 
     void validate() const;
 };
@@ -882,7 +884,7 @@ FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(deleg
 FC_REFLECT( deip::protocol::create_budget_operation, (owner)(content_permlink)(balance)(deadline) )
 FC_REFLECT( deip::protocol::close_budget_operation, (budget_id)(owner) )
 
-FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(data)(action)(expiration_time)(quorum_percent) )
+FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time)(quorum_percent) )
 FC_REFLECT( deip::protocol::create_research_group_operation, (permlink)(desciption) )
-FC_REFLECT( deip::protocol::proposal_vote_operation, (voter))
+FC_REFLECT( deip::protocol::proposal_vote_operation, (voter)(proposal_id)(research_group_id))
 // clang-format on

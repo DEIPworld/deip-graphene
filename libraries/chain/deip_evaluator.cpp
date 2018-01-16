@@ -1455,7 +1455,7 @@ void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
               ("account_name", op.creator));
 
     // quorum_percent should be taken from research_group_object
-    proposal_service.create_proposal(op.action, op.data, op.creator, op.expiration_time, op.quorum_percent);
+    proposal_service.create_proposal(op.action, op.data, op.creator, op.research_group_id, op.expiration_time, op.quorum_percent);
 }
 
 void create_research_group_evaluator::do_apply(const create_research_group_operation& op)
@@ -1478,7 +1478,7 @@ void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
     share_type total_tokens_amount = research_group_service.get_research_group(proposal.research_group_id).total_tokens_amount;
 
-    const proposal_vote_object& proposal_vote = proposal_service.create_vote(op.voter, weight, op.proposal_id);
+    const proposal_vote_object& proposal_vote = proposal_service.create_vote(op.voter, weight, op.proposal_id, op.research_group_id);
 
     _db._temporary_public_impl().modify(
             proposal, [&](proposal_object& obj) { obj.current_votes_amount += proposal_vote.weight; });
@@ -1490,6 +1490,8 @@ void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
             case deip::protocol::proposal_action_type::dropout_member: {
                 exclude_member_proposal_data_type exclude_member_data = fc::json::from_string(
                         proposal.data).as<exclude_member_proposal_data_type>();
+                proposal_service.remove_proposal_votes(exclude_member_data.name,
+                                                       exclude_member_data.research_group_id);
                 research_group_token_service.remove_token_object(exclude_member_data.name,
                                                                  exclude_member_data.research_group_id);
                 break;

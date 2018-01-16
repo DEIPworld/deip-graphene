@@ -43,8 +43,9 @@ public:
     const proposal_object& create_proposal(const action_t action,
                                            const std::string json_data,
                                            const account_t initiator,
+                                           const research_group_id_type research_group_id,
                                            const fc::time_point_sec expiration_time,
-                                           const int quorum_percent);
+                                           const u_int16_t quorum_percent);
 
     void remove(const proposal_object& proposal);
 
@@ -61,9 +62,13 @@ public:
      * @param weight - weight of persons vote
      * @param id - id of proposal
      * */
+    void remove_proposal_votes(const account_name_type account_t,
+                                                  const research_group_id_type research_group_id);
+
     const proposal_vote_object& create_vote(const account_t voter,
                                             const deip::chain::share_type weight,
-                                            const proposal_id_type id);
+                                            const proposal_id_type id,
+                                            const research_group_id_type research_group_id);
 };
 
 } // namespace chain
