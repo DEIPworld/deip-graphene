@@ -16,17 +16,16 @@ const expert_token_object& dbs_expert_token::get_expert_token(const expert_token
     return db_impl().get<expert_token_object>(id);
 }
 
-std::vector<const expert_token_object> dbs_expert_token::get_expert_tokens_by_account_id(const account_id_type account_id) const
+dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_account_id(const account_id_type account_id) const
 {
-    std::vector<const expert_token_object> ret;
+    expert_token_refs_type ret;
 
     auto it_pair = db_impl().get_index<expert_token_index>().indicies().get<by_account_id>().equal_range(account_id);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
     {
-        // expert_token_object test = *it;
-        ret.push_back(*it);
+        ret.push_back(std::cref(*it));
         ++it;
     }
 
@@ -34,23 +33,21 @@ std::vector<const expert_token_object> dbs_expert_token::get_expert_tokens_by_ac
 }
 
 
-// test
-// dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_account_id(const account_id_type account_id) const
-// {
-//     expert_token_refs_type ret;
+dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const
+{
+    expert_token_refs_type ret;
 
-//     auto it_pair = db_impl().get_index<expert_token_index>().indicies().get<by_account_id>().equal_range(account_id);
-//     auto it = it_pair.first;
-//     const auto it_end = it_pair.second;
-//     while (it != it_end)
-//     {
-//         expert_token_object test = *it;
-//         ret.push_back(std::cref(*it));
-//         ++it;
-//     }
+    auto it_pair = db_impl().get_index<expert_token_index>().indicies().get<by_discipline_id>().equal_range(discipline_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
 
-//     return ret;
-// }
+    return ret;
+}
 
 
 

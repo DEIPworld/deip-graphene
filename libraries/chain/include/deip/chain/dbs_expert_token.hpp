@@ -23,23 +23,22 @@ protected:
 
 public:
 
-    //using expert_token_refs_type = std::vector<std::reference_wrapper<const expert_token_object>>;
+    using expert_token_refs_type = std::vector<std::reference_wrapper<const expert_token_object>>;
 
     /* Get expert token by id
      * @returns expert token object by its id
     */
     const expert_token_object& get_expert_token(const expert_token_id_type id) const;
 
-    /** Get expert tokens by account id
+    /* Get expert tokens by account id
     * @returns a list of all expert token objects for specific account
     */
-    std::vector<const expert_token_object> get_expert_tokens_by_account_id(const account_id_type account_id) const;
-    // expert_token_refs_type get_expert_tokens_by_account_id(const account_id_type account_id) const;
+    expert_token_refs_type get_expert_tokens_by_account_id(const account_id_type account_id) const;
 
-    // /** Get expert tokens by discipline id 
-    //  * @returns a list of all expert token objects for specific discipline
-    // */
-    // std::vector<const expert_token_object> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
+    /* Get expert tokens by discipline id 
+     * @returns a list of all expert token objects for specific discipline
+    */
+    expert_token_refs_type get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
 
 };
 } // namespace chain
