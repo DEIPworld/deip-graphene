@@ -16,11 +16,11 @@ const expert_token_object& dbs_expert_token::get_expert_token(const expert_token
     return db_impl().get<expert_token_object>(id);
 }
 
-dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_account_id(const account_id_type account_id) const
+dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_account_name(const account_name_type account_name) const
 {
     expert_token_refs_type ret;
 
-    auto it_pair = db_impl().get_index<expert_token_index>().indicies().get<by_account_id>().equal_range(account_id);
+    auto it_pair = db_impl().get_index<expert_token_index>().indicies().get<by_account_name>().equal_range(account_name);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)

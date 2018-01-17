@@ -490,7 +490,7 @@ struct expert_token_api_obj
 {
     expert_token_api_obj(const chain::expert_token_object& d)
         : id(d.id._id)
-        ,  account_id(d.account_id._id)
+        ,  account_name(d.account_name)
         ,  discipline_id(d.discipline_id._id)
         ,  amount(d.amount)
     {}
@@ -501,7 +501,7 @@ struct expert_token_api_obj
     }
 
     int64_t id;
-    int64_t account_id;
+    string account_name;
     int64_t discipline_id;
     uint32_t amount;
 };
@@ -606,7 +606,7 @@ FC_REFLECT( deip::app::discipline_api_obj,
 
 FC_REFLECT( deip::app::expert_token_api_obj,
             (id)
-            (account_id)
+            (account_name)
             (discipline_id)
             (amount)
 )

@@ -30,13 +30,13 @@ public:
     }
 
     expert_token_id_type id;
-    account_id_type account_id;
+    account_name_type account_name;
     discipline_id_type discipline_id;
     uint32_t amount = 0;
 
 };
 
-struct by_account_id;
+struct by_account_name;
 struct by_discipline_id;
 
 typedef multi_index_container<expert_token_object,
@@ -44,10 +44,10 @@ typedef multi_index_container<expert_token_object,
                     member<expert_token_object,
                            expert_token_id_type,
                            &expert_token_object::id>>,
-            ordered_non_unique<tag<by_account_id>,
+            ordered_non_unique<tag<by_account_name>,
                     member<expert_token_object,
-                           account_id_type,
-                           &expert_token_object::account_id>>,
+                           account_name_type,
+                           &expert_token_object::account_name>>,
             ordered_non_unique<tag<by_discipline_id>,
                     member<expert_token_object,
                            discipline_id_type,
@@ -58,7 +58,7 @@ typedef multi_index_container<expert_token_object,
 }
 
 FC_REFLECT( deip::chain::expert_token_object,
-            (id)(account_id)(discipline_id)(amount)
+            (id)(account_name)(discipline_id)(amount)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::expert_token_object, deip::chain::expert_token_index )

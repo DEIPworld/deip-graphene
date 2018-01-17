@@ -30,10 +30,10 @@ public:
     */
     const expert_token_object& get_expert_token(const expert_token_id_type id) const;
 
-    /* Get expert tokens by account id
+    /* Get expert tokens by account name
     * @returns a list of all expert token objects for specific account
     */
-    expert_token_refs_type get_expert_tokens_by_account_id(const account_id_type account_id) const;
+    expert_token_refs_type get_expert_tokens_by_account_name(const account_name_type account_name) const;
 
     /* Get expert tokens by discipline id 
      * @returns a list of all expert token objects for specific discipline

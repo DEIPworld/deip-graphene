@@ -384,7 +384,7 @@ public:
     // Expert Tokens //
     ///////////////////
     expert_token_api_obj get_expert_token(const expert_token_id_type id) const;
-    vector<expert_token_api_obj> get_expert_tokens_by_account_id(const account_id_type account_id) const;
+    vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_name_type account_name) const;
     vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
 
 
@@ -520,7 +520,7 @@ FC_API(deip::app::database_api,
 
    // Expert Tokens
    (get_expert_token)
-   (get_expert_tokens_by_account_id)
+   (get_expert_tokens_by_account_name)
    (get_expert_tokens_by_discipline_id)
 )
 

@@ -219,15 +219,18 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
 
     for (auto& expert_token : expert_tokens)
     {
-        FC_ASSERT(!expert_token.account_name.empty(), "Expertise 'account_name' must not be empty.");
-        FC_ASSERT(expert_token.discipline_id != 0,  "Expertise 'discipline_id' must not be empty.");
-        FC_ASSERT(expert_token.amount != 0,  "Expertise 'amount' must not be equal to 0 for genesis state.");
+        FC_ASSERT(!expert_token.account_name.empty(), "Expertise token 'account_name' must not be empty.");
+        FC_ASSERT(expert_token.discipline_id != 0,  "Expertise token 'discipline_id' must not be empty.");
+        FC_ASSERT(expert_token.amount != 0,  "Expertise token 'amount' must not be equal to 0 for genesis state.");
 
         auto account = get<account_object, by_name>(expert_token.account_name);
-        auto discipline = get<discipline_object, by_id>(expert_token.discipline_id);
+        FC_ASSERT(account.name == expert_token.account_name); // verify that account exists
+
+        auto discipline = get<discipline_object, by_id>(expert_token.discipline_id); // verify that discipline exists
+        FC_ASSERT(discipline.id._id == expert_token.discipline_id); // verify that discipline exists
 
         create<expert_token_object>([&](expert_token_object& d) {
-            d.account_id = account.id._id;
+            d.account_name = account.name;
             d.discipline_id = discipline.id._id;
             d.amount = expert_token.amount;
         });

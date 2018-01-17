@@ -21,28 +21,28 @@ public:
     {
         db.create<expert_token_object>([&](expert_token_object& d) {
             d.id = 1;
-            d.account_id = 111;
+            d.account_name = "alice";
             d.discipline_id = 1111;
             d.amount = 100;
         });
 
         db.create<expert_token_object>([&](expert_token_object& d) {
             d.id = 2;
-            d.account_id = 222;
+            d.account_name = "bob";
             d.discipline_id = 2222;
             d.amount = 200;
         });
 
         db.create<expert_token_object>([&](expert_token_object& d) {
             d.id = 3;
-            d.account_id = 111;
+            d.account_name = "alice";
             d.discipline_id = 3333;
             d.amount = 300;
         });
 
         db.create<expert_token_object>([&](expert_token_object& d) {
             d.id = 4;
-            d.account_id = 444;
+            d.account_name = "john";
             d.discipline_id = 1111;
             d.amount = 150;
         });
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(get_expert_token_by_id)
         auto token = data_service.get_expert_token(2);
 
         BOOST_CHECK(token.id == 2);
-        BOOST_CHECK(token.account_id == 222);
+        BOOST_CHECK(token.account_name == "bob");
         BOOST_CHECK(token.discipline_id == 2222);
         BOOST_CHECK(token.amount == 200);
     }
@@ -80,33 +80,33 @@ BOOST_AUTO_TEST_CASE(throw_on_get_expert_token_by_non_existing_id)
 }
 
 
-BOOST_AUTO_TEST_CASE(get_expert_tokens_vector_by_account_id)
+BOOST_AUTO_TEST_CASE(get_expert_tokens_vector_by_account_name)
 {
     try
     {
         create_expert_tokens();
-        auto expert_tokens = data_service.get_expert_tokens_by_account_id(111);
+        auto expert_tokens = data_service.get_expert_tokens_by_account_name("alice");
 
         BOOST_CHECK(expert_tokens.size() == 2);
-        BOOST_CHECK(true == std::any_of(expert_tokens.begin(), expert_tokens.end(), [](std::reference_wrapper<const expert_token_object> wrapper){
+        BOOST_CHECK(std::any_of(expert_tokens.begin(), expert_tokens.end(), [](std::reference_wrapper<const expert_token_object> wrapper){
             const expert_token_object &token = wrapper.get();
-            return token.id == 1 && token.account_id == 111 && token.discipline_id == 1111 && token.amount == 100;
+            return token.id == 1 && token.account_name == "alice" && token.discipline_id == 1111 && token.amount == 100;
         }));
-        BOOST_CHECK(true == std::any_of(expert_tokens.begin(), expert_tokens.end(), [](std::reference_wrapper<const expert_token_object> wrapper){
+        BOOST_CHECK(std::any_of(expert_tokens.begin(), expert_tokens.end(), [](std::reference_wrapper<const expert_token_object> wrapper){
             const expert_token_object &token = wrapper.get();
-            return token.id == 3 && token.account_id == 111 && token.discipline_id == 3333 && token.amount == 300;
+            return token.id == 3 && token.account_name == "alice" && token.discipline_id == 3333 && token.amount == 300;
         }));
     }
     FC_LOG_AND_RETHROW()
 }
 
 
-BOOST_AUTO_TEST_CASE(get_empty_expert_tokens_vector_by_account_id)
+BOOST_AUTO_TEST_CASE(get_empty_expert_tokens_vector_by_account_name)
 {
     try
     {
         create_expert_tokens();
-        auto expert_tokens = data_service.get_expert_tokens_by_account_id(121);
+        auto expert_tokens = data_service.get_expert_tokens_by_account_name("somebody");
 
         BOOST_CHECK(expert_tokens.size() == 0);
     }
@@ -122,13 +122,13 @@ BOOST_AUTO_TEST_CASE(get_expert_tokens_vector_by_discipline_id)
         auto expert_tokens = data_service.get_expert_tokens_by_discipline_id(1111);
 
         BOOST_CHECK(expert_tokens.size() == 2);
-        BOOST_CHECK(true == std::any_of(expert_tokens.begin(), expert_tokens.end(), [](std::reference_wrapper<const expert_token_object> wrapper){
+        BOOST_CHECK(std::any_of(expert_tokens.begin(), expert_tokens.end(), [](std::reference_wrapper<const expert_token_object> wrapper){
             const expert_token_object &token = wrapper.get();
-            return token.id == 1 && token.account_id == 111 && token.discipline_id == 1111 && token.amount == 100;
+            return token.id == 1 && token.account_name == "alice" && token.discipline_id == 1111 && token.amount == 100;
         }));
-        BOOST_CHECK(true == std::any_of(expert_tokens.begin(), expert_tokens.end(), [](std::reference_wrapper<const expert_token_object> wrapper){
+        BOOST_CHECK(std::any_of(expert_tokens.begin(), expert_tokens.end(), [](std::reference_wrapper<const expert_token_object> wrapper){
             const expert_token_object &token = wrapper.get();
-            return token.id == 4 && token.account_id == 444 && token.discipline_id == 1111 && token.amount == 150;
+            return token.id == 4 && token.account_name == "john" && token.discipline_id == 1111 && token.amount == 150;
         }));
     }
     FC_LOG_AND_RETHROW()
