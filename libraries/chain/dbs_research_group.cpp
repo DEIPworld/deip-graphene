@@ -59,7 +59,7 @@ const research_group_token_object& dbs_research_group_token::get_research_group_
 const research_group_token_object& dbs_research_group_token::create_research_group_token(const research_group_id_type research_group_id,
                                                                                          const share_type amount,
                                                                                          const account_name_type account_name) {
-    const research_group_token_object& new_research_group_token = (const research_group_token_object &) db_impl().create<research_group_token_object>([&](research_group_token_object& research_group_token) {
+    const research_group_token_object& new_research_group_token = db_impl().create<research_group_token_object>([&](research_group_token_object& research_group_token) {
                 research_group_token.research_group = research_group_id;
                 research_group_token.amount = amount;
                 research_group_token.owner = account_name;
@@ -82,13 +82,11 @@ bool dbs_research_group_token::token_exists(const account_name_type& account_nam
 void dbs_research_group_token::remove_token_object(const account_name_type& account_name,
                                                    research_group_id_type research_group_id)
 {
-    FC_ASSERT(token_exists(account_name, research_group_id), "Token does not exist.");
+    FC_ASSERT(token_exists(account_name, research_group_id), "Token does not exist");
 
     const research_group_token_object& token = get_research_group_token(account_name, research_group_id);
 
     const research_group_object& research_group = db().obtain_service<dbs_research_group>().get_research_group(research_group_id);
-
-
 
     db_impl().modify(research_group, [&](research_group_object& rg) { rg.total_tokens_amount -= token.amount; });
 

@@ -1488,8 +1488,12 @@ void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
     {
         switch (proposal.action) {
             case deip::protocol::proposal_action_type::dropout_member: {
-                exclude_member_proposal_data_type exclude_member_data = fc::json::from_string(
-                        proposal.data).as<exclude_member_proposal_data_type>();
+                member_proposal_data_type exclude_member_data = fc::json::from_string(
+                        proposal.data).as<member_proposal_data_type>();
+                dbs_account& account_service = _db.obtain_service<dbs_account>();
+                account_service.check_account_existence(exclude_member_data.name);
+                FC_ASSERT(research_group_token_service.token_exists(exclude_member_data.name, exclude_member_data.research_group_id),
+                                                                    "Token does not exist.");
                 proposal_service.remove_proposal_votes(exclude_member_data.name,
                                                        exclude_member_data.research_group_id);
                 research_group_token_service.remove_token_object(exclude_member_data.name,
@@ -1497,6 +1501,12 @@ void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
                 break;
             }
             case deip::protocol::proposal_action_type::invite_member: {
+                member_proposal_data_type include_member_data = fc::json::from_string(
+                        proposal.data).as<member_proposal_data_type>();
+                dbs_account& account_service = _db.obtain_service<dbs_account>();
+                account_service.check_account_existence(include_member_data.name);
+                FC_ASSERT(research_group_service.group_exists(include_member_data.research_group_id), "Group does not exist.");
+                research_group_token_service.create_research_group_token(include_member_data.research_group_id, 100, include_member_data.name);
                 break;
             }
             case deip::protocol::proposal_action_type::start_new_research: {
@@ -1517,6 +1527,7 @@ void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
             case deip::protocol::proposal_action_type::change_quorum: {
                 change_quorum_proposal_data_type change_quorum_data = fc::json::from_string(
                         proposal.data).as<change_quorum_proposal_data_type>();
+                FC_ASSERT(research_group_service.group_exists(change_quorum_data.research_group_id), "Group does not exist.");
                 research_group_service.change_quorum_group_object(change_quorum_data.quorum_percent,
                                                                   change_quorum_data.research_group_id);
                 break;
