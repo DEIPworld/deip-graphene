@@ -77,5 +77,18 @@
         "name": "Law",
         "votes_in_last_ten_weeks": 5,
         "parent_id": 0
+    }],
+    "expert_tokens": [{
+        "account_name": "alice",
+        "discipline_id": 4,
+        "amount": 5000
+    }, {
+        "account_name": "alice",
+        "discipline_id": 6,
+        "amount": 5000
+    }, {
+        "account_name": "bob",
+        "discipline_id": 1,
+        "amount": 10000
     }]
 }

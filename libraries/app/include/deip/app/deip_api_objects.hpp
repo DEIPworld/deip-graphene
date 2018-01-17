@@ -9,6 +9,7 @@
 #include <deip/chain/witness_objects.hpp>
 #include <deip/chain/budget_objects.hpp>
 #include <deip/chain/discipline_object.hpp>
+#include <deip/chain/expert_token_object.hpp>
 
 #include <deip/tags/tags_plugin.hpp>
 
@@ -485,6 +486,26 @@ struct discipline_api_obj
     share_type votes_in_last_ten_weeks;
 };
 
+struct expert_token_api_obj
+{
+    expert_token_api_obj(const chain::expert_token_object& d)
+        : id(d.id._id)
+        ,  account_id(d.account_id._id)
+        ,  discipline_id(d.discipline_id._id)
+        ,  amount(d.amount)
+    {}
+
+    // because fc::variant require for temporary object
+    expert_token_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t account_id;
+    int64_t discipline_id;
+    uint32_t amount;
+};
+
 } // namespace app
 } // namespace deip
 
@@ -581,6 +602,13 @@ FC_REFLECT( deip::app::discipline_api_obj,
             (parent_id)
             (name)
             (votes_in_last_ten_weeks)
+)
+
+FC_REFLECT( deip::app::expert_token_api_obj,
+            (id)
+            (account_id)
+            (discipline_id)
+            (amount)
 )
 
 // clang-format on

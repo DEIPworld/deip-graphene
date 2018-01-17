@@ -42,8 +42,7 @@ struct genesis_state_type
 
     struct expert_token_type
     {
-        dc::expert_token_id_type id;
-        dc::account_id_type account_id;
+        std::string account_name;
         dc::discipline_id_type discipline_id;
         uint32_t amount;
     };
@@ -97,8 +96,7 @@ FC_REFLECT(deip::chain::genesis_state_type::discipline_type,
            (parent_id))
 
 FC_REFLECT(deip::chain::genesis_state_type::expert_token_type,
-           (id)
-           (account_id)
+           (account_name)
            (discipline_id)
            (amount))
 

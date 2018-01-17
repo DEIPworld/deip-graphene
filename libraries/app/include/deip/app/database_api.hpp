@@ -379,6 +379,15 @@ public:
     discipline_api_obj get_discipline_by_name(const discipline_name_type name) const;
     vector<discipline_api_obj> get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
 
+
+    ///////////////////
+    // Expert Tokens //
+    ///////////////////
+    expert_token_api_obj get_expert_token(const expert_token_id_type id) const;
+    vector<expert_token_api_obj> get_expert_tokens_by_account_id(const account_id_type account_id) const;
+    vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
+
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -508,6 +517,11 @@ FC_API(deip::app::database_api,
    (get_discipline)
    (get_discipline_by_name)
    (get_disciplines_by_parent_id)
+
+   // Expert Tokens
+   (get_expert_token)
+   (get_expert_tokens_by_account_id)
+   (get_expert_tokens_by_discipline_id)
 )
 
 // clang-format on

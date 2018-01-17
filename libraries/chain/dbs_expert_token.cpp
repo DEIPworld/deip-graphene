@@ -50,23 +50,5 @@ dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_
 }
 
 
-
-
-// std::vector<const expert_token_object> dbs_expert_token::get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const
-// {
-//     std::vector<const expert_token_object> ret;
-
-//     auto it_pair = db_impl().get_index<expert_token_index>().indicies().get<by_discipline_id>().equal_range(discipline_id);
-//     auto it = it_pair.first;
-//     const auto it_end = it_pair.second;
-//     while (it != it_end)
-//     {
-//         ret.push_back(*it);
-//         ++it;
-//     }
-
-//     return ret;
-// }
-
 } //namespace chain
 } //namespace deip
