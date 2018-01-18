@@ -29,17 +29,17 @@ const research_group_object& dbs_research_group::create_research_group(const str
 
 void dbs_research_group::change_quorum_group_object(u_int16_t quorum_percent, research_group_id_type research_group_id)
 {
-    FC_ASSERT(group_exists(research_group_id), "Group does not exist.");
+    group_exists(research_group_id);
 
     const research_group_object& research_group = db().obtain_service<dbs_research_group>().get_research_group(research_group_id);
 
     db_impl().modify(research_group, [&](research_group_object& rg) { rg.quorum_percent = quorum_percent; });
 }
 
-bool dbs_research_group::group_exists(research_group_id_type research_group_id) const
+void dbs_research_group::group_exists(research_group_id_type research_group_id) const
 {
     const auto& idx = db_impl().get_index<research_group_index>().indices().get<by_id>();
-    return idx.find(research_group_id) != idx.cend();
+    FC_ASSERT(idx.find(research_group_id) != idx.cend(), "Group \"${1}\" does not exist.", ("1", research_group_id));
 }
 
 dbs_research_group_token::dbs_research_group_token(database& db)
@@ -72,17 +72,19 @@ const research_group_token_object& dbs_research_group_token::create_research_gro
     return new_research_group_token;
 }
 
-bool dbs_research_group_token::token_exists(const account_name_type& account_name, 
+void dbs_research_group_token::token_exists(const account_name_type& account_name,
                                             research_group_id_type research_group_id) const
 {
     const auto& idx = db_impl().get_index<research_group_token_index>().indices().get<by_owner>();
-    return idx.find(boost::make_tuple(account_name, research_group_id)) != idx.cend();
+
+    FC_ASSERT(idx.find(boost::make_tuple(account_name, research_group_id)) != idx.cend(), "Account \"${1}\" does not exist in \"${2}\" group.",
+              ("1", account_name)("2", research_group_id));
 }
 
 void dbs_research_group_token::remove_token_object(const account_name_type& account_name,
                                                    research_group_id_type research_group_id)
 {
-    FC_ASSERT(token_exists(account_name, research_group_id), "Token does not exist");
+    token_exists(account_name, research_group_id);
 
     const research_group_token_object& token = get_research_group_token(account_name, research_group_id);
 
