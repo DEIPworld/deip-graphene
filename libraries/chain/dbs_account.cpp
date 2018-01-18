@@ -635,12 +635,5 @@ const account_object& dbs_account::get_account(const account_id_type& account_id
     return db_impl().get<account_object, by_id>(account_id);
 }
 
-bool dbs_account::is_exists(const account_name_type& account)
-{
-    auto acc = db_impl().find<account_object, by_name>(account);
-    
-    return acc != nullptr;
-}
-
 }
 }

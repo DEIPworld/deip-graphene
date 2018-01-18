@@ -419,6 +419,7 @@ protected:
     void update_last_irreversible_block();
     void clear_expired_transactions();
     void clear_expired_delegations();
+    void clear_expired_proposals();
     void process_header_extensions(const signed_block& next_block);
 
     void init_hardforks(fc::time_point_sec genesis_time);
