@@ -1906,7 +1906,7 @@ void database::_apply_block(const signed_block& next_block)
         expire_escrow_ratification();
         process_decline_voting_rights();
 
-        this->obtain_service<dbs_proposal>().clear_expired_proposals();
+        clear_expired_proposals();
 
         process_hardforks();
 
@@ -2288,6 +2288,12 @@ void database::clear_expired_delegations()
         remove(*itr);
         itr = delegations_by_exp.begin();
     }
+}
+
+void database::clear_expired_proposals()
+{
+    auto& proposal_service = obtain_service<dbs_proposal>();
+    proposal_service.clear_expired_proposals();
 }
 
 void database::adjust_balance(const account_object& a, const asset& delta)

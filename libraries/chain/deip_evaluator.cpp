@@ -1447,12 +1447,13 @@ void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
     const uint32_t _lifetime_min = DAYS_TO_SECONDS(1);
     const uint32_t _lifetime_max = DAYS_TO_SECONDS(10);
 
-    FC_ASSERT((op.expiration_time.sec_since_epoch() - fc::time_point_sec().sec_since_epoch() <= _lifetime_max && op.expiration_time.sec_since_epoch() - fc::time_point_sec().sec_since_epoch() >= _lifetime_min),
+    auto sec_till_expiration = op.expiration_time.sec_since_epoch() - fc::time_point_sec().sec_since_epoch();
+
+    FC_ASSERT(sec_till_expiration <= _lifetime_max && sec_till_expiration >= _lifetime_min,
              "Proposal life time is not in range of ${min} - ${max} seconds.",
              ("min", _lifetime_min)("max", _lifetime_max));
 
-    FC_ASSERT(account_service.is_exists(op.creator), "Account \"${account_name}\" must exist.",
-              ("account_name", op.creator));
+    account_service.check_account_existence(op.creator);
 
     // quorum_percent should be taken from research_group_object
     proposal_service.create_proposal(op.action, op.data, op.creator, op.research_group_id, op.expiration_time, op.quorum_percent);
