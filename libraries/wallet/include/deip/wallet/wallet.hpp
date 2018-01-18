@@ -978,16 +978,17 @@ public:
      *  @warning The owner account must have sufficient balance for budget
      *
      *  @param budget_owner the future owner of creating budget
-     *  @param content_permlink the budget target identity (post or other)
      *  @param balance
-     *  @param deadline the deadline time to close budget (even if there is rest of balance)
      *  @param broadcast
+     *  @param start_block
+     *  @param end_block
+     *  @param target_discipline
      */
     annotated_signed_transaction create_budget(const std::string& budget_owner,
                                                const asset& balance,
                                                const uint32_t& start_block,
-                                               const uint32_t& enf_block,
-                                               const discipline_id_type& target_discipline,
+                                               const uint32_t& end_block,
+                                               const discipline_name_type& target_discipline,
                                                const bool broadcast);
 
 public:

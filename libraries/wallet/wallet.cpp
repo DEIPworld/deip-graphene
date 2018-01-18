@@ -2488,8 +2488,8 @@ annotated_signed_transaction wallet_api::create_budget(const std::string& budget
                                                const asset& balance,
                                                const uint32_t& start_block,
                                                const uint32_t& end_block,
-                                               const discipline_id_type& target_discipline,
-                                               const bool broadcast);
+                                               const discipline_name_type& target_discipline,
+                                               const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
