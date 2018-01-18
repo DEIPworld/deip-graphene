@@ -32,7 +32,7 @@ public:
     expert_token_id_type id;
     account_name_type account_name;
     discipline_id_type discipline_id;
-    uint32_t amount = 0;
+    share_type amount = 0;
 
 };
 

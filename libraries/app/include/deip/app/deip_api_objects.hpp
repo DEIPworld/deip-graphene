@@ -503,7 +503,7 @@ struct expert_token_api_obj
     int64_t id;
     string account_name;
     int64_t discipline_id;
-    uint32_t amount;
+    share_type amount;
 };
 
 } // namespace app
