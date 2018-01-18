@@ -20,6 +20,7 @@
 
 #include <deip/chain/dbs_budget.hpp>
 #include <deip/chain/dbs_discipline.hpp>
+#include <deip/chain/dbs_expert_token.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
@@ -79,6 +80,12 @@ public:
     vector<discipline_api_obj> get_all_disciplines() const;
     discipline_api_obj get_discipline(const discipline_id_type id) const;
     discipline_api_obj get_discipline_by_name(const discipline_name_type name) const;
+
+    //Expert tokens
+    expert_token_api_obj get_expert_token(const expert_token_id_type id) const;
+    vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_id_type account_id) const;
+    vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
+
 
     // signal handlers
     void on_applied_block(const chain::signed_block& b);
@@ -2193,6 +2200,47 @@ vector<discipline_api_obj> database_api::get_disciplines_by_parent_id(const disc
 
         for (const chain::discipline_object &discipline : disciplines) {
             results.push_back(discipline_api_obj(discipline));
+        }
+
+        return results;
+    });
+}
+
+expert_token_api_obj database_api::get_expert_token(const expert_token_id_type id) const
+{
+      return my->_db.with_read_lock([&]() {
+        chain::dbs_expert_token &expert_token_service = my->_db.obtain_service<chain::dbs_expert_token>();
+        auto expert_token = expert_token_service.get_expert_token(id);
+        return expert_token_api_obj(expert_token);
+    });
+}
+
+vector<expert_token_api_obj> database_api::get_expert_tokens_by_account_name(const account_name_type account_name) const
+{
+      return my->_db.with_read_lock([&]() {
+        vector<expert_token_api_obj> results;
+
+        chain::dbs_expert_token &expert_token_service = my->_db.obtain_service<chain::dbs_expert_token>();
+        auto expert_tokens = expert_token_service.get_expert_tokens_by_account_name(account_name);
+
+        for (const chain::expert_token_object &expert_token : expert_tokens) {
+            results.push_back(expert_token_api_obj(expert_token));
+        }
+
+        return results;
+    });
+}
+
+vector<expert_token_api_obj> database_api::get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const
+{
+      return my->_db.with_read_lock([&]() {
+        vector<expert_token_api_obj> results;
+
+        chain::dbs_expert_token &expert_token_service = my->_db.obtain_service<chain::dbs_expert_token>();
+        auto expert_tokens = expert_token_service.get_expert_tokens_by_discipline_id(discipline_id);
+
+        for (const chain::expert_token_object &expert_token : expert_tokens) {
+            results.push_back(expert_token_api_obj(expert_token));
         }
 
         return results;
