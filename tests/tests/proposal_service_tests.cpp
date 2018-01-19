@@ -54,6 +54,32 @@ public:
         });
     }
 
+    void create_proposal_votes()
+    {
+        db.create<proposal_vote_object>([&](proposal_vote_object& d) {
+            d.id = 1;
+            d.voter = "alice";
+            d.weight = 50;
+            d.proposal_id = 1;
+            d.research_group_id = 3;
+        });
+
+        db.create<proposal_vote_object>([&](proposal_vote_object& d) {
+            d.id = 2;
+            d.voter = "alice";
+            d.weight = 50;
+            d.proposal_id = 2;
+            d.research_group_id = 3;
+        });
+
+        db.create<proposal_vote_object>([&](proposal_vote_object& d) {
+            d.id = 3;
+            d.voter = "bob";
+            d.weight = 60;
+            d.proposal_id = 1;
+            d.research_group_id = 2;
+        });
+    }
     dbs_proposal& data_service;
 };
 
@@ -110,10 +136,10 @@ BOOST_AUTO_TEST_CASE(remove_proposal)
  {
      try
      {
-         /*create_proposals();
-         auto proposal =  db.get<proposal_object, by_id>(2);
+         create_proposals();
+         auto& proposal =  db.get<proposal_object, by_id>(2);
          BOOST_CHECK_NO_THROW(data_service.remove(proposal));
-         BOOST_CHECK_THROW((db.get<proposal_object, by_id>(2)), boost::exception);*/
+         BOOST_CHECK_THROW((db.get<proposal_object, by_id>(2)), boost::exception);
      }
      FC_LOG_AND_RETHROW()
  }
@@ -126,6 +152,34 @@ BOOST_AUTO_TEST_CASE(clear_expired_proposals)
 
          BOOST_CHECK_NO_THROW(data_service.clear_expired_proposals());
          BOOST_CHECK_THROW((db.get<proposal_object, by_id>(2)), boost::exception);
+
+     }
+     FC_LOG_AND_RETHROW()
+ }
+
+BOOST_AUTO_TEST_CASE(create_proposal_votes)
+ {
+     try
+     {
+         const proposal_vote_object& proposal_vote = data_service.create_vote("alice", 55, 1, 2);
+
+         BOOST_CHECK(proposal_vote.voter == "alice");
+         BOOST_CHECK(proposal_vote.weight == 55);
+         BOOST_CHECK(proposal_vote.proposal_id == 1);
+         BOOST_CHECK(proposal_vote.research_group_id == 2);
+
+     }
+     FC_LOG_AND_RETHROW()
+ }
+
+BOOST_AUTO_TEST_CASE(remove_proposal_votes)
+ {
+     try
+     {
+         create_proposal_votes();
+
+         BOOST_CHECK_NO_THROW(data_service.remove_proposal_votes("alice", 3));
+         BOOST_CHECK_THROW((db.get<proposal_vote_object, by_voter>(boost::make_tuple("alice", 3))), boost::exception);
 
      }
      FC_LOG_AND_RETHROW()

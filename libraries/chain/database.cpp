@@ -1681,6 +1681,7 @@ void database::initialize_indexes()
     add_index<vesting_delegation_expiration_index>();
     add_index<budget_index>();
     add_index<proposal_index>();
+    add_index<proposal_vote_index>();
     add_index<research_group_index>();
     add_index<research_group_token_index>();
     add_index<discipline_index>();

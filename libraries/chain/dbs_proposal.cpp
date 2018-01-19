@@ -47,11 +47,6 @@ void dbs_proposal::check_proposal_existance(proposal_id_type proposal_id) const
     FC_ASSERT(proposal.find(proposal_id) != proposal.cend(), "Proposal \"${1}\" does not exist.", ("1", proposal_id));
 }
 
-size_t dbs_proposal::get_votes(const proposal_object& proposal)
-{
-    return proposal.voted_accounts.size();
-}
-
 bool dbs_proposal::is_expired(const proposal_object& proposal)
 {
     return _get_now() > proposal.expiration_time;

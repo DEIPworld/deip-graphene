@@ -51,8 +51,6 @@ public:
 
     void check_proposal_existance(proposal_id_type proposal_id) const;
 
-    size_t get_votes(const proposal_object& proposal);
-
     bool is_expired(const proposal_object& proposal);
 
     void clear_expired_proposals();
