@@ -65,7 +65,8 @@ enum object_type
     research_group_object_type,
     research_group_token_object_type,
     discipline_object_type,
-    proposal_vote_object_type
+    proposal_vote_object_type,
+    expert_token_object_type
 };
 
 class dynamic_global_property_object;
@@ -99,6 +100,7 @@ class research_group_object;
 class research_group_token_object;
 class discipline_object;
 class proposal_vote_object;
+class expert_token_object;
 
 typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
 typedef oid<chain_property_object> chain_property_id_type;
@@ -131,6 +133,8 @@ typedef oid<research_group_object> research_group_id_type;
 typedef oid<research_group_token_object> research_group_token_id_type;
 typedef oid<discipline_object> discipline_id_type;
 typedef oid<proposal_vote_object> proposal_vote_id_type;
+typedef oid<expert_token_object> expert_token_id_type;
+
 
 enum bandwidth_type
 {
@@ -175,6 +179,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (research_group_token_object_type)
                  (discipline_object_type)
                  (proposal_vote_object_type)
+                 (expert_token_object_type)                 
                  )
 
 FC_REFLECT_ENUM( deip::chain::bandwidth_type, (post)(forum)(market) )

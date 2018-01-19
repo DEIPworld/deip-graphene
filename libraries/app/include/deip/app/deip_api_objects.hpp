@@ -10,6 +10,7 @@
 #include <deip/chain/budget_objects.hpp>
 #include <deip/chain/proposal_object.hpp>
 #include <deip/chain/discipline_object.hpp>
+#include <deip/chain/expert_token_object.hpp>
 
 #include <deip/tags/tags_plugin.hpp>
 
@@ -174,9 +175,6 @@ struct account_api_obj
         , voting_power(a.voting_power)
         , last_vote_time(a.last_vote_time)
         , balance(a.balance)
-        , reward_deip_balance(a.reward_deip_balance)
-        , reward_vesting_balance(a.reward_vesting_balance)
-        , reward_vesting_deip(a.reward_vesting_deip)
         , curation_rewards(a.curation_rewards)
         , posting_rewards(a.posting_rewards)
         , vesting_shares(a.vesting_shares)
@@ -260,10 +258,6 @@ struct account_api_obj
     time_point_sec last_vote_time;
 
     asset balance;
-
-    asset reward_deip_balance;
-    asset reward_vesting_balance;
-    asset reward_vesting_deip;
 
     share_type curation_rewards;
     share_type posting_rewards;
@@ -493,6 +487,26 @@ struct discipline_api_obj
     share_type votes_in_last_ten_weeks;
 };
 
+struct expert_token_api_obj
+{
+    expert_token_api_obj(const chain::expert_token_object& d)
+        : id(d.id._id)
+        ,  account_name(d.account_name)
+        ,  discipline_id(d.discipline_id._id)
+        ,  amount(d.amount)
+    {}
+
+    // because fc::variant require for temporary object
+    expert_token_api_obj()
+    {
+    }
+
+    int64_t id;
+    string account_name;
+    int64_t discipline_id;
+    share_type amount;
+};
+
 } // namespace app
 } // namespace deip
 
@@ -516,7 +530,6 @@ FC_REFLECT( deip::app::account_api_obj,
              (owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)(recovery_account)(last_account_recovery)
              (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
              (balance)
-             (reward_deip_balance)(reward_vesting_balance)(reward_vesting_deip)
              (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)
@@ -590,6 +603,13 @@ FC_REFLECT( deip::app::discipline_api_obj,
             (parent_id)
             (name)
             (votes_in_last_ten_weeks)
+)
+
+FC_REFLECT( deip::app::expert_token_api_obj,
+            (id)
+            (account_name)
+            (discipline_id)
+            (amount)
 )
 
 // clang-format on

@@ -194,7 +194,7 @@ deip. Until then, this will allow you to install boost 1.60.0.
 
 ### Clone the Repository
 
-    git clone https://gitlab.deip.com/blockchain/node.git
+    git clone https://gitlab.com/DEIP/deip-blockchain.git
     cd deip
 
 ### Compile

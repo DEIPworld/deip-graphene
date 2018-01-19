@@ -1285,42 +1285,6 @@ void decline_voting_rights_evaluator::do_apply(const decline_voting_rights_opera
     }
 }
 
-void claim_reward_balance_evaluator::do_apply(const claim_reward_balance_operation& op)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    const auto& acnt = account_service.get_account(op.account);
-
-    FC_ASSERT(op.reward_deip <= acnt.reward_deip_balance, "Cannot claim that much DEIP. Claim: ${c} Actual: ${a}",
-              ("c", op.reward_deip)("a", acnt.reward_deip_balance));
-    FC_ASSERT(op.reward_vests <= acnt.reward_vesting_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
-              ("c", op.reward_vests)("a", acnt.reward_vesting_balance));
-
-    asset reward_vesting_deip_to_move = asset(0, DEIP_SYMBOL);
-    if (op.reward_vests == acnt.reward_vesting_balance)
-        reward_vesting_deip_to_move = acnt.reward_vesting_deip;
-    else
-        reward_vesting_deip_to_move
-            = asset(((uint128_t(op.reward_vests.amount.value) * uint128_t(acnt.reward_vesting_deip.amount.value))
-                     / uint128_t(acnt.reward_vesting_balance.amount.value))
-                        .to_uint64(),
-                    DEIP_SYMBOL);
-
-    account_service.increase_balance(acnt, op.reward_deip);
-    account_service.decrease_reward_balance(acnt, op.reward_deip);
-    account_service.increase_vesting_shares(acnt, op.reward_vests, reward_vesting_deip_to_move);
-
-    _db._temporary_public_impl().modify(_db.get_dynamic_global_properties(), [&](dynamic_global_property_object& gpo) {
-        gpo.total_vesting_shares += op.reward_vests;
-        gpo.total_vesting_fund_deip += reward_vesting_deip_to_move;
-
-        gpo.pending_rewarded_vesting_shares -= op.reward_vests;
-        gpo.pending_rewarded_vesting_deip -= reward_vesting_deip_to_move;
-    });
-
-    account_service.adjust_proxied_witness_votes(acnt, op.reward_vests.amount);
-}
-
 void delegate_vesting_shares_evaluator::do_apply(const delegate_vesting_shares_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();

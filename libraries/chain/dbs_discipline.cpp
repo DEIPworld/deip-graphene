@@ -11,12 +11,12 @@ dbs_discipline::dbs_discipline(database &db)
 {
 }
 
-dbs_discipline::discipline_refs_type dbs_discipline::get_disciplines() const
+dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines() const
 {
-    discipline_refs_type ret;
+    discipline_ref_type ret;
 
-    auto idx = db_impl().get_index<discipline_index>().indicies();
-    auto it = idx.cbegin();
+    const auto& idx = db_impl().get_index<discipline_index>().indicies().get<by_id>();
+    auto it = idx.lower_bound(0);
     const auto it_end = idx.cend();
     while (it != it_end)
     {
@@ -37,9 +37,9 @@ const discipline_object& dbs_discipline::get_discipline_by_name(const discipline
     return db_impl().get<discipline_object, by_discipline_name>(name);
 }
 
-dbs_discipline::discipline_refs_type dbs_discipline::get_disciplines_by_parent_id(const discipline_id_type parent_id) const
+dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines_by_parent_id(const discipline_id_type parent_id) const
 {
-    discipline_refs_type ret;
+    discipline_ref_type ret;
 
     auto it_pair = db_impl().get_index<discipline_index>().indicies().get<by_parent_id>().equal_range(parent_id);
     auto it = it_pair.first;
