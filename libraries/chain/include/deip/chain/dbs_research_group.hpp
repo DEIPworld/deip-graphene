@@ -36,7 +36,7 @@ public:
 
     void change_quorum_group_object(u_int16_t quorum_percent, research_group_id_type research_group_id);
 
-    void group_exists(research_group_id_type research_group_id) const;
+    void check_research_group_existance(research_group_id_type research_group_id) const;
 
 };
 
@@ -67,7 +67,7 @@ public:
 
     void remove_token_object(const account_name_type& account_name, research_group_id_type research_group_id);
 
-    void token_exists(const account_name_type& account_name,
+    void check_research_token_existance(const account_name_type& account_name,
                       research_group_id_type research_group_id) const;
 
     void add_share_to_research_group_token(const share_type amount, 
