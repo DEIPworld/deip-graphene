@@ -41,10 +41,10 @@ void dbs_proposal::remove(const proposal_object& proposal)
     db_impl().remove(proposal);
 }
 
-bool dbs_proposal::is_exist(proposal_id_type proposal_id)
+void dbs_proposal::check_proposal_existance(proposal_id_type proposal_id) const
 {
-    auto proposal = db_impl().find<proposal_object, by_id>(proposal_id);
-    return proposal != nullptr;
+    const auto& proposal = db_impl().get_index<proposal_index>().indices().get<by_id>();
+    FC_ASSERT(proposal.find(proposal_id) != proposal.cend(), "Proposal \"${1}\" does not exist.", ("1", proposal_id));
 }
 
 size_t dbs_proposal::get_votes(const proposal_object& proposal)
@@ -67,21 +67,6 @@ void dbs_proposal::clear_expired_proposals()
     }
 }
 
-void dbs_proposal::remove_proposal_votes(const account_name_type account_t,
-                                                  const research_group_id_type research_group_id)
-{
-    const auto& proposal_votes_idx
-            = db_impl().get_index<proposal_vote_index>().indices().get<by_voter>();
-    auto proposal_vote_itr = proposal_votes_idx.find(boost::make_tuple(account_t, research_group_id));
-
-    while(proposal_vote_itr != proposal_votes_idx.end())
-    {
-        const auto& current_proposal_vote = *proposal_vote_itr;
-        ++proposal_vote_itr;
-        db_impl().remove(current_proposal_vote);
-    }
-}
-
 const proposal_vote_object& dbs_proposal::create_vote(const dbs_proposal::account_t voter,
                                                       const deip::chain::share_type weight,
                                                       const proposal_id_type id,
@@ -95,6 +80,21 @@ const proposal_vote_object& dbs_proposal::create_vote(const dbs_proposal::accoun
     });
 
     return new_proposal_vote;
+}
+
+void dbs_proposal::remove_proposal_votes(const account_name_type account_t,
+                                                  const research_group_id_type research_group_id)
+{
+    const auto& proposal_votes_idx
+            = db_impl().get_index<proposal_vote_index>().indices().get<by_voter>();
+    auto proposal_vote_itr = proposal_votes_idx.find(boost::make_tuple(account_t, research_group_id));
+
+    while(proposal_vote_itr != proposal_votes_idx.end())
+    {
+        const auto& current_proposal_vote = *proposal_vote_itr;
+        ++proposal_vote_itr;
+        db_impl().remove(current_proposal_vote);
+    }
 }
 
 } // namespace chain
