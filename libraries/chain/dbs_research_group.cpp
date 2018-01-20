@@ -103,5 +103,10 @@ void dbs_research_group::check_member_existence(const account_name_type &account
     check_research_group_token_existence(account, group_id);
 }
 
+size_t dbs_research_group::get_members_count(const research_group_id_type &group_id)
+{
+    return db_impl().get_index<research_group_token_index>().indices().size();
+}
+
 } // namespace chain
 } // namespace deip

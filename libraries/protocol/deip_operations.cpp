@@ -342,16 +342,22 @@ void close_budget_operation::validate() const
 
 void proposal_create_operation::validate() const
 {
+    validate_account_name(creator);
+    FC_ASSERT(expiration_time > fc::time_point_sec());
+    FC_ASSERT(fc::is_utf8(data), "Data is not valid UTF8 string");
+    FC_ASSERT(quorum_percent > 5 && quorum_percent <= 100, "Quorum percent must be in 5% to 100& range");
 }
 
 void create_research_group_operation::validate() const
 {
+    validate_account_name(creator);
+    validate_permlink(permlink);
+    FC_ASSERT(fc::is_utf8(desciption), "Description is not valid UTF8 string");
 }
 
 void proposal_vote_operation::validate() const
 {
     validate_account_name(voter);
-
 }
 
 

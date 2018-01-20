@@ -57,6 +57,8 @@ public:
 
     void check_member_existence(const account_name_type& account, const research_group_id_type& group_id);
 
+    size_t get_members_count(const research_group_id_type& group_id);
+
 };
 
 } // namespace chain
