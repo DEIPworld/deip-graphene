@@ -41,7 +41,5 @@ DEFINE_EVALUATOR(close_budget)
 DEFINE_EVALUATOR(proposal_create)
 DEFINE_EVALUATOR(create_research_group)
 
-DEFINE_EVALUATOR(proposal_vote)
-
 }
 } // deip::chain

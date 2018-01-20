@@ -1431,86 +1431,86 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
                                                  op.desciption);
 }
 
-void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
-{
-//    dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
-//
-//    proposal_object proposal = proposal_service.get_proposal(op.proposal_id);
-//
-//    dbs_research_group_token& research_group_token_service = _db.obtain_service<dbs_research_group_token>();
-//    share_type weight = research_group_token_service.get_research_group_token(op.voter, proposal.research_group_id).amount;
-//
-//    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
-//    share_type total_tokens_amount = research_group_service.get_research_group(proposal.research_group_id).total_tokens_amount;
-//
-//    const proposal_vote_object& proposal_vote = proposal_service.create_vote(op.voter, weight, op.proposal_id, op.research_group_id);
-//
-//    _db._temporary_public_impl().modify(
-//            proposal, [&](proposal_object& obj) { obj.current_votes_amount += proposal_vote.weight; });
-//
-//
-//    if (proposal.current_votes_amount / total_tokens_amount < (share_type)proposal.quorum_percent)
-//    {
-//        switch (proposal.action) {
-//            case deip::protocol::proposal_action_type::dropout_member: {
-//                member_proposal_data_type exclude_member_data = fc::json::from_string(
-//                        proposal.data).as<member_proposal_data_type>();
-//                dbs_account& account_service = _db.obtain_service<dbs_account>();
-//                account_service.check_account_existence(exclude_member_data.name);
-//                research_group_token_service.check_research_token_existence(exclude_member_data.name, exclude_member_data.research_group_id);
-//                proposal_service.remove_proposal_votes(exclude_member_data.name,
-//                                                       exclude_member_data.research_group_id);
-//                research_group_token_service.remove_token_object(exclude_member_data.name,
-//                                                                 exclude_member_data.research_group_id);
-//                break;
-//            }
-//            case deip::protocol::proposal_action_type::invite_member: {
-//                member_proposal_data_type include_member_data = fc::json::from_string(
-//                        proposal.data).as<member_proposal_data_type>();
-//                dbs_account& account_service = _db.obtain_service<dbs_account>();
-//                account_service.check_account_existence(include_member_data.name);
-//                research_group_service.check_research_group_existence(include_member_data.research_group_id);
-//                research_group_token_service.create_research_group_token(include_member_data.research_group_id, 100, include_member_data.name);
-//                break;
-//            }
-//            case deip::protocol::proposal_action_type::start_new_research: {
-//                break;
-//            }
-//            case deip::protocol::proposal_action_type::send_funds: {
-//                break;
-//            }
-//            case deip::protocol::proposal_action_type::transfer_research_tokens: {
-//                break;
-//            }
-//            case deip::protocol::proposal_action_type::start_research_token_sale: {
-//                break;
-//            }
-//            case deip::protocol::proposal_action_type::rebalance_research_group_tokens: {
-//                break;
-//            }
-//            case deip::protocol::proposal_action_type::change_quorum: {
-//                change_quorum_proposal_data_type change_quorum_data = fc::json::from_string(
-//                        proposal.data).as<change_quorum_proposal_data_type>();
-//                research_group_service.check_research_group_existence(change_quorum_data.research_group_id);
-//                research_group_service.change_quorum_group_object(change_quorum_data.quorum_percent,
-//                                                                  change_quorum_data.research_group_id);
-//                break;
-//            }
-//            case deip::protocol::proposal_action_type::change_research_review_share_percent: {
-//                break;
-//            }
-//            case deip::protocol::proposal_action_type::offer_research_tokens: {
-//                break;
-//            }
-//            case deip::protocol::proposal_action_type::accept_research_tokens_offer: {
-//                break;
-//            }
-//        }
-//        proposal_service.remove(proposal);
-//    }
-//    else
-//    {}
-}
+//void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
+//{
+////    dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
+////
+////    proposal_object proposal = proposal_service.get_proposal(op.proposal_id);
+////
+////    dbs_research_group_token& research_group_token_service = _db.obtain_service<dbs_research_group_token>();
+////    share_type weight = research_group_token_service.get_research_group_token(op.voter, proposal.research_group_id).amount;
+////
+////    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+////    share_type total_tokens_amount = research_group_service.get_research_group(proposal.research_group_id).total_tokens_amount;
+////
+////    const proposal_vote_object& proposal_vote = proposal_service.create_vote(op.voter, weight, op.proposal_id, op.research_group_id);
+////
+////    _db._temporary_public_impl().modify(
+////            proposal, [&](proposal_object& obj) { obj.current_votes_amount += proposal_vote.weight; });
+////
+////
+////    if (proposal.current_votes_amount / total_tokens_amount < (share_type)proposal.quorum_percent)
+////    {
+////        switch (proposal.action) {
+////            case deip::protocol::proposal_action_type::dropout_member: {
+////                member_proposal_data_type exclude_member_data = fc::json::from_string(
+////                        proposal.data).as<member_proposal_data_type>();
+////                dbs_account& account_service = _db.obtain_service<dbs_account>();
+////                account_service.check_account_existence(exclude_member_data.name);
+////                research_group_token_service.check_research_token_existence(exclude_member_data.name, exclude_member_data.research_group_id);
+////                proposal_service.remove_proposal_votes(exclude_member_data.name,
+////                                                       exclude_member_data.research_group_id);
+////                research_group_token_service.remove_token_object(exclude_member_data.name,
+////                                                                 exclude_member_data.research_group_id);
+////                break;
+////            }
+////            case deip::protocol::proposal_action_type::invite_member: {
+////                member_proposal_data_type include_member_data = fc::json::from_string(
+////                        proposal.data).as<member_proposal_data_type>();
+////                dbs_account& account_service = _db.obtain_service<dbs_account>();
+////                account_service.check_account_existence(include_member_data.name);
+////                research_group_service.check_research_group_existence(include_member_data.research_group_id);
+////                research_group_token_service.create_research_group_token(include_member_data.research_group_id, 100, include_member_data.name);
+////                break;
+////            }
+////            case deip::protocol::proposal_action_type::start_new_research: {
+////                break;
+////            }
+////            case deip::protocol::proposal_action_type::send_funds: {
+////                break;
+////            }
+////            case deip::protocol::proposal_action_type::transfer_research_tokens: {
+////                break;
+////            }
+////            case deip::protocol::proposal_action_type::start_research_token_sale: {
+////                break;
+////            }
+////            case deip::protocol::proposal_action_type::rebalance_research_group_tokens: {
+////                break;
+////            }
+////            case deip::protocol::proposal_action_type::change_quorum: {
+////                change_quorum_proposal_data_type change_quorum_data = fc::json::from_string(
+////                        proposal.data).as<change_quorum_proposal_data_type>();
+////                research_group_service.check_research_group_existence(change_quorum_data.research_group_id);
+////                research_group_service.change_quorum_group_object(change_quorum_data.quorum_percent,
+////                                                                  change_quorum_data.research_group_id);
+////                break;
+////            }
+////            case deip::protocol::proposal_action_type::change_research_review_share_percent: {
+////                break;
+////            }
+////            case deip::protocol::proposal_action_type::offer_research_tokens: {
+////                break;
+////            }
+////            case deip::protocol::proposal_action_type::accept_research_tokens_offer: {
+////                break;
+////            }
+////        }
+////        proposal_service.remove(proposal);
+////    }
+////    else
+////    {}
+//}
 
 } // namespace chain
 } // namespace deip 

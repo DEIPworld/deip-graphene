@@ -49,11 +49,13 @@ public:
 
     void remove_token(const account_name_type& account, const research_group_id_type& research_group_id);
 
-    void check_research_token_existence(const account_name_type& account,
+    void check_research_group_token_existence(const account_name_type& account,
                                         const research_group_id_type& research_group_id) const;
 
     void update_research_group_token_share(const share_type amount,
                                            const research_group_token_id_type& token_id);
+
+    void check_member_existence(const account_name_type& account, const research_group_id_type& group_id);
 
 };
 
