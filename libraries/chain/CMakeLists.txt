@@ -31,6 +31,7 @@ add_library( deip_chain
              dbs_discipline.cpp
              dbs_research.cpp
              dbs_research_discipline_relation.cpp
+             dbs_research_content.cpp
 
              deip_evaluator.cpp
 
