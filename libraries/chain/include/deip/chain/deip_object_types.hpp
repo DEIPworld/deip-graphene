@@ -28,8 +28,10 @@ using deip::protocol::block_id_type;
 using deip::protocol::chain_id_type;
 using deip::protocol::share_type;
 using deip::protocol::transaction_id_type;
+using deip::protocol::discipline_name_type;
 
 struct by_id;
+struct by_expiration_time;
 
 enum object_type
 {
@@ -58,7 +60,13 @@ enum object_type
     reward_pool_object_type,
     vesting_delegation_object_type,
     vesting_delegation_expiration_object_type,
-    budget_object_type
+    budget_object_type,
+    proposal_object_type,
+    research_group_object_type,
+    research_group_token_object_type,
+    discipline_object_type,
+    proposal_vote_object_type,
+    expert_token_object_type
 };
 
 class dynamic_global_property_object;
@@ -87,6 +95,12 @@ class reward_pool_object;
 class vesting_delegation_object;
 class vesting_delegation_expiration_object;
 class budget_object;
+class proposal_object;
+class research_group_object;
+class research_group_token_object;
+class discipline_object;
+class proposal_vote_object;
+class expert_token_object;
 
 typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
 typedef oid<chain_property_object> chain_property_id_type;
@@ -114,6 +128,13 @@ typedef oid<reward_pool_object> reward_pool_id_type;
 typedef oid<vesting_delegation_object> vesting_delegation_id_type;
 typedef oid<vesting_delegation_expiration_object> vesting_delegation_expiration_id_type;
 typedef oid<budget_object> budget_id_type;
+typedef oid<proposal_object> proposal_id_type;
+typedef oid<research_group_object> research_group_id_type;
+typedef oid<research_group_token_object> research_group_token_id_type;
+typedef oid<discipline_object> discipline_id_type;
+typedef oid<proposal_vote_object> proposal_vote_id_type;
+typedef oid<expert_token_object> expert_token_id_type;
+
 
 enum bandwidth_type
 {
@@ -153,6 +174,12 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (vesting_delegation_object_type)
                  (vesting_delegation_expiration_object_type)
                  (budget_object_type)
+                 (proposal_object_type)
+                 (research_group_object_type)
+                 (research_group_token_object_type)
+                 (discipline_object_type)
+                 (proposal_vote_object_type)
+                 (expert_token_object_type)                 
                  )
 
 FC_REFLECT_ENUM( deip::chain::bandwidth_type, (post)(forum)(market) )

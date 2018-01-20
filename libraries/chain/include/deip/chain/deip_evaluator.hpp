@@ -35,9 +35,13 @@ DEFINE_EVALUATOR(request_account_recovery)
 DEFINE_EVALUATOR(recover_account)
 DEFINE_EVALUATOR(change_recovery_account)
 DEFINE_EVALUATOR(decline_voting_rights)
-DEFINE_EVALUATOR(claim_reward_balance)
 DEFINE_EVALUATOR(delegate_vesting_shares)
 DEFINE_EVALUATOR(create_budget)
 DEFINE_EVALUATOR(close_budget)
+DEFINE_EVALUATOR(proposal_create)
+DEFINE_EVALUATOR(create_research_group)
+
+DEFINE_EVALUATOR(proposal_vote)
+
 }
 } // deip::chain

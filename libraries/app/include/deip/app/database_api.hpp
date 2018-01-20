@@ -371,6 +371,23 @@ public:
      */
     map<uint32_t, applied_operation> get_account_history(string account, uint64_t from, uint32_t limit) const;
 
+    /////////////////
+    // Disciplines //
+    /////////////////
+    vector<discipline_api_obj> get_all_disciplines() const;
+    discipline_api_obj get_discipline(const discipline_id_type id) const;
+    discipline_api_obj get_discipline_by_name(const discipline_name_type name) const;
+    vector<discipline_api_obj> get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
+
+
+    ///////////////////
+    // Expert Tokens //
+    ///////////////////
+    expert_token_api_obj get_expert_token(const expert_token_id_type id) const;
+    vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_name_type account_name) const;
+    vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
+
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -494,6 +511,17 @@ FC_API(deip::app::database_api,
     // Budget
    (get_budgets)
    (lookup_budget_owners)
+
+   // Disciplines
+   (get_all_disciplines)
+   (get_discipline)
+   (get_discipline_by_name)
+   (get_disciplines_by_parent_id)
+
+   // Expert Tokens
+   (get_expert_token)
+   (get_expert_tokens_by_account_name)
+   (get_expert_tokens_by_discipline_id)
 )
 
 // clang-format on

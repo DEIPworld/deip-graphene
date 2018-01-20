@@ -7,6 +7,8 @@
 #include <deip/chain/block_summary_object.hpp>
 #include <deip/chain/chain_property_object.hpp>
 #include <deip/chain/deip_objects.hpp>
+#include <deip/chain/discipline_object.hpp>
+#include <deip/chain/expert_token_object.hpp>
 
 #include <deip/chain/pool/reward_pool.hpp>
 
@@ -78,7 +80,8 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_genesis_witnesses(genesis_state);
         init_genesis_witness_schedule(genesis_state);
         init_genesis_global_property_object(genesis_state);
-        init_genesis_rewards(genesis_state);
+        init_genesis_disciplines(genesis_state);
+        init_expert_tokens(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
@@ -159,7 +162,7 @@ void database::init_genesis_global_property_object(const genesis_state_type& gen
     });
 }
 
-void database::init_genesis_rewards(const genesis_state_type& genesis_state)
+/*void database::init_genesis_rewards(const genesis_state_type& genesis_state)
 {
     const auto& gpo = get_dynamic_global_properties();
 
@@ -189,6 +192,49 @@ void database::init_genesis_rewards(const genesis_state_type& genesis_state)
 
     reward_service.create_pool(initial_reward_pool_supply);
     budget_service.create_fund_budget(genesis_state.init_rewards_supply - initial_reward_pool_supply, deadline);
+}*/
+
+void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
+{
+    const vector<genesis_state_type::discipline_type>& disciplines = genesis_state.disciplines;
+
+    for (auto& discipline : disciplines)
+    {
+        FC_ASSERT(!discipline.name.empty(), "Discipline 'name' should not be empty.");
+        FC_ASSERT(discipline.id != 0, "Creation of root discipline with id = 0 is not allowed.");
+
+        create<discipline_object>([&](discipline_object& d) {
+            d.id = discipline.id;
+            d.name = discipline.name;
+            d.parent_id = discipline.parent_id;
+            d.votes_in_last_ten_weeks = discipline.votes_in_last_ten_weeks;
+        });
+    }
+}
+
+
+void database::init_expert_tokens(const genesis_state_type& genesis_state)
+{
+    const vector<genesis_state_type::expert_token_type>& expert_tokens = genesis_state.expert_tokens;
+
+    for (auto& expert_token : expert_tokens)
+    {
+        FC_ASSERT(!expert_token.account_name.empty(), "Expertise token 'account_name' must not be empty.");
+        FC_ASSERT(expert_token.discipline_id != 0,  "Expertise token 'discipline_id' must not be empty.");
+        FC_ASSERT(expert_token.amount != 0,  "Expertise token 'amount' must not be equal to 0 for genesis state.");
+
+        auto account = get<account_object, by_name>(expert_token.account_name);
+        FC_ASSERT(account.name == expert_token.account_name); // verify that account exists
+
+        auto discipline = get<discipline_object, by_id>(expert_token.discipline_id); // verify that discipline exists
+        FC_ASSERT(discipline.id._id == expert_token.discipline_id); // verify that discipline exists
+
+        create<expert_token_object>([&](expert_token_object& d) {
+            d.account_name = account.name;
+            d.discipline_id = discipline.id._id;
+            d.amount = expert_token.amount;
+        });
+    }
 }
 
 } // namespace chain

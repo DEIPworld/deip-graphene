@@ -10,6 +10,8 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_proposal.hpp>
+#include <deip/chain/dbs_research_group.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1283,42 +1285,6 @@ void decline_voting_rights_evaluator::do_apply(const decline_voting_rights_opera
     }
 }
 
-void claim_reward_balance_evaluator::do_apply(const claim_reward_balance_operation& op)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    const auto& acnt = account_service.get_account(op.account);
-
-    FC_ASSERT(op.reward_deip <= acnt.reward_deip_balance, "Cannot claim that much DEIP. Claim: ${c} Actual: ${a}",
-              ("c", op.reward_deip)("a", acnt.reward_deip_balance));
-    FC_ASSERT(op.reward_vests <= acnt.reward_vesting_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
-              ("c", op.reward_vests)("a", acnt.reward_vesting_balance));
-
-    asset reward_vesting_deip_to_move = asset(0, DEIP_SYMBOL);
-    if (op.reward_vests == acnt.reward_vesting_balance)
-        reward_vesting_deip_to_move = acnt.reward_vesting_deip;
-    else
-        reward_vesting_deip_to_move
-            = asset(((uint128_t(op.reward_vests.amount.value) * uint128_t(acnt.reward_vesting_deip.amount.value))
-                     / uint128_t(acnt.reward_vesting_balance.amount.value))
-                        .to_uint64(),
-                    DEIP_SYMBOL);
-
-    account_service.increase_balance(acnt, op.reward_deip);
-    account_service.decrease_reward_balance(acnt, op.reward_deip);
-    account_service.increase_vesting_shares(acnt, op.reward_vests, reward_vesting_deip_to_move);
-
-    _db._temporary_public_impl().modify(_db.get_dynamic_global_properties(), [&](dynamic_global_property_object& gpo) {
-        gpo.total_vesting_shares += op.reward_vests;
-        gpo.total_vesting_fund_deip += reward_vesting_deip_to_move;
-
-        gpo.pending_rewarded_vesting_shares -= op.reward_vests;
-        gpo.pending_rewarded_vesting_deip -= reward_vesting_deip_to_move;
-    });
-
-    account_service.adjust_proxied_witness_votes(acnt, op.reward_vests.amount);
-}
-
 void delegate_vesting_shares_evaluator::do_apply(const delegate_vesting_shares_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
@@ -1437,5 +1403,114 @@ void close_budget_evaluator::do_apply(const close_budget_operation& op)
     budget_service.close_budget(budget);
 }
 
+void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
+{
+    dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    const uint32_t _lifetime_min = DAYS_TO_SECONDS(1);
+    const uint32_t _lifetime_max = DAYS_TO_SECONDS(10);
+
+    auto sec_till_expiration = op.expiration_time.sec_since_epoch() - fc::time_point_sec().sec_since_epoch();
+
+    FC_ASSERT(sec_till_expiration <= _lifetime_max && sec_till_expiration >= _lifetime_min,
+             "Proposal life time is not in range of ${min} - ${max} seconds.",
+             ("min", _lifetime_min)("max", _lifetime_max));
+
+    account_service.check_account_existence(op.creator);
+
+    // quorum_percent should be taken from research_group_object
+    proposal_service.create_proposal(op.action, op.data, op.creator, op.research_group_id, op.expiration_time, op.quorum_percent);
+}
+
+void create_research_group_evaluator::do_apply(const create_research_group_operation& op)
+{
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    research_group_service.create_research_group(op.permlink,
+                                                 op.desciption);
+}
+
+void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
+{
+    dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
+
+    proposal_object proposal = proposal_service.get_proposal(op.proposal_id);
+
+    dbs_research_group_token& research_group_token_service = _db.obtain_service<dbs_research_group_token>();
+    share_type weight = research_group_token_service.get_research_group_token(op.voter, proposal.research_group_id).amount;
+
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    share_type total_tokens_amount = research_group_service.get_research_group(proposal.research_group_id).total_tokens_amount;
+
+    const proposal_vote_object& proposal_vote = proposal_service.create_vote(op.voter, weight, op.proposal_id, op.research_group_id);
+
+    _db._temporary_public_impl().modify(
+            proposal, [&](proposal_object& obj) { obj.current_votes_amount += proposal_vote.weight; });
+
+
+    if (proposal.current_votes_amount / total_tokens_amount < (share_type)proposal.quorum_percent)
+    {
+        switch (proposal.action) {
+            case deip::protocol::proposal_action_type::dropout_member: {
+                member_proposal_data_type exclude_member_data = fc::json::from_string(
+                        proposal.data).as<member_proposal_data_type>();
+                dbs_account& account_service = _db.obtain_service<dbs_account>();
+                account_service.check_account_existence(exclude_member_data.name);
+                research_group_token_service.check_research_token_existance(exclude_member_data.name, exclude_member_data.research_group_id);
+                proposal_service.remove_proposal_votes(exclude_member_data.name,
+                                                       exclude_member_data.research_group_id);
+                research_group_token_service.remove_token_object(exclude_member_data.name,
+                                                                 exclude_member_data.research_group_id);
+                break;
+            }
+            case deip::protocol::proposal_action_type::invite_member: {
+                member_proposal_data_type include_member_data = fc::json::from_string(
+                        proposal.data).as<member_proposal_data_type>();
+                dbs_account& account_service = _db.obtain_service<dbs_account>();
+                account_service.check_account_existence(include_member_data.name);
+                research_group_service.check_research_group_existance(include_member_data.research_group_id);
+                research_group_token_service.create_research_group_token(include_member_data.research_group_id, 100, include_member_data.name);
+                break;
+            }
+            case deip::protocol::proposal_action_type::start_new_research: {
+                break;
+            }
+            case deip::protocol::proposal_action_type::send_funds: {
+                break;
+            }
+            case deip::protocol::proposal_action_type::transfer_research_tokens: {
+                break;
+            }
+            case deip::protocol::proposal_action_type::start_research_token_sale: {
+                break;
+            }
+            case deip::protocol::proposal_action_type::rebalance_research_group_tokens: {
+                break;
+            }
+            case deip::protocol::proposal_action_type::change_quorum: {
+                change_quorum_proposal_data_type change_quorum_data = fc::json::from_string(
+                        proposal.data).as<change_quorum_proposal_data_type>();
+                research_group_service.check_research_group_existance(change_quorum_data.research_group_id);
+                research_group_service.change_quorum_group_object(change_quorum_data.quorum_percent,
+                                                                  change_quorum_data.research_group_id);
+                break;
+            }
+            case deip::protocol::proposal_action_type::change_research_review_share_percent: {
+                break;
+            }
+            case deip::protocol::proposal_action_type::offer_research_tokens: {
+                break;
+            }
+            case deip::protocol::proposal_action_type::accept_research_tokens_offer: {
+                break;
+            }
+        }
+        proposal_service.remove(proposal);
+    }
+    else
+    {}
+}
+
 } // namespace chain
-} // namespace deip
+} // namespace deip 
