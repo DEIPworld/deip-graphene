@@ -33,7 +33,6 @@ add_library( deip_chain
              dbs_discipline.cpp
              dbs_expert_token.cpp
 
-
              deip_evaluator.cpp
 
              deip_objects.cpp
