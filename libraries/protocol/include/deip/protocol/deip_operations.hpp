@@ -5,6 +5,8 @@
 
 #include <fc/utf8.hpp>
 #include <fc/crypto/equihash.hpp>
+#include <fc/shared_string.hpp>
+#include <fc/io/json.hpp>
 
 namespace deip {
 namespace protocol {
@@ -766,6 +768,37 @@ struct close_budget_operation : public base_operation
     }
 };
 
+struct proposal_create_operation : public base_operation
+{
+    account_name_type creator;
+    int64_t research_group_id;
+    string data; ///< must be proper utf8 / JSON string.
+
+    deip::protocol::proposal_action_type action;
+    fc::time_point_sec expiration_time;
+    int quorum_percent;
+
+    void validate() const;
+};
+
+struct create_research_group_operation : public base_operation
+{
+    string permlink;
+    string desciption;
+
+    void validate() const;
+};
+
+struct proposal_vote_operation : public base_operation
+{
+    account_name_type voter;
+    int64_t proposal_id;
+    int64_t research_group_id;
+
+    void validate() const;
+};
+
+
 } // namespace protocol
 } // namespace deip
 
@@ -837,4 +870,7 @@ FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(deleg
 FC_REFLECT( deip::protocol::create_budget_operation, (owner)(content_permlink)(balance)(deadline) )
 FC_REFLECT( deip::protocol::close_budget_operation, (budget_id)(owner) )
 
+FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time)(quorum_percent) )
+FC_REFLECT( deip::protocol::create_research_group_operation, (permlink)(desciption) )
+FC_REFLECT( deip::protocol::proposal_vote_operation, (voter)(proposal_id)(research_group_id))
 // clang-format on

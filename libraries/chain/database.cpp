@@ -16,7 +16,9 @@
 #include <deip/chain/shared_db_merkle.hpp>
 #include <deip/chain/operation_notification.hpp>
 #include <deip/chain/budget_objects.hpp>
+#include <deip/chain/proposal_object.hpp>
 #include <deip/chain/genesis_state.hpp>
+#include <deip/chain/research_group_object.hpp>
 #include <deip/chain/discipline_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
 
@@ -43,6 +45,7 @@
 
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_witness.hpp>
+#include <deip/chain/dbs_proposal.hpp>
 
 namespace deip {
 namespace chain {
@@ -1630,6 +1633,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_budget_evaluator>();
     _my->_evaluator_registry.register_evaluator<close_budget_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
+    _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>();
 }
 
 void database::set_custom_operation_interpreter(const std::string& id,
@@ -1675,6 +1680,10 @@ void database::initialize_indexes()
     add_index<vesting_delegation_index>();
     add_index<vesting_delegation_expiration_index>();
     add_index<budget_index>();
+    add_index<proposal_index>();
+    add_index<proposal_vote_index>();
+    add_index<research_group_index>();
+    add_index<research_group_token_index>();
     add_index<discipline_index>();
     add_index<expert_token_index>();
 
@@ -1899,6 +1908,8 @@ void database::_apply_block(const signed_block& next_block)
         account_recovery_processing();
         expire_escrow_ratification();
         process_decline_voting_rights();
+
+        clear_expired_proposals();
 
         process_hardforks();
 
@@ -2280,6 +2291,12 @@ void database::clear_expired_delegations()
         remove(*itr);
         itr = delegations_by_exp.begin();
     }
+}
+
+void database::clear_expired_proposals()
+{
+    auto& proposal_service = obtain_service<dbs_proposal>();
+    proposal_service.clear_expired_proposals();
 }
 
 void database::adjust_balance(const account_object& a, const asset& delta)

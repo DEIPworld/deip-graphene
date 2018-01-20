@@ -339,5 +339,21 @@ void close_budget_operation::validate() const
 {
     validate_account_name(owner);
 }
-} //namespace protocol
-} // namespace deip
+
+void proposal_create_operation::validate() const
+{
+}
+
+void create_research_group_operation::validate() const
+{
+}
+
+void proposal_vote_operation::validate() const
+{
+    validate_account_name(voter);
+
+}
+
+
+}
+} // deip::protocol
