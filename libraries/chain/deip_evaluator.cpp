@@ -1457,7 +1457,7 @@ void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
                         proposal.data).as<member_proposal_data_type>();
                 dbs_account& account_service = _db.obtain_service<dbs_account>();
                 account_service.check_account_existence(exclude_member_data.name);
-                research_group_token_service.check_research_token_existance(exclude_member_data.name, exclude_member_data.research_group_id);
+                research_group_token_service.check_research_token_existence(exclude_member_data.name, exclude_member_data.research_group_id);
                 proposal_service.remove_proposal_votes(exclude_member_data.name,
                                                        exclude_member_data.research_group_id);
                 research_group_token_service.remove_token_object(exclude_member_data.name,
@@ -1469,7 +1469,7 @@ void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
                         proposal.data).as<member_proposal_data_type>();
                 dbs_account& account_service = _db.obtain_service<dbs_account>();
                 account_service.check_account_existence(include_member_data.name);
-                research_group_service.check_research_group_existance(include_member_data.research_group_id);
+                research_group_service.check_research_group_existence(include_member_data.research_group_id);
                 research_group_token_service.create_research_group_token(include_member_data.research_group_id, 100, include_member_data.name);
                 break;
             }
@@ -1491,7 +1491,7 @@ void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
             case deip::protocol::proposal_action_type::change_quorum: {
                 change_quorum_proposal_data_type change_quorum_data = fc::json::from_string(
                         proposal.data).as<change_quorum_proposal_data_type>();
-                research_group_service.check_research_group_existance(change_quorum_data.research_group_id);
+                research_group_service.check_research_group_existence(change_quorum_data.research_group_id);
                 research_group_service.change_quorum_group_object(change_quorum_data.quorum_percent,
                                                                   change_quorum_data.research_group_id);
                 break;

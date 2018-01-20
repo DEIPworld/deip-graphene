@@ -41,7 +41,7 @@ void dbs_proposal::remove(const proposal_object& proposal)
     db_impl().remove(proposal);
 }
 
-void dbs_proposal::check_proposal_existance(proposal_id_type proposal_id) const
+void dbs_proposal::check_proposal_existence(proposal_id_type proposal_id) const
 {
     const auto& proposal = db_impl().get_index<proposal_index>().indices().get<by_id>();
     FC_ASSERT(proposal.find(proposal_id) != proposal.cend(), "Proposal \"${1}\" does not exist.", ("1", proposal_id));

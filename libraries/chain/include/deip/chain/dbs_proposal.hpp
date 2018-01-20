@@ -49,7 +49,7 @@ public:
 
     void remove(const proposal_object& proposal);
 
-    void check_proposal_existance(proposal_id_type proposal_id) const;
+    void check_proposal_existence(proposal_id_type proposal_id) const;
 
     bool is_expired(const proposal_object& proposal);
 
