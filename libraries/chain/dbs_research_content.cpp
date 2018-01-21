@@ -11,7 +11,7 @@ dbs_research_content::dbs_research_content(database &db) : _base_type(db)
 {
 }
 
-const research_content_object& dbs_research_content::create(const research_id_type& research_id, research_content_type& type, research_content_body_type& content)
+const research_content_object& dbs_research_content::create(const research_id_type& research_id, const research_content_type& type, const research_content_body_type& content)
 {
     const auto& new_research_content = db_impl().create<research_content_object>([&](research_content_object& rc) {
         rc.research_id = research_id;

@@ -76,19 +76,6 @@ public:
     bool verify_authority(const signed_transaction& trx) const;
     bool verify_account_authority(const string& name_or_id, const flat_set<public_key_type>& signers) const;
 
-    // Disciplines
-    vector<discipline_api_obj> get_all_disciplines() const;
-    discipline_api_obj get_discipline(const discipline_id_type id) const;
-    discipline_api_obj get_discipline_by_name(const discipline_name_type name) const;
-
-
-    // Research content
-    research_content_api_obj get_research_content_by_id(const research_content_id_type& id) const;
-    vector<research_content_api_obj> get_content_by_research_id(const research_id_type& research_id) const;
-    vector<research_content_api_obj> get_content_by_research_id_and_content_type(const research_id_type& research_id, const research_content_type& type) const;
-    research_content_api_obj create(const research_id_type& research_id, research_content_type& type, research_content_body_type& content);
-
-
     // signal handlers
     void on_applied_block(const chain::signed_block& b);
 
@@ -2218,20 +2205,6 @@ research_content_api_obj database_api::get_research_content_by_id(const research
     });
 }
 
-vector<research_content_api_obj> database_api::get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<research_content_api_obj> results;
-        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
-        auto contents = research_content_service.get_content_by_research_id_and_content_type(research_id, type);
-
-        for (const chain::research_content_object &content : contents) {
-            results.push_back(research_content_api_obj(content));
-        }
-        return results;
-    });
-}
-
 vector<research_content_api_obj> database_api::get_all_research_content(const research_id_type& research_id) const
 {
     return my->_db.with_read_lock([&]() {
@@ -2246,7 +2219,21 @@ vector<research_content_api_obj> database_api::get_all_research_content(const re
     });
 }
 
-research_content_api_obj database_api::create_research_content(const research_id_type& research_id, research_content_type& type, research_content_body_type& content)
+vector<research_content_api_obj> database_api::get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_content_api_obj> results;
+        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+        auto contents = research_content_service.get_content_by_research_id_and_content_type(research_id, type);
+
+        for (const chain::research_content_object &content : contents) {
+            results.push_back(research_content_api_obj(content));
+        }
+        return results;
+    });
+}
+
+research_content_api_obj database_api::create_research_content(const research_id_type& research_id, const research_content_type& type, const research_content_body_type& content) const
 {
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();

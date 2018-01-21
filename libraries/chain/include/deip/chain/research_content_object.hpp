@@ -74,6 +74,8 @@ typedef multi_index_container<research_content_object,
 }
 }
 
+FC_REFLECT_ENUM( deip::chain::research_content_type, (announcement)(milestone)(comment)(final_result)(review) )
+
 FC_REFLECT(deip::chain::research_content_object,
                         (id)(research_id)(type)(content)
             )

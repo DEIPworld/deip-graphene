@@ -26,7 +26,7 @@ public:
 
     using research_content_refs_type = std::vector<std::reference_wrapper<const research_content_object>>;
 
-    const research_content_object& create(const research_id_type& research_id, research_content_type& type, research_content_body_type& content);
+    const research_content_object& create(const research_id_type& research_id, const research_content_type& type, const research_content_body_type& content);
 
     const research_content_object& get_content_by_id(const research_content_id_type& id) const;
 
