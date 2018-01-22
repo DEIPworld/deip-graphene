@@ -45,7 +45,7 @@ namespace deip {
             /* Get research tokens by research_id and account_name
                @returns a list of all research token objects for */
 
-            research_token_refs_type get_research_tokens_by_account_name_and_research_id(const account_name_type account_name,
+            const research_token_object& get_research_token_by_account_name_and_research_id(const account_name_type account_name,
                                                                                          const research_id_type research_id) const;
         };
     } // namespace chain

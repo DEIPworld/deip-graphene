@@ -1,12 +1,6 @@
 #pragma once
 
-#include <fc/fixed_string.hpp>
-
-#include <deip/protocol/authority.hpp>
-#include <deip/protocol/deip_operations.hpp>
-
 #include <deip/chain/deip_object_types.hpp>
-#include <deip/chain/shared_authority.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 
@@ -14,8 +8,6 @@
 
 namespace deip {
     namespace chain {
-
-        using deip::protocol::asset;
 
         class research_token_object : public object<research_token_object_type, research_token_object>
         {

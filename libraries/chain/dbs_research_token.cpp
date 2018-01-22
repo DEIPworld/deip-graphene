@@ -61,22 +61,10 @@ dbs_research_token::research_token_refs_type dbs_research_token::get_research_to
     return ret;
 }
 
-dbs_research_token::research_token_refs_type dbs_research_token::get_research_tokens_by_account_name_and_research_id(const account_name_type account_name,
+const research_token_object& dbs_research_token::get_research_token_by_account_name_and_research_id(const account_name_type account_name,
                                                                                          const research_id_type research_id) const
 {
-    research_token_refs_type ret;
-
-    auto it_pair = db_impl().get_index<research_token_index>().indicies().get<by_account_name_and_research_id>().equal_range(boost::make_tuple(account_name,
-                                                                                                                                               research_id));
-    auto it = it_pair.first;
-    const auto it_end = it_pair.second;
-    while (it != it_end)
-    {
-        ret.push_back(std::cref(*it));
-        ++it;
-    }
-
-    return ret;
+    return db_impl().get<research_token_object, by_account_name_and_research_id>(boost::make_tuple(account_name, research_id));
 }
 
 } //namespace chain
