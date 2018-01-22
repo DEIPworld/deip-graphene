@@ -16,11 +16,14 @@
 #include <deip/chain/shared_db_merkle.hpp>
 #include <deip/chain/operation_notification.hpp>
 #include <deip/chain/budget_objects.hpp>
+#include <deip/chain/proposal_object.hpp>
 #include <deip/chain/genesis_state.hpp>
+#include <deip/chain/research_group_object.hpp>
 #include <deip/chain/discipline_object.hpp>
 #include <deip/chain/research_discipline_relation_object.hpp>
 #include <deip/chain/research_object.hpp>
 #include <deip/chain/research_content_object.hpp>
+#include <deip/chain/expert_token_object.hpp>
 
 
 #include <deip/chain/util/asset.hpp>
@@ -45,6 +48,7 @@
 
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_witness.hpp>
+#include <deip/chain/dbs_proposal.hpp>
 
 namespace deip {
 namespace chain {
@@ -1182,7 +1186,7 @@ share_type database::pay_curators(const comment_object& c, share_type& max_rewar
                 {
                     unclaimed_rewards -= claim;
                     const auto& voter = get(itr->voter);
-                    auto reward = account_service.create_vesting(voter, asset(claim, DEIP_SYMBOL), true);
+                    auto reward = account_service.create_vesting(voter, asset(claim, DEIP_SYMBOL));
 
                     push_virtual_operation(
                         curation_reward_operation(voter.name, reward, c.author, fc::to_string(c.permlink)));
@@ -1238,7 +1242,7 @@ share_type database::cashout_comment_helper(util::comment_reward_context& ctx, c
                 for (auto& b : comment.beneficiaries)
                 {
                     auto benefactor_tokens = (author_tokens * b.weight) / DEIP_100_PERCENT;
-                    auto vest_created = account_service.create_vesting(get_account(b.account), benefactor_tokens, true);
+                    auto vest_created = account_service.create_vesting(get_account(b.account), benefactor_tokens);
                     push_virtual_operation(comment_benefactor_reward_operation(
                         b.account, comment.author, fc::to_string(comment.permlink), vest_created));
                     total_beneficiary += benefactor_tokens;
@@ -1250,10 +1254,10 @@ share_type database::cashout_comment_helper(util::comment_reward_context& ctx, c
                 auto vesting_deip = author_tokens - deip;
 
                 const auto& author = get_account(comment.author);
-                auto vest_created = account_service.create_vesting(author, vesting_deip, true);
+                auto vest_created = account_service.create_vesting(author, vesting_deip);
                 auto deip_payout = asset(deip, DEIP_SYMBOL);
 
-                account_service.increase_reward_balance(author, deip_payout);
+                account_service.increase_balance(author, deip_payout);
 
                 adjust_total_payout(comment, deip_payout + asset(vesting_deip, DEIP_SYMBOL),
                                     asset(curation_tokens, DEIP_SYMBOL), asset(total_beneficiary, DEIP_SYMBOL));
@@ -1628,12 +1632,14 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<escrow_dispute_evaluator>();
     _my->_evaluator_registry.register_evaluator<escrow_release_evaluator>();
     _my->_evaluator_registry.register_evaluator<decline_voting_rights_evaluator>();
-    _my->_evaluator_registry.register_evaluator<claim_reward_balance_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_budget_evaluator>();
     _my->_evaluator_registry.register_evaluator<close_budget_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
+    _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>();
+
 }
 
 void database::set_custom_operation_interpreter(const std::string& id,
@@ -1679,10 +1685,15 @@ void database::initialize_indexes()
     add_index<vesting_delegation_index>();
     add_index<vesting_delegation_expiration_index>();
     add_index<budget_index>();
+    add_index<proposal_index>();
+    add_index<proposal_vote_index>();
+    add_index<research_group_index>();
+    add_index<research_group_token_index>();
     add_index<discipline_index>();
     add_index<research_discipline_relation_index>();
     add_index<research_index>();
     add_index<research_content_index>();
+    add_index<expert_token_index>();
 
     _plugin_index_signal();
 }
@@ -1905,6 +1916,8 @@ void database::_apply_block(const signed_block& next_block)
         account_recovery_processing();
         expire_escrow_ratification();
         process_decline_voting_rights();
+
+        clear_expired_proposals();
 
         process_hardforks();
 
@@ -2288,6 +2301,12 @@ void database::clear_expired_delegations()
     }
 }
 
+void database::clear_expired_proposals()
+{
+    auto& proposal_service = obtain_service<dbs_proposal>();
+    proposal_service.clear_expired_proposals();
+}
+
 void database::adjust_balance(const account_object& a, const asset& delta)
 {
     modify(a, [&](account_object& acnt) {
@@ -2435,7 +2454,6 @@ void database::validate_invariants() const
         const auto& account_idx = get_index<account_index>().indices().get<by_name>();
         asset total_supply = asset(0, DEIP_SYMBOL);
         asset total_vesting = asset(0, VESTS_SYMBOL);
-        asset pending_vesting_deip = asset(0, DEIP_SYMBOL);
         share_type total_vsf_votes = share_type(0);
 
         auto gpo = get_dynamic_global_properties();
@@ -2448,10 +2466,7 @@ void database::validate_invariants() const
         for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr)
         {
             total_supply += itr->balance;
-            total_supply += itr->reward_deip_balance;
             total_vesting += itr->vesting_shares;
-            total_vesting += itr->reward_vesting_balance;
-            pending_vesting_deip += itr->reward_vesting_deip;
             total_vsf_votes += (itr->proxy == DEIP_PROXY_TO_SELF_ACCOUNT
                                     ? itr->witness_vote_weight()
                                     : (DEIP_MAX_PROXY_RECURSION_DEPTH > 0
@@ -2491,18 +2506,14 @@ void database::validate_invariants() const
             total_supply += itr->reward_balance;
         }
 
-        total_supply
-            += gpo.total_vesting_fund_deip + gpo.total_reward_fund_deip + gpo.pending_rewarded_vesting_deip;
+        total_supply += gpo.total_vesting_fund_deip + gpo.total_reward_fund_deip;
 
         FC_ASSERT(gpo.current_supply == total_supply, "",
                   ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));
-        FC_ASSERT(gpo.total_vesting_shares + gpo.pending_rewarded_vesting_shares == total_vesting, "",
+        FC_ASSERT(gpo.total_vesting_shares == total_vesting, "",
                   ("gpo.total_vesting_shares", gpo.total_vesting_shares)("total_vesting", total_vesting));
         FC_ASSERT(gpo.total_vesting_shares.amount == total_vsf_votes, "",
                   ("total_vesting_shares", gpo.total_vesting_shares)("total_vsf_votes", total_vsf_votes));
-        FC_ASSERT(gpo.pending_rewarded_vesting_deip == pending_vesting_deip, "",
-                  ("pending_rewarded_vesting_deip", gpo.pending_rewarded_vesting_deip)("pending_vesting_deip",
-                                                                                           pending_vesting_deip));
     }
     FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
 }

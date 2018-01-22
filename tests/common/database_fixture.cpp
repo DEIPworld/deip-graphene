@@ -1,4 +1,4 @@
-#include <boost/test/unit_test.hpp>
+   #include <boost/test/unit_test.hpp>
 #include <boost/program_options.hpp>
 
 #include <graphene/utilities/tempdir.hpp>

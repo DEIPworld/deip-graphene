@@ -43,13 +43,17 @@ typedef fc::static_variant<vote_operation,
 
                            custom_binary_operation,
                            decline_voting_rights_operation,
-                           claim_reward_balance_operation,
                            delegate_vesting_shares_operation,
                            account_create_with_delegation_operation,
 
                            create_budget_operation,
                            close_budget_operation,
                            create_research_operation,
+
+                           proposal_create_operation,
+                           create_research_group_operation,
+
+                           proposal_vote_operation,
 
                            /// virtual operations
                            author_reward_operation,

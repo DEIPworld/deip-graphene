@@ -318,16 +318,6 @@ void decline_voting_rights_operation::validate() const
     validate_account_name(account);
 }
 
-void claim_reward_balance_operation::validate() const
-{
-    validate_account_name(account);
-    FC_ASSERT(is_asset_type(reward_deip, DEIP_SYMBOL), "Reward Deip must be DEIP");
-    FC_ASSERT(is_asset_type(reward_vests, VESTS_SYMBOL), "Reward Deip must be VESTS");
-    FC_ASSERT(reward_deip.amount >= 0, "Cannot claim a negative amount");
-    FC_ASSERT(reward_vests.amount >= 0, "Cannot claim a negative amount");
-    FC_ASSERT(reward_deip.amount > 0 || reward_vests.amount > 0, "Must claim something.");
-}
-
 void delegate_vesting_shares_operation::validate() const
 {
     validate_account_name(delegator);
@@ -350,6 +340,7 @@ void close_budget_operation::validate() const
     validate_account_name(owner);
 }
 
+
 void create_research_operation::validate() const
 {
     for (const account_name_type& author : authors)
@@ -363,5 +354,20 @@ void create_research_operation::validate() const
     FC_ASSERT(disciplines_ids.size() > 0, "Research should be linked to at least 1 discipline");
     FC_ASSERT(percent_for_review >= 5 * DEIP_1_PERCENT && percent_for_review <= 50 * DEIP_1_PERCENT, "Percent for review must be 5-50%");
 }
+
+void proposal_create_operation::validate() const
+{
+}
+
+void create_research_group_operation::validate() const
+{
+}
+
+void proposal_vote_operation::validate() const
+{
+    validate_account_name(voter);
+
+}
+
 }
 } // deip::protocol

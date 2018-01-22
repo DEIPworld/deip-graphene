@@ -951,11 +951,6 @@ public:
 
     annotated_signed_transaction decline_voting_rights(const std::string& account, bool decline, bool broadcast);
 
-    annotated_signed_transaction claim_reward_balance(const std::string& account,
-                                                      const asset& reward_deip,
-                                                      const asset& reward_vests,
-                                                      bool broadcast);
-
     /**
      *  Gets the budget information for all my budgets (list_my_accounts)
      */
@@ -1090,7 +1085,6 @@ FC_API( deip::wallet::wallet_api,
         (get_encrypted_memo)
         (decrypt_memo)
         (decline_voting_rights)
-        (claim_reward_balance)
         (create_budget)
         (close_budget)
 
