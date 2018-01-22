@@ -111,25 +111,6 @@ public:
     }
 
 protected:
-//    virtual void update_proposals_voting_list_and_execute()
-//    {
-////        while (!removed_members.empty())
-////        {
-////            account_name_type member = *removed_members.begin();
-////
-////            _proposal_service.for_all_proposals_remove_from_voting_list(member);
-////
-////            auto proposals = _proposal_service.get_proposals();
-////
-////            for (const auto& p : proposals)
-////            {
-////                execute_proposal(p);
-////            }
-////
-////            removed_members.erase(member);
-////        }
-//    }
-
     virtual void execute_proposal(const proposal_object& proposal)
     {
         if (is_quorum(proposal))
@@ -150,10 +131,10 @@ protected:
 
     void invite_evaluator(const proposal_object& proposal)
     {
-        member_proposal_data_type include_member_data = fc::json::from_string(proposal.data).as<member_proposal_data_type>();
-        _account_service.check_account_existence(include_member_data.name);
-        _research_group_service.check_research_group_existence(include_member_data.research_group_id);
-        _research_group_service.create_research_group_token(include_member_data.research_group_id, 100, include_member_data.name);
+        invite_member_proposal_data_type data = fc::json::from_string(proposal.data).as<invite_member_proposal_data_type>();
+        _account_service.check_account_existence(data.name);
+        _research_group_service.check_research_group_existence(data.research_group_id);
+        _research_group_service.create_research_group_token(data.research_group_id, data.research_group_token_amount, data.name);
     }
 
     void dropout_evaluator(const proposal_object& proposal)
