@@ -10,6 +10,8 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_research.hpp>
+#include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 
@@ -1403,6 +1405,28 @@ void close_budget_evaluator::do_apply(const close_budget_operation& op)
     budget_service.close_budget(budget);
 }
 
+void create_research_evaluator::do_apply(const create_research_operation &op)
+{
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    for (const auto& author : op.authors) {
+        account_service.check_account_existence(author);
+    }
+
+    const auto& research = research_service.create(op.name, op.abstract_content, op.permlink, op.research_group_id, op.percent_for_review);
+
+    for (const auto& discipline_id : op.disciplines_ids) {
+        research_discipline_relation_service.create(research.id, discipline_id);
+    }
+
+    //Create research_token_object
+    //Create research_content_object
+}
+
+
+
 void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
 {
     dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
@@ -1511,6 +1535,7 @@ void proposal_vote_evaluator::do_apply(const proposal_vote_operation& op)
     else
     {}
 }
+
 
 } // namespace chain
 } // namespace deip 

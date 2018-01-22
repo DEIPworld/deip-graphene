@@ -20,6 +20,9 @@
 #include <deip/chain/genesis_state.hpp>
 #include <deip/chain/research_group_object.hpp>
 #include <deip/chain/discipline_object.hpp>
+#include <deip/chain/research_discipline_relation_object.hpp>
+#include <deip/chain/research_object.hpp>
+#include <deip/chain/research_content_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
 
 
@@ -1633,8 +1636,10 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_budget_evaluator>();
     _my->_evaluator_registry.register_evaluator<close_budget_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>();
+
 }
 
 void database::set_custom_operation_interpreter(const std::string& id,
@@ -1685,6 +1690,9 @@ void database::initialize_indexes()
     add_index<research_group_index>();
     add_index<research_group_token_index>();
     add_index<discipline_index>();
+    add_index<research_discipline_relation_index>();
+    add_index<research_index>();
+    add_index<research_content_index>();
     add_index<expert_token_index>();
 
     _plugin_index_signal();

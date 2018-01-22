@@ -10,6 +10,8 @@
 #include <deip/chain/budget_objects.hpp>
 #include <deip/chain/proposal_object.hpp>
 #include <deip/chain/discipline_object.hpp>
+#include <deip/chain/research_object.hpp>
+#include <deip/chain/research_content_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
 
 #include <deip/tags/tags_plugin.hpp>
@@ -487,6 +489,28 @@ struct discipline_api_obj
     share_type votes_in_last_ten_weeks;
 };
 
+struct research_content_api_obj
+{
+    research_content_api_obj(const chain::research_content_object& rc)
+        : id(rc.id._id)
+        ,  research_id(rc.research_id._id)
+        ,  content_type(rc.type)
+        ,  content(rc.content)
+        ,  created_at(rc.created_at)
+    {}
+
+    // because fc::variant require for temporary object
+    research_content_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t research_id;
+    int64_t content_type;
+    std::string content;
+    time_point_sec created_at;
+};
+
 struct expert_token_api_obj
 {
     expert_token_api_obj(const chain::expert_token_object& d)
@@ -603,7 +627,16 @@ FC_REFLECT( deip::app::discipline_api_obj,
             (parent_id)
             (name)
             (votes_in_last_ten_weeks)
-)
+          )
+
+
+FC_REFLECT( deip::app::research_content_api_obj,
+            (id)
+            (research_id)
+            (content_type)
+            (content)
+            (created_at)
+          )
 
 FC_REFLECT( deip::app::expert_token_api_obj,
             (id)

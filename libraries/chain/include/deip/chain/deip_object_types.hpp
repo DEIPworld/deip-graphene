@@ -61,12 +61,16 @@ enum object_type
     vesting_delegation_object_type,
     vesting_delegation_expiration_object_type,
     budget_object_type,
+    discipline_object_type,
+    research_object_type,
+    research_discipline_relation_object_type,
+    research_content_object_type,
     proposal_object_type,
     research_group_object_type,
     research_group_token_object_type,
-    discipline_object_type,
     proposal_vote_object_type,
     expert_token_object_type
+
 };
 
 class dynamic_global_property_object;
@@ -99,8 +103,12 @@ class proposal_object;
 class research_group_object;
 class research_group_token_object;
 class discipline_object;
+class research_object;
+class research_discipline_relation_object;
+class research_content_object;
 class proposal_vote_object;
 class expert_token_object;
+
 
 typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
 typedef oid<chain_property_object> chain_property_id_type;
@@ -132,6 +140,9 @@ typedef oid<proposal_object> proposal_id_type;
 typedef oid<research_group_object> research_group_id_type;
 typedef oid<research_group_token_object> research_group_token_id_type;
 typedef oid<discipline_object> discipline_id_type;
+typedef oid<research_object> research_id_type;
+typedef oid<research_discipline_relation_object> research_discipline_relation_id_type;
+typedef oid<research_content_object> research_content_id_type;
 typedef oid<proposal_vote_object> proposal_vote_id_type;
 typedef oid<expert_token_object> expert_token_id_type;
 
@@ -178,8 +189,12 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (research_group_object_type)
                  (research_group_token_object_type)
                  (discipline_object_type)
+                 (research_object_type)
+                 (research_discipline_relation_object_type)
+                 (research_content_object_type)
                  (proposal_vote_object_type)
                  (expert_token_object_type)                 
+
                  )
 
 FC_REFLECT_ENUM( deip::chain::bandwidth_type, (post)(forum)(market) )
