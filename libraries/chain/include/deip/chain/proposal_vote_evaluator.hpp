@@ -108,29 +108,27 @@ public:
         _proposal_service.vote_for(op.proposal_id, op.voter);
 
         execute_proposal(proposal);
-
-        update_proposals_voting_list_and_execute();
     }
 
 protected:
-    virtual void update_proposals_voting_list_and_execute()
-    {
-//        while (!removed_members.empty())
-//        {
-//            account_name_type member = *removed_members.begin();
-//
-//            _proposal_service.for_all_proposals_remove_from_voting_list(member);
-//
-//            auto proposals = _proposal_service.get_proposals();
-//
-//            for (const auto& p : proposals)
-//            {
-//                execute_proposal(p);
-//            }
-//
-//            removed_members.erase(member);
-//        }
-    }
+//    virtual void update_proposals_voting_list_and_execute()
+//    {
+////        while (!removed_members.empty())
+////        {
+////            account_name_type member = *removed_members.begin();
+////
+////            _proposal_service.for_all_proposals_remove_from_voting_list(member);
+////
+////            auto proposals = _proposal_service.get_proposals();
+////
+////            for (const auto& p : proposals)
+////            {
+////                execute_proposal(p);
+////            }
+////
+////            removed_members.erase(member);
+////        }
+//    }
 
     virtual void execute_proposal(const proposal_object& proposal)
     {
@@ -183,8 +181,6 @@ protected:
     AccountService& _account_service;
     ProposalService& _proposal_service;
     ResearchGroupService& _research_group_service;
-
-    fc::flat_set<account_name_type> removed_members;
 
 private:
     proposal_evaluators_register evaluators;
