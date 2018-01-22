@@ -77,18 +77,6 @@ public:
     bool verify_authority(const signed_transaction& trx) const;
     bool verify_account_authority(const string& name_or_id, const flat_set<public_key_type>& signers) const;
 
-
-    // // Disciplines
-    // vector<discipline_api_obj> get_all_disciplines() const;
-    // discipline_api_obj get_discipline(const discipline_id_type id) const;
-    // discipline_api_obj get_discipline_by_name(const discipline_name_type name) const;
-
-    // //Expert tokens
-    // expert_token_api_obj get_expert_token(const expert_token_id_type id) const;
-    // vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_id_type account_id) const;
-    // vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
-
-
     // signal handlers
     void on_applied_block(const chain::signed_block& b);
 
