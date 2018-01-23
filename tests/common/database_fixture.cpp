@@ -8,8 +8,6 @@
 #include <deip/account_history/account_history_plugin.hpp>
 #include <deip/witness/witness_plugin.hpp>
 #include <deip/chain/genesis_state.hpp>
-#include <deip/chain/dbs_account.hpp>
-#include <deip/chain/dbs_research_group.hpp>
 
 #include <fc/crypto/digest.hpp>
 #include <fc/smart_ref_impl.hpp>

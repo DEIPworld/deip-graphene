@@ -4,6 +4,8 @@
 #include <deip/chain/database.hpp>
 #include <deip/chain/genesis_state.hpp>
 #include <deip/chain/dbs_proposal.hpp>
+#include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_account.hpp>
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>
 
@@ -87,18 +89,20 @@ struct database_fixture
                                          const share_type& fee);
 
     const research_group_object&
-    research_group_create(const string& permlink, const string& desciption, const uint32_t quorum_percent);
+    research_group_create(const uint32_t id, const string& permlink, const string& desciption, const uint32_t quorum_percent);
 
     const research_group_token_object& research_group_token_create(const research_group_id_type& research_group_id,
                                                                    const account_name_type& account,
                                                                    const share_type amount);
 
-    const research_group_object& research_group_setup(const string& permlink,
+    const research_group_object& research_group_setup(const uint32_t id,
+                                                      const string& permlink,
                                                       const string& desciption,
                                                       const uint32_t quorum_percent,
                                                       const vector<account_name_type>& accounts);
 
-    const proposal_object& proposal_create(const dbs_proposal::action_t action,
+    const proposal_object& proposal_create(const uint32_t id,
+                                           const dbs_proposal::action_t action,
                                            const string json_data,
                                            const account_name_type& creator,
                                            const research_group_id_type& research_group_id,
