@@ -1,4 +1,4 @@
-   #include <boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include <boost/program_options.hpp>
 
 #include <graphene/utilities/tempdir.hpp>
@@ -9,6 +9,7 @@
 #include <deip/witness/witness_plugin.hpp>
 #include <deip/chain/genesis_state.hpp>
 #include <deip/chain/dbs_account.hpp>
+#include <deip/chain/dbs_research_group.hpp>
 
 #include <fc/crypto/digest.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -341,6 +342,72 @@ const witness_object& database_fixture::witness_create(const string& owner,
         return db.get_witness(owner);
     }
     FC_CAPTURE_AND_RETHROW((owner)(url))
+}
+
+const research_group_object&
+database_fixture::research_group_create(const string& permlink, const string& description, const uint32_t quorum_percent)
+{
+    const research_group_object& new_research_group
+        = db.create<research_group_object>([&](research_group_object& rg) {
+              fc::from_string(rg.permlink, permlink);
+              fc::from_string(rg.desciption, description);
+              rg.quorum_percent = quorum_percent;
+              rg.id = 1;
+          });
+
+    return new_research_group;
+}
+
+const research_group_token_object& database_fixture::research_group_token_create(
+    const research_group_id_type& research_group_id, const account_name_type& account, const share_type amount = 10)
+{
+    const research_group_token_object& new_research_group_token
+        = db.create<research_group_token_object>([&](research_group_token_object& research_group_token) {
+              research_group_token.research_group = research_group_id;
+              research_group_token.amount = amount;
+              research_group_token.owner = account;
+          });
+
+    const research_group_object& research_group = db.get<research_group_object>(research_group_id);
+
+    db.modify(research_group, [&](research_group_object& rg) { rg.total_tokens_amount += amount; });
+    return new_research_group_token;
+}
+
+const research_group_object& database_fixture::research_group_setup(const string& permlink,
+                                                                    const string& description,
+                                                                    const uint32_t quorum_percent,
+                                                                    const vector<account_name_type>& accounts)
+{
+    const auto& research_group = research_group_create(permlink, description, quorum_percent);
+
+    for (const auto& account : accounts)
+    {
+        research_group_token_create(research_group.id, account);
+    }
+
+    return research_group;
+}
+
+const proposal_object& database_fixture::proposal_create(const dbs_proposal::action_t action,
+                                       const std::string json_data,
+                                       const account_name_type& creator,
+                                       const research_group_id_type& research_group_id,
+                                       const fc::time_point_sec expiration_time,
+                                       const uint32_t quorum_percent)
+{
+    const proposal_object& new_proposal = db.create<proposal_object>([&](proposal_object& proposal) {
+        proposal.action = action;
+        proposal.id = 1;
+        proposal.data = json_data;
+        proposal.creator = creator;
+        proposal.research_group_id = research_group_id;
+        proposal.creation_time = fc::time_point_sec();
+        proposal.expiration_time = expiration_time;
+        proposal.quorum_percent = quorum_percent;
+    });
+
+    return new_proposal;
 }
 
 void database_fixture::fund(const string& account_name, const share_type& amount)
