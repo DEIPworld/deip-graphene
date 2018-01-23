@@ -4775,7 +4775,7 @@ BOOST_AUTO_TEST_CASE(invite_member_apply)
     {
         BOOST_TEST_MESSAGE("Testing: account_create_apply");
 
-        ACTORS((alice));
+        ACTORS((alice)(bob));
         generate_block();
 
         private_key_type priv_key = generate_private_key("alice");
@@ -4784,7 +4784,9 @@ BOOST_AUTO_TEST_CASE(invite_member_apply)
         accounts.push_back("alice");
         auto& research_group = research_group_setup(1, "test", "test", 1, accounts);
 
-        auto& proposal = proposal_create(1, invite_member, "test", "alice", 1, time_point_sec(0xffffffff), 1);
+        const std::string invite_member_json = "{\"name\":\"bob\",\"research_group_id\": 1,\"research_group_token_amount\": 100}";
+
+        auto& proposal = proposal_create(1, invite_member, invite_member_json, "alice", 1, time_point_sec(0xffffffff), 1);
 
         proposal_vote_operation op;
 
@@ -4800,9 +4802,10 @@ BOOST_AUTO_TEST_CASE(invite_member_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        auto members = db.get<research_group_object, by_id>(1).research_group_tokens.size();
+        auto& research_group_service = db.obtain_service<dbs_research_group>();
+        auto members_count = research_group_service.get_members_count(1);
 
-        BOOST_CHECK(members == 2);
+        BOOST_CHECK(members_count == 2);
 
     }
     FC_LOG_AND_RETHROW()
