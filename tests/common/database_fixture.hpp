@@ -88,18 +88,21 @@ struct database_fixture
                                          const public_key_type& signing_key,
                                          const share_type& fee);
 
-    const research_group_object&
-    research_group_create(const uint32_t id, const string& permlink, const string& desciption, const uint32_t quorum_percent);
+    const research_group_object& research_group_create(const uint32_t& id, const string& permlink,
+                                                       const string& desciption,
+                                                       const uint32_t& quorum_percent,
+                                                       const int32_t& tokens_amount);
 
     const research_group_token_object& research_group_token_create(const research_group_id_type& research_group_id,
                                                                    const account_name_type& account,
-                                                                   const share_type amount);
+                                                                   const int32_t& amount);
 
-    const research_group_object& research_group_setup(const uint32_t id,
-                                                      const string& permlink,
-                                                      const string& desciption,
-                                                      const uint32_t quorum_percent,
-                                                      const vector<account_name_type>& accounts);
+    const research_group_object& setup_research_group(const uint32_t &id,
+                                                      const string &permlink,
+                                                      const string &desciption,
+                                                      const uint32_t &quorum_percent,
+                                                      const int32_t &tokens_amount,
+                                                      const vector<account_name_type> &accounts);
 
     const proposal_object& proposal_create(const uint32_t id,
                                            const dbs_proposal::action_t action,

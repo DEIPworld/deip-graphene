@@ -135,6 +135,7 @@ protected:
         _account_service.check_account_existence(data.name);
         _research_group_service.check_research_group_existence(data.research_group_id);
         _research_group_service.create_research_group_token(data.research_group_id, data.research_group_token_amount, data.name);
+        _research_group_service.adjust_research_group_token_amount(data.research_group_id, -data.research_group_token_amount);
     }
 
     void dropout_evaluator(const proposal_object& proposal)

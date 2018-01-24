@@ -1407,6 +1407,7 @@ void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
 {
     dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     const uint32_t _lifetime_min = DAYS_TO_SECONDS(1);
     const uint32_t _lifetime_max = DAYS_TO_SECONDS(10);
@@ -1419,8 +1420,11 @@ void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
 
     account_service.check_account_existence(op.creator);
 
+    auto& research_group = research_group_service.get_research_group(op.research_group_id);
+    auto quorum_percent = research_group.quorum_percent;
+
     // quorum_percent should be taken from research_group_object
-    proposal_service.create_proposal(op.action, op.data, op.creator, op.research_group_id, op.expiration_time, op.quorum_percent);
+    proposal_service.create_proposal(op.action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
 }
 
 void create_research_group_evaluator::do_apply(const create_research_group_operation& op)
@@ -1428,7 +1432,9 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     research_group_service.create_research_group(op.permlink,
-                                                 op.desciption);
+                                                 op.desciption,
+                                                 op.quorum_percent,
+                                                 op.tokens_amount);
 }
 
 } // namespace chain

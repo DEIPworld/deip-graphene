@@ -776,7 +776,6 @@ struct proposal_create_operation : public base_operation
 
     deip::protocol::proposal_action_type action;
     fc::time_point_sec expiration_time;
-    uint32_t quorum_percent;
 
     void validate() const;
 };
@@ -786,6 +785,8 @@ struct create_research_group_operation : public base_operation
     account_name_type creator;
     string permlink;
     string desciption;
+    uint32_t quorum_percent;
+    uint32_t tokens_amount;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -879,7 +880,7 @@ FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(deleg
 FC_REFLECT( deip::protocol::create_budget_operation, (owner)(content_permlink)(balance)(deadline) )
 FC_REFLECT( deip::protocol::close_budget_operation, (budget_id)(owner) )
 
-FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time)(quorum_percent) )
+FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption) )
 FC_REFLECT( deip::protocol::proposal_vote_operation, (voter)(proposal_id)(research_group_id))
 // clang-format on

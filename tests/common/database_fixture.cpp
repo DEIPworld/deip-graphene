@@ -343,48 +343,54 @@ const witness_object& database_fixture::witness_create(const string& owner,
 }
 
 const research_group_object&
-database_fixture::research_group_create(const uint32_t id, const string& permlink, const string& description, const uint32_t quorum_percent)
+database_fixture::research_group_create(const uint32_t& id, const string& permlink,
+                                        const string& description, const uint32_t& quorum_percent, const int32_t& tokens_amount)
 {
     const research_group_object& new_research_group
         = db.create<research_group_object>([&](research_group_object& rg) {
+              rg.id = id;
               fc::from_string(rg.permlink, permlink);
               fc::from_string(rg.desciption, description);
               rg.quorum_percent = quorum_percent;
-              rg.id = id;
+              rg.total_tokens_amount = tokens_amount;
           });
 
     return new_research_group;
 }
 
 const research_group_token_object& database_fixture::research_group_token_create(
-    const research_group_id_type& research_group_id, const account_name_type& account, const share_type amount = 10)
+    const research_group_id_type& research_group_id, const account_name_type& account, const int32_t& amount = 10)
 {
-    const research_group_token_object& new_research_group_token
-        = db.create<research_group_token_object>([&](research_group_token_object& research_group_token) {
-              research_group_token.research_group = research_group_id;
-              research_group_token.amount = amount;
-              research_group_token.owner = account;
-          });
+    auto& research_group_service = db.obtain_service<dbs_research_group>();
 
-    const research_group_object& research_group = db.get<research_group_object>(research_group_id);
+    const research_group_token_object& new_research_group_token = research_group_service.create_research_group_token(research_group_id, amount, account);
 
-    db.modify(research_group, [&](research_group_object& rg) { rg.total_tokens_amount += amount; });
+    const auto& researh_group = research_group_service.get_research_group(research_group_id);
+
+//    research_group_service.adjust_research_group_token_amount(research_group_id, -amount);
+
+    db.modify(researh_group, [&](research_group_object& rg) {
+       rg.total_tokens_amount = 300;
+    });
+
     return new_research_group_token;
 }
 
-const research_group_object& database_fixture::research_group_setup(const uint32_t id,
-                                                                    const string& permlink,
-                                                                    const string& description,
-                                                                    const uint32_t quorum_percent,
-                                                                    const vector<account_name_type>& accounts)
+const research_group_object& database_fixture::setup_research_group(const uint32_t &id,
+                                                                    const string &permlink,
+                                                                    const string &description,
+                                                                    const uint32_t &quorum_percent,
+                                                                    const int32_t &tokens_amount,
+                                                                    const vector<account_name_type> &accounts)
 {
-    const auto& research_group = research_group_create(id, permlink, description, quorum_percent);
+    const auto& research_group = research_group_create(id, permlink, description, quorum_percent, tokens_amount);
 
     for (const auto& account : accounts)
     {
         research_group_token_create(research_group.id, account);
     }
 
+    auto& cc_research_group = db.obtain_service<dbs_research_group>().get_research_group(id);
     return research_group;
 }
 
