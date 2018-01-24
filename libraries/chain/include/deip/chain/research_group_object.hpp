@@ -25,7 +25,7 @@ public:
     fc::shared_string desciption;
 
     uint32_t quorum_percent;
-    share_type total_tokens_amount;
+    uint32_t total_tokens_amount;
     flat_set<research_group_token_object> research_group_tokens;
 };
 
@@ -41,7 +41,7 @@ public:
 public:
     research_group_token_id_type id;
     research_group_id_type research_group;
-    share_type amount;
+    uint32_t amount;
     account_name_type owner;
 };
 

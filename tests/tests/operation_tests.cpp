@@ -4823,9 +4823,7 @@ BOOST_AUTO_TEST_CASE(invite_member_apply)
 
         vector<account_name_type> accounts = { "alice" };
 
-        setup_research_group(1, "test", "test", 1, 500, accounts);
-
-        auto& research_group_1 = research_group_service.get_research_group(1);
+        setup_research_group(1, "test", "test", 1, 100, accounts);
 
         const std::string invite_member_json = "{\"name\":\"bob\",\"research_group_id\": 1,\"research_group_token_amount\": 10}";
 
@@ -4836,6 +4834,8 @@ BOOST_AUTO_TEST_CASE(invite_member_apply)
         op.voter = "alice";
         op.research_group_id = 1;
         op.proposal_id = 1;
+
+        auto& research_group_1 = research_group_service.get_research_group(1);
 
         BOOST_TEST_MESSAGE("--- Test");
         signed_transaction tx;

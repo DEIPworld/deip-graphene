@@ -363,15 +363,9 @@ const research_group_token_object& database_fixture::research_group_token_create
 {
     auto& research_group_service = db.obtain_service<dbs_research_group>();
 
-    const research_group_token_object& new_research_group_token = research_group_service.create_research_group_token(research_group_id, amount, account);
+    const research_group_token_object& new_research_group_token = research_group_service.create_research_group_token(research_group_id, -amount, account);
 
     const auto& researh_group = research_group_service.get_research_group(research_group_id);
-
-//    research_group_service.adjust_research_group_token_amount(research_group_id, -amount);
-
-    db.modify(researh_group, [&](research_group_object& rg) {
-       rg.total_tokens_amount = 300;
-    });
 
     return new_research_group_token;
 }
@@ -390,7 +384,6 @@ const research_group_object& database_fixture::setup_research_group(const uint32
         research_group_token_create(research_group.id, account);
     }
 
-    auto& cc_research_group = db.obtain_service<dbs_research_group>().get_research_group(id);
     return research_group;
 }
 

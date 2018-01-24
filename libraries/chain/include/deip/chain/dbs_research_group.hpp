@@ -34,7 +34,7 @@ public:
      */
     const research_group_object& create_research_group(const string& permlink, const string& description,
                                                        const uint32_t& quorum_percent,
-                                                       const share_type tokens_amount);
+                                                       const uint32_t& tokens_amount);
 
     void change_quorum(const uint32_t quorum_percent, const research_group_id_type& research_group_id);
 
@@ -46,7 +46,7 @@ public:
                                                                 const research_group_id_type& research_group_id) const;
 
     const research_group_token_object& create_research_group_token(const research_group_id_type& research_group_id,
-                                                                   const share_type amount,
+                                                                   const uint32_t& amount,
                                                                    const account_name_type& account);
 
     void remove_token(const account_name_type& account, const research_group_id_type& research_group_id);
@@ -54,7 +54,7 @@ public:
     void check_research_group_token_existence(const account_name_type& account,
                                         const research_group_id_type& research_group_id) const;
 
-    const research_group_object&  adjust_research_group_token_amount(const research_group_id_type& group_id, const int32_t delta);
+    const research_group_object&  adjust_research_group_token_amount(const research_group_id_type& group_id, const int32_t& delta);
 
     void check_member_existence(const account_name_type& account, const research_group_id_type& group_id);
 

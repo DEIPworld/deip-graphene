@@ -17,7 +17,7 @@ const research_group_object& dbs_research_group::get_research_group(const resear
 const research_group_object& dbs_research_group::create_research_group(const string& permlink,
                                                                        const string& description,
                                                                        const uint32_t& quorum_percent,
-                                                                       const share_type tokens_amount) {
+                                                                       const uint32_t& tokens_amount) {
     const research_group_object& new_research_group = db_impl().create<research_group_object>([&](research_group_object& research_group) {
         fc::from_string(research_group.permlink, permlink);
         fc::from_string(research_group.desciption, description);
@@ -31,7 +31,7 @@ const research_group_object& dbs_research_group::create_research_group(const str
 void dbs_research_group::change_quorum(const uint32_t quorum_percent, const research_group_id_type& research_group_id)
 {
     check_research_group_existence(research_group_id);
-    const research_group_object& research_group = db().obtain_service<dbs_research_group>().get_research_group(research_group_id);
+    const research_group_object& research_group = get_research_group(research_group_id);
     db_impl().modify(research_group, [&](research_group_object& rg) { rg.quorum_percent = quorum_percent; });
 }
 
@@ -51,7 +51,7 @@ const research_group_token_object& dbs_research_group::get_research_group_token_
 }
 
 const research_group_token_object& dbs_research_group::create_research_group_token(const research_group_id_type& research_group_id,
-                                                                                   const share_type amount,
+                                                                                   const uint32_t& amount,
                                                                                    const account_name_type& account) {
     const research_group_token_object& new_research_group_token = db_impl()
             .create<research_group_token_object>([&](research_group_token_object& research_group_token) {
@@ -83,7 +83,7 @@ void dbs_research_group::remove_token(const account_name_type& account,
 
     const research_group_token_object& token = get_research_group_token_by_account(account, research_group_id);
 
-    const research_group_object& research_group = db().obtain_service<dbs_research_group>().get_research_group(research_group_id);
+    const research_group_object& research_group = get_research_group(research_group_id);
 
     db_impl().modify(research_group, [&](research_group_object& rg) { rg.total_tokens_amount -= token.amount; });
 
@@ -91,9 +91,9 @@ void dbs_research_group::remove_token(const account_name_type& account,
 }
 
 const research_group_object& dbs_research_group::adjust_research_group_token_amount(const research_group_id_type &group_id,
-                                                            const int32_t delta) {
-    auto& research_group_service = db().obtain_service<dbs_research_group>();
-    const research_group_object& research_group = research_group_service.get_research_group(group_id);
+                                                            const int32_t& delta) {
+
+    const research_group_object& research_group = get_research_group(group_id);
     FC_ASSERT((research_group.total_tokens_amount + delta > 0), "Cannot update research group token amount (result amount < 0)");
 
     db_impl().modify(research_group, [&](research_group_object& rg) {
