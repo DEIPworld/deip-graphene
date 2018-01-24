@@ -784,6 +784,16 @@ struct create_research_operation : public base_operation
 };
 
 
+struct create_research_content_operation : public base_operation
+{
+    int64_t research_id;
+    research_content_type content_type;
+    research_content_body_type content;
+    vector <account_name_type> authors;
+
+    void validate() const;
+};
+
 struct proposal_create_operation : public base_operation
 {
     account_name_type creator;
@@ -896,6 +906,8 @@ FC_REFLECT( deip::protocol::create_research_operation,  (research_group_id)
                                                         (abstract_content)
                                                         (abstract_references)
                                                         (percent_for_review) )
+
+FC_REFLECT( deip::protocol::create_research_content_operation, (research_id)(content)(content_type)(authors))
 
 FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time)(quorum_percent) )
 FC_REFLECT( deip::protocol::create_research_group_operation, (permlink)(desciption) )

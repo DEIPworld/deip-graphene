@@ -1635,6 +1635,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_budget_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_evaluator>();
     _my->_evaluator_registry.register_evaluator<close_budget_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();

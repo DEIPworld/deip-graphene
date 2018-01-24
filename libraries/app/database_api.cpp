@@ -20,6 +20,7 @@
 
 #include <deip/chain/dbs_budget.hpp>
 #include <deip/chain/dbs_discipline.hpp>
+#include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
 
@@ -2239,7 +2240,7 @@ vector<research_content_api_obj> database_api::get_research_content_by_type(cons
 // TODO: move to operations
 research_content_api_obj database_api::create_research_content(const research_id_type& research_id, const research_content_type& type, const research_content_body_type& content) const
 {
-    return my->_db.with_read_lock([&]() {
+    return my->_db.with_read_lock([&]() { 
         chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
         return research_content_service.create(research_id, type, content);
     });

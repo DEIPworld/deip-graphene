@@ -11,6 +11,7 @@
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_budget.hpp>
 #include <deip/chain/dbs_research.hpp>
+#include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
@@ -1415,6 +1416,7 @@ void create_research_evaluator::do_apply(const create_research_operation &op)
         account_service.check_account_existence(author);
     }
 
+    // todo: add authors to research object
     const auto& research = research_service.create(op.name, op.abstract_content, op.permlink, op.research_group_id, op.percent_for_review);
 
     for (const auto& discipline_id : op.disciplines_ids) {
@@ -1422,10 +1424,23 @@ void create_research_evaluator::do_apply(const create_research_operation &op)
     }
 
     //Create research_token_object
-    //Create research_content_object
 }
 
 
+void create_research_content_evaluator::do_apply(const create_research_content_operation &op)
+{
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    for (const auto& author : op.authors) {
+        account_service.check_account_existence(author);
+    }
+
+    research_service.check_research_existence(op.research_id);
+    // todo: add authors to research content object
+    research_content_service.create(op.research_id, op.content_type, op.content);
+}
 
 void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
 {
