@@ -44,7 +44,9 @@ namespace tests {
     {
     public:
         proposal_vote_evaluator_fixture()
-                : evaluator(account_service, proposal_service, research_group_service)
+                : evaluator(db.obtain_service<deip::chain::dbs_account>(),
+                            db.obtain_service<deip::chain::dbs_proposal>(),
+                            db.obtain_service<deip::chain::dbs_research_group>())
         {
         }
 
@@ -80,11 +82,6 @@ namespace tests {
         }
 
         proposal_vote_operation op;
-
-        deip::chain::dbs_account account_service;
-        deip::chain::dbs_proposal proposal_service;
-        deip::chain::dbs_research_group research_group_service;
-
         evaluator_mocked evaluator;
     };
 
