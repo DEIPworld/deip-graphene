@@ -108,6 +108,21 @@ const proposal_vote_object& dbs_proposal::create_vote(const account_name_type& v
     return new_proposal_vote;
 }
 
+const dbs_proposal::proposal_votes_ref_type  dbs_proposal::get_votes_for(const proposal_id_type &proposal_id) {
+    proposal_votes_ref_type ret;
+
+    auto it_pair = db_impl().get_index<proposal_vote_index>().indicies().get<by_proposal_id>().equal_range(proposal_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
 } // namespace chain
 } // namespace deip
 

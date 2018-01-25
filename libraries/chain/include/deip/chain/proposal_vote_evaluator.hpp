@@ -122,11 +122,15 @@ protected:
 
     bool is_quorum(const proposal_object& proposal)
     {
-        const size_t votes = proposal.voted_accounts.size();
         const research_group_object& research_group = _research_group_service.get_research_group(proposal.research_group_id);
-        const size_t group_members_count = _research_group_service.get_members_count(proposal.research_group_id);
-        const size_t needed_votes = DEIP_1_PERCENT * research_group.quorum_percent * group_members_count / DEIP_100_PERCENT;
-        return votes  >= needed_votes;
+        auto& total_tokens = research_group.total_tokens_amount;
+
+        share_type total_voted_weight = 0;
+        auto& votes = _proposal_service.get_votes_for(proposal.id);
+        for (const proposal_vote_object& vote : votes) {
+            total_voted_weight += vote.weight;
+        }
+        return (total_voted_weight / total_tokens).value * DEIP_1_PERCENT >= research_group.quorum_percent;
     }
 
     void invite_evaluator(const proposal_object& proposal)
@@ -135,7 +139,7 @@ protected:
         _account_service.check_account_existence(data.name);
         _research_group_service.check_research_group_existence(data.research_group_id);
         _research_group_service.create_research_group_token(data.research_group_id, data.research_group_token_amount, data.name);
-        _research_group_service.adjust_research_group_token_amount(data.research_group_id, -data.research_group_token_amount);
+        _research_group_service.adjust_research_group_token_amount(data.research_group_id, data.research_group_token_amount);
     }
 
     void dropout_evaluator(const proposal_object& proposal)

@@ -24,6 +24,7 @@ protected:
     explicit dbs_proposal(database& db);
 
 public:
+    using proposal_votes_ref_type = std::vector<std::reference_wrapper<const proposal_vote_object>>;
 
     typedef deip::protocol::proposal_action_type action_t;
 
@@ -54,9 +55,10 @@ public:
 
     void clear_expired_proposals();
 
-    void remove_proposal_votes(const account_name_type& account,
-                                                  const research_group_id_type& research_group_id);
+    void remove_proposal_votes(const account_name_type& account, const research_group_id_type& research_group_id);
     const proposal_vote_object& vote_for(const proposal_id_type& proposal_id, const account_name_type& voter);
+
+    const proposal_votes_ref_type get_votes_for(const proposal_id_type& proposal_id);
 
 private:
     /* Create proposal vote object
