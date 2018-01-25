@@ -60,10 +60,6 @@ const research_group_token_object& dbs_research_group::create_research_group_tok
         research_group_token.owner = account;
     });
 
-    const research_group_object& research_group = get_research_group(research_group_id);
-
-    db_impl().modify(research_group, [&](research_group_object& rg) { rg.total_tokens_amount += amount; });
-
     return new_research_group_token;
 }
 
@@ -80,13 +76,7 @@ void dbs_research_group::remove_token(const account_name_type& account,
                                       const research_group_id_type& research_group_id)
 {
     check_research_group_token_existence(account, research_group_id);
-
     const research_group_token_object& token = get_research_group_token_by_account(account, research_group_id);
-
-    const research_group_object& research_group = get_research_group(research_group_id);
-
-    db_impl().modify(research_group, [&](research_group_object& rg) { rg.total_tokens_amount -= token.amount; });
-
     db_impl().remove(token);
 }
 

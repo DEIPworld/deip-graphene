@@ -125,12 +125,12 @@ protected:
         const research_group_object& research_group = _research_group_service.get_research_group(proposal.research_group_id);
         auto& total_tokens = research_group.total_tokens_amount;
 
-        share_type total_voted_weight = 0;
+        float total_voted_weight = 0;
         auto& votes = _proposal_service.get_votes_for(proposal.id);
         for (const proposal_vote_object& vote : votes) {
-            total_voted_weight += vote.weight;
+            total_voted_weight += vote.weight.value;
         }
-        return (total_voted_weight / total_tokens).value * DEIP_1_PERCENT >= research_group.quorum_percent;
+        return (total_voted_weight / total_tokens) * DEIP_1_PERCENT >= research_group.quorum_percent;
     }
 
     void invite_evaluator(const proposal_object& proposal)
@@ -144,11 +144,14 @@ protected:
 
     void dropout_evaluator(const proposal_object& proposal)
     {
-        member_proposal_data_type exclude_member_data = fc::json::from_string(proposal.data).as<member_proposal_data_type>();
-        _account_service.check_account_existence(exclude_member_data.name);
-        _research_group_service.check_research_group_token_existence(exclude_member_data.name, exclude_member_data.research_group_id);
-        _proposal_service.remove_proposal_votes(exclude_member_data.name, exclude_member_data.research_group_id);
-        _research_group_service.remove_token(exclude_member_data.name, exclude_member_data.research_group_id);
+        member_proposal_data_type data = fc::json::from_string(proposal.data).as<member_proposal_data_type>();
+        _account_service.check_account_existence(data.name);
+        _research_group_service.check_research_group_token_existence(data.name, data.research_group_id);
+        _proposal_service.remove_proposal_votes(data.name, data.research_group_id);
+        auto& token = _research_group_service.get_research_group_token_by_account(data.name, data.research_group_id);
+        auto tokens_amount = token.amount;
+        _research_group_service.remove_token(data.name, data.research_group_id);
+        _research_group_service.adjust_research_group_token_amount(data.research_group_id, -tokens_amount);
     }
 
     void change_research_review_share_evaluator(const proposal_object& proposal)

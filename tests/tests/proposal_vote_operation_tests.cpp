@@ -42,9 +42,6 @@ public:
             : evaluator(db.obtain_service<dbs_account>(),
                         db.obtain_service<dbs_proposal>(),
                         db.obtain_service<dbs_research_group>()) {
-        ACTORS((alice)(bob))
-        std::vector<account_name_type> accounts = {"alice"};
-        setup_research_group(1, "research_group", "research group", 50, 100, accounts);
     }
 
     ~proposal_vote_evaluator_fixture() {
@@ -57,8 +54,15 @@ public:
 BOOST_FIXTURE_TEST_SUITE(proposal_vote_evaluator_tests, proposal_vote_evaluator_fixture)
 
 BOOST_AUTO_TEST_CASE(invite_member_execute_test) {
+    ACTORS((alice)(bob))
+    std::vector<account_name_type> accounts = {"alice"};
+    setup_research_group(1, "research_group", "research group", 1, 100, accounts);
     const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":1,\"research_group_token_amount\":50}";
-    proposal_create(1, dbs_proposal::action_t::invite_member, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 50);
+    proposal_create(1, dbs_proposal::action_t::invite_member, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+
+
+    auto& research_group_service = db.obtain_service<dbs_research_group>();
+    auto& rg = research_group_service.get_research_group(1);
 
     proposal_vote_operation op;
     op.research_group_id = 1;
@@ -67,7 +71,6 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test) {
 
     evaluator.do_apply(op);
 
-    auto& research_group_service = db.obtain_service<dbs_research_group>();
     auto& bobs_token = research_group_service.get_research_group_token_by_account("bob", 1);
 
     BOOST_CHECK(bobs_token.owner == "bob");
@@ -75,7 +78,7 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test) {
     BOOST_CHECK(bobs_token.research_group == 1);
 
     auto& research_group = research_group_service.get_research_group(1);
-    //BOOST_CHECK(research_group.total_tokens_amount == 150);
+    BOOST_CHECK(research_group.total_tokens_amount == 250);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
