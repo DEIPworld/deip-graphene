@@ -4770,94 +4770,45 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 //    FC_LOG_AND_RETHROW()
 //}
 
-BOOST_AUTO_TEST_CASE(create_research_group_apply)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: create_research_group_apply");
+//BOOST_AUTO_TEST_CASE(create_research_group_apply)
+//{
+//    try
+//    {
+//        BOOST_TEST_MESSAGE("Testing: create_research_group_apply");
+//
+//        ACTORS((alice));
+//        generate_block();
+//
+//        private_key_type priv_key = generate_private_key("alice");
+//
+//        create_research_group_operation op;
+//
+//        op.creator = "alice";
+//        op.permlink = "group";
+//        op.desciption = "group";
+//        op.quorum_percent = 10;
+//        op.tokens_amount = 100;
+//
+//        BOOST_TEST_MESSAGE("--- Test");
+//        signed_transaction tx;
+//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx.operations.push_back(op);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        tx.validate();
+//        db.push_transaction(tx, 0);
+//
+//        auto& research_group_service = db.obtain_service<dbs_research_group>();
+//        auto& research_group = research_group_service.get_research_group(0);
+//
+//        BOOST_CHECK(research_group.desciption == "group");
+//        BOOST_CHECK(research_group.permlink == "group");
+//        BOOST_CHECK(research_group.quorum_percent == 10);
+//        BOOST_CHECK(research_group.total_tokens_amount == 100);
+//
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
 
-        ACTORS((alice));
-        generate_block();
-
-        private_key_type priv_key = generate_private_key("alice");
-
-        create_research_group_operation op;
-
-        op.creator = "alice";
-        op.permlink = "group";
-        op.desciption = "group";
-        op.quorum_percent = 10;
-        op.tokens_amount = 100;
-
-        BOOST_TEST_MESSAGE("--- Test");
-        signed_transaction tx;
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.operations.push_back(op);
-        tx.sign(alice_private_key, db.get_chain_id());
-        tx.validate();
-        db.push_transaction(tx, 0);
-
-        auto& research_group_service = db.obtain_service<dbs_research_group>();
-        auto& research_group = research_group_service.get_research_group(0);
-
-        BOOST_CHECK(research_group.desciption == "group");
-        BOOST_CHECK(research_group.permlink == "group");
-        BOOST_CHECK(research_group.quorum_percent == 10);
-        BOOST_CHECK(research_group.total_tokens_amount == 100);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(invite_member_apply)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: account_create_apply");
-
-        ACTORS((alice)(bob));
-        generate_block();
-
-        private_key_type priv_key = generate_private_key("alice");
-        auto& research_group_service = db.obtain_service<dbs_research_group>();
-
-        vector<account_name_type> accounts = { "alice" };
-
-        setup_research_group(1, "test", "test", 1, 100, accounts);
-
-        const std::string invite_member_json = "{\"name\":\"bob\",\"research_group_id\": 1,\"research_group_token_amount\": 10}";
-
-        proposal_create(1, invite_member, invite_member_json, "alice", 1, time_point_sec(0xffffffff), 1);
-
-        proposal_vote_operation op;
-
-        op.voter = "alice";
-        op.research_group_id = 1;
-        op.proposal_id = 1;
-
-        auto& research_group_1 = research_group_service.get_research_group(1);
-
-        BOOST_TEST_MESSAGE("--- Test");
-        signed_transaction tx;
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.operations.push_back(op);
-        tx.sign(alice_private_key, db.get_chain_id());
-        tx.validate();
-        db.push_transaction(tx, 0);
-
-        auto& bobs_token = research_group_service.get_research_group_token_by_account("bob", 1);
-
-        BOOST_CHECK(bobs_token.research_group == 1);
-        BOOST_CHECK(bobs_token.amount == 10);
-        BOOST_CHECK(bobs_token.owner == "bob");
-
-        auto& research_group = research_group_service.get_research_group(1);
-        // Validate we have correct tokens amount in group taking into account alice's and bob's tokens
-        BOOST_CHECK(research_group.total_tokens_amount == 80);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
 BOOST_AUTO_TEST_SUITE_END()
 
 #endif
