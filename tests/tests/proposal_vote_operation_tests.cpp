@@ -7,95 +7,79 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/proposal_vote_evaluator.hpp>
-#include <deip/chain/proposal_object.hpp>
+#include <deip/chain/deip_objects.hpp>
 
-#include "defines.hpp"
 #include "database_fixture.hpp"
 
+using namespace deip::chain;
+
+namespace deip {
 namespace tests {
 
-    using deip::protocol::account_name_type;
-    using deip::chain::proposal_object;
-    using deip::chain::proposal_vote_operation;
-    using deip::protocol::proposal_action_type;
-    using deip::chain::proposal_id_type;
+using deip::protocol::account_name_type;
+using deip::protocol::proposal_action_type;
 
 
-    typedef deip::chain::proposal_vote_evaluator_t<deip::chain::dbs_account, deip::chain::dbs_proposal, deip::chain::dbs_research_group>
-            proposal_vote_evaluator;
+typedef deip::chain::proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group>
+        proposal_vote_evaluator;
 
-    class evaluator_mocked : public proposal_vote_evaluator
-    {
-    public:
-        evaluator_mocked(deip::chain::dbs_account& account_service,
-                         deip::chain::dbs_proposal& proposal_service,
-                         deip::chain::dbs_research_group& research_group_service)
-                : proposal_vote_evaluator(account_service, proposal_service, research_group_service)
-        {
-        }
+class evaluator_mocked : public proposal_vote_evaluator {
+public:
+    evaluator_mocked(dbs_account &account_service,
+                     dbs_proposal &proposal_service,
+                     dbs_research_group &research_group_service)
+            : proposal_vote_evaluator(account_service, proposal_service, research_group_service) {
+    }
 
-        void execute_proposal(const proposal_object& proposal)
-        {
-            proposal_vote_evaluator::execute_proposal(proposal);
-        }
-    };
+    void execute_proposal(const proposal_object &proposal) {
+        proposal_vote_evaluator::execute_proposal(proposal);
+    }
+};
 
-    class proposal_vote_evaluator_fixture : public deip::chain::clean_database_fixture
-    {
-    public:
-        proposal_vote_evaluator_fixture()
-                : evaluator(db.obtain_service<deip::chain::dbs_account>(),
-                            db.obtain_service<deip::chain::dbs_proposal>(),
-                            db.obtain_service<deip::chain::dbs_research_group>())
-        {
-        }
+class proposal_vote_evaluator_fixture : public clean_database_fixture {
+public:
+    proposal_vote_evaluator_fixture()
+            : evaluator(db.obtain_service<dbs_account>(),
+                        db.obtain_service<dbs_proposal>(),
+                        db.obtain_service<dbs_research_group>()) {
+        ACTORS((alice)(bob))
+        std::vector<account_name_type> accounts = {"alice"};
+        setup_research_group(1, "research_group", "research group", 50, 100, accounts);
+    }
 
-        ~proposal_vote_evaluator_fixture()
-        {
-        }
+    ~proposal_vote_evaluator_fixture() {
+    }
 
-        void apply()
-        {
-            evaluator.do_apply(op);
-        }
 
-        const proposal_object& proposal_create(const uint32_t id,
-                                               const deip::chain::dbs_proposal::action_t action,
-                                               const std::string json_data,
-                                               const account_name_type& creator,
-                                               const deip::chain::research_group_id_type& research_group_id,
-                                               const fc::time_point_sec expiration_time,
-                                               const uint32_t quorum_percent)
-        {
-            const proposal_object& new_proposal = db.create<proposal_object>([&](proposal_object& proposal) {
-                proposal.action = action;
-                proposal.id = id;
-                proposal.data = json_data;
-                proposal.creator = creator;
-                proposal.research_group_id = research_group_id;
-                proposal.creation_time = fc::time_point_sec();
-                proposal.expiration_time = expiration_time;
-                proposal.quorum_percent = quorum_percent;
-            });
-
-            return new_proposal;
-        }
-
-        proposal_vote_operation op;
-        evaluator_mocked evaluator;
-    };
+    evaluator_mocked evaluator;
+};
 
 BOOST_FIXTURE_TEST_SUITE(proposal_vote_evaluator_tests, proposal_vote_evaluator_fixture)
 
+BOOST_AUTO_TEST_CASE(invite_member_execute_test) {
+    const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":1,\"research_group_token_amount\":50}";
+    proposal_create(1, dbs_proposal::action_t::invite_member, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 50);
+
+    proposal_vote_operation op;
+    op.research_group_id = 1;
+    op.proposal_id = 1;
+    op.voter = "alice";
+
+    evaluator.do_apply(op);
+
+    auto& research_group_service = db.obtain_service<dbs_research_group>();
+    auto& bobs_token = research_group_service.get_research_group_token_by_account("bob", 1);
+
+    BOOST_CHECK(bobs_token.owner == "bob");
+    BOOST_CHECK(bobs_token.amount == 50);
+    BOOST_CHECK(bobs_token.research_group == 1);
+
+    auto& research_group = research_group_service.get_research_group(1);
+    //BOOST_CHECK(research_group.total_tokens_amount == 150);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_FIXTURE_TEST_SUITE(proposal_execute_tests, proposal_vote_evaluator_fixture)
-
-
-BOOST_AUTO_TEST_SUITE_END()
-
-}//
-// Created by dzeranov on 25.1.18.
-//
+}
+}
 
