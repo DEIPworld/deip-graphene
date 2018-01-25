@@ -62,7 +62,6 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test) {
 
 
     auto& research_group_service = db.obtain_service<dbs_research_group>();
-    auto& rg = research_group_service.get_research_group(1);
 
     proposal_vote_operation op;
     op.research_group_id = 1;
