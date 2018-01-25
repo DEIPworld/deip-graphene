@@ -81,8 +81,36 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test) {
     BOOST_CHECK(research_group.total_tokens_amount == 250);
 }
 
+BOOST_AUTO_TEST_CASE(exclude_member_apply)
+{
+    try
+    {
+        ACTORS((alice)(bob));
+
+        auto& research_group_service = db.obtain_service<dbs_research_group>();
+        vector<account_name_type> accounts = { "alice", "bob" };
+        setup_research_group(1, "research_group", "research group", 1, 100, accounts);
+
+        const std::string exclude_member_json = "{\"name\":\"bob\",\"research_group_id\": 1}";
+        proposal_create(1, dbs_proposal::action_t::dropout_member, exclude_member_json, "alice", 1, time_point_sec(0xffffffff), 1);
+
+        proposal_vote_operation op;
+
+        op.research_group_id = 1;
+        op.proposal_id = 1;
+        op.voter = "alice";
+
+        evaluator.do_apply(op);
+
+        auto& research_group = research_group_service.get_research_group(1);
+
+        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account("bob", 1), std::out_of_range);
+        BOOST_CHECK(research_group.total_tokens_amount == 200);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 }
 }
-
