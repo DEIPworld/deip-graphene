@@ -27,7 +27,7 @@ dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines() const
     return ret;
 }
 
-const discipline_object& dbs_discipline::get_discipline(const discipline_id_type id) const
+const discipline_object& dbs_discipline::get_discipline(const discipline_id_type& id) const
 {
     return db_impl().get<discipline_object>(id);
 }
@@ -37,9 +37,11 @@ const discipline_object& dbs_discipline::get_discipline_by_name(const discipline
     return db_impl().get<discipline_object, by_discipline_name>(name);
 }
 
-const discipline_object* dbs_discipline::find_discipline_by_name(const discipline_name_type& name) const
+void dbs_discipline::check_discipline_existence(const discipline_name_type &name)
 {
-    return db_impl().find<discipline_object, by_discipline_name>(name);
+    const auto& idx = db_impl().get_index<discipline_index>().indices().get<by_discipline_name>();
+
+    FC_ASSERT(idx.find(name) != idx.cend(), "Discipline \"${1}\" does not exist", ("1", name));
 }
 
 dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines_by_parent_id(const discipline_id_type parent_id) const
