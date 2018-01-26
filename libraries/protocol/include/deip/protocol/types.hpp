@@ -156,6 +156,15 @@ struct extended_private_key_type
     friend bool operator!=(const extended_private_key_type& p1, const extended_private_key_type& p2);
 };
 
+enum research_content_type : uint16_t
+{
+    announcement = 1,
+    milestone = 2,
+    comment = 3 ,
+    final_result = 4,
+    review = 5,
+};
+
 enum proposal_action_type
 {
     start_new_research,
@@ -196,6 +205,7 @@ FC_REFLECT(deip::protocol::extended_public_key_type::binary_key, (check)(data))
 FC_REFLECT(deip::protocol::extended_private_key_type, (key_data))
 FC_REFLECT(deip::protocol::extended_private_key_type::binary_key, (check)(data))
 
+FC_REFLECT_ENUM( deip::protocol::research_content_type, (announcement)(milestone)(comment)(final_result)(review) )
 FC_REFLECT_ENUM(deip::protocol::proposal_action_type,   (start_new_research)
                                                         (invite_member)
                                                         (dropout_member)

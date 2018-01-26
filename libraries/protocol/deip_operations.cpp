@@ -337,16 +337,28 @@ void create_budget_operation::validate() const
 
 void create_research_operation::validate() const
 {
+    FC_ASSERT(authors.size() > 0, "Research should contain at least 1 author");
     for (const account_name_type& author : authors)
     {
         validate_account_name(author);
     }
-    
+
     validate_permlink(permlink);
 
     FC_ASSERT(!name.empty(), "Research name cannot be empty");
+    FC_ASSERT(!abstract_content.empty(), "Research abstract cannot be empty");
     FC_ASSERT(disciplines_ids.size() > 0, "Research should be linked to at least 1 discipline");
     FC_ASSERT(percent_for_review >= 5 * DEIP_1_PERCENT && percent_for_review <= 50 * DEIP_1_PERCENT, "Percent for review must be 5-50%");
+}
+
+void create_research_content_operation::validate() const
+{
+    FC_ASSERT(authors.size() > 0, "Research content should contain at least 1 author");
+    for (const account_name_type& author : authors)
+    {
+        validate_account_name(author);
+    }
+    FC_ASSERT(!content.empty(), "Research content cannot be empty");
 }
 
 void proposal_create_operation::validate() const

@@ -30,6 +30,8 @@ public:
     const research_object& get_research(const research_id_type& id) const;
 
     const research_object& get_research_by_permlink(const string& permlink) const;
+
+    void check_research_existence(const research_id_type& id) const;
 };
 }
 }

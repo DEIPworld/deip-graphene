@@ -52,5 +52,11 @@ const research_object& dbs_research::get_research_by_permlink(const string& perm
     return db_impl().get<research_object, by_permlink>(permlink);
 }
 
+void dbs_research::check_research_existence(const research_id_type& id) const
+{
+    auto research = db_impl().find<research_object, by_id>(id);
+    FC_ASSERT(research != nullptr, "Research with _id \"${1}\" must exist.", ("1", id));
+}
+
 }
 }

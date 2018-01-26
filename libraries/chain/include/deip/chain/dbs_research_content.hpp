@@ -9,6 +9,7 @@
 namespace deip{
 namespace chain{
 
+using deip::protocol::research_content_type;
 using deip::protocol::research_content_body_type;
 
 
