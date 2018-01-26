@@ -25,12 +25,17 @@ protected:
 
 public:
     using proposal_votes_ref_type = std::vector<std::reference_wrapper<const proposal_vote_object>>;
+    using proposal_ref_type = std::vector<std::reference_wrapper<const proposal_object>>;
 
     typedef deip::protocol::proposal_action_type action_t;
 
     /** Get proposal by id
      */
     const proposal_object& get_proposal(const proposal_id_type& id) const;
+
+    /** Get proposals by research group
+     */
+    const proposal_ref_type get_proposals_by_research_group_id(const research_group_id_type& research_group_id) const;
 
     /** Create proposal object.
      *

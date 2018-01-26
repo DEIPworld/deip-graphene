@@ -17,6 +17,23 @@ const proposal_object& dbs_proposal::get_proposal(const proposal_id_type& id) co
     return db_impl().get<proposal_object>(id);
 }
 
+const dbs_proposal::proposal_ref_type
+dbs_proposal::get_proposals_by_research_group_id(const research_group_id_type& research_group_id) const
+{
+    proposal_ref_type ret;
+
+    auto it_pair = db_impl().get_index<proposal_index>().indicies().get<by_research_group_id>().equal_range(research_group_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
 const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_t action,
                                                      const std::string json_data,
                                                      const account_name_type& creator,
