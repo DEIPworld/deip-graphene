@@ -744,22 +744,11 @@ struct delegate_vesting_shares_operation : public base_operation
 struct create_budget_operation : public base_operation
 {
     account_name_type owner;
-    string content_permlink;
-
     asset balance;
-    time_point_sec deadline;
 
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
-
-struct close_budget_operation : public base_operation
-{
-    int64_t budget_id;
-    account_name_type owner;
+    discipline_name_type target_discipline;
+    uint32_t start_block;
+    uint32_t end_block;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -894,8 +883,7 @@ FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recov
 FC_REFLECT( deip::protocol::decline_voting_rights_operation, (account)(decline) )
 FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) )
 
-FC_REFLECT( deip::protocol::create_budget_operation, (owner)(content_permlink)(balance)(deadline) )
-FC_REFLECT( deip::protocol::close_budget_operation, (budget_id)(owner) )
+FC_REFLECT( deip::protocol::create_budget_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
 
 FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption) )

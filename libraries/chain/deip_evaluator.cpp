@@ -10,6 +10,7 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_proposal.hpp>
@@ -1382,27 +1383,13 @@ void create_budget_evaluator::do_apply(const create_budget_operation& op)
 {
     dbs_budget& budget_service = _db.obtain_service<dbs_budget>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
-
+    dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     account_service.check_account_existence(op.owner);
-
-    optional<string> content_permlink;
-    if (!op.content_permlink.empty())
-    {
-        content_permlink = op.content_permlink;
-    }
-
     const auto& owner = account_service.get_account(op.owner);
-
-    budget_service.create_budget(owner, op.balance, op.deadline, content_permlink);
-}
-
-void close_budget_evaluator::do_apply(const close_budget_operation& op)
-{
-    dbs_budget& budget_service = _db.obtain_service<dbs_budget>();
-
-    const budget_object& budget = budget_service.get_budget(budget_id_type(op.budget_id));
-
-    budget_service.close_budget(budget);
+    auto discipline = discipline_service.find_discipline_by_name(op.target_discipline);
+    //DEIP: not sure that we can pass pointer from data service to evaluator, check pls
+    FC_ASSERT(discipline != nullptr, "Target discipline doesn't exist");
+    budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline->id);
 }
 
 void create_research_evaluator::do_apply(const create_research_operation &op)

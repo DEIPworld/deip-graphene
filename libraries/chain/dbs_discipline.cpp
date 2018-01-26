@@ -37,6 +37,11 @@ const discipline_object& dbs_discipline::get_discipline_by_name(const discipline
     return db_impl().get<discipline_object, by_discipline_name>(name);
 }
 
+const discipline_object* dbs_discipline::find_discipline_by_name(const discipline_name_type& name) const
+{
+    return db_impl().find<discipline_object, by_discipline_name>(name);
+}
+
 dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines_by_parent_id(const discipline_id_type parent_id) const
 {
     discipline_ref_type ret;
