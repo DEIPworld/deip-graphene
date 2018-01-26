@@ -80,6 +80,15 @@ struct change_quorum_proposal_data_type
                                                                        quorum_percent(quorum_percent){}
 };
 
+struct start_research_proposal_data_type
+{
+    string name;
+    string abstract;
+    string permlink;
+    int64_t research_group_id;
+    uint32_t percent_for_review;
+};
+
 typedef multi_index_container<proposal_object,
                                                 indexed_by<ordered_unique<tag<by_id>, 
                                                                 member<proposal_object, 
@@ -103,5 +112,7 @@ FC_REFLECT(deip::chain::member_proposal_data_type, (research_group_id)(name))
 FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount))
 
 FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
+
+FC_REFLECT(deip::chain::start_research_proposal_data_type, (name)(abstract)(permlink)(research_group_id)(percent_for_review))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::proposal_object, deip::chain::proposal_index)

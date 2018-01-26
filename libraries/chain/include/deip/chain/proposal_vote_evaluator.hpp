@@ -12,6 +12,7 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_research.hpp>
 
 #include <deip/chain/proposal_object.hpp>
 
@@ -24,6 +25,7 @@ using namespace deip::protocol;
 template <typename AccountService,
         typename ProposalService,
         typename ResearchGroupService,
+        typename ResearchService,
         typename OperationType = deip::protocol::operation>
 class proposal_vote_evaluator_t : public evaluator<OperationType>
 // clang-format on
@@ -33,6 +35,7 @@ public:
     typedef proposal_vote_evaluator_t<AccountService,
             ProposalService,
             ResearchGroupService,
+            ResearchService,
             OperationType>
             EvaluatorType;
 
@@ -64,11 +67,13 @@ public:
 
     proposal_vote_evaluator_t(AccountService& account_service,
                               ProposalService& proposal_service,
-                              ResearchGroupService& research_group_service
+                              ResearchGroupService& research_group_service,
+                              ResearchService& research_service
                               )
             : _account_service(account_service)
             , _proposal_service(proposal_service)
             , _research_group_service(research_group_service)
+            , _research_service(research_service)
     {
         evaluators.set(proposal_action_type::invite_member,
                        std::bind(&EvaluatorType::invite_evaluator, this, std::placeholders::_1));
@@ -78,6 +83,8 @@ public:
                        std::bind(&EvaluatorType::change_quorum_evaluator, this, std::placeholders::_1));
         evaluators.set(proposal_action_type::change_research_review_share_percent,
                        std::bind(&EvaluatorType::change_research_review_share_evaluator, this, std::placeholders::_1));
+        evaluators.set(proposal_action_type::start_research,
+                       std::bind(&EvaluatorType::start_research_evaluator, this, std::placeholders::_1));
     }
 
     virtual void apply(const OperationType& o) final override
@@ -167,15 +174,23 @@ protected:
         _research_group_service.change_quorum(change_quorum_data.quorum_percent, change_quorum_data.research_group_id);
     }
 
+    void start_research_evaluator(const proposal_object& proposal)
+    {
+        start_research_proposal_data_type data = fc::json::from_string(proposal.data).as<start_research_proposal_data_type>();
+        _research_group_service.check_research_group_existence(data.research_group_id);
+        _research_service.create(data.name, data.abstract, data.permlink, data.research_group_id, data.percent_for_review);
+    }
+
     AccountService& _account_service;
     ProposalService& _proposal_service;
     ResearchGroupService& _research_group_service;
+    ResearchService& _research_service;
 
 private:
     proposal_evaluators_register evaluators;
 };
 
-typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group>
+typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research>
         proposal_vote_evaluator;
 
 } // namespace chain
