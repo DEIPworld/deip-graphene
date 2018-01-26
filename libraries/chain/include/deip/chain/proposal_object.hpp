@@ -49,6 +49,25 @@ struct member_proposal_data_type
     }
 };
 
+struct invite_member_proposal_data_type
+{
+    research_group_id_type research_group_id;
+    deip::protocol::account_name_type name;
+    uint32_t research_group_token_amount;
+
+    invite_member_proposal_data_type()
+    {
+    }
+
+    invite_member_proposal_data_type(const research_group_id_type& research_group_id,
+                              const deip::protocol::account_name_type& name, const uint32_t& research_group_token_amount)
+            : research_group_id(research_group_id)
+            , name(name)
+            , research_group_token_amount(research_group_token_amount)
+    {
+    }
+};
+
 struct change_quorum_proposal_data_type
 {
     research_group_id_type research_group_id;
@@ -80,6 +99,8 @@ typedef multi_index_container<proposal_object,
 FC_REFLECT(deip::chain::proposal_object, (id)(research_group_id)(action)(creation_time)(expiration_time)(creator)(data)(quorum_percent)(current_votes_amount))
 
 FC_REFLECT(deip::chain::member_proposal_data_type, (research_group_id)(name))
+
+FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount))
 
 FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
 
