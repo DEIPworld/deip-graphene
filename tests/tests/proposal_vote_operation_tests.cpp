@@ -6,6 +6,7 @@
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_research.hpp>
 #include <deip/chain/proposal_vote_evaluator.hpp>
 #include <deip/chain/deip_objects.hpp>
 
@@ -20,15 +21,16 @@ using deip::protocol::account_name_type;
 using deip::protocol::proposal_action_type;
 
 
-typedef deip::chain::proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group>
+typedef deip::chain::proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research>
         proposal_vote_evaluator;
 
 class evaluator_mocked : public proposal_vote_evaluator {
 public:
     evaluator_mocked(dbs_account &account_service,
                      dbs_proposal &proposal_service,
-                     dbs_research_group &research_group_service)
-            : proposal_vote_evaluator(account_service, proposal_service, research_group_service) {
+                     dbs_research_group &research_group_service,
+                     dbs_research &research_service)
+            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service) {
     }
 
     void execute_proposal(const proposal_object &proposal) {
@@ -41,7 +43,8 @@ public:
     proposal_vote_evaluator_fixture()
             : evaluator(db.obtain_service<dbs_account>(),
                         db.obtain_service<dbs_proposal>(),
-                        db.obtain_service<dbs_research_group>()) {
+                        db.obtain_service<dbs_research_group>(),
+                        db.obtain_service<dbs_research>()) {
     }
 
     ~proposal_vote_evaluator_fixture() {
@@ -53,7 +56,8 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(proposal_vote_evaluator_tests, proposal_vote_evaluator_fixture)
 
-BOOST_AUTO_TEST_CASE(invite_member_execute_test) {
+BOOST_AUTO_TEST_CASE(invite_member_execute_test)
+{
     ACTORS((alice)(bob))
     std::vector<account_name_type> accounts = {"alice"};
     setup_research_group(1, "research_group", "research group", 1, 100, accounts);
@@ -135,6 +139,35 @@ BOOST_AUTO_TEST_CASE(change_quorum_test)
         BOOST_CHECK(research_group.quorum_percent == 80);
     }
     FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(start_research_execute_test)
+{
+    ACTORS((alice))
+    std::vector<account_name_type> accounts = {"alice"};
+    setup_research_group(1, "research_group", "research group", 1, 100, accounts);
+    const std::string json_str = "{\"name\":\"test\","
+            "\"research_group_id\":1,"
+            "\"abstract\":\"abstract\","
+            "\"permlink\":\"permlink\","
+            "\"percent_for_review\": 10}";
+    proposal_create(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+
+    proposal_vote_operation op;
+    op.research_group_id = 1;
+    op.proposal_id = 1;
+    op.voter = "alice";
+
+    evaluator.do_apply(op);
+
+    auto& research_service = db.obtain_service<dbs_research>();
+    auto& research = research_service.get_research(0);
+
+    BOOST_CHECK(research.name == "test");
+    BOOST_CHECK(research.abstract == "abstract");
+    BOOST_CHECK(research.permlink == "permlink");
+    BOOST_CHECK(research.research_group_id == 1);
+    BOOST_CHECK(research.percent_for_review == 10);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

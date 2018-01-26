@@ -167,7 +167,7 @@ enum research_content_type : uint16_t
 
 enum proposal_action_type
 {
-    start_new_research,
+    start_research,
     invite_member,
     dropout_member,
     send_funds,
@@ -206,7 +206,7 @@ FC_REFLECT(deip::protocol::extended_private_key_type, (key_data))
 FC_REFLECT(deip::protocol::extended_private_key_type::binary_key, (check)(data))
 
 FC_REFLECT_ENUM( deip::protocol::research_content_type, (announcement)(milestone)(comment)(final_result)(review) )
-FC_REFLECT_ENUM(deip::protocol::proposal_action_type,   (start_new_research)
+FC_REFLECT_ENUM(deip::protocol::proposal_action_type,   (start_research)
                                                         (invite_member)
                                                         (dropout_member)
                                                         (send_funds)
