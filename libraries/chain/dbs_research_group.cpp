@@ -20,7 +20,7 @@ const research_group_object& dbs_research_group::create_research_group(const str
                                                                        const uint32_t& tokens_amount) {
     const research_group_object& new_research_group = db_impl().create<research_group_object>([&](research_group_object& research_group) {
         fc::from_string(research_group.permlink, permlink);
-        fc::from_string(research_group.desciption, description);
+        fc::from_string(research_group.description, description);
         research_group.quorum_percent = quorum_percent;
         research_group.total_tokens_amount = tokens_amount;
     });
@@ -55,7 +55,7 @@ const research_group_token_object& dbs_research_group::create_research_group_tok
                                                                                    const account_name_type& account) {
     const research_group_token_object& new_research_group_token = db_impl()
             .create<research_group_token_object>([&](research_group_token_object& research_group_token) {
-        research_group_token.research_group = research_group_id;
+        research_group_token.research_group_id = research_group_id;
         research_group_token.amount = amount;
         research_group_token.owner = account;
     });

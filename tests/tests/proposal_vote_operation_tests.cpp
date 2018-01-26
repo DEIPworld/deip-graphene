@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test) {
 
     BOOST_CHECK(bobs_token.owner == "bob");
     BOOST_CHECK(bobs_token.amount == 50);
-    BOOST_CHECK(bobs_token.research_group == 1);
+    BOOST_CHECK(bobs_token.research_group_id == 1);
 
     auto& research_group = research_group_service.get_research_group(1);
     BOOST_CHECK(research_group.total_tokens_amount == 250);
