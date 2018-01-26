@@ -68,7 +68,7 @@ const proposal_vote_object& dbs_proposal::vote_for(const proposal_id_type &propo
     auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
     auto& proposal = get_proposal(proposal_id);
 
-    auto& token = research_group_service.get_research_group_token_by_account(voter, proposal.research_group_id);
+    auto& token = research_group_service.get_research_group_token_by_account_and_research_id(voter, proposal.research_group_id);
     auto wight = token.amount;
 
     db_impl().modify(proposal, [&](proposal_object& p) {

@@ -24,6 +24,7 @@ protected:
 
 public:
 
+    using research_group_token_refs_type = std::vector<std::reference_wrapper<const research_group_token_object>>;
     /** Get research group by id
      */
     const research_group_object& get_research_group(const research_group_id_type& id) const;
@@ -42,23 +43,21 @@ public:
 
     const research_group_token_object& get_research_group_token_by_id(const research_group_token_id_type& id) const;
 
-    const research_group_token_object& get_research_group_token_by_account(const account_name_type& account,
+    research_group_token_refs_type get_research_group_tokens_by_account_name(const account_name_type &account_name) const;
+
+    const research_group_token_object& get_research_group_token_by_account_and_research_id(const account_name_type& account,
                                                                 const research_group_id_type& research_group_id) const;
 
     const research_group_token_object& create_research_group_token(const research_group_id_type& research_group_id,
                                                                    const uint32_t& amount,
-                                                                   const account_name_type& account);
+                                                                   const account_name_type& owner);
 
     void remove_token(const account_name_type& account, const research_group_id_type& research_group_id);
 
     void check_research_group_token_existence(const account_name_type& account,
                                         const research_group_id_type& research_group_id) const;
 
-    const research_group_object&  adjust_research_group_token_amount(const research_group_id_type& group_id, const int32_t& delta);
-
-    void check_member_existence(const account_name_type& account, const research_group_id_type& group_id);
-
-    size_t get_members_count(const research_group_id_type& group_id);
+    const research_group_object&  adjust_research_group_token_amount(const research_group_id_type& research_group_id, const int32_t& delta);
 
 };
 
