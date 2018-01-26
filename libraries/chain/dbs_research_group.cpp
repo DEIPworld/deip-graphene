@@ -60,7 +60,7 @@ dbs_research_group::research_group_token_refs_type dbs_research_group::get_resea
     }
 
     return ret;
-    
+
 }
 
 const research_group_token_object& dbs_research_group::get_research_group_token_by_account_and_research_id(const account_name_type &account,
@@ -70,12 +70,12 @@ const research_group_token_object& dbs_research_group::get_research_group_token_
 
 const research_group_token_object& dbs_research_group::create_research_group_token(const research_group_id_type& research_group_id,
                                                                                    const uint32_t& amount,
-                                                                                   const account_name_type& account) {
+                                                                                   const account_name_type& owner) {
     const research_group_token_object& new_research_group_token = db_impl()
             .create<research_group_token_object>([&](research_group_token_object& research_group_token) {
         research_group_token.research_group_id = research_group_id;
         research_group_token.amount = amount;
-        research_group_token.owner = account;
+        research_group_token.owner = owner;
     });
 
     return new_research_group_token;
@@ -98,10 +98,10 @@ void dbs_research_group::remove_token(const account_name_type& account,
     db_impl().remove(token);
 }
 
-const research_group_object& dbs_research_group::adjust_research_group_token_amount(const research_group_id_type &group_id,
+const research_group_object& dbs_research_group::adjust_research_group_token_amount(const research_group_id_type &research_group_id,
                                                             const int32_t& delta) {
 
-    const research_group_object& research_group = get_research_group(group_id);
+    const research_group_object& research_group = get_research_group(research_group_id);
     FC_ASSERT((research_group.total_tokens_amount + delta > 0), "Cannot update research group token amount (result amount < 0)");
 
     db_impl().modify(research_group, [&](research_group_object& rg) {
@@ -109,17 +109,6 @@ const research_group_object& dbs_research_group::adjust_research_group_token_amo
     });
 
     return research_group;
-}
-
-void dbs_research_group::check_member_existence(const account_name_type &account,
-                                                const research_group_id_type& group_id)
-{
-    check_research_group_token_existence(account, group_id);
-}
-
-size_t dbs_research_group::get_members_count(const research_group_id_type &group_id)
-{
-    return db_impl().get_index<research_group_token_index>().indices().size();
 }
 
 } // namespace chain

@@ -93,7 +93,7 @@ public:
 
     void do_apply(const proposal_vote_operation& op)
     {
-        _research_group_service.check_member_existence(op.voter, op.research_group_id);
+        _research_group_service.check_research_group_token_existence(op.voter, op.research_group_id);
         _account_service.check_account_existence(op.voter);
 
         _proposal_service.check_proposal_existence(op.proposal_id);
