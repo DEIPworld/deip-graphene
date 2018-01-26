@@ -744,22 +744,11 @@ struct delegate_vesting_shares_operation : public base_operation
 struct create_budget_operation : public base_operation
 {
     account_name_type owner;
-    string content_permlink;
-
     asset balance;
-    time_point_sec deadline;
 
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
-
-struct close_budget_operation : public base_operation
-{
-    int64_t budget_id;
-    account_name_type owner;
+    discipline_name_type target_discipline;
+    uint32_t start_block;
+    uint32_t end_block;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -802,17 +791,23 @@ struct proposal_create_operation : public base_operation
 
     deip::protocol::proposal_action_type action;
     fc::time_point_sec expiration_time;
-    int quorum_percent;
 
     void validate() const;
 };
 
 struct create_research_group_operation : public base_operation
 {
+    account_name_type creator;
     string permlink;
     string desciption;
+    uint32_t quorum_percent;
+    uint32_t tokens_amount;
 
     void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(creator);
+    }
 };
 
 struct proposal_vote_operation : public base_operation
@@ -822,6 +817,10 @@ struct proposal_vote_operation : public base_operation
     int64_t research_group_id;
 
     void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(voter);
+    }
 };
 
 
@@ -894,9 +893,10 @@ FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recov
 FC_REFLECT( deip::protocol::decline_voting_rights_operation, (account)(decline) )
 FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) )
 
-FC_REFLECT( deip::protocol::create_budget_operation, (owner)(content_permlink)(balance)(deadline) )
-FC_REFLECT( deip::protocol::close_budget_operation, (budget_id)(owner) )
+FC_REFLECT( deip::protocol::create_budget_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
 
+FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time))
+FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption) )
 
 FC_REFLECT( deip::protocol::create_research_operation,  (research_group_id)
                                                         (authors)
@@ -908,9 +908,6 @@ FC_REFLECT( deip::protocol::create_research_operation,  (research_group_id)
                                                         (percent_for_review) )
 
 FC_REFLECT( deip::protocol::create_research_content_operation, (research_id)(content)(content_type)(authors))
-
-FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time)(quorum_percent) )
-FC_REFLECT( deip::protocol::create_research_group_operation, (permlink)(desciption) )
 FC_REFLECT( deip::protocol::proposal_vote_operation, (voter)(proposal_id)(research_group_id))
 
 // clang-format on

@@ -27,62 +27,62 @@ using fc::string;
 
 BOOST_AUTO_TEST_SUITE(test_account_create_operation_get_authorities)
 
-//BOOST_AUTO_TEST_CASE(there_is_no_owner_authority)
-//{
-//    try
-//    {
-//        account_create_operation op;
-//        op.creator = "alice";
-//        op.new_account_name = "bob";
+BOOST_AUTO_TEST_CASE(there_is_no_owner_authority)
+{
+    try
+    {
+        account_create_operation op;
+        op.creator = "alice";
+        op.new_account_name = "bob";
+
+        flat_set<account_name_type> authorities;
+
+        op.get_required_owner_authorities(authorities);
+
+        BOOST_CHECK(authorities.empty() == true);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(there_is_no_posting_authority)
+{
+    try
+    {
+        account_create_operation op;
+        op.creator = "alice";
+        op.new_account_name = "bob";
+
+        flat_set<account_name_type> authorities;
+
+        op.get_required_posting_authorities(authorities);
+
+        BOOST_CHECK(authorities.empty() == true);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(creator_have_active_authority)
+{
+    try
+    {
+        account_create_operation op;
+        op.creator = "alice";
+        op.new_account_name = "bob";
+
+        flat_set<account_name_type> authorities;
+
+        op.get_required_active_authorities(authorities);
+
+        const flat_set<account_name_type> expected = { "alice" };
+
+        BOOST_CHECK(authorities == expected);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 //
-//        flat_set<account_name_type> authorities;
-//
-//        op.get_required_owner_authorities(authorities);
-//
-//        BOOST_CHECK(authorities.empty() == true);
-//    }
-//    FC_LOG_AND_RETHROW()
-//}
-//
-//BOOST_AUTO_TEST_CASE(there_is_no_posting_authority)
-//{
-//    try
-//    {
-//        account_create_operation op;
-//        op.creator = "alice";
-//        op.new_account_name = "bob";
-//
-//        flat_set<account_name_type> authorities;
-//
-//        op.get_required_posting_authorities(authorities);
-//
-//        BOOST_CHECK(authorities.empty() == true);
-//    }
-//    FC_LOG_AND_RETHROW()
-//}
-//
-//BOOST_AUTO_TEST_CASE(creator_have_active_authority)
-//{
-//    try
-//    {
-//        account_create_operation op;
-//        op.creator = "alice";
-//        op.new_account_name = "bob";
-//
-//        flat_set<account_name_type> authorities;
-//
-//        op.get_required_active_authorities(authorities);
-//
-//        const flat_set<account_name_type> expected = { "alice" };
-//
-//        BOOST_CHECK(authorities == expected);
-//    }
-//    FC_LOG_AND_RETHROW()
-//}
-//
-//BOOST_AUTO_TEST_SUITE_END()
-//
-//BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
+BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 //
 //BOOST_AUTO_TEST_CASE(account_create_apply)
 //{
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_SUITE(test_account_create_operation_get_authorities)
 //        BOOST_REQUIRE(acct.vesting_shares.amount.value == (op.fee * (vest_shares / vests)).amount.value);
 //        BOOST_REQUIRE(acct.vesting_withdraw_rate.amount.value == ASSET("0.000000 VESTS").amount.value);
 //        BOOST_REQUIRE(acct.proxied_vsf_votes_total().value == 0);
-//        BOOST_REQUIRE((init_starting_balance - ASSET("0.100 TESTS")).amount.value == init.balance.amount.value);
+//        BOOST_REQUIRE((init_starting_balance - Aresearch_group_tokensSSET("0.100 TESTS")).amount.value == init.balance.amount.value);
 //        validate_database();
 //
 //        BOOST_TEST_MESSAGE("--- Test failure when creator cannot cover fee");
@@ -4766,6 +4766,45 @@ BOOST_AUTO_TEST_SUITE(test_account_create_operation_get_authorities)
 //        BOOST_REQUIRE(db.get_account("bob").reward_vesting_deip.amount
 //                          + db.get_account("sam").reward_vesting_deip.amount
 //                      == db.get_comment("alice", string("test")).beneficiary_payout_value.amount);
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
+
+//BOOST_AUTO_TEST_CASE(create_research_group_apply)
+//{
+//    try
+//    {
+//        BOOST_TEST_MESSAGE("Testing: create_research_group_apply");
+//
+//        ACTORS((alice));
+//        generate_block();
+//
+//        private_key_type priv_key = generate_private_key("alice");
+//
+//        create_research_group_operation op;
+//
+//        op.creator = "alice";
+//        op.permlink = "group";
+//        op.desciption = "group";
+//        op.quorum_percent = 10;
+//        op.tokens_amount = 100;
+//
+//        BOOST_TEST_MESSAGE("--- Test");
+//        signed_transaction tx;
+//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx.operations.push_back(op);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        tx.validate();
+//        db.push_transaction(tx, 0);
+//
+//        auto& research_group_service = db.obtain_service<dbs_research_group>();
+//        auto& research_group = research_group_service.get_research_group(0);
+//
+//        BOOST_CHECK(research_group.desciption == "group");
+//        BOOST_CHECK(research_group.permlink == "group");
+//        BOOST_CHECK(research_group.quorum_percent == 10);
+//        BOOST_CHECK(research_group.total_tokens_amount == 100);
+//
 //    }
 //    FC_LOG_AND_RETHROW()
 //}

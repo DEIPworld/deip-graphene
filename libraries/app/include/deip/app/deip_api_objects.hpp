@@ -441,12 +441,12 @@ struct budget_api_obj
     budget_api_obj(const chain::budget_object& b)
         : id(b.id._id)
         , owner(b.owner)
-        , content_permlink(fc::to_string(b.content_permlink))
+        , target_discipline(b.target_discipline._id)
         , created(b.created)
-        , deadline(b.deadline)
         , balance(b.balance)
         , per_block(b.per_block)
-        , last_allocated_block(b.last_allocated_block)
+        , start_block(b.start_block)
+        , end_block(b.end_block)
     {
     }
 
@@ -458,15 +458,14 @@ struct budget_api_obj
     int64_t id;
 
     account_name_type owner;
-    string content_permlink;
+    int64_t target_discipline;
 
     time_point_sec created;
-    time_point_sec deadline;
 
     asset balance;
     share_type per_block;
-
-    uint32_t last_allocated_block;
+    uint32_t start_block;
+    uint32_t end_block;
 };
 
 struct discipline_api_obj
@@ -614,12 +613,12 @@ FC_REFLECT_DERIVED( deip::app::dynamic_global_property_api_obj, (deip::chain::dy
 FC_REFLECT( deip::app::budget_api_obj,
              (id)
             (owner)
-            (content_permlink)
+            (target_discipline)
             (created)
-            (deadline)
             (balance)
             (per_block)
-            (last_allocated_block)
+            (start_block)
+            (end_block)
           )
 
 FC_REFLECT( deip::app::discipline_api_obj,

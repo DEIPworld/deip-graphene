@@ -28,26 +28,27 @@ namespace chain{
     };
 
     struct by_voter;
+    struct by_proposal_id;
 
     typedef multi_index_container<proposal_vote_object,
                                             indexed_by<
-                                                ordered_unique<
-                                                            tag<by_id>,
+                                                ordered_unique<tag<by_id>,
                                                             member<
                                                                 proposal_vote_object,
                                                                 proposal_vote_id_type,
-                                                                &proposal_vote_object::id>
-                                                >,
-                                                ordered_non_unique<
-                                                            tag<by_voter>,
+                                                                &proposal_vote_object::id>>,
+                                                ordered_non_unique<tag<by_voter>,
                                                                 composite_key<proposal_vote_object,
                                                                       member<proposal_vote_object,
                                                                              account_name_type,
                                                                              &proposal_vote_object::voter>,
                                                                       member<proposal_vote_object,
                                                                              research_group_id_type,
-                                                                             &proposal_vote_object::research_group_id>>
-                                                >
+                                                                             &proposal_vote_object::research_group_id>>>,
+                                                ordered_non_unique<tag<by_proposal_id>,
+                                                    member<proposal_vote_object,
+                                                           proposal_id_type,
+                                                           &proposal_vote_object::proposal_id>>
                                             >,
                                             allocator<proposal_vote_object>>
     proposal_vote_index;
