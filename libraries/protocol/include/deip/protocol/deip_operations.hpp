@@ -768,6 +768,22 @@ struct close_budget_operation : public base_operation
     }
 };
 
+
+struct create_research_operation : public base_operation
+{
+    int64_t research_group_id;
+    vector <account_name_type> authors;
+    vector <int64_t> disciplines_ids;
+    std::string name;
+    std::string permlink;
+    std::string abstract_content;
+    vector <int64_t> abstract_references;
+    uint32_t percent_for_review;
+
+    void validate() const;
+};
+
+
 struct proposal_create_operation : public base_operation
 {
     account_name_type creator;
@@ -807,6 +823,7 @@ struct proposal_vote_operation : public base_operation
         a.insert(voter);
     }
 };
+
 
 
 } // namespace protocol
@@ -882,5 +899,15 @@ FC_REFLECT( deip::protocol::close_budget_operation, (budget_id)(owner) )
 
 FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption) )
+
+FC_REFLECT( deip::protocol::create_research_operation,  (research_group_id)
+                                                        (authors)
+                                                        (disciplines_ids)
+                                                        (name)
+                                                        (permlink)
+                                                        (abstract_content)
+                                                        (abstract_references)
+                                                        (percent_for_review) )
 FC_REFLECT( deip::protocol::proposal_vote_operation, (voter)(proposal_id)(research_group_id))
+
 // clang-format on
