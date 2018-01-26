@@ -109,6 +109,34 @@ BOOST_AUTO_TEST_CASE(exclude_member_apply)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(change_quorum)
+{
+    try
+    {
+        ACTORS((alice)(bob));
+
+        auto& research_group_service = db.obtain_service<dbs_research_group>();
+        vector<account_name_type> accounts = { "alice", "bob" };
+        setup_research_group(1, "research_group", "research group", 1, 100, accounts);
+
+        const std::string change_quorum_json = "{\"quorum_percent\": 80,\"research_group_id\": 1}";
+        proposal_create(1, dbs_proposal::action_t::change_quorum, change_quorum_json, "alice", 1, time_point_sec(0xffffffff), 1);
+
+        proposal_vote_operation op;
+
+        op.research_group_id = 1;
+        op.proposal_id = 1;
+        op.voter = "alice";
+
+        evaluator.do_apply(op);
+
+        auto& research_group = research_group_service.get_research_group(1);
+
+        BOOST_CHECK(research_group.quorum_percent == 80);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 }
