@@ -2,6 +2,9 @@
 
 #include <deip/chain/deip_object_types.hpp>
 #include <boost/multi_index/composite_key.hpp>
+#include <fc/utf8.hpp>
+
+using namespace deip::protocol;
 
 namespace deip {
 namespace chain {
@@ -32,7 +35,12 @@ public:
     flat_set<account_name_type> voted_accounts;
 };
 
-struct member_proposal_data_type
+struct base_proposal_data_type
+{
+    virtual void validate() const {};
+};
+
+struct member_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
     deip::protocol::account_name_type name;
@@ -47,9 +55,14 @@ struct member_proposal_data_type
           name(name)
     {
     }
+
+    void validate() const
+    {
+        FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
+    }
 };
 
-struct invite_member_proposal_data_type
+struct invite_member_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
     deip::protocol::account_name_type name;
@@ -66,9 +79,15 @@ struct invite_member_proposal_data_type
             , research_group_token_amount(research_group_token_amount)
     {
     }
+
+    void validate() const
+    {
+        FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
+        FC_ASSERT(research_group_token_amount > 0, "Research group tokens amount should be > 0");
+    }
 };
 
-struct change_quorum_proposal_data_type
+struct change_quorum_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
     u_int16_t quorum_percent;
@@ -78,15 +97,39 @@ struct change_quorum_proposal_data_type
     change_quorum_proposal_data_type(const research_group_id_type& research_group_id,
                                      const u_int16_t quorum_percent) : research_group_id(research_group_id),
                                                                        quorum_percent(quorum_percent){}
+
+    void validate() const
+    {
+        FC_ASSERT(quorum_percent >= 5 && quorum_percent <= 100, "Quorum percent should be in 5 to 100 range");
+    }
 };
 
-struct start_research_proposal_data_type
+struct start_research_proposal_data_type : base_proposal_data_type
 {
     string name;
     string abstract;
     string permlink;
-    int64_t research_group_id;
+    research_group_id_type research_group_id;
     uint32_t percent_for_review;
+
+    start_research_proposal_data_type() {}
+
+    start_research_proposal_data_type(const string& name, const string& abstract, const string& permlink,
+                                     const research_group_id_type& research_group_id, uint32_t& percent_for_review)
+            : name(name)
+            , abstract(abstract)
+            , permlink(permlink)
+            , research_group_id(research_group_id)
+            , percent_for_review(percent_for_review) {}
+
+    void validate() const
+    {
+        FC_ASSERT(!name.empty(), "Research name cannot be empty");
+        FC_ASSERT(!abstract.empty(), "Research abstract cannot be empty");
+        FC_ASSERT(permlink.size() < DEIP_MAX_PERMLINK_LENGTH, "Research permlink is too long");
+        FC_ASSERT(fc::is_utf8(permlink), "Research permlink should be valid UTF8 string");
+        FC_ASSERT(percent_for_review >= 0 && percent_for_review <= 50, "Percent for review should be in 0 to 50 range");
+    }
 };
 
 typedef multi_index_container<proposal_object,
