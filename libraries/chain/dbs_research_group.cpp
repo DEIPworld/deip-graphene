@@ -45,7 +45,25 @@ const research_group_token_object& dbs_research_group::get_research_group_token_
     return db_impl().get<research_group_token_object>(id);
 }
 
-const research_group_token_object& dbs_research_group::get_research_group_token_by_account(const account_name_type &account,
+dbs_research_group::research_group_token_refs_type dbs_research_group::get_research_group_tokens_by_account_name(const account_name_type
+                                                                                                                 &account_name) const
+{
+    research_group_token_refs_type ret;
+
+    auto it_pair = db_impl().get_index<research_group_token_index>().indicies().get<by_owner>().equal_range(account_name);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+    
+}
+
+const research_group_token_object& dbs_research_group::get_research_group_token_by_account_and_research_id(const account_name_type &account,
                                                                                            const research_group_id_type &research_group_id) const  {
     return db_impl().get<research_group_token_object, by_owner>(boost::make_tuple(account, research_group_id));
 }
@@ -76,7 +94,7 @@ void dbs_research_group::remove_token(const account_name_type& account,
                                       const research_group_id_type& research_group_id)
 {
     check_research_group_token_existence(account, research_group_id);
-    const research_group_token_object& token = get_research_group_token_by_account(account, research_group_id);
+    const research_group_token_object& token = get_research_group_token_by_account_and_research_id(account, research_group_id);
     db_impl().remove(token);
 }
 

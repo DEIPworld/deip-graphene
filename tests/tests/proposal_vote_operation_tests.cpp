@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test) {
 
     evaluator.do_apply(op);
 
-    auto& bobs_token = research_group_service.get_research_group_token_by_account("bob", 1);
+    auto& bobs_token = research_group_service.get_research_group_token_by_account_and_research_id("bob", 1);
 
     BOOST_CHECK(bobs_token.owner == "bob");
     BOOST_CHECK(bobs_token.amount == 50);
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
 
         auto& research_group = research_group_service.get_research_group(1);
 
-        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account("bob", 1), std::out_of_range);
+        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_id("bob", 1), std::out_of_range);
         BOOST_CHECK(research_group.total_tokens_amount == 200);
     }
     FC_LOG_AND_RETHROW()

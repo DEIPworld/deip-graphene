@@ -148,7 +148,7 @@ protected:
         _account_service.check_account_existence(data.name);
         _research_group_service.check_research_group_token_existence(data.name, data.research_group_id);
         _proposal_service.remove_proposal_votes(data.name, data.research_group_id);
-        auto& token = _research_group_service.get_research_group_token_by_account(data.name, data.research_group_id);
+        auto& token = _research_group_service.get_research_group_token_by_account_and_research_id(data.name, data.research_group_id);
         auto tokens_amount = token.amount;
         _research_group_service.remove_token(data.name, data.research_group_id);
         _research_group_service.adjust_research_group_token_amount(data.research_group_id, -tokens_amount);
