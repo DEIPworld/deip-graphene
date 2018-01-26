@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test) {
     BOOST_CHECK(research_group.total_tokens_amount == 250);
 }
 
-BOOST_AUTO_TEST_CASE(exclude_member_apply)
+BOOST_AUTO_TEST_CASE(exclude_member_test)
 {
     try
     {
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(exclude_member_apply)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(change_quorum)
+BOOST_AUTO_TEST_CASE(change_quorum_test)
 {
     try
     {
