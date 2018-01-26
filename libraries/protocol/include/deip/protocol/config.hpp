@@ -6,6 +6,8 @@
 
 #pragma once
 
+#define DAYS_TO_SECONDS(X)                     (60*60*24*X)
+
 #define DEIP_BLOCKCHAIN_VERSION              ( version(0, 0, 1) )
 #define DEIP_BLOCKCHAIN_HARDFORK_VERSION     ( hardfork_version( DEIP_BLOCKCHAIN_VERSION ) )
 

@@ -6,7 +6,7 @@ if( MSVC )
       COMMAND cat-parts "${CMAKE_CURRENT_SOURCE_DIR}/hardfork.d" ${hardfork_hpp_file} )
    add_dependencies( build_hardfork_hpp cat-parts )
 else( MSVC )
-   set( hardfork_hpp_file "${CMAKE_CURRENT_BINARY_DIR}/include/deip/chain/hardfork.hpp" )
+   set( hardfork_hpp_file "${CMAKE_CURRENT_BINARY_DIR}/include/deip/chain/hardfork.hpp")
    add_custom_target( build_hardfork_hpp
       COMMAND "${CMAKE_SOURCE_DIR}/programs/build_helpers/cat_parts.py" "${CMAKE_CURRENT_SOURCE_DIR}/hardfork.d" ${hardfork_hpp_file} )
 endif( MSVC )
@@ -28,10 +28,16 @@ add_library( deip_chain
              dbs_reward.cpp
              dbs_witness.cpp
              dbs_budget.cpp
+             dbs_proposal.cpp
+             dbs_research_group.cpp
              dbs_discipline.cpp
+             dbs_research.cpp
+             dbs_research_discipline_relation.cpp
+             dbs_research_content.cpp
+             dbs_expert_token.cpp
+             dbs_research_token.cpp
 
              deip_evaluator.cpp
-
              deip_objects.cpp
              shared_authority.cpp
              block_log.cpp

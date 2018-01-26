@@ -379,6 +379,23 @@ public:
     discipline_api_obj get_discipline_by_name(const discipline_name_type name) const;
     vector<discipline_api_obj> get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
 
+    //////////////////////
+    // Research Content //
+    //////////////////////
+    research_content_api_obj get_research_content_by_id(const research_content_id_type& id) const;
+    vector<research_content_api_obj> get_all_research_content(const research_id_type& research_id) const;
+    vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
+    // TODO: move to operation
+    research_content_api_obj create_research_content(const research_id_type& research_id, const research_content_type& type, const research_content_body_type& content) const;
+
+    ///////////////////
+    // Expert Tokens //
+    ///////////////////
+    expert_token_api_obj get_expert_token(const expert_token_id_type id) const;
+    vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_name_type account_name) const;
+    vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
+
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -508,6 +525,18 @@ FC_API(deip::app::database_api,
    (get_discipline)
    (get_discipline_by_name)
    (get_disciplines_by_parent_id)
+
+   // Research Content
+   (get_research_content_by_id)
+   (get_all_research_content)
+   (get_research_content_by_type)
+   (create_research_content)
+
+   // Expert Tokens
+   (get_expert_token)
+   (get_expert_tokens_by_account_name)
+   (get_expert_tokens_by_discipline_id)
+
 )
 
 // clang-format on

@@ -11,6 +11,10 @@
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_budget.hpp>
 #include <deip/chain/dbs_discipline.hpp>
+#include <deip/chain/dbs_research.hpp>
+#include <deip/chain/dbs_research_discipline_relation.hpp>
+#include <deip/chain/dbs_proposal.hpp>
+#include <deip/chain/dbs_research_group.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1284,42 +1288,6 @@ void decline_voting_rights_evaluator::do_apply(const decline_voting_rights_opera
     }
 }
 
-void claim_reward_balance_evaluator::do_apply(const claim_reward_balance_operation& op)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    const auto& acnt = account_service.get_account(op.account);
-
-    FC_ASSERT(op.reward_deip <= acnt.reward_deip_balance, "Cannot claim that much DEIP. Claim: ${c} Actual: ${a}",
-              ("c", op.reward_deip)("a", acnt.reward_deip_balance));
-    FC_ASSERT(op.reward_vests <= acnt.reward_vesting_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
-              ("c", op.reward_vests)("a", acnt.reward_vesting_balance));
-
-    asset reward_vesting_deip_to_move = asset(0, DEIP_SYMBOL);
-    if (op.reward_vests == acnt.reward_vesting_balance)
-        reward_vesting_deip_to_move = acnt.reward_vesting_deip;
-    else
-        reward_vesting_deip_to_move
-            = asset(((uint128_t(op.reward_vests.amount.value) * uint128_t(acnt.reward_vesting_deip.amount.value))
-                     / uint128_t(acnt.reward_vesting_balance.amount.value))
-                        .to_uint64(),
-                    DEIP_SYMBOL);
-
-    account_service.increase_balance(acnt, op.reward_deip);
-    account_service.decrease_reward_balance(acnt, op.reward_deip);
-    account_service.increase_vesting_shares(acnt, op.reward_vests, reward_vesting_deip_to_move);
-
-    _db._temporary_public_impl().modify(_db.get_dynamic_global_properties(), [&](dynamic_global_property_object& gpo) {
-        gpo.total_vesting_shares += op.reward_vests;
-        gpo.total_vesting_fund_deip += reward_vesting_deip_to_move;
-
-        gpo.pending_rewarded_vesting_shares -= op.reward_vests;
-        gpo.pending_rewarded_vesting_deip -= reward_vesting_deip_to_move;
-    });
-
-    account_service.adjust_proxied_witness_votes(acnt, op.reward_vests.amount);
-}
-
 void delegate_vesting_shares_evaluator::do_apply(const delegate_vesting_shares_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
@@ -1424,5 +1392,62 @@ void create_budget_evaluator::do_apply(const create_budget_operation& op)
     budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline->id);
 }
 
+void create_research_evaluator::do_apply(const create_research_operation &op)
+{
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    for (const auto& author : op.authors) {
+        account_service.check_account_existence(author);
+    }
+
+    const auto& research = research_service.create(op.name, op.abstract_content, op.permlink, op.research_group_id, op.percent_for_review);
+
+    for (const auto& discipline_id : op.disciplines_ids) {
+        research_discipline_relation_service.create(research.id, discipline_id);
+    }
+
+    //Create research_token_object
+    //Create research_content_object
+}
+
+
+
+void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
+{
+    dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    const uint32_t _lifetime_min = DAYS_TO_SECONDS(1);
+    const uint32_t _lifetime_max = DAYS_TO_SECONDS(10);
+
+    auto sec_till_expiration = op.expiration_time.sec_since_epoch() - fc::time_point_sec().sec_since_epoch();
+
+    FC_ASSERT(sec_till_expiration <= _lifetime_max && sec_till_expiration >= _lifetime_min,
+             "Proposal life time is not in range of ${min} - ${max} seconds.",
+             ("min", _lifetime_min)("max", _lifetime_max));
+
+    account_service.check_account_existence(op.creator);
+
+    auto& research_group = research_group_service.get_research_group(op.research_group_id);
+    auto quorum_percent = research_group.quorum_percent;
+
+    // quorum_percent should be taken from research_group_object
+    proposal_service.create_proposal(op.action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
+}
+
+void create_research_group_evaluator::do_apply(const create_research_group_operation& op)
+{
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    research_group_service.create_research_group(op.permlink,
+                                                 op.desciption,
+                                                 op.quorum_percent,
+                                                 op.tokens_amount);
+}
+
+
 } // namespace chain
-} // namespace deip
+} // namespace deip 

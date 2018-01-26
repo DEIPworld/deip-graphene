@@ -21,6 +21,11 @@ public:
             new EvaluatorType(_db, args...));
     }
 
+    template <typename EvaluatorType> void register_evaluator(EvaluatorType* e)
+    {
+        _op_evaluators[OperationType::template tag<typename EvaluatorType::operation_type>::value].reset(e);
+    }
+
     evaluator<OperationType>& get_evaluator(const OperationType& op)
     {
         int i_which = op.which();

@@ -78,7 +78,8 @@ typedef fc::sha256 digest_type;
 typedef fc::ecc::compact_signature signature_type;
 typedef safe<int64_t> share_type;
 typedef uint16_t weight_type;
-typedef fc::fixed_string_16 discipline_name_type;
+typedef fc::fixed_string_32 discipline_name_type;
+typedef fc::string research_content_body_type;
 
 struct public_key_type
 {
@@ -154,6 +155,28 @@ struct extended_private_key_type
     friend bool operator==(const extended_private_key_type& p1, const extended_private_key_type& p2);
     friend bool operator!=(const extended_private_key_type& p1, const extended_private_key_type& p2);
 };
+
+enum proposal_action_type
+{
+    start_new_research,
+    invite_member,
+    dropout_member,
+    send_funds,
+    transfer_research_tokens,
+    start_research_token_sale,
+    rebalance_research_group_tokens,
+    change_quorum,
+    change_research_review_share_percent,
+    offer_research_tokens,
+    accept_research_tokens_offer
+};
+
+enum proposal_life_time_type
+{
+    day,
+    week
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -172,6 +195,19 @@ FC_REFLECT(deip::protocol::extended_public_key_type, (key_data))
 FC_REFLECT(deip::protocol::extended_public_key_type::binary_key, (check)(data))
 FC_REFLECT(deip::protocol::extended_private_key_type, (key_data))
 FC_REFLECT(deip::protocol::extended_private_key_type::binary_key, (check)(data))
+
+FC_REFLECT_ENUM(deip::protocol::proposal_action_type,   (start_new_research)
+                                                        (invite_member)
+                                                        (dropout_member)
+                                                        (send_funds)
+                                                        (transfer_research_tokens)
+                                                        (start_research_token_sale)
+                                                        (rebalance_research_group_tokens)
+                                                        (change_quorum)
+                                                        (change_research_review_share_percent)
+                                                        (offer_research_tokens)
+                                                        (accept_research_tokens_offer))
+FC_REFLECT_ENUM(deip::protocol::proposal_life_time_type, (day)(week))
 
 FC_REFLECT_TYPENAME(deip::protocol::share_type)
 
