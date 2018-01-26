@@ -350,7 +350,7 @@ database_fixture::research_group_create(const uint32_t& id, const string& permli
         = db.create<research_group_object>([&](research_group_object& rg) {
               rg.id = id;
               fc::from_string(rg.permlink, permlink);
-              fc::from_string(rg.desciption, description);
+              fc::from_string(rg.description, description);
               rg.quorum_percent = quorum_percent;
               rg.total_tokens_amount = tokens_amount;
           });

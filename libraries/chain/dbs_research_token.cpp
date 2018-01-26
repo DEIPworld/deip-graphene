@@ -11,9 +11,9 @@ dbs_research_token::dbs_research_token(database &db)
 {
 }
 
-const research_token_object& dbs_research_token::create_research_token(const account_name_type owner,
+const research_token_object& dbs_research_token::create_research_token(const account_name_type &owner,
                                                     const deip::chain::share_type amount,
-                                                    const research_id_type research_id)
+                                                    const research_id_type &research_id)
 {
     const research_token_object& new_research_token = db_impl().create<research_token_object>([&](research_token_object& research_token) {
         research_token.account_name = owner;
@@ -24,12 +24,12 @@ const research_token_object& dbs_research_token::create_research_token(const acc
     return new_research_token;
 }
 
-const research_token_object& dbs_research_token::get_research_token(const research_token_id_type id) const
+const research_token_object& dbs_research_token::get_research_token(const research_token_id_type &id) const
 {
     return db_impl().get<research_token_object>(id);
 }
 
-dbs_research_token::research_token_refs_type dbs_research_token::get_research_tokens_by_account_name(const account_name_type account_name) const
+dbs_research_token::research_token_refs_type dbs_research_token::get_research_tokens_by_account_name(const account_name_type &account_name) const
 {
     research_token_refs_type ret;
 
@@ -45,7 +45,7 @@ dbs_research_token::research_token_refs_type dbs_research_token::get_research_to
     return ret;
 }
 
-dbs_research_token::research_token_refs_type dbs_research_token::get_research_tokens_by_research_id(const research_id_type research_id) const
+dbs_research_token::research_token_refs_type dbs_research_token::get_research_tokens_by_research_id(const research_id_type &research_id) const
 {
     research_token_refs_type ret;
 
@@ -61,8 +61,8 @@ dbs_research_token::research_token_refs_type dbs_research_token::get_research_to
     return ret;
 }
 
-const research_token_object& dbs_research_token::get_research_token_by_account_name_and_research_id(const account_name_type account_name,
-                                                                                         const research_id_type research_id) const
+const research_token_object& dbs_research_token::get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
+                                                                                         const research_id_type &research_id) const
 {
     return db_impl().get<research_token_object, by_account_name_and_research_id>(boost::make_tuple(account_name, research_id));
 }

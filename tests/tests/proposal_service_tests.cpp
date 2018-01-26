@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(vote_for_proposal)
      try
      {
          auto& research_group_service = db.obtain_service<dbs_research_group>();
-         auto& token = research_group_service.get_research_group_token_by_account("alice", 1);
+         auto& token = research_group_service.get_research_group_token_by_account_and_research_id("alice", 1);
          auto& proposal = data_service.get_proposal(1);
          auto weight = token.amount;
 
