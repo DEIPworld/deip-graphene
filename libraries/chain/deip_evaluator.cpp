@@ -1386,10 +1386,9 @@ void create_budget_evaluator::do_apply(const create_budget_operation& op)
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     account_service.check_account_existence(op.owner);
     const auto& owner = account_service.get_account(op.owner);
-    auto discipline = discipline_service.find_discipline_by_name(op.target_discipline);
-    //DEIP: not sure that we can pass pointer from data service to evaluator, check pls
-    FC_ASSERT(discipline != nullptr, "Target discipline doesn't exist");
-    budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline->id);
+    discipline_service.check_discipline_existence(op.target_discipline);
+    auto& discipline = discipline_service.get_discipline_by_name(op.target_discipline);
+    budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id);
 }
 
 void create_research_evaluator::do_apply(const create_research_operation &op)
