@@ -15,6 +15,7 @@
 #include <deip/chain/dbs_research.hpp>
 
 #include <deip/chain/proposal_object.hpp>
+#include <deip/chain/proposal_data_types.hpp>
 
 namespace deip {
 namespace chain {
@@ -142,7 +143,7 @@ protected:
 
     void invite_evaluator(const proposal_object& proposal)
     {
-        invite_member_proposal_data_type data = fc::json::from_string(proposal.data).as<invite_member_proposal_data_type>();
+        invite_member_proposal_data_type data = get_data<invite_member_proposal_data_type>(proposal);
         _account_service.check_account_existence(data.name);
         _research_group_service.check_research_group_existence(data.research_group_id);
         _research_group_service.create_research_group_token(data.research_group_id, data.research_group_token_amount, data.name);
@@ -151,7 +152,7 @@ protected:
 
     void dropout_evaluator(const proposal_object& proposal)
     {
-        member_proposal_data_type data = fc::json::from_string(proposal.data).as<member_proposal_data_type>();
+        member_proposal_data_type data = get_data<member_proposal_data_type>(proposal);
         _account_service.check_account_existence(data.name);
         _research_group_service.check_research_group_token_existence(data.name, data.research_group_id);
         _proposal_service.remove_proposal_votes(data.name, data.research_group_id);
@@ -169,14 +170,14 @@ protected:
 
     void change_quorum_evaluator(const proposal_object& proposal)
     {
-        change_quorum_proposal_data_type change_quorum_data = fc::json::from_string(proposal.data).as<change_quorum_proposal_data_type>();
-        _research_group_service.check_research_group_existence(change_quorum_data.research_group_id);
-        _research_group_service.change_quorum(change_quorum_data.quorum_percent, change_quorum_data.research_group_id);
+        change_quorum_proposal_data_type data = get_data<change_quorum_proposal_data_type>(proposal);
+        _research_group_service.check_research_group_existence(data.research_group_id);
+        _research_group_service.change_quorum(data.quorum_percent, data.research_group_id);
     }
 
     void start_research_evaluator(const proposal_object& proposal)
     {
-        start_research_proposal_data_type data = fc::json::from_string(proposal.data).as<start_research_proposal_data_type>();
+        start_research_proposal_data_type data = get_data<start_research_proposal_data_type>(proposal);
         _research_group_service.check_research_group_existence(data.research_group_id);
         _research_service.create(data.name, data.abstract, data.permlink, data.research_group_id, data.percent_for_review);
     }
@@ -188,6 +189,13 @@ protected:
 
 private:
     proposal_evaluators_register evaluators;
+
+    template <typename DataType> DataType get_data(const proposal_object& proposal)
+    {
+        auto data = fc::json::from_string(proposal.data).as<DataType>();
+        data.validate();
+        return data;
+    }
 };
 
 typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research>

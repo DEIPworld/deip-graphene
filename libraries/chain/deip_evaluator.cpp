@@ -1392,27 +1392,6 @@ void create_budget_evaluator::do_apply(const create_budget_operation& op)
     budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id);
 }
 
-void create_research_evaluator::do_apply(const create_research_operation &op)
-{
-    dbs_research& research_service = _db.obtain_service<dbs_research>();
-    dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    for (const auto& author : op.authors) {
-        account_service.check_account_existence(author);
-    }
-
-    // todo: add authors to research object
-    const auto& research = research_service.create(op.name, op.abstract_content, op.permlink, op.research_group_id, op.percent_for_review);
-
-    for (const auto& discipline_id : op.disciplines_ids) {
-        research_discipline_relation_service.create(research.id, discipline_id);
-    }
-
-    //Create research_token_object
-}
-
-
 void create_research_content_evaluator::do_apply(const create_research_content_operation &op)
 {
     dbs_research& research_service = _db.obtain_service<dbs_research>();
