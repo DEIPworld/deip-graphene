@@ -50,7 +50,6 @@ public:
     ~proposal_vote_evaluator_fixture() {
     }
 
-
     evaluator_mocked evaluator;
 };
 

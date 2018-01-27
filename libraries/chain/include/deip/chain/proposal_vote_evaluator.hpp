@@ -15,6 +15,7 @@
 #include <deip/chain/dbs_research.hpp>
 
 #include <deip/chain/proposal_object.hpp>
+#include <deip/chain/proposal_data_types.hpp>
 
 namespace deip {
 namespace chain {
