@@ -37,24 +37,13 @@ public:
 
 struct base_proposal_data_type
 {
-    virtual void validate() const {};
+    virtual void validate() const = 0;
 };
 
 struct member_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
     deip::protocol::account_name_type name;
-
-    member_proposal_data_type()
-    {
-    }
-
-    member_proposal_data_type(const research_group_id_type& research_group_id,
-                                      const deip::protocol::account_name_type& name)
-        : research_group_id(research_group_id),
-          name(name)
-    {
-    }
 
     void validate() const
     {
@@ -68,18 +57,6 @@ struct invite_member_proposal_data_type : base_proposal_data_type
     deip::protocol::account_name_type name;
     uint32_t research_group_token_amount;
 
-    invite_member_proposal_data_type()
-    {
-    }
-
-    invite_member_proposal_data_type(const research_group_id_type& research_group_id,
-                              const deip::protocol::account_name_type& name, const uint32_t& research_group_token_amount)
-            : research_group_id(research_group_id)
-            , name(name)
-            , research_group_token_amount(research_group_token_amount)
-    {
-    }
-
     void validate() const
     {
         FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
@@ -91,12 +68,6 @@ struct change_quorum_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
     u_int16_t quorum_percent;
-
-    change_quorum_proposal_data_type(){}
-
-    change_quorum_proposal_data_type(const research_group_id_type& research_group_id,
-                                     const u_int16_t quorum_percent) : research_group_id(research_group_id),
-                                                                       quorum_percent(quorum_percent){}
 
     void validate() const
     {
@@ -111,16 +82,6 @@ struct start_research_proposal_data_type : base_proposal_data_type
     string permlink;
     research_group_id_type research_group_id;
     uint32_t percent_for_review;
-
-    start_research_proposal_data_type() {}
-
-    start_research_proposal_data_type(const string& name, const string& abstract, const string& permlink,
-                                     const research_group_id_type& research_group_id, uint32_t& percent_for_review)
-            : name(name)
-            , abstract(abstract)
-            , permlink(permlink)
-            , research_group_id(research_group_id)
-            , percent_for_review(percent_for_review) {}
 
     void validate() const
     {
