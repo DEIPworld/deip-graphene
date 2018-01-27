@@ -169,6 +169,72 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
     BOOST_CHECK(research.percent_for_review == 10);
 }
 
+BOOST_AUTO_TEST_CASE(invite_member_validate_test)
+{
+    const std::string json_str = "{\"name\":\"\",\"research_group_id\":1,\"research_group_token_amount\":1000}";
+    proposal_create(1, dbs_proposal::action_t::invite_member, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+
+    proposal_vote_operation op;
+    op.research_group_id = 1;
+    op.proposal_id = 1;
+    op.voter = "alice";
+
+    BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
+}
+
+BOOST_AUTO_TEST_CASE(exclude_member_validate_test)
+{
+    try
+    {
+        const std::string exclude_member_json = "{\"name\":\"\",\"research_group_id\": 1}";
+        proposal_create(1, dbs_proposal::action_t::dropout_member, exclude_member_json, "alice", 1, time_point_sec(0xffffffff), 1);
+
+        proposal_vote_operation op;
+
+        op.research_group_id = 1;
+        op.proposal_id = 1;
+        op.voter = "alice";
+
+        BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(change_quorum_validate_test)
+{
+    try
+    {
+        const std::string change_quorum_json = "{\"quorum_percent\": 1000,\"research_group_id\": 1}";
+        proposal_create(1, dbs_proposal::action_t::change_quorum, change_quorum_json, "alice", 1, time_point_sec(0xffffffff), 1);
+
+        proposal_vote_operation op;
+
+        op.research_group_id = 1;
+        op.proposal_id = 1;
+        op.voter = "alice";
+
+        BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(start_research_validate_test)
+{
+    const std::string json_str = "{\"name\":\"\","
+            "\"research_group_id\":1,"
+            "\"abstract\":\"\","
+            "\"permlink\":\"\","
+            "\"percent_for_review\": 10000}";
+    proposal_create(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+
+    proposal_vote_operation op;
+    op.research_group_id = 1;
+    op.proposal_id = 1;
+    op.voter = "alice";
+
+    BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 }
