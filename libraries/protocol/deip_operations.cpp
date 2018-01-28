@@ -354,7 +354,7 @@ void create_research_operation::validate() const
     FC_ASSERT(!name.empty(), "Research name cannot be empty");
     FC_ASSERT(!abstract_content.empty(), "Research abstract cannot be empty");
     FC_ASSERT(disciplines_ids.size() > 0, "Research should be linked to at least 1 discipline");
-    FC_ASSERT(percent_for_review >= 5 * DEIP_1_PERCENT && percent_for_review <= 50 * DEIP_1_PERCENT, "Percent for review must be 5-50%");
+    FC_ASSERT(review_share >= 0 && review_share <= 50, "Percent for review must be in range of 0-50%");
 }
 
 void create_research_content_operation::validate() const

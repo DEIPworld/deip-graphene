@@ -57,6 +57,12 @@ inline void validate_permlink_0_1(const string& permlink)
     }
 }
 
+inline void validate_enum_value_by_range(int val, int first, int last)
+{
+    FC_ASSERT(val >= first && val <= last, "Provided enum value is outside of the range: val = ${enum_val}, first = ${first}, last = ${last}", 
+                                            ("enum_val", val)("first", first)("last", last));
+}
+
 struct strcmp_equal
 {
     bool operator()(const fc::shared_string& a, const string& b)
@@ -1417,7 +1423,7 @@ void create_research_evaluator::do_apply(const create_research_operation &op)
     }
 
     // todo: add authors to research object
-    const auto& research = research_service.create(op.name, op.abstract_content, op.permlink, op.research_group_id, op.percent_for_review);
+    const auto& research = research_service.create(op.name, op.abstract_content, op.permlink, op.research_group_id, op.review_share);
 
     for (const auto& discipline_id : op.disciplines_ids) {
         research_discipline_relation_service.create(research.id, discipline_id);
@@ -1436,10 +1442,11 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
     for (const auto& author : op.authors) {
         account_service.check_account_existence(author);
     }
-
+    
+    validate_enum_value_by_range(op.content_type, research_content_type::First, research_content_type::Last);
     research_service.check_research_existence(op.research_id);
     // todo: add authors to research content object
-    research_content_service.create(op.research_id, op.content_type, op.content);
+    research_content_service.create(op.research_id, (research_content_type) op.content_type, op.content);
 }
 
 void proposal_create_evaluator::do_apply(const proposal_create_operation& op)

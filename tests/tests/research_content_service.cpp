@@ -10,9 +10,6 @@
 namespace deip {
 namespace chain {
 
-using deip::protocol::research_content_type;
-using deip::protocol::research_content_body_type;
-
 
 class research_content_service_fixture : public clean_database_fixture
 {
@@ -29,9 +26,9 @@ public:
             r.name = "Research #1";
             r.permlink = "Research #1 permlink";
             r.research_group_id = 1;
-            r.percent_for_review = 10 * DEIP_1_PERCENT;
+            r.review_share = 10;
             r.is_finished = false;
-            r.created = db.head_block_time();
+            r.created_at = db.head_block_time();
             r.abstract = "abstract for Research #1";
             r.owned_tokens = DEIP_100_PERCENT;
         });
@@ -47,8 +44,8 @@ public:
         db.create<research_content_object>([&](research_content_object& rc) {
             rc.id = 1;
             rc.research_id = 1;
-            rc.type = research_content_type::comment;
-            rc.content = "comment for Research #1";
+            rc.type = research_content_type::review;
+            rc.content = "review for Research #1";
             rc.created_at = db.head_block_time();
         });
 
@@ -65,9 +62,9 @@ public:
             r.name = "Research #2";
             r.permlink = "permlink for Research #2";
             r.research_group_id = 2;
-            r.percent_for_review = 10 * DEIP_1_PERCENT;
+            r.review_share = 10;
             r.is_finished = false;
-            r.created = db.head_block_time();
+            r.created_at = db.head_block_time();
             r.abstract = "abstract for research #2";
             r.owned_tokens = DEIP_100_PERCENT;
         });
@@ -128,8 +125,8 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
             return content.id == 1 && content.research_id == 1 && 
-                    content.type == research_content_type::comment && 
-                    content.content == "comment for Research #1";
+                    content.type == research_content_type::review && 
+                    content.content == "review for Research #1";
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
@@ -158,14 +155,14 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
     try
     {
         create_researches_with_content();
-        auto contents = data_service.get_content_by_research_id_and_content_type(1, research_content_type::comment);
+        auto contents = data_service.get_content_by_research_id_and_content_type(1, research_content_type::review);
 
         BOOST_CHECK(contents.size() == 1);
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
             return content.id == 1 && content.research_id == 1 && 
-                    content.type == research_content_type::comment && 
-                    content.content == "comment for Research #1";
+                    content.type == research_content_type::review && 
+                    content.content == "review for Research #1";
         }));
     }
     FC_LOG_AND_RETHROW()
@@ -176,7 +173,7 @@ BOOST_AUTO_TEST_CASE(get_no_content_for_non_existing_research_by_id_and_content_
     try
     {
         create_researches_with_content();
-        auto contents = data_service.get_content_by_research_id_and_content_type(3, research_content_type::comment);
+        auto contents = data_service.get_content_by_research_id_and_content_type(3, research_content_type::review);
         BOOST_CHECK(contents.size() == 0);
     }
     FC_LOG_AND_RETHROW()
@@ -188,7 +185,7 @@ BOOST_AUTO_TEST_CASE(create_research_content)
     {
         create_researches_with_content();
         research_content_type type = research_content_type::milestone;
-        research_content_body_type content = "milestone for Research #2";
+        std::string content = "milestone for Research #2";
 
         auto milestone = data_service.create(2, type, content);
         BOOST_CHECK(milestone.research_id == 2);

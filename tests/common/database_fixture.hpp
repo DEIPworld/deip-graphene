@@ -85,6 +85,11 @@ struct database_fixture
                                          const public_key_type& signing_key,
                                          const share_type& fee);
 
+    const discipline_object& discipline_create(const discipline_id_type& id, 
+                                                                const discipline_name_type& name, 
+                                                                const discipline_id_type& parent_id,
+                                                                const share_type& votes_in_last_ten_weeks);
+
     void fund(const string& account_name, const share_type& amount = 500000);
     void fund(const string& account_name, const asset& amount);
     void transfer(const string& from, const string& to, const share_type& deip);

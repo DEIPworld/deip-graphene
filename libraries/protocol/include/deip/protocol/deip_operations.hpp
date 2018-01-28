@@ -772,13 +772,13 @@ struct close_budget_operation : public base_operation
 struct create_research_operation : public base_operation
 {
     int64_t research_group_id;
-    vector <account_name_type> authors;
-    vector <int64_t> disciplines_ids;
+    flat_set <account_name_type> authors;
+    flat_set <int64_t> disciplines_ids;
     std::string name;
     std::string permlink;
     std::string abstract_content;
-    vector <int64_t> abstract_references;
-    uint32_t percent_for_review;
+    flat_set <int64_t> abstract_references;
+    double review_share;
 
     void validate() const;
 };
@@ -787,9 +787,9 @@ struct create_research_operation : public base_operation
 struct create_research_content_operation : public base_operation
 {
     int64_t research_id;
-    research_content_type content_type;
-    research_content_body_type content;
-    vector <account_name_type> authors;
+    uint16_t content_type;
+    string content;
+    flat_set <account_name_type> authors;
 
     void validate() const;
 };
@@ -905,7 +905,7 @@ FC_REFLECT( deip::protocol::create_research_operation,  (research_group_id)
                                                         (permlink)
                                                         (abstract_content)
                                                         (abstract_references)
-                                                        (percent_for_review) )
+                                                        (review_share) )
 
 FC_REFLECT( deip::protocol::create_research_content_operation, (research_id)(content)(content_type)(authors))
 

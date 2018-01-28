@@ -18,9 +18,17 @@
 namespace deip {
 namespace chain {
 
-using deip::protocol::research_content_type;
-using deip::protocol::research_content_body_type;
-
+enum research_content_type : uint16_t
+{
+    announcement = 1,
+    milestone = 2,
+    final_result = 3,
+    review = 4,
+    
+    // make sure to update the bounds while adding new value
+    First = announcement,
+    Last = review
+};
 
 class research_content_object : public object<research_content_object_type, research_content_object>
 {
@@ -38,7 +46,7 @@ public:
     research_content_id_type id;
     research_id_type research_id;
     research_content_type type;
-    research_content_body_type content;
+    fc::string content;
     time_point_sec created_at;
 };
 
@@ -66,6 +74,8 @@ typedef multi_index_container<research_content_object,
         research_content_index;
 }
 }
+
+FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result)(review) )
 
 FC_REFLECT(deip::chain::research_content_object,
                         (id)(research_id)(type)(content)
