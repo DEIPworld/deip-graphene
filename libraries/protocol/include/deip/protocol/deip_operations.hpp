@@ -758,21 +758,6 @@ struct create_budget_operation : public base_operation
 };
 
 
-struct create_research_operation : public base_operation
-{
-    int64_t research_group_id;
-    flat_set <account_name_type> authors;
-    flat_set <int64_t> disciplines_ids;
-    std::string name;
-    std::string permlink;
-    std::string abstract_content;
-    flat_set <int64_t> abstract_references;
-    double review_share;
-
-    void validate() const;
-};
-
-
 struct create_research_content_operation : public base_operation
 {
     int64_t research_id;
@@ -897,15 +882,6 @@ FC_REFLECT( deip::protocol::create_budget_operation, (owner)(balance)(target_dis
 
 FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption) )
-
-FC_REFLECT( deip::protocol::create_research_operation,  (research_group_id)
-                                                        (authors)
-                                                        (disciplines_ids)
-                                                        (name)
-                                                        (permlink)
-                                                        (abstract_content)
-                                                        (abstract_references)
-                                                        (review_share) )
 
 FC_REFLECT( deip::protocol::create_research_content_operation, (research_id)(content)(content_type)(authors))
 FC_REFLECT( deip::protocol::proposal_vote_operation, (voter)(proposal_id)(research_group_id))

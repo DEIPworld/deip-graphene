@@ -10,6 +10,7 @@
 #define DISCIPLINE_MATH 10
 #define DISCIPLINE_PHYSICS 20
 #define RESEARCH_GROUP_ID 1
+#define REVIEW_SHARE_IN_PERCENT 10.5
 #define ABSTRACT "ABSTRACT"
 
 namespace deip {
@@ -29,7 +30,7 @@ public:
             r.name = RESEARCH_NAME;
             r.permlink = RESEARCH_NAME;
             r.research_group_id = RESEARCH_GROUP_ID;
-            r.review_share = 10;
+            r.review_share_in_percent = 10.2;
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = ABSTRACT;
@@ -46,12 +47,12 @@ BOOST_AUTO_TEST_CASE(create_research)
 {
     try
     {
-        auto& research = data_service.create(RESEARCH_NAME, ABSTRACT, RESEARCH_NAME, RESEARCH_GROUP_ID, 10 * DEIP_1_PERCENT);
+        auto& research = data_service.create(RESEARCH_NAME, ABSTRACT, RESEARCH_NAME, RESEARCH_GROUP_ID, REVIEW_SHARE_IN_PERCENT);
 
         BOOST_CHECK(research.name == RESEARCH_NAME);
         BOOST_CHECK(research.permlink == RESEARCH_NAME);
         BOOST_CHECK(research.research_group_id == RESEARCH_GROUP_ID);
-        BOOST_CHECK(research.review_share == 10);
+        BOOST_CHECK(research.review_share_in_percent == REVIEW_SHARE_IN_PERCENT);
         BOOST_CHECK(research.is_finished == false);
         BOOST_CHECK(research.created_at <= db.head_block_time());
         BOOST_CHECK(research.abstract == ABSTRACT);
@@ -76,7 +77,7 @@ BOOST_AUTO_TEST_CASE(get_researches)
             BOOST_CHECK(research.name == RESEARCH_NAME);
             BOOST_CHECK(research.permlink == RESEARCH_NAME);
             BOOST_CHECK(research.research_group_id == RESEARCH_GROUP_ID);
-            BOOST_CHECK(research.review_share == 10);
+            BOOST_CHECK(research.review_share_in_percent == 10.2);
             BOOST_CHECK(research.is_finished == false);
             BOOST_CHECK(research.created_at <= db.head_block_time());
             BOOST_CHECK(research.abstract == ABSTRACT);
@@ -98,7 +99,7 @@ BOOST_AUTO_TEST_CASE(get_research)
         BOOST_CHECK(research.name == RESEARCH_NAME);
         BOOST_CHECK(research.permlink == RESEARCH_NAME);
         BOOST_CHECK(research.research_group_id == RESEARCH_GROUP_ID);
-        BOOST_CHECK(research.review_share == 10);
+        BOOST_CHECK(research.review_share_in_percent == 10.2);
         BOOST_CHECK(research.is_finished == false);
         BOOST_CHECK(research.created_at <= db.head_block_time());
         BOOST_CHECK(research.abstract == ABSTRACT);
@@ -119,7 +120,7 @@ BOOST_AUTO_TEST_CASE(get_research_by_permlink)
         BOOST_CHECK(research.name == RESEARCH_NAME);
         BOOST_CHECK(research.permlink == RESEARCH_NAME);
         BOOST_CHECK(research.research_group_id == RESEARCH_GROUP_ID);
-        BOOST_CHECK(research.review_share == 10);
+        BOOST_CHECK(research.review_share_in_percent == 10.2);
         BOOST_CHECK(research.is_finished == false);
         BOOST_CHECK(research.created_at <= db.head_block_time());
         BOOST_CHECK(research.abstract == ABSTRACT);

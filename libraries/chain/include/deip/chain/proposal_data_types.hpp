@@ -54,7 +54,7 @@ struct start_research_proposal_data_type : base_proposal_data_type
     string abstract;
     string permlink;
     research_group_id_type research_group_id;
-    uint32_t percent_for_review;
+    double review_share_in_percent;
 
     void validate() const
     {
@@ -62,7 +62,7 @@ struct start_research_proposal_data_type : base_proposal_data_type
         FC_ASSERT(!abstract.empty(), "Research abstract cannot be empty");
         FC_ASSERT(permlink.size() < DEIP_MAX_PERMLINK_LENGTH, "Research permlink is too long");
         FC_ASSERT(fc::is_utf8(permlink), "Research permlink should be valid UTF8 string");
-        FC_ASSERT(percent_for_review >= 0 && percent_for_review <= 50, "Percent for review should be in 0 to 50 range");
+        FC_ASSERT(review_share_in_percent >= 0 && review_share_in_percent <= 50, "Percent for review should be in 0 to 50 range");
     }
 };
 
@@ -75,5 +75,5 @@ FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(na
 
 FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
 
-FC_REFLECT(deip::chain::start_research_proposal_data_type, (name)(abstract)(permlink)(research_group_id)(percent_for_review))
+FC_REFLECT(deip::chain::start_research_proposal_data_type, (name)(abstract)(permlink)(research_group_id)(review_share_in_percent))
 

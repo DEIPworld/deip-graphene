@@ -10,14 +10,14 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 }
 
 const research_object& dbs_research::create(const string &name, const string &abstract, const string &permlink,
-                                            const research_group_id_type &research_group_id, const uint32_t &review_share)
+                                            const research_group_id_type &research_group_id, const double &review_share_in_percent)
 {
     const auto& new_research = db_impl().create<research_object>([&](research_object& r) {
         r.name = name;
         r.abstract = abstract;
         r.permlink = permlink;
         r.research_group_id = research_group_id;
-        r.review_share = review_share;
+        r.review_share_in_percent = review_share_in_percent;
         r.is_finished = false;
         r.owned_tokens = DEIP_100_PERCENT;
         r.created_at = db_impl().head_block_time();

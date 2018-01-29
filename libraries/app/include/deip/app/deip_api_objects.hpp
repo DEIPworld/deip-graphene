@@ -498,7 +498,7 @@ struct research_api_obj
         ,  permlink(r.permlink)
         ,  is_finished(r.is_finished)
         ,  owned_tokens(r.owned_tokens)
-        ,  review_share(r.review_share)
+        ,  review_share_in_percent(r.review_share_in_percent)
         ,  created_at(r.created_at)
     {}
 
@@ -514,7 +514,7 @@ struct research_api_obj
     std::string permlink;
     bool is_finished;
     share_type owned_tokens;
-    double review_share;
+    double review_share_in_percent;
     time_point_sec created_at;
 };
 
@@ -667,7 +667,7 @@ FC_REFLECT( deip::app::research_api_obj,
             (permlink)
             (is_finished)
             (owned_tokens)
-            (review_share)
+            (review_share_in_percent)
             (created_at)
           )
 
