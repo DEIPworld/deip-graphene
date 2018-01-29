@@ -32,6 +32,8 @@ public:
     const research_object& get_research_by_permlink(const string& permlink) const;
 
     void check_research_existence(const research_id_type& id) const;
+
+    void decrease_owned_tokens(const research_object& research, const share_type delta);
 };
 }
 }

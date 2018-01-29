@@ -12,6 +12,7 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_research_token.hpp>
 #include <deip/chain/dbs_research.hpp>
 
 #include <deip/chain/proposal_object.hpp>
@@ -27,6 +28,7 @@ template <typename AccountService,
         typename ProposalService,
         typename ResearchGroupService,
         typename ResearchService,
+        typename ResearchTokenService,
         typename OperationType = deip::protocol::operation>
 class proposal_vote_evaluator_t : public evaluator<OperationType>
 // clang-format on
@@ -37,6 +39,7 @@ public:
             ProposalService,
             ResearchGroupService,
             ResearchService,
+            ResearchTokenService,
             OperationType>
             EvaluatorType;
 
@@ -69,12 +72,14 @@ public:
     proposal_vote_evaluator_t(AccountService& account_service,
                               ProposalService& proposal_service,
                               ResearchGroupService& research_group_service,
-                              ResearchService& research_service
+                              ResearchService& research_service,
+                              ResearchTokenService& research_token_service
                               )
             : _account_service(account_service)
             , _proposal_service(proposal_service)
             , _research_group_service(research_group_service)
             , _research_service(research_service)
+            , _research_token_service(research_token_service)
     {
         evaluators.set(proposal_action_type::invite_member,
                        std::bind(&EvaluatorType::invite_evaluator, this, std::placeholders::_1));
@@ -86,6 +91,8 @@ public:
                        std::bind(&EvaluatorType::change_research_review_share_evaluator, this, std::placeholders::_1));
         evaluators.set(proposal_action_type::start_research,
                        std::bind(&EvaluatorType::start_research_evaluator, this, std::placeholders::_1));
+        evaluators.set(proposal_action_type::transfer_research_tokens,
+                       std::bind(&EvaluatorType::transfer_research_tokens_evaluator, this, std::placeholders::_1));
     }
 
     virtual void apply(const OperationType& o) final override
@@ -182,10 +189,26 @@ protected:
         _research_service.create(data.name, data.abstract, data.permlink, data.research_group_id, data.percent_for_review);
     }
 
+    void transfer_research_tokens_evaluator(const proposal_object& proposal)
+    {
+        transfer_research_tokens_data_type data = get_data<transfer_research_tokens_data_type>(proposal);
+        _research_service.check_research_existence(data.research_id);
+        _account_service.check_account_existence(data.account_name);
+        auto& account = _account_service.get_account(data.account_name);
+        auto& research = _research_service.get_research(data.research_id);
+        auto& research_group = _research_group_service.get_research_group(proposal.research_group_id);
+
+        FC_ASSERT((account.balance.amount - data.total_price.amount > 0), "Account balance is less that total price (result amount < 0)");
+        FC_ASSERT((research.owned_tokens - data.amount > 0), "Research balance is less than amount (result amount < 0)");
+        _account_service.decrease_balance(account, data.total_price);
+        _research_service.decrease_owned_tokens(research, data.amount);
+        _research_token_service.create_research_token(account.name, data.amount, data.research_id);
+    }
     AccountService& _account_service;
     ProposalService& _proposal_service;
     ResearchGroupService& _research_group_service;
     ResearchService& _research_service;
+    ResearchTokenService& _research_token_service;
 
 private:
     proposal_evaluators_register evaluators;
@@ -198,7 +221,7 @@ private:
     }
 };
 
-typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research>
+typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token>
         proposal_vote_evaluator;
 
 } // namespace chain
