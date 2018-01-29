@@ -171,6 +171,35 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
     BOOST_CHECK(research.percent_for_review == 10);
 }
 
+BOOST_AUTO_TEST_CASE(transfer_research_tokens_execute_test)
+{
+    ACTORS((alice)(bob))
+    std::vector<account_name_type> accounts = {"alice"};
+    setup_research_group(1, "research_group", "research group", 1, 100, accounts);
+    const std::string json_str = "{\"research_id\":1,"
+            "\"total_price\":0,"
+            "\"account_name\":\"bob\","
+            "\"amount\": 10}";
+
+    proposal_create(1, dbs_proposal::action_t::transfer_research_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+
+    proposal_vote_operation op;
+    op.research_group_id = 1;
+    op.proposal_id = 1;
+    op.voter = "alice";
+
+    evaluator.do_apply(op);
+
+    auto& research_service = db.obtain_service<dbs_research>();
+    auto& research = research_service.get_research(0);
+
+    BOOST_CHECK(research.name == "test");
+    BOOST_CHECK(research.abstract == "abstract");
+    BOOST_CHECK(research.permlink == "permlink");
+    BOOST_CHECK(research.research_group_id == 1);
+    BOOST_CHECK(research.percent_for_review == 10);
+}
+
 BOOST_AUTO_TEST_CASE(invite_member_validate_test)
 {
     const std::string json_str = "{\"name\":\"\",\"research_group_id\":1,\"research_group_token_amount\":1000}";
