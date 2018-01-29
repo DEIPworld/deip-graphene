@@ -21,7 +21,7 @@ using deip::protocol::account_name_type;
 using deip::protocol::proposal_action_type;
 
 
-typedef deip::chain::proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research>
+typedef deip::chain::proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token>
         proposal_vote_evaluator;
 
 class evaluator_mocked : public proposal_vote_evaluator {
@@ -29,8 +29,9 @@ public:
     evaluator_mocked(dbs_account &account_service,
                      dbs_proposal &proposal_service,
                      dbs_research_group &research_group_service,
-                     dbs_research &research_service)
-            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service) {
+                     dbs_research &research_service,
+                     dbs_research_token &research_token_service)
+            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service) {
     }
 
     void execute_proposal(const proposal_object &proposal) {
@@ -44,7 +45,8 @@ public:
             : evaluator(db.obtain_service<dbs_account>(),
                         db.obtain_service<dbs_proposal>(),
                         db.obtain_service<dbs_research_group>(),
-                        db.obtain_service<dbs_research>()) {
+                        db.obtain_service<dbs_research>(),
+                        db.obtain_service<dbs_research_token>()) {
     }
 
     ~proposal_vote_evaluator_fixture() {
