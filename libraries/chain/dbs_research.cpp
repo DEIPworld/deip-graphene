@@ -10,7 +10,7 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 }
 
 const research_object& dbs_research::create(const string &name, const string &abstract, const string &permlink,
-                                            const int64_t &research_group_id, const double &review_share)
+                                            const research_group_id_type &research_group_id, const uint32_t &review_share)
 {
     const auto& new_research = db_impl().create<research_object>([&](research_object& r) {
         r.name = name;

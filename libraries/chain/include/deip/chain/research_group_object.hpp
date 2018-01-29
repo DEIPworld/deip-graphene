@@ -13,7 +13,7 @@ class research_group_object : public object<research_group_object_type, research
 
 public:
     template <typename Constructor, typename Allocator> research_group_object(Constructor&& c, allocator<Allocator> a)
-    : permlink(a), desciption(a)
+    : permlink(a), description(a)
     {
         c(*this);
     }
@@ -22,10 +22,10 @@ public:
     research_group_id_type id;
 
     fc::shared_string permlink;
-    fc::shared_string desciption;
+    fc::shared_string description;
 
-    u_int16_t quorum_percent;
-    share_type total_tokens_amount;
+    uint32_t quorum_percent;
+    uint32_t total_tokens_amount;
     flat_set<research_group_token_object> research_group_tokens;
 };
 
@@ -40,9 +40,8 @@ public:
 
 public:
     research_group_token_id_type id;
-
-    research_group_id_type research_group;
-    share_type amount;
+    research_group_id_type research_group_id;
+    uint32_t amount;
     account_name_type owner;
 };
 
@@ -77,7 +76,7 @@ typedef multi_index_container<research_group_token_object,
                                                             member<
                                                                 research_group_token_object, 
                                                                 research_group_id_type, 
-                                                                &research_group_token_object::research_group>
+                                                                &research_group_token_object::research_group_id>
                                                 >,
                                                 ordered_unique<
                                                             tag<by_owner>,
@@ -87,7 +86,7 @@ typedef multi_index_container<research_group_token_object,
                                                                              &research_group_token_object::owner>,
                                                                       member<research_group_token_object,
                                                                              research_group_id_type,
-                                                                             &research_group_token_object::research_group>>
+                                                                             &research_group_token_object::research_group_id>>
                                                 >
                                             >,
                                             allocator<research_group_token_object>>
@@ -98,10 +97,10 @@ typedef multi_index_container<research_group_token_object,
 
   
 
-FC_REFLECT(deip::chain::research_group_object, (id)(permlink)(desciption)(total_tokens_amount))
+FC_REFLECT(deip::chain::research_group_object, (id)(permlink)(description)(total_tokens_amount))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_group_object, deip::chain::research_group_index)
 
-FC_REFLECT(deip::chain::research_group_token_object, (id)(research_group)(amount)(owner))
+FC_REFLECT(deip::chain::research_group_token_object, (id)(research_group_id)(amount)(owner))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_group_token_object, deip::chain::research_group_token_index)

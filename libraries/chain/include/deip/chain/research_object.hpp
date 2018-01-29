@@ -32,11 +32,10 @@ public:
     }
 
     research_id_type id;
-    id_type research_group_id;
+    research_group_id_type research_group_id;
     fc::string name;
     fc::string abstract;
     fc::string permlink;
-
     time_point_sec created_at;
 
     bool is_finished;
@@ -46,6 +45,7 @@ public:
 
 struct by_permlink;
 struct is_finished;
+struct by_research_group;
 
 typedef multi_index_container<research_object,
                 indexed_by<ordered_unique<tag<by_id>,
@@ -61,7 +61,11 @@ typedef multi_index_container<research_object,
                         ordered_non_unique<tag<is_finished>,
                                 member<research_object,
                                         bool,
-                                        &research_object::is_finished>>>,
+                                        &research_object::is_finished>>,
+                        ordered_non_unique<tag<by_research_group>,
+                        member<research_object,
+                                research_group_id_type,
+                                &research_object::research_group_id>>>,
 
                         allocator<research_object>>
                         research_index;

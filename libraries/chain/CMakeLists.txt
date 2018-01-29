@@ -35,7 +35,7 @@ add_library( deip_chain
              dbs_research_discipline_relation.cpp
              dbs_research_content.cpp
              dbs_expert_token.cpp
-
+             dbs_research_token.cpp
 
              deip_evaluator.cpp
              deip_objects.cpp

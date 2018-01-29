@@ -24,7 +24,8 @@
 #include <deip/chain/research_object.hpp>
 #include <deip/chain/research_content_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
-
+#include <deip/chain/research_token_object.hpp>
+#include <deip/chain/proposal_vote_evaluator.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -49,6 +50,7 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_proposal.hpp>
+#include <deip/chain/dbs_research_group.hpp>
 
 namespace deip {
 namespace chain {
@@ -1634,13 +1636,15 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<decline_voting_rights_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_budget_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_research_evaluator>();
-    _my->_evaluator_registry.register_evaluator<close_budget_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_research_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
-    _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>();
 
+    // clang-format off
+    _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>(
+            new proposal_vote_evaluator(this->obtain_service<dbs_account>(),
+                                        this->obtain_service<dbs_proposal>(),
+                                        this->obtain_service<dbs_research_group>(),
+                                        this->obtain_service<dbs_research>()));
+    //clang-format on
 }
 
 void database::set_custom_operation_interpreter(const std::string& id,
@@ -1695,6 +1699,7 @@ void database::initialize_indexes()
     add_index<research_index>();
     add_index<research_content_index>();
     add_index<expert_token_index>();
+    add_index<research_token_index>();
 
     _plugin_index_signal();
 }

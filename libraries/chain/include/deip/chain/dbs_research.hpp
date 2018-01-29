@@ -23,7 +23,7 @@ public:
     using research_refs_type = std::vector<std::reference_wrapper<const research_object>>;
 
     const research_object& create(const string& name, const string& abstract, const string& permlink,
-                                  const int64_t& research_group_id, const double& review_share);
+                                  const research_group_id_type& research_group_id, const uint32_t& percent_for_review);
 
     research_refs_type get_researches() const;
 
