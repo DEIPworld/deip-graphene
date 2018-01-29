@@ -22,6 +22,7 @@
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
+#include <deip/chain/dbs_research_group.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
@@ -2286,6 +2287,97 @@ vector<expert_token_api_obj> database_api::get_expert_tokens_by_discipline_id(co
     });
 }
 
+
+research_group_api_obj database_api::create_research_group(const string permlink,
+                                                          const string description,
+                                                          const uint32_t quorum_percent,
+                                                          const uint32_t tokens_amount) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group &research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
+
+        return research_group_service.create_research_group(permlink, description, quorum_percent, tokens_amount);
+    });
+}
+
+proposal_api_obj database_api::create_proposal(const dbs_proposal::action_t action,
+                                              const std::string json_data,
+                                              const account_name_type creator,
+                                              const research_group_id_type research_group_id,
+                                              const fc::time_point_sec expiration_time,
+                                              const uint32_t quorum_percent) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_proposal &proposal_service = my->_db.obtain_service<chain::dbs_proposal>();
+
+        return proposal_service.create_proposal(action, json_data, creator, research_group_id, expiration_time,
+                                                quorum_percent);
+    });
+}
+
+proposal_vote_api_obj database_api::vote_for_proposal(const proposal_id_type proposal_id, const account_name_type voter) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_proposal &proposal_service = my->_db.obtain_service<chain::dbs_proposal>();
+
+        return proposal_service.vote_for(proposal_id, voter);
+    });
+}
+
+vector<proposal_api_obj>
+database_api::get_proposals_by_research_group_id(const research_group_id_type research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<proposal_api_obj> results;
+
+        chain::dbs_proposal& proposal_service = my->_db.obtain_service<chain::dbs_proposal>();
+        auto proposals = proposal_service.get_proposals_by_research_group_id(research_group_id);
+
+        for (const chain::proposal_object& proposal : proposals)
+        {
+            results.push_back(proposal_api_obj(proposal));
+        }
+
+        return results;
+    });
+}
+
+proposal_api_obj database_api::get_proposal(const proposal_id_type id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_proposal &proposal_service = my->_db.obtain_service<chain::dbs_proposal>();
+
+        return proposal_service.get_proposal(id);
+    });
+}
+
+vector<research_group_token_api_obj>
+database_api::get_research_group_tokens_by_account(const account_name_type account) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_group_token_api_obj> results;
+
+        chain::dbs_research_group& research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
+        auto research_group_tokens = research_group_service.get_research_group_tokens_by_account_name(account);
+
+        for (const chain::research_group_token_object& research_group_token : research_group_tokens)
+        {
+            results.push_back(research_group_token_api_obj(research_group_token));
+        }
+
+        return results;
+    });
+}
+
+research_group_token_api_obj database_api::get_research_group_token_by_account_and_research_group_id(
+    const account_name_type account, const research_group_id_type research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group& research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
+
+        return research_group_service.get_research_group_token_by_account_and_research_id(account, research_group_id);
+    });
+}
 
 } // namespace app
 } // namespace deip
