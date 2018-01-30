@@ -379,14 +379,19 @@ public:
     discipline_api_obj get_discipline_by_name(const discipline_name_type name) const;
     vector<discipline_api_obj> get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
 
+    ////////////////
+    // Researches //
+    ////////////////
+    research_api_obj get_research_by_id(const research_id_type& id) const;
+    research_api_obj get_research_by_permlink(const string& permlink) const;
+    vector<research_api_obj> get_researches() const;
+
     //////////////////////
     // Research Content //
     //////////////////////
     research_content_api_obj get_research_content_by_id(const research_content_id_type& id) const;
     vector<research_content_api_obj> get_all_research_content(const research_id_type& research_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
-    // TODO: move to operation
-    research_content_api_obj create_research_content(const research_id_type& research_id, const research_content_type& type, const research_content_body_type& content) const;
 
     ///////////////////
     // Expert Tokens //
@@ -526,11 +531,15 @@ FC_API(deip::app::database_api,
    (get_discipline_by_name)
    (get_disciplines_by_parent_id)
 
+   // Research
+   (get_research_by_id)
+   (get_research_by_permlink)
+   (get_researches)
+
    // Research Content
    (get_research_content_by_id)
    (get_all_research_content)
    (get_research_content_by_type)
-   (create_research_content)
 
    // Expert Tokens
    (get_expert_token)

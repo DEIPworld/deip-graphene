@@ -179,7 +179,7 @@ protected:
     {
         start_research_proposal_data_type data = get_data<start_research_proposal_data_type>(proposal);
         _research_group_service.check_research_group_existence(data.research_group_id);
-        _research_service.create(data.name, data.abstract, data.permlink, data.research_group_id, data.percent_for_review);
+        _research_service.create(data.name, data.abstract, data.permlink, data.research_group_id, data.review_share_in_percent);
     }
 
     AccountService& _account_service;

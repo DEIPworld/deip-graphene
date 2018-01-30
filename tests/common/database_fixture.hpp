@@ -6,6 +6,7 @@
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_account.hpp>
+#include <deip/chain/dbs_discipline.hpp>
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>
 
@@ -87,6 +88,11 @@ struct database_fixture
                                          const string& url,
                                          const public_key_type& signing_key,
                                          const share_type& fee);
+
+    const discipline_object& discipline_create(const discipline_id_type& id, 
+                                                const discipline_name_type& name, 
+                                                const discipline_id_type& parent_id,
+                                                const share_type& votes_in_last_ten_weeks);
 
     const research_group_object& research_group_create(const uint32_t& id, const string& permlink,
                                                        const string& desciption,

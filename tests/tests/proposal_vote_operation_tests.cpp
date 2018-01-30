@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
             "\"research_group_id\":1,"
             "\"abstract\":\"abstract\","
             "\"permlink\":\"permlink\","
-            "\"percent_for_review\": 10}";
+            "\"review_share_in_percent\": 10}";
     proposal_create(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     proposal_vote_operation op;
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
     BOOST_CHECK(research.abstract == "abstract");
     BOOST_CHECK(research.permlink == "permlink");
     BOOST_CHECK(research.research_group_id == 1);
-    BOOST_CHECK(research.percent_for_review == 10);
+    BOOST_CHECK(research.review_share_in_percent == 10);
 }
 
 BOOST_AUTO_TEST_CASE(invite_member_validate_test)
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(start_research_validate_test)
             "\"research_group_id\":1,"
             "\"abstract\":\"\","
             "\"permlink\":\"\","
-            "\"percent_for_review\": 10000}";
+            "\"review_share_in_percent\": 5}";
     proposal_create(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     proposal_vote_operation op;

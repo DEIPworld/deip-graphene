@@ -488,12 +488,43 @@ struct discipline_api_obj
     share_type votes_in_last_ten_weeks;
 };
 
+struct research_api_obj
+{
+    research_api_obj(const chain::research_object& r)
+        : id(r.id._id)
+        ,  research_group_id(r.research_group_id._id)
+        ,  name(r.name)
+        ,  abstract(r.abstract)
+        ,  permlink(r.permlink)
+        ,  is_finished(r.is_finished)
+        ,  owned_tokens(r.owned_tokens)
+        ,  review_share_in_percent(r.review_share_in_percent)
+        ,  created_at(r.created_at)
+    {}
+
+    // because fc::variant require for temporary object
+    research_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t research_group_id;
+    std::string name;
+    std::string abstract;
+    std::string permlink;
+    bool is_finished;
+    share_type owned_tokens;
+    double review_share_in_percent;
+    time_point_sec created_at;
+};
+
 struct research_content_api_obj
 {
     research_content_api_obj(const chain::research_content_object& rc)
         : id(rc.id._id)
         ,  research_id(rc.research_id._id)
         ,  content_type(rc.type)
+        ,  authors(rc.authors)
         ,  content(rc.content)
         ,  created_at(rc.created_at)
     {}
@@ -505,7 +536,8 @@ struct research_content_api_obj
 
     int64_t id;
     int64_t research_id;
-    int64_t content_type;
+    research_content_type content_type;
+    flat_set<account_name_type> authors;
     std::string content;
     time_point_sec created_at;
 };
@@ -629,11 +661,24 @@ FC_REFLECT( deip::app::discipline_api_obj,
           )
 
 
+FC_REFLECT( deip::app::research_api_obj,
+            (id)
+            (research_group_id)
+            (name)
+            (abstract)
+            (permlink)
+            (is_finished)
+            (owned_tokens)
+            (review_share_in_percent)
+            (created_at)
+          )
+
 FC_REFLECT( deip::app::research_content_api_obj,
             (id)
             (research_id)
             (content_type)
             (content)
+            (authors)
             (created_at)
           )
 

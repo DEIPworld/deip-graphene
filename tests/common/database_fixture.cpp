@@ -9,6 +9,7 @@
 #include <deip/witness/witness_plugin.hpp>
 #include <deip/chain/genesis_state.hpp>
 
+
 #include <fc/crypto/digest.hpp>
 #include <fc/smart_ref_impl.hpp>
 
@@ -313,6 +314,22 @@ database_fixture::account_create(const string& name, const public_key_type& key,
 const account_object& database_fixture::account_create(const string& name, const public_key_type& key)
 {
     return account_create(name, key, key);
+}
+
+
+const discipline_object& database_fixture::discipline_create(const discipline_id_type& id, 
+                                                            const discipline_name_type& name, 
+                                                            const discipline_id_type& parent_id,
+                                                            const share_type& votes_in_last_ten_weeks)
+{
+   const discipline_object& discipline = db.create<discipline_object>([&](discipline_object& d) {
+            d.id = id;
+            d.name = name;
+            d.parent_id = parent_id;
+            d.votes_in_last_ten_weeks = votes_in_last_ten_weeks;
+    });
+
+    return discipline;
 }
 
 const witness_object& database_fixture::witness_create(const string& owner,
