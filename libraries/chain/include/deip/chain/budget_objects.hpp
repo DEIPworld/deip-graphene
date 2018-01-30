@@ -1,7 +1,5 @@
 #pragma once
 
-#include <fc/fixed_string.hpp>
-
 #include <deip/protocol/authority.hpp>
 #include <deip/protocol/deip_operations.hpp>
 
@@ -25,7 +23,7 @@ class budget_object : public object<budget_object_type, budget_object>
 public:
 
     template <typename Constructor, typename Allocator>
-    budget_object(Constructor&& c, allocator<Allocator> a): content_permlink(a)
+    budget_object(Constructor&& c, allocator<Allocator> a)
     {
         c(*this);
     }
@@ -33,15 +31,15 @@ public:
     id_type id;
 
     account_name_type owner;
-    fc::shared_string content_permlink;
 
+    discipline_id_type target_discipline;
+    
     time_point_sec created = time_point_sec::min();
-    time_point_sec deadline = time_point_sec::maximum();
 
     asset balance = asset(0, DEIP_SYMBOL);
     share_type per_block = 0;
-
-    uint32_t last_allocated_block = 0;
+    uint32_t start_block = 0;
+    uint32_t end_block = 0;
 };
 
 struct by_owner_name;
@@ -62,7 +60,7 @@ typedef multi_index_container<budget_object,
 }
 
 FC_REFLECT( deip::chain::budget_object,
-             (id)(owner)(content_permlink)(created)(deadline)(balance)(per_block)(last_allocated_block)
+             (id)(owner)(target_discipline)(created)(balance)(per_block)(start_block)(end_block)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::budget_object, deip::chain::budget_index )

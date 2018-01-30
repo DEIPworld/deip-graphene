@@ -318,16 +318,6 @@ void decline_voting_rights_operation::validate() const
     validate_account_name(account);
 }
 
-void claim_reward_balance_operation::validate() const
-{
-    validate_account_name(account);
-    FC_ASSERT(is_asset_type(reward_deip, DEIP_SYMBOL), "Reward Deip must be DEIP");
-    FC_ASSERT(is_asset_type(reward_vests, VESTS_SYMBOL), "Reward Deip must be VESTS");
-    FC_ASSERT(reward_deip.amount >= 0, "Cannot claim a negative amount");
-    FC_ASSERT(reward_vests.amount >= 0, "Cannot claim a negative amount");
-    FC_ASSERT(reward_deip.amount > 0 || reward_vests.amount > 0, "Must claim something.");
-}
-
 void delegate_vesting_shares_operation::validate() const
 {
     validate_account_name(delegator);
@@ -340,14 +330,40 @@ void delegate_vesting_shares_operation::validate() const
 void create_budget_operation::validate() const
 {
     validate_account_name(owner);
-    validate_permlink(content_permlink);
     FC_ASSERT(is_asset_type(balance, DEIP_SYMBOL), "Balance must be DEIP");
     FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Balance must be positive");
 }
 
-void close_budget_operation::validate() const
+
+void create_research_content_operation::validate() const
 {
-    validate_account_name(owner);
+    FC_ASSERT(authors.size() > 0, "Research content should contain at least 1 author");
+    for (const account_name_type& author : authors)
+    {
+        validate_account_name(author);
+    }
+    FC_ASSERT(!content.empty(), "Research content cannot be empty");
 }
+
+void proposal_create_operation::validate() const
+{
+    validate_account_name(creator);
+    FC_ASSERT(expiration_time > fc::time_point_sec());
+    FC_ASSERT(fc::is_utf8(data), "Data is not valid UTF8 string");}
+
+void create_research_group_operation::validate() const
+{
+    validate_account_name(creator);
+    validate_permlink(permlink);
+    FC_ASSERT(fc::is_utf8(desciption), "Description is not valid UTF8 string");
+    FC_ASSERT(quorum_percent > 5 && quorum_percent <= 100, "Quorum percent must be in 5% to 100& range");
+    FC_ASSERT(tokens_amount > 0, "Initial research group tokens amount must be greater than 0");
+}
+
+void proposal_vote_operation::validate() const
+{
+    validate_account_name(voter);
+}
+
 }
 } // deip::protocol

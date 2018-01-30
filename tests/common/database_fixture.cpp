@@ -8,7 +8,7 @@
 #include <deip/account_history/account_history_plugin.hpp>
 #include <deip/witness/witness_plugin.hpp>
 #include <deip/chain/genesis_state.hpp>
-#include <deip/chain/dbs_account.hpp>
+
 
 #include <fc/crypto/digest.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -316,6 +316,22 @@ const account_object& database_fixture::account_create(const string& name, const
     return account_create(name, key, key);
 }
 
+
+const discipline_object& database_fixture::discipline_create(const discipline_id_type& id, 
+                                                            const discipline_name_type& name, 
+                                                            const discipline_id_type& parent_id,
+                                                            const share_type& votes_in_last_ten_weeks)
+{
+   const discipline_object& discipline = db.create<discipline_object>([&](discipline_object& d) {
+            d.id = id;
+            d.name = name;
+            d.parent_id = parent_id;
+            d.votes_in_last_ten_weeks = votes_in_last_ten_weeks;
+    });
+
+    return discipline;
+}
+
 const witness_object& database_fixture::witness_create(const string& owner,
                                                        const private_key_type& owner_key,
                                                        const string& url,
@@ -341,6 +357,69 @@ const witness_object& database_fixture::witness_create(const string& owner,
         return db.get_witness(owner);
     }
     FC_CAPTURE_AND_RETHROW((owner)(url))
+}
+
+const research_group_object&
+database_fixture::research_group_create(const uint32_t& id, const string& permlink,
+                                        const string& description, const uint32_t& quorum_percent, const int32_t& tokens_amount)
+{
+    const research_group_object& new_research_group
+        = db.create<research_group_object>([&](research_group_object& rg) {
+              rg.id = id;
+              fc::from_string(rg.permlink, permlink);
+              fc::from_string(rg.description, description);
+              rg.quorum_percent = quorum_percent;
+              rg.total_tokens_amount = tokens_amount;
+          });
+
+    return new_research_group;
+}
+
+const research_group_token_object& database_fixture::research_group_token_create(
+    const research_group_id_type& research_group_id, const account_name_type& account, const int32_t& amount = 10)
+{
+    auto& research_group_service = db.obtain_service<dbs_research_group>();
+    const research_group_token_object& new_research_group_token = research_group_service.create_research_group_token(research_group_id, amount, account);
+    research_group_service.adjust_research_group_token_amount(research_group_id, amount);
+    return new_research_group_token;
+}
+
+const research_group_object& database_fixture::setup_research_group(const uint32_t &id,
+                                                                    const string &permlink,
+                                                                    const string &description,
+                                                                    const uint32_t &quorum_percent,
+                                                                    const int32_t &tokens_amount,
+                                                                    const vector<account_name_type> &accounts)
+{
+    const auto& research_group = research_group_create(id, permlink, description, quorum_percent, tokens_amount);
+
+    for (const auto& account : accounts)
+    {
+        research_group_token_create(research_group.id, account, tokens_amount);
+    }
+
+    return research_group;
+}
+
+const proposal_object& database_fixture::proposal_create(const uint32_t id, const dbs_proposal::action_t action,
+                                       const std::string json_data,
+                                       const account_name_type& creator,
+                                       const research_group_id_type& research_group_id,
+                                       const fc::time_point_sec expiration_time,
+                                       const uint32_t quorum_percent)
+{
+    const proposal_object& new_proposal = db.create<proposal_object>([&](proposal_object& proposal) {
+        proposal.action = action;
+        proposal.id = id;
+        proposal.data = json_data;
+        proposal.creator = creator;
+        proposal.research_group_id = research_group_id;
+        proposal.creation_time = fc::time_point_sec();
+        proposal.expiration_time = expiration_time;
+        proposal.quorum_percent = quorum_percent;
+    });
+
+    return new_proposal;
 }
 
 void database_fixture::fund(const string& account_name, const share_type& amount)

@@ -9,8 +9,24 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 {
 }
 
+const research_object& dbs_research::create(const string &name, const string &abstract, const string &permlink,
+                                            const research_group_id_type &research_group_id, const double &review_share_in_percent)
+{
+    const auto& new_research = db_impl().create<research_object>([&](research_object& r) {
+        r.name = name;
+        r.abstract = abstract;
+        r.permlink = permlink;
+        r.research_group_id = research_group_id;
+        r.review_share_in_percent = review_share_in_percent;
+        r.is_finished = false;
+        r.owned_tokens = DEIP_100_PERCENT;
+        r.created_at = db_impl().head_block_time();
+    });
 
-dbs_research::research_refs_type dbs_research::get_researchs() const
+    return new_research;
+}
+
+dbs_research::research_refs_type dbs_research::get_researches() const
 {
     research_refs_type ret;
 
@@ -24,22 +40,22 @@ dbs_research::research_refs_type dbs_research::get_researchs() const
     }
 
     return ret;
-
 }
 
-const research_object& dbs_research::get_research(const research_id_type id) const
+const research_object& dbs_research::get_research(const research_id_type& id) const
 {
     return db_impl().get<research_object>(id);
 }
 
-const research_object& dbs_research::get_research_by_permlink(const string & permlink) const
+const research_object& dbs_research::get_research_by_permlink(const string& permlink) const
 {
     return db_impl().get<research_object, by_permlink>(permlink);
 }
 
-const research_object& dbs_research::get_research_by_discipline_id(const discipline_id_type discipline_ids) const
+void dbs_research::check_research_existence(const research_id_type& id) const
 {
-    return db_impl().get<research_object, by_discipline_id>(discipline_ids);
+    auto research = db_impl().find<research_object, by_id>(id);
+    FC_ASSERT(research != nullptr, "Research with id \"${1}\" must exist.", ("1", id));
 }
 
 }

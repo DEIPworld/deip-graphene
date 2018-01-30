@@ -2140,24 +2140,6 @@ annotated_signed_transaction wallet_api::decline_voting_rights(const std::string
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::claim_reward_balance(const std::string& account,
-                                                              const asset& reward_deip,
-                                                              const asset& reward_vests,
-                                                              bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-    claim_reward_balance_operation op;
-    op.account = account;
-    op.reward_deip = reward_deip;
-    op.reward_vests = reward_vests;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
 map<uint32_t, applied_operation>
 wallet_api::get_account_history(const std::string& account, uint32_t from, uint32_t limit)
 {
@@ -2485,36 +2467,21 @@ vector<budget_api_obj> wallet_api::get_budgets(const std::string& account_name)
 }
 
 annotated_signed_transaction wallet_api::create_budget(const std::string& budget_owner,
-                                                       const std::string& content_permlink,
-                                                       const asset& balance,
-                                                       const time_point_sec deadline,
-                                                       const bool broadcast)
+                                               const asset& balance,
+                                               const uint32_t& start_block,
+                                               const uint32_t& end_block,
+                                               const discipline_name_type& target_discipline,
+                                               const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
     create_budget_operation op;
 
     op.owner = budget_owner;
-    op.content_permlink = content_permlink;
+    op.target_discipline = target_discipline;
     op.balance = balance;
-    op.deadline = deadline;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
-annotated_signed_transaction
-wallet_api::close_budget(const int64_t id, const std::string& budget_owner, const bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    close_budget_operation op;
-
-    op.budget_id = id;
-    op.owner = budget_owner;
+    op.start_block = start_block;
+    op.end_block = end_block;
 
     signed_transaction tx;
     tx.operations.push_back(op);

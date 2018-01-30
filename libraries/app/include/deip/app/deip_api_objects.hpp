@@ -8,7 +8,11 @@
 #include <deip/chain/transaction_object.hpp>
 #include <deip/chain/witness_objects.hpp>
 #include <deip/chain/budget_objects.hpp>
+#include <deip/chain/proposal_object.hpp>
 #include <deip/chain/discipline_object.hpp>
+#include <deip/chain/research_object.hpp>
+#include <deip/chain/research_content_object.hpp>
+#include <deip/chain/expert_token_object.hpp>
 
 #include <deip/tags/tags_plugin.hpp>
 
@@ -173,9 +177,6 @@ struct account_api_obj
         , voting_power(a.voting_power)
         , last_vote_time(a.last_vote_time)
         , balance(a.balance)
-        , reward_deip_balance(a.reward_deip_balance)
-        , reward_vesting_balance(a.reward_vesting_balance)
-        , reward_vesting_deip(a.reward_vesting_deip)
         , curation_rewards(a.curation_rewards)
         , posting_rewards(a.posting_rewards)
         , vesting_shares(a.vesting_shares)
@@ -259,10 +260,6 @@ struct account_api_obj
     time_point_sec last_vote_time;
 
     asset balance;
-
-    asset reward_deip_balance;
-    asset reward_vesting_balance;
-    asset reward_vesting_deip;
 
     share_type curation_rewards;
     share_type posting_rewards;
@@ -444,12 +441,12 @@ struct budget_api_obj
     budget_api_obj(const chain::budget_object& b)
         : id(b.id._id)
         , owner(b.owner)
-        , content_permlink(fc::to_string(b.content_permlink))
+        , target_discipline(b.target_discipline._id)
         , created(b.created)
-        , deadline(b.deadline)
         , balance(b.balance)
         , per_block(b.per_block)
-        , last_allocated_block(b.last_allocated_block)
+        , start_block(b.start_block)
+        , end_block(b.end_block)
     {
     }
 
@@ -461,15 +458,14 @@ struct budget_api_obj
     int64_t id;
 
     account_name_type owner;
-    string content_permlink;
+    int64_t target_discipline;
 
     time_point_sec created;
-    time_point_sec deadline;
 
     asset balance;
     share_type per_block;
-
-    uint32_t last_allocated_block;
+    uint32_t start_block;
+    uint32_t end_block;
 };
 
 struct discipline_api_obj
@@ -490,6 +486,80 @@ struct discipline_api_obj
     int64_t parent_id;
     string name;
     share_type votes_in_last_ten_weeks;
+};
+
+struct research_api_obj
+{
+    research_api_obj(const chain::research_object& r)
+        : id(r.id._id)
+        ,  research_group_id(r.research_group_id._id)
+        ,  name(r.name)
+        ,  abstract(r.abstract)
+        ,  permlink(r.permlink)
+        ,  is_finished(r.is_finished)
+        ,  owned_tokens(r.owned_tokens)
+        ,  review_share_in_percent(r.review_share_in_percent)
+        ,  created_at(r.created_at)
+    {}
+
+    // because fc::variant require for temporary object
+    research_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t research_group_id;
+    std::string name;
+    std::string abstract;
+    std::string permlink;
+    bool is_finished;
+    share_type owned_tokens;
+    double review_share_in_percent;
+    time_point_sec created_at;
+};
+
+struct research_content_api_obj
+{
+    research_content_api_obj(const chain::research_content_object& rc)
+        : id(rc.id._id)
+        ,  research_id(rc.research_id._id)
+        ,  content_type(rc.type)
+        ,  authors(rc.authors)
+        ,  content(rc.content)
+        ,  created_at(rc.created_at)
+    {}
+
+    // because fc::variant require for temporary object
+    research_content_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t research_id;
+    research_content_type content_type;
+    flat_set<account_name_type> authors;
+    std::string content;
+    time_point_sec created_at;
+};
+
+struct expert_token_api_obj
+{
+    expert_token_api_obj(const chain::expert_token_object& d)
+        : id(d.id._id)
+        ,  account_name(d.account_name)
+        ,  discipline_id(d.discipline_id._id)
+        ,  amount(d.amount)
+    {}
+
+    // because fc::variant require for temporary object
+    expert_token_api_obj()
+    {
+    }
+
+    int64_t id;
+    string account_name;
+    int64_t discipline_id;
+    share_type amount;
 };
 
 } // namespace app
@@ -515,7 +585,6 @@ FC_REFLECT( deip::app::account_api_obj,
              (owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)(recovery_account)(last_account_recovery)
              (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
              (balance)
-             (reward_deip_balance)(reward_vesting_balance)(reward_vesting_deip)
              (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)
@@ -576,12 +645,12 @@ FC_REFLECT_DERIVED( deip::app::dynamic_global_property_api_obj, (deip::chain::dy
 FC_REFLECT( deip::app::budget_api_obj,
              (id)
             (owner)
-            (content_permlink)
+            (target_discipline)
             (created)
-            (deadline)
             (balance)
             (per_block)
-            (last_allocated_block)
+            (start_block)
+            (end_block)
           )
 
 FC_REFLECT( deip::app::discipline_api_obj,
@@ -589,6 +658,35 @@ FC_REFLECT( deip::app::discipline_api_obj,
             (parent_id)
             (name)
             (votes_in_last_ten_weeks)
+          )
+
+
+FC_REFLECT( deip::app::research_api_obj,
+            (id)
+            (research_group_id)
+            (name)
+            (abstract)
+            (permlink)
+            (is_finished)
+            (owned_tokens)
+            (review_share_in_percent)
+            (created_at)
+          )
+
+FC_REFLECT( deip::app::research_content_api_obj,
+            (id)
+            (research_id)
+            (content_type)
+            (content)
+            (authors)
+            (created_at)
+          )
+
+FC_REFLECT( deip::app::expert_token_api_obj,
+            (id)
+            (account_name)
+            (discipline_id)
+            (amount)
 )
 
 // clang-format on

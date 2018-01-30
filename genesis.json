@@ -1,81 +1,94 @@
 {
-	"initial_timestamp" : "2017-11-29T10:03:00",
-	"init_supply": 1000,
-	"accounts": [{
-		"name": "initdelegate",
-		"recovery_account": "",
-		"public_key": "DEIP5bgzuweaHx231escVuPVxgudSyUWdKAH7fKgxZfp3nKSirzFRa",
-		"deip_amount": 1000,
-		"sp_amount": 0
-	}, {
-		"name": "alice",
-		"recovery_account": "",
-		"public_key": "DEIP76dCCDk6HVdjCZG144sHzVHReoDcjtNh7CkxSXF6TeKPW2YK2c",
-		"deip_amount": 0,
-		"sp_amount": 0
-	}, {
-		"name": "bob",
-		"recovery_account": "",
-		"public_key": "DEIP5gSUmAuNo1ry9cv88o3JmM7K6iJJtTh3f2NyMzWrKa6ZBz365B",
-		"deip_amount": 0,
-		"sp_amount": 0
-	}],
+    "initial_timestamp": "2017-11-29T10:03:00",
+    "init_supply": 1000,
+    "accounts": [{
+        "name": "initdelegate",
+        "recovery_account": "",
+        "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ",
+        "deip_amount": 1000,
+        "sp_amount": 0
+    }, {
+        "name": "alice",
+        "recovery_account": "",
+        "public_key": "DEIP76dCCDk6HVdjCZG144sHzVHReoDcjtNh7CkxSXF6TeKPW2YK2c",
+        "deip_amount": 0,
+        "sp_amount": 0
+    }, {
+        "name": "bob",
+        "recovery_account": "",
+        "public_key": "DEIP5gSUmAuNo1ry9cv88o3JmM7K6iJJtTh3f2NyMzWrKa6ZBz365B",
+        "deip_amount": 0,
+        "sp_amount": 0
+    }],
 
-	"witness_candidates": [{
-		"owner_name": "initdelegate",
-		"block_signing_key": "DEIP5bgzuweaHx231escVuPVxgudSyUWdKAH7fKgxZfp3nKSirzFRa"
-	}, {
-		"owner_name": "alice",
-		"block_signing_key": "DEIP76dCCDk6HVdjCZG144sHzVHReoDcjtNh7CkxSXF6TeKPW2YK2c"
-	}, {
-		"owner_name": "bob",
-		"block_signing_key": "DEIP5gSUmAuNo1ry9cv88o3JmM7K6iJJtTh3f2NyMzWrKa6ZBz365B"
-	}],
+    "witness_candidates": [{
+        "owner_name": "initdelegate",
+        "block_signing_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ"
+    }, {
+        "owner_name": "alice",
+        "block_signing_key": "DEIP76dCCDk6HVdjCZG144sHzVHReoDcjtNh7CkxSXF6TeKPW2YK2c"
+    }, {
+        "owner_name": "bob",
+        "block_signing_key": "DEIP5gSUmAuNo1ry9cv88o3JmM7K6iJJtTh3f2NyMzWrKa6ZBz365B"
+    }],
 
-	"disciplines": [{
-		"id": 1,
-		"name": "Mathematics",
-		"votes_in_last_ten_weeks": 100,
-		"parent_id": 0
-	}, {
-		"id": 2,
-		"name": "Physics",
-		"votes_in_last_ten_weeks": 250,
-		"parent_id": 0
-	}, {
-		"id": 3,
-		"name": "Chemistry",
-		"votes_in_last_ten_weeks": 42,
-		"parent_id": 0
-	}, {
-		"id" : 4,
-		"name": "Biology",
-		"votes_in_last_ten_weeks": 70,
-		"parent_id": 0
-	}, {
-		"id": 5,
-		"name": "Computer Science",
-		"votes_in_last_ten_weeks": 310,
-		"parent_id": 0
-	}, {
-		"id": 6,
-		"name": "Medicine",
-		"votes_in_last_ten_weeks": 90,
-		"parent_id": 0
-	}, {
-		"id": 7,
-		"name": "Pure Mathematics",
-		"votes_in_last_ten_weeks": 35,
-		"parent_id": 1
-	}, {
-		"id": 8,
-		"name": "Applied Mathematics",
-		"votes_in_last_ten_weeks": 86,
-		"parent_id": 1
-	}, {
-		"id": 9,
-		"name": "Law",
-		"votes_in_last_ten_weeks": 5,
-		"parent_id": 0
-	}]
+    "disciplines": [{
+        "id": 1,
+        "name": "Mathematics",
+        "votes_in_last_ten_weeks": 100,
+        "parent_id": 0
+    }, {
+        "id": 2,
+        "name": "Physics",
+        "votes_in_last_ten_weeks": 250,
+        "parent_id": 0
+    }, {
+        "id": 3,
+        "name": "Chemistry",
+        "votes_in_last_ten_weeks": 42,
+        "parent_id": 0
+    }, {
+        "id": 4,
+        "name": "Biology",
+        "votes_in_last_ten_weeks": 70,
+        "parent_id": 0
+    }, {
+        "id": 5,
+        "name": "Computer Science",
+        "votes_in_last_ten_weeks": 310,
+        "parent_id": 0
+    }, {
+        "id": 6,
+        "name": "Medicine",
+        "votes_in_last_ten_weeks": 90,
+        "parent_id": 0
+    }, {
+        "id": 7,
+        "name": "Pure Mathematics",
+        "votes_in_last_ten_weeks": 35,
+        "parent_id": 1
+    }, {
+        "id": 8,
+        "name": "Applied Mathematics",
+        "votes_in_last_ten_weeks": 86,
+        "parent_id": 1
+    }, {
+        "id": 9,
+        "name": "Law",
+        "votes_in_last_ten_weeks": 5,
+        "parent_id": 0
+    }],
+    "expert_tokens": [{
+        "account_name": "alice",
+        "discipline_id": 4,
+        "amount": 5000
+    }, {
+        "account_name": "alice",
+        "discipline_id": 6,
+        "amount": 5000
+    }, {
+        "account_name": "bob",
+        "discipline_id": 1,
+        "amount": 10000
+    }]
 }

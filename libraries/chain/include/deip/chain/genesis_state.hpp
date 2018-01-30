@@ -40,6 +40,13 @@ struct genesis_state_type
         dc::discipline_id_type parent_id;
     };
 
+    struct expert_token_type
+    {
+        std::string account_name;
+        dc::discipline_id_type discipline_id;
+        uint32_t amount;
+    };
+
     genesis_state_type()
         : init_supply(0)
     {
@@ -56,6 +63,8 @@ struct genesis_state_type
     std::vector<account_type> accounts;
     std::vector<witness_type> witness_candidates;
     std::vector<discipline_type> disciplines;
+    std::vector<expert_token_type> expert_tokens;
+
 
     sp::chain_id_type initial_chain_id;
 };
@@ -86,6 +95,11 @@ FC_REFLECT(deip::chain::genesis_state_type::discipline_type,
            (votes_in_last_ten_weeks)
            (parent_id))
 
+FC_REFLECT(deip::chain::genesis_state_type::expert_token_type,
+           (account_name)
+           (discipline_id)
+           (amount))
+
 FC_REFLECT(deip::chain::genesis_state_type,
            (init_supply)
            (init_rewards_supply)
@@ -93,5 +107,6 @@ FC_REFLECT(deip::chain::genesis_state_type,
            (accounts)
            (witness_candidates)
            (disciplines)
+           (expert_tokens)
            (initial_chain_id))
 // clang-format on

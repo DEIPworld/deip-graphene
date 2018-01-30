@@ -3,6 +3,10 @@
 #include <deip/app/application.hpp>
 #include <deip/chain/database.hpp>
 #include <deip/chain/genesis_state.hpp>
+#include <deip/chain/dbs_proposal.hpp>
+#include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_account.hpp>
+#include <deip/chain/dbs_discipline.hpp>
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>
 
@@ -84,6 +88,35 @@ struct database_fixture
                                          const string& url,
                                          const public_key_type& signing_key,
                                          const share_type& fee);
+
+    const discipline_object& discipline_create(const discipline_id_type& id, 
+                                                const discipline_name_type& name, 
+                                                const discipline_id_type& parent_id,
+                                                const share_type& votes_in_last_ten_weeks);
+
+    const research_group_object& research_group_create(const uint32_t& id, const string& permlink,
+                                                       const string& desciption,
+                                                       const uint32_t& quorum_percent,
+                                                       const int32_t& tokens_amount);
+
+    const research_group_token_object& research_group_token_create(const research_group_id_type& research_group_id,
+                                                                   const account_name_type& account,
+                                                                   const int32_t& amount);
+
+    const research_group_object& setup_research_group(const uint32_t &id,
+                                                      const string &permlink,
+                                                      const string &desciption,
+                                                      const uint32_t &quorum_percent,
+                                                      const int32_t &tokens_amount,
+                                                      const vector<account_name_type> &accounts);
+
+    const proposal_object& proposal_create(const uint32_t id,
+                                           const dbs_proposal::action_t action,
+                                           const string json_data,
+                                           const account_name_type& creator,
+                                           const research_group_id_type& research_group_id,
+                                           const time_point_sec expiration_time,
+                                           const uint32_t quorum_percent);
 
     void fund(const string& account_name, const share_type& amount = 500000);
     void fund(const string& account_name, const asset& amount);

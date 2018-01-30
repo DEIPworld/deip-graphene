@@ -10,6 +10,12 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_discipline.hpp>
+#include <deip/chain/dbs_research.hpp>
+#include <deip/chain/dbs_research_content.hpp>
+#include <deip/chain/dbs_research_discipline_relation.hpp>
+#include <deip/chain/dbs_proposal.hpp>
+#include <deip/chain/dbs_research_group.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -50,6 +56,12 @@ inline void validate_permlink_0_1(const string& permlink)
             FC_ASSERT(false, "Invalid permlink character: ${ch}", ("ch", std::string(1, ch)));
         }
     }
+}
+
+inline void validate_enum_value_by_range(int val, int first, int last)
+{
+    FC_ASSERT(val >= first && val <= last, "Provided enum value is outside of the range: val = ${enum_val}, first = ${first}, last = ${last}", 
+                                            ("enum_val", val)("first", first)("last", last));
 }
 
 struct strcmp_equal
@@ -1283,42 +1295,6 @@ void decline_voting_rights_evaluator::do_apply(const decline_voting_rights_opera
     }
 }
 
-void claim_reward_balance_evaluator::do_apply(const claim_reward_balance_operation& op)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    const auto& acnt = account_service.get_account(op.account);
-
-    FC_ASSERT(op.reward_deip <= acnt.reward_deip_balance, "Cannot claim that much DEIP. Claim: ${c} Actual: ${a}",
-              ("c", op.reward_deip)("a", acnt.reward_deip_balance));
-    FC_ASSERT(op.reward_vests <= acnt.reward_vesting_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
-              ("c", op.reward_vests)("a", acnt.reward_vesting_balance));
-
-    asset reward_vesting_deip_to_move = asset(0, DEIP_SYMBOL);
-    if (op.reward_vests == acnt.reward_vesting_balance)
-        reward_vesting_deip_to_move = acnt.reward_vesting_deip;
-    else
-        reward_vesting_deip_to_move
-            = asset(((uint128_t(op.reward_vests.amount.value) * uint128_t(acnt.reward_vesting_deip.amount.value))
-                     / uint128_t(acnt.reward_vesting_balance.amount.value))
-                        .to_uint64(),
-                    DEIP_SYMBOL);
-
-    account_service.increase_balance(acnt, op.reward_deip);
-    account_service.decrease_reward_balance(acnt, op.reward_deip);
-    account_service.increase_vesting_shares(acnt, op.reward_vests, reward_vesting_deip_to_move);
-
-    _db._temporary_public_impl().modify(_db.get_dynamic_global_properties(), [&](dynamic_global_property_object& gpo) {
-        gpo.total_vesting_shares += op.reward_vests;
-        gpo.total_vesting_fund_deip += reward_vesting_deip_to_move;
-
-        gpo.pending_rewarded_vesting_shares -= op.reward_vests;
-        gpo.pending_rewarded_vesting_deip -= reward_vesting_deip_to_move;
-    });
-
-    account_service.adjust_proxied_witness_votes(acnt, op.reward_vests.amount);
-}
-
 void delegate_vesting_shares_evaluator::do_apply(const delegate_vesting_shares_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
@@ -1414,28 +1390,64 @@ void create_budget_evaluator::do_apply(const create_budget_operation& op)
 {
     dbs_budget& budget_service = _db.obtain_service<dbs_budget>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
-
+    dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     account_service.check_account_existence(op.owner);
-
-    optional<string> content_permlink;
-    if (!op.content_permlink.empty())
-    {
-        content_permlink = op.content_permlink;
-    }
-
     const auto& owner = account_service.get_account(op.owner);
-
-    budget_service.create_budget(owner, op.balance, op.deadline, content_permlink);
+    discipline_service.check_discipline_existence(op.target_discipline);
+    auto& discipline = discipline_service.get_discipline_by_name(op.target_discipline);
+    budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id);
 }
 
-void close_budget_evaluator::do_apply(const close_budget_operation& op)
+
+void create_research_content_evaluator::do_apply(const create_research_content_operation &op)
 {
-    dbs_budget& budget_service = _db.obtain_service<dbs_budget>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
 
-    const budget_object& budget = budget_service.get_budget(budget_id_type(op.budget_id));
-
-    budget_service.close_budget(budget);
+    for (const auto& author : op.authors) {
+        account_service.check_account_existence(author);
+    }
+    
+    validate_enum_value_by_range(op.content_type, research_content_type::First, research_content_type::Last);
+    research_service.check_research_existence(op.research_id);
+    research_content_service.create(op.research_id, (research_content_type) op.content_type, op.content, op.authors);
 }
+
+void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
+{
+    dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    const uint32_t _lifetime_min = DAYS_TO_SECONDS(1);
+    const uint32_t _lifetime_max = DAYS_TO_SECONDS(10);
+
+    auto sec_till_expiration = op.expiration_time.sec_since_epoch() - fc::time_point_sec().sec_since_epoch();
+
+    FC_ASSERT(sec_till_expiration <= _lifetime_max && sec_till_expiration >= _lifetime_min,
+             "Proposal life time is not in range of ${min} - ${max} seconds.",
+             ("min", _lifetime_min)("max", _lifetime_max));
+
+    account_service.check_account_existence(op.creator);
+
+    auto& research_group = research_group_service.get_research_group(op.research_group_id);
+    auto quorum_percent = research_group.quorum_percent;
+
+    // quorum_percent should be taken from research_group_object
+    proposal_service.create_proposal(op.action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
+}
+
+void create_research_group_evaluator::do_apply(const create_research_group_operation& op)
+{
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    research_group_service.create_research_group(op.permlink,
+                                                 op.desciption,
+                                                 op.quorum_percent,
+                                                 op.tokens_amount);
+}
+
 
 } // namespace chain
-} // namespace deip
+} // namespace deip 

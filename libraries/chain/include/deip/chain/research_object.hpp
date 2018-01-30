@@ -9,6 +9,7 @@
 #include <deip/chain/shared_authority.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
+#include <boost/multi_index/hashed_index.hpp>
 
 #include <numeric>
 
@@ -17,10 +18,8 @@
 namespace deip{
 namespace chain{
 
-using deip::protocol::asset;
-
 class research_object : public object<research_object_type, research_object>
-{
+{ 
 
     research_object() = delete;
 
@@ -32,42 +31,49 @@ public:
         c(*this);
     }
 
-    id_type id;
-    discipline_id_type discipline_id;
-    fc::shared_string name;
-    fc::shared_string abstract;
-
-    time_point_sec created;
+    research_id_type id;
+    research_group_id_type research_group_id;
+    fc::string name;
+    fc::string abstract;
+    fc::string permlink;
+    time_point_sec created_at;
 
     bool is_finished;
-    string permlink;
     share_type owned_tokens;
+    double review_share_in_percent;
 };
 
 struct by_permlink;
-struct by_discipline_id;
+struct is_finished;
+struct by_research_group;
 
 typedef multi_index_container<research_object,
                 indexed_by<ordered_unique<tag<by_id>,
                             member<research_object,
                                     research_id_type,
                                     &research_object::id>>,
-                            ordered_unique<tag<by_permlink>,
-                            member<research_object,
-                                    string,
-                                    &research_object::permlink>>,
-                            ordered_unique<tag<by_discipline_id>,
-                            member<research_object,
-                                    discipline_id_type,
-                                    &research_object::discipline_id>>>,
 
-                                    allocator<research_object>>
-                                    research_index;
+                        ordered_unique<tag<by_permlink>,
+                                        member<research_object,
+                                                fc::string,
+                                                &research_object::permlink>>,
+                       
+                        ordered_non_unique<tag<is_finished>,
+                                member<research_object,
+                                        bool,
+                                        &research_object::is_finished>>,
+                        ordered_non_unique<tag<by_research_group>,
+                        member<research_object,
+                                research_group_id_type,
+                                &research_object::research_group_id>>>,
+
+                        allocator<research_object>>
+                        research_index;
 }
 }
 
 FC_REFLECT(deip::chain::research_object,
-                        (id)(name)(permlink)(discipline_id)(abstract)(created)(is_finished)(owned_tokens)
+                        (id)(name)(research_group_id)(permlink)(abstract)(created_at)(is_finished)(owned_tokens)(review_share_in_percent)
             )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_object, deip::chain::research_index)

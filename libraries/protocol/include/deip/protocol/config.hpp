@@ -6,6 +6,8 @@
 
 #pragma once
 
+#define DAYS_TO_SECONDS(X)                     (60*60*24*X)
+
 #define DEIP_BLOCKCHAIN_VERSION              ( version(0, 0, 1) )
 #define DEIP_BLOCKCHAIN_HARDFORK_VERSION     ( hardfork_version( DEIP_BLOCKCHAIN_VERSION ) )
 
@@ -62,6 +64,8 @@
 #define DEIP_LIMIT_API_BUDGETS_LIST_SIZE      1000
 
 #endif
+
+#define DEIP_MIN_GRANT_PER_BLOCK 1
 
 #define DEIP_BLOCK_INTERVAL                  3
 #define DEIP_BLOCKS_PER_YEAR                 (365*24*60*60/DEIP_BLOCK_INTERVAL)

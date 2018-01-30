@@ -11,23 +11,23 @@ dbs_discipline::dbs_discipline(database &db)
 {
 }
 
-std::vector<const discipline_object> dbs_discipline::get_disciplines() const
+dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines() const
 {
-    std::vector<const discipline_object> ret;
+    discipline_ref_type ret;
 
-    auto idx = db_impl().get_index<discipline_index>().indicies();
-    auto it = idx.cbegin();
+    const auto& idx = db_impl().get_index<discipline_index>().indicies().get<by_id>();
+    auto it = idx.lower_bound(0);
     const auto it_end = idx.cend();
     while (it != it_end)
     {
-        ret.push_back(*it);
+        ret.push_back(std::cref(*it));
         ++it;
     }
 
     return ret;
 }
 
-const discipline_object& dbs_discipline::get_discipline(const discipline_id_type id) const
+const discipline_object& dbs_discipline::get_discipline(const discipline_id_type& id) const
 {
     return db_impl().get<discipline_object>(id);
 }
@@ -37,16 +37,23 @@ const discipline_object& dbs_discipline::get_discipline_by_name(const discipline
     return db_impl().get<discipline_object, by_discipline_name>(name);
 }
 
-std::vector<const discipline_object> dbs_discipline::get_disciplines_by_parent_id(const discipline_id_type parent_id) const
+void dbs_discipline::check_discipline_existence(const discipline_name_type &name)
 {
-    std::vector<const discipline_object> ret;
+    const auto& idx = db_impl().get_index<discipline_index>().indices().get<by_discipline_name>();
+
+    FC_ASSERT(idx.find(name) != idx.cend(), "Discipline \"${1}\" does not exist", ("1", name));
+}
+
+dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines_by_parent_id(const discipline_id_type parent_id) const
+{
+    discipline_ref_type ret;
 
     auto it_pair = db_impl().get_index<discipline_index>().indicies().get<by_parent_id>().equal_range(parent_id);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
     {
-        ret.push_back(*it);
+        ret.push_back(std::cref(*it));
         ++it;
     }
 
