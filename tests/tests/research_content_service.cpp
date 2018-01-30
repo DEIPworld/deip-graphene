@@ -38,6 +38,7 @@ public:
             rc.research_id = 1;
             rc.type = research_content_type::milestone;
             rc.content = "milestone for Research #1";
+            rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
         });
 
@@ -46,6 +47,7 @@ public:
             rc.research_id = 1;
             rc.type = research_content_type::review;
             rc.content = "review for Research #1";
+            rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
         });
 
@@ -54,6 +56,7 @@ public:
             rc.research_id = 1;
             rc.type = research_content_type::final_result;
             rc.content = "final result for Research #1";
+            rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
         });
 
@@ -74,6 +77,7 @@ public:
             rc.research_id = 2;
             rc.type = research_content_type::announcement;
             rc.content = "announcement for Research #2";
+            rc.authors = {"john"};
             rc.created_at = db.head_block_time();
         });
     }
@@ -81,7 +85,7 @@ public:
     dbs_research_content& data_service;
 };
 
-BOOST_FIXTURE_TEST_SUITE(research_content_service, research_content_service_fixture)
+BOOST_FIXTURE_TEST_SUITE(research_content_service_tests, research_content_service_fixture)
 
 BOOST_AUTO_TEST_CASE(get_content_by_id)
 {
@@ -94,6 +98,8 @@ BOOST_AUTO_TEST_CASE(get_content_by_id)
         BOOST_CHECK(announcement.research_id == 2);
         BOOST_CHECK(announcement.type == research_content_type::announcement);
         BOOST_CHECK(announcement.content == "announcement for Research #2");
+        BOOST_CHECK(announcement.authors.size() == 1);
+        BOOST_CHECK(announcement.authors.begin()[0] == "john");
     }
     FC_LOG_AND_RETHROW()
 }
@@ -120,19 +126,25 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
             const research_content_object &content = wrapper.get();
             return content.id == 0 && content.research_id == 1 && 
                     content.type == research_content_type::milestone &&
-                    content.content == "milestone for Research #1";
+                    content.content == "milestone for Research #1" &&
+                    content.authors.size() == 2 && 
+                    content.authors.begin()[0] == "alice" && content.authors.begin()[1] == "bob";
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
             return content.id == 1 && content.research_id == 1 && 
                     content.type == research_content_type::review && 
-                    content.content == "review for Research #1";
+                    content.content == "review for Research #1" &&
+                    content.authors.size() == 1 && 
+                    content.authors.begin()[0] == "alice";
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
             return content.id == 2 && content.research_id == 1 && 
                     content.type == research_content_type::final_result && 
-                    content.content == "final result for Research #1";
+                    content.content == "final result for Research #1" &&
+                    content.authors.size() == 1 && 
+                    content.authors.begin()[0] == "bob";
         }));
     }
     FC_LOG_AND_RETHROW()
@@ -162,7 +174,9 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
             const research_content_object &content = wrapper.get();
             return content.id == 1 && content.research_id == 1 && 
                     content.type == research_content_type::review && 
-                    content.content == "review for Research #1";
+                    content.content == "review for Research #1" && 
+                    content.authors.size() == 1 && 
+                    content.authors.begin()[0] == "alice";
         }));
     }
     FC_LOG_AND_RETHROW()
@@ -187,15 +201,22 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         research_content_type type = research_content_type::milestone;
         std::string content = "milestone for Research #2";
 
-        auto milestone = data_service.create(2, type, content);
+        flat_set<account_name_type> authors = {"sam"};
+
+        auto milestone = data_service.create(2, type, content, authors);
         BOOST_CHECK(milestone.research_id == 2);
         BOOST_CHECK(milestone.type == research_content_type::milestone);
         BOOST_CHECK(milestone.content == "milestone for Research #2");
+        BOOST_CHECK(milestone.authors.size() == 1);
+        BOOST_CHECK(milestone.authors.begin()[0] == "sam");
+
 
         auto db_milestone = db.get<research_content_object, by_id>(milestone.id);
         BOOST_CHECK(db_milestone.research_id == 2);
         BOOST_CHECK(db_milestone.type == research_content_type::milestone);
-        BOOST_CHECK(db_milestone.content == "milestone for Research #2");             
+        BOOST_CHECK(db_milestone.content == "milestone for Research #2"); 
+        BOOST_CHECK(db_milestone.authors.size() == 1);
+        BOOST_CHECK(db_milestone.authors.begin()[0] == "sam");            
     }
     FC_LOG_AND_RETHROW()
 }

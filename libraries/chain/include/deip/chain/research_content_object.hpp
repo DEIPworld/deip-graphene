@@ -47,6 +47,7 @@ public:
     research_id_type research_id;
     research_content_type type;
     fc::string content;
+    flat_set<account_name_type> authors;
     time_point_sec created_at;
 };
 
@@ -77,8 +78,6 @@ typedef multi_index_container<research_content_object,
 
 FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result)(review) )
 
-FC_REFLECT(deip::chain::research_content_object,
-                        (id)(research_id)(type)(content)
-            )
+FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(content)(authors) )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_content_object, deip::chain::research_content_index)

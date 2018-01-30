@@ -524,6 +524,7 @@ struct research_content_api_obj
         : id(rc.id._id)
         ,  research_id(rc.research_id._id)
         ,  content_type(rc.type)
+        ,  authors(rc.authors)
         ,  content(rc.content)
         ,  created_at(rc.created_at)
     {}
@@ -536,6 +537,7 @@ struct research_content_api_obj
     int64_t id;
     int64_t research_id;
     research_content_type content_type;
+    flat_set<account_name_type> authors;
     std::string content;
     time_point_sec created_at;
 };
@@ -676,6 +678,7 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (research_id)
             (content_type)
             (content)
+            (authors)
             (created_at)
           )
 

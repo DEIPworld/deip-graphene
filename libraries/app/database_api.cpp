@@ -2198,7 +2198,37 @@ vector<discipline_api_obj> database_api::get_disciplines_by_parent_id(const disc
 }
 
 
+research_api_obj database_api::get_research_by_id(const research_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
+        return research_service.get_research(id);
+    });
+}
 
+research_api_obj database_api::get_research_by_permlink(const string& permlink) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
+        return research_service.get_research_by_permlink(permlink);
+    });
+}
+
+vector<research_api_obj> database_api::get_researches() const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_api_obj> results;
+
+        chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
+        auto researches = research_service.get_researches();
+
+        for (const chain::research_object &research : researches) {
+            results.push_back(research_api_obj(research));
+        }
+
+        return results;
+    });
+}
 
 research_content_api_obj database_api::get_research_content_by_id(const research_content_id_type& id) const
 {
@@ -2236,16 +2266,6 @@ vector<research_content_api_obj> database_api::get_research_content_by_type(cons
         return results;
     });
 }
-
-// TODO: move to operations
-research_content_api_obj database_api::create_research_content(const research_id_type& research_id, const research_content_type& type, const string& content) const
-{
-    return my->_db.with_read_lock([&]() { 
-        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
-        return research_content_service.create(research_id, type, content);
-    });
-}
-
 
 
 expert_token_api_obj database_api::get_expert_token(const expert_token_id_type id) const

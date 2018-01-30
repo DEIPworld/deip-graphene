@@ -1411,8 +1411,7 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
     
     validate_enum_value_by_range(op.content_type, research_content_type::First, research_content_type::Last);
     research_service.check_research_existence(op.research_id);
-    // todo: add authors to research content object
-    research_content_service.create(op.research_id, (research_content_type) op.content_type, op.content);
+    research_content_service.create(op.research_id, (research_content_type) op.content_type, op.content, op.authors);
 }
 
 void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
