@@ -41,9 +41,9 @@ public:
     *
     * @returns new vote object
     */
-    const vote_object& create_material_vote(const optional<discipline_id_type>& discipline_id,
+    const vote_object& create_content_vote(const optional<discipline_id_type>& discipline_id,
                                       const account_name_type& voter,
-                                      const int64_t& material_id,
+                                      const int64_t& content_id,
                                       const share_type& weight,
                                       const time_point_sec& voting_time);
 

@@ -58,16 +58,16 @@ const vote_object& dbs_vote::create_research_vote(const optional<discipline_id_t
     return vote;
 }
 
-const vote_object& dbs_vote::create_material_vote(const optional<discipline_id_type>& discipline_id,
+const vote_object& dbs_vote::create_content_vote(const optional<discipline_id_type>& discipline_id,
                                                   const account_name_type& voter,
-                                                  const int64_t& material_id,
+                                                  const int64_t& content_id,
                                                   const share_type& weight,
                                                   const time_point_sec& voting_time)
 {
     auto& vote = create_vote(discipline_id, voter, weight, voting_time);
 
     db_impl().modify(vote, [&](vote_object& v) {
-        v.material_id = material_id;
+        v.content_id = content_id;
     });
 
     return vote;

@@ -33,7 +33,7 @@ public:
     optional<discipline_id_type> discipline_id;
     account_name_type voter;
     optional<research_id_type> research_id;
-    optional<id_type> material_id;
+    optional<research_content_id_type> content_id;
     optional<id_type> review_id;
     share_type weight;
     time_point_sec voting_time;
@@ -41,7 +41,7 @@ public:
 
 struct by_discipline_id;
 struct by_research_id;
-struct by_material_id;
+struct by_content_id;
 struct by_review_id;
 struct by_voter;
 
@@ -52,6 +52,16 @@ struct optional_discipline_id_extractor
     result_type operator()(const vote_object& v) const
     {
         return v.discipline_id;
+    }
+};
+
+struct optional_content_id_extractor
+{
+    typedef optional<research_content_id_type> result_type;
+
+    result_type operator()(const vote_object& v) const
+    {
+        return v.content_id;
     }
 };
 
@@ -74,6 +84,8 @@ typedef multi_index_container<vote_object,
                         optional_discipline_id_extractor>,
                 ordered_non_unique<tag<by_research_id>,
                         optional_research_id_extractor>,
+                ordered_non_unique<tag<by_content_id>,
+                        optional_content_id_extractor>,
                 ordered_non_unique<tag<by_voter>,
                         member<vote_object,
                                 account_name_type,
@@ -84,7 +96,7 @@ typedef multi_index_container<vote_object,
 }
 
 FC_REFLECT( deip::chain::vote_object,
-            (id)(discipline_id)(voter)(research_id)(material_id)(review_id)(weight)(voting_time)
+            (id)(discipline_id)(voter)(research_id)(content_id)(review_id)(weight)(voting_time)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::vote_object, deip::chain::vote_index )
