@@ -800,6 +800,7 @@ struct create_research_group_operation : public base_operation
     account_name_type creator;
     string permlink;
     string desciption;
+    deip::protocol::asset funds;
     uint32_t quorum_percent;
     uint32_t tokens_amount;
 
@@ -896,7 +897,7 @@ FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(deleg
 FC_REFLECT( deip::protocol::create_budget_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
 
 FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time))
-FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption) )
+FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption)(funds) )
 
 FC_REFLECT( deip::protocol::create_research_operation,  (research_group_id)
                                                         (authors)

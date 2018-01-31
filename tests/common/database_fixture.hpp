@@ -6,6 +6,7 @@
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_account.hpp>
+#include <deip/chain/dbs_research.hpp>
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>
 
@@ -90,6 +91,7 @@ struct database_fixture
 
     const research_group_object& research_group_create(const uint32_t& id, const string& permlink,
                                                        const string& desciption,
+                                                       const asset& funds,
                                                        const uint32_t& quorum_percent,
                                                        const int32_t& tokens_amount);
 
@@ -100,6 +102,7 @@ struct database_fixture
     const research_group_object& setup_research_group(const uint32_t &id,
                                                       const string &permlink,
                                                       const string &desciption,
+                                                      const asset& funds,
                                                       const uint32_t &quorum_percent,
                                                       const int32_t &tokens_amount,
                                                       const vector<account_name_type> &accounts);
@@ -111,6 +114,12 @@ struct database_fixture
                                            const research_group_id_type& research_group_id,
                                            const time_point_sec expiration_time,
                                            const uint32_t quorum_percent);
+
+    const research_object& research_create(const string& name, 
+                                           const string& abstract, 
+                                           const string& permlink,
+                                           const research_group_id_type& research_group_id,
+                                           const uint32_t& percent_for_review);
 
     void fund(const string& account_name, const share_type& amount = 500000);
     void fund(const string& account_name, const asset& amount);

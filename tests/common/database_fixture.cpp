@@ -344,13 +344,15 @@ const witness_object& database_fixture::witness_create(const string& owner,
 
 const research_group_object&
 database_fixture::research_group_create(const uint32_t& id, const string& permlink,
-                                        const string& description, const uint32_t& quorum_percent, const int32_t& tokens_amount)
+                                        const string& description, const asset& funds,
+                                        const uint32_t& quorum_percent, const int32_t& tokens_amount)
 {
     const research_group_object& new_research_group
         = db.create<research_group_object>([&](research_group_object& rg) {
               rg.id = id;
               fc::from_string(rg.permlink, permlink);
               fc::from_string(rg.description, description);
+              rg.funds = funds;
               rg.quorum_percent = quorum_percent;
               rg.total_tokens_amount = tokens_amount;
           });
@@ -370,11 +372,12 @@ const research_group_token_object& database_fixture::research_group_token_create
 const research_group_object& database_fixture::setup_research_group(const uint32_t &id,
                                                                     const string &permlink,
                                                                     const string &description,
+                                                                    const asset& funds,
                                                                     const uint32_t &quorum_percent,
                                                                     const int32_t &tokens_amount,
                                                                     const vector<account_name_type> &accounts)
 {
-    const auto& research_group = research_group_create(id, permlink, description, quorum_percent, tokens_amount);
+    const auto& research_group = research_group_create(id, permlink, description, funds, quorum_percent, tokens_amount);
 
     for (const auto& account : accounts)
     {
@@ -405,6 +408,23 @@ const proposal_object& database_fixture::proposal_create(const uint32_t id, cons
     return new_proposal;
 }
 
+const research_object& database_fixture::research_create(const string &name, const string &abstract, const string &permlink,
+                                            const research_group_id_type &research_group_id, const uint32_t &percent_for_review)
+{
+    const auto& new_research = db.create<research_object>([&](research_object& research) {
+        fc::from_string(research.name, name);
+        fc::from_string(research.abstract, abstract);
+        fc::from_string(research.permlink, permlink);
+        research.research_group_id = research_group_id;
+        research.percent_for_review = percent_for_review;
+        research.is_finished = false;
+        research.owned_tokens = DEIP_100_PERCENT;
+        research.created = db.head_block_time();
+    });
+
+    return new_research;
+}
+    
 void database_fixture::fund(const string& account_name, const share_type& amount)
 {
     try

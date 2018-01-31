@@ -200,7 +200,7 @@ protected:
         FC_ASSERT((account.balance.amount - data.total_price.amount > 0), "Account balance is less that total price (result amount < 0)");
         FC_ASSERT((research.owned_tokens - data.amount > 0), "Research balance is less than amount (result amount < 0)");
         _account_service.decrease_balance(account, data.total_price);
-        //_research_group_service.adjust_research_group_token_amount(proposal.research_group_id, data.amount);
+        _research_group_service.increase_research_group_funds(proposal.research_group_id, data.amount);
         _research_service.decrease_owned_tokens(research, data.amount);
         _research_token_service.create_research_token(account.name, data.amount, data.research_id);
     }
