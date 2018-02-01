@@ -129,6 +129,19 @@ BOOST_AUTO_TEST_CASE(get_research_by_permlink)
     }
     FC_LOG_AND_RETHROW()
 }
+    
+BOOST_AUTO_TEST_CASE(decrease_owned_tokens_test){
+    try
+    {
+        create_researches();
+
+        auto& research = db.get<research_object, by_id>(1);
+        BOOST_CHECK_NO_THROW(data_service.decrease_owned_tokens(research, 200));
+        BOOST_CHECK(research.owned_tokens == 9800);
+
+    }
+    FC_LOG_AND_RETHROW()
+}    
 
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -5,6 +5,7 @@
 #include <boost/multi_index/composite_key.hpp>
 #include <fc/shared_string.hpp>
 
+
 namespace deip {
 namespace chain {
 
@@ -23,10 +24,9 @@ public:
 
     fc::shared_string permlink;
     fc::shared_string description;
-
+    share_type funds = 0;
     uint32_t quorum_percent;
     uint32_t total_tokens_amount;
-    flat_set<research_group_token_object> research_group_tokens;
 };
 
 class research_group_token_object : public object<research_group_token_object_type, research_group_token_object>
@@ -97,7 +97,7 @@ typedef multi_index_container<research_group_token_object,
 
   
 
-FC_REFLECT(deip::chain::research_group_object, (id)(permlink)(description)(total_tokens_amount))
+FC_REFLECT(deip::chain::research_group_object, (id)(permlink)(description)(funds)(quorum_percent)(total_tokens_amount))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_group_object, deip::chain::research_group_index)
 

@@ -16,11 +16,13 @@ const research_group_object& dbs_research_group::get_research_group(const resear
 
 const research_group_object& dbs_research_group::create_research_group(const string& permlink,
                                                                        const string& description,
+                                                                       const share_type funds,
                                                                        const uint32_t& quorum_percent,
                                                                        const uint32_t& tokens_amount) {
     const research_group_object& new_research_group = db_impl().create<research_group_object>([&](research_group_object& research_group) {
         fc::from_string(research_group.permlink, permlink);
         fc::from_string(research_group.description, description);
+        research_group.funds = funds;
         research_group.quorum_percent = quorum_percent;
         research_group.total_tokens_amount = tokens_amount;
     });
@@ -107,6 +109,23 @@ const research_group_object& dbs_research_group::adjust_research_group_token_amo
     db_impl().modify(research_group, [&](research_group_object& rg) {
         rg.total_tokens_amount += delta;
     });
+
+    return research_group;
+}
+
+const research_group_object& dbs_research_group::increase_research_group_funds(const research_group_id_type& research_group_id, const share_type deips)
+{
+    const research_group_object& research_group = get_research_group(research_group_id);
+    db_impl().modify(research_group, [&](research_group_object& rg) { rg.funds += deips; });
+
+    return research_group;
+}
+
+const research_group_object& dbs_research_group::decrease_research_group_funds(const research_group_id_type& research_group_id, const share_type deips)
+{
+    const research_group_object& research_group = get_research_group(research_group_id);
+    FC_ASSERT(research_group.funds > deips, "Not enough funds");
+    db_impl().modify(research_group, [&](research_group_object& rg) { rg.funds -= deips; });
 
     return research_group;
 }

@@ -1444,6 +1444,7 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
 
     research_group_service.create_research_group(op.permlink,
                                                  op.desciption,
+                                                 op.funds,
                                                  op.quorum_percent,
                                                  op.tokens_amount);
 }
