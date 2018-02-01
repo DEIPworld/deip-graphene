@@ -534,36 +534,6 @@ struct expert_token_api_obj
     share_type amount;
 };
 
-struct research_group_api_obj
-{
-    research_group_api_obj(const chain::research_group_object& rg)
-        : id(rg.id._id)
-        ,  permlink(fc::to_string(rg.permlink))
-        ,  description(fc::to_string(rg.description))
-        ,  quorum_percent(rg.quorum_percent)
-        ,  total_tokens_amount(rg.total_tokens_amount)
-    {
-        for (auto& token : rg.research_group_tokens)
-        {
-            research_group_tokens.push_back(token);
-        }
-    }
-    // {}
-
-    // because fc::variant require for temporary object
-    research_group_api_obj()
-    {
-    }
-
-    int64_t id;
-    string permlink;
-    string description;
-    uint32_t quorum_percent;
-    uint32_t total_tokens_amount;
-
-    vector<research_group_token_object> research_group_tokens;
-};
-
 struct proposal_api_obj
 {
     proposal_api_obj(const chain::proposal_object& p)
@@ -751,15 +721,6 @@ FC_REFLECT( deip::app::expert_token_api_obj,
             (account_name)
             (discipline_id)
             (amount)
-)
-
-FC_REFLECT( deip::app::research_group_api_obj,
-            (id)
-            (permlink)
-            (description)
-            (quorum_percent)
-            (total_tokens_amount)
-            // (research_group_tokens)
 )
 
 FC_REFLECT( deip::app::proposal_api_obj,

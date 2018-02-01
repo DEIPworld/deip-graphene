@@ -2287,34 +2287,6 @@ vector<expert_token_api_obj> database_api::get_expert_tokens_by_discipline_id(co
     });
 }
 
-
-research_group_api_obj database_api::create_research_group(const string permlink,
-                                                          const string description,
-                                                          const uint32_t quorum_percent,
-                                                          const uint32_t tokens_amount) const
-{
-    return my->_db.with_read_lock([&]() {
-        chain::dbs_research_group &research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
-
-        return research_group_service.create_research_group(permlink, description, quorum_percent, tokens_amount);
-    });
-}
-
-proposal_api_obj database_api::create_proposal(const dbs_proposal::action_t action,
-                                              const std::string json_data,
-                                              const account_name_type creator,
-                                              const research_group_id_type research_group_id,
-                                              const fc::time_point_sec expiration_time,
-                                              const uint32_t quorum_percent) const
-{
-    return my->_db.with_read_lock([&]() {
-        chain::dbs_proposal &proposal_service = my->_db.obtain_service<chain::dbs_proposal>();
-
-        return proposal_service.create_proposal(action, json_data, creator, research_group_id, expiration_time,
-                                                quorum_percent);
-    });
-}
-
 proposal_vote_api_obj database_api::vote_for_proposal(const proposal_id_type proposal_id, const account_name_type voter) const
 {
     return my->_db.with_read_lock([&]() {

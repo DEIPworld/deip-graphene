@@ -394,28 +394,11 @@ public:
     ///////////////////
     expert_token_api_obj get_expert_token(const expert_token_id_type id) const;
     vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_name_type account_name) const;
-    vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
-
-
-    ////////////////////
-    // Research group //
-    ///////////////////
-    research_group_api_obj create_research_group(const string permlink,
-                                                const string description,
-                                                const uint32_t quorum_percent,
-                                                const uint32_t tokens_amount) const;
-                                                
+    vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;                 
 
     ////////////////////
     // Proposal       //
     ///////////////////
-    proposal_api_obj create_proposal(const dbs_proposal::action_t action,
-                                    const std::string json_data,
-                                    const account_name_type creator,
-                                    const research_group_id_type research_group_id,
-                                    const fc::time_point_sec expiration_time,
-                                    const uint32_t quorum_percent) const;
-
     proposal_vote_api_obj vote_for_proposal(const proposal_id_type proposal_id, const account_name_type voter) const;
     vector<proposal_api_obj> get_proposals_by_research_group_id(const research_group_id_type research_group_id) const;
     proposal_api_obj get_proposal(const proposal_id_type id) const;
@@ -571,11 +554,7 @@ FC_API(deip::app::database_api,
    (get_expert_tokens_by_account_name)
    (get_expert_tokens_by_discipline_id)
 
-   // Research group
-   (create_research_group)
-
    // Proposal
-   (create_proposal)
    (vote_for_proposal)
    (get_proposals_by_research_group_id)
    (get_proposal)
