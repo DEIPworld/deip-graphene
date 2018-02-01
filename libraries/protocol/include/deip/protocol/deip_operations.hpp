@@ -800,7 +800,7 @@ struct create_research_group_operation : public base_operation
     account_name_type creator;
     string permlink;
     string desciption;
-    deip::protocol::asset funds;
+    share_type funds;
     uint32_t quorum_percent;
     uint32_t tokens_amount;
 

@@ -34,7 +34,7 @@ public:
      * @returns research group object
      */
     const research_group_object& create_research_group(const string& permlink, const string& description,
-                                                       const asset& funds,
+                                                       const share_type funds,
                                                        const uint32_t& quorum_percent,
                                                        const uint32_t& tokens_amount);
 
@@ -60,9 +60,9 @@ public:
 
     const research_group_object&  adjust_research_group_token_amount(const research_group_id_type& research_group_id, const int32_t& delta);
 
-    const research_group_object& increase_research_group_funds(const research_group_id_type& research_group_id, const asset& deips);
+    const research_group_object& increase_research_group_funds(const research_group_id_type& research_group_id, const share_type deips);
 
-    const research_group_object& decrease_research_group_funds(const research_group_id_type& research_group_id, const asset& deips);
+    const research_group_object& decrease_research_group_funds(const research_group_id_type& research_group_id, const share_type deips);
 
 };
 

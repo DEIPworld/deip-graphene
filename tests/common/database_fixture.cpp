@@ -344,7 +344,7 @@ const witness_object& database_fixture::witness_create(const string& owner,
 
 const research_group_object&
 database_fixture::research_group_create(const uint32_t& id, const string& permlink,
-                                        const string& description, const asset& funds,
+                                        const string& description, const share_type funds,
                                         const uint32_t& quorum_percent, const int32_t& tokens_amount)
 {
     const research_group_object& new_research_group
@@ -372,7 +372,7 @@ const research_group_token_object& database_fixture::research_group_token_create
 const research_group_object& database_fixture::setup_research_group(const uint32_t &id,
                                                                     const string &permlink,
                                                                     const string &description,
-                                                                    const asset& funds,
+                                                                    const share_type funds,
                                                                     const uint32_t &quorum_percent,
                                                                     const int32_t &tokens_amount,
                                                                     const vector<account_name_type> &accounts)

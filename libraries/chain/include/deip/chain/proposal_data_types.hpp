@@ -69,14 +69,27 @@ struct start_research_proposal_data_type : base_proposal_data_type
 struct transfer_research_tokens_data_type : base_proposal_data_type
 {
     research_id_type research_id;
-    asset total_price;
+    share_type total_price;
     deip::protocol::account_name_type account_name;
     share_type amount;
 
     void validate() const
     {
         FC_ASSERT(is_valid_account_name(account_name), "Account name ${n} is invalid", ("n", account_name));
-        FC_ASSERT(total_price.amount >= 0, "Total price cant be negative");
+        FC_ASSERT(total_price >= 0, "Total price cant be negative");
+    }
+};
+
+struct send_funds_data_type : base_proposal_data_type
+{
+    research_group_id_type research_group_id;
+    account_name_type account_name;
+    share_type funds;
+
+    void validate() const
+    {
+        FC_ASSERT(is_valid_account_name(account_name), "Account name ${n} is invalid", ("n", account_name));
+        FC_ASSERT(funds >= 0, "Amount cant be negative");
     }
 };
 }
@@ -91,3 +104,5 @@ FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(qu
 FC_REFLECT(deip::chain::start_research_proposal_data_type, (name)(abstract)(permlink)(research_group_id)(percent_for_review))
 
 FC_REFLECT(deip::chain::transfer_research_tokens_data_type, (research_id)(total_price)(account_name)(amount))
+
+FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(account_name)(funds))

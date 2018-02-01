@@ -60,7 +60,7 @@ void dbs_research::check_research_existence(const research_id_type& id) const
 
 void dbs_research::decrease_owned_tokens(const research_object& research, const share_type delta)
 {
-    FC_ASSERT((research.owned_tokens + delta > 0), "Cannot update research owned tokens (result amount < 0)");
+    FC_ASSERT((research.owned_tokens - delta > 0), "Cannot update research owned tokens (result amount < 0)");
     db_impl().modify(research, [&](research_object& r_o) { r_o.owned_tokens -= delta; });
 }
 

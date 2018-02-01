@@ -93,6 +93,8 @@ public:
                        std::bind(&EvaluatorType::start_research_evaluator, this, std::placeholders::_1));
         evaluators.set(proposal_action_type::transfer_research_tokens,
                        std::bind(&EvaluatorType::transfer_research_tokens_evaluator, this, std::placeholders::_1));
+        evaluators.set(proposal_action_type::send_funds,
+                       std::bind(&EvaluatorType::send_funds_evaluator, this, std::placeholders::_1));
     }
 
     virtual void apply(const OperationType& o) final override
@@ -197,12 +199,26 @@ protected:
         auto& account = _account_service.get_account(data.account_name);
         auto& research = _research_service.get_research(data.research_id);
 
-        FC_ASSERT((account.balance.amount - data.total_price.amount > 0), "Account balance is less that total price (result amount < 0)");
+        FC_ASSERT((account.balance.amount - data.total_price > 0), "Account balance is less that total price (result amount < 0)");
         FC_ASSERT((research.owned_tokens - data.amount > 0), "Research balance is less than amount (result amount < 0)");
-        _account_service.decrease_balance(account, data.total_price);
-        _research_group_service.increase_research_group_funds(proposal.research_group_id, data.amount);
+        _account_service.decrease_balance(account, asset(data.total_price));
+        _research_group_service.increase_research_group_funds(proposal.research_group_id, data.total_price);
         _research_service.decrease_owned_tokens(research, data.amount);
         _research_token_service.create_research_token(account.name, data.amount, data.research_id);
+    }
+
+    void send_funds_evaluator(const proposal_object& proposal)
+    {
+        send_funds_data_type data = get_data<send_funds_data_type>(proposal);
+        _research_group_service.check_research_group_existence(data.research_group_id);
+        _account_service.check_account_existence(data.account_name);
+
+        auto& account = _account_service.get_account(data.account_name);
+        auto& research_group = _research_group_service.get_research_group(data.research_group_id);
+        FC_ASSERT((research_group.funds - data.funds > 0), "Research balance is less than amount (result amount < 0)");
+
+        _account_service.increase_balance(account, data.funds);
+        _research_group_service.decrease_research_group_funds(proposal.research_group_id, data.funds);
     }
     AccountService& _account_service;
     ProposalService& _proposal_service;

@@ -91,7 +91,7 @@ struct database_fixture
 
     const research_group_object& research_group_create(const uint32_t& id, const string& permlink,
                                                        const string& desciption,
-                                                       const asset& funds,
+                                                       const share_type funds,
                                                        const uint32_t& quorum_percent,
                                                        const int32_t& tokens_amount);
 
@@ -102,7 +102,7 @@ struct database_fixture
     const research_group_object& setup_research_group(const uint32_t &id,
                                                       const string &permlink,
                                                       const string &desciption,
-                                                      const asset& funds,
+                                                      const share_type funds,
                                                       const uint32_t &quorum_percent,
                                                       const int32_t &tokens_amount,
                                                       const vector<account_name_type> &accounts);
