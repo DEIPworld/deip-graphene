@@ -116,7 +116,6 @@ const research_group_object& dbs_research_group::adjust_research_group_token_amo
 const research_group_object& dbs_research_group::increase_research_group_funds(const research_group_id_type& research_group_id, const share_type deips)
 {
     const research_group_object& research_group = get_research_group(research_group_id);
-    FC_ASSERT(research_group.funds + deips > 0, "Not enough funds");
     db_impl().modify(research_group, [&](research_group_object& rg) { rg.funds += deips; });
 
     return research_group;
@@ -125,7 +124,7 @@ const research_group_object& dbs_research_group::increase_research_group_funds(c
 const research_group_object& dbs_research_group::decrease_research_group_funds(const research_group_id_type& research_group_id, const share_type deips)
 {
     const research_group_object& research_group = get_research_group(research_group_id);
-    FC_ASSERT(research_group.funds + deips > 0, "Not enough funds");
+    FC_ASSERT(research_group.funds > deips, "Not enough funds");
     db_impl().modify(research_group, [&](research_group_object& rg) { rg.funds -= deips; });
 
     return research_group;
