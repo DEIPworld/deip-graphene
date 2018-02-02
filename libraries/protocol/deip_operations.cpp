@@ -154,7 +154,6 @@ void vote_operation::validate() const
     validate_account_name(voter);
     FC_ASSERT(abs(weight) <= DEIP_100_PERCENT, "Weight is not a DEIP percentage");
     validate_permlink(permlink);
-    FC_ASSERT(research_id != NULL || content_id != NULL || review_id != NULL, "Should vote for research, content or review");
 }
 
 void transfer_operation::validate() const
