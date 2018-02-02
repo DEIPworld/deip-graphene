@@ -17,6 +17,13 @@ namespace chain {
 
 using deip::protocol::asset;
 
+enum vote_target_type : uint8_t
+{
+    research_vote = 1,
+    content_vote = 2,
+    review_vote = 3
+};
+
 class vote_object : public object<vote_object_type, vote_object>
 {
     vote_object() = delete;
@@ -32,38 +39,16 @@ public:
     vote_id_type id;
     discipline_id_type discipline_id;
     account_name_type voter;
-    optional<research_id_type> research_id;
-    optional<research_content_id_type> content_id;
-    optional<id_type> review_id;
+    vote_target_type vote_type;
+    int64_t vote_for_id;
     share_type weight;
     time_point_sec voting_time;
 };
 
 struct by_discipline_id;
-struct by_research_id;
-struct by_content_id;
-struct by_review_id;
+struct by_type_and_target_id;
 struct by_voter;
 
-struct optional_content_id_extractor
-{
-    typedef optional<research_content_id_type> result_type;
-
-    result_type operator()(const vote_object& v) const
-    {
-        return v.content_id;
-    }
-};
-
-struct optional_research_id_extractor
-{
-    typedef optional<research_id_type> result_type;
-
-    result_type operator()(const vote_object& v) const
-    {
-        return v.research_id;
-    }
-};
 
 typedef multi_index_container<vote_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -74,10 +59,14 @@ typedef multi_index_container<vote_object,
                         member<vote_object,
                               discipline_id_type,
                               &vote_object::discipline_id>>,
-                ordered_non_unique<tag<by_research_id>,
-                        optional_research_id_extractor>,
-                ordered_non_unique<tag<by_content_id>,
-                        optional_content_id_extractor>,
+                ordered_non_unique<tag<by_type_and_target_id>,
+                        composite_key<vote_object,
+                                member<vote_object,
+                                      vote_target_type,
+                                      &vote_object::vote_type>,
+                                member<vote_object,
+                                      int64_t,
+                                      &vote_object::vote_for_id>>>,
                 ordered_non_unique<tag<by_voter>,
                         member<vote_object,
                                 account_name_type,
@@ -88,8 +77,10 @@ typedef multi_index_container<vote_object,
 }
 
 FC_REFLECT( deip::chain::vote_object,
-            (id)(discipline_id)(voter)(research_id)(content_id)(review_id)(weight)(voting_time)
+            (id)(discipline_id)(voter)(vote_type)(vote_for_id)(weight)(voting_time)
 )
+
+FC_REFLECT_ENUM(deip::chain::vote_target_type , (research_vote)(content_vote)(review_vote))
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::vote_object, deip::chain::vote_index )
 
