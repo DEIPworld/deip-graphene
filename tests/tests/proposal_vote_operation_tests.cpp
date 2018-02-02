@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test)
 
     evaluator.do_apply(op);
 
-    auto& bobs_token = research_group_service.get_research_group_token_by_account_and_research_id("bob", 1);
+    auto& bobs_token = research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1);
 
     BOOST_CHECK(bobs_token.owner == "bob");
     BOOST_CHECK(bobs_token.amount == 50);
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
 
         auto& research_group = research_group_service.get_research_group(1);
 
-        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_id("bob", 1), std::out_of_range);
+        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1), std::out_of_range);
         BOOST_CHECK(research_group.total_tokens_amount == 200);
     }
     FC_LOG_AND_RETHROW()
@@ -231,6 +231,37 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
     BOOST_CHECK(bobs_account.balance.amount == 1250);
 }
 
+BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
+{
+    ACTORS((alice)(bob))
+    std::vector<account_name_type> accounts = {"alice", "bob"};
+    setup_research_group(1, "research_group", "research group", 750, 1, 100, accounts);
+    const std::string json_str = "{\"research_group_id\":1,"
+            "\"accounts\":[{"
+            "\"account_name\":\"alice\","
+            "\"amount\":\"50\" },"
+            "{"
+            "\"account_name\":\"bob\","
+            "\"amount\":\"25\""
+            "}]}";
+    proposal_create(1, dbs_proposal::action_t::rebalance_research_group_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+
+    proposal_vote_operation op;
+    op.research_group_id = 1;
+    op.proposal_id = 1;
+    op.voter = "alice";
+
+    evaluator.do_apply(op);
+
+
+    auto& research_group_service = db.obtain_service<dbs_research_group>();
+    auto& alice_token = research_group_service.get_research_group_token_by_account_and_research_group_id("alice", 1);
+    auto& bobs_token = research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1);
+
+    BOOST_CHECK(alice_token.amount == 150);
+    BOOST_CHECK(bobs_token.amount == 125);
+}
+
 BOOST_AUTO_TEST_CASE(invite_member_validate_test)
 {
     const std::string json_str = "{\"name\":\"\",\"research_group_id\":1,\"research_group_token_amount\":1000}";
@@ -327,6 +358,22 @@ BOOST_AUTO_TEST_CASE(send_funds_validate_test)
 
     BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
 }
+
+BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_validate_test)
+{
+    const std::string json_str = "{\"research_group_id\":1,"
+            "\"account_name\":\"bob\","
+            "\"funds\": 250}";
+    proposal_create(1, dbs_proposal::action_t::rebalance_research_group_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+
+    proposal_vote_operation op;
+    op.research_group_id = 1;
+    op.proposal_id = 1;
+    op.voter = "alice";
+
+    BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 }
