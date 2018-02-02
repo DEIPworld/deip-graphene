@@ -6,6 +6,7 @@
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_account.hpp>
+#include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>
