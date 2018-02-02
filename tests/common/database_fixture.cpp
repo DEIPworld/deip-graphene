@@ -429,14 +429,14 @@ const research_object& database_fixture::research_create(const string &name, con
                                             const research_group_id_type &research_group_id, const uint32_t &percent_for_review)
 {
     const auto& new_research = db.create<research_object>([&](research_object& research) {
-        fc::from_string(research.name, name);
-        fc::from_string(research.abstract, abstract);
-        fc::from_string(research.permlink, permlink);
+        research.name = name;
+        research.abstract = abstract;
+        research.permlink = permlink;
         research.research_group_id = research_group_id;
-        research.percent_for_review = percent_for_review;
+        research.review_share_in_percent = percent_for_review;
         research.is_finished = false;
         research.owned_tokens = DEIP_100_PERCENT;
-        research.created = db.head_block_time();
+        research.created_at = db.head_block_time();
     });
 
     return new_research;
