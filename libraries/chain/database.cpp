@@ -51,6 +51,7 @@
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_research_content.hpp>
 
 namespace deip {
 namespace chain {
@@ -1643,7 +1644,8 @@ void database::initialize_evaluators()
             new proposal_vote_evaluator(this->obtain_service<dbs_account>(),
                                         this->obtain_service<dbs_proposal>(),
                                         this->obtain_service<dbs_research_group>(),
-                                        this->obtain_service<dbs_research>()));
+                                        this->obtain_service<dbs_research>(),
+                                        this->obtain_service<dbs_research_content>()));
     //clang-format on
 }
 

@@ -167,7 +167,8 @@ enum proposal_action_type
     change_quorum,
     change_research_review_share_percent,
     offer_research_tokens,
-    accept_research_tokens_offer
+    accept_research_tokens_offer,
+    create_research_material
 };
 
 enum proposal_life_time_type
@@ -207,7 +208,8 @@ FC_REFLECT_ENUM(deip::protocol::proposal_action_type,   (start_research)
                                                         (change_quorum)
                                                         (change_research_review_share_percent)
                                                         (offer_research_tokens)
-                                                        (accept_research_tokens_offer))
+                                                        (accept_research_tokens_offer)
+                                                        (create_research_material))
 
 FC_REFLECT_ENUM(deip::protocol::proposal_life_time_type, (day)(week))
 

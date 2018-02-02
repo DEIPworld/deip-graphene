@@ -66,6 +66,20 @@ struct start_research_proposal_data_type : base_proposal_data_type
     }
 };
 
+struct create_research_content_data_type : base_proposal_data_type
+{
+    research_id_type research_id;
+    research_content_type type;
+    string content;
+    flat_set<account_name_type> authors;
+
+    void validate() const
+    {
+        FC_ASSERT(!content.empty(), "Content cannot be empty");
+        FC_ASSERT(!authors.empty(), "Content should be have author(s)");
+    }
+};
+
 }
 }
 
@@ -76,4 +90,6 @@ FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(na
 FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
 
 FC_REFLECT(deip::chain::start_research_proposal_data_type, (name)(abstract)(permlink)(research_group_id)(review_share_in_percent))
+
+FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(content)(authors))
 
