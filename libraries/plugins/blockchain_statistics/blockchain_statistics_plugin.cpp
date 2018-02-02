@@ -96,27 +96,27 @@ struct operation_process
 
     void operator()(const vote_operation& op) const
     {
-        _db.modify(_bucket, [&](bucket_object& b) {
-            const auto& cv_idx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
-            const auto& comment = _db.get_comment(op.author, op.permlink);
-            const auto& voter = _db.get_account(op.voter);
-            const auto itr = cv_idx.find(boost::make_tuple(comment.id, voter.id));
-
-            if (itr->num_changes)
-            {
-                if (comment.parent_author.size())
-                    b.new_reply_votes++;
-                else
-                    b.new_root_votes++;
-            }
-            else
-            {
-                if (comment.parent_author.size())
-                    b.changed_reply_votes++;
-                else
-                    b.changed_root_votes++;
-            }
-        });
+//        _db.modify(_bucket, [&](bucket_object& b) {
+//            const auto& cv_idx = _db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
+//            const auto& comment = _db.get_comment(op.author, op.permlink);
+//            const auto& voter = _db.get_account(op.voter);
+//            const auto itr = cv_idx.find(boost::make_tuple(comment.id, voter.id));
+//
+//            if (itr->num_changes)
+//            {
+//                if (comment.parent_author.size())
+//                    b.new_reply_votes++;
+//                else
+//                    b.new_root_votes++;
+//            }
+//            else
+//            {
+//                if (comment.parent_author.size())
+//                    b.changed_reply_votes++;
+//                else
+//                    b.changed_root_votes++;
+//            }
+//        });
     }
 
     void operator()(const author_reward_operation& op) const

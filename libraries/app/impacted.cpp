@@ -74,7 +74,7 @@ struct get_impacted_account_visitor
     void operator()(const vote_operation& op)
     {
         _impacted.insert(op.voter);
-        _impacted.insert(op.author);
+//        _impacted.insert(op.author);
     }
 
     void operator()(const transfer_operation& op)
