@@ -11,7 +11,7 @@ dbs_vote::dbs_vote(database &db)
 {
 }
 
-dbs_vote::vote_refs_type dbs_vote::get_votes_by_discipline(const optional<discipline_id_type>& discipline_id) const
+dbs_vote::vote_refs_type dbs_vote::get_votes_by_discipline(const discipline_id_type& discipline_id) const
 {
     vote_refs_type ret;
 
@@ -27,7 +27,7 @@ dbs_vote::vote_refs_type dbs_vote::get_votes_by_discipline(const optional<discip
     return ret;
 }
 
-dbs_vote::vote_refs_type dbs_vote::get_votes_by_research(const optional<research_id_type>& research_id) const
+dbs_vote::vote_refs_type dbs_vote::get_votes_by_research(const research_id_type& research_id) const
 {
     vote_refs_type ret;
 
@@ -43,7 +43,7 @@ dbs_vote::vote_refs_type dbs_vote::get_votes_by_research(const optional<research
     return ret;
 }
 
-const vote_object& dbs_vote::create_research_vote(const optional<discipline_id_type>& discipline_id,
+const vote_object& dbs_vote::create_research_vote(const discipline_id_type& discipline_id,
                                   const account_name_type& voter,
                                   const int64_t& research_id,
                                   const share_type& weight,
@@ -58,7 +58,7 @@ const vote_object& dbs_vote::create_research_vote(const optional<discipline_id_t
     return vote;
 }
 
-const vote_object& dbs_vote::create_content_vote(const optional<discipline_id_type>& discipline_id,
+const vote_object& dbs_vote::create_content_vote(const discipline_id_type& discipline_id,
                                                   const account_name_type& voter,
                                                   const int64_t& content_id,
                                                   const share_type& weight,
@@ -73,7 +73,7 @@ const vote_object& dbs_vote::create_content_vote(const optional<discipline_id_ty
     return vote;
 }
 
-const vote_object& dbs_vote::create_review_vote(const optional<discipline_id_type>& discipline_id,
+const vote_object& dbs_vote::create_review_vote(const discipline_id_type& discipline_id,
                                                   const account_name_type& voter,
                                                   const int64_t& review_id,
                                                   const share_type& weight,
@@ -88,7 +88,7 @@ const vote_object& dbs_vote::create_review_vote(const optional<discipline_id_typ
     return vote;
 }
 
-const vote_object& dbs_vote::create_vote(const optional<discipline_id_type>& discipline_id,
+const vote_object& dbs_vote::create_vote(const discipline_id_type& discipline_id,
                                                   const account_name_type& voter,
                                                   const share_type& weight,
                                                   const time_point_sec& voting_time)

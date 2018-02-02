@@ -30,7 +30,7 @@ public:
     }
 
     vote_id_type id;
-    optional<discipline_id_type> discipline_id;
+    discipline_id_type discipline_id;
     account_name_type voter;
     optional<research_id_type> research_id;
     optional<research_content_id_type> content_id;
@@ -44,16 +44,6 @@ struct by_research_id;
 struct by_content_id;
 struct by_review_id;
 struct by_voter;
-
-struct optional_discipline_id_extractor
-{
-    typedef optional<discipline_id_type> result_type;
-
-    result_type operator()(const vote_object& v) const
-    {
-        return v.discipline_id;
-    }
-};
 
 struct optional_content_id_extractor
 {
@@ -81,7 +71,9 @@ typedef multi_index_container<vote_object,
                         vote_id_type,
                         &vote_object::id>>,
                 ordered_non_unique<tag<by_discipline_id>,
-                        optional_discipline_id_extractor>,
+                        member<vote_object,
+                              discipline_id_type,
+                              &vote_object::discipline_id>>,
                 ordered_non_unique<tag<by_research_id>,
                         optional_research_id_extractor>,
                 ordered_non_unique<tag<by_content_id>,
