@@ -764,6 +764,7 @@ struct create_research_content_operation : public base_operation
     uint16_t content_type;
     string content;
     flat_set <account_name_type> authors;
+    std::vector<int64_t> research_references;
 
     void validate() const;
 };
@@ -813,7 +814,7 @@ struct make_research_review_operation : public base_operation
     int64_t research_id;
     fc::string content;
     flat_set<account_name_type> authors;
-
+    std::vector<int64_t> research_references;
 };
 
 } // namespace protocol
@@ -889,7 +890,7 @@ FC_REFLECT( deip::protocol::create_budget_operation, (owner)(balance)(target_dis
 FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption) )
 
-FC_REFLECT( deip::protocol::create_research_content_operation, (research_id)(content)(content_type)(authors))
+FC_REFLECT( deip::protocol::create_research_content_operation, (research_id)(content)(content_type)(authors)(research_references))
 FC_REFLECT( deip::protocol::proposal_vote_operation, (voter)(proposal_id)(research_group_id))
 
 FC_REFLECT( deip::protocol::make_research_review_operation, (research_id)(content)(authors))

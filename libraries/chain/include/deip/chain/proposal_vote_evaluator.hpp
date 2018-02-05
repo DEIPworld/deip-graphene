@@ -193,7 +193,7 @@ protected:
     void create_research_material_evaluator(const proposal_object& proposal)
     {
         create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);  
-        _research_content_service.create(data.research_id, data.type, data.content, data.authors);
+        _research_content_service.create(data.research_id, data.type, data.content, data.authors, data.research_references);
     }
 
     AccountService& _account_service;

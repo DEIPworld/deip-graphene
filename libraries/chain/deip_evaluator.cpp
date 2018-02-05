@@ -1408,10 +1408,19 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
     for (const auto& author : op.authors) {
         account_service.check_account_existence(author);
     }
-    
+
     validate_enum_value_by_range(op.content_type, research_content_type::First, research_content_type::Last);
     research_service.check_research_existence(op.research_id);
-    research_content_service.create(op.research_id, (research_content_type) op.content_type, op.content, op.authors);
+
+    std::vector<research_id_type> references;
+    int size = op.research_references.size();
+    for (int i = 0; i < size; ++i)
+    {
+        research_service.check_research_existence(op.research_references[i]);
+        references.push_back((research_id_type)op.research_references[i]);
+    }
+
+    research_content_service.create(op.research_id, (research_content_type) op.content_type, op.content, op.authors, references);
 }
 
 void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
@@ -1452,7 +1461,19 @@ void make_research_review_evaluator::do_apply(const make_research_review_operati
 {
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
 
-    research_content_service.create(op.research_id, research_content_type::review, op.content, op.authors);
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+
+    research_service.check_research_existence(op.research_id);
+
+    std::vector<research_id_type> references;
+    int size = op.research_references.size();
+    for (int i = 0; i < size; ++i)
+    {
+        research_service.check_research_existence(op.research_references[i]);
+        references.push_back((research_id_type)op.research_references[i]);
+    }
+
+    research_content_service.create(op.research_id, research_content_type::review, op.content, op.authors, references);
 }
 
 } // namespace chain

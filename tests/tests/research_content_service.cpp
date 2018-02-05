@@ -202,8 +202,9 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         std::string content = "milestone for Research #2";
 
         flat_set<account_name_type> authors = {"sam"};
+        std::vector<research_id_type> references = {1, 2, 3};
 
-        auto milestone = data_service.create(2, type, content, authors);
+        auto milestone = data_service.create(2, type, content, authors, references);
         BOOST_CHECK(milestone.research_id == 2);
         BOOST_CHECK(milestone.type == research_content_type::milestone);
         BOOST_CHECK(milestone.content == "milestone for Research #2");

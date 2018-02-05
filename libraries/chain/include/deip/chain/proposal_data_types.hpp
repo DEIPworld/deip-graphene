@@ -72,14 +72,14 @@ struct create_research_content_data_type : base_proposal_data_type
     research_content_type type;
     string content;
     flat_set<account_name_type> authors;
-
+    std::vector<research_id_type> research_references;
     void validate() const
     {
         FC_ASSERT(!content.empty(), "Content cannot be empty");
         FC_ASSERT(!authors.empty(), "Content should have author(s)");
         for (auto& author : authors)
         {
-            chain::validate_account_name(author);
+            FC_ASSERT(is_valid_account_name(author), "Account name ${n} is invalid", ("n", author));
         }
     }
 };
