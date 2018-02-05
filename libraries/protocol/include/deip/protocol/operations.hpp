@@ -52,6 +52,8 @@ typedef fc::static_variant<vote_operation,
                            proposal_create_operation,
                            create_research_group_operation,
 
+                           make_research_review_operation,
+
                            proposal_vote_operation,
 
                            /// virtual operations

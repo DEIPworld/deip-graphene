@@ -1448,6 +1448,12 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
                                                  op.tokens_amount);
 }
 
+void make_research_review_evaluator::do_apply(const make_research_review_operation& op)
+{
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+
+    research_content_service.create(op.research_id, research_content_type::review, op.content, op.authors);
+}
 
 } // namespace chain
 } // namespace deip 

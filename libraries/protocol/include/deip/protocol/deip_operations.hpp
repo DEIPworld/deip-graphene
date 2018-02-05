@@ -808,7 +808,13 @@ struct proposal_vote_operation : public base_operation
     }
 };
 
+struct make_research_review_operation : public base_operation
+{
+    int64_t research_id;
+    fc::string content;
+    flat_set<account_name_type> authors;
 
+};
 
 } // namespace protocol
 } // namespace deip
@@ -885,5 +891,7 @@ FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)
 
 FC_REFLECT( deip::protocol::create_research_content_operation, (research_id)(content)(content_type)(authors))
 FC_REFLECT( deip::protocol::proposal_vote_operation, (voter)(proposal_id)(research_group_id))
+
+FC_REFLECT( deip::protocol::make_research_review_operation, (research_id)(content)(authors))
 
 // clang-format on

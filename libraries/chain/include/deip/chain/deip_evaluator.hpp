@@ -40,6 +40,7 @@ DEFINE_EVALUATOR(create_budget)
 DEFINE_EVALUATOR(create_research_content)
 DEFINE_EVALUATOR(proposal_create)
 DEFINE_EVALUATOR(create_research_group)
+DEFINE_EVALUATOR(make_research_review)
 
 }
 } // deip::chain
