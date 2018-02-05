@@ -76,7 +76,11 @@ struct create_research_content_data_type : base_proposal_data_type
     void validate() const
     {
         FC_ASSERT(!content.empty(), "Content cannot be empty");
-        FC_ASSERT(!authors.empty(), "Content should be have author(s)");
+        FC_ASSERT(!authors.empty(), "Content should have author(s)");
+        for (auto& author : authors)
+        {
+            chain::validate_account_name(author);
+        }
     }
 };
 
