@@ -399,7 +399,6 @@ public:
     ////////////////////
     // Proposal       //
     ///////////////////
-    proposal_vote_api_obj vote_for_proposal(const proposal_id_type proposal_id, const account_name_type voter) const;
     vector<proposal_api_obj> get_proposals_by_research_group_id(const research_group_id_type research_group_id) const;
     proposal_api_obj get_proposal(const proposal_id_type id) const;
 
@@ -555,7 +554,6 @@ FC_API(deip::app::database_api,
    (get_expert_tokens_by_discipline_id)
 
    // Proposal
-   (vote_for_proposal)
    (get_proposals_by_research_group_id)
    (get_proposal)
 
