@@ -150,6 +150,7 @@ const research_group_token_object& dbs_research_group::increase_research_group_t
 {
     const research_group_token_object& research_group_token = get_research_group_token_by_account_and_research_group_id(account_name, research_group_id);
     db_impl().modify(research_group_token, [&](research_group_token_object& rgt) { rgt.amount += amount; });
+    return research_group_token;
 }
 
 } // namespace chain
