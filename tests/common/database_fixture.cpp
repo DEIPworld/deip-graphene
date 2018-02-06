@@ -360,9 +360,12 @@ const witness_object& database_fixture::witness_create(const string& owner,
 }
 
 const research_group_object&
-database_fixture::research_group_create(const uint32_t& id, const string& permlink,
-                                        const string& description, const share_type funds,
-                                        const uint32_t& quorum_percent, const int32_t& tokens_amount)
+database_fixture::research_group_create(const uint32_t& id,
+                                        const string& permlink,
+                                        const string& description,
+                                        const share_type funds,
+                                        const share_type quorum_percent,
+                                        const share_type tokens_amount)
 {
     const research_group_object& new_research_group
         = db.create<research_group_object>([&](research_group_object& rg) {
@@ -378,11 +381,11 @@ database_fixture::research_group_create(const uint32_t& id, const string& permli
 }
 
 const research_group_token_object& database_fixture::research_group_token_create(
-    const research_group_id_type& research_group_id, const account_name_type& account, const int32_t& amount = 10)
+    const research_group_id_type& research_group_id, const account_name_type& account, const share_type amount = 10)
 {
     auto& research_group_service = db.obtain_service<dbs_research_group>();
     const research_group_token_object& new_research_group_token = research_group_service.create_research_group_token(research_group_id, amount, account);
-    research_group_service.adjust_research_group_token_amount(research_group_id, amount);
+    research_group_service.increase_research_group_total_tokens_amount(research_group_id, amount);
     return new_research_group_token;
 }
 
@@ -390,8 +393,8 @@ const research_group_object& database_fixture::setup_research_group(const uint32
                                                                     const string &permlink,
                                                                     const string &description,
                                                                     const share_type funds,
-                                                                    const uint32_t &quorum_percent,
-                                                                    const int32_t &tokens_amount,
+                                                                    const share_type quorum_percent,
+                                                                    const share_type tokens_amount,
                                                                     const vector<account_name_type> &accounts)
 {
     const auto& research_group = research_group_create(id, permlink, description, funds, quorum_percent, tokens_amount);
@@ -409,7 +412,7 @@ const proposal_object& database_fixture::proposal_create(const uint32_t id, cons
                                        const account_name_type& creator,
                                        const research_group_id_type& research_group_id,
                                        const fc::time_point_sec expiration_time,
-                                       const uint32_t quorum_percent)
+                                       const share_type quorum_percent)
 {
     const proposal_object& new_proposal = db.create<proposal_object>([&](proposal_object& proposal) {
         proposal.action = action;
@@ -425,8 +428,11 @@ const proposal_object& database_fixture::proposal_create(const uint32_t id, cons
     return new_proposal;
 }
 
-const research_object& database_fixture::research_create(const string &name, const string &abstract, const string &permlink,
-                                            const research_group_id_type &research_group_id, const uint32_t &percent_for_review)
+const research_object& database_fixture::research_create(const string &name,
+                                                         const string &abstract,
+                                                         const string &permlink,
+                                                         const research_group_id_type &research_group_id,
+                                                         const uint32_t &percent_for_review)
 {
     const auto& new_research = db.create<research_object>([&](research_object& research) {
         research.name = name;

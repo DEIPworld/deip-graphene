@@ -28,7 +28,7 @@ struct invite_member_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
     deip::protocol::account_name_type name;
-    uint32_t research_group_token_amount;
+    share_type research_group_token_amount;
 
     void validate() const
     {
@@ -92,6 +92,25 @@ struct send_funds_data_type : base_proposal_data_type
         FC_ASSERT(funds >= 0, "Amount cant be negative");
     }
 };
+struct rebalance_info
+{
+    account_name_type account_name;
+    share_type amount;
+};
+
+struct rebalance_research_group_tokens_data_type : base_proposal_data_type
+{
+    research_group_id_type research_group_id;
+
+    std::vector<rebalance_info> accounts;
+
+    void validate() const
+    {
+        int size = accounts.size();
+        for (int i = 0; i < size; ++i)
+            FC_ASSERT(is_valid_account_name(accounts[i].account_name), "Account name ${n} is invalid", ("n", accounts[i].account_name));
+    }
+};
 }
 }
 
@@ -106,3 +125,7 @@ FC_REFLECT(deip::chain::start_research_proposal_data_type, (name)(abstract)(perm
 FC_REFLECT(deip::chain::transfer_research_tokens_data_type, (research_id)(total_price)(account_name)(amount))
 
 FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(account_name)(funds))
+
+FC_REFLECT(deip::chain::rebalance_info, (account_name)(amount))
+
+FC_REFLECT(deip::chain::rebalance_research_group_tokens_data_type, (research_group_id)(accounts))

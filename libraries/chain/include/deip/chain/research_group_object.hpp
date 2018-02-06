@@ -25,8 +25,8 @@ public:
     fc::shared_string permlink;
     fc::shared_string description;
     share_type funds = 0;
-    uint32_t quorum_percent;
-    uint32_t total_tokens_amount;
+    share_type quorum_percent;
+    share_type total_tokens_amount;
 };
 
 class research_group_token_object : public object<research_group_token_object_type, research_group_token_object>
@@ -41,7 +41,7 @@ public:
 public:
     research_group_token_id_type id;
     research_group_id_type research_group_id;
-    uint32_t amount;
+    share_type amount;
     account_name_type owner;
 };
 
