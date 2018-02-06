@@ -15,7 +15,8 @@ const research_content_object& dbs_research_content::create(const research_id_ty
                                                             const research_content_type& type,
                                                             const string& content,
                                                             const flat_set<account_name_type>& authors,
-                                                            std::vector<research_id_type> research_references)
+                                                            const std::vector<research_id_type>& research_references,
+                                                            const std::vector<string>& research_external_references)
 {
     const auto& new_research_content = db_impl().create<research_content_object>([&](research_content_object& rc) {
         rc.research_id = research_id;
@@ -24,6 +25,7 @@ const research_content_object& dbs_research_content::create(const research_id_ty
         rc.authors = authors;
         rc.created_at = db_impl().head_block_time();
         rc.research_references = research_references;
+        rc.research_external_references = research_external_references;
     });
 
     return new_research_content;

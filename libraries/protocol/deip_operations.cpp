@@ -334,17 +334,6 @@ void create_budget_operation::validate() const
     FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Balance must be positive");
 }
 
-
-void create_research_content_operation::validate() const
-{
-    FC_ASSERT(authors.size() > 0, "Research content should contain at least 1 author");
-    for (const account_name_type& author : authors)
-    {
-        validate_account_name(author);
-    }
-    FC_ASSERT(!content.empty(), "Research content cannot be empty");
-}
-
 void proposal_create_operation::validate() const
 {
     validate_account_name(creator);
@@ -364,6 +353,18 @@ void proposal_vote_operation::validate() const
 {
     validate_account_name(voter);
 }
+
+void make_research_review_operation::validate() const
+{
+    validate_account_name(author);
+    FC_ASSERT(!content.empty(), "Research content cannot be empty");
+    for (auto& link : research_external_references)
+    {
+        FC_ASSERT(!link.empty(), "Link cannot be empty");
+        FC_ASSERT(fc::is_utf8(link), "Description is not valid UTF8 string");
+    }
+}
+
 
 }
 } // deip::protocol
