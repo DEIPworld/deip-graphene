@@ -31,7 +31,6 @@ public:
 
     research_token_sale_id_type id;
 
-    research_token_id_type research_token_id;
     research_id_type research_id;
     fc::time_point start_time;
     fc::time_point end_time;
@@ -63,6 +62,6 @@ typedef multi_index_container<research_token_sale_object,
 } // namespace chain
 } // namespace deip
 
-FC_REFLECT(deip::chain::research_token_sale_object, (id)(research_token_id)(research_id)(start_time)(end_time)(total_amount)(balance_tokens)(soft_cap)(hard_cap))
+FC_REFLECT(deip::chain::research_token_sale_object, (id)(research_id)(start_time)(end_time)(total_amount)(balance_tokens)(soft_cap)(hard_cap))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_token_sale_object, deip::chain::research_token_sale_index)

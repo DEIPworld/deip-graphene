@@ -52,6 +52,7 @@
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_research_token_sale.hpp>
 
 namespace deip {
 namespace chain {
@@ -1645,7 +1646,8 @@ void database::initialize_evaluators()
                                         this->obtain_service<dbs_proposal>(),
                                         this->obtain_service<dbs_research_group>(),
                                         this->obtain_service<dbs_research>(),
-                                        this->obtain_service<dbs_research_token>()));
+                                        this->obtain_service<dbs_research_token>(),
+                                        this->obtain_service<dbs_research_token_sale>()));
     //clang-format on
 }
 

@@ -111,6 +111,21 @@ struct rebalance_research_group_tokens_data_type : base_proposal_data_type
             FC_ASSERT(is_valid_account_name(accounts[i].account_name), "Account name ${n} is invalid", ("n", accounts[i].account_name));
     }
 };
+
+struct start_research_token_sale_data_type : base_proposal_data_type
+{
+    research_id_type research_id;
+    fc::time_point start_time;
+    fc::time_point end_time;
+    share_type amount_for_sale;
+    share_type soft_cap;
+    share_type hard_cap;
+
+    void validate() const
+    {   
+    }
+};
+
 }
 }
 
@@ -129,3 +144,5 @@ FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(account_name)(
 FC_REFLECT(deip::chain::rebalance_info, (account_name)(amount))
 
 FC_REFLECT(deip::chain::rebalance_research_group_tokens_data_type, (research_group_id)(accounts))
+
+FC_REFLECT(deip::chain::start_research_token_sale_data_type, (research_id)(start_time)(end_time)(amount_for_sale)(soft_cap)(hard_cap))

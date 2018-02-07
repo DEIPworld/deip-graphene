@@ -1,5 +1,4 @@
 #include <deip/chain/dbs_research_token_sale.hpp>
-#include <deip/chain/dbs_account.hpp>
 #include <deip/chain/database.hpp>
 
 namespace deip {
@@ -10,18 +9,16 @@ dbs_research_token_sale::dbs_research_token_sale(database& db)
 {
 }
 
-const dbs_research_token_sale_object&
-dbs_research_token_sale::start_research_token_sale(const research_token_id_type& research_token_id,
-                                                   const research_id_type& research_id,
-                                                   const fc::time_point& start_time,
-                                                   const fc::time_point& end_time,
-                                                   const share_type balance_tokens,
-                                                   const share_type soft_cap,
-                                                   const share_type hard_cap)
+const research_token_sale_object&
+dbs_research_token_sale::start_research_token_sale(const research_id_type& research_id,
+                                                   const fc::time_point start_time,
+                                                   const fc::time_point end_time,
+                                                   const deip::chain::share_type balance_tokens,
+                                                   const deip::chain::share_type soft_cap,
+                                                   const deip::chain::share_type hard_cap)
 {
-    const dbs_research_token_sale_object& new_research_token_sale
-        = db_impl().create<dbs_research_token_sale_object>([&](dbs_research_token_sale_object& research_token_sale) {
-              research_token_sale.research_token_id = research_token_id;
+    const research_token_sale_object& new_research_token_sale
+        = db_impl().create<research_token_sale_object>([&](research_token_sale_object& research_token_sale) {
               research_token_sale.research_id = research_id;
               research_token_sale.start_time = start_time;
               research_token_sale.end_time = end_time;
