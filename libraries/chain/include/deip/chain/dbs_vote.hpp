@@ -25,7 +25,7 @@ public:
     using vote_refs_type = std::vector<std::reference_wrapper<const vote_object>>;
 
     vote_refs_type get_votes_by_discipline(const discipline_id_type& discipline_id) const;
-    vote_refs_type get_votes_by_type_and_target(const vote_target_type& vote_type, int64_t& vote_for_id) const;
+    vote_refs_type get_votes_by_type_and_target(const vote_target_type& vote_type, const int64_t& vote_for_id) const;
     const vote_object& create_vote(const discipline_id_type& discipline_id,
                                    const account_name_type& voter,
                                    const vote_target_type& vote_type,

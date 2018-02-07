@@ -25,357 +25,357 @@ using namespace deip::protocol;
 
 BOOST_FIXTURE_TEST_SUITE(operation_time_tests, clean_database_fixture)
 
-BOOST_AUTO_TEST_CASE(comment_payout_equalize)
-{
-    try
-    {
-        ACTORS((alice)(bob)(dave)(ulysses)(vivian)(wendy))
-
-        struct author_actor
-        {
-            author_actor(const std::string& n,
-                         fc::ecc::private_key pk,
-                         fc::optional<asset> mpay = fc::optional<asset>())
-                : name(n)
-                , private_key(pk)
-                , max_accepted_payout(mpay)
-            {
-            }
-            std::string name;
-            fc::ecc::private_key private_key;
-            fc::optional<asset> max_accepted_payout;
-        };
-
-        struct voter_actor
-        {
-            voter_actor(const std::string& n, fc::ecc::private_key pk, std::string fa)
-                : name(n)
-                , private_key(pk)
-                , favorite_author(fa)
-            {
-            }
-            std::string name;
-            fc::ecc::private_key private_key;
-            std::string favorite_author;
-        };
-
-        std::vector<author_actor> authors;
-        std::vector<voter_actor> voters;
-
-        authors.emplace_back("alice", alice_private_key);
-        authors.emplace_back("bob", bob_private_key, ASSET("0.000 TESTS"));
-        authors.emplace_back("dave", dave_private_key);
-        voters.emplace_back("ulysses", ulysses_private_key, "alice");
-        voters.emplace_back("vivian", vivian_private_key, "bob");
-        voters.emplace_back("wendy", wendy_private_key, "dave");
-
-        // A,B,D : posters
-        // U,V,W : voters
-
-        // DEIP: we don't have stable coin but might have an threshold
-        // set a ridiculously high DEIP price ($1 / satoshi) to disable dust threshold
-        // set_price_feed( price( ASSET( "0.001 TESTS" ), ASSET( "1.000 TBD" ) ) );
-
-        for (const auto& voter : voters)
-        {
-            fund(voter.name, 10000);
-            vest(voter.name, 10000);
-        }
-
-        // authors all write in the same block, but Bob declines payout
-        for (const auto& author : authors)
-        {
-            signed_transaction tx;
-            comment_operation com;
-            com.author = author.name;
-            com.permlink = "mypost";
-            com.parent_author = DEIP_ROOT_POST_PARENT;
-            com.parent_permlink = "test";
-            com.title = "Hello from " + author.name;
-            com.body = "Hello, my name is " + author.name;
-            tx.operations.push_back(com);
-
-            if (author.max_accepted_payout.valid())
-            {
-                comment_options_operation copt;
-                copt.author = com.author;
-                copt.permlink = com.permlink;
-                copt.max_accepted_payout = *(author.max_accepted_payout);
-                tx.operations.push_back(copt);
-            }
-
-            tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-            tx.sign(author.private_key, db.get_chain_id());
-            db.push_transaction(tx, 0);
-        }
-
-        generate_blocks(1);
-
-        // voters all vote in the same block with the same stake
-        for (const auto& voter : voters)
-        {
-            signed_transaction tx;
-            vote_operation vote;
-            vote.voter = voter.name;
-            vote.author = voter.favorite_author;
-            vote.permlink = "mypost";
-            vote.weight = DEIP_100_PERCENT;
-            tx.operations.push_back(vote);
-            tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-            tx.sign(voter.private_key, db.get_chain_id());
-            db.push_transaction(tx, 0);
-        }
-
-        //        auto reward_deip = db.get_dynamic_global_properties().total_reward_fund_deip;
-
-        // generate a few blocks to seed the reward fund
-        generate_blocks(10);
-        // const auto& rf = db.get< reward_fund_object, by_name >( DEIP_POST_REWARD_FUND_NAME );
-        // idump( (rf) );
-
-        generate_blocks(db.get_comment("alice", string("mypost")).cashout_time, true);
-        /*
-        for( const auto& author : authors )
-        {
-           const account_object& a = db.get_account(author.name);
-           ilog( "${n} : ${deip} ${sbd}", ("n", author.name)("deip", a.reward_deip_balance)("sbd",
-        a.reward_sbd_balance) );
-        }
-        for( const auto& voter : voters )
-        {
-           const account_object& a = db.get_account(voter.name);
-           ilog( "${n} : ${deip} ${sbd}", ("n", voter.name)("deip", a.reward_deip_balance)("sbd",
-        a.reward_sbd_balance) );
-        }
-        */
-
-        // DEIP: rewrite to check DEIP reward
-        //        const account_object& alice_account = db.get_account("alice");
-        //        const account_object& bob_account = db.get_account("bob");
-        //        const account_object& dave_account = db.get_account("dave");
-
-        //        BOOST_CHECK( alice_account.reward_sbd_balance == ASSET( "14288.000 TBD" ) );
-        //        BOOST_CHECK( alice_account.reward_sbd_balance == ASSET( "13967.000 TBD" ) );
-        //        BOOST_CHECK( bob_account.reward_sbd_balance == ASSET( "0.000 TBD" ) );
-        //        BOOST_CHECK( dave_account.reward_sbd_balance == alice_account.reward_sbd_balance );
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(comment_payout_dust)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: comment_payout_dust");
-
-        ACTORS((alice)(bob))
-        generate_block();
-
-        vest("alice", ASSET("10.000 TESTS"));
-        vest("bob", ASSET("10.000 TESTS"));
-
-        generate_block();
-        validate_database();
-
-        comment_operation comment;
-        comment.author = "alice";
-        comment.permlink = "test";
-        comment.parent_permlink = "test";
-        comment.title = "test";
-        comment.body = "test";
-        vote_operation vote;
-        vote.voter = "alice";
-        vote.author = "alice";
-        vote.permlink = "test";
-        vote.weight = 81 * DEIP_1_PERCENT;
-
-        signed_transaction tx;
-        tx.operations.push_back(comment);
-        tx.operations.push_back(vote);
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.sign(alice_private_key, db.get_chain_id());
-        db.push_transaction(tx, 0);
-        validate_database();
-
-        comment.author = "bob";
-        vote.voter = "bob";
-        vote.author = "bob";
-        vote.weight = 59 * DEIP_1_PERCENT;
-
-        tx.clear();
-        tx.operations.push_back(comment);
-        tx.operations.push_back(vote);
-        tx.sign(bob_private_key, db.get_chain_id());
-        db.push_transaction(tx, 0);
-        validate_database();
-
-        generate_blocks(db.get_comment("alice", string("test")).cashout_time);
-
-        // If comments are paid out independent of order, then the last satoshi of DEIP cannot be divided among them
-        const auto rf = db.get<reward_fund_object, by_name>(DEIP_POST_REWARD_FUND_NAME);
-        BOOST_REQUIRE(rf.reward_balance == ASSET("0.001 TESTS"));
-
-        validate_database();
-
-        BOOST_TEST_MESSAGE("Done");
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-/*
-BOOST_AUTO_TEST_CASE( reward_funds )
-{
-   try
-   {
-      BOOST_TEST_MESSAGE( "Testing: reward_funds" );
-
-      ACTORS( (alice)(bob) )
-      generate_block();
-
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
-      generate_block();
-
-      comment_operation comment;
-      vote_operation vote;
-      signed_transaction tx;
-
-      comment.author = "alice";
-      comment.permlink = "test";
-      comment.parent_permlink = "test";
-      comment.title = "foo";
-      comment.body = "bar";
-      vote.voter = "alice";
-      vote.author = "alice";
-      vote.permlink = "test";
-      vote.weight = DEIP_100_PERCENT;
-      tx.operations.push_back( comment );
-      tx.operations.push_back( vote );
-      tx.set_expiration( db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-
-      generate_blocks( 5 );
-
-      comment.author = "bob";
-      comment.parent_author = "alice";
-      vote.voter = "bob";
-      vote.author = "bob";
-      tx.clear();
-      tx.operations.push_back( comment );
-      tx.operations.push_back( vote );
-      tx.sign( bob_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-
-      generate_blocks( db.get_comment( "alice", string( "test" ) ).cashout_time );
-
-      {
-         const auto& post_rf = db.get< reward_fund_object, by_name >( DEIP_POST_REWARD_FUND_NAME );
-         const auto& comment_rf = db.get< reward_fund_object, by_name >( DEIP_COMMENT_REWARD_FUND_NAME );
-
-         BOOST_REQUIRE( post_rf.reward_balance.amount == 0 );
-         BOOST_REQUIRE( comment_rf.reward_balance.amount > 0 );
-         BOOST_REQUIRE( db.get_account( "alice" ).reward_sbd_balance.amount > 0 );
-         BOOST_REQUIRE( db.get_account( "bob" ).reward_sbd_balance.amount == 0 );
-         validate_database();
-      }
-
-      generate_blocks( db.get_comment( "bob", string( "test" ) ).cashout_time );
-
-      {
-         const auto& post_rf = db.get< reward_fund_object, by_name >( DEIP_POST_REWARD_FUND_NAME );
-         const auto& comment_rf = db.get< reward_fund_object, by_name >( DEIP_COMMENT_REWARD_FUND_NAME );
-
-         BOOST_REQUIRE( post_rf.reward_balance.amount > 0 );
-         BOOST_REQUIRE( comment_rf.reward_balance.amount == 0 );
-         BOOST_REQUIRE( db.get_account( "alice" ).reward_sbd_balance.amount > 0 );
-         BOOST_REQUIRE( db.get_account( "bob" ).reward_sbd_balance.amount > 0 );
-         validate_database();
-      }
-   }
-   FC_LOG_AND_RETHROW()
-}
-*/
-
-BOOST_AUTO_TEST_CASE(recent_claims_decay)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: recent_rshares_2decay");
-        ACTORS((alice)(bob))
-        generate_block();
-
-        generate_block();
-
-        comment_operation comment;
-        vote_operation vote;
-        signed_transaction tx;
-
-        comment.author = "alice";
-        comment.permlink = "test";
-        comment.parent_permlink = "test";
-        comment.title = "foo";
-        comment.body = "bar";
-        vote.voter = "alice";
-        vote.author = "alice";
-        vote.permlink = "test";
-        vote.weight = DEIP_100_PERCENT;
-        tx.operations.push_back(comment);
-        tx.operations.push_back(vote);
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.sign(alice_private_key, db.get_chain_id());
-        db.push_transaction(tx, 0);
-
-        auto alice_vshares = util::evaluate_reward_curve(
-            db.get_comment("alice", string("test")).net_rshares.value,
-            db.get<reward_fund_object, by_name>(DEIP_POST_REWARD_FUND_NAME).author_reward_curve);
-
-        generate_blocks(5);
-
-        comment.author = "bob";
-        vote.voter = "bob";
-        vote.author = "bob";
-        tx.clear();
-        tx.operations.push_back(comment);
-        tx.operations.push_back(vote);
-        tx.sign(bob_private_key, db.get_chain_id());
-        db.push_transaction(tx, 0);
-
-        generate_blocks(db.get_comment("alice", string("test")).cashout_time);
-
-        {
-            const auto& post_rf = db.get<reward_fund_object, by_name>(DEIP_POST_REWARD_FUND_NAME);
-
-            BOOST_REQUIRE(post_rf.recent_claims == alice_vshares);
-            validate_database();
-        }
-
-        auto bob_cashout_time = db.get_comment("bob", string("test")).cashout_time;
-        auto bob_vshares = util::evaluate_reward_curve(
-            db.get_comment("bob", string("test")).net_rshares.value,
-            db.get<reward_fund_object, by_name>(DEIP_POST_REWARD_FUND_NAME).author_reward_curve);
-
-        generate_block();
-
-        while (db.head_block_time() < bob_cashout_time)
-        {
-            alice_vshares -= (alice_vshares * DEIP_BLOCK_INTERVAL) / DEIP_RECENT_RSHARES_DECAY_RATE.to_seconds();
-            const auto& post_rf = db.get<reward_fund_object, by_name>(DEIP_POST_REWARD_FUND_NAME);
-
-            BOOST_REQUIRE(post_rf.recent_claims == alice_vshares);
-
-            generate_block();
-        }
-
-        {
-            alice_vshares -= (alice_vshares * DEIP_BLOCK_INTERVAL) / DEIP_RECENT_RSHARES_DECAY_RATE.to_seconds();
-            const auto& post_rf = db.get<reward_fund_object, by_name>(DEIP_POST_REWARD_FUND_NAME);
-
-            BOOST_REQUIRE(post_rf.recent_claims == alice_vshares + bob_vshares);
-            validate_database();
-        }
-    }
-    FC_LOG_AND_RETHROW()
-}
+//BOOST_AUTO_TEST_CASE(comment_payout_equalize)
+//{
+//    try
+//    {
+//        ACTORS((alice)(bob)(dave)(ulysses)(vivian)(wendy))
+//
+//        struct author_actor
+//        {
+//            author_actor(const std::string& n,
+//                         fc::ecc::private_key pk,
+//                         fc::optional<asset> mpay = fc::optional<asset>())
+//                : name(n)
+//                , private_key(pk)
+//                , max_accepted_payout(mpay)
+//            {
+//            }
+//            std::string name;
+//            fc::ecc::private_key private_key;
+//            fc::optional<asset> max_accepted_payout;
+//        };
+//
+//        struct voter_actor
+//        {
+//            voter_actor(const std::string& n, fc::ecc::private_key pk, std::string fa)
+//                : name(n)
+//                , private_key(pk)
+//                , favorite_author(fa)
+//            {
+//            }
+//            std::string name;
+//            fc::ecc::private_key private_key;
+//            std::string favorite_author;
+//        };
+//
+//        std::vector<author_actor> authors;
+//        std::vector<voter_actor> voters;
+//
+//        authors.emplace_back("alice", alice_private_key);
+//        authors.emplace_back("bob", bob_private_key, ASSET("0.000 TESTS"));
+//        authors.emplace_back("dave", dave_private_key);
+//        voters.emplace_back("ulysses", ulysses_private_key, "alice");
+//        voters.emplace_back("vivian", vivian_private_key, "bob");
+//        voters.emplace_back("wendy", wendy_private_key, "dave");
+//
+//        // A,B,D : posters
+//        // U,V,W : voters
+//
+//        // DEIP: we don't have stable coin but might have an threshold
+//        // set a ridiculously high DEIP price ($1 / satoshi) to disable dust threshold
+//        // set_price_feed( price( ASSET( "0.001 TESTS" ), ASSET( "1.000 TBD" ) ) );
+//
+//        for (const auto& voter : voters)
+//        {
+//            fund(voter.name, 10000);
+//            vest(voter.name, 10000);
+//        }
+//
+//        // authors all write in the same block, but Bob declines payout
+//        for (const auto& author : authors)
+//        {
+//            signed_transaction tx;
+//            comment_operation com;
+//            com.author = author.name;
+//            com.permlink = "mypost";
+//            com.parent_author = DEIP_ROOT_POST_PARENT;
+//            com.parent_permlink = "test";
+//            com.title = "Hello from " + author.name;
+//            com.body = "Hello, my name is " + author.name;
+//            tx.operations.push_back(com);
+//
+//            if (author.max_accepted_payout.valid())
+//            {
+//                comment_options_operation copt;
+//                copt.author = com.author;
+//                copt.permlink = com.permlink;
+//                copt.max_accepted_payout = *(author.max_accepted_payout);
+//                tx.operations.push_back(copt);
+//            }
+//
+//            tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//            tx.sign(author.private_key, db.get_chain_id());
+//            db.push_transaction(tx, 0);
+//        }
+//
+//        generate_blocks(1);
+//
+//        // voters all vote in the same block with the same stake
+//        for (const auto& voter : voters)
+//        {
+//            signed_transaction tx;
+//            vote_operation vote;
+//            vote.voter = voter.name;
+//            vote.author = voter.favorite_author;
+//            vote.permlink = "mypost";
+//            vote.weight = DEIP_100_PERCENT;
+//            tx.operations.push_back(vote);
+//            tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//            tx.sign(voter.private_key, db.get_chain_id());
+//            db.push_transaction(tx, 0);
+//        }
+//
+//        //        auto reward_deip = db.get_dynamic_global_properties().total_reward_fund_deip;
+//
+//        // generate a few blocks to seed the reward fund
+//        generate_blocks(10);
+//        // const auto& rf = db.get< reward_fund_object, by_name >( DEIP_POST_REWARD_FUND_NAME );
+//        // idump( (rf) );
+//
+//        generate_blocks(db.get_comment("alice", string("mypost")).cashout_time, true);
+//        /*
+//        for( const auto& author : authors )
+//        {
+//           const account_object& a = db.get_account(author.name);
+//           ilog( "${n} : ${deip} ${sbd}", ("n", author.name)("deip", a.reward_deip_balance)("sbd",
+//        a.reward_sbd_balance) );
+//        }
+//        for( const auto& voter : voters )
+//        {
+//           const account_object& a = db.get_account(voter.name);
+//           ilog( "${n} : ${deip} ${sbd}", ("n", voter.name)("deip", a.reward_deip_balance)("sbd",
+//        a.reward_sbd_balance) );
+//        }
+//        */
+//
+//        // DEIP: rewrite to check DEIP reward
+//        //        const account_object& alice_account = db.get_account("alice");
+//        //        const account_object& bob_account = db.get_account("bob");
+//        //        const account_object& dave_account = db.get_account("dave");
+//
+//        //        BOOST_CHECK( alice_account.reward_sbd_balance == ASSET( "14288.000 TBD" ) );
+//        //        BOOST_CHECK( alice_account.reward_sbd_balance == ASSET( "13967.000 TBD" ) );
+//        //        BOOST_CHECK( bob_account.reward_sbd_balance == ASSET( "0.000 TBD" ) );
+//        //        BOOST_CHECK( dave_account.reward_sbd_balance == alice_account.reward_sbd_balance );
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
+//
+//BOOST_AUTO_TEST_CASE(comment_payout_dust)
+//{
+//    try
+//    {
+//        BOOST_TEST_MESSAGE("Testing: comment_payout_dust");
+//
+//        ACTORS((alice)(bob))
+//        generate_block();
+//
+//        vest("alice", ASSET("10.000 TESTS"));
+//        vest("bob", ASSET("10.000 TESTS"));
+//
+//        generate_block();
+//        validate_database();
+//
+//        comment_operation comment;
+//        comment.author = "alice";
+//        comment.permlink = "test";
+//        comment.parent_permlink = "test";
+//        comment.title = "test";
+//        comment.body = "test";
+//        vote_operation vote;
+//        vote.voter = "alice";
+//        vote.author = "alice";
+//        vote.permlink = "test";
+//        vote.weight = 81 * DEIP_1_PERCENT;
+//
+//        signed_transaction tx;
+//        tx.operations.push_back(comment);
+//        tx.operations.push_back(vote);
+//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//        validate_database();
+//
+//        comment.author = "bob";
+//        vote.voter = "bob";
+//        vote.author = "bob";
+//        vote.weight = 59 * DEIP_1_PERCENT;
+//
+//        tx.clear();
+//        tx.operations.push_back(comment);
+//        tx.operations.push_back(vote);
+//        tx.sign(bob_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//        validate_database();
+//
+//        generate_blocks(db.get_comment("alice", string("test")).cashout_time);
+//
+//        // If comments are paid out independent of order, then the last satoshi of DEIP cannot be divided among them
+//        const auto rf = db.get<reward_fund_object, by_name>(DEIP_POST_REWARD_FUND_NAME);
+//        BOOST_REQUIRE(rf.reward_balance == ASSET("0.001 TESTS"));
+//
+//        validate_database();
+//
+//        BOOST_TEST_MESSAGE("Done");
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
+//
+///*
+//BOOST_AUTO_TEST_CASE( reward_funds )
+//{
+//   try
+//   {
+//      BOOST_TEST_MESSAGE( "Testing: reward_funds" );
+//
+//      ACTORS( (alice)(bob) )
+//      generate_block();
+//
+//      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
+//      generate_block();
+//
+//      comment_operation comment;
+//      vote_operation vote;
+//      signed_transaction tx;
+//
+//      comment.author = "alice";
+//      comment.permlink = "test";
+//      comment.parent_permlink = "test";
+//      comment.title = "foo";
+//      comment.body = "bar";
+//      vote.voter = "alice";
+//      vote.author = "alice";
+//      vote.permlink = "test";
+//      vote.weight = DEIP_100_PERCENT;
+//      tx.operations.push_back( comment );
+//      tx.operations.push_back( vote );
+//      tx.set_expiration( db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION );
+//      tx.sign( alice_private_key, db.get_chain_id() );
+//      db.push_transaction( tx, 0 );
+//
+//      generate_blocks( 5 );
+//
+//      comment.author = "bob";
+//      comment.parent_author = "alice";
+//      vote.voter = "bob";
+//      vote.author = "bob";
+//      tx.clear();
+//      tx.operations.push_back( comment );
+//      tx.operations.push_back( vote );
+//      tx.sign( bob_private_key, db.get_chain_id() );
+//      db.push_transaction( tx, 0 );
+//
+//      generate_blocks( db.get_comment( "alice", string( "test" ) ).cashout_time );
+//
+//      {
+//         const auto& post_rf = db.get< reward_fund_object, by_name >( DEIP_POST_REWARD_FUND_NAME );
+//         const auto& comment_rf = db.get< reward_fund_object, by_name >( DEIP_COMMENT_REWARD_FUND_NAME );
+//
+//         BOOST_REQUIRE( post_rf.reward_balance.amount == 0 );
+//         BOOST_REQUIRE( comment_rf.reward_balance.amount > 0 );
+//         BOOST_REQUIRE( db.get_account( "alice" ).reward_sbd_balance.amount > 0 );
+//         BOOST_REQUIRE( db.get_account( "bob" ).reward_sbd_balance.amount == 0 );
+//         validate_database();
+//      }
+//
+//      generate_blocks( db.get_comment( "bob", string( "test" ) ).cashout_time );
+//
+//      {
+//         const auto& post_rf = db.get< reward_fund_object, by_name >( DEIP_POST_REWARD_FUND_NAME );
+//         const auto& comment_rf = db.get< reward_fund_object, by_name >( DEIP_COMMENT_REWARD_FUND_NAME );
+//
+//         BOOST_REQUIRE( post_rf.reward_balance.amount > 0 );
+//         BOOST_REQUIRE( comment_rf.reward_balance.amount == 0 );
+//         BOOST_REQUIRE( db.get_account( "alice" ).reward_sbd_balance.amount > 0 );
+//         BOOST_REQUIRE( db.get_account( "bob" ).reward_sbd_balance.amount > 0 );
+//         validate_database();
+//      }
+//   }
+//   FC_LOG_AND_RETHROW()
+//}
+//*/
+//
+//BOOST_AUTO_TEST_CASE(recent_claims_decay)
+//{
+//    try
+//    {
+//        BOOST_TEST_MESSAGE("Testing: recent_rshares_2decay");
+//        ACTORS((alice)(bob))
+//        generate_block();
+//
+//        generate_block();
+//
+//        comment_operation comment;
+//        vote_operation vote;
+//        signed_transaction tx;
+//
+//        comment.author = "alice";
+//        comment.permlink = "test";
+//        comment.parent_permlink = "test";
+//        comment.title = "foo";
+//        comment.body = "bar";
+//        vote.voter = "alice";
+//        vote.author = "alice";
+//        vote.permlink = "test";
+//        vote.weight = DEIP_100_PERCENT;
+//        tx.operations.push_back(comment);
+//        tx.operations.push_back(vote);
+//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        auto alice_vshares = util::evaluate_reward_curve(
+//            db.get_comment("alice", string("test")).net_rshares.value,
+//            db.get<reward_fund_object, by_name>(DEIP_POST_REWARD_FUND_NAME).author_reward_curve);
+//
+//        generate_blocks(5);
+//
+//        comment.author = "bob";
+//        vote.voter = "bob";
+//        vote.author = "bob";
+//        tx.clear();
+//        tx.operations.push_back(comment);
+//        tx.operations.push_back(vote);
+//        tx.sign(bob_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        generate_blocks(db.get_comment("alice", string("test")).cashout_time);
+//
+//        {
+//            const auto& post_rf = db.get<reward_fund_object, by_name>(DEIP_POST_REWARD_FUND_NAME);
+//
+//            BOOST_REQUIRE(post_rf.recent_claims == alice_vshares);
+//            validate_database();
+//        }
+//
+//        auto bob_cashout_time = db.get_comment("bob", string("test")).cashout_time;
+//        auto bob_vshares = util::evaluate_reward_curve(
+//            db.get_comment("bob", string("test")).net_rshares.value,
+//            db.get<reward_fund_object, by_name>(DEIP_POST_REWARD_FUND_NAME).author_reward_curve);
+//
+//        generate_block();
+//
+//        while (db.head_block_time() < bob_cashout_time)
+//        {
+//            alice_vshares -= (alice_vshares * DEIP_BLOCK_INTERVAL) / DEIP_RECENT_RSHARES_DECAY_RATE.to_seconds();
+//            const auto& post_rf = db.get<reward_fund_object, by_name>(DEIP_POST_REWARD_FUND_NAME);
+//
+//            BOOST_REQUIRE(post_rf.recent_claims == alice_vshares);
+//
+//            generate_block();
+//        }
+//
+//        {
+//            alice_vshares -= (alice_vshares * DEIP_BLOCK_INTERVAL) / DEIP_RECENT_RSHARES_DECAY_RATE.to_seconds();
+//            const auto& post_rf = db.get<reward_fund_object, by_name>(DEIP_POST_REWARD_FUND_NAME);
+//
+//            BOOST_REQUIRE(post_rf.recent_claims == alice_vshares + bob_vshares);
+//            validate_database();
+//        }
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
 
 /*BOOST_AUTO_TEST_CASE( comment_payout )
 {
@@ -1629,121 +1629,121 @@ BOOST_AUTO_TEST_CASE(post_rate_limit)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(comment_freeze)
-{
-    try
-    {
-        ACTORS((alice)(bob)(sam)(dave))
-        fund("alice", 10000);
-        fund("bob", 10000);
-        fund("sam", 10000);
-        fund("dave", 10000);
-
-        vest("alice", 10000);
-        vest("bob", 10000);
-        vest("sam", 10000);
-        vest("dave", 10000);
-
-        signed_transaction tx;
-
-        comment_operation comment;
-        comment.author = "alice";
-        comment.parent_author = "";
-        comment.permlink = "test";
-        comment.parent_permlink = "test";
-        comment.body = "test";
-
-        tx.operations.push_back(comment);
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.sign(alice_private_key, db.get_chain_id());
-        db.push_transaction(tx, 0);
-
-        comment.body = "test2";
-
-        tx.operations.clear();
-        tx.signatures.clear();
-
-        tx.operations.push_back(comment);
-        tx.sign(alice_private_key, db.get_chain_id());
-        db.push_transaction(tx, 0);
-
-        vote_operation vote;
-        vote.weight = DEIP_100_PERCENT;
-        vote.voter = "bob";
-        vote.author = "alice";
-        vote.permlink = "test";
-
-        tx.operations.clear();
-        tx.signatures.clear();
-
-        tx.operations.push_back(vote);
-        tx.sign(bob_private_key, db.get_chain_id());
-        db.push_transaction(tx, 0);
-
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).last_payout == fc::time_point_sec::min());
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).cashout_time != fc::time_point_sec::min());
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).cashout_time != fc::time_point_sec::maximum());
-
-        generate_blocks(db.get_comment("alice", string("test")).cashout_time, true);
-
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).last_payout == db.head_block_time());
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).cashout_time == fc::time_point_sec::maximum());
-
-        vote.voter = "sam";
-
-        tx.operations.clear();
-        tx.signatures.clear();
-
-        tx.operations.push_back(vote);
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.sign(sam_private_key, db.get_chain_id());
-        db.push_transaction(tx, 0);
-
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).cashout_time == fc::time_point_sec::maximum());
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).net_rshares.value == 0);
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).abs_rshares.value == 0);
-
-        vote.voter = "bob";
-        vote.weight = DEIP_100_PERCENT * -1;
-
-        tx.operations.clear();
-        tx.signatures.clear();
-
-        tx.operations.push_back(vote);
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.sign(bob_private_key, db.get_chain_id());
-        db.push_transaction(tx, 0);
-
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).cashout_time == fc::time_point_sec::maximum());
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).net_rshares.value == 0);
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).abs_rshares.value == 0);
-
-        vote.voter = "dave";
-        vote.weight = 0;
-
-        tx.operations.clear();
-        tx.signatures.clear();
-
-        tx.operations.push_back(vote);
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.sign(dave_private_key, db.get_chain_id());
-
-        db.push_transaction(tx, 0);
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).cashout_time == fc::time_point_sec::maximum());
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).net_rshares.value == 0);
-        BOOST_REQUIRE(db.get_comment("alice", string("test")).abs_rshares.value == 0);
-
-        comment.body = "test4";
-
-        tx.operations.clear();
-        tx.signatures.clear();
-
-        tx.operations.push_back(comment);
-        tx.sign(alice_private_key, db.get_chain_id());
-        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
-    }
-    FC_LOG_AND_RETHROW()
-}
+//BOOST_AUTO_TEST_CASE(comment_freeze)
+//{
+//    try
+//    {
+//        ACTORS((alice)(bob)(sam)(dave))
+//        fund("alice", 10000);
+//        fund("bob", 10000);
+//        fund("sam", 10000);
+//        fund("dave", 10000);
+//
+//        vest("alice", 10000);
+//        vest("bob", 10000);
+//        vest("sam", 10000);
+//        vest("dave", 10000);
+//
+//        signed_transaction tx;
+//
+//        comment_operation comment;
+//        comment.author = "alice";
+//        comment.parent_author = "";
+//        comment.permlink = "test";
+//        comment.parent_permlink = "test";
+//        comment.body = "test";
+//
+//        tx.operations.push_back(comment);
+//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        comment.body = "test2";
+//
+//        tx.operations.clear();
+//        tx.signatures.clear();
+//
+//        tx.operations.push_back(comment);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        vote_operation vote;
+//        vote.weight = DEIP_100_PERCENT;
+//        vote.voter = "bob";
+//        vote.author = "alice";
+//        vote.permlink = "test";
+//
+//        tx.operations.clear();
+//        tx.signatures.clear();
+//
+//        tx.operations.push_back(vote);
+//        tx.sign(bob_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).last_payout == fc::time_point_sec::min());
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).cashout_time != fc::time_point_sec::min());
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).cashout_time != fc::time_point_sec::maximum());
+//
+//        generate_blocks(db.get_comment("alice", string("test")).cashout_time, true);
+//
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).last_payout == db.head_block_time());
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).cashout_time == fc::time_point_sec::maximum());
+//
+//        vote.voter = "sam";
+//
+//        tx.operations.clear();
+//        tx.signatures.clear();
+//
+//        tx.operations.push_back(vote);
+//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx.sign(sam_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).cashout_time == fc::time_point_sec::maximum());
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).net_rshares.value == 0);
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).abs_rshares.value == 0);
+//
+//        vote.voter = "bob";
+//        vote.weight = DEIP_100_PERCENT * -1;
+//
+//        tx.operations.clear();
+//        tx.signatures.clear();
+//
+//        tx.operations.push_back(vote);
+//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx.sign(bob_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).cashout_time == fc::time_point_sec::maximum());
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).net_rshares.value == 0);
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).abs_rshares.value == 0);
+//
+//        vote.voter = "dave";
+//        vote.weight = 0;
+//
+//        tx.operations.clear();
+//        tx.signatures.clear();
+//
+//        tx.operations.push_back(vote);
+//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx.sign(dave_private_key, db.get_chain_id());
+//
+//        db.push_transaction(tx, 0);
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).cashout_time == fc::time_point_sec::maximum());
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).net_rshares.value == 0);
+//        BOOST_REQUIRE(db.get_comment("alice", string("test")).abs_rshares.value == 0);
+//
+//        comment.body = "test4";
+//
+//        tx.operations.clear();
+//        tx.signatures.clear();
+//
+//        tx.operations.push_back(comment);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
 
 BOOST_AUTO_TEST_SUITE_END()
 #endif

@@ -147,6 +147,22 @@ BOOST_AUTO_TEST_CASE(get_empty_expert_tokens_vector_by_discipline_id)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(get_expert_token_by_account_and_discipline_id)
+{
+    try
+    {
+        create_expert_tokens();
+        auto expert_token = data_service.get_expert_token_by_account_and_discipline("alice", 1111);
+
+        BOOST_CHECK(expert_token.id == 1);
+        BOOST_CHECK(expert_token.amount == 100);
+        BOOST_CHECK(expert_token.discipline_id == 1111);
+        BOOST_CHECK(expert_token.account_name == "alice");
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 
 
 BOOST_AUTO_TEST_SUITE_END()

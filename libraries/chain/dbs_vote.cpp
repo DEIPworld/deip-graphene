@@ -27,7 +27,7 @@ dbs_vote::vote_refs_type dbs_vote::get_votes_by_discipline(const discipline_id_t
     return ret;
 }
 
-dbs_vote::vote_refs_type dbs_vote::get_votes_by_type_and_target(const vote_target_type& vote_type, int64_t& vote_for_id) const
+dbs_vote::vote_refs_type dbs_vote::get_votes_by_type_and_target(const vote_target_type& vote_type, const int64_t& vote_for_id) const
 {
     vote_refs_type ret;
 

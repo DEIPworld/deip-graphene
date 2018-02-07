@@ -9,8 +9,6 @@
 namespace deip {
 namespace chain {
 
-using deip::protocol::asset;
-
 class research_group_object : public object<research_group_object_type, research_group_object>
 {
 

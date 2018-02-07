@@ -27,14 +27,18 @@ public:
     void create_votes() {
         db.create<vote_object>([&](vote_object& r) {
             r.id = 1,
-            r.research_id = RESEARCH,
+            r.voter = VOTER;
+            r.vote_type = vote_target_type::research_vote;
+            r.vote_for_id = RESEARCH;
             r.discipline_id = DISCIPLINE_MATH;
         });
 
         db.create<vote_object>([&](vote_object& r) {
             r.id = 2,
-            r.research_id = RESEARCH,
-            r.discipline_id = NULL;
+            r.voter = VOTER;
+            r.vote_type = vote_target_type::review_vote;
+            r.vote_for_id = RESEARCH;
+            r.discipline_id = 0;
         });
     }
 
@@ -48,9 +52,9 @@ BOOST_AUTO_TEST_CASE(create_research_vote)
     try
     {
         auto time = db.head_block_time();
-        auto& vote = data_service.create_research_vote(DISCIPLINE_MATH, VOTER, RESEARCH, WEIGHT, time);
+        auto& vote = data_service.create_vote(DISCIPLINE_MATH, VOTER, vote_target_type::research_vote, RESEARCH, WEIGHT, time);
 
-        BOOST_CHECK(vote.research_id == RESEARCH);
+
         BOOST_CHECK(vote.discipline_id == DISCIPLINE_MATH);
         BOOST_CHECK(vote.weight == WEIGHT);
         BOOST_CHECK(vote.voter == VOTER);
@@ -78,37 +82,19 @@ BOOST_AUTO_TEST_CASE(get_votes_by_discipline)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_votes_by_null_discipline)
+BOOST_AUTO_TEST_CASE(get_votes_by_target)
 {
     try
     {
         create_votes();
 
-        const auto& relations = data_service.get_votes_by_discipline(NULL);
+        const auto& votes = data_service.get_votes_by_type_and_target(vote_target_type::research_vote, RESEARCH);
 
-        BOOST_CHECK_EQUAL(relations.size(), 1);
+        BOOST_CHECK_EQUAL(votes.size(), 1);
 
-        for (const chain::vote_object& relation : relations) {
-            BOOST_CHECK(relation.discipline_id == NULL);
-        }
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(get_votes_by_research)
-{
-    try
-    {
-        create_votes();
-
-        const auto& relations = data_service.get_votes_by_research(RESEARCH);
-
-
-        BOOST_CHECK_EQUAL(relations.size(), 2);
-
-        for (const chain::vote_object& relation : relations) {
-            BOOST_CHECK(relation.research_id == RESEARCH);
+        for (const chain::vote_object& vote : votes) {
+            BOOST_CHECK(vote.vote_type == vote_target_type::research_vote);
+            BOOST_CHECK(vote.vote_for_id == RESEARCH);
         }
 
     }
