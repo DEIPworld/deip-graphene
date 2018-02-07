@@ -33,7 +33,7 @@ public:
 
     research_token_id_type research_token_id;
     research_id_type research_id;
-    fc::time_point start_time
+    fc::time_point start_time;
     fc::time_point end_time;
     share_type total_amount;
     share_type balance_tokens;
@@ -41,7 +41,28 @@ public:
     share_type hard_cap;
 };
 
+struct by_research_id;
+struct by_end_time;
+
+typedef multi_index_container<research_token_sale_object,
+        indexed_by<ordered_unique<tag<by_id>,
+                member<research_token_sale_object,
+                        research_token_sale_id_type,
+                        &research_token_sale_object::id>>,
+                ordered_unique<tag<by_research_id>,
+                        member<research_token_sale_object,
+                                research_id_type,
+                                &research_token_sale_object::research_id>>,
+                ordered_non_unique<tag<by_end_time>,
+                        member<research_token_sale_object,
+                                fc::time_point,
+                                &research_token_sale_object::end_time>>>,
+        allocator<research_token_sale_object>>
+        research_token_sale_index;
+
 } // namespace chain
 } // namespace deip
 
 FC_REFLECT(deip::chain::research_token_sale_object, (id)(research_token_id)(research_id)(start_time)(end_time)(total_amount)(balance_tokens)(soft_cap)(hard_cap))
+
+CHAINBASE_SET_INDEX_TYPE(deip::chain::research_token_sale_object, deip::chain::research_token_sale_index)

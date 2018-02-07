@@ -23,6 +23,7 @@
 #include <deip/chain/research_discipline_relation_object.hpp>
 #include <deip/chain/research_object.hpp>
 #include <deip/chain/research_content_object.hpp>
+#include <deip/chain/research_token_sale_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
 #include <deip/chain/research_token_object.hpp>
 #include <deip/chain/proposal_vote_evaluator.hpp>
@@ -1701,6 +1702,7 @@ void database::initialize_indexes()
     add_index<research_content_index>();
     add_index<expert_token_index>();
     add_index<research_token_index>();
+    add_index<research_token_sale_index>();
 
     _plugin_index_signal();
 }

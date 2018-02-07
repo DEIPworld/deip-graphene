@@ -29,7 +29,6 @@ public:
                                                        const research_id_type& research_id,
                                                        const fc::time_point& start_time,
                                                        const fc::time_point& end_time,
-                                                       const share_type total_amount,
                                                        const share_type balance_tokens,
                                                        const share_type soft_cap,
                                                        const share_type hard_cap);
