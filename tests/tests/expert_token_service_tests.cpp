@@ -54,6 +54,21 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(expert_token_service, expert_token_service_fixture)
 
+BOOST_AUTO_TEST_CASE(create)
+{
+    try
+    {
+        auto token = data_service.create("alice", 1000, 1000);
+
+        BOOST_CHECK(token.id == 0);
+        BOOST_CHECK(token.account_name == "alice");
+        BOOST_CHECK(token.discipline_id == 1000);
+        BOOST_CHECK(token.amount == 1000);
+        BOOST_CHECK(token.voting_power == DEIP_100_PERCENT);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(get_expert_token_by_id)
 {
     try

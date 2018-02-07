@@ -33,7 +33,8 @@ public:
     account_name_type account_name;
     discipline_id_type discipline_id;
     share_type amount = 0;
-
+    uint16_t voting_power = DEIP_100_PERCENT; ///< current voting power of this token, it falls after every vote
+    time_point_sec last_vote_time; ///< used to increase the voting power of this token the longer it goes without voting.
 };
 
 struct by_account_name;
@@ -67,7 +68,7 @@ typedef multi_index_container<expert_token_object,
 }
 
 FC_REFLECT( deip::chain::expert_token_object,
-            (id)(account_name)(discipline_id)(amount)
+            (id)(account_name)(discipline_id)(amount)(voting_power)(last_vote_time)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::expert_token_object, deip::chain::expert_token_index )

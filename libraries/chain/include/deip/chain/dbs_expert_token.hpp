@@ -25,6 +25,8 @@ public:
 
     using expert_token_refs_type = std::vector<std::reference_wrapper<const expert_token_object>>;
 
+    const expert_token_object& create(const account_name_type& account, const discipline_id_type& discipline_id, const share_type& amount);
+
     /* Get expert token by id
      * @returns expert token object by its id
     */

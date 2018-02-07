@@ -11,6 +11,21 @@ dbs_expert_token::dbs_expert_token(database &db)
 {
 }
 
+const expert_token_object& dbs_expert_token::create(const account_name_type &account,
+                                                    const discipline_id_type &discipline_id,
+                                                    const share_type& amount)
+{
+    const auto& props = db_impl().get_dynamic_global_properties();
+
+    auto& token = db_impl().create<expert_token_object>([&](expert_token_object& token) {
+        token.account_name = account;
+        token.discipline_id = discipline_id;
+        token.amount = amount;
+        token.last_vote_time = props.time;
+    });
+    return token;
+}
+
 const expert_token_object& dbs_expert_token::get_expert_token(const expert_token_id_type& id) const
 {
     return db_impl().get<expert_token_object>(id);
