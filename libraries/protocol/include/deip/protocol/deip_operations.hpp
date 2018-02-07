@@ -757,17 +757,6 @@ struct create_budget_operation : public base_operation
     }
 };
 
-
-struct create_research_content_operation : public base_operation
-{
-    int64_t research_id;
-    uint16_t content_type;
-    string content;
-    flat_set <account_name_type> authors;
-
-    void validate() const;
-};
-
 struct proposal_create_operation : public base_operation
 {
     account_name_type creator;
@@ -809,7 +798,20 @@ struct proposal_vote_operation : public base_operation
     }
 };
 
+struct make_research_review_operation : public base_operation
+{
+    int64_t research_id;
+    fc::string content;
+    account_name_type author;
+    std::vector<int64_t> research_references;
+    std::vector<string> research_external_references;
 
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(author);
+    }
+};
 
 } // namespace protocol
 } // namespace deip
@@ -884,7 +886,8 @@ FC_REFLECT( deip::protocol::create_budget_operation, (owner)(balance)(target_dis
 FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption)(funds) )
 
-FC_REFLECT( deip::protocol::create_research_content_operation, (research_id)(content)(content_type)(authors))
 FC_REFLECT( deip::protocol::proposal_vote_operation, (voter)(proposal_id)(research_group_id))
+
+FC_REFLECT( deip::protocol::make_research_review_operation, (research_id)(content)(author)(research_references)(research_external_references))
 
 // clang-format on

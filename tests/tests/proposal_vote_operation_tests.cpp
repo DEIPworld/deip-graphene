@@ -7,6 +7,7 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_research.hpp>
+#include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/proposal_vote_evaluator.hpp>
 #include <deip/chain/deip_objects.hpp>
 
@@ -20,7 +21,7 @@ namespace tests {
 using deip::protocol::account_name_type;
 using deip::protocol::proposal_action_type;
 
-typedef deip::chain::proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token>
+typedef deip::chain::proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_content>
         proposal_vote_evaluator;
 
 class evaluator_mocked : public proposal_vote_evaluator {
@@ -29,8 +30,9 @@ public:
                      dbs_proposal &proposal_service,
                      dbs_research_group &research_group_service,
                      dbs_research &research_service,
-                     dbs_research_token &research_token_service)
-            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service) {
+                     dbs_research_token &research_token_service,
+                     dbs_research_content &research_content_service)
+            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service) {
     }
 
     void execute_proposal(const proposal_object &proposal) {
@@ -45,7 +47,8 @@ public:
                         db.obtain_service<dbs_proposal>(),
                         db.obtain_service<dbs_research_group>(),
                         db.obtain_service<dbs_research>(),
-                        db.obtain_service<dbs_research_token>()) {
+                        db.obtain_service<dbs_research_token>(),
+                        db.obtain_service<dbs_research_content>()) {
     }
 
     ~proposal_vote_evaluator_fixture() {
@@ -66,7 +69,7 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test)
 
 
     auto& research_group_service = db.obtain_service<dbs_research_group>();
-
+ 
     proposal_vote_operation op;
     op.research_group_id = 1;
     op.proposal_id = 1;
@@ -181,7 +184,7 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_execute_test)
             "\"account_name\":\"bob\","
             "\"amount\": 5}";
 
-    auto& research = research_create("name","abstract", "permlink", 1, 10);
+    auto& research = research_create(0, "name","abstract", "permlink", 1, 10);
     proposal_create(1, dbs_proposal::action_t::transfer_research_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     proposal_vote_operation op;
@@ -372,6 +375,48 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_validate_test)
     op.voter = "alice";
 
     BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
+}
+
+BOOST_AUTO_TEST_CASE(create_research_material)
+{
+    ACTORS((alice))
+    std::vector<account_name_type> accounts = {"alice"};
+    setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
+
+    db.create<research_object>([&](research_object& r) {
+        r.id = 1;
+        r.name = "Research #1";
+        r.permlink = "Research #1 permlink";
+        r.research_group_id = 1;
+        r.review_share_in_percent = 10;
+        r.is_finished = false;
+        r.created_at = db.head_block_time();
+        r.abstract = "abstract for Research #1";
+        r.owned_tokens = DEIP_100_PERCENT;
+    });
+
+    const std::string json_str = "{\"research_id\": 1,\"type\": 2,\"content\":\"milestone for Research #1\", \"authors\":[\"alice\"]}";
+
+    proposal_create(1, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+
+    proposal_vote_operation op;
+    op.research_group_id = 1;
+    op.proposal_id = 1;
+    op.voter = "alice";
+
+    evaluator.do_apply(op);
+
+    auto& research_content_service = db.obtain_service<dbs_research_content>();
+    auto contents = research_content_service.get_content_by_research_id(1);
+
+    BOOST_CHECK(contents.size() == 1);
+    BOOST_CHECK(std::any_of(
+        contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper) {
+            const research_content_object& content = wrapper.get();
+            return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone
+                && content.content == "milestone for Research #1" && content.authors.size() == 1
+                && content.authors.begin()[0] == "alice";
+        }));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -111,6 +111,32 @@ struct rebalance_research_group_tokens_data_type : base_proposal_data_type
             FC_ASSERT(is_valid_account_name(accounts[i].account_name), "Account name ${n} is invalid", ("n", accounts[i].account_name));
     }
 };
+struct create_research_content_data_type : base_proposal_data_type
+{
+    research_id_type research_id;
+    research_content_type type;
+    string content;
+    flat_set<account_name_type> authors;
+    std::vector<research_id_type> research_references;
+    std::vector<string> research_external_references;
+    void validate() const
+    {
+        FC_ASSERT(!content.empty(), "Content cannot be empty");
+        FC_ASSERT(!authors.empty(), "Content should have author(s)");
+        for (auto& author : authors)
+        {
+            FC_ASSERT(is_valid_account_name(author), "Account name ${n} is invalid", ("n", author));
+        }
+
+        for (auto& link : research_external_references)
+        {
+            FC_ASSERT(!link.empty(), "External reference link cannot be empty");
+            FC_ASSERT(fc::is_utf8(link), "External reference link is not valid UTF8 string");
+        }
+
+    }
+};
+
 }
 }
 
@@ -129,3 +155,6 @@ FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(account_name)(
 FC_REFLECT(deip::chain::rebalance_info, (account_name)(amount))
 
 FC_REFLECT(deip::chain::rebalance_research_group_tokens_data_type, (research_group_id)(accounts))
+
+FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(content)(authors)(research_references)(research_external_references))
+

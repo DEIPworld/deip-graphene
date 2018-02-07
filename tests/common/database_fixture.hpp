@@ -8,6 +8,8 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_discipline.hpp>
+#include <deip/chain/dbs_research.hpp>
+#include <deip/chain/dbs_research_content.hpp>
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>
 
@@ -121,11 +123,12 @@ struct database_fixture
                                            const time_point_sec expiration_time,
                                            const share_type quorum_percent);
 
-    const research_object& research_create(const string& name, 
-                                           const string& abstract, 
+    const research_object& research_create(const uint32_t id,
+                                           const string& name,
+                                           const string& abstract,
                                            const string& permlink,
                                            const research_group_id_type& research_group_id,
-                                           const uint32_t& percent_for_review);
+                                           const double& review_share_in_percent);
 
     void fund(const string& account_name, const share_type& amount = 500000);
     void fund(const string& account_name, const asset& amount);
