@@ -360,8 +360,8 @@ void make_research_review_operation::validate() const
     FC_ASSERT(!content.empty(), "Research content cannot be empty");
     for (auto& link : research_external_references)
     {
-        FC_ASSERT(!link.empty(), "Link cannot be empty");
-        FC_ASSERT(fc::is_utf8(link), "Description is not valid UTF8 string");
+        FC_ASSERT(!link.empty(), "External reference link cannot be empty");
+        FC_ASSERT(fc::is_utf8(link), "External reference is not valid UTF8 string");
     }
 }
 
