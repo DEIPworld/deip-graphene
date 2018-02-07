@@ -47,10 +47,11 @@ typedef fc::static_variant<vote_operation,
                            account_create_with_delegation_operation,
 
                            create_budget_operation,
-                           create_research_content_operation,
 
                            proposal_create_operation,
                            create_research_group_operation,
+
+                           make_research_review_operation,
 
                            proposal_vote_operation,
 

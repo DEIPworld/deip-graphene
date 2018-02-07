@@ -72,15 +72,23 @@ struct create_research_content_data_type : base_proposal_data_type
     research_content_type type;
     string content;
     flat_set<account_name_type> authors;
-
+    std::vector<research_id_type> research_references;
+    std::vector<string> research_external_references;
     void validate() const
     {
         FC_ASSERT(!content.empty(), "Content cannot be empty");
         FC_ASSERT(!authors.empty(), "Content should have author(s)");
         for (auto& author : authors)
         {
-            chain::validate_account_name(author);
+            FC_ASSERT(is_valid_account_name(author), "Account name ${n} is invalid", ("n", author));
         }
+
+        for (auto& link : research_external_references)
+        {
+            FC_ASSERT(!link.empty(), "External reference link cannot be empty");
+            FC_ASSERT(fc::is_utf8(link), "External reference link is not valid UTF8 string");
+        }
+
     }
 };
 
@@ -95,5 +103,5 @@ FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(qu
 
 FC_REFLECT(deip::chain::start_research_proposal_data_type, (name)(abstract)(permlink)(research_group_id)(review_share_in_percent))
 
-FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(content)(authors))
+FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(content)(authors)(research_references)(research_external_references))
 

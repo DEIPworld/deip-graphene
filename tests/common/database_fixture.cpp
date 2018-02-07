@@ -422,6 +422,28 @@ const proposal_object& database_fixture::proposal_create(const uint32_t id, cons
     return new_proposal;
 }
 
+const research_object& database_fixture::research_create(const uint32_t id,
+                                                         const string &name,
+                                                         const string &abstract,
+                                                         const string &permlink,
+                                                         const research_group_id_type &research_group_id,
+                                                         const double &review_share_in_percent)
+{
+    const auto& new_research = db.create<research_object>([&](research_object& r) {
+        r.id = id;
+        r.name = name;
+        r.abstract = abstract;
+        r.permlink = permlink;
+        r.research_group_id = research_group_id;
+        r.review_share_in_percent = review_share_in_percent;
+        r.is_finished = false;
+        r.owned_tokens = DEIP_100_PERCENT;
+        r.created_at = db.head_block_time();
+    });
+
+    return new_research;
+}
+
 void database_fixture::fund(const string& account_name, const share_type& amount)
 {
     try

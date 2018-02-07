@@ -49,6 +49,8 @@ public:
     fc::string content;
     flat_set<account_name_type> authors;
     time_point_sec created_at;
+    std::vector<research_id_type> research_references;
+    std::vector<string> research_external_references;
 };
 
 struct by_research_id;
@@ -78,6 +80,6 @@ typedef multi_index_container<research_content_object,
 
 FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result)(review) )
 
-FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(content)(authors) )
+FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(content)(authors)(research_references)(research_external_references))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_content_object, deip::chain::research_content_index)
