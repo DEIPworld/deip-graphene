@@ -163,6 +163,12 @@ BOOST_AUTO_TEST_CASE(get_expert_token_by_account_and_discipline_id)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(check_expert_token_existence_by_account_and_discipline_id)
+{
+    BOOST_CHECK_THROW(data_service.check_expert_token_existence_by_account_and_discipline("alice", 1111), fc::assert_exception);
+}
+
+
 
 
 BOOST_AUTO_TEST_SUITE_END()
