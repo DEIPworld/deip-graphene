@@ -1435,9 +1435,10 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
 void make_research_review_evaluator::do_apply(const make_research_review_operation& op)
 {
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
-
     dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
 
+    account_service.check_account_existence(op.author);
     research_service.check_research_existence(op.research_id);
 
     std::vector<research_id_type> references;
