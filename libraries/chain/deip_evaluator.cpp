@@ -16,6 +16,8 @@
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_vote.hpp>
+#include <deip/chain/dbs_expert_token.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -915,6 +917,43 @@ void account_witness_vote_evaluator::do_apply(const account_witness_vote_operati
 void vote_evaluator::do_apply(const vote_operation& o)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+
+    try
+    {
+        const auto& voter = account_service.get_account(o.voter);
+
+        FC_ASSERT(!(voter.owner_challenged || voter.active_challenged),
+                  "Operation cannot be processed because the account is currently challenged.");
+
+        FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
+
+        expert_token_service.check_expert_token_existence_by_account_and_discipline(o.voter, o.discipline_id);
+
+        std::vector<discipline_id_type> target_disciplines;
+        research_id_type research_id;
+
+        if (o.vote_type == vote_target_type::research_vote)
+        {
+            research_id = o.vote_for_id;
+        } else if (o.vote_type == vote_target_type::content_vote || o.vote_type == vote_target_type::review_vote) {
+            dbs_research_content& content_service = _db.obtain_service<dbs_research_content>();
+            const auto& content = content_service.get_content_by_id(o.vote_for_id);
+            research_id = content.research_id;
+        } else {
+            FC_THROW("Incorrect vote type");
+        }
+
+        dbs_research_discipline_relation& research_disciplines_service = _db.obtain_service<dbs_research_discipline_relation>();
+        const auto& relations = research_disciplines_service.get_research_discipline_relations_by_research(research_id);
+        for (auto& relation_wrapper : relations) {
+            const auto& relation = relation_wrapper.get();
+            target_disciplines.push_back(relation.discipline_id);
+        }
+
+    }
+    FC_CAPTURE_AND_RETHROW((o))
 
 //    try
 //    {

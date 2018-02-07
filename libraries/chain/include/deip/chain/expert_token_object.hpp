@@ -38,6 +38,7 @@ public:
 
 struct by_account_name;
 struct by_discipline_id;
+struct by_account_and_discipline;
 
 typedef multi_index_container<expert_token_object,
             indexed_by<ordered_unique<tag<by_id>,
@@ -48,6 +49,14 @@ typedef multi_index_container<expert_token_object,
                     member<expert_token_object,
                            account_name_type,
                            &expert_token_object::account_name>>,
+            ordered_unique<tag<by_account_and_discipline>,
+                    composite_key<expert_token_object,
+                            member<expert_token_object,
+                                   account_name_type,
+                                   &expert_token_object::account_name>,
+                            member<expert_token_object,
+                                   discipline_id_type,
+                                   &expert_token_object::discipline_id>>>,
             ordered_non_unique<tag<by_discipline_id>,
                     member<expert_token_object,
                            discipline_id_type,

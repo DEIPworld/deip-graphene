@@ -11,12 +11,18 @@ dbs_expert_token::dbs_expert_token(database &db)
 {
 }
 
-const expert_token_object& dbs_expert_token::get_expert_token(const expert_token_id_type id) const
+const expert_token_object& dbs_expert_token::get_expert_token(const expert_token_id_type& id) const
 {
     return db_impl().get<expert_token_object>(id);
 }
 
-dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_account_name(const account_name_type account_name) const
+const expert_token_object& dbs_expert_token::get_expert_token_by_account_and_discipline(
+        const account_name_type &account, const discipline_id_type &discipline_id) const
+{
+    return db_impl().get<expert_token_object, by_account_and_discipline>(std::make_tuple(account, discipline_id));
+}
+
+dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_account_name(const account_name_type& account_name) const
 {
     expert_token_refs_type ret;
 
@@ -32,8 +38,7 @@ dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_
     return ret;
 }
 
-
-dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const
+dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_discipline_id(const discipline_id_type& discipline_id) const
 {
     expert_token_refs_type ret;
 
@@ -47,6 +52,14 @@ dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_
     }
 
     return ret;
+}
+
+void dbs_expert_token::check_expert_token_existence_by_account_and_discipline(const account_name_type &account,
+                                                                              const discipline_id_type &discipline_id)
+{
+    const auto& idx = db_impl().get_index<expert_token_index>().indices().get<by_account_and_discipline>();
+
+    FC_ASSERT(idx.find(std::make_tuple(account, discipline_id)) != idx.cend(), "Expert token for account \"${1}\" and discipline \"${2}\" does not exist", ("1", account)("2", discipline_id));
 }
 
 

@@ -28,17 +28,26 @@ public:
     /* Get expert token by id
      * @returns expert token object by its id
     */
-    const expert_token_object& get_expert_token(const expert_token_id_type id) const;
+    const expert_token_object& get_expert_token(const expert_token_id_type& id) const;
+
+    /* Get expert token by account name & discipline
+    * @returns expert token in specified discipline for account
+    */
+    const expert_token_object& get_expert_token_by_account_and_discipline(const account_name_type& account,
+                                                                           const discipline_id_type& discipline_id) const;
 
     /* Get expert tokens by account name
     * @returns a list of all expert token objects for specific account
     */
-    expert_token_refs_type get_expert_tokens_by_account_name(const account_name_type account_name) const;
+    expert_token_refs_type get_expert_tokens_by_account_name(const account_name_type& account_name) const;
 
-    /* Get expert tokens by discipline id 
+    /* Get expert tokens by discipline id
      * @returns a list of all expert token objects for specific discipline
     */
-    expert_token_refs_type get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
+    expert_token_refs_type get_expert_tokens_by_discipline_id(const discipline_id_type& discipline_id) const;
+
+    void check_expert_token_existence_by_account_and_discipline(const account_name_type& account,
+                                                                const discipline_id_type& discipline_id);
 
 };
 } // namespace chain
