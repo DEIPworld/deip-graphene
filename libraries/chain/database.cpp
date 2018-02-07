@@ -1646,6 +1646,7 @@ void database::initialize_evaluators()
                                         this->obtain_service<dbs_proposal>(),
                                         this->obtain_service<dbs_research_group>(),
                                         this->obtain_service<dbs_research>(),
+                                        this->obtain_service<dbs_research_token>(),
                                         this->obtain_service<dbs_research_content>()));
     //clang-format on
 }

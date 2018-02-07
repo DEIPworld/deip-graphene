@@ -6,6 +6,7 @@
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_account.hpp>
+#include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_research_content.hpp>
@@ -98,18 +99,20 @@ struct database_fixture
 
     const research_group_object& research_group_create(const uint32_t& id, const string& permlink,
                                                        const string& desciption,
-                                                       const uint32_t& quorum_percent,
-                                                       const int32_t& tokens_amount);
+                                                       const share_type funds,
+                                                       const share_type quorum_percent,
+                                                       const share_type tokens_amount);
 
     const research_group_token_object& research_group_token_create(const research_group_id_type& research_group_id,
                                                                    const account_name_type& account,
-                                                                   const int32_t& amount);
+                                                                   const share_type amount);
 
     const research_group_object& setup_research_group(const uint32_t &id,
                                                       const string &permlink,
                                                       const string &desciption,
-                                                      const uint32_t &quorum_percent,
-                                                      const int32_t &tokens_amount,
+                                                      const share_type funds,
+                                                      const share_type quorum_percent,
+                                                      const share_type tokens_amount,
                                                       const vector<account_name_type> &accounts);
 
     const proposal_object& proposal_create(const uint32_t id,
@@ -118,7 +121,7 @@ struct database_fixture
                                            const account_name_type& creator,
                                            const research_group_id_type& research_group_id,
                                            const time_point_sec expiration_time,
-                                           const uint32_t quorum_percent);
+                                           const share_type quorum_percent);
 
     const research_object& research_create(const uint32_t id,
                                            const string& name,
