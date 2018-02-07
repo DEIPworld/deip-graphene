@@ -28,7 +28,7 @@ public:
     fc::time_point_sec expiration_time;
     account_t creator;
     std::string data;
-    u_int16_t quorum_percent;
+    share_type quorum_percent;
     share_type current_votes_amount;
 
     flat_set<account_name_type> voted_accounts;

@@ -95,6 +95,8 @@ public:
                        std::bind(&EvaluatorType::transfer_research_tokens_evaluator, this, std::placeholders::_1));
         evaluators.set(proposal_action_type::send_funds,
                        std::bind(&EvaluatorType::send_funds_evaluator, this, std::placeholders::_1));
+        evaluators.set(proposal_action_type::rebalance_research_group_tokens,
+                       std::bind(&EvaluatorType::rebalance_research_group_tokens_evaluator, this, std::placeholders::_1));
     }
 
     virtual void apply(const OperationType& o) final override
@@ -156,7 +158,7 @@ protected:
         _account_service.check_account_existence(data.name);
         _research_group_service.check_research_group_existence(data.research_group_id);
         _research_group_service.create_research_group_token(data.research_group_id, data.research_group_token_amount, data.name);
-        _research_group_service.adjust_research_group_token_amount(data.research_group_id, data.research_group_token_amount);
+        _research_group_service.increase_research_group_total_tokens_amount(data.research_group_id, data.research_group_token_amount);
     }
 
     void dropout_evaluator(const proposal_object& proposal)
@@ -165,10 +167,10 @@ protected:
         _account_service.check_account_existence(data.name);
         _research_group_service.check_research_group_token_existence(data.name, data.research_group_id);
         _proposal_service.remove_proposal_votes(data.name, data.research_group_id);
-        auto& token = _research_group_service.get_research_group_token_by_account_and_research_id(data.name, data.research_group_id);
+        auto& token = _research_group_service.get_research_group_token_by_account_and_research_group_id(data.name, data.research_group_id);
         auto tokens_amount = token.amount;
         _research_group_service.remove_token(data.name, data.research_group_id);
-        _research_group_service.adjust_research_group_token_amount(data.research_group_id, -tokens_amount);
+        _research_group_service.decrease_research_group_total_tokens_amount(data.research_group_id, tokens_amount);
     }
 
     void change_research_review_share_evaluator(const proposal_object& proposal)
@@ -220,6 +222,22 @@ protected:
         _account_service.increase_balance(account, data.funds);
         _research_group_service.decrease_research_group_funds(proposal.research_group_id, data.funds);
     }
+
+    void rebalance_research_group_tokens_evaluator(const proposal_object& proposal)
+    {
+        rebalance_research_group_tokens_data_type data = get_data<rebalance_research_group_tokens_data_type>(proposal);
+        _research_group_service.check_research_group_existence(data.research_group_id);
+
+        int size = data.accounts.size();
+        for (int i = 0; i < size; ++i)
+        {
+            _account_service.check_account_existence(data.accounts[i].account_name);
+            _research_group_service.increase_research_group_token_amount(data.research_group_id, 
+                                                                         data.accounts[i].account_name, 
+                                                                         data.accounts[i].amount);
+        }
+    }
+
     AccountService& _account_service;
     ProposalService& _proposal_service;
     ResearchGroupService& _research_group_service;
