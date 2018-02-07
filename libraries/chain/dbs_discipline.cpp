@@ -37,11 +37,18 @@ const discipline_object& dbs_discipline::get_discipline_by_name(const discipline
     return db_impl().get<discipline_object, by_discipline_name>(name);
 }
 
-void dbs_discipline::check_discipline_existence(const discipline_name_type &name)
+void dbs_discipline::check_discipline_existence_by_name(const discipline_name_type &name)
 {
     const auto& idx = db_impl().get_index<discipline_index>().indices().get<by_discipline_name>();
 
     FC_ASSERT(idx.find(name) != idx.cend(), "Discipline \"${1}\" does not exist", ("1", name));
+}
+
+void dbs_discipline::check_discipline_existence(const discipline_id_type &id)
+{
+    const auto& idx = db_impl().get_index<discipline_index>().indices().get<by_id>();
+
+    FC_ASSERT(idx.find(id) != idx.cend(), "Discipline with id=\"${1}\" does not exist", ("1", id));
 }
 
 dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines_by_parent_id(const discipline_id_type parent_id) const

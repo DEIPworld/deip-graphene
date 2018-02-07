@@ -919,6 +919,7 @@ void vote_evaluator::do_apply(const vote_operation& o)
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
     dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+    dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
 
     try
     {
@@ -928,6 +929,10 @@ void vote_evaluator::do_apply(const vote_operation& o)
                   "Operation cannot be processed because the account is currently challenged.");
 
         FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
+
+        if (o.discipline_id != 0) {
+            discipline_service.check_discipline_existence(o.discipline_id);
+        }
 
         expert_token_service.check_expert_token_existence_by_account_and_discipline(o.voter, o.discipline_id);
 
@@ -942,7 +947,7 @@ void vote_evaluator::do_apply(const vote_operation& o)
             const auto& content = content_service.get_content_by_id(o.vote_for_id);
             research_id = content.research_id;
         } else {
-            FC_THROW("Incorrect vote type");
+            FC_THROW("Invalid vote type {t}", ("t", o.vote_type));
         }
 
         dbs_research_discipline_relation& research_disciplines_service = _db.obtain_service<dbs_research_discipline_relation>();
@@ -950,6 +955,17 @@ void vote_evaluator::do_apply(const vote_operation& o)
         for (auto& relation_wrapper : relations) {
             const auto& relation = relation_wrapper.get();
             target_disciplines.push_back(relation.discipline_id);
+        }
+
+        const auto& voter_token = expert_token_service.get_expert_token_by_account_and_discipline(o.voter, o.discipline_id);
+
+        // Validate that research has discipline we are trying to vote with
+        if (o.discipline_id != 0)
+        {
+            auto itr = std::find(target_disciplines.begin(), target_disciplines.end(), o.discipline_id);
+            bool discipline_found = (itr != target_disciplines.end());
+            FC_ASSERT(discipline_found, "Cannot vote with {d} token as research is not in this discipline",
+                      ("d", discipline_service.get_discipline(o.discipline_id).name));
         }
 
     }
@@ -1432,7 +1448,7 @@ void create_budget_evaluator::do_apply(const create_budget_operation& op)
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     account_service.check_account_existence(op.owner);
     const auto& owner = account_service.get_account(op.owner);
-    discipline_service.check_discipline_existence(op.target_discipline);
+    discipline_service.check_discipline_existence_by_name(op.target_discipline);
     auto& discipline = discipline_service.get_discipline_by_name(op.target_discipline);
     budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id);
 }
