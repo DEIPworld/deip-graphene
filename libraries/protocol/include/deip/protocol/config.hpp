@@ -65,6 +65,8 @@
 
 #endif
 
+#define DEIP_MIN_GRANT_PER_BLOCK 1
+
 #define DEIP_BLOCK_INTERVAL                  3
 #define DEIP_BLOCKS_PER_YEAR                 (365*24*60*60/DEIP_BLOCK_INTERVAL)
 #define DEIP_BLOCKS_PER_DAY                  (24*60*60/DEIP_BLOCK_INTERVAL)

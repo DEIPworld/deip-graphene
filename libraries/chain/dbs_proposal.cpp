@@ -39,7 +39,7 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
                                                      const account_name_type& creator,
                                                      const research_group_id_type& research_group_id,
                                                      const fc::time_point_sec expiration_time,
-                                                     const uint32_t quorum_percent)
+                                                     const share_type quorum_percent)
 {
     const proposal_object& new_proposal = db_impl().create<proposal_object>([&](proposal_object& proposal) {
         proposal.action = action;
@@ -85,7 +85,7 @@ const proposal_vote_object& dbs_proposal::vote_for(const proposal_id_type &propo
     auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
     auto& proposal = get_proposal(proposal_id);
 
-    auto& token = research_group_service.get_research_group_token_by_account_and_research_id(voter, proposal.research_group_id);
+    auto& token = research_group_service.get_research_group_token_by_account_and_research_group_id(voter, proposal.research_group_id);
     auto wight = token.amount;
 
     db_impl().modify(proposal, [&](proposal_object& p) {

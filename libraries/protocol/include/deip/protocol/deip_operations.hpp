@@ -744,10 +744,11 @@ struct delegate_vesting_shares_operation : public base_operation
 struct create_budget_operation : public base_operation
 {
     account_name_type owner;
-    string content_permlink;
-
     asset balance;
-    time_point_sec deadline;
+
+    discipline_name_type target_discipline;
+    uint32_t start_block;
+    uint32_t end_block;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -755,34 +756,6 @@ struct create_budget_operation : public base_operation
         a.insert(owner);
     }
 };
-
-struct close_budget_operation : public base_operation
-{
-    int64_t budget_id;
-    account_name_type owner;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
-
-
-struct create_research_operation : public base_operation
-{
-    int64_t research_group_id;
-    vector <account_name_type> authors;
-    vector <int64_t> disciplines_ids;
-    std::string name;
-    std::string permlink;
-    std::string abstract_content;
-    vector <int64_t> abstract_references;
-    uint32_t percent_for_review;
-
-    void validate() const;
-};
-
 
 struct proposal_create_operation : public base_operation
 {
@@ -801,6 +774,7 @@ struct create_research_group_operation : public base_operation
     account_name_type creator;
     string permlink;
     string desciption;
+    share_type funds;
     uint32_t quorum_percent;
     uint32_t tokens_amount;
 
@@ -824,7 +798,20 @@ struct proposal_vote_operation : public base_operation
     }
 };
 
+struct make_research_review_operation : public base_operation
+{
+    int64_t research_id;
+    fc::string content;
+    account_name_type author;
+    std::vector<int64_t> research_references;
+    std::vector<string> research_external_references;
 
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(author);
+    }
+};
 
 } // namespace protocol
 } // namespace deip
@@ -894,20 +881,13 @@ FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recov
 FC_REFLECT( deip::protocol::decline_voting_rights_operation, (account)(decline) )
 FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) )
 
-FC_REFLECT( deip::protocol::create_budget_operation, (owner)(content_permlink)(balance)(deadline) )
-FC_REFLECT( deip::protocol::close_budget_operation, (budget_id)(owner) )
+FC_REFLECT( deip::protocol::create_budget_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
 
 FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time))
-FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption) )
+FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption)(funds) )
 
-FC_REFLECT( deip::protocol::create_research_operation,  (research_group_id)
-                                                        (authors)
-                                                        (disciplines_ids)
-                                                        (name)
-                                                        (permlink)
-                                                        (abstract_content)
-                                                        (abstract_references)
-                                                        (percent_for_review) )
 FC_REFLECT( deip::protocol::proposal_vote_operation, (voter)(proposal_id)(research_group_id))
+
+FC_REFLECT( deip::protocol::make_research_review_operation, (research_id)(content)(author)(research_references)(research_external_references))
 
 // clang-format on

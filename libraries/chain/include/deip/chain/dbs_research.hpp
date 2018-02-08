@@ -23,13 +23,17 @@ public:
     using research_refs_type = std::vector<std::reference_wrapper<const research_object>>;
 
     const research_object& create(const string& name, const string& abstract, const string& permlink,
-                                  const int64_t& research_group_id, const uint32_t& percent_for_review);
+                                  const research_group_id_type& research_group_id, const double& review_share_in_percent);
 
     research_refs_type get_researches() const;
 
     const research_object& get_research(const research_id_type& id) const;
 
     const research_object& get_research_by_permlink(const string& permlink) const;
+
+    void check_research_existence(const research_id_type& id) const;
+
+    void decrease_owned_tokens(const research_object& research, const share_type delta);
 };
 }
 }

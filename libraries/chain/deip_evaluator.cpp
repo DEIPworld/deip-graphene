@@ -10,7 +10,9 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_research.hpp>
+#include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
@@ -54,6 +56,12 @@ inline void validate_permlink_0_1(const string& permlink)
             FC_ASSERT(false, "Invalid permlink character: ${ch}", ("ch", std::string(1, ch)));
         }
     }
+}
+
+inline void validate_enum_value_by_range(int val, int first, int last)
+{
+    FC_ASSERT(val >= first && val <= last, "Provided enum value is outside of the range: val = ${enum_val}, first = ${first}, last = ${last}", 
+                                            ("enum_val", val)("first", first)("last", last));
 }
 
 struct strcmp_equal
@@ -1382,50 +1390,13 @@ void create_budget_evaluator::do_apply(const create_budget_operation& op)
 {
     dbs_budget& budget_service = _db.obtain_service<dbs_budget>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
-
+    dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     account_service.check_account_existence(op.owner);
-
-    optional<string> content_permlink;
-    if (!op.content_permlink.empty())
-    {
-        content_permlink = op.content_permlink;
-    }
-
     const auto& owner = account_service.get_account(op.owner);
-
-    budget_service.create_budget(owner, op.balance, op.deadline, content_permlink);
+    discipline_service.check_discipline_existence(op.target_discipline);
+    auto& discipline = discipline_service.get_discipline_by_name(op.target_discipline);
+    budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id);
 }
-
-void close_budget_evaluator::do_apply(const close_budget_operation& op)
-{
-    dbs_budget& budget_service = _db.obtain_service<dbs_budget>();
-
-    const budget_object& budget = budget_service.get_budget(budget_id_type(op.budget_id));
-
-    budget_service.close_budget(budget);
-}
-
-void create_research_evaluator::do_apply(const create_research_operation &op)
-{
-    dbs_research& research_service = _db.obtain_service<dbs_research>();
-    dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    for (const auto& author : op.authors) {
-        account_service.check_account_existence(author);
-    }
-
-    const auto& research = research_service.create(op.name, op.abstract_content, op.permlink, op.research_group_id, op.percent_for_review);
-
-    for (const auto& discipline_id : op.disciplines_ids) {
-        research_discipline_relation_service.create(research.id, discipline_id);
-    }
-
-    //Create research_token_object
-    //Create research_content_object
-}
-
-
 
 void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
 {
@@ -1457,10 +1428,31 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
 
     research_group_service.create_research_group(op.permlink,
                                                  op.desciption,
+                                                 op.funds,
                                                  op.quorum_percent,
                                                  op.tokens_amount);
 }
 
+void make_research_review_evaluator::do_apply(const make_research_review_operation& op)
+{
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    account_service.check_account_existence(op.author);
+    research_service.check_research_existence(op.research_id);
+
+    std::vector<research_id_type> references;
+    int size = op.research_references.size();
+    for (int i = 0; i < size; ++i)
+    {
+        research_service.check_research_existence(op.research_references[i]);
+        references.push_back((research_id_type)op.research_references[i]);
+    }
+
+    flat_set<account_name_type> review_author = {op.author};
+    research_content_service.create(op.research_id, research_content_type::review, op.content, review_author, references, op.research_external_references);
+}
 
 } // namespace chain
 } // namespace deip 

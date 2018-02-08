@@ -31,11 +31,13 @@ public:
 
     /** Get discipline by id
     */
-    const discipline_object& get_discipline(const discipline_id_type id) const;
+    const discipline_object& get_discipline(const discipline_id_type& id) const;
 
     /** Get discipline by name
     */
     const discipline_object& get_discipline_by_name(const discipline_name_type& name) const;
+
+    void check_discipline_existence(const discipline_name_type& name);
 
     /** Get discipline by parent_id
     */

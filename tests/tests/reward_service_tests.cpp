@@ -55,9 +55,7 @@ BOOST_AUTO_TEST_CASE(check_reward_pool_initial_supply_distribution)
     try
     {
         const reward_pool_object& pool = reward_service.get_pool();
-
         asset total_reward_supply = pool.balance;
-        total_reward_supply += budget_service.get_fund_budget().balance;
 
         BOOST_REQUIRE_EQUAL(total_reward_supply, TEST_REWARD_INITIAL_SUPPLY);
     }

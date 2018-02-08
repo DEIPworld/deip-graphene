@@ -444,12 +444,12 @@ struct budget_api_obj
     budget_api_obj(const chain::budget_object& b)
         : id(b.id._id)
         , owner(b.owner)
-        , content_permlink(fc::to_string(b.content_permlink))
+        , target_discipline(b.target_discipline._id)
         , created(b.created)
-        , deadline(b.deadline)
         , balance(b.balance)
         , per_block(b.per_block)
-        , last_allocated_block(b.last_allocated_block)
+        , start_block(b.start_block)
+        , end_block(b.end_block)
     {
     }
 
@@ -461,15 +461,14 @@ struct budget_api_obj
     int64_t id;
 
     account_name_type owner;
-    string content_permlink;
+    int64_t target_discipline;
 
     time_point_sec created;
-    time_point_sec deadline;
 
     asset balance;
     share_type per_block;
-
-    uint32_t last_allocated_block;
+    uint32_t start_block;
+    uint32_t end_block;
 };
 
 struct discipline_api_obj
@@ -492,12 +491,43 @@ struct discipline_api_obj
     share_type votes_in_last_ten_weeks;
 };
 
+struct research_api_obj
+{
+    research_api_obj(const chain::research_object& r)
+        : id(r.id._id)
+        ,  research_group_id(r.research_group_id._id)
+        ,  name(r.name)
+        ,  abstract(r.abstract)
+        ,  permlink(r.permlink)
+        ,  is_finished(r.is_finished)
+        ,  owned_tokens(r.owned_tokens)
+        ,  review_share_in_percent(r.review_share_in_percent)
+        ,  created_at(r.created_at)
+    {}
+
+    // because fc::variant require for temporary object
+    research_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t research_group_id;
+    std::string name;
+    std::string abstract;
+    std::string permlink;
+    bool is_finished;
+    share_type owned_tokens;
+    double review_share_in_percent;
+    time_point_sec created_at;
+};
+
 struct research_content_api_obj
 {
     research_content_api_obj(const chain::research_content_object& rc)
         : id(rc.id._id)
         ,  research_id(rc.research_id._id)
         ,  content_type(rc.type)
+        ,  authors(rc.authors)
         ,  content(rc.content)
         ,  created_at(rc.created_at)
     {}
@@ -509,7 +539,8 @@ struct research_content_api_obj
 
     int64_t id;
     int64_t research_id;
-    int64_t content_type;
+    research_content_type content_type;
+    flat_set<account_name_type> authors;
     std::string content;
     time_point_sec created_at;
 };
@@ -543,7 +574,7 @@ struct proposal_api_obj
         ,  expiration_time(p.expiration_time)
         ,  creator(p.creator)
         ,  data(p.data)
-        ,  quorum_percent(p.quorum_percent)
+        ,  quorum_percent(p.quorum_percent.value)
         ,  current_votes_amount(p.current_votes_amount)
         ,  voted_accounts(p.voted_accounts)
     {}
@@ -594,7 +625,7 @@ struct research_group_token_api_obj
     research_group_token_api_obj(const chain::research_group_token_object& rgt)
         : id(rgt.id._id)
         ,  research_group_id(rgt.research_group_id._id)
-        ,  amount(rgt.amount)
+        ,  amount(rgt.amount.value)
         ,  owner(rgt.owner)
     {}
 
@@ -615,13 +646,9 @@ struct research_group_api_obj
         : id(rg.id._id)
         ,  permlink(rg.permlink)
         ,  description(rg.description)
-        ,  quorum_percent(rg.quorum_percent)
-        ,  total_tokens_amount(rg.total_tokens_amount)
+        ,  quorum_percent(rg.quorum_percent.value)
+        ,  total_tokens_amount(rg.total_tokens_amount.value)
     {
-        for (auto& token : rg.research_group_tokens)
-        {
-            research_group_tokens.push_back(token);
-        }
     }
     // {}
 
@@ -635,8 +662,6 @@ struct research_group_api_obj
     string description;
     uint32_t quorum_percent;
     uint32_t total_tokens_amount;
-
-    vector<research_group_token_object> research_group_tokens;
 };
 
 
@@ -723,12 +748,12 @@ FC_REFLECT_DERIVED( deip::app::dynamic_global_property_api_obj, (deip::chain::dy
 FC_REFLECT( deip::app::budget_api_obj,
              (id)
             (owner)
-            (content_permlink)
+            (target_discipline)
             (created)
-            (deadline)
             (balance)
             (per_block)
-            (last_allocated_block)
+            (start_block)
+            (end_block)
           )
 
 FC_REFLECT( deip::app::discipline_api_obj,
@@ -739,11 +764,24 @@ FC_REFLECT( deip::app::discipline_api_obj,
           )
 
 
+FC_REFLECT( deip::app::research_api_obj,
+            (id)
+            (research_group_id)
+            (name)
+            (abstract)
+            (permlink)
+            (is_finished)
+            (owned_tokens)
+            (review_share_in_percent)
+            (created_at)
+          )
+
 FC_REFLECT( deip::app::research_content_api_obj,
             (id)
             (research_id)
             (content_type)
             (content)
+            (authors)
             (created_at)
           )
 

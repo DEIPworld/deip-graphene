@@ -380,6 +380,13 @@ public:
     discipline_api_obj get_discipline_by_name(const discipline_name_type name) const;
     vector<discipline_api_obj> get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
 
+    ////////////////
+    // Researches //
+    ////////////////
+    research_api_obj get_research_by_id(const research_id_type& id) const;
+    research_api_obj get_research_by_permlink(const string& permlink) const;
+    vector<research_api_obj> get_researches() const;
+
     //////////////////////
     // Research Content //
     //////////////////////
@@ -544,6 +551,11 @@ FC_API(deip::app::database_api,
    (get_discipline)
    (get_discipline_by_name)
    (get_disciplines_by_parent_id)
+
+   // Research
+   (get_research_by_id)
+   (get_research_by_permlink)
+   (get_researches)
 
    // Research Content
    (get_research_content_by_id)

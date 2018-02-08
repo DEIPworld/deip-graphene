@@ -39,8 +39,9 @@ const research_group_object& get_research_group_by_permlink(const fc::string& pe
      * @returns research group object
      */
     const research_group_object& create_research_group(const string& permlink, const string& description,
-                                                       const uint32_t& quorum_percent,
-                                                       const uint32_t& tokens_amount);
+                                                       const share_type funds,
+                                                       const share_type quorum_percent,
+                                                       const share_type tokens_amount);
 
     void change_quorum(const uint32_t quorum_percent, const research_group_id_type& research_group_id);
 
@@ -52,23 +53,29 @@ const research_group_object& get_research_group_by_permlink(const fc::string& pe
 
     research_group_token_refs_type get_research_group_tokens_by_account_name(const account_name_type &account_name) const;
 
-    const research_group_token_object& get_research_group_token_by_account_and_research_id(const account_name_type& account,
+    const research_group_token_object& get_research_group_token_by_account_and_research_group_id(const account_name_type& account,
                                                                 const research_group_id_type& research_group_id) const;
 
     const research_group_token_object& create_research_group_token(const research_group_id_type& research_group_id,
-                                                                   const uint32_t& amount,
-                                                                   const account_name_type& account);
+                                                                   const share_type amount,
+                                                                   const account_name_type& owner);
 
     void remove_token(const account_name_type& account, const research_group_id_type& research_group_id);
 
     void check_research_group_token_existence(const account_name_type& account,
                                         const research_group_id_type& research_group_id) const;
 
-    const research_group_object&  adjust_research_group_token_amount(const research_group_id_type& group_id, const int32_t& delta);
+    const research_group_object&  increase_research_group_total_tokens_amount(const research_group_id_type& research_group_id, const share_type delta);
 
-    void check_member_existence(const account_name_type& account, const research_group_id_type& group_id);
+    const research_group_object&  decrease_research_group_total_tokens_amount(const research_group_id_type& research_group_id, const share_type delta);
 
-    size_t get_members_count(const research_group_id_type& group_id);
+    const research_group_object& increase_research_group_funds(const research_group_id_type& research_group_id, const share_type deips);
+
+    const research_group_object& decrease_research_group_funds(const research_group_id_type& research_group_id, const share_type deips);
+
+    const research_group_token_object& increase_research_group_token_amount(const research_group_id_type& research_group_id,
+                                                                            const account_name_type& account_name,
+                                                                            const share_type amount);
 
 };
 

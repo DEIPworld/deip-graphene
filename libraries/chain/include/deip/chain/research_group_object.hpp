@@ -6,6 +6,7 @@
 #include <fc/shared_string.hpp>
 #include <fc/fixed_string.hpp>
 
+
 namespace deip {
 namespace chain {
 
@@ -23,10 +24,9 @@ public:
 
     fc::string permlink;
     fc::string description;
-
-    uint32_t quorum_percent;
-    uint32_t total_tokens_amount;
-    flat_set<research_group_token_object> research_group_tokens;
+    share_type funds = 0;
+    share_type quorum_percent;
+    share_type total_tokens_amount;
 };
 
 class research_group_token_object : public object<research_group_token_object_type, research_group_token_object>
@@ -41,7 +41,7 @@ public:
 public:
     research_group_token_id_type id;
     research_group_id_type research_group_id;
-    uint32_t amount;
+    share_type amount;
     account_name_type owner;
 };
 
@@ -103,7 +103,7 @@ typedef multi_index_container<research_group_token_object,
 
   
 
-FC_REFLECT(deip::chain::research_group_object, (id)(permlink)(description)(total_tokens_amount))
+FC_REFLECT(deip::chain::research_group_object, (id)(permlink)(description)(funds)(quorum_percent)(total_tokens_amount))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_group_object, deip::chain::research_group_index)
 

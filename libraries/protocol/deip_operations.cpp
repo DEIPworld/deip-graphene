@@ -330,29 +330,8 @@ void delegate_vesting_shares_operation::validate() const
 void create_budget_operation::validate() const
 {
     validate_account_name(owner);
-    validate_permlink(content_permlink);
     FC_ASSERT(is_asset_type(balance, DEIP_SYMBOL), "Balance must be DEIP");
     FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Balance must be positive");
-}
-
-void close_budget_operation::validate() const
-{
-    validate_account_name(owner);
-}
-
-
-void create_research_operation::validate() const
-{
-    for (const account_name_type& author : authors)
-    {
-        validate_account_name(author);
-    }
-    
-    validate_permlink(permlink);
-
-    FC_ASSERT(!name.empty(), "Research name cannot be empty");
-    FC_ASSERT(disciplines_ids.size() > 0, "Research should be linked to at least 1 discipline");
-    FC_ASSERT(percent_for_review >= 5 * DEIP_1_PERCENT && percent_for_review <= 50 * DEIP_1_PERCENT, "Percent for review must be 5-50%");
 }
 
 void proposal_create_operation::validate() const
@@ -374,6 +353,18 @@ void proposal_vote_operation::validate() const
 {
     validate_account_name(voter);
 }
+
+void make_research_review_operation::validate() const
+{
+    validate_account_name(author);
+    FC_ASSERT(!content.empty(), "Research content cannot be empty");
+    for (auto& link : research_external_references)
+    {
+        FC_ASSERT(!link.empty(), "External reference link cannot be empty");
+        FC_ASSERT(fc::is_utf8(link), "External reference is not valid UTF8 string");
+    }
+}
+
 
 }
 } // deip::protocol
