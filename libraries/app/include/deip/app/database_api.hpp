@@ -402,6 +402,10 @@ public:
     vector<proposal_api_obj> get_proposals_by_research_group_id(const research_group_id_type research_group_id) const;
     proposal_api_obj get_proposal(const proposal_id_type id) const;
 
+    ////////////////////
+    // Research group //
+    ///////////////////
+    research_group_api_obj get_research_group_by_id(const research_group_id_type research_group_id) const;
 
     /////////////////////////////////
     // Research group tokens       //
@@ -556,6 +560,9 @@ FC_API(deip::app::database_api,
    // Proposal
    (get_proposals_by_research_group_id)
    (get_proposal)
+
+   // Research group
+   (get_research_group_by_id)
 
    // Research group tokens
    (get_research_group_tokens_by_account)

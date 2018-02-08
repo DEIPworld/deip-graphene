@@ -14,6 +14,10 @@ const research_group_object& dbs_research_group::get_research_group(const resear
     return db_impl().get<research_group_object, by_id>(id);
 }
 
+const research_group_object& dbs_research_group::get_research_group_by_permlink(const fc::shared_string& permlink) const {
+    return db_impl().get<research_group_object, by_permlink>(permlink);
+}
+
 const research_group_object& dbs_research_group::create_research_group(const string& permlink,
                                                                        const string& description,
                                                                        const uint32_t& quorum_percent,

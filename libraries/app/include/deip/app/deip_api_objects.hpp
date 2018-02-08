@@ -609,6 +609,37 @@ struct research_group_token_api_obj
     fc::fixed_string_16 owner;
 };
 
+struct research_group_api_obj
+{
+    research_group_api_obj(const chain::research_group_object& rg)
+        : id(rg.id._id)
+        ,  permlink(fc::to_string(rg.permlink))
+        ,  description(fc::to_string(rg.description))
+        ,  quorum_percent(rg.quorum_percent)
+        ,  total_tokens_amount(rg.total_tokens_amount)
+    {
+        for (auto& token : rg.research_group_tokens)
+        {
+            research_group_tokens.push_back(token);
+        }
+    }
+    // {}
+
+    // because fc::variant require for temporary object
+    research_group_api_obj()
+    {
+    }
+
+    int64_t id;
+    string permlink;
+    string description;
+    uint32_t quorum_percent;
+    uint32_t total_tokens_amount;
+
+    vector<research_group_token_object> research_group_tokens;
+};
+
+
 } // namespace app
 } // namespace deip
 
@@ -750,5 +781,15 @@ FC_REFLECT( deip::app::research_group_token_api_obj,
             (amount)
             (owner)
 )
+
+FC_REFLECT( deip::app::research_group_api_obj,
+            (id)
+            (permlink)
+            (description)
+            (quorum_percent)
+            (total_tokens_amount)
+            // (research_group_tokens)
+)
+
 
 // clang-format on

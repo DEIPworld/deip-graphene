@@ -9,6 +9,8 @@
 #include <deip/chain/deip_object_types.hpp>
 #include <deip/chain/research_group_object.hpp>
 
+#include <fc/shared_string.hpp>
+
 namespace deip {
 namespace chain {
 
@@ -29,6 +31,8 @@ public:
      */
     const research_group_object& get_research_group(const research_group_id_type& id) const;
 
+
+const research_group_object& get_research_group_by_permlink(const fc::shared_string& permlink) const;
     /** Create research_group object.
      *
      * @returns research group object

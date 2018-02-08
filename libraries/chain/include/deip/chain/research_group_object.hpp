@@ -54,6 +54,12 @@ typedef multi_index_container<research_group_object,
                                                                 member<research_group_object, 
                                                                         research_group_id_type, 
                                                                         &research_group_object::id>
+                                                    >,
+                                                    ordered_unique<
+                                                        tag<by_permlink>, 
+                                                                member<research_group_object, 
+                                                                        fc::shared_string, 
+                                                                        &research_group_object::permlink>
                                                     >
                                                 >,
                                                 allocator<research_group_object>>

@@ -2342,5 +2342,15 @@ research_group_token_api_obj database_api::get_research_group_token_by_account_a
     });
 }
 
+research_group_api_obj database_api::get_research_group_by_id(const research_group_id_type research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group &research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
+
+        research_group_service.check_research_group_existence(research_group_id);
+        return research_group_service.get_research_group(research_group_id);
+    });
+}
+
 } // namespace app
 } // namespace deip
