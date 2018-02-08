@@ -386,8 +386,6 @@ public:
     research_content_api_obj get_research_content_by_id(const research_content_id_type& id) const;
     vector<research_content_api_obj> get_all_research_content(const research_id_type& research_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
-    // TODO: move to operation
-    research_content_api_obj create_research_content(const research_id_type& research_id, const research_content_type& type, const research_content_body_type& content) const;
 
     ///////////////////
     // Expert Tokens //
@@ -551,7 +549,6 @@ FC_API(deip::app::database_api,
    (get_research_content_by_id)
    (get_all_research_content)
    (get_research_content_by_type)
-   (create_research_content)
 
    // Expert Tokens
    (get_expert_token)
