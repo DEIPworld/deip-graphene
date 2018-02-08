@@ -115,8 +115,8 @@ struct rebalance_research_group_tokens_data_type : base_proposal_data_type
 struct start_research_token_sale_data_type : base_proposal_data_type
 {
     research_id_type research_id;
-    fc::time_point start_time;
-    fc::time_point end_time;
+    fc::time_point_sec start_time;
+    fc::time_point_sec end_time;
     share_type amount_for_sale;
     share_type soft_cap;
     share_type hard_cap;

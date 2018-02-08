@@ -20,7 +20,7 @@ namespace tests {
 using deip::protocol::account_name_type;
 using deip::protocol::proposal_action_type;
 
-typedef deip::chain::proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token>
+typedef deip::chain::proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_token_sale>
         proposal_vote_evaluator;
 
 class evaluator_mocked : public proposal_vote_evaluator {
@@ -29,8 +29,9 @@ public:
                      dbs_proposal &proposal_service,
                      dbs_research_group &research_group_service,
                      dbs_research &research_service,
-                     dbs_research_token &research_token_service)
-            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service) {
+                     dbs_research_token &research_token_service,
+                     dbs_research_token_sale &research_token_sale_service)
+            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_token_sale_service) {
     }
 
     void execute_proposal(const proposal_object &proposal) {
@@ -45,7 +46,8 @@ public:
                         db.obtain_service<dbs_proposal>(),
                         db.obtain_service<dbs_research_group>(),
                         db.obtain_service<dbs_research>(),
-                        db.obtain_service<dbs_research_token>()) {
+                        db.obtain_service<dbs_research_token>(),
+                        db.obtain_service<dbs_research_token_sale>()) {
     }
 
     ~proposal_vote_evaluator_fixture() {

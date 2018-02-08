@@ -10,8 +10,8 @@ dbs_research_token_sale::dbs_research_token_sale(database& db)
 }
 
 const research_token_sale_object& dbs_research_token_sale::start_research_token_sale(const research_id_type& research_id,
-                                                                                     const fc::time_point start_time,
-                                                                                     const fc::time_point end_time,
+                                                                                     const fc::time_point_sec start_time,
+                                                                                     const fc::time_point_sec end_time,
                                                                                      const deip::chain::share_type balance_tokens,
                                                                                      const deip::chain::share_type soft_cap,
                                                                                      const deip::chain::share_type hard_cap)
@@ -43,7 +43,7 @@ dbs_research_token_sale::get_research_token_sale_by_research_id(const research_i
 }
 
 dbs_research_token_sale::research_token_sale_refs_type
-dbs_research_token_sale::get_research_token_sale_by_end_time(const fc::time_point& end_time) const
+dbs_research_token_sale::get_research_token_sale_by_end_time(const fc::time_point_sec& end_time) const
 {
     research_token_sale_refs_type ret;
 
