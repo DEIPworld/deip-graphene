@@ -30,20 +30,17 @@ const research_token_sale_object& dbs_research_token_sale::start_research_token_
     return new_research_token_sale;
 }
 
-const research_token_sale_object&
-dbs_research_token_sale::get_research_token_sale_by_id(const research_token_sale_id_type& id) const
+const research_token_sale_object& dbs_research_token_sale::get_research_token_sale_by_id(const research_token_sale_id_type& id) const
 {
     return db_impl().get<research_token_sale_object, by_id>(id);
 }
 
-const research_token_sale_object&
-dbs_research_token_sale::get_research_token_sale_by_research_id(const research_id_type& research_id) const
+const research_token_sale_object& dbs_research_token_sale::get_research_token_sale_by_research_id(const research_id_type& research_id) const
 {
     return db_impl().get<research_token_sale_object, by_research_id>(research_id);
 }
 
-dbs_research_token_sale::research_token_sale_refs_type
-dbs_research_token_sale::get_research_token_sale_by_end_time(const fc::time_point& end_time) const
+dbs_research_token_sale::research_token_sale_refs_type dbs_research_token_sale::get_research_token_sale_by_end_time(const fc::time_point& end_time) const
 {
     research_token_sale_refs_type ret;
 
