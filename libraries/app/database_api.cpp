@@ -2352,5 +2352,15 @@ research_group_api_obj database_api::get_research_group_by_id(const research_gro
     });
 }
 
+research_group_api_obj database_api::get_research_group_by_permlink(const string& permlink) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group &research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
+
+        research_group_service.check_research_group_existence_by_permlink(permlink);
+        return research_group_service.get_research_group_by_permlink(permlink);
+    });
+}
+
 } // namespace app
 } // namespace deip

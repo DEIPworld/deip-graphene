@@ -10,6 +10,7 @@
 #include <deip/chain/research_group_object.hpp>
 
 #include <fc/shared_string.hpp>
+#include <fc/fixed_string.hpp>
 
 namespace deip {
 namespace chain {
@@ -32,7 +33,7 @@ public:
     const research_group_object& get_research_group(const research_group_id_type& id) const;
 
 
-const research_group_object& get_research_group_by_permlink(const fc::shared_string& permlink) const;
+const research_group_object& get_research_group_by_permlink(const fc::string& permlink) const;
     /** Create research_group object.
      *
      * @returns research group object
@@ -44,6 +45,8 @@ const research_group_object& get_research_group_by_permlink(const fc::shared_str
     void change_quorum(const uint32_t quorum_percent, const research_group_id_type& research_group_id);
 
     void check_research_group_existence(const research_group_id_type& research_group_id) const;
+
+    void check_research_group_existence_by_permlink(const string& permlink) const;
 
     const research_group_token_object& get_research_group_token_by_id(const research_group_token_id_type& id) const;
 

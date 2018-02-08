@@ -613,8 +613,8 @@ struct research_group_api_obj
 {
     research_group_api_obj(const chain::research_group_object& rg)
         : id(rg.id._id)
-        ,  permlink(fc::to_string(rg.permlink))
-        ,  description(fc::to_string(rg.description))
+        ,  permlink(rg.permlink)
+        ,  description(rg.description)
         ,  quorum_percent(rg.quorum_percent)
         ,  total_tokens_amount(rg.total_tokens_amount)
     {
