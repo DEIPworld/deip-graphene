@@ -159,6 +159,27 @@ BOOST_AUTO_TEST_CASE(clear_expired_proposals)
      FC_LOG_AND_RETHROW()
  }
 
+BOOST_AUTO_TEST_CASE(vote_for_proposal)
+ {
+     try
+     {
+         auto& research_group_service = db.obtain_service<dbs_research_group>();
+         auto& token = research_group_service.get_research_group_token_by_account_and_research_id("alice", 1);
+         auto& proposal = data_service.get_proposal(1);
+         auto weight = token.amount;
+
+         const proposal_vote_object& proposal_vote = data_service.vote_for(1, "alice");         
+
+         BOOST_CHECK(proposal_vote.voter == "alice");
+         BOOST_CHECK(proposal_vote.weight == weight);
+         BOOST_CHECK(proposal_vote.proposal_id == 1);
+         BOOST_CHECK(proposal_vote.research_group_id == 1);
+
+         BOOST_CHECK(proposal.voted_accounts.find("alice") != proposal.voted_accounts.end());
+     }
+     FC_LOG_AND_RETHROW()
+ }
+
 BOOST_AUTO_TEST_CASE(remove_proposal_votes)
  {
      try
