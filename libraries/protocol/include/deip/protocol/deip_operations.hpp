@@ -809,7 +809,18 @@ struct proposal_vote_operation : public base_operation
     }
 };
 
+struct create_research_token_sale_contribution_operation : public base_operation
+{
+    int64_t research_id;
+    account_name_type owner;
+    share_type amount;
 
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
 
 } // namespace protocol
 } // namespace deip
@@ -887,4 +898,5 @@ FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)
 FC_REFLECT( deip::protocol::create_research_content_operation, (research_id)(content)(content_type)(authors))
 FC_REFLECT( deip::protocol::proposal_vote_operation, (voter)(proposal_id)(research_group_id))
 
+FC_REFLECT( deip::protocol::create_research_token_sale_contribution_operation, (owner)(research_id)(amount))
 // clang-format on

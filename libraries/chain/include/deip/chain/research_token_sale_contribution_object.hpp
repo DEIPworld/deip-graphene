@@ -28,13 +28,13 @@ public:
     }
 
     research_token_sale_contribution_id_type id;
-    research_id_type research_id;
+    research_token_sale_id_type research_token_sale_id;
     account_name_type owner;
     share_type amount;
-    fc::time_point contribution_time;
+    fc::time_point_sec contribution_time;
 };
 
-struct by_research_id;
+struct by_research_token_sale_id;
 struct by_owner;
 
 typedef multi_index_container<research_token_sale_contribution_object,
@@ -42,10 +42,10 @@ typedef multi_index_container<research_token_sale_contribution_object,
                 member<research_token_sale_contribution_object,
                         research_token_sale_contribution_id_type,
                         &research_token_sale_contribution_object::id>>,
-                ordered_non_unique<tag<by_research_id>,
+                ordered_non_unique<tag<by_research_token_sale_id>,
                         member<research_token_sale_contribution_object,
-                                research_id_type,
-                                &research_token_sale_contribution_object::research_id>>,
+                                research_token_sale_id_type,
+                                &research_token_sale_contribution_object::research_token_sale_id>>,
                 ordered_non_unique<tag<by_owner>,
                         member<research_token_sale_contribution_object,
                                 account_name_type,
@@ -56,6 +56,6 @@ typedef multi_index_container<research_token_sale_contribution_object,
 } // namespace chain
 } // namespace deip
 
-FC_REFLECT(deip::chain::research_token_sale_contribution_object, (id)(research_id)(owner)(amount)(contribution_time))
+FC_REFLECT(deip::chain::research_token_sale_contribution_object, (id)(research_token_sale_id)(owner)(amount)(contribution_time))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_token_sale_contribution_object, deip::chain::research_token_sale_contribution_index)

@@ -16,6 +16,7 @@
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_research_token_sale_contribution.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1449,6 +1450,22 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
                                                  op.tokens_amount);
 }
 
+void create_research_token_sale_contribution_evaluator::do_apply(const create_research_token_sale_contribution_operation& op)
+{
+    dbs_research_token_sale_contribution& research_token_sale_contribution = _db.obtain_service<dbs_research_token_sale_contribution>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+
+    account_service.check_account_existence(op.owner);
+    research_service.check_research_existence(op.research_id);
+
+    fc::time_point_sec contribution_time = _db.head_block_time();
+
+    research_token_sale_contribution.create_research_token_sale_contributiont(op.research_id,
+                                                                              op.owner,
+                                                                              contribution_time,
+                                                                              op.amount);
+}
 
 } // namespace chain
 } // namespace deip 
