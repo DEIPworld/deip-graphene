@@ -9,10 +9,12 @@
 #include <deip/chain/witness_objects.hpp>
 #include <deip/chain/budget_objects.hpp>
 #include <deip/chain/proposal_object.hpp>
+#include <deip/chain/proposal_vote_object.hpp>
 #include <deip/chain/discipline_object.hpp>
 #include <deip/chain/research_object.hpp>
 #include <deip/chain/research_content_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
+#include <deip/chain/research_group_object.hpp>
 
 #include <deip/tags/tags_plugin.hpp>
 
@@ -22,6 +24,7 @@ namespace deip {
 namespace app {
 
 using namespace deip::chain;
+using research_group_token_refs_type = std::vector<std::reference_wrapper<const research_group_token_object>>;
 
 typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
 typedef chain::block_summary_object block_summary_api_obj;
@@ -562,6 +565,106 @@ struct expert_token_api_obj
     share_type amount;
 };
 
+struct proposal_api_obj
+{
+    proposal_api_obj(const chain::proposal_object& p)
+        : id(p.id._id)
+        ,  action(p.action)
+        ,  creation_time(p.creation_time)
+        ,  expiration_time(p.expiration_time)
+        ,  creator(p.creator)
+        ,  data(p.data)
+        ,  quorum_percent(p.quorum_percent.value)
+        ,  current_votes_amount(p.current_votes_amount)
+        ,  voted_accounts(p.voted_accounts)
+    {}
+
+    // because fc::variant require for temporary object
+    proposal_api_obj()
+    {
+    }
+
+    int64_t id;
+    int8_t action;
+    fc::time_point_sec creation_time;
+    fc::time_point_sec expiration_time;
+    string creator;
+    std::string data;
+    uint16_t quorum_percent;
+    share_type current_votes_amount;
+
+    flat_set<account_name_type> voted_accounts;
+};
+
+struct proposal_vote_api_obj
+{
+    proposal_vote_api_obj(const chain::proposal_vote_object& pv)
+        : id(pv.id._id)
+        ,  proposal_id(pv.proposal_id._id)
+        ,  research_group_id(pv.research_group_id._id)
+        ,  voting_time(pv.voting_time)
+        ,  voter(pv.voter)
+        ,  weight(pv.weight)
+    {}
+
+    // because fc::variant require for temporary object
+    proposal_vote_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t proposal_id;
+    int64_t research_group_id;
+    fc::time_point_sec voting_time;
+    account_name_type voter;
+    share_type weight;
+};
+
+struct research_group_token_api_obj
+{
+    research_group_token_api_obj(const chain::research_group_token_object& rgt)
+        : id(rgt.id._id)
+        ,  research_group_id(rgt.research_group_id._id)
+        ,  amount(rgt.amount.value)
+        ,  owner(rgt.owner)
+    {}
+
+    // because fc::variant require for temporary object
+    research_group_token_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t research_group_id;
+    uint32_t amount;
+    fc::fixed_string_16 owner;
+};
+
+struct research_group_api_obj
+{
+    research_group_api_obj(const chain::research_group_object& rg)
+        : id(rg.id._id)
+        ,  permlink(rg.permlink)
+        ,  description(rg.description)
+        ,  quorum_percent(rg.quorum_percent.value)
+        ,  total_tokens_amount(rg.total_tokens_amount.value)
+    {
+    }
+    // {}
+
+    // because fc::variant require for temporary object
+    research_group_api_obj()
+    {
+    }
+
+    int64_t id;
+    string permlink;
+    string description;
+    uint32_t quorum_percent;
+    uint32_t total_tokens_amount;
+};
+
+
 } // namespace app
 } // namespace deip
 
@@ -688,5 +791,43 @@ FC_REFLECT( deip::app::expert_token_api_obj,
             (discipline_id)
             (amount)
 )
+
+FC_REFLECT( deip::app::proposal_api_obj,
+            (id)
+            (action)
+            (creation_time)
+            (expiration_time)
+            (creator)
+            (data)
+            (quorum_percent)
+            (current_votes_amount)
+            (voted_accounts)
+)
+
+FC_REFLECT( deip::app::proposal_vote_api_obj,
+            (id)
+            (proposal_id)
+            (research_group_id)
+            (voting_time)
+            (voter)
+            (weight)
+)
+
+FC_REFLECT( deip::app::research_group_token_api_obj,
+            (id)
+            (research_group_id)
+            (amount)
+            (owner)
+)
+
+FC_REFLECT( deip::app::research_group_api_obj,
+            (id)
+            (permlink)
+            (description)
+            (quorum_percent)
+            (total_tokens_amount)
+            // (research_group_tokens)
+)
+
 
 // clang-format on

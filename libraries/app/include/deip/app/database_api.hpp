@@ -6,6 +6,7 @@
 #include <deip/chain/deip_objects.hpp>
 #include <deip/chain/deip_object_types.hpp>
 #include <deip/chain/history_object.hpp>
+#include <deip/chain/dbs_proposal.hpp>
 
 #include <deip/tags/tags_plugin.hpp>
 
@@ -398,8 +399,28 @@ public:
     ///////////////////
     expert_token_api_obj get_expert_token(const expert_token_id_type id) const;
     vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_name_type account_name) const;
-    vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
+    vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;                 
 
+    ////////////////////
+    // Proposal       //
+    ///////////////////
+    vector<proposal_api_obj> get_proposals_by_research_group_id(const research_group_id_type research_group_id) const;
+    proposal_api_obj get_proposal(const proposal_id_type id) const;
+
+    ////////////////////
+    // Research group //
+    ///////////////////
+    research_group_api_obj get_research_group_by_id(const research_group_id_type research_group_id) const;
+    research_group_api_obj get_research_group_by_permlink(const string& permlink) const;
+
+    /////////////////////////////////
+    // Research group tokens       //
+    ////////////////////////////////
+    vector<research_group_token_api_obj> get_research_group_tokens_by_account(const account_name_type account) const;
+
+    research_group_token_api_obj
+    get_research_group_token_by_account_and_research_group_id(const account_name_type account,
+                                                              const research_group_id_type research_group_id) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -546,6 +567,17 @@ FC_API(deip::app::database_api,
    (get_expert_tokens_by_account_name)
    (get_expert_tokens_by_discipline_id)
 
+   // Proposal
+   (get_proposals_by_research_group_id)
+   (get_proposal)
+
+   // Research group
+   (get_research_group_by_id)
+   (get_research_group_by_permlink)
+
+   // Research group tokens
+   (get_research_group_tokens_by_account)
+   (get_research_group_token_by_account_and_research_group_id)
 )
 
 // clang-format on
