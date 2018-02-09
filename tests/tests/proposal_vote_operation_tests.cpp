@@ -65,12 +65,12 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test)
     std::vector<account_name_type> accounts = {"alice"};
     setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
     const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":1,\"research_group_token_amount\":50}";
-    proposal_create(1, dbs_proposal::action_t::invite_member, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::invite_member, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
 
     auto& research_group_service = db.obtain_service<dbs_research_group>();
  
-    proposal_vote_operation op;
+    vote_proposal_operation op;
     op.research_group_id = 1;
     op.proposal_id = 1;
     op.voter = "alice";
@@ -98,9 +98,9 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
         setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
 
         const std::string exclude_member_json = "{\"name\":\"bob\",\"research_group_id\": 1}";
-        proposal_create(1, dbs_proposal::action_t::dropout_member, exclude_member_json, "alice", 1, time_point_sec(0xffffffff), 1);
+        create_proposal(1, dbs_proposal::action_t::dropout_member, exclude_member_json, "alice", 1, time_point_sec(0xffffffff), 1);
 
-        proposal_vote_operation op;
+        vote_proposal_operation op;
 
         op.research_group_id = 1;
         op.proposal_id = 1;
@@ -127,9 +127,9 @@ BOOST_AUTO_TEST_CASE(change_quorum_test)
         setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
 
         const std::string change_quorum_json = "{\"quorum_percent\": 80,\"research_group_id\": 1}";
-        proposal_create(1, dbs_proposal::action_t::change_quorum, change_quorum_json, "alice", 1, time_point_sec(0xffffffff), 1);
+        create_proposal(1, dbs_proposal::action_t::change_quorum, change_quorum_json, "alice", 1, time_point_sec(0xffffffff), 1);
 
-        proposal_vote_operation op;
+        vote_proposal_operation op;
 
         op.research_group_id = 1;
         op.proposal_id = 1;
@@ -154,9 +154,9 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
             "\"abstract\":\"abstract\","
             "\"permlink\":\"permlink\","
             "\"review_share_in_percent\": 10}";
-    proposal_create(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
-    proposal_vote_operation op;
+    vote_proposal_operation op;
     op.research_group_id = 1;
     op.proposal_id = 1;
     op.voter = "alice";
@@ -185,9 +185,9 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_execute_test)
             "\"amount\": 5}";
 
     auto& research = research_create(0, "name","abstract", "permlink", 1, 10);
-    proposal_create(1, dbs_proposal::action_t::transfer_research_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::transfer_research_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
-    proposal_vote_operation op;
+    vote_proposal_operation op;
     op.research_group_id = 1;
     op.proposal_id = 1;
     op.voter = "alice";
@@ -215,9 +215,9 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
             "\"account_name\":\"bob\","
             "\"funds\": 250}";
 
-    proposal_create(1, dbs_proposal::action_t::send_funds, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::send_funds, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
-    proposal_vote_operation op;
+    vote_proposal_operation op;
     op.research_group_id = 1;
     op.proposal_id = 1;
     op.voter = "alice";
@@ -247,9 +247,9 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
             "\"account_name\":\"bob\","
             "\"amount\":\"25\""
             "}]}";
-    proposal_create(1, dbs_proposal::action_t::rebalance_research_group_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::rebalance_research_group_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
-    proposal_vote_operation op;
+    vote_proposal_operation op;
     op.research_group_id = 1;
     op.proposal_id = 1;
     op.voter = "alice";
@@ -268,9 +268,9 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
 BOOST_AUTO_TEST_CASE(invite_member_validate_test)
 {
     const std::string json_str = "{\"name\":\"\",\"research_group_id\":1,\"research_group_token_amount\":1000}";
-    proposal_create(1, dbs_proposal::action_t::invite_member, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::invite_member, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
-    proposal_vote_operation op;
+    vote_proposal_operation op;
     op.research_group_id = 1;
     op.proposal_id = 1;
     op.voter = "alice";
@@ -283,9 +283,9 @@ BOOST_AUTO_TEST_CASE(exclude_member_validate_test)
     try
     {
         const std::string exclude_member_json = "{\"name\":\"\",\"research_group_id\": 1}";
-        proposal_create(1, dbs_proposal::action_t::dropout_member, exclude_member_json, "alice", 1, time_point_sec(0xffffffff), 1);
+        create_proposal(1, dbs_proposal::action_t::dropout_member, exclude_member_json, "alice", 1, time_point_sec(0xffffffff), 1);
 
-        proposal_vote_operation op;
+        vote_proposal_operation op;
 
         op.research_group_id = 1;
         op.proposal_id = 1;
@@ -301,9 +301,9 @@ BOOST_AUTO_TEST_CASE(change_quorum_validate_test)
     try
     {
         const std::string change_quorum_json = "{\"quorum_percent\": 1000,\"research_group_id\": 1}";
-        proposal_create(1, dbs_proposal::action_t::change_quorum, change_quorum_json, "alice", 1, time_point_sec(0xffffffff), 1);
+        create_proposal(1, dbs_proposal::action_t::change_quorum, change_quorum_json, "alice", 1, time_point_sec(0xffffffff), 1);
 
-        proposal_vote_operation op;
+        vote_proposal_operation op;
 
         op.research_group_id = 1;
         op.proposal_id = 1;
@@ -321,9 +321,9 @@ BOOST_AUTO_TEST_CASE(start_research_validate_test)
             "\"abstract\":\"\","
             "\"permlink\":\"\","
             "\"review_share_in_percent\": 5}";
-    proposal_create(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
-    proposal_vote_operation op;
+    vote_proposal_operation op;
     op.research_group_id = 1;
     op.proposal_id = 1;
     op.voter = "alice";
@@ -337,9 +337,9 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_validate_test)
             "\"total_price\":500,"
             "\"account_name\":\"bob\","
             "\"amount\": 5}";
-    proposal_create(1, dbs_proposal::action_t::transfer_research_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::transfer_research_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
-    proposal_vote_operation op;
+    vote_proposal_operation op;
     op.research_group_id = 1;
     op.proposal_id = 1;
     op.voter = "alice";
@@ -352,9 +352,9 @@ BOOST_AUTO_TEST_CASE(send_funds_validate_test)
     const std::string json_str = "{\"research_group_id\":1,"
             "\"account_name\":\"bob\","
             "\"funds\": 250}";
-    proposal_create(1, dbs_proposal::action_t::transfer_research_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::transfer_research_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
-    proposal_vote_operation op;
+    vote_proposal_operation op;
     op.research_group_id = 1;
     op.proposal_id = 1;
     op.voter = "alice";
@@ -367,9 +367,9 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_validate_test)
     const std::string json_str = "{\"research_group_id\":1,"
             "\"account_name\":\"bob\","
             "\"funds\": 250}";
-    proposal_create(1, dbs_proposal::action_t::rebalance_research_group_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::rebalance_research_group_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
-    proposal_vote_operation op;
+    vote_proposal_operation op;
     op.research_group_id = 1;
     op.proposal_id = 1;
     op.voter = "alice";
@@ -397,9 +397,9 @@ BOOST_AUTO_TEST_CASE(create_research_material)
 
     const std::string json_str = "{\"research_id\": 1,\"type\": 2,\"content\":\"milestone for Research #1\", \"authors\":[\"alice\"]}";
 
-    proposal_create(1, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
-    proposal_vote_operation op;
+    vote_proposal_operation op;
     op.research_group_id = 1;
     op.proposal_id = 1;
     op.voter = "alice";

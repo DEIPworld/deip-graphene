@@ -407,7 +407,7 @@ const research_group_object& database_fixture::setup_research_group(const uint32
     return research_group;
 }
 
-const proposal_object& database_fixture::proposal_create(const uint32_t id, const dbs_proposal::action_t action,
+const proposal_object& database_fixture::create_proposal(const uint32_t id, const dbs_proposal::action_t action,
                                        const std::string json_data,
                                        const account_name_type& creator,
                                        const research_group_id_type& research_group_id,

@@ -115,7 +115,7 @@ struct database_fixture
                                                       const share_type tokens_amount,
                                                       const vector<account_name_type> &accounts);
 
-    const proposal_object& proposal_create(const uint32_t id,
+    const proposal_object& create_proposal(const uint32_t id,
                                            const dbs_proposal::action_t action,
                                            const string json_data,
                                            const account_name_type& creator,

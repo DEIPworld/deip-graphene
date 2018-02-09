@@ -58,12 +58,6 @@ inline void validate_permlink_0_1(const string& permlink)
     }
 }
 
-inline void validate_enum_value_by_range(int val, int first, int last)
-{
-    FC_ASSERT(val >= first && val <= last, "Provided enum value is outside of the range: val = ${enum_val}, first = ${first}, last = ${last}", 
-                                            ("enum_val", val)("first", first)("last", last));
-}
-
 struct strcmp_equal
 {
     bool operator()(const fc::shared_string& a, const string& b)
@@ -1398,12 +1392,14 @@ void create_budget_evaluator::do_apply(const create_budget_operation& op)
     budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id);
 }
 
-void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
+void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
 {
     dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
+    account_service.check_account_existence(op.creator);
+    research_group_service.check_research_group_token_existence(op.creator, op.research_group_id);
     const uint32_t _lifetime_min = DAYS_TO_SECONDS(1);
     const uint32_t _lifetime_max = DAYS_TO_SECONDS(10);
 
@@ -1413,24 +1409,26 @@ void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
              "Proposal life time is not in range of ${min} - ${max} seconds.",
              ("min", _lifetime_min)("max", _lifetime_max));
 
-    account_service.check_account_existence(op.creator);
-
     auto& research_group = research_group_service.get_research_group(op.research_group_id);
     auto quorum_percent = research_group.quorum_percent;
+    // the range must be checked in create_proposal_operation::validate()
+    deip::protocol::proposal_action_type action = static_cast<deip::protocol::proposal_action_type>(op.action); 
 
     // quorum_percent should be taken from research_group_object
-    proposal_service.create_proposal(op.action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
+    proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
 }
 
 void create_research_group_evaluator::do_apply(const create_research_group_operation& op)
 {
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
-    research_group_service.create_research_group(op.permlink,
+    const research_group_object& research_group = research_group_service.create_research_group(op.permlink,
                                                  op.desciption,
                                                  op.funds,
                                                  op.quorum_percent,
                                                  op.tokens_amount);
+    
+    research_group_service.create_research_group_token(research_group.id, op.tokens_amount, op.creator);
 }
 
 void make_research_review_evaluator::do_apply(const make_research_review_operation& op)

@@ -36,6 +36,7 @@ typedef fc::static_variant<vote_operation,
                            request_account_recovery_operation,
                            recover_account_operation,
                            change_recovery_account_operation,
+
                            escrow_transfer_operation,
                            escrow_dispute_operation,
                            escrow_release_operation,
@@ -46,16 +47,15 @@ typedef fc::static_variant<vote_operation,
                            delegate_vesting_shares_operation,
                            account_create_with_delegation_operation,
 
+                           // DEIP native operations
                            create_budget_operation,
-
-                           proposal_create_operation,
                            create_research_group_operation,
-
+                           create_proposal_operation,
+                           vote_proposal_operation,
                            make_research_review_operation,
 
-                           proposal_vote_operation,
 
-                           /// virtual operations
+                           // virtual operations
                            author_reward_operation,
                            curation_reward_operation,
                            comment_reward_operation,
