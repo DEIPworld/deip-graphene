@@ -37,7 +37,7 @@ class proposal_vote_evaluator_t : public evaluator<OperationType>
 // clang-format on
 {
 public:
-    typedef proposal_vote_operation operation_type;
+    typedef vote_proposal_operation operation_type;
     typedef proposal_vote_evaluator_t<AccountService,
             ProposalService,
             ResearchGroupService,
@@ -118,11 +118,10 @@ public:
         return OperationType::template tag<operation_type>::value;
     }
 
-    void do_apply(const proposal_vote_operation& op)
+    void do_apply(const vote_proposal_operation& op)
     {
         _research_group_service.check_research_group_token_existence(op.voter, op.research_group_id);
         _account_service.check_account_existence(op.voter);
-
         _proposal_service.check_proposal_existence(op.proposal_id);
 
         const proposal_object& proposal = _proposal_service.get_proposal(op.proposal_id);

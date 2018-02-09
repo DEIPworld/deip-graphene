@@ -403,7 +403,7 @@ public:
 
     ////////////////////
     // Proposal       //
-    ///////////////////
+    ////////////////////
     vector<proposal_api_obj> get_proposals_by_research_group_id(const research_group_id_type research_group_id) const;
     proposal_api_obj get_proposal(const proposal_id_type id) const;
 
@@ -415,7 +415,7 @@ public:
 
     /////////////////////////////////
     // Research group tokens       //
-    ////////////////////////////////
+    /////////////////////////////////
     vector<research_group_token_api_obj> get_research_group_tokens_by_account(const account_name_type account) const;
 
     research_group_token_api_obj

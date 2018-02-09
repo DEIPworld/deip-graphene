@@ -22,6 +22,12 @@ inline void validate_permlink(const string& permlink)
     FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
 }
 
+inline void validate_enum_value_by_range(int val, int first, int last)
+{
+    FC_ASSERT(val >= first && val <= last, "Provided enum value is outside of the range: val = ${enum_val}, first = ${first}, last = ${last}", 
+                                            ("enum_val", val)("first", first)("last", last));
+}
+
 struct account_create_operation : public base_operation
 {
     asset fee;
@@ -741,6 +747,9 @@ struct delegate_vesting_shares_operation : public base_operation
     void validate() const;
 };
 
+
+// DEIP native operations
+
 struct create_budget_operation : public base_operation
 {
     account_name_type owner;
@@ -757,24 +766,12 @@ struct create_budget_operation : public base_operation
     }
 };
 
-struct proposal_create_operation : public base_operation
-{
-    account_name_type creator;
-    int64_t research_group_id;
-    string data; ///< must be proper utf8 / JSON string.
-
-    deip::protocol::proposal_action_type action;
-    fc::time_point_sec expiration_time;
-
-    void validate() const;
-};
-
 struct create_research_group_operation : public base_operation
 {
     account_name_type creator;
     string permlink;
     string desciption;
-    share_type funds;
+    uint64_t funds;
     uint32_t quorum_percent;
     uint32_t tokens_amount;
 
@@ -785,11 +782,27 @@ struct create_research_group_operation : public base_operation
     }
 };
 
-struct proposal_vote_operation : public base_operation
+struct create_proposal_operation : public base_operation
+{
+    account_name_type creator;
+    uint32_t research_group_id;
+    string data; ///< must be proper utf8 / JSON string.
+
+    uint16_t action;
+    time_point_sec expiration_time;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(creator);
+    }
+};
+
+struct vote_proposal_operation : public base_operation
 {
     account_name_type voter;
-    int64_t proposal_id;
-    int64_t research_group_id;
+    uint32_t proposal_id;
+    uint32_t research_group_id;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -800,10 +813,10 @@ struct proposal_vote_operation : public base_operation
 
 struct make_research_review_operation : public base_operation
 {
-    int64_t research_id;
-    fc::string content;
     account_name_type author;
-    std::vector<int64_t> research_references;
+    uint32_t research_id;
+    string content;
+    std::vector<uint32_t> research_references;
     std::vector<string> research_external_references;
 
     void validate() const;
@@ -881,13 +894,11 @@ FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recov
 FC_REFLECT( deip::protocol::decline_voting_rights_operation, (account)(decline) )
 FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) )
 
+// DEIP native operations
 FC_REFLECT( deip::protocol::create_budget_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
-
-FC_REFLECT( deip::protocol::proposal_create_operation, (creator)(research_group_id)(data)(action)(expiration_time))
-FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption)(funds) )
-
-FC_REFLECT( deip::protocol::proposal_vote_operation, (voter)(proposal_id)(research_group_id))
-
+FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption)(funds)(quorum_percent)(tokens_amount))
+FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
+FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
 FC_REFLECT( deip::protocol::make_research_review_operation, (research_id)(content)(author)(research_references)(research_external_references))
 
 // clang-format on
