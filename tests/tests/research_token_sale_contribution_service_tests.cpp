@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(create_research_token_sale_contribution)
     try
     {
         auto& research_token_sale_contribution =
-                data_service.create_research_token_sale_contributiont(1, "alice", fc::time_point_sec(0xffffffff), 100);
+                data_service.create_research_token_sale_contribution(1, "alice", fc::time_point_sec(0xffffffff), 100);
 
         BOOST_CHECK(research_token_sale_contribution.research_token_sale_id == 1);
         BOOST_CHECK(research_token_sale_contribution.owner == "alice");
