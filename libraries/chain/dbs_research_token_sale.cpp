@@ -56,6 +56,20 @@ dbs_research_token_sale::research_token_sale_refs_type dbs_research_token_sale::
     return ret;
 }
 
+void dbs_research_token_sale::check_research_token_sale_existence(const research_token_sale_id_type& id) const
+{
+    auto research_token_sale = db_impl().find<research_token_sale_object, by_id>(id);
+    FC_ASSERT(research_token_sale != nullptr, "Research token sale with id \"${1}\" must exist.", ("1", id));
+}
+
+const research_token_sale_object& dbs_research_token_sale::increase_research_token_sale_tokens_amount(const research_token_sale_id_type& id,
+                                                                                                      const share_type amount)
+{
+    const research_token_sale_object& research_token_sale = get_research_token_sale_by_id(id);
+    db_impl().modify(research_token_sale, [&](research_token_sale_object& rts) { rts.total_amount += amount; });
+    return research_token_sale;
+}
+
 } // namespace chain
 } // namespace deip
 

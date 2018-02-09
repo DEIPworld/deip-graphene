@@ -10,10 +10,10 @@ dbs_research_token_sale_contribution::dbs_research_token_sale_contribution(datab
 }
 
 const research_token_sale_contribution_object&
-    dbs_research_token_sale_contribution::create_research_token_sale_contributiont(const research_token_sale_id_type& research_token_sale_id,
-                                                                                   const account_name_type& owner,
-                                                                                   const fc::time_point_sec contribution_time,
-                                                                                   const deip::chain::share_type amount)
+    dbs_research_token_sale_contribution::create_research_token_sale_contribution(const research_token_sale_id_type& research_token_sale_id,
+                                                                                  const account_name_type& owner,
+                                                                                  const fc::time_point_sec contribution_time,
+                                                                                  const deip::chain::share_type amount)
 {
     const auto& new_research_token_sale_contribution
             = db_impl().create<research_token_sale_contribution_object>([&](research_token_sale_contribution_object& research_token_sale_contribution) {
