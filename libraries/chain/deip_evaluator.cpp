@@ -1403,7 +1403,9 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     const uint32_t _lifetime_min = DAYS_TO_SECONDS(1);
     const uint32_t _lifetime_max = DAYS_TO_SECONDS(10);
 
-    auto sec_till_expiration = op.expiration_time.sec_since_epoch() - fc::time_point::now().sec_since_epoch();
+    const auto& props = _db.get_dynamic_global_properties();
+
+    auto sec_till_expiration = op.expiration_time.sec_since_epoch() - props.time.sec_since_epoch();
 
     FC_ASSERT(sec_till_expiration <= _lifetime_max && sec_till_expiration >= _lifetime_min,
              "Proposal life time is not in range of ${min} - ${max} seconds. The actual value was ${actual}",
