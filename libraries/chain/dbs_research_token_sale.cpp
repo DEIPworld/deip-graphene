@@ -10,8 +10,8 @@ dbs_research_token_sale::dbs_research_token_sale(database& db)
 }
 
 const research_token_sale_object& dbs_research_token_sale::start_research_token_sale(const research_id_type& research_id,
-                                                                                     const fc::time_point start_time,
-                                                                                     const fc::time_point end_time,
+                                                                                     const fc::time_point_sec start_time,
+                                                                                     const fc::time_point_sec end_time,
                                                                                      const deip::chain::share_type balance_tokens,
                                                                                      const deip::chain::share_type soft_cap,
                                                                                      const deip::chain::share_type hard_cap)
@@ -68,6 +68,64 @@ const research_token_sale_object& dbs_research_token_sale::increase_research_tok
     const research_token_sale_object& research_token_sale = get_research_token_sale_by_id(id);
     db_impl().modify(research_token_sale, [&](research_token_sale_object& rts) { rts.total_amount += amount; });
     return research_token_sale;
+}
+
+
+const research_token_sale_contribution_object&
+    dbs_research_token_sale::create_research_token_sale_contribution(const research_token_sale_id_type& research_token_sale_id,
+                                                                                  const account_name_type& owner,
+                                                                                  const fc::time_point_sec contribution_time,
+                                                                                  const deip::chain::share_type amount)
+{
+    const auto& new_research_token_sale_contribution
+            = db_impl().create<research_token_sale_contribution_object>([&](research_token_sale_contribution_object& research_token_sale_contribution) {
+                research_token_sale_contribution.research_token_sale_id = research_token_sale_id;
+                research_token_sale_contribution.owner = owner;
+                research_token_sale_contribution.contribution_time = contribution_time;
+                research_token_sale_contribution.amount = amount;
+            });
+
+    return new_research_token_sale_contribution;
+}
+
+const research_token_sale_contribution_object&
+    dbs_research_token_sale::get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type& id) const
+{
+    return db_impl().get<research_token_sale_contribution_object, by_id>(id);
+}
+
+dbs_research_token_sale::research_token_sale_contribution_refs_type
+    dbs_research_token_sale::get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type& research_token_sale_id) const
+{
+    research_token_sale_contribution_refs_type ret;
+
+    auto it_pair = db_impl().get_index<research_token_sale_contribution_index>().indicies().get<by_research_token_sale_id>().equal_range(research_token_sale_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_research_token_sale::research_token_sale_contribution_refs_type
+    dbs_research_token_sale::get_research_token_sale_contributions_by_account_name(const account_name_type& owner) const
+{
+    research_token_sale_contribution_refs_type ret;
+
+    auto it_pair = db_impl().get_index<research_token_sale_contribution_index>().indicies().get<by_owner>().equal_range(owner);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
 }
 
 } // namespace chain

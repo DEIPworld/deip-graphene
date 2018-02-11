@@ -53,7 +53,7 @@ typedef fc::static_variant<vote_operation,
                            create_research_group_operation,
 
                            proposal_vote_operation,
-                           create_research_token_sale_contribution_operation,
+                           contribute_to_token_sale_operation,
 
                            /// virtual operations
                            author_reward_operation,

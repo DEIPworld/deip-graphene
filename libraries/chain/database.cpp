@@ -24,7 +24,6 @@
 #include <deip/chain/research_object.hpp>
 #include <deip/chain/research_content_object.hpp>
 #include <deip/chain/research_token_sale_object.hpp>
-#include <deip/chain/research_token_sale_contribution_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
 #include <deip/chain/research_token_object.hpp>
 #include <deip/chain/proposal_vote_evaluator.hpp>
@@ -1640,7 +1639,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_research_token_sale_contribution_evaluator>();
+    _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
 
     // clang-format off
     _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>(

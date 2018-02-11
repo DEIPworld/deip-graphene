@@ -17,7 +17,6 @@
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_research_token_sale.hpp>
-#include <deip/chain/dbs_research_token_sale_contribution.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1451,9 +1450,9 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
                                                  op.tokens_amount);
 }
 
-void create_research_token_sale_contribution_evaluator::do_apply(const create_research_token_sale_contribution_operation& op)
+void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)
 {
-    dbs_research_token_sale_contribution &research_token_sale_contribution_service = _db.obtain_service<dbs_research_token_sale_contribution>();
+    dbs_research_token_sale &research_token_sale_contribution_service = _db.obtain_service<dbs_research_token_sale>();
     dbs_account &account_service = _db.obtain_service<dbs_account>();
     dbs_research_token_sale &research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
 
