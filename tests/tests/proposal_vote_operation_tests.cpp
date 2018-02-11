@@ -376,6 +376,41 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_validate_test)
     BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
 }
 
+BOOST_AUTO_TEST_CASE(research_token_sale_execute_test)
+{
+    try
+    {
+    ACTORS((alice))
+    std::vector<account_name_type> accounts = {"alice"};
+    setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);     
+    const std::string json_str = "{\"research_id\":0,\"amount_for_sale\":90,\"start_time\":\"2020-02-08T16:00:54\",\"end_time\":\"2020-03-08T15:02:31\",\"soft_cap\":60,\"hard_cap\":90}";
+
+    proposal_create(1, dbs_proposal::action_t::start_research_token_sale, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    
+    auto& research = research_create("name","abstract", "permlink", 1, 10);
+    auto& research_token_sale_service = db.obtain_service<dbs_research_token_sale>();
+
+    proposal_vote_operation op;
+    op.research_group_id = 1;
+    op.proposal_id = 1;
+    op.voter = "alice";
+
+    evaluator.do_apply(op);
+
+    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_research_id(0);
+
+    BOOST_CHECK(research_token_sale.research_id == 0);
+    BOOST_CHECK(research_token_sale.start_time == fc::time_point_sec(1581177654));
+    BOOST_CHECK(research_token_sale.end_time == fc::time_point_sec(1583679751));
+    BOOST_CHECK(research_token_sale.total_amount == 0);
+    BOOST_CHECK(research_token_sale.balance_tokens == 90);
+    BOOST_CHECK(research_token_sale.soft_cap == 60);
+    BOOST_CHECK(research_token_sale.hard_cap == 90);
+    BOOST_CHECK(research.owned_tokens == 9910);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 }

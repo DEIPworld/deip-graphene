@@ -122,7 +122,13 @@ struct start_research_token_sale_data_type : base_proposal_data_type
     share_type hard_cap;
 
     void validate() const
-    {   
+    {
+        FC_ASSERT(amount_for_sale > 0, "Research tokens for sale amount should be > 0");
+        FC_ASSERT(soft_cap > 0, "Soft cap should be > 0");
+        FC_ASSERT(hard_cap > 0, "Hard cap should be > 0");
+        FC_ASSERT(hard_cap > soft_cap, "Hard cap should be greater than soft cap");
+        FC_ASSERT(start_time >= fc::time_point::now(), "Start time cannot be at the past");
+        FC_ASSERT(end_time > start_time, "End time should be greater than start time");
     }
 };
 

@@ -161,13 +161,13 @@ enum proposal_action_type
     invite_member,
     dropout_member,
     send_funds,
-    transfer_research_tokens,
-    start_research_token_sale,
+    transfer_research_tokens,    
     rebalance_research_group_tokens,
     change_quorum,
     change_research_review_share_percent,
     offer_research_tokens,
-    accept_research_tokens_offer
+    accept_research_tokens_offer,
+    start_research_token_sale
 };
 
 enum proposal_life_time_type
@@ -201,13 +201,13 @@ FC_REFLECT_ENUM(deip::protocol::proposal_action_type,   (start_research)
                                                         (invite_member)
                                                         (dropout_member)
                                                         (send_funds)
-                                                        (transfer_research_tokens)
-                                                        (start_research_token_sale)
+                                                        (transfer_research_tokens)                                                        
                                                         (rebalance_research_group_tokens)
                                                         (change_quorum)
                                                         (change_research_review_share_percent)
                                                         (offer_research_tokens)
-                                                        (accept_research_tokens_offer))
+                                                        (accept_research_tokens_offer)
+                                                        (start_research_token_sale))
 
 FC_REFLECT_ENUM(deip::protocol::proposal_life_time_type, (day)(week))
 
