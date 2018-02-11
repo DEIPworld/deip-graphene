@@ -1451,7 +1451,8 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
                                                  op.tokens_amount);
 }
 
-void create_research_token_sale_contribution_evaluator::do_apply(const create_research_token_sale_contribution_operation& op) {
+void create_research_token_sale_contribution_evaluator::do_apply(const create_research_token_sale_contribution_operation& op)
+{
     dbs_research_token_sale_contribution &research_token_sale_contribution_service = _db.obtain_service<dbs_research_token_sale_contribution>();
     dbs_account &account_service = _db.obtain_service<dbs_account>();
     dbs_research_token_sale &research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();

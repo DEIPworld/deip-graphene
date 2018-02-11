@@ -33,7 +33,7 @@ const research_token_sale_contribution_object&
 }
 
 dbs_research_token_sale_contribution::research_token_sale_contribution_refs_type
-    dbs_research_token_sale_contribution::get_research_token_sale_contribution_by_research_token_sale_id(const research_token_sale_id_type& research_token_sale_id) const
+    dbs_research_token_sale_contribution::get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type& research_token_sale_id) const
 {
     research_token_sale_contribution_refs_type ret;
 
@@ -50,7 +50,7 @@ dbs_research_token_sale_contribution::research_token_sale_contribution_refs_type
 }
 
 dbs_research_token_sale_contribution::research_token_sale_contribution_refs_type
-    dbs_research_token_sale_contribution::get_research_token_sale_contribution_by_account_name(const account_name_type& owner) const
+    dbs_research_token_sale_contribution::get_research_token_sale_contributions_by_account_name(const account_name_type& owner) const
 {
     research_token_sale_contribution_refs_type ret;
 

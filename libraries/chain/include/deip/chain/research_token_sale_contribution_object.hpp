@@ -1,24 +1,10 @@
 #pragma once
-#include <fc/fixed_string.hpp>
-#include <fc/shared_string.hpp>
-
-#include <deip/protocol/authority.hpp>
-#include <deip/protocol/deip_operations.hpp>
-
 #include <deip/chain/deip_object_types.hpp>
-#include <deip/chain/shared_authority.hpp>
-
-#include <boost/multi_index/composite_key.hpp>
-#include <boost/multi_index/hashed_index.hpp>
-
-#include <numeric>
-
-#include <vector>
 
 namespace deip {
 namespace chain {
 
-class research_token_sale_contribution_object : public object<research_token_sale_object_type, research_token_sale_contribution_object>
+class research_token_sale_contribution_object : public object<research_token_sale_contribution_object_type, research_token_sale_contribution_object>
 {
     research_token_sale_contribution_object() = delete;
 public:

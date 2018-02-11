@@ -31,9 +31,10 @@ public:
     const research_token_sale_contribution_object& get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type& id) const;
 
     research_token_sale_contribution_refs_type
-        get_research_token_sale_contribution_by_research_token_sale_id(const research_token_sale_id_type& research_token_sale_id) const;
+        get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type& research_token_sale_id) const;
 
-    research_token_sale_contribution_refs_type get_research_token_sale_contribution_by_account_name(const account_name_type& owner) const;
+    research_token_sale_contribution_refs_type get_research_token_sale_contributions_by_account_name(const account_name_type& owner) const;
+
 };
 
 } // namespace chain

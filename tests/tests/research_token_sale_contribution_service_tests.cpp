@@ -63,6 +63,50 @@ BOOST_AUTO_TEST_CASE(create_research_token_sale_contribution)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_id_test)
+{
+    try
+    {
+        create_research_token_sale_contributions();
+
+        auto& research_token_sale_contribution = data_service.get_research_token_sale_contribution_by_id(1);
+
+        BOOST_CHECK(research_token_sale_contribution.owner == "alice");
+        BOOST_CHECK(research_token_sale_contribution.amount == 100);
+        BOOST_CHECK(research_token_sale_contribution.research_token_sale_id == 1);
+
+        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_id(4), boost::exception);
+        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_id(0), boost::exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_research_token_sale_id_test)
+{
+    try
+    {
+        create_research_token_sale_contributions();
+
+        auto research_token_sale_contribution = data_service.get_research_token_sale_contributions_by_research_token_sale_id(1);
+
+        BOOST_CHECK(research_token_sale_contribution.size() == 2);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_account_name_test)
+{
+    try
+    {
+        create_research_token_sale_contributions();
+
+        auto research_token_sale_contribution = data_service.get_research_token_sale_contributions_by_account_name("bob");
+
+        BOOST_CHECK(research_token_sale_contribution.size() == 2);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace chain
