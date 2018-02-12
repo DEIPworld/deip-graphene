@@ -1584,6 +1584,38 @@ void database::process_decline_voting_rights()
     }
 }
 
+void database::process_research_token_sales()
+{
+    dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
+
+    auto research_token_sales = research_token_sale_service.get_all_research_token_sales();
+
+    for (const auto token_sale : research_token_sales)
+    {
+        if (token_sale.get().end_time >= head_block_time())
+        {
+            if (token_sale.get().total_amount < token_sale.get().soft_cap)
+                //return all contributions
+                //delete token_sale
+            else if (token_sale.get().total_amount >= token_sale.get().soft_cap)
+                //research tokens distribution
+                //delete token_sale
+        }
+    }
+}
+
+void database::distribute_research_tokens(const uint32_t research_token_sale_id)
+{
+    dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
+
+    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(research_token_sale_id);
+    auto research_token_sale_contributions =
+            research_token_sale_service.get_research_token_sale_contributions_by_research_token_sale_id(research_token_sale_id);
+
+
+
+}
+
 time_point_sec database::head_block_time() const
 {
     return get_dynamic_global_properties().time;

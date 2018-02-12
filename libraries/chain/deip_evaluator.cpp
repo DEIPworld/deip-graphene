@@ -1452,22 +1452,35 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
 
 void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)
 {
-    dbs_research_token_sale &research_token_sale_contribution_service = _db.obtain_service<dbs_research_token_sale>();
     dbs_account &account_service = _db.obtain_service<dbs_account>();
     dbs_research_token_sale &research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
 
     account_service.check_account_existence(op.owner);
+
+    auto& account = account_service.get_account(op.owner);
+    FC_ASSERT(account.balance.amount < op.amount, "Not enough funds to contribute");
+
     research_token_sale_service.check_research_token_sale_existence(op.research_token_sale_id);
 
     fc::time_point_sec contribution_time = _db.head_block_time();
 
-    research_token_sale_contribution_service.create_research_token_sale_contribution(op.research_token_sale_id,
+    research_token_sale_service.create_research_token_sale_contribution(op.research_token_sale_id,
                                                                                      op.owner,
                                                                                      contribution_time,
                                                                                      op.amount);
 
-    account_service.decrease_balance(account_service.get_account(op.owner), asset(op.amount));
-    research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, op.amount);
+    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(op.research_token_sale_id);
+
+    if (research_token_sale.total_amount + op.amount > research_token_sale.hard_cap){
+        share_type difference = research_token_sale.hard_cap - research_token_sale.total_amount;
+        account_service.decrease_balance(account_service.get_account(op.owner), asset(difference));
+        research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, difference);
+        //distribute research_tokens
+    }
+    else {
+        account_service.decrease_balance(account_service.get_account(op.owner), asset(op.amount));
+        research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, op.amount);
+    }
 }
 
 } // namespace chain
