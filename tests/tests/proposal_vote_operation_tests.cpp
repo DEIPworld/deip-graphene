@@ -411,6 +411,30 @@ BOOST_AUTO_TEST_CASE(research_token_sale_execute_test)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(research_token_sale_validate_test)
+{
+    try
+    {
+    ACTORS((alice))
+    std::vector<account_name_type> accounts = {"alice"};
+    setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);  
+
+    // TODO: Add check for every value 
+    const std::string json_str = "{\"research_id\":0,\"amount_for_sale\":9999999999,\"start_time\":\"2020-02-08T15:02:31\",\"end_time\":\"2020-01-08T15:02:31\",\"soft_cap\":9999999999,\"hard_cap\":9999994444}";
+
+    proposal_create(1, dbs_proposal::action_t::start_research_token_sale, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    research_create("name","abstract", "permlink", 1, 10);
+    
+    proposal_vote_operation op;
+    op.research_group_id = 1;
+    op.proposal_id = 1;
+    op.voter = "alice";
+
+    BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 }
