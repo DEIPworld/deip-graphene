@@ -23,6 +23,7 @@
 #include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
+#include <deip/chain/dbs_research_token_sale.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
@@ -2307,6 +2308,92 @@ vector<expert_token_api_obj> database_api::get_expert_tokens_by_discipline_id(co
     });
 }
 
+research_token_sale_api_obj
+database_api::get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_token_sale& research_token_sale_service
+            = my->_db.obtain_service<chain::dbs_research_token_sale>();
+        return research_token_sale_service.get_research_token_sale_by_id(research_token_sale_id);
+    });
+}
+
+research_token_sale_api_obj
+database_api::get_research_token_sale_by_research_id(const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_token_sale& research_token_sale_service
+            = my->_db.obtain_service<chain::dbs_research_token_sale>();
+        return research_token_sale_service.get_research_token_sale_by_research_id(research_id);
+    });
+}
+
+vector<research_token_sale_api_obj>
+database_api::get_research_token_sale_by_end_time(const time_point_sec end_time) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_token_sale_api_obj> results;
+        chain::dbs_research_token_sale& research_token_sale_service
+            = my->_db.obtain_service<chain::dbs_research_token_sale>();
+
+        auto research_token_sales = research_token_sale_service.get_research_token_sale_by_end_time(end_time);
+
+        for (const chain::research_token_sale_object& research_token_sale : research_token_sales)
+        {
+            results.push_back(research_token_sale);
+        }
+
+        return results;
+    });
+}
+
+research_token_sale_contribution_api_obj
+database_api::get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type research_token_sale_contribution_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_token_sale& research_token_sale_service
+            = my->_db.obtain_service<chain::dbs_research_token_sale>();
+        return research_token_sale_service.get_research_token_sale_contribution_by_id(research_token_sale_contribution_id);
+    });
+}
+
+vector<research_token_sale_contribution_api_obj>
+database_api::get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type research_token_sale_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_token_sale_contribution_api_obj> results;
+        chain::dbs_research_token_sale& research_token_sale_service
+            = my->_db.obtain_service<chain::dbs_research_token_sale>();
+
+        auto research_token_sale_contributions = research_token_sale_service.get_research_token_sale_contributions_by_research_token_sale_id(research_token_sale_id);
+
+        for (const chain::research_token_sale_contribution_object& research_token_sale_contribution : research_token_sale_contributions)
+        {
+            results.push_back(research_token_sale_contribution);
+        }
+
+        return results;
+    });
+}
+
+vector<research_token_sale_contribution_api_obj>
+database_api::get_research_token_sale_contributions_by_account_name(const account_name_type owner) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_token_sale_contribution_api_obj> results;
+        chain::dbs_research_token_sale& research_token_sale_service
+            = my->_db.obtain_service<chain::dbs_research_token_sale>();
+
+        auto research_token_sale_contributions = research_token_sale_service.get_research_token_sale_contributions_by_account_name(owner);
+
+        for (const chain::research_token_sale_contribution_object& research_token_sale_contribution : research_token_sale_contributions)
+        {
+            results.push_back(research_token_sale_contribution);
+        }
+
+        return results;
+    });
+}
 
 } // namespace app
 } // namespace deip
