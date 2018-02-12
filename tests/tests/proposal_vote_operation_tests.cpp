@@ -7,6 +7,7 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_research.hpp>
+#include <deip/chain/dbs_research_token_sale.hpp>
 #include <deip/chain/proposal_vote_evaluator.hpp>
 #include <deip/chain/deip_objects.hpp>
 

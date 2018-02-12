@@ -16,6 +16,7 @@
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_research_token_sale.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1449,6 +1450,25 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
                                                  op.tokens_amount);
 }
 
+void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)
+{
+    dbs_research_token_sale &research_token_sale_contribution_service = _db.obtain_service<dbs_research_token_sale>();
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_research_token_sale &research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
+
+    account_service.check_account_existence(op.owner);
+    research_token_sale_service.check_research_token_sale_existence(op.research_token_sale_id);
+
+    fc::time_point_sec contribution_time = _db.head_block_time();
+
+    research_token_sale_contribution_service.create_research_token_sale_contribution(op.research_token_sale_id,
+                                                                                     op.owner,
+                                                                                     contribution_time,
+                                                                                     op.amount);
+
+    account_service.decrease_balance(account_service.get_account(op.owner), asset(op.amount));
+    research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, op.amount);
+}
 
 } // namespace chain
 } // namespace deip 

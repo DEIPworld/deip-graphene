@@ -365,5 +365,11 @@ void proposal_vote_operation::validate() const
     validate_account_name(voter);
 }
 
+void contribute_to_token_sale_operation::validate() const
+{
+    validate_account_name(owner);
+    FC_ASSERT(amount > 0, "Amount must be bigger than 0");
+}
+
 }
 } // deip::protocol

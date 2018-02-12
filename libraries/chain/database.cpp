@@ -1639,6 +1639,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
+    _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
 
     // clang-format off
     _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>(
@@ -1705,6 +1706,7 @@ void database::initialize_indexes()
     add_index<expert_token_index>();
     add_index<research_token_index>();
     add_index<research_token_sale_index>();
+    add_index<research_token_sale_contribution_index>();
 
     _plugin_index_signal();
 }

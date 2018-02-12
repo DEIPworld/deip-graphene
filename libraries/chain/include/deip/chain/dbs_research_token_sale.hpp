@@ -31,8 +31,29 @@ public:
                                                                 const deip::chain::share_type hard_cap);
 
     const research_token_sale_object& get_research_token_sale_by_id(const research_token_sale_id_type& id) const;
+
     const research_token_sale_object& get_research_token_sale_by_research_id(const research_id_type& research_id) const;
     research_token_sale_refs_type get_research_token_sale_by_end_time(const fc::time_point_sec& end_time) const;
+
+    void check_research_token_sale_existence(const research_token_sale_id_type& id) const;
+
+    const research_token_sale_object& increase_research_token_sale_tokens_amount(const research_token_sale_id_type& id, const share_type amount);
+
+    //research_token_sale_contribution
+
+    using research_token_sale_contribution_refs_type = std::vector<std::reference_wrapper<const research_token_sale_contribution_object>>;
+
+    const research_token_sale_contribution_object& create_research_token_sale_contribution(const research_token_sale_id_type& research_token_sale_id,
+                                                                                           const account_name_type& owner,
+                                                                                           const fc::time_point_sec contribution_time,
+                                                                                           const deip::chain::share_type amount);
+
+    const research_token_sale_contribution_object& get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type& id) const;
+
+    research_token_sale_contribution_refs_type
+        get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type& research_token_sale_id) const;
+
+    research_token_sale_contribution_refs_type get_research_token_sale_contributions_by_account_name(const account_name_type& owner) const;
 };
 
 } // namespace chain
