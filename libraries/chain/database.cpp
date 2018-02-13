@@ -1599,7 +1599,7 @@ void database::distribute_research_tokens(const research_token_sale_id_type rese
 
     while (it != it_end)
     {
-        auto transfer_amount = (it->amount / research_token_sale.total_amount) * research_token_sale.balance_tokens;
+        auto transfer_amount = (it->amount * research_token_sale.balance_tokens)/ research_token_sale.total_amount ;
         research_token_service.create_research_token(it->owner, transfer_amount, research_token_sale.research_id);
         remove(*it);
         it = idx.first;
