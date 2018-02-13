@@ -30,6 +30,22 @@ const research_token_sale_object& dbs_research_token_sale::start_research_token_
     return new_research_token_sale;
 }
 
+dbs_research_token_sale::research_token_sale_refs_type dbs_research_token_sale::get_all_research_token_sales() const
+{
+    research_token_sale_refs_type ret;
+
+    auto idx = db_impl().get_index<research_token_sale_index>().indicies();
+    auto it = idx.cbegin();
+    const auto it_end = idx.cend();
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
 const research_token_sale_object& dbs_research_token_sale::get_research_token_sale_by_id(const research_token_sale_id_type& id) const
 {
     return db_impl().get<research_token_sale_object, by_id>(id);

@@ -30,6 +30,8 @@ public:
                                                                 const deip::chain::share_type soft_cap,
                                                                 const deip::chain::share_type hard_cap);
 
+    research_token_sale_refs_type get_all_research_token_sales() const;
+
     const research_token_sale_object& get_research_token_sale_by_id(const research_token_sale_id_type& id) const;
 
     const research_token_sale_object& get_research_token_sale_by_research_id(const research_id_type& research_id) const;
