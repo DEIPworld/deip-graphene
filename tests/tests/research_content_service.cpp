@@ -40,6 +40,8 @@ public:
             rc.content = "milestone for Research #1";
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
+            rc.research_references = {1};
+            rc.research_external_references = {"one", "two", "four"};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -49,6 +51,8 @@ public:
             rc.content = "review for Research #1";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
+            rc.research_references = {1};
+            rc.research_external_references = {"one", "four"};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -58,6 +62,8 @@ public:
             rc.content = "final result for Research #1";
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
+            rc.research_references = {1};
+            rc.research_external_references = {"one", "two", "three"};
         });
 
         db.create<research_object>([&](research_object& r) {
@@ -79,6 +85,8 @@ public:
             rc.content = "announcement for Research #2";
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
+            rc.research_references = {1};
+            rc.research_external_references = {"one", "two"};
         });
     }
 
@@ -100,6 +108,8 @@ BOOST_AUTO_TEST_CASE(get_content_by_id)
         BOOST_CHECK(announcement.content == "announcement for Research #2");
         BOOST_CHECK(announcement.authors.size() == 1);
         BOOST_CHECK(announcement.authors.begin()[0] == "john");
+        BOOST_CHECK(announcement.research_references.size() == 1);
+        BOOST_CHECK(announcement.research_external_references.size() == 2);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -128,7 +138,10 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                     content.type == research_content_type::milestone &&
                     content.content == "milestone for Research #1" &&
                     content.authors.size() == 2 && 
-                    content.authors.begin()[0] == "alice" && content.authors.begin()[1] == "bob";
+                    content.authors.begin()[0] == "alice" && content.authors.begin()[1] == "bob" &&
+                    content.research_references.size() == 1 &&
+                    content.research_external_references.size() == 3;
+
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
@@ -136,7 +149,9 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                     content.type == research_content_type::review && 
                     content.content == "review for Research #1" &&
                     content.authors.size() == 1 && 
-                    content.authors.begin()[0] == "alice";
+                    content.authors.begin()[0] == "alice" &&
+                    content.research_references.size() == 1 &&
+                    content.research_external_references.size() == 2;
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
@@ -144,7 +159,9 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                     content.type == research_content_type::final_result && 
                     content.content == "final result for Research #1" &&
                     content.authors.size() == 1 && 
-                    content.authors.begin()[0] == "bob";
+                    content.authors.begin()[0] == "bob" &&
+                    content.research_references.size() == 1 &&
+                    content.research_external_references.size() == 3;
         }));
     }
     FC_LOG_AND_RETHROW()
@@ -176,7 +193,9 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
                     content.type == research_content_type::review && 
                     content.content == "review for Research #1" && 
                     content.authors.size() == 1 && 
-                    content.authors.begin()[0] == "alice";
+                    content.authors.begin()[0] == "alice" &&
+                    content.research_references.size() == 1 &&
+                    content.research_external_references.size() == 2;
         }));
     }
     FC_LOG_AND_RETHROW()
@@ -202,13 +221,18 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         std::string content = "milestone for Research #2";
 
         flat_set<account_name_type> authors = {"sam"};
+        std::vector<research_id_type> references = {1, 2, 3};
+        std::vector<string> external_references = {"one", "two", "three"};
 
-        auto milestone = data_service.create(2, type, content, authors);
+        auto milestone = data_service.create(2, type, content, authors, references, external_references);
         BOOST_CHECK(milestone.research_id == 2);
         BOOST_CHECK(milestone.type == research_content_type::milestone);
         BOOST_CHECK(milestone.content == "milestone for Research #2");
         BOOST_CHECK(milestone.authors.size() == 1);
         BOOST_CHECK(milestone.authors.begin()[0] == "sam");
+        BOOST_CHECK(milestone.research_references.size() == 3);
+        BOOST_CHECK(milestone.research_external_references.size() == 3);
+
 
 
         auto db_milestone = db.get<research_content_object, by_id>(milestone.id);
@@ -216,7 +240,10 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         BOOST_CHECK(db_milestone.type == research_content_type::milestone);
         BOOST_CHECK(db_milestone.content == "milestone for Research #2"); 
         BOOST_CHECK(db_milestone.authors.size() == 1);
-        BOOST_CHECK(db_milestone.authors.begin()[0] == "sam");            
+        BOOST_CHECK(db_milestone.authors.begin()[0] == "sam");
+        BOOST_CHECK(db_milestone.research_references.size() == 3);
+        BOOST_CHECK(db_milestone.research_external_references.size() == 3);
+
     }
     FC_LOG_AND_RETHROW()
 }

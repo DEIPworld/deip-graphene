@@ -37,9 +37,9 @@ DEFINE_EVALUATOR(change_recovery_account)
 DEFINE_EVALUATOR(decline_voting_rights)
 DEFINE_EVALUATOR(delegate_vesting_shares)
 DEFINE_EVALUATOR(create_budget)
-DEFINE_EVALUATOR(create_research_content)
-DEFINE_EVALUATOR(proposal_create)
+DEFINE_EVALUATOR(create_proposal)
 DEFINE_EVALUATOR(create_research_group)
+DEFINE_EVALUATOR(make_research_review)
 DEFINE_EVALUATOR(contribute_to_token_sale)
 
 }

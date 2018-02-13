@@ -370,8 +370,8 @@ database_fixture::research_group_create(const uint32_t& id,
     const research_group_object& new_research_group
         = db.create<research_group_object>([&](research_group_object& rg) {
               rg.id = id;
-              fc::from_string(rg.permlink, permlink);
-              fc::from_string(rg.description, description);
+              rg.permlink = permlink;
+              rg.description = description;            
               rg.funds = funds;
               rg.quorum_percent = quorum_percent;
               rg.total_tokens_amount = tokens_amount;
@@ -407,7 +407,7 @@ const research_group_object& database_fixture::setup_research_group(const uint32
     return research_group;
 }
 
-const proposal_object& database_fixture::proposal_create(const uint32_t id, const dbs_proposal::action_t action,
+const proposal_object& database_fixture::create_proposal(const uint32_t id, const dbs_proposal::action_t action,
                                        const std::string json_data,
                                        const account_name_type& creator,
                                        const research_group_id_type& research_group_id,
@@ -428,26 +428,28 @@ const proposal_object& database_fixture::proposal_create(const uint32_t id, cons
     return new_proposal;
 }
 
-const research_object& database_fixture::research_create(const string &name,
+const research_object& database_fixture::research_create(const uint32_t id,
+                                                         const string &name,
                                                          const string &abstract,
                                                          const string &permlink,
                                                          const research_group_id_type &research_group_id,
-                                                         const uint32_t &percent_for_review)
+                                                         const double &review_share_in_percent)
 {
-    const auto& new_research = db.create<research_object>([&](research_object& research) {
-        research.name = name;
-        research.abstract = abstract;
-        research.permlink = permlink;
-        research.research_group_id = research_group_id;
-        research.review_share_in_percent = percent_for_review;
-        research.is_finished = false;
-        research.owned_tokens = DEIP_100_PERCENT;
-        research.created_at = db.head_block_time();
+    const auto& new_research = db.create<research_object>([&](research_object& r) {
+        r.id = id;
+        r.name = name;
+        r.abstract = abstract;
+        r.permlink = permlink;
+        r.research_group_id = research_group_id;
+        r.review_share_in_percent = review_share_in_percent;
+        r.is_finished = false;
+        r.owned_tokens = DEIP_100_PERCENT;
+        r.created_at = db.head_block_time();
     });
 
     return new_research;
 }
-    
+
 void database_fixture::fund(const string& account_name, const share_type& amount)
 {
     try

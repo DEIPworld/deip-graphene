@@ -155,19 +155,23 @@ struct extended_private_key_type
     friend bool operator!=(const extended_private_key_type& p1, const extended_private_key_type& p2);
 };
 
-enum proposal_action_type
+enum proposal_action_type : uint16_t
 {
-    start_research,
-    invite_member,
-    dropout_member,
-    send_funds,
-    transfer_research_tokens,    
-    rebalance_research_group_tokens,
-    change_quorum,
-    change_research_review_share_percent,
-    offer_research_tokens,
-    accept_research_tokens_offer,
-    start_research_token_sale
+    start_research = 1,
+    invite_member = 2,
+    dropout_member = 3,
+    send_funds = 4,
+    transfer_research_tokens = 5,
+    start_research_token_sale = 6,
+    rebalance_research_group_tokens = 7,
+    change_quorum = 8,
+    change_research_review_share_percent = 9,
+    offer_research_tokens = 10,
+    accept_research_tokens_offer = 11,
+    create_research_material = 12,
+
+    First = start_research,
+    Last = create_research_material
 };
 
 enum proposal_life_time_type
@@ -201,13 +205,14 @@ FC_REFLECT_ENUM(deip::protocol::proposal_action_type,   (start_research)
                                                         (invite_member)
                                                         (dropout_member)
                                                         (send_funds)
-                                                        (transfer_research_tokens)                                                        
+                                                        (transfer_research_tokens)
+                                                        (start_research_token_sale)
                                                         (rebalance_research_group_tokens)
                                                         (change_quorum)
                                                         (change_research_review_share_percent)
                                                         (offer_research_tokens)
                                                         (accept_research_tokens_offer)
-                                                        (start_research_token_sale))
+                                                        (create_research_material))
 
 FC_REFLECT_ENUM(deip::protocol::proposal_life_time_type, (day)(week))
 

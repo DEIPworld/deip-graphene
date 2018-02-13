@@ -53,6 +53,8 @@
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_research_token_sale.hpp>
+#include <deip/chain/dbs_research_content.hpp>
+
 
 namespace deip {
 namespace chain {
@@ -1706,6 +1708,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_proposal_evaluator>();
+    _my->_evaluator_registry.register_evaluator<make_research_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
 
     // clang-format off
@@ -1715,6 +1719,7 @@ void database::initialize_evaluators()
                                         this->obtain_service<dbs_research_group>(),
                                         this->obtain_service<dbs_research>(),
                                         this->obtain_service<dbs_research_token>(),
+                                        this->obtain_service<dbs_research_content>(),
                                         this->obtain_service<dbs_research_token_sale>()));
     //clang-format on
 }

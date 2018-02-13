@@ -14,6 +14,7 @@
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_research_token.hpp>
 #include <deip/chain/dbs_research.hpp>
+#include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/dbs_research_token_sale.hpp>
 
 #include <deip/chain/proposal_object.hpp>
@@ -30,18 +31,20 @@ template <typename AccountService,
         typename ResearchGroupService,
         typename ResearchService,
         typename ResearchTokenService,
+        typename ResearchContentService,
         typename ResearchTokenSaleService,
         typename OperationType = deip::protocol::operation>
 class proposal_vote_evaluator_t : public evaluator<OperationType>
 // clang-format on
 {
 public:
-    typedef proposal_vote_operation operation_type;
+    typedef vote_proposal_operation operation_type;
     typedef proposal_vote_evaluator_t<AccountService,
             ProposalService,
             ResearchGroupService,
             ResearchService,
             ResearchTokenService,
+            ResearchContentService,
             ResearchTokenSaleService,
             OperationType>
             EvaluatorType;
@@ -77,6 +80,7 @@ public:
                               ResearchGroupService& research_group_service,
                               ResearchService& research_service,
                               ResearchTokenService& research_token_service,
+                              ResearchContentService& research_content_service,
                               ResearchTokenSaleService& research_token_sale_service
                               )
             : _account_service(account_service)
@@ -84,6 +88,7 @@ public:
             , _research_group_service(research_group_service)
             , _research_service(research_service)
             , _research_token_service(research_token_service)
+            , _research_content_service(research_content_service)
             , _research_token_sale_service(research_token_sale_service)
     {
         evaluators.set(proposal_action_type::invite_member,
@@ -102,6 +107,8 @@ public:
                        std::bind(&EvaluatorType::send_funds_evaluator, this, std::placeholders::_1));
         evaluators.set(proposal_action_type::rebalance_research_group_tokens,
                        std::bind(&EvaluatorType::rebalance_research_group_tokens_evaluator, this, std::placeholders::_1));
+        evaluators.set(proposal_action_type::create_research_material,
+                       std::bind(&EvaluatorType::create_research_material_evaluator, this, std::placeholders::_1));
         evaluators.set(proposal_action_type::start_research_token_sale,
                        std::bind(&EvaluatorType::start_research_token_sale_evaluator, this, std::placeholders::_1));
     }
@@ -117,11 +124,10 @@ public:
         return OperationType::template tag<operation_type>::value;
     }
 
-    void do_apply(const proposal_vote_operation& op)
+    void do_apply(const vote_proposal_operation& op)
     {
         _research_group_service.check_research_group_token_existence(op.voter, op.research_group_id);
         _account_service.check_account_existence(op.voter);
-
         _proposal_service.check_proposal_existence(op.proposal_id);
 
         const proposal_object& proposal = _proposal_service.get_proposal(op.proposal_id);
@@ -245,12 +251,17 @@ protected:
         }
     }
 
-    void start_research_token_sale_evaluator(const proposal_object& proposal)
+    void create_research_material_evaluator(const proposal_object& proposal)
     {
+        create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);  
+        _research_content_service.create(data.research_id, data.type, data.content, data.authors, data.research_references, data.research_external_references);
+    }
+
+    void start_research_token_sale_evaluator(const proposal_object& proposal) {
         start_research_token_sale_data_type data = get_data<start_research_token_sale_data_type>(proposal);
 
         _research_service.check_research_existence(data.research_id);
-        auto& research = _research_service.get_research(data.research_id);
+        auto &research = _research_service.get_research(data.research_id);
 
         FC_ASSERT((research.owned_tokens - data.amount_for_sale >= 0), "Tokens for sale is more than research balance");
 
@@ -264,6 +275,7 @@ protected:
     ResearchGroupService& _research_group_service;
     ResearchService& _research_service;
     ResearchTokenService& _research_token_service;
+    ResearchContentService& _research_content_service;
     ResearchTokenSaleService& _research_token_sale_service;
 
 private:
@@ -282,8 +294,11 @@ typedef proposal_vote_evaluator_t<dbs_account,
                                   dbs_research_group,
                                   dbs_research,
                                   dbs_research_token,
+                                  dbs_research_content,
                                   dbs_research_token_sale>
     proposal_vote_evaluator;
+typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_content, dbs_research_token_sale>
+        proposal_vote_evaluator;
 
 } // namespace chain
 } // namespace deip

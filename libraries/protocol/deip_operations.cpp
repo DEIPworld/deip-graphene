@@ -334,22 +334,13 @@ void create_budget_operation::validate() const
     FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Balance must be positive");
 }
 
-
-void create_research_content_operation::validate() const
+void create_proposal_operation::validate() const
 {
-    FC_ASSERT(authors.size() > 0, "Research content should contain at least 1 author");
-    for (const account_name_type& author : authors)
-    {
-        validate_account_name(author);
-    }
-    FC_ASSERT(!content.empty(), "Research content cannot be empty");
-}
-
-void proposal_create_operation::validate() const
-{
+    validate_enum_value_by_range(action, proposal_action_type::First, proposal_action_type::Last);
     validate_account_name(creator);
     FC_ASSERT(expiration_time > fc::time_point_sec());
-    FC_ASSERT(fc::is_utf8(data), "Data is not valid UTF8 string");}
+    FC_ASSERT(fc::is_utf8(data), "Data is not valid UTF8 string");
+}
 
 void create_research_group_operation::validate() const
 {
@@ -360,9 +351,20 @@ void create_research_group_operation::validate() const
     FC_ASSERT(tokens_amount > 0, "Initial research group tokens amount must be greater than 0");
 }
 
-void proposal_vote_operation::validate() const
+void vote_proposal_operation::validate() const
 {
     validate_account_name(voter);
+}
+
+void make_research_review_operation::validate() const
+{
+    validate_account_name(author);
+    FC_ASSERT(!content.empty(), "Research content cannot be empty");
+    for (auto& link : research_external_references)
+    {
+        FC_ASSERT(!link.empty(), "External reference link cannot be empty");
+        FC_ASSERT(fc::is_utf8(link), "External reference is not valid UTF8 string");
+    }
 }
 
 void contribute_to_token_sale_operation::validate() const

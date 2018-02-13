@@ -22,7 +22,7 @@ public:
     {
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 1;
-            d.permlink = "test";
+            d.permlink = "test1";
             d.description = "test";
             d.quorum_percent = 40;
             d.total_tokens_amount = 300;
@@ -30,7 +30,7 @@ public:
 
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 2;
-            d.permlink = "test";
+            d.permlink = "test2";
             d.description = "test";
             d.quorum_percent = 60;
             d.total_tokens_amount = 500;
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(get_research_group_by_id_test)
         create_research_groups();
         auto& research_group = data_service.get_research_group(1);
 
-        BOOST_CHECK(research_group.permlink == "test");
+        BOOST_CHECK(research_group.permlink == "test1");
         BOOST_CHECK(research_group.description == "test");
         BOOST_CHECK(research_group.quorum_percent == 40);
         BOOST_CHECK(research_group.total_tokens_amount == 300);
