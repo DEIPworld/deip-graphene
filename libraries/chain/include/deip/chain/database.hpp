@@ -323,7 +323,8 @@ public:
     void process_decline_voting_rights();
     void update_median_feed();
     void process_research_token_sales();
-    void distribute_research_tokens(const uint32_t research_token_sale_id);
+    void distribute_research_tokens(const research_token_sale_id_type research_token_sale_id);
+    void refund_research_tokens(const research_token_sale_id_type research_token_sale_id);
 
     uint16_t get_curation_rewards_percent(const comment_object& c) const override;
 

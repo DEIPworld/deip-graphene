@@ -1464,7 +1464,12 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
 
     fc::time_point_sec contribution_time = _db.head_block_time();
 
-    research_token_sale_service.create_research_token_sale_contribution(op.research_token_sale_id,
+    auto research_token_sale_contribution = _db._temporary_public_impl().find<research_token_sale_contribution_object, by_owner>(op.owner);
+    if (research_token_sale_contribution != nullptr)
+        _db._temporary_public_impl().modify(*research_token_sale_contribution,
+                                            [&](research_token_sale_contribution_object& rtsc_o) { rtsc_o.amount += op.amount; });
+    else
+        research_token_sale_service.create_research_token_sale_contribution(op.research_token_sale_id,
                                                                                      op.owner,
                                                                                      contribution_time,
                                                                                      op.amount);
@@ -1475,7 +1480,7 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
         share_type difference = research_token_sale.hard_cap - research_token_sale.total_amount;
         account_service.decrease_balance(account_service.get_account(op.owner), asset(difference));
         research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, difference);
-        //distribute research_tokens
+        _db.distribute_research_tokens(op.research_token_sale_id);
     }
     else {
         account_service.decrease_balance(account_service.get_account(op.owner), asset(op.amount));
