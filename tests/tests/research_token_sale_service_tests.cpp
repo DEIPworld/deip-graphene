@@ -158,17 +158,18 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_by_end_time)
 
         BOOST_CHECK(research_token_sales.size() == 2);
 
-//        BOOST_CHECK(std::any_of(research_token_sales.begin(), research_token_sales.end(),
-//                                [](std::reference_wrapper<const research_token_sale_object> wrapper) {
-//                                    const research_token_sale_object& research_token_sale = wrapper.get();
-//                                    return research_token_sale.id == 0 && research_token_sale.research_id == 1
-//                                        && research_token_sale.start_time == START_TIME
-//                                        && research_token_sale.end_time == END_TIME
-//                                        && research_token_sale.total_amount == 0
-//                                        && research_token_sale.balance_tokens == BALANCE_TOKENS
-//                                        && research_token_sale.soft_cap == SOFT_CAP
-//                                        && research_token_sale.hard_cap == HARD_CAP;
-//                                }));
+        BOOST_CHECK(std::any_of(research_token_sales.begin(), research_token_sales.end(),
+                                [](std::reference_wrapper<const research_token_sale_object> wrapper) {
+                                    const research_token_sale_object& research_token_sale = wrapper.get();
+                                    return research_token_sale.id == 0
+                                        && research_token_sale.research_id == 1
+                                        && research_token_sale.start_time == START_TIME
+                                        && research_token_sale.end_time == END_TIME
+                                        && research_token_sale.total_amount == 0
+                                        && research_token_sale.balance_tokens == BALANCE_TOKENS
+                                        && research_token_sale.soft_cap == SOFT_CAP
+                                        && research_token_sale.hard_cap == HARD_CAP;
+                                }));
 //
 //        BOOST_CHECK(std::any_of(research_token_sales.begin(), research_token_sales.end(),
 //                                [](std::reference_wrapper<const research_token_sale_object> wrapper) {
