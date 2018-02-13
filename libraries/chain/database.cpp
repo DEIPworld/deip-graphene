@@ -1609,6 +1609,10 @@ void database::distribute_research_tokens(const research_token_sale_id_type rese
 void database::refund_research_tokens(const research_token_sale_id_type research_token_sale_id)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
+    dbs_research& research_service = obtain_service<dbs_research>();
+    dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
+
+    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(research_token_sale_id);
 
     const auto& idx = get_index<research_token_sale_contribution_index>().indicies().
             get<by_research_token_sale_id>().equal_range(research_token_sale_id);
@@ -1622,6 +1626,9 @@ void database::refund_research_tokens(const research_token_sale_id_type research
         remove(*it);
         it = idx.first;
     }
+
+    auto& research = research_service.get_research(research_token_sale.research_id);
+    modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
 }
 
 void database::process_research_token_sales()
