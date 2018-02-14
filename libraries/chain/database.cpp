@@ -23,6 +23,7 @@
 #include <deip/chain/research_discipline_relation_object.hpp>
 #include <deip/chain/research_object.hpp>
 #include <deip/chain/research_content_object.hpp>
+#include <deip/chain/research_token_sale_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
 #include <deip/chain/research_token_object.hpp>
 #include <deip/chain/proposal_vote_evaluator.hpp>
@@ -51,7 +52,9 @@
 #include <deip/chain/dbs_witness.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_research_token_sale.hpp>
 #include <deip/chain/dbs_research_content.hpp>
+
 
 namespace deip {
 namespace chain {
@@ -1583,6 +1586,73 @@ void database::process_decline_voting_rights()
     }
 }
 
+void database::distribute_research_tokens(const research_token_sale_id_type research_token_sale_id)
+{
+    dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
+    dbs_research_token& research_token_service = obtain_service<dbs_research_token>();
+
+    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(research_token_sale_id);
+
+    const auto& idx = get_index<research_token_sale_contribution_index>().indicies().
+            get<by_research_token_sale_id>().equal_range(research_token_sale_id);
+
+    auto it = idx.first;
+    const auto it_end = idx.second;
+
+    while (it != it_end)
+    {
+        auto transfer_amount = (it->amount * research_token_sale.balance_tokens)/ research_token_sale.total_amount ;
+        research_token_service.create_research_token(it->owner, transfer_amount, research_token_sale.research_id);
+        remove(*it);
+        it = idx.first;
+    }
+}
+
+void database::refund_research_tokens(const research_token_sale_id_type research_token_sale_id)
+{
+    dbs_account& account_service = obtain_service<dbs_account>();
+    dbs_research& research_service = obtain_service<dbs_research>();
+    dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
+
+    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(research_token_sale_id);
+
+    const auto& idx = get_index<research_token_sale_contribution_index>().indicies().
+            get<by_research_token_sale_id>().equal_range(research_token_sale_id);
+
+    auto it = idx.first;
+    const auto it_end = idx.second;
+
+    while (it != it_end)
+    {
+        account_service.increase_balance(account_service.get_account(it->owner), it->amount);
+        remove(*it);
+        it = idx.first;
+    }
+
+    auto& research = research_service.get_research(research_token_sale.research_id);
+    modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
+}
+
+void database::process_research_token_sales()
+{
+    const auto& idx = get_index<research_token_sale_index>().indices().get<by_end_time>();
+    auto itr = idx.begin();
+    auto _head_block_time = head_block_time();
+
+    while (itr->end_time <= _head_block_time)
+    {
+        if (itr->total_amount < itr->soft_cap){
+            refund_research_tokens(itr->id);
+            remove(*itr);
+        }
+        else if (itr->total_amount >= itr->soft_cap){
+            distribute_research_tokens(itr->id);
+            remove(*itr);
+        }
+        itr = idx.begin();
+    }
+}
+
 time_point_sec database::head_block_time() const
 {
     return get_dynamic_global_properties().time;
@@ -1640,6 +1710,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<make_research_review_evaluator>();
+    _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
 
     // clang-format off
     _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>(
@@ -1648,7 +1719,8 @@ void database::initialize_evaluators()
                                         this->obtain_service<dbs_research_group>(),
                                         this->obtain_service<dbs_research>(),
                                         this->obtain_service<dbs_research_token>(),
-                                        this->obtain_service<dbs_research_content>()));
+                                        this->obtain_service<dbs_research_content>(),
+                                        this->obtain_service<dbs_research_token_sale>()));
     //clang-format on
 }
 
@@ -1705,6 +1777,8 @@ void database::initialize_indexes()
     add_index<research_content_index>();
     add_index<expert_token_index>();
     add_index<research_token_index>();
+    add_index<research_token_sale_index>();
+    add_index<research_token_sale_contribution_index>();
 
     _plugin_index_signal();
 }

@@ -111,6 +111,7 @@ struct rebalance_research_group_tokens_data_type : base_proposal_data_type
             FC_ASSERT(is_valid_account_name(accounts[i].account_name), "Account name ${n} is invalid", ("n", accounts[i].account_name));
     }
 };
+
 struct create_research_content_data_type : base_proposal_data_type
 {
     research_id_type research_id;
@@ -133,7 +134,24 @@ struct create_research_content_data_type : base_proposal_data_type
             FC_ASSERT(!link.empty(), "External reference link cannot be empty");
             FC_ASSERT(fc::is_utf8(link), "External reference link is not valid UTF8 string");
         }
+    }
+};
 
+struct start_research_token_sale_data_type : base_proposal_data_type {
+    research_id_type research_id;
+    fc::time_point_sec start_time;
+    fc::time_point_sec end_time;
+    share_type amount_for_sale;
+    share_type soft_cap;
+    share_type hard_cap;
+
+    void validate() const {
+        FC_ASSERT(amount_for_sale > 0, "Research tokens for sale amount should be > 0");
+        FC_ASSERT(soft_cap > 0, "Soft cap should be > 0");
+        FC_ASSERT(hard_cap > 0, "Hard cap should be > 0");
+        FC_ASSERT(hard_cap > soft_cap, "Hard cap should be greater than soft cap");
+        FC_ASSERT(start_time >= fc::time_point::now(), "Start time cannot be at the past");
+        FC_ASSERT(end_time > start_time, "End time should be greater than start time");
     }
 };
 
@@ -157,4 +175,6 @@ FC_REFLECT(deip::chain::rebalance_info, (account_name)(amount))
 FC_REFLECT(deip::chain::rebalance_research_group_tokens_data_type, (research_group_id)(accounts))
 
 FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(content)(authors)(research_references)(research_external_references))
+
+FC_REFLECT(deip::chain::start_research_token_sale_data_type, (research_id)(start_time)(end_time)(amount_for_sale)(soft_cap)(hard_cap))
 

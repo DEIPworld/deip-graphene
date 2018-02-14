@@ -170,7 +170,6 @@ enum proposal_action_type : uint16_t
     accept_research_tokens_offer = 11,
     create_research_material = 12,
 
-    // make sure to update the bounds while adding new value
     First = start_research,
     Last = create_research_material
 };

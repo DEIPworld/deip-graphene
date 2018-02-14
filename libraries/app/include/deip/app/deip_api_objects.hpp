@@ -14,6 +14,7 @@
 #include <deip/chain/research_object.hpp>
 #include <deip/chain/research_content_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
+#include <deip/chain/research_token_sale_object.hpp>
 #include <deip/chain/research_group_object.hpp>
 
 #include <deip/tags/tags_plugin.hpp>
@@ -664,6 +665,56 @@ struct research_group_api_obj
     uint32_t total_tokens_amount;
 };
 
+struct research_token_sale_api_obj
+{
+    research_token_sale_api_obj(const chain::research_token_sale_object& rts)
+        : id(rts.id._id)
+        ,  research_id(rts.research_id._id)
+        ,  start_time(rts.start_time)
+        ,  end_time(rts.end_time)
+        ,  total_amount(rts.total_amount)
+        ,  balance_tokens(rts.balance_tokens)
+        ,  soft_cap(rts.soft_cap)
+        ,  hard_cap(rts.hard_cap)
+    {}
+
+    // because fc::variant require for temporary object
+    research_token_sale_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t research_id;
+    time_point_sec start_time;
+    time_point_sec end_time;
+    share_type total_amount;
+    share_type balance_tokens;
+    share_type soft_cap;
+    share_type hard_cap;
+};
+
+struct research_token_sale_contribution_api_obj
+{
+    research_token_sale_contribution_api_obj(const chain::research_token_sale_contribution_object& co)
+        : id(co.id._id)
+        ,  research_token_sale_id(co.research_token_sale_id._id)
+        ,  owner(co.owner)
+        ,  amount(co.amount)
+        ,  contribution_time(co.contribution_time)
+    {}
+
+    // because fc::variant require for temporary object
+    research_token_sale_contribution_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t research_token_sale_id;
+    account_name_type owner;
+    share_type amount;
+    time_point_sec contribution_time;
+};
+
 
 } // namespace app
 } // namespace deip
@@ -792,6 +843,7 @@ FC_REFLECT( deip::app::expert_token_api_obj,
             (amount)
 )
 
+
 FC_REFLECT( deip::app::proposal_api_obj,
             (id)
             (action)
@@ -827,6 +879,25 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (quorum_percent)
             (total_tokens_amount)
             // (research_group_tokens)
+)
+
+FC_REFLECT( deip::app::research_token_sale_api_obj,
+            (id)
+            (research_id)
+            (start_time)
+            (end_time)
+            (total_amount)
+            (balance_tokens)
+            (soft_cap)
+            (hard_cap)
+)
+
+FC_REFLECT( deip::app::research_token_sale_contribution_api_obj,
+            (id)
+            (research_token_sale_id)
+            (owner)
+            (amount)
+            (contribution_time)
 )
 
 

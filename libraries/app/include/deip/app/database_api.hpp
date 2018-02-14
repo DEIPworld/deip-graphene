@@ -399,7 +399,7 @@ public:
     ///////////////////
     expert_token_api_obj get_expert_token(const expert_token_id_type id) const;
     vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_name_type account_name) const;
-    vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;                 
+    vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
 
     ////////////////////
     // Proposal       //
@@ -421,6 +421,17 @@ public:
     research_group_token_api_obj
     get_research_group_token_by_account_and_research_group_id(const account_name_type account,
                                                               const research_group_id_type research_group_id) const;
+
+    /////////////////////////
+    // Research token sale //
+    ////////////////////////
+    research_token_sale_api_obj get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const;
+    research_token_sale_api_obj get_research_token_sale_by_research_id(const research_id_type& research_id) const;
+    vector<research_token_sale_api_obj> get_research_token_sale_by_end_time(const time_point_sec end_time) const;
+    research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type research_token_sale_contribution_id) const;
+    vector<research_token_sale_contribution_api_obj> get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type research_token_sale_id) const;
+    research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_account_name(const account_name_type owner) const;
+
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -578,6 +589,15 @@ FC_API(deip::app::database_api,
    // Research group tokens
    (get_research_group_tokens_by_account)
    (get_research_group_token_by_account_and_research_group_id)
+
+   // Research Token Sale
+   (get_research_token_sale_by_id)
+   (get_research_token_sale_by_research_id)
+   (get_research_token_sale_by_end_time)
+   (get_research_token_sale_contribution_by_id)
+   (get_research_token_sale_contributions_by_research_token_sale_id)
+   (get_research_token_sale_contribution_by_account_name)
+
 )
 
 // clang-format on

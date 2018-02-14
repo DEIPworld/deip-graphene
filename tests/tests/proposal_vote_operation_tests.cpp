@@ -7,6 +7,8 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_research.hpp>
+
+#include <deip/chain/dbs_research_token_sale.hpp>
 #include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/proposal_vote_evaluator.hpp>
 #include <deip/chain/deip_objects.hpp>
@@ -21,8 +23,15 @@ namespace tests {
 using deip::protocol::account_name_type;
 using deip::protocol::proposal_action_type;
 
-typedef deip::chain::proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_content>
+typedef deip::chain::proposal_vote_evaluator_t<dbs_account,
+                                               dbs_proposal,
+                                               dbs_research_group,
+                                               dbs_research,
+                                               dbs_research_token,
+                                               dbs_research_content,
+                                               dbs_research_token_sale>
         proposal_vote_evaluator;
+
 
 class evaluator_mocked : public proposal_vote_evaluator {
 public:
@@ -31,8 +40,9 @@ public:
                      dbs_research_group &research_group_service,
                      dbs_research &research_service,
                      dbs_research_token &research_token_service,
-                     dbs_research_content &research_content_service)
-            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service) {
+                     dbs_research_content &research_content_service,
+                     dbs_research_token_sale &research_token_sale_service)
+            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service) {
     }
 
     void execute_proposal(const proposal_object &proposal) {
@@ -48,7 +58,9 @@ public:
                         db.obtain_service<dbs_research_group>(),
                         db.obtain_service<dbs_research>(),
                         db.obtain_service<dbs_research_token>(),
-                        db.obtain_service<dbs_research_content>()) {
+                        db.obtain_service<dbs_research_content>(),
+                        db.obtain_service<dbs_research_token_sale>()) {
+
     }
 
     ~proposal_vote_evaluator_fixture() {
@@ -265,6 +277,41 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
     BOOST_CHECK(bobs_token.amount == 125);
 }
 
+BOOST_AUTO_TEST_CASE(research_token_sale_execute_test)
+{
+    try
+    {
+    ACTORS((alice))
+    std::vector<account_name_type> accounts = {"alice"};
+    setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
+    const std::string json_str = "{\"research_id\":0,\"amount_for_sale\":90,\"start_time\":\"2020-02-08T16:00:54\",\"end_time\":\"2020-03-08T15:02:31\",\"soft_cap\":60,\"hard_cap\":90}";
+
+    create_proposal(1, dbs_proposal::action_t::start_research_token_sale, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+
+    auto& research = research_create(0, "name","abstract", "permlink", 1, 10);
+    auto& research_token_sale_service = db.obtain_service<dbs_research_token_sale>();
+
+    vote_proposal_operation op;
+    op.research_group_id = 1;
+    op.proposal_id = 1;
+    op.voter = "alice";
+
+    evaluator.do_apply(op);
+
+    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_research_id(0);
+
+    BOOST_CHECK(research_token_sale.research_id == 0);
+    BOOST_CHECK(research_token_sale.start_time == fc::time_point_sec(1581177654));
+    BOOST_CHECK(research_token_sale.end_time == fc::time_point_sec(1583679751));
+    BOOST_CHECK(research_token_sale.total_amount == 0);
+    BOOST_CHECK(research_token_sale.balance_tokens == 90);
+    BOOST_CHECK(research_token_sale.soft_cap == 60);
+    BOOST_CHECK(research_token_sale.hard_cap == 90);
+    BOOST_CHECK(research.owned_tokens == 9910);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(invite_member_validate_test)
 {
     const std::string json_str = "{\"name\":\"\",\"research_group_id\":1,\"research_group_token_amount\":1000}";
@@ -377,6 +424,31 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_validate_test)
     BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
 }
 
+BOOST_AUTO_TEST_CASE(research_token_sale_validate_test)
+{
+    try
+    {
+    ACTORS((alice))
+    std::vector<account_name_type> accounts = {"alice"};
+    setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
+
+    // TODO: Add check for every value
+    const std::string json_str = "{\"research_id\":0,\"amount_for_sale\":9999999999,\"start_time\":\"2020-02-08T15:02:31\",\"end_time\":\"2020-01-08T15:02:31\",\"soft_cap\":9999999999,\"hard_cap\":9999994444}";
+
+    create_proposal(1, dbs_proposal::action_t::start_research_token_sale, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    research_create(0, "name","abstract", "permlink", 1, 10);
+
+    vote_proposal_operation op;
+    op.research_group_id = 1;
+    op.proposal_id = 1;
+    op.voter = "alice";
+
+    BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+
 BOOST_AUTO_TEST_CASE(create_research_material)
 {
     ACTORS((alice))
@@ -418,6 +490,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
                 && content.authors.begin()[0] == "alice";
         }));
 }
+
 
 BOOST_AUTO_TEST_SUITE_END()
 
