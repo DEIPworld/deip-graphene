@@ -75,7 +75,7 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(research_token_sale_service_tests, research_token_sale_fixture)
 
-BOOST_AUTO_TEST_CASE(create_research_token_sale_test)
+BOOST_AUTO_TEST_CASE(create_research_token_sale)
 {
     try
     {
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(create_research_token_sale_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_all_research_token_sales_test)
+BOOST_AUTO_TEST_CASE(get_all_research_token_sales)
 {
     create_research_token_sales();
 
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(get_all_research_token_sales_test)
     BOOST_CHECK(research_token_sales.size() == 3);
 }
 
-BOOST_AUTO_TEST_CASE(get_research_token_sale_by_id_test)
+BOOST_AUTO_TEST_CASE(get_research_token_sale_by_id)
 {
     try
     {
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_by_id_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_research_token_sale_by_research_id_test)
+BOOST_AUTO_TEST_CASE(get_research_token_sale_by_research_id)
 {
     try
     {
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_by_research_id_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_research_token_sales_by_end_time_test)
+BOOST_AUTO_TEST_CASE(get_research_token_sales_by_end_time)
 {
     try
     {
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(get_research_token_sales_by_end_time_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(create_research_token_sale_contribution_test)
+BOOST_AUTO_TEST_CASE(create_research_token_sale_contribution)
 {
     try
     {
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE(create_research_token_sale_contribution_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_id_test)
+BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_id)
 {
     try
     {
@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_id_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_research_token_sale_id_test)
+BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_research_token_sale_id)
 {
     try
     {
@@ -226,19 +226,20 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_research_token_sale
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_account_name_test)
+BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_account_name_and_research_token_sale_id)
 {
     try
     {
         create_research_token_sale_contributions();
 
-        auto& research_token_sale_contribution = data_service.get_research_token_sale_contribution_by_account_name("bob");
+        auto& research_token_sale_contribution = data_service.get_research_token_sale_contribution_by_account_name_and_research_token_sale_id("bob", 1);
 
         BOOST_CHECK(research_token_sale_contribution.owner == "bob");
         BOOST_CHECK(research_token_sale_contribution.amount == 200);
         BOOST_CHECK(research_token_sale_contribution.research_token_sale_id == 1);
 
-        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_account_name("alex"), boost::exception);
+        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_account_name_and_research_token_sale_id("alex", 1), boost::exception);
+        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_account_name_and_research_token_sale_id("bob", 123), boost::exception);
     }
     FC_LOG_AND_RETHROW()
 }

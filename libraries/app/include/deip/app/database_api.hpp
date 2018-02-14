@@ -430,7 +430,8 @@ public:
     vector<research_token_sale_api_obj> get_research_token_sale_by_end_time(const time_point_sec end_time) const;
     research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type research_token_sale_contribution_id) const;
     vector<research_token_sale_contribution_api_obj> get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type research_token_sale_id) const;
-    research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_account_name(const account_name_type owner) const;
+    research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_account_name_and_research_token_sale_id(const account_name_type owner,
+                                                                                                                             const research_token_sale_id_type research_token_sale_id) const;
 
 
     ////////////////////////////
@@ -596,7 +597,7 @@ FC_API(deip::app::database_api,
    (get_research_token_sale_by_end_time)
    (get_research_token_sale_contribution_by_id)
    (get_research_token_sale_contributions_by_research_token_sale_id)
-   (get_research_token_sale_contribution_by_account_name)
+   (get_research_token_sale_contribution_by_account_name_and_research_token_sale_id)
 
 )
 
