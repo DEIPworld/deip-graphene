@@ -34,8 +34,8 @@ dbs_research_token_sale::research_token_sale_refs_type dbs_research_token_sale::
 {
     research_token_sale_refs_type ret;
 
-    auto idx = db_impl().get_index<research_token_sale_index>().indicies();
-    auto it = idx.cbegin();
+    const auto& idx = db_impl().get_index<research_token_sale_index>().indicies().get<by_id>();
+    auto it = idx.lower_bound(0);
     const auto it_end = idx.cend();
     while (it != it_end)
     {

@@ -99,6 +99,45 @@ BOOST_AUTO_TEST_CASE(get_all_research_token_sales)
     auto research_token_sales = data_service.get_all_research_token_sales();
 
     BOOST_CHECK(research_token_sales.size() == 3);
+
+    BOOST_CHECK(std::any_of(research_token_sales.begin(), research_token_sales.end(),
+                            [](std::reference_wrapper<const research_token_sale_object> wrapper) {
+                                const research_token_sale_object& research_token_sale = wrapper.get();
+                                return research_token_sale.id == 0
+                                       && research_token_sale.research_id == 1
+                                       && research_token_sale.start_time == START_TIME
+                                       && research_token_sale.end_time == END_TIME
+                                       && research_token_sale.total_amount == 0
+                                       && research_token_sale.balance_tokens == BALANCE_TOKENS
+                                       && research_token_sale.soft_cap == SOFT_CAP
+                                       && research_token_sale.hard_cap == HARD_CAP;
+                            }));
+
+    BOOST_CHECK(std::any_of(research_token_sales.begin(), research_token_sales.end(),
+                            [](std::reference_wrapper<const research_token_sale_object> wrapper) {
+                                const research_token_sale_object& research_token_sale = wrapper.get();
+                                return research_token_sale.id == 1
+                                       && research_token_sale.research_id == 2
+                                       && research_token_sale.start_time == START_TIME
+                                       && research_token_sale.end_time == fc::time_point_sec(1583675751)
+                                       && research_token_sale.total_amount == 0
+                                       && research_token_sale.balance_tokens == 200
+                                       && research_token_sale.soft_cap == SOFT_CAP
+                                       && research_token_sale.hard_cap == HARD_CAP;
+                            }));
+
+    BOOST_CHECK(std::any_of(research_token_sales.begin(), research_token_sales.end(),
+                            [](std::reference_wrapper<const research_token_sale_object> wrapper) {
+                                const research_token_sale_object& research_token_sale = wrapper.get();
+                                return research_token_sale.id == 2
+                                       && research_token_sale.research_id == 3
+                                       && research_token_sale.start_time == fc::time_point_sec(1581177654)
+                                       && research_token_sale.end_time == END_TIME
+                                       && research_token_sale.total_amount == 0
+                                       && research_token_sale.balance_tokens == 90
+                                       && research_token_sale.soft_cap == 60
+                                       && research_token_sale.hard_cap == 90;
+                            }));
 }
 
 BOOST_AUTO_TEST_CASE(get_research_token_sale_by_id)
@@ -219,9 +258,29 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_research_token_sale
     {
         create_research_token_sale_contributions();
 
-        auto research_token_sale_contribution = data_service.get_research_token_sale_contributions_by_research_token_sale_id(1);
+        auto research_token_sale_contributions = data_service.get_research_token_sale_contributions_by_research_token_sale_id(1);
 
-        BOOST_CHECK(research_token_sale_contribution.size() == 2);
+        BOOST_CHECK(research_token_sale_contributions.size() == 2);
+
+        BOOST_CHECK(std::any_of(research_token_sale_contributions.begin(), research_token_sale_contributions.end(),
+                                [](std::reference_wrapper<const research_token_sale_contribution_object> wrapper) {
+                                    const research_token_sale_contribution_object& research_token_sale_contribution = wrapper.get();
+                                    return research_token_sale_contribution.id == 1
+                                           && research_token_sale_contribution.owner == "alice"
+                                           && research_token_sale_contribution.amount == 100
+                                           && research_token_sale_contribution.research_token_sale_id == 1;
+                                }));
+
+        BOOST_CHECK(std::any_of(research_token_sale_contributions.begin(), research_token_sale_contributions.end(),
+                                [](std::reference_wrapper<const research_token_sale_contribution_object> wrapper) {
+                                    const research_token_sale_contribution_object& research_token_sale_contribution = wrapper.get();
+                                    return research_token_sale_contribution.id == 2
+                                           && research_token_sale_contribution.owner == "bob"
+                                           && research_token_sale_contribution.amount == 200
+                                           && research_token_sale_contribution.research_token_sale_id == 1;
+                                }));
+
+
     }
     FC_LOG_AND_RETHROW()
 }
