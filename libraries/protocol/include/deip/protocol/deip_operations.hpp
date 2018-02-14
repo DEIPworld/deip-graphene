@@ -816,8 +816,8 @@ struct make_research_review_operation : public base_operation
     account_name_type author;
     uint32_t research_id;
     string content;
-    std::vector<uint32_t> research_references;
-    std::vector<string> research_external_references;
+    vector<uint32_t> research_references;
+    vector<string> research_external_references;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -899,6 +899,6 @@ FC_REFLECT( deip::protocol::create_budget_operation, (owner)(balance)(target_dis
 FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption)(funds)(quorum_percent)(tokens_amount))
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
-FC_REFLECT( deip::protocol::make_research_review_operation, (research_id)(content)(author)(research_references)(research_external_references))
+FC_REFLECT( deip::protocol::make_research_review_operation, (author)(research_id)(content)(research_references)(research_external_references))
 
 // clang-format on
