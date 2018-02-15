@@ -1633,6 +1633,37 @@ void database::refund_research_tokens(const research_token_sale_id_type research
     modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
 }
 
+void database::research_token_holders_reward_distribution(const research_id_type research_id, share_type reward)
+{
+    dbs_account& account_service = obtain_service<dbs_account>();
+    dbs_research& research_service = obtain_service<dbs_research>();
+    dbs_research_token& research_token_service = obtain_service<dbs_research_token>();
+    
+    auto& research = research_service.get_research(research_id);
+    
+    auto research_group_reward = (research.owned_tokens * reward) / DEIP_100_PERCENT;
+    
+    if(research_group_reward > 0)
+    {
+        dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
+        research_group_service.increase_research_group_funds(research.research_group_id, research_group_reward);
+        reward -= research_group_reward;
+    }
+
+    const auto& idx = get_index<research_token_index>().indicies().get<by_research_id>().equal_range(research.id);
+
+    auto it = idx.first;
+    const auto it_end = idx.second;
+
+    while (it != it_end)
+    {
+        auto reward_amount = (it->amount * reward) / research.owned_tokens;
+        account_service.increase_balance(account_service.get_account(it->account_name), reward_amount);
+        ++it;
+    }
+    
+}
+    
 void database::process_research_token_sales()
 {
     const auto& idx = get_index<research_token_sale_index>().indices().get<by_end_time>();
