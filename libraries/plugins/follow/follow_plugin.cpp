@@ -83,27 +83,27 @@ struct pre_operation_visitor
     {
         try
         {
-            auto& db = _plugin.database();
-            const auto& c = db.get_comment(op.author, op.permlink);
-
-            if (db.calculate_discussion_payout_time(c) == fc::time_point_sec::maximum())
-                return;
-
-            const auto& cv_idx = db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
-            auto cv = cv_idx.find(std::make_tuple(c.id, db.get_account(op.voter).id));
-
-            if (cv != cv_idx.end())
-            {
-                const auto& rep_idx = db.get_index<reputation_index>().indices().get<by_account>();
-                auto rep = rep_idx.find(op.author);
-
-                if (rep != rep_idx.end())
-                {
-                    db.modify(*rep, [&](reputation_object& r) {
-                        r.reputation -= (cv->rshares >> 6); // Shift away precision from vests. It is noise
-                    });
-                }
-            }
+//            auto& db = _plugin.database();
+//            const auto& c = db.get_comment(op.author, op.permlink);
+//
+//            if (db.calculate_discussion_payout_time(c) == fc::time_point_sec::maximum())
+//                return;
+//
+//            const auto& cv_idx = db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
+//            auto cv = cv_idx.find(std::make_tuple(c.id, db.get_account(op.voter).id));
+//
+//            if (cv != cv_idx.end())
+//            {
+//                const auto& rep_idx = db.get_index<reputation_index>().indices().get<by_account>();
+//                auto rep = rep_idx.find(op.author);
+//
+//                if (rep != rep_idx.end())
+//                {
+//                    db.modify(*rep, [&](reputation_object& r) {
+//                        r.reputation -= (cv->rshares >> 6); // Shift away precision from vests. It is noise
+//                    });
+//                }
+//            }
         }
         catch (const fc::exception& e)
         {
@@ -284,48 +284,48 @@ struct post_operation_visitor
     {
         try
         {
-            auto& db = _plugin.database();
-            const auto& comment = db.get_comment(op.author, op.permlink);
-
-            if (db.calculate_discussion_payout_time(comment) == fc::time_point_sec::maximum())
-                return;
-
-            const auto& cv_idx = db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
-            auto cv = cv_idx.find(boost::make_tuple(comment.id, db.get_account(op.voter).id));
-
-            const auto& rep_idx = db.get_index<reputation_index>().indices().get<by_account>();
-            auto voter_rep = rep_idx.find(op.voter);
-            auto author_rep = rep_idx.find(op.author);
-
-            // Rules are a plugin, do not effect consensus, and are subject to change.
-            // Rule #1: Must have non-negative reputation to effect another user's reputation
-            if (voter_rep != rep_idx.end() && voter_rep->reputation < 0)
-                return;
-
-            if (author_rep == rep_idx.end())
-            {
-                // Rule #2: If you are down voting another user, you must have more reputation than them to impact their
-                // reputation
-                // User rep is 0, so requires voter having positive rep
-                if (cv->rshares < 0 && !(voter_rep != rep_idx.end() && voter_rep->reputation > 0))
-                    return;
-
-                db.create<reputation_object>([&](reputation_object& r) {
-                    r.account = op.author;
-                    r.reputation = (cv->rshares >> 6); // Shift away precision from vests. It is noise
-                });
-            }
-            else
-            {
-                // Rule #2: If you are down voting another user, you must have more reputation than them to impact their
-                // reputation
-                if (cv->rshares < 0 && !(voter_rep != rep_idx.end() && voter_rep->reputation > author_rep->reputation))
-                    return;
-
-                db.modify(*author_rep, [&](reputation_object& r) {
-                    r.reputation += (cv->rshares >> 6); // Shift away precision from vests. It is noise
-                });
-            }
+//            auto& db = _plugin.database();
+//            const auto& comment = db.get_comment(op.author, op.permlink);
+//
+//            if (db.calculate_discussion_payout_time(comment) == fc::time_point_sec::maximum())
+//                return;
+//
+//            const auto& cv_idx = db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
+//            auto cv = cv_idx.find(boost::make_tuple(comment.id, db.get_account(op.voter).id));
+//
+//            const auto& rep_idx = db.get_index<reputation_index>().indices().get<by_account>();
+//            auto voter_rep = rep_idx.find(op.voter);
+//            auto author_rep = rep_idx.find(op.author);
+//
+//            // Rules are a plugin, do not effect consensus, and are subject to change.
+//            // Rule #1: Must have non-negative reputation to effect another user's reputation
+//            if (voter_rep != rep_idx.end() && voter_rep->reputation < 0)
+//                return;
+//
+//            if (author_rep == rep_idx.end())
+//            {
+//                // Rule #2: If you are down voting another user, you must have more reputation than them to impact their
+//                // reputation
+//                // User rep is 0, so requires voter having positive rep
+//                if (cv->rshares < 0 && !(voter_rep != rep_idx.end() && voter_rep->reputation > 0))
+//                    return;
+//
+//                db.create<reputation_object>([&](reputation_object& r) {
+//                    r.account = op.author;
+//                    r.reputation = (cv->rshares >> 6); // Shift away precision from vests. It is noise
+//                });
+//            }
+//            else
+//            {
+//                // Rule #2: If you are down voting another user, you must have more reputation than them to impact their
+//                // reputation
+//                if (cv->rshares < 0 && !(voter_rep != rep_idx.end() && voter_rep->reputation > author_rep->reputation))
+//                    return;
+//
+//                db.modify(*author_rep, [&](reputation_object& r) {
+//                    r.reputation += (cv->rshares >> 6); // Shift away precision from vests. It is noise
+//                });
+//            }
         }
         FC_CAPTURE_AND_RETHROW()
     }

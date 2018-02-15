@@ -85,11 +85,20 @@ BOOST_AUTO_TEST_CASE(get_discipline_by_name)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(check_discipline_existence_by_name)
+{
+    try
+    {
+        BOOST_CHECK_THROW(data_service.check_discipline_existence_by_name("Medicine"), fc::assert_exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(check_discipline_existence)
 {
     try
     {
-        BOOST_CHECK_THROW(data_service.check_discipline_existence("Medicine"), fc::assert_exception);
+        BOOST_CHECK_THROW(data_service.check_discipline_existence(1000000), fc::assert_exception);
     }
     FC_LOG_AND_RETHROW()
 }

@@ -152,7 +152,6 @@ void prove_authority_operation::validate() const
 void vote_operation::validate() const
 {
     validate_account_name(voter);
-    validate_account_name(author);
     FC_ASSERT(abs(weight) <= DEIP_100_PERCENT, "Weight is not a DEIP percentage");
     validate_permlink(permlink);
 }

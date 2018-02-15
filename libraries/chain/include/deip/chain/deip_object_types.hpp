@@ -61,6 +61,7 @@ enum object_type
     vesting_delegation_expiration_object_type,
     budget_object_type,
     discipline_object_type,
+    vote_object_type,
     research_object_type,
     research_discipline_relation_object_type,
     research_content_object_type,
@@ -104,6 +105,7 @@ class proposal_object;
 class research_group_object;
 class research_group_token_object;
 class discipline_object;
+class vote_object;
 class research_object;
 class research_discipline_relation_object;
 class research_content_object;
@@ -144,6 +146,7 @@ typedef oid<proposal_object> proposal_id_type;
 typedef oid<research_group_object> research_group_id_type;
 typedef oid<research_group_token_object> research_group_token_id_type;
 typedef oid<discipline_object> discipline_id_type;
+typedef oid<vote_object> vote_id_type;
 typedef oid<research_object> research_id_type;
 typedef oid<research_discipline_relation_object> research_discipline_relation_id_type;
 typedef oid<research_content_object> research_content_id_type;
@@ -196,6 +199,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (research_group_object_type)
                  (research_group_token_object_type)
                  (discipline_object_type)
+                 (vote_object_type)
                  (research_object_type)
                  (research_discipline_relation_object_type)
                  (research_content_object_type)

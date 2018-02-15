@@ -54,6 +54,21 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(expert_token_service, expert_token_service_fixture)
 
+BOOST_AUTO_TEST_CASE(create)
+{
+    try
+    {
+        auto token = data_service.create("alice", 1000, 1000);
+
+        BOOST_CHECK(token.id == 0);
+        BOOST_CHECK(token.account_name == "alice");
+        BOOST_CHECK(token.discipline_id == 1000);
+        BOOST_CHECK(token.amount == 1000);
+        BOOST_CHECK(token.voting_power == DEIP_100_PERCENT);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(get_expert_token_by_id)
 {
     try
@@ -146,6 +161,28 @@ BOOST_AUTO_TEST_CASE(get_empty_expert_tokens_vector_by_discipline_id)
     }
     FC_LOG_AND_RETHROW()
 }
+
+BOOST_AUTO_TEST_CASE(get_expert_token_by_account_and_discipline_id)
+{
+    try
+    {
+        create_expert_tokens();
+        auto expert_token = data_service.get_expert_token_by_account_and_discipline("alice", 1111);
+
+        BOOST_CHECK(expert_token.id == 1);
+        BOOST_CHECK(expert_token.amount == 100);
+        BOOST_CHECK(expert_token.discipline_id == 1111);
+        BOOST_CHECK(expert_token.account_name == "alice");
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(check_expert_token_existence_by_account_and_discipline_id)
+{
+    BOOST_CHECK_THROW(data_service.check_expert_token_existence_by_account_and_discipline("alice", 1111), fc::assert_exception);
+}
+
 
 
 

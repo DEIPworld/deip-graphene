@@ -31,6 +31,7 @@ add_library( deip_chain
              dbs_proposal.cpp
              dbs_research_group.cpp
              dbs_discipline.cpp
+             dbs_vote.cpp
              dbs_research.cpp
              dbs_research_discipline_relation.cpp
              dbs_research_content.cpp
