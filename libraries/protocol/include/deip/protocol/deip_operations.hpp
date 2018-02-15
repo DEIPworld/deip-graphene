@@ -207,8 +207,8 @@ struct vote_operation : public base_operation
     uint64_t discipline_id;
     string permlink;
     int16_t weight = 0;
-    uint8_t vote_type;
-    uint64_t vote_for_id;
+    uint128_t research_id;
+    uint128_t research_content_id;
 
     void validate() const;
     void get_required_posting_authorities(flat_set<account_name_type>& a) const
@@ -887,7 +887,7 @@ FC_REFLECT( deip::protocol::witness_update_operation, (owner)(url)(block_signing
 FC_REFLECT( deip::protocol::account_witness_vote_operation, (account)(witness)(approve) )
 FC_REFLECT( deip::protocol::account_witness_proxy_operation, (account)(proxy) )
 FC_REFLECT( deip::protocol::comment_operation, (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata) )
-FC_REFLECT( deip::protocol::vote_operation, (voter)(discipline_id)(permlink)(weight)(vote_type)(vote_for_id))
+FC_REFLECT( deip::protocol::vote_operation, (voter)(discipline_id)(permlink)(weight)(research_id)(research_content_id))
 FC_REFLECT( deip::protocol::custom_operation, (required_auths)(id)(data) )
 FC_REFLECT( deip::protocol::custom_json_operation, (required_auths)(required_posting_auths)(id)(json) )
 FC_REFLECT( deip::protocol::custom_binary_operation, (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data) )

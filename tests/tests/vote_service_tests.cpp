@@ -6,13 +6,6 @@
 
 #include "database_fixture.hpp"
 
-#define RESEARCH 1
-#define MATERIAL 11
-#define REVIEW 21
-#define DISCIPLINE_MATH 10
-#define VOTER "voter"
-#define WEIGHT 100
-
 namespace deip {
 namespace chain {
 
@@ -27,18 +20,24 @@ public:
     void create_votes() {
         db.create<vote_object>([&](vote_object& r) {
             r.id = 1,
-            r.voter = VOTER;
-            r.vote_type = vote_target_type::research_vote;
-            r.vote_for_id = RESEARCH;
-            r.discipline_id = DISCIPLINE_MATH;
+            r.voter = "alice";
+            r.tokens_amount = 100;
+            r.weight = 50 * DEIP_1_PERCENT;
+            r.voting_power = 10 * DEIP_1_PERCENT;
+            r.research_id = 1;
+            r.research_content_id = 1;
+            r.discipline_id = 1024;
         });
 
         db.create<vote_object>([&](vote_object& r) {
             r.id = 2,
-            r.voter = VOTER;
-            r.vote_type = vote_target_type::review_vote;
-            r.vote_for_id = RESEARCH;
-            r.discipline_id = 0;
+            r.voter = "bob";
+            r.tokens_amount = 1000;
+            r.weight = 20 * DEIP_1_PERCENT;
+            r.voting_power = 10 * DEIP_1_PERCENT;
+            r.research_id = 2;
+            r.research_content_id = 2;
+            r.discipline_id = 1024;
         });
     }
 
@@ -52,12 +51,15 @@ BOOST_AUTO_TEST_CASE(create_research_vote)
     try
     {
         auto time = db.head_block_time();
-        auto& vote = data_service.create_vote(DISCIPLINE_MATH, VOTER, vote_target_type::research_vote, RESEARCH, WEIGHT, time);
+        auto& vote = data_service.create_vote(1024, "alice", 1, 1, 100, DEIP_100_PERCENT, 10 * DEIP_1_PERCENT, time);
 
-
-        BOOST_CHECK(vote.discipline_id == DISCIPLINE_MATH);
-        BOOST_CHECK(vote.weight == WEIGHT);
-        BOOST_CHECK(vote.voter == VOTER);
+        BOOST_CHECK(vote.discipline_id == 1024);
+        BOOST_CHECK(vote.research_id == 1);
+        BOOST_CHECK(vote.research_content_id == 1);
+        BOOST_CHECK(vote.tokens_amount == 100);
+        BOOST_CHECK(vote.weight == DEIP_100_PERCENT);
+        BOOST_CHECK(vote.voting_power == 10 * DEIP_1_PERCENT);
+        BOOST_CHECK(vote.voter == "alice");
         BOOST_CHECK(vote.voting_time == time);
     }
     FC_LOG_AND_RETHROW()
@@ -69,37 +71,57 @@ BOOST_AUTO_TEST_CASE(get_votes_by_discipline)
     {
         create_votes();
 
-        const auto& relations = data_service.get_votes_by_discipline(DISCIPLINE_MATH);
+        const auto& votes = data_service.get_votes_by_discipline(1024);
 
 
-        BOOST_CHECK_EQUAL(relations.size(), 1);
+        BOOST_CHECK_EQUAL(votes.size(), 2);
 
-        for (const chain::vote_object& relation : relations) {
-            BOOST_CHECK(relation.discipline_id == DISCIPLINE_MATH);
+        for (const chain::vote_object& vote : votes) {
+            BOOST_CHECK(vote.discipline_id == 1024);
         }
 
     }
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_votes_by_target)
+BOOST_AUTO_TEST_CASE(get_votes_by_research)
 {
     try
     {
         create_votes();
 
-        const auto& votes = data_service.get_votes_by_type_and_target(vote_target_type::research_vote, RESEARCH);
+        const auto& votes = data_service.get_votes_by_research(1);
+
 
         BOOST_CHECK_EQUAL(votes.size(), 1);
 
         for (const chain::vote_object& vote : votes) {
-            BOOST_CHECK(vote.vote_type == vote_target_type::research_vote);
-            BOOST_CHECK(vote.vote_for_id == RESEARCH);
+            BOOST_CHECK(vote.research_id == 1);
         }
 
     }
     FC_LOG_AND_RETHROW()
 }
+
+BOOST_AUTO_TEST_CASE(get_votes_by_research_content)
+{
+    try
+    {
+        create_votes();
+
+        const auto& votes = data_service.get_votes_by_research_content(2);
+
+
+        BOOST_CHECK_EQUAL(votes.size(), 1);
+
+        for (const chain::vote_object& vote : votes) {
+            BOOST_CHECK(vote.research_content_id == 2);
+        }
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 
