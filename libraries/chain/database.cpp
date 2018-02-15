@@ -1647,7 +1647,6 @@ void database::research_token_holders_reward_distribution(const research_id_type
     {
         dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
         research_group_service.increase_research_group_funds(research.research_group_id, research_group_reward);
-        reward -= research_group_reward;
     }
 
     const auto& idx = get_index<research_token_index>().indicies().get<by_research_id>().equal_range(research.id);
@@ -1657,7 +1656,7 @@ void database::research_token_holders_reward_distribution(const research_id_type
 
     while (it != it_end)
     {
-        auto reward_amount = (it->amount * reward) / research.owned_tokens;
+        auto reward_amount = (it->amount * reward) / DEIP_100_PERCENT;
         account_service.increase_balance(account_service.get_account(it->account_name), reward_amount);
         ++it;
     }
