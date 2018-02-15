@@ -34,16 +34,23 @@ public:
     flat_set<account_name_type> voted_accounts;
 };
 
+struct by_research_group_id;
+struct by_expiration_time;
+
 typedef multi_index_container<proposal_object,
                                                 indexed_by<ordered_unique<tag<by_id>, 
                                                                 member<proposal_object, 
-                                                                        proposal_id_type, 
+                                                                        proposal_id_type,
                                                                         &proposal_object::id>>,
                                                             ordered_unique<tag<by_expiration_time>,
                                                                 member<proposal_object,
                                                                         fc::time_point_sec,
-                                                                        &proposal_object::expiration_time>>>,
-                                                allocator<proposal_object>>
+                                                                        &proposal_object::expiration_time>>,
+                                                            ordered_non_unique<tag<by_research_group_id>,
+                                                                member<proposal_object,
+                                                                        research_group_id_type,
+                                                                        &proposal_object::research_group_id>>>,
+                                                            allocator<proposal_object>>
     proposal_index;
 
 } // namespace chain

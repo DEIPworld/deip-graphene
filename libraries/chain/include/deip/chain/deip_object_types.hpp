@@ -31,7 +31,6 @@ using deip::protocol::transaction_id_type;
 using deip::protocol::discipline_name_type;
 
 struct by_id;
-struct by_expiration_time;
 
 enum object_type
 {
@@ -71,7 +70,9 @@ enum object_type
     research_group_token_object_type,
     proposal_vote_object_type,
     expert_token_object_type,
-    research_token_object_type
+    research_token_object_type,
+    research_token_sale_object_type,
+    research_token_sale_contribution_object_type
 };
 
 class dynamic_global_property_object;
@@ -111,6 +112,8 @@ class research_content_object;
 class proposal_vote_object;
 class expert_token_object;
 class research_token_object;
+class research_token_sale_object;
+class research_token_sale_contribution_object;
 
 
 typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
@@ -150,6 +153,8 @@ typedef oid<research_content_object> research_content_id_type;
 typedef oid<proposal_vote_object> proposal_vote_id_type;
 typedef oid<expert_token_object> expert_token_id_type;
 typedef oid<research_token_object> research_token_id_type;
+typedef oid<research_token_sale_object> research_token_sale_id_type;
+typedef oid<research_token_sale_contribution_object> research_token_sale_contribution_id_type;
 
 
 enum bandwidth_type
@@ -201,6 +206,8 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (proposal_vote_object_type)
                  (expert_token_object_type)
                  (research_token_object_type)
+                 (research_token_sale_object_type)
+                 (research_token_sale_contribution_object_type)
 
                  )
 

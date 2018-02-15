@@ -16,6 +16,7 @@
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_research_token_sale.hpp>
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
 
@@ -58,12 +59,6 @@ inline void validate_permlink_0_1(const string& permlink)
             FC_ASSERT(false, "Invalid permlink character: ${ch}", ("ch", std::string(1, ch)));
         }
     }
-}
-
-inline void validate_enum_value_by_range(int val, int first, int last)
-{
-    FC_ASSERT(val >= first && val <= last, "Provided enum value is outside of the range: val = ${enum_val}, first = ${first}, last = ${last}", 
-                                            ("enum_val", val)("first", first)("last", last));
 }
 
 struct strcmp_equal
@@ -1453,57 +1448,106 @@ void create_budget_evaluator::do_apply(const create_budget_operation& op)
     budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id);
 }
 
-
-void create_research_content_evaluator::do_apply(const create_research_content_operation &op)
-{
-    dbs_research& research_service = _db.obtain_service<dbs_research>();
-    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    for (const auto& author : op.authors) {
-        account_service.check_account_existence(author);
-    }
-    
-    validate_enum_value_by_range(op.content_type, research_content_type::First, research_content_type::Last);
-    research_service.check_research_existence(op.research_id);
-    research_content_service.create(op.research_id, (research_content_type) op.content_type, op.content, op.authors);
-}
-
-void proposal_create_evaluator::do_apply(const proposal_create_operation& op)
+void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
 {
     dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
+    account_service.check_account_existence(op.creator);
+    research_group_service.check_research_group_token_existence(op.creator, op.research_group_id);
     const uint32_t _lifetime_min = DAYS_TO_SECONDS(1);
     const uint32_t _lifetime_max = DAYS_TO_SECONDS(10);
 
-    auto sec_till_expiration = op.expiration_time.sec_since_epoch() - fc::time_point_sec().sec_since_epoch();
+    const auto& props = _db.get_dynamic_global_properties();
+
+    auto sec_till_expiration = op.expiration_time.sec_since_epoch() - props.time.sec_since_epoch();
 
     FC_ASSERT(sec_till_expiration <= _lifetime_max && sec_till_expiration >= _lifetime_min,
-             "Proposal life time is not in range of ${min} - ${max} seconds.",
-             ("min", _lifetime_min)("max", _lifetime_max));
-
-    account_service.check_account_existence(op.creator);
+             "Proposal life time is not in range of ${min} - ${max} seconds. The actual value was ${actual}",
+             ("min", _lifetime_min)("max", _lifetime_max)("actual", sec_till_expiration));
 
     auto& research_group = research_group_service.get_research_group(op.research_group_id);
     auto quorum_percent = research_group.quorum_percent;
+    // the range must be checked in create_proposal_operation::validate()
+    deip::protocol::proposal_action_type action = static_cast<deip::protocol::proposal_action_type>(op.action); 
 
     // quorum_percent should be taken from research_group_object
-    proposal_service.create_proposal(op.action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
+    proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
 }
 
 void create_research_group_evaluator::do_apply(const create_research_group_operation& op)
 {
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
-    research_group_service.create_research_group(op.permlink,
+    const research_group_object& research_group = research_group_service.create_research_group(op.permlink,
                                                  op.desciption,
                                                  op.funds,
                                                  op.quorum_percent,
                                                  op.tokens_amount);
+    
+    research_group_service.create_research_group_token(research_group.id, op.tokens_amount, op.creator);
 }
 
+void make_research_review_evaluator::do_apply(const make_research_review_operation& op)
+{
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    account_service.check_account_existence(op.author);
+    research_service.check_research_existence(op.research_id);
+
+    std::vector<research_id_type> references;
+    int size = op.research_references.size();
+    for (int i = 0; i < size; ++i)
+    {
+        research_service.check_research_existence(op.research_references[i]);
+        references.push_back((research_id_type)op.research_references[i]);
+    }
+
+    flat_set<account_name_type> review_author = {op.author};
+    research_content_service.create(op.research_id, research_content_type::review, op.content, review_author, references, op.research_external_references);
+}
+
+void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)
+{
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_research_token_sale &research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
+
+    account_service.check_account_existence(op.owner);
+
+    auto& account = account_service.get_account(op.owner);
+    FC_ASSERT(account.balance.amount < op.amount, "Not enough funds to contribute");
+
+    research_token_sale_service.check_research_token_sale_existence(op.research_token_sale_id);
+
+    fc::time_point_sec contribution_time = _db.head_block_time();
+
+    auto research_token_sale_contribution = _db._temporary_public_impl().
+            find<research_token_sale_contribution_object, by_owner_and_research_token_sale_id>(boost::make_tuple(op.owner, op.research_token_sale_id));
+    if (research_token_sale_contribution != nullptr)
+        _db._temporary_public_impl().modify(*research_token_sale_contribution,
+                                            [&](research_token_sale_contribution_object& rtsc_o) { rtsc_o.amount += op.amount; });
+    else
+        research_token_sale_service.create_research_token_sale_contribution(op.research_token_sale_id,
+                                                                                     op.owner,
+                                                                                     contribution_time,
+                                                                                     op.amount);
+
+    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(op.research_token_sale_id);
+
+    if (research_token_sale.total_amount + op.amount > research_token_sale.hard_cap){
+        share_type difference = research_token_sale.hard_cap - research_token_sale.total_amount;
+        account_service.decrease_balance(account_service.get_account(op.owner), asset(difference));
+        research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, difference);
+        _db.distribute_research_tokens(op.research_token_sale_id);
+    }
+    else {
+        account_service.decrease_balance(account_service.get_account(op.owner), asset(op.amount));
+        research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, op.amount);
+    }
+}
 
 } // namespace chain
 } // namespace deip 

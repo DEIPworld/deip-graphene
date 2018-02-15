@@ -4,6 +4,7 @@
 #include <deip/chain/deip_object_types.hpp>
 #include <boost/multi_index/composite_key.hpp>
 #include <fc/shared_string.hpp>
+#include <fc/fixed_string.hpp>
 
 
 namespace deip {
@@ -14,7 +15,6 @@ class research_group_object : public object<research_group_object_type, research
 
 public:
     template <typename Constructor, typename Allocator> research_group_object(Constructor&& c, allocator<Allocator> a)
-    : permlink(a), description(a)
     {
         c(*this);
     }
@@ -22,8 +22,8 @@ public:
 public:
     research_group_id_type id;
 
-    fc::shared_string permlink;
-    fc::shared_string description;
+    fc::string permlink;
+    fc::string description;
     share_type funds = 0;
     share_type quorum_percent;
     share_type total_tokens_amount;
@@ -54,6 +54,12 @@ typedef multi_index_container<research_group_object,
                                                                 member<research_group_object, 
                                                                         research_group_id_type, 
                                                                         &research_group_object::id>
+                                                    >,
+                                                    ordered_unique<
+                                                        tag<by_permlink>, 
+                                                                member<research_group_object, 
+                                                                        fc::string, 
+                                                                        &research_group_object::permlink>
                                                     >
                                                 >,
                                                 allocator<research_group_object>>

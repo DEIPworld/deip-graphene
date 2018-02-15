@@ -14,14 +14,18 @@ const research_group_object& dbs_research_group::get_research_group(const resear
     return db_impl().get<research_group_object, by_id>(id);
 }
 
+const research_group_object& dbs_research_group::get_research_group_by_permlink(const fc::string& permlink) const {
+    return db_impl().get<research_group_object, by_permlink>(permlink);
+}
+
 const research_group_object& dbs_research_group::create_research_group(const string& permlink,
                                                                        const string& description,
                                                                        const share_type funds,
                                                                        const share_type quorum_percent,
                                                                        const share_type tokens_amount) {
     const research_group_object& new_research_group = db_impl().create<research_group_object>([&](research_group_object& research_group) {
-        fc::from_string(research_group.permlink, permlink);
-        fc::from_string(research_group.description, description);
+        research_group.permlink = permlink;
+        research_group.description = description;
         research_group.funds = funds;
         research_group.quorum_percent = quorum_percent;
         research_group.total_tokens_amount = tokens_amount;
@@ -41,6 +45,12 @@ void dbs_research_group::check_research_group_existence(const research_group_id_
 {
     const auto& idx = db_impl().get_index<research_group_index>().indices().get<by_id>();
     FC_ASSERT(idx.find(research_group_id) != idx.cend(), "Group \"${1}\" does not exist.", ("1", research_group_id));
+}
+
+void dbs_research_group::check_research_group_existence_by_permlink(const string& permlink) const
+{
+    const auto& idx = db_impl().get_index<research_group_index>().indices().get<by_permlink>();
+    FC_ASSERT(idx.find(permlink) != idx.cend(), "Group by permlink: \"${1}\" does not exist.", ("1", permlink));
 }
 
 const research_group_token_object& dbs_research_group::get_research_group_token_by_id(const research_group_token_id_type& id) const {

@@ -6,6 +6,7 @@
 #include <deip/chain/deip_objects.hpp>
 #include <deip/chain/deip_object_types.hpp>
 #include <deip/chain/history_object.hpp>
+#include <deip/chain/dbs_proposal.hpp>
 
 #include <deip/tags/tags_plugin.hpp>
 
@@ -400,6 +401,38 @@ public:
     vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_name_type account_name) const;
     vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
 
+    ////////////////////
+    // Proposal       //
+    ////////////////////
+    vector<proposal_api_obj> get_proposals_by_research_group_id(const research_group_id_type research_group_id) const;
+    proposal_api_obj get_proposal(const proposal_id_type id) const;
+
+    ////////////////////
+    // Research group //
+    ///////////////////
+    research_group_api_obj get_research_group_by_id(const research_group_id_type research_group_id) const;
+    research_group_api_obj get_research_group_by_permlink(const string& permlink) const;
+
+    /////////////////////////////////
+    // Research group tokens       //
+    /////////////////////////////////
+    vector<research_group_token_api_obj> get_research_group_tokens_by_account(const account_name_type account) const;
+
+    research_group_token_api_obj
+    get_research_group_token_by_account_and_research_group_id(const account_name_type account,
+                                                              const research_group_id_type research_group_id) const;
+
+    /////////////////////////
+    // Research token sale //
+    ////////////////////////
+    research_token_sale_api_obj get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const;
+    research_token_sale_api_obj get_research_token_sale_by_research_id(const research_id_type& research_id) const;
+    vector<research_token_sale_api_obj> get_research_token_sale_by_end_time(const time_point_sec end_time) const;
+    research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type research_token_sale_contribution_id) const;
+    vector<research_token_sale_contribution_api_obj> get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type research_token_sale_id) const;
+    research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_account_name_and_research_token_sale_id(const account_name_type owner,
+                                                                                                                             const research_token_sale_id_type research_token_sale_id) const;
+
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -545,6 +578,26 @@ FC_API(deip::app::database_api,
    (get_expert_token)
    (get_expert_tokens_by_account_name)
    (get_expert_tokens_by_discipline_id)
+
+   // Proposal
+   (get_proposals_by_research_group_id)
+   (get_proposal)
+
+   // Research group
+   (get_research_group_by_id)
+   (get_research_group_by_permlink)
+
+   // Research group tokens
+   (get_research_group_tokens_by_account)
+   (get_research_group_token_by_account_and_research_group_id)
+
+   // Research Token Sale
+   (get_research_token_sale_by_id)
+   (get_research_token_sale_by_research_id)
+   (get_research_token_sale_by_end_time)
+   (get_research_token_sale_contribution_by_id)
+   (get_research_token_sale_contributions_by_research_token_sale_id)
+   (get_research_token_sale_contribution_by_account_name_and_research_token_sale_id)
 
 )
 
