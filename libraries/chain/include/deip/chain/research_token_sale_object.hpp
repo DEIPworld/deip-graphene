@@ -76,21 +76,25 @@ typedef multi_index_container<research_token_sale_object,
         research_token_sale_index;
 
 struct by_research_token_sale_id;
-struct by_owner;
+struct by_owner_and_research_token_sale_id;
 
 typedef multi_index_container<research_token_sale_contribution_object,
         indexed_by<ordered_unique<tag<by_id>,
                 member<research_token_sale_contribution_object,
                         research_token_sale_contribution_id_type,
                         &research_token_sale_contribution_object::id>>,
-                ordered_unique<tag<by_owner>,
-                        member<research_token_sale_contribution_object,
-                                account_name_type,
-                                &research_token_sale_contribution_object::owner>>,
                 ordered_non_unique<tag<by_research_token_sale_id>,
                         member<research_token_sale_contribution_object,
                                 research_token_sale_id_type,
-                                &research_token_sale_contribution_object::research_token_sale_id>>>,
+                                &research_token_sale_contribution_object::research_token_sale_id>>,
+                ordered_unique<tag<by_owner_and_research_token_sale_id>,
+                composite_key<research_token_sale_contribution_object,
+                        member<research_token_sale_contribution_object,
+                               account_name_type,
+                               &research_token_sale_contribution_object::owner>,
+                        member<research_token_sale_contribution_object,
+                               research_token_sale_id_type,
+                               &research_token_sale_contribution_object::research_token_sale_id>>>>,
         allocator<research_token_sale_contribution_object>>
         research_token_sale_contribution_index;
 

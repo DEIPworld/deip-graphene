@@ -34,8 +34,8 @@ dbs_research_token_sale::research_token_sale_refs_type dbs_research_token_sale::
 {
     research_token_sale_refs_type ret;
 
-    auto idx = db_impl().get_index<research_token_sale_index>().indicies();
-    auto it = idx.cbegin();
+    const auto& idx = db_impl().get_index<research_token_sale_index>().indicies().get<by_id>();
+    auto it = idx.lower_bound(0);
     const auto it_end = idx.cend();
     while (it != it_end)
     {
@@ -129,9 +129,10 @@ dbs_research_token_sale::research_token_sale_contribution_refs_type
 }
 
 const research_token_sale_contribution_object&
-    dbs_research_token_sale::get_research_token_sale_contribution_by_account_name(const account_name_type& owner) const
+    dbs_research_token_sale::get_research_token_sale_contribution_by_account_name_and_research_token_sale_id(const account_name_type& owner,
+                                                                                                             const research_token_sale_id_type& research_token_sale_id) const
 {
-    return db_impl().get<research_token_sale_contribution_object, by_owner>(owner);
+    return db_impl().get<research_token_sale_contribution_object, by_owner_and_research_token_sale_id>(boost::make_tuple(owner, research_token_sale_id));
 }
 
 } // namespace chain

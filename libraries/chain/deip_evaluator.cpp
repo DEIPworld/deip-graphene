@@ -1469,7 +1469,8 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
 
     fc::time_point_sec contribution_time = _db.head_block_time();
 
-    auto research_token_sale_contribution = _db._temporary_public_impl().find<research_token_sale_contribution_object, by_owner>(op.owner);
+    auto research_token_sale_contribution = _db._temporary_public_impl().
+            find<research_token_sale_contribution_object, by_owner_and_research_token_sale_id>(boost::make_tuple(op.owner, op.research_token_sale_id));
     if (research_token_sale_contribution != nullptr)
         _db._temporary_public_impl().modify(*research_token_sale_contribution,
                                             [&](research_token_sale_contribution_object& rtsc_o) { rtsc_o.amount += op.amount; });
