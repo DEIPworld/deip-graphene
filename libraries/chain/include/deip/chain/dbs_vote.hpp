@@ -27,6 +27,10 @@ public:
     vote_refs_type get_votes_by_discipline(const discipline_id_type& discipline_id) const;
     vote_refs_type get_votes_by_research(const research_id_type& research_id) const;
     vote_refs_type get_votes_by_research_content(const research_content_id_type& research_content_id) const;
+    vote_refs_type get_votes_by_research_and_discipline(const research_id_type& research_id,
+                                                        const discipline_id_type& discipline_id) const;
+    vote_refs_type get_votes_by_research_content_and_discipline(const research_content_id_type& research_content_id,
+                                                                const discipline_id_type& discipline_id) const;
 
     const vote_object& create_vote(const discipline_id_type& discipline_id,
                                    const account_name_type& voter,
