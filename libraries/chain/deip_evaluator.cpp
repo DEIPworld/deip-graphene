@@ -952,8 +952,8 @@ void vote_evaluator::do_apply(const vote_operation& o)
                       ("d", discipline_service.get_discipline(o.discipline_id).name));
         }
 
-        const auto& vote_idx = _db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
-        auto itr = vote_idx.find(std::make_tuple(voter.name, o.discipline_id, o.research_content_id));
+//        const auto& vote_idx = _db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
+//        auto itr = vote_idx.find(std::make_tuple(voter.name, o.discipline_id, o.research_content_id));
 
         int64_t elapsed_seconds   = (_db.head_block_time() - token.last_vote_time).to_seconds();
 
