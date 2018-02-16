@@ -1682,7 +1682,35 @@ void database::distribute_voters_reward(const discipline_id_type discipline_id, 
     }
 }
 
+void database::distribute_references_reward(const research_content_id_type research_content_id, const share_type reward)
+{
+    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
 
+    auto& research_content = research_content_service.get_content_by_id(research_content_id);
+
+    std::vector<std::pair<research_id_type, share_type>> research_votes_by_id;
+    share_type total_votes_amount = 0;
+
+    for (auto research_id : research_content.research_references)
+    {
+        share_type votes = 0;
+        const auto& idx = get_index<vote_index>().indicies().get<by_research_id>().equal_range(research_id);
+
+        auto it = idx.first;
+        const auto it_end = idx.second;
+
+        while (it != it_end)
+        {
+            votes += it->weight;
+            ++it;
+        }
+        total_votes_amount += votes;
+        research_votes_by_id.push_back(std::make_pair(research_id, votes));
+    }
+
+    for (auto& research_votes : research_votes_by_id)
+        research_token_holders_reward_distribution(research_votes.first, (research_votes.second * reward) / total_votes_amount);
+}
     
 void database::process_research_token_sales()
 {
