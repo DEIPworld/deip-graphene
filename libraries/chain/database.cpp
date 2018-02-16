@@ -1634,12 +1634,11 @@ void database::refund_research_tokens(const research_token_sale_id_type research
     modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
 }
 
-void database::research_token_holders_reward_distribution(const research_id_type research_id, share_type reward)
+void database::research_token_holders_reward_distribution(const research_id_type research_id, const share_type reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
     dbs_research& research_service = obtain_service<dbs_research>();
-    dbs_research_token& research_token_service = obtain_service<dbs_research_token>();
-    
+
     auto& research = research_service.get_research(research_id);
     
     auto research_group_reward = (research.owned_tokens * reward) / DEIP_100_PERCENT;
@@ -1663,6 +1662,27 @@ void database::research_token_holders_reward_distribution(const research_id_type
     }
     
 }
+
+void database::distribute_voters_reward(const discipline_id_type discipline_id, const research_content_id_type research_content_id,
+                                        const share_type deips_amount, const share_type total_weight)
+{
+    dbs_account& account_service = obtain_service<dbs_account>();
+
+    const auto& idx = get_index<vote_index>().indicies().
+            get<by_content_and_discipline>().equal_range(std::make_tuple(research_content_id, discipline_id));
+
+    auto it = idx.first;
+    const auto it_end = idx.second;
+
+    while (it != it_end)
+    {
+        auto reward_amount = (it->weight * deips_amount) / total_weight;
+        account_service.increase_balance(account_service.get_account(it->voter), reward_amount);
+        ++it;
+    }
+}
+
+
     
 void database::process_research_token_sales()
 {
