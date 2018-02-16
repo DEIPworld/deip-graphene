@@ -51,10 +51,16 @@ public:
     time_point_sec created_at;
     std::vector<research_id_type> research_references;
     std::vector<string> research_external_references;
+
+    uint16_t activity_round;
+    time_point_sec activity_window_start;
+    time_point_sec activity_window_end;
 };
 
 struct by_research_id;
 struct by_research_id_and_content_type;
+struct by_activity_window_start;
+struct by_activity_window_end;
 
 typedef multi_index_container<research_content_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -72,7 +78,15 @@ typedef multi_index_container<research_content_object,
                                         &research_content_object::research_id>,
                                 member<research_content_object,
                                         research_content_type,
-                                        &research_content_object::type>>>>,
+                                        &research_content_object::type>>>,
+                ordered_non_unique<tag<by_activity_window_start>,
+                                member<research_content_object,
+                                        time_point_sec,
+                                        &research_content_object::activity_window_start>>,
+                ordered_non_unique<tag<by_activity_window_end>,
+                                member<research_content_object,
+                                        time_point_sec,
+                                        &research_content_object::activity_window_end>>>,
         allocator<research_content_object>>
         research_content_index;
 }

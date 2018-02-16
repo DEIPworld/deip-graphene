@@ -2795,5 +2795,44 @@ void database::retally_witness_votes()
         }
     }
 }
+
+void database::process_intermediate_results_activity()
+{
+    auto now = head_block_time();
+    const auto& research_content_by_activity_expiration = get_index<research_content_index, by_activity_window_end>();
+    auto itr = research_content_by_activity_expiration.begin();
+
+    // update activity windows for intermediate content
+    while (itr != research_content_by_activity_expiration.end() && itr->activity_window_end < now)
+    {
+        dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
+        modify(research_content_service.get_content_by_id(itr->id),
+               [&](research_content_object& a) {
+
+                   if (a.activity_round == 1) {
+                        // the 2nd activity period for intermediate results 
+                        // starts in 2 weeks after the 1st one has ended and goes on for 1 week
+                        a.activity_round = 2;
+                        a.activity_window_start = now + DAYS_TO_SECONDS(14); 
+                        a.activity_window_end = now + DAYS_TO_SECONDS(21);
+                   } else {
+                        // mark intermediate result activity as expired 
+                        // and set the bounds to max value to exclude them from future iterations
+                        a.activity_round = 0;
+                        a.activity_window_start = fc::time_point_sec::maximum();
+                        a.activity_window_end = fc::time_point_sec::maximum();
+                   }
+
+                    // TODO: Exclude votes for this intermidiate result 
+                    // from global TOTAL DISCIPLINE VOTES object that affects on the current distribution
+                });
+
+        ++itr;
+    }
+}
+
+
+
+
 } // namespace chain
 } // namespace deip

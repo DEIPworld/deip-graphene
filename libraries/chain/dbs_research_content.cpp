@@ -18,14 +18,21 @@ const research_content_object& dbs_research_content::create(const research_id_ty
                                                             const std::vector<research_id_type>& research_references,
                                                             const std::vector<string>& research_external_references)
 {
+    auto now = db_impl().head_block_time();
     const auto& new_research_content = db_impl().create<research_content_object>([&](research_content_object& rc) {
         rc.research_id = research_id;
         rc.type = type;
         rc.content = content;
         rc.authors = authors;
-        rc.created_at = db_impl().head_block_time();
+        rc.created_at = now;
         rc.research_references = research_references;
         rc.research_external_references = research_external_references;
+
+        // the 1st activity period for intermediate result starts immediately 
+        // after publishing and goes on for 2 weeks
+        rc.activity_round = 1;
+        rc.activity_window_start = now;
+        rc.activity_window_end = now + DAYS_TO_SECONDS(14);
     });
 
     return new_research_content;
