@@ -934,17 +934,6 @@ void vote_evaluator::do_apply(const vote_operation& o)
         std::vector<discipline_id_type> target_disciplines;
         research_id_type research_id;
 
-        if (o.vote_type == vote_target_type::research_vote)
-        {
-            research_id = o.vote_for_id;
-        } else if (o.vote_type == vote_target_type::content_vote || o.vote_type == vote_target_type::review_vote) {
-            dbs_research_content& content_service = _db.obtain_service<dbs_research_content>();
-            const auto& content = content_service.get_content_by_id(o.vote_for_id);
-            research_id = content.research_id;
-        } else {
-            FC_THROW("Invalid vote type {t}", ("t", o.vote_type));
-        }
-
         dbs_research_discipline_relation& research_disciplines_service = _db.obtain_service<dbs_research_discipline_relation>();
         const auto& relations = research_disciplines_service.get_research_discipline_relations_by_research(research_id);
         for (auto& relation_wrapper : relations) {
