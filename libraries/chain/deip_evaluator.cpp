@@ -941,7 +941,7 @@ void vote_evaluator::do_apply(const vote_operation& o)
             target_disciplines.push_back(relation.discipline_id);
         }
 
-        const auto& voter_token = expert_token_service.get_expert_token_by_account_and_discipline(o.voter, o.discipline_id);
+        const auto& token = expert_token_service.get_expert_token_by_account_and_discipline(o.voter, o.discipline_id);
 
         // Validate that research has discipline we are trying to vote with
         if (o.discipline_id != 0)
@@ -951,6 +951,31 @@ void vote_evaluator::do_apply(const vote_operation& o)
             FC_ASSERT(discipline_found, "Cannot vote with {d} token as research is not in this discipline",
                       ("d", discipline_service.get_discipline(o.discipline_id).name));
         }
+
+        const auto& vote_idx = _db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
+        auto itr = vote_idx.find(std::make_tuple(voter.name, o.discipline_id, o.research_content_id));
+
+        int64_t elapsed_seconds   = (_db.head_block_time() - token.last_vote_time).to_seconds();
+
+        int64_t regenerated_power = (DEIP_100_PERCENT * elapsed_seconds) / DEIP_VOTE_REGENERATION_SECONDS;
+        int64_t current_power = std::min(int64_t(token.voting_power + regenerated_power), int64_t(DEIP_100_PERCENT));
+        FC_ASSERT(current_power > 0, "Account currently does not have voting power.");
+
+        int64_t abs_weight = abs(o.weight);
+        int64_t used_power = (current_power * abs_weight) / DEIP_100_PERCENT;
+
+        used_power /= 10;
+
+        const dynamic_global_property_object& dgpo = _db.get_dynamic_global_properties();
+
+        FC_ASSERT(used_power <= current_power, "Account does not have enough power to vote.");
+
+        int64_t abs_rshares
+            = ((uint128_t(token.amount.value) * used_power) / (DEIP_100_PERCENT))
+                  .to_uint64();
+
+        FC_ASSERT(abs_rshares > DEIP_VOTE_DUST_THRESHOLD || o.weight == 0,
+                  "Voting weight is too small, please accumulate more voting power or deip power.");
 
     }
     FC_CAPTURE_AND_RETHROW((o))
