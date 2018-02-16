@@ -6,6 +6,7 @@
 #include <functional>
 
 #include <deip/chain/vote_object.hpp>
+#include <deip/chain/total_votes_object.hpp>
 
 namespace deip {
 namespace chain {
@@ -40,6 +41,12 @@ public:
                                    const int16_t& weight,
                                    const uint16_t& voting_power,
                                    const time_point_sec& voting_time);
+
+    // total_votes_object
+
+    const total_votes_object& create_total_votes(const discipline_id_type& discipline_id,
+                                                 const research_id_type& research_id,
+                                                 const research_content_id_type& research_content_id);
 
 };
 } // namespace chain

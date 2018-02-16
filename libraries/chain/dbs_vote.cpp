@@ -108,8 +108,8 @@ const vote_object& dbs_vote::create_vote(const discipline_id_type &discipline_id
 
     const auto& new_vote = db_impl().create<vote_object>([&](vote_object& v) {
         v.discipline_id = discipline_id;
-        v.research_id = research_id,
-        v.research_content_id = research_content_id,
+        v.research_id = research_id;
+        v.research_content_id = research_content_id;
         v.voter = voter;
         v.tokens_amount = tokens_amount;
         v.weight = weight;
@@ -118,6 +118,20 @@ const vote_object& dbs_vote::create_vote(const discipline_id_type &discipline_id
     });
 
     return new_vote;
+}
+
+const total_votes_object& dbs_vote::create_total_votes(const discipline_id_type& discipline_id,
+                                                       const research_id_type& research_id,
+                                                       const research_content_id_type& research_content_id)
+{
+    const auto& new_total_votes = db_impl().create<total_votes_object>([&](total_votes_object& v_o) {
+        v_o.discipline_id = discipline_id;
+        v_o.research_id = research_id;
+        v_o.research_content_id = research_content_id;
+        v_o.total_votes_amount = 0;
+    });
+
+    return new_total_votes;
 }
 
 } //namespace chain
