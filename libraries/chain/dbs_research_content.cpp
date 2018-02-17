@@ -31,6 +31,7 @@ const research_content_object& dbs_research_content::create(const research_id_ty
         rc.research_external_references = research_external_references;
 
         rc.activity_round = 1;
+        rc.activity_state = research_content_activity_state::active;
 
         if (type == research_content_type::announcement || 
             type == research_content_type::milestone ||
