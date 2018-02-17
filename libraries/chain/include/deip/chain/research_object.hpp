@@ -40,7 +40,7 @@ public:
 
     bool is_finished;
     share_type owned_tokens;
-    double review_share_in_percent;
+    uint16_t review_share_in_percent;
 };
 
 struct by_permlink;

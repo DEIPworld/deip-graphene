@@ -433,7 +433,7 @@ const research_object& database_fixture::research_create(const uint32_t id,
                                                          const string &abstract,
                                                          const string &permlink,
                                                          const research_group_id_type &research_group_id,
-                                                         const double &review_share_in_percent)
+                                                         const uint16_t review_share_in_percent)
 {
     const auto& new_research = db.create<research_object>([&](research_object& r) {
         r.id = id;

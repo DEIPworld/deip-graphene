@@ -54,7 +54,7 @@ struct start_research_proposal_data_type : base_proposal_data_type
     string abstract;
     string permlink;
     research_group_id_type research_group_id;
-    double review_share_in_percent;
+    uint16_t review_share_in_percent;
 
     void validate() const
     {
@@ -158,7 +158,7 @@ struct start_research_token_sale_data_type : base_proposal_data_type {
 struct change_research_review_share_percent_data_type : base_proposal_data_type
 {
     research_id_type research_id;
-    double review_share_in_percent;
+    uint16_t review_share_in_percent;
 
     void validate() const
     {
