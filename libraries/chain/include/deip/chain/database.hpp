@@ -432,7 +432,7 @@ protected:
     void init_hardforks(fc::time_point_sec genesis_time);
     void process_hardforks();
     void apply_hardfork(uint32_t hardfork);
-    void process_intermediate_results_activity();
+    void process_content_activity_period();
     ///@}
 
     void init_genesis_accounts(const genesis_state_type& genesis_state);

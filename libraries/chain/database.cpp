@@ -2796,7 +2796,7 @@ void database::retally_witness_votes()
     }
 }
 
-void database::process_intermediate_results_activity()
+void database::process_content_activity_period()
 {
     auto now = head_block_time();
     const auto& research_content_by_activity_expiration = get_index<research_content_index, by_activity_window_end>();
