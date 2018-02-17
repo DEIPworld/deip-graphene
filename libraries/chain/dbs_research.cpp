@@ -64,5 +64,12 @@ void dbs_research::decrease_owned_tokens(const research_object& research, const 
     db_impl().modify(research, [&](research_object& r_o) { r_o.owned_tokens -= delta; });
 }
 
+void dbs_research::change_research_review_share_percent(const double& review_share_in_percent, const research_id_type& research_id)
+{
+    check_research_existence(research_id);
+    const research_object& research = get_research(research_id);
+    db_impl().modify(research, [&](research_object& r) { r.review_share_in_percent = review_share_in_percent; });
+}
+
 }
 }

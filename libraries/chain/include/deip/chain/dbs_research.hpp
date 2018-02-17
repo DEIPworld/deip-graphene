@@ -34,6 +34,8 @@ public:
     void check_research_existence(const research_id_type& id) const;
 
     void decrease_owned_tokens(const research_object& research, const share_type delta);
+    
+    void change_research_review_share_percent(const double& review_share_in_percent, const research_id_type& research_id);
 };
 }
 }

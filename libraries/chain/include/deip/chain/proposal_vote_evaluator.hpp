@@ -188,8 +188,8 @@ protected:
 
     void change_research_review_share_evaluator(const proposal_object& proposal)
     {
-//        uint64_t quorum = proposal.data.as_uint64();
-//        _properties_service.set_dropout_quorum(quorum);
+        change_research_review_share_percent_data_type data = get_data<change_research_review_share_percent_data_type>(proposal);
+        _research_service.change_research_review_share_percent(data.review_share_in_percent, data.research_id);
     }
 
     void change_quorum_evaluator(const proposal_object& proposal)

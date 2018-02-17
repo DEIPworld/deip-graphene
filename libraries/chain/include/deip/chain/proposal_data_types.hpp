@@ -155,6 +155,18 @@ struct start_research_token_sale_data_type : base_proposal_data_type {
     }
 };
 
+struct change_research_review_share_percent_data_type : base_proposal_data_type
+{
+    research_id_type research_id;
+    double review_share_in_percent;
+
+    void validate() const
+    {
+        FC_ASSERT(review_share_in_percent >= 0 && review_share_in_percent <= 50,
+                  "Percent for review should be in 0 to 50 range");
+    }
+};
+
 }
 }
 
@@ -178,3 +190,4 @@ FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(c
 
 FC_REFLECT(deip::chain::start_research_token_sale_data_type, (research_id)(start_time)(end_time)(amount_for_sale)(soft_cap)(hard_cap))
 
+FC_REFLECT(deip::chain::change_research_review_share_percent_data_type, (research_id)(review_share_in_percent))
