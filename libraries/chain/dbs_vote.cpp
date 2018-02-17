@@ -134,5 +134,22 @@ const total_votes_object& dbs_vote::create_total_votes(const discipline_id_type&
     return new_total_votes;
 }
 
+const total_votes_object& dbs_vote::get_total_votes_object_by_content_and_discipline(const research_content_id_type& research_content_id,
+                                                                                     const discipline_id_type& discipline_id) const
+{
+    return db_impl().get<total_votes_object, by_content_and_discipline>(boost::make_tuple(research_content_id, discipline_id));
+}
+
+const total_votes_object& dbs_vote::update_total_votes_object(const research_content_id_type& research_content_id,
+                                                              const discipline_id_type& discipline_id,
+                                                              const share_type total_votes_amount)
+{
+
+    const total_votes_object& total_votes = db_impl().get<total_votes_object, by_content_and_discipline>(boost::make_tuple(research_content_id, discipline_id));
+    db_impl().modify(total_votes, [&](total_votes_object& tv_o) { tv_o.total_votes_amount = total_votes_amount; });
+
+    return total_votes;
+}
+
 } //namespace chain
 } //namespace deip

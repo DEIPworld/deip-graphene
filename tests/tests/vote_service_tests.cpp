@@ -41,6 +41,24 @@ public:
         });
     }
 
+    void create_total_votes()
+    {
+        db.create<total_votes_object>([&](total_votes_object& r) {
+            r.id = 1,
+            r.research_id = 1;
+            r.research_content_id = 1;
+            r.discipline_id = 1024;
+            r.total_votes_amount = 1000;
+        });
+
+        db.create<total_votes_object>([&](total_votes_object& r) {
+            r.id = 2,
+            r.research_id = 1;
+            r.research_content_id = 1;
+            r.discipline_id = 2048;
+            r.total_votes_amount = 2000;
+        });
+    }
     dbs_vote& data_service;
 };
 
@@ -158,6 +176,50 @@ BOOST_AUTO_TEST_CASE(get_votes_by_research_content_and_discipline)
             BOOST_CHECK(vote.discipline_id == 1024);
         }
 
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(create_total_votes_object)
+{
+    try
+    {
+        auto& total_votes = data_service.create_total_votes(1, 1, 1);
+
+        BOOST_CHECK(total_votes.discipline_id == 1);
+        BOOST_CHECK(total_votes.research_id == 1);
+        BOOST_CHECK(total_votes.research_content_id == 1);
+        BOOST_CHECK(total_votes.total_votes_amount == 0);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_total_votes_object_by_content_and_discipline)
+{
+    try
+    {
+        create_total_votes();
+        auto& total_votes = data_service.get_total_votes_object_by_content_and_discipline(1, 1024);
+
+        BOOST_CHECK(total_votes.discipline_id == 1024);
+        BOOST_CHECK(total_votes.research_id == 1);
+        BOOST_CHECK(total_votes.research_content_id == 1);
+        BOOST_CHECK(total_votes.total_votes_amount == 1000);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(update_total_votes_object)
+{
+    try
+    {
+        create_total_votes();
+        auto& total_votes = data_service.update_total_votes_object(1, 1024,2000);
+
+        BOOST_CHECK(total_votes.discipline_id == 1024);
+        BOOST_CHECK(total_votes.research_id == 1);
+        BOOST_CHECK(total_votes.research_content_id == 1);
+        BOOST_CHECK(total_votes.total_votes_amount == 2000);
     }
     FC_LOG_AND_RETHROW()
 }

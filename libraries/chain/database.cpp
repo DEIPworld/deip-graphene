@@ -28,6 +28,7 @@
 #include <deip/chain/research_token_object.hpp>
 #include <deip/chain/proposal_vote_evaluator.hpp>
 #include <deip/chain/vote_object.hpp>
+#include <deip/chain/total_votes_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1859,6 +1860,7 @@ void database::initialize_indexes()
     add_index<research_token_sale_index>();
     add_index<research_token_sale_contribution_index>();
     add_index<vote_index>();
+    add_index<total_votes_index>();
 
     _plugin_index_signal();
 }
