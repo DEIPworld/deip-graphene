@@ -108,8 +108,8 @@ const vote_object& dbs_vote::create_vote(const discipline_id_type &discipline_id
 
     const auto& new_vote = db_impl().create<vote_object>([&](vote_object& v) {
         v.discipline_id = discipline_id;
-        v.research_id = research_id,
-        v.research_content_id = research_content_id,
+        v.research_id = research_id;
+        v.research_content_id = research_content_id;
         v.voter = voter;
         v.tokens_amount = tokens_amount;
         v.weight = weight;
