@@ -2807,21 +2807,60 @@ void database::process_intermediate_results_activity()
     {
         dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
         modify(research_content_service.get_content_by_id(itr->id),
-               [&](research_content_object& a) {
+               [&](research_content_object& rc) {
 
-                   if (a.activity_round == 1) {
-                        // the 2nd activity period for intermediate results 
-                        // starts in 2 weeks after the 1st one has ended and goes on for 1 week
-                        a.activity_round = 2;
-                        a.activity_window_start = now + DAYS_TO_SECONDS(14); 
-                        a.activity_window_end = now + DAYS_TO_SECONDS(21);
-                   } else {
-                        // mark intermediate result activity as expired 
-                        // and set the bounds to max value to exclude them from future iterations
-                        a.activity_round = 0;
-                        a.activity_window_start = fc::time_point_sec::maximum();
-                        a.activity_window_end = fc::time_point_sec::maximum();
-                   }
+                    if (rc.type == research_content_type::announcement || 
+                        rc.type == research_content_type::milestone ||
+                        rc.type == research_content_type::review) {
+
+                        switch (rc.activity_round) {
+                            case 1: {
+                                // the 2nd activity period for intermediate results 
+                                // starts in 2 weeks after the 1st one has ended and continues for 1 week
+                                rc.activity_round = 2;
+                                rc.activity_window_start = now + DAYS_TO_SECONDS(14); 
+                                rc.activity_window_end = now + DAYS_TO_SECONDS(14 + 7);
+                                break;
+                            }
+                            default: {
+                                // mark intermediate result activity period as expired 
+                                // and set the bounds to max value to exclude it from future iterations
+                                rc.activity_round = 0;
+                                rc.activity_window_start = fc::time_point_sec::maximum();
+                                rc.activity_window_end = fc::time_point_sec::maximum();
+                                break;
+                            }
+                        }
+
+                    } else if (rc.type == research_content_type::final_result) {
+
+                        switch (rc.activity_round) {
+                            case 1: {
+                                // the 2nd activity period for final results
+                                // starts in 2 months after the 1st one has ended and continues for 1 months
+                                rc.activity_round = 2;
+                                rc.activity_window_start = now + DAYS_TO_SECONDS(60); 
+                                rc.activity_window_end = now + DAYS_TO_SECONDS(60 + 30);
+                                break;
+                            }
+                            case 2: {
+                                // the 3rd activity period for final results
+                                // starts in one half of a year after the 2nd one has ended and continues for 2 weeks
+                                rc.activity_round = 3;
+                                rc.activity_window_start = now + DAYS_TO_SECONDS(182); 
+                                rc.activity_window_end = now + DAYS_TO_SECONDS(182 + 14);
+                                break;
+                            }
+                            default: {
+                                // mark final result activity period as expired 
+                                // and set the bounds to max value to exclude it from future iterations
+                                rc.activity_round = 0;
+                                rc.activity_window_start = fc::time_point_sec::maximum();
+                                rc.activity_window_end = fc::time_point_sec::maximum();
+                                break;
+                            }
+                        }
+                    }
 
                     // TODO: Exclude votes for this intermidiate result 
                     // from global TOTAL DISCIPLINE VOTES object that affects on the current distribution
