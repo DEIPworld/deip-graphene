@@ -189,7 +189,7 @@ protected:
     void change_research_review_share_evaluator(const proposal_object& proposal)
     {
         change_research_review_share_percent_data_type data = get_data<change_research_review_share_percent_data_type>(proposal);
-        _research_service.change_research_review_share_percent(data.review_share_in_percent, data.research_id);
+        _research_service.change_research_review_share_percent(data.research_id, data.review_share_in_percent);
     }
 
     void change_quorum_evaluator(const proposal_object& proposal)

@@ -141,7 +141,20 @@ BOOST_AUTO_TEST_CASE(decrease_owned_tokens_test){
 
     }
     FC_LOG_AND_RETHROW()
-}    
+}
+
+BOOST_AUTO_TEST_CASE(change_research_review_share_percent_test){
+    try
+    {
+        create_researches();
+
+        auto& research = db.get<research_object, by_id>(1);
+        BOOST_CHECK_NO_THROW(data_service.change_research_review_share_percent(1,  45.1));
+        BOOST_CHECK(research.review_share_in_percent ==  45.1);
+
+    }
+    FC_LOG_AND_RETHROW()
+}        
 
 BOOST_AUTO_TEST_SUITE_END()
 
