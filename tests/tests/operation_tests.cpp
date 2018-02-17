@@ -19,6 +19,8 @@
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
+#include <deip/chain/research_discipline_relation_object.hpp>
+#include <deip/chain/expert_token_object.hpp>
 
 using namespace deip;
 using namespace deip::chain;
@@ -92,9 +94,10 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
 
         ACTORS((alice));
 
+        generate_block();
+
         auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10);
 
-        generate_block();
         private_key_type priv_key = generate_private_key("alice");
 
         make_research_review_operation op;
@@ -110,7 +113,7 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
         tx.operations.push_back(op);
-        tx.sign(init_account_priv_key, db.get_chain_id());
+        tx.sign(priv_key, db.get_chain_id());
         tx.validate();
         db.push_transaction(tx, 0);
 
@@ -119,6 +122,66 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         BOOST_CHECK(research_content.type == review);
 
 
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(vote_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: make_review_research_apply");
+
+        ACTORS((alice)(bob));
+
+        generate_block();
+
+        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10);
+        auto& discipline = discipline_create(1, "Math", 0, 0);
+        auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+            r.discipline_id = discipline.id;
+            r.research_id = research.id;
+            r.votes_count = 0;
+        });
+
+        auto& token = db.create<expert_token_object>([&](expert_token_object& t) {
+            t.id = 1;
+            t.discipline_id = discipline.id;
+            t.amount = 1000;
+            t.voting_power = DEIP_100_PERCENT;
+            t.account_name = "alice";
+        });
+
+        auto& content = db.create<research_content_object>([&](research_content_object& c) {
+            c.id = 1;
+            c.created_at = db.head_block_time();
+            c.research_id = research.id;
+            c.authors = { "alice", "bob" };
+            c.content = "content";
+            c.research_references = {};
+            c.research_external_references = { "http://google.com" };
+            c.type = research_content_type::milestone;
+        });
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        vote_operation op;
+
+        op.research_id = research.id._id;
+        op.research_content_id = content.id._id;
+        op.discipline_id = discipline.id._id;
+        op.weight = 50 * DEIP_1_PERCENT;
+        op.voter = "alice";
+        op.permlink = "permlink";
+
+        BOOST_TEST_MESSAGE("--- Test normal vote");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
     }
     FC_LOG_AND_RETHROW()
 }

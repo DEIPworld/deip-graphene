@@ -39,6 +39,7 @@ public:
     int16_t weight;
     uint16_t voting_power;
     time_point_sec voting_time;
+    int8_t num_changes = 0;
 };
 
 struct by_discipline_id;
@@ -89,10 +90,7 @@ typedef multi_index_container<vote_object,
                                         &vote_object::discipline_id>,
                                 member<vote_object,
                                         research_id_type,
-                                        &vote_object::research_id>>,
-                                composite_key_compare<std::less<account_name_type>,
-                                                      std::less<discipline_id_type>,
-                                                      std::less<research_id_type>>>,
+                                        &vote_object::research_id>>>,
                 ordered_non_unique<tag<by_voter_discipline_and_content>,
                         composite_key<vote_object,
                                 member<vote_object,
@@ -103,10 +101,7 @@ typedef multi_index_container<vote_object,
                                         &vote_object::discipline_id>,
                                 member<vote_object,
                                         research_content_id_type,
-                                        &vote_object::research_content_id>>,
-                                composite_key_compare<std::less<account_name_type>,
-                                                      std::less<discipline_id_type>,
-                                                      std::less<research_content_id_type>>>,
+                                        &vote_object::research_content_id>>>,
                 ordered_non_unique<tag<by_research_content_id>,
                         member<vote_object,
                                 research_content_id_type,

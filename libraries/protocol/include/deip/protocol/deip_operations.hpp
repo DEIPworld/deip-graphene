@@ -207,8 +207,8 @@ struct vote_operation : public base_operation
     uint64_t discipline_id;
     string permlink;
     int16_t weight = 0;
-    uint128_t research_id;
-    uint128_t research_content_id;
+    uint64_t research_id;
+    uint64_t research_content_id;
 
     void validate() const;
     void get_required_posting_authorities(flat_set<account_name_type>& a) const
