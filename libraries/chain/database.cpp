@@ -28,6 +28,7 @@
 #include <deip/chain/research_token_object.hpp>
 #include <deip/chain/proposal_vote_evaluator.hpp>
 #include <deip/chain/vote_object.hpp>
+#include <deip/chain/total_votes_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1634,12 +1635,11 @@ void database::refund_research_tokens(const research_token_sale_id_type research
     modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
 }
 
-void database::research_token_holders_reward_distribution(const research_id_type research_id, share_type reward)
+void database::research_token_holders_reward_distribution(const research_id_type research_id, const share_type reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
     dbs_research& research_service = obtain_service<dbs_research>();
-    dbs_research_token& research_token_service = obtain_service<dbs_research_token>();
-    
+
     auto& research = research_service.get_research(research_id);
     
     auto research_group_reward = (research.owned_tokens * reward) / DEIP_100_PERCENT;
@@ -1648,7 +1648,6 @@ void database::research_token_holders_reward_distribution(const research_id_type
     {
         dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
         research_group_service.increase_research_group_funds(research.research_group_id, research_group_reward);
-        reward -= research_group_reward;
     }
 
     const auto& idx = get_index<research_token_index>().indicies().get<by_research_id>().equal_range(research.id);
@@ -1658,11 +1657,60 @@ void database::research_token_holders_reward_distribution(const research_id_type
 
     while (it != it_end)
     {
-        auto reward_amount = (it->amount * reward) / research.owned_tokens;
+        auto reward_amount = (it->amount * reward) / DEIP_100_PERCENT;
         account_service.increase_balance(account_service.get_account(it->account_name), reward_amount);
         ++it;
     }
     
+}
+
+void database::distribute_voters_reward(const discipline_id_type discipline_id, const research_content_id_type research_content_id,
+                                        const share_type deips_amount, const share_type total_weight)
+{
+    dbs_account& account_service = obtain_service<dbs_account>();
+
+    const auto& idx = get_index<vote_index>().indicies().
+            get<by_content_and_discipline>().equal_range(std::make_tuple(research_content_id, discipline_id));
+
+    auto it = idx.first;
+    const auto it_end = idx.second;
+
+    while (it != it_end)
+    {
+        auto reward_amount = (it->weight * deips_amount) / total_weight;
+        account_service.increase_balance(account_service.get_account(it->voter), reward_amount);
+        ++it;
+    }
+}
+
+void database::distribute_references_reward(const research_content_id_type research_content_id, const share_type reward)
+{
+    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
+
+    auto& research_content = research_content_service.get_content_by_id(research_content_id);
+
+    std::vector<std::pair<research_id_type, share_type>> research_votes_by_id;
+    share_type total_votes_amount = 0;
+
+    for (auto research_id : research_content.research_references)
+    {
+        share_type votes = 0;
+        const auto& idx = get_index<vote_index>().indicies().get<by_research_id>().equal_range(research_id);
+
+        auto it = idx.first;
+        const auto it_end = idx.second;
+
+        while (it != it_end)
+        {
+            votes += it->weight;
+            ++it;
+        }
+        total_votes_amount += votes;
+        research_votes_by_id.push_back(std::make_pair(research_id, votes));
+    }
+
+    for (auto& research_votes : research_votes_by_id)
+        research_token_holders_reward_distribution(research_votes.first, (research_votes.second * reward) / total_votes_amount);
 }
     
 void database::process_research_token_sales()
@@ -1812,6 +1860,7 @@ void database::initialize_indexes()
     add_index<research_token_sale_index>();
     add_index<research_token_sale_contribution_index>();
     add_index<vote_index>();
+    add_index<total_votes_index>();
 
     _plugin_index_signal();
 }

@@ -6,6 +6,7 @@
 #include <functional>
 
 #include <deip/chain/vote_object.hpp>
+#include <deip/chain/total_votes_object.hpp>
 
 namespace deip {
 namespace chain {
@@ -40,6 +41,22 @@ public:
                                    const int16_t& weight,
                                    const uint16_t& voting_power,
                                    const time_point_sec& voting_time);
+
+    // total_votes_object
+
+    using total_votes_refs_type = std::vector<std::reference_wrapper<const total_votes_object>>;
+
+    const total_votes_object& create_total_votes(const discipline_id_type& discipline_id,
+                                                 const research_id_type& research_id,
+                                                 const research_content_id_type& research_content_id);
+
+    const total_votes_object& get_total_votes_object_by_content_and_discipline(const research_content_id_type& research_content_id,
+                                                                               const discipline_id_type& discipline_id) const;
+
+    const total_votes_object& update_total_votes_object(const research_content_id_type& research_content_id,
+                                                        const discipline_id_type& discipline_id,
+                                                        const share_type total_votes_amount);
+
 
 };
 } // namespace chain
