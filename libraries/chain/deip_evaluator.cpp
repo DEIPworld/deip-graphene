@@ -915,6 +915,8 @@ void vote_evaluator::do_apply(const vote_operation& o)
     dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
     dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
 
     try
     {
@@ -925,6 +927,8 @@ void vote_evaluator::do_apply(const vote_operation& o)
 
         FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
 
+        research_service.check_research_existence(o.research_id);
+
         if (o.discipline_id != 0) {
             discipline_service.check_discipline_existence(o.discipline_id);
         }
@@ -932,10 +936,9 @@ void vote_evaluator::do_apply(const vote_operation& o)
         expert_token_service.check_expert_token_existence_by_account_and_discipline(o.voter, o.discipline_id);
 
         std::vector<discipline_id_type> target_disciplines;
-        research_id_type research_id;
 
         dbs_research_discipline_relation& research_disciplines_service = _db.obtain_service<dbs_research_discipline_relation>();
-        const auto& relations = research_disciplines_service.get_research_discipline_relations_by_research(research_id);
+        const auto& relations = research_disciplines_service.get_research_discipline_relations_by_research(o.research_id);
         for (auto& relation_wrapper : relations) {
             const auto& relation = relation_wrapper.get();
             target_disciplines.push_back(relation.discipline_id);
@@ -954,6 +957,15 @@ void vote_evaluator::do_apply(const vote_operation& o)
 
         const auto& vote_idx = _db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
         auto itr = vote_idx.find(std::make_tuple(voter.name, o.discipline_id, o.research_content_id));
+
+        const auto& total_votes_idx = _db._temporary_public_impl().get_index<total_votes_index>().indices().get<by_content_and_discipline>();
+        auto total_votes_itr = total_votes_idx.find(std::make_tuple(o.research_content_id, o.discipline_id));
+
+        // Create total_votes_object if it does not exist yet
+        if (total_votes_itr == total_votes_idx.end())
+        {
+            vote_service.create_total_votes(o.discipline_id, o.research_id, o.research_content_id);
+        }
 
         int64_t elapsed_seconds   = (_db.head_block_time() - token.last_vote_time).to_seconds();
 
@@ -977,6 +989,11 @@ void vote_evaluator::do_apply(const vote_operation& o)
         FC_ASSERT(abs_used_tokens > DEIP_VOTE_DUST_THRESHOLD || o.weight == 0,
                   "Voting weight is too small, please accumulate more voting power or DEIP power.");
 
+        auto& total_votes_object = vote_service
+                .get_total_votes_object_by_content_and_discipline(o.research_content_id, o.discipline_id);
+
+        const auto& old_votes = total_votes_object.total_votes_amount;
+
         if (itr == vote_idx.end())
         {
             FC_ASSERT(o.weight != 0, "Vote weight cannot be 0.");
@@ -990,6 +1007,8 @@ void vote_evaluator::do_apply(const vote_operation& o)
             });
 
             FC_ASSERT(abs_used_tokens > 0, "Cannot vote with 0 rshares.");
+
+            vote_service.update_total_votes(total_votes_object, old_votes + rshares);
 
             uint64_t max_vote_weight = 0;
 
@@ -1015,29 +1034,29 @@ void vote_evaluator::do_apply(const vote_operation& o)
             _db._temporary_public_impl().create<vote_object>([&](vote_object& v) {
                 v.voter = voter.name;
                 v.discipline_id = o.discipline_id;
-                v.research_id = o.research_id.to_uint64();
-                v.research_content_id = o.research_content_id.to_uint64();
+                v.research_id = o.research_id;
+                v.research_content_id = o.research_content_id;
                 v.weight = o.weight;
                 v.voting_power = used_power;
                 v.tokens_amount = abs_used_tokens;
                 v.voting_time = _db.head_block_time();
 
+                auto curve = curve_id::quadratic;
+                uint64_t old_weight = util::evaluate_reward_curve(old_votes.value, curve).to_uint64();
+                uint64_t new_weight = util::evaluate_reward_curve(total_votes_object.total_votes_amount.value, curve).to_uint64();
+                v.weight = new_weight - old_weight;
 
-                    auto curve = curve_id::quadratic;
-//                    uint64_t old_weight = util::evaluate_reward_curve(old_vote_rshares.value, curve).to_uint64();
-//                    uint64_t new_weight = util::evaluate_reward_curve(comment.vote_rshares.value, curve).to_uint64();
-//                    cv.weight = new_weight - old_weight;
-//
-//                    max_vote_weight = cv.weight;
-//
-//                    /// discount weight by time
-//                    uint128_t w(max_vote_weight);
-//                    uint64_t delta_t = std::min(uint64_t((cv.last_update - comment.created).to_seconds()),
-//                                                uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
-//
-//                    w *= delta_t;
-//                    w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
-//                    cv.weight = w.to_uint64();
+                max_vote_weight = v.weight;
+
+                /// discount weight by time
+                const auto& content = research_content_service.get_content_by_id(o.research_content_id);
+                uint128_t w(max_vote_weight);
+                uint64_t delta_t = std::min(uint64_t((v.voting_time - content.created_at).to_seconds()),
+                                            uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
+
+                w *= delta_t;
+                w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
+                v.weight = w.to_uint64();
 
             });
         }
@@ -1046,7 +1065,7 @@ void vote_evaluator::do_apply(const vote_operation& o)
 //            FC_ASSERT(itr->num_changes < DEIP_MAX_VOTE_CHANGES,
 //                      "Voter has used the maximum number of vote changes on this comment.");
 //
-//            FC_ASSERT(itr->vote_percent != o.weight, "You have already voted in a similar way.");
+//            FC_ASSERT(itr->weight != o.weight, "You have already voted in a similar way.");
 //
 //            /// this is the rshares voting for or against the post
 //            int64_t rshares = o.weight < 0 ? -abs_used_tokens : abs_used_tokens;
