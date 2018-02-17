@@ -19,13 +19,36 @@ const research_content_object& dbs_research_content::create(const research_id_ty
                                                             const std::vector<string>& research_external_references)
 {
     const auto& new_research_content = db_impl().create<research_content_object>([&](research_content_object& rc) {
+        
+        auto now = db_impl().head_block_time();
+        
         rc.research_id = research_id;
         rc.type = type;
         rc.content = content;
         rc.authors = authors;
-        rc.created_at = db_impl().head_block_time();
+        rc.created_at = now;
         rc.research_references = research_references;
         rc.research_external_references = research_external_references;
+
+        rc.activity_round = 1;
+        rc.activity_state = research_content_activity_state::active;
+
+        if (type == research_content_type::announcement || 
+            type == research_content_type::milestone ||
+            type == research_content_type::review) {
+
+            // the 1st activity period for intermediate result starts immediately 
+            // after publishing and continues for 2 weeks
+            rc.activity_window_start = now;
+            rc.activity_window_end = now + DAYS_TO_SECONDS(14);
+
+        } else if (type == research_content_type::final_result) {
+            // the 1st activity period for final result starts immediately 
+            // after publishing and continues for 2 months
+            rc.activity_window_start = now;
+            rc.activity_window_end = now + DAYS_TO_SECONDS(60);
+        }
+
     });
 
     return new_research_content;
