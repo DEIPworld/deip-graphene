@@ -986,9 +986,6 @@ void vote_evaluator::do_apply(const vote_operation& o)
             = ((uint128_t(token.amount.value) * used_power) / (DEIP_100_PERCENT))
                   .to_uint64();
 
-        FC_ASSERT(abs_used_tokens > DEIP_VOTE_DUST_THRESHOLD || o.weight == 0,
-                  "Voting weight is too small, please accumulate more voting power or DEIP power.");
-
         auto& total_votes_object = vote_service
                 .get_total_votes_object_by_content_and_discipline(o.research_content_id, o.discipline_id);
 
