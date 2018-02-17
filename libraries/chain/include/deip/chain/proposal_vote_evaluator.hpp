@@ -195,7 +195,6 @@ protected:
     void change_quorum_evaluator(const proposal_object& proposal)
     {
         change_quorum_proposal_data_type data = get_data<change_quorum_proposal_data_type>(proposal);
-        _research_group_service.check_research_group_existence(data.research_group_id);
         _research_group_service.change_quorum(data.quorum_percent, data.research_group_id);
     }
 
