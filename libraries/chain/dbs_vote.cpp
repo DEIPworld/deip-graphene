@@ -146,5 +146,20 @@ const total_votes_object& dbs_vote::update_total_votes(const total_votes_object&
     return total_votes;
 }
 
+dbs_vote::total_votes_refs_type dbs_vote::get_total_votes_object_by_content(const research_content_id_type& research_content_id) const
+{
+    total_votes_refs_type ret;
+    
+    auto it_pair = db_impl().get_index<total_votes_index>().indicies().get<by_research_content_id>().equal_range(research_content_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+    return ret;
+}
+
 } //namespace chain
 } //namespace deip

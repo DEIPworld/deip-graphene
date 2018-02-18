@@ -33,6 +33,9 @@ public:
     discipline_id_type parent_id;
     discipline_name_type name;
     share_type votes_in_last_ten_weeks;
+
+    share_type total_review_active_votes;
+    share_type total_research_active_votes;
 };
 
 struct by_discipline_name;
