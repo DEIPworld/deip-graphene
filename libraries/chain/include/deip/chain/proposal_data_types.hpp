@@ -62,7 +62,7 @@ struct start_research_proposal_data_type : base_proposal_data_type
         FC_ASSERT(!abstract.empty(), "Research abstract cannot be empty");
         FC_ASSERT(permlink.size() < DEIP_MAX_PERMLINK_LENGTH, "Research permlink is too long");
         FC_ASSERT(fc::is_utf8(permlink), "Research permlink should be valid UTF8 string");
-        FC_ASSERT(review_share_in_percent >= 0 && review_share_in_percent <= 50, "Percent for review should be in 0 to 50 range");
+        FC_ASSERT(review_share_in_percent >= 0 && review_share_in_percent <= 50 * DEIP_1_PERCENT, "Percent for review should be in 0 to 50 range");
     }
 };
 
@@ -162,7 +162,7 @@ struct change_research_review_share_percent_data_type : base_proposal_data_type
 
     void validate() const
     {
-        FC_ASSERT(review_share_in_percent >= 0 && review_share_in_percent <= 50,
+        FC_ASSERT(review_share_in_percent >= 0 && review_share_in_percent <= 50 * DEIP_1_PERCENT,
                   "Percent for review should be in 0 to 50 range");
     }
 };
