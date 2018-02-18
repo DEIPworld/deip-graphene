@@ -2087,6 +2087,7 @@ void database::_apply_block(const signed_block& next_block)
         process_decline_voting_rights();
 
         clear_expired_proposals();
+        process_content_activity_windows();
 
         process_hardforks();
 
@@ -2800,7 +2801,7 @@ void database::retally_witness_votes()
     }
 }
 
-void database::process_content_activity_period()
+void database::process_content_activity_windows()
 {
     auto now = head_block_time();
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
