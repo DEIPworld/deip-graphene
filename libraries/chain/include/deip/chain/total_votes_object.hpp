@@ -35,14 +35,17 @@ public:
     research_id_type research_id;
     research_content_id_type research_content_id;
 
-    share_type total_votes_amount;
-    share_type total_active_votes_amount;
+    share_type total_weight;
+    share_type total_active_weight;
 
-    share_type total_research_reward_votes_amount;
-    share_type total_active_research_reward_votes_amount;
+    share_type total_research_reward_weight;
+    share_type total_active_research_reward_weight;
 
-    share_type total_curators_reward_votes_amount;
-    share_type total_active_curators_reward_votes_amount;
+    share_type total_curators_reward_weight;
+    share_type total_active_curators_reward_weight;
+
+    share_type total_review_reward_weight;
+    share_type total_active_review_reward_weight;
 };
 
 struct by_discipline_id;
@@ -85,9 +88,9 @@ typedef multi_index_container<total_votes_object,
 }
 }
 
-FC_REFLECT( deip::chain::total_votes_object,(id)(discipline_id)(research_id)(research_content_id)(total_votes_amount)
-        (total_active_votes_amount)(total_research_reward_votes_amount)(total_active_research_reward_votes_amount)
-        (total_curators_reward_votes_amount)(total_active_curators_reward_votes_amount))
+FC_REFLECT( deip::chain::total_votes_object,(id)(discipline_id)(research_id)(research_content_id)(total_weight)
+        (total_active_weight)(total_research_reward_weight)(total_active_research_reward_weight)
+        (total_curators_reward_weight)(total_active_curators_reward_weight))
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::total_votes_object, deip::chain::total_votes_index )
 

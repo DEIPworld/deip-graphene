@@ -919,7 +919,8 @@ void vote_evaluator::do_apply(const vote_operation& o)
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
 
     auto research_reward_curve = curve_id::power1dot5;
-    auto curators_reward_curve = curve_id::quadratic;
+    auto curators_reward_curve = curve_id::power1dot5;
+    auto review_reward_curve = curve_id::power1dot5;
 
     try
     {
@@ -1008,18 +1009,24 @@ void vote_evaluator::do_apply(const vote_operation& o)
 
             FC_ASSERT(abs_used_tokens > 0, "Cannot vote with 0 rshares.");
 
-            auto old_votes = tvo.total_votes_amount;
+            auto old_weight = tvo.total_weight;
 
             _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
-                t.total_votes_amount += rshares;
+                t.total_weight += rshares;
                 if (content_is_active) {
-                    t.total_active_votes_amount += rshares;
+                    t.total_active_weight += rshares;
                 }
 
-                t.total_research_reward_votes_amount += util::evaluate_reward_curve(rshares, research_reward_curve).to_uint64();
+                t.total_research_reward_weight += util::evaluate_reward_curve(rshares, research_reward_curve).to_uint64();
                 if (content_is_active) {
-                    t.total_active_research_reward_votes_amount
+                    t.total_active_research_reward_weight
                             += util::evaluate_reward_curve(rshares, research_reward_curve).to_uint64();
+                }
+
+                t.total_review_reward_weight += util::evaluate_reward_curve(rshares, review_reward_curve).to_uint64();
+                if (content_is_active) {
+                    t.total_active_review_reward_weight
+                            += util::evaluate_reward_curve(rshares, review_reward_curve).to_uint64();
                 }
             });
 
@@ -1054,8 +1061,8 @@ void vote_evaluator::do_apply(const vote_operation& o)
                 v.tokens_amount = abs_used_tokens;
                 v.voting_time = _db.head_block_time();
 
-                uint64_t old_weight = util::evaluate_reward_curve(old_votes.value, curators_reward_curve).to_uint64();
-                uint64_t new_weight = util::evaluate_reward_curve(tvo.total_votes_amount.value, curators_reward_curve).to_uint64();
+                uint64_t old_weight = util::evaluate_reward_curve(old_weight, curators_reward_curve).to_uint64();
+                uint64_t new_weight = util::evaluate_reward_curve(tvo.total_weight.value, curators_reward_curve).to_uint64();
                 v.weight = new_weight - old_weight;
 
                 max_vote_weight = v.weight;
@@ -1071,9 +1078,9 @@ void vote_evaluator::do_apply(const vote_operation& o)
             });
 
             _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
-                t.total_curators_reward_votes_amount += vote.weight;
+                t.total_curators_reward_weight += vote.weight;
                 if (content_is_active) {
-                    t.total_active_research_reward_votes_amount += vote.weight;
+                    t.total_active_research_reward_weight += vote.weight;
                 }
             });
         }
