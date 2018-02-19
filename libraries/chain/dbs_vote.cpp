@@ -128,7 +128,14 @@ const total_votes_object& dbs_vote::create_total_votes(const discipline_id_type&
         v_o.discipline_id = discipline_id;
         v_o.research_id = research_id;
         v_o.research_content_id = research_content_id;
-        v_o.total_votes_amount = 0;
+        v_o.total_weight = 0;
+        v_o.total_active_weight = 0;
+        v_o.total_research_reward_weight = 0;
+        v_o.total_active_research_reward_weight = 0;
+        v_o.total_curators_reward_weight = 0;
+        v_o.total_active_curators_reward_weight = 0;
+        v_o.total_review_reward_weight = 0;
+        v_o.total_active_review_reward_weight = 0;
     });
 
     return new_total_votes;
@@ -140,9 +147,9 @@ const total_votes_object& dbs_vote::get_total_votes_object_by_content_and_discip
     return db_impl().get<total_votes_object, by_content_and_discipline>(boost::make_tuple(research_content_id, discipline_id));
 }
 
-const total_votes_object& dbs_vote::update_total_votes(const total_votes_object& total_votes, const share_type total_votes_amount)
+const total_votes_object& dbs_vote::update_total_votes(const total_votes_object& total_votes, const share_type total_weight)
 {
-    db_impl().modify(total_votes, [&](total_votes_object& tv_o) { tv_o.total_votes_amount = total_votes_amount; });
+    db_impl().modify(total_votes, [&](total_votes_object& tv_o) { tv_o.total_weight = total_weight; });
     return total_votes;
 }
 

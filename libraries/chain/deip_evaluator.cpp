@@ -918,6 +918,10 @@ void vote_evaluator::do_apply(const vote_operation& o)
     dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
 
+    auto research_reward_curve = curve_id::power1dot5;
+    auto curators_reward_curve = curve_id::power1dot5;
+    auto review_reward_curve = curve_id::power1dot5;
+
     try
     {
         const auto& voter = account_service.get_account(o.voter);
@@ -934,6 +938,8 @@ void vote_evaluator::do_apply(const vote_operation& o)
         }
 
         expert_token_service.check_expert_token_existence_by_account_and_discipline(o.voter, o.discipline_id);
+
+        const auto& content = research_content_service.get_content_by_id(o.research_content_id);
 
         std::vector<discipline_id_type> target_disciplines;
 
@@ -978,18 +984,16 @@ void vote_evaluator::do_apply(const vote_operation& o)
 
         used_power /= 10;
 
-        const dynamic_global_property_object& dgpo = _db.get_dynamic_global_properties();
-
         FC_ASSERT(used_power <= current_power, "Account does not have enough power to vote.");
 
         uint64_t abs_used_tokens
             = ((uint128_t(token.amount.value) * used_power) / (DEIP_100_PERCENT))
                   .to_uint64();
 
-        auto& total_votes_object = vote_service
+        auto& tvo = vote_service
                 .get_total_votes_object_by_content_and_discipline(o.research_content_id, o.discipline_id);
 
-        const auto& old_votes = total_votes_object.total_votes_amount;
+        bool content_is_active = content.activity_state == research_content_activity_state::active;
 
         if (itr == vote_idx.end())
         {
@@ -1005,7 +1009,26 @@ void vote_evaluator::do_apply(const vote_operation& o)
 
             FC_ASSERT(abs_used_tokens > 0, "Cannot vote with 0 rshares.");
 
-            vote_service.update_total_votes(total_votes_object, old_votes + rshares);
+            auto old_weight = tvo.total_weight;
+
+            _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
+                t.total_weight += rshares;
+                if (content_is_active) {
+                    t.total_active_weight += rshares;
+                }
+
+                t.total_research_reward_weight += util::evaluate_reward_curve(rshares, research_reward_curve).to_uint64();
+                if (content_is_active) {
+                    t.total_active_research_reward_weight
+                            += util::evaluate_reward_curve(rshares, research_reward_curve).to_uint64();
+                }
+
+                t.total_review_reward_weight += util::evaluate_reward_curve(rshares, review_reward_curve).to_uint64();
+                if (content_is_active) {
+                    t.total_active_review_reward_weight
+                            += util::evaluate_reward_curve(rshares, review_reward_curve).to_uint64();
+                }
+            });
 
             uint64_t max_vote_weight = 0;
 
@@ -1028,7 +1051,7 @@ void vote_evaluator::do_apply(const vote_operation& o)
              *integer.
              *
              **/
-            _db._temporary_public_impl().create<vote_object>([&](vote_object& v) {
+            auto& vote = _db._temporary_public_impl().create<vote_object>([&](vote_object& v) {
                 v.voter = voter.name;
                 v.discipline_id = o.discipline_id;
                 v.research_id = o.research_id;
@@ -1038,15 +1061,13 @@ void vote_evaluator::do_apply(const vote_operation& o)
                 v.tokens_amount = abs_used_tokens;
                 v.voting_time = _db.head_block_time();
 
-                auto curve = curve_id::quadratic;
-                uint64_t old_weight = util::evaluate_reward_curve(old_votes.value, curve).to_uint64();
-                uint64_t new_weight = util::evaluate_reward_curve(total_votes_object.total_votes_amount.value, curve).to_uint64();
+                uint64_t old_weight = util::evaluate_reward_curve(old_weight, curators_reward_curve).to_uint64();
+                uint64_t new_weight = util::evaluate_reward_curve(tvo.total_weight.value, curators_reward_curve).to_uint64();
                 v.weight = new_weight - old_weight;
 
                 max_vote_weight = v.weight;
 
                 /// discount weight by time
-                const auto& content = research_content_service.get_content_by_id(o.research_content_id);
                 uint128_t w(max_vote_weight);
                 uint64_t delta_t = std::min(uint64_t((v.voting_time - content.created_at).to_seconds()),
                                             uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
@@ -1054,7 +1075,13 @@ void vote_evaluator::do_apply(const vote_operation& o)
                 w *= delta_t;
                 w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
                 v.weight = w.to_uint64();
+            });
 
+            _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
+                t.total_curators_reward_weight += vote.weight;
+                if (content_is_active) {
+                    t.total_active_research_reward_weight += vote.weight;
+                }
             });
         }
         else

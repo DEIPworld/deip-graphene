@@ -53,8 +53,11 @@ public:
     const total_votes_object& get_total_votes_object_by_content_and_discipline(const research_content_id_type& research_content_id,
                                                                                const discipline_id_type& discipline_id) const;
 
-    const total_votes_object& update_total_votes(const total_votes_object& total_votes, const share_type total_votes_amount);
+    const total_votes_object& update_total_votes(const total_votes_object& total_votes, const share_type total_weight);
     total_votes_refs_type get_total_votes_object_by_content(const research_content_id_type& research_content_id) const;
+
+
+
 };
 } // namespace chain
 } // namespace deip

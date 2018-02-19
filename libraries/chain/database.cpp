@@ -2810,7 +2810,7 @@ void database::process_content_activity_windows()
 
     const auto& research_content_by_activity_end = get_index<research_content_index, by_activity_window_end>();
     auto itr_by_end = research_content_by_activity_end.begin();
-    std::map<discipline_id_type, std::map<research_content_type, share_type>> expired_active_votes;
+    std::map<discipline_id_type, std::map<research_content_type, share_type>> expired_active_weight;
 
     // close activity windows for content with expired end point
     while (itr_by_end != research_content_by_activity_end.end() && itr_by_end->activity_window_end < now)
@@ -2881,18 +2881,22 @@ void database::process_content_activity_windows()
         for (auto wrapper : rc_total_votes_refs) {
             const total_votes_object& rc_total_votes = wrapper.get();
 
-            if (expired_active_votes.find(rc_total_votes.discipline_id) != expired_active_votes.end()) {
+            share_type expired_votes = itr_by_end->type == research_content_type::review 
+                        ? rc_total_votes.total_active_review_reward_weight
+                        : rc_total_votes.total_active_research_reward_weight;
+    
+            if (expired_active_weight.find(rc_total_votes.discipline_id) != expired_active_weight.end()) {
 
-                std::map<research_content_type, share_type>& votes_by_content_type = expired_active_votes[rc_total_votes.discipline_id];
+                std::map<research_content_type, share_type>& votes_by_content_type = expired_active_weight[rc_total_votes.discipline_id];
                     
                 if (votes_by_content_type.find(itr_by_end->type) != votes_by_content_type.end()) {
-                    votes_by_content_type[itr_by_end->type] += rc_total_votes.total_active_votes_amount;
+                    votes_by_content_type[itr_by_end->type] += expired_votes;
                 } else {
-                    votes_by_content_type[itr_by_end->type] = rc_total_votes.total_active_votes_amount;
+                    votes_by_content_type[itr_by_end->type] = expired_votes;
                 }
 
             } else {
-                expired_active_votes[rc_total_votes.discipline_id][itr_by_end->type] = rc_total_votes.total_active_votes_amount;
+                expired_active_weight[rc_total_votes.discipline_id][itr_by_end->type] = expired_votes;
             }
         }
 
@@ -2900,16 +2904,16 @@ void database::process_content_activity_windows()
     }
 
     // decrease total active votes in discipline object
-    for(auto it = expired_active_votes.begin(); it != expired_active_votes.end(); it++)
+    for(auto it = expired_active_weight.begin(); it != expired_active_weight.end(); it++)
     {
         discipline_id_type discipline_id = it->first;
         std::map<research_content_type, share_type> votes_by_content_type = it->second;
 
-        share_type expired_review_votes = 
+        share_type expired_review_weight = 
             votes_by_content_type.find(research_content_type::review) != votes_by_content_type.end() 
             ? votes_by_content_type[research_content_type::review] : share_type(0);
 
-        share_type expired_research_votes = std::accumulate( votes_by_content_type.begin(), votes_by_content_type.end(), share_type(0),
+        share_type expired_research_weight = std::accumulate( votes_by_content_type.begin(), votes_by_content_type.end(), share_type(0),
                         [](share_type acc, std::pair<research_content_type, share_type> p) {
                             if (p.first != research_content_type::review) {
                                 return acc + p.second; 
@@ -2918,8 +2922,8 @@ void database::process_content_activity_windows()
                         });
 
         modify(discipline_service.get_discipline(discipline_id), [&](discipline_object& d) {
-            d.total_review_active_votes -= expired_review_votes;
-            d.total_research_active_votes -= expired_research_votes;
+            d.total_active_review_reward_weight -= expired_review_weight;
+            d.total_active_research_reward_weight -= expired_research_weight;
         });
     }
 
@@ -2927,7 +2931,7 @@ void database::process_content_activity_windows()
 
     const auto& research_content_by_activity_start = get_index<research_content_index, by_activity_window_start>();
     auto itr_by_start = research_content_by_activity_start.begin();
-    std::map<discipline_id_type, std::map<research_content_type, share_type>> resumed_active_votes;
+    std::map<discipline_id_type, std::map<research_content_type, share_type>> resumed_active_weight;
 
     // reopen activity windows for content with actual start point
     while (itr_by_start != research_content_by_activity_start.end() && itr_by_start->activity_window_start < now)
@@ -2944,18 +2948,22 @@ void database::process_content_activity_windows()
             for (auto wrapper : rc_total_votes_refs) {
                 const total_votes_object& rc_total_votes = wrapper.get();
 
-                if (resumed_active_votes.find(rc_total_votes.discipline_id) != resumed_active_votes.end()) {
+                share_type resumed_votes = itr_by_start->type == research_content_type::review 
+                        ? rc_total_votes.total_active_review_reward_weight
+                        : rc_total_votes.total_active_research_reward_weight;
 
-                    std::map<research_content_type, share_type>& votes_by_content_type = resumed_active_votes[rc_total_votes.discipline_id];
+                if (resumed_active_weight.find(rc_total_votes.discipline_id) != resumed_active_weight.end()) {
+
+                    std::map<research_content_type, share_type>& votes_by_content_type = resumed_active_weight[rc_total_votes.discipline_id];
                     
                     if (votes_by_content_type.find(itr_by_start->type) != votes_by_content_type.end()) {
-                        votes_by_content_type[itr_by_start->type] += rc_total_votes.total_active_votes_amount;
+                        votes_by_content_type[itr_by_start->type] += resumed_votes;
                     } else {
-                        votes_by_content_type[itr_by_start->type] = rc_total_votes.total_active_votes_amount;
+                        votes_by_content_type[itr_by_start->type] = resumed_votes;
                     }
 
                 } else {
-                    resumed_active_votes[rc_total_votes.discipline_id][itr_by_start->type] = rc_total_votes.total_active_votes_amount;
+                    resumed_active_weight[rc_total_votes.discipline_id][itr_by_start->type] = resumed_votes;
                 }
             }
         }
@@ -2965,16 +2973,16 @@ void database::process_content_activity_windows()
 
 
     // increase total active votes in discipline object
-    for(auto it = resumed_active_votes.begin(); it != resumed_active_votes.end(); it++)
+    for(auto it = resumed_active_weight.begin(); it != resumed_active_weight.end(); it++)
     {
         discipline_id_type discipline_id = it->first;
         std::map<research_content_type, share_type> votes_by_content_type = it->second;
 
-        share_type resumed_review_votes = 
+        share_type resumed_review_weight = 
             votes_by_content_type.find(research_content_type::review) != votes_by_content_type.end() 
             ? votes_by_content_type[research_content_type::review] : share_type(0);
 
-        share_type resumed_research_votes = std::accumulate( votes_by_content_type.begin(), votes_by_content_type.end(), share_type(0),
+        share_type resumed_research_weight = std::accumulate( votes_by_content_type.begin(), votes_by_content_type.end(), share_type(0),
                         [](share_type acc, std::pair<research_content_type, share_type> p) {
                             if (p.first != research_content_type::review) {
                                 return acc + p.second; 
@@ -2983,8 +2991,8 @@ void database::process_content_activity_windows()
                         });
 
         modify(discipline_service.get_discipline(discipline_id), [&](discipline_object& d) {
-            d.total_review_active_votes += resumed_review_votes;
-            d.total_research_active_votes += resumed_research_votes;
+            d.total_active_review_reward_weight += resumed_review_weight;
+            d.total_active_research_reward_weight += resumed_research_weight;
         });
     }
 }
