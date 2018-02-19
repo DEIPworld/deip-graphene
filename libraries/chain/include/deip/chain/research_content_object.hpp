@@ -30,6 +30,13 @@ enum research_content_type : uint16_t
     Last = review
 };
 
+enum research_content_activity_state : uint16_t
+{
+    active = 1,
+    pending = 2,
+    closed = 3
+};
+
 class research_content_object : public object<research_content_object_type, research_content_object>
 {
     
@@ -52,10 +59,18 @@ public:
     uint16_t review_share_in_percent;
     std::vector<research_id_type> research_references;
     std::vector<string> research_external_references;
+
+    uint16_t activity_round;
+    research_content_activity_state activity_state;
+    time_point_sec activity_window_start;
+    time_point_sec activity_window_end;
 };
 
 struct by_research_id;
 struct by_research_id_and_content_type;
+struct by_activity_state;
+struct by_activity_window_start;
+struct by_activity_window_end;
 
 typedef multi_index_container<research_content_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -73,13 +88,26 @@ typedef multi_index_container<research_content_object,
                                         &research_content_object::research_id>,
                                 member<research_content_object,
                                         research_content_type,
-                                        &research_content_object::type>>>>,
+                                        &research_content_object::type>>>,
+                ordered_non_unique<tag<by_activity_window_start>,
+                                member<research_content_object,
+                                        time_point_sec,
+                                        &research_content_object::activity_window_start>>,
+                ordered_non_unique<tag<by_activity_window_end>,
+                                member<research_content_object,
+                                        time_point_sec,
+                                        &research_content_object::activity_window_end>>,
+                ordered_non_unique<tag<by_activity_state>,
+                                member<research_content_object,
+                                        research_content_activity_state,
+                                        &research_content_object::activity_state>>>,
         allocator<research_content_object>>
         research_content_index;
 }
 }
 
 FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result)(review) )
+FC_REFLECT_ENUM(deip::chain::research_content_activity_state, (active)(pending)(closed) )
 
 FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(content)(authors)(review_share_in_percent)(research_references)(research_external_references))
 

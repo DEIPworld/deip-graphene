@@ -915,6 +915,8 @@ void vote_evaluator::do_apply(const vote_operation& o)
     dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
     dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
 
     try
     {
@@ -925,6 +927,8 @@ void vote_evaluator::do_apply(const vote_operation& o)
 
         FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
 
+        research_service.check_research_existence(o.research_id);
+
         if (o.discipline_id != 0) {
             discipline_service.check_discipline_existence(o.discipline_id);
         }
@@ -932,27 +936,15 @@ void vote_evaluator::do_apply(const vote_operation& o)
         expert_token_service.check_expert_token_existence_by_account_and_discipline(o.voter, o.discipline_id);
 
         std::vector<discipline_id_type> target_disciplines;
-        research_id_type research_id;
-
-        if (o.vote_type == vote_target_type::research_vote)
-        {
-            research_id = o.vote_for_id;
-        } else if (o.vote_type == vote_target_type::content_vote || o.vote_type == vote_target_type::review_vote) {
-            dbs_research_content& content_service = _db.obtain_service<dbs_research_content>();
-            const auto& content = content_service.get_content_by_id(o.vote_for_id);
-            research_id = content.research_id;
-        } else {
-            FC_THROW("Invalid vote type {t}", ("t", o.vote_type));
-        }
 
         dbs_research_discipline_relation& research_disciplines_service = _db.obtain_service<dbs_research_discipline_relation>();
-        const auto& relations = research_disciplines_service.get_research_discipline_relations_by_research(research_id);
+        const auto& relations = research_disciplines_service.get_research_discipline_relations_by_research(o.research_id);
         for (auto& relation_wrapper : relations) {
             const auto& relation = relation_wrapper.get();
             target_disciplines.push_back(relation.discipline_id);
         }
 
-        const auto& voter_token = expert_token_service.get_expert_token_by_account_and_discipline(o.voter, o.discipline_id);
+        const auto& token = expert_token_service.get_expert_token_by_account_and_discipline(o.voter, o.discipline_id);
 
         // Validate that research has discipline we are trying to vote with
         if (o.discipline_id != 0)
@@ -963,211 +955,122 @@ void vote_evaluator::do_apply(const vote_operation& o)
                       ("d", discipline_service.get_discipline(o.discipline_id).name));
         }
 
-    }
-    FC_CAPTURE_AND_RETHROW((o))
+        const auto& vote_idx = _db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
+        auto itr = vote_idx.find(std::make_tuple(voter.name, o.discipline_id, o.research_content_id));
 
-//    try
-//    {
-//        const auto& comment = _db.get_comment(o.author, o.permlink);
-//        const auto& voter = account_service.get_account(o.voter);
-//
-//        FC_ASSERT(!(voter.owner_challenged || voter.active_challenged),
-//                  "Operation cannot be processed because the account is currently challenged.");
-//
-//        FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
-//
-//        if (o.weight > 0)
-//            FC_ASSERT(comment.allow_votes, "Votes are not allowed on the comment.");
-//
-//        if (_db.calculate_discussion_payout_time(comment) == fc::time_point_sec::maximum())
-//        {
-//#ifndef CLEAR_VOTES
-//            const auto& comment_vote_idx
-//                = _db._temporary_public_impl().get_index<comment_vote_index>().indices().get<by_comment_voter>();
-//            auto itr = comment_vote_idx.find(std::make_tuple(comment.id, voter.id));
-//
-//            if (itr == comment_vote_idx.end())
-//                _db._temporary_public_impl().create<comment_vote_object>([&](comment_vote_object& cvo) {
-//                    cvo.voter = voter.id;
-//                    cvo.comment = comment.id;
-//                    cvo.vote_percent = o.weight;
-//                    cvo.last_update = _db.head_block_time();
-//                });
-//            else
-//                _db._temporary_public_impl().modify(*itr, [&](comment_vote_object& cvo) {
-//                    cvo.vote_percent = o.weight;
-//                    cvo.last_update = _db.head_block_time();
-//                });
-//#endif
-//            return;
-//        }
-//
-//        const auto& comment_vote_idx
-//            = _db._temporary_public_impl().get_index<comment_vote_index>().indices().get<by_comment_voter>();
-//        auto itr = comment_vote_idx.find(std::make_tuple(comment.id, voter.id));
-//
-//        int64_t elapsed_seconds = (_db.head_block_time() - voter.last_vote_time).to_seconds();
-//
-//#ifndef IS_TEST_NET
-//        FC_ASSERT(elapsed_seconds >= DEIP_MIN_VOTE_INTERVAL_SEC, "Can only vote once every 3 seconds.");
-//#endif
-//
-//        int64_t regenerated_power = (DEIP_100_PERCENT * elapsed_seconds) / DEIP_VOTE_REGENERATION_SECONDS;
-//        int64_t current_power = std::min(int64_t(voter.voting_power + regenerated_power), int64_t(DEIP_100_PERCENT));
-//        FC_ASSERT(current_power > 0, "Account currently does not have voting power.");
-//
-//        int64_t abs_weight = abs(o.weight);
-//        int64_t used_power = (current_power * abs_weight) / DEIP_100_PERCENT;
-//
-//        const dynamic_global_property_object& dgpo = _db.get_dynamic_global_properties();
-//
-//        // used_power = (current_power * abs_weight / DEIP_100_PERCENT) * (reserve / max_vote_denom)
-//        // The second multiplication is rounded up as of HF 259
-//        int64_t max_vote_denom = dgpo.vote_power_reserve_rate * DEIP_VOTE_REGENERATION_SECONDS / (60 * 60 * 24);
-//        FC_ASSERT(max_vote_denom > 0);
-//
-//        used_power = (used_power + max_vote_denom - 1) / max_vote_denom;
-//
-//        FC_ASSERT(used_power <= current_power, "Account does not have enough power to vote.");
-//
-//        int64_t abs_rshares
-//            = ((uint128_t(voter.effective_vesting_shares().amount.value) * used_power) / (DEIP_100_PERCENT))
-//                  .to_uint64();
-//
-//        FC_ASSERT(abs_rshares > DEIP_VOTE_DUST_THRESHOLD || o.weight == 0,
-//                  "Voting weight is too small, please accumulate more voting power or deip power.");
-//
-//        FC_ASSERT(itr == comment_vote_idx.end() || itr->num_changes != -1,
-//                  "Cannot vote again on a comment after payout.");
-//
-//        if (itr == comment_vote_idx.end())
-//        {
-//            FC_ASSERT(o.weight != 0, "Vote weight cannot be 0.");
-//            /// this is the rshares voting for or against the post
-//            int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
-//
-//            if (rshares > 0)
-//            {
-//                FC_ASSERT(_db.head_block_time() < comment.cashout_time - DEIP_UPVOTE_LOCKOUT,
-//                          "Cannot increase payout within last twelve hours before payout.");
-//            }
-//
-//            // used_power /= (50*7); /// a 100% vote means use .28% of voting power which should force users to spread
-//            // their votes around over 50+ posts day for a week
-//            // if( used_power == 0 ) used_power = 1;
-//
-//            account_service.update_voting_power(voter, current_power - used_power);
-//
-//            /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into
-//            /// total rshares^2
-//            fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
-//            const auto& root = _db._temporary_public_impl().get(comment.root_comment);
-//
-//            fc::uint128_t avg_cashout_sec;
-//
-//            FC_ASSERT(abs_rshares > 0, "Cannot vote with 0 rshares.");
-//
-//            auto old_vote_rshares = comment.vote_rshares;
-//
-//            _db._temporary_public_impl().modify(comment, [&](comment_object& c) {
-//                c.net_rshares += rshares;
-//                c.abs_rshares += abs_rshares;
-//                if (rshares > 0)
-//                    c.vote_rshares += rshares;
-//                if (rshares > 0)
-//                    c.net_votes++;
-//                else
-//                    c.net_votes--;
-//            });
-//
-//            _db._temporary_public_impl().modify(root,
-//                                                [&](comment_object& c) { c.children_abs_rshares += abs_rshares; });
-//
-//            fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
-//
-//            /// calculate rshares2 value
-//            new_rshares = util::evaluate_reward_curve(new_rshares);
-//            old_rshares = util::evaluate_reward_curve(old_rshares);
-//
-//            uint64_t max_vote_weight = 0;
-//
-//            /** this verifies uniqueness of voter
-//             *
-//             *  cv.weight / c.total_vote_weight ==> % of rshares increase that is accounted for by the vote
-//             *
-//             *  W(R) = B * R / ( R + 2S )
-//             *  W(R) is bounded above by B. B is fixed at 2^64 - 1, so all weights fit in a 64 bit integer.
-//             *
-//             *  The equation for an individual vote is:
-//             *    W(R_N) - W(R_N-1), which is the delta increase of proportional weight
-//             *
-//             *  c.total_vote_weight =
-//             *    W(R_1) - W(R_0) +
-//             *    W(R_2) - W(R_1) + ...
-//             *    W(R_N) - W(R_N-1) = W(R_N) - W(R_0)
-//             *
-//             *  Since W(R_0) = 0, c.total_vote_weight is also bounded above by B and will always fit in a 64 bit
-//             *integer.
-//             *
-//             **/
-//            _db._temporary_public_impl().create<comment_vote_object>([&](comment_vote_object& cv) {
-//                cv.voter = voter.id;
-//                cv.comment = comment.id;
-//                cv.rshares = rshares;
-//                cv.vote_percent = o.weight;
-//                cv.last_update = _db.head_block_time();
-//
-//                bool curation_reward_eligible = rshares > 0 && (comment.last_payout == fc::time_point_sec())
-//                    && comment.allow_curation_rewards && _db.get_curation_rewards_percent(comment) > 0;
-//
-//                if (curation_reward_eligible)
-//                {
-//                    const auto& reward_fund = _db.get_reward_fund(comment);
-//                    auto curve = reward_fund.curation_reward_curve;
-//                    uint64_t old_weight = util::evaluate_reward_curve(old_vote_rshares.value, curve).to_uint64();
-//                    uint64_t new_weight = util::evaluate_reward_curve(comment.vote_rshares.value, curve).to_uint64();
-//                    cv.weight = new_weight - old_weight;
-//
-//                    max_vote_weight = cv.weight;
-//
-//                    /// discount weight by time
-//                    uint128_t w(max_vote_weight);
-//                    uint64_t delta_t = std::min(uint64_t((cv.last_update - comment.created).to_seconds()),
-//                                                uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
-//
-//                    w *= delta_t;
-//                    w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
-//                    cv.weight = w.to_uint64();
-//                }
-//                else
-//                {
-//                    cv.weight = 0;
-//                }
-//            });
-//
-//            if (max_vote_weight) // Optimization
-//            {
-//                _db._temporary_public_impl().modify(comment,
-//                                                    [&](comment_object& c) { c.total_vote_weight += max_vote_weight; });
-//            }
-//        }
-//        else
-//        {
+        const auto& total_votes_idx = _db._temporary_public_impl().get_index<total_votes_index>().indices().get<by_content_and_discipline>();
+        auto total_votes_itr = total_votes_idx.find(std::make_tuple(o.research_content_id, o.discipline_id));
+
+        // Create total_votes_object if it does not exist yet
+        if (total_votes_itr == total_votes_idx.end())
+        {
+            vote_service.create_total_votes(o.discipline_id, o.research_id, o.research_content_id);
+        }
+
+        int64_t elapsed_seconds   = (_db.head_block_time() - token.last_vote_time).to_seconds();
+
+        int64_t regenerated_power = (DEIP_100_PERCENT * elapsed_seconds) / DEIP_VOTE_REGENERATION_SECONDS;
+        int64_t current_power = std::min(int64_t(token.voting_power + regenerated_power), int64_t(DEIP_100_PERCENT));
+        FC_ASSERT(current_power > 0, "Account currently does not have voting power.");
+
+        int64_t abs_weight = abs(o.weight);
+        int64_t used_power = (current_power * abs_weight) / DEIP_100_PERCENT;
+
+        used_power /= 10;
+
+        const dynamic_global_property_object& dgpo = _db.get_dynamic_global_properties();
+
+        FC_ASSERT(used_power <= current_power, "Account does not have enough power to vote.");
+
+        uint64_t abs_used_tokens
+            = ((uint128_t(token.amount.value) * used_power) / (DEIP_100_PERCENT))
+                  .to_uint64();
+
+        auto& total_votes_object = vote_service
+                .get_total_votes_object_by_content_and_discipline(o.research_content_id, o.discipline_id);
+
+        const auto& old_votes = total_votes_object.total_votes_amount;
+
+        if (itr == vote_idx.end())
+        {
+            FC_ASSERT(o.weight != 0, "Vote weight cannot be 0.");
+
+            /// this is the rshares voting for or against the post
+            int64_t rshares = o.weight < 0 ? -abs_used_tokens : abs_used_tokens;
+
+            _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
+                t.voting_power = current_power - used_power;
+                t.last_vote_time = _db.head_block_time();
+            });
+
+            FC_ASSERT(abs_used_tokens > 0, "Cannot vote with 0 rshares.");
+
+            vote_service.update_total_votes(total_votes_object, old_votes + rshares);
+
+            uint64_t max_vote_weight = 0;
+
+            /** this verifies uniqueness of voter
+             *
+             *  cv.weight / c.total_vote_weight ==> % of rshares increase that is accounted for by the vote
+             *
+             *  W(R) = B * R / ( R + 2S )
+             *  W(R) is bounded above by B. B is fixed at 2^64 - 1, so all weights fit in a 64 bit integer.
+             *
+             *  The equation for an individual vote is:
+             *    W(R_N) - W(R_N-1), which is the delta increase of proportional weight
+             *
+             *  c.total_vote_weight =
+             *    W(R_1) - W(R_0) +
+             *    W(R_2) - W(R_1) + ...
+             *    W(R_N) - W(R_N-1) = W(R_N) - W(R_0)
+             *
+             *  Since W(R_0) = 0, c.total_vote_weight is also bounded above by B and will always fit in a 64 bit
+             *integer.
+             *
+             **/
+            _db._temporary_public_impl().create<vote_object>([&](vote_object& v) {
+                v.voter = voter.name;
+                v.discipline_id = o.discipline_id;
+                v.research_id = o.research_id;
+                v.research_content_id = o.research_content_id;
+                v.weight = o.weight;
+                v.voting_power = used_power;
+                v.tokens_amount = abs_used_tokens;
+                v.voting_time = _db.head_block_time();
+
+                auto curve = curve_id::quadratic;
+                uint64_t old_weight = util::evaluate_reward_curve(old_votes.value, curve).to_uint64();
+                uint64_t new_weight = util::evaluate_reward_curve(total_votes_object.total_votes_amount.value, curve).to_uint64();
+                v.weight = new_weight - old_weight;
+
+                max_vote_weight = v.weight;
+
+                /// discount weight by time
+                const auto& content = research_content_service.get_content_by_id(o.research_content_id);
+                uint128_t w(max_vote_weight);
+                uint64_t delta_t = std::min(uint64_t((v.voting_time - content.created_at).to_seconds()),
+                                            uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
+
+                w *= delta_t;
+                w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
+                v.weight = w.to_uint64();
+
+            });
+        }
+        else
+        {
 //            FC_ASSERT(itr->num_changes < DEIP_MAX_VOTE_CHANGES,
 //                      "Voter has used the maximum number of vote changes on this comment.");
 //
-//            FC_ASSERT(itr->vote_percent != o.weight, "You have already voted in a similar way.");
+//            FC_ASSERT(itr->weight != o.weight, "You have already voted in a similar way.");
 //
 //            /// this is the rshares voting for or against the post
-//            int64_t rshares = o.weight < 0 ? -abs_rshares : abs_rshares;
+//            int64_t rshares = o.weight < 0 ? -abs_used_tokens : abs_used_tokens;
 //
-//            if (itr->rshares < rshares)
-//            {
-//                FC_ASSERT(_db.head_block_time() < comment.cashout_time - DEIP_UPVOTE_LOCKOUT,
-//                          "Cannot increase payout within last twelve hours before payout.");
-//            }
-//
-//            account_service.update_voting_power(voter, current_power - used_power);
+//            _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
+//                t.voting_power = current_power - used_power;
+//                t.last_vote_time = _db.head_block_time();
+//            });
 //
 //            /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into
 //            /// total rshares^2
@@ -1215,9 +1118,10 @@ void vote_evaluator::do_apply(const vote_operation& o)
 //                cv.weight = 0;
 //                cv.num_changes += 1;
 //            });
-//        }
-//    }
-//    FC_CAPTURE_AND_RETHROW((o))
+        }
+
+    }
+    FC_CAPTURE_AND_RETHROW((o))
 }
 
 void custom_evaluator::do_apply(const custom_operation& o)

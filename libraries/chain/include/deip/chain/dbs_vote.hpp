@@ -6,6 +6,7 @@
 #include <functional>
 
 #include <deip/chain/vote_object.hpp>
+#include <deip/chain/total_votes_object.hpp>
 
 namespace deip {
 namespace chain {
@@ -25,13 +26,35 @@ public:
     using vote_refs_type = std::vector<std::reference_wrapper<const vote_object>>;
 
     vote_refs_type get_votes_by_discipline(const discipline_id_type& discipline_id) const;
-    vote_refs_type get_votes_by_type_and_target(const vote_target_type& vote_type, const int64_t& vote_for_id) const;
+    vote_refs_type get_votes_by_research(const research_id_type& research_id) const;
+    vote_refs_type get_votes_by_research_content(const research_content_id_type& research_content_id) const;
+    vote_refs_type get_votes_by_research_and_discipline(const research_id_type& research_id,
+                                                        const discipline_id_type& discipline_id) const;
+    vote_refs_type get_votes_by_research_content_and_discipline(const research_content_id_type& research_content_id,
+                                                                const discipline_id_type& discipline_id) const;
+
     const vote_object& create_vote(const discipline_id_type& discipline_id,
                                    const account_name_type& voter,
-                                   const vote_target_type& vote_type,
-                                   const int64_t& vote_for_id,
-                                   const share_type& weight,
+                                   const research_id_type& research_id,
+                                   const research_content_id_type& research_content_id,
+                                   const share_type& tokens_amount,
+                                   const int16_t& weight,
+                                   const uint16_t& voting_power,
                                    const time_point_sec& voting_time);
+
+    // total_votes_object
+
+    using total_votes_refs_type = std::vector<std::reference_wrapper<const total_votes_object>>;
+
+    const total_votes_object& create_total_votes(const discipline_id_type& discipline_id,
+                                                 const research_id_type& research_id,
+                                                 const research_content_id_type& research_content_id);
+
+    const total_votes_object& get_total_votes_object_by_content_and_discipline(const research_content_id_type& research_content_id,
+                                                                               const discipline_id_type& discipline_id) const;
+
+    const total_votes_object& update_total_votes(const total_votes_object& total_votes, const share_type total_votes_amount);
+
 
 };
 } // namespace chain
