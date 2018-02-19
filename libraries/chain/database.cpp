@@ -56,6 +56,8 @@
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_research_token_sale.hpp>
 #include <deip/chain/dbs_research_content.hpp>
+#include <deip/chain/dbs_vote.hpp>
+#include <deip/chain/dbs_discipline.hpp>
 
 
 namespace deip {
@@ -2085,6 +2087,7 @@ void database::_apply_block(const signed_block& next_block)
         process_decline_voting_rights();
 
         clear_expired_proposals();
+        process_content_activity_windows();
 
         process_hardforks();
 
@@ -2798,103 +2801,199 @@ void database::retally_witness_votes()
     }
 }
 
-void database::process_content_activity_period()
+void database::process_content_activity_windows()
 {
     auto now = head_block_time();
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
+    dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
+    dbs_vote& votes_service = obtain_service<dbs_vote>();
 
     const auto& research_content_by_activity_end = get_index<research_content_index, by_activity_window_end>();
-    auto itr_by_expiration = research_content_by_activity_end.begin();
+    auto itr_by_end = research_content_by_activity_end.begin();
+    std::map<discipline_id_type, std::map<research_content_type, share_type>> expired_active_weight;
 
-    // update activity windows bounds for content with expired state
-    while (itr_by_expiration != research_content_by_activity_end.end() && itr_by_expiration->activity_window_end < now)
+    // close activity windows for content with expired end point
+    while (itr_by_end != research_content_by_activity_end.end() && itr_by_end->activity_window_end < now)
     {
-        modify(research_content_service.get_content_by_id(itr_by_expiration->id),
-               [&](research_content_object& rc) {
+        modify(research_content_service.get_content_by_id(itr_by_end->id), [&](research_content_object& rc) {
 
-                    if (rc.type == research_content_type::announcement || 
-                        rc.type == research_content_type::milestone ||
-                        rc.type == research_content_type::review) {
+            if (rc.type == research_content_type::announcement || 
+                rc.type == research_content_type::milestone ||
+                rc.type == research_content_type::review) {
 
-                        switch (rc.activity_round) {
-                            case 1: {
-                                // the 2nd activity period for intermediate results 
-                                // starts in 2 weeks after the 1st one has ended and continues for 1 week
-                                rc.activity_round = 2;
-                                rc.activity_state = research_content_activity_state::pending;
-                                rc.activity_window_start = now + DAYS_TO_SECONDS(14); 
-                                rc.activity_window_end = now + DAYS_TO_SECONDS(14 + 7);
-                                break;
-                            }
-                            default: {
-                                // mark intermediate result activity period as expired 
-                                // and set the bounds to max value to exclude it from future iterations
-                                rc.activity_round = 0;
-                                rc.activity_state = research_content_activity_state::closed;
-                                rc.activity_window_start = fc::time_point_sec::maximum();
-                                rc.activity_window_end = fc::time_point_sec::maximum();
-                                break;
-                            }
-                        }
-
-                    } else if (rc.type == research_content_type::final_result) {
-
-                        switch (rc.activity_round) {
-                            case 1: {
-                                // the 2nd activity period for final results
-                                // starts in 2 months after the 1st one has ended and continues for 1 months
-                                rc.activity_round = 2;
-                                rc.activity_state = research_content_activity_state::pending;
-                                rc.activity_window_start = now + DAYS_TO_SECONDS(60); 
-                                rc.activity_window_end = now + DAYS_TO_SECONDS(60 + 30);
-                                break;
-                            }
-                            case 2: {
-                                // the 3rd activity period for final results
-                                // starts in one half of a year after the 2nd one has ended and continues for 2 weeks
-                                rc.activity_round = 3;
-                                rc.activity_state = research_content_activity_state::pending;
-                                rc.activity_window_start = now + DAYS_TO_SECONDS(182); 
-                                rc.activity_window_end = now + DAYS_TO_SECONDS(182 + 14);
-                                break;
-                            }
-                            default: {
-                                // mark final result activity period as expired 
-                                // and set the bounds to max value to exclude it from future iterations
-                                rc.activity_round = 0;
-                                rc.activity_state = research_content_activity_state::closed;
-                                rc.activity_window_start = fc::time_point_sec::maximum();
-                                rc.activity_window_end = fc::time_point_sec::maximum();
-                                break;
-                            }
-                        }
+                switch (rc.activity_round) {
+                    case 1: {
+                        // the 2nd activity period for intermediate result
+                        // starts in 2 weeks after the 1st one has ended and continues for 1 week
+                        rc.activity_round = 2;
+                        rc.activity_state = research_content_activity_state::pending;
+                        rc.activity_window_start = now + DAYS_TO_SECONDS(14); 
+                        rc.activity_window_end = now + DAYS_TO_SECONDS(14 + 7);
+                        break;
                     }
+                    default: {
+                        // mark intermediate result activity period as expired 
+                        // and set the bounds to max value to exclude content from future iterations
+                        rc.activity_round = 0;
+                        rc.activity_state = research_content_activity_state::closed;
+                        rc.activity_window_start = fc::time_point_sec::maximum();
+                        rc.activity_window_end = fc::time_point_sec::maximum();
+                        break;
+                    }
+                }
 
-                    // TODO: Exclude total_active_votes for this content result 
-                    // from global TOTAL DISCIPLINE VOTES object that affects on the current distribution
-                });
+            } else if (rc.type == research_content_type::final_result) {
 
-        ++itr_by_expiration;
+                switch (rc.activity_round) {
+                    case 1: {
+                        // the 2nd activity period for final result
+                        // starts in 2 months after the 1st one has ended and continues for 1 months
+                        rc.activity_round = 2;
+                        rc.activity_state = research_content_activity_state::pending;
+                        rc.activity_window_start = now + DAYS_TO_SECONDS(60); 
+                        rc.activity_window_end = now + DAYS_TO_SECONDS(60 + 30);
+                        break;
+                    }
+                    case 2: {
+                        // the 3rd activity period for final result
+                        // starts in one half of a year after the 2nd one has ended and continues for 2 weeks
+                        rc.activity_round = 3;
+                        rc.activity_state = research_content_activity_state::pending;
+                        rc.activity_window_start = now + DAYS_TO_SECONDS(182); 
+                        rc.activity_window_end = now + DAYS_TO_SECONDS(182 + 14);
+                        break;
+                    }
+                    default: {
+                        // mark final result activity period as expired 
+                        // and set the bounds to max value to exclude content from future iterations
+                        rc.activity_round = 0;
+                        rc.activity_state = research_content_activity_state::closed;
+                        rc.activity_window_start = fc::time_point_sec::maximum();
+                        rc.activity_window_end = fc::time_point_sec::maximum();
+                        break;
+                    }
+                }
+            }
+        });
+
+        // get all total votes for current content and accumulate it by discipline and type
+        auto rc_total_votes_refs = votes_service.get_total_votes_object_by_content(itr_by_end->id);
+        for (auto wrapper : rc_total_votes_refs) {
+            const total_votes_object& rc_total_votes = wrapper.get();
+
+            share_type expired_votes = itr_by_end->type == research_content_type::review 
+                        ? rc_total_votes.total_active_review_reward_weight
+                        : rc_total_votes.total_active_research_reward_weight;
+    
+            if (expired_active_weight.find(rc_total_votes.discipline_id) != expired_active_weight.end()) {
+
+                std::map<research_content_type, share_type>& votes_by_content_type = expired_active_weight[rc_total_votes.discipline_id];
+                    
+                if (votes_by_content_type.find(itr_by_end->type) != votes_by_content_type.end()) {
+                    votes_by_content_type[itr_by_end->type] += expired_votes;
+                } else {
+                    votes_by_content_type[itr_by_end->type] = expired_votes;
+                }
+
+            } else {
+                expired_active_weight[rc_total_votes.discipline_id][itr_by_end->type] = expired_votes;
+            }
+        }
+
+        ++itr_by_end;
+    }
+
+    // decrease total active votes in discipline object
+    for(auto it = expired_active_weight.begin(); it != expired_active_weight.end(); it++)
+    {
+        discipline_id_type discipline_id = it->first;
+        std::map<research_content_type, share_type> votes_by_content_type = it->second;
+
+        share_type expired_review_weight = 
+            votes_by_content_type.find(research_content_type::review) != votes_by_content_type.end() 
+            ? votes_by_content_type[research_content_type::review] : share_type(0);
+
+        share_type expired_research_weight = std::accumulate( votes_by_content_type.begin(), votes_by_content_type.end(), share_type(0),
+                        [](share_type acc, std::pair<research_content_type, share_type> p) {
+                            if (p.first != research_content_type::review) {
+                                return acc + p.second; 
+                            }
+                            return acc;
+                        });
+
+        modify(discipline_service.get_discipline(discipline_id), [&](discipline_object& d) {
+            d.total_active_review_reward_weight -= expired_review_weight;
+            d.total_active_research_reward_weight -= expired_research_weight;
+        });
     }
 
 
+
     const auto& research_content_by_activity_start = get_index<research_content_index, by_activity_window_start>();
-    auto itr_by_beginning = research_content_by_activity_start.begin();
+    auto itr_by_start = research_content_by_activity_start.begin();
+    std::map<discipline_id_type, std::map<research_content_type, share_type>> resumed_active_weight;
 
-    // update activity windows bounds for content with expired state
-    while (itr_by_beginning != research_content_by_activity_start.end() && itr_by_beginning->activity_window_start < now)
+    // reopen activity windows for content with actual start point
+    while (itr_by_start != research_content_by_activity_start.end() && itr_by_start->activity_window_start < now)
     {
-        if(itr_by_beginning->activity_state == research_content_activity_state::pending)
+        if(itr_by_start->activity_state == research_content_activity_state::pending)
         {
-            modify(research_content_service.get_content_by_id(itr_by_beginning->id),
+            modify(research_content_service.get_content_by_id(itr_by_start->id),
                [&](research_content_object& rc) {
-
                     rc.activity_state = research_content_activity_state::active;
+            });
 
-                    // TODO: Add total_active_votes for this content result 
-                    // to global TOTAL DISCIPLINE VOTES object that affects on the current distribution
-                });
+            // get all total votes for current content and accumulate it by discipline and type
+            auto rc_total_votes_refs = votes_service.get_total_votes_object_by_content(itr_by_start->id);
+            for (auto wrapper : rc_total_votes_refs) {
+                const total_votes_object& rc_total_votes = wrapper.get();
+
+                share_type resumed_votes = itr_by_start->type == research_content_type::review 
+                        ? rc_total_votes.total_active_review_reward_weight
+                        : rc_total_votes.total_active_research_reward_weight;
+
+                if (resumed_active_weight.find(rc_total_votes.discipline_id) != resumed_active_weight.end()) {
+
+                    std::map<research_content_type, share_type>& votes_by_content_type = resumed_active_weight[rc_total_votes.discipline_id];
+                    
+                    if (votes_by_content_type.find(itr_by_start->type) != votes_by_content_type.end()) {
+                        votes_by_content_type[itr_by_start->type] += resumed_votes;
+                    } else {
+                        votes_by_content_type[itr_by_start->type] = resumed_votes;
+                    }
+
+                } else {
+                    resumed_active_weight[rc_total_votes.discipline_id][itr_by_start->type] = resumed_votes;
+                }
+            }
         }
+
+        ++itr_by_start;
+    }
+
+
+    // increase total active votes in discipline object
+    for(auto it = resumed_active_weight.begin(); it != resumed_active_weight.end(); it++)
+    {
+        discipline_id_type discipline_id = it->first;
+        std::map<research_content_type, share_type> votes_by_content_type = it->second;
+
+        share_type resumed_review_weight = 
+            votes_by_content_type.find(research_content_type::review) != votes_by_content_type.end() 
+            ? votes_by_content_type[research_content_type::review] : share_type(0);
+
+        share_type resumed_research_weight = std::accumulate( votes_by_content_type.begin(), votes_by_content_type.end(), share_type(0),
+                        [](share_type acc, std::pair<research_content_type, share_type> p) {
+                            if (p.first != research_content_type::review) {
+                                return acc + p.second; 
+                            }
+                            return acc;
+                        });
+
+        modify(discipline_service.get_discipline(discipline_id), [&](discipline_object& d) {
+            d.total_active_review_reward_weight += resumed_review_weight;
+            d.total_active_research_reward_weight += resumed_research_weight;
+        });
     }
 }
 
