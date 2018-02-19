@@ -1009,7 +1009,7 @@ void vote_evaluator::do_apply(const vote_operation& o)
 
             FC_ASSERT(abs_used_tokens > 0, "Cannot vote with 0 rshares.");
 
-            auto old_weight = tvo.total_weight;
+            auto current_weight = tvo.total_weight;
 
             _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
                 t.total_weight += rshares;
@@ -1028,6 +1028,12 @@ void vote_evaluator::do_apply(const vote_operation& o)
                     t.total_active_review_reward_weight
                             += util::evaluate_reward_curve(rshares, review_reward_curve).to_uint64();
                 }
+            });
+
+            const auto& discipline = discipline_service.get_discipline(o.discipline_id);
+            _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
+                d.total_active_research_reward_weight = tvo.total_active_research_reward_weight;
+                d.total_active_review_reward_weight = tvo.total_active_review_reward_weight;
             });
 
             uint64_t max_vote_weight = 0;
@@ -1061,7 +1067,7 @@ void vote_evaluator::do_apply(const vote_operation& o)
                 v.tokens_amount = abs_used_tokens;
                 v.voting_time = _db.head_block_time();
 
-                uint64_t old_weight = util::evaluate_reward_curve(old_weight, curators_reward_curve).to_uint64();
+                uint64_t old_weight = util::evaluate_reward_curve(current_weight.value, curators_reward_curve).to_uint64();
                 uint64_t new_weight = util::evaluate_reward_curve(tvo.total_weight.value, curators_reward_curve).to_uint64();
                 v.weight = new_weight - old_weight;
 
@@ -1084,69 +1090,6 @@ void vote_evaluator::do_apply(const vote_operation& o)
                 }
             });
         }
-        else
-        {
-//            FC_ASSERT(itr->num_changes < DEIP_MAX_VOTE_CHANGES,
-//                      "Voter has used the maximum number of vote changes on this comment.");
-//
-//            FC_ASSERT(itr->weight != o.weight, "You have already voted in a similar way.");
-//
-//            /// this is the rshares voting for or against the post
-//            int64_t rshares = o.weight < 0 ? -abs_used_tokens : abs_used_tokens;
-//
-//            _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
-//                t.voting_power = current_power - used_power;
-//                t.last_vote_time = _db.head_block_time();
-//            });
-//
-//            /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into
-//            /// total rshares^2
-//            fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
-//            const auto& root = _db._temporary_public_impl().get(comment.root_comment);
-//
-//            fc::uint128_t avg_cashout_sec;
-//
-//            _db._temporary_public_impl().modify(comment, [&](comment_object& c) {
-//                c.net_rshares -= itr->rshares;
-//                c.net_rshares += rshares;
-//                c.abs_rshares += abs_rshares;
-//
-//                /// TODO: figure out how to handle remove a vote (rshares == 0 )
-//                if (rshares > 0 && itr->rshares < 0)
-//                    c.net_votes += 2;
-//                else if (rshares > 0 && itr->rshares == 0)
-//                    c.net_votes += 1;
-//                else if (rshares == 0 && itr->rshares < 0)
-//                    c.net_votes += 1;
-//                else if (rshares == 0 && itr->rshares > 0)
-//                    c.net_votes -= 1;
-//                else if (rshares < 0 && itr->rshares == 0)
-//                    c.net_votes -= 1;
-//                else if (rshares < 0 && itr->rshares > 0)
-//                    c.net_votes -= 2;
-//            });
-//
-//            _db._temporary_public_impl().modify(root,
-//                                                [&](comment_object& c) { c.children_abs_rshares += abs_rshares; });
-//
-//            fc::uint128_t new_rshares = std::max(comment.net_rshares.value, int64_t(0));
-//
-//            /// calculate rshares2 value
-//            new_rshares = util::evaluate_reward_curve(new_rshares);
-//            old_rshares = util::evaluate_reward_curve(old_rshares);
-//
-//            _db._temporary_public_impl().modify(comment,
-//                                                [&](comment_object& c) { c.total_vote_weight -= itr->weight; });
-//
-//            _db._temporary_public_impl().modify(*itr, [&](comment_vote_object& cv) {
-//                cv.rshares = rshares;
-//                cv.vote_percent = o.weight;
-//                cv.last_update = _db.head_block_time();
-//                cv.weight = 0;
-//                cv.num_changes += 1;
-//            });
-        }
-
     }
     FC_CAPTURE_AND_RETHROW((o))
 }
