@@ -16,6 +16,7 @@
 #include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/dbs_research_token_sale.hpp>
+#include <deip/chain/dbs_dynamic_global_properties.hpp>
 
 #include <deip/chain/proposal_object.hpp>
 #include <deip/chain/proposal_data_types.hpp>
@@ -33,6 +34,7 @@ template <typename AccountService,
         typename ResearchTokenService,
         typename ResearchContentService,
         typename ResearchTokenSaleService,
+        typename DynamicGlobalPropertiesService,
         typename OperationType = deip::protocol::operation>
 class proposal_vote_evaluator_t : public evaluator<OperationType>
 // clang-format on
@@ -46,6 +48,7 @@ public:
             ResearchTokenService,
             ResearchContentService,
             ResearchTokenSaleService,
+            DynamicGlobalPropertiesService,
             OperationType>
             EvaluatorType;
 
@@ -81,7 +84,8 @@ public:
                               ResearchService& research_service,
                               ResearchTokenService& research_token_service,
                               ResearchContentService& research_content_service,
-                              ResearchTokenSaleService& research_token_sale_service
+                              ResearchTokenSaleService& research_token_sale_service,
+                              DynamicGlobalPropertiesService& dynamic_global_properties_service
                               )
             : _account_service(account_service)
             , _proposal_service(proposal_service)
@@ -90,6 +94,7 @@ public:
             , _research_token_service(research_token_service)
             , _research_content_service(research_content_service)
             , _research_token_sale_service(research_token_sale_service)
+            , _dynamic_global_properties_service(dynamic_global_properties_service)
     {
         evaluators.set(proposal_action_type::invite_member,
                        std::bind(&EvaluatorType::invite_evaluator, this, std::placeholders::_1));
@@ -189,6 +194,13 @@ protected:
     void change_research_review_share_evaluator(const proposal_object& proposal)
     {
         change_research_review_share_percent_data_type data = get_data<change_research_review_share_percent_data_type>(proposal);
+        auto& research = _research_service.get_research(data.research_id);
+
+        int64_t time_period_from_last_update
+            = (_dynamic_global_properties_service.get_dynamic_global_properties().time - research.review_share_in_percent_last_update).to_seconds();
+        FC_ASSERT((time_period_from_last_update >= DAYS_TO_SECONDS(90)),
+                  "Cannot update review_share (time period from last update < 90)");
+
         _research_service.change_research_review_share_percent(data.research_id, data.review_share_in_percent);
     }
 
@@ -280,6 +292,7 @@ protected:
     ResearchTokenService& _research_token_service;
     ResearchContentService& _research_content_service;
     ResearchTokenSaleService& _research_token_sale_service;
+    DynamicGlobalPropertiesService& _dynamic_global_properties_service;
 
 private:
     proposal_evaluators_register evaluators;
@@ -298,9 +311,10 @@ typedef proposal_vote_evaluator_t<dbs_account,
                                   dbs_research,
                                   dbs_research_token,
                                   dbs_research_content,
-                                  dbs_research_token_sale>
+                                  dbs_research_token_sale,
+                                  dbs_dynamic_global_properties>
     proposal_vote_evaluator;
-typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_content, dbs_research_token_sale>
+typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_content, dbs_research_token_sale, dbs_dynamic_global_properties>
         proposal_vote_evaluator;
 
 } // namespace chain

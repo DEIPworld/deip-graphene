@@ -445,6 +445,7 @@ const research_object& database_fixture::research_create(const uint32_t id,
         r.is_finished = false;
         r.owned_tokens = DEIP_100_PERCENT;
         r.created_at = db.head_block_time();
+        r.review_share_in_percent_last_update = db.head_block_time();
     });
 
     return new_research;

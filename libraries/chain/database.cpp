@@ -56,6 +56,7 @@
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_research_token_sale.hpp>
 #include <deip/chain/dbs_research_content.hpp>
+#include <deip/chain/dbs_dynamic_global_properties.hpp>
 
 
 namespace deip {
@@ -1800,7 +1801,8 @@ void database::initialize_evaluators()
                                         this->obtain_service<dbs_research>(),
                                         this->obtain_service<dbs_research_token>(),
                                         this->obtain_service<dbs_research_content>(),
-                                        this->obtain_service<dbs_research_token_sale>()));
+                                        this->obtain_service<dbs_research_token_sale>(),
+                                        this->obtain_service<dbs_dynamic_global_properties>()));
     //clang-format on
 }
 
