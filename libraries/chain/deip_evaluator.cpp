@@ -1497,6 +1497,7 @@ void make_research_review_evaluator::do_apply(const make_research_review_operati
 
     account_service.check_account_existence(op.author);
     research_service.check_research_existence(op.research_id);
+    auto &research = research_service.get_research(op.research_id);
 
     std::vector<research_id_type> references;
     int size = op.research_references.size();
@@ -1507,7 +1508,7 @@ void make_research_review_evaluator::do_apply(const make_research_review_operati
     }
 
     flat_set<account_name_type> review_author = {op.author};
-    research_content_service.create(op.research_id, research_content_type::review, op.content, review_author, references, op.research_external_references);
+    research_content_service.create(op.research_id, research_content_type::review, op.content, review_author, research.review_share_in_percent, references, op.research_external_references);
 }
 
 void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)

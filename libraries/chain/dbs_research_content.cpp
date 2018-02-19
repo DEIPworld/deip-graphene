@@ -15,6 +15,7 @@ const research_content_object& dbs_research_content::create(const research_id_ty
                                                             const research_content_type& type,
                                                             const string& content,
                                                             const flat_set<account_name_type>& authors,
+                                                            const uint16_t review_share_in_percent,
                                                             const std::vector<research_id_type>& research_references,
                                                             const std::vector<string>& research_external_references)
 {
@@ -24,6 +25,7 @@ const research_content_object& dbs_research_content::create(const research_id_ty
         rc.content = content;
         rc.authors = authors;
         rc.created_at = db_impl().head_block_time();
+        rc.review_share_in_percent = review_share_in_percent;
         rc.research_references = research_references;
         rc.research_external_references = research_external_references;
     });

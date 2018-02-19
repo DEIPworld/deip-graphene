@@ -528,9 +528,10 @@ struct research_content_api_obj
         : id(rc.id._id)
         ,  research_id(rc.research_id._id)
         ,  content_type(rc.type)
-        ,  authors(rc.authors)
+        ,  authors(rc.authors)        
         ,  content(rc.content)
         ,  created_at(rc.created_at)
+        ,  review_share_in_percent(rc.review_share_in_percent)
     {}
 
     // because fc::variant require for temporary object
@@ -544,6 +545,7 @@ struct research_content_api_obj
     flat_set<account_name_type> authors;
     std::string content;
     time_point_sec created_at;
+    uint16_t review_share_in_percent;
 };
 
 struct expert_token_api_obj
@@ -834,6 +836,7 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (content)
             (authors)
             (created_at)
+            (review_share_in_percent)
           )
 
 FC_REFLECT( deip::app::expert_token_api_obj,

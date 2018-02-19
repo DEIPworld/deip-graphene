@@ -118,6 +118,7 @@ struct create_research_content_data_type : base_proposal_data_type
     research_content_type type;
     string content;
     flat_set<account_name_type> authors;
+    uint16_t review_share_in_percent;
     std::vector<research_id_type> research_references;
     std::vector<string> research_external_references;
     void validate() const
@@ -186,7 +187,7 @@ FC_REFLECT(deip::chain::rebalance_info, (account_name)(amount))
 
 FC_REFLECT(deip::chain::rebalance_research_group_tokens_data_type, (research_group_id)(accounts))
 
-FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(content)(authors)(research_references)(research_external_references))
+FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(content)(authors)(review_share_in_percent)(research_references)(research_external_references))
 
 FC_REFLECT(deip::chain::start_research_token_sale_data_type, (research_id)(start_time)(end_time)(amount_for_sale)(soft_cap)(hard_cap))
 

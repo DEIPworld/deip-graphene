@@ -7,6 +7,9 @@
 
 #include "database_fixture.hpp"
 
+#define RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT 10
+#define RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT 20
+
 namespace deip {
 namespace chain {
 
@@ -26,7 +29,7 @@ public:
             r.name = "Research #1";
             r.permlink = "Research #1 permlink";
             r.research_group_id = 1;
-            r.review_share_in_percent = 10;
+            r.review_share_in_percent = RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT;
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for Research #1";
@@ -39,6 +42,7 @@ public:
             rc.type = research_content_type::milestone;
             rc.content = "milestone for Research #1";
             rc.authors = {"alice", "bob"};
+            rc.review_share_in_percent = RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT;
             rc.created_at = db.head_block_time();
             rc.research_references = {1};
             rc.research_external_references = {"one", "two", "four"};
@@ -50,6 +54,7 @@ public:
             rc.type = research_content_type::review;
             rc.content = "review for Research #1";
             rc.authors = {"alice"};
+            rc.review_share_in_percent = RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT;
             rc.created_at = db.head_block_time();
             rc.research_references = {1};
             rc.research_external_references = {"one", "four"};
@@ -61,6 +66,7 @@ public:
             rc.type = research_content_type::final_result;
             rc.content = "final result for Research #1";
             rc.authors = {"bob"};
+            rc.review_share_in_percent = RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT;
             rc.created_at = db.head_block_time();
             rc.research_references = {1};
             rc.research_external_references = {"one", "two", "three"};
@@ -71,7 +77,7 @@ public:
             r.name = "Research #2";
             r.permlink = "permlink for Research #2";
             r.research_group_id = 2;
-            r.review_share_in_percent = 10;
+            r.review_share_in_percent = RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT;
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for research #2";
@@ -84,6 +90,7 @@ public:
             rc.type = research_content_type::announcement;
             rc.content = "announcement for Research #2";
             rc.authors = {"john"};
+            rc.review_share_in_percent = RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT;
             rc.created_at = db.head_block_time();
             rc.research_references = {1};
             rc.research_external_references = {"one", "two"};
@@ -108,6 +115,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_id)
         BOOST_CHECK(announcement.content == "announcement for Research #2");
         BOOST_CHECK(announcement.authors.size() == 1);
         BOOST_CHECK(announcement.authors.begin()[0] == "john");
+        BOOST_CHECK(announcement.review_share_in_percent == RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT);
         BOOST_CHECK(announcement.research_references.size() == 1);
         BOOST_CHECK(announcement.research_external_references.size() == 2);
     }
@@ -137,7 +145,8 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
             return content.id == 0 && content.research_id == 1 && 
                     content.type == research_content_type::milestone &&
                     content.content == "milestone for Research #1" &&
-                    content.authors.size() == 2 && 
+                    content.authors.size() == 2 &&
+                    content.review_share_in_percent == RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT && 
                     content.authors.begin()[0] == "alice" && content.authors.begin()[1] == "bob" &&
                     content.research_references.size() == 1 &&
                     content.research_external_references.size() == 3;
@@ -148,6 +157,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
             return content.id == 1 && content.research_id == 1 && 
                     content.type == research_content_type::review && 
                     content.content == "review for Research #1" &&
+                    content.review_share_in_percent == RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT &&
                     content.authors.size() == 1 && 
                     content.authors.begin()[0] == "alice" &&
                     content.research_references.size() == 1 &&
@@ -158,6 +168,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
             return content.id == 2 && content.research_id == 1 && 
                     content.type == research_content_type::final_result && 
                     content.content == "final result for Research #1" &&
+                    content.review_share_in_percent == RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT &&
                     content.authors.size() == 1 && 
                     content.authors.begin()[0] == "bob" &&
                     content.research_references.size() == 1 &&
@@ -191,7 +202,8 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
             const research_content_object &content = wrapper.get();
             return content.id == 1 && content.research_id == 1 && 
                     content.type == research_content_type::review && 
-                    content.content == "review for Research #1" && 
+                    content.content == "review for Research #1" &&
+                    content.review_share_in_percent == RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT && 
                     content.authors.size() == 1 && 
                     content.authors.begin()[0] == "alice" &&
                     content.research_references.size() == 1 &&
@@ -221,13 +233,15 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         std::string content = "milestone for Research #2";
 
         flat_set<account_name_type> authors = {"sam"};
+        uint16_t review_share_in_percent = RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT;
         std::vector<research_id_type> references = {1, 2, 3};
         std::vector<string> external_references = {"one", "two", "three"};
 
-        auto milestone = data_service.create(2, type, content, authors, references, external_references);
+        auto milestone = data_service.create(2, type, content, authors, review_share_in_percent, references, external_references);
         BOOST_CHECK(milestone.research_id == 2);
         BOOST_CHECK(milestone.type == research_content_type::milestone);
         BOOST_CHECK(milestone.content == "milestone for Research #2");
+        BOOST_CHECK(milestone.review_share_in_percent == RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT);
         BOOST_CHECK(milestone.authors.size() == 1);
         BOOST_CHECK(milestone.authors.begin()[0] == "sam");
         BOOST_CHECK(milestone.research_references.size() == 3);
@@ -238,7 +252,8 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         auto db_milestone = db.get<research_content_object, by_id>(milestone.id);
         BOOST_CHECK(db_milestone.research_id == 2);
         BOOST_CHECK(db_milestone.type == research_content_type::milestone);
-        BOOST_CHECK(db_milestone.content == "milestone for Research #2"); 
+        BOOST_CHECK(db_milestone.content == "milestone for Research #2");
+        BOOST_CHECK(db_milestone.review_share_in_percent == RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT); 
         BOOST_CHECK(db_milestone.authors.size() == 1);
         BOOST_CHECK(db_milestone.authors.begin()[0] == "sam");
         BOOST_CHECK(db_milestone.research_references.size() == 3);

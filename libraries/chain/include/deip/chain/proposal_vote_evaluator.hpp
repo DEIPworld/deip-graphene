@@ -252,8 +252,12 @@ protected:
 
     void create_research_material_evaluator(const proposal_object& proposal)
     {
-        create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);  
-        _research_content_service.create(data.research_id, data.type, data.content, data.authors, data.research_references, data.research_external_references);
+        create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
+
+        _research_service.check_research_existence(data.research_id);
+        auto &research = _research_service.get_research(data.research_id);
+          
+        _research_content_service.create(data.research_id, data.type, data.content, data.authors, research.review_share_in_percent, data.research_references, data.research_external_references);
     }
 
     void start_research_token_sale_evaluator(const proposal_object& proposal) {

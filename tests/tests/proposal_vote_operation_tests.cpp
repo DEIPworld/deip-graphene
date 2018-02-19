@@ -514,7 +514,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         r.owned_tokens = DEIP_100_PERCENT;
     });
 
-    const std::string json_str = "{\"research_id\": 1,\"type\": 2,\"content\":\"milestone for Research #1\", \"authors\":[\"alice\"]}";
+    const std::string json_str = "{\"research_id\": 1,\"type\": 2,\"content\":\"milestone for Research #1\", \"authors\":[\"alice\"], \"review_share_in_percent\": 10}";
 
     create_proposal(1, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
@@ -534,6 +534,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
             const research_content_object& content = wrapper.get();
             return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone
                 && content.content == "milestone for Research #1" && content.authors.size() == 1
+                && content.review_share_in_percent == 10
                 && content.authors.begin()[0] == "alice";
         }));
 }
