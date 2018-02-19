@@ -10,6 +10,7 @@
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_research_content.hpp>
+#include <deip/chain/dbs_vote.hpp>
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>
 

@@ -126,132 +126,214 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(vote_apply)
+BOOST_AUTO_TEST_CASE(vote_apply_failure)
 {
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: make_review_research_apply");
 
-        ACTORS((alice)(bob));
+    BOOST_TEST_MESSAGE("Testing: vote_apply failure cases");
 
-        generate_block();
+    ACTORS((alice)(bob));
 
-        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10);
-        auto& discipline = discipline_create(1, "Math", 0, 0);
-        auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
-            r.discipline_id = discipline.id;
-            r.research_id = research.id;
-            r.votes_count = 0;
-        });
+    generate_block();
 
-        auto& token = db.create<expert_token_object>([&](expert_token_object& t) {
-            t.id = 1;
-            t.discipline_id = discipline.id;
-            t.amount = 1000;
-            t.voting_power = DEIP_100_PERCENT;
-            t.account_name = "alice";
-        });
+    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10);
+    auto& discipline = discipline_create(1, "Math", 0, 0);
+    auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+        r.discipline_id = discipline.id;
+        r.research_id = research.id;
+        r.votes_count = 0;
+    });
 
-        auto& content = db.create<research_content_object>([&](research_content_object& c) {
-            c.id = 1;
-            c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
-            c.research_id = research.id;
-            c.authors = { "alice", "bob" };
-            c.content = "content";
-            c.research_references = {};
-            c.research_external_references = { "http://google.com" };
-            c.type = research_content_type::milestone;
-        });
+    auto& token = db.create<expert_token_object>([&](expert_token_object& t) {
+        t.id = 1;
+        t.discipline_id = discipline.id;
+        t.amount = 1000;
+        t.voting_power = DEIP_100_PERCENT;
+        t.account_name = "alice";
+    });
 
-        private_key_type priv_key = generate_private_key("alice");
+    auto& content = db.create<research_content_object>([&](research_content_object& c) {
+        c.id = 1;
+        c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
+        c.research_id = research.id;
+        c.authors = { "alice", "bob" };
+        c.content = "content";
+        c.research_references = {};
+        c.research_external_references = { "http://google.com" };
+        c.type = research_content_type::milestone;
+    });
 
-        vote_operation op;
+    private_key_type priv_key = generate_private_key("alice");
 
-        signed_transaction tx;
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+    vote_operation op;
 
-        BOOST_TEST_MESSAGE("--- Testing voting on a non-existent research");
+    signed_transaction tx;
+    tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
 
-        tx.operations.clear();
-        tx.signatures.clear();
+    BOOST_TEST_MESSAGE("--- Testing voting on a non-existent research");
 
-        op.research_id = 100;
-        op.research_content_id = content.id._id;
-        op.discipline_id = discipline.id._id;
-        op.weight = 50 * DEIP_1_PERCENT;
-        op.voter = "alice";
-        op.permlink = "permlink";
+    tx.operations.clear();
+    tx.signatures.clear();
 
-        tx.operations.push_back(op);
-        tx.sign(priv_key, db.get_chain_id());
-        tx.validate();
+    op.research_id = 100;
+    op.research_content_id = content.id._id;
+    op.discipline_id = discipline.id._id;
+    op.weight = 50 * DEIP_1_PERCENT;
+    op.voter = "alice";
+    op.permlink = "permlink";
 
-        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+    tx.operations.push_back(op);
+    tx.sign(priv_key, db.get_chain_id());
+    tx.validate();
 
-        validate_database();
+    DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
-        BOOST_TEST_MESSAGE("--- Testing voting on a non-existent content");
+    validate_database();
 
-        tx.operations.clear();
-        tx.signatures.clear();
+    BOOST_TEST_MESSAGE("--- Testing voting on a non-existent content");
 
-        op.research_id = research.id._id;
-        op.research_content_id = 100;
-        op.discipline_id = discipline.id._id;
-        op.weight = 50 * DEIP_1_PERCENT;
-        op.voter = "alice";
-        op.permlink = "permlink";
+    tx.operations.clear();
+    tx.signatures.clear();
 
-        tx.operations.push_back(op);
-        tx.sign(priv_key, db.get_chain_id());
-        tx.validate();
+    op.research_id = research.id._id;
+    op.research_content_id = 100;
+    op.discipline_id = discipline.id._id;
+    op.weight = 50 * DEIP_1_PERCENT;
+    op.voter = "alice";
+    op.permlink = "permlink";
 
-        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+    tx.operations.push_back(op);
+    tx.sign(priv_key, db.get_chain_id());
+    tx.validate();
 
-        validate_database();
+    DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
-        BOOST_TEST_MESSAGE("--- Testing voting with non-existent discipline");
+    validate_database();
 
-        tx.operations.clear();
-        tx.signatures.clear();
+    BOOST_TEST_MESSAGE("--- Testing voting with non-existent discipline");
 
-        op.research_id = research.id._id;
-        op.research_content_id = content.id._id;
-        op.discipline_id = 100;
-        op.weight = 50 * DEIP_1_PERCENT;
-        op.voter = "alice";
-        op.permlink = "permlink";
+    tx.operations.clear();
+    tx.signatures.clear();
 
-        tx.operations.push_back(op);
-        tx.sign(priv_key, db.get_chain_id());
-        tx.validate();
+    op.research_id = research.id._id;
+    op.research_content_id = content.id._id;
+    op.discipline_id = 100;
+    op.weight = 50 * DEIP_1_PERCENT;
+    op.voter = "alice";
+    op.permlink = "permlink";
 
-        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+    tx.operations.push_back(op);
+    tx.sign(priv_key, db.get_chain_id());
+    tx.validate();
 
-        validate_database();
+    DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
-        BOOST_TEST_MESSAGE("--- Testing voting with a weight of 0");
+    validate_database();
 
-        tx.operations.clear();
-        tx.signatures.clear();
+    BOOST_TEST_MESSAGE("--- Testing voting with a weight of 0");
 
-        op.research_id = research.id._id;
-        op.research_content_id = content.id._id;
-        op.discipline_id = discipline.id._id;
-        op.weight = 0;
-        op.voter = "alice";
-        op.permlink = "permlink";
+    tx.operations.clear();
+    tx.signatures.clear();
 
-        tx.operations.push_back(op);
-        tx.sign(alice_private_key, db.get_chain_id());
+    op.research_id = research.id._id;
+    op.research_content_id = content.id._id;
+    op.discipline_id = discipline.id._id;
+    op.weight = 0;
+    op.voter = "alice";
+    op.permlink = "permlink";
 
-        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+    tx.operations.push_back(op);
+    tx.sign(alice_private_key, db.get_chain_id());
 
-        validate_database();
+    DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
-    }
-    FC_LOG_AND_RETHROW()
+    validate_database();
 }
+
+BOOST_AUTO_TEST_CASE(vote_apply_success)
+{
+    BOOST_TEST_MESSAGE("Testing: vote_apply success cases");
+
+    ACTORS((alice)(bob));
+
+    generate_block();
+
+    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10);
+    auto& discipline = discipline_create(1, "Math", 0, 0);
+    auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+        r.discipline_id = discipline.id;
+        r.research_id = research.id;
+        r.votes_count = 0;
+    });
+
+    auto& token = db.create<expert_token_object>([&](expert_token_object& t) {
+        t.id = 1;
+        t.discipline_id = discipline.id;
+        t.amount = 1000;
+        t.voting_power = DEIP_100_PERCENT;
+        t.account_name = "alice";
+    });
+
+    auto& content = db.create<research_content_object>([&](research_content_object& c) {
+        c.id = 1;
+        c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
+        c.research_id = research.id;
+        c.authors = { "alice", "bob" };
+        c.content = "content";
+        c.research_references = {};
+        c.research_external_references = { "http://google.com" };
+        c.type = research_content_type::milestone;
+    });
+
+    private_key_type priv_key = generate_private_key("alice");
+
+    vote_operation op;
+
+    signed_transaction tx;
+    tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+
+    BOOST_TEST_MESSAGE("--- Testing success");
+
+    tx.operations.clear();
+    tx.signatures.clear();
+
+    auto old_voting_power = token.voting_power;
+
+    op.research_id = research.id._id;
+    op.research_content_id = content.id._id;
+    op.discipline_id = discipline.id._id;
+    op.weight = 50 * DEIP_1_PERCENT;
+    op.voter = "alice";
+    op.permlink = "permlink";
+
+    tx.operations.clear();
+    tx.signatures.clear();
+    tx.operations.push_back(op);
+    tx.sign(alice_private_key, db.get_chain_id());
+
+    db.push_transaction(tx, 0);
+
+    // Validate token
+    BOOST_REQUIRE(token.voting_power == old_voting_power - (old_voting_power * op.weight / DEIP_100_PERCENT / 10));
+    BOOST_REQUIRE(token.last_vote_time == db.head_block_time());
+
+    // Validate vote object
+    auto& vote_service = db.obtain_service<dbs_vote>();
+    const auto& vote_idx = db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
+    auto itr = vote_idx.find(std::make_tuple(op.voter, op.discipline_id, op.research_content_id));
+
+    BOOST_REQUIRE(itr != vote_idx.end());
+    auto& vote = *itr;
+    BOOST_REQUIRE(vote.voting_power == (old_voting_power * op.weight / DEIP_100_PERCENT / 10));
+    int64_t expected_tokens_amount = (token.amount.value * old_voting_power * op.weight) / (10 * DEIP_100_PERCENT * DEIP_100_PERCENT);
+    BOOST_REQUIRE(vote.tokens_amount.value == expected_tokens_amount);
+    BOOST_REQUIRE(vote.voting_time == db.head_block_time());
+    BOOST_REQUIRE(vote.voter == op.voter);
+    BOOST_REQUIRE(vote.discipline_id == op.discipline_id);
+    BOOST_REQUIRE(vote.research_id == op.research_id);
+    BOOST_REQUIRE(vote.research_content_id == op.research_content_id);
+    validate_database();
+}
+
 //BOOST_AUTO_TEST_CASE(account_create_apply)
 //{
 //    try
