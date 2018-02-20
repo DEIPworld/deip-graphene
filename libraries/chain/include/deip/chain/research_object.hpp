@@ -37,6 +37,7 @@ public:
     fc::string abstract;
     fc::string permlink;
     time_point_sec created_at;
+    uint16_t dropout_compensation_in_percent;
 
     bool is_finished;
     share_type owned_tokens;
@@ -73,7 +74,7 @@ typedef multi_index_container<research_object,
 }
 
 FC_REFLECT(deip::chain::research_object,
-                        (id)(name)(research_group_id)(permlink)(abstract)(created_at)(is_finished)(owned_tokens)(review_share_in_percent)
+                        (id)(name)(research_group_id)(permlink)(abstract)(created_at)(dropout_compensation_in_percent)(is_finished)(owned_tokens)(review_share_in_percent)
             )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_object, deip::chain::research_index)

@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
 
         generate_block();
 
-        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10);
+        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
 
     generate_block();
 
-    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10);
+    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
     auto& discipline = discipline_create(1, "Math", 0, 0);
     auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.discipline_id = discipline.id;
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 
     generate_block();
 
-    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10);
+    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
     auto& discipline = discipline_create(1, "Math", 0, 0);
     auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.discipline_id = discipline.id;

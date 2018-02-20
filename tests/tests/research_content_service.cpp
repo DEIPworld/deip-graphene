@@ -7,6 +7,8 @@
 
 #include "database_fixture.hpp"
 
+#define DROPOUT_COMPENSATION_IN_PERCENT 1500
+
 namespace deip {
 namespace chain {
 
@@ -27,6 +29,7 @@ public:
             r.permlink = "Research #1 permlink";
             r.research_group_id = 1;
             r.review_share_in_percent = 10;
+            r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for Research #1";
@@ -72,6 +75,7 @@ public:
             r.permlink = "permlink for Research #2";
             r.research_group_id = 2;
             r.review_share_in_percent = 10;
+            r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for research #2";
