@@ -1086,7 +1086,7 @@ void vote_evaluator::do_apply(const vote_operation& o)
             _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
                 t.total_curators_reward_weight += vote.weight;
                 if (content_is_active) {
-                    t.total_active_research_reward_weight += vote.weight;
+                    t.total_active_curators_reward_weight += vote.weight;
                 }
             });
         }
