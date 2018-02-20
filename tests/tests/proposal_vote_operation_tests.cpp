@@ -133,34 +133,36 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(change_research_review_share_test)
-{
-    try
-    {
-        ACTORS((alice)(bob));
+// TODO: Add block generation. This option is available after 90 days from last update.
 
-        auto& research_service = db.obtain_service<dbs_research>();
-        vector<account_name_type> accounts = { "alice", "bob" };
-        setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
-        research_create(0, "name","abstract", "permlink", 1, 10);
+// BOOST_AUTO_TEST_CASE(change_research_review_share_test)
+// {
+//     try
+//     {
+//         ACTORS((alice)(bob));
 
-        const std::string json = "{\"review_share_in_percent\": 45,\"research_id\": 0}";
-        create_proposal(1, dbs_proposal::action_t::change_research_review_share_percent, json, "alice", 1, time_point_sec(0xffffffff), 1);
+//         auto& research_service = db.obtain_service<dbs_research>();
+//         vector<account_name_type> accounts = { "alice", "bob" };
+//         setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
+//         research_create(0, "name","abstract", "permlink", 1, 10);
 
-        vote_proposal_operation op;
+//         const std::string json = "{\"review_share_in_percent\": 45,\"research_id\": 0}";
+//         create_proposal(1, dbs_proposal::action_t::change_research_review_share_percent, json, "alice", 1, time_point_sec(0xffffffff), 1);
 
-        op.research_group_id = 1;
-        op.proposal_id = 1;
-        op.voter = "alice";
+//         vote_proposal_operation op;
 
-        evaluator.do_apply(op);
+//         op.research_group_id = 1;
+//         op.proposal_id = 1;
+//         op.voter = "alice";
 
-        auto& research = research_service.get_research(0);
+//         evaluator.do_apply(op);
 
-        BOOST_CHECK(research.review_share_in_percent == 45);
-    }
-    FC_LOG_AND_RETHROW()
-}
+//         auto& research = research_service.get_research(0);
+
+//         BOOST_CHECK(research.review_share_in_percent == 45);
+//     }
+//     FC_LOG_AND_RETHROW()
+// }
 
 BOOST_AUTO_TEST_CASE(change_quorum_test)
 {
@@ -377,25 +379,23 @@ BOOST_AUTO_TEST_CASE(exclude_member_validate_test)
     FC_LOG_AND_RETHROW()
 }
 
-// TODO: Add block generation. This option is available after 90 days from last update.
-//
-// BOOST_AUTO_TEST_CASE(change_research_review_share_validate_test)
-// {
-//     try
-//     {
-//         const std::string json = "{\"review_share_in_percent\": 45,\"research_id\": 0}";
-//         create_proposal(1, dbs_proposal::action_t::change_research_review_share_percent, json, "alice", 1, time_point_sec(0xffffffff), 1);
+BOOST_AUTO_TEST_CASE(change_research_review_share_validate_test)
+{
+    try
+    {
+        const std::string json = "{\"review_share_in_percent\": 45,\"research_id\": 0}";
+        create_proposal(1, dbs_proposal::action_t::change_research_review_share_percent, json, "alice", 1, time_point_sec(0xffffffff), 1);
 
-//         vote_proposal_operation op;
+        vote_proposal_operation op;
 
-//         op.research_group_id = 1;
-//         op.proposal_id = 1;
-//         op.voter = "alice";
+        op.research_group_id = 1;
+        op.proposal_id = 1;
+        op.voter = "alice";
 
-//         BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
-//     }
-//     FC_LOG_AND_RETHROW()
-// }
+        BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
 
 BOOST_AUTO_TEST_CASE(change_quorum_validate_test)
 {
