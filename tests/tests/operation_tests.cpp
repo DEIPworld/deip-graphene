@@ -292,15 +292,6 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
     signed_transaction tx;
     tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
 
-    auto total_weight_before = 0;
-    auto total_active_weight_before = 0;
-    auto total_research_weight_before = 0;
-    auto total_active_research_weight_before = 0;
-    auto total_curator_weight_before = 0;
-    auto total_active_curator_weight_before = 0;
-    auto total_review_weight_before = 0;
-    auto total_active_review_weight_before = 0;
-
     bool content_is_active = content.activity_state == research_content_activity_state::active;
 
     BOOST_TEST_MESSAGE("--- Testing success");
@@ -392,6 +383,9 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
         BOOST_REQUIRE(discipline.total_active_review_reward_weight == expected_review_reward_weight);
     }
 
+    // Validate glopal properties object
+    auto& dgpo = db.get_dynamic_global_properties();
+    BOOST_REQUIRE(dgpo.total_disciplines_reward_weight == expected_tokens_amount);
 
     validate_database();
 }

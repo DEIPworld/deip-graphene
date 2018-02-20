@@ -918,6 +918,8 @@ void vote_evaluator::do_apply(const vote_operation& o)
     dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
 
+    auto& dgpo = _db.get_dynamic_global_properties();
+
     auto research_reward_curve = curve_id::power1dot5;
     auto curators_reward_curve = curve_id::power1dot5;
     auto review_reward_curve = curve_id::power1dot5;
@@ -1028,6 +1030,10 @@ void vote_evaluator::do_apply(const vote_operation& o)
                     t.total_active_review_reward_weight
                             += util::evaluate_reward_curve(rshares, review_reward_curve).to_uint64();
                 }
+            });
+
+            _db._temporary_public_impl().modify(dgpo, [&](dynamic_global_property_object& prop) {
+               prop.total_disciplines_reward_weight += rshares;
             });
 
             const auto& discipline = discipline_service.get_discipline(o.discipline_id);
