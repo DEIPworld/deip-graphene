@@ -504,6 +504,7 @@ struct research_api_obj
         ,  owned_tokens(r.owned_tokens)
         ,  review_share_in_percent(r.review_share_in_percent)
         ,  created_at(r.created_at)
+        ,  dropout_compensation_in_percent(r.dropout_compensation_in_percent)
     {}
 
     // because fc::variant require for temporary object
@@ -520,6 +521,7 @@ struct research_api_obj
     share_type owned_tokens;
     double review_share_in_percent;
     time_point_sec created_at;
+    int16_t dropout_compensation_in_percent;
 };
 
 struct research_content_api_obj
@@ -825,6 +827,7 @@ FC_REFLECT( deip::app::research_api_obj,
             (owned_tokens)
             (review_share_in_percent)
             (created_at)
+            (dropout_compensation_in_percent)
           )
 
 FC_REFLECT( deip::app::research_content_api_obj,
