@@ -36,7 +36,7 @@ public:
     research_id_type research_id;
     research_content_id_type research_content_id;
     share_type tokens_amount;
-    int16_t weight;
+    int64_t weight;
     uint16_t voting_power;
     time_point_sec voting_time;
     int8_t num_changes = 0;
