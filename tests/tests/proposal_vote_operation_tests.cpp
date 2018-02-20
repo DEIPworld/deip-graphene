@@ -15,6 +15,8 @@
 
 #include "database_fixture.hpp"
 
+#define DROPOUT_COMPENSATION_IN_PERCENT 1500
+
 using namespace deip::chain;
 
 namespace deip {
@@ -165,7 +167,8 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
             "\"research_group_id\":1,"
             "\"abstract\":\"abstract\","
             "\"permlink\":\"permlink\","
-            "\"review_share_in_percent\": 10}";
+            "\"review_share_in_percent\": 10,"
+            "\"dropout_compensation_in_percent\": 1500}";
     create_proposal(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
@@ -183,6 +186,7 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
     BOOST_CHECK(research.permlink == "permlink");
     BOOST_CHECK(research.research_group_id == 1);
     BOOST_CHECK(research.review_share_in_percent == 10);
+    BOOST_CHECK(research.dropout_compensation_in_percent == DROPOUT_COMPENSATION_IN_PERCENT);
 }
 
 BOOST_AUTO_TEST_CASE(transfer_research_tokens_execute_test)
@@ -196,7 +200,7 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_execute_test)
             "\"account_name\":\"bob\","
             "\"amount\": 5}";
 
-    auto& research = research_create(0, "name","abstract", "permlink", 1, 10);
+    auto& research = research_create(0, "name","abstract", "permlink", 1, 10, DROPOUT_COMPENSATION_IN_PERCENT);
     create_proposal(1, dbs_proposal::action_t::transfer_research_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
@@ -288,7 +292,7 @@ BOOST_AUTO_TEST_CASE(research_token_sale_execute_test)
 
     create_proposal(1, dbs_proposal::action_t::start_research_token_sale, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
-    auto& research = research_create(0, "name","abstract", "permlink", 1, 10);
+    auto& research = research_create(0, "name","abstract", "permlink", 1, 10, DROPOUT_COMPENSATION_IN_PERCENT);
     auto& research_token_sale_service = db.obtain_service<dbs_research_token_sale>();
 
     vote_proposal_operation op;
@@ -367,7 +371,8 @@ BOOST_AUTO_TEST_CASE(start_research_validate_test)
             "\"research_group_id\":1,"
             "\"abstract\":\"\","
             "\"permlink\":\"\","
-            "\"review_share_in_percent\": 5}";
+            "\"review_share_in_percent\": 5,"
+            "\"dropout_compensation_in_percent\": 1500}";
     create_proposal(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
@@ -436,7 +441,7 @@ BOOST_AUTO_TEST_CASE(research_token_sale_validate_test)
     const std::string json_str = "{\"research_id\":0,\"amount_for_sale\":9999999999,\"start_time\":\"2020-02-08T15:02:31\",\"end_time\":\"2020-01-08T15:02:31\",\"soft_cap\":9999999999,\"hard_cap\":9999994444}";
 
     create_proposal(1, dbs_proposal::action_t::start_research_token_sale, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
-    research_create(0, "name","abstract", "permlink", 1, 10);
+    research_create(0, "name","abstract", "permlink", 1, 10, DROPOUT_COMPENSATION_IN_PERCENT);
 
     vote_proposal_operation op;
     op.research_group_id = 1;
@@ -461,6 +466,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         r.permlink = "Research #1 permlink";
         r.research_group_id = 1;
         r.review_share_in_percent = 10;
+        r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
         r.is_finished = false;
         r.created_at = db.head_block_time();
         r.abstract = "abstract for Research #1";

@@ -128,7 +128,8 @@ struct database_fixture
                                            const string& abstract,
                                            const string& permlink,
                                            const research_group_id_type& research_group_id,
-                                           const double& review_share_in_percent);
+                                           const double& review_share_in_percent,
+                                           const uint16_t dropout_compensation_in_percent);
 
     void fund(const string& account_name, const share_type& amount = 500000);
     void fund(const string& account_name, const asset& amount);
