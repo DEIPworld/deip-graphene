@@ -27,6 +27,8 @@ public:
 
     research_refs_type get_researches() const;
 
+    research_refs_type get_researches_by_research_group(const research_group_id_type& research_group_id) const;
+
     const research_object& get_research(const research_id_type& id) const;
 
     const research_object& get_research_by_permlink(const string& permlink) const;

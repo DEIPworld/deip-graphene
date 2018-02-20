@@ -177,11 +177,30 @@ protected:
     void dropout_evaluator(const proposal_object& proposal)
     {
         member_proposal_data_type data = get_data<member_proposal_data_type>(proposal);
+
         _account_service.check_account_existence(data.name);
         _research_group_service.check_research_group_token_existence(data.name, data.research_group_id);
+
         _proposal_service.remove_proposal_votes(data.name, data.research_group_id);
+
         auto& token = _research_group_service.get_research_group_token_by_account_and_research_group_id(data.name, data.research_group_id);
         auto tokens_amount = token.amount;
+        auto& research_group = _research_group_service.get_research_group(data.research_group_id);
+        auto total_rg_tokens_amount = research_group.total_tokens_amount;
+        auto tokens_amount_in_percent = tokens_amount * DEIP_100_PERCENT / total_rg_tokens_amount;
+
+        auto researches = _research_service.get_researches_by_research_group(data.research_group_id);
+        for (auto& r : researches)
+        {
+            auto& research = r.get();
+
+            auto tokens_amount_in_percent_after_dropout_compensation = tokens_amount_in_percent * research.dropout_compensation_in_percent / DEIP_100_PERCENT;
+            auto tokens_amount_after_dropout_compensation = research.owned_tokens * tokens_amount_in_percent_after_dropout_compensation / DEIP_100_PERCENT;
+
+            _research_service.decrease_owned_tokens(research, tokens_amount_after_dropout_compensation);
+            _research_token_service.create_research_token(data.name, tokens_amount_after_dropout_compensation, research.id);
+        }
+
         _research_group_service.remove_token(data.name, data.research_group_id);
         _research_group_service.decrease_research_group_total_tokens_amount(data.research_group_id, tokens_amount);
     }

@@ -43,6 +43,24 @@ dbs_research::research_refs_type dbs_research::get_researches() const
     return ret;
 }
 
+dbs_research::research_refs_type dbs_research::get_researches_by_research_group(const research_group_id_type& research_group_id) const
+{
+    research_refs_type ret;
+
+    auto it_pair
+        = db_impl().get_index<research_index>().indicies().get<by_research_group>().equal_range(research_group_id);
+
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
 const research_object& dbs_research::get_research(const research_id_type& id) const
 {
     return db_impl().get<research_object>(id);
