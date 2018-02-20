@@ -29,7 +29,8 @@ typedef deip::chain::proposal_vote_evaluator_t<dbs_account,
                                                dbs_research,
                                                dbs_research_token,
                                                dbs_research_content,
-                                               dbs_research_token_sale>
+                                               dbs_research_token_sale,
+                                               dbs_research_discipline_relation>
         proposal_vote_evaluator;
 
 
@@ -41,8 +42,9 @@ public:
                      dbs_research &research_service,
                      dbs_research_token &research_token_service,
                      dbs_research_content &research_content_service,
-                     dbs_research_token_sale &research_token_sale_service)
-            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service) {
+                     dbs_research_token_sale &research_token_sale_service,
+                     dbs_research_discipline_relation &research_discipline_relation_service)
+            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service, research_discipline_relation_service) {
     }
 
     void execute_proposal(const proposal_object &proposal) {
@@ -59,7 +61,8 @@ public:
                         db.obtain_service<dbs_research>(),
                         db.obtain_service<dbs_research_token>(),
                         db.obtain_service<dbs_research_content>(),
-                        db.obtain_service<dbs_research_token_sale>()) {
+                        db.obtain_service<dbs_research_token_sale>(),
+                        db.obtain_service<dbs_research_discipline_relation>()) {
 
     }
 
@@ -165,7 +168,8 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
             "\"research_group_id\":1,"
             "\"abstract\":\"abstract\","
             "\"permlink\":\"permlink\","
-            "\"review_share_in_percent\": 10}";
+            "\"review_share_in_percent\": 10,"
+            "\"disciplines_id\": [1, 2, 3]}";
     create_proposal(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
@@ -183,6 +187,36 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
     BOOST_CHECK(research.permlink == "permlink");
     BOOST_CHECK(research.research_group_id == 1);
     BOOST_CHECK(research.review_share_in_percent == 10);
+
+    auto& research_discipline_relation_service = db.obtain_service<dbs_research_discipline_relation>();
+    auto relations = research_discipline_relation_service.get_research_discipline_relations_by_research(0);
+
+    BOOST_CHECK(relations.size() == 3);
+
+    BOOST_CHECK(std::any_of(relations.begin(), relations.end(),
+                            [](std::reference_wrapper<const research_discipline_relation_object> wrapper) {
+                                const research_discipline_relation_object& research_discipline_relation = wrapper.get();
+                                return research_discipline_relation.id == 0
+                                       && research_discipline_relation.research_id == 0
+                                       && research_discipline_relation.discipline_id == 1;
+                            }));
+
+    BOOST_CHECK(std::any_of(relations.begin(), relations.end(),
+                            [](std::reference_wrapper<const research_discipline_relation_object> wrapper) {
+                                const research_discipline_relation_object& research_discipline_relation = wrapper.get();
+                                return research_discipline_relation.id == 1
+                                       && research_discipline_relation.research_id == 0
+                                       && research_discipline_relation.discipline_id == 2;
+                            }));
+
+    BOOST_CHECK(std::any_of(relations.begin(), relations.end(),
+                            [](std::reference_wrapper<const research_discipline_relation_object> wrapper) {
+                                const research_discipline_relation_object& research_discipline_relation = wrapper.get();
+                                return research_discipline_relation.id == 2
+                                       && research_discipline_relation.research_id == 0
+                                       && research_discipline_relation.discipline_id == 3;
+                            }));
+
 }
 
 BOOST_AUTO_TEST_CASE(transfer_research_tokens_execute_test)
