@@ -56,6 +56,8 @@ struct start_research_proposal_data_type : base_proposal_data_type
     research_group_id_type research_group_id;
     uint16_t review_share_in_percent;
     uint16_t dropout_compensation_in_percent;
+    std::vector<u_int64_t> disciplines_id;
+
 
     void validate() const
     {
@@ -140,7 +142,8 @@ struct create_research_content_data_type : base_proposal_data_type
     }
 };
 
-struct start_research_token_sale_data_type : base_proposal_data_type {
+struct start_research_token_sale_data_type : base_proposal_data_type
+{
     research_id_type research_id;
     fc::time_point_sec start_time;
     fc::time_point_sec end_time;
@@ -179,7 +182,7 @@ FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(na
 
 FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
 
-FC_REFLECT(deip::chain::start_research_proposal_data_type, (name)(abstract)(permlink)(research_group_id)(review_share_in_percent)(dropout_compensation_in_percent))
+FC_REFLECT(deip::chain::start_research_proposal_data_type, (name)(abstract)(permlink)(research_group_id)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines_id))
 
 FC_REFLECT(deip::chain::transfer_research_tokens_data_type, (research_id)(total_price)(account_name)(amount))
 
