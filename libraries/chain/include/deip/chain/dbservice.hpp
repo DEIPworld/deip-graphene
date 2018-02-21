@@ -1,7 +1,6 @@
 #pragma once
 
 #include <fc/shared_string.hpp>
-#include <deip/chain/custom_operation_interpreter.hpp>
 
 #include <deip/chain/dbs_base_impl.hpp>
 
@@ -52,8 +51,6 @@ public:
     virtual time_point_sec head_block_time() const = 0;
 
     virtual const time_point_sec calculate_discussion_payout_time(const comment_object& comment) const = 0;
-
-    virtual std::shared_ptr<custom_operation_interpreter> get_custom_json_evaluator(const string& id) = 0;
 
     virtual fc::time_point_sec get_genesis_time() const = 0;
 
