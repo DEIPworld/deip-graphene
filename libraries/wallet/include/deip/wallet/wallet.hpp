@@ -2,7 +2,6 @@
 
 #include <deip/app/api.hpp>
 #include <deip/private_message/private_message_plugin.hpp>
-#include <deip/follow/follow_plugin.hpp>
 #include <deip/app/deip_api_objects.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
@@ -919,17 +918,6 @@ public:
      */
     map<uint32_t, applied_operation> get_account_history(const std::string& account, uint32_t from, uint32_t limit);
 
-    /**
-     *  Marks one account as following another account.  Requires the posting authority of the follower.
-     *
-     *  @param follower
-     *  @param following
-     *  @param what - a set of things to follow: posts, comments, votes, ignore
-     *  @param broadcast
-     */
-    annotated_signed_transaction
-    follow(const std::string& follower, const std::string& following, set<string> what, bool broadcast);
-
     std::map<string, std::function<string(fc::variant, const fc::variants&)>> get_result_formatters() const;
 
     void encrypt_keys();
@@ -1061,7 +1049,6 @@ FC_API( deip::wallet::wallet_api,
         (update_witness)
         (set_voting_proxy)
         (vote_for_witness)
-        (follow)
         (transfer)
         (escrow_transfer)
         (escrow_approve)

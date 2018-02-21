@@ -4,7 +4,6 @@
 
 #include <deip/app/api.hpp>
 #include <deip/protocol/base.hpp>
-#include <deip/follow/follow_operations.hpp>
 #include <deip/private_message/private_message_operations.hpp>
 #include <deip/wallet/wallet.hpp>
 #include <deip/wallet/api_documentation.hpp>
@@ -884,22 +883,6 @@ public:
         }
     }
 
-    void use_follow_api()
-    {
-        if (_remote_follow_api.valid())
-            return;
-
-        try
-        {
-            _remote_follow_api = _remote_api->get_api_by_name("follow_api")->as<follow::follow_api>();
-        }
-        catch (const fc::exception& e)
-        {
-            elog("Couldn't get follow API");
-            throw(e);
-        }
-    }
-
     void use_remote_account_by_key_api()
     {
         if (_remote_account_by_key_api.valid())
@@ -963,7 +946,6 @@ public:
     optional<fc::api<network_node_api>> _remote_net_node;
     optional<fc::api<account_by_key::account_by_key_api>> _remote_account_by_key_api;
     optional<fc::api<private_message_api>> _remote_message_api;
-    optional<fc::api<follow::follow_api>> _remote_follow_api;
     uint32_t _tx_expiration_seconds = 30;
 
     flat_map<string, operation> _prototype_ops;
@@ -2257,43 +2239,6 @@ annotated_signed_transaction wallet_api::prove(const std::string& challenged, bo
 annotated_signed_transaction wallet_api::get_transaction(transaction_id_type id) const
 {
     return my->_remote_db->get_transaction(id);
-}
-
-annotated_signed_transaction
-wallet_api::follow(const std::string& follower, const std::string& following, set<string> what, bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    std::string following_str = following;
-
-    auto follwer_account = get_account(follower);
-    FC_ASSERT(following_str.size());
-    if (following_str[0] != '@' || following_str[0] != '#')
-    {
-        following_str = '@' + following_str;
-    }
-    if (following_str[0] == '@')
-    {
-        get_account(following_str.substr(1));
-    }
-    FC_ASSERT(following_str.size() > 1);
-
-    follow::follow_operation fop;
-    fop.follower = follower;
-    fop.following = following_str;
-    fop.what = what;
-    follow::follow_plugin_operation op = fop;
-
-    custom_json_operation jop;
-    jop.id = "follow";
-    jop.json = fc::json::to_string(op);
-    jop.required_posting_auths.insert(follower);
-
-    signed_transaction trx;
-    trx.operations.push_back(jop);
-    trx.validate();
-
-    return my->sign_transaction(trx, broadcast);
 }
 
 annotated_signed_transaction wallet_api::send_private_message(
