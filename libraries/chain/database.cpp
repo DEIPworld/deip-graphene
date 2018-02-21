@@ -2575,7 +2575,6 @@ void database::apply_hardfork(uint32_t hardfork)
     switch (hardfork)
     {
     case DEIP_HARDFORK_0_1:
-        perform_vesting_share_split(1000000);
         break;
     default:
         break;
