@@ -1,5 +1,4 @@
 #include <deip/chain/deip_evaluator.hpp>
-#include <deip/chain/custom_operation_interpreter.hpp>
 #include <deip/chain/deip_objects.hpp>
 #include <deip/chain/witness_objects.hpp>
 #include <deip/chain/block_summary_object.hpp>
@@ -979,6 +978,8 @@ void vote_evaluator::do_apply(const vote_operation& o)
         const auto& vote_idx = _db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
         auto itr = vote_idx.find(std::make_tuple(voter.name, o.discipline_id, o.research_content_id));
 
+        FC_ASSERT(itr == vote_idx.end(), "You have already voted for this research content");
+
         const auto& total_votes_idx = _db._temporary_public_impl().get_index<total_votes_index>().indices().get<by_content_and_discipline>();
         auto total_votes_itr = total_votes_idx.find(std::make_tuple(o.research_content_id, o.discipline_id));
 
@@ -1010,156 +1011,104 @@ void vote_evaluator::do_apply(const vote_operation& o)
 
         bool content_is_active = content.activity_state == research_content_activity_state::active;
 
-        if (itr == vote_idx.end())
-        {
-            FC_ASSERT(o.weight != 0, "Vote weight cannot be 0.");
+        FC_ASSERT(o.weight != 0, "Vote weight cannot be 0.");
 
-            /// this is the rshares voting for or against the post
-            int64_t rshares = o.weight < 0 ? -abs_used_tokens : abs_used_tokens;
+        /// this is the rshares voting for or against the post
+        int64_t rshares = o.weight < 0 ? -abs_used_tokens : abs_used_tokens;
 
-            _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
-                t.voting_power = current_power - used_power;
-                t.last_vote_time = _db.head_block_time();
-            });
+        _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
+            t.voting_power = current_power - used_power;
+            t.last_vote_time = _db.head_block_time();
+        });
 
-            FC_ASSERT(abs_used_tokens > 0, "Cannot vote with 0 rshares.");
+        FC_ASSERT(abs_used_tokens > 0, "Cannot vote with 0 rshares.");
 
-            auto current_weight = tvo.total_weight;
+        auto current_weight = tvo.total_weight;
 
-            _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
-                t.total_weight += rshares;
-                if (content_is_active) {
-                    t.total_active_weight += rshares;
-                }
+        _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
+            t.total_weight += rshares;
+            if (content_is_active) {
+                t.total_active_weight += rshares;
+            }
 
-                t.total_research_reward_weight += util::evaluate_reward_curve(rshares, research_reward_curve).to_uint64();
-                if (content_is_active) {
-                    t.total_active_research_reward_weight
-                            += util::evaluate_reward_curve(rshares, research_reward_curve).to_uint64();
-                }
+            t.total_research_reward_weight += util::evaluate_reward_curve(rshares, research_reward_curve).to_uint64();
+            if (content_is_active) {
+                t.total_active_research_reward_weight
+                        += util::evaluate_reward_curve(rshares, research_reward_curve).to_uint64();
+            }
 
-                t.total_review_reward_weight += util::evaluate_reward_curve(rshares, review_reward_curve).to_uint64();
-                if (content_is_active) {
-                    t.total_active_review_reward_weight
-                            += util::evaluate_reward_curve(rshares, review_reward_curve).to_uint64();
-                }
-            });
+            t.total_review_reward_weight += util::evaluate_reward_curve(rshares, review_reward_curve).to_uint64();
+            if (content_is_active) {
+                t.total_active_review_reward_weight
+                        += util::evaluate_reward_curve(rshares, review_reward_curve).to_uint64();
+            }
+        });
 
-            _db._temporary_public_impl().modify(dgpo, [&](dynamic_global_property_object& prop) {
-               prop.total_disciplines_reward_weight += rshares;
-            });
+        _db._temporary_public_impl().modify(dgpo, [&](dynamic_global_property_object& prop) {
+           prop.total_disciplines_reward_weight += rshares;
+        });
 
-            const auto& discipline = discipline_service.get_discipline(o.discipline_id);
-            _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
-                d.total_active_research_reward_weight = tvo.total_active_research_reward_weight;
-                d.total_active_review_reward_weight = tvo.total_active_review_reward_weight;
-            });
+        const auto& discipline = discipline_service.get_discipline(o.discipline_id);
+        _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
+            d.total_active_research_reward_weight = tvo.total_active_research_reward_weight;
+            d.total_active_review_reward_weight = tvo.total_active_review_reward_weight;
+        });
 
-            uint64_t max_vote_weight = 0;
+        uint64_t max_vote_weight = 0;
 
-            /** this verifies uniqueness of voter
-             *
-             *  cv.weight / c.total_vote_weight ==> % of rshares increase that is accounted for by the vote
-             *
-             *  W(R) = B * R / ( R + 2S )
-             *  W(R) is bounded above by B. B is fixed at 2^64 - 1, so all weights fit in a 64 bit integer.
-             *
-             *  The equation for an individual vote is:
-             *    W(R_N) - W(R_N-1), which is the delta increase of proportional weight
-             *
-             *  c.total_vote_weight =
-             *    W(R_1) - W(R_0) +
-             *    W(R_2) - W(R_1) + ...
-             *    W(R_N) - W(R_N-1) = W(R_N) - W(R_0)
-             *
-             *  Since W(R_0) = 0, c.total_vote_weight is also bounded above by B and will always fit in a 64 bit
-             *integer.
-             *
-             **/
-            auto& vote = _db._temporary_public_impl().create<vote_object>([&](vote_object& v) {
-                v.voter = voter.name;
-                v.discipline_id = o.discipline_id;
-                v.research_id = o.research_id;
-                v.research_content_id = o.research_content_id;
-                v.weight = o.weight;
-                v.voting_power = used_power;
-                v.tokens_amount = abs_used_tokens;
-                v.voting_time = _db.head_block_time();
+        /** this verifies uniqueness of voter
+         *
+         *  cv.weight / c.total_vote_weight ==> % of rshares increase that is accounted for by the vote
+         *
+         *  W(R) = B * R / ( R + 2S )
+         *  W(R) is bounded above by B. B is fixed at 2^64 - 1, so all weights fit in a 64 bit integer.
+         *
+         *  The equation for an individual vote is:
+         *    W(R_N) - W(R_N-1), which is the delta increase of proportional weight
+         *
+         *  c.total_vote_weight =
+         *    W(R_1) - W(R_0) +
+         *    W(R_2) - W(R_1) + ...
+         *    W(R_N) - W(R_N-1) = W(R_N) - W(R_0)
+         *
+         *  Since W(R_0) = 0, c.total_vote_weight is also bounded above by B and will always fit in a 64 bit
+         *integer.
+         *
+         **/
+        auto& vote = _db._temporary_public_impl().create<vote_object>([&](vote_object& v) {
+            v.voter = voter.name;
+            v.discipline_id = o.discipline_id;
+            v.research_id = o.research_id;
+            v.research_content_id = o.research_content_id;
+            v.weight = o.weight;
+            v.voting_power = used_power;
+            v.tokens_amount = abs_used_tokens;
+            v.voting_time = _db.head_block_time();
 
-                uint64_t old_weight = util::evaluate_reward_curve(current_weight.value, curators_reward_curve).to_uint64();
-                uint64_t new_weight = util::evaluate_reward_curve(tvo.total_weight.value, curators_reward_curve).to_uint64();
-                v.weight = new_weight - old_weight;
+            uint64_t old_weight = util::evaluate_reward_curve(current_weight.value, curators_reward_curve).to_uint64();
+            uint64_t new_weight = util::evaluate_reward_curve(tvo.total_weight.value, curators_reward_curve).to_uint64();
+            v.weight = new_weight - old_weight;
 
-                max_vote_weight = v.weight;
+            max_vote_weight = v.weight;
 
-                /// discount weight by time
-                uint128_t w(max_vote_weight);
-                uint64_t delta_t = std::min(uint64_t((v.voting_time - content.created_at).to_seconds()),
-                                            uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
+            /// discount weight by time
+            uint128_t w(max_vote_weight);
+            uint64_t delta_t = std::min(uint64_t((v.voting_time - content.created_at).to_seconds()),
+                                        uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
 
-                w *= delta_t;
-                w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
-                v.weight = w.to_uint64();
-            });
+            w *= delta_t;
+            w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
+            v.weight = w.to_uint64();
+        });
 
-            _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
-                t.total_curators_reward_weight += vote.weight;
-                if (content_is_active) {
-                    t.total_active_curators_reward_weight += vote.weight;
-                }
-            });
-        }
+        _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
+            t.total_curators_reward_weight += vote.weight;
+            if (content_is_active) {
+                t.total_active_curators_reward_weight += vote.weight;
+            }
+        });
     }
     FC_CAPTURE_AND_RETHROW((o))
-}
-
-void custom_evaluator::do_apply(const custom_operation& o)
-{
-}
-
-void custom_json_evaluator::do_apply(const custom_json_operation& o)
-{
-    dbservice& d = db();
-    std::shared_ptr<custom_operation_interpreter> eval = d.get_custom_json_evaluator(o.id);
-    if (!eval)
-        return;
-
-    try
-    {
-        eval->apply(o);
-    }
-    catch (const fc::exception& e)
-    {
-        if (d.is_producing())
-            throw e;
-    }
-    catch (...)
-    {
-        elog("Unexpected exception applying custom json evaluator.");
-    }
-}
-
-void custom_binary_evaluator::do_apply(const custom_binary_operation& o)
-{
-    dbservice& d = db();
-
-    std::shared_ptr<custom_operation_interpreter> eval = d.get_custom_json_evaluator(o.id);
-    if (!eval)
-        return;
-
-    try
-    {
-        eval->apply(o);
-    }
-    catch (const fc::exception& e)
-    {
-        if (d.is_producing())
-            throw e;
-    }
-    catch (...)
-    {
-        elog("Unexpected exception applying custom json evaluator.");
-    }
 }
 
 void prove_authority_evaluator::do_apply(const prove_authority_operation& o)

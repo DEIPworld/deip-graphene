@@ -2479,6 +2479,7 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
 //    FC_LOG_AND_RETHROW()
 //}
 
+
 //BOOST_AUTO_TEST_CASE(custom_authorities)
 //{
 //    custom_operation op;
@@ -2558,6 +2559,7 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
 //    op.get_required_authorities(auths);
 //    BOOST_REQUIRE(auths == expected);
 //}
+
 //
 //BOOST_AUTO_TEST_CASE(account_recovery)
 //{

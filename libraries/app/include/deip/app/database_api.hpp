@@ -10,7 +10,6 @@
 
 #include <deip/tags/tags_plugin.hpp>
 
-#include <deip/follow/follow_plugin.hpp>
 #include <deip/witness/witness_plugin.hpp>
 
 #include <fc/api.hpp>
@@ -318,8 +317,6 @@ public:
     vector<discussion> get_discussions_by_votes(const discussion_query& query) const;
     vector<discussion> get_discussions_by_children(const discussion_query& query) const;
     vector<discussion> get_discussions_by_hot(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_feed(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_blog(const discussion_query& query) const;
     vector<discussion> get_discussions_by_comments(const discussion_query& query) const;
     vector<discussion> get_discussions_by_promoted(const discussion_query& query) const;
 
@@ -490,8 +487,6 @@ FC_API(deip::app::database_api,
    (get_discussions_by_votes)
    (get_discussions_by_children)
    (get_discussions_by_hot)
-   (get_discussions_by_feed)
-   (get_discussions_by_blog)
    (get_discussions_by_comments)
    (get_discussions_by_promoted)
 
