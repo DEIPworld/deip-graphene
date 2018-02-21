@@ -2,7 +2,6 @@
 
 #include <deip/chain/block_summary_object.hpp>
 #include <deip/chain/compound.hpp>
-#include <deip/chain/custom_operation_interpreter.hpp>
 #include <deip/chain/database.hpp>
 #include <deip/chain/database_exceptions.hpp>
 #include <deip/chain/db_with.hpp>
@@ -1775,9 +1774,6 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<witness_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_witness_vote_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_witness_proxy_evaluator>();
-    _my->_evaluator_registry.register_evaluator<custom_evaluator>();
-    _my->_evaluator_registry.register_evaluator<custom_binary_evaluator>();
-    _my->_evaluator_registry.register_evaluator<custom_json_evaluator>();
     _my->_evaluator_registry.register_evaluator<prove_authority_evaluator>();
     _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator>();
     _my->_evaluator_registry.register_evaluator<recover_account_evaluator>();
@@ -1804,22 +1800,6 @@ void database::initialize_evaluators()
                                         this->obtain_service<dbs_research_content>(),
                                         this->obtain_service<dbs_research_token_sale>()));
     //clang-format on
-}
-
-void database::set_custom_operation_interpreter(const std::string& id,
-                                                std::shared_ptr<custom_operation_interpreter> registry)
-{
-    bool inserted = _custom_operation_interpreters.emplace(id, registry).second;
-    // This assert triggering means we're mis-configured (multiple registrations of custom JSON evaluator for same ID)
-    FC_ASSERT(inserted);
-}
-
-std::shared_ptr<custom_operation_interpreter> database::get_custom_json_evaluator(const std::string& id)
-{
-    auto it = _custom_operation_interpreters.find(id);
-    if (it != _custom_operation_interpreters.end())
-        return it->second;
-    return std::shared_ptr<custom_operation_interpreter>();
 }
 
 void database::initialize_indexes()

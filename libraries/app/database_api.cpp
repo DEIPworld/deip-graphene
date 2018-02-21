@@ -1596,7 +1596,6 @@ state database_api::get_state(string path) const
                         case operation::tag<account_create_operation>::value:
                         case operation::tag<account_update_operation>::value:
                         case operation::tag<witness_update_operation>::value:
-                        case operation::tag<custom_operation>::value:
                         case operation::tag<producer_reward_operation>::value:
                         default:
                             eacnt.other_history[item.first] = item.second;

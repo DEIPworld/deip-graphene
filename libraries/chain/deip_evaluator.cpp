@@ -1,5 +1,4 @@
 #include <deip/chain/deip_evaluator.hpp>
-#include <deip/chain/custom_operation_interpreter.hpp>
 #include <deip/chain/deip_objects.hpp>
 #include <deip/chain/witness_objects.hpp>
 #include <deip/chain/block_summary_object.hpp>
@@ -1098,55 +1097,6 @@ void vote_evaluator::do_apply(const vote_operation& o)
         }
     }
     FC_CAPTURE_AND_RETHROW((o))
-}
-
-void custom_evaluator::do_apply(const custom_operation& o)
-{
-}
-
-void custom_json_evaluator::do_apply(const custom_json_operation& o)
-{
-    dbservice& d = db();
-    std::shared_ptr<custom_operation_interpreter> eval = d.get_custom_json_evaluator(o.id);
-    if (!eval)
-        return;
-
-    try
-    {
-        eval->apply(o);
-    }
-    catch (const fc::exception& e)
-    {
-        if (d.is_producing())
-            throw e;
-    }
-    catch (...)
-    {
-        elog("Unexpected exception applying custom json evaluator.");
-    }
-}
-
-void custom_binary_evaluator::do_apply(const custom_binary_operation& o)
-{
-    dbservice& d = db();
-
-    std::shared_ptr<custom_operation_interpreter> eval = d.get_custom_json_evaluator(o.id);
-    if (!eval)
-        return;
-
-    try
-    {
-        eval->apply(o);
-    }
-    catch (const fc::exception& e)
-    {
-        if (d.is_producing())
-            throw e;
-    }
-    catch (...)
-    {
-        elog("Unexpected exception applying custom json evaluator.");
-    }
 }
 
 void prove_authority_evaluator::do_apply(const prove_authority_operation& o)

@@ -24,10 +24,7 @@ namespace deip {
                 account_witness_vote_operation,
                 account_witness_proxy_operation,
 
-                custom_operation,
-
                 delete_comment_operation,
-                custom_json_operation,
                 comment_options_operation,
                 set_withdraw_vesting_route_operation,
 
@@ -42,7 +39,6 @@ namespace deip {
                 escrow_release_operation,
                 escrow_approve_operation,
 
-                custom_binary_operation,
                 decline_voting_rights_operation,
                 delegate_vesting_shares_operation,
                 account_create_with_delegation_operation,

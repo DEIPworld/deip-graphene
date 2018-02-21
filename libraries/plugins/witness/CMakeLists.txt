@@ -2,8 +2,6 @@ file(GLOB HEADERS "include/deip/witness/*.hpp")
 
 add_library( deip_witness
              witness_plugin.cpp
-             witness_evaluators.cpp
-             witness_operations.cpp
            )
 
 target_link_libraries( deip_witness deip_chain deip_protocol deip_app )
