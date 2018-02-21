@@ -11,7 +11,7 @@ add_library( deip_app
              ${EGENESIS_HEADERS}
            )
 
-target_link_libraries( deip_app deip_chain deip_protocol deip_tags deip_follow deip_witness deip_mf_plugins fc graphene_net graphene_utilities )
+target_link_libraries( deip_app deip_chain deip_protocol deip_tags deip_witness deip_mf_plugins fc graphene_net graphene_utilities )
 target_include_directories( deip_app
                             PUBLIC
                             "${CMAKE_CURRENT_SOURCE_DIR}/include"
