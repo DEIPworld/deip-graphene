@@ -14,10 +14,8 @@ target_include_directories(chain_test PUBLIC "common")
 
 file(GLOB_RECURSE WALLET_SOURCES "wallet/*.cpp")
 add_executable(wallet_tests ${WALLET_SOURCES})
-target_link_libraries(wallet_tests deip_wallet deip_chain deip_app deip_private_message deip_egenesis_none graphene_utilities fc)
+target_link_libraries(wallet_tests deip_wallet deip_chain deip_app deip_egenesis_none graphene_utilities fc)
 
 if(MSVC)
     set_source_files_properties(tests/serialization_tests.cpp PROPERTIES COMPILE_FLAGS "/bigobj" )
 endif(MSVC)
-
-#add_subdirectory( generate_empty_blocks )

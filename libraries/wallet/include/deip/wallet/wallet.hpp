@@ -1,7 +1,6 @@
 #pragma once
 
 #include <deip/app/api.hpp>
-#include <deip/private_message/private_message_plugin.hpp>
 #include <deip/app/deip_api_objects.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
@@ -18,7 +17,6 @@ namespace deip {
 namespace wallet {
 
 using deip::app::discussion;
-using namespace deip::private_message;
 
 typedef uint16_t transaction_handle_type;
 
@@ -809,16 +807,6 @@ public:
                                               const std::string& json,
                                               bool broadcast);
 
-    annotated_signed_transaction send_private_message(const std::string& from,
-                                                      const std::string& to,
-                                                      const std::string& subject,
-                                                      const std::string& body,
-                                                      bool broadcast);
-
-    vector<extended_message_object> get_inbox(const std::string& account, fc::time_point newest, uint32_t limit);
-    vector<extended_message_object> get_outbox(const std::string& account, fc::time_point newest, uint32_t limit);
-    message_body try_decrypt_message(const message_api_obj& mo);
-
     /**
      * Vote on a comment to be paid DEIP
      *
@@ -1070,11 +1058,6 @@ FC_API( deip::wallet::wallet_api,
         (decrypt_memo)
         (decline_voting_rights)
         (create_budget)
-
-        // private message api
-        (send_private_message)
-        (get_inbox)
-        (get_outbox)
 
         /// helper api
         (get_prototype_operation)

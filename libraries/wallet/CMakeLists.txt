@@ -25,7 +25,7 @@ endif()
 
 add_library( deip_wallet wallet.cpp ${CMAKE_CURRENT_BINARY_DIR}/api_documentation.cpp ${HEADERS} )
 # I don't know why deip_app is required twice in the following line, I just know the linker breaks if it isn't.
-target_link_libraries( deip_wallet PRIVATE deip_app graphene_net deip_chain deip_protocol graphene_utilities fc deip_private_message deip_app deip_account_by_key ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} )
+target_link_libraries( deip_wallet PRIVATE deip_app graphene_net deip_chain deip_protocol graphene_utilities fc deip_app deip_account_by_key ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} )
 target_include_directories( deip_wallet PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
 if(MSVC)
