@@ -55,6 +55,7 @@ struct start_research_proposal_data_type : base_proposal_data_type
     string permlink;
     research_group_id_type research_group_id;
     uint16_t review_share_in_percent;
+    uint16_t dropout_compensation_in_percent;
 
     void validate() const
     {
@@ -63,6 +64,7 @@ struct start_research_proposal_data_type : base_proposal_data_type
         FC_ASSERT(permlink.size() < DEIP_MAX_PERMLINK_LENGTH, "Research permlink is too long");
         FC_ASSERT(fc::is_utf8(permlink), "Research permlink should be valid UTF8 string");
         FC_ASSERT(review_share_in_percent >= 0 && review_share_in_percent <= 50 * DEIP_1_PERCENT, "Percent for review should be in 0 to 50 range");
+        FC_ASSERT(dropout_compensation_in_percent >= 0 && dropout_compensation_in_percent <= DEIP_100_PERCENT, "Percent for dropout compensation should be in 0 to 100 range");
     }
 };
 
@@ -177,7 +179,7 @@ FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(na
 
 FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
 
-FC_REFLECT(deip::chain::start_research_proposal_data_type, (name)(abstract)(permlink)(research_group_id)(review_share_in_percent))
+FC_REFLECT(deip::chain::start_research_proposal_data_type, (name)(abstract)(permlink)(research_group_id)(review_share_in_percent)(dropout_compensation_in_percent))
 
 FC_REFLECT(deip::chain::transfer_research_tokens_data_type, (research_id)(total_price)(account_name)(amount))
 
