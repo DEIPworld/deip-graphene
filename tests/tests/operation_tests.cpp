@@ -2052,122 +2052,137 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 //    FC_LOG_AND_RETHROW()
 //}
 //
-//BOOST_AUTO_TEST_CASE(account_witness_vote_validate)
-//{
-//    try
-//    {
-//        BOOST_TEST_MESSAGE("Testing: account_witness_vote_validate");
-//
-//        validate_database();
-//    }
-//    FC_LOG_AND_RETHROW()
-//}
-//
-//BOOST_AUTO_TEST_CASE(account_witness_vote_authorities)
-//{
-//    try
-//    {
-//        BOOST_TEST_MESSAGE("Testing: account_witness_vote_authorities");
-//
-//        ACTORS((alice)(bob)(sam))
-//
-//        fund("alice", 1000);
-//        private_key_type alice_witness_key = generate_private_key("alice_witness");
-//        witness_create("alice", alice_private_key, "foo.bar", alice_witness_key.get_public_key(), 1000);
-//
-//        account_witness_vote_operation op;
-//        op.account = "bob";
-//        op.witness = "alice";
-//
-//        signed_transaction tx;
-//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-//        tx.operations.push_back(op);
-//
-//        BOOST_TEST_MESSAGE("--- Test failure when no signatures");
-//        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
-//
-//        BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the account's authority");
-//        tx.sign(bob_post_key, db.get_chain_id());
-//        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
-//
-//        BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
-//        tx.signatures.clear();
-//        tx.sign(bob_private_key, db.get_chain_id());
-//        tx.sign(bob_private_key, db.get_chain_id());
-//        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
-//
-//        BOOST_TEST_MESSAGE("--- Test failure when signed by an additional signature not in the creator's authority");
-//        tx.signatures.clear();
-//        tx.sign(bob_private_key, db.get_chain_id());
-//        tx.sign(alice_private_key, db.get_chain_id());
-//        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
-//
-//        BOOST_TEST_MESSAGE("--- Test success with witness signature");
-//        tx.signatures.clear();
-//        tx.sign(bob_private_key, db.get_chain_id());
-//        db.push_transaction(tx, 0);
-//
-//        BOOST_TEST_MESSAGE("--- Test failure with proxy signature");
-//        proxy("bob", "sam");
-//        tx.signatures.clear();
-//        tx.sign(sam_private_key, db.get_chain_id());
-//        DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
-//
-//        validate_database();
-//    }
-//    FC_LOG_AND_RETHROW()
-//}
-//
-//BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
-//{
-//    try
-//    {
-//        BOOST_TEST_MESSAGE("Testing: account_witness_vote_apply");
-//
-//        ACTORS((alice)(bob)(sam))
-//        fund("alice", 5000);
-//        vest("alice", 5000);
-//        fund("sam", 1000);
-//
-//        private_key_type sam_witness_key = generate_private_key("sam_key");
-//        witness_create("sam", sam_private_key, "foo.bar", sam_witness_key.get_public_key(), 1000);
-//        const witness_object& sam_witness = db.get_witness("sam");
-//
-//        const auto& witness_vote_idx = db.get_index<witness_vote_index>().indices().get<by_witness_account>();
-//
-//        BOOST_TEST_MESSAGE("--- Test normal vote");
-//        account_witness_vote_operation op;
-//        op.account = "alice";
-//        op.witness = "sam";
-//        op.approve = true;
-//
-//        signed_transaction tx;
-//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-//        tx.operations.push_back(op);
-//        tx.sign(alice_private_key, db.get_chain_id());
-//
-//        db.push_transaction(tx, 0);
-//
-//        BOOST_REQUIRE(sam_witness.votes == alice.vesting_shares.amount);
-//        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) != witness_vote_idx.end());
-//        validate_database();
-//
-//        BOOST_TEST_MESSAGE("--- Test revoke vote");
-//        op.approve = false;
-//        tx.operations.clear();
-//        tx.signatures.clear();
-//        tx.operations.push_back(op);
-//        tx.sign(alice_private_key, db.get_chain_id());
-//
-//        db.push_transaction(tx, 0);
-//        BOOST_REQUIRE(sam_witness.votes.value == 0);
-//        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) == witness_vote_idx.end());
-//
-//        BOOST_TEST_MESSAGE("--- Test failure when attempting to revoke a non-existent vote");
-//
-//        DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
-//        BOOST_REQUIRE(sam_witness.votes.value == 0);
-//        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) == witness_vote_idx.end());
+BOOST_AUTO_TEST_CASE(account_witness_vote_validate)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: account_witness_vote_validate");
+
+        validate_database();
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(account_witness_vote_authorities)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: account_witness_vote_authorities");
+
+        ACTORS((alice)(bob)(sam))
+
+        fund("alice", 1000);
+        private_key_type alice_witness_key = generate_private_key("alice_witness");
+        witness_create("alice", alice_private_key, "foo.bar", alice_witness_key.get_public_key(), 1000);
+
+        account_witness_vote_operation op;
+        op.account = "bob";
+        op.witness = "alice";
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+
+        BOOST_TEST_MESSAGE("--- Test failure when no signatures");
+        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+
+        BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the account's authority");
+        tx.sign(bob_post_key, db.get_chain_id());
+        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+
+        BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
+        tx.signatures.clear();
+        tx.sign(bob_private_key, db.get_chain_id());
+        tx.sign(bob_private_key, db.get_chain_id());
+        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+
+        BOOST_TEST_MESSAGE("--- Test failure when signed by an additional signature not in the creator's authority");
+        tx.signatures.clear();
+        tx.sign(bob_private_key, db.get_chain_id());
+        tx.sign(alice_private_key, db.get_chain_id());
+        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+
+        BOOST_TEST_MESSAGE("--- Test success with witness signature");
+        tx.signatures.clear();
+        tx.sign(bob_private_key, db.get_chain_id());
+        db.push_transaction(tx, 0);
+
+        BOOST_TEST_MESSAGE("--- Test failure with proxy signature");
+        proxy("bob", "sam");
+        tx.signatures.clear();
+        tx.sign(sam_private_key, db.get_chain_id());
+        DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+
+        validate_database();
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: account_witness_vote_apply");
+
+        ACTORS((alice)(bob)(sam))
+        fund("alice", 5000);
+        vest("alice", 5000);
+        fund("sam", 1000);
+
+        for (int i = 1; i < 4; ++i)
+            expert_token_create(i, "alice", i, i * 100);
+
+        private_key_type sam_witness_key = generate_private_key("sam_key");
+        witness_create("sam", sam_private_key, "foo.bar", sam_witness_key.get_public_key(), 1000);
+        const witness_object& sam_witness = db.get_witness("sam");
+
+        const auto& witness_vote_idx = db.get_index<witness_vote_index>().indices().get<by_witness_account>();
+
+        BOOST_TEST_MESSAGE("--- Test normal vote");
+        account_witness_vote_operation op;
+        op.account = "alice";
+        op.witness = "sam";
+        op.approve = true;
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(alice_private_key, db.get_chain_id());
+
+        db.push_transaction(tx, 0);
+
+        auto expert_tokens_by_account = db.get_index<expert_token_index>().indices().get<by_account_name>().equal_range("alice");
+
+        auto it = expert_tokens_by_account.first;
+        const auto it_end = expert_tokens_by_account.second;
+
+        share_type alice_total_vote_weight;
+        while (it != it_end)
+        {
+            alice_total_vote_weight += it->amount;
+            ++it;
+        }
+
+        BOOST_REQUIRE(sam_witness.votes == alice_total_vote_weight);
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) != witness_vote_idx.end());
+        validate_database();
+
+        BOOST_TEST_MESSAGE("--- Test revoke vote");
+        op.approve = false;
+        tx.operations.clear();
+        tx.signatures.clear();
+        tx.operations.push_back(op);
+        tx.sign(alice_private_key, db.get_chain_id());
+
+        db.push_transaction(tx, 0);
+        BOOST_REQUIRE(sam_witness.votes.value == 0);
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) == witness_vote_idx.end());
+
+        BOOST_TEST_MESSAGE("--- Test failure when attempting to revoke a non-existent vote");
+
+        DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
+        BOOST_REQUIRE(sam_witness.votes.value == 0);
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) == witness_vote_idx.end());
 //
 //        BOOST_TEST_MESSAGE("--- Test proxied vote");
 //        proxy("alice", "bob");
@@ -2210,30 +2225,30 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 //        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, bob.id)) == witness_vote_idx.end());
 //        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) == witness_vote_idx.end());
 //
-//        BOOST_TEST_MESSAGE("--- Test failure when voting for a non-existent account");
-//        tx.operations.clear();
-//        tx.signatures.clear();
-//        op.witness = "dave";
-//        op.approve = true;
-//        tx.operations.push_back(op);
-//        tx.sign(bob_private_key, db.get_chain_id());
-//
-//        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
-//        validate_database();
-//
-//        BOOST_TEST_MESSAGE("--- Test failure when voting for an account that is not a witness");
-//        tx.operations.clear();
-//        tx.signatures.clear();
-//        op.witness = "alice";
-//        tx.operations.push_back(op);
-//        tx.sign(bob_private_key, db.get_chain_id());
-//
-//        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
-//        validate_database();
-//    }
-//    FC_LOG_AND_RETHROW()
-//}
-//
+        BOOST_TEST_MESSAGE("--- Test failure when voting for a non-existent account");
+        tx.operations.clear();
+        tx.signatures.clear();
+        op.witness = "dave";
+        op.approve = true;
+        tx.operations.push_back(op);
+        tx.sign(bob_private_key, db.get_chain_id());
+
+        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+        validate_database();
+
+        BOOST_TEST_MESSAGE("--- Test failure when voting for an account that is not a witness");
+        tx.operations.clear();
+        tx.signatures.clear();
+        op.witness = "alice";
+        tx.operations.push_back(op);
+        tx.sign(bob_private_key, db.get_chain_id());
+
+        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+        validate_database();
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 //BOOST_AUTO_TEST_CASE(account_witness_proxy_validate)
 //{
 //    try
@@ -2463,7 +2478,7 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 //    }
 //    FC_LOG_AND_RETHROW()
 //}
-//
+
 //BOOST_AUTO_TEST_CASE(custom_authorities)
 //{
 //    custom_operation op;
