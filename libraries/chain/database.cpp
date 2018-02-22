@@ -1799,6 +1799,7 @@ void database::initialize_evaluators()
                                         this->obtain_service<dbs_research_token>(),
                                         this->obtain_service<dbs_research_content>(),
                                         this->obtain_service<dbs_research_token_sale>(),
+                                        this->obtain_service<dbs_discipline>(),
                                         this->obtain_service<dbs_research_discipline_relation>()));
     //clang-format on
 }

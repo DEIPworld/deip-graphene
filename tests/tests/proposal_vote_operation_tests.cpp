@@ -32,6 +32,7 @@ typedef deip::chain::proposal_vote_evaluator_t<dbs_account,
                                                dbs_research_token,
                                                dbs_research_content,
                                                dbs_research_token_sale,
+                                               dbs_discipline,
                                                dbs_research_discipline_relation>
         proposal_vote_evaluator;
 
@@ -45,8 +46,9 @@ public:
                      dbs_research_token &research_token_service,
                      dbs_research_content &research_content_service,
                      dbs_research_token_sale &research_token_sale_service,
+                     dbs_discipline &discipline_service,
                      dbs_research_discipline_relation &research_discipline_relation_service)
-            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service, research_discipline_relation_service) {
+            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service, discipline_service, research_discipline_relation_service) {
     }
 
     void execute_proposal(const proposal_object &proposal) {
@@ -64,6 +66,7 @@ public:
                         db.obtain_service<dbs_research_token>(),
                         db.obtain_service<dbs_research_content>(),
                         db.obtain_service<dbs_research_token_sale>(),
+                        db.obtain_service<dbs_discipline>(),
                         db.obtain_service<dbs_research_discipline_relation>()) {
 
     }
@@ -206,7 +209,7 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
             "\"permlink\":\"permlink\","
             "\"review_share_in_percent\": 10,"
             "\"dropout_compensation_in_percent\": 1500,"
-            "\"disciplines_id\": [1, 2, 3]}";
+            "\"disciplines\": [1, 2, 3]}";
 
     create_proposal(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
