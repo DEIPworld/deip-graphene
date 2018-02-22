@@ -20,13 +20,12 @@ const research_group_object& dbs_research_group::get_research_group_by_permlink(
 
 const research_group_object& dbs_research_group::create_research_group(const string& permlink,
                                                                        const string& description,
-                                                                       const share_type funds,
                                                                        const share_type quorum_percent,
                                                                        const share_type tokens_amount) {
     const research_group_object& new_research_group = db_impl().create<research_group_object>([&](research_group_object& research_group) {
         research_group.permlink = permlink;
         research_group.description = description;
-        research_group.funds = funds;
+        research_group.funds = 0;
         research_group.quorum_percent = quorum_percent;
         research_group.total_tokens_amount = tokens_amount;
     });

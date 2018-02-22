@@ -39,7 +39,6 @@ const research_group_object& get_research_group_by_permlink(const fc::string& pe
      * @returns research group object
      */
     const research_group_object& create_research_group(const string& permlink, const string& description,
-                                                       const share_type funds,
                                                        const share_type quorum_percent,
                                                        const share_type tokens_amount);
 
