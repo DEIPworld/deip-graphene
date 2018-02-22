@@ -56,30 +56,6 @@ enum withdraw_route_type
 };
 
 class database_api_impl;
-
-/**
- *  Defines the arguments to a query as a struct so it can be easily extended
- */
-struct discussion_query
-{
-    void validate() const
-    {
-        FC_ASSERT(filter_tags.find(tag) == filter_tags.end());
-        FC_ASSERT(limit <= 100);
-    }
-
-    string tag;
-    uint32_t limit = 0;
-    set<string> filter_tags;
-    set<string> select_authors; ///< list of authors to include, posts not by this author are filtered
-    set<string> select_tags; ///< list of tags to include, posts without these tags are filtered
-    uint32_t truncate_body = 0; ///< the number of bytes of the post body to return, 0 for all
-    optional<string> start_author;
-    optional<string> start_permlink;
-    optional<string> parent_author;
-    optional<string> parent_permlink;
-};
-
 /**
  * @brief The database_api class implements the RPC API for the chain database.
  *
@@ -433,15 +409,6 @@ private:
     static bool exit_default(const comment_api_obj& c) { return false; }
     static bool tag_exit_default(const tags::tag_object& c) { return false; }
 
-    template <typename Index, typename StartItr>
-    vector<discussion> get_discussions(const discussion_query& q, const string& tag, comment_id_type parent,
-        const Index& idx, StartItr itr, uint32_t truncate_body = 0,
-        const std::function<bool(const comment_api_obj&)>& filter = &database_api::filter_default,
-        const std::function<bool(const comment_api_obj&)>& exit = &database_api::exit_default,
-        const std::function<bool(const tags::tag_object&)>& tag_exit = &database_api::tag_exit_default,
-        bool ignore_parent = false) const;
-    comment_id_type get_parent(const discussion_query& q) const;
-
     void recursively_fetch_content(state& _state, discussion& root, set<string>& referenced_accounts) const;
 
     std::shared_ptr<database_api_impl> my;
@@ -453,8 +420,6 @@ private:
 
 FC_REFLECT( deip::app::scheduled_hardfork, (hf_version)(live_time) )
 FC_REFLECT( deip::app::withdraw_route, (from_account)(to_account)(percent)(auto_vest) )
-
-FC_REFLECT( deip::app::discussion_query, (tag)(filter_tags)(select_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit) )
 
 FC_REFLECT_ENUM( deip::app::withdraw_route_type, (incoming)(outgoing)(all) )
 
