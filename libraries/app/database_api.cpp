@@ -108,11 +108,6 @@ applied_operation::applied_operation(const operation_object& op_obj)
     op = fc::raw::unpack<operation>(op_obj.serialized_op);
 }
 
-void find_accounts(set<string>& accounts, const discussion& d)
-{
-    accounts.insert(d.author);
-}
-
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
 // Subscriptions                                                    //
@@ -827,51 +822,6 @@ u256 to256(const fc::uint128& t)
     return result;
 }
 
-void database_api::set_pending_payout(discussion& d) const
-{
-    const auto& cidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_comment>();
-    auto itr = cidx.lower_bound(d.id);
-    if (itr != cidx.end() && itr->comment == d.id)
-    {
-        d.promoted = asset(itr->promoted_balance, DEIP_SYMBOL);
-    }
-    asset pot = my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)).reward_balance;
-    u256 total_r2 = to256(my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink)).recent_claims);
-    if (total_r2 > 0)
-    {
-        uint128_t vshares;
-        const auto& rf = my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink));
-        vshares = d.net_rshares.value > 0
-            ? deip::chain::util::evaluate_reward_curve(d.net_rshares.value, rf.author_reward_curve)
-            : 0;
-
-        u256 r2 = to256(vshares); // to256(abs_net_rshares);
-        r2 *= pot.amount.value;
-        r2 /= total_r2;
-
-        d.pending_payout_value = asset(static_cast<uint64_t>(r2), pot.symbol);
-    }
-
-    if (d.parent_author != DEIP_ROOT_POST_PARENT)
-        d.cashout_time = my->_db.calculate_discussion_payout_time(my->_db.get<comment_object>(d.id));
-
-    if (d.body.size() > 1024 * 128)
-        d.body = "body pruned due to size";
-    if (d.parent_author.size() > 0 && d.body.size() > 1024 * 16)
-        d.body = "comment pruned due to size";
-
-    set_url(d);
-}
-
-void database_api::set_url(discussion& d) const
-{
-    const comment_api_obj root(my->_db.get<comment_object, by_id>(d.root_comment));
-    d.url = "/" + root.category + "/@" + root.author + "/" + root.permlink;
-    d.root_title = root.title;
-    if (root.id != d.id)
-        d.url += "#@" + d.author + "/" + d.permlink;
-}
-
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
 // Budgets                                                          //
@@ -998,23 +948,6 @@ vector<tag_api_obj> database_api::get_trending_tags(string after, uint32_t limit
     });
 }
 
-discussion database_api::get_discussion(comment_id_type id, uint32_t truncate_body) const
-{
-    discussion d = my->_db.get(id);
-    set_url(d);
-    set_pending_payout(d);
-    d.active_votes = get_active_votes(d.author, d.permlink);
-    d.body_length = d.body.size();
-    if (truncate_body)
-    {
-        d.body = d.body.substr(0, truncate_body);
-
-        if (!fc::is_utf8(d.body))
-            d.body = fc::prune_invalid_utf8(d.body);
-    }
-    return d;
-}
-
 /**
  *  This call assumes root already stored as part of state, it will
  *  modify root.replies to contain links to the reply posts and then
@@ -1033,51 +966,6 @@ vector<account_name_type> database_api::get_active_witnesses() const
         for (size_t i = 0; i < n; i++)
             result.push_back(wso.current_shuffled_witnesses[i]);
         return result;
-    });
-}
-
-vector<discussion> database_api::get_discussions_by_author_before_date(string author,
-                                                                       string start_permlink,
-                                                                       time_point_sec before_date,
-                                                                       uint32_t limit) const
-{
-    return my->_db.with_read_lock([&]() {
-        try
-        {
-            vector<discussion> result;
-#ifndef IS_LOW_MEM
-            FC_ASSERT(limit <= 100);
-            result.reserve(limit);
-            uint32_t count = 0;
-            const auto& didx = my->_db.get_index<comment_index>().indices().get<by_author_last_update>();
-
-            if (before_date == time_point_sec())
-                before_date = time_point_sec::maximum();
-
-            auto itr = didx.lower_bound(boost::make_tuple(author, time_point_sec::maximum()));
-            if (start_permlink.size())
-            {
-                const auto& comment = my->_db.get_comment(author, start_permlink);
-                if (comment.created < before_date)
-                    itr = didx.iterator_to(comment);
-            }
-
-            while (itr != didx.end() && itr->author == author && count < limit)
-            {
-                if (itr->parent_author.size() == 0)
-                {
-                    result.push_back(*itr);
-                    set_pending_payout(result.back());
-                    result.back().active_votes = get_active_votes(itr->author, fc::to_string(itr->permlink));
-                    ++count;
-                }
-                ++itr;
-            }
-
-#endif
-            return result;
-        }
-        FC_CAPTURE_AND_RETHROW((author)(start_permlink)(before_date)(limit))
     });
 }
 
@@ -1197,29 +1085,6 @@ state database_api::get_state(string path) const
                             eacnt.other_history[item.first] = item.second;
                         }
                     }
-                }
-                else if (part[1] == "posts" || part[1] == "comments")
-                {
-#ifndef IS_LOW_MEM
-                    int count = 0;
-                    const auto& pidx = my->_db.get_index<comment_index>().indices().get<by_author_last_update>();
-                    auto itr = pidx.lower_bound(acnt);
-                    eacnt.comments = vector<string>();
-
-                    while (itr != pidx.end() && itr->author == acnt && count < 20)
-                    {
-                        if (itr->parent_author.size())
-                        {
-                            const auto link = acnt + "/" + fc::to_string(itr->permlink);
-                            eacnt.comments->push_back(link);
-                            _state.content[link] = *itr;
-                            set_pending_payout(_state.content[link]);
-                            ++count;
-                        }
-
-                        ++itr;
-                    }
-#endif
                 }
             }
             /// pull a complete discussion

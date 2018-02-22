@@ -301,17 +301,6 @@ public:
     ///@{
 
     /**
-     *  This method is used to fetch all posts/comments by start_author that occur after before_date and start_permlink
-     * with up to limit being returned.
-     *
-     *  If start_permlink is empty then only before_date will be considered. If both are specified the eariler to the
-     * two metrics will be used. This
-     *  should allow easy pagination.
-     */
-    vector<discussion> get_discussions_by_author_before_date(
-        string author, string start_permlink, time_point_sec before_date, uint32_t limit) const;
-
-    /**
      *  Account operations have sequence numbers from 0 to N where N is the most recent operation. This method
      *  returns operations in the range [from-limit, from]
      *
@@ -388,15 +377,9 @@ public:
     void on_api_startup();
 
 private:
-    void set_pending_payout(discussion& d) const;
-    void set_url(discussion& d) const;
-    discussion get_discussion(comment_id_type, uint32_t truncate_body = 0) const;
-
     static bool filter_default(const comment_api_obj& c) { return false; }
     static bool exit_default(const comment_api_obj& c) { return false; }
     static bool tag_exit_default(const tags::tag_object& c) { return false; }
-
-    void recursively_fetch_content(state& _state, discussion& root, set<string>& referenced_accounts) const;
 
     std::shared_ptr<database_api_impl> my;
 };
@@ -462,9 +445,6 @@ FC_API(deip::app::database_api,
    // votes
    (get_active_votes)
    (get_account_votes)
-
-   // content
-   (get_discussions_by_author_before_date)
 
    // Witnesses
    (get_witnesses)
