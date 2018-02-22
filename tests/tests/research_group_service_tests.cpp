@@ -86,12 +86,13 @@ BOOST_AUTO_TEST_CASE(create_research_group_test)
 {
     try
     {
-        auto& research_group = data_service.create_research_group("test", "test", 0, 34, 1240);
+        auto& research_group = data_service.create_research_group("test", "test", 34, 1240);
 
         BOOST_CHECK(research_group.permlink == "test");
         BOOST_CHECK(research_group.description == "test");
         BOOST_CHECK(research_group.quorum_percent == 34);
         BOOST_CHECK(research_group.total_tokens_amount == 1240);
+        BOOST_CHECK(research_group.funds == 0);
 
     }
     FC_LOG_AND_RETHROW()
