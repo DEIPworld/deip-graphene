@@ -452,6 +452,20 @@ const research_object& database_fixture::research_create(const uint32_t id,
     return new_research;
 }
 
+const expert_token_object& database_fixture::expert_token_create(const uint32_t id,
+                                                                 const account_name_type& account,
+                                                                 const discipline_id_type& discipline_id,
+                                                                 const share_type& amount)
+{
+    auto& expert_token = db.create<expert_token_object>([&](expert_token_object& token) {
+        token.id = id;
+        token.account_name = account;
+        token.discipline_id = discipline_id;
+        token.amount = amount;
+    });
+    return expert_token;
+}
+
 void database_fixture::fund(const string& account_name, const share_type& amount)
 {
     try
