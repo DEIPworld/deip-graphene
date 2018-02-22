@@ -16,6 +16,7 @@
 #include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/dbs_research_token_sale.hpp>
+#include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 
 #include <deip/chain/proposal_object.hpp>
@@ -34,6 +35,7 @@ template <typename AccountService,
         typename ResearchTokenService,
         typename ResearchContentService,
         typename ResearchTokenSaleService,
+        typename DisciplineService,
         typename ResearchDisciplineRelationService,
         typename OperationType = deip::protocol::operation>
 class proposal_vote_evaluator_t : public evaluator<OperationType>
@@ -48,6 +50,7 @@ public:
             ResearchTokenService,
             ResearchContentService,
             ResearchTokenSaleService,
+            DisciplineService,
             ResearchDisciplineRelationService,
             OperationType>
             EvaluatorType;
@@ -85,8 +88,9 @@ public:
                               ResearchTokenService& research_token_service,
                               ResearchContentService& research_content_service,
                               ResearchTokenSaleService& research_token_sale_service,
-                              ResearchDisciplineRelationService& research_discipline_relation_service
-                              )
+                              DisciplineService& discipline_service,
+                              ResearchDisciplineRelationService& research_discipline_relation_service)
+                              
             : _account_service(account_service)
             , _proposal_service(proposal_service)
             , _research_group_service(research_group_service)
@@ -94,6 +98,7 @@ public:
             , _research_token_service(research_token_service)
             , _research_content_service(research_content_service)
             , _research_token_sale_service(research_token_sale_service)
+            , _discipline_service(discipline_service)
             , _research_discipline_relation_service(research_discipline_relation_service)
     {
         evaluators.set(proposal_action_type::invite_member,
@@ -228,8 +233,11 @@ protected:
         start_research_proposal_data_type data = get_data<start_research_proposal_data_type>(proposal);
         _research_group_service.check_research_group_existence(data.research_group_id);
         auto& research = _research_service.create(data.name, data.abstract, data.permlink, data.research_group_id, data.review_share_in_percent, data.dropout_compensation_in_percent);
-        for (auto& discipline_id : data.disciplines_id)
+        for (auto& discipline_id : data.disciplines)
+        {
+            _discipline_service.check_discipline_existence(discipline_id);
             _research_discipline_relation_service.create(research.id, discipline_id);
+        }
     }
 
     void transfer_research_tokens_evaluator(const proposal_object& proposal)
@@ -303,6 +311,7 @@ protected:
     ResearchTokenService& _research_token_service;
     ResearchContentService& _research_content_service;
     ResearchTokenSaleService& _research_token_sale_service;
+    DisciplineService& _discipline_service;
     ResearchDisciplineRelationService& _research_discipline_relation_service;
 
 
@@ -324,9 +333,10 @@ typedef proposal_vote_evaluator_t<dbs_account,
                                   dbs_research_token,
                                   dbs_research_content,
                                   dbs_research_token_sale,
+                                  dbs_discipline,
                                   dbs_research_discipline_relation>
     proposal_vote_evaluator;
-typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_content, dbs_research_token_sale, dbs_research_discipline_relation>
+typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_content, dbs_research_token_sale, dbs_discipline, dbs_research_discipline_relation>
         proposal_vote_evaluator;
 
 } // namespace chain
