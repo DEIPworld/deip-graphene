@@ -767,22 +767,6 @@ bool database_api_impl::verify_account_authority(const string& name, const flat_
     return verify_authority(trx);
 }
 
-discussion database_api::get_content(string author, string permlink) const
-{
-    return my->_db.with_read_lock([&]() {
-        const auto& by_permlink_idx = my->_db.get_index<comment_index>().indices().get<by_permlink>();
-        auto itr = by_permlink_idx.find(boost::make_tuple(author, permlink));
-        if (itr != by_permlink_idx.end())
-        {
-            discussion result(*itr);
-            set_pending_payout(result);
-            result.active_votes = get_active_votes(author, permlink);
-            return result;
-        }
-        return discussion();
-    });
-}
-
 vector<vote_state> database_api::get_active_votes(string author, string permlink) const
 {
     return my->_db.with_read_lock([&]() {
@@ -888,24 +872,6 @@ void database_api::set_url(discussion& d) const
         d.url += "#@" + d.author + "/" + d.permlink;
 }
 
-vector<discussion> database_api::get_content_replies(string author, string permlink) const
-{
-    return my->_db.with_read_lock([&]() {
-        account_name_type acc_name = account_name_type(author);
-        const auto& by_permlink_idx = my->_db.get_index<comment_index>().indices().get<by_parent>();
-        auto itr = by_permlink_idx.find(boost::make_tuple(acc_name, permlink));
-        vector<discussion> result;
-        while (itr != by_permlink_idx.end() && itr->parent_author == author
-               && fc::to_string(itr->parent_permlink) == permlink)
-        {
-            result.push_back(discussion(*itr));
-            set_pending_payout(result.back());
-            ++itr;
-        }
-        return result;
-    });
-}
-
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
 // Budgets                                                          //
@@ -963,44 +929,6 @@ set<string> database_api_impl::lookup_budget_owners(const string& lower_bound_na
  *  The first call should be (account_to_retrieve replies, "", limit)
  *  Subsequent calls should be (last_author, last_permlink, limit)
  */
-vector<discussion> database_api::get_replies_by_last_update(account_name_type start_parent_author,
-                                                            string start_permlink,
-                                                            uint32_t limit) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<discussion> result;
-
-#ifndef IS_LOW_MEM
-        FC_ASSERT(limit <= 100);
-        const auto& last_update_idx = my->_db.get_index<comment_index>().indices().get<by_last_update>();
-        auto itr = last_update_idx.begin();
-        const account_name_type* parent_author = &start_parent_author;
-
-        if (start_permlink.size())
-        {
-            const auto& comment = my->_db.get_comment(start_parent_author, start_permlink);
-            itr = last_update_idx.iterator_to(comment);
-            parent_author = &comment.parent_author;
-        }
-        else if (start_parent_author.size())
-        {
-            itr = last_update_idx.lower_bound(start_parent_author);
-        }
-
-        result.reserve(limit);
-
-        while (itr != last_update_idx.end() && result.size() < limit && itr->parent_author == *parent_author)
-        {
-            result.push_back(*itr);
-            set_pending_payout(result.back());
-            result.back().active_votes = get_active_votes(itr->author, fc::to_string(itr->permlink));
-            ++itr;
-        }
-
-#endif
-        return result;
-    });
-}
 
 map<uint32_t, applied_operation> database_api::get_account_history(string account, uint64_t from, uint32_t limit) const
 {
@@ -1094,34 +1022,6 @@ discussion database_api::get_discussion(comment_id_type id, uint32_t truncate_bo
  *  any accounts referenced by authors.
  *
  */
-void database_api::recursively_fetch_content(state& _state, discussion& root, set<string>& referenced_accounts) const
-{
-    return my->_db.with_read_lock([&]() {
-        try
-        {
-            if (root.author.size())
-                referenced_accounts.insert(root.author);
-
-            auto replies = get_content_replies(root.author, root.permlink);
-            for (auto& r : replies)
-            {
-                try
-                {
-                    recursively_fetch_content(_state, r, referenced_accounts);
-                    root.replies.push_back(r.author + "/" + r.permlink);
-                    _state.content[r.author + "/" + r.permlink] = std::move(r);
-                    if (r.author.size())
-                        referenced_accounts.insert(r.author);
-                }
-                catch (const fc::exception& e)
-                {
-                    edump((e.to_detail_string()));
-                }
-            }
-        }
-        FC_CAPTURE_AND_RETHROW((root.author)(root.permlink))
-    });
-}
 
 vector<account_name_type> database_api::get_active_witnesses() const
 {
@@ -1298,18 +1198,6 @@ state database_api::get_state(string path) const
                         }
                     }
                 }
-                else if (part[1] == "recent-replies")
-                {
-                    auto replies = get_replies_by_last_update(acnt, "", 50);
-                    eacnt.recent_replies = vector<string>();
-                    for (const auto& reply : replies)
-                    {
-                        auto reply_ref = reply.author + "/" + reply.permlink;
-                        _state.content[reply_ref] = reply;
-
-                        eacnt.recent_replies->push_back(reply_ref);
-                    }
-                }
                 else if (part[1] == "posts" || part[1] == "comments")
                 {
 #ifndef IS_LOW_MEM
@@ -1335,17 +1223,7 @@ state database_api::get_state(string path) const
                 }
             }
             /// pull a complete discussion
-            else if (part[1].size() && part[1][0] == '@')
-            {
-                auto account = part[1].substr(1);
-                auto slug = part[2];
 
-                auto key = account + "/" + slug;
-                auto dis = get_content(account, slug);
-
-                recursively_fetch_content(_state, dis, accounts);
-                _state.content[key] = std::move(dis);
-            }
             else if (part[0] == "witnesses" || part[0] == "~witnesses")
             {
                 auto wits = get_witnesses_by_vote("", 50);

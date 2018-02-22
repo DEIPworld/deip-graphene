@@ -277,9 +277,6 @@ public:
     vector<vote_state> get_active_votes(string author, string permlink) const;
     vector<account_vote> get_account_votes(string voter) const;
 
-    discussion get_content(string author, string permlink) const;
-    vector<discussion> get_content_replies(string parent, string parent_permlink) const;
-
     ///@{ tags API
     /** This API will return the top 1000 tags used by an author sorted by most frequently used */
     vector<pair<string, uint32_t>> get_tags_used_by_author(const string& author) const;
@@ -293,10 +290,7 @@ public:
      *     Get root content in category..
      *     Get any content in category...
      *
-     *  Return discussions
-     *     Total Discussion Pending Payout
-     *     Last Discussion Update (or reply)... think
-     *     Top Discussions by Total Payout
+
      *
      *  Return content (comments)
      *     Pending Payout Amount
@@ -305,13 +299,6 @@ public:
      *
      */
     ///@{
-
-    /**
-     *  Return the active discussions with the highest cumulative pending payouts without respect to category, total
-     *  pending payout means the pending payout of all children as well.
-     */
-    vector<discussion> get_replies_by_last_update(
-        account_name_type start_author, string start_permlink, uint32_t limit) const;
 
     /**
      *  This method is used to fetch all posts/comments by start_author that occur after before_date and start_permlink
@@ -477,10 +464,7 @@ FC_API(deip::app::database_api,
    (get_account_votes)
 
    // content
-   (get_content)
-   (get_content_replies)
    (get_discussions_by_author_before_date)
-   (get_replies_by_last_update)
 
    // Witnesses
    (get_witnesses)
