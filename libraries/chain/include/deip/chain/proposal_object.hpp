@@ -36,21 +36,22 @@ public:
 
 struct by_research_group_id;
 struct by_expiration_time;
+struct by_data;
 
 typedef multi_index_container<proposal_object,
                                                 indexed_by<ordered_unique<tag<by_id>, 
                                                                 member<proposal_object, 
-                                                                        proposal_id_type,
-                                                                        &proposal_object::id>>,
-                                                            ordered_unique<tag<by_expiration_time>,
+                                                                       proposal_id_type,
+                                                                       &proposal_object::id>>,
+                                                           ordered_unique<tag<by_expiration_time>,
                                                                 member<proposal_object,
                                                                         fc::time_point_sec,
                                                                         &proposal_object::expiration_time>>,
-                                                            ordered_non_unique<tag<by_research_group_id>,
+                                                           ordered_non_unique<tag<by_research_group_id>,
                                                                 member<proposal_object,
                                                                         research_group_id_type,
                                                                         &proposal_object::research_group_id>>>,
-                                                            allocator<proposal_object>>
+                                                           allocator<proposal_object>>
     proposal_index;
 
 } // namespace chain
