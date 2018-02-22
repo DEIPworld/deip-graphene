@@ -307,18 +307,6 @@ public:
     ///@{ tags API
     /** This API will return the top 1000 tags used by an author sorted by most frequently used */
     vector<pair<string, uint32_t>> get_tags_used_by_author(const string& author) const;
-    vector<discussion> get_discussions_by_payout(const discussion_query& query) const;
-    vector<discussion> get_post_discussions_by_payout(const discussion_query& query) const;
-    vector<discussion> get_comment_discussions_by_payout(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_trending(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_created(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_active(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_cashout(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_votes(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_children(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_hot(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_comments(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_promoted(const discussion_query& query) const;
 
     ///@}
 
@@ -477,18 +465,6 @@ FC_API(deip::app::database_api,
    // tags
    (get_trending_tags)
    (get_tags_used_by_author)
-   (get_discussions_by_payout)
-   (get_post_discussions_by_payout)
-   (get_comment_discussions_by_payout)
-   (get_discussions_by_trending)
-   (get_discussions_by_created)
-   (get_discussions_by_active)
-   (get_discussions_by_cashout)
-   (get_discussions_by_votes)
-   (get_discussions_by_children)
-   (get_discussions_by_hot)
-   (get_discussions_by_comments)
-   (get_discussions_by_promoted)
 
    // Blocks and transactions
    (get_block_header)
