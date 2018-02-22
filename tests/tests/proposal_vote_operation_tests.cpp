@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
         ///generate blocks here///
 
         // Change research review share percent
-        create_proposal_by_operation("initdelegate", 0, change_review_share_json, dbs_proposal::action_t::change_research_review_share_percent, time_point_sec(0xffffffff));
+        create_proposal_by_operation("initdelegate", 0, change_review_share_json, dbs_proposal::action_t::change_research_review_share_percent, time_point_sec(1519410877));
         
         vote_proposal_operation crs_op;
 
