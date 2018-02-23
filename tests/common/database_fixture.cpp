@@ -485,6 +485,8 @@ void database_fixture::create_proposal_by_operation(const account_name_type& cre
         db.push_transaction(trx, 0);
         trx.operations.clear();
         trx.signatures.clear();
+
+        generate_block();
     }
     FC_CAPTURE_AND_RETHROW((creator))
 }

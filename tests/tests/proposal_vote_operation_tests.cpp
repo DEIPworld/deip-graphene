@@ -138,28 +138,27 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
     FC_LOG_AND_RETHROW()
 }
 
-// TODO: Add block generation. This option is available after 90 days from last update.
 BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 {
     try
     {
         auto& research_service = db.obtain_service<dbs_research>();
-        auto& proposal_service = db.obtain_service<dbs_proposal>();
 
-        auto& research_group = research_group_create_by_operation("initdelegate", "test permlink", "test description", DEIP_100_PERCENT, 50, 100);
+        research_group_create_by_operation("initdelegate", "test permlink", "test description", DEIP_100_PERCENT, 50,
+                                           100);
 
-        const std::string create_proposal_json = "{\"name\":\"testresearch\","
-                                                 "\"research_group_id\":0,"
-                                                 "\"abstract\":\"abstract\","
-                                                 "\"permlink\":\"permlink\","
-                                                 "\"review_share_in_percent\": 10,"
-                                                 "\"dropout_compensation_in_percent\": 1500,"
-                                                 "\"disciplines_id\": [1, 2, 3]}";
+        const std::string create_research_proposal_json = "{\"name\":\"testresearch\","
+                                                          "\"research_group_id\":0,"
+                                                          "\"abstract\":\"abstract\","
+                                                          "\"permlink\":\"permlink\","
+                                                          "\"review_share_in_percent\": 10,"
+                                                          "\"dropout_compensation_in_percent\": 1500,"
+                                                          "\"disciplines_id\": [1, 2, 3]}";
+        const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 45,\"research_id\": 0}";
 
-        const std::string change_review_share_json = "{\"review_share_in_percent\": 45,\"research_id\": 0}";
-
-        // Create research
-        create_proposal_by_operation("initdelegate", 0, create_proposal_json, dbs_proposal::action_t::start_research, time_point_sec(1519410877));
+        create_proposal_by_operation("initdelegate", 0, create_research_proposal_json,
+                                     dbs_proposal::action_t::start_research,
+                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
 
         vote_proposal_operation op;
 
@@ -169,11 +168,12 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 
         evaluator.do_apply(op);
 
-        ///generate blocks here///
+        generate_blocks(fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(90)), true);
 
-        // Change research review share percent
-        create_proposal_by_operation("initdelegate", 0, change_review_share_json, dbs_proposal::action_t::change_research_review_share_percent, time_point_sec(1519410877));
-        
+        create_proposal_by_operation("initdelegate", 0, change_review_share_proposal_json,
+                                     dbs_proposal::action_t::change_research_review_share_percent,
+                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
+
         vote_proposal_operation crs_op;
 
         crs_op.research_group_id = 0;
