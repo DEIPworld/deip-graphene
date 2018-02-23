@@ -142,9 +142,11 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 {
     try
     {
+        ACTORS((alice));
+
         auto& research_service = db.obtain_service<dbs_research>();
 
-        research_group_create_by_operation("initdelegate", "test permlink", "test description", DEIP_100_PERCENT, 50,
+        research_group_create_by_operation("alice", "test permlink", "test description", DEIP_100_PERCENT, 50,
                                            100);
 
         const std::string create_research_proposal_json = "{\"name\":\"testresearch\","
@@ -156,7 +158,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
                                                           "\"disciplines_id\": [1, 2, 3]}";
         const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 45,\"research_id\": 0}";
 
-        create_proposal_by_operation("initdelegate", 0, create_research_proposal_json,
+        create_proposal_by_operation("alice", 0, create_research_proposal_json,
                                      dbs_proposal::action_t::start_research,
                                      fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
 
@@ -164,13 +166,13 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 
         op.research_group_id = 0;
         op.proposal_id = 0;
-        op.voter = "initdelegate";
+        op.voter = "alice";
 
         evaluator.do_apply(op);
 
         generate_blocks(fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(90)), true);
 
-        create_proposal_by_operation("initdelegate", 0, change_review_share_proposal_json,
+        create_proposal_by_operation("alice", 0, change_review_share_proposal_json,
                                      dbs_proposal::action_t::change_research_review_share_percent,
                                      fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
 
@@ -178,7 +180,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 
         crs_op.research_group_id = 0;
         crs_op.proposal_id = 1;
-        crs_op.voter = "initdelegate";
+        crs_op.voter = "alice";
 
         evaluator.do_apply(crs_op);
 

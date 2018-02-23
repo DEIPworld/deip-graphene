@@ -389,6 +389,9 @@ const research_group_object& database_fixture::research_group_create_by_operatio
 {
     try
     {
+        auto cr = std::string(creator);
+        private_key_type priv_key = generate_private_key(cr);
+
         create_research_group_operation op;
         op.creator = creator;
         op.permlink = permlink;
@@ -400,7 +403,7 @@ const research_group_object& database_fixture::research_group_create_by_operatio
         trx.operations.push_back(op);
 
         trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        trx.sign(init_account_priv_key, db.get_chain_id());
+        trx.sign(priv_key, db.get_chain_id());
         trx.validate();
         db.push_transaction(trx, 0);
         trx.operations.clear();
@@ -470,6 +473,9 @@ void database_fixture::create_proposal_by_operation(const account_name_type& cre
 {
     try
     {
+        auto cr = std::string(creator);
+        private_key_type priv_key = generate_private_key(cr);
+
         create_proposal_operation op;
         op.creator = creator;
         op.research_group_id = research_group_id._id;
@@ -480,7 +486,7 @@ void database_fixture::create_proposal_by_operation(const account_name_type& cre
         trx.operations.push_back(op);
 
         trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        trx.sign(init_account_priv_key, db.get_chain_id());
+        trx.sign(priv_key, db.get_chain_id());
         trx.validate();
         db.push_transaction(trx, 0);
         trx.operations.clear();
