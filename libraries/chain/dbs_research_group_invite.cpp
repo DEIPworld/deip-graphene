@@ -22,20 +22,30 @@ const research_group_invite_object& dbs_research_group_invite::create(const acco
     return new_research_group_invite;
 }
 
-const research_group_invite_object& dbs_research_group_invite::get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id)
+const research_group_invite_object& dbs_research_group_invite::get(const research_group_invite_id_type& research_group_invite_id)
 {
     return db_impl().get<research_group_invite_object>(research_group_invite_id);
 }
 
-dbs_research_group_invite::research_group_invite_refs_type
+const research_group_invite_object&
     dbs_research_group_invite::get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name,
                                                                                                const research_group_id_type& research_group_id)
 {
+    return db_impl().get<research_group_invite_object, by_account_and_research_group_id>(boost::make_tuple(account_name, research_group_id));
+}
+
+void dbs_research_group_invite::check_research_group_invite_existence(const research_group_invite_id_type& research_group_invite_id)
+{
+    auto research_group_invite = db_impl().find<research_group_invite_object, by_id>(research_group_invite_id);
+    FC_ASSERT(research_group_invite != nullptr, "Research group invite with id \"${1}\" must exist.", ("1", research_group_invite_id));
+}
+
+dbs_research_group_invite::research_group_invite_refs_type
+    dbs_research_group_invite::get_research_group_invites_by_account_name(const account_name_type& account_name)
+{
     research_group_invite_refs_type ret;
 
-    auto it_pair
-            = db_impl().get_index<research_group_invite_index>().indicies().get<by_account_and_research_group_id>().equal_range(std::make_tuple(account_name, research_group_id));
-
+    auto it_pair = db_impl().get_index<research_group_invite_index>().indicies().get<by_account_name>().equal_range(account_name);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
@@ -46,13 +56,6 @@ dbs_research_group_invite::research_group_invite_refs_type
 
     return ret;
 }
-
-void dbs_research_group_invite::check_research_group_invite_existence(const research_group_invite_id_type& research_group_invite_id)
-{
-    auto research_group_invite = db_impl().find<research_group_invite_object, by_id>(research_group_invite_id);
-    FC_ASSERT(research_group_invite != nullptr, "Research group invite with id \"${1}\" must exist.", ("1", research_group_invite_id));
-}
-
 
 }
 }

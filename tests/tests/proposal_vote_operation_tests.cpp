@@ -33,7 +33,8 @@ typedef deip::chain::proposal_vote_evaluator_t<dbs_account,
                                                dbs_research_content,
                                                dbs_research_token_sale,
                                                dbs_discipline,
-                                               dbs_research_discipline_relation>
+                                               dbs_research_discipline_relation,
+                                               dbs_research_group_invite>
         proposal_vote_evaluator;
 
 
@@ -47,8 +48,9 @@ public:
                      dbs_research_content &research_content_service,
                      dbs_research_token_sale &research_token_sale_service,
                      dbs_discipline &discipline_service,
-                     dbs_research_discipline_relation &research_discipline_relation_service)
-            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service, discipline_service, research_discipline_relation_service) {
+                     dbs_research_discipline_relation &research_discipline_relation_service,
+                     dbs_research_group_invite &research_group_invite_service)
+            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service, discipline_service, research_discipline_relation_service, research_group_invite_service) {
     }
 
     void execute_proposal(const proposal_object &proposal) {
@@ -67,7 +69,8 @@ public:
                         db.obtain_service<dbs_research_content>(),
                         db.obtain_service<dbs_research_token_sale>(),
                         db.obtain_service<dbs_discipline>(),
-                        db.obtain_service<dbs_research_discipline_relation>()) {
+                        db.obtain_service<dbs_research_discipline_relation>(),
+                        db.obtain_service<dbs_research_group_invite>()) {
 
     }
 

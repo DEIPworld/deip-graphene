@@ -33,15 +33,14 @@ public:
                                                const research_group_id_type& research_group_id,
                                                const share_type research_group_token_amount);
 
-    const research_group_invite_object& get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id);
+    const research_group_invite_object& get(const research_group_invite_id_type& research_group_invite_id);
 
-    research_group_invite_refs_type get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name,
+    const research_group_invite_object& get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name,
                                                                                                     const research_group_id_type& research_group_id);
 
     void check_research_group_invite_existence(const research_group_invite_id_type& research_group_invite_id);
 
-
-
+    research_group_invite_refs_type get_research_group_invites_by_account_name(const account_name_type& account_name);
 
 };
 
