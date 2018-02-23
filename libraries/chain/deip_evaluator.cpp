@@ -18,6 +18,7 @@
 #include <deip/chain/dbs_research_token_sale.hpp>
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
+#include <deip/chain/dbs_research_group_invite.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1388,6 +1389,38 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
         account_service.decrease_balance(account_service.get_account(op.owner), asset(op.amount));
         research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, op.amount);
     }
+}
+
+void approve_research_group_invite_evaluator::do_apply(const approve_research_group_invite_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_research_group_invite &research_group_invite_service = _db.obtain_service<dbs_research_group_invite>();
+
+    auto& research_group_invite = research_group_invite_service.get_research_group_invite_by_id(op.research_group_invite_id);
+
+    account_service.check_account_existence(research_group_invite.account_name);
+    research_group_service.check_research_group_existence(research_group_invite.research_group_id);
+
+    research_group_service.create_research_group_token(research_group_invite.research_group_id,
+                                                       research_group_invite.research_group_token_amount,
+                                                       research_group_invite.account_name);
+    research_group_service.increase_research_group_total_tokens_amount(research_group_invite.research_group_id,
+                                                                       research_group_invite.research_group_token_amount);
+
+    _db._temporary_public_impl().remove(research_group_invite);
+}
+
+void reject_research_group_invite_evaluator::do_apply(const reject_research_group_invite_operation& op)
+{
+    dbs_research_group_invite &research_group_invite_service = _db.obtain_service<dbs_research_group_invite>();
+
+    research_group_invite_service.check_research_group_invite_existence(op.research_group_invite_id);
+
+    auto& research_group_invite = research_group_invite_service.get_research_group_invite_by_id(op.research_group_invite_id);
+
+    _db._temporary_public_impl().remove(research_group_invite);
+
 }
 
 } // namespace chain

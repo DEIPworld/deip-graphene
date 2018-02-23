@@ -23,6 +23,7 @@ public:
 
     account_name_type account_name;
     research_group_id_type research_group_id;
+    share_type research_group_token_amount;
 };
 
 
@@ -51,6 +52,6 @@ typedef multi_index_container<research_group_invite_object,
 
 
 
-FC_REFLECT(deip::chain::research_group_invite_object, (id)(account_name)(research_group_id))
+FC_REFLECT(deip::chain::research_group_invite_object, (id)(account_name)(research_group_id)(research_group_token_amount))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_group_invite_object, deip::chain::research_group_invite_index)

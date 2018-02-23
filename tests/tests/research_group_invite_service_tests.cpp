@@ -21,19 +21,22 @@ public:
         db.create<research_group_invite_object>([&](research_group_invite_object& rgi_o) {
             rgi_o.id = 1;
             rgi_o.account_name = "alice";
-            rgi_o.research_group_id = 1;            
+            rgi_o.research_group_id = 1;
+            rgi_o.research_group_token_amount = 100;
         });
 
         db.create<research_group_invite_object>([&](research_group_invite_object& rgi_o) {
             rgi_o.id = 2;
             rgi_o.account_name = "alice";
             rgi_o.research_group_id = 2;
+            rgi_o.research_group_token_amount = 100;
         });
 
         db.create<research_group_invite_object>([&](research_group_invite_object& rgi_o) {
             rgi_o.id = 3;
             rgi_o.account_name = "alice";
             rgi_o.research_group_id = 3;
+            rgi_o.research_group_token_amount = 100;
         });
     }
 
@@ -50,6 +53,7 @@ BOOST_AUTO_TEST_CASE(create_research_invite_object)
 
         BOOST_CHECK(research_invite.account_name == "bob");
         BOOST_CHECK(research_invite.research_group_id == 2);
+        BOOST_CHECK(research_invite.research_group_token_amount == 100);
  
     }
     FC_LOG_AND_RETHROW()
