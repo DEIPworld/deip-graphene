@@ -2,6 +2,7 @@
 
 #include <deip/chain/deip_object_types.hpp>
 #include <boost/multi_index/composite_key.hpp>
+#include <boost/multi_index/hashed_index.hpp>
 
 using namespace deip::protocol;
 
@@ -38,11 +39,17 @@ struct by_research_group_id;
 struct by_expiration_time;
 struct by_data;
 
+
 typedef multi_index_container<proposal_object,
-                                                indexed_by<ordered_unique<tag<by_id>, 
-                                                                member<proposal_object, 
+                                                indexed_by<ordered_unique<tag<by_id>,
+                                                                member<proposal_object,
                                                                        proposal_id_type,
                                                                        &proposal_object::id>>,
+                                                           hashed_unique<tag<by_data>,
+                                                                member<proposal_object,
+                                                                       std::string,
+                                                                       &proposal_object::data>,
+                                                                std::hash<std::string>>,
                                                            ordered_unique<tag<by_expiration_time>,
                                                                 member<proposal_object,
                                                                         fc::time_point_sec,
@@ -53,6 +60,7 @@ typedef multi_index_container<proposal_object,
                                                                         &proposal_object::research_group_id>>>,
                                                            allocator<proposal_object>>
     proposal_index;
+
 
 } // namespace chain
 } // namespace deip
