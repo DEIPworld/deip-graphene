@@ -105,6 +105,18 @@ BOOST_AUTO_TEST_CASE(create_proposal)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(throw_on_create_proposal_with_non_unique_data)
+{
+    try
+    {
+        const proposal_object& proposal = data_service.create_proposal(proposal_action_type::dropout_member, "1", "alice",
+                                                                       1, fc::time_point_sec(0xfffffff0), 40);
+        BOOST_CHECK_THROW(data_service.create_proposal(proposal_action_type::invite_member, "1", "bob", 2, fc::time_point_sec(0xffffffff), 40),
+                          boost::exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(get_proposal_by_id)
  {
      try

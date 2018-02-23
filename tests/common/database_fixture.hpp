@@ -11,6 +11,7 @@
 #include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/dbs_vote.hpp>
+#include <deip/chain/dbs_expert_token.hpp>
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>
 
@@ -107,7 +108,6 @@ struct database_fixture
     const research_group_object& research_group_create_by_operation(const account_name_type& creator,
                                                                                       const string& permlink,
                                                                                       const string& description,
-                                                                                      const uint64_t funds,
                                                                                       const uint32_t quorum_percent,
                                                                                       const uint32_t tokens_amount);
 
@@ -144,6 +144,11 @@ struct database_fixture
                                            const research_group_id_type& research_group_id,
                                            const uint16_t review_share_in_percent,
                                            const uint16_t dropout_compensation_in_percent);
+
+    const expert_token_object& expert_token_create(const uint32_t id,
+                                                   const account_name_type& account,
+                                                   const discipline_id_type& discipline_id,
+                                                   const share_type& amount);
 
     void fund(const string& account_name, const share_type& amount = 500000);
     void fund(const string& account_name, const asset& amount);

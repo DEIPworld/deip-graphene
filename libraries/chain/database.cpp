@@ -1800,6 +1800,7 @@ void database::initialize_evaluators()
                                         this->obtain_service<dbs_research_token>(),
                                         this->obtain_service<dbs_research_content>(),
                                         this->obtain_service<dbs_research_token_sale>(),
+                                        this->obtain_service<dbs_discipline>(),
                                         this->obtain_service<dbs_research_discipline_relation>(),
                                         this->obtain_service<dbs_dynamic_global_properties>()));
     //clang-format on
@@ -2577,7 +2578,6 @@ void database::apply_hardfork(uint32_t hardfork)
     switch (hardfork)
     {
     case DEIP_HARDFORK_0_1:
-        perform_vesting_share_split(1000000);
         break;
     default:
         break;
@@ -2669,51 +2669,6 @@ void database::validate_invariants() const
                   ("total_vesting_shares", gpo.total_vesting_shares)("total_vsf_votes", total_vsf_votes));
     }
     FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
-}
-
-void database::perform_vesting_share_split(uint32_t magnitude)
-{
-    try
-    {
-        modify(get_dynamic_global_properties(), [&](dynamic_global_property_object& d) {
-            d.total_vesting_shares.amount *= magnitude;
-            d.total_reward_shares2 = 0;
-        });
-
-        // Need to update all VESTS in accounts and the total VESTS in the dgpo
-        for (const auto& account : get_index<account_index>().indices())
-        {
-            modify(account, [&](account_object& a) {
-                a.vesting_shares.amount *= magnitude;
-                a.withdrawn *= magnitude;
-                a.to_withdraw *= magnitude;
-                a.vesting_withdraw_rate
-                    = asset(a.to_withdraw / DEIP_VESTING_WITHDRAW_INTERVALS_PRE_HF_16, VESTS_SYMBOL);
-                if (a.vesting_withdraw_rate.amount == 0)
-                    a.vesting_withdraw_rate.amount = 1;
-
-                for (uint32_t i = 0; i < DEIP_MAX_PROXY_RECURSION_DEPTH; ++i)
-                    a.proxied_vsf_votes[i] *= magnitude;
-            });
-        }
-
-        const auto& comments = get_index<comment_index>().indices();
-        for (const auto& comment : comments)
-        {
-            modify(comment, [&](comment_object& c) {
-                c.net_rshares *= magnitude;
-                c.abs_rshares *= magnitude;
-                c.vote_rshares *= magnitude;
-            });
-        }
-
-        for (const auto& c : comments)
-        {
-            if (c.net_rshares.value > 0)
-                adjust_rshares2(c, 0, util::evaluate_reward_curve(c.net_rshares.value));
-        }
-    }
-    FC_CAPTURE_AND_RETHROW()
 }
 
 void database::retally_comment_children()

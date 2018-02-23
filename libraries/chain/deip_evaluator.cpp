@@ -881,6 +881,19 @@ void account_witness_vote_evaluator::do_apply(const account_witness_vote_operati
         = _db._temporary_public_impl().get_index<witness_vote_index>().indices().get<by_account_witness>();
     auto itr = by_account_witness_idx.find(boost::make_tuple(voter.id, witness.id));
 
+    auto expert_tokens_by_account =
+            _db._temporary_public_impl().get_index<expert_token_index>().indices().get<by_account_name>().equal_range(voter.name);
+
+    auto it = expert_tokens_by_account.first;
+    const auto it_end = expert_tokens_by_account.second;
+
+    share_type total_vote_weight;
+    while (it != it_end)
+    {
+        total_vote_weight += it->amount;
+        ++it;
+    }
+
     if (itr == by_account_witness_idx.end())
     {
         FC_ASSERT(o.approve, "Vote doesn't exist, user must indicate a desire to approve witness.");
@@ -893,7 +906,7 @@ void account_witness_vote_evaluator::do_apply(const account_witness_vote_operati
             v.account = voter.id;
         });
 
-        witness_service.adjust_witness_vote(witness, voter.witness_vote_weight());
+        witness_service.adjust_witness_vote(witness, total_vote_weight);
 
         account_service.increase_witnesses_voted_for(voter);
     }
@@ -901,7 +914,7 @@ void account_witness_vote_evaluator::do_apply(const account_witness_vote_operati
     {
         FC_ASSERT(!o.approve, "Vote currently exists, user must indicate a desire to reject witness.");
 
-        witness_service.adjust_witness_vote(witness, -voter.witness_vote_weight());
+        witness_service.adjust_witness_vote(witness, -total_vote_weight);
 
         account_service.decrease_witnesses_voted_for(voter);
         _db._temporary_public_impl().remove(*itr);
@@ -1311,7 +1324,6 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
 
     const research_group_object& research_group = research_group_service.create_research_group(op.permlink,
                                                  op.desciption,
-                                                 op.funds,
                                                  op.quorum_percent,
                                                  op.tokens_amount);
     

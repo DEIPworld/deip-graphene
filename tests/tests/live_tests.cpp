@@ -96,7 +96,6 @@ com_itr->net_rshares.value * magnitude * magnitude : 0;
 
       BOOST_TEST_MESSAGE( "Perform split" );
       fc::time_point start = fc::time_point::now();
-      db.perform_vesting_share_split( magnitude );
       fc::time_point end = fc::time_point::now();
       ilog( "Vesting split execution time: ${t} us", ("t",end - start) );
 

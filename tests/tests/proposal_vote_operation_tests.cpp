@@ -34,6 +34,7 @@ typedef deip::chain::proposal_vote_evaluator_t<dbs_account,
                                                dbs_research_token,
                                                dbs_research_content,
                                                dbs_research_token_sale,
+                                               dbs_discipline,
                                                dbs_research_discipline_relation,
                                                dbs_dynamic_global_properties>
         proposal_vote_evaluator;
@@ -48,9 +49,10 @@ public:
                      dbs_research_token &research_token_service,
                      dbs_research_content &research_content_service,
                      dbs_research_token_sale &research_token_sale_service,
+                     dbs_discipline &discipline_service,
                      dbs_research_discipline_relation &research_discipline_relation_service,
                      dbs_dynamic_global_properties &dynamic_global_properties_service)
-            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service, research_discipline_relation_service, dynamic_global_properties_service) {
+            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service, discipline_service, research_discipline_relation_service, dynamic_global_properties_service) {
     }
 
     void execute_proposal(const proposal_object &proposal) {
@@ -68,9 +70,34 @@ public:
                         db.obtain_service<dbs_research_token>(),
                         db.obtain_service<dbs_research_content>(),
                         db.obtain_service<dbs_research_token_sale>(),
+                        db.obtain_service<dbs_discipline>(),
                         db.obtain_service<dbs_research_discipline_relation>(),
                         db.obtain_service<dbs_dynamic_global_properties>()) {
 
+    }
+
+    void create_disciplines()
+    {
+        db.create<discipline_object>([&](discipline_object& d) {
+            d.id = 1;
+            d.name = "Physics";
+            d.parent_id = 0;
+            d.votes_in_last_ten_weeks = 100;
+        });
+
+        db.create<discipline_object>([&](discipline_object& d) {
+            d.id = 2;
+            d.name = "Mathematics";
+            d.parent_id = 0;
+            d.votes_in_last_ten_weeks = 150;
+        });
+
+        db.create<discipline_object>([&](discipline_object& d) {
+            d.id = 3;
+            d.name = "Cryptography";
+            d.parent_id = 1;
+            d.votes_in_last_ten_weeks = 30;
+        });
     }
 
     ~proposal_vote_evaluator_fixture() {
@@ -138,6 +165,7 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
     FC_LOG_AND_RETHROW()
 }
 
+// TODO: Add create discipline. Discipline from genesis are delete after generate_block.
 BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 {
     try
@@ -146,7 +174,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 
         auto& research_service = db.obtain_service<dbs_research>();
 
-        research_group_create_by_operation("alice", "test permlink", "test description", DEIP_100_PERCENT, 50,
+        research_group_create_by_operation("alice", "test permlink", "test description", 50,
                                            100);
 
         const std::string create_research_proposal_json = "{\"name\":\"testresearch\","
@@ -155,7 +183,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
                                                           "\"permlink\":\"permlink\","
                                                           "\"review_share_in_percent\": 10,"
                                                           "\"dropout_compensation_in_percent\": 1500,"
-                                                          "\"disciplines_id\": [1, 2, 3]}";
+                                                          "\"disciplines\": [1, 2, 3]}";
         const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 45,\"research_id\": 0}";
 
         create_proposal_by_operation("alice", 0, create_research_proposal_json,
@@ -168,8 +196,10 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
         op.proposal_id = 0;
         op.voter = "alice";
 
-        evaluator.do_apply(op);
+        create_disciplines();
 
+        evaluator.do_apply(op);
+        
         generate_blocks(fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(90)), true);
 
         create_proposal_by_operation("alice", 0, change_review_share_proposal_json,
@@ -256,6 +286,9 @@ BOOST_AUTO_TEST_CASE(change_quorum_test)
 BOOST_AUTO_TEST_CASE(start_research_execute_test)
 {
     ACTORS((alice))
+
+    create_disciplines();
+
     std::vector<account_name_type> accounts = {"alice"};
     setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
     const std::string json_str = "{\"name\":\"test\","
@@ -264,7 +297,7 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
             "\"permlink\":\"permlink\","
             "\"review_share_in_percent\": 10,"
             "\"dropout_compensation_in_percent\": 1500,"
-            "\"disciplines_id\": [1, 2, 3]}";
+            "\"disciplines\": [1, 2, 3]}";
 
     create_proposal(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
