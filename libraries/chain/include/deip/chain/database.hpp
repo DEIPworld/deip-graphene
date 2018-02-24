@@ -324,12 +324,13 @@ public:
     void process_research_token_sales();
     void distribute_research_tokens(const research_token_sale_id_type research_token_sale_id) override;
     void refund_research_tokens(const research_token_sale_id_type research_token_sale_id);
-    void research_token_holders_reward_distribution(const research_id_type research_id, const share_type reward);
+    void reward_research_token_holders(const research_id_type research_id, const share_type reward);
     void distribute_voters_reward(const discipline_id_type discipline_id, const research_content_id_type research_content_id,
                                   const share_type deips_amount, const share_type total_weight);
     void distribute_references_reward(const research_content_id_type research_content_id, const share_type reward);
     void distribute_reward(const share_type reward);
     share_type reward_researches_in_discipline(const discipline_object &discipline, const share_type reward);
+    void reward_research(const research_id_type& research_id, const share_type reward);
 
     uint16_t get_curation_rewards_percent(const comment_object& c) const override;
 

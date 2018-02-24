@@ -1604,7 +1604,7 @@ void database::distribute_research_tokens(const research_token_sale_id_type rese
 
     while (it != it_end)
     {
-        auto transfer_amount = (it->amount * research_token_sale.balance_tokens)/ research_token_sale.total_amount ;
+        auto transfer_amount = (it->amount * research_token_sale.balance_tokens) / research_token_sale.total_amount ;
         research_token_service.create_research_token(it->owner, transfer_amount, research_token_sale.research_id);
         remove(*it);
         it = idx.first;
@@ -1636,14 +1636,12 @@ void database::refund_research_tokens(const research_token_sale_id_type research
     modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
 }
 
-void database::research_token_holders_reward_distribution(const research_id_type research_id, const share_type reward)
+void database::reward_research_token_holders(const research_id_type research_id, const share_type reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
     dbs_research& research_service = obtain_service<dbs_research>();
 
     auto& research = research_service.get_research(research_id);
-
-    // TODO: fix calculation. Research group owned tokens can be greater than 100 percent.
     auto research_group_reward = (research.owned_tokens * reward) / DEIP_100_PERCENT;
     
     if(research_group_reward > 0)
@@ -1712,7 +1710,7 @@ void database::distribute_references_reward(const research_content_id_type resea
     }
 
     for (auto& research_votes : research_votes_by_id)
-        research_token_holders_reward_distribution(research_votes.first, (research_votes.second * reward) / total_votes_amount);
+        reward_research_token_holders(research_votes.first, (research_votes.second * reward) / total_votes_amount);
 }
 
 void database::distribute_reward(const share_type reward)
@@ -1762,13 +1760,7 @@ share_type database::reward_researches_in_discipline(const discipline_object &di
         {
             auto& active_research_reward_weight = total_votes_itr->total_active_research_reward_weight;
             auto research_share = (reward * active_research_reward_weight) / active_research_reward_weight;
-
-            research_token_holders_reward_distribution(total_votes_itr->research_id, research_share);
-
-            // Allocate funds to
-
-            // TODO: allocate rewards to reviews, references etc.
-
+            reward_research(total_votes_itr->research_id, research_share);
             unclaimed_reward -= research_share;
         }
 
@@ -1776,6 +1768,11 @@ share_type database::reward_researches_in_discipline(const discipline_object &di
     }
 
     return unclaimed_reward;
+}
+
+void database::reward_research(const research_id_type& research_id, const share_type reward)
+{
+    reward_research_token_holders(research_id, reward);
 }
     
 void database::process_research_token_sales()
@@ -1788,12 +1785,11 @@ void database::process_research_token_sales()
     {
         if (itr->total_amount < itr->soft_cap){
             refund_research_tokens(itr->id);
-            remove(*itr);
         }
         else if (itr->total_amount >= itr->soft_cap){
             distribute_research_tokens(itr->id);
-            remove(*itr);
         }
+        remove(*itr);
         itr = idx.begin();
     }
 }
