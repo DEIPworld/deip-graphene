@@ -349,5 +349,15 @@ void contribute_to_token_sale_operation::validate() const
     FC_ASSERT(amount > 0, "Amount must be bigger than 0");
 }
 
+void approve_research_group_invite_operation::validate() const
+{
+    validate_account_name(owner);
+}
+
+void reject_research_group_invite_operation::validate() const
+{
+    validate_account_name(owner);
+}
+
 }
 } // deip::protocol
