@@ -753,7 +753,7 @@ struct make_research_review_operation : public base_operation
 
 struct contribute_to_token_sale_operation : public base_operation
 {
-    int64_t research_token_sale_id;
+    uint32_t research_token_sale_id;
     account_name_type owner;
     share_type amount;
 
@@ -766,7 +766,7 @@ struct contribute_to_token_sale_operation : public base_operation
 
 struct approve_research_group_invite_operation : public base_operation
 {
-    int64_t research_group_invite_id;
+    uint32_t research_group_invite_id;
     account_name_type owner;
 
     void validate() const;
@@ -778,7 +778,7 @@ struct approve_research_group_invite_operation : public base_operation
 
 struct reject_research_group_invite_operation : public base_operation
 {
-    int64_t research_group_invite_id;
+    uint32_t research_group_invite_id;
     account_name_type owner;
 
     void validate() const;
