@@ -112,6 +112,9 @@
 #define DEIP_CONTENT_REWARD_PERCENT          (75*DEIP_1_PERCENT) //75% of inflation, 7.125% inflation
 #define DEIP_VESTING_FUND_PERCENT            (15*DEIP_1_PERCENT) //15% of inflation, 1.425% inflation
 
+#define DEIP_COMMON_POOL_SHARE_PERCENT       (20*DEIP_1_PERCENT)
+#define DEIP_ALL_DISCIPLINES_POOL_SHARE_PERCENT (80*DEIP_1_PERCENT)
+
 #define DEIP_BANDWIDTH_AVERAGE_WINDOW_SECONDS (60*60*24*7) ///< 1 week
 #define DEIP_BANDWIDTH_PRECISION              (uint64_t(1000000)) ///< 1 million
 #define DEIP_MAX_COMMENT_DEPTH                0xffff // 64k

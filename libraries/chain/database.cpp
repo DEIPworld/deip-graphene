@@ -1642,7 +1642,8 @@ void database::research_token_holders_reward_distribution(const research_id_type
     dbs_research& research_service = obtain_service<dbs_research>();
 
     auto& research = research_service.get_research(research_id);
-    
+
+    // TODO: fix calculation. Research group owned tokens can be greater than 100 percent.
     auto research_group_reward = (research.owned_tokens * reward) / DEIP_100_PERCENT;
     
     if(research_group_reward > 0)
@@ -1712,6 +1713,69 @@ void database::distribute_references_reward(const research_content_id_type resea
 
     for (auto& research_votes : research_votes_by_id)
         research_token_holders_reward_distribution(research_votes.first, (research_votes.second * reward) / total_votes_amount);
+}
+
+void database::distribute_reward(const share_type reward)
+{
+    auto& discipline_service = obtain_service<dbs_discipline>();
+
+    auto& dgpo = get_dynamic_global_properties();
+    auto total_disciplines_reward_weight = dgpo.total_active_disciplines_reward_weight.to_uint64();
+
+    // Distribute among common and all disciplines pools
+    auto common_pool_share = (reward * DEIP_COMMON_POOL_SHARE_PERCENT) / DEIP_100_PERCENT;
+    auto all_disciplines_pool_share = (reward * DEIP_ALL_DISCIPLINES_POOL_SHARE_PERCENT) / DEIP_100_PERCENT;
+    auto unclaimed_reward = reward - common_pool_share - all_disciplines_pool_share;
+
+    FC_ASSERT(unclaimed_reward > 0, "Attempted to distribute amount that is greater than reward amount");
+
+    auto disciplines = discipline_service.get_disciplines();
+    for (auto& discipline_ref : disciplines) {
+        const auto& discipline = discipline_ref.get();
+
+        if (discipline.id == 0) {
+            reward_researches_in_discipline(discipline, common_pool_share);
+        } else {
+            // Distribute among disciplines in all disciplines pool
+            auto discipline_reward_share = (all_disciplines_pool_share * discipline.total_active_reward_weight) / total_disciplines_reward_weight;
+            reward_researches_in_discipline(discipline, discipline_reward_share);
+        }
+    }
+}
+
+
+share_type database::reward_researches_in_discipline(const discipline_object &discipline, const share_type reward)
+{
+    auto& research_service = obtain_service<dbs_research>();
+    auto& research_group_service = obtain_service<dbs_research_group>();
+
+    auto& active_research_reward_weight = discipline.total_active_research_reward_weight;
+
+    const auto& total_votes_idx = get_index<total_votes_index>().indices().get<by_discipline_id>();
+    auto total_votes_itr = total_votes_idx.find(discipline.id);
+
+    auto unclaimed_reward = reward;
+
+    while (total_votes_itr != total_votes_idx.end())
+    {
+        if (total_votes_itr->total_active_research_reward_weight != 0)
+        {
+            auto& active_research_reward_weight = total_votes_itr->total_active_research_reward_weight;
+            auto research_share = (reward * active_research_reward_weight) / active_research_reward_weight;
+
+            research_token_holders_reward_distribution(total_votes_itr->research_id, research_share);
+
+            // Allocate funds to
+
+            // TODO: allocate rewards to reviews, references etc.
+
+            unclaimed_reward -= research_share;
+        }
+
+        ++total_votes_itr;
+    }
+
+    return unclaimed_reward;
 }
     
 void database::process_research_token_sales()

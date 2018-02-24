@@ -355,37 +355,28 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 
     // total_votes
     BOOST_REQUIRE(total_votes.total_weight == expected_tokens_amount);
-    // check if content is active until we figure out the way to generate blocks without losing data
-    if (content_is_active) {
-        BOOST_REQUIRE(total_votes.total_active_weight == expected_tokens_amount);
-    }
+    BOOST_REQUIRE(total_votes.total_active_weight == expected_tokens_amount);
 
     uint64_t expected_research_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, research_reward_curve).to_uint64();
     BOOST_REQUIRE(total_votes.total_research_reward_weight == expected_research_reward_weight);
-    if (content_is_active) {
-        BOOST_REQUIRE(total_votes.total_active_research_reward_weight == expected_research_reward_weight);
-    }
+    BOOST_REQUIRE(total_votes.total_active_research_reward_weight == expected_research_reward_weight);
 
     uint64_t expected_review_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, review_reward_curve).to_uint64();
     BOOST_REQUIRE(total_votes.total_review_reward_weight == expected_review_reward_weight);
-    if (content_is_active) {
-        BOOST_REQUIRE(total_votes.total_active_review_reward_weight == expected_review_reward_weight);
-    }
+    BOOST_REQUIRE(total_votes.total_active_review_reward_weight == expected_review_reward_weight);
 
     BOOST_REQUIRE(total_votes.total_curators_reward_weight == expected_curator_reward_weight);
-    if (content_is_active) {
-        BOOST_REQUIRE(total_votes.total_active_curators_reward_weight == expected_curator_reward_weight);
-    }
+    BOOST_REQUIRE(total_votes.total_active_curators_reward_weight == expected_curator_reward_weight);
 
     // Validate discipline
-    if (content_is_active) {
-        BOOST_REQUIRE(discipline.total_active_research_reward_weight == expected_research_reward_weight);
-        BOOST_REQUIRE(discipline.total_active_review_reward_weight == expected_review_reward_weight);
-    }
+
+    BOOST_REQUIRE(discipline.total_active_reward_weight == expected_tokens_amount);
+    BOOST_REQUIRE(discipline.total_active_research_reward_weight == expected_research_reward_weight);
+    BOOST_REQUIRE(discipline.total_active_review_reward_weight == expected_review_reward_weight);
 
     // Validate glopal properties object
     auto& dgpo = db.get_dynamic_global_properties();
-    BOOST_REQUIRE(dgpo.total_disciplines_reward_weight == expected_tokens_amount);
+    BOOST_REQUIRE(dgpo.total_active_disciplines_reward_weight == expected_tokens_amount);
 
     validate_database();
 }

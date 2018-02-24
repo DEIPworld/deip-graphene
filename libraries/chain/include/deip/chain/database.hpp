@@ -328,6 +328,8 @@ public:
     void distribute_voters_reward(const discipline_id_type discipline_id, const research_content_id_type research_content_id,
                                   const share_type deips_amount, const share_type total_weight);
     void distribute_references_reward(const research_content_id_type research_content_id, const share_type reward);
+    void distribute_reward(const share_type reward);
+    share_type reward_researches_in_discipline(const discipline_object &discipline, const share_type reward);
 
     uint16_t get_curation_rewards_percent(const comment_object& c) const override;
 
