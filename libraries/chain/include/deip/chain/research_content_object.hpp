@@ -23,11 +23,7 @@ enum research_content_type : uint16_t
     announcement = 1,
     milestone = 2,
     final_result = 3,
-    review = 4,
-    
-    // make sure to update the bounds while adding new value
-    First = announcement,
-    Last = review
+    review = 4
 };
 
 enum research_content_activity_state : uint16_t

@@ -383,6 +383,7 @@ public:
     research_api_obj get_research_by_id(const research_id_type& id) const;
     research_api_obj get_research_by_permlink(const string& permlink) const;
     vector<research_api_obj> get_researches() const;
+    vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
 
     //////////////////////
     // Research Content //
@@ -406,7 +407,7 @@ public:
 
     ////////////////////
     // Research group //
-    ///////////////////
+    ////////////////////
     research_group_api_obj get_research_group_by_id(const research_group_id_type research_group_id) const;
     research_group_api_obj get_research_group_by_permlink(const string& permlink) const;
 
@@ -421,7 +422,7 @@ public:
 
     /////////////////////////
     // Research token sale //
-    ////////////////////////
+    /////////////////////////
     research_token_sale_api_obj get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const;
     research_token_sale_api_obj get_research_token_sale_by_research_id(const research_id_type& research_id) const;
     vector<research_token_sale_api_obj> get_research_token_sale_by_end_time(const time_point_sec end_time) const;
