@@ -58,6 +58,7 @@
 #include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_discipline.hpp>
+#include <deip/chain/dbs_expert_token.hpp>
 
 
 namespace deip {
@@ -1651,10 +1652,12 @@ void database::reward_research_token_holders(const research_object& research, co
         dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
         research_group_service.increase_research_group_funds(research.research_group_id, research_group_reward);
 
+        const auto& research_group = research_group_service.get_research_group(research.research_group_id);
         auto research_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
         for (auto& token_ref : research_group_tokens) {
-            const auto& expert_tokens_idx = get_index<expert_token_index>().indicies().get<by_account_and_discipline>();
-
+            auto& token = token_ref.get();
+            auto new_expertise_amount = (research_group_reward * token.amount) / research_group.total_tokens_amount;
+            reward_expertise(token.owner, discipline_id, new_expertise_amount);
         }
     }
 
@@ -1672,6 +1675,21 @@ void database::reward_research_token_holders(const research_object& research, co
     }
 
     FC_ASSERT(claimed_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
+}
+
+void database::reward_expertise(const account_name_type& account, const discipline_id_type& discipline_id, const share_type& reward)
+{
+    const auto& expert_tokens_idx = get_index<expert_token_index>().indices().get<by_account_and_discipline>();
+    auto expert_tokens_itr = expert_tokens_idx.find(std::make_tuple(account, discipline_id));
+    if (expert_tokens_itr != expert_tokens_idx.end()) {
+        auto expert_token = *expert_tokens_itr;
+        modify(expert_token, [&](expert_token_object& t) {
+            t.amount += reward;
+        });
+    } else {
+        dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
+        expert_token_service.create(account, discipline_id, reward);
+    }
 }
 
 void database::distribute_voters_reward(const discipline_id_type discipline_id, const research_content_id_type research_content_id,

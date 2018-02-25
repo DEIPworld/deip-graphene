@@ -332,6 +332,7 @@ public:
     void distribute_reward(const share_type reward);
     void reward_researches_in_discipline(const discipline_object &discipline, const share_type& reward);
     void reward_research(const research_id_type& research_id, const discipline_id_type& discipline_id, const share_type& reward);
+    void reward_expertise(const account_name_type& account, const discipline_id_type& discipline_id, const share_type& reward);
 
     uint16_t get_curation_rewards_percent(const comment_object& c) const override;
 
