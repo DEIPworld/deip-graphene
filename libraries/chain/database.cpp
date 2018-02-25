@@ -1644,7 +1644,8 @@ void database::reward_research_token_holders(const research_id_type research_id,
 
     auto& research = research_service.get_research(research_id);
     auto research_group_reward = (research.owned_tokens * reward) / DEIP_100_PERCENT;
-    
+    auto claimed_reward = research_group_reward;
+
     if(research_group_reward > 0)
     {
         dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
@@ -1660,9 +1661,11 @@ void database::reward_research_token_holders(const research_id_type research_id,
     {
         auto reward_amount = (it->amount * reward) / DEIP_100_PERCENT;
         account_service.increase_balance(account_service.get_account(it->account_name), reward_amount);
+        claimed_reward += reward_amount;
         ++it;
     }
-    
+
+    FC_ASSERT(claimed_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
 }
 
 void database::distribute_voters_reward(const discipline_id_type discipline_id, const research_content_id_type research_content_id,
@@ -1726,18 +1729,20 @@ void database::distribute_reward(const share_type reward)
     auto all_disciplines_pool_share = (reward * DEIP_ALL_DISCIPLINES_POOL_SHARE_PERCENT) / DEIP_100_PERCENT;
     auto unclaimed_reward = reward - common_pool_share - all_disciplines_pool_share;
 
-    FC_ASSERT(unclaimed_reward > 0, "Attempted to distribute amount that is greater than reward amount");
+    FC_ASSERT(unclaimed_reward > 0, "Attempt to distribute amount that is greater than reward amount");
 
     auto disciplines = discipline_service.get_disciplines();
     for (auto& discipline_ref : disciplines) {
         const auto& discipline = discipline_ref.get();
-
-        if (discipline.id == 0) {
-            reward_researches_in_discipline(discipline, common_pool_share);
-        } else {
-            // Distribute among disciplines in all disciplines pool
-            auto discipline_reward_share = (all_disciplines_pool_share * discipline.total_active_reward_weight) / total_disciplines_reward_weight;
-            reward_researches_in_discipline(discipline, discipline_reward_share);
+        if (discipline.total_active_reward_weight != 0)
+        {
+            if (discipline.id == 0) {
+                reward_researches_in_discipline(discipline, common_pool_share);
+            } else {
+                // Distribute among disciplines in all disciplines pool
+                auto discipline_reward_share = (all_disciplines_pool_share * discipline.total_active_reward_weight) / total_disciplines_reward_weight;
+                reward_researches_in_discipline(discipline, discipline_reward_share);
+            }
         }
     }
 }
@@ -1745,10 +1750,10 @@ void database::distribute_reward(const share_type reward)
 
 share_type database::reward_researches_in_discipline(const discipline_object &discipline, const share_type reward)
 {
+    FC_ASSERT(discipline.total_active_reward_weight != 0, "Attempt to allocate funds to inactive discipline");
+
     auto& research_service = obtain_service<dbs_research>();
     auto& research_group_service = obtain_service<dbs_research_group>();
-
-    auto& active_research_reward_weight = discipline.total_active_research_reward_weight;
 
     const auto& total_votes_idx = get_index<total_votes_index>().indices().get<by_discipline_id>();
     auto total_votes_itr = total_votes_idx.find(discipline.id);
@@ -1760,7 +1765,7 @@ share_type database::reward_researches_in_discipline(const discipline_object &di
         if (total_votes_itr->total_active_research_reward_weight != 0)
         {
             auto& active_research_reward_weight = total_votes_itr->total_active_research_reward_weight;
-            auto research_share = (reward * active_research_reward_weight) / active_research_reward_weight;
+            auto research_share = (reward * active_research_reward_weight) / discipline.total_active_research_reward_weight;;
             reward_research(total_votes_itr->research_id, research_share);
             unclaimed_reward -= research_share;
         }
@@ -1773,7 +1778,22 @@ share_type database::reward_researches_in_discipline(const discipline_object &di
 
 void database::reward_research(const research_id_type& research_id, const share_type reward)
 {
-    reward_research_token_holders(research_id, reward);
+    auto& research_service = obtain_service<dbs_research>();
+    auto& research = research_service.get_research(research_id);
+
+    auto curators_share = (reward * DEIP_CURATORS_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT;
+    auto references_share = (reward * DEIP_REFERENCES_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT;
+    auto review_share = (reward * research.review_share_in_percent) / DEIP_100_PERCENT;
+    auto token_holders_share_percent = DEIP_100_PERCENT
+                                       - DEIP_CURATORS_REWARD_SHARE_PERCENT
+                                       - DEIP_REFERENCES_REWARD_SHARE_PERCENT
+                                       - research.review_share_in_percent;
+    auto token_holders_share = (reward * token_holders_share_percent) / DEIP_100_PERCENT;
+    FC_ASSERT(reward >= token_holders_share + review_share + references_share + curators_share,
+              "Attempt to allocate funds amount that is greater than reward amount");
+
+    reward_research_token_holders(research_id, token_holders_share);
+
 }
     
 void database::process_research_token_sales()
