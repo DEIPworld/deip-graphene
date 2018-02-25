@@ -390,6 +390,84 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
     validate_database();
 }
 
+BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: approve_research_group_invite_apply");
+
+        ACTORS((alice)(bob));
+
+        generate_block();
+
+        auto& research_group = research_group_create(1, "permlink", "description", 200, 50, 300);
+        auto& research_group_invite = research_group_invite_create(1, "bob", 1, 50);
+
+        private_key_type priv_key = generate_private_key("bob");
+
+        approve_research_group_invite_operation op;
+
+        op.research_group_invite_id = 1;
+        op.owner = "bob";
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& _research_group = db.get<research_group_object, by_id>(1);
+
+        BOOST_CHECK(_research_group.total_tokens_amount == 350);
+
+        auto& _research_group_token = db.get<research_group_token_object, by_owner>(std::make_tuple("bob", 1));
+
+        BOOST_CHECK(_research_group_token.owner == "bob");
+        BOOST_CHECK(_research_group_token.research_group_id == 1);
+        BOOST_CHECK(_research_group_token.amount == 50);
+
+        BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(1)), boost::exception);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: reject_research_group_invite_apply");
+
+        ACTORS((alice)(bob));
+
+        generate_block();
+
+        auto& research_group = research_group_create(1, "permlink", "description", 200, 50, 300);
+        auto& research_group_invite = research_group_invite_create(1, "bob", 1, 50);
+
+        private_key_type priv_key = generate_private_key("bob");
+
+        reject_research_group_invite_operation op;
+
+        op.research_group_invite_id = 1;
+        op.owner = "bob";
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& _research_group = db.get<research_group_object, by_id>(1);
+
+        BOOST_CHECK(research_group.total_tokens_amount == 300);
+        BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(1)), boost::exception);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
 //BOOST_AUTO_TEST_CASE(account_create_apply)
 //{
 //    try
