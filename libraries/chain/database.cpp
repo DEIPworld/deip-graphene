@@ -1639,7 +1639,7 @@ void database::refund_research_tokens(const research_token_sale_id_type research
     modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
 }
 
-void database::reward_research_token_holders(const research_object& research, const share_type& reward)
+void database::reward_research_token_holders(const research_object& research, const discipline_id_type& discipline_id, const share_type& reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
 
@@ -1650,6 +1650,12 @@ void database::reward_research_token_holders(const research_object& research, co
     {
         dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
         research_group_service.increase_research_group_funds(research.research_group_id, research_group_reward);
+
+        auto research_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
+        for (auto& token_ref : research_group_tokens) {
+            const auto& expert_tokens_idx = get_index<expert_token_index>().indicies().get<by_account_and_discipline>();
+
+        }
     }
 
     const auto& idx = get_index<research_token_index>().indicies().get<by_research_id>().equal_range(research.id);
@@ -1747,7 +1753,7 @@ void database::distribute_reward(const share_type reward)
     auto all_disciplines_pool_share = (reward * DEIP_ALL_DISCIPLINES_POOL_SHARE_PERCENT) / DEIP_100_PERCENT;
     auto unclaimed_reward = reward - common_pool_share - all_disciplines_pool_share;
 
-    FC_ASSERT(unclaimed_reward > 0, "Attempt to distribute amount that is greater than reward amount");
+    FC_ASSERT(unclaimed_reward >= 0, "Attempt to distribute amount that is greater than reward amount");
 
     auto disciplines = discipline_service.get_disciplines();
     for (auto& discipline_ref : disciplines) {
@@ -1810,7 +1816,7 @@ void database::reward_research(const research_id_type& research_id, const discip
     FC_ASSERT(reward >= token_holders_share + review_share + references_share + curators_share,
               "Attempt to allocate funds amount that is greater than reward amount");
 
-    reward_research_token_holders(research, token_holders_share);
+    reward_research_token_holders(research, discipline_id, token_holders_share);
     pay_curators(research, discipline_id, curators_share);
 }
     

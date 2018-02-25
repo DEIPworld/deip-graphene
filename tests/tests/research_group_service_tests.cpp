@@ -162,6 +162,23 @@ BOOST_AUTO_TEST_CASE(get_research_group_tokens_by_account_name_test)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(get_research_group_tokens_test)
+{
+    try
+    {
+        create_research_group_tokens();
+
+        auto research_group_tokens = data_service.get_research_group_tokens(2);
+
+        BOOST_CHECK(research_group_tokens.size() == 2);
+        for (const research_group_token_object& token : research_group_tokens)
+        {
+            BOOST_CHECK(token.research_group_id == 2);
+        }
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(get_research_group_token_by_account_and_research_id_test)
 {
     try
