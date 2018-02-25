@@ -204,11 +204,10 @@ struct delete_comment_operation : public base_operation
 struct vote_operation : public base_operation
 {
     account_name_type voter;
-    uint64_t discipline_id;
-    string permlink;
+    int64_t discipline_id;
     int16_t weight = 0;
-    uint64_t research_id;
-    uint64_t research_content_id;
+    int64_t research_id;
+    int64_t research_content_id;
 
     void validate() const;
     void get_required_posting_authorities(flat_set<account_name_type>& a) const
@@ -710,7 +709,7 @@ struct create_research_group_operation : public base_operation
 struct create_proposal_operation : public base_operation
 {
     account_name_type creator;
-    uint32_t research_group_id;
+    int64_t research_group_id;
     string data; ///< must be proper utf8 / JSON string.
 
     uint16_t action;
@@ -726,8 +725,8 @@ struct create_proposal_operation : public base_operation
 struct vote_proposal_operation : public base_operation
 {
     account_name_type voter;
-    uint32_t proposal_id;
-    uint32_t research_group_id;
+    int64_t proposal_id;
+    int64_t research_group_id;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -739,9 +738,9 @@ struct vote_proposal_operation : public base_operation
 struct make_research_review_operation : public base_operation
 {
     account_name_type author;
-    uint32_t research_id;
+    int64_t research_id;
     string content;
-    vector<uint32_t> research_references;
+    vector<int64_t> research_references;
     vector<string> research_external_references;
 
     void validate() const;
@@ -755,7 +754,7 @@ struct contribute_to_token_sale_operation : public base_operation
 {
     int64_t research_token_sale_id;
     account_name_type owner;
-    share_type amount;
+    uint32_t amount;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -764,6 +763,29 @@ struct contribute_to_token_sale_operation : public base_operation
     }
 };
 
+struct approve_research_group_invite_operation : public base_operation
+{
+    int64_t research_group_invite_id;
+    account_name_type owner;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
+
+struct reject_research_group_invite_operation : public base_operation
+{
+    int64_t research_group_invite_id;
+    account_name_type owner;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
 
 } // namespace protocol
 } // namespace deip
@@ -810,7 +832,7 @@ FC_REFLECT( deip::protocol::witness_update_operation, (owner)(url)(block_signing
 FC_REFLECT( deip::protocol::account_witness_vote_operation, (account)(witness)(approve) )
 FC_REFLECT( deip::protocol::account_witness_proxy_operation, (account)(proxy) )
 FC_REFLECT( deip::protocol::comment_operation, (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata) )
-FC_REFLECT( deip::protocol::vote_operation, (voter)(discipline_id)(permlink)(weight)(research_id)(research_content_id))
+FC_REFLECT( deip::protocol::vote_operation, (voter)(discipline_id)(weight)(research_id)(research_content_id))
 
 FC_REFLECT( deip::protocol::delete_comment_operation, (author)(permlink) )
 
@@ -838,4 +860,7 @@ FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(resear
 FC_REFLECT( deip::protocol::make_research_review_operation, (author)(research_id)(content)(research_references)(research_external_references))
 
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (owner)(research_token_sale_id)(amount))
+FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner))
+FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
 // clang-format on
+

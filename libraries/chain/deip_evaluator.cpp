@@ -18,6 +18,7 @@
 #include <deip/chain/dbs_research_token_sale.hpp>
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
+#include <deip/chain/dbs_research_group_invite.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -881,6 +882,19 @@ void account_witness_vote_evaluator::do_apply(const account_witness_vote_operati
         = _db._temporary_public_impl().get_index<witness_vote_index>().indices().get<by_account_witness>();
     auto itr = by_account_witness_idx.find(boost::make_tuple(voter.id, witness.id));
 
+    auto expert_tokens_by_account =
+            _db._temporary_public_impl().get_index<expert_token_index>().indices().get<by_account_name>().equal_range(voter.name);
+
+    auto it = expert_tokens_by_account.first;
+    const auto it_end = expert_tokens_by_account.second;
+
+    share_type total_vote_weight;
+    while (it != it_end)
+    {
+        total_vote_weight += it->amount;
+        ++it;
+    }
+
     if (itr == by_account_witness_idx.end())
     {
         FC_ASSERT(o.approve, "Vote doesn't exist, user must indicate a desire to approve witness.");
@@ -893,7 +907,7 @@ void account_witness_vote_evaluator::do_apply(const account_witness_vote_operati
             v.account = voter.id;
         });
 
-        witness_service.adjust_witness_vote(witness, voter.witness_vote_weight());
+        witness_service.adjust_witness_vote(witness, total_vote_weight);
 
         account_service.increase_witnesses_voted_for(voter);
     }
@@ -901,7 +915,7 @@ void account_witness_vote_evaluator::do_apply(const account_witness_vote_operati
     {
         FC_ASSERT(!o.approve, "Vote currently exists, user must indicate a desire to reject witness.");
 
-        witness_service.adjust_witness_vote(witness, -voter.witness_vote_weight());
+        witness_service.adjust_witness_vote(witness, -total_vote_weight);
 
         account_service.decrease_witnesses_voted_for(voter);
         _db._temporary_public_impl().remove(*itr);
@@ -1380,6 +1394,38 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
         account_service.decrease_balance(account_service.get_account(op.owner), asset(op.amount));
         research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, op.amount);
     }
+}
+
+void approve_research_group_invite_evaluator::do_apply(const approve_research_group_invite_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_research_group_invite &research_group_invite_service = _db.obtain_service<dbs_research_group_invite>();
+
+    auto& research_group_invite = research_group_invite_service.get(op.research_group_invite_id);
+
+    account_service.check_account_existence(research_group_invite.account_name);
+    research_group_service.check_research_group_existence(research_group_invite.research_group_id);
+
+    research_group_service.create_research_group_token(research_group_invite.research_group_id,
+                                                       research_group_invite.research_group_token_amount,
+                                                       research_group_invite.account_name);
+    research_group_service.increase_research_group_total_tokens_amount(research_group_invite.research_group_id,
+                                                                       research_group_invite.research_group_token_amount);
+
+    _db._temporary_public_impl().remove(research_group_invite);
+}
+
+void reject_research_group_invite_evaluator::do_apply(const reject_research_group_invite_operation& op)
+{
+    dbs_research_group_invite &research_group_invite_service = _db.obtain_service<dbs_research_group_invite>();
+
+    research_group_invite_service.check_research_group_invite_existence(op.research_group_invite_id);
+
+    auto& research_group_invite = research_group_invite_service.get(op.research_group_invite_id);
+
+    _db._temporary_public_impl().remove(research_group_invite);
+
 }
 
 } // namespace chain

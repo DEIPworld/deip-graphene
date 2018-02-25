@@ -16,6 +16,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <deip/chain/research_group_invite_object.hpp>
 
 #include "database_fixture.hpp"
 
@@ -450,6 +451,34 @@ const research_object& database_fixture::research_create(const uint32_t id,
     });
 
     return new_research;
+}
+
+const expert_token_object& database_fixture::expert_token_create(const uint32_t id,
+                                                                 const account_name_type& account,
+                                                                 const discipline_id_type& discipline_id,
+                                                                 const share_type& amount)
+{
+    auto& expert_token = db.create<expert_token_object>([&](expert_token_object& token) {
+        token.id = id;
+        token.account_name = account;
+        token.discipline_id = discipline_id;
+        token.amount = amount;
+    });
+    return expert_token;
+}
+
+const research_group_invite_object& database_fixture::research_group_invite_create(const uint32_t id,
+                                                                                   const account_name_type& account_name,
+                                                                                   const research_group_id_type& research_group_id,
+                                                                                   const share_type research_group_token_amount)
+{
+    auto& research_group_invite = db.create<research_group_invite_object>([&](research_group_invite_object& rgi_o) {
+        rgi_o.id = id;
+        rgi_o.account_name = account_name;
+        rgi_o.research_group_id = research_group_id;
+        rgi_o.research_group_token_amount = research_group_token_amount;
+    });
+    return research_group_invite;
 }
 
 void database_fixture::fund(const string& account_name, const share_type& amount)

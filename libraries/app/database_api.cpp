@@ -2018,6 +2018,22 @@ vector<research_api_obj> database_api::get_researches() const
     });
 }
 
+vector<research_api_obj> database_api::get_researches_by_research_group_id(const research_group_id_type& research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_api_obj> results;
+
+        chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
+        auto researches = research_service.get_researches_by_research_group(research_group_id);
+
+        for (const chain::research_object &research : researches) {
+            results.push_back(research_api_obj(research));
+        }
+
+        return results;
+    });
+}
+
 research_content_api_obj database_api::get_research_content_by_id(const research_content_id_type& id) const
 {
     return my->_db.with_read_lock([&]() {

@@ -50,7 +50,8 @@ namespace deip {
                 vote_proposal_operation,
                 make_research_review_operation,
                 contribute_to_token_sale_operation,
-
+                approve_research_group_invite_operation,
+                reject_research_group_invite_operation,
 
                 // virtual operations
                 author_reward_operation,

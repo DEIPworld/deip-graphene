@@ -28,6 +28,7 @@
 #include <deip/chain/proposal_vote_evaluator.hpp>
 #include <deip/chain/vote_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
+#include <deip/chain/research_group_invite_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1849,6 +1850,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<make_research_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
+    _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
+    _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
 
     // clang-format off
     _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>(
@@ -1859,7 +1862,9 @@ void database::initialize_evaluators()
                                         this->obtain_service<dbs_research_token>(),
                                         this->obtain_service<dbs_research_content>(),
                                         this->obtain_service<dbs_research_token_sale>(),
-                                        this->obtain_service<dbs_research_discipline_relation>()));
+                                        this->obtain_service<dbs_discipline>(),
+                                        this->obtain_service<dbs_research_discipline_relation>(),
+                                        this->obtain_service<dbs_research_group_invite>()));
     //clang-format on
 }
 
@@ -1904,6 +1909,7 @@ void database::initialize_indexes()
     add_index<research_token_sale_contribution_index>();
     add_index<vote_index>();
     add_index<total_votes_index>();
+    add_index<research_group_invite_index>();
 
     _plugin_index_signal();
 }
