@@ -316,7 +316,7 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 
     // Validate vote & total_votes objects
     auto& vote_service = db.obtain_service<dbs_vote>();
-    auto& total_votes = vote_service.get_total_votes_object_by_content_and_discipline(op.research_content_id, op.discipline_id);
+    auto& total_votes = vote_service.get_total_votes_by_content_and_discipline(op.research_content_id, op.discipline_id);
 
     const auto& vote_idx = db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
     auto itr = vote_idx.find(std::make_tuple(op.voter, op.discipline_id, op.research_content_id));

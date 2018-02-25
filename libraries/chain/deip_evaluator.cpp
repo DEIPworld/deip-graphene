@@ -1008,7 +1008,7 @@ void vote_evaluator::do_apply(const vote_operation& o)
                   .to_uint64();
 
         auto& tvo = vote_service
-                .get_total_votes_object_by_content_and_discipline(o.research_content_id, o.discipline_id);
+                .get_total_votes_by_content_and_discipline(o.research_content_id, o.discipline_id);
 
         bool content_is_active = content.activity_state == research_content_activity_state::active;
 
