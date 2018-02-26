@@ -40,7 +40,7 @@ struct invite_member_proposal_data_type : base_proposal_data_type
 struct change_quorum_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
-    u_int16_t quorum_percent;
+    uint16_t quorum_percent;
 
     void validate() const
     {
@@ -56,14 +56,14 @@ struct start_research_proposal_data_type : base_proposal_data_type
     research_group_id_type research_group_id;
     uint16_t review_share_in_percent;
     uint16_t dropout_compensation_in_percent;
-    std::vector<uint32_t> disciplines;
+    std::vector<int64_t> disciplines;
     // vector<deip::protocol::discipline_name_type> disciplines;
 
 
     void validate() const
     {
         FC_ASSERT(disciplines.size() != 0, "Research must be related to one or several disciplines");
-        FC_ASSERT(!std::any_of(disciplines.begin(), disciplines.end(), [](uint32_t discipline_id){
+        FC_ASSERT(!std::any_of(disciplines.begin(), disciplines.end(), [](int64_t discipline_id){
             return discipline_id == 0;
         }), "Research cannot be related to 'common' discipline");
 
