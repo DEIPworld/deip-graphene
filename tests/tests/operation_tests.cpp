@@ -179,8 +179,6 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
     op.discipline_id = discipline.id._id;
     op.weight = 50 * DEIP_1_PERCENT;
     op.voter = "alice";
-    op.permlink = "permlink";
-
     tx.operations.push_back(op);
     tx.sign(priv_key, db.get_chain_id());
     tx.validate();
@@ -199,7 +197,6 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
     op.discipline_id = discipline.id._id;
     op.weight = 50 * DEIP_1_PERCENT;
     op.voter = "alice";
-    op.permlink = "permlink";
 
     tx.operations.push_back(op);
     tx.sign(priv_key, db.get_chain_id());
@@ -219,7 +216,6 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
     op.discipline_id = 100;
     op.weight = 50 * DEIP_1_PERCENT;
     op.voter = "alice";
-    op.permlink = "permlink";
 
     tx.operations.push_back(op);
     tx.sign(priv_key, db.get_chain_id());
@@ -239,7 +235,6 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
     op.discipline_id = discipline.id._id;
     op.weight = 0;
     op.voter = "alice";
-    op.permlink = "permlink";
 
     tx.operations.push_back(op);
     tx.sign(alice_private_key, db.get_chain_id());
@@ -306,7 +301,6 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
     op.discipline_id = discipline.id._id;
     op.weight = 50 * DEIP_1_PERCENT;
     op.voter = "alice";
-    op.permlink = "permlink";
 
     tx.operations.clear();
     tx.signatures.clear();

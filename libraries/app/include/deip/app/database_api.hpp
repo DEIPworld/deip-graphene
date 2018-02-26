@@ -445,7 +445,7 @@ FC_API(deip::app::database_api,
    (get_potential_signatures)
    (verify_authority)
    (verify_account_authority)
-           
+
    // Witnesses
    (get_witnesses)
    (get_witness_by_account)

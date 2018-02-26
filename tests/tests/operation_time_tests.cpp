@@ -1568,8 +1568,6 @@ BOOST_AUTO_TEST_CASE(post_rate_limit)
         tx.sign(alice_private_key, db.get_chain_id());
         db.push_transaction(tx, 0);
 
-        BOOST_REQUIRE(db.get_comment("alice", string("test1")).reward_weight == DEIP_100_PERCENT);
-
         tx.operations.clear();
         tx.signatures.clear();
 
@@ -1581,8 +1579,6 @@ BOOST_AUTO_TEST_CASE(post_rate_limit)
         tx.operations.push_back(op);
         tx.sign(alice_private_key, db.get_chain_id());
         db.push_transaction(tx, 0);
-
-        BOOST_REQUIRE(db.get_comment("alice", string("test2")).reward_weight == DEIP_100_PERCENT);
 
         generate_blocks(db.head_block_time() + DEIP_MIN_ROOT_COMMENT_INTERVAL + fc::seconds(DEIP_BLOCK_INTERVAL),
                         true);
@@ -1596,8 +1592,6 @@ BOOST_AUTO_TEST_CASE(post_rate_limit)
         tx.sign(alice_private_key, db.get_chain_id());
         db.push_transaction(tx, 0);
 
-        BOOST_REQUIRE(db.get_comment("alice", string("test3")).reward_weight == DEIP_100_PERCENT);
-
         generate_blocks(db.head_block_time() + DEIP_MIN_ROOT_COMMENT_INTERVAL + fc::seconds(DEIP_BLOCK_INTERVAL),
                         true);
 
@@ -1610,8 +1604,6 @@ BOOST_AUTO_TEST_CASE(post_rate_limit)
         tx.sign(alice_private_key, db.get_chain_id());
         db.push_transaction(tx, 0);
 
-        BOOST_REQUIRE(db.get_comment("alice", string("test4")).reward_weight == DEIP_100_PERCENT);
-
         generate_blocks(db.head_block_time() + DEIP_MIN_ROOT_COMMENT_INTERVAL + fc::seconds(DEIP_BLOCK_INTERVAL),
                         true);
 
@@ -1623,8 +1615,6 @@ BOOST_AUTO_TEST_CASE(post_rate_limit)
         tx.operations.push_back(op);
         tx.sign(alice_private_key, db.get_chain_id());
         db.push_transaction(tx, 0);
-
-        BOOST_REQUIRE(db.get_comment("alice", string("test5")).reward_weight == DEIP_100_PERCENT);
     }
     FC_LOG_AND_RETHROW()
 }
