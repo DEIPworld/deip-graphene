@@ -564,6 +564,7 @@ FC_API(deip::app::database_api,
    (get_research_by_id)
    (get_research_by_permlink)
    (get_researches)
+   (get_researches_by_research_group_id)
 
    // Research Content
    (get_research_content_by_id)
