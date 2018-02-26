@@ -1657,7 +1657,7 @@ void database::reward_research_token_holders(const research_object& research, co
         for (auto& token_ref : research_group_tokens) {
             auto& token = token_ref.get();
             auto new_expertise_amount = (research_group_reward * token.amount) / research_group.total_tokens_amount;
-            reward_expertise(token.owner, discipline_id, new_expertise_amount);
+            reward_with_expertise(token.owner, discipline_id, new_expertise_amount);
         }
     }
 
@@ -1677,7 +1677,8 @@ void database::reward_research_token_holders(const research_object& research, co
     FC_ASSERT(claimed_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
 }
 
-void database::reward_expertise(const account_name_type& account, const discipline_id_type& discipline_id, const share_type& reward)
+void database::reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
+                                     const share_type &reward)
 {
     const auto& expert_tokens_idx = get_index<expert_token_index>().indices().get<by_account_and_discipline>();
     auto expert_tokens_itr = expert_tokens_idx.find(std::make_tuple(account, discipline_id));
@@ -1692,32 +1693,14 @@ void database::reward_expertise(const account_name_type& account, const discipli
     }
 }
 
-void database::distribute_voters_reward(const discipline_id_type discipline_id, const research_content_id_type research_content_id,
-                                        const share_type deips_amount, const share_type total_weight)
-{
-    dbs_account& account_service = obtain_service<dbs_account>();
-
-    const auto& idx = get_index<vote_index>().indicies().
-            get<by_content_and_discipline>().equal_range(std::make_tuple(research_content_id, discipline_id));
-
-    auto it = idx.first;
-    const auto it_end = idx.second;
-
-    while (it != it_end)
-    {
-        auto reward_amount = (it->weight * deips_amount) / total_weight;
-        account_service.increase_balance(account_service.get_account(it->voter), reward_amount);
-        ++it;
-    }
-}
-
-share_type database::pay_curators(const research_object& research, const discipline_id_type& discipline_id, const share_type& reward)
+share_type database::pay_curators(const research_content_id_type &research_content_id,
+                                  const discipline_id_type &discipline_id, const share_type &reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
     dbs_vote& vote_service = obtain_service<dbs_vote>();
 
-    auto total_votes = vote_service.get_total_votes_by_research_and_discipline(research.id, discipline_id);
-    auto votes = vote_service.get_votes_by_research_and_discipline(research.id, discipline_id);
+    auto total_votes = vote_service.get_total_votes_by_content_and_discipline(research_content_id, discipline_id);
+    auto votes = vote_service.get_votes_by_research_content_and_discipline(research_content_id, discipline_id);
 
     for (auto& vote_ref : votes) {
         auto vote = vote_ref.get();
@@ -1729,34 +1712,39 @@ share_type database::pay_curators(const research_object& research, const discipl
     }
 }
 
-void database::distribute_references_reward(const research_content_id_type research_content_id, const share_type reward)
+void database::reward_references(const research_content_id_type& research_content_id, const discipline_id_type& discipline_id,
+                                 const share_type& reward)
 {
-//    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
-//
-//    auto& research_content = research_content_service.get_content_by_id(research_content_id);
-//
-//    std::vector<std::pair<research_id_type, share_type>> research_votes_by_id;
-//    share_type total_votes_amount = 0;
-//
-//    for (auto research_id : research_content.research_references)
-//    {
-//        share_type votes = 0;
-//        const auto& idx = get_index<vote_index>().indicies().get<by_research_id>().equal_range(research_id);
-//
-//        auto it = idx.first;
-//        const auto it_end = idx.second;
-//
-//        while (it != it_end)
-//        {
-//            votes += it->weight;
-//            ++it;
-//        }
-//        total_votes_amount += votes;
-//        research_votes_by_id.push_back(std::make_pair(research_id, votes));
-//    }
-//
-//    for (auto& research_votes : research_votes_by_id)
-//        reward_research_token_holders(research_votes.first, (research_votes.second * reward) / total_votes_amount);
+    dbs_research& research_service = obtain_service<dbs_research>();
+    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
+    auto& research_content = research_content_service.get_content_by_id(research_content_id);
+
+    std::vector<std::pair<research_id_type, share_type>> research_votes_by_id;
+    share_type total_votes_amount = 0;
+
+    for (auto research_id : research_content.research_references)
+    {
+        share_type votes = 0;
+        const auto& idx = get_index<total_votes_index>().indicies().get<by_research_and_discipline>()
+                .equal_range(std::make_tuple(research_id, discipline_id));
+
+        auto it = idx.first;
+        const auto it_end = idx.second;
+
+        while (it != it_end)
+        {
+            votes += it->total_research_reward_weight;
+            ++it;
+        }
+        total_votes_amount += votes;
+        research_votes_by_id.push_back(std::make_pair(research_id, votes));
+    }
+
+    for (auto& research_votes : research_votes_by_id) {
+        auto& research = research_service.get_research(research_votes.first);
+        reward_research_token_holders(research, discipline_id,
+                                      (research_votes.second * reward) / total_votes_amount);
+    }
 }
 
 void database::distribute_reward(const share_type reward)
@@ -1769,9 +1757,9 @@ void database::distribute_reward(const share_type reward)
     // Distribute among common and all disciplines pools
     auto common_pool_share = (reward * DEIP_COMMON_POOL_SHARE_PERCENT) / DEIP_100_PERCENT;
     auto all_disciplines_pool_share = (reward * DEIP_ALL_DISCIPLINES_POOL_SHARE_PERCENT) / DEIP_100_PERCENT;
-    auto unclaimed_reward = reward - common_pool_share - all_disciplines_pool_share;
+    auto claimed_reward = common_pool_share + all_disciplines_pool_share;
 
-    FC_ASSERT(unclaimed_reward >= 0, "Attempt to distribute amount that is greater than reward amount");
+    FC_ASSERT(claimed_reward <= reward, "Attempt to distribute amount that is greater than reward amount");
 
     auto disciplines = discipline_service.get_disciplines();
     for (auto& discipline_ref : disciplines) {
@@ -1807,9 +1795,9 @@ void database::reward_researches_in_discipline(const discipline_object& discipli
         if (total_votes_itr->total_active_research_reward_weight != 0)
         {
             auto& active_research_reward_weight = total_votes_itr->total_active_research_reward_weight;
-            auto research_share = (reward * active_research_reward_weight) / discipline.total_active_research_reward_weight;;
-            reward_research(total_votes_itr->research_id, discipline.id, research_share);
-            claimed_reward += research_share;
+            auto research_content_share = (reward * active_research_reward_weight) / discipline.total_active_research_reward_weight;;
+            reward_research_content(total_votes_itr->research_content_id, discipline.id, research_content_share);
+            claimed_reward += research_content_share;
         }
 
         ++total_votes_itr;
@@ -1818,10 +1806,12 @@ void database::reward_researches_in_discipline(const discipline_object& discipli
     FC_ASSERT(claimed_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
 }
 
-void database::reward_research(const research_id_type& research_id, const discipline_id_type& discipline_id, const share_type& reward)
+void database::reward_research_content(const research_content_id_type& research_content_id, const discipline_id_type& discipline_id, const share_type& reward)
 {
+    auto& research_content_service = obtain_service<dbs_research_content>();
     auto& research_service = obtain_service<dbs_research>();
-    auto& research = research_service.get_research(research_id);
+    auto& research_content = research_content_service.get_content_by_id(research_content_id);
+    auto& research = research_service.get_research(research_content.research_id);
 
     auto curators_share = (reward * DEIP_CURATORS_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT;
     auto references_share = (reward * DEIP_REFERENCES_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT;
@@ -1831,11 +1821,12 @@ void database::reward_research(const research_id_type& research_id, const discip
                                        - DEIP_REFERENCES_REWARD_SHARE_PERCENT
                                        - research.review_share_in_percent;
     auto token_holders_share = (reward * token_holders_share_percent) / DEIP_100_PERCENT;
-    FC_ASSERT(reward >= token_holders_share + review_share + references_share + curators_share,
+    FC_ASSERT(token_holders_share + review_share + references_share + curators_share <= reward,
               "Attempt to allocate funds amount that is greater than reward amount");
 
     reward_research_token_holders(research, discipline_id, token_holders_share);
-    pay_curators(research, discipline_id, curators_share);
+    reward_references(research_content_id, discipline_id, references_share);
+    pay_curators(research_content_id, discipline_id, curators_share);
 }
     
 void database::process_research_token_sales()
