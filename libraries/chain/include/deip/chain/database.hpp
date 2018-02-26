@@ -35,7 +35,6 @@ class database_impl;
 struct genesis_state_type;
 
 namespace util {
-struct comment_reward_context;
 }
 
 /**
@@ -135,13 +134,6 @@ public:
 
     const account_object& get_account(const account_name_type& name) const override;
     const account_object* find_account(const account_name_type& name) const;
-
-    const comment_object& get_comment(const account_name_type& author,
-                                      const fc::shared_string& permlink) const override;
-    const comment_object* find_comment(const account_name_type& author, const fc::shared_string& permlink) const;
-
-    const comment_object& get_comment(const account_name_type& author, const string& permlink) const override;
-    const comment_object* find_comment(const account_name_type& author, const string& permlink) const;
 
     const escrow_object& get_escrow(const account_name_type& name, uint32_t escrow_id) const override;
     const escrow_object* find_escrow(const account_name_type& name, uint32_t escrow_id) const;
@@ -318,8 +310,6 @@ public:
                                   const share_type deips_amount, const share_type total_weight);
     void distribute_references_reward(const research_content_id_type research_content_id, const share_type reward);
 
-    uint16_t get_curation_rewards_percent(const comment_object& c) const override;
-
     share_type pay_reward_funds(share_type reward);
 
     time_point_sec head_block_time() const override;
@@ -347,8 +337,7 @@ public:
     /** when popping a block, the transactions that were removed get cached here so they
      * can be reapplied at the proper time */
     std::deque<signed_transaction> _popped_tx;
-    
-    void retally_comment_children();
+
     void retally_witness_votes();
 
     bool has_hardfork(uint32_t hardfork) const;

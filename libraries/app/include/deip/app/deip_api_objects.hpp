@@ -1,7 +1,6 @@
 #pragma once
 #include <deip/chain/account_object.hpp>
 #include <deip/chain/block_summary_object.hpp>
-#include <deip/chain/comment_object.hpp>
 #include <deip/chain/global_property_object.hpp>
 #include <deip/chain/history_object.hpp>
 #include <deip/chain/deip_objects.hpp>
@@ -30,7 +29,6 @@ using research_group_token_refs_type = std::vector<std::reference_wrapper<const 
 
 typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
 typedef chain::block_summary_object block_summary_api_obj;
-typedef chain::comment_vote_object comment_vote_api_obj;
 typedef chain::escrow_object escrow_api_obj;
 typedef chain::withdraw_vesting_route_object withdraw_vesting_route_api_obj;
 typedef chain::decline_voting_rights_request_object decline_voting_rights_request_api_obj;
@@ -41,99 +39,6 @@ typedef chain::vesting_delegation_expiration_object vesting_delegation_expiratio
 typedef chain::reward_fund_object reward_fund_api_obj;
 typedef witness::account_bandwidth_object account_bandwidth_api_obj;
 
-struct comment_api_obj
-{
-    comment_api_obj(const chain::comment_object& o)
-        : id(o.id)
-        , category(fc::to_string(o.category))
-        , parent_author(o.parent_author)
-        , parent_permlink(fc::to_string(o.parent_permlink))
-        , author(o.author)
-        , permlink(fc::to_string(o.permlink))
-        , title(fc::to_string(o.title))
-        , body(fc::to_string(o.body))
-        , json_metadata(fc::to_string(o.json_metadata))
-        , last_update(o.last_update)
-        , created(o.created)
-        , active(o.active)
-        , last_payout(o.last_payout)
-        , depth(o.depth)
-        , children(o.children)
-        , net_rshares(o.net_rshares)
-        , abs_rshares(o.abs_rshares)
-        , vote_rshares(o.vote_rshares)
-        , children_abs_rshares(o.children_abs_rshares)
-        , cashout_time(o.cashout_time)
-        , max_cashout_time(o.max_cashout_time)
-        , total_vote_weight(o.total_vote_weight)
-        , reward_weight(o.reward_weight)
-        , total_payout_value(o.total_payout_value)
-        , curator_payout_value(o.curator_payout_value)
-        , author_rewards(o.author_rewards)
-        , net_votes(o.net_votes)
-        , root_comment(o.root_comment)
-        , max_accepted_payout(o.max_accepted_payout)
-        , percent_deips(o.percent_deips)
-        , allow_replies(o.allow_replies)
-        , allow_votes(o.allow_votes)
-        , allow_curation_rewards(o.allow_curation_rewards)
-    {
-        for (auto& route : o.beneficiaries)
-        {
-            beneficiaries.push_back(route);
-        }
-    }
-
-    comment_api_obj()
-    {
-    }
-
-    comment_id_type id;
-    string category;
-    account_name_type parent_author;
-    string parent_permlink;
-    account_name_type author;
-    string permlink;
-
-    string title;
-    string body;
-    string json_metadata;
-    time_point_sec last_update;
-    time_point_sec created;
-    time_point_sec active;
-    time_point_sec last_payout;
-
-    uint8_t depth = 0;
-    uint32_t children = 0;
-
-    share_type net_rshares;
-    share_type abs_rshares;
-    share_type vote_rshares;
-
-    share_type children_abs_rshares;
-    time_point_sec cashout_time;
-    time_point_sec max_cashout_time;
-    uint64_t total_vote_weight = 0;
-
-    uint16_t reward_weight = 0;
-
-    asset total_payout_value;
-    asset curator_payout_value;
-
-    share_type author_rewards;
-
-    int32_t net_votes = 0;
-
-    comment_id_type root_comment;
-
-    asset max_accepted_payout;
-    uint16_t percent_deips = 0;
-    bool allow_replies = false;
-    bool allow_votes = false;
-    bool allow_curation_rewards = false;
-    vector<beneficiary_route_type> beneficiaries;
-};
-
 struct tag_api_obj
 {
     tag_api_obj(const tags::tag_stats_object& o)
@@ -141,7 +46,6 @@ struct tag_api_obj
         , total_payouts(o.total_payout)
         , net_votes(o.net_votes)
         , top_posts(o.top_posts)
-        , comments(o.comments)
         , trending(o.total_trending)
     {
     }
@@ -154,7 +58,6 @@ struct tag_api_obj
     asset total_payouts;
     int32_t net_votes = 0;
     uint32_t top_posts = 0;
-    uint32_t comments = 0;
     fc::uint128 trending = 0;
 };
 
@@ -175,7 +78,6 @@ struct account_api_obj
         , last_active_proved(a.last_active_proved)
         , recovery_account(a.recovery_account)
         , last_account_recovery(a.last_account_recovery)
-        , comment_count(a.comment_count)
         , lifetime_vote_count(a.lifetime_vote_count)
         , post_count(a.post_count)
         , can_vote(a.can_vote)
@@ -256,7 +158,6 @@ struct account_api_obj
     time_point_sec last_active_proved;
     account_name_type recovery_account;
     time_point_sec last_account_recovery;
-    uint32_t comment_count = 0;
     uint32_t lifetime_vote_count = 0;
     uint32_t post_count = 0;
 
@@ -742,23 +643,11 @@ struct research_discipline_relation_api_obj
 
 // clang-format off
 
-FC_REFLECT( deip::app::comment_api_obj,
-             (id)(author)(permlink)
-             (category)(parent_author)(parent_permlink)
-             (title)(body)(json_metadata)(last_update)(created)(active)(last_payout)
-             (depth)(children)
-             (net_rshares)(abs_rshares)(vote_rshares)
-             (children_abs_rshares)(cashout_time)(max_cashout_time)
-             (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(author_rewards)(net_votes)(root_comment)
-             (max_accepted_payout)(percent_deips)(allow_replies)(allow_votes)(allow_curation_rewards)
-             (beneficiaries)
-          )
-
 FC_REFLECT( deip::app::account_api_obj,
              (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(last_owner_update)(last_account_update)
              (created)(mined)
              (owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)(recovery_account)(last_account_recovery)
-             (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
+             (lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
              (balance)
              (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
@@ -788,7 +677,6 @@ FC_REFLECT( deip::app::tag_api_obj,
             (total_payouts)
             (net_votes)
             (top_posts)
-            (comments)
             (trending)
           )
 

@@ -184,38 +184,6 @@ struct operation_visitor
     {
     }
 
-    void operator()(const comment_options_operation& o) const
-    {
-        const auto& comment = _db.get_comment(o.author, o.permlink);
-
-        comment_options_extension_visitor v(comment, _db);
-
-        for (auto& e : o.extensions)
-        {
-            e.visit(v);
-        }
-    }
-
-    void operator()(const comment_operation& o) const
-    {
-        if (o.parent_author != DEIP_ROOT_POST_PARENT)
-        {
-            const auto& parent = _db.find_comment(o.parent_author, o.parent_permlink);
-
-            if (parent != nullptr)
-                DEIP_ASSERT(parent->depth < DEIP_SOFT_MAX_COMMENT_DEPTH, chain::plugin_exception,
-                              "Comment is nested ${x} posts deep, maximum depth is ${y}.",
-                              ("x", parent->depth)("y", DEIP_SOFT_MAX_COMMENT_DEPTH));
-        }
-
-        auto itr = _db.find<comment_object, by_permlink>(boost::make_tuple(o.author, o.permlink));
-
-        if (itr != nullptr && itr->cashout_time == fc::time_point_sec::maximum())
-        {
-            FC_THROW_EXCEPTION(chain::plugin_exception, "The comment is archived");
-        }
-    }
-
     void operator()(const transfer_operation& o) const
     {
         if (o.memo.length() > 0)

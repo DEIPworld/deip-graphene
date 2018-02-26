@@ -15,7 +15,6 @@ struct discussion_index
 {
     vector<string> trending; /// trending posts over the last 24 hours
     vector<string> payout; /// pending posts by payout
-    vector<string> payout_comments; /// pending comments by payout
     vector<string> created; /// creation date
     vector<string> responses; /// creation date
     vector<string> active; /// last update or reply
@@ -47,28 +46,6 @@ struct account_vote
     int16_t percent = 0;
     time_point_sec time;
 };
-
-struct discussion : public comment_api_obj
-{
-    discussion(const comment_object& o)
-        : comment_api_obj(o)
-    {
-    }
-    discussion() {}
-
-    string url; /// /category/@rootauthor/root_permlink#author/permlink
-    string root_title;
-    asset pending_payout_value = asset(0, DEIP_SYMBOL);
-    asset total_pending_payout_value; ///< sbd including replies
-    vector<vote_state> active_votes;
-    vector<string> replies; ///< author/slug mapping
-    asset promoted = asset(0, DEIP_SYMBOL);
-    uint32_t body_length = 0;
-    vector<account_name_type> reblogged_by;
-    optional<account_name_type> first_reblogged_by;
-    optional<time_point_sec> first_reblogged_on;
-};
-
 /**
  *  Convert's vesting shares
  */
@@ -87,7 +64,6 @@ struct extended_account : public account_api_obj
     set<string> witness_votes;
     vector<pair<string, uint32_t>> tags_usage;
 
-    optional<vector<string>> comments; /// permlinks for this user
     optional<vector<string>> recent_replies; /// blog posts for this user
 };
 
@@ -112,7 +88,6 @@ struct state
     /**
      *  map from account/slug to full nested discussion
      */
-    map<string, discussion> content;
     map<string, extended_account> accounts;
 
     /**
@@ -135,10 +110,9 @@ FC_REFLECT_DERIVED( deip::app::extended_account,
 FC_REFLECT( deip::app::vote_state, (voter)(weight)(rshares)(percent)(time) )
 FC_REFLECT( deip::app::account_vote, (authorperm)(weight)(rshares)(percent)(time) )
 
-FC_REFLECT( deip::app::discussion_index, (trending)(payout)(payout_comments)(created)(responses)(active)(votes)(hot)(promoted)(cashout) )
+FC_REFLECT( deip::app::discussion_index, (trending)(payout)(created)(responses)(active)(votes)(hot)(promoted)(cashout) )
 FC_REFLECT( deip::app::tag_index, (trending) )
-FC_REFLECT_DERIVED( deip::app::discussion, (deip::app::comment_api_obj), (url)(root_title)(pending_payout_value)(total_pending_payout_value)(active_votes)(replies)(promoted)(body_length)(reblogged_by)(first_reblogged_by)(first_reblogged_on) )
 
-FC_REFLECT( deip::app::state, (current_route)(props)(tag_idx)(tags)(content)(accounts)(witnesses)(discussion_idx)(witness_schedule)(error) )
+FC_REFLECT( deip::app::state, (current_route)(props)(tag_idx)(tags)(accounts)(witnesses)(discussion_idx)(witness_schedule)(error) )
 
 // clang-format on

@@ -428,34 +428,6 @@ const account_object* database::find_account(const account_name_type& name) cons
     return find<account_object, by_name>(name);
 }
 
-const comment_object& database::get_comment(const account_name_type& author, const fc::shared_string& permlink) const
-{
-    try
-    {
-        return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-    }
-    FC_CAPTURE_AND_RETHROW((author)(permlink))
-}
-
-const comment_object* database::find_comment(const account_name_type& author, const fc::shared_string& permlink) const
-{
-    return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-}
-
-const comment_object& database::get_comment(const account_name_type& author, const string& permlink) const
-{
-    try
-    {
-        return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-    }
-    FC_CAPTURE_AND_RETHROW((author)(permlink))
-}
-
-const comment_object* database::find_comment(const account_name_type& author, const string& permlink) const
-{
-    return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-}
-
 const escrow_object& database::get_escrow(const account_name_type& name, uint32_t escrow_id) const
 {
     try
@@ -1184,11 +1156,6 @@ void database::process_funds()
     push_virtual_operation(producer_reward_operation(cwit.owner, producer_reward));
 }
 
-uint16_t database::get_curation_rewards_percent(const comment_object& c) const
-{
-    return get_reward_fund(c).percent_curation_rewards;
-}
-
 share_type database::pay_reward_funds(share_type reward)
 {
     const auto& reward_idx = get_index<reward_fund_index, by_id>();
@@ -1469,9 +1436,6 @@ uint32_t database::last_non_undoable_block_num() const
 void database::initialize_evaluators()
 {
     _my->_evaluator_registry.register_evaluator<vote_evaluator>();
-    _my->_evaluator_registry.register_evaluator<comment_evaluator>();
-    _my->_evaluator_registry.register_evaluator<comment_options_evaluator>();
-    _my->_evaluator_registry.register_evaluator<delete_comment_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_to_vesting_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_vesting_evaluator>();
@@ -1524,8 +1488,6 @@ void database::initialize_indexes()
     add_index<transaction_index>();
     add_index<block_summary_index>();
     add_index<witness_schedule_index>();
-    add_index<comment_index>();
-    add_index<comment_vote_index>();
     add_index<witness_vote_index>();
     add_index<operation_index>();
     add_index<account_history_index>();
@@ -1772,7 +1734,6 @@ void database::_apply_block(const signed_block& next_block)
 
         process_funds();
 
-        process_comment_cashout();
         process_vesting_withdrawals();
 
         account_recovery_processing();
@@ -2350,17 +2311,6 @@ void database::validate_invariants() const
 
         fc::uint128_t total_rshares2;
 
-        const auto& comment_idx = get_index<comment_index>().indices();
-
-        for (auto itr = comment_idx.begin(); itr != comment_idx.end(); ++itr)
-        {
-            if (itr->net_rshares.value > 0)
-            {
-                auto delta = util::evaluate_reward_curve(itr->net_rshares.value);
-                total_rshares2 += delta;
-            }
-        }
-
         const auto& reward_idx = get_index<reward_fund_index, by_id>();
 
         for (auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr)
@@ -2378,39 +2328,6 @@ void database::validate_invariants() const
                   ("total_vesting_shares", gpo.total_vesting_shares)("total_vsf_votes", total_vsf_votes));
     }
     FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
-}
-
-void database::retally_comment_children()
-{
-    const auto& cidx = get_index<comment_index>().indices();
-
-    // Clear children counts
-    for (auto itr = cidx.begin(); itr != cidx.end(); ++itr)
-    {
-        modify(*itr, [&](comment_object& c) { c.children = 0; });
-    }
-
-    for (auto itr = cidx.begin(); itr != cidx.end(); ++itr)
-    {
-        if (itr->parent_author != DEIP_ROOT_POST_PARENT)
-        {
-// Low memory nodes only need immediate child count, full nodes track total children
-#ifdef IS_LOW_MEM
-            modify(get_comment(itr->parent_author, itr->parent_permlink), [&](comment_object& c) { c.children++; });
-#else
-            const comment_object* parent = &get_comment(itr->parent_author, itr->parent_permlink);
-            while (parent)
-            {
-                modify(*parent, [&](comment_object& c) { c.children++; });
-
-                if (parent->parent_author != DEIP_ROOT_POST_PARENT)
-                    parent = &get_comment(parent->parent_author, parent->parent_permlink);
-                else
-                    parent = nullptr;
-            }
-#endif
-        }
-    }
 }
 
 void database::retally_witness_votes()

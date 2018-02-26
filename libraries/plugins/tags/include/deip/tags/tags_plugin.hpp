@@ -2,7 +2,6 @@
 
 #include <deip/app/plugin.hpp>
 #include <deip/chain/database.hpp>
-#include <deip/chain/comment_object.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 

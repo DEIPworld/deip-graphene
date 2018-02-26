@@ -383,8 +383,6 @@ public:
     void on_api_startup();
 
 private:
-    static bool filter_default(const comment_api_obj& c) { return false; }
-    static bool exit_default(const comment_api_obj& c) { return false; }
     static bool tag_exit_default(const tags::tag_object& c) { return false; }
 
     std::shared_ptr<database_api_impl> my;
@@ -447,11 +445,7 @@ FC_API(deip::app::database_api,
    (get_potential_signatures)
    (verify_authority)
    (verify_account_authority)
-
-   // votes
-   (get_active_votes)
-   (get_account_votes)
-
+           
    // Witnesses
    (get_witnesses)
    (get_witness_by_account)
