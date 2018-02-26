@@ -56,30 +56,6 @@ enum withdraw_route_type
 };
 
 class database_api_impl;
-
-/**
- *  Defines the arguments to a query as a struct so it can be easily extended
- */
-struct discussion_query
-{
-    void validate() const
-    {
-        FC_ASSERT(filter_tags.find(tag) == filter_tags.end());
-        FC_ASSERT(limit <= 100);
-    }
-
-    string tag;
-    uint32_t limit = 0;
-    set<string> filter_tags;
-    set<string> select_authors; ///< list of authors to include, posts not by this author are filtered
-    set<string> select_tags; ///< list of tags to include, posts without these tags are filtered
-    uint32_t truncate_body = 0; ///< the number of bytes of the post body to return, 0 for all
-    optional<string> start_author;
-    optional<string> start_permlink;
-    optional<string> parent_author;
-    optional<string> parent_permlink;
-};
-
 /**
  * @brief The database_api class implements the RPC API for the chain database.
  *
@@ -301,24 +277,9 @@ public:
     vector<vote_state> get_active_votes(string author, string permlink) const;
     vector<account_vote> get_account_votes(string voter) const;
 
-    discussion get_content(string author, string permlink) const;
-    vector<discussion> get_content_replies(string parent, string parent_permlink) const;
-
     ///@{ tags API
     /** This API will return the top 1000 tags used by an author sorted by most frequently used */
     vector<pair<string, uint32_t>> get_tags_used_by_author(const string& author) const;
-    vector<discussion> get_discussions_by_payout(const discussion_query& query) const;
-    vector<discussion> get_post_discussions_by_payout(const discussion_query& query) const;
-    vector<discussion> get_comment_discussions_by_payout(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_trending(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_created(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_active(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_cashout(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_votes(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_children(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_hot(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_comments(const discussion_query& query) const;
-    vector<discussion> get_discussions_by_promoted(const discussion_query& query) const;
 
     ///@}
 
@@ -329,10 +290,7 @@ public:
      *     Get root content in category..
      *     Get any content in category...
      *
-     *  Return discussions
-     *     Total Discussion Pending Payout
-     *     Last Discussion Update (or reply)... think
-     *     Top Discussions by Total Payout
+
      *
      *  Return content (comments)
      *     Pending Payout Amount
@@ -341,24 +299,6 @@ public:
      *
      */
     ///@{
-
-    /**
-     *  Return the active discussions with the highest cumulative pending payouts without respect to category, total
-     *  pending payout means the pending payout of all children as well.
-     */
-    vector<discussion> get_replies_by_last_update(
-        account_name_type start_author, string start_permlink, uint32_t limit) const;
-
-    /**
-     *  This method is used to fetch all posts/comments by start_author that occur after before_date and start_permlink
-     * with up to limit being returned.
-     *
-     *  If start_permlink is empty then only before_date will be considered. If both are specified the eariler to the
-     * two metrics will be used. This
-     *  should allow easy pagination.
-     */
-    vector<discussion> get_discussions_by_author_before_date(
-        string author, string start_permlink, time_point_sec before_date, uint32_t limit) const;
 
     /**
      *  Account operations have sequence numbers from 0 to N where N is the most recent operation. This method
@@ -438,24 +378,9 @@ public:
     void on_api_startup();
 
 private:
-    void set_pending_payout(discussion& d) const;
-    void set_url(discussion& d) const;
-    discussion get_discussion(comment_id_type, uint32_t truncate_body = 0) const;
-
     static bool filter_default(const comment_api_obj& c) { return false; }
     static bool exit_default(const comment_api_obj& c) { return false; }
     static bool tag_exit_default(const tags::tag_object& c) { return false; }
-
-    template <typename Index, typename StartItr>
-    vector<discussion> get_discussions(const discussion_query& q, const string& tag, comment_id_type parent,
-        const Index& idx, StartItr itr, uint32_t truncate_body = 0,
-        const std::function<bool(const comment_api_obj&)>& filter = &database_api::filter_default,
-        const std::function<bool(const comment_api_obj&)>& exit = &database_api::exit_default,
-        const std::function<bool(const tags::tag_object&)>& tag_exit = &database_api::tag_exit_default,
-        bool ignore_parent = false) const;
-    comment_id_type get_parent(const discussion_query& q) const;
-
-    void recursively_fetch_content(state& _state, discussion& root, set<string>& referenced_accounts) const;
 
     std::shared_ptr<database_api_impl> my;
 };
@@ -467,8 +392,6 @@ private:
 FC_REFLECT( deip::app::scheduled_hardfork, (hf_version)(live_time) )
 FC_REFLECT( deip::app::withdraw_route, (from_account)(to_account)(percent)(auto_vest) )
 
-FC_REFLECT( deip::app::discussion_query, (tag)(filter_tags)(select_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit) )
-
 FC_REFLECT_ENUM( deip::app::withdraw_route_type, (incoming)(outgoing)(all) )
 
 FC_API(deip::app::database_api,
@@ -478,18 +401,6 @@ FC_API(deip::app::database_api,
    // tags
    (get_trending_tags)
    (get_tags_used_by_author)
-   (get_discussions_by_payout)
-   (get_post_discussions_by_payout)
-   (get_comment_discussions_by_payout)
-   (get_discussions_by_trending)
-   (get_discussions_by_created)
-   (get_discussions_by_active)
-   (get_discussions_by_cashout)
-   (get_discussions_by_votes)
-   (get_discussions_by_children)
-   (get_discussions_by_hot)
-   (get_discussions_by_comments)
-   (get_discussions_by_promoted)
 
    // Blocks and transactions
    (get_block_header)
@@ -535,12 +446,6 @@ FC_API(deip::app::database_api,
    // votes
    (get_active_votes)
    (get_account_votes)
-
-   // content
-   (get_content)
-   (get_content_replies)
-   (get_discussions_by_author_before_date)
-   (get_replies_by_last_update)
 
    // Witnesses
    (get_witnesses)
