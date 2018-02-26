@@ -65,17 +65,19 @@ public:
 class proposal_vote_evaluator_fixture : public clean_database_fixture {
 public:
     proposal_vote_evaluator_fixture()
-            : evaluator(db.obtain_service<dbs_account>(),
-                        db.obtain_service<dbs_proposal>(),
-                        db.obtain_service<dbs_research_group>(),
-                        db.obtain_service<dbs_research>(),
-                        db.obtain_service<dbs_research_token>(),
-                        db.obtain_service<dbs_research_content>(),
-                        db.obtain_service<dbs_research_token_sale>(),
-                        db.obtain_service<dbs_discipline>(),
-                        db.obtain_service<dbs_research_discipline_relation>(),
-                        db.obtain_service<dbs_research_group_invite>(),
-                        db.obtain_service<dbs_dynamic_global_properties>()) {
+        : evaluator(db.obtain_service<dbs_account>(),
+                    db.obtain_service<dbs_proposal>(),
+                    db.obtain_service<dbs_research_group>(),
+                    db.obtain_service<dbs_research>(),
+                    db.obtain_service<dbs_research_token>(),
+                    db.obtain_service<dbs_research_content>(),
+                    db.obtain_service<dbs_research_token_sale>(),
+                    db.obtain_service<dbs_discipline>(),
+                    db.obtain_service<dbs_research_discipline_relation>(),
+                    db.obtain_service<dbs_research_group_invite>(),
+                    db.obtain_service<dbs_dynamic_global_properties>())
+    {
+    }
 
     void create_disciplines()
     {
