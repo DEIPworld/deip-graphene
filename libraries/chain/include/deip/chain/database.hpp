@@ -151,9 +151,6 @@ public:
     const witness_schedule_object& get_witness_schedule_object() const override;
     const hardfork_property_object& get_hardfork_property_object() const;
 
-    const time_point_sec calculate_discussion_payout_time(const comment_object& comment) const override;
-    const reward_fund_object& get_reward_fund(const comment_object& c) const override;
-
     /**
      *  Deducts fee from the account and the share supply
      */
@@ -292,13 +289,8 @@ public:
 
     /** @return the sbd created and deposited to_account, may return DEIP if there is no median feed */
     asset create_vesting(const account_object& to_account, asset deip, bool to_reward_balance = false);
-    void adjust_total_payout(const comment_object& a,
-                             const asset& sbd,
-                             const asset& curator_sbd_value,
-                             const asset& beneficiary_value);
 
     void adjust_supply(const asset& delta, bool adjust_vesting = false);
-    void adjust_rshares2(const comment_object& comment, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2);
 
     asset get_balance(const account_object& a, asset_symbol_type symbol) const override;
     asset get_balance(const string& aname, asset_symbol_type symbol) const override
@@ -312,9 +304,6 @@ public:
      */
     void clear_witness_votes(const account_object& a);
     void process_vesting_withdrawals();
-    share_type pay_curators(const comment_object& c, share_type& max_rewards);
-    share_type cashout_comment_helper(util::comment_reward_context& ctx, const comment_object& comment);
-    void process_comment_cashout();
     void process_funds();
     void process_conversions();
     void account_recovery_processing();
