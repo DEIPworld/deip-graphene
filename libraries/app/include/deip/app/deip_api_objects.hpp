@@ -16,6 +16,7 @@
 #include <deip/chain/expert_token_object.hpp>
 #include <deip/chain/research_token_sale_object.hpp>
 #include <deip/chain/research_group_object.hpp>
+#include <deip/chain/research_discipline_relation_object.hpp>
 
 #include <deip/tags/tags_plugin.hpp>
 
@@ -717,6 +718,24 @@ struct research_token_sale_contribution_api_obj
     time_point_sec contribution_time;
 };
 
+struct research_discipline_relation_api_obj
+{
+    research_discipline_relation_api_obj(const chain::research_discipline_relation_object& re)
+            : id(re.id._id)
+            ,  research_id(re.research_id._id)
+            ,  discipline_id(re.discipline_id._id)
+            ,  votes_count(re.votes_count)
+    {}
+    // because fc::variant require for temporary object
+    research_discipline_relation_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t research_id;
+    int64_t discipline_id;
+    uint16_t votes_count;
+};
 
 } // namespace app
 } // namespace deip
@@ -903,5 +922,11 @@ FC_REFLECT( deip::app::research_token_sale_contribution_api_obj,
             (contribution_time)
 )
 
+FC_REFLECT( deip::app::research_discipline_relation_api_obj,
+            (id)
+            (research_id)
+            (discipline_id)
+            (votes_count)
+)
 
 // clang-format on

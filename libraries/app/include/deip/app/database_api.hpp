@@ -371,6 +371,11 @@ public:
     research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_account_name_and_research_token_sale_id(const account_name_type owner,
                                                                                                                              const research_token_sale_id_type research_token_sale_id) const;
 
+    ///////////////////////////////////
+    // Research discipline relation //
+    //////////////////////////////////
+
+    vector<int64_t> get_disciplines_by_research(const research_id_type& research_id) const;
 
     ////////////////////////////
     // Handlers - not exposed //
