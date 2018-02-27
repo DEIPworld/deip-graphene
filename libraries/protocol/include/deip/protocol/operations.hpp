@@ -56,13 +56,10 @@ namespace deip {
                 // virtual operations
                 author_reward_operation,
                 curation_reward_operation,
-                comment_reward_operation,
                 fill_vesting_withdraw_operation,
                 shutdown_witness_operation,
                 hardfork_operation,
-                comment_payout_update_operation,
                 return_vesting_delegation_operation,
-                comment_benefactor_reward_operation,
                 producer_reward_operation>
                 operation;
 
