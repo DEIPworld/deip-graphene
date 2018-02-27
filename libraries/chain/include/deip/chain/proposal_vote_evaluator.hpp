@@ -16,6 +16,7 @@
 #include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/dbs_research_token_sale.hpp>
+#include <deip/chain/dbs_dynamic_global_properties.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
@@ -39,6 +40,7 @@ template <typename AccountService,
         typename DisciplineService,
         typename ResearchDisciplineRelationService,
         typename ResearchGroupInviteService,
+        typename DynamicGlobalPropertiesService,
         typename OperationType = deip::protocol::operation>
 class proposal_vote_evaluator_t : public evaluator<OperationType>
 // clang-format on
@@ -55,6 +57,7 @@ public:
             DisciplineService,
             ResearchDisciplineRelationService,
             ResearchGroupInviteService,
+            DynamicGlobalPropertiesService,
             OperationType>
             EvaluatorType;
 
@@ -93,7 +96,8 @@ public:
                               ResearchTokenSaleService& research_token_sale_service,
                               DisciplineService& discipline_service,
                               ResearchDisciplineRelationService& research_discipline_relation_service,
-                              ResearchGroupInviteService& research_group_invite_service)
+                              ResearchGroupInviteService& research_group_invite_service,
+                              DynamicGlobalPropertiesService& dynamic_global_properties_service)
                               
             : _account_service(account_service)
             , _proposal_service(proposal_service)
@@ -105,6 +109,7 @@ public:
             , _discipline_service(discipline_service)
             , _research_discipline_relation_service(research_discipline_relation_service)
             , _research_group_invite_service(research_group_invite_service)
+            , _dynamic_global_properties_service(dynamic_global_properties_service)
     {
         evaluators.set(proposal_action_type::invite_member,
                        std::bind(&EvaluatorType::invite_evaluator, this, std::placeholders::_1));
@@ -219,14 +224,20 @@ protected:
 
     void change_research_review_share_evaluator(const proposal_object& proposal)
     {
-//        uint64_t quorum = proposal.data.as_uint64();
-//        _properties_service.set_dropout_quorum(quorum);
+        change_research_review_share_percent_data_type data = get_data<change_research_review_share_percent_data_type>(proposal);
+        auto& research = _research_service.get_research(data.research_id);
+
+        int64_t time_period_from_last_update
+            = (_dynamic_global_properties_service.get_dynamic_global_properties().time - research.review_share_in_percent_last_update).to_seconds();
+        FC_ASSERT((time_period_from_last_update >= DAYS_TO_SECONDS(90)),
+                  "Cannot update review_share (time period from last update < 90)");
+
+        _research_service.change_research_review_share_percent(data.research_id, data.review_share_in_percent);
     }
 
     void change_quorum_evaluator(const proposal_object& proposal)
     {
         change_quorum_proposal_data_type data = get_data<change_quorum_proposal_data_type>(proposal);
-        _research_group_service.check_research_group_existence(data.research_group_id);
         _research_group_service.change_quorum(data.quorum_percent, data.research_group_id);
     }
 
@@ -289,7 +300,11 @@ protected:
 
     void create_research_material_evaluator(const proposal_object& proposal)
     {
-        create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);  
+        create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
+
+        _research_service.check_research_existence(data.research_id);
+        auto &research = _research_service.get_research(data.research_id);
+          
         _research_content_service.create(data.research_id, data.type, data.content, data.authors, data.research_references, data.research_external_references);
     }
 
@@ -316,6 +331,7 @@ protected:
     DisciplineService& _discipline_service;
     ResearchDisciplineRelationService& _research_discipline_relation_service;
     ResearchGroupInviteService& _research_group_invite_service;
+    DynamicGlobalPropertiesService& _dynamic_global_properties_service;
 
 
 private:
@@ -338,9 +354,10 @@ typedef proposal_vote_evaluator_t<dbs_account,
                                   dbs_research_token_sale,
                                   dbs_discipline,
                                   dbs_research_discipline_relation,
-                                  dbs_research_group_invite>
+                                  dbs_research_group_invite,
+                                  dbs_dynamic_global_properties>
     proposal_vote_evaluator;
-typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_content, dbs_research_token_sale, dbs_discipline, dbs_research_discipline_relation, dbs_research_group_invite>
+typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_content, dbs_research_token_sale, dbs_discipline, dbs_research_discipline_relation, dbs_research_group_invite, dbs_dynamic_global_properties>
         proposal_vote_evaluator;
 
 } // namespace chain

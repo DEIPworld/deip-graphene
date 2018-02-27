@@ -10,7 +10,7 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 }
 
 const research_object& dbs_research::create(const string &name, const string &abstract, const string &permlink,
-                                            const research_group_id_type &research_group_id, const double &review_share_in_percent, const uint16_t dropout_compensation_in_percent)
+                                            const research_group_id_type &research_group_id, const uint16_t review_share_in_percent, const uint16_t dropout_compensation_in_percent)
 {
     const auto& new_research = db_impl().create<research_object>([&](research_object& r) {
         r.name = name;
@@ -22,6 +22,7 @@ const research_object& dbs_research::create(const string &name, const string &ab
         r.is_finished = false;
         r.owned_tokens = DEIP_100_PERCENT;
         r.created_at = db_impl().head_block_time();
+        r.review_share_in_percent_last_update = db_impl().head_block_time();
     });
 
     return new_research;
@@ -83,5 +84,15 @@ void dbs_research::decrease_owned_tokens(const research_object& research, const 
     db_impl().modify(research, [&](research_object& r_o) { r_o.owned_tokens -= delta; });
 }
 
+void dbs_research::change_research_review_share_percent(const research_id_type& research_id,
+                                                        const uint16_t review_share_in_percent)
+{
+    check_research_existence(research_id);
+    const research_object& research = get_research(research_id);
+    db_impl().modify(research, [&](research_object& r) {
+        r.review_share_in_percent = review_share_in_percent;
+        r.review_share_in_percent_last_update = db_impl().head_block_time();
+    });
+}
 }
 }

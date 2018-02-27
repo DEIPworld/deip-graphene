@@ -381,6 +381,41 @@ database_fixture::research_group_create(const uint32_t& id,
     return new_research_group;
 }
 
+const research_group_object& database_fixture::research_group_create_by_operation(const account_name_type& creator,
+                                                                                  const string& permlink,
+                                                                                  const string& description,
+                                                                                  const uint32_t quorum_percent,
+                                                                                  const uint32_t tokens_amount)
+{
+    try
+    {
+        auto cr = std::string(creator);
+        private_key_type priv_key = generate_private_key(cr);
+
+        create_research_group_operation op;
+        op.creator = creator;
+        op.permlink = permlink;
+        op.desciption = description;
+        op.quorum_percent = quorum_percent;
+        op.tokens_amount = tokens_amount;
+
+        trx.operations.push_back(op);
+
+        trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        trx.sign(priv_key, db.get_chain_id());
+        trx.validate();
+        db.push_transaction(trx, 0);
+        trx.operations.clear();
+        trx.signatures.clear();
+
+        auto& research_group_service = db.obtain_service<dbs_research_group>();
+        const research_group_object& rg = research_group_service.get_research_group_by_permlink(permlink);
+
+        return rg;
+    }
+    FC_CAPTURE_AND_RETHROW((creator)(permlink))
+}
+
 const research_group_token_object& database_fixture::research_group_token_create(
     const research_group_id_type& research_group_id, const account_name_type& account, const share_type amount = 10)
 {
@@ -429,12 +464,44 @@ const proposal_object& database_fixture::create_proposal(const uint32_t id, cons
     return new_proposal;
 }
 
+void database_fixture::create_proposal_by_operation(const account_name_type& creator,
+                                                                      const research_group_id_type& research_group_id,
+                                                                      const std::string json_data,
+                                                                      const dbs_proposal::action_t action,
+                                                                      const fc::time_point_sec expiration_time)
+{
+    try
+    {
+        auto cr = std::string(creator);
+        private_key_type priv_key = generate_private_key(cr);
+
+        create_proposal_operation op;
+        op.creator = creator;
+        op.research_group_id = research_group_id._id;
+        op.data = json_data;
+        op.action = action;
+        op.expiration_time = expiration_time;
+
+        trx.operations.push_back(op);
+
+        trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        trx.sign(priv_key, db.get_chain_id());
+        trx.validate();
+        db.push_transaction(trx, 0);
+        trx.operations.clear();
+        trx.signatures.clear();
+
+        generate_block();
+    }
+    FC_CAPTURE_AND_RETHROW((creator))
+}
+
 const research_object& database_fixture::research_create(const uint32_t id,
                                                          const string &name,
                                                          const string &abstract,
                                                          const string &permlink,
                                                          const research_group_id_type &research_group_id,
-                                                         const double &review_share_in_percent,
+                                                         const uint16_t review_share_in_percent,
                                                          const uint16_t dropout_compensation_in_percent)
 {
     const auto& new_research = db.create<research_object>([&](research_object& r) {
@@ -448,6 +515,7 @@ const research_object& database_fixture::research_create(const uint32_t id,
         r.is_finished = false;
         r.owned_tokens = DEIP_100_PERCENT;
         r.created_at = db.head_block_time();
+        r.review_share_in_percent_last_update = db.head_block_time();
     });
 
     return new_research;
