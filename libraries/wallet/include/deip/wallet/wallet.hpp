@@ -787,27 +787,6 @@ public:
     vector<variant> network_get_connected_peers();
 
     /**
-     *  Post or update a comment.
-     *
-     *  @param author the name of the account authoring the comment
-     *  @param permlink the accountwide unique permlink for the comment
-     *  @param parent_author can be null if this is a top level comment
-     *  @param parent_permlink becomes category if parent_author is ""
-     *  @param title the title of the comment
-     *  @param body the body of the comment
-     *  @param json the json metadata of the comment
-     *  @param broadcast true if you wish to broadcast the transaction
-     */
-    annotated_signed_transaction post_comment(const std::string& author,
-                                              const std::string& permlink,
-                                              const std::string& parent_author,
-                                              const std::string& parent_permlink,
-                                              const std::string& title,
-                                              const std::string& body,
-                                              const std::string& json,
-                                              bool broadcast);
-
-    /**
      * Vote on a comment to be paid DEIP
      *
      * @param voter The account voting
@@ -1045,7 +1024,6 @@ FC_API( deip::wallet::wallet_api,
         (transfer_to_vesting)
         (withdraw_vesting)
         (set_withdraw_vesting_route)
-        (post_comment)
         (vote)
         (set_transaction_expiration)
         (challenge)

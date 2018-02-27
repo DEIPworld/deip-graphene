@@ -2132,32 +2132,6 @@ vector<withdraw_route> wallet_api::get_withdraw_routes(const std::string& accoun
     return my->_remote_db->get_withdraw_routes(account, type);
 }
 
-annotated_signed_transaction wallet_api::post_comment(const std::string& author,
-                                                      const std::string& permlink,
-                                                      const std::string& parent_author,
-                                                      const std::string& parent_permlink,
-                                                      const std::string& title,
-                                                      const std::string& body,
-                                                      const std::string& json,
-                                                      bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-    comment_operation op;
-    op.parent_author = parent_author;
-    op.parent_permlink = parent_permlink;
-    op.author = author;
-    op.permlink = permlink;
-    op.title = title;
-    op.body = body;
-    op.json_metadata = json;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
 annotated_signed_transaction wallet_api::vote(
     const std::string& voter, const std::string& author, const std::string& permlink, int16_t weight, bool broadcast)
 {
