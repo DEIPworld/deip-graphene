@@ -1693,8 +1693,8 @@ void database::reward_with_expertise(const account_name_type &account, const dis
     }
 }
 
-share_type database::pay_curators(const research_content_id_type &research_content_id,
-                                  const discipline_id_type &discipline_id, const share_type &reward)
+share_type database::reward_voters(const research_content_id_type &research_content_id,
+                                   const discipline_id_type &discipline_id, const share_type &reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
     dbs_vote& vote_service = obtain_service<dbs_vote>();
@@ -1826,7 +1826,7 @@ void database::reward_research_content(const research_content_id_type& research_
 
     reward_research_token_holders(research, discipline_id, token_holders_share);
     reward_references(research_content_id, discipline_id, references_share);
-    pay_curators(research_content_id, discipline_id, curators_share);
+    reward_voters(research_content_id, discipline_id, curators_share);
 }
     
 void database::process_research_token_sales()
