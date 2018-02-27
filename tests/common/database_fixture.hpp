@@ -105,6 +105,12 @@ struct database_fixture
                                                        const share_type funds,
                                                        const share_type quorum_percent,
                                                        const share_type tokens_amount);
+                                                       
+    const research_group_object& research_group_create_by_operation(const account_name_type& creator,
+                                                                                      const string& permlink,
+                                                                                      const string& description,
+                                                                                      const uint32_t quorum_percent,
+                                                                                      const uint32_t tokens_amount);
 
     const research_group_token_object& research_group_token_create(const research_group_id_type& research_group_id,
                                                                    const account_name_type& account,
@@ -126,12 +132,18 @@ struct database_fixture
                                            const time_point_sec expiration_time,
                                            const share_type quorum_percent);
 
+    void create_proposal_by_operation(const account_name_type& creator,
+                                      const research_group_id_type& research_group_id,
+                                      const std::string json_data,
+                                      const dbs_proposal::action_t action,
+                                      const fc::time_point_sec expiration_time);
+
     const research_object& research_create(const uint32_t id,
                                            const string& name,
                                            const string& abstract,
                                            const string& permlink,
                                            const research_group_id_type& research_group_id,
-                                           const double& review_share_in_percent,
+                                           const uint16_t review_share_in_percent,
                                            const uint16_t dropout_compensation_in_percent);
 
     const expert_token_object& expert_token_create(const uint32_t id,

@@ -39,6 +39,7 @@ add_library( deip_chain
              dbs_research_token.cpp
              dbs_research_token_sale.cpp
              dbs_research_group_invite.cpp
+             dbs_dynamic_global_properties.cpp
 
              deip_evaluator.cpp
              deip_objects.cpp

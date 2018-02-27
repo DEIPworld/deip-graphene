@@ -179,6 +179,7 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
     op.discipline_id = discipline.id._id;
     op.weight = 50 * DEIP_1_PERCENT;
     op.voter = "alice";
+
     tx.operations.push_back(op);
     tx.sign(priv_key, db.get_chain_id());
     tx.validate();

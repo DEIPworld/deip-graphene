@@ -421,7 +421,7 @@ struct research_api_obj
     std::string permlink;
     bool is_finished;
     share_type owned_tokens;
-    double review_share_in_percent;
+    uint16_t review_share_in_percent;
     time_point_sec created_at;
     int16_t dropout_compensation_in_percent;
 };
@@ -432,7 +432,7 @@ struct research_content_api_obj
         : id(rc.id._id)
         ,  research_id(rc.research_id._id)
         ,  content_type(rc.type)
-        ,  authors(rc.authors)
+        ,  authors(rc.authors)        
         ,  content(rc.content)
         ,  created_at(rc.created_at)
     {}
