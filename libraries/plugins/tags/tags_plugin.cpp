@@ -56,38 +56,6 @@ struct operation_visitor
 
     database& _db;
 
-    void remove_stats(const tag_object& tag, const tag_stats_object& stats) const
-    {
-        _db.modify(stats, [&](tag_stats_object& s) {
-            if (tag.parent == comment_id_type())
-            {
-                s.top_posts--;
-            }
-            else
-            {
-                s.comments--;
-            }
-            s.total_trending -= static_cast<uint32_t>(tag.trending);
-            s.net_votes -= tag.net_votes;
-        });
-    }
-
-    void add_stats(const tag_object& tag, const tag_stats_object& stats) const
-    {
-        _db.modify(stats, [&](tag_stats_object& s) {
-            if (tag.parent == comment_id_type())
-            {
-                s.top_posts++;
-            }
-            else
-            {
-                s.comments++;
-            }
-            s.total_trending += static_cast<uint32_t>(tag.trending);
-            s.net_votes += tag.net_votes;
-        });
-    }
-
     void remove_tag(const tag_object& tag) const
     {
         /// TODO: update tag stats object
