@@ -11,7 +11,6 @@ namespace deip {
  * or it will trigger a hardfork.
  */
         typedef fc::static_variant<vote_operation,
-                comment_operation,
 
                 transfer_operation,
                 transfer_to_vesting_operation,
@@ -24,8 +23,6 @@ namespace deip {
                 account_witness_vote_operation,
                 account_witness_proxy_operation,
 
-                delete_comment_operation,
-                comment_options_operation,
                 set_withdraw_vesting_route_operation,
 
                 prove_authority_operation,
