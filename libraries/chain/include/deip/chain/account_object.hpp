@@ -48,7 +48,6 @@ public:
     time_point_sec last_active_proved = time_point_sec::min();
     account_name_type recovery_account;
     time_point_sec last_account_recovery;
-    uint32_t comment_count = 0;
     uint32_t lifetime_vote_count = 0;
     uint32_t post_count = 0;
 
@@ -512,7 +511,7 @@ FC_REFLECT( deip::chain::account_object,
              (id)(name)(memo_key)(json_metadata)(proxy)(last_account_update)
              (created)(mined)
              (owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)(recovery_account)(last_account_recovery)
-             (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
+             (lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
              (balance)
              (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
              (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)

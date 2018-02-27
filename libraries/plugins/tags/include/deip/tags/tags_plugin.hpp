@@ -90,13 +90,6 @@ public:
     share_type promoted_balance = 0;
 
     account_id_type author;
-    comment_id_type parent;
-    comment_id_type comment;
-
-    bool is_post() const
-    {
-        return parent == comment_id_type();
-    }
 };
 
 typedef oid<tag_object> tag_id_type;
@@ -114,26 +107,13 @@ struct by_parent_hot;
 struct by_author_parent_created; /// all blog posts by author with tag
 struct by_author_comment;
 struct by_reward_fund_net_rshares;
-struct by_comment;
 struct by_tag;
 
 typedef multi_index_container<
     tag_object,
     indexed_by<
         ordered_unique<tag<by_id>, member<tag_object, tag_id_type, &tag_object::id>>,
-        ordered_unique<tag<by_comment>,
-                       composite_key<tag_object,
-                                     member<tag_object, comment_id_type, &tag_object::comment>,
-                                     member<tag_object, tag_id_type, &tag_object::id>>,
-                       composite_key_compare<std::less<comment_id_type>, std::less<tag_id_type>>>,
-        ordered_unique<
-            tag<by_author_comment>,
-            composite_key<tag_object,
-                          member<tag_object, account_id_type, &tag_object::author>,
-                          member<tag_object, comment_id_type, &tag_object::comment>,
-                          member<tag_object, tag_id_type, &tag_object::id>>,
-            composite_key_compare<std::less<account_id_type>, std::less<comment_id_type>, std::less<tag_id_type>>>,
-        ordered_unique<tag<by_parent_created>,
+                ordered_unique<tag<by_parent_created>,
                        composite_key<tag_object,
                                      member<tag_object, tag_name_type, &tag_object::tag>,
                                      member<tag_object, comment_id_type, &tag_object::parent>,

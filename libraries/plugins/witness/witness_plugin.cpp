@@ -92,26 +92,6 @@ void witness_plugin_impl::plugin_initialize()
 {
 }
 
-struct comment_options_extension_visitor
-{
-    comment_options_extension_visitor(const comment_object& c, const database& db)
-        : _c(c)
-        , _db(db)
-    {
-    }
-
-    typedef void result_type;
-
-    const comment_object& _c;
-    const database& _db;
-
-    void operator()(const comment_payout_beneficiaries& cpb) const
-    {
-        DEIP_ASSERT(cpb.beneficiaries.size() <= 8, chain::plugin_exception,
-                      "Cannot specify more than 8 beneficiaries.");
-    }
-};
-
 void check_memo(const string& memo, const account_object& account, const account_authority_object& auth)
 {
     vector<public_key_type> keys;
