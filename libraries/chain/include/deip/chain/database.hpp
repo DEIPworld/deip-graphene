@@ -35,7 +35,6 @@ class database_impl;
 struct genesis_state_type;
 
 namespace util {
-struct comment_reward_context;
 }
 
 /**
@@ -136,13 +135,6 @@ public:
     const account_object& get_account(const account_name_type& name) const override;
     const account_object* find_account(const account_name_type& name) const;
 
-    const comment_object& get_comment(const account_name_type& author,
-                                      const fc::shared_string& permlink) const override;
-    const comment_object* find_comment(const account_name_type& author, const fc::shared_string& permlink) const;
-
-    const comment_object& get_comment(const account_name_type& author, const string& permlink) const override;
-    const comment_object* find_comment(const account_name_type& author, const string& permlink) const;
-
     const escrow_object& get_escrow(const account_name_type& name, uint32_t escrow_id) const override;
     const escrow_object* find_escrow(const account_name_type& name, uint32_t escrow_id) const;
 
@@ -150,9 +142,6 @@ public:
     const node_property_object& get_node_properties() const;
     const witness_schedule_object& get_witness_schedule_object() const override;
     const hardfork_property_object& get_hardfork_property_object() const;
-
-    const time_point_sec calculate_discussion_payout_time(const comment_object& comment) const override;
-    const reward_fund_object& get_reward_fund(const comment_object& c) const override;
 
     /**
      *  Deducts fee from the account and the share supply
@@ -292,13 +281,8 @@ public:
 
     /** @return the sbd created and deposited to_account, may return DEIP if there is no median feed */
     asset create_vesting(const account_object& to_account, asset deip, bool to_reward_balance = false);
-    void adjust_total_payout(const comment_object& a,
-                             const asset& sbd,
-                             const asset& curator_sbd_value,
-                             const asset& beneficiary_value);
 
     void adjust_supply(const asset& delta, bool adjust_vesting = false);
-    void adjust_rshares2(const comment_object& comment, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2);
 
     asset get_balance(const account_object& a, asset_symbol_type symbol) const override;
     asset get_balance(const string& aname, asset_symbol_type symbol) const override
@@ -312,11 +296,8 @@ public:
      */
     void clear_witness_votes(const account_object& a);
     void process_vesting_withdrawals();
-    share_type pay_curators(const comment_object& c, share_type& max_rewards);
     share_type reward_voters(const research_content_id_type &research_content_id,
                              const discipline_id_type &discipline_id, const share_type &reward);
-    share_type cashout_comment_helper(util::comment_reward_context& ctx, const comment_object& comment);
-    void process_comment_cashout();
     void process_funds();
     void process_conversions();
     void account_recovery_processing();
@@ -340,8 +321,6 @@ public:
                                  const share_type &reward);
     void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                const share_type &reward);
-
-    uint16_t get_curation_rewards_percent(const comment_object& c) const override;
 
     share_type pay_reward_funds(share_type reward);
 
@@ -370,8 +349,7 @@ public:
     /** when popping a block, the transactions that were removed get cached here so they
      * can be reapplied at the proper time */
     std::deque<signed_transaction> _popped_tx;
-    
-    void retally_comment_children();
+
     void retally_witness_votes();
 
     bool has_hardfork(uint32_t hardfork) const;

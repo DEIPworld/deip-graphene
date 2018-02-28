@@ -42,8 +42,6 @@ enum object_type
     transaction_object_type,
     block_summary_object_type,
     witness_schedule_object_type,
-    comment_object_type,
-    comment_vote_object_type,
     witness_vote_object_type,
     operation_object_type,
     account_history_object_type,
@@ -85,8 +83,6 @@ class witness_object;
 class transaction_object;
 class block_summary_object;
 class witness_schedule_object;
-class comment_object;
-class comment_vote_object;
 class witness_vote_object;
 class operation_object;
 class account_history_object;
@@ -128,8 +124,6 @@ typedef oid<witness_object> witness_id_type;
 typedef oid<transaction_object> transaction_object_id_type;
 typedef oid<block_summary_object> block_summary_id_type;
 typedef oid<witness_schedule_object> witness_schedule_id_type;
-typedef oid<comment_object> comment_id_type;
-typedef oid<comment_vote_object> comment_vote_id_type;
 typedef oid<witness_vote_object> witness_vote_id_type;
 typedef oid<operation_object> operation_id_type;
 typedef oid<account_history_object> account_history_id_type;
@@ -183,8 +177,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (transaction_object_type)
                  (block_summary_object_type)
                  (witness_schedule_object_type)
-                 (comment_object_type)
-                 (comment_vote_object_type)
                  (witness_vote_object_type)
                  (operation_object_type)
                  (account_history_object_type)

@@ -1,7 +1,6 @@
 #include <deip/account_statistics/account_statistics_api.hpp>
 
 #include <deip/chain/account_object.hpp>
-#include <deip/chain/comment_object.hpp>
 
 #include <deip/chain/database.hpp>
 

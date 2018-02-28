@@ -763,58 +763,6 @@ bool database_api_impl::verify_account_authority(const string& name, const flat_
     return verify_authority(trx);
 }
 
-vector<vote_state> database_api::get_active_votes(string author, string permlink) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<vote_state> result;
-        const auto& comment = my->_db.get_comment(author, permlink);
-        const auto& idx = my->_db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
-        comment_id_type cid(comment.id);
-        auto itr = idx.lower_bound(cid);
-        while (itr != idx.end() && itr->comment == cid)
-        {
-            const auto& vo = my->_db.get(itr->voter);
-            vote_state vstate;
-            vstate.voter = vo.name;
-            vstate.weight = itr->weight;
-            vstate.rshares = itr->rshares;
-            vstate.percent = itr->vote_percent;
-            vstate.time = itr->last_update;
-
-            result.push_back(vstate);
-            ++itr;
-        }
-        return result;
-    });
-}
-
-vector<account_vote> database_api::get_account_votes(string voter) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<account_vote> result;
-
-        const auto& voter_acnt = my->_db.get_account(voter);
-        const auto& idx = my->_db.get_index<comment_vote_index>().indices().get<by_voter_comment>();
-
-        account_id_type aid(voter_acnt.id);
-        auto itr = idx.lower_bound(aid);
-        auto end = idx.upper_bound(aid);
-        while (itr != end)
-        {
-            const auto& vo = my->_db.get(itr->comment);
-            account_vote avote;
-            avote.authorperm = vo.author + "/" + fc::to_string(vo.permlink);
-            avote.weight = itr->weight;
-            avote.rshares = itr->rshares;
-            avote.percent = itr->vote_percent;
-            avote.time = itr->last_update;
-            result.push_back(avote);
-            ++itr;
-        }
-        return result;
-    });
-}
-
 u256 to256(const fc::uint128& t)
 {
     u256 result(t.high_bits());
@@ -1063,15 +1011,11 @@ state database_api::get_state(string path) const
                         case operation::tag<transfer_operation>::value:
                         case operation::tag<author_reward_operation>::value:
                         case operation::tag<curation_reward_operation>::value:
-                        case operation::tag<comment_benefactor_reward_operation>::value:
                         case operation::tag<escrow_transfer_operation>::value:
                         case operation::tag<escrow_approve_operation>::value:
                         case operation::tag<escrow_dispute_operation>::value:
                         case operation::tag<escrow_release_operation>::value:
                             eacnt.transfer_history[item.first] = item.second;
-                            break;
-                        case operation::tag<comment_operation>::value:
-                            //   eacnt.post_history[item.first] =  item.second;
                             break;
                         case operation::tag<vote_operation>::value:
                         case operation::tag<account_witness_vote_operation>::value:
@@ -1119,10 +1063,6 @@ state database_api::get_state(string path) const
             {
                 _state.accounts.erase("");
                 _state.accounts[a] = extended_account(my->_db.get_account(a), my->_db);
-            }
-            for (auto& d : _state.content)
-            {
-                d.second.active_votes = get_active_votes(d.second.author, d.second.permlink);
             }
 
             _state.witness_schedule = my->_db.get_witness_schedule_object();

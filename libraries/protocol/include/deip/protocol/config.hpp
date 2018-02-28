@@ -97,7 +97,6 @@
 #define DEIP_MIN_VOTE_INTERVAL_SEC           3
 #define DEIP_VOTE_DUST_THRESHOLD             (50000000)
 
-#define DEIP_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
 #define DEIP_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
 
 #define DEIP_MAX_ACCOUNT_WITNESS_VOTES       30
@@ -122,8 +121,6 @@
 
 #define DEIP_BANDWIDTH_AVERAGE_WINDOW_SECONDS (60*60*24*7) ///< 1 week
 #define DEIP_BANDWIDTH_PRECISION              (uint64_t(1000000)) ///< 1 million
-#define DEIP_MAX_COMMENT_DEPTH                0xffff // 64k
-#define DEIP_SOFT_MAX_COMMENT_DEPTH           0xff // 255
 
 #define DEIP_MAX_RESERVE_RATIO                (20000)
 
@@ -139,7 +136,6 @@
 #define DEIP_MIN_POW_REWARD                  DEIP_MINING_REWARD
 
 #define DEIP_POST_REWARD_FUND_NAME           ("post")
-#define DEIP_COMMENT_REWARD_FUND_NAME        ("comment")
 #define DEIP_RECENT_RSHARES_DECAY_RATE       (fc::days(15))
 // note, if redefining these constants make sure calculate_claims doesn't overflow
 

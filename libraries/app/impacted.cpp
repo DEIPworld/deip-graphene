@@ -64,13 +64,6 @@ struct get_impacted_account_visitor
         _impacted.insert(op.creator);
     }
 
-    void operator()(const comment_operation& op)
-    {
-        _impacted.insert(op.author);
-        if (op.parent_author.size())
-            _impacted.insert(op.parent_author);
-    }
-
     void operator()(const vote_operation& op)
     {
         _impacted.insert(op.voter);
@@ -192,12 +185,6 @@ struct get_impacted_account_visitor
     void operator()(const return_vesting_delegation_operation& op)
     {
         _impacted.insert(op.account);
-    }
-
-    void operator()(const comment_benefactor_reward_operation& op)
-    {
-        _impacted.insert(op.benefactor);
-        _impacted.insert(op.author);
     }
 
     void operator()(const producer_reward_operation& op)

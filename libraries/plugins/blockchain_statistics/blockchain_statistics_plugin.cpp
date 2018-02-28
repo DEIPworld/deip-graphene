@@ -2,7 +2,6 @@
 
 #include <deip/app/impacted.hpp>
 #include <deip/chain/account_object.hpp>
-#include <deip/chain/comment_object.hpp>
 #include <deip/chain/history_object.hpp>
 
 #include <deip/chain/database.hpp>
@@ -70,28 +69,6 @@ struct operation_process
     void operator()(const account_create_operation& op) const
     {
         _db.modify(_bucket, [&](bucket_object& b) { b.paid_accounts_created++; });
-    }
-
-    void operator()(const comment_operation& op) const
-    {
-        _db.modify(_bucket, [&](bucket_object& b) {
-            auto& comment = _db.get_comment(op.author, op.permlink);
-
-            if (comment.created == _db.head_block_time())
-            {
-                if (comment.parent_author.length())
-                    b.replies++;
-                else
-                    b.root_comments++;
-            }
-            else
-            {
-                if (comment.parent_author.length())
-                    b.reply_edits++;
-                else
-                    b.root_comment_edits++;
-            }
-        });
     }
 
     void operator()(const vote_operation& op) const
@@ -247,20 +224,7 @@ void blockchain_statistics_plugin_impl::pre_operation(const operation_notificati
 
     for (auto bucket_id : _current_buckets)
     {
-        if (o.op.which() == operation::tag<delete_comment_operation>::value)
-        {
-            delete_comment_operation op = o.op.get<delete_comment_operation>();
-            auto comment = db.get_comment(op.author, op.permlink);
-            const auto& bucket = db.get(bucket_id);
-
-            db.modify(bucket, [&](bucket_object& b) {
-                if (comment.parent_author.length())
-                    b.replies_deleted++;
-                else
-                    b.root_comments_deleted++;
-            });
-        }
-        else if (o.op.which() == operation::tag<withdraw_vesting_operation>::value)
+        if (o.op.which() == operation::tag<withdraw_vesting_operation>::value)
         {
             withdraw_vesting_operation op = o.op.get<withdraw_vesting_operation>();
             const auto& account = db.get_account(op.account);

@@ -248,7 +248,6 @@ typedef multi_index_container<reward_fund_object,
 } // namespace chain
 } // namespace deip
 
-#include <deip/chain/comment_object.hpp>
 #include <deip/chain/account_object.hpp>
 
 // clang-format off

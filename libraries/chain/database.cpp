@@ -430,34 +430,6 @@ const account_object* database::find_account(const account_name_type& name) cons
     return find<account_object, by_name>(name);
 }
 
-const comment_object& database::get_comment(const account_name_type& author, const fc::shared_string& permlink) const
-{
-    try
-    {
-        return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-    }
-    FC_CAPTURE_AND_RETHROW((author)(permlink))
-}
-
-const comment_object* database::find_comment(const account_name_type& author, const fc::shared_string& permlink) const
-{
-    return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-}
-
-const comment_object& database::get_comment(const account_name_type& author, const string& permlink) const
-{
-    try
-    {
-        return get<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-    }
-    FC_CAPTURE_AND_RETHROW((author)(permlink))
-}
-
-const comment_object* database::find_comment(const account_name_type& author, const string& permlink) const
-{
-    return find<comment_object, by_permlink>(boost::make_tuple(author, permlink));
-}
-
 const escrow_object& database::get_escrow(const account_name_type& name, uint32_t escrow_id) const
 {
     try
@@ -502,16 +474,6 @@ const hardfork_property_object& database::get_hardfork_property_object() const
         return get<hardfork_property_object>();
     }
     FC_CAPTURE_AND_RETHROW()
-}
-
-const time_point_sec database::calculate_discussion_payout_time(const comment_object& comment) const
-{
-    return comment.cashout_time;
-}
-
-const reward_fund_object& database::get_reward_fund(const comment_object& c) const
-{
-    return get<reward_fund_object, by_name>(DEIP_POST_REWARD_FUND_NAME);
 }
 
 void database::pay_fee(const account_object& account, asset fee)
@@ -1013,23 +975,6 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when) const
     return (when - first_slot_time).to_seconds() / DEIP_BLOCK_INTERVAL + 1;
 }
 
-/**
- * This method updates total_reward_shares2 on DGPO, and children_rshares2 on comments, when a comment's rshares2
- * changes
- * from old_rshares2 to new_rshares2.  Maintaining invariants that children_rshares2 is the sum of all descendants'
- * rshares2,
- * and dgpo.total_reward_shares2 is the total number of rshares2 outstanding.
- */
-void database::adjust_rshares2(const comment_object& c, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2)
-{
-
-    const auto& dgpo = get_dynamic_global_properties();
-    modify(dgpo, [&](dynamic_global_property_object& p) {
-        p.total_reward_shares2 -= old_rshares2;
-        p.total_reward_shares2 += new_rshares2;
-    });
-}
-
 void database::process_vesting_withdrawals()
 {
     dbs_account& account_service = obtain_service<dbs_account>();
@@ -1152,273 +1097,6 @@ void database::process_vesting_withdrawals()
     }
 }
 
-void database::adjust_total_payout(const comment_object& cur,
-                                   const asset& sbd_created,
-                                   const asset& curator_sbd_value,
-                                   const asset& beneficiary_value)
-{
-    modify(cur, [&](comment_object& c) {
-        if (c.total_payout_value.symbol == sbd_created.symbol)
-            c.total_payout_value += sbd_created;
-        c.curator_payout_value += curator_sbd_value;
-        c.beneficiary_payout_value += beneficiary_value;
-    });
-    /// TODO: potentially modify author's total payout numbers as well
-}
-
-/**
- *  This method will iterate through all comment_vote_objects and give them
- *  (max_rewards * weight) / c.total_vote_weight.
- *
- *  @returns unclaimed rewards.
- */
-share_type database::pay_curators(const comment_object& c, share_type& max_rewards)
-{
-    dbs_account& account_service = obtain_service<dbs_account>();
-    try
-    {
-        uint128_t total_weight(c.total_vote_weight);
-        // edump( (total_weight)(max_rewards) );
-        share_type unclaimed_rewards = max_rewards;
-
-        if (!c.allow_curation_rewards)
-        {
-            unclaimed_rewards = 0;
-            max_rewards = 0;
-        }
-        else if (c.total_vote_weight > 0)
-        {
-            const auto& cvidx = get_index<comment_vote_index>().indices().get<by_comment_weight_voter>();
-            auto itr = cvidx.lower_bound(c.id);
-            while (itr != cvidx.end() && itr->comment == c.id)
-            {
-                uint128_t weight(itr->weight);
-                auto claim = ((max_rewards.value * weight) / total_weight).to_uint64();
-                if (claim > 0) // min_amt is non-zero satoshis
-                {
-                    unclaimed_rewards -= claim;
-                    const auto& voter = get(itr->voter);
-                    auto reward = account_service.create_vesting(voter, asset(claim, DEIP_SYMBOL));
-
-                    push_virtual_operation(
-                        curation_reward_operation(voter.name, reward, c.author, fc::to_string(c.permlink)));
-
-#ifndef IS_LOW_MEM
-                    modify(voter, [&](account_object& a) { a.curation_rewards += claim; });
-#endif
-                }
-                ++itr;
-            }
-        }
-        max_rewards -= unclaimed_rewards;
-
-        return unclaimed_rewards;
-    }
-    FC_CAPTURE_AND_RETHROW()
-}
-
-void fill_comment_reward_context_local_state(util::comment_reward_context& ctx, const comment_object& comment)
-{
-    ctx.rshares = comment.net_rshares;
-    ctx.reward_weight = comment.reward_weight;
-    ctx.max_scr = comment.max_accepted_payout;
-}
-
-share_type database::cashout_comment_helper(util::comment_reward_context& ctx, const comment_object& comment)
-{
-    dbs_account& account_service = obtain_service<dbs_account>();
-    try
-    {
-        share_type claimed_reward = 0;
-
-        if (comment.net_rshares > 0)
-        {
-            fill_comment_reward_context_local_state(ctx, comment);
-
-            const auto rf = get_reward_fund(comment);
-            ctx.reward_curve = rf.author_reward_curve;
-
-            const share_type reward = util::get_rshare_reward(ctx);
-            uint128_t reward_tokens = uint128_t(reward.value);
-
-            if (reward_tokens > 0)
-            {
-                share_type curation_tokens
-                    = ((reward_tokens * get_curation_rewards_percent(comment)) / DEIP_100_PERCENT).to_uint64();
-                share_type author_tokens = reward_tokens.to_uint64() - curation_tokens;
-
-                author_tokens += pay_curators(comment, curation_tokens);
-                share_type total_beneficiary = 0;
-                claimed_reward = author_tokens + curation_tokens;
-
-                for (auto& b : comment.beneficiaries)
-                {
-                    auto benefactor_tokens = (author_tokens * b.weight) / DEIP_100_PERCENT;
-                    auto vest_created = account_service.create_vesting(get_account(b.account), benefactor_tokens);
-                    push_virtual_operation(comment_benefactor_reward_operation(
-                        b.account, comment.author, fc::to_string(comment.permlink), vest_created));
-                    total_beneficiary += benefactor_tokens;
-                }
-
-                author_tokens -= total_beneficiary;
-
-                auto deip = (author_tokens * comment.percent_deips) / (2 * DEIP_100_PERCENT);
-                auto vesting_deip = author_tokens - deip;
-
-                const auto& author = get_account(comment.author);
-                auto vest_created = account_service.create_vesting(author, vesting_deip);
-                auto deip_payout = asset(deip, DEIP_SYMBOL);
-
-                account_service.increase_balance(author, deip_payout);
-
-                adjust_total_payout(comment, deip_payout + asset(vesting_deip, DEIP_SYMBOL),
-                                    asset(curation_tokens, DEIP_SYMBOL), asset(total_beneficiary, DEIP_SYMBOL));
-
-                push_virtual_operation(
-                    author_reward_operation(comment.author, fc::to_string(comment.permlink), deip_payout, vest_created));
-                push_virtual_operation(comment_reward_operation(comment.author, fc::to_string(comment.permlink),
-                                                                asset(claimed_reward, DEIP_SYMBOL)));
-
-#ifndef IS_LOW_MEM
-                modify(comment, [&](comment_object& c) { c.author_rewards += author_tokens; });
-
-                modify(get_account(comment.author), [&](account_object& a) { a.posting_rewards += author_tokens; });
-#endif
-            }
-        }
-
-        modify(comment, [&](comment_object& c) {
-            /**
-             * A payout is only made for positive rshares, negative rshares hang around
-             * for the next time this post might get an upvote.
-             */
-            if (c.net_rshares > 0)
-                c.net_rshares = 0;
-            c.children_abs_rshares = 0;
-            c.abs_rshares = 0;
-            c.vote_rshares = 0;
-            c.total_vote_weight = 0;
-            c.max_cashout_time = fc::time_point_sec::maximum();
-            c.cashout_time = fc::time_point_sec::maximum();
-            c.last_payout = head_block_time();
-        });
-
-        push_virtual_operation(comment_payout_update_operation(comment.author, fc::to_string(comment.permlink)));
-
-        const auto& vote_idx = get_index<comment_vote_index>().indices().get<by_comment_voter>();
-        auto vote_itr = vote_idx.lower_bound(comment.id);
-        while (vote_itr != vote_idx.end() && vote_itr->comment == comment.id)
-        {
-            const auto& cur_vote = *vote_itr;
-            ++vote_itr;
-            if (calculate_discussion_payout_time(comment) != fc::time_point_sec::maximum())
-            {
-                modify(cur_vote, [&](comment_vote_object& cvo) { cvo.num_changes = -1; });
-            }
-            else
-            {
-#ifdef CLEAR_VOTES
-                remove(cur_vote);
-#endif
-            }
-        }
-
-        return claimed_reward;
-    }
-    FC_CAPTURE_AND_RETHROW((comment))
-}
-
-void database::process_comment_cashout()
-{
-    // DEIP: check next comment , we need to change first cashout time
-    /// don't allow any content to get paid out until the website is ready to launch
-    /// and people have had a week to start posting.  The first cashout will be the biggest because it
-    /// will represent 2+ months of rewards.
-    // if( !has_hardfork( DEIP_FIRST_CASHOUT_TIME ) )
-    //   return;
-
-    util::comment_reward_context ctx;
-
-    vector<reward_fund_context> funds;
-    vector<share_type> deip_awarded;
-    const auto& reward_idx = get_index<reward_fund_index, by_id>();
-
-    // Decay recent rshares of each fund
-    for (auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr)
-    {
-        // Add all reward funds to the local cache and decay their recent rshares
-        modify(*itr, [&](reward_fund_object& rfo) {
-            fc::microseconds decay_rate;
-            decay_rate = DEIP_RECENT_RSHARES_DECAY_RATE;
-            rfo.recent_claims
-                -= (rfo.recent_claims * (head_block_time() - rfo.last_update).to_seconds()) / decay_rate.to_seconds();
-            rfo.last_update = head_block_time();
-        });
-
-        reward_fund_context rf_ctx;
-        rf_ctx.recent_claims = itr->recent_claims;
-        rf_ctx.reward_balance = itr->reward_balance;
-
-        // The index is by ID, so the ID should be the current size of the vector (0, 1, 2, etc...)
-        assert((int64_t)funds.size() == itr->id._id);
-
-        funds.push_back(rf_ctx);
-    }
-
-    const auto& cidx = get_index<comment_index>().indices().get<by_cashout_time>();
-
-    auto current = cidx.begin();
-    //  add all rshares about to be cashed out to the reward funds. This ensures equal satoshi per rshare payment
-
-    while (current != cidx.end() && current->cashout_time <= head_block_time())
-    {
-        if (current->net_rshares > 0)
-        {
-            const auto& rf = get_reward_fund(*current);
-            funds[rf.id._id].recent_claims
-                += util::evaluate_reward_curve(current->net_rshares.value, rf.author_reward_curve);
-        }
-
-        ++current;
-    }
-
-    current = cidx.begin();
-
-    /*
-     * Payout all comments
-     *
-     * Each payout follows a similar pattern, but for a different reason.
-     * Cashout comment helper does not know about the reward fund it is paying from.
-     * The helper only does token allocation based on curation rewards and the SBD
-     * global %, etc.
-     *
-     * Each context is used by get_rshare_reward to determine what part of each budget
-     * the comment is entitled to. Prior to hardfork 17, all payouts are done against
-     * the global state updated each payout. After the hardfork, each payout is done
-     * against a reward fund state that is snapshotted before all payouts in the block.
-     */
-    while (current != cidx.end() && current->cashout_time <= head_block_time())
-    {
-        auto fund_id = get_reward_fund(*current).id._id;
-        ctx.total_reward_shares2 = funds[fund_id].recent_claims;
-        ctx.total_reward_fund_deip = funds[fund_id].reward_balance;
-        funds[fund_id].deip_awarded += cashout_comment_helper(ctx, *current);
-        current = cidx.begin();
-    }
-
-    // Write the cached fund state back to the database
-    if (funds.size())
-    {
-        for (size_t i = 0; i < funds.size(); i++)
-        {
-            modify(get<reward_fund_object, by_id>(reward_fund_id_type(i)), [&](reward_fund_object& rfo) {
-                rfo.recent_claims = funds[i].recent_claims;
-                rfo.reward_balance -= funds[i].deip_awarded;
-            });
-        }
-    }
-}
-
 /**
  *  Overall the network has an inflation rate of 102% of virtual deip per year
  *  90% of inflation is directed to vesting shares
@@ -1480,11 +1158,6 @@ void database::process_funds()
     const auto& producer_reward
         = account_service.create_vesting(get_account(cwit.owner), asset(witness_reward, DEIP_SYMBOL));
     push_virtual_operation(producer_reward_operation(cwit.owner, producer_reward));
-}
-
-uint16_t database::get_curation_rewards_percent(const comment_object& c) const
-{
-    return get_reward_fund(c).percent_curation_rewards;
 }
 
 share_type database::pay_reward_funds(share_type reward)
@@ -1884,9 +1557,6 @@ uint32_t database::last_non_undoable_block_num() const
 void database::initialize_evaluators()
 {
     _my->_evaluator_registry.register_evaluator<vote_evaluator>();
-    _my->_evaluator_registry.register_evaluator<comment_evaluator>();
-    _my->_evaluator_registry.register_evaluator<comment_options_evaluator>();
-    _my->_evaluator_registry.register_evaluator<delete_comment_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_to_vesting_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_vesting_evaluator>();
@@ -1940,8 +1610,6 @@ void database::initialize_indexes()
     add_index<transaction_index>();
     add_index<block_summary_index>();
     add_index<witness_schedule_index>();
-    add_index<comment_index>();
-    add_index<comment_vote_index>();
     add_index<witness_vote_index>();
     add_index<operation_index>();
     add_index<account_history_index>();
@@ -2188,7 +1856,6 @@ void database::_apply_block(const signed_block& next_block)
 
         process_funds();
 
-        process_comment_cashout();
         process_vesting_withdrawals();
 
         account_recovery_processing();
@@ -2766,17 +2433,6 @@ void database::validate_invariants() const
 
         fc::uint128_t total_rshares2;
 
-        const auto& comment_idx = get_index<comment_index>().indices();
-
-        for (auto itr = comment_idx.begin(); itr != comment_idx.end(); ++itr)
-        {
-            if (itr->net_rshares.value > 0)
-            {
-                auto delta = util::evaluate_reward_curve(itr->net_rshares.value);
-                total_rshares2 += delta;
-            }
-        }
-
         const auto& reward_idx = get_index<reward_fund_index, by_id>();
 
         for (auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr)
@@ -2794,39 +2450,6 @@ void database::validate_invariants() const
                   ("total_vesting_shares", gpo.total_vesting_shares)("total_vsf_votes", total_vsf_votes));
     }
     FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
-}
-
-void database::retally_comment_children()
-{
-    const auto& cidx = get_index<comment_index>().indices();
-
-    // Clear children counts
-    for (auto itr = cidx.begin(); itr != cidx.end(); ++itr)
-    {
-        modify(*itr, [&](comment_object& c) { c.children = 0; });
-    }
-
-    for (auto itr = cidx.begin(); itr != cidx.end(); ++itr)
-    {
-        if (itr->parent_author != DEIP_ROOT_POST_PARENT)
-        {
-// Low memory nodes only need immediate child count, full nodes track total children
-#ifdef IS_LOW_MEM
-            modify(get_comment(itr->parent_author, itr->parent_permlink), [&](comment_object& c) { c.children++; });
-#else
-            const comment_object* parent = &get_comment(itr->parent_author, itr->parent_permlink);
-            while (parent)
-            {
-                modify(*parent, [&](comment_object& c) { c.children++; });
-
-                if (parent->parent_author != DEIP_ROOT_POST_PARENT)
-                    parent = &get_comment(parent->parent_author, parent->parent_permlink);
-                else
-                    parent = nullptr;
-            }
-#endif
-        }
-    }
 }
 
 void database::retally_witness_votes()

@@ -91,26 +91,7 @@ struct account_update_operation : public base_operation
     }
 };
 
-struct comment_operation : public base_operation
-{
-    account_name_type parent_author;
-    string parent_permlink;
-
-    account_name_type author;
-    string permlink;
-
-    string title;
-    string body;
-    string json_metadata;
-
-    void validate() const;
-    void get_required_posting_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(author);
-    }
-};
-
-struct beneficiary_route_type
+    struct beneficiary_route_type
 {
     beneficiary_route_type()
     {
@@ -131,45 +112,6 @@ struct beneficiary_route_type
     }
 };
 
-struct comment_payout_beneficiaries
-{
-    vector<beneficiary_route_type> beneficiaries;
-
-    void validate() const;
-};
-
-typedef static_variant<comment_payout_beneficiaries> comment_options_extension;
-
-typedef flat_set<comment_options_extension> comment_options_extensions_type;
-
-/**
- *  Authors of posts may not want all of the benefits that come from creating a post. This
- *  operation allows authors to update properties associated with their post.
- *
- *  The max_accepted_payout may be decreased, but never increased.
- *  The percent_deips may be decreased, but never increased
- *
- */
-struct comment_options_operation : public base_operation
-{
-    account_name_type author;
-    string permlink;
-
-    asset max_accepted_payout
-        = asset(1000000000, DEIP_SYMBOL); /// SBD value of the maximum payout this post will receive
-    uint16_t percent_deips
-        = DEIP_100_PERCENT; /// the percent of Deip Dollars to key, unkept amounts will be received as Deip Power
-    bool allow_votes = true; /// allows a post to receive votes;
-    bool allow_curation_rewards = true; /// allows voters to recieve curation rewards. Rewards return to reward fund.
-    comment_options_extensions_type extensions;
-
-    void validate() const;
-    void get_required_posting_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(author);
-    }
-};
-
 struct prove_authority_operation : public base_operation
 {
     account_name_type challenged;
@@ -186,18 +128,6 @@ struct prove_authority_operation : public base_operation
     {
         if (require_owner)
             a.insert(challenged);
-    }
-};
-
-struct delete_comment_operation : public base_operation
-{
-    account_name_type author;
-    string permlink;
-
-    void validate() const;
-    void get_required_posting_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(author);
     }
 };
 
@@ -831,15 +761,10 @@ FC_REFLECT( deip::protocol::set_withdraw_vesting_route_operation, (from_account)
 FC_REFLECT( deip::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( deip::protocol::account_witness_vote_operation, (account)(witness)(approve) )
 FC_REFLECT( deip::protocol::account_witness_proxy_operation, (account)(proxy) )
-FC_REFLECT( deip::protocol::comment_operation, (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata) )
 FC_REFLECT( deip::protocol::vote_operation, (voter)(discipline_id)(weight)(research_id)(research_content_id))
 
-FC_REFLECT( deip::protocol::delete_comment_operation, (author)(permlink) )
 
 FC_REFLECT( deip::protocol::beneficiary_route_type, (account)(weight) )
-FC_REFLECT( deip::protocol::comment_payout_beneficiaries, (beneficiaries) )
-FC_REFLECT_TYPENAME( deip::protocol::comment_options_extension )
-FC_REFLECT( deip::protocol::comment_options_operation, (author)(permlink)(max_accepted_payout)(percent_deips)(allow_votes)(allow_curation_rewards)(extensions) )
 
 FC_REFLECT( deip::protocol::escrow_transfer_operation, (from)(to)(deip_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration) )
 FC_REFLECT( deip::protocol::escrow_approve_operation, (from)(to)(agent)(who)(escrow_id)(approve) )
