@@ -33,49 +33,54 @@
     }],
 
     "disciplines": [{
+        "id": 0,
+        "name": "Common",
+        "votes_in_last_ten_weeks": 0,
+        "parent_id": 0
+    }, {
         "id": 1,
         "name": "Mathematics",
-        "votes_in_last_ten_weeks": 100,
+        "votes_in_last_ten_weeks": 0,
         "parent_id": 0
     }, {
         "id": 2,
         "name": "Physics",
-        "votes_in_last_ten_weeks": 250,
+        "votes_in_last_ten_weeks": 0,
         "parent_id": 0
     }, {
         "id": 3,
         "name": "Chemistry",
-        "votes_in_last_ten_weeks": 42,
+        "votes_in_last_ten_weeks": 0,
         "parent_id": 0
     }, {
         "id": 4,
         "name": "Biology",
-        "votes_in_last_ten_weeks": 70,
+        "votes_in_last_ten_weeks": 0,
         "parent_id": 0
     }, {
         "id": 5,
         "name": "Computer Science",
-        "votes_in_last_ten_weeks": 310,
+        "votes_in_last_ten_weeks": 0,
         "parent_id": 0
     }, {
         "id": 6,
         "name": "Medicine",
-        "votes_in_last_ten_weeks": 90,
+        "votes_in_last_ten_weeks": 0,
         "parent_id": 0
     }, {
         "id": 7,
         "name": "Pure Mathematics",
-        "votes_in_last_ten_weeks": 35,
+        "votes_in_last_ten_weeks": 0,
         "parent_id": 1
     }, {
         "id": 8,
         "name": "Applied Mathematics",
-        "votes_in_last_ten_weeks": 86,
+        "votes_in_last_ten_weeks": 0,
         "parent_id": 1
     }, {
         "id": 9,
         "name": "Law",
-        "votes_in_last_ten_weeks": 5,
+        "votes_in_last_ten_weeks": 0,
         "parent_id": 0
     }],
     "expert_tokens": [{

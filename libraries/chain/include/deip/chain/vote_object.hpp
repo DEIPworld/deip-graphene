@@ -39,7 +39,6 @@ public:
     int64_t weight;
     uint16_t voting_power;
     time_point_sec voting_time;
-    int8_t num_changes = 0;
 };
 
 struct by_discipline_id;

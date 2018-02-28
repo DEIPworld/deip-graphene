@@ -313,6 +313,8 @@ public:
     void clear_witness_votes(const account_object& a);
     void process_vesting_withdrawals();
     share_type pay_curators(const comment_object& c, share_type& max_rewards);
+    share_type reward_voters(const research_content_id_type &research_content_id,
+                             const discipline_id_type &discipline_id, const share_type &reward);
     share_type cashout_comment_helper(util::comment_reward_context& ctx, const comment_object& comment);
     void process_comment_cashout();
     void process_funds();
@@ -324,10 +326,20 @@ public:
     void process_research_token_sales();
     void distribute_research_tokens(const research_token_sale_id_type research_token_sale_id) override;
     void refund_research_tokens(const research_token_sale_id_type research_token_sale_id);
-    void research_token_holders_reward_distribution(const research_id_type research_id, const share_type reward);
-    void distribute_voters_reward(const discipline_id_type discipline_id, const research_content_id_type research_content_id,
-                                  const share_type deips_amount, const share_type total_weight);
-    void distribute_references_reward(const research_content_id_type research_content_id, const share_type reward);
+    void reward_research_token_holders(const research_object& research,
+                                       const discipline_id_type& discipline_id,
+                                       const share_type& reward,
+                                       const share_type& expertise_reward);
+    void reward_references(const research_content_id_type& research_content_id,
+                           const discipline_id_type& discipline_id,
+                           const share_type& reward,
+                           const share_type& expertise_reward);
+    void distribute_reward(const share_type reward);
+    void reward_researches_in_discipline(const discipline_object &discipline, const share_type& reward);
+    void reward_research_content(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id,
+                                 const share_type &reward);
+    void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
+                               const share_type &reward);
 
     uint16_t get_curation_rewards_percent(const comment_object& c) const override;
 

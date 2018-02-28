@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(get_total_votes_object_by_content_and_discipline)
     try
     {
         create_total_votes();
-        auto& total_votes = data_service.get_total_votes_object_by_content_and_discipline(1, 1024);
+        auto& total_votes = data_service.get_total_votes_by_content_and_discipline(1, 1024);
 
         BOOST_CHECK(total_votes.discipline_id == 1024);
         BOOST_CHECK(total_votes.research_id == 1);
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(update_total_votes_object)
     try
     {
         create_total_votes();
-        auto& old_total_votes = data_service.get_total_votes_object_by_content_and_discipline(1, 1024);
+        auto& old_total_votes = data_service.get_total_votes_by_content_and_discipline(1, 1024);
         auto& updated_total_votes = data_service.update_total_votes(old_total_votes, 2000);
 
         BOOST_CHECK(updated_total_votes.discipline_id == 1024);
