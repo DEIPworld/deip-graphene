@@ -52,6 +52,8 @@ const research_group_object& get_research_group_by_permlink(const fc::string& pe
 
     research_group_token_refs_type get_research_group_tokens_by_account_name(const account_name_type &account_name) const;
 
+    research_group_token_refs_type get_research_group_tokens(const research_group_id_type& research_group_id) const;
+
     const research_group_token_object& get_research_group_token_by_account_and_research_group_id(const account_name_type& account,
                                                                 const research_group_id_type& research_group_id) const;
 
