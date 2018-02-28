@@ -322,7 +322,7 @@ public:
     ////////////////
     research_api_obj get_research_by_id(const research_id_type& id) const;
     research_api_obj get_research_by_permlink(const string& permlink) const;
-    vector<research_api_obj> get_researches() const;
+    vector<research_api_obj> get_researches(const research_id_type& from, const uint32_t limit) const;
     vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
 
     //////////////////////
