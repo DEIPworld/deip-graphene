@@ -8,6 +8,36 @@
 namespace deip {
 namespace protocol {
 
+struct author_reward_operation : public virtual_operation
+{
+    author_reward_operation() {}
+    author_reward_operation(const account_name_type& a, const string& p, const asset& scr, const asset& v)
+        : author(a)
+        , permlink(p)
+        , deip_payout(scr)
+        , vesting_payout(v)
+    {
+    }
+
+    account_name_type author;
+    string permlink;
+    asset deip_payout;
+    asset vesting_payout;
+};
+
+struct curation_reward_operation : public virtual_operation
+{
+    curation_reward_operation() {}
+    curation_reward_operation(const string& c, const asset& r, const string& a, const string& p)
+        : curator(c)
+        , reward(r)
+    {
+    }
+
+    account_name_type curator;
+    asset reward;
+};
+
 struct fill_vesting_withdraw_operation : public virtual_operation
 {
     fill_vesting_withdraw_operation() {}
@@ -75,6 +105,8 @@ struct producer_reward_operation : public virtual_operation
 }
 } // deip::protocol
 
+FC_REFLECT(deip::protocol::author_reward_operation, (author)(permlink)(deip_payout)(vesting_payout))
+FC_REFLECT(deip::protocol::curation_reward_operation, (curator)(reward))
 FC_REFLECT(deip::protocol::fill_vesting_withdraw_operation, (from_account)(to_account)(withdrawn)(deposited))
 FC_REFLECT(deip::protocol::shutdown_witness_operation, (owner))
 FC_REFLECT(deip::protocol::hardfork_operation, (hardfork_id))

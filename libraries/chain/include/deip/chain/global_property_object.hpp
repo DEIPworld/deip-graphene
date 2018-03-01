@@ -45,6 +45,8 @@ public:
     asset confidential_supply = asset(0, DEIP_SYMBOL); ///< total asset held in confidential balances
     asset total_vesting_fund_deip = asset(0, DEIP_SYMBOL);
     asset total_vesting_shares = asset(0, VESTS_SYMBOL);
+    asset total_reward_fund_deip = asset(0, DEIP_SYMBOL);
+    fc::uint128 total_reward_shares2; ///< the running total of REWARD^2
     fc::uint128 total_active_disciplines_reward_weight;
 
     price get_vesting_share_price() const
@@ -100,6 +102,6 @@ typedef multi_index_container<dynamic_global_property_object,
 
 FC_REFLECT(deip::chain::dynamic_global_property_object,
            (id)(head_block_number)(head_block_id)(time)(current_witness)(current_supply)(confidential_supply)(
-               total_vesting_fund_deip)(total_vesting_shares)(total_active_disciplines_reward_weight)(maximum_block_size)(current_aslot)(
+               total_vesting_fund_deip)(total_vesting_shares)(total_reward_fund_deip)(total_reward_shares2)(total_active_disciplines_reward_weight)(maximum_block_size)(current_aslot)(
                recent_slots_filled)(participation_count)(last_irreversible_block_num)(vote_power_reserve_rate))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::dynamic_global_property_object, deip::chain::dynamic_global_property_index)

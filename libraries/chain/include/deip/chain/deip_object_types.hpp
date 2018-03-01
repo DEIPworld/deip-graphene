@@ -53,6 +53,8 @@ enum object_type
     escrow_object_type,
     decline_voting_rights_request_object_type,
     block_stats_object_type,
+    reward_fund_object_type,
+    reward_pool_object_type,
     vesting_delegation_object_type,
     vesting_delegation_expiration_object_type,
     budget_object_type,
@@ -92,6 +94,8 @@ class change_recovery_account_request_object;
 class escrow_object;
 class decline_voting_rights_request_object;
 class block_stats_object;
+class reward_fund_object;
+class reward_pool_object;
 class vesting_delegation_object;
 class vesting_delegation_expiration_object;
 class budget_object;
@@ -131,6 +135,8 @@ typedef oid<change_recovery_account_request_object> change_recovery_account_requ
 typedef oid<escrow_object> escrow_id_type;
 typedef oid<decline_voting_rights_request_object> decline_voting_rights_request_id_type;
 typedef oid<block_stats_object> block_stats_id_type;
+typedef oid<reward_fund_object> reward_fund_id_type;
+typedef oid<reward_pool_object> reward_pool_id_type;
 typedef oid<vesting_delegation_object> vesting_delegation_id_type;
 typedef oid<vesting_delegation_expiration_object> vesting_delegation_expiration_id_type;
 typedef oid<budget_object> budget_id_type;
@@ -182,6 +188,8 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (escrow_object_type)
                  (decline_voting_rights_request_object_type)
                  (block_stats_object_type)
+                 (reward_fund_object_type)
+                 (reward_pool_object_type)
                  (vesting_delegation_object_type)
                  (vesting_delegation_expiration_object_type)
                  (budget_object_type)

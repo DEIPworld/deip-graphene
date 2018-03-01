@@ -1,6 +1,7 @@
 #include <deip/chain/database.hpp>
 #include <deip/chain/genesis_state.hpp>
 #include <deip/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_reward.hpp>
 
 #include <deip/chain/account_object.hpp>
 #include <deip/chain/block_summary_object.hpp>
@@ -8,6 +9,8 @@
 #include <deip/chain/deip_objects.hpp>
 #include <deip/chain/discipline_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
+
+#include <deip/chain/pool/reward_pool.hpp>
 
 #include <fc/io/json.hpp>
 
@@ -26,6 +29,7 @@ void generate_default_genesis_state(genesis_state_type& genesis)
     const sp::public_key_type init_public_key(DEIP_DEFAULT_INIT_PUBLIC_KEY);
 
     genesis.init_supply = DEIP_DEFAULT_INIT_SUPPLY;
+    genesis.init_rewards_supply = DEIP_REWARDS_INITIAL_SUPPLY;
     genesis.initial_timestamp = DEIP_DEFAULT_GENESIS_TIME;
 
     genesis.accounts.push_back({ "initdelegate", "", init_public_key, genesis.init_supply, uint64_t(0) });
@@ -152,8 +156,43 @@ void database::init_genesis_global_property_object(const genesis_state_type& gen
         gpo.participation_count = 128;
         gpo.current_supply = asset(genesis_state.init_supply, DEIP_SYMBOL);
         gpo.maximum_block_size = DEIP_MAX_BLOCK_SIZE;
+
+        gpo.total_reward_fund_deip = asset(0, DEIP_SYMBOL);
+        gpo.total_reward_shares2 = 0;
     });
 }
+
+/*void database::init_genesis_rewards(const genesis_state_type& genesis_state)
+{
+    const auto& gpo = get_dynamic_global_properties();
+
+    auto post_rf = create<reward_fund_object>([&](reward_fund_object& rfo) {
+        rfo.name = DEIP_POST_REWARD_FUND_NAME;
+        rfo.last_update = head_block_time();
+        rfo.percent_curation_rewards = DEIP_1_PERCENT * 25;
+        rfo.percent_content_rewards = DEIP_100_PERCENT;
+        rfo.reward_balance = gpo.total_reward_fund_deip;
+        rfo.author_reward_curve = curve_id::linear;
+        rfo.curation_reward_curve = curve_id::square_root;
+    });
+
+    // As a shortcut in payout processing, we use the id as an array index.
+    // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
+    FC_ASSERT(post_rf.id._id == 0);
+
+    // We share initial fund between raward_pool and fund budget
+    dbs_reward& reward_service = obtain_service<dbs_reward>();
+    dbs_budget& budget_service = obtain_service<dbs_budget>();
+
+    asset initial_reward_pool_supply(genesis_state.init_rewards_supply.amount
+                                         * DEIP_GUARANTED_REWARD_SUPPLY_PERIOD_IN_DAYS
+                                         / DEIP_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS,
+                                     genesis_state.init_rewards_supply.symbol);
+    fc::time_point deadline = get_genesis_time() + fc::days(DEIP_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS);
+
+    reward_service.create_pool(initial_reward_pool_supply);
+    budget_service.create_fund_budget(genesis_state.init_rewards_supply - initial_reward_pool_supply, deadline);
+}*/
 
 void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
 {

@@ -280,7 +280,7 @@ public:
     uint32_t get_slot_at_time(fc::time_point_sec when) const;
 
     /** @return the sbd created and deposited to_account, may return DEIP if there is no median feed */
-    asset create_vesting(const account_object& to_account, asset deip);
+    asset create_vesting(const account_object& to_account, asset deip, bool to_reward_balance = false);
 
     void adjust_supply(const asset& delta, bool adjust_vesting = false);
 
@@ -321,6 +321,8 @@ public:
                                  const share_type &reward);
     void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                const share_type &reward);
+
+    share_type pay_reward_funds(share_type reward);
 
     time_point_sec head_block_time() const override;
     uint32_t head_block_num() const;
@@ -422,6 +424,7 @@ protected:
     void init_genesis_witnesses(const genesis_state_type& genesis_state);
     void init_genesis_witness_schedule(const genesis_state_type& genesis_state);
     void init_genesis_global_property_object(const genesis_state_type& genesis_state);
+    void init_genesis_rewards(const genesis_state_type& genesis_state);
     void init_genesis_disciplines(const genesis_state_type& genesis_state);
     void init_expert_tokens(const genesis_state_type& genesis_state);
 
