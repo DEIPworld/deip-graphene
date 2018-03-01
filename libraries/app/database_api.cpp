@@ -281,16 +281,6 @@ scheduled_hardfork database_api::get_next_scheduled_hardfork() const
     });
 }
 
-reward_fund_api_obj database_api::get_reward_fund(const string& name) const
-{
-    return my->_db.with_read_lock([&]() {
-        auto fund = my->_db.find<reward_fund_object, by_name>(name);
-        FC_ASSERT(fund != nullptr, "Invalid reward fund name");
-
-        return *fund;
-    });
-}
-
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
 // Keys                                                             //
@@ -1009,8 +999,6 @@ state database_api::get_state(string path) const
                         case operation::tag<transfer_to_vesting_operation>::value:
                         case operation::tag<withdraw_vesting_operation>::value:
                         case operation::tag<transfer_operation>::value:
-                        case operation::tag<author_reward_operation>::value:
-                        case operation::tag<curation_reward_operation>::value:
                         case operation::tag<escrow_transfer_operation>::value:
                         case operation::tag<escrow_approve_operation>::value:
                         case operation::tag<escrow_dispute_operation>::value:
@@ -1025,7 +1013,7 @@ state database_api::get_state(string path) const
                         case operation::tag<account_create_operation>::value:
                         case operation::tag<account_update_operation>::value:
                         case operation::tag<witness_update_operation>::value:
-                        case operation::tag<producer_reward_operation>::value:
+                        case operation::tag<producer_reward_operation>::value:  
                         default:
                             eacnt.other_history[item.first] = item.second;
                         }

@@ -161,16 +161,6 @@ struct get_impacted_account_visitor
 
     // virtual operations
 
-    void operator()(const author_reward_operation& op)
-    {
-        _impacted.insert(op.author);
-    }
-
-    void operator()(const curation_reward_operation& op)
-    {
-        _impacted.insert(op.curator);
-    }
-
     void operator()(const fill_vesting_withdraw_operation& op)
     {
         _impacted.insert(op.from_account);
@@ -187,7 +177,7 @@ struct get_impacted_account_visitor
         _impacted.insert(op.account);
     }
 
-    void operator()(const producer_reward_operation& op)
+        void operator()(const producer_reward_operation& op)
     {
         _impacted.insert(op.producer);
     }
