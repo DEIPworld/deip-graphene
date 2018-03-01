@@ -72,10 +72,6 @@ struct account_api_obj
         , last_account_update(a.last_account_update)
         , created(a.created)
         , mined(a.mined)
-        , owner_challenged(a.owner_challenged)
-        , active_challenged(a.active_challenged)
-        , last_owner_proved(a.last_owner_proved)
-        , last_active_proved(a.last_active_proved)
         , recovery_account(a.recovery_account)
         , last_account_recovery(a.last_account_recovery)
         , lifetime_vote_count(a.lifetime_vote_count)
@@ -152,10 +148,6 @@ struct account_api_obj
 
     time_point_sec created;
     bool mined = false;
-    bool owner_challenged = false;
-    bool active_challenged = false;
-    time_point_sec last_owner_proved;
-    time_point_sec last_active_proved;
     account_name_type recovery_account;
     time_point_sec last_account_recovery;
     uint32_t lifetime_vote_count = 0;
@@ -646,7 +638,7 @@ struct research_discipline_relation_api_obj
 FC_REFLECT( deip::app::account_api_obj,
              (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(last_owner_update)(last_account_update)
              (created)(mined)
-             (owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)(recovery_account)(last_account_recovery)
+             (recovery_account)(last_account_recovery)
              (lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
              (balance)
              (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)

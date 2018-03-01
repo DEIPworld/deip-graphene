@@ -64,11 +64,6 @@ void account_update_operation::validate() const
     }
 }
 
-void prove_authority_operation::validate() const
-{
-    validate_account_name(challenged);
-}
-
 void vote_operation::validate() const
 {
     validate_account_name(voter);

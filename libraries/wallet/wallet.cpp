@@ -2177,21 +2177,6 @@ wallet_api::challenge(const std::string& challenger, const std::string& challeng
     */
 }
 
-annotated_signed_transaction wallet_api::prove(const std::string& challenged, bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    prove_authority_operation op;
-    op.challenged = challenged;
-    op.require_owner = false;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
 annotated_signed_transaction wallet_api::get_transaction(transaction_id_type id) const
 {
     return my->_remote_db->get_transaction(id);

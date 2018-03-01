@@ -112,25 +112,6 @@ struct account_update_operation : public base_operation
     }
 };
 
-struct prove_authority_operation : public base_operation
-{
-    account_name_type challenged;
-    bool require_owner = false;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        if (!require_owner)
-            a.insert(challenged);
-    }
-    void get_required_owner_authorities(flat_set<account_name_type>& a) const
-    {
-        if (require_owner)
-            a.insert(challenged);
-    }
-};
-
 struct vote_operation : public base_operation
 {
     account_name_type voter;
@@ -770,7 +751,6 @@ FC_REFLECT( deip::protocol::escrow_transfer_operation, (from)(to)(deip_amount)(e
 FC_REFLECT( deip::protocol::escrow_approve_operation, (from)(to)(agent)(who)(escrow_id)(approve) )
 FC_REFLECT( deip::protocol::escrow_dispute_operation, (from)(to)(agent)(who)(escrow_id) )
 FC_REFLECT( deip::protocol::escrow_release_operation, (from)(to)(agent)(who)(receiver)(escrow_id)(deip_amount) )
-FC_REFLECT( deip::protocol::prove_authority_operation, (challenged)(require_owner) )
 FC_REFLECT( deip::protocol::request_account_recovery_operation, (recovery_account)(account_to_recover)(new_owner_authority)(extensions) )
 FC_REFLECT( deip::protocol::recover_account_operation, (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions) )
 FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) )
