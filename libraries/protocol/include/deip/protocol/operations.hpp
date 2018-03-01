@@ -41,7 +41,7 @@ namespace deip {
                 account_create_with_delegation_operation,
 
                 // DEIP native operations
-                create_budget_operation,
+                create_grant_operation,
                 create_research_group_operation,
                 create_proposal_operation,
                 vote_proposal_operation,

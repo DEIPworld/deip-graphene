@@ -27,7 +27,7 @@ add_library( deip_chain
              dbs_account.cpp
              dbs_reward.cpp
              dbs_witness.cpp
-             dbs_budget.cpp
+             dbs_grant.cpp
              dbs_proposal.cpp
              dbs_research_group.cpp
              dbs_discipline.cpp

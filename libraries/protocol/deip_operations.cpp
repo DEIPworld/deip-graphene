@@ -222,7 +222,7 @@ void delegate_vesting_shares_operation::validate() const
     FC_ASSERT(vesting_shares >= asset(0, VESTS_SYMBOL), "Delegation cannot be negative");
 }
 
-void create_budget_operation::validate() const
+void create_grant_operation::validate() const
 {
     validate_account_name(owner);
     FC_ASSERT(is_asset_type(balance, DEIP_SYMBOL), "Balance must be DEIP");

@@ -16,14 +16,14 @@ namespace chain {
 
 using deip::protocol::asset;
 
-class budget_object : public object<budget_object_type, budget_object>
+class grant_object : public object<grant_object_type, grant_object>
 {
-    budget_object() = delete;
+    grant_object() = delete;
 
 public:
 
     template <typename Constructor, typename Allocator>
-    budget_object(Constructor&& c, allocator<Allocator> a)
+    grant_object(Constructor&& c, allocator<Allocator> a)
     {
         c(*this);
     }
@@ -44,24 +44,24 @@ public:
 
 struct by_owner_name;
 
-typedef multi_index_container<budget_object,
+typedef multi_index_container<grant_object,
                               indexed_by<ordered_unique<tag<by_id>,
-                                                        member<budget_object,
-                                                               budget_id_type,
-                                                               &budget_object::id>>,
+                                                        member<grant_object,
+                                                               grant_id_type,
+                                                               &grant_object::id>>,
                                          ordered_non_unique<tag<by_owner_name>,
-                                                        member<budget_object,
+                                                        member<grant_object,
                                                                account_name_type,
-                                                               &budget_object::owner>>>,
-                              allocator<budget_object>>
-    budget_index;
+                                                               &grant_object::owner>>>,
+                              allocator<grant_object>>
+    grant_index;
 
 }
 }
 
-FC_REFLECT( deip::chain::budget_object,
+FC_REFLECT( deip::chain::grant_object,
              (id)(owner)(target_discipline)(created)(balance)(per_block)(start_block)(end_block)
 )
 
-CHAINBASE_SET_INDEX_TYPE( deip::chain::budget_object, deip::chain::budget_index )
+CHAINBASE_SET_INDEX_TYPE( deip::chain::grant_object, deip::chain::grant_index )
 

@@ -3,7 +3,7 @@
 
 #include <deip/chain/pool/reward_pool.hpp>
 #include <deip/chain/dbs_reward.hpp>
-#include <deip/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_grant.hpp>
 #include <deip/protocol/config.hpp>
 
 #include "../common/database_fixture.hpp"
@@ -20,12 +20,12 @@ class dbs_reward_fixture : public clean_database_fixture
 public:
     dbs_reward_fixture()
         : reward_service(db.obtain_service<dbs_reward>())
-        , budget_service(db.obtain_service<dbs_budget>())
+        , grant_service(db.obtain_service<dbs_grant>())
     {
     }
 
     dbs_reward& reward_service;
-    dbs_budget& budget_service;
+    dbs_grant& grant_service;
 
     const asset NULL_BALANCE = asset(0, DEIP_SYMBOL);
 };

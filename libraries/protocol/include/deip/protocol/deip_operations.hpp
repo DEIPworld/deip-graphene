@@ -605,7 +605,7 @@ struct delegate_vesting_shares_operation : public base_operation
 
 // DEIP native operations
 
-struct create_budget_operation : public base_operation
+struct create_grant_operation : public base_operation
 {
     account_name_type owner;
     asset balance;
@@ -778,7 +778,7 @@ FC_REFLECT( deip::protocol::decline_voting_rights_operation, (account)(decline) 
 FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) )
 
 // DEIP native operations
-FC_REFLECT( deip::protocol::create_budget_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
+FC_REFLECT( deip::protocol::create_grant_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
 FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption)(quorum_percent)(tokens_amount))
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
