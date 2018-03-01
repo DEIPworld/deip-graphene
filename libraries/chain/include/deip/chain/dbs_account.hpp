@@ -115,7 +115,6 @@ public:
     /**
     * @param to_account - the account to receive the new vesting shares
     * @param DEIP - DEIP to be converted to vesting shares
-    * @param to_reward_balance
     * @return the sbd created and deposited to_account, may return DEIP if there is no median feed
     */
     asset create_vesting(const account_object& to_account, const asset &deip);

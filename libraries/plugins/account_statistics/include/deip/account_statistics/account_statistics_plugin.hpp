@@ -63,15 +63,6 @@ struct account_stats_bucket_object : public object<account_stats_bucket_object_t
     uint32_t changed_root_votes = 0; ///< Changed votes for root comments
     uint32_t new_reply_votes = 0; ///< New votes on replies
     uint32_t changed_reply_votes = 0; ///< Changed votes for replies
-    uint32_t author_reward_payouts = 0; ///< Number of author reward payouts
-    share_type author_rewards_sbd = 0; ///< SBD paid for author rewards
-    share_type author_rewards_vests = 0; ///< VESTS paid for author rewards
-    share_type author_rewards_total_deip_value = 0; ///< DEIP Value of author rewards
-    share_type author_rewards_payout_sbd_value = 0; ///< SBD Value of author rewards at time of payout
-    uint32_t curation_reward_payouts = 0; ///< Number of curation reward payouts.
-    share_type curation_rewards_vests = 0; ///< VESTS paid for curation rewards
-    share_type curation_rewards_deip_value = 0; ///< DEIP Value of curation rewards
-    share_type curation_rewards_payout_sbd_value = 0; ///< SBD Value of curation rewards at time of payout
     uint32_t transfers_to = 0; ///< Account to account transfers to this account
     uint32_t transfers_from = 0; ///< Account to account transfers from this account
     share_type deip_sent = 0; ///< DEIP sent from this account
@@ -162,10 +153,7 @@ FC_REFLECT(
     deip::account_statistics::account_stats_bucket_object,
     (id)(open)(seconds)(name)(transactions)(market_bandwidth)(non_market_bandwidth)(total_ops)(market_ops)(forum_ops)(
         root_comments)(root_comment_edits)(root_comments_deleted)(replies)(reply_edits)(replies_deleted)(
-        new_root_votes)(changed_root_votes)(new_reply_votes)(changed_reply_votes)(author_reward_payouts)(
-        author_rewards_sbd)(author_rewards_vests)(author_rewards_total_deip_value)(author_rewards_payout_sbd_value)(
-        curation_reward_payouts)(curation_rewards_vests)(curation_rewards_deip_value)(
-        curation_rewards_payout_sbd_value)(transfers_to)(transfers_from)(deip_sent)(deip_received)(sbd_sent)(
+        new_root_votes)(changed_root_votes)(new_reply_votes)(changed_reply_votes)(transfers_to)(transfers_from)(deip_sent)(deip_received)(sbd_sent)(
         sbd_received)(sbd_interest_payments)(sbd_paid_as_interest)(transfers_to_vesting)(deip_vested)(new_vests)(
         new_vesting_withdrawal_requests)(modified_vesting_withdrawal_requests)(vesting_withdrawals_processed)(
         finished_vesting_withdrawals)(vests_withdrawn)(deip_received_from_withdrawls)(deip_received_from_routes)(
