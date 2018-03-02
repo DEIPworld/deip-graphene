@@ -10,7 +10,8 @@ namespace deip {
 /** NOTE: do not change the order of any operations prior to the virtual operations
  * or it will trigger a hardfork.
  */
-        typedef fc::static_variant<vote_operation,
+        typedef fc::static_variant<
+                vote_operation,
 
                 transfer_operation,
                 transfer_to_vesting_operation,
