@@ -749,10 +749,10 @@ void vote_evaluator::do_apply(const vote_operation& o)
 
         const auto& discipline = discipline_service.get_discipline(o.discipline_id);
         _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
-            d.total_active_research_reward_weight = tvo.total_active_research_reward_weight;
-            d.total_active_review_reward_weight = tvo.total_active_review_reward_weight;
+            d.total_active_research_reward_weight += tvo.total_active_research_reward_weight;
+            d.total_active_review_reward_weight += tvo.total_active_review_reward_weight;
             if (content_is_active) {
-                d.total_active_reward_weight = tvo.total_weight;
+                d.total_active_reward_weight += tvo.total_weight;
             }
         });
 
