@@ -296,7 +296,7 @@ public:
      */
     void clear_witness_votes(const account_object& a);
     void process_vesting_withdrawals();
-    share_type reward_voters(const research_content_id_type &research_content_id,
+    void reward_voters(const research_content_id_type &research_content_id,
                              const discipline_id_type &discipline_id, const share_type &reward);
     void process_funds();
     void process_conversions();
@@ -321,6 +321,9 @@ public:
                                  const share_type &reward);
     void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                const share_type &reward);
+    void reward_reviews(const research_object& research,
+                        const discipline_id_type& discipline_id,
+                        const share_type& reward);
 
     share_type pay_reward_funds(share_type reward);
 

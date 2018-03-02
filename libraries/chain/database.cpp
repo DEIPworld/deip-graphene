@@ -1305,7 +1305,7 @@ void database::refund_research_tokens(const research_token_sale_id_type research
 
     while (it != it_end)
     {
-        account_service.increase_balance(account_service.get_account(it->owner), it->amount);
+        account_service.increase_balance(account_service.get_account(it->owner), asset(it->amount, DEIP_SYMBOL));
         remove(*it);
         it = idx.first;
     }
@@ -1346,7 +1346,7 @@ void database::reward_research_token_holders(const research_object& research,
     while (it != it_end)
     {
         auto reward_amount = (it->amount * reward) / DEIP_100_PERCENT;
-        account_service.increase_balance(account_service.get_account(it->account_name), reward_amount);
+        account_service.increase_balance(account_service.get_account(it->account_name), asset(reward_amount, DEIP_SYMBOL));
         claimed_reward += reward_amount;
         ++it;
     }
@@ -1370,7 +1370,7 @@ void database::reward_with_expertise(const account_name_type &account, const dis
     }
 }
 
-share_type database::reward_voters(const research_content_id_type &research_content_id,
+void database::reward_voters(const research_content_id_type &research_content_id,
                                    const discipline_id_type &discipline_id, const share_type &reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
@@ -1384,7 +1384,7 @@ share_type database::reward_voters(const research_content_id_type &research_cont
 
         if (vote.weight != 0) {
             auto reward_amount = (vote.weight * reward) / total_votes.total_curators_reward_weight;
-            account_service.increase_balance(account_service.get_account(vote.voter), reward_amount);
+            account_service.increase_balance(account_service.get_account(vote.voter), asset(reward_amount, DEIP_SYMBOL));
         }
     }
 }
@@ -1421,7 +1421,7 @@ void database::reward_references(const research_content_id_type& research_conten
         auto& research = research_service.get_research(research_votes.first);
         auto reward_share = (research_votes.second * reward) / total_votes_amount;
         auto expertise_reward_share = (research_votes.second * expertise_reward) / total_votes_amount;
-        reward_research_token_holders(research, discipline_id, reward_share, expertise_reward);
+        reward_research_token_holders(research, discipline_id, reward_share, expertise_reward_share);
     }
 }
 
@@ -1508,6 +1508,42 @@ void database::reward_research_content(const research_content_id_type& research_
     reward_research_token_holders(research, discipline_id, token_holders_share, research_group_expertise_share);
     reward_references(research_content_id, discipline_id, references_share, references_expertise_share);
     reward_voters(research_content_id, discipline_id, curators_share);
+    if (research_content.type != research_content_type::review) {
+        reward_reviews(research, discipline_id, review_share);
+    }
+}
+
+void database::reward_reviews(const research_object &research,
+                              const discipline_id_type &discipline_id, const share_type &reward)
+{
+    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
+    dbs_vote& vote_service = obtain_service<dbs_vote>();
+    dbs_account& account_service = obtain_service<dbs_account>();
+    auto reviews = research_content_service.get_content_by_research_id_and_content_type(research.id, research_content_type::review);
+    std::vector<std::pair<research_content_object, share_type>> votes_by_review;
+    share_type total_weight = 0;
+    for (auto& review_reference : reviews) {
+        auto review = review_reference.get();
+        auto& total_votes = vote_service.get_total_votes_by_content_and_discipline(review.id, discipline_id);
+        total_weight += total_votes.total_review_reward_weight;
+        votes_by_review.push_back(std::make_pair(review, total_votes.total_review_reward_weight));
+    }
+
+    for (auto& review_votes : votes_by_review) {
+        auto review = review_votes.first;
+        auto review_reward_share = (reward * review_votes.second) / total_weight;
+        auto authors = review.authors;
+        auto review_curators_reward_share = (review_reward_share * DEIP_CURATORS_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT;
+        auto review_references_reward_share = (review_reward_share * DEIP_REFERENCES_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT;
+        auto authors_reward_share = review_reward_share - review_curators_reward_share - review_references_reward_share;
+        for (auto& author_name : authors) {
+            auto& author = account_service.get_account(author_name);
+            auto author_reward = authors_reward_share / authors.size();
+            account_service.increase_balance(author, asset(author_reward, DEIP_SYMBOL));
+        }
+        reward_references(review.id, discipline_id, review_references_reward_share, 0);
+        reward_voters(review.id, discipline_id, review_curators_reward_share);
+    }
 }
     
 void database::process_research_token_sales()
