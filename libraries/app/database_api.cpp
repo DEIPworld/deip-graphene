@@ -1167,19 +1167,26 @@ research_api_obj database_api::get_research_by_permlink(const string& permlink) 
     });
 }
 
-vector<research_api_obj> database_api::get_researches() const
+vector<research_api_obj> database_api::get_researches(const research_id_type& from, const uint32_t limit) const
 {
     return my->_db.with_read_lock([&]() {
-        vector<research_api_obj> results;
+        FC_ASSERT(limit <= 100);
 
-        chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
-        auto researches = research_service.get_researches();
+        vector<research_api_obj> result;
+        result.reserve(limit);
 
-        for (const chain::research_object &research : researches) {
-            results.push_back(research_api_obj(research));
+        const auto& idx = my->_db.get_index<research_index>().indicies().get<by_id>();
+
+        auto itr = idx.find(from);
+        FC_ASSERT(itr != idx.end(), "invalid research id ${n}", ("n", from));
+
+        while (itr != idx.end() && result.size() < limit)
+        {
+            result.push_back(research_api_obj(*itr));
+            ++itr;
         }
 
-        return results;
+        return result;
     });
 }
 
