@@ -6,7 +6,7 @@
 #include <deip/chain/deip_objects.hpp>
 #include <deip/chain/transaction_object.hpp>
 #include <deip/chain/witness_objects.hpp>
-#include <deip/chain/budget_objects.hpp>
+#include <deip/chain/grant_objects.hpp>
 #include <deip/chain/proposal_object.hpp>
 #include <deip/chain/proposal_vote_object.hpp>
 #include <deip/chain/discipline_object.hpp>
@@ -342,9 +342,9 @@ struct dynamic_global_property_api_obj : public dynamic_global_property_object
     uint128_t max_virtual_bandwidth = 0;
 };
 
-struct budget_api_obj
+struct grant_api_obj
 {
-    budget_api_obj(const chain::budget_object& b)
+    grant_api_obj(const chain::grant_object& b)
         : id(b.id._id)
         , owner(b.owner)
         , target_discipline(b.target_discipline._id)
@@ -357,7 +357,7 @@ struct budget_api_obj
     }
 
     // because fc::variant require for temporary object
-    budget_api_obj()
+    grant_api_obj()
     {
     }
 
@@ -705,7 +705,7 @@ FC_REFLECT_DERIVED( deip::app::dynamic_global_property_api_obj, (deip::chain::dy
                      (max_virtual_bandwidth)
                   )
 
-FC_REFLECT( deip::app::budget_api_obj,
+FC_REFLECT( deip::app::grant_api_obj,
              (id)
             (owner)
             (target_discipline)

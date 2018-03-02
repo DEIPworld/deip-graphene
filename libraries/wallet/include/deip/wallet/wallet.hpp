@@ -905,34 +905,34 @@ public:
     annotated_signed_transaction decline_voting_rights(const std::string& account, bool decline, bool broadcast);
 
     /**
-     *  Gets the budget information for all my budgets (list_my_accounts)
+     *  Gets the grant information for all my grants (list_my_accounts)
      */
-    vector<budget_api_obj> list_my_budgets();
+    vector<grant_api_obj> list_my_grants();
 
     /**
-     *  Gets the list of all budget owners (look list_accounts to understand input parameters)
+     *  Gets the list of all grant owners (look list_accounts to understand input parameters)
      */
-    set<string> list_budget_owners(const std::string& lowerbound, uint32_t limit);
+    set<string> list_grant_owners(const std::string& lowerbound, uint32_t limit);
 
     /**
-     *  Gets the budget information for certain account
+     *  Gets the grant information for certain account
      */
-    vector<budget_api_obj> get_budgets(const std::string& account_name);
+    vector<grant_api_obj> get_grants(const std::string& account_name);
 
     /**
-     *  This method will create new budget linked to owner account. The current account creation fee can be found with
+     *  This method will create new grant linked to owner account. The current account creation fee can be found with
      * the 'info' wallet command.
      *
-     *  @warning The owner account must have sufficient balance for budget
+     *  @warning The owner account must have sufficient balance for grant
      *
-     *  @param budget_owner the future owner of creating budget
+     *  @param grant_owner the future owner of creating grant
      *  @param balance
      *  @param broadcast
      *  @param start_block
      *  @param end_block
      *  @param target_discipline
      */
-    annotated_signed_transaction create_budget(const std::string& budget_owner,
+    annotated_signed_transaction create_grant(const std::string& grant_owner,
                                                const asset& balance,
                                                const uint32_t& start_block,
                                                const uint32_t& end_block,
@@ -995,9 +995,9 @@ FC_API( deip::wallet::wallet_api,
         (get_account_history)
         (get_state)
         (get_withdraw_routes)
-        (list_my_budgets)
-        (list_budget_owners)
-        (get_budgets)
+        (list_my_grants)
+        (list_grant_owners)
+        (get_grants)
 
         /// transaction api
         (create_account)
@@ -1033,7 +1033,7 @@ FC_API( deip::wallet::wallet_api,
         (get_encrypted_memo)
         (decrypt_memo)
         (decline_voting_rights)
-        (create_budget)
+        (create_grant)
 
         /// helper api
         (get_prototype_operation)

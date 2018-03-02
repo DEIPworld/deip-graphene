@@ -8,7 +8,7 @@
 #include <deip/chain/database.hpp> //replace to dbservice after _temporary_public_impl remove
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_witness.hpp>
-#include <deip/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_grant.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_research_content.hpp>
@@ -980,16 +980,16 @@ void delegate_vesting_shares_evaluator::do_apply(const delegate_vesting_shares_o
     }
 }
 
-void create_budget_evaluator::do_apply(const create_budget_operation& op)
+void create_grant_evaluator::do_apply(const create_grant_operation& op)
 {
-    dbs_budget& budget_service = _db.obtain_service<dbs_budget>();
+    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     account_service.check_account_existence(op.owner);
     const auto& owner = account_service.get_account(op.owner);
     discipline_service.check_discipline_existence_by_name(op.target_discipline);
     auto& discipline = discipline_service.get_discipline_by_name(op.target_discipline);
-    budget_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id);
+    grant_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id);
 }
 
 void create_proposal_evaluator::do_apply(const create_proposal_operation& op)

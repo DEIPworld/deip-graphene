@@ -1,6 +1,6 @@
 #include <deip/chain/database.hpp>
 #include <deip/chain/genesis_state.hpp>
-#include <deip/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_grant.hpp>
 #include <deip/chain/dbs_reward.hpp>
 
 #include <deip/chain/account_object.hpp>
@@ -180,9 +180,9 @@ void database::init_genesis_global_property_object(const genesis_state_type& gen
     // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
     FC_ASSERT(post_rf.id._id == 0);
 
-    // We share initial fund between raward_pool and fund budget
+    // We share initial fund between raward_pool and fund grant
     dbs_reward& reward_service = obtain_service<dbs_reward>();
-    dbs_budget& budget_service = obtain_service<dbs_budget>();
+    dbs_grant& grant_service = obtain_service<dbs_grant>();
 
     asset initial_reward_pool_supply(genesis_state.init_rewards_supply.amount
                                          * DEIP_GUARANTED_REWARD_SUPPLY_PERIOD_IN_DAYS
@@ -191,7 +191,7 @@ void database::init_genesis_global_property_object(const genesis_state_type& gen
     fc::time_point deadline = get_genesis_time() + fc::days(DEIP_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS);
 
     reward_service.create_pool(initial_reward_pool_supply);
-    budget_service.create_fund_budget(genesis_state.init_rewards_supply - initial_reward_pool_supply, deadline);
+    grant_service.create_fund_grant(genesis_state.init_rewards_supply - initial_reward_pool_supply, deadline);
 }*/
 
 void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
