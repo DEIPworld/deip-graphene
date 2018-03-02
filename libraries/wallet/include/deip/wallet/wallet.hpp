@@ -16,8 +16,6 @@ using namespace std;
 namespace deip {
 namespace wallet {
 
-using deip::app::discussion;
-
 typedef uint16_t transaction_handle_type;
 
 struct memo_data

@@ -2140,8 +2140,6 @@ annotated_signed_transaction wallet_api::vote(
 
     vote_operation op;
     op.voter = voter;
-    op.author = author;
-    op.permlink = permlink;
     op.weight = weight * DEIP_1_PERCENT;
 
     signed_transaction tx;
