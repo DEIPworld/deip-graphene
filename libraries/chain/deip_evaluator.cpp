@@ -412,8 +412,6 @@ void transfer_evaluator::do_apply(const transfer_operation& o)
     const auto& from_account = account_service.get_account(o.from);
     const auto& to_account = account_service.get_account(o.to);
 
-    account_service.drop_challenged(from_account);
-
     FC_ASSERT(_db.get_balance(from_account, o.amount.symbol) >= o.amount,
               "Account does not have sufficient funds for transfer.");
     account_service.decrease_balance(from_account, o.amount);
@@ -637,9 +635,6 @@ void vote_evaluator::do_apply(const vote_operation& o)
     {
         const auto& voter = account_service.get_account(o.voter);
 
-        FC_ASSERT(!(voter.owner_challenged || voter.active_challenged),
-                  "Operation cannot be processed because the account is currently challenged.");
-
         FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
 
         research_service.check_research_existence(o.research_id);
@@ -811,17 +806,6 @@ void vote_evaluator::do_apply(const vote_operation& o)
         });
     }
     FC_CAPTURE_AND_RETHROW((o))
-}
-
-void prove_authority_evaluator::do_apply(const prove_authority_operation& o)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    const auto& challenged = account_service.get_account(o.challenged);
-    FC_ASSERT(challenged.owner_challenged || challenged.active_challenged,
-              "Account is not challeneged. No need to prove authority.");
-
-    account_service.prove_authority(challenged, o.require_owner);
 }
 
 void request_account_recovery_evaluator::do_apply(const request_account_recovery_operation& o)
