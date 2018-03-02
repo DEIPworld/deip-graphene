@@ -697,6 +697,7 @@ struct approve_research_group_invite_operation : public base_operation
 {
     int64_t research_group_invite_id;
     account_name_type owner;
+    uint16_t research_tokens_conversion_percent;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -785,7 +786,7 @@ FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(resear
 FC_REFLECT( deip::protocol::make_research_review_operation, (author)(research_id)(content)(research_references)(research_external_references))
 
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (owner)(research_token_sale_id)(amount))
-FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner))
+FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner)(research_tokens_conversion_percent))
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
 // clang-format on
 

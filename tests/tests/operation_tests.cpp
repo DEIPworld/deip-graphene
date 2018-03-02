@@ -395,6 +395,7 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
 
         op.research_group_invite_id = 1;
         op.owner = "bob";
+        op.research_tokens_conversion_percent = 5000;
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);

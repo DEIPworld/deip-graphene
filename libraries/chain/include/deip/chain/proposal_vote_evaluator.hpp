@@ -188,7 +188,7 @@ protected:
     void invite_evaluator(const proposal_object& proposal)
     {
         invite_member_proposal_data_type data = get_data<invite_member_proposal_data_type>(proposal);
-        _research_group_invite_service.create(data.name, data.research_group_id,data.research_group_token_amount);
+        _research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount);
     }
 
     void dropout_evaluator(const proposal_object& proposal)
@@ -211,11 +211,25 @@ protected:
         {
             auto& research = r.get();
 
-            auto tokens_amount_in_percent_after_dropout_compensation = tokens_amount_in_percent * research.dropout_compensation_in_percent / DEIP_100_PERCENT;
-            auto tokens_amount_after_dropout_compensation = research.owned_tokens * tokens_amount_in_percent_after_dropout_compensation / DEIP_100_PERCENT;
+            auto tokens_amount_in_percent_after_dropout_compensation
+                = tokens_amount_in_percent * research.dropout_compensation_in_percent / DEIP_100_PERCENT;
+            auto tokens_amount_after_dropout_compensation
+                = research.owned_tokens * tokens_amount_in_percent_after_dropout_compensation / DEIP_100_PERCENT;
 
             _research_service.decrease_owned_tokens(research, tokens_amount_after_dropout_compensation);
-            _research_token_service.create_research_token(data.name, tokens_amount_after_dropout_compensation, research.id);
+
+            if (_research_token_service.check_research_token_existence_by_account_name_and_research_id(data.name,
+                                                                                                       research.id))
+            {
+                auto& research_token = _research_token_service.get_research_token_by_account_name_and_research_id(
+                    data.name, research.id);
+                _research_token_service.increase_research_token_amount(research_token, tokens_amount_after_dropout_compensation);
+            }
+            else
+            {
+                _research_token_service.create_research_token(data.name, tokens_amount_after_dropout_compensation,
+                                                              research.id);
+            }
         }
 
         _research_group_service.remove_token(data.name, data.research_group_id);
@@ -261,12 +275,25 @@ protected:
         auto& account = _account_service.get_account(data.account_name);
         auto& research = _research_service.get_research(data.research_id);
 
-        FC_ASSERT((account.balance.amount - data.total_price > 0), "Account balance is less that total price (result amount < 0)");
-        FC_ASSERT((research.owned_tokens - data.amount > 0), "Research balance is less than amount (result amount < 0)");
+        FC_ASSERT((account.balance.amount - data.total_price > 0),
+                  "Account balance is less that total price (result amount < 0)");
+        FC_ASSERT((research.owned_tokens - data.amount > 0),
+                  "Research balance is less than amount (result amount < 0)");
         _account_service.decrease_balance(account, asset(data.total_price));
         _research_group_service.increase_research_group_funds(proposal.research_group_id, data.total_price);
         _research_service.decrease_owned_tokens(research, data.amount);
-        _research_token_service.create_research_token(account.name, data.amount, data.research_id);
+
+        if (_research_token_service.check_research_token_existence_by_account_name_and_research_id(account.name,
+                                                                                                   data.research_id))
+        {
+            auto& research_token = _research_token_service.get_research_token_by_account_name_and_research_id(
+                account.name, data.research_id);
+            _research_token_service.increase_research_token_amount(research_token, data.amount);
+        }
+        else
+        {
+            _research_token_service.create_research_token(account.name, data.amount, data.research_id);
+        }
     }
 
     void send_funds_evaluator(const proposal_object& proposal)
