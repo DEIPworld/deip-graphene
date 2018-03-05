@@ -10,7 +10,8 @@ namespace deip {
 /** NOTE: do not change the order of any operations prior to the virtual operations
  * or it will trigger a hardfork.
  */
-        typedef fc::static_variant<vote_operation,
+        typedef fc::static_variant<
+                vote_operation,
 
                 transfer_operation,
                 transfer_to_vesting_operation,
@@ -24,8 +25,6 @@ namespace deip {
                 account_witness_proxy_operation,
 
                 set_withdraw_vesting_route_operation,
-
-                prove_authority_operation,
 
                 request_account_recovery_operation,
                 recover_account_operation,
@@ -41,7 +40,7 @@ namespace deip {
                 account_create_with_delegation_operation,
 
                 // DEIP native operations
-                create_budget_operation,
+                create_grant_operation,
                 create_research_group_operation,
                 create_proposal_operation,
                 vote_proposal_operation,
