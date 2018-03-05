@@ -17,9 +17,9 @@
 #include <deip/chain/research_group_object.hpp>
 #include <deip/chain/research_discipline_relation_object.hpp>
 
-#include <deip/tags/tags_plugin.hpp>
-
 #include <deip/witness/witness_objects.hpp>
+
+#include <deip/chain/database.hpp>
 
 namespace deip {
 namespace app {
@@ -38,28 +38,6 @@ typedef chain::vesting_delegation_object vesting_delegation_api_obj;
 typedef chain::vesting_delegation_expiration_object vesting_delegation_expiration_api_obj;
 typedef chain::reward_fund_object reward_fund_api_obj;
 typedef witness::account_bandwidth_object account_bandwidth_api_obj;
-
-struct tag_api_obj
-{
-    tag_api_obj(const tags::tag_stats_object& o)
-        : name(o.tag)
-        , total_payouts(o.total_payout)
-        , net_votes(o.net_votes)
-        , top_posts(o.top_posts)
-        , trending(o.total_trending)
-    {
-    }
-
-    tag_api_obj()
-    {
-    }
-
-    string name;
-    asset total_payouts;
-    int32_t net_votes = 0;
-    uint32_t top_posts = 0;
-    fc::uint128 trending = 0;
-};
 
 struct account_api_obj
 {
@@ -662,14 +640,6 @@ FC_REFLECT( deip::app::account_recovery_request_api_obj,
              (account_to_recover)
              (new_owner_authority)
              (expires)
-          )
-
-FC_REFLECT( deip::app::tag_api_obj,
-            (name)
-            (total_payouts)
-            (net_votes)
-            (top_posts)
-            (trending)
           )
 
 FC_REFLECT( deip::app::witness_api_obj,

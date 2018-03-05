@@ -1,7 +1,6 @@
 file(GLOB HEADERS "include/deip/tags/*.hpp")
 
-add_library( deip_tags
-             tags_plugin.cpp )
+add_library( deip_tags )
 
 target_link_libraries( deip_tags deip_chain deip_protocol deip_app )
 target_include_directories( deip_tags
