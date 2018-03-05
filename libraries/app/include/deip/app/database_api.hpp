@@ -377,6 +377,15 @@ public:
 
     vector<int64_t> get_disciplines_by_research(const research_id_type& research_id) const;
 
+    ///////////////////////////////////
+    // Research group invite        //
+    //////////////////////////////////
+
+    research_group_invite_api_obj get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id) const;
+    research_group_invite_api_obj get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
+    vector<research_group_invite_api_obj> get_research_group_invites_by_account_name(const account_name_type& account_name) const;
+    vector<research_group_invite_api_obj> get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const;
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -500,6 +509,9 @@ FC_API(deip::app::database_api,
    (get_research_token_sale_contributions_by_research_token_sale_id)
    (get_research_token_sale_contribution_by_account_name_and_research_token_sale_id)
 
+   // Research group invite
+    (get_research_group_invites_by_account_name) 
+    (get_research_group_invites_by_research_group_id)
 )
 
 // clang-format on
