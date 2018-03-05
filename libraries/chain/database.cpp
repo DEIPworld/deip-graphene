@@ -1129,10 +1129,8 @@ void database::process_funds()
 
     auto new_deip = (props.current_supply.amount * current_inflation_rate)
         / (int64_t(DEIP_100_PERCENT) * int64_t(DEIP_BLOCKS_PER_YEAR));
-    auto content_reward = (new_deip * DEIP_CONTENT_REWARD_PERCENT) / DEIP_100_PERCENT;
-    content_reward = pay_reward_funds(content_reward); /// 75% to content creator
-    auto vesting_reward = (new_deip * DEIP_VESTING_FUND_PERCENT) / DEIP_100_PERCENT; /// 15% to vesting fund
-    auto witness_reward = new_deip - content_reward - vesting_reward; /// Remaining 10% to witness pay
+    auto content_reward = (new_deip * DEIP_CONTENT_REWARD_PERCENT) / DEIP_100_PERCENT; /// 97% to content rewards
+    auto witness_reward = (new_deip * DEIP_WITNESS_REWARD_PERCENT) / DEIP_100_PERCENT; /// Remaining 3% to witness pay
 
     const auto& cwit = get_witness(props.current_witness);
     witness_reward *= DEIP_MAX_WITNESSES;
@@ -1146,10 +1144,9 @@ void database::process_funds()
 
     witness_reward /= wso.witness_pay_normalization_factor;
 
-    new_deip = content_reward + vesting_reward + witness_reward;
+    new_deip = content_reward + witness_reward;
 
     modify(props, [&](dynamic_global_property_object& p) {
-        p.total_vesting_fund_deip += asset(vesting_reward, DEIP_SYMBOL);
         p.current_supply += asset(new_deip, DEIP_SYMBOL);
     });
 

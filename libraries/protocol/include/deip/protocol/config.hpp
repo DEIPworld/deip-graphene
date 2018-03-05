@@ -108,8 +108,8 @@
 #define DEIP_INFLATION_RATE_START_PERCENT    (978) // Fixes block 7,000,000 to 9.5%
 #define DEIP_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
 #define DEIP_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
-#define DEIP_CONTENT_REWARD_PERCENT          (75*DEIP_1_PERCENT) //75% of inflation, 7.125% inflation
-#define DEIP_VESTING_FUND_PERCENT            (15*DEIP_1_PERCENT) //15% of inflation, 1.425% inflation
+#define DEIP_CONTENT_REWARD_PERCENT          (97*DEIP_1_PERCENT) //97% of inflation, 9.215% inflation
+#define DEIP_WITNESS_REWARD_PERCENT          (3*DEIP_1_PERCENT) //3% of inflation, 0.285% inflation
 
 #define DEIP_COMMON_POOL_SHARE_PERCENT       (20*DEIP_1_PERCENT)
 #define DEIP_ALL_DISCIPLINES_POOL_SHARE_PERCENT (80*DEIP_1_PERCENT)
