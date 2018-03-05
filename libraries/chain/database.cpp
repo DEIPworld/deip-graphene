@@ -1540,6 +1540,7 @@ void database::reward_reviews(const research_object &research,
             auto& author = account_service.get_account(author_name);
             auto author_reward = authors_reward_share / authors.size();
             account_service.increase_balance(author, asset(author_reward, DEIP_SYMBOL));
+            reward_with_expertise(author.name, discipline_id, author_reward);
         }
         reward_references(review.id, discipline_id, review_references_reward_share, 0);
         reward_voters(review.id, discipline_id, review_curators_reward_share);
