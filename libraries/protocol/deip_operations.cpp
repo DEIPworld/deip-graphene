@@ -203,11 +203,6 @@ void change_recovery_account_operation::validate() const
     validate_account_name(new_recovery_account);
 }
 
-void decline_voting_rights_operation::validate() const
-{
-    validate_account_name(account);
-}
-
 void delegate_vesting_shares_operation::validate() const
 {
     validate_account_name(delegator);

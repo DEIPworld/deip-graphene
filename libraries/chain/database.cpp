@@ -1237,36 +1237,6 @@ void database::expire_escrow_ratification()
     }
 }
 
-void database::process_decline_voting_rights()
-{
-    const auto& request_idx = get_index<decline_voting_rights_request_index>().indices().get<by_effective_date>();
-    auto itr = request_idx.begin();
-
-    dbs_account& account_service = obtain_service<dbs_account>();
-
-    while (itr != request_idx.end() && itr->effective_date <= head_block_time())
-    {
-        const auto& account = get(itr->account);
-
-        /// remove all current votes
-        std::array<share_type, DEIP_MAX_PROXY_RECURSION_DEPTH + 1> delta;
-        delta[0] = -account.vesting_shares.amount;
-        for (int i = 0; i < DEIP_MAX_PROXY_RECURSION_DEPTH; ++i)
-            delta[i + 1] = -account.proxied_vsf_votes[i];
-        account_service.adjust_proxied_witness_votes(account, delta);
-
-        account_service.clear_witness_votes(account);
-
-        modify(get(itr->account), [&](account_object& a) {
-            a.can_vote = false;
-            a.proxy = DEIP_PROXY_TO_SELF_ACCOUNT;
-        });
-
-        remove(*itr);
-        itr = request_idx.begin();
-    }
-}
-
 void database::distribute_research_tokens(const research_token_sale_id_type research_token_sale_id)
 {
     dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
@@ -1573,7 +1543,6 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<escrow_approve_evaluator>();
     _my->_evaluator_registry.register_evaluator<escrow_dispute_evaluator>();
     _my->_evaluator_registry.register_evaluator<escrow_release_evaluator>();
-    _my->_evaluator_registry.register_evaluator<decline_voting_rights_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
@@ -1618,7 +1587,6 @@ void database::initialize_indexes()
     add_index<account_recovery_request_index>();
     add_index<change_recovery_account_request_index>();
     add_index<escrow_index>();
-    add_index<decline_voting_rights_request_index>();
     add_index<reward_fund_index>();
     add_index<reward_pool_index>();
     add_index<vesting_delegation_index>();
@@ -1859,7 +1827,6 @@ void database::_apply_block(const signed_block& next_block)
 
         account_recovery_processing();
         expire_escrow_ratification();
-        process_decline_voting_rights();
 
         clear_expired_proposals();
         process_content_activity_windows();

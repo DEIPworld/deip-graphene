@@ -857,32 +857,6 @@ void change_recovery_account_evaluator::do_apply(const change_recovery_account_o
     account_service.change_recovery_account(account_to_recover, o.new_recovery_account);
 }
 
-void decline_voting_rights_evaluator::do_apply(const decline_voting_rights_operation& o)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    const auto& account = account_service.get_account(o.account);
-    const auto& request_idx
-        = _db._temporary_public_impl().get_index<decline_voting_rights_request_index>().indices().get<by_account>();
-    auto itr = request_idx.find(account.id);
-
-    if (o.decline)
-    {
-        FC_ASSERT(itr == request_idx.end(), "Cannot create new request because one already exists.");
-
-        _db._temporary_public_impl().create<decline_voting_rights_request_object>(
-            [&](decline_voting_rights_request_object& req) {
-                req.account = account.id;
-                req.effective_date = _db.head_block_time() + DEIP_OWNER_AUTH_RECOVERY_PERIOD;
-            });
-    }
-    else
-    {
-        FC_ASSERT(itr != request_idx.end(), "Cannot cancel the request because it does not exist.");
-        _db._temporary_public_impl().remove(*itr);
-    }
-}
-
 void delegate_vesting_shares_evaluator::do_apply(const delegate_vesting_shares_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();

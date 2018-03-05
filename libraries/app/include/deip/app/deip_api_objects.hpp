@@ -31,7 +31,6 @@ typedef chain::change_recovery_account_request_object change_recovery_account_re
 typedef chain::block_summary_object block_summary_api_obj;
 typedef chain::escrow_object escrow_api_obj;
 typedef chain::withdraw_vesting_route_object withdraw_vesting_route_api_obj;
-typedef chain::decline_voting_rights_request_object decline_voting_rights_request_api_obj;
 typedef chain::witness_vote_object witness_vote_api_obj;
 typedef chain::witness_schedule_object witness_schedule_api_obj;
 typedef chain::vesting_delegation_object vesting_delegation_api_obj;

@@ -73,26 +73,6 @@ public:
     bool auto_vest = false;
 };
 
-class decline_voting_rights_request_object
-    : public object<decline_voting_rights_request_object_type, decline_voting_rights_request_object>
-{
-public:
-    template <typename Constructor, typename Allocator>
-    decline_voting_rights_request_object(Constructor&& c, allocator<Allocator> a)
-    {
-        c(*this);
-    }
-
-    decline_voting_rights_request_object()
-    {
-    }
-
-    id_type id;
-
-    account_id_type account;
-    time_point_sec effective_date;
-};
-
 enum curve_id
 {
     quadratic,
@@ -205,31 +185,6 @@ typedef multi_index_container<escrow_object,
                               allocator<escrow_object>>
     escrow_index;
 
-struct by_account;
-struct by_effective_date;
-typedef multi_index_container<decline_voting_rights_request_object,
-                              indexed_by<ordered_unique<tag<by_id>,
-                                                        member<decline_voting_rights_request_object,
-                                                               decline_voting_rights_request_id_type,
-                                                               &decline_voting_rights_request_object::id>>,
-                                         ordered_unique<tag<by_account>,
-                                                        member<decline_voting_rights_request_object,
-                                                               account_id_type,
-                                                               &decline_voting_rights_request_object::account>>,
-                                         ordered_unique<tag<by_effective_date>,
-                                                        composite_key<decline_voting_rights_request_object,
-                                                                      member<decline_voting_rights_request_object,
-                                                                             time_point_sec,
-                                                                             &decline_voting_rights_request_object::
-                                                                                 effective_date>,
-                                                                      member<decline_voting_rights_request_object,
-                                                                             account_id_type,
-                                                                             &decline_voting_rights_request_object::
-                                                                                 account>>,
-                                                        composite_key_compare<std::less<time_point_sec>,
-                                                                              std::less<account_id_type>>>>,
-                              allocator<decline_voting_rights_request_object>>
-    decline_voting_rights_request_index;
 
 struct by_name;
 typedef multi_index_container<reward_fund_object,
@@ -265,10 +220,6 @@ FC_REFLECT( deip::chain::escrow_object,
              (deip_balance)(pending_fee)
              (to_approved)(agent_approved)(disputed) )
 CHAINBASE_SET_INDEX_TYPE( deip::chain::escrow_object, deip::chain::escrow_index )
-
-FC_REFLECT( deip::chain::decline_voting_rights_request_object,
-             (id)(account)(effective_date) )
-CHAINBASE_SET_INDEX_TYPE( deip::chain::decline_voting_rights_request_object, deip::chain::decline_voting_rights_request_index )
 
 FC_REFLECT( deip::chain::reward_fund_object,
             (id)
