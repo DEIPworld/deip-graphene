@@ -2140,8 +2140,6 @@ annotated_signed_transaction wallet_api::vote(
 
     vote_operation op;
     op.voter = voter;
-    op.author = author;
-    op.permlink = permlink;
     op.weight = weight * DEIP_1_PERCENT;
 
     signed_transaction tx;
@@ -2177,27 +2175,12 @@ wallet_api::challenge(const std::string& challenger, const std::string& challeng
     */
 }
 
-annotated_signed_transaction wallet_api::prove(const std::string& challenged, bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    prove_authority_operation op;
-    op.challenged = challenged;
-    op.require_owner = false;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
 annotated_signed_transaction wallet_api::get_transaction(transaction_id_type id) const
 {
     return my->_remote_db->get_transaction(id);
 }
 
-vector<budget_api_obj> wallet_api::list_my_budgets()
+vector<grant_api_obj> wallet_api::list_my_grants()
 {
     FC_ASSERT(!is_locked());
 
@@ -2223,24 +2206,24 @@ vector<budget_api_obj> wallet_api::list_my_budgets()
         for (const auto& name : item)
             names.insert(name);
 
-    return my->_remote_db->get_budgets(names);
+    return my->_remote_db->get_grants(names);
 }
 
-set<string> wallet_api::list_budget_owners(const string& lowerbound, uint32_t limit)
+set<string> wallet_api::list_grant_owners(const string& lowerbound, uint32_t limit)
 {
-    return my->_remote_db->lookup_budget_owners(lowerbound, limit);
+    return my->_remote_db->lookup_grant_owners(lowerbound, limit);
 }
 
-vector<budget_api_obj> wallet_api::get_budgets(const std::string& account_name)
+vector<grant_api_obj> wallet_api::get_grants(const std::string& account_name)
 {
-    vector<budget_api_obj> result;
+    vector<grant_api_obj> result;
 
-    result = my->_remote_db->get_budgets({ account_name });
+    result = my->_remote_db->get_grants({ account_name });
 
     return result;
 }
 
-annotated_signed_transaction wallet_api::create_budget(const std::string& budget_owner,
+annotated_signed_transaction wallet_api::create_grant(const std::string& grant_owner,
                                                const asset& balance,
                                                const uint32_t& start_block,
                                                const uint32_t& end_block,
@@ -2249,9 +2232,9 @@ annotated_signed_transaction wallet_api::create_budget(const std::string& budget
 {
     FC_ASSERT(!is_locked());
 
-    create_budget_operation op;
+    create_grant_operation op;
 
-    op.owner = budget_owner;
+    op.owner = grant_owner;
     op.target_discipline = target_discipline;
     op.balance = balance;
     op.start_block = start_block;

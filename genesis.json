@@ -10,13 +10,13 @@
     }, {
         "name": "alice",
         "recovery_account": "",
-        "public_key": "DEIP76dCCDk6HVdjCZG144sHzVHReoDcjtNh7CkxSXF6TeKPW2YK2c",
+        "public_key": "DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83",
         "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "bob",
         "recovery_account": "",
-        "public_key": "DEIP5gSUmAuNo1ry9cv88o3JmM7K6iJJtTh3f2NyMzWrKa6ZBz365B",
+        "public_key": "DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi",
         "deip_amount": 0,
         "sp_amount": 0
     }],
@@ -26,10 +26,10 @@
         "block_signing_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ"
     }, {
         "owner_name": "alice",
-        "block_signing_key": "DEIP76dCCDk6HVdjCZG144sHzVHReoDcjtNh7CkxSXF6TeKPW2YK2c"
+        "block_signing_key": "DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83"
     }, {
         "owner_name": "bob",
-        "block_signing_key": "DEIP5gSUmAuNo1ry9cv88o3JmM7K6iJJtTh3f2NyMzWrKa6ZBz365B"
+        "block_signing_key": "DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi"
     }],
 
     "disciplines": [{
@@ -84,6 +84,42 @@
         "parent_id": 0
     }],
     "expert_tokens": [{
+        "account_name": "initdelegate",
+        "discipline_id": 1,
+        "amount": 1000
+    }, {
+        "account_name": "initdelegate",
+        "discipline_id": 2,
+        "amount": 2000
+    }, {
+        "account_name": "initdelegate",
+        "discipline_id": 3,
+        "amount": 1000
+    }, {
+        "account_name": "initdelegate",
+        "discipline_id": 4,
+        "amount": 1000
+    }, {
+        "account_name": "initdelegate",
+        "discipline_id": 5,
+        "amount": 1000
+    }, {
+        "account_name": "initdelegate",
+        "discipline_id": 6,
+        "amount": 1000
+    }, {
+        "account_name": "initdelegate",
+        "discipline_id": 7,
+        "amount": 1000
+    }, {
+        "account_name": "initdelegate",
+        "discipline_id": 8,
+        "amount": 1000
+    }, {
+        "account_name": "initdelegate",
+        "discipline_id": 9,
+        "amount": 1000
+    }, {
         "account_name": "alice",
         "discipline_id": 4,
         "amount": 5000

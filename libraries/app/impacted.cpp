@@ -154,7 +154,7 @@ struct get_impacted_account_visitor
         _impacted.insert(op.delegatee);
     }
 
-    void operator()(const create_budget_operation& op)
+    void operator()(const create_grant_operation& op)
     {
         _impacted.insert(op.owner);
     }

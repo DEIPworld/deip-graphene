@@ -18,7 +18,7 @@
 #include <cfenv>
 #include <iostream>
 
-#include <deip/chain/dbs_budget.hpp>
+#include <deip/chain/dbs_grant.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_research.hpp>
 #include <deip/chain/dbs_research_content.hpp>
@@ -63,9 +63,9 @@ public:
     set<string> lookup_accounts(const string& lower_bound_name, uint32_t limit) const;
     uint64_t get_account_count() const;
 
-    // Budgets
-    vector<budget_api_obj> get_budgets(const set<string>& names) const;
-    set<string> lookup_budget_owners(const string& lower_bound_name, uint32_t limit) const;
+    // Grants
+    vector<grant_api_obj> get_grants(const set<string>& names) const;
+    set<string> lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const;
 
     // Witnesses
     vector<optional<witness_api_obj>> get_witnesses(const vector<witness_id_type>& witness_ids) const;
@@ -773,53 +773,53 @@ u256 to256(const fc::uint128& t)
 
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
-// Budgets                                                          //
+// Grants                                                          //
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
-vector<budget_api_obj> database_api::get_budgets(const set<string>& names) const
+vector<grant_api_obj> database_api::get_grants(const set<string>& names) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_budgets(names); });
+    return my->_db.with_read_lock([&]() { return my->get_grants(names); });
 }
 
-vector<budget_api_obj> database_api_impl::get_budgets(const set<string>& names) const
+vector<grant_api_obj> database_api_impl::get_grants(const set<string>& names) const
 {
-    FC_ASSERT(names.size() <= DEIP_LIMIT_API_BUDGETS_LIST_SIZE, "names size must be less or equal than ${1}",
-              ("1", DEIP_LIMIT_API_BUDGETS_LIST_SIZE));
+    FC_ASSERT(names.size() <= DEIP_LIMIT_API_GRANTS_LIST_SIZE, "names size must be less or equal than ${1}",
+              ("1", DEIP_LIMIT_API_GRANTS_LIST_SIZE));
 
-    vector<budget_api_obj> results;
+    vector<grant_api_obj> results;
 
-    chain::dbs_budget& budget_service = _db.obtain_service<chain::dbs_budget>();
+    chain::dbs_grant& grant_service = _db.obtain_service<chain::dbs_grant>();
 
     for (const auto& name : names)
     {
-        auto budgets = budget_service.get_budgets(name);
-        if (results.size() + budgets.size() > DEIP_LIMIT_API_BUDGETS_LIST_SIZE)
+        auto grants = grant_service.get_grants(name);
+        if (results.size() + grants.size() > DEIP_LIMIT_API_GRANTS_LIST_SIZE)
         {
             break;
         }
 
-        for (const chain::budget_object& budget : budgets)
+        for (const chain::grant_object& grant : grants)
         {
-            results.push_back(budget_api_obj(budget));
+            results.push_back(grant_api_obj(grant));
         }
     }
 
     return results;
 }
 
-set<string> database_api::lookup_budget_owners(const string& lower_bound_name, uint32_t limit) const
+set<string> database_api::lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const
 {
-    return my->_db.with_read_lock([&]() { return my->lookup_budget_owners(lower_bound_name, limit); });
+    return my->_db.with_read_lock([&]() { return my->lookup_grant_owners(lower_bound_name, limit); });
 }
 
-set<string> database_api_impl::lookup_budget_owners(const string& lower_bound_name, uint32_t limit) const
+set<string> database_api_impl::lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const
 {
-    FC_ASSERT(limit <= DEIP_LIMIT_API_BUDGETS_LIST_SIZE, "limit must be less or equal than ${1}",
-              ("1", DEIP_LIMIT_API_BUDGETS_LIST_SIZE));
+    FC_ASSERT(limit <= DEIP_LIMIT_API_GRANTS_LIST_SIZE, "limit must be less or equal than ${1}",
+              ("1", DEIP_LIMIT_API_GRANTS_LIST_SIZE));
 
-    chain::dbs_budget& budget_service = _db.obtain_service<chain::dbs_budget>();
+    chain::dbs_grant& grant_service = _db.obtain_service<chain::dbs_grant>();
 
-    return budget_service.lookup_budget_owners(lower_bound_name, limit);
+    return grant_service.lookup_grant_owners(lower_bound_name, limit);
 }
 
 /**
@@ -1167,19 +1167,26 @@ research_api_obj database_api::get_research_by_permlink(const string& permlink) 
     });
 }
 
-vector<research_api_obj> database_api::get_researches() const
+vector<research_api_obj> database_api::get_researches(const research_id_type& from, const uint32_t limit) const
 {
     return my->_db.with_read_lock([&]() {
-        vector<research_api_obj> results;
+        FC_ASSERT(limit <= 100);
 
-        chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
-        auto researches = research_service.get_researches();
+        vector<research_api_obj> result;
+        result.reserve(limit);
 
-        for (const chain::research_object &research : researches) {
-            results.push_back(research_api_obj(research));
+        const auto& idx = my->_db.get_index<research_index>().indicies().get<by_id>();
+
+        auto itr = idx.find(from);
+        FC_ASSERT(itr != idx.end(), "invalid research id ${n}", ("n", from));
+
+        while (itr != idx.end() && result.size() < limit)
+        {
+            result.push_back(research_api_obj(*itr));
+            ++itr;
         }
 
-        return results;
+        return result;
     });
 }
 

@@ -675,7 +675,7 @@ const const_char_ptr word_list[]
         "buckeen", "bucker",  "bucket",  "buckety", "buckeye", "buckie",  "bucking", "buckish", "buckle",  "buckled",
         "buckler", "bucklum", "bucko",   "buckpot", "buckra",  "buckram", "bucksaw", "bucky",   "bucolic", "bucrane",
         "bud",     "buda",    "buddage", "budder",  "buddhi",  "budding", "buddle",  "buddler", "buddy",   "budge",
-        "budger",  "budget",  "budless", "budlet",  "budlike", "budmash", "budtime", "budwood", "budworm", "budzat",
+        "budger",  "grant",  "budless", "budlet",  "budlike", "budmash", "budtime", "budwood", "budworm", "budzat",
         "bufagin", "buff",    "buffalo", "buffed",  "buffer",  "buffet",  "buffing", "buffle",  "buffont", "buffoon",
         "buffy",   "bufidin", "bufo",    "bug",     "bugaboo", "bugan",   "bugbane", "bugbear", "bugbite", "bugdom",
         "bugfish", "bugger",  "buggery", "buggy",   "bughead", "bugle",   "bugled",  "bugler",  "buglet",  "bugloss",

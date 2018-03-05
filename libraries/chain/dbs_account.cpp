@@ -175,12 +175,6 @@ void dbs_account::update_acount(const account_object& account,
         if (memo_key != public_key_type())
             acc.memo_key = memo_key;
 
-        if ((active || owner) && acc.active_challenged)
-        {
-            acc.active_challenged = false;
-            acc.last_active_proved = t;
-        }
-
         acc.last_account_update = t;
 
 #ifndef IS_LOW_MEM
@@ -254,36 +248,6 @@ void dbs_account::increase_received_vesting_shares(const account_object& account
 void dbs_account::decrease_received_vesting_shares(const account_object& account, const asset& vesting)
 {
     increase_received_vesting_shares(account, -vesting);
-}
-
-void dbs_account::drop_challenged(const account_object& account, const optional<time_point_sec>& now)
-{
-    _time t = _get_now(now);
-
-    if (account.active_challenged)
-    {
-        db_impl().modify(account, [&](account_object& a) {
-            a.active_challenged = false;
-            a.last_active_proved = t;
-        });
-    }
-}
-
-void dbs_account::prove_authority(const account_object& account,
-                                  bool require_owner,
-                                  const optional<time_point_sec>& now)
-{
-    _time t = _get_now(now);
-
-    db_impl().modify(account, [&](account_object& a) {
-        a.active_challenged = false;
-        a.last_active_proved = t;
-        if (require_owner)
-        {
-            a.owner_challenged = false;
-            a.last_owner_proved = t;
-        }
-    });
 }
 
 void dbs_account::update_withdraw(const account_object& account,
