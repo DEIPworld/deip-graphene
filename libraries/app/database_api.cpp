@@ -461,23 +461,6 @@ optional<account_recovery_request_api_obj> database_api::get_recovery_request(st
     });
 }
 
-optional<escrow_api_obj> database_api::get_escrow(string from, uint32_t escrow_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        optional<escrow_api_obj> result;
-
-        try
-        {
-            result = my->_db.get_escrow(from, escrow_id);
-        }
-        catch (...)
-        {
-        }
-
-        return result;
-    });
-}
-
 vector<withdraw_route> database_api::get_withdraw_routes(string account, withdraw_route_type type) const
 {
     return my->_db.with_read_lock([&]() {
