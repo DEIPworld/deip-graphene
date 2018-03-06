@@ -153,117 +153,6 @@ struct transfer_operation : public base_operation
 };
 
 /**
- *  The purpose of this operation is to enable someone to send money contingently to
- *  another individual. The funds leave the *from* account and go into a temporary balance
- *  where they are held until *from* releases it to *to* or *to* refunds it to *from*.
- *
- *  In the event of a dispute the *agent* can divide the funds between the to/from account.
- *  Disputes can be raised any time before or on the dispute deadline time, after the escrow
- *  has been approved by all parties.
- *
- *  This operation only creates a proposed escrow transfer. Both the *agent* and *to* must
- *  agree to the terms of the arrangement by approving the escrow.
- *
- *  The escrow agent is paid the fee on approval of all parties. It is up to the escrow agent
- *  to determine the fee.
- *
- *  Escrow transactions are uniquely identified by 'from' and 'escrow_id', the 'escrow_id' is defined
- *  by the sender.
- */
-struct escrow_transfer_operation : public base_operation
-{
-    account_name_type from;
-    account_name_type to;
-    account_name_type agent;
-    uint32_t escrow_id = 30;
-
-    asset deip_amount = asset(0, DEIP_SYMBOL);
-    asset fee;
-
-    time_point_sec ratification_deadline;
-    time_point_sec escrow_expiration;
-
-    string json_meta;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(from);
-    }
-};
-
-/**
- *  The agent and to accounts must approve an escrow transaction for it to be valid on
- *  the blockchain. Once a part approves the escrow, the cannot revoke their approval.
- *  Subsequent escrow approve operations, regardless of the approval, will be rejected.
- */
-struct escrow_approve_operation : public base_operation
-{
-    account_name_type from;
-    account_name_type to;
-    account_name_type agent;
-    account_name_type who; // Either to or agent
-
-    uint32_t escrow_id = 30;
-    bool approve = true;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(who);
-    }
-};
-
-/**
- *  If either the sender or receiver of an escrow payment has an issue, they can
- *  raise it for dispute. Once a payment is in dispute, the agent has authority over
- *  who gets what.
- */
-struct escrow_dispute_operation : public base_operation
-{
-    account_name_type from;
-    account_name_type to;
-    account_name_type agent;
-    account_name_type who;
-
-    uint32_t escrow_id = 30;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(who);
-    }
-};
-
-/**
- *  This operation can be used by anyone associated with the escrow transfer to
- *  release funds if they have permission.
- *
- *  The permission scheme is as follows:
- *  If there is no dispute and escrow has not expired, either party can release funds to the other.
- *  If escrow expires and there is no dispute, either party can release funds to either party.
- *  If there is a dispute regardless of expiration, the agent can release funds to either party
- *     following whichever agreement was in place between the parties.
- */
-struct escrow_release_operation : public base_operation
-{
-    account_name_type from;
-    account_name_type to; ///< the original 'to'
-    account_name_type agent;
-    account_name_type who; ///< the account that is attempting to release the funds, determines valid 'receiver'
-    account_name_type receiver; ///< the account that should receive funds (might be from, might be to)
-
-    uint32_t escrow_id = 30;
-    asset deip_amount = asset(0, DEIP_SYMBOL); ///< the amount of deip to release
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(who);
-    }
-};
-
-/**
  *  This operation converts DEIP into VFS (Vesting Fund Shares) at
  *  the current exchange rate. With this operation it is possible to
  *  give another account vesting shares so that faucets can
@@ -735,10 +624,6 @@ FC_REFLECT( deip::protocol::vote_operation, (voter)(discipline_id)(weight)(resea
 
 FC_REFLECT( deip::protocol::beneficiary_route_type, (account)(weight) )
 
-FC_REFLECT( deip::protocol::escrow_transfer_operation, (from)(to)(deip_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration) )
-FC_REFLECT( deip::protocol::escrow_approve_operation, (from)(to)(agent)(who)(escrow_id)(approve) )
-FC_REFLECT( deip::protocol::escrow_dispute_operation, (from)(to)(agent)(who)(escrow_id) )
-FC_REFLECT( deip::protocol::escrow_release_operation, (from)(to)(agent)(who)(receiver)(escrow_id)(deip_amount) )
 FC_REFLECT( deip::protocol::request_account_recovery_operation, (recovery_account)(account_to_recover)(new_owner_authority)(extensions) )
 FC_REFLECT( deip::protocol::recover_account_operation, (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions) )
 FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) )

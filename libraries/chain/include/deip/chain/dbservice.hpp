@@ -29,7 +29,7 @@ public:
     virtual const witness_object& get_witness(const account_name_type& name) const = 0;
 
     virtual const account_object& get_account(const account_name_type& name) const = 0;
-    
+
     virtual asset get_balance(const account_object& a, asset_symbol_type symbol) const = 0;
 
     virtual asset get_balance(const string& aname, asset_symbol_type symbol) const = 0;

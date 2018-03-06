@@ -994,12 +994,6 @@ state database_api::get_state(string path) const
                         case operation::tag<transfer_operation>::value:
                         case operation::tag<author_reward_operation>::value:
                         case operation::tag<curation_reward_operation>::value:
-                        case operation::tag<escrow_transfer_operation>::value:
-                        case operation::tag<escrow_approve_operation>::value:
-                        case operation::tag<escrow_dispute_operation>::value:
-                        case operation::tag<escrow_release_operation>::value:
-                            eacnt.transfer_history[item.first] = item.second;
-                            break;
                         case operation::tag<vote_operation>::value:
                         case operation::tag<account_witness_vote_operation>::value:
                         case operation::tag<account_witness_proxy_operation>::value:
