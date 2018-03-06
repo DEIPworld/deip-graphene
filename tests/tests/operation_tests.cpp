@@ -3399,32 +3399,6 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
 //    }
 //    FC_LOG_AND_RETHROW()
 //}
-//
-//BOOST_AUTO_TEST_CASE(decline_voting_rights_authorities)
-//{
-//    try
-//    {
-//        BOOST_TEST_MESSAGE("Testing: decline_voting_rights_authorities");
-//
-//        decline_voting_rights_operation op;
-//        op.account = "alice";
-//
-//        flat_set<account_name_type> auths;
-//        flat_set<account_name_type> expected;
-//
-//        op.get_required_active_authorities(auths);
-//        BOOST_REQUIRE(auths == expected);
-//
-//        op.get_required_posting_authorities(auths);
-//        BOOST_REQUIRE(auths == expected);
-//
-//        expected.insert("alice");
-//        op.get_required_owner_authorities(auths);
-//        BOOST_REQUIRE(auths == expected);
-//    }
-//    FC_LOG_AND_RETHROW()
-//}
-//
 //BOOST_AUTO_TEST_CASE(account_bandwidth)
 //{
 //    try
