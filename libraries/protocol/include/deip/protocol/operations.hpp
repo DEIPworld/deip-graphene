@@ -30,11 +30,6 @@ namespace deip {
                 recover_account_operation,
                 change_recovery_account_operation,
 
-                escrow_transfer_operation,
-                escrow_dispute_operation,
-                escrow_release_operation,
-                escrow_approve_operation,
-
                 delegate_vesting_shares_operation,
                 account_create_with_delegation_operation,
 

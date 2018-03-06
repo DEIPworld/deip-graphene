@@ -135,9 +135,6 @@ public:
     const account_object& get_account(const account_name_type& name) const override;
     const account_object* find_account(const account_name_type& name) const;
 
-    const escrow_object& get_escrow(const account_name_type& name, uint32_t escrow_id) const override;
-    const escrow_object* find_escrow(const account_name_type& name, uint32_t escrow_id) const;
-
     const dynamic_global_property_object& get_dynamic_global_properties() const override;
     const node_property_object& get_node_properties() const;
     const witness_schedule_object& get_witness_schedule_object() const override;
@@ -301,7 +298,6 @@ public:
     void process_funds();
     void process_conversions();
     void account_recovery_processing();
-    void expire_escrow_ratification();
     void update_median_feed();
     void process_research_token_sales();
     void distribute_research_tokens(const research_token_sale_id_type research_token_sale_id) override;

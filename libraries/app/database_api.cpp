@@ -462,23 +462,6 @@ optional<account_recovery_request_api_obj> database_api::get_recovery_request(st
     });
 }
 
-optional<escrow_api_obj> database_api::get_escrow(string from, uint32_t escrow_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        optional<escrow_api_obj> result;
-
-        try
-        {
-            result = my->_db.get_escrow(from, escrow_id);
-        }
-        catch (...)
-        {
-        }
-
-        return result;
-    });
-}
-
 vector<withdraw_route> database_api::get_withdraw_routes(string account, withdraw_route_type type) const
 {
     return my->_db.with_read_lock([&]() {
@@ -1012,12 +995,6 @@ state database_api::get_state(string path) const
                         case operation::tag<transfer_operation>::value:
                         case operation::tag<author_reward_operation>::value:
                         case operation::tag<curation_reward_operation>::value:
-                        case operation::tag<escrow_transfer_operation>::value:
-                        case operation::tag<escrow_approve_operation>::value:
-                        case operation::tag<escrow_dispute_operation>::value:
-                        case operation::tag<escrow_release_operation>::value:
-                            eacnt.transfer_history[item.first] = item.second;
-                            break;
                         case operation::tag<vote_operation>::value:
                         case operation::tag<account_witness_vote_operation>::value:
                         case operation::tag<account_witness_proxy_operation>::value:
