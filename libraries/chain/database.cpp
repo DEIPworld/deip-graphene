@@ -1380,7 +1380,7 @@ void database::reward_voters(const research_content_id_type &research_content_id
         auto vote = vote_ref.get();
 
         if (vote.weight != 0) {
-            auto reward_amount = (vote.weight * reward) / total_votes.total_curators_reward_weight;
+            auto reward_amount = util::calculate_share(reward, vote.weight, total_votes.total_curators_reward_weight);
             account_service.increase_balance(account_service.get_account(vote.voter), asset(reward_amount, DEIP_SYMBOL));
         }
     }
@@ -1416,8 +1416,9 @@ void database::reward_references(const research_content_id_type& research_conten
 
     for (auto& research_votes : research_votes_by_id) {
         auto& research = research_service.get_research(research_votes.first);
-        auto reward_share = (research_votes.second * reward) / total_votes_amount;
-        auto expertise_reward_share = (research_votes.second * expertise_reward) / total_votes_amount;
+        auto reward_share = util::calculate_share(reward, research_votes.second.value, total_votes_amount);
+        auto expertise_reward_share = util::calculate_share(expertise_reward, research_votes.second.value,
+                                                            total_votes_amount);
         reward_research_token_holders(research, discipline_id, reward_share, expertise_reward_share);
     }
 }
@@ -1430,8 +1431,8 @@ void database::distribute_reward(const share_type reward)
     auto total_disciplines_reward_weight = dgpo.total_active_disciplines_reward_weight.to_uint64();
 
     // Distribute among common and all disciplines pools
-    auto common_pool_share = (reward * DEIP_COMMON_POOL_SHARE_PERCENT) / DEIP_100_PERCENT;
-    auto all_disciplines_pool_share = (reward * DEIP_ALL_DISCIPLINES_POOL_SHARE_PERCENT) / DEIP_100_PERCENT;
+    auto common_pool_share = util::calculate_share(reward, DEIP_COMMON_POOL_SHARE_PERCENT);
+    auto all_disciplines_pool_share = util::calculate_share(reward, DEIP_ALL_DISCIPLINES_POOL_SHARE_PERCENT);
     auto claimed_reward = common_pool_share + all_disciplines_pool_share;
 
     FC_ASSERT(claimed_reward <= reward, "Attempt to distribute amount that is greater than reward amount");
@@ -1445,7 +1446,9 @@ void database::distribute_reward(const share_type reward)
                 reward_researches_in_discipline(discipline, common_pool_share);
             } else {
                 // Distribute among disciplines in all disciplines pool
-                auto discipline_reward_share = (all_disciplines_pool_share * discipline.total_active_reward_weight) / total_disciplines_reward_weight;
+                auto discipline_reward_share = util::calculate_share(all_disciplines_pool_share,
+                                                                     discipline.total_active_reward_weight,
+                                                                     total_disciplines_reward_weight);
                 reward_researches_in_discipline(discipline, discipline_reward_share);
             }
         }
@@ -1470,7 +1473,7 @@ void database::reward_researches_in_discipline(const discipline_object& discipli
         if (total_votes_itr->total_active_research_reward_weight != 0)
         {
             auto& active_research_reward_weight = total_votes_itr->total_active_research_reward_weight;
-            auto research_content_share = (reward * active_research_reward_weight) / discipline.total_active_research_reward_weight;;
+            auto research_content_share = util::calculate_share(reward, active_research_reward_weight, discipline.total_active_research_reward_weight);
             reward_research_content(total_votes_itr->research_content_id, discipline.id, research_content_share);
             claimed_reward += research_content_share;
         }
@@ -1490,13 +1493,13 @@ void database::reward_research_content(const research_content_id_type& research_
     auto& research_content = research_content_service.get_content_by_id(research_content_id);
     auto& research = research_service.get_research(research_content.research_id);
 
-    auto curators_share = (reward * DEIP_CURATORS_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT;
-    auto references_share = (reward * DEIP_REFERENCES_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT;
-    auto review_share = (reward * research.review_share_in_percent) / DEIP_100_PERCENT;
+    auto curators_share = util::calculate_share(reward, DEIP_CURATORS_REWARD_SHARE_PERCENT);
+    auto references_share = util::calculate_share(reward, DEIP_REFERENCES_REWARD_SHARE_PERCENT);
+    auto review_share = util::calculate_share(reward, research.review_share_in_percent);
     auto token_holders_share = reward - curators_share - references_share - review_share;
 
-    auto references_expertise_share = (reward * DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT;
-    auto review_expertise_share = (reward * research.review_share_in_percent) / DEIP_100_PERCENT;
+    auto references_expertise_share = util::calculate_share(reward, DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT);
+    auto review_expertise_share = util::calculate_share(reward, research.review_share_in_percent);
     auto research_group_expertise_share = reward - references_expertise_share - review_expertise_share;
 
     FC_ASSERT(token_holders_share + review_share + references_share + curators_share <= reward,
@@ -1528,10 +1531,12 @@ void database::reward_reviews(const research_object &research,
 
     for (auto& review_votes : votes_by_review) {
         auto review = review_votes.first;
-        auto review_reward_share = (reward * review_votes.second) / total_weight;
+        auto review_reward_share = util::calculate_share(reward, review_votes.second.value, total_weight);
         auto authors = review.authors;
-        auto review_curators_reward_share = (review_reward_share * DEIP_CURATORS_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT;
-        auto review_references_reward_share = (review_reward_share * DEIP_REFERENCES_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT;
+        auto review_curators_reward_share = util::calculate_share(review_reward_share,
+                                                                  DEIP_CURATORS_REWARD_SHARE_PERCENT);
+        auto review_references_reward_share = util::calculate_share(review_reward_share,
+                                                                    DEIP_REFERENCES_REWARD_SHARE_PERCENT);
         auto authors_reward_share = review_reward_share - review_curators_reward_share - review_references_reward_share;
         for (auto& author_name : authors) {
             auto& author = account_service.get_account(author_name);
