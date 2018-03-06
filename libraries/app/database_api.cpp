@@ -26,6 +26,7 @@
 #include <deip/chain/dbs_research_token_sale.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_research_discipline_relation.hpp>
+#include <deip/chain/dbs_research_group_invite.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
@@ -1450,6 +1451,65 @@ database_api::get_disciplines_by_research(const research_id_type& research_id) c
         for (const chain::research_discipline_relation_object& research_discipline_relation : research_discipline_relations)
         {
             results.push_back(research_discipline_relation.discipline_id._id);
+        }
+
+        return results;
+    });
+}
+
+research_group_invite_api_obj
+database_api::get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group_invite& research_group_invite_service
+            = my->_db.obtain_service<chain::dbs_research_group_invite>();
+        return research_group_invite_service.get(research_group_invite_id);
+    });
+}
+
+research_group_invite_api_obj database_api::get_research_group_invite_by_account_name_and_research_group_id(
+    const account_name_type& account_name, const research_group_id_type& research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group_invite& research_group_invite_service
+            = my->_db.obtain_service<chain::dbs_research_group_invite>();
+        return research_group_invite_service.get_research_group_invite_by_account_name_and_research_group_id(
+            account_name, research_group_id);
+    });
+}
+
+vector<research_group_invite_api_obj>
+database_api::get_research_group_invites_by_account_name(const account_name_type& account_name) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_group_invite_api_obj> results;
+        chain::dbs_research_group_invite& research_group_invite_service
+            = my->_db.obtain_service<chain::dbs_research_group_invite>();
+
+        auto research_group_invites = research_group_invite_service.get_research_group_invites_by_account_name(account_name);
+
+        for (const chain::research_group_invite_object& research_group_invite : research_group_invites)
+        {
+            results.push_back(research_group_invite);
+        }
+
+        return results;
+    });
+}
+
+vector<research_group_invite_api_obj>
+database_api::get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_group_invite_api_obj> results;
+        chain::dbs_research_group_invite& research_group_invite_service
+            = my->_db.obtain_service<chain::dbs_research_group_invite>();
+
+        auto research_group_invites = research_group_invite_service.get_research_group_invites_by_research_group_id(research_group_id);
+
+        for (const chain::research_group_invite_object& research_group_invite : research_group_invites)
+        {
+            results.push_back(research_group_invite);
         }
 
         return results;
