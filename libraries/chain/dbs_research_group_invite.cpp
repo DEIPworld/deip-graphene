@@ -57,5 +57,21 @@ dbs_research_group_invite::research_group_invite_refs_type
     return ret;
 }
 
+dbs_research_group_invite::research_group_invite_refs_type
+    dbs_research_group_invite::get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id)
+{
+    research_group_invite_refs_type ret;
+
+    auto it_pair = db_impl().get_index<research_group_invite_index>().indicies().get<by_research_group_id>().equal_range(research_group_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
 }
 }

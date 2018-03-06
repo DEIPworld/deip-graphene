@@ -129,55 +129,6 @@ void account_witness_proxy_operation::validate() const
     FC_ASSERT(proxy != account, "Cannot proxy to self");
 }
 
-void escrow_transfer_operation::validate() const
-{
-    validate_account_name(from);
-    validate_account_name(to);
-    validate_account_name(agent);
-    FC_ASSERT(fee.amount >= 0, "fee cannot be negative");
-    FC_ASSERT(deip_amount.amount > 0, "deip amount cannot be negative");
-    FC_ASSERT(from != agent && to != agent, "agent must be a third party");
-    FC_ASSERT(fee.symbol == DEIP_SYMBOL, "fee must be DEIP");
-    FC_ASSERT(deip_amount.symbol == DEIP_SYMBOL, "deip amount must contain DEIP");
-    FC_ASSERT(ratification_deadline < escrow_expiration, "ratification deadline must be before escrow expiration");
-    if (json_meta.size() > 0)
-    {
-        FC_ASSERT(fc::is_utf8(json_meta), "JSON Metadata not formatted in UTF8");
-        FC_ASSERT(fc::json::is_valid(json_meta), "JSON Metadata not valid JSON");
-    }
-}
-
-void escrow_approve_operation::validate() const
-{
-    validate_account_name(from);
-    validate_account_name(to);
-    validate_account_name(agent);
-    validate_account_name(who);
-    FC_ASSERT(who == to || who == agent, "to or agent must approve escrow");
-}
-
-void escrow_dispute_operation::validate() const
-{
-    validate_account_name(from);
-    validate_account_name(to);
-    validate_account_name(agent);
-    validate_account_name(who);
-    FC_ASSERT(who == from || who == to, "who must be from or to");
-}
-
-void escrow_release_operation::validate() const
-{
-    validate_account_name(from);
-    validate_account_name(to);
-    validate_account_name(agent);
-    validate_account_name(who);
-    validate_account_name(receiver);
-    FC_ASSERT(who == from || who == to || who == agent, "who must be from or to or agent");
-    FC_ASSERT(receiver == from || receiver == to, "receiver must be from or to");
-    FC_ASSERT(deip_amount.amount >= 0, "deip amount cannot be negative");
-    FC_ASSERT(deip_amount.symbol == DEIP_SYMBOL, "deip amount must contain DEIP");
-}
-
 void request_account_recovery_operation::validate() const
 {
     validate_account_name(recovery_account);
@@ -201,11 +152,6 @@ void change_recovery_account_operation::validate() const
 {
     validate_account_name(account_to_recover);
     validate_account_name(new_recovery_account);
-}
-
-void decline_voting_rights_operation::validate() const
-{
-    validate_account_name(account);
 }
 
 void delegate_vesting_shares_operation::validate() const

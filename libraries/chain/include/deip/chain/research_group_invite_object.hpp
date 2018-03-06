@@ -27,6 +27,7 @@ public:
 };
 
 struct by_account_name;
+struct by_research_group_id;
 struct by_account_and_research_group_id;
 
 typedef multi_index_container<research_group_invite_object,
@@ -38,6 +39,10 @@ typedef multi_index_container<research_group_invite_object,
                                         member<research_group_invite_object,
                                                account_name_type,
                                                &research_group_invite_object::account_name>>,
+                           ordered_non_unique<tag<by_research_group_id>,
+                                         member<research_group_invite_object,
+                                                research_group_id_type,
+                                                &research_group_invite_object::research_group_id>>,
                            ordered_unique<tag<by_account_and_research_group_id>,
                            composite_key<research_group_invite_object,
                                         member<research_group_invite_object,

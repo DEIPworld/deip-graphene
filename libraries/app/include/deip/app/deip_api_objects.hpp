@@ -16,6 +16,7 @@
 #include <deip/chain/research_token_sale_object.hpp>
 #include <deip/chain/research_group_object.hpp>
 #include <deip/chain/research_discipline_relation_object.hpp>
+#include <deip/chain/research_group_invite_object.hpp>
 
 #include <deip/tags/tags_plugin.hpp>
 
@@ -29,9 +30,7 @@ using research_group_token_refs_type = std::vector<std::reference_wrapper<const 
 
 typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
 typedef chain::block_summary_object block_summary_api_obj;
-typedef chain::escrow_object escrow_api_obj;
 typedef chain::withdraw_vesting_route_object withdraw_vesting_route_api_obj;
-typedef chain::decline_voting_rights_request_object decline_voting_rights_request_api_obj;
 typedef chain::witness_vote_object witness_vote_api_obj;
 typedef chain::witness_schedule_object witness_schedule_api_obj;
 typedef chain::vesting_delegation_object vesting_delegation_api_obj;
@@ -630,6 +629,26 @@ struct research_discipline_relation_api_obj
     uint16_t votes_count;
 };
 
+struct research_group_invite_api_obj
+{
+    research_group_invite_api_obj(const chain::research_group_invite_object& co)
+        : id(co.id._id)
+        ,  account_name(co.account_name)
+        ,  research_group_id(co.research_group_id._id)
+        ,  research_group_token_amount(co.research_group_token_amount)
+    {}
+
+    // because fc::variant require for temporary object
+    research_group_invite_api_obj()
+    {
+    }
+
+    int64_t id;
+    account_name_type account_name;
+    int64_t research_group_id;
+    share_type research_group_token_amount;
+};
+
 } // namespace app
 } // namespace deip
 
@@ -807,6 +826,13 @@ FC_REFLECT( deip::app::research_discipline_relation_api_obj,
             (research_id)
             (discipline_id)
             (votes_count)
+)
+
+FC_REFLECT( deip::app::research_group_invite_api_obj,
+            (id)
+            (account_name)
+            (research_group_id)
+            (research_group_token_amount)
 )
 
 // clang-format on
