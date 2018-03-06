@@ -50,7 +50,6 @@ enum object_type
     owner_authority_history_object_type,
     account_recovery_request_object_type,
     change_recovery_account_request_object_type,
-    escrow_object_type,
     block_stats_object_type,
     reward_fund_object_type,
     reward_pool_object_type,
@@ -182,7 +181,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (owner_authority_history_object_type)
                  (account_recovery_request_object_type)
                  (change_recovery_account_request_object_type)
-                 (escrow_object_type)
                  (block_stats_object_type)
                  (reward_fund_object_type)
                  (reward_pool_object_type)
