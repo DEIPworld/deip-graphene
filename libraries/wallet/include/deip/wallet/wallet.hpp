@@ -893,8 +893,6 @@ public:
      */
     string decrypt_memo(const std::string& memo);
 
-    annotated_signed_transaction decline_voting_rights(const std::string& account, bool decline, bool broadcast);
-
     /**
      *  Gets the grant information for all my grants (list_my_accounts)
      */
@@ -1022,7 +1020,6 @@ FC_API( deip::wallet::wallet_api,
         (get_owner_history)
         (get_encrypted_memo)
         (decrypt_memo)
-        (decline_voting_rights)
         (create_grant)
 
         /// helper api

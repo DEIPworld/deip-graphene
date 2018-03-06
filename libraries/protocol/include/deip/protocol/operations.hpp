@@ -35,7 +35,6 @@ namespace deip {
                 escrow_release_operation,
                 escrow_approve_operation,
 
-                decline_voting_rights_operation,
                 delegate_vesting_shares_operation,
                 account_create_with_delegation_operation,
 

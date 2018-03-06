@@ -2090,20 +2090,6 @@ string wallet_api::decrypt_memo(const std::string& encrypted_memo)
     return encrypted_memo;
 }
 
-annotated_signed_transaction wallet_api::decline_voting_rights(const std::string& account, bool decline, bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-    decline_voting_rights_operation op;
-    op.account = account;
-    op.decline = decline;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
 map<uint32_t, applied_operation>
 wallet_api::get_account_history(const std::string& account, uint32_t from, uint32_t limit)
 {
