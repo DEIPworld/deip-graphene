@@ -66,13 +66,6 @@ public:
     void increase_received_vesting_shares(const account_object& account, const asset& vesting);
     void decrease_received_vesting_shares(const account_object& account, const asset& vesting);
 
-    void drop_challenged(const account_object& account,
-                         const optional<time_point_sec>& now = optional<time_point_sec>());
-
-    void prove_authority(const account_object& account,
-                         bool require_owner,
-                         const optional<time_point_sec>& now = optional<time_point_sec>());
-
     void update_withdraw(const account_object& account,
                          const asset& vesting,
                          const time_point_sec& next_vesting_withdrawal,

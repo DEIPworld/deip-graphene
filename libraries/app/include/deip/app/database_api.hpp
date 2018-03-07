@@ -174,9 +174,9 @@ public:
      */
     uint64_t get_account_count() const;
 
-    vector<budget_api_obj> get_budgets(const set<string>& account_names) const;
+    vector<grant_api_obj> get_grants(const set<string>& account_names) const;
 
-    set<string> lookup_budget_owners(const string& lower_bound_name, uint32_t limit) const;
+    set<string> lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const;
 
     vector<owner_authority_history_api_obj> get_owner_history(string account) const;
 
@@ -322,7 +322,7 @@ public:
     ////////////////
     research_api_obj get_research_by_id(const research_id_type& id) const;
     research_api_obj get_research_by_permlink(const string& permlink) const;
-    vector<research_api_obj> get_researches() const;
+    vector<research_api_obj> get_researches(const research_id_type& from, const uint32_t limit) const;
     vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
 
     //////////////////////
@@ -454,9 +454,9 @@ FC_API(deip::app::database_api,
    (get_witness_count)
    (get_active_witnesses)
 
-    // Budget
-   (get_budgets)
-   (lookup_budget_owners)
+    // Grant
+   (get_grants)
+   (lookup_grant_owners)
 
    // Disciplines
    (get_all_disciplines)
