@@ -29,6 +29,7 @@
 #include <deip/chain/vote_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/research_group_invite_object.hpp>
+#include <deip/chain/grant_objects.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -60,6 +61,7 @@
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
+#include <deip/chain/dbs_grant.hpp>
 
 
 namespace deip {
@@ -1307,6 +1309,26 @@ void database::reward_with_expertise(const account_name_type &account, const dis
     }
 }
 
+void database::process_grants()
+{
+    uint32_t block_num = head_block_num();
+
+    dbs_grant& grant_service = obtain_service<dbs_grant>();
+    dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
+
+    const auto& grants_idx = get_index<grant_index>().indices().get<by_start_block>();
+    auto grants_itr = grants_idx.lower_bound(block_num);
+
+    while (grants_itr != grants_idx.end())
+    {
+        auto grant = *grants_itr;
+        const auto& discipline_object = discipline_service.get_discipline(grant.target_discipline);
+        reward_researches_in_discipline(discipline_object, grant.per_block);
+        grant_service.allocate_funds(grant);
+        ++grants_itr;
+    }
+}
+
 share_type database::reward_voters(const research_content_id_type &research_content_id,
                                    const discipline_id_type &discipline_id, const share_type &reward)
 {
@@ -1784,6 +1806,8 @@ void database::_apply_block(const signed_block& next_block)
         update_witness_schedule();
 
         process_funds();
+
+        process_grants();
 
         process_vesting_withdrawals();
 

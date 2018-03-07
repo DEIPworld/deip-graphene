@@ -316,6 +316,7 @@ public:
                                  const share_type &reward);
     void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                const share_type &reward);
+    void process_grants();
 
     share_type pay_reward_funds(share_type reward);
 
