@@ -322,8 +322,6 @@ public:
     void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                const share_type &reward);
 
-    share_type pay_reward_funds(share_type reward);
-
     time_point_sec head_block_time() const override;
     uint32_t head_block_num() const;
     block_id_type head_block_id() const;
