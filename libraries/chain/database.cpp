@@ -1115,8 +1115,9 @@ void database::process_funds()
 
     auto new_deip = (props.current_supply.amount * current_inflation_rate)
         / (int64_t(DEIP_100_PERCENT) * int64_t(DEIP_BLOCKS_PER_YEAR));
-    auto content_reward = (new_deip * DEIP_CONTENT_REWARD_PERCENT) / DEIP_100_PERCENT; /// 97% to content rewards
-    auto witness_reward = (new_deip * DEIP_WITNESS_REWARD_PERCENT) / DEIP_100_PERCENT; /// Remaining 3% to witness pay
+    auto content_reward = util::calculate_share(new_deip, DEIP_CONTENT_REWARD_PERCENT); /// 97% to content rewards
+    content_reward = pay_reward_funds(content_reward);
+    auto witness_reward = new_deip - content_reward; /// Remaining 3% to witness pay
 
     const auto& cwit = get_witness(props.current_witness);
     witness_reward *= DEIP_MAX_WITNESSES;
