@@ -36,6 +36,7 @@ typedef chain::witness_vote_object witness_vote_api_obj;
 typedef chain::witness_schedule_object witness_schedule_api_obj;
 typedef chain::vesting_delegation_object vesting_delegation_api_obj;
 typedef chain::vesting_delegation_expiration_object vesting_delegation_expiration_api_obj;
+typedef chain::reward_fund_object reward_fund_api_obj;
 typedef witness::account_bandwidth_object account_bandwidth_api_obj;
 
 struct tag_api_obj

@@ -281,6 +281,16 @@ scheduled_hardfork database_api::get_next_scheduled_hardfork() const
     });
 }
 
+reward_fund_api_obj database_api::get_reward_fund(const string& name) const
+{
+    return my->_db.with_read_lock([&]() {
+        auto fund = my->_db.find<reward_fund_object, by_name>(name);
+        FC_ASSERT(fund != nullptr, "Invalid reward fund name");
+
+        return *fund;
+    });
+}
+
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
 // Keys                                                             //
