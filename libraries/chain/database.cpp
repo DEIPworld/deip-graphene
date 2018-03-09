@@ -1219,8 +1219,19 @@ void database::distribute_research_tokens(const research_token_sale_id_type rese
 
     while (it != it_end)
     {
-        auto transfer_amount = (it->amount * research_token_sale.balance_tokens) / research_token_sale.total_amount ;
-        research_token_service.create_research_token(it->owner, transfer_amount, research_token_sale.research_id);
+        auto transfer_amount = (it->amount * research_token_sale.balance_tokens) / research_token_sale.total_amount;
+
+        if (research_token_service.check_research_token_existence_by_account_name_and_research_id(
+                it->owner, research_token_sale.research_id))
+        {
+            auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id(
+                it->owner, research_token_sale.research_id);
+            research_token_service.increase_research_token_amount(research_token, transfer_amount);
+        }
+        else
+        {
+            research_token_service.create_research_token(it->owner, transfer_amount, research_token_sale.research_id);
+        }
         remove(*it);
         it = idx.first;
     }
