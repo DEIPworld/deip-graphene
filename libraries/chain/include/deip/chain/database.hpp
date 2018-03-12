@@ -304,22 +304,22 @@ public:
     /**
      * Rewards distribution
      */
-    void distribute_reward(const share_type reward);
-    void reward_researches_in_discipline(const discipline_object &discipline, const share_type& reward);
-    void reward_research_content(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id,
+    share_type distribute_reward(const share_type reward);
+    share_type reward_researches_in_discipline(const discipline_object &discipline, const share_type& reward);
+    share_type reward_research_content(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id,
                                  const share_type &reward);
-    void reward_research_token_holders(const research_object& research,
+    share_type reward_research_token_holders(const research_object& research,
                                        const discipline_id_type& discipline_id,
                                        const share_type& reward,
                                        const share_type& expertise_reward);
-    void reward_references(const research_content_id_type& research_content_id,
+    share_type reward_references(const research_content_id_type& research_content_id,
                            const discipline_id_type& discipline_id,
                            const share_type& reward,
                            const share_type& expertise_reward);
-    void reward_reviews(const research_object& research,
+    share_type reward_reviews(const research_object& research,
                         const discipline_id_type& discipline_id,
                         const share_type& reward);
-    void reward_voters(const research_content_id_type &research_content_id,
+    share_type reward_voters(const research_content_id_type &research_content_id,
                        const discipline_id_type &discipline_id, const share_type &reward);
     void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                const share_type &reward);
