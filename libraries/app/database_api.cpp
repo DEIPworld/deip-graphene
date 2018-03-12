@@ -938,8 +938,6 @@ state database_api::get_state(string path) const
                         case operation::tag<transfer_to_vesting_operation>::value:
                         case operation::tag<withdraw_vesting_operation>::value:
                         case operation::tag<transfer_operation>::value:
-                        case operation::tag<author_reward_operation>::value:
-                        case operation::tag<curation_reward_operation>::value:
                         case operation::tag<vote_operation>::value:
                         case operation::tag<account_witness_vote_operation>::value:
                         case operation::tag<account_witness_proxy_operation>::value:
@@ -948,7 +946,7 @@ state database_api::get_state(string path) const
                         case operation::tag<account_create_operation>::value:
                         case operation::tag<account_update_operation>::value:
                         case operation::tag<witness_update_operation>::value:
-                        case operation::tag<producer_reward_operation>::value:
+                        case operation::tag<producer_reward_operation>::value:  
                         default:
                             eacnt.other_history[item.first] = item.second;
                         }

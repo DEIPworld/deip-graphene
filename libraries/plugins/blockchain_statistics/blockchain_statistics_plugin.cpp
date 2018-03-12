@@ -96,20 +96,6 @@ struct operation_process
 //        });
     }
 
-    void operator()(const author_reward_operation& op) const
-    {
-        _db.modify(_bucket, [&](bucket_object& b) {
-            b.payouts++;
-            b.deip_paid_to_authors += op.deip_payout.amount;
-            b.vests_paid_to_authors += op.vesting_payout.amount;
-        });
-    }
-
-    void operator()(const curation_reward_operation& op) const
-    {
-        _db.modify(_bucket, [&](bucket_object& b) { b.vests_paid_to_curators += op.reward.amount; });
-    }
-
     void operator()(const transfer_to_vesting_operation& op) const
     {
         _db.modify(_bucket, [&](bucket_object& b) {

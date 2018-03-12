@@ -52,7 +52,6 @@ enum object_type
     change_recovery_account_request_object_type,
     block_stats_object_type,
     reward_fund_object_type,
-    reward_pool_object_type,
     vesting_delegation_object_type,
     vesting_delegation_expiration_object_type,
     grant_object_type,
@@ -91,7 +90,6 @@ class account_recovery_request_object;
 class change_recovery_account_request_object;
 class block_stats_object;
 class reward_fund_object;
-class reward_pool_object;
 class vesting_delegation_object;
 class vesting_delegation_expiration_object;
 class grant_object;
@@ -130,7 +128,6 @@ typedef oid<account_recovery_request_object> account_recovery_request_id_type;
 typedef oid<change_recovery_account_request_object> change_recovery_account_request_id_type;
 typedef oid<block_stats_object> block_stats_id_type;
 typedef oid<reward_fund_object> reward_fund_id_type;
-typedef oid<reward_pool_object> reward_pool_id_type;
 typedef oid<vesting_delegation_object> vesting_delegation_id_type;
 typedef oid<vesting_delegation_expiration_object> vesting_delegation_expiration_id_type;
 typedef oid<grant_object> grant_id_type;
@@ -181,7 +178,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (change_recovery_account_request_object_type)
                  (block_stats_object_type)
                  (reward_fund_object_type)
-                 (reward_pool_object_type)
                  (vesting_delegation_object_type)
                  (vesting_delegation_expiration_object_type)
                  (grant_object_type)

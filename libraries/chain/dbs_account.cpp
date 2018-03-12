@@ -486,8 +486,7 @@ asset dbs_account::create_vesting(const account_object& to_account, const asset&
             props.total_vesting_shares += new_vesting;
         });
 
-        // if (!to_reward_balance)
-            adjust_proxied_witness_votes(to_account, new_vesting.amount);
+        adjust_proxied_witness_votes(to_account, new_vesting.amount);
 
         return new_vesting;
     }

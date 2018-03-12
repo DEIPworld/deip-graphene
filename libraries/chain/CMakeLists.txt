@@ -25,7 +25,6 @@ add_library( deip_chain
              dbs_base_impl.cpp
              dbservice.cpp
              dbs_account.cpp
-             dbs_reward.cpp
              dbs_witness.cpp
              dbs_grant.cpp
              dbs_proposal.cpp
@@ -49,7 +48,7 @@ add_library( deip_chain
              genesis.cpp
 
              util/reward.cpp
-
+             
              ${HEADERS}
              ${hardfork_hpp_file}
              "${CMAKE_CURRENT_BINARY_DIR}/include/deip/chain/hardfork.hpp"

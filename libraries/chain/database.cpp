@@ -1,7 +1,6 @@
 #include <deip/protocol/deip_operations.hpp>
 
 #include <deip/chain/block_summary_object.hpp>
-#include <deip/chain/compound.hpp>
 #include <deip/chain/database.hpp>
 #include <deip/chain/database_exceptions.hpp>
 #include <deip/chain/db_with.hpp>
@@ -34,8 +33,6 @@
 #include <deip/chain/util/reward.hpp>
 #include <deip/chain/util/uint256.hpp>
 
-#include <deip/chain/pool/reward_pool.hpp>
-
 #include <fc/smart_ref_impl.hpp>
 #include <fc/uint128.hpp>
 #include <fc/container/deque.hpp>
@@ -60,7 +57,6 @@
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
-
 
 namespace deip {
 namespace chain {
@@ -95,13 +91,6 @@ namespace deip {
 namespace chain {
 
 using boost::container::flat_set;
-
-struct reward_fund_context
-{
-    uint128_t recent_claims = 0;
-    asset reward_balance = asset(0, DEIP_SYMBOL);
-    share_type deip_awarded = 0;
-};
 
 class database_impl
 {
@@ -1116,7 +1105,7 @@ void database::process_funds()
     auto new_deip = (props.current_supply.amount * current_inflation_rate)
         / (int64_t(DEIP_100_PERCENT) * int64_t(DEIP_BLOCKS_PER_YEAR));
     auto content_reward = (new_deip * DEIP_CONTENT_REWARD_PERCENT) / DEIP_100_PERCENT;
-    content_reward = pay_reward_funds(content_reward); /// 75% to content creator
+    
     auto vesting_reward = (new_deip * DEIP_VESTING_FUND_PERCENT) / DEIP_100_PERCENT; /// 15% to vesting fund
     auto witness_reward = new_deip - content_reward - vesting_reward; /// Remaining 10% to witness pay
 
@@ -1144,27 +1133,6 @@ void database::process_funds()
     const auto& producer_reward
         = account_service.create_vesting(get_account(cwit.owner), asset(witness_reward, DEIP_SYMBOL));
     push_virtual_operation(producer_reward_operation(cwit.owner, producer_reward));
-}
-
-share_type database::pay_reward_funds(share_type reward)
-{
-    const auto& reward_idx = get_index<reward_fund_index, by_id>();
-    share_type used_rewards = 0;
-
-    for (auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr)
-    {
-        // reward is a per block reward and the percents are 16-bit. This should never overflow
-        auto r = (reward * itr->percent_content_rewards) / DEIP_100_PERCENT;
-
-        modify(*itr, [&](reward_fund_object& rfo) { rfo.reward_balance += asset(r, DEIP_SYMBOL); });
-
-        used_rewards += r;
-
-        // Sanity check to ensure we aren't printing more DEIP than has been allocated through inflation
-        FC_ASSERT(used_rewards <= reward);
-    }
-
-    return used_rewards;
 }
 
 void database::account_recovery_processing()
@@ -1561,7 +1529,6 @@ void database::initialize_indexes()
     add_index<account_recovery_request_index>();
     add_index<change_recovery_account_request_index>();
     add_index<reward_fund_index>();
-    add_index<reward_pool_index>();
     add_index<vesting_delegation_index>();
     add_index<vesting_delegation_expiration_index>();
     add_index<grant_index>();
