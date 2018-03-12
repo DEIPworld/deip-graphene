@@ -300,7 +300,7 @@ public:
     void account_recovery_processing();
     void update_median_feed();
     void process_research_token_sales();
-    void distribute_research_tokens(const research_token_sale_id_type research_token_sale_id) override;
+    void distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id) override;
     void refund_research_tokens(const research_token_sale_id_type research_token_sale_id);
     void reward_research_token_holders(const research_object& research,
                                        const discipline_id_type& discipline_id,

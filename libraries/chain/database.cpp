@@ -1204,20 +1204,18 @@ void database::account_recovery_processing()
     }
 }
 
-void database::distribute_research_tokens(const research_token_sale_id_type research_token_sale_id)
+void database::distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id)
 {
     dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
     dbs_research_token& research_token_service = obtain_service<dbs_research_token>();
 
     auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(research_token_sale_id);
 
-    const auto& idx = get_index<research_token_sale_contribution_index>().indicies().
-            get<by_research_token_sale_id>().equal_range(research_token_sale_id);
+    const auto& idx = get_index<research_token_sale_contribution_index>().indicies().get<by_research_token_sale_id>();
 
-    auto it = idx.first;
-    const auto it_end = idx.second;
+    auto it = idx.find(research_token_sale_id);
 
-    while (it != it_end)
+    while (it != idx.end() && it->research_token_sale_id == research_token_sale_id)
     {
         auto transfer_amount = (it->amount * research_token_sale.balance_tokens) / research_token_sale.total_amount;
 
@@ -1233,7 +1231,7 @@ void database::distribute_research_tokens(const research_token_sale_id_type rese
             research_token_service.create_research_token(it->owner, transfer_amount, research_token_sale.research_id);
         }
         remove(*it);
-        it = idx.first;
+        it = idx.find(research_token_sale_id);
     }
 }
 
