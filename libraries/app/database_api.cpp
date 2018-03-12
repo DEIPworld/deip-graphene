@@ -26,6 +26,7 @@
 #include <deip/chain/dbs_research_token_sale.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_research_discipline_relation.hpp>
+#include <deip/chain/dbs_research_group_invite.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
@@ -461,23 +462,6 @@ optional<account_recovery_request_api_obj> database_api::get_recovery_request(st
     });
 }
 
-optional<escrow_api_obj> database_api::get_escrow(string from, uint32_t escrow_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        optional<escrow_api_obj> result;
-
-        try
-        {
-            result = my->_db.get_escrow(from, escrow_id);
-        }
-        catch (...)
-        {
-        }
-
-        return result;
-    });
-}
-
 vector<withdraw_route> database_api::get_withdraw_routes(string account, withdraw_route_type type) const
 {
     return my->_db.with_read_lock([&]() {
@@ -851,52 +835,6 @@ map<uint32_t, applied_operation> database_api::get_account_history(string accoun
     });
 }
 
-vector<pair<string, uint32_t>> database_api::get_tags_used_by_author(const string& author) const
-{
-    return my->_db.with_read_lock([&]() {
-        const auto* acnt = my->_db.find_account(author);
-        FC_ASSERT(acnt != nullptr);
-        const auto& tidx = my->_db.get_index<tags::author_tag_stats_index>().indices().get<tags::by_author_posts_tag>();
-        auto itr = tidx.lower_bound(boost::make_tuple(acnt->id, 0));
-        vector<pair<string, uint32_t>> result;
-        while (itr != tidx.end() && itr->author == acnt->id && result.size() < 1000)
-        {
-            result.push_back(std::make_pair(itr->tag, itr->total_posts));
-            ++itr;
-        }
-        return result;
-    });
-}
-
-vector<tag_api_obj> database_api::get_trending_tags(string after, uint32_t limit) const
-{
-    return my->_db.with_read_lock([&]() {
-        limit = std::min(limit, uint32_t(1000));
-        vector<tag_api_obj> result;
-        result.reserve(limit);
-
-        const auto& nidx = my->_db.get_index<tags::tag_stats_index>().indices().get<tags::by_tag>();
-
-        const auto& ridx = my->_db.get_index<tags::tag_stats_index>().indices().get<tags::by_trending>();
-        auto itr = ridx.begin();
-        if (after != "" && nidx.size())
-        {
-            auto nitr = nidx.lower_bound(after);
-            if (nitr == nidx.end())
-                itr = ridx.end();
-            else
-                itr = ridx.iterator_to(*nitr);
-        }
-
-        while (itr != ridx.end() && result.size() < limit)
-        {
-            result.push_back(tag_api_obj(*itr));
-            ++itr;
-        }
-        return result;
-    });
-}
-
 /**
  *  This call assumes root already stored as part of state, it will
  *  modify root.replies to contain links to the reply posts and then
@@ -975,14 +913,6 @@ state database_api::get_state(string path) const
             if (!path.size())
                 path = "trending";
 
-            /// FETCH CATEGORY STATE
-            auto trending_tags = get_trending_tags(std::string(), 50);
-            for (const auto& t : trending_tags)
-            {
-                _state.tag_idx.trending.push_back(string(t.name));
-            }
-            /// END FETCH CATEGORY STATE
-
             set<string> accounts;
 
             vector<string> part;
@@ -996,7 +926,6 @@ state database_api::get_state(string path) const
             {
                 auto acnt = part[0].substr(1);
                 _state.accounts[acnt] = extended_account(my->_db.get_account(acnt), my->_db);
-                _state.accounts[acnt].tags_usage = get_tags_used_by_author(acnt);
 
                 auto& eacnt = _state.accounts[acnt];
                 if (part[1] == "transfers")
@@ -1009,12 +938,6 @@ state database_api::get_state(string path) const
                         case operation::tag<transfer_to_vesting_operation>::value:
                         case operation::tag<withdraw_vesting_operation>::value:
                         case operation::tag<transfer_operation>::value:
-                        case operation::tag<escrow_transfer_operation>::value:
-                        case operation::tag<escrow_approve_operation>::value:
-                        case operation::tag<escrow_dispute_operation>::value:
-                        case operation::tag<escrow_release_operation>::value:
-                            eacnt.transfer_history[item.first] = item.second;
-                            break;
                         case operation::tag<vote_operation>::value:
                         case operation::tag<account_witness_vote_operation>::value:
                         case operation::tag<account_witness_proxy_operation>::value:
@@ -1041,17 +964,6 @@ state database_api::get_state(string path) const
                 }
             }
 
-            else if (part[0] == "tags")
-            {
-                _state.tag_idx.trending.clear();
-                auto trending_tags = get_trending_tags(std::string(), 250);
-                for (const auto& t : trending_tags)
-                {
-                    string name = t.name;
-                    _state.tag_idx.trending.push_back(name);
-                    _state.tags[name] = t;
-                }
-            }
             else
             {
                 elog("What... no matches");
@@ -1448,6 +1360,65 @@ database_api::get_disciplines_by_research(const research_id_type& research_id) c
         for (const chain::research_discipline_relation_object& research_discipline_relation : research_discipline_relations)
         {
             results.push_back(research_discipline_relation.discipline_id._id);
+        }
+
+        return results;
+    });
+}
+
+research_group_invite_api_obj
+database_api::get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group_invite& research_group_invite_service
+            = my->_db.obtain_service<chain::dbs_research_group_invite>();
+        return research_group_invite_service.get(research_group_invite_id);
+    });
+}
+
+research_group_invite_api_obj database_api::get_research_group_invite_by_account_name_and_research_group_id(
+    const account_name_type& account_name, const research_group_id_type& research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group_invite& research_group_invite_service
+            = my->_db.obtain_service<chain::dbs_research_group_invite>();
+        return research_group_invite_service.get_research_group_invite_by_account_name_and_research_group_id(
+            account_name, research_group_id);
+    });
+}
+
+vector<research_group_invite_api_obj>
+database_api::get_research_group_invites_by_account_name(const account_name_type& account_name) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_group_invite_api_obj> results;
+        chain::dbs_research_group_invite& research_group_invite_service
+            = my->_db.obtain_service<chain::dbs_research_group_invite>();
+
+        auto research_group_invites = research_group_invite_service.get_research_group_invites_by_account_name(account_name);
+
+        for (const chain::research_group_invite_object& research_group_invite : research_group_invites)
+        {
+            results.push_back(research_group_invite);
+        }
+
+        return results;
+    });
+}
+
+vector<research_group_invite_api_obj>
+database_api::get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_group_invite_api_obj> results;
+        chain::dbs_research_group_invite& research_group_invite_service
+            = my->_db.obtain_service<chain::dbs_research_group_invite>();
+
+        auto research_group_invites = research_group_invite_service.get_research_group_invites_by_research_group_id(research_group_id);
+
+        for (const chain::research_group_invite_object& research_group_invite : research_group_invites)
+        {
+            results.push_back(research_group_invite);
         }
 
         return results;

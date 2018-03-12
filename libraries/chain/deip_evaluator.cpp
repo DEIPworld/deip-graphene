@@ -19,6 +19,7 @@
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
+#include <deip/chain/dbs_research_token.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -227,183 +228,6 @@ void account_update_evaluator::do_apply(const account_update_operation& o)
 /**
  *  Because net_rshares is 0 there is no need to update any pending payout calculations or parent posts.
  */
-
-void escrow_transfer_evaluator::do_apply(const escrow_transfer_operation& o)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    try
-    {
-        const auto& from_account = account_service.get_account(o.from);
-        account_service.check_account_existence(o.to);
-        account_service.check_account_existence(o.agent);
-
-        FC_ASSERT(o.ratification_deadline > _db.head_block_time(),
-                  "The escorw ratification deadline must be after head block time.");
-        FC_ASSERT(o.escrow_expiration > _db.head_block_time(), "The escrow expiration must be after head block time.");
-
-        asset deip_spent = o.deip_amount;
-        if (o.fee.symbol == DEIP_SYMBOL)
-            deip_spent += o.fee;
-
-        FC_ASSERT(from_account.balance >= deip_spent,
-                  "Account cannot cover DEIP costs of escrow. Required: ${r} Available: ${a}",
-                  ("r", deip_spent)("a", from_account.balance));
-
-        account_service.decrease_balance(from_account, deip_spent);
-
-        _db._temporary_public_impl().create<escrow_object>([&](escrow_object& esc) {
-            esc.escrow_id = o.escrow_id;
-            esc.from = o.from;
-            esc.to = o.to;
-            esc.agent = o.agent;
-            esc.ratification_deadline = o.ratification_deadline;
-            esc.escrow_expiration = o.escrow_expiration;
-            esc.deip_balance = o.deip_amount;
-            esc.pending_fee = o.fee;
-        });
-    }
-    FC_CAPTURE_AND_RETHROW((o))
-}
-
-void escrow_approve_evaluator::do_apply(const escrow_approve_operation& o)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    try
-    {
-
-        const auto& escrow = _db.get_escrow(o.from, o.escrow_id);
-
-        FC_ASSERT(escrow.to == o.to, "Operation 'to' (${o}) does not match escrow 'to' (${e}).",
-                  ("o", o.to)("e", escrow.to));
-        FC_ASSERT(escrow.agent == o.agent, "Operation 'agent' (${a}) does not match escrow 'agent' (${e}).",
-                  ("o", o.agent)("e", escrow.agent));
-        FC_ASSERT(escrow.ratification_deadline >= _db.head_block_time(),
-                  "The escrow ratification deadline has passed. Escrow can no longer be ratified.");
-
-        bool reject_escrow = !o.approve;
-
-        if (o.who == o.to)
-        {
-            FC_ASSERT(!escrow.to_approved, "Account 'to' (${t}) has already approved the escrow.", ("t", o.to));
-
-            if (!reject_escrow)
-            {
-                _db._temporary_public_impl().modify(escrow, [&](escrow_object& esc) { esc.to_approved = true; });
-            }
-        }
-        if (o.who == o.agent)
-        {
-            FC_ASSERT(!escrow.agent_approved, "Account 'agent' (${a}) has already approved the escrow.",
-                      ("a", o.agent));
-
-            if (!reject_escrow)
-            {
-                _db._temporary_public_impl().modify(escrow, [&](escrow_object& esc) { esc.agent_approved = true; });
-            }
-        }
-
-        if (reject_escrow)
-        {
-            const auto& from_account = account_service.get_account(o.from);
-            account_service.increase_balance(from_account, escrow.deip_balance);
-            account_service.increase_balance(from_account, escrow.pending_fee);
-
-            _db._temporary_public_impl().remove(escrow);
-        }
-        else if (escrow.to_approved && escrow.agent_approved)
-        {
-            const auto& agent_account = account_service.get_account(o.agent);
-            account_service.increase_balance(agent_account, escrow.pending_fee);
-
-            _db._temporary_public_impl().modify(escrow, [&](escrow_object& esc) { esc.pending_fee.amount = 0; });
-        }
-    }
-    FC_CAPTURE_AND_RETHROW((o))
-}
-
-void escrow_dispute_evaluator::do_apply(const escrow_dispute_operation& o)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    try
-    {
-        account_service.check_account_existence(o.from);
-
-        const auto& e = _db.get_escrow(o.from, o.escrow_id);
-        FC_ASSERT(_db.head_block_time() < e.escrow_expiration, "Disputing the escrow must happen before expiration.");
-        FC_ASSERT(e.to_approved && e.agent_approved,
-                  "The escrow must be approved by all parties before a dispute can be raised.");
-        FC_ASSERT(!e.disputed, "The escrow is already under dispute.");
-        FC_ASSERT(e.to == o.to, "Operation 'to' (${o}) does not match escrow 'to' (${e}).", ("o", o.to)("e", e.to));
-        FC_ASSERT(e.agent == o.agent, "Operation 'agent' (${a}) does not match escrow 'agent' (${e}).",
-                  ("o", o.agent)("e", e.agent));
-
-        _db._temporary_public_impl().modify(e, [&](escrow_object& esc) { esc.disputed = true; });
-    }
-    FC_CAPTURE_AND_RETHROW((o))
-}
-
-void escrow_release_evaluator::do_apply(const escrow_release_operation& o)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    try
-    {
-        account_service.check_account_existence(o.from);
-        const auto& receiver_account = account_service.get_account(o.receiver);
-
-        const auto& e = _db.get_escrow(o.from, o.escrow_id);
-        FC_ASSERT(e.deip_balance >= o.deip_amount,
-                  "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}",
-                  ("a", o.deip_amount)("b", e.deip_balance));
-        FC_ASSERT(e.to == o.to, "Operation 'to' (${o}) does not match escrow 'to' (${e}).", ("o", o.to)("e", e.to));
-        FC_ASSERT(e.agent == o.agent, "Operation 'agent' (${a}) does not match escrow 'agent' (${e}).",
-                  ("o", o.agent)("e", e.agent));
-        FC_ASSERT(o.receiver == e.from || o.receiver == e.to, "Funds must be released to 'from' (${f}) or 'to' (${t})",
-                  ("f", e.from)("t", e.to));
-        FC_ASSERT(e.to_approved && e.agent_approved, "Funds cannot be released prior to escrow approval.");
-
-        // If there is a dispute regardless of expiration, the agent can release funds to either party
-        if (e.disputed)
-        {
-            FC_ASSERT(o.who == e.agent, "Only 'agent' (${a}) can release funds in a disputed escrow.", ("a", e.agent));
-        }
-        else
-        {
-            FC_ASSERT(o.who == e.from || o.who == e.to,
-                      "Only 'from' (${f}) and 'to' (${t}) can release funds from a non-disputed escrow",
-                      ("f", e.from)("t", e.to));
-
-            if (e.escrow_expiration > _db.head_block_time())
-            {
-                // If there is no dispute and escrow has not expired, either party can release funds to the other.
-                if (o.who == e.from)
-                {
-                    FC_ASSERT(o.receiver == e.to, "Only 'from' (${f}) can release funds to 'to' (${t}).",
-                              ("f", e.from)("t", e.to));
-                }
-                else if (o.who == e.to)
-                {
-                    FC_ASSERT(o.receiver == e.from, "Only 'to' (${t}) can release funds to 'from' (${t}).",
-                              ("f", e.from)("t", e.to));
-                }
-            }
-        }
-        // If escrow expires and there is no dispute, either party can release funds to either party.
-
-        account_service.increase_balance(receiver_account, o.deip_amount);
-
-        _db._temporary_public_impl().modify(e, [&](escrow_object& esc) { esc.deip_balance -= o.deip_amount; });
-
-        if (e.deip_balance.amount == 0)
-        {
-            _db._temporary_public_impl().remove(e);
-        }
-    }
-    FC_CAPTURE_AND_RETHROW((o))
-}
 
 void transfer_evaluator::do_apply(const transfer_operation& o)
 {
@@ -857,32 +681,6 @@ void change_recovery_account_evaluator::do_apply(const change_recovery_account_o
     account_service.change_recovery_account(account_to_recover, o.new_recovery_account);
 }
 
-void decline_voting_rights_evaluator::do_apply(const decline_voting_rights_operation& o)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    const auto& account = account_service.get_account(o.account);
-    const auto& request_idx
-        = _db._temporary_public_impl().get_index<decline_voting_rights_request_index>().indices().get<by_account>();
-    auto itr = request_idx.find(account.id);
-
-    if (o.decline)
-    {
-        FC_ASSERT(itr == request_idx.end(), "Cannot create new request because one already exists.");
-
-        _db._temporary_public_impl().create<decline_voting_rights_request_object>(
-            [&](decline_voting_rights_request_object& req) {
-                req.account = account.id;
-                req.effective_date = _db.head_block_time() + DEIP_OWNER_AUTH_RECOVERY_PERIOD;
-            });
-    }
-    else
-    {
-        FC_ASSERT(itr != request_idx.end(), "Cannot cancel the request because it does not exist.");
-        _db._temporary_public_impl().remove(*itr);
-    }
-}
-
 void delegate_vesting_shares_evaluator::do_apply(const delegate_vesting_shares_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
@@ -1090,12 +888,34 @@ void approve_research_group_invite_evaluator::do_apply(const approve_research_gr
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_research &research_service = _db.obtain_service<dbs_research>();
+    dbs_research_token &research_token_service = _db.obtain_service<dbs_research_token>();
     dbs_research_group_invite &research_group_invite_service = _db.obtain_service<dbs_research_group_invite>();
 
     auto& research_group_invite = research_group_invite_service.get(op.research_group_invite_id);
 
     account_service.check_account_existence(research_group_invite.account_name);
     research_group_service.check_research_group_existence(research_group_invite.research_group_id);
+
+    auto researches = research_service.get_researches_by_research_group(research_group_invite.research_group_id);
+
+    for (auto& r : researches)
+    {
+        auto& research = r.get();
+
+        if (research_token_service.check_research_token_existence_by_account_name_and_research_id(
+                research_group_invite.account_name, research.id))
+        {
+            auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id(
+                research_group_invite.account_name, research.id);
+
+            auto tokens_to_conversion
+                = research_token.amount * op.research_tokens_conversion_percent / DEIP_100_PERCENT;
+
+            research_token_service.decrease_research_token_amount(research_token, tokens_to_conversion);
+            research_service.increase_owned_tokens(research, tokens_to_conversion);
+        }
+    }
 
     research_group_service.create_research_group_token(research_group_invite.research_group_id,
                                                        research_group_invite.research_group_token_amount,

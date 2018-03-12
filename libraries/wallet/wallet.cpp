@@ -1897,106 +1897,6 @@ annotated_signed_transaction wallet_api::transfer(
     FC_CAPTURE_AND_RETHROW((from)(to)(amount)(memo)(broadcast))
 }
 
-annotated_signed_transaction wallet_api::escrow_transfer(const std::string& from,
-                                                         const std::string& to,
-                                                         const std::string& agent,
-                                                         uint32_t escrow_id,
-                                                         const asset& deip_amount,
-                                                         const asset& fee,
-                                                         time_point_sec ratification_deadline,
-                                                         time_point_sec escrow_expiration,
-                                                         const std::string& json_meta,
-                                                         bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-    escrow_transfer_operation op;
-    op.from = from;
-    op.to = to;
-    op.agent = agent;
-    op.escrow_id = escrow_id;
-    op.deip_amount = deip_amount;
-    op.fee = fee;
-    op.ratification_deadline = ratification_deadline;
-    op.escrow_expiration = escrow_expiration;
-    op.json_meta = json_meta;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
-annotated_signed_transaction wallet_api::escrow_approve(const std::string& from,
-                                                        const std::string& to,
-                                                        const std::string& agent,
-                                                        const std::string& who,
-                                                        uint32_t escrow_id,
-                                                        bool approve,
-                                                        bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-    escrow_approve_operation op;
-    op.from = from;
-    op.to = to;
-    op.agent = agent;
-    op.who = who;
-    op.escrow_id = escrow_id;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
-annotated_signed_transaction wallet_api::escrow_dispute(const std::string& from,
-                                                        const std::string& to,
-                                                        const std::string& agent,
-                                                        const std::string& who,
-                                                        uint32_t escrow_id,
-                                                        bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-    escrow_dispute_operation op;
-    op.from = from;
-    op.to = to;
-    op.agent = agent;
-    op.who = who;
-    op.escrow_id = escrow_id;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
-annotated_signed_transaction wallet_api::escrow_release(const std::string& from,
-                                                        const std::string& to,
-                                                        const std::string& agent,
-                                                        const std::string& who,
-                                                        const std::string& receiver,
-                                                        uint32_t escrow_id,
-                                                        const asset& deip_amount,
-                                                        bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-    escrow_release_operation op;
-    op.from = from;
-    op.to = to;
-    op.agent = agent;
-    op.who = who;
-    op.receiver = receiver;
-    op.escrow_id = escrow_id;
-    op.deip_amount = deip_amount;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-    return my->sign_transaction(tx, broadcast);
-}
-
 annotated_signed_transaction
 wallet_api::transfer_to_vesting(const std::string& from, const std::string& to, const asset& amount, bool broadcast)
 {
@@ -2088,20 +1988,6 @@ string wallet_api::decrypt_memo(const std::string& encrypted_memo)
         }
     }
     return encrypted_memo;
-}
-
-annotated_signed_transaction wallet_api::decline_voting_rights(const std::string& account, bool decline, bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-    decline_voting_rights_operation op;
-    op.account = account;
-    op.decline = decline;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
 }
 
 map<uint32_t, applied_operation>

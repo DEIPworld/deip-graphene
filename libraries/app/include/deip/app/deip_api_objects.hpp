@@ -16,10 +16,11 @@
 #include <deip/chain/research_token_sale_object.hpp>
 #include <deip/chain/research_group_object.hpp>
 #include <deip/chain/research_discipline_relation_object.hpp>
-
-#include <deip/tags/tags_plugin.hpp>
+#include <deip/chain/research_group_invite_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
+
+#include <deip/chain/database.hpp>
 
 namespace deip {
 namespace app {
@@ -29,37 +30,13 @@ using research_group_token_refs_type = std::vector<std::reference_wrapper<const 
 
 typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
 typedef chain::block_summary_object block_summary_api_obj;
-typedef chain::escrow_object escrow_api_obj;
 typedef chain::withdraw_vesting_route_object withdraw_vesting_route_api_obj;
-typedef chain::decline_voting_rights_request_object decline_voting_rights_request_api_obj;
 typedef chain::witness_vote_object witness_vote_api_obj;
 typedef chain::witness_schedule_object witness_schedule_api_obj;
 typedef chain::vesting_delegation_object vesting_delegation_api_obj;
 typedef chain::vesting_delegation_expiration_object vesting_delegation_expiration_api_obj;
 typedef chain::reward_fund_object reward_fund_api_obj;
 typedef witness::account_bandwidth_object account_bandwidth_api_obj;
-
-struct tag_api_obj
-{
-    tag_api_obj(const tags::tag_stats_object& o)
-        : name(o.tag)
-        , total_payouts(o.total_payout)
-        , net_votes(o.net_votes)
-        , top_posts(o.top_posts)
-        , trending(o.total_trending)
-    {
-    }
-
-    tag_api_obj()
-    {
-    }
-
-    string name;
-    asset total_payouts;
-    int32_t net_votes = 0;
-    uint32_t top_posts = 0;
-    fc::uint128 trending = 0;
-};
 
 struct account_api_obj
 {
@@ -625,6 +602,26 @@ struct research_discipline_relation_api_obj
     uint16_t votes_count;
 };
 
+struct research_group_invite_api_obj
+{
+    research_group_invite_api_obj(const chain::research_group_invite_object& co)
+        : id(co.id._id)
+        ,  account_name(co.account_name)
+        ,  research_group_id(co.research_group_id._id)
+        ,  research_group_token_amount(co.research_group_token_amount)
+    {}
+
+    // because fc::variant require for temporary object
+    research_group_invite_api_obj()
+    {
+    }
+
+    int64_t id;
+    account_name_type account_name;
+    int64_t research_group_id;
+    share_type research_group_token_amount;
+};
+
 } // namespace app
 } // namespace deip
 
@@ -655,14 +652,6 @@ FC_REFLECT( deip::app::account_recovery_request_api_obj,
              (account_to_recover)
              (new_owner_authority)
              (expires)
-          )
-
-FC_REFLECT( deip::app::tag_api_obj,
-            (name)
-            (total_payouts)
-            (net_votes)
-            (top_posts)
-            (trending)
           )
 
 FC_REFLECT( deip::app::witness_api_obj,
@@ -800,6 +789,13 @@ FC_REFLECT( deip::app::research_discipline_relation_api_obj,
             (research_id)
             (discipline_id)
             (votes_count)
+)
+
+FC_REFLECT( deip::app::research_group_invite_api_obj,
+            (id)
+            (account_name)
+            (research_group_id)
+            (research_group_token_amount)
 )
 
 // clang-format on

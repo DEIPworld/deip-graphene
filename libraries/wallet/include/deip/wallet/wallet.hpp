@@ -632,89 +632,6 @@ public:
                                           bool broadcast = false);
 
     /**
-     * Transfer funds from one account to another using escrow. DEIP and SBD can be transferred.
-     *
-     * @param from The account the funds are coming from
-     * @param to The account the funds are going to
-     * @param agent The account acting as the agent in case of dispute
-     * @param escrow_id A unique id for the escrow transfer. (from, escrow_id) must be a unique pair
-     * @param deip_amount The amount of DEIP to transfer
-     * @param fee The fee paid to the agent
-     * @param ratification_deadline The deadline for 'to' and 'agent' to approve the escrow transfer
-     * @param escrow_expiration The expiration of the escrow transfer, after which either party can claim the funds
-     * @param json_meta JSON encoded meta data
-     * @param broadcast true if you wish to broadcast the transaction
-     */
-    annotated_signed_transaction escrow_transfer(const std::string& from,
-                                                 const std::string& to,
-                                                 const std::string& agent,
-                                                 uint32_t escrow_id,
-                                                 const asset& deip_amount,
-                                                 const asset& fee,
-                                                 time_point_sec ratification_deadline,
-                                                 time_point_sec escrow_expiration,
-                                                 const std::string& json_meta,
-                                                 bool broadcast = false);
-
-    /**
-     * Approve a proposed escrow transfer. Funds cannot be released until after approval. This is in lieu of requiring
-     * multi-sig on escrow_transfer
-     *
-     * @param from The account that funded the escrow
-     * @param to The destination of the escrow
-     * @param agent The account acting as the agent in case of dispute
-     * @param who The account approving the escrow transfer (either 'to' or 'agent)
-     * @param escrow_id A unique id for the escrow transfer
-     * @param approve true to approve the escrow transfer, otherwise cancels it and refunds 'from'
-     * @param broadcast true if you wish to broadcast the transaction
-     */
-    annotated_signed_transaction escrow_approve(const std::string& from,
-                                                const std::string& to,
-                                                const std::string& agent,
-                                                const std::string& who,
-                                                uint32_t escrow_id,
-                                                bool approve,
-                                                bool broadcast = false);
-
-    /**
-     * Raise a dispute on the escrow transfer before it expires
-     *
-     * @param from The account that funded the escrow
-     * @param to The destination of the escrow
-     * @param agent The account acting as the agent in case of dispute
-     * @param who The account raising the dispute (either 'from' or 'to')
-     * @param escrow_id A unique id for the escrow transfer
-     * @param broadcast true if you wish to broadcast the transaction
-     */
-    annotated_signed_transaction escrow_dispute(const std::string& from,
-                                                const std::string& to,
-                                                const std::string& agent,
-                                                const std::string& who,
-                                                uint32_t escrow_id,
-                                                bool broadcast = false);
-
-    /**
-     * Release funds help in escrow
-     *
-     * @param from The account that funded the escrow
-     * @param to The account the funds are originally going to
-     * @param agent The account acting as the agent in case of dispute
-     * @param who The account authorizing the release
-     * @param receiver The account that will receive funds being released
-     * @param escrow_id A unique id for the escrow transfer
-     * @param deip_amount The amount of DEIP that will be released
-     * @param broadcast true if you wish to broadcast the transaction
-     */
-    annotated_signed_transaction escrow_release(const std::string& from,
-                                                const std::string& to,
-                                                const std::string& agent,
-                                                const std::string& who,
-                                                const std::string& receiver,
-                                                uint32_t escrow_id,
-                                                const asset& deip_amount,
-                                                bool broadcast = false);
-
-    /**
      * Transfer DEIP into a vesting fund represented by vesting shares (VESTS). VESTS are required to vesting
      * for a minimum of one coin year and can be withdrawn once a week over a two year withdraw period.
      * VESTS are protected against dilution up until 90% of DEIP is vesting.
@@ -893,8 +810,6 @@ public:
      */
     string decrypt_memo(const std::string& memo);
 
-    annotated_signed_transaction decline_voting_rights(const std::string& account, bool decline, bool broadcast);
-
     /**
      *  Gets the grant information for all my grants (list_my_accounts)
      */
@@ -1006,10 +921,6 @@ FC_API( deip::wallet::wallet_api,
         (set_voting_proxy)
         (vote_for_witness)
         (transfer)
-        (escrow_transfer)
-        (escrow_approve)
-        (escrow_dispute)
-        (escrow_release)
         (transfer_to_vesting)
         (withdraw_vesting)
         (set_withdraw_vesting_route)
@@ -1022,7 +933,6 @@ FC_API( deip::wallet::wallet_api,
         (get_owner_history)
         (get_encrypted_memo)
         (decrypt_memo)
-        (decline_voting_rights)
         (create_grant)
 
         /// helper api
