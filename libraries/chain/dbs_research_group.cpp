@@ -73,7 +73,7 @@ dbs_research_group::research_group_token_refs_type dbs_research_group::get_resea
     return ret;
 }
 
-dbs_research_group::research_group_token_refs_type  dbs_research_group::get_research_group_tokens(
+dbs_research_group::research_group_token_refs_type  dbs_research_group::get_research_group_tokens_by_research_group_id(
         const research_group_id_type &research_group_id) const
 {
     research_group_token_refs_type ret;

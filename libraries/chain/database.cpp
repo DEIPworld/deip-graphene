@@ -1276,7 +1276,7 @@ void database::reward_research_token_holders(const research_object& research,
         research_group_service.increase_research_group_funds(research.research_group_id, research_group_reward);
 
         const auto& research_group = research_group_service.get_research_group(research.research_group_id);
-        auto research_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
+        auto research_group_tokens = research_group_service.get_research_group_tokens_by_research_group_id(research.research_group_id);
         for (auto& token_ref : research_group_tokens) {
             auto& token = token_ref.get();
             auto new_expertise_amount = (expertise_reward * token.amount) / research_group.total_tokens_amount;
