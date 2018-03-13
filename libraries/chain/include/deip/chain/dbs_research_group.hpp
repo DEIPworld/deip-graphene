@@ -33,7 +33,7 @@ public:
     const research_group_object& get_research_group(const research_group_id_type& id) const;
 
 
-const research_group_object& get_research_group_by_permlink(const fc::string& permlink) const;
+    const research_group_object& get_research_group_by_permlink(const fc::string& permlink) const;
     /** Create research_group object.
      *
      * @returns research group object

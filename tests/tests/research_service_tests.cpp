@@ -38,6 +38,32 @@ public:
             r.abstract = ABSTRACT;
             r.owned_tokens = DEIP_100_PERCENT;
         });
+
+        db.create<research_object>([&](research_object& r) {
+            r.id = 2;
+            r.name = "Second";
+            r.permlink = "Second";
+            r.research_group_id = 2;
+            r.review_share_in_percent = 10;
+            r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
+            r.is_finished = false;
+            r.created_at = db.head_block_time();
+            r.abstract = ABSTRACT;
+            r.owned_tokens = DEIP_100_PERCENT;
+        });
+
+        db.create<research_object>([&](research_object& r) {
+            r.id = 3;
+            r.name = "Third";
+            r.permlink = "Third";
+            r.research_group_id = 2;
+            r.review_share_in_percent = 10;
+            r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
+            r.is_finished = false;
+            r.created_at = db.head_block_time();
+            r.abstract = ABSTRACT;
+            r.owned_tokens = DEIP_100_PERCENT;
+        });
     }
 
     dbs_research& data_service;
@@ -73,20 +99,80 @@ BOOST_AUTO_TEST_CASE(get_researches)
 
         const auto& researches = data_service.get_researches();
 
-        BOOST_CHECK(researches.size() == 1);
+        BOOST_CHECK(researches.size() == 3);
 
-        for (const research_object& research: researches) {
+        BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
+            const research_object &research = wrapper.get();
+            return  research.id == 1 && research.name == RESEARCH_NAME &&
+                    research.permlink == RESEARCH_NAME &&
+                    research.research_group_id == RESEARCH_GROUP_ID &&
+                    research.review_share_in_percent == 10 &&
+                    research.dropout_compensation_in_percent == DROPOUT_COMPENSATION_IN_PERCENT &&
+                    research.is_finished == false &&
+                    research.abstract == ABSTRACT &&
+                    research.owned_tokens == DEIP_100_PERCENT;
+        }));
 
-            BOOST_CHECK(research.name == RESEARCH_NAME);
-            BOOST_CHECK(research.permlink == RESEARCH_NAME);
-            BOOST_CHECK(research.research_group_id == RESEARCH_GROUP_ID);
-            BOOST_CHECK(research.review_share_in_percent == 10);
-            BOOST_CHECK(research.dropout_compensation_in_percent == DROPOUT_COMPENSATION_IN_PERCENT);
-            BOOST_CHECK(research.is_finished == false);
-            BOOST_CHECK(research.created_at <= db.head_block_time());
-            BOOST_CHECK(research.abstract == ABSTRACT);
-            BOOST_CHECK(research.owned_tokens == DEIP_100_PERCENT);
-        }
+        BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
+            const research_object &research = wrapper.get();
+            return  research.id == 2 && research.name == "Second" &&
+                    research.permlink == "Second" &&
+                    research.research_group_id == 2 &&
+                    research.review_share_in_percent == 10 &&
+                    research.dropout_compensation_in_percent == DROPOUT_COMPENSATION_IN_PERCENT &&
+                    research.is_finished == false &&
+                    research.abstract == ABSTRACT &&
+                    research.owned_tokens == DEIP_100_PERCENT;
+        }));
+
+        BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
+            const research_object &research = wrapper.get();
+            return  research.id == 3 && research.name == "Third" &&
+                    research.permlink == "Third" &&
+                    research.research_group_id == 2 &&
+                    research.review_share_in_percent == 10 &&
+                    research.dropout_compensation_in_percent == DROPOUT_COMPENSATION_IN_PERCENT &&
+                    research.is_finished == false &&
+                    research.abstract == ABSTRACT &&
+                    research.owned_tokens == DEIP_100_PERCENT;
+        }));
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_researches_by_research_group)
+{
+    try
+    {
+        create_researches();
+
+        const auto& researches = data_service.get_researches_by_research_group(2);
+
+        BOOST_CHECK(researches.size() == 2);
+
+        BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
+            const research_object &research = wrapper.get();
+            return  research.id == 2 && research.name == "Second" &&
+                    research.permlink == "Second" &&
+                    research.research_group_id == 2 &&
+                    research.review_share_in_percent == 10 &&
+                    research.dropout_compensation_in_percent == DROPOUT_COMPENSATION_IN_PERCENT &&
+                    research.is_finished == false &&
+                    research.abstract == ABSTRACT &&
+                    research.owned_tokens == DEIP_100_PERCENT;
+        }));
+
+        BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
+            const research_object &research = wrapper.get();
+            return  research.id == 3 && research.name == "Third" &&
+                    research.permlink == "Third" &&
+                    research.research_group_id == 2 &&
+                    research.review_share_in_percent == 10 &&
+                    research.dropout_compensation_in_percent == DROPOUT_COMPENSATION_IN_PERCENT &&
+                    research.is_finished == false &&
+                    research.abstract == ABSTRACT &&
+                    research.owned_tokens == DEIP_100_PERCENT;
+        }));
     }
     FC_LOG_AND_RETHROW()
 }
@@ -136,7 +222,8 @@ BOOST_AUTO_TEST_CASE(get_research_by_permlink)
     FC_LOG_AND_RETHROW()
 }
     
-BOOST_AUTO_TEST_CASE(decrease_owned_tokens_test){
+BOOST_AUTO_TEST_CASE(decrease_owned_tokens)
+{
     try
     {
         create_researches();
@@ -149,7 +236,22 @@ BOOST_AUTO_TEST_CASE(decrease_owned_tokens_test){
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(change_research_review_share_percent_test){
+BOOST_AUTO_TEST_CASE(increase_owned_tokens)
+{
+    try
+    {
+        create_researches();
+
+        auto& research = db.get<research_object, by_id>(1);
+        BOOST_CHECK_NO_THROW(data_service.increase_owned_tokens(research, 200));
+        BOOST_CHECK(research.owned_tokens == 10200);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(change_research_review_share_percent)
+{
     try
     {
         create_researches();

@@ -32,8 +32,8 @@ dbs_research::research_refs_type dbs_research::get_researches() const
 {
     research_refs_type ret;
 
-    auto idx = db_impl().get_index<research_index>().indicies();
-    auto it = idx.cbegin();
+    const auto& idx = db_impl().get_index<research_index>().indicies().get<by_id>();
+    auto it = idx.lower_bound(0);
     const auto it_end = idx.cend();
     while (it != it_end)
     {
