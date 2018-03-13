@@ -45,7 +45,7 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(research_group_invite_service, research_group_invite_service_fixture)
 
-BOOST_AUTO_TEST_CASE(create_research_invite_object)
+BOOST_AUTO_TEST_CASE(create)
 {
     try
     {
@@ -71,6 +71,22 @@ BOOST_AUTO_TEST_CASE(throw_on_create_research_invite_object)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(get)
+{
+    try
+    {
+        create_research_invite_objects();
+
+        auto& research_group_invite = data_service.get(1);
+
+        BOOST_CHECK(research_group_invite.account_name == "alice");
+        BOOST_CHECK(research_group_invite.research_group_id == 1);
+        BOOST_CHECK(research_group_invite.research_group_token_amount == 100);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(get_research_group_invite_by_account_name_and_research_group_id)
 {
     try
@@ -82,6 +98,20 @@ BOOST_AUTO_TEST_CASE(get_research_group_invite_by_account_name_and_research_grou
         BOOST_CHECK(research_group_invite.account_name == "alice");
         BOOST_CHECK(research_group_invite.research_group_id == 1);
         BOOST_CHECK(research_group_invite.research_group_token_amount == 100);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(check_research_group_invite_existence)
+{
+    try
+    {
+        create_research_invite_objects();
+
+        BOOST_CHECK_NO_THROW(data_service.check_research_group_invite_existence(1));
+        BOOST_CHECK_NO_THROW(data_service.check_research_group_invite_existence(2));
+        BOOST_CHECK_THROW(data_service.check_research_group_invite_existence(25), fc::assert_exception);
 
     }
     FC_LOG_AND_RETHROW()
