@@ -52,7 +52,7 @@ namespace deip {
                                                                                          const research_id_type &research_id) const;
 
             bool check_research_token_existence_by_account_name_and_research_id(const account_name_type& account_name,
-                                                                              const research_id_type& research_id) const;
+                                                                                const research_id_type& research_id) const;
         };
     } // namespace chain
 } // namespace deip

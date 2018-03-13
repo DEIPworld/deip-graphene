@@ -367,9 +367,9 @@ BOOST_AUTO_TEST_CASE(increase_research_group_token_amount)
 
         BOOST_CHECK_NO_THROW(data_service.increase_research_group_token_amount(1, "alice", 25));
 
-        auto research_group_token = db.get<research_group_token_object>(3);
+        auto research_group = db.get<research_group_token_object>(3);
 
-        BOOST_CHECK(research_group_token.amount == 60);
+        BOOST_CHECK(research_group.amount == 175);
 
     }
     FC_LOG_AND_RETHROW()
