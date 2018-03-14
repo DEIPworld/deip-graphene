@@ -101,6 +101,43 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(research_content_service_tests, research_content_service_fixture)
 
+
+BOOST_AUTO_TEST_CASE(create_research_content)
+{
+    try
+    {
+        create_researches_with_content();
+        research_content_type type = research_content_type::milestone;
+        std::string content = "milestone for Research #2";
+
+        flat_set<account_name_type> authors = {"sam"};
+        std::vector<research_id_type> references = {1, 2, 3};
+        std::vector<string> external_references = {"one", "two", "three"};
+
+        auto milestone = data_service.create(2, type, content, authors, references, external_references);
+        BOOST_CHECK(milestone.research_id == 2);
+        BOOST_CHECK(milestone.type == research_content_type::milestone);
+        BOOST_CHECK(milestone.content == "milestone for Research #2");
+        BOOST_CHECK(milestone.authors.size() == 1);
+        BOOST_CHECK(milestone.authors.begin()[0] == "sam");
+        BOOST_CHECK(milestone.research_references.size() == 3);
+        BOOST_CHECK(milestone.research_external_references.size() == 3);
+
+
+
+        auto db_milestone = db.get<research_content_object, by_id>(milestone.id);
+        BOOST_CHECK(db_milestone.research_id == 2);
+        BOOST_CHECK(db_milestone.type == research_content_type::milestone);
+        BOOST_CHECK(db_milestone.content == "milestone for Research #2");
+        BOOST_CHECK(db_milestone.authors.size() == 1);
+        BOOST_CHECK(db_milestone.authors.begin()[0] == "sam");
+        BOOST_CHECK(db_milestone.research_references.size() == 3);
+        BOOST_CHECK(db_milestone.research_external_references.size() == 3);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(get_content_by_id)
 {
     try
@@ -116,15 +153,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_id)
         BOOST_CHECK(announcement.authors.begin()[0] == "john");
         BOOST_CHECK(announcement.research_references.size() == 1);
         BOOST_CHECK(announcement.research_external_references.size() == 2);
-    }
-    FC_LOG_AND_RETHROW()
-}
 
-BOOST_AUTO_TEST_CASE(get_no_content_by_non_existing_id)
-{
-    try
-    {
-        create_researches_with_content();
         BOOST_CHECK_THROW(data_service.get_content_by_id(10), fc::exception);
     }
     FC_LOG_AND_RETHROW()
@@ -169,18 +198,8 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                     content.research_references.size() == 1 &&
                     content.research_external_references.size() == 3;
         }));
-    }
-    FC_LOG_AND_RETHROW()
-}
 
-BOOST_AUTO_TEST_CASE(get_no_content_for_non_existing_research_by_id)
-{
-    try
-    {
-        create_researches_with_content();
-        auto contents = data_service.get_content_by_research_id(3);
-        BOOST_CHECK(contents.size() == 0);
-
+        BOOST_CHECK(data_service.get_content_by_research_id(3).size() == 0);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -203,53 +222,8 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
                     content.research_references.size() == 1 &&
                     content.research_external_references.size() == 2;
         }));
-    }
-    FC_LOG_AND_RETHROW()
-}
 
-BOOST_AUTO_TEST_CASE(get_no_content_for_non_existing_research_by_id_and_content_type)
-{
-    try
-    {
-        create_researches_with_content();
-        auto contents = data_service.get_content_by_research_id_and_content_type(3, research_content_type::review);
-        BOOST_CHECK(contents.size() == 0);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(create_research_content)
-{
-    try
-    {
-        create_researches_with_content();
-        research_content_type type = research_content_type::milestone;
-        std::string content = "milestone for Research #2";
-
-        flat_set<account_name_type> authors = {"sam"};
-        std::vector<research_id_type> references = {1, 2, 3};
-        std::vector<string> external_references = {"one", "two", "three"};
-
-        auto milestone = data_service.create(2, type, content, authors, references, external_references);
-        BOOST_CHECK(milestone.research_id == 2);
-        BOOST_CHECK(milestone.type == research_content_type::milestone);
-        BOOST_CHECK(milestone.content == "milestone for Research #2");
-        BOOST_CHECK(milestone.authors.size() == 1);
-        BOOST_CHECK(milestone.authors.begin()[0] == "sam");
-        BOOST_CHECK(milestone.research_references.size() == 3);
-        BOOST_CHECK(milestone.research_external_references.size() == 3);
-
-
-
-        auto db_milestone = db.get<research_content_object, by_id>(milestone.id);
-        BOOST_CHECK(db_milestone.research_id == 2);
-        BOOST_CHECK(db_milestone.type == research_content_type::milestone);
-        BOOST_CHECK(db_milestone.content == "milestone for Research #2");
-        BOOST_CHECK(db_milestone.authors.size() == 1);
-        BOOST_CHECK(db_milestone.authors.begin()[0] == "sam");
-        BOOST_CHECK(db_milestone.research_references.size() == 3);
-        BOOST_CHECK(db_milestone.research_external_references.size() == 3);
-
+        BOOST_CHECK(data_service.get_content_by_research_id_and_content_type(3, research_content_type::review).size() == 0);
     }
     FC_LOG_AND_RETHROW()
 }
