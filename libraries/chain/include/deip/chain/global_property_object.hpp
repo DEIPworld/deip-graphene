@@ -43,6 +43,7 @@ public:
 
     asset current_supply = asset(0, DEIP_SYMBOL);
     asset confidential_supply = asset(0, DEIP_SYMBOL); ///< total asset held in confidential balances
+    // TODO: remove vesting funds & shares
     asset total_vesting_fund_deip = asset(0, DEIP_SYMBOL);
     asset total_vesting_shares = asset(0, VESTS_SYMBOL);
     asset total_reward_fund_deip = asset(0, DEIP_SYMBOL);

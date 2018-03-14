@@ -23,6 +23,8 @@ using fc::uint128_t;
 
 
 uint128_t evaluate_reward_curve(const uint128_t& rshares, const curve_id& curve = quadratic);
+share_type calculate_share(const share_type &amount, const share_type &share_percent);
+share_type calculate_share(const share_type &amount, const share_type &weight, const share_type &total_weight);
 
 // DEIP: decide who will we approach MIN PAYOUT if we don't have stable coin
 

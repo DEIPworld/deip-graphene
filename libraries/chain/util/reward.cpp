@@ -59,6 +59,17 @@ uint128_t evaluate_reward_curve(const uint128_t& rshares, const curve_id& curve)
 
     return result;
 }
+
+share_type calculate_share(const share_type &amount, const share_type& share_percent)
+{
+    return (amount * share_percent) / DEIP_100_PERCENT;
+}
+
+share_type calculate_share(const share_type &amount, const share_type &weight, const share_type &total_weight)
+{
+    return (amount * weight) / total_weight;
+}
+
 }
 }
 } // deip::chain::util

@@ -293,8 +293,6 @@ public:
      */
     void clear_witness_votes(const account_object& a);
     void process_vesting_withdrawals();
-    share_type reward_voters(const research_content_id_type &research_content_id,
-                             const discipline_id_type &discipline_id, const share_type &reward);
     void process_funds();
     void process_conversions();
     void account_recovery_processing();
@@ -302,18 +300,27 @@ public:
     void process_research_token_sales();
     void distribute_research_tokens(const research_token_sale_id_type research_token_sale_id) override;
     void refund_research_tokens(const research_token_sale_id_type research_token_sale_id);
-    void reward_research_token_holders(const research_object& research,
+
+    /**
+     * Rewards distribution
+     */
+    share_type distribute_reward(const share_type reward);
+    share_type reward_researches_in_discipline(const discipline_object &discipline, const share_type& reward);
+    share_type reward_research_content(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id,
+                                 const share_type &reward);
+    share_type reward_research_token_holders(const research_object& research,
                                        const discipline_id_type& discipline_id,
                                        const share_type& reward,
                                        const share_type& expertise_reward);
-    void reward_references(const research_content_id_type& research_content_id,
+    share_type reward_references(const research_content_id_type& research_content_id,
                            const discipline_id_type& discipline_id,
                            const share_type& reward,
                            const share_type& expertise_reward);
-    void distribute_reward(const share_type reward);
-    void reward_researches_in_discipline(const discipline_object &discipline, const share_type& reward);
-    void reward_research_content(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id,
-                                 const share_type &reward);
+    share_type reward_reviews(const research_object& research,
+                        const discipline_id_type& discipline_id,
+                        const share_type& reward);
+    share_type reward_voters(const research_content_id_type &research_content_id,
+                       const discipline_id_type &discipline_id, const share_type &reward);
     void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                const share_type &reward);
 
