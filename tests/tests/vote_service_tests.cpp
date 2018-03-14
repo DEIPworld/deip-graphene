@@ -209,6 +209,21 @@ BOOST_AUTO_TEST_CASE(get_total_votes_object_by_content_and_discipline)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(get_total_votes_by_research_and_discipline)
+{
+    try
+    {
+        create_total_votes();
+        auto& total_votes = data_service.get_total_votes_by_research_and_discipline(1, 2048);
+
+        BOOST_CHECK(total_votes.discipline_id == 2048);
+        BOOST_CHECK(total_votes.research_id == 1);
+        BOOST_CHECK(total_votes.research_content_id == 1);
+        BOOST_CHECK(total_votes.total_weight == 2000);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(update_total_votes_object)
 {
     try
@@ -221,6 +236,35 @@ BOOST_AUTO_TEST_CASE(update_total_votes_object)
         BOOST_CHECK(updated_total_votes.research_id == 1);
         BOOST_CHECK(updated_total_votes.research_content_id == 1);
         BOOST_CHECK(updated_total_votes.total_weight == 2000);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_total_votes_by_content)
+{
+    try {
+        create_total_votes();
+        auto total_votes = data_service.get_total_votes_by_content(1);
+
+        BOOST_CHECK(total_votes.size() == 2);
+
+        BOOST_CHECK(std::any_of(total_votes.begin(), total_votes.end(),
+                                [](std::reference_wrapper<const total_votes_object> wrapper) {
+                                    const total_votes_object &total_vote = wrapper.get();
+                                    return total_vote.id == 1 && total_vote.research_id == 1 &&
+                                           total_vote.research_content_id == 1 &&
+                                           total_vote.discipline_id == 1024 &&
+                                           total_vote.total_weight == 1000;
+                                }));
+
+        BOOST_CHECK(std::any_of(total_votes.begin(), total_votes.end(),
+                                [](std::reference_wrapper<const total_votes_object> wrapper) {
+                                    const total_votes_object &total_vote = wrapper.get();
+                                    return total_vote.id == 2 && total_vote.research_id == 1 &&
+                                           total_vote.research_content_id == 1 &&
+                                           total_vote.discipline_id == 2048 &&
+                                           total_vote.total_weight == 2000;
+                                }));
     }
     FC_LOG_AND_RETHROW()
 }
