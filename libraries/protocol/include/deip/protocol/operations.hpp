@@ -44,8 +44,6 @@ namespace deip {
                 reject_research_group_invite_operation,
 
                 // virtual operations
-                author_reward_operation,
-                curation_reward_operation,
                 fill_vesting_withdraw_operation,
                 shutdown_witness_operation,
                 hardfork_operation,

@@ -79,30 +79,6 @@ public:
     {
     }
 
-    void create_disciplines()
-    {
-        db.create<discipline_object>([&](discipline_object& d) {
-            d.id = 1;
-            d.name = "Physics";
-            d.parent_id = 0;
-            d.votes_in_last_ten_weeks = 100;
-        });
-
-        db.create<discipline_object>([&](discipline_object& d) {
-            d.id = 2;
-            d.name = "Mathematics";
-            d.parent_id = 0;
-            d.votes_in_last_ten_weeks = 150;
-        });
-
-        db.create<discipline_object>([&](discipline_object& d) {
-            d.id = 3;
-            d.name = "Cryptography";
-            d.parent_id = 1;
-            d.votes_in_last_ten_weeks = 30;
-        });
-    }
-
     ~proposal_vote_evaluator_fixture() {
     }
 
@@ -195,6 +171,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
         op.proposal_id = 0;
         op.voter = "alice";
 
+        generate_block();
         create_disciplines();
 
         evaluator.do_apply(op);
