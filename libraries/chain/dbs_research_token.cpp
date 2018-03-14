@@ -80,7 +80,7 @@ const research_token_object& dbs_research_token::get_research_token_by_account_n
 }
 
 bool dbs_research_token::check_research_token_existence_by_account_name_and_research_id(const account_name_type& account_name,
-                                                                              const research_id_type& research_id) const
+                                                                                        const research_id_type& research_id) const
 {
     const auto& idx = db_impl().get_index<research_token_index>().indices().get<by_account_name_and_research_id>();
 
