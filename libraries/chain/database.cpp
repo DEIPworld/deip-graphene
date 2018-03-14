@@ -1215,7 +1215,7 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
 
     auto it = idx.find(research_token_sale_id);
 
-    while (it != idx.end() && it->research_token_sale_id == research_token_sale_id)
+    while (it != idx.end())
     {
         auto transfer_amount = (it->amount * research_token_sale.balance_tokens) / research_token_sale.total_amount;
 
@@ -1231,7 +1231,7 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
             research_token_service.create_research_token(it->owner, transfer_amount, research_token_sale.research_id);
         }
         remove(*it);
-        it = idx.find(research_token_sale_id);
+        ++it;
     }
 }
 

@@ -80,20 +80,11 @@ BOOST_AUTO_TEST_CASE(get_expert_token_by_id)
         BOOST_CHECK(token.account_name == "bob");
         BOOST_CHECK(token.discipline_id == 2222);
         BOOST_CHECK(token.amount == 200);
-    }
-    FC_LOG_AND_RETHROW()
-}
 
-BOOST_AUTO_TEST_CASE(throw_on_get_expert_token_by_non_existing_id)
-{
-    try
-    {
-        create_expert_tokens();
         BOOST_CHECK_THROW(data_service.get_expert_token(9), boost::exception);
     }
     FC_LOG_AND_RETHROW()
 }
-
 
 BOOST_AUTO_TEST_CASE(get_expert_tokens_vector_by_account_name)
 {
