@@ -277,15 +277,15 @@ BOOST_AUTO_TEST_CASE(reward_reviews)
 
         BOOST_CHECK_NO_THROW(db.reward_reviews(1, 1, 1000000));
 
-        BOOST_CHECK(db.get_account("alice").balance.amount == 170108);
-        BOOST_CHECK(db.get_account("bob").balance.amount == 255112);
-        BOOST_CHECK(db.get_account("john").balance.amount == 425120);
+        BOOST_CHECK(db.get_account("alice").balance.amount == 170148);
+        BOOST_CHECK(db.get_account("bob").balance.amount == 255172);
+        BOOST_CHECK(db.get_account("john").balance.amount == 425220);
 
         BOOST_CHECK(db.get<expert_token_object>(0).amount == 170000);
         BOOST_CHECK(db.get<expert_token_object>(1).amount == 255000);
         BOOST_CHECK(db.get<expert_token_object>(2).amount == 425000);
 
-        BOOST_CHECK(db.get<research_group_object>(1).funds == 900000);
+        BOOST_CHECK(db.get<research_group_object>(1).funds == 88000);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -346,15 +346,13 @@ BOOST_AUTO_TEST_CASE(reward_research_token_holders)
         BOOST_CHECK(db.get<expert_token_object>(1).amount == 300);
         BOOST_CHECK(db.get<expert_token_object>(2).amount == 500);
 
-        BOOST_CHECK(db.get_account("alice").balance.amount == 200);
-        BOOST_CHECK(db.get_account("bob").balance.amount == 250);
-        BOOST_CHECK(db.get_account("john").balance.amount == 350);
+        BOOST_CHECK(db.get_account("alice").balance.amount == 102);
+        BOOST_CHECK(db.get_account("bob").balance.amount == 103);
+        BOOST_CHECK(db.get_account("john").balance.amount == 105);
 
     }
     FC_LOG_AND_RETHROW()
 }
-
-
 
 BOOST_AUTO_TEST_SUITE_END()
 
