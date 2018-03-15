@@ -1484,7 +1484,7 @@ void database::reward_with_expertise(const account_name_type &account, const dis
     const auto& expert_tokens_idx = get_index<expert_token_index>().indices().get<by_account_and_discipline>();
     auto expert_tokens_itr = expert_tokens_idx.find(std::make_tuple(account, discipline_id));
     if (expert_tokens_itr != expert_tokens_idx.end()) {
-        auto expert_token = *expert_tokens_itr;
+        auto& expert_token = *expert_tokens_itr;
         modify(expert_token, [&](expert_token_object& t) {
             t.amount += reward;
         });

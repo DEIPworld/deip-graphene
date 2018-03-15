@@ -13,7 +13,8 @@ class database_unit_service_fixture : public clean_database_fixture
 public:
     database_unit_service_fixture()
             : account_service(db.obtain_service<dbs_account>()),
-              vote_service(db.obtain_service<dbs_vote>())
+              vote_service(db.obtain_service<dbs_vote>()),
+              research_content_service(db.obtain_service<dbs_research_content>())
     {
     }
 
@@ -58,8 +59,17 @@ public:
         });
     }
 
+    void create_expert_token()
+    {
+        db.create<expert_token_object>([&](expert_token_object& d) {
+            d.id = 1;
+            d.account_name = "alice";
+            d.discipline_id = 1;
+        });
+    }
     dbs_account& account_service;
     dbs_vote& vote_service;
+    dbs_research_content& research_content_service;
 };
 
 BOOST_FIXTURE_TEST_SUITE(database_unit_service, database_unit_service_fixture)
@@ -89,6 +99,34 @@ BOOST_AUTO_TEST_CASE(reward_voters)
     }
     FC_LOG_AND_RETHROW()
 }
+
+BOOST_AUTO_TEST_CASE(reward_with_expertise)
+{
+    try
+    {
+        create_expert_token();
+
+        BOOST_CHECK_NO_THROW(db.reward_with_expertise("alice", 1, 30));
+        BOOST_CHECK(db.get<expert_token_object>(1).amount == 30);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(reward_reviews)
+{
+    try
+    {
+        create_expert_token();
+
+        BOOST_CHECK_NO_THROW(db.reward_with_expertise("alice", 1, 30));
+        BOOST_CHECK(db.get<expert_token_object>(1).amount == 30);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END()
 
