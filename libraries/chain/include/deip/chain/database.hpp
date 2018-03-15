@@ -316,7 +316,7 @@ public:
                            const discipline_id_type& discipline_id,
                            const share_type& reward,
                            const share_type& expertise_reward);
-    share_type reward_reviews(const research_object& research,
+    share_type reward_reviews(const research_id_type& research_id,
                         const discipline_id_type& discipline_id,
                         const share_type& reward);
     share_type reward_voters(const research_content_id_type &research_content_id,

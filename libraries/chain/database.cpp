@@ -1316,7 +1316,7 @@ share_type database::reward_research_content(const research_content_id_type& res
     used_reward += reward_references(research_content_id, discipline_id, references_share, references_expertise_share);
     used_reward += reward_voters(research_content_id, discipline_id, curators_share);
     if (research_content.type != research_content_type::review) {
-        used_reward += reward_reviews(research, discipline_id, review_share);
+        used_reward += reward_reviews(research.id, discipline_id, review_share);
     }
 
     FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
@@ -1380,20 +1380,12 @@ share_type database::reward_references(const research_content_id_type& research_
 
     for (auto research_id : research_content.research_references)
     {
-        share_type votes = 0;
-        const auto& idx = get_index<total_votes_index>().indicies().get<by_research_and_discipline>()
-                .equal_range(std::make_tuple(research_id, discipline_id));
+        const auto& idx = get_index<total_votes_index>().indicies().get<by_research_and_discipline>();
+        auto total_votes_itr = idx.find(std::make_tuple(research_id, discipline_id));
 
-        auto it = idx.first;
-        const auto it_end = idx.second;
-
-        while (it != it_end)
-        {
-            votes += it->total_research_reward_weight;
-            ++it;
-        }
-        total_votes_amount += votes;
-        research_votes_by_id.push_back(std::make_pair(research_id, votes));
+        auto& test = *total_votes_itr;
+        total_votes_amount += total_votes_itr->total_research_reward_weight;
+        research_votes_by_id.push_back(std::make_pair(research_id, total_votes_itr->total_research_reward_weight));
     }
 
     for (auto& research_votes : research_votes_by_id) {
@@ -1409,13 +1401,13 @@ share_type database::reward_references(const research_content_id_type& research_
     return used_reward;
 }
 
-share_type database::reward_reviews(const research_object &research,
+share_type database::reward_reviews(const research_id_type &research_id,
                               const discipline_id_type &discipline_id, const share_type &reward)
 {
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
     dbs_vote& vote_service = obtain_service<dbs_vote>();
     dbs_account& account_service = obtain_service<dbs_account>();
-    auto reviews = research_content_service.get_content_by_research_id_and_content_type(research.id, research_content_type::review);
+    auto reviews = research_content_service.get_content_by_research_id_and_content_type(research_id, research_content_type::review);
     std::vector<std::pair<research_content_object, share_type>> votes_by_review;
     share_type total_weight = 0;
     share_type used_reward = 0;
