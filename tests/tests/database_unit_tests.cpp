@@ -195,16 +195,15 @@ BOOST_AUTO_TEST_CASE(reward_voters)
         fund("bob", 100);
         fund("john", 100);
 
+        share_type reward = 30;
+
         create_votes();
         create_total_votes();
 
-        BOOST_CHECK_NO_THROW(db.reward_voters(1, 1, 30));
+        BOOST_CHECK_NO_THROW(db.reward_voters(1, 1, reward));
 
-        auto& bob_account = db.get_account("bob");
-        auto& john_account = db.get_account("john");
-
-        BOOST_CHECK(bob_account.balance.amount == 100 + util::calculate_share(30, 10, 30));
-        BOOST_CHECK(john_account.balance.amount == 120);
+        BOOST_CHECK(db.get_account("bob").balance.amount == 100 + util::calculate_share(reward, db.get<vote_object>(1).weight, db.get<total_votes_object>(1).total_weight));
+        BOOST_CHECK(db.get_account("john").balance.amount == 100 + util::calculate_share(reward, db.get<vote_object>(2).weight, db.get<total_votes_object>(1).total_weight));
 
     }
     FC_LOG_AND_RETHROW()
@@ -216,8 +215,10 @@ BOOST_AUTO_TEST_CASE(reward_with_expertise)
     {
         ACTOR(alice);
 
-        BOOST_CHECK_NO_THROW(db.reward_with_expertise("alice", 1, 30));
-        BOOST_CHECK(db.get<expert_token_object>(0).amount == 30);
+        share_type reward = 30;
+
+        BOOST_CHECK_NO_THROW(db.reward_with_expertise("alice", 1, reward));
+        BOOST_CHECK(db.get<expert_token_object>(0).amount == reward);
 
     }
     FC_LOG_AND_RETHROW()
@@ -237,16 +238,24 @@ BOOST_AUTO_TEST_CASE(reward_reviews)
         create_research_groups();
         create_research_group_tokens();
 
-        BOOST_CHECK_NO_THROW(db.reward_reviews(1, 1, 1000));
+        share_type reward = 1000;
 
-        BOOST_CHECK(db.get_account("alice").balance.amount == util::calculate_share(1000, DEIP_100_PERCENT - DEIP_CURATORS_REWARD_SHARE_PERCENT - DEIP_REFERENCES_REWARD_SHARE_PERCENT) +
-                                                              util::calculate_share(50, 20, 50));
-        BOOST_CHECK(db.get_account("bob").balance.amount == util::calculate_share(50, 30, 50) + util::calculate_share(50, db.get<vote_object>(1).weight, db.get<total_votes_object>(1).total_weight));
-        BOOST_CHECK(db.get_account("john").balance.amount == util::calculate_share(50, db.get<vote_object>(2).weight, db.get<total_votes_object>(1).total_weight));
+        BOOST_CHECK_NO_THROW(db.reward_reviews(1, 1, reward));
 
-        BOOST_CHECK(db.get<expert_token_object>(0).amount == util::calculate_share(1000, DEIP_100_PERCENT - DEIP_CURATORS_REWARD_SHARE_PERCENT - DEIP_REFERENCES_REWARD_SHARE_PERCENT));
+        BOOST_CHECK(db.get_account("alice").balance.amount == util::calculate_share(reward, DEIP_100_PERCENT - DEIP_CURATORS_REWARD_SHARE_PERCENT - DEIP_REFERENCES_REWARD_SHARE_PERCENT) +
+                                  util::calculate_share((reward * DEIP_REFERENCES_REWARD_SHARE_PERCENT * db.get<research_object>(2).owned_tokens) / (DEIP_100_PERCENT * DEIP_100_PERCENT),
+                                  db.get<research_token_object>(1).amount, DEIP_100_PERCENT - db.get<research_object>(2).owned_tokens));
 
-        BOOST_CHECK(db.get<research_group_object>(2).funds == util::calculate_share(1000, (DEIP_REFERENCES_REWARD_SHARE_PERCENT * db.get<research_object>(2).owned_tokens) / DEIP_100_PERCENT));
+        BOOST_CHECK(db.get_account("bob").balance.amount == util::calculate_share((reward * DEIP_REFERENCES_REWARD_SHARE_PERCENT * db.get<research_object>(2).owned_tokens) / (DEIP_100_PERCENT * DEIP_100_PERCENT),
+                                  db.get<research_token_object>(2).amount, DEIP_100_PERCENT - db.get<research_object>(2).owned_tokens) + util::calculate_share((reward * DEIP_CURATORS_REWARD_SHARE_PERCENT) /DEIP_100_PERCENT,
+                                  db.get<vote_object>(1).weight, db.get<total_votes_object>(1).total_weight));
+
+        BOOST_CHECK(db.get_account("john").balance.amount == util::calculate_share((reward * DEIP_CURATORS_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT,
+                                                                                   db.get<vote_object>(2).weight, db.get<total_votes_object>(1).total_weight));
+
+        BOOST_CHECK(db.get<expert_token_object>(0).amount == util::calculate_share(reward, DEIP_100_PERCENT - DEIP_CURATORS_REWARD_SHARE_PERCENT - DEIP_REFERENCES_REWARD_SHARE_PERCENT));
+
+        BOOST_CHECK(db.get<research_group_object>(2).funds == util::calculate_share(reward, (DEIP_REFERENCES_REWARD_SHARE_PERCENT * db.get<research_object>(2).owned_tokens) / DEIP_100_PERCENT));
     }
     FC_LOG_AND_RETHROW()
 }
@@ -264,15 +273,17 @@ BOOST_AUTO_TEST_CASE(reward_references)
         create_research_groups();
         create_research_group_tokens();
 
-        BOOST_CHECK_NO_THROW(db.reward_references(1, 1, 1000, 1000));
+        share_type reward = 1000;
 
-        BOOST_CHECK(db.get<research_group_object>(2).funds == (db.get<research_object>(2).owned_tokens * 1000) / DEIP_100_PERCENT);
+        BOOST_CHECK_NO_THROW(db.reward_references(1, 1, reward, reward));
 
-        BOOST_CHECK(db.get<expert_token_object>(0).amount == (1000 * db.get<research_group_token_object>(3).amount) / db.get<research_group_object>(2).total_tokens_amount);
-        BOOST_CHECK(db.get<expert_token_object>(1).amount == (1000 * db.get<research_group_token_object>(4).amount) / db.get<research_group_object>(2).total_tokens_amount);
+        BOOST_CHECK(db.get<research_group_object>(2).funds == (db.get<research_object>(2).owned_tokens * reward) / DEIP_100_PERCENT);
 
-        BOOST_CHECK(db.get_account("alice").balance.amount == (db.get<research_token_object>(1).amount * 1000) / DEIP_100_PERCENT);
-        BOOST_CHECK(db.get_account("bob").balance.amount == (db.get<research_token_object>(2).amount * 1000) / DEIP_100_PERCENT);
+        BOOST_CHECK(db.get<expert_token_object>(0).amount == (reward * db.get<research_group_token_object>(3).amount) / db.get<research_group_object>(2).total_tokens_amount);
+        BOOST_CHECK(db.get<expert_token_object>(1).amount == (reward * db.get<research_group_token_object>(4).amount) / db.get<research_group_object>(2).total_tokens_amount);
+
+        BOOST_CHECK(db.get_account("alice").balance.amount == (db.get<research_token_object>(1).amount * reward) / DEIP_100_PERCENT);
+        BOOST_CHECK(db.get_account("bob").balance.amount == (db.get<research_token_object>(2).amount * reward) / DEIP_100_PERCENT);
 
     }
     FC_LOG_AND_RETHROW()
@@ -289,28 +300,65 @@ BOOST_AUTO_TEST_CASE(reward_research_token_holders)
         create_research_group_tokens();
         create_research_tokens();
 
-        BOOST_CHECK_NO_THROW(db.reward_research_token_holders(db.get<research_object>(2), 1, 1000, 1000));
+        share_type reward = 1000;
 
-        BOOST_CHECK(db.get<research_group_object>(2).funds == (db.get<research_object>(2).owned_tokens * 1000) / DEIP_100_PERCENT);
+        BOOST_CHECK_NO_THROW(db.reward_research_token_holders(db.get<research_object>(2), 1, reward, reward));
 
-        BOOST_CHECK(db.get<expert_token_object>(0).amount == (1000 * db.get<research_group_token_object>(3).amount) / db.get<research_group_object>(2).total_tokens_amount);
-        BOOST_CHECK(db.get<expert_token_object>(1).amount == (1000 * db.get<research_group_token_object>(4).amount) / db.get<research_group_object>(2).total_tokens_amount);
+        BOOST_CHECK(db.get<research_group_object>(2).funds == (db.get<research_object>(2).owned_tokens * reward) / DEIP_100_PERCENT);
 
-        BOOST_CHECK(db.get_account("alice").balance.amount == (db.get<research_token_object>(1).amount * 1000) / DEIP_100_PERCENT);
-        BOOST_CHECK(db.get_account("bob").balance.amount == (db.get<research_token_object>(2).amount * 1000) / DEIP_100_PERCENT);
+        BOOST_CHECK(db.get<expert_token_object>(0).amount == (reward * db.get<research_group_token_object>(3).amount) / db.get<research_group_object>(2).total_tokens_amount);
+        BOOST_CHECK(db.get<expert_token_object>(1).amount == (reward * db.get<research_group_token_object>(4).amount) / db.get<research_group_object>(2).total_tokens_amount);
+
+        BOOST_CHECK(db.get_account("alice").balance.amount == (db.get<research_token_object>(1).amount * reward) / DEIP_100_PERCENT);
+        BOOST_CHECK(db.get_account("bob").balance.amount == (db.get<research_token_object>(2).amount * reward) / DEIP_100_PERCENT);
     }
     FC_LOG_AND_RETHROW()
 }
 
-//BOOST_AUTO_TEST_CASE(reward_research_content)
-//{
-//    try
-//    {
-//
-//
-//    }
-//    FC_LOG_AND_RETHROW()
-//}
+BOOST_AUTO_TEST_CASE(reward_research_content)
+{
+    try
+    {
+        ACTORS((alice)(alex)(jack)(bob)(john));
+
+        create_research_contents();
+        create_researches();
+        create_votes();
+        create_total_votes();
+        create_research_tokens();
+        create_research_groups();
+        create_research_group_tokens();
+
+        share_type reward = 1000;
+        BOOST_CHECK_NO_THROW(db.reward_research_content(1, 1, reward));
+
+        BOOST_CHECK(db.get<research_group_object>(1).funds == util::calculate_share(reward, DEIP_100_PERCENT -
+                DEIP_CURATORS_REWARD_SHARE_PERCENT - DEIP_REFERENCES_REWARD_SHARE_PERCENT - db.get<research_object>(1).review_share_in_percent));
+        BOOST_CHECK(db.get<research_group_object>(2).funds == util::calculate_share(reward,
+                    (DEIP_REFERENCES_REWARD_SHARE_PERCENT * db.get<research_object>(2).owned_tokens) / DEIP_100_PERCENT));
+
+        BOOST_CHECK(db.get<expert_token_object>(0).amount == util::calculate_share(reward * (DEIP_100_PERCENT -
+                DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT - db.get<research_object>(1).review_share_in_percent) / DEIP_100_PERCENT, db.get<research_group_token_object>(1).amount,
+                db.get<research_group_object>(1).total_tokens_amount));
+
+        BOOST_CHECK(db.get<expert_token_object>(1).amount == util::calculate_share(reward * (DEIP_100_PERCENT -
+                DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT - db.get<research_object>(1).review_share_in_percent) / DEIP_100_PERCENT, db.get<research_group_token_object>(2).amount,
+                db.get<research_group_object>(1).total_tokens_amount) + util::calculate_share((reward * DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT, db.get<research_group_token_object>(3).amount,
+                db.get<research_group_object>(2).total_tokens_amount));
+
+        BOOST_CHECK(db.get<expert_token_object>(2).amount == util::calculate_share((reward * DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT, db.get<research_group_token_object>(4).amount,
+                db.get<research_group_object>(2).total_tokens_amount));
+
+        BOOST_CHECK(db.get_account("alice").balance.amount == util::calculate_share((reward * DEIP_REFERENCES_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT,
+                    db.get<research_token_object>(1).amount, DEIP_100_PERCENT));
+        BOOST_CHECK(db.get_account("bob").balance.amount == util::calculate_share((reward * DEIP_REFERENCES_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT,
+                    db.get<research_token_object>(2).amount, DEIP_100_PERCENT) + util::calculate_share((reward * DEIP_CURATORS_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT,
+                    db.get<vote_object>(1).weight, db.get<total_votes_object>(1).total_weight));
+        BOOST_CHECK(db.get_account("john").balance.amount == util::calculate_share((reward * DEIP_CURATORS_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT,
+                    db.get<vote_object>(2).weight, db.get<total_votes_object>(1).total_weight));
+    }
+    FC_LOG_AND_RETHROW()
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
