@@ -142,7 +142,7 @@ public:
             d.voter = "john";
             d.research_id = 1;
             d.research_content_id = 1;
-            d.weight = 20;
+            d.weight = 30;
         });
 
         db.create<vote_object>([&](vote_object& d) {
@@ -162,10 +162,11 @@ public:
             d.discipline_id = 1;
             d.research_id = 1;
             d.research_content_id = 1;
-            d.total_weight = 30;
-            d.total_curators_reward_weight = 30;
-            d.total_review_reward_weight = 30;
-            d.total_research_reward_weight = 30;
+            d.total_weight = 40;
+            d.total_curators_reward_weight = 40;
+            d.total_review_reward_weight = 40;
+            d.total_research_reward_weight = 40;
+            d.total_active_research_reward_weight = 40;
         });
 
         db.create<total_votes_object>([&](total_votes_object& d) {
@@ -177,6 +178,19 @@ public:
             d.total_curators_reward_weight = 50;
             d.total_review_reward_weight = 50;
             d.total_research_reward_weight = 50;
+            d.total_active_research_reward_weight = 50;
+        });
+    }
+
+    void create_discipline()
+    {
+        db.create<discipline_object>([&](discipline_object& d) {
+            d.id = 1;
+            d.parent_id = 1;
+            d.name = "math";
+            d.total_active_review_reward_weight = 80;
+            d.total_active_research_reward_weight = 80;
+            d.total_active_reward_weight = 80;
         });
     }
 
@@ -319,7 +333,7 @@ BOOST_AUTO_TEST_CASE(reward_research_content)
 {
     try
     {
-        ACTORS((alice)(alex)(jack)(bob)(john));
+        ACTORS((alice)(bob)(john));
 
         create_research_contents();
         create_researches();
@@ -360,6 +374,61 @@ BOOST_AUTO_TEST_CASE(reward_research_content)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(reward_researches_in_discipline)
+{
+    try
+    {
+        ACTORS((alice)(alex)(jack)(bob)(john));
+
+        create_research_contents();
+        create_researches();
+        create_votes();
+        create_total_votes();
+        create_research_tokens();
+        create_research_groups();
+        create_research_group_tokens();
+        create_discipline();
+
+        share_type reward = 100000;
+
+        BOOST_CHECK_NO_THROW(db.reward_researches_in_discipline(db.get<discipline_object>(1), reward));
+
+        share_type reward_total_vote_first = (reward * db.get<total_votes_object>(1).total_active_research_reward_weight) / db.get<discipline_object>(1).total_active_review_reward_weight;
+        share_type reward_total_vote_second = (reward * db.get<total_votes_object>(2).total_active_research_reward_weight) / db.get<discipline_object>(1).total_active_review_reward_weight;
+
+        BOOST_CHECK(db.get<research_group_object>(1).funds == util::calculate_share(reward_total_vote_first, (DEIP_100_PERCENT - DEIP_CURATORS_REWARD_SHARE_PERCENT -
+                DEIP_REFERENCES_REWARD_SHARE_PERCENT - db.get<research_object>(1).review_share_in_percent), DEIP_100_PERCENT) +
+                util::calculate_share(reward_total_vote_second, DEIP_REFERENCES_REWARD_SHARE_PERCENT, DEIP_100_PERCENT));
+        BOOST_CHECK(db.get<research_group_object>(2).funds == util::calculate_share(reward_total_vote_second, ((DEIP_100_PERCENT - DEIP_CURATORS_REWARD_SHARE_PERCENT -
+                DEIP_REFERENCES_REWARD_SHARE_PERCENT - db.get<research_object>(1).review_share_in_percent) * db.get<research_object>(2).owned_tokens) / DEIP_100_PERCENT,
+                DEIP_100_PERCENT) + util::calculate_share(reward_total_vote_first, (DEIP_REFERENCES_REWARD_SHARE_PERCENT * db.get<research_object>(2).owned_tokens) / DEIP_100_PERCENT, DEIP_100_PERCENT));
+
+        BOOST_CHECK(db.get_account("alice").balance.amount == util::calculate_share(reward_total_vote_first, (DEIP_REFERENCES_REWARD_SHARE_PERCENT * db.get<research_token_object>(1).amount) /
+                DEIP_100_PERCENT, DEIP_100_PERCENT) + util::calculate_share(reward_total_vote_second, ((DEIP_100_PERCENT - DEIP_CURATORS_REWARD_SHARE_PERCENT -
+                DEIP_REFERENCES_REWARD_SHARE_PERCENT - db.get<research_object>(2).review_share_in_percent) * db.get<research_token_object>(1).amount) / DEIP_100_PERCENT, DEIP_100_PERCENT) +
+                util::calculate_share(reward_total_vote_second, (DEIP_CURATORS_REWARD_SHARE_PERCENT * db.get<vote_object>(3).weight) / db.get<total_votes_object>(2).total_weight, DEIP_100_PERCENT));
+        BOOST_CHECK(db.get_account("bob").balance.amount == util::calculate_share(reward_total_vote_first, (DEIP_REFERENCES_REWARD_SHARE_PERCENT * db.get<research_token_object>(2).amount) /
+                DEIP_100_PERCENT, DEIP_100_PERCENT) + util::calculate_share(reward_total_vote_first, (DEIP_CURATORS_REWARD_SHARE_PERCENT * db.get<vote_object>(1).weight) / db.get<total_votes_object>(1).total_weight, DEIP_100_PERCENT) +
+                util::calculate_share(reward_total_vote_second, ((DEIP_100_PERCENT - DEIP_CURATORS_REWARD_SHARE_PERCENT - DEIP_REFERENCES_REWARD_SHARE_PERCENT - db.get<research_object>(2).review_share_in_percent) *
+                db.get<research_token_object>(2).amount) / DEIP_100_PERCENT, DEIP_100_PERCENT));
+        BOOST_CHECK(db.get_account("john").balance.amount == util::calculate_share(reward_total_vote_first, (DEIP_CURATORS_REWARD_SHARE_PERCENT * db.get<vote_object>(2).weight) / db.get<total_votes_object>(1).total_weight, DEIP_100_PERCENT));
+
+        BOOST_CHECK(db.get<expert_token_object>(0).amount == util::calculate_share(reward_total_vote_first, ((DEIP_100_PERCENT - DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT -
+                db.get<research_object>(1).review_share_in_percent) * db.get<research_group_token_object>(1).amount) / db.get<research_group_object>(1).total_tokens_amount, DEIP_100_PERCENT) + util::calculate_share(reward_total_vote_second, (DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT *
+                db.get<research_group_token_object>(1).amount) / db.get<research_group_object>(1).total_tokens_amount, DEIP_100_PERCENT));
+        BOOST_CHECK(db.get<expert_token_object>(1).amount == util::calculate_share(reward_total_vote_first, ((DEIP_100_PERCENT - DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT -
+                db.get<research_object>(1).review_share_in_percent) * db.get<research_group_token_object>(2).amount) / db.get<research_group_object>(1).total_tokens_amount, DEIP_100_PERCENT) +
+                util::calculate_share(reward_total_vote_first, (DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT * db.get<research_group_token_object>(3).amount) / db.get<research_group_object>(2).total_tokens_amount) +
+                util::calculate_share(reward_total_vote_second, ((DEIP_100_PERCENT - DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT - db.get<research_object>(2).review_share_in_percent) *
+                db.get<research_group_token_object>(3).amount) / db.get<research_group_object>(2).total_tokens_amount, DEIP_100_PERCENT) + util::calculate_share(reward_total_vote_second, (DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT *
+                db.get<research_group_token_object>(2).amount) / db.get<research_group_object>(1).total_tokens_amount, DEIP_100_PERCENT));
+        BOOST_CHECK(db.get<expert_token_object>(2).amount == util::calculate_share(reward_total_vote_first, (DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT * db.get<research_group_token_object>(4).amount) / db.get<research_group_object>(2).total_tokens_amount) +
+                util::calculate_share(reward_total_vote_second, ((DEIP_100_PERCENT - DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT - db.get<research_object>(2).review_share_in_percent) *
+                db.get<research_group_token_object>(4).amount) / db.get<research_group_object>(2).total_tokens_amount, DEIP_100_PERCENT));
+
+    }
+    FC_LOG_AND_RETHROW()
+}
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace chain
