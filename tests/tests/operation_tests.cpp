@@ -358,7 +358,9 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
     BOOST_REQUIRE(total_votes.total_research_reward_weight == expected_research_reward_weight);
     BOOST_REQUIRE(total_votes.total_active_research_reward_weight == expected_research_reward_weight);
 
-    uint64_t expected_review_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, review_reward_curve).to_uint64();
+    uint64_t expected_review_reward_weight = content.type == research_content_type::review
+                                             ? util::evaluate_reward_curve(expected_tokens_amount, review_reward_curve).to_uint64()
+                                             : 0;
     BOOST_REQUIRE(total_votes.total_review_reward_weight == expected_review_reward_weight);
     BOOST_REQUIRE(total_votes.total_active_review_reward_weight == expected_review_reward_weight);
 
