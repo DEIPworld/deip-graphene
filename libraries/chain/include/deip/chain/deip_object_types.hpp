@@ -148,7 +148,7 @@ typedef oid<research_token_object> research_token_id_type;
 typedef oid<research_token_sale_object> research_token_sale_id_type;
 typedef oid<research_token_sale_contribution_object> research_token_sale_contribution_id_type;
 typedef oid<research_group_invite_object> research_group_invite_id_type;
-typedef oid<review_object> review_id;
+typedef oid<review_object> review_id_type;
 
 
 enum bandwidth_type
