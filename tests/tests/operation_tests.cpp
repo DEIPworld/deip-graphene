@@ -151,13 +151,7 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
         r.votes_count = 0;
     });
 
-    auto& token = db.create<expert_token_object>([&](expert_token_object& t) {
-        t.id = 1;
-        t.discipline_id = discipline.id;
-        t.amount = 1000;
-        t.voting_power = DEIP_100_PERCENT;
-        t.account_name = "alice";
-    });
+    expert_token("alice", 1, 99999);
 
     auto& content = db.create<research_content_object>([&](research_content_object& c) {
         c.id = 1;
