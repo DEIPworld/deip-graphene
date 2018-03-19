@@ -1,6 +1,7 @@
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/database.hpp>
 
+#define TWO_WEEKS 1209600 //in sec
 
 namespace deip{
 namespace chain{
@@ -17,6 +18,7 @@ const research_group_invite_object& dbs_research_group_invite::create(const acco
         rgi_o.account_name = account_name;
         rgi_o.research_group_id = research_group_id;
         rgi_o.research_group_token_amount = research_group_token_amount;
+        rgi_o.expiration_time = _get_now() + TWO_WEEKS;
     });
 
     return new_research_group_invite;
@@ -73,5 +75,21 @@ dbs_research_group_invite::research_group_invite_refs_type
 
     return ret;
 }
+
+void dbs_research_group_invite::clear_expired_invites()
+{
+    const auto& invite_expiration_index = db_impl().get_index<research_group_invite_index>().indices().get<by_expiration_time>();
+
+    while (!invite_expiration_index.empty() && is_expired(*invite_expiration_index.begin()))
+    {
+        db_impl().remove(*invite_expiration_index.begin());
+    }
+}
+
+bool dbs_research_group_invite::is_expired(const research_group_invite_object& invite)
+{
+    return _get_now() > invite.expiration_time;
+}
+
 }
 }

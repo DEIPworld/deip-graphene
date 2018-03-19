@@ -57,6 +57,7 @@
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
+#include <deip/chain/dbs_research_group_invite.hpp>
 
 namespace deip {
 namespace chain {
@@ -1867,6 +1868,7 @@ void database::_apply_block(const signed_block& next_block)
         create_block_summary(next_block);
         clear_expired_transactions();
         clear_expired_delegations();
+        clear_expired_proposals();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
@@ -2266,6 +2268,12 @@ void database::clear_expired_proposals()
 {
     auto& proposal_service = obtain_service<dbs_proposal>();
     proposal_service.clear_expired_proposals();
+}
+
+void database::clear_expired_invites()
+{
+    auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
+    research_group_invite_service.clear_expired_invites();
 }
 
 void database::adjust_balance(const account_object& a, const asset& delta)
