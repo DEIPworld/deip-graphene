@@ -194,6 +194,14 @@ public:
         });
     }
 
+    void create_dynamic_global_property_object()
+    {
+        db.create<dynamic_global_property_object>([&](dynamic_global_property_object& d) {
+            d.id = 0;
+            d.total_active_disciplines_reward_weight = 80;
+        });
+    }
+
     dbs_account& account_service;
     dbs_vote& vote_service;
     dbs_research_content& research_content_service;
@@ -429,6 +437,32 @@ BOOST_AUTO_TEST_CASE(reward_researches_in_discipline)
     }
     FC_LOG_AND_RETHROW()
 }
+
+BOOST_AUTO_TEST_CASE(distribute_reward)
+{
+    try
+    {
+        ACTORS((alice)(alex)(jack)(bob)(john));
+
+        create_research_contents();
+        create_researches();
+        create_votes();
+        create_total_votes();
+        create_research_tokens();
+        create_research_groups();
+        create_research_group_tokens();
+        create_discipline();
+
+        db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object& dgpo) { dgpo.total_active_disciplines_reward_weight = db.get<discipline_object>(1).total_active_reward_weight.value; });
+
+        share_type reward = 100000;
+
+        BOOST_CHECK_NO_THROW(db.distribute_reward(reward));
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace chain
