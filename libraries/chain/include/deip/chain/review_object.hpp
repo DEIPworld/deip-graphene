@@ -33,8 +33,8 @@ public:
 
     review_id_type id;
     research_id_type research_id;
-    bool is_positive;
     fc::string content;
+    bool is_positive = true;
     account_name_type author;
     time_point_sec created_at;
 };
@@ -62,7 +62,7 @@ typedef multi_index_container<review_object,
 }
 
 FC_REFLECT(deip::chain::review_object,
-           (id)(research_id)(is_positive)(content)(author)(created_at)
+           (id)(research_id)(content)(is_positive)(author)(created_at)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::review_object, deip::chain::review_index)
