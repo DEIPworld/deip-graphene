@@ -1382,8 +1382,6 @@ share_type database::reward_references(const research_content_id_type& research_
     {
         const auto& idx = get_index<total_votes_index>().indicies().get<by_research_and_discipline>();
         auto total_votes_itr = idx.find(std::make_tuple(research_id, discipline_id));
-
-        auto& test = *total_votes_itr;
         total_votes_amount += total_votes_itr->total_research_reward_weight;
         research_votes_by_id.push_back(std::make_pair(research_id, total_votes_itr->total_research_reward_weight));
     }
