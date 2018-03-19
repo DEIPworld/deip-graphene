@@ -28,8 +28,13 @@ void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
     private_key_type init_delegate_priv_key = private_key_type::regenerate(fc::sha256::hash(string("init_key")));
     public_key_type init_public_key = init_delegate_priv_key.get_public_key();
 
+    genesis_state.disciplines.push_back({ 0, "Common", 0, 0 });
+    genesis_state.disciplines.push_back({ 1, "Mathematics", 0, 0 });
+
     genesis_state.accounts.push_back(
         { "initdelegate", "null", init_public_key, genesis_state.init_supply, uint64_t(0) });
+    genesis_state.expert_tokens.push_back({ "initdelegate", 0, 33333 });
+    genesis_state.expert_tokens.push_back({ "initdelegate", 1, 22222 });
 
     genesis_state.witness_candidates.push_back({ "initdelegate", init_public_key });
 }
@@ -88,12 +93,21 @@ clean_database_fixture::clean_database_fixture()
         // ahplugin->plugin_startup();
         db_plugin->plugin_startup();
         vest(TEST_INIT_DELEGATE_NAME, 10000);
+        
+        // common_token(TEST_INIT_DELEGATE_NAME, 10000);
+        // expert_token(TEST_INIT_DELEGATE_NAME, 1, 10000);
 
         // Fill up the rest of the required miners
         for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
         {
             account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
             fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), DEIP_MIN_PRODUCER_REWARD.amount.value);
+
+            generate_block();
+
+            common_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 77777);
+            expert_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1, 66666);
+
             witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
                            init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount);
         }
@@ -151,12 +165,20 @@ void clean_database_fixture::resize_shared_mem(uint64_t size)
     generate_block();
 
     vest(TEST_INIT_DELEGATE_NAME, 10000);
+    // common_token(TEST_INIT_DELEGATE_NAME, 10000);
+    // expert_token(TEST_INIT_DELEGATE_NAME, 1, 10000);
 
     // Fill up the rest of the required miners
     for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
     {
         account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
         fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), DEIP_MIN_PRODUCER_REWARD.amount.value);
+
+        generate_block();
+
+        common_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 55555);
+        expert_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1, 44444);
+        
         witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
                        init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount);
     }
@@ -651,6 +673,32 @@ void database_fixture::vest(const string& account, const asset& amount)
 
             dbs_account& account_service = db.obtain_service<dbs_account>();
             account_service.create_vesting(db.get_account(account), amount);
+        },
+        default_skip);
+}
+
+void database_fixture::common_token(const string& account, const share_type& amount)
+{
+    db_plugin->debug_update(
+        [=](database& db) {
+            // db.modify(db.get_dynamic_global_properties(),
+            //           [&](dynamic_global_property_object& gpo) { gpo.current_supply += amount; });
+
+            dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
+            expert_token_service.create(account, 0, amount);
+        },
+        default_skip);
+}
+
+void database_fixture::expert_token(const string& account, const discipline_id_type& discipline_id, const share_type& amount)
+{
+    db_plugin->debug_update(
+        [=](database& db) {
+            // db.modify(db.get_dynamic_global_properties(),
+            //           [&](dynamic_global_property_object& gpo) { gpo.current_supply += amount; });
+
+            dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
+            expert_token_service.create(account, discipline_id, amount);
         },
         default_skip);
 }

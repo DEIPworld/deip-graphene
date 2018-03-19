@@ -164,6 +164,8 @@ struct database_fixture
     void convert(const string& account_name, const asset& amount);
     void vest(const string& from, const share_type& amount);
     void vest(const string& account, const asset& amount);
+    void common_token(const string& account, const share_type& amount);
+    void expert_token(const string& account, const discipline_id_type& discipline_id, const share_type& amount);
     void proxy(const string& account, const string& proxy);
     const asset& get_balance(const string& account_name) const;
     void sign(signed_transaction& trx, const fc::ecc::private_key& key);
