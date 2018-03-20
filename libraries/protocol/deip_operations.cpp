@@ -228,11 +228,6 @@ void create_research_group_join_request_operation::validate() const
     FC_ASSERT(fc::is_utf8(motivation_letter), "Motivation letter is not valid UTF8 string");
 }
 
-void approve_research_group_join_request_operation::validate() const
-{
-    validate_account_name(owner);
-}
-
 void reject_research_group_join_request_operation::validate() const
 {
     validate_account_name(owner);

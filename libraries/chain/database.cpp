@@ -1597,7 +1597,6 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_group_join_request_evaluator>();
-    _my->_evaluator_registry.register_evaluator<approve_research_group_join_request_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_research_group_join_request_evaluator>();
 
     // clang-format off
@@ -1865,6 +1864,9 @@ void database::_apply_block(const signed_block& next_block)
         create_block_summary(next_block);
         clear_expired_transactions();
         clear_expired_delegations();
+        clear_expired_proposals();
+        clear_expired_invites();
+        clear_expired_join_requests();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
@@ -1875,8 +1877,6 @@ void database::_apply_block(const signed_block& next_block)
 
         account_recovery_processing();
 
-        clear_expired_proposals();
-        clear_expired_invites();
         process_content_activity_windows();
 
         process_hardforks();
@@ -2272,6 +2272,13 @@ void database::clear_expired_invites()
     auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
     research_group_invite_service.clear_expired_invites();
 }
+
+void database::clear_expired_join_requests()
+{
+    auto& research_group_join_request_service = obtain_service<dbs_research_group_join_request>();
+    research_group_join_request_service.clear_expired_research_group_join_requests();
+}
+
 
 void database::adjust_balance(const account_object& a, const asset& delta)
 {

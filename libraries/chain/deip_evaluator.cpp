@@ -952,11 +952,6 @@ void create_research_group_join_request_evaluator::do_apply(const create_researc
 
 }
 
-void approve_research_group_join_request_evaluator::do_apply(const approve_research_group_join_request_operation& op)
-{
-
-}
-
 void reject_research_group_join_request_evaluator::do_apply(const reject_research_group_join_request_operation& op)
 {
     dbs_research_group_join_request &research_group_join_request_service = _db.obtain_service<dbs_research_group_join_request>();

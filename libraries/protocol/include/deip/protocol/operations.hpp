@@ -43,7 +43,6 @@ namespace deip {
                 approve_research_group_invite_operation,
                 reject_research_group_invite_operation,
                 create_research_group_join_request_operation,
-                approve_research_group_join_request_operation,
                 reject_research_group_join_request_operation,
 
                 // virtual operations
