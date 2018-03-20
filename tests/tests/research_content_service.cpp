@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         std::string content = "milestone for Research #2";
 
         flat_set<account_name_type> authors = {"sam"};
-        std::vector<research_id_type> references = {1, 2, 3};
+        std::vector<research_id_type> references = {1, 3};
         std::vector<string> external_references = {"one", "two", "three"};
 
         auto milestone = data_service.create(2, type, content, authors, references, external_references);
@@ -236,10 +236,11 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         BOOST_CHECK(milestone.content == "milestone for Research #2");
         BOOST_CHECK(milestone.authors.size() == 1);
         BOOST_CHECK(milestone.authors.begin()[0] == "sam");
-        BOOST_CHECK(milestone.research_references.size() == 3);
+        BOOST_CHECK(milestone.research_references.size() == 2);
         BOOST_CHECK(milestone.research_external_references.size() == 3);
 
-
+        std::vector<research_id_type> fault_references = {1, 2, 3};
+        BOOST_CHECK_THROW(data_service.create(2, type, content, authors, fault_references, external_references), fc::assert_exception);
 
         auto db_milestone = db.get<research_content_object, by_id>(milestone.id);
         BOOST_CHECK(db_milestone.research_id == 2);
@@ -247,7 +248,7 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         BOOST_CHECK(db_milestone.content == "milestone for Research #2");
         BOOST_CHECK(db_milestone.authors.size() == 1);
         BOOST_CHECK(db_milestone.authors.begin()[0] == "sam");
-        BOOST_CHECK(db_milestone.research_references.size() == 3);
+        BOOST_CHECK(db_milestone.research_references.size() == 2);
         BOOST_CHECK(db_milestone.research_external_references.size() == 3);
 
     }
