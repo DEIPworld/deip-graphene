@@ -1661,6 +1661,7 @@ void database::initialize_indexes()
     add_index<total_votes_index>();
     add_index<research_group_invite_index>();
     add_index<review_index>();
+    add_index<review_vote_index>();
 
     _plugin_index_signal();
 }
