@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(create_research_join_request_object)
         BOOST_CHECK(research_group_join_request.account_name == "bob");
         BOOST_CHECK(research_group_join_request.research_group_id == 1);
         BOOST_CHECK(research_group_join_request.motivation_letter == "test");
-        BOOST_CHECK(research_group_join_request.expiration_time == db.head_block_time() + 1209600);
+        BOOST_CHECK(research_group_join_request.expiration_time == db.head_block_time() + DAYS_TO_SECONDS(14));
 
         BOOST_CHECK_THROW(data_service.create("bob", 1, "test2"), boost::exception);
 

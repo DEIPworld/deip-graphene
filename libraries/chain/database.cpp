@@ -58,6 +58,7 @@
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
+#include <deip/chain/dbs_research_group_join_request.hpp>
 
 namespace deip {
 namespace chain {
@@ -1604,6 +1605,9 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
     _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_group_join_request_evaluator>();
+    _my->_evaluator_registry.register_evaluator<approve_research_group_join_request_evaluator>();
+    _my->_evaluator_registry.register_evaluator<reject_research_group_join_request_evaluator>();
 
     // clang-format off
     _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>(
@@ -1617,7 +1621,8 @@ void database::initialize_evaluators()
                                         this->obtain_service<dbs_discipline>(),
                                         this->obtain_service<dbs_research_discipline_relation>(),
                                         this->obtain_service<dbs_research_group_invite>(),
-                                        this->obtain_service<dbs_dynamic_global_properties>()));
+                                        this->obtain_service<dbs_dynamic_global_properties>(),
+                                        this->obtain_service<dbs_research_group_join_request>()));
     //clang-format on
 }
 

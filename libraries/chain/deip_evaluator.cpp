@@ -20,6 +20,7 @@
 #include <deip/chain/dbs_expert_token.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_research_token.hpp>
+#include <deip/chain/dbs_research_group_join_request.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -935,6 +936,19 @@ void reject_research_group_invite_evaluator::do_apply(const reject_research_grou
     auto& research_group_invite = research_group_invite_service.get(op.research_group_invite_id);
 
     _db._temporary_public_impl().remove(research_group_invite);
+
+}
+
+void create_research_group_join_request_evaluator::do_apply(const create_research_group_join_request_operation& op)
+{
+}
+
+void approve_research_group_join_request_evaluator::do_apply(const approve_research_group_join_request_operation& op)
+{
+}
+
+void reject_research_group_join_request_evaluator::do_apply(const reject_research_group_join_request_operation& op)
+{
 
 }
 

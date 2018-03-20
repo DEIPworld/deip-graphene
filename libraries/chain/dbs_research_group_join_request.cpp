@@ -1,8 +1,6 @@
 #include <deip/chain/dbs_research_group_join_request.hpp>
 #include <deip/chain/database.hpp>
 
-#define  TWO_WEEKS         1209600
-
 namespace deip{
 namespace chain{
 
@@ -18,7 +16,7 @@ const research_group_join_request_object& dbs_research_group_join_request::creat
         rgir_o.account_name = account_name;
         rgir_o.research_group_id = research_group_id;
         rgir_o.motivation_letter = motivation_letter;
-        rgir_o.expiration_time = _get_now() + TWO_WEEKS;
+        rgir_o.expiration_time = _get_now() + DAYS_TO_SECONDS(14);
     });
 
     return new_research_group_join_request;

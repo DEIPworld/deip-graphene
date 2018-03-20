@@ -576,6 +576,44 @@ struct reject_research_group_invite_operation : public base_operation
     }
 };
 
+struct create_research_group_join_request_operation : public base_operation
+{
+    int64_t research_group_join_request_id;
+    account_name_type owner;
+    int64_t research_group_id;
+    string motivation_letter;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
+
+struct approve_research_group_join_request_operation : public base_operation
+{
+    int64_t research_group_join_request_id;
+    account_name_type owner;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
+
+struct reject_research_group_join_request_operation : public base_operation
+{
+    int64_t research_group_join_request_id;
+    account_name_type owner;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -640,5 +678,7 @@ FC_REFLECT( deip::protocol::make_research_review_operation, (author)(research_id
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (owner)(research_token_sale_id)(amount))
 FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner)(research_tokens_conversion_percent))
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
+FC_REFLECT( deip::protocol::create_research_group_join_request_operation, (research_group_join_request_id)(owner)(research_group_id)(motivation_letter))
+FC_REFLECT( deip::protocol::approve_research_group_join_request_operation, (research_group_join_request_id)(owner))
+FC_REFLECT( deip::protocol::reject_research_group_join_request_operation, (research_group_join_request_id)(owner))
 // clang-format on
-
