@@ -28,15 +28,29 @@ void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
     private_key_type init_delegate_priv_key = private_key_type::regenerate(fc::sha256::hash(string("init_key")));
     public_key_type init_public_key = init_delegate_priv_key.get_public_key();
 
-    genesis_state.disciplines.push_back({ 0, "Common", 0, 0 });
-    genesis_state.disciplines.push_back({ 1, "Mathematics", 0, 0 });
-
     genesis_state.accounts.push_back(
         { "initdelegate", "null", init_public_key, genesis_state.init_supply, uint64_t(0) });
-    genesis_state.expert_tokens.push_back({ "initdelegate", 0, 33333 });
-    genesis_state.expert_tokens.push_back({ "initdelegate", 1, 22222 });
-
     genesis_state.witness_candidates.push_back({ "initdelegate", init_public_key });
+}
+
+void create_initdelegate_expert_tokens_for_genesis_state(genesis_state_type& genesis_state)
+{
+    genesis_state.expert_tokens.push_back({ "initdelegate", 0, 10000 });
+    genesis_state.expert_tokens.push_back({ "initdelegate", 1, 10000 });
+}
+
+void create_disciplines_for_genesis_state(genesis_state_type& genesis_state)
+{
+    genesis_state.disciplines.push_back({ 0, "Common", 0, 0 });
+    genesis_state.disciplines.push_back({ 1, "Mathematics", 0, 0 });
+    genesis_state.disciplines.push_back({ 2, "Physics", 0, 0 });
+    genesis_state.disciplines.push_back({ 3, "Chemistry", 0, 0 });
+    genesis_state.disciplines.push_back({ 4, "Biology", 0, 0 });
+    genesis_state.disciplines.push_back({ 5, "Computer Science", 0, 0 });
+    genesis_state.disciplines.push_back({ 6, "Medicine", 0, 0 });
+    genesis_state.disciplines.push_back({ 7, "Pure Mathematics", 0, 1 });
+    genesis_state.disciplines.push_back({ 8, "Applied Mathematics", 0, 1 });
+    genesis_state.disciplines.push_back({ 9, "Law", 0, 0 });
 }
 
 database_fixture::database_fixture()
@@ -52,7 +66,9 @@ database_fixture::database_fixture()
     genesis_state.initial_chain_id = TEST_CHAIN_ID;
     genesis_state.initial_timestamp = fc::time_point_sec(TEST_GENESIS_TIMESTAMP);
 
+    create_disciplines_for_genesis_state(genesis_state);
     create_initdelegate_for_genesis_state(genesis_state);
+    create_initdelegate_expert_tokens_for_genesis_state(genesis_state);
 }
 
 database_fixture::~database_fixture()
@@ -677,30 +693,29 @@ void database_fixture::vest(const string& account, const asset& amount)
         default_skip);
 }
 
-void database_fixture::common_token(const string& account, const share_type& amount)
-{
-    db_plugin->debug_update(
-        [=](database& db) {
-            // db.modify(db.get_dynamic_global_properties(),
-            //           [&](dynamic_global_property_object& gpo) { gpo.current_supply += amount; });
-
-            dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
-            expert_token_service.create(account, 0, amount);
-        },
-        default_skip);
+void database_fixture::create_all_discipline_expert_tokens_for_account(const string& account)
+{    
+    for (uint32_t i = 0; i < genesis_state.disciplines.size(); i++)
+    {
+        expert_token(account, i, 10000);
+    }
 }
 
-void database_fixture::expert_token(const string& account, const discipline_id_type& discipline_id, const share_type& amount)
+const expert_token_object& database_fixture::common_token(const string& account, const share_type& amount)
 {
-    db_plugin->debug_update(
-        [=](database& db) {
-            // db.modify(db.get_dynamic_global_properties(),
-            //           [&](dynamic_global_property_object& gpo) { gpo.current_supply += amount; });
+    dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
+    auto& common_token = expert_token_service.create(account, 0, amount);
 
-            dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
-            expert_token_service.create(account, discipline_id, amount);
-        },
-        default_skip);
+    return common_token;
+}
+
+const expert_token_object&
+database_fixture::expert_token(const string& account, const discipline_id_type& discipline_id, const share_type& amount)
+{
+    dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
+    auto& expert_token = expert_token_service.create(account, discipline_id, amount);
+
+    return expert_token;
 }
 
 void database_fixture::proxy(const string& account, const string& proxy)
