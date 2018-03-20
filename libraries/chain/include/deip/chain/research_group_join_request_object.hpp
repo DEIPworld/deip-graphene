@@ -50,7 +50,7 @@ typedef multi_index_container<research_group_join_request_object,
                                                 fc::time_point_sec,
                                                 &research_group_join_request_object::expiration_time>>,
                            ordered_unique<tag<by_account_and_research_group_id>,
-                           composite_key<research_group_invite_object,
+                           composite_key<research_group_join_request_object,
                                         member<research_group_join_request_object,
                                                 account_name_type,
                                                 &research_group_join_request_object::account_name>,
@@ -67,6 +67,6 @@ typedef multi_index_container<research_group_join_request_object,
 
 
 
-FC_REFLECT(deip::chain::research_group_invite_object, (id)(account_name)(research_group_id)(motivation_letter)(expiration_time))
+FC_REFLECT(deip::chain::research_group_join_request_object, (id)(account_name)(research_group_id)(motivation_letter)(expiration_time))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_group_join_request_object, deip::chain::research_group_join_request_index)
