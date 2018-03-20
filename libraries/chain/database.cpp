@@ -1868,7 +1868,6 @@ void database::_apply_block(const signed_block& next_block)
         create_block_summary(next_block);
         clear_expired_transactions();
         clear_expired_delegations();
-        clear_expired_invites();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
@@ -1880,6 +1879,7 @@ void database::_apply_block(const signed_block& next_block)
         account_recovery_processing();
 
         clear_expired_proposals();
+        clear_expired_invites();
         process_content_activity_windows();
 
         process_hardforks();

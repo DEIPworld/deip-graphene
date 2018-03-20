@@ -1,8 +1,6 @@
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/database.hpp>
 
-#define TWO_WEEKS 1209600 //in sec
-
 namespace deip{
 namespace chain{
 
@@ -18,7 +16,7 @@ const research_group_invite_object& dbs_research_group_invite::create(const acco
         rgi_o.account_name = account_name;
         rgi_o.research_group_id = research_group_id;
         rgi_o.research_group_token_amount = research_group_token_amount;
-        rgi_o.expiration_time = _get_now() + TWO_WEEKS;
+        rgi_o.expiration_time = _get_now() + DAYS_TO_SECONDS(14);
     });
 
     return new_research_group_invite;
