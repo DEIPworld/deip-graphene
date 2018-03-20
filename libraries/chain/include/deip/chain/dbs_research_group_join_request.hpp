@@ -42,6 +42,10 @@ public:
 
     research_group_join_request_refs_type get_research_group_join_requests_by_research_group_id(const research_group_id_type& research_group_id);
 
+    void clear_expired_research_group_join_requests();
+
+    bool is_expired(const research_group_join_request_object& research_group_join_request);
+
 };
 
 } // namespace chain

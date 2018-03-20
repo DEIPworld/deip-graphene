@@ -75,5 +75,23 @@ dbs_research_group_join_request::research_group_join_request_refs_type
 
     return ret;
 }
+
+void dbs_research_group_join_request::clear_expired_research_group_join_requests()
+{
+    const auto& join_request_expiration_index = db_impl().get_index<research_group_join_request_index>().indices().get<by_expiration_time>();
+
+    while (!join_request_expiration_index.empty() && is_expired(*join_request_expiration_index.begin()))
+    {
+        db_impl().remove(*join_request_expiration_index.begin());
+    }
+}
+
+bool dbs_research_group_join_request::is_expired(const research_group_join_request_object& research_group_join_request)
+{
+    return _get_now() > research_group_join_request.expiration_time;
+}
+
+
+
 }
 }

@@ -28,6 +28,7 @@
 #include <deip/chain/vote_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/research_group_invite_object.hpp>
+#include <deip/chain/research_group_join_request_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1657,6 +1658,7 @@ void database::initialize_indexes()
     add_index<vote_index>();
     add_index<total_votes_index>();
     add_index<research_group_invite_index>();
+    add_index<research_group_join_request_index>();
 
     _plugin_index_signal();
 }
