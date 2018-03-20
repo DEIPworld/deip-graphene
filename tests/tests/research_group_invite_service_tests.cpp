@@ -23,6 +23,7 @@ public:
             rgi_o.account_name = "alice";
             rgi_o.research_group_id = 1;
             rgi_o.research_group_token_amount = 100;
+            rgi_o.expiration_time = fc::time_point_sec(0xffffffff);
         });
 
         db.create<research_group_invite_object>([&](research_group_invite_object& rgi_o) {
@@ -30,6 +31,7 @@ public:
             rgi_o.account_name = "alice";
             rgi_o.research_group_id = 2;
             rgi_o.research_group_token_amount = 100;
+            rgi_o.expiration_time = fc::time_point_sec(123);
         });
 
         db.create<research_group_invite_object>([&](research_group_invite_object& rgi_o) {
@@ -37,6 +39,7 @@ public:
             rgi_o.account_name = "bob";
             rgi_o.research_group_id = 1;
             rgi_o.research_group_token_amount = 100;
+            rgi_o.expiration_time = fc::time_point_sec(0xffffff1f);
         });
     }
 
@@ -82,6 +85,7 @@ BOOST_AUTO_TEST_CASE(get_research_group_invite_by_account_name_and_research_grou
         BOOST_CHECK(research_group_invite.account_name == "alice");
         BOOST_CHECK(research_group_invite.research_group_id == 1);
         BOOST_CHECK(research_group_invite.research_group_token_amount == 100);
+        BOOST_CHECK(research_group_invite.expiration_time == fc::time_point_sec(0xffffffff));
 
     }
     FC_LOG_AND_RETHROW()
@@ -101,7 +105,9 @@ BOOST_AUTO_TEST_CASE(get_research_group_invites_by_account_name)
                                     return research_group_invite.id == 1
                                            && research_group_invite.research_group_id == 1
                                            && research_group_invite.account_name == "alice"
-                                           && research_group_invite.research_group_token_amount == 100;
+                                           && research_group_invite.research_group_token_amount == 100
+                                           && research_group_invite.expiration_time == fc::time_point_sec(0xffffffff);
+
                                 }));
 
         BOOST_CHECK(std::any_of(research_group_invites.begin(), research_group_invites.end(),
@@ -110,7 +116,8 @@ BOOST_AUTO_TEST_CASE(get_research_group_invites_by_account_name)
                                     return research_group_invite.id == 2
                                            && research_group_invite.research_group_id == 2
                                            && research_group_invite.account_name == "alice"
-                                           && research_group_invite.research_group_token_amount == 100;
+                                           && research_group_invite.research_group_token_amount == 100
+                                           && research_group_invite.expiration_time == fc::time_point_sec(123);
                                 }));
     }
     FC_LOG_AND_RETHROW()
@@ -141,6 +148,30 @@ BOOST_AUTO_TEST_CASE(get_research_group_invites_by_research_group_id)
                                            && research_group_invite.account_name == "bob"
                                            && research_group_invite.research_group_token_amount == 100;
                                 }));
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(clear_expired_invites)
+{
+    try
+    {
+        create_research_invite_objects();
+
+        BOOST_CHECK_NO_THROW(data_service.clear_expired_invites());
+        BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(2)), boost::exception);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(is_expired)
+{
+    try
+    {
+        create_research_invite_objects();
+
+        BOOST_CHECK(data_service.is_expired(db.get<research_group_invite_object>(2)) == true);
     }
     FC_LOG_AND_RETHROW()
 }
