@@ -99,6 +99,7 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         generate_block();
 
         auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
+        research_create(2, "test_research2", "abstract2", "permlink2", 1, 10, 1500);
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -107,7 +108,7 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         op.author = "alice";
         op.research_id = 1;
         op.content = "test";
-        op.research_references = {1};
+        op.research_references = {2};
         op.research_external_references = {"one", "two", "three"};
 
         BOOST_TEST_MESSAGE("--- Test normal research review creation");
