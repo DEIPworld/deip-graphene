@@ -332,10 +332,6 @@ protected:
         _research_service.check_research_existence(data.research_id);
         auto &research = _research_service.get_research(data.research_id);
 
-        int size = data.research_references.size();
-        for (int i = 0; i < size; ++i)
-            FC_ASSERT(data.research_references[i] != data.research_id, "Research material cannot reference research it is being created for.");
-
         _research_content_service.create(data.research_id, data.type, data.content, data.authors, data.research_references, data.research_external_references);
     }
 
