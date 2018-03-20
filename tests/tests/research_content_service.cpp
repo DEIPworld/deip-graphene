@@ -50,17 +50,6 @@ public:
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
-            rc.id = 1;
-            rc.research_id = 1;
-            rc.type = research_content_type::review;
-            rc.content = "review for Research #1";
-            rc.authors = {"alice"};
-            rc.created_at = db.head_block_time();
-            rc.research_references = {1};
-            rc.research_external_references = {"one", "four"};
-        });
-
-        db.create<research_content_object>([&](research_content_object& rc) {
             rc.id = 2;
             rc.research_id = 1;
             rc.type = research_content_type::final_result;
@@ -86,7 +75,7 @@ public:
 
         db.create<research_content_object>([&](research_content_object& rc) {
             rc.id = 3;
-            rc.research_id = 2;
+            rc.research_id = 1;
             rc.type = research_content_type::announcement;
             rc.content = "announcement for Research #2";
             rc.authors = {"john"};
@@ -151,16 +140,6 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
-            return content.id == 1 && content.research_id == 1 && 
-                    content.type == research_content_type::review && 
-                    content.content == "review for Research #1" &&
-                    content.authors.size() == 1 && 
-                    content.authors.begin()[0] == "alice" &&
-                    content.research_references.size() == 1 &&
-                    content.research_external_references.size() == 2;
-        }));
-        BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
-            const research_content_object &content = wrapper.get();
             return content.id == 2 && content.research_id == 1 && 
                     content.type == research_content_type::final_result && 
                     content.content == "final result for Research #1" &&
@@ -190,16 +169,16 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
     try
     {
         create_researches_with_content();
-        auto contents = data_service.get_content_by_research_id_and_content_type(1, research_content_type::review);
+        auto contents = data_service.get_content_by_research_id_and_content_type(1, research_content_type::announcement);
 
         BOOST_CHECK(contents.size() == 1);
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
-            return content.id == 1 && content.research_id == 1 && 
-                    content.type == research_content_type::review && 
-                    content.content == "review for Research #1" &&
+            return content.id == 3 && content.research_id == 1 &&
+                    content.type == research_content_type::announcement &&
+                    content.content == "announcement for Research #2" &&
                     content.authors.size() == 1 && 
-                    content.authors.begin()[0] == "alice" &&
+                    content.authors.begin()[0] == "john" &&
                     content.research_references.size() == 1 &&
                     content.research_external_references.size() == 2;
         }));
@@ -212,7 +191,7 @@ BOOST_AUTO_TEST_CASE(get_no_content_for_non_existing_research_by_id_and_content_
     try
     {
         create_researches_with_content();
-        auto contents = data_service.get_content_by_research_id_and_content_type(3, research_content_type::review);
+        auto contents = data_service.get_content_by_research_id_and_content_type(3, research_content_type::announcement);
         BOOST_CHECK(contents.size() == 0);
     }
     FC_LOG_AND_RETHROW()

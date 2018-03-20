@@ -524,7 +524,6 @@ void vote_evaluator::do_apply(const vote_operation& o)
                 .get_total_votes_by_content_and_discipline(o.research_content_id, o.discipline_id);
 
         const bool content_is_active = content.activity_state == research_content_activity_state::active;
-        const bool content_is_review = content.type == research_content_type::review;
 
         FC_ASSERT(o.weight != 0, "Vote weight cannot be 0.");
 
@@ -548,18 +547,9 @@ void vote_evaluator::do_apply(const vote_operation& o)
                 t.total_active_weight += rshares;
             }
 
-            if (!content_is_review) {
-                t.total_research_reward_weight += evaluated_research_rshares;
-                if (content_is_active) {
-                    t.total_active_research_reward_weight += evaluated_research_rshares;
-                }
-            }
-
-            if (content_is_review) {
-                t.total_review_reward_weight += evaluated_review_rshares;
-                if (content_is_active) {
-                    t.total_active_review_reward_weight += evaluated_review_rshares;
-                }
+            t.total_research_reward_weight += evaluated_research_rshares;
+            if (content_is_active) {
+                t.total_active_research_reward_weight += evaluated_research_rshares;
             }
         });
 
@@ -572,13 +562,7 @@ void vote_evaluator::do_apply(const vote_operation& o)
         const auto& discipline = discipline_service.get_discipline(o.discipline_id);
         _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
 
-            if (!content_is_review) {
-                d.total_active_research_reward_weight += evaluated_research_rshares;
-            }
-
-            if (content_is_review){
-                d.total_active_review_reward_weight += evaluated_review_rshares;
-            }
+            d.total_active_research_reward_weight += evaluated_research_rshares;
 
             if (content_is_active) {
                 d.total_active_reward_weight += rshares;
@@ -826,23 +810,24 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
 
 void make_research_review_evaluator::do_apply(const make_research_review_operation& op)
 {
-    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
-    dbs_research& research_service = _db.obtain_service<dbs_research>();
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    account_service.check_account_existence(op.author);
-    research_service.check_research_existence(op.research_id);
-
-    std::vector<research_id_type> references;
-    int size = op.research_references.size();
-    for (int i = 0; i < size; ++i)
-    {
-        research_service.check_research_existence(op.research_references[i]);
-        references.push_back((research_id_type)op.research_references[i]);
-    }
-
-    flat_set<account_name_type> review_author = {op.author};
-    research_content_service.create(op.research_id, research_content_type::review, op.content, review_author, references, op.research_external_references);
+    // TODO: create review
+//    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+//    dbs_research& research_service = _db.obtain_service<dbs_research>();
+//    dbs_account& account_service = _db.obtain_service<dbs_account>();
+//
+//    account_service.check_account_existence(op.author);
+//    research_service.check_research_existence(op.research_id);
+//
+//    std::vector<research_id_type> references;
+//    int size = op.research_references.size();
+//    for (int i = 0; i < size; ++i)
+//    {
+//        research_service.check_research_existence(op.research_references[i]);
+//        references.push_back((research_id_type)op.research_references[i]);
+//    }
+//
+//    flat_set<account_name_type> review_author = {op.author};
+//    research_content_service.create(op.research_id, research_content_type::review, op.content, review_author, references, op.research_external_references);
 }
 
 void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)

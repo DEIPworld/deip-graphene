@@ -22,8 +22,7 @@ enum research_content_type : uint16_t
 {
     announcement = 1,
     milestone = 2,
-    final_result = 3,
-    review = 4
+    final_result = 3
 };
 
 enum research_content_activity_state : uint16_t
@@ -101,7 +100,7 @@ typedef multi_index_container<research_content_object,
 }
 }
 
-FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result)(review) )
+FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result))
 FC_REFLECT_ENUM(deip::chain::research_content_activity_state, (active)(pending)(closed) )
 
 FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(content)(authors)(research_references)(research_external_references))
