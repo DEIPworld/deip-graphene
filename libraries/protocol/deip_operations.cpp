@@ -70,6 +70,12 @@ void vote_operation::validate() const
     FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
 }
 
+void vote_for_review_operation::validate() const
+{
+    validate_account_name(voter);
+    FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
+}
+
 void transfer_operation::validate() const
 {
     try

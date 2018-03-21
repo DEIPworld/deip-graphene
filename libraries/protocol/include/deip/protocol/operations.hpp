@@ -42,6 +42,7 @@ namespace deip {
                 contribute_to_token_sale_operation,
                 approve_research_group_invite_operation,
                 reject_research_group_invite_operation,
+                vote_for_review_operation,
 
                 // virtual operations
                 fill_vesting_withdraw_operation,

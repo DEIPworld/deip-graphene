@@ -37,7 +37,8 @@ public:
     bool is_positive = true;
     account_name_type author;
     time_point_sec created_at;
-    std::map<discipline_id_type, share_type> reward_weights_per_discipline;
+    bip::map<discipline_id_type, share_type> reward_weights_per_discipline;
+    bip::map<discipline_id_type, share_type> curation_reward_weights_per_discipline;
 };
 
 struct by_author;

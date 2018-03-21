@@ -31,6 +31,7 @@ DEFINE_EVALUATOR(make_research_review)
 DEFINE_EVALUATOR(contribute_to_token_sale)
 DEFINE_EVALUATOR(approve_research_group_invite)
 DEFINE_EVALUATOR(reject_research_group_invite)
+DEFINE_EVALUATOR(vote_for_review)
 
 }
 } // deip::chain

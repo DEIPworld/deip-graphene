@@ -44,7 +44,7 @@ struct by_discipline_id;
 struct by_review_id;
 struct by_voter;
 struct by_review_and_discipline;
-struct by_voter_and_discipline;
+struct by_voter_discipline_and_review;
 
 typedef multi_index_container<review_vote_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -67,14 +67,17 @@ typedef multi_index_container<review_vote_object,
                                 member<review_vote_object,
                                         discipline_id_type,
                                         &review_vote_object::discipline_id>>>,
-                ordered_non_unique<tag<by_voter_and_discipline>,
+                ordered_unique<tag<by_voter_discipline_and_review>,
                         composite_key<review_vote_object,
                                 member<review_vote_object,
                                         account_name_type,
                                         &review_vote_object::voter>,
                                 member<review_vote_object,
                                         discipline_id_type,
-                                        &review_vote_object::discipline_id>>>,
+                                        &review_vote_object::discipline_id>,
+                                member<review_vote_object,
+                                        review_id_type,
+                                        &review_vote_object::review_id>>>,
                 ordered_non_unique<tag<by_voter>,
                         member<review_vote_object,
                                 account_name_type,

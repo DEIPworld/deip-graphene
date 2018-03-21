@@ -127,6 +127,20 @@ struct vote_operation : public base_operation
     }
 };
 
+struct vote_for_review_operation : public base_operation
+{
+    account_name_type voter;
+    int64_t review_id;
+    int64_t discipline_id;
+    int16_t weight = 0;
+
+    void validate() const;
+    void get_required_posting_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(voter);
+    }
+};
+
 /**
  * @ingroup operations
  *
@@ -640,5 +654,7 @@ FC_REFLECT( deip::protocol::make_research_review_operation, (author)(research_id
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (owner)(research_token_sale_id)(amount))
 FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner)(research_tokens_conversion_percent))
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
+FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
+
 // clang-format on
 

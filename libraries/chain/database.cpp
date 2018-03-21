@@ -1606,6 +1606,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
     _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
+    _my->_evaluator_registry.register_evaluator<vote_for_review_evaluator>();
 
     // clang-format off
     _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>(
