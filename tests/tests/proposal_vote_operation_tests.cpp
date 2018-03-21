@@ -79,30 +79,6 @@ public:
     {
     }
 
-    void create_disciplines()
-    {
-        db.create<discipline_object>([&](discipline_object& d) {
-            d.id = 1;
-            d.name = "Physics";
-            d.parent_id = 0;
-            d.votes_in_last_ten_weeks = 100;
-        });
-
-        db.create<discipline_object>([&](discipline_object& d) {
-            d.id = 2;
-            d.name = "Mathematics";
-            d.parent_id = 0;
-            d.votes_in_last_ten_weeks = 150;
-        });
-
-        db.create<discipline_object>([&](discipline_object& d) {
-            d.id = 3;
-            d.name = "Cryptography";
-            d.parent_id = 1;
-            d.votes_in_last_ten_weeks = 30;
-        });
-    }
-
     ~proposal_vote_evaluator_fixture() {
     }
 
@@ -195,6 +171,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
         op.proposal_id = 0;
         op.voter = "alice";
 
+        generate_block();
         create_disciplines();
 
         evaluator.do_apply(op);
@@ -727,13 +704,32 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         r.owned_tokens = DEIP_100_PERCENT;
     });
 
-    const std::string json_str = "{\"research_id\": 1,\"type\": 2,\"content\":\"milestone for Research #1\", \"authors\":[\"alice\"]}";
+    const std::string wrong_json_str = "{\"research_id\": 1,"
+                                 "\"type\": 2,"
+                                 "\"content\":\"milestone for Research #1\","
+                                 "\"authors\":[\"alice\"],"
+                                 "\"research_references\": [1, 2, 3]}";
 
-    create_proposal(1, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::create_research_material, wrong_json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+
+    vote_proposal_operation wrong_op;
+    wrong_op.research_group_id = 1;
+    wrong_op.proposal_id = 1;
+    wrong_op.voter = "alice";
+
+    BOOST_CHECK_THROW(evaluator.do_apply(wrong_op), fc::assert_exception);
+
+    const std::string json_str = "{\"research_id\": 1,"
+            "\"type\": 2,"
+            "\"content\":\"milestone for Research #2\","
+            "\"authors\":[\"alice\"],"
+            "\"research_references\": [3]}";
+
+    create_proposal(2, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
     op.research_group_id = 1;
-    op.proposal_id = 1;
+    op.proposal_id = 2;
     op.voter = "alice";
 
     evaluator.do_apply(op);
@@ -746,8 +742,8 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper) {
             const research_content_object& content = wrapper.get();
             return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone
-                && content.content == "milestone for Research #1" && content.authors.size() == 1
-                && content.authors.begin()[0] == "alice";
+                && content.content == "milestone for Research #2" && content.authors.size() == 1
+                && content.authors.begin()[0] == "alice" && content.research_references.size() == 1;
         }));
 }
 

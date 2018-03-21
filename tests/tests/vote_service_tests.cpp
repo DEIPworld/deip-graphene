@@ -209,6 +209,23 @@ BOOST_AUTO_TEST_CASE(get_total_votes_object_by_content_and_discipline)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(get_total_votes_discipline)
+{
+    try
+    {
+        create_total_votes();
+        auto total_votes = data_service.get_total_votes_by_discipline(1024);
+
+        BOOST_CHECK(total_votes.size() == 1);
+        for (auto tv : total_votes) {
+            auto& tvo = tv.get();
+            BOOST_CHECK(tvo.discipline_id == 1024);
+        }
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(update_total_votes_object)
 {
     try

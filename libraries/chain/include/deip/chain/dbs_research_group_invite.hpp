@@ -44,6 +44,10 @@ public:
 
     research_group_invite_refs_type get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id);
 
+    void clear_expired_invites();
+
+    bool is_expired(const research_group_invite_object& invite);
+
 };
 
 } // namespace chain

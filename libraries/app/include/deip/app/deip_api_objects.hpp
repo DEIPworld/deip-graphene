@@ -18,9 +18,9 @@
 #include <deip/chain/research_discipline_relation_object.hpp>
 #include <deip/chain/research_group_invite_object.hpp>
 
-#include <deip/tags/tags_plugin.hpp>
-
 #include <deip/witness/witness_objects.hpp>
+
+#include <deip/chain/database.hpp>
 
 namespace deip {
 namespace app {
@@ -37,28 +37,6 @@ typedef chain::vesting_delegation_object vesting_delegation_api_obj;
 typedef chain::vesting_delegation_expiration_object vesting_delegation_expiration_api_obj;
 typedef chain::reward_fund_object reward_fund_api_obj;
 typedef witness::account_bandwidth_object account_bandwidth_api_obj;
-
-struct tag_api_obj
-{
-    tag_api_obj(const tags::tag_stats_object& o)
-        : name(o.tag)
-        , total_payouts(o.total_payout)
-        , net_votes(o.net_votes)
-        , top_posts(o.top_posts)
-        , trending(o.total_trending)
-    {
-    }
-
-    tag_api_obj()
-    {
-    }
-
-    string name;
-    asset total_payouts;
-    int32_t net_votes = 0;
-    uint32_t top_posts = 0;
-    fc::uint128 trending = 0;
-};
 
 struct account_api_obj
 {
@@ -79,8 +57,6 @@ struct account_api_obj
         , voting_power(a.voting_power)
         , last_vote_time(a.last_vote_time)
         , balance(a.balance)
-        , curation_rewards(a.curation_rewards)
-        , posting_rewards(a.posting_rewards)
         , vesting_shares(a.vesting_shares)
         , delegated_vesting_shares(a.delegated_vesting_shares)
         , received_vesting_shares(a.received_vesting_shares)
@@ -157,9 +133,6 @@ struct account_api_obj
     time_point_sec last_vote_time;
 
     asset balance;
-
-    share_type curation_rewards;
-    share_type posting_rewards;
 
     asset vesting_shares;
     asset delegated_vesting_shares;
@@ -661,8 +634,6 @@ FC_REFLECT( deip::app::account_api_obj,
              (lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
              (balance)
              (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
-             (curation_rewards)
-             (posting_rewards)
              (proxied_vsf_votes)(witnesses_voted_for)
              (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
              (average_market_bandwidth)(lifetime_market_bandwidth)(last_market_bandwidth_update)
@@ -681,14 +652,6 @@ FC_REFLECT( deip::app::account_recovery_request_api_obj,
              (account_to_recover)
              (new_owner_authority)
              (expires)
-          )
-
-FC_REFLECT( deip::app::tag_api_obj,
-            (name)
-            (total_payouts)
-            (net_votes)
-            (top_posts)
-            (trending)
           )
 
 FC_REFLECT( deip::app::witness_api_obj,

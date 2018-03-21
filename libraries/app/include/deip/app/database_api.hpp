@@ -8,8 +8,6 @@
 #include <deip/chain/history_object.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 
-#include <deip/tags/tags_plugin.hpp>
-
 #include <deip/witness/witness_plugin.hpp>
 
 #include <fc/api.hpp>
@@ -74,8 +72,6 @@ public:
     ///////////////////
 
     void set_block_applied_callback(std::function<void(const variant& block_header)> cb);
-
-    vector<tag_api_obj> get_trending_tags(string after_tag, uint32_t limit) const;
 
     /**
      *  This API is a short-cut for returning all of the state required for a particular URL
@@ -275,10 +271,6 @@ public:
     vector<vote_state> get_active_votes(string author, string permlink) const;
     vector<account_vote> get_account_votes(string voter) const;
 
-    ///@{ tags API
-    /** This API will return the top 1000 tags used by an author sorted by most frequently used */
-    vector<pair<string, uint32_t>> get_tags_used_by_author(const string& author) const;
-
     ///@}
 
     /**
@@ -390,8 +382,6 @@ public:
     void on_api_startup();
 
 private:
-    static bool tag_exit_default(const tags::tag_object& c) { return false; }
-
     std::shared_ptr<database_api_impl> my;
 };
 }
@@ -407,10 +397,6 @@ FC_REFLECT_ENUM( deip::app::withdraw_route_type, (incoming)(outgoing)(all) )
 FC_API(deip::app::database_api,
    // Subscriptions
    (set_block_applied_callback)
-
-   // tags
-   (get_trending_tags)
-   (get_tags_used_by_author)
 
    // Blocks and transactions
    (get_block_header)

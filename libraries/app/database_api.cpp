@@ -835,52 +835,6 @@ map<uint32_t, applied_operation> database_api::get_account_history(string accoun
     });
 }
 
-vector<pair<string, uint32_t>> database_api::get_tags_used_by_author(const string& author) const
-{
-    return my->_db.with_read_lock([&]() {
-        const auto* acnt = my->_db.find_account(author);
-        FC_ASSERT(acnt != nullptr);
-        const auto& tidx = my->_db.get_index<tags::author_tag_stats_index>().indices().get<tags::by_author_posts_tag>();
-        auto itr = tidx.lower_bound(boost::make_tuple(acnt->id, 0));
-        vector<pair<string, uint32_t>> result;
-        while (itr != tidx.end() && itr->author == acnt->id && result.size() < 1000)
-        {
-            result.push_back(std::make_pair(itr->tag, itr->total_posts));
-            ++itr;
-        }
-        return result;
-    });
-}
-
-vector<tag_api_obj> database_api::get_trending_tags(string after, uint32_t limit) const
-{
-    return my->_db.with_read_lock([&]() {
-        limit = std::min(limit, uint32_t(1000));
-        vector<tag_api_obj> result;
-        result.reserve(limit);
-
-        const auto& nidx = my->_db.get_index<tags::tag_stats_index>().indices().get<tags::by_tag>();
-
-        const auto& ridx = my->_db.get_index<tags::tag_stats_index>().indices().get<tags::by_trending>();
-        auto itr = ridx.begin();
-        if (after != "" && nidx.size())
-        {
-            auto nitr = nidx.lower_bound(after);
-            if (nitr == nidx.end())
-                itr = ridx.end();
-            else
-                itr = ridx.iterator_to(*nitr);
-        }
-
-        while (itr != ridx.end() && result.size() < limit)
-        {
-            result.push_back(tag_api_obj(*itr));
-            ++itr;
-        }
-        return result;
-    });
-}
-
 /**
  *  This call assumes root already stored as part of state, it will
  *  modify root.replies to contain links to the reply posts and then
@@ -959,14 +913,6 @@ state database_api::get_state(string path) const
             if (!path.size())
                 path = "trending";
 
-            /// FETCH CATEGORY STATE
-            auto trending_tags = get_trending_tags(std::string(), 50);
-            for (const auto& t : trending_tags)
-            {
-                _state.tag_idx.trending.push_back(string(t.name));
-            }
-            /// END FETCH CATEGORY STATE
-
             set<string> accounts;
 
             vector<string> part;
@@ -980,7 +926,6 @@ state database_api::get_state(string path) const
             {
                 auto acnt = part[0].substr(1);
                 _state.accounts[acnt] = extended_account(my->_db.get_account(acnt), my->_db);
-                _state.accounts[acnt].tags_usage = get_tags_used_by_author(acnt);
 
                 auto& eacnt = _state.accounts[acnt];
                 if (part[1] == "transfers")
@@ -993,8 +938,6 @@ state database_api::get_state(string path) const
                         case operation::tag<transfer_to_vesting_operation>::value:
                         case operation::tag<withdraw_vesting_operation>::value:
                         case operation::tag<transfer_operation>::value:
-                        case operation::tag<author_reward_operation>::value:
-                        case operation::tag<curation_reward_operation>::value:
                         case operation::tag<vote_operation>::value:
                         case operation::tag<account_witness_vote_operation>::value:
                         case operation::tag<account_witness_proxy_operation>::value:
@@ -1003,7 +946,7 @@ state database_api::get_state(string path) const
                         case operation::tag<account_create_operation>::value:
                         case operation::tag<account_update_operation>::value:
                         case operation::tag<witness_update_operation>::value:
-                        case operation::tag<producer_reward_operation>::value:
+                        case operation::tag<producer_reward_operation>::value:  
                         default:
                             eacnt.other_history[item.first] = item.second;
                         }
@@ -1021,17 +964,6 @@ state database_api::get_state(string path) const
                 }
             }
 
-            else if (part[0] == "tags")
-            {
-                _state.tag_idx.trending.clear();
-                auto trending_tags = get_trending_tags(std::string(), 250);
-                for (const auto& t : trending_tags)
-                {
-                    string name = t.name;
-                    _state.tag_idx.trending.push_back(name);
-                    _state.tags[name] = t;
-                }
-            }
             else
             {
                 elog("What... no matches");

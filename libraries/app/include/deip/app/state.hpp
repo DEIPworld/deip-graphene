@@ -24,11 +24,6 @@ struct discussion_index
     vector<string> promoted; /// pending lifetime payout
 };
 
-struct tag_index
-{
-    vector<string> trending; /// pending payouts
-};
-
 struct vote_state
 {
     string voter;
@@ -62,7 +57,6 @@ struct extended_account : public account_api_obj
     map<uint64_t, applied_operation> vote_history;
     map<uint64_t, applied_operation> other_history;
     set<string> witness_votes;
-    vector<pair<string, uint32_t>> tags_usage;
 
     optional<vector<string>> recent_replies; /// blog posts for this user
 };
@@ -76,14 +70,10 @@ struct state
 
     dynamic_global_property_api_obj props;
 
-    app::tag_index tag_idx;
-
     /**
      * "" is the global discussion index
      */
     map<string, discussion_index> discussion_idx;
-
-    map<string, tag_api_obj> tags;
 
     /**
      *  map from account/slug to full nested discussion
@@ -104,15 +94,14 @@ struct state
 
 FC_REFLECT_DERIVED( deip::app::extended_account,
                    (deip::app::account_api_obj),
-                   (transfer_history)(post_history)(vote_history)(other_history)(witness_votes)(tags_usage)(recent_replies) )
+                   (transfer_history)(post_history)(vote_history)(other_history)(witness_votes)(recent_replies) )
 
 
 FC_REFLECT( deip::app::vote_state, (voter)(weight)(rshares)(percent)(time) )
 FC_REFLECT( deip::app::account_vote, (authorperm)(weight)(rshares)(percent)(time) )
 
 FC_REFLECT( deip::app::discussion_index, (trending)(payout)(created)(responses)(active)(votes)(hot)(promoted)(cashout) )
-FC_REFLECT( deip::app::tag_index, (trending) )
 
-FC_REFLECT( deip::app::state, (current_route)(props)(tag_idx)(tags)(accounts)(witnesses)(discussion_idx)(witness_schedule)(error) )
+FC_REFLECT( deip::app::state, (current_route)(props)(accounts)(witnesses)(discussion_idx)(witness_schedule)(error) )
 
 // clang-format on

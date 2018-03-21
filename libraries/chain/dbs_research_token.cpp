@@ -24,6 +24,18 @@ const research_token_object& dbs_research_token::create_research_token(const acc
     return new_research_token;
 }
 
+void dbs_research_token::increase_research_token_amount(const research_token_object& research_token, const share_type delta)
+{
+    FC_ASSERT((delta >= 0), "Cannot update research token amount (delta < 0)");
+    db_impl().modify(research_token, [&](research_token_object& rt_o) { rt_o.amount += delta; });
+}
+
+void dbs_research_token::decrease_research_token_amount(const research_token_object& research_token, const share_type delta)
+{
+    FC_ASSERT((research_token.amount - delta >= 0), "Cannot update research token amount (result amount < 0)");
+    db_impl().modify(research_token, [&](research_token_object& rt_o) { rt_o.amount -= delta; });
+}
+
 const research_token_object& dbs_research_token::get_research_token(const research_token_id_type &id) const
 {
     return db_impl().get<research_token_object>(id);
@@ -65,6 +77,21 @@ const research_token_object& dbs_research_token::get_research_token_by_account_n
                                                                                          const research_id_type &research_id) const
 {
     return db_impl().get<research_token_object, by_account_name_and_research_id>(boost::make_tuple(account_name, research_id));
+}
+
+bool dbs_research_token::check_research_token_existence_by_account_name_and_research_id(const account_name_type& account_name,
+                                                                              const research_id_type& research_id) const
+{
+    const auto& idx = db_impl().get_index<research_token_index>().indices().get<by_account_name_and_research_id>();
+
+    if (idx.find(boost::make_tuple(account_name, research_id)) != idx.cend())
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 } //namespace chain
