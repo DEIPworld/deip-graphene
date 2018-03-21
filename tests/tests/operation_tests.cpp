@@ -1693,19 +1693,18 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
         BOOST_TEST_MESSAGE("Testing: account_witness_vote_apply");
 
         ACTORS((alice)(bob)(sam))
-        generate_block();
-        
+
         expert_token("sam", 1, 1000);
 
         fund("alice", 5000);
 
         for (int i = 1; i < 4; ++i)
-            expert_token("alice", i, i*100);
+            expert_token("alice", i, i * 100);
 
         vest("alice", 5000);
         fund("sam", 1000);
 
-        
+        const auto& alice_obj = db.get_account("alice");
 
         private_key_type sam_witness_key = generate_private_key("sam_key");
         witness_create("sam", sam_private_key, "foo.bar", sam_witness_key.get_public_key(), 1000);
@@ -1739,7 +1738,7 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
         }
 
         BOOST_REQUIRE(sam_witness.votes == alice_total_vote_weight);
-        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) != witness_vote_idx.end());
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice_obj.id)) != witness_vote_idx.end());
         validate_database();
 
         BOOST_TEST_MESSAGE("--- Test revoke vote");
@@ -1751,13 +1750,13 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
 
         db.push_transaction(tx, 0);
         BOOST_REQUIRE(sam_witness.votes.value == 0);
-        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) == witness_vote_idx.end());
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice_obj.id)) == witness_vote_idx.end());
 
         BOOST_TEST_MESSAGE("--- Test failure when attempting to revoke a non-existent vote");
 
         DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
         BOOST_REQUIRE(sam_witness.votes.value == 0);
-        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) == witness_vote_idx.end());
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice_obj.id)) == witness_vote_idx.end());
 
         BOOST_TEST_MESSAGE("--- Test failure when voting for a non-existent account");
         tx.operations.clear();
