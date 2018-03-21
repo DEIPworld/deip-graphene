@@ -18,6 +18,10 @@ const research_content_object& dbs_research_content::create(const research_id_ty
                                                             const std::vector<research_id_type>& research_references,
                                                             const std::vector<string>& research_external_references)
 {
+    int size = research_references.size();
+    for (int i = 0; i < size; ++i)
+        FC_ASSERT(research_references[i] != research_id, "Research material cannot reference research it is being created for.");
+
     const auto& new_research_content = db_impl().create<research_content_object>([&](research_content_object& rc) {
         
         auto now = db_impl().head_block_time();

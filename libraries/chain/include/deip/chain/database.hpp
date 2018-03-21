@@ -316,13 +316,14 @@ public:
                            const discipline_id_type& discipline_id,
                            const share_type& reward,
                            const share_type& expertise_reward);
-    share_type reward_reviews(const research_object& research,
+    share_type reward_reviews(const research_id_type& research_id,
                         const discipline_id_type& discipline_id,
                         const share_type& reward);
     share_type reward_voters(const research_content_id_type &research_content_id,
                        const discipline_id_type &discipline_id, const share_type &reward);
     void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                const share_type &reward);
+    share_type fund_review_pool(const discipline_id_type& discipline_id, const share_type &amount);
 
     time_point_sec head_block_time() const override;
     uint32_t head_block_num() const;
@@ -384,6 +385,10 @@ private:
 
     void _update_median_witness_props();
 
+    share_type allocate_rewards_to_reviews(const share_type& reward, const discipline_id_type& discipline_id,
+                                           const std::vector<std::pair<research_content_object, share_type>>& reviews_weights,
+                                           const share_type& total_weight);
+
 protected:
     // Mark pop_undo() as protected -- we do not want outside calling pop_undo(); it should call pop_block() instead
     // void pop_undo() { object_database::pop_undo(); }
@@ -414,6 +419,7 @@ protected:
     void clear_expired_proposals();
     void process_content_activity_windows();
     void process_header_extensions(const signed_block& next_block);
+    void clear_expired_invites();
 
     void init_hardforks(fc::time_point_sec genesis_time);
     void process_hardforks();
