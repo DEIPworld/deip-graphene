@@ -58,6 +58,7 @@
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
+#include <deip/chain/dbs_grant.hpp>
 
 namespace deip {
 namespace chain {
@@ -1526,7 +1527,28 @@ share_type database::allocate_rewards_to_reviews(const share_type& reward, const
 
     return used_reward;
 }
-    
+
+void database::process_grants()
+{
+    uint32_t block_num = head_block_num();
+
+    dbs_grant& grant_service = obtain_service<dbs_grant>();
+    dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
+
+    const auto& grants_idx = get_index<grant_index>().indices().get<by_start_block>();
+    auto grants_itr = grants_idx.lower_bound(block_num);
+
+    while (grants_itr != grants_idx.end())
+    {
+        auto grant = *grants_itr;
+        const auto& discipline_object = discipline_service.get_discipline(grant.target_discipline);
+        reward_researches_in_discipline(discipline_object, grant.per_block);
+        grant_service.allocate_funds(grant);
+        ++grants_itr;
+    }
+}
+
+
 void database::process_research_token_sales()
 {
     const auto& idx = get_index<research_token_sale_index>().indices().get<by_end_time>();
@@ -2504,7 +2526,7 @@ void database::process_content_activity_windows()
     {
         modify(research_content_service.get_content_by_id(itr_by_end->id), [&](research_content_object& rc) {
 
-            if (rc.type == research_content_type::announcement || 
+            if (rc.type == research_content_type::announcement ||
                 rc.type == research_content_type::milestone ||
                 rc.type == research_content_type::review) {
 
@@ -2514,12 +2536,12 @@ void database::process_content_activity_windows()
                         // starts in 2 weeks after the 1st one has ended and continues for 1 week
                         rc.activity_round = 2;
                         rc.activity_state = research_content_activity_state::pending;
-                        rc.activity_window_start = now + DAYS_TO_SECONDS(14); 
+                        rc.activity_window_start = now + DAYS_TO_SECONDS(14);
                         rc.activity_window_end = now + DAYS_TO_SECONDS(14 + 7);
                         break;
                     }
                     default: {
-                        // mark intermediate result activity period as expired 
+                        // mark intermediate result activity period as expired
                         // and set the bounds to max value to exclude content from future iterations
                         rc.activity_round = 0;
                         rc.activity_state = research_content_activity_state::closed;
@@ -2537,7 +2559,7 @@ void database::process_content_activity_windows()
                         // starts in 2 months after the 1st one has ended and continues for 1 months
                         rc.activity_round = 2;
                         rc.activity_state = research_content_activity_state::pending;
-                        rc.activity_window_start = now + DAYS_TO_SECONDS(60); 
+                        rc.activity_window_start = now + DAYS_TO_SECONDS(60);
                         rc.activity_window_end = now + DAYS_TO_SECONDS(60 + 30);
                         break;
                     }
@@ -2546,12 +2568,12 @@ void database::process_content_activity_windows()
                         // starts in one half of a year after the 2nd one has ended and continues for 2 weeks
                         rc.activity_round = 3;
                         rc.activity_state = research_content_activity_state::pending;
-                        rc.activity_window_start = now + DAYS_TO_SECONDS(182); 
+                        rc.activity_window_start = now + DAYS_TO_SECONDS(182);
                         rc.activity_window_end = now + DAYS_TO_SECONDS(182 + 14);
                         break;
                     }
                     default: {
-                        // mark final result activity period as expired 
+                        // mark final result activity period as expired
                         // and set the bounds to max value to exclude content from future iterations
                         rc.activity_round = 0;
                         rc.activity_state = research_content_activity_state::closed;
@@ -2568,14 +2590,14 @@ void database::process_content_activity_windows()
         for (auto wrapper : rc_total_votes_refs) {
             const total_votes_object& rc_total_votes = wrapper.get();
 
-            share_type expired_votes = itr_by_end->type == research_content_type::review 
+            share_type expired_votes = itr_by_end->type == research_content_type::review
                         ? rc_total_votes.total_active_review_reward_weight
                         : rc_total_votes.total_active_research_reward_weight;
-    
+
             if (expired_active_weight.find(rc_total_votes.discipline_id) != expired_active_weight.end()) {
 
                 std::map<research_content_type, share_type>& votes_by_content_type = expired_active_weight[rc_total_votes.discipline_id];
-                    
+
                 if (votes_by_content_type.find(itr_by_end->type) != votes_by_content_type.end()) {
                     votes_by_content_type[itr_by_end->type] += expired_votes;
                 } else {
@@ -2596,14 +2618,14 @@ void database::process_content_activity_windows()
         discipline_id_type discipline_id = it->first;
         std::map<research_content_type, share_type> votes_by_content_type = it->second;
 
-        share_type expired_review_weight = 
-            votes_by_content_type.find(research_content_type::review) != votes_by_content_type.end() 
+        share_type expired_review_weight =
+            votes_by_content_type.find(research_content_type::review) != votes_by_content_type.end()
             ? votes_by_content_type[research_content_type::review] : share_type(0);
 
         share_type expired_research_weight = std::accumulate( votes_by_content_type.begin(), votes_by_content_type.end(), share_type(0),
                         [](share_type acc, std::pair<research_content_type, share_type> p) {
                             if (p.first != research_content_type::review) {
-                                return acc + p.second; 
+                                return acc + p.second;
                             }
                             return acc;
                         });
@@ -2635,14 +2657,14 @@ void database::process_content_activity_windows()
             for (auto wrapper : rc_total_votes_refs) {
                 const total_votes_object& rc_total_votes = wrapper.get();
 
-                share_type resumed_votes = itr_by_start->type == research_content_type::review 
+                share_type resumed_votes = itr_by_start->type == research_content_type::review
                         ? rc_total_votes.total_active_review_reward_weight
                         : rc_total_votes.total_active_research_reward_weight;
 
                 if (resumed_active_weight.find(rc_total_votes.discipline_id) != resumed_active_weight.end()) {
 
                     std::map<research_content_type, share_type>& votes_by_content_type = resumed_active_weight[rc_total_votes.discipline_id];
-                    
+
                     if (votes_by_content_type.find(itr_by_start->type) != votes_by_content_type.end()) {
                         votes_by_content_type[itr_by_start->type] += resumed_votes;
                     } else {
@@ -2665,14 +2687,14 @@ void database::process_content_activity_windows()
         discipline_id_type discipline_id = it->first;
         std::map<research_content_type, share_type> votes_by_content_type = it->second;
 
-        share_type resumed_review_weight = 
-            votes_by_content_type.find(research_content_type::review) != votes_by_content_type.end() 
+        share_type resumed_review_weight =
+            votes_by_content_type.find(research_content_type::review) != votes_by_content_type.end()
             ? votes_by_content_type[research_content_type::review] : share_type(0);
 
         share_type resumed_research_weight = std::accumulate( votes_by_content_type.begin(), votes_by_content_type.end(), share_type(0),
                         [](share_type acc, std::pair<research_content_type, share_type> p) {
                             if (p.first != research_content_type::review) {
-                                return acc + p.second; 
+                                return acc + p.second;
                             }
                             return acc;
                         });
@@ -2683,9 +2705,6 @@ void database::process_content_activity_windows()
         });
     }
 }
-
-
-
 
 } // namespace chain
 } // namespace deip

@@ -43,12 +43,17 @@ public:
 };
 
 struct by_owner_name;
+struct by_start_block;
 
 typedef multi_index_container<grant_object,
                               indexed_by<ordered_unique<tag<by_id>,
                                                         member<grant_object,
                                                                grant_id_type,
                                                                &grant_object::id>>,
+                                         ordered_non_unique<tag<by_start_block>,
+                                                        member<grant_object,
+                                                               uint32_t,
+                                                               &grant_object::start_block>>,
                                          ordered_non_unique<tag<by_owner_name>,
                                                         member<grant_object,
                                                                account_name_type,
