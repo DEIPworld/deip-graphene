@@ -4,6 +4,7 @@
 #include <deip/chain/database.hpp>
 #include <deip/chain/research_token_object.hpp>
 #include <deip/chain/util/reward.hpp>
+#include <deip/chain/grant_objects.hpp>
 
 #include "database_fixture.hpp"
 
@@ -191,6 +192,19 @@ public:
             d.total_active_review_reward_weight = 100;
             d.total_active_research_reward_weight = 100;
             d.total_active_reward_weight = 100;
+        });
+    }
+
+    void create_grant()
+    {
+        db.create<grant_object>([&](grant_object& d) {
+            d.id = 1;
+            d.owner = "bob";
+            d.target_discipline = 1;
+            d.balance = asset(100, DEIP_SYMBOL);
+            d.per_block = 100;
+            d.start_block = 4;
+            d.end_block = 4;
         });
     }
 
@@ -510,6 +524,58 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
 
     }
     FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(grant_researches_in_discipline)
+{
+    try
+    {
+        ACTORS((alice)(alex)(jack)(bob)(john));
+
+        create_research_contents();
+        create_researches();
+        create_votes();
+        create_total_votes();
+        create_research_groups();
+        create_research_group_tokens();
+        create_discipline();
+
+        share_type grant = 100000;
+
+        BOOST_CHECK_NO_THROW(db.grant_researches_in_discipline(1, grant));
+
+        BOOST_CHECK(db.get<research_group_object>(1).funds == util::calculate_share(grant, db.get<total_votes_object>(1).total_weight, db.get<discipline_object>(1).total_active_reward_weight));
+        BOOST_CHECK(db.get<research_group_object>(2).funds == util::calculate_share(grant, db.get<total_votes_object>(2).total_weight, db.get<discipline_object>(1).total_active_reward_weight));
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(process_grants)
+{
+   try
+   {
+       BOOST_TEST_MESSAGE("Testing: process_grants");
+
+       ACTORS((alice)(alex)(jack)(bob)(john));
+
+       generate_block();
+
+       create_research_contents();
+       create_researches();
+       create_votes();
+       create_total_votes();
+       create_research_groups();
+       create_research_group_tokens();
+       create_discipline();
+       create_grant();
+
+       BOOST_CHECK_NO_THROW(db.process_grants());
+
+       BOOST_CHECK(db.get<research_group_object>(1).funds == util::calculate_share(100, db.get<total_votes_object>(1).total_weight, db.get<discipline_object>(1).total_active_reward_weight));
+       BOOST_CHECK(db.get<research_group_object>(2).funds == util::calculate_share(100, db.get<total_votes_object>(2).total_weight, db.get<discipline_object>(1).total_active_reward_weight));
+
+   }
+   FC_LOG_AND_RETHROW()
 }
 
 BOOST_AUTO_TEST_SUITE_END()

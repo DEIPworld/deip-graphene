@@ -327,6 +327,7 @@ public:
     share_type pay_reward_funds(share_type reward);
     share_type fund_review_pool(const discipline_id_type& discipline_id, const share_type &amount);
 
+    share_type grant_researches_in_discipline(const discipline_id_type& discipline_id, const share_type &amount);
     void process_grants();
 
     time_point_sec head_block_time() const override;

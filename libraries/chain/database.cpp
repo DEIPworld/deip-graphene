@@ -1528,6 +1528,44 @@ share_type database::allocate_rewards_to_reviews(const share_type& reward, const
     return used_reward;
 }
 
+share_type database::grant_researches_in_discipline(const discipline_id_type& discipline_id, const share_type &grant)
+{
+    dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
+    const auto& discipline = discipline_service.get_discipline(discipline_id);
+
+    FC_ASSERT(discipline.total_active_reward_weight != 0, "Attempt to allocate funds to inactive discipline");
+
+    auto& research_service = obtain_service<dbs_research>();
+    auto& research_group_service = obtain_service<dbs_research_group>();
+
+    const auto& total_votes_idx = get_index<total_votes_index>().indices().get<by_discipline_id>();
+    auto total_votes_itr = total_votes_idx.find(discipline.id);
+
+    share_type used_grant = 0;
+
+    std::map<research_group_id_type, share_type> grant_shares_per_research;
+
+    while (total_votes_itr != total_votes_idx.end())
+    {
+        if (total_votes_itr->total_active_research_reward_weight != 0)
+        {
+            auto& active_research_reward_weight = total_votes_itr->total_active_research_reward_weight;
+            auto research_content_share = util::calculate_share(grant, active_research_reward_weight, discipline.total_active_research_reward_weight);
+            grant_shares_per_research[research_service.get_research(total_votes_itr->research_id).research_group_id] += research_content_share;
+        }
+        ++total_votes_itr;
+    }
+
+    for (auto key_value_pair : grant_shares_per_research) {
+        research_group_service.increase_research_group_funds(key_value_pair.first, key_value_pair.second);
+        used_grant += key_value_pair.second;
+    }
+
+    FC_ASSERT(used_grant <= grant, "Attempt to allocate grant amount that is greater than grant");
+
+    return used_grant;
+}
+
 void database::process_grants()
 {
     uint32_t block_num = head_block_num();
@@ -1540,9 +1578,8 @@ void database::process_grants()
 
     while (grants_itr != grants_idx.end())
     {
-        auto grant = *grants_itr;
-        const auto& discipline_object = discipline_service.get_discipline(grant.target_discipline);
-        reward_researches_in_discipline(discipline_object, grant.per_block);
+        auto& grant = *grants_itr;
+        grant_researches_in_discipline(grant.target_discipline, grant.per_block);
         grant_service.allocate_funds(grant);
         ++grants_itr;
     }
