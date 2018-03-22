@@ -39,35 +39,50 @@ public:
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
+            research_references_data data;
+            data.research_reference_id = 2;
+            std::vector<research_references_data> research_references;
+            research_references.push_back(data);
+
             rc.id = 0; // id of the first element in index is 0
             rc.research_id = 1;
             rc.type = research_content_type::milestone;
             rc.content = "milestone for Research #1";
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
-            rc.research_references = {1};
+            rc.research_references = research_references;
             rc.research_external_references = {"one", "two", "four"};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
+            research_references_data data;
+            data.research_reference_id = 2;
+            std::vector<research_references_data> research_references;
+            research_references.push_back(data);
+
             rc.id = 1;
             rc.research_id = 1;
             rc.type = research_content_type::review;
             rc.content = "review for Research #1";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
-            rc.research_references = {1};
+            rc.research_references = research_references;
             rc.research_external_references = {"one", "four"};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
+            research_references_data data;
+            data.research_reference_id = 2;
+            std::vector<research_references_data> research_references;
+            research_references.push_back(data);
+
             rc.id = 2;
             rc.research_id = 1;
             rc.type = research_content_type::final_result;
             rc.content = "final result for Research #1";
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
-            rc.research_references = {1};
+            rc.research_references = research_references;
             rc.research_external_references = {"one", "two", "three"};
         });
 
@@ -85,13 +100,17 @@ public:
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
+            research_references_data data;
+            data.research_reference_id = 1;
+            std::vector<research_references_data> research_references;
+            research_references.push_back(data);
             rc.id = 3;
             rc.research_id = 2;
             rc.type = research_content_type::announcement;
             rc.content = "announcement for Research #2";
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
-            rc.research_references = {1};
+            rc.research_references = research_references;
             rc.research_external_references = {"one", "two"};
         });
     }
@@ -227,20 +246,26 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         std::string content = "milestone for Research #2";
 
         flat_set<account_name_type> authors = {"sam"};
-        std::vector<research_id_type> references = {1, 3};
+
+        research_references_data data;
+        data.research_reference_id = 1;
+        std::vector<research_references_data> research_references;
+        research_references.push_back(data);
+
         std::vector<string> external_references = {"one", "two", "three"};
 
-        auto milestone = data_service.create(2, type, content, authors, references, external_references);
+        auto milestone = data_service.create(2, type, content, authors, research_references, external_references);
         BOOST_CHECK(milestone.research_id == 2);
         BOOST_CHECK(milestone.type == research_content_type::milestone);
         BOOST_CHECK(milestone.content == "milestone for Research #2");
         BOOST_CHECK(milestone.authors.size() == 1);
         BOOST_CHECK(milestone.authors.begin()[0] == "sam");
-        BOOST_CHECK(milestone.research_references.size() == 2);
+        BOOST_CHECK(milestone.research_references.size() == 1);
         BOOST_CHECK(milestone.research_external_references.size() == 3);
 
-        std::vector<research_id_type> fault_references = {1, 2, 3};
-        BOOST_CHECK_THROW(data_service.create(2, type, content, authors, fault_references, external_references), fc::assert_exception);
+        data.research_reference_id = 2;
+        research_references.push_back(data);
+        BOOST_CHECK_THROW(data_service.create(2, type, content, authors, research_references, external_references), fc::assert_exception);
 
         auto db_milestone = db.get<research_content_object, by_id>(milestone.id);
         BOOST_CHECK(db_milestone.research_id == 2);
@@ -248,8 +273,21 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         BOOST_CHECK(db_milestone.content == "milestone for Research #2");
         BOOST_CHECK(db_milestone.authors.size() == 1);
         BOOST_CHECK(db_milestone.authors.begin()[0] == "sam");
-        BOOST_CHECK(db_milestone.research_references.size() == 2);
+        BOOST_CHECK(db_milestone.research_references.size() == 1);
         BOOST_CHECK(db_milestone.research_external_references.size() == 3);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(check_research_content_existence)
+{
+    try
+    {
+        create_researches_with_content();
+
+        BOOST_CHECK_NO_THROW(data_service.check_research_content_existence(1));
+        BOOST_CHECK_THROW(data_service.check_research_content_existence(123), fc::assert_exception);
 
     }
     FC_LOG_AND_RETHROW()

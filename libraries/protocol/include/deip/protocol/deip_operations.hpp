@@ -528,7 +528,7 @@ struct make_research_review_operation : public base_operation
     account_name_type author;
     int64_t research_id;
     string content;
-    vector<int64_t> research_references;
+    vector<std::pair<int64_t, int64_t>> research_references;
     vector<string> research_external_references;
 
     void validate() const;

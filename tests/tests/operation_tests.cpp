@@ -105,10 +105,16 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
 
         make_research_review_operation op;
 
+        std::pair<int64_t, int64_t > data;
+        data.first = 2;
+
+        std::vector<std::pair<int64_t, int64_t >> research_references;
+        research_references.push_back(data);
+
         op.author = "alice";
         op.research_id = 1;
         op.content = "test";
-        op.research_references = {2};
+        op.research_references = research_references;
         op.research_external_references = {"one", "two", "three"};
 
         BOOST_TEST_MESSAGE("--- Test normal research review creation");
@@ -121,9 +127,8 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         db.push_transaction(tx, 0);
 
         auto& research_content = db.get<research_content_object, by_id>(0);
-        
-        BOOST_CHECK(research_content.type == review);
 
+        BOOST_CHECK(research_content.type == review);
 
     }
     FC_LOG_AND_RETHROW()

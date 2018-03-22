@@ -708,7 +708,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
                                  "\"type\": 2,"
                                  "\"content\":\"milestone for Research #1\","
                                  "\"authors\":[\"alice\"],"
-                                 "\"research_references\": [1, 2, 3]}";
+                                 "\"research_references\": [{\"research_reference_id\": 1}, {\"research_reference_id\": 2}, {\"research_reference_id\": 3}]}";
 
     create_proposal(1, dbs_proposal::action_t::create_research_material, wrong_json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
@@ -723,7 +723,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
             "\"type\": 2,"
             "\"content\":\"milestone for Research #2\","
             "\"authors\":[\"alice\"],"
-            "\"research_references\": [3]}";
+            "\"research_references\": [{\"research_reference_id\": 3}]}";
 
     create_proposal(2, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 

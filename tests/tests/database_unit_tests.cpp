@@ -108,20 +108,29 @@ public:
 
     void create_research_contents()
     {
+
         db.create<research_content_object>([&](research_content_object& d) {
+            research_references_data data;
+            data.research_reference_id = 2;
+            std::vector<research_references_data> research_references;
+            research_references.push_back(data);
             d.id = 1;
             d.research_id = 1;
             d.type = review;
             d.authors = {"alice"};
-            d.research_references = {2};
+            d.research_references = research_references;
         });
 
         db.create<research_content_object>([&](research_content_object& d) {
+            research_references_data data;
+            data.research_reference_id = 1;
+            std::vector<research_references_data> research_references;
+            research_references.push_back(data);
             d.id = 2;
             d.research_id = 2;
             d.type = review;
             d.authors = {"alex"};
-            d.research_references = {1};
+            d.research_references = research_references;
         });
     }
 

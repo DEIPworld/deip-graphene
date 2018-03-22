@@ -128,7 +128,7 @@ struct create_research_content_data_type : base_proposal_data_type
     research_content_type type;
     string content;
     flat_set<account_name_type> authors;
-    std::vector<research_id_type> research_references;
+    std::vector<research_references_data> research_references;
     std::vector<string> research_external_references;
     void validate() const
     {
