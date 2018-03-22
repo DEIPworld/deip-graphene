@@ -123,14 +123,11 @@ clean_database_fixture::clean_database_fixture()
         {
             common_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 10000);
             expert_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1, 10000);
-        }
 
-        for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
-        {
             witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
                            init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount);
         }
-
+        
         validate_database();
     }
     catch (const fc::exception& e)
