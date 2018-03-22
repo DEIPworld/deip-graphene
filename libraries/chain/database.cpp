@@ -1551,7 +1551,8 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
         {
             auto& active_research_reward_weight = total_votes_itr->total_active_research_reward_weight;
             auto research_content_share = util::calculate_share(grant, active_research_reward_weight, discipline.total_active_research_reward_weight);
-            grant_shares_per_research[research_service.get_research(total_votes_itr->research_id).research_group_id] += research_content_share;
+            auto& research_group_id = research_service.get_research(total_votes_itr->research_id).research_group_id;
+            grant_shares_per_research[research_group_id] += research_content_share;
         }
         ++total_votes_itr;
     }
