@@ -573,30 +573,6 @@ const expert_token_object& database_fixture::expert_token_create(const uint32_t 
     return expert_token;
 }
 
-void database_fixture::create_disciplines()
-{
-    db.create<discipline_object>([&](discipline_object& d) {
-        d.id = 1;
-        d.name = "Physics";
-        d.parent_id = 0;
-        d.votes_in_last_ten_weeks = 100;
-    });
-
-    db.create<discipline_object>([&](discipline_object& d) {
-        d.id = 2;
-        d.name = "Mathematics";
-        d.parent_id = 0;
-        d.votes_in_last_ten_weeks = 150;
-    });
-
-    db.create<discipline_object>([&](discipline_object& d) {
-        d.id = 3;
-        d.name = "Cryptography";
-        d.parent_id = 1;
-        d.votes_in_last_ten_weeks = 30;
-    });
-}
-
 const research_group_invite_object& database_fixture::research_group_invite_create(const uint32_t id,
                                                                                    const account_name_type& account_name,
                                                                                    const research_group_id_type& research_group_id,

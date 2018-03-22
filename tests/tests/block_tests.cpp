@@ -441,7 +441,7 @@ BOOST_FIXTURE_TEST_CASE(optional_tapos, clean_database_fixture)
     try
     {
         idump((db.get_account(TEST_INIT_DELEGATE_NAME)));
-        ACTORS((alice)(bob));
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
 
         generate_block();
 
@@ -510,7 +510,7 @@ BOOST_FIXTURE_TEST_CASE(double_sign_check, clean_database_fixture)
     try
     {
         generate_block();
-        ACTOR(bob);
+        ACTORS_WITH_EXPERT_TOKENS((bob));
         share_type amount = 1000;
 
         transfer_operation t;

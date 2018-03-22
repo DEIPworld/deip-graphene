@@ -140,8 +140,6 @@ struct database_fixture
                                       const dbs_proposal::action_t action,
                                       const fc::time_point_sec expiration_time);
 
-    void create_disciplines();
-
     const research_object& research_create(const uint32_t id,
                                            const string& name,
                                            const string& abstract,
