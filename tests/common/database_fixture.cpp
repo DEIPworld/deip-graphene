@@ -109,21 +109,24 @@ clean_database_fixture::clean_database_fixture()
         // ahplugin->plugin_startup();
         db_plugin->plugin_startup();
         vest(TEST_INIT_DELEGATE_NAME, 10000);
-        
-        // common_token(TEST_INIT_DELEGATE_NAME, 10000);
-        // expert_token(TEST_INIT_DELEGATE_NAME, 1, 10000);
 
         // Fill up the rest of the required miners
         for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
         {
             account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
             fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), DEIP_MIN_PRODUCER_REWARD.amount.value);
+        }
 
-            generate_block();
+        generate_block();
 
-            common_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 77777);
-            expert_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1, 66666);
+        for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
+        {
+            common_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 10000);
+            expert_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1, 10000);
+        }
 
+        for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
+        {
             witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
                            init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount);
         }
@@ -181,20 +184,24 @@ void clean_database_fixture::resize_shared_mem(uint64_t size)
     generate_block();
 
     vest(TEST_INIT_DELEGATE_NAME, 10000);
-    // common_token(TEST_INIT_DELEGATE_NAME, 10000);
-    // expert_token(TEST_INIT_DELEGATE_NAME, 1, 10000);
 
     // Fill up the rest of the required miners
     for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
     {
         account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
         fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), DEIP_MIN_PRODUCER_REWARD.amount.value);
+    }
 
-        generate_block();
+    generate_block();
 
-        common_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 55555);
-        expert_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1, 44444);
-        
+    for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
+    {
+        common_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 10000);
+        expert_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1, 10000);
+    }
+
+    for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
+    {
         witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
                        init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount);
     }

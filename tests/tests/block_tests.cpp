@@ -711,7 +711,7 @@ BOOST_FIXTURE_TEST_CASE(skip_block, clean_database_fixture)
     try
     {
         BOOST_TEST_MESSAGE("Skipping blocks through db");
-        BOOST_REQUIRE(db.head_block_num() == 2);
+        BOOST_REQUIRE(db.head_block_num() == 3);
 
         int init_block_num = db.head_block_num();
         int miss_blocks = fc::minutes(1).to_seconds() / DEIP_BLOCK_INTERVAL;
