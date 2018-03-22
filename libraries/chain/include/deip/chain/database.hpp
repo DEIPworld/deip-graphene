@@ -310,8 +310,7 @@ public:
                                  const share_type &reward);
     share_type reward_research_token_holders(const research_object& research,
                                        const discipline_id_type& discipline_id,
-                                       const share_type& reward,
-                                       const share_type& expertise_reward);
+                                       const share_type& reward);
     share_type reward_references(const research_content_id_type& research_content_id,
                            const discipline_id_type& discipline_id,
                            const share_type& reward,
@@ -323,6 +322,10 @@ public:
                        const discipline_id_type &discipline_id, const share_type &reward);
     void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                const share_type &reward);
+    share_type reward_research_group_members_with_expertise(const research_group_id_type& research_group_id,
+                                                            const discipline_id_type& discipline_id,
+                                                            const flat_set<account_name_type>& accounts,
+                                                            const share_type &expertise_reward);
 
     share_type pay_reward_funds(share_type reward);
     share_type fund_review_pool(const discipline_id_type& discipline_id, const share_type &amount);

@@ -1300,6 +1300,7 @@ share_type database::reward_research_content(const research_content_id_type& res
 {
     auto& research_content_service = obtain_service<dbs_research_content>();
     auto& research_service = obtain_service<dbs_research>();
+    auto& research_group_service = obtain_service<dbs_research_group>();
     auto& research_content = research_content_service.get_content_by_id(research_content_id);
     auto& research = research_service.get_research(research_content.research_id);
 
@@ -1316,8 +1317,23 @@ share_type database::reward_research_content(const research_content_id_type& res
               "Attempt to allocate funds amount that is greater than reward amount");
 
     share_type used_reward = 0;
+    flat_set<account_name_type> accounts_to_reward_with_expertise;
 
-    used_reward += reward_research_token_holders(research, discipline_id, token_holders_share, research_group_expertise_share);
+    if (research_content.type == research_content_type::final_result)
+    {
+        auto research_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
+        for (auto& token_ref : research_group_tokens) {
+            auto& token = token_ref.get();
+            accounts_to_reward_with_expertise.insert(token.owner);
+        }
+
+    }
+    else if (research_content.type != research_content_type::final_result)
+        accounts_to_reward_with_expertise = research_content.authors;
+
+
+    reward_research_group_members_with_expertise(research.research_group_id, discipline_id, accounts_to_reward_with_expertise, reward);
+    used_reward += reward_research_token_holders(research, discipline_id, token_holders_share);
     used_reward += reward_references(research_content_id, discipline_id, references_share, references_expertise_share);
     used_reward += reward_voters(research_content_id, discipline_id, curators_share);
     if (research_content.type != research_content_type::review) {
@@ -1331,8 +1347,7 @@ share_type database::reward_research_content(const research_content_id_type& res
 
 share_type database::reward_research_token_holders(const research_object& research,
                                             const discipline_id_type& discipline_id,
-                                            const share_type& reward,
-                                            const share_type& expertise_reward)
+                                            const share_type& reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
 
@@ -1344,14 +1359,6 @@ share_type database::reward_research_token_holders(const research_object& resear
         dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
         research_group_service.increase_research_group_funds(research.research_group_id, research_group_reward);
         used_reward += research_group_reward;
-
-        const auto& research_group = research_group_service.get_research_group(research.research_group_id);
-        auto research_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
-        for (auto& token_ref : research_group_tokens) {
-            auto& token = token_ref.get();
-            auto new_expertise_amount = (expertise_reward * token.amount) / research_group.total_tokens_amount;
-            reward_with_expertise(token.owner, discipline_id, new_expertise_amount);
-        }
     }
 
     const auto& idx = get_index<research_token_index>().indicies().get<by_research_id>().equal_range(research.id);
@@ -1377,9 +1384,12 @@ share_type database::reward_references(const research_content_id_type& research_
 {
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
+    dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
     auto& research_content = research_content_service.get_content_by_id(research_content_id);
 
-    std::vector<std::pair<research_id_type, share_type>> research_votes_by_id;
+    //std::vector<std::pair<research_id_type, share_type>> research_votes_by_id;
+    std::map<research_id_type, std::pair<share_type, flat_set<account_name_type>>> research_votes_by_id;
+    flat_set<account_name_type> accounts_to_reward_with_expertise;
     share_type total_votes_amount = 0;
     share_type used_reward = 0;
 
@@ -1388,7 +1398,19 @@ share_type database::reward_references(const research_content_id_type& research_
         const auto& idx = get_index<total_votes_index>().indicies().get<by_research_and_discipline>();
         auto total_votes_itr = idx.find(std::make_tuple(research_reference_data.research_reference_id, discipline_id));
         total_votes_amount += total_votes_itr->total_research_reward_weight;
-        research_votes_by_id.push_back(std::make_pair(research_reference_data.research_reference_id, total_votes_itr->total_research_reward_weight));
+        if (!research_reference_data.research_content_reference_id.valid())
+        {
+            auto& research = research_service.get_research(research_reference_data.research_reference_id);
+            auto research_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
+            for (auto& token_ref : research_group_tokens) {
+                auto& token = token_ref.get();
+                accounts_to_reward_with_expertise.insert(token.owner);
+            }
+        }
+        else if (research_reference_data.research_content_reference_id.valid())
+            accounts_to_reward_with_expertise = get<research_content_object>(*research_reference_data.research_content_reference_id).authors;
+
+        research_votes_by_id.insert(research_reference_data.research_reference_id, std::make_pair(total_votes_itr->total_research_reward_weight, accounts_to_reward_with_expertise));
     }
 
     for (auto& research_votes : research_votes_by_id) {
@@ -1396,7 +1418,8 @@ share_type database::reward_references(const research_content_id_type& research_
         auto reward_share = util::calculate_share(reward, research_votes.second.value, total_votes_amount);
         auto expertise_reward_share = util::calculate_share(expertise_reward, research_votes.second.value,
                                                             total_votes_amount);
-        used_reward += reward_research_token_holders(research, discipline_id, reward_share, expertise_reward_share);
+        used_reward += reward_research_token_holders(research, discipline_id, reward_share);
+
     }
 
     FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
@@ -1469,6 +1492,28 @@ void database::reward_with_expertise(const account_name_type &account, const dis
         dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
         expert_token_service.create(account, discipline_id, reward);
     }
+}
+
+share_type database::reward_research_group_members_with_expertise(const research_group_id_type& research_group_id,
+                                                                  const discipline_id_type& discipline_id,
+                                                                  const flat_set<account_name_type>& accounts,
+                                                                  const share_type &expertise_reward)
+{
+    auto& research_group_service = obtain_service<dbs_research_group>();
+
+    std::vector<research_group_token_object> tokens_to_reward;
+    share_type accounts_total_tokens_amount = 0;
+    for (auto& account : accounts) {
+        auto &token = research_group_service.get_research_group_token_by_account_and_research_group_id(account, research_group_id);
+        accounts_total_tokens_amount += token.amount;
+        tokens_to_reward.push_back(token);
+    }
+
+    for (auto& token : tokens_to_reward) {
+        auto new_expertise_amount = (expertise_reward * token.amount) / accounts_total_tokens_amount;
+        reward_with_expertise(token.owner, discipline_id, new_expertise_amount);
+    }
+
 }
 
 share_type database::fund_review_pool(const discipline_id_type& discipline_id, const share_type& amount)
