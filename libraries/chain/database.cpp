@@ -1533,7 +1533,8 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
     dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
     const auto& discipline = discipline_service.get_discipline(discipline_id);
 
-    FC_ASSERT(discipline.total_active_reward_weight != 0, "Attempt to allocate funds to inactive discipline");
+    if(discipline.total_active_reward_weight == 0)
+        return 0;
 
     auto& research_service = obtain_service<dbs_research>();
     auto& research_group_service = obtain_service<dbs_research_group>();
