@@ -327,6 +327,8 @@ public:
                                                             const flat_set<account_name_type>& accounts,
                                                             const share_type &expertise_reward);
 
+    flat_set<account_name_type> get_all_research_group_token_account_names(const research_group_id_type& research_group_id);
+
     share_type pay_reward_funds(share_type reward);
     share_type fund_review_pool(const discipline_id_type& discipline_id, const share_type &amount);
 

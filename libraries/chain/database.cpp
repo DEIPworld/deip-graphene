@@ -1320,14 +1320,8 @@ share_type database::reward_research_content(const research_content_id_type& res
     flat_set<account_name_type> accounts_to_reward_with_expertise;
 
     if (research_content.type == research_content_type::final_result)
-    {
-        auto research_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
-        for (auto& token_ref : research_group_tokens) {
-            auto& token = token_ref.get();
-            accounts_to_reward_with_expertise.insert(token.owner);
-        }
+        accounts_to_reward_with_expertise = get_all_research_group_token_account_names(research.research_group_id);
 
-    }
     else if (research_content.type != research_content_type::final_result)
         accounts_to_reward_with_expertise = research_content.authors;
 
@@ -1400,11 +1394,8 @@ share_type database::reward_references(const research_content_id_type& research_
         if (!research_reference_data.research_content_reference_id.valid())
         {
             auto& research = research_service.get_research(research_reference_data.research_reference_id);
-            auto research_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
-            for (auto& token_ref : research_group_tokens) {
-                auto& token = token_ref.get();
-                accounts_to_reward_with_expertise.insert(token.owner);
-            }
+
+            accounts_to_reward_with_expertise = get_all_research_group_token_account_names(research.research_group_id);
         }
         else if (research_reference_data.research_content_reference_id.valid())
             accounts_to_reward_with_expertise = get<research_content_object>(*research_reference_data.research_content_reference_id).authors;
@@ -1514,6 +1505,20 @@ share_type database::reward_research_group_members_with_expertise(const research
         reward_with_expertise(token.owner, discipline_id, new_expertise_amount);
     }
 
+}
+
+flat_set<account_name_type> database::get_all_research_group_token_account_names(const research_group_id_type& research_group_id)
+{
+    dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
+    flat_set<account_name_type> accounts_to_reward_with_expertise;
+
+    auto research_group_tokens = research_group_service.get_research_group_tokens(research_group_id);
+    for (auto& token_ref : research_group_tokens) {
+        auto& token = token_ref.get();
+        accounts_to_reward_with_expertise.insert(token.owner);
+    }
+
+    return accounts_to_reward_with_expertise;
 }
 
 share_type database::fund_review_pool(const discipline_id_type& discipline_id, const share_type& amount)
