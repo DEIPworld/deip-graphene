@@ -81,7 +81,7 @@ public:
         db.create<research_group_token_object>([&](research_group_token_object& d) {
             d.id = 1;
             d.research_group_id = 1;
-            d.owner = "john";
+            d.owner = "alice";
             d.amount = 2000;
         });
 
@@ -339,12 +339,9 @@ BOOST_AUTO_TEST_CASE(reward_research_token_holders)
 
         share_type reward = 1000;
 
-        BOOST_CHECK_NO_THROW(db.reward_research_token_holders(db.get<research_object>(2), 1, reward, reward));
+        BOOST_CHECK_NO_THROW(db.reward_research_token_holders(db.get<research_object>(2), 1, reward));
 
         BOOST_CHECK(db.get<research_group_object>(2).funds == (db.get<research_object>(2).owned_tokens * reward) / DEIP_100_PERCENT);
-
-        BOOST_CHECK(db.get<expert_token_object>(0).amount == (reward * db.get<research_group_token_object>(3).amount) / db.get<research_group_object>(2).total_tokens_amount);
-        BOOST_CHECK(db.get<expert_token_object>(1).amount == (reward * db.get<research_group_token_object>(4).amount) / db.get<research_group_object>(2).total_tokens_amount);
 
         BOOST_CHECK(db.get_account("alice").balance.amount == (db.get<research_token_object>(1).amount * reward) / DEIP_100_PERCENT);
         BOOST_CHECK(db.get_account("bob").balance.amount == (db.get<research_token_object>(2).amount * reward) / DEIP_100_PERCENT);
@@ -374,6 +371,16 @@ BOOST_AUTO_TEST_CASE(reward_research_content)
         BOOST_CHECK(db.get<research_group_object>(2).funds == util::calculate_share(reward,
                     (DEIP_REFERENCES_REWARD_SHARE_PERCENT * db.get<research_object>(2).owned_tokens) / DEIP_100_PERCENT));
 
+        auto& test = db.get<expert_token_object>(0);
+        auto& test1 = db.get<expert_token_object>(1);
+
+        share_type t = util::calculate_share(reward * (DEIP_100_PERCENT -
+                                                      DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT - db.get<research_object>(1).review_share_in_percent) / DEIP_100_PERCENT, db.get<research_group_token_object>(1).amount,
+                                            db.get<research_group_object>(1).total_tokens_amount);
+        share_type t1 = util::calculate_share(reward * (DEIP_100_PERCENT -
+                                                        DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT - db.get<research_object>(1).review_share_in_percent) / DEIP_100_PERCENT, db.get<research_group_token_object>(2).amount,
+                                              db.get<research_group_object>(1).total_tokens_amount) + util::calculate_share((reward * DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT) / DEIP_100_PERCENT, db.get<research_group_token_object>(3).amount,
+                                                                                                                            db.get<research_group_object>(2).total_tokens_amount);
         BOOST_CHECK(db.get<expert_token_object>(0).amount == util::calculate_share(reward * (DEIP_100_PERCENT -
                 DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT - db.get<research_object>(1).review_share_in_percent) / DEIP_100_PERCENT, db.get<research_group_token_object>(1).amount,
                 db.get<research_group_object>(1).total_tokens_amount));
