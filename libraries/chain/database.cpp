@@ -1331,7 +1331,6 @@ share_type database::reward_research_content(const research_content_id_type& res
     else if (research_content.type != research_content_type::final_result)
         accounts_to_reward_with_expertise = research_content.authors;
 
-    int size = accounts_to_reward_with_expertise.size();
     reward_research_group_members_with_expertise(research.research_group_id, discipline_id, accounts_to_reward_with_expertise, research_group_expertise_share);
     used_reward += reward_research_token_holders(research, discipline_id, token_holders_share);
     used_reward += reward_references(research_content_id, discipline_id, references_share, references_expertise_share);
@@ -1505,7 +1504,6 @@ share_type database::reward_research_group_members_with_expertise(const research
     std::vector<research_group_token_object> tokens_to_reward;
     share_type accounts_total_tokens_amount = 0;
     for (auto& account : accounts) {
-        string name = account;
         auto &token = research_group_service.get_research_group_token_by_account_and_research_group_id(account, research_group_id);
         accounts_total_tokens_amount += token.amount;
         tokens_to_reward.push_back(token);
