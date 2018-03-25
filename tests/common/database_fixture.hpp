@@ -100,23 +100,27 @@ struct database_fixture
                                                 const discipline_id_type& parent_id,
                                                 const share_type& votes_in_last_ten_weeks);
 
-    const research_group_object& research_group_create(const uint32_t& id, const string& permlink,
+    const research_group_object& research_group_create(const int64_t& id,
+                                                       const string& name, 
+                                                       const string& permlink,
                                                        const string& desciption,
                                                        const share_type funds,
                                                        const share_type quorum_percent,
                                                        const share_type tokens_amount);
                                                        
     const research_group_object& research_group_create_by_operation(const account_name_type& creator,
-                                                                                      const string& permlink,
-                                                                                      const string& description,
-                                                                                      const uint32_t quorum_percent,
-                                                                                      const uint32_t tokens_amount);
+                                                                    const string& permlink,
+                                                                    const string& name,
+                                                                    const string& description,
+                                                                    const uint32_t quorum_percent,
+                                                                    const uint32_t tokens_amount);
 
     const research_group_token_object& research_group_token_create(const research_group_id_type& research_group_id,
                                                                    const account_name_type& account,
                                                                    const share_type amount);
 
-    const research_group_object& setup_research_group(const uint32_t &id,
+    const research_group_object& setup_research_group(const int64_t &id,
+                                                      const string &name,
                                                       const string &permlink,
                                                       const string &desciption,
                                                       const share_type funds,
@@ -124,7 +128,7 @@ struct database_fixture
                                                       const share_type tokens_amount,
                                                       const vector<account_name_type> &accounts);
 
-    const proposal_object& create_proposal(const uint32_t id,
+    const proposal_object& create_proposal(const int64_t id,
                                            const dbs_proposal::action_t action,
                                            const string json_data,
                                            const account_name_type& creator,
@@ -140,20 +144,20 @@ struct database_fixture
 
     void create_disciplines();
 
-    const research_object& research_create(const uint32_t id,
-                                           const string& name,
+    const research_object& research_create(const int64_t id,
+                                           const string& title,
                                            const string& abstract,
                                            const string& permlink,
                                            const research_group_id_type& research_group_id,
                                            const uint16_t review_share_in_percent,
                                            const uint16_t dropout_compensation_in_percent);
 
-    const expert_token_object& expert_token_create(const uint32_t id,
+    const expert_token_object& expert_token_create(const int64_t id,
                                                    const account_name_type& account,
                                                    const discipline_id_type& discipline_id,
                                                    const share_type& amount);
 
-    const research_group_invite_object& research_group_invite_create(const uint32_t id,
+    const research_group_invite_object& research_group_invite_create(const int64_t id,
                                                                      const account_name_type& account_name,
                                                                      const research_group_id_type& research_group_id,
                                                                      const share_type research_group_token_amount);

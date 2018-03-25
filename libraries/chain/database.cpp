@@ -1378,7 +1378,7 @@ share_type database::reward_references(const research_content_id_type& research_
     share_type total_votes_amount = 0;
     share_type used_reward = 0;
 
-    for (auto research_id : research_content.research_references)
+    for (auto research_id : research_content.references)
     {
         share_type votes = 0;
         const auto& idx = get_index<total_votes_index>().indicies().get<by_research_and_discipline>()

@@ -259,7 +259,7 @@ protected:
     {
         start_research_proposal_data_type data = get_data<start_research_proposal_data_type>(proposal);
         _research_group_service.check_research_group_existence(data.research_group_id);
-        auto& research = _research_service.create(data.name, data.abstract, data.permlink, data.research_group_id, data.review_share_in_percent, data.dropout_compensation_in_percent);
+        auto& research = _research_service.create(data.title, data.abstract, data.permlink, data.research_group_id, data.review_share_in_percent, data.dropout_compensation_in_percent);
         for (auto& discipline_id : data.disciplines)
         {
             _discipline_service.check_discipline_existence(discipline_id);
@@ -329,10 +329,8 @@ protected:
     {
         create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
 
-        _research_service.check_research_existence(data.research_id);
-        auto &research = _research_service.get_research(data.research_id);
-          
-        _research_content_service.create(data.research_id, data.type, data.content, data.authors, data.research_references, data.research_external_references);
+        _research_service.check_research_existence(data.research_id);          
+        _research_content_service.create(data.research_id, data.type, data.title, data.content, data.authors, data.references, data.external_references);
     }
 
     void start_research_token_sale_evaluator(const proposal_object& proposal) {
@@ -366,7 +364,9 @@ private:
 
     template <typename DataType> DataType get_data(const proposal_object& proposal)
     {
-        auto data = fc::json::from_string(proposal.data).as<DataType>();
+        auto data = fc::json::from_string(
+            fc::to_string(proposal.data)
+        ).as<DataType>();
         data.validate();
         return data;
     }

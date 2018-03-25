@@ -816,10 +816,11 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
 {
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
-    const research_group_object& research_group = research_group_service.create_research_group(op.permlink,
-                                                 op.desciption,
-                                                 op.quorum_percent,
-                                                 op.tokens_amount);
+    const research_group_object& research_group = research_group_service.create_research_group(op.name,
+                                                                                               op.permlink,
+                                                                                               op.description,
+                                                                                               op.quorum_percent,
+                                                                                               op.tokens_amount);
     
     research_group_service.create_research_group_token(research_group.id, op.tokens_amount, op.creator);
 }
@@ -834,15 +835,15 @@ void make_research_review_evaluator::do_apply(const make_research_review_operati
     research_service.check_research_existence(op.research_id);
 
     std::vector<research_id_type> references;
-    int size = op.research_references.size();
+    int size = op.references.size();
     for (int i = 0; i < size; ++i)
     {
-        research_service.check_research_existence(op.research_references[i]);
-        references.push_back((research_id_type)op.research_references[i]);
+        research_service.check_research_existence(op.references[i]);
+        references.push_back((research_id_type)op.references[i]);
     }
 
-    flat_set<account_name_type> review_author = {op.author};
-    research_content_service.create(op.research_id, research_content_type::review, op.content, review_author, references, op.research_external_references);
+    std::vector<account_name_type> review_author = {op.author};
+    research_content_service.create(op.research_id, research_content_type::review, op.title, op.content, review_author, references, op.external_references);
 }
 
 void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)
