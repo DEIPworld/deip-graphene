@@ -15,7 +15,7 @@ const research_group_join_request_object& dbs_research_group_join_request::creat
     const auto& new_research_group_join_request = db_impl().create<research_group_join_request_object>([&](research_group_join_request_object& rgir_o) {
         rgir_o.account_name = account_name;
         rgir_o.research_group_id = research_group_id;
-        rgir_o.motivation_letter = motivation_letter;
+        fc::from_string(rgir_o.motivation_letter, motivation_letter);
         rgir_o.expiration_time = _get_now() + DAYS_TO_SECONDS(14);
     });
 

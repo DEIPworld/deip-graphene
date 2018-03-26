@@ -13,7 +13,7 @@ namespace chain {
 class research_group_join_request_object : public object<research_group_join_request_object_type, research_group_join_request_object>
 {
 public:
-    template <typename Constructor, typename Allocator> research_group_join_request_object(Constructor&& c, allocator<Allocator> a)
+    template <typename Constructor, typename Allocator> research_group_join_request_object(Constructor&& c, allocator<Allocator> a) : motivation_letter(a   )
     {
         c(*this);
     }
@@ -23,7 +23,7 @@ public:
 
     account_name_type account_name;
     research_group_id_type research_group_id;
-    std::string motivation_letter;
+    fc::shared_string motivation_letter;
     fc::time_point_sec expiration_time;
 };
 

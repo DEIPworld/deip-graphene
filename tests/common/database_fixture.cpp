@@ -582,7 +582,7 @@ const research_group_join_request_object& database_fixture::research_group_join_
         rgir_o.id = id;
         rgir_o.account_name = account_name;
         rgir_o.research_group_id = research_group_id;
-        rgir_o.motivation_letter = motivation_letter;
+        fc::from_string(rgir_o.motivation_letter, motivation_letter);
     });
     return research_group_join_request;
 }
