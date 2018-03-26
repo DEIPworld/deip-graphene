@@ -1380,7 +1380,6 @@ share_type database::reward_references(const research_content_id_type& research_
     dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
     auto& research_content = research_content_service.get_content_by_id(research_content_id);
 
-    //std::vector<std::pair<research_id_type, share_type>> research_votes_by_id;
     std::map<research_id_type, std::pair<share_type, flat_set<account_name_type>>> research_votes_by_id;
     flat_set<account_name_type> accounts_to_reward_with_expertise;
     share_type total_votes_amount = 0;
