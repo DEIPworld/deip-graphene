@@ -1580,7 +1580,7 @@ share_type database::allocate_rewards_to_reviews(const share_type& reward, const
 share_type database::grant_researches_in_discipline(const discipline_id_type& discipline_id, const share_type &grant)
 {
     dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
-    dbs_research_content& research_content_servie = obtain_service<dbs_research_content>();
+    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
     const auto& discipline = discipline_service.get_discipline(discipline_id);
 
     if(discipline.total_active_reward_weight == 0)
@@ -1598,9 +1598,9 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
 
     while (total_votes_itr != total_votes_idx.end())
     {
-        auto final_results = research_content_servie.get_content_by_research_id_and_content_type(total_votes_itr->research_id,
-                                                                                                     research_content_type::final_result);
-        if (total_votes_itr->total_active_research_reward_weight != 0 && final_results.size() == 0)
+        const auto& research_content = research_content_service.get_content_by_id(total_votes_itr->research_content_id);
+
+        if (total_votes_itr->total_active_research_reward_weight != 0 && research_content.type != research_content_type::final_result)
         {
             auto& active_research_reward_weight = total_votes_itr->total_active_research_reward_weight;
             auto research_content_share = util::calculate_share(grant, active_research_reward_weight, discipline.total_active_research_reward_weight);
