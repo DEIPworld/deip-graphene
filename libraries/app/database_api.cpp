@@ -1452,28 +1452,28 @@ vector<research_listing_api_obj> database_api::get_research_listing(const uint64
         vector<research_listing_api_obj> results;
         results.reserve(limit);
         chain::dbs_research_discipline_relation& research_discipline_service = my->_db.obtain_service<dbs_research_discipline_relation>();
-//        chain::dbs_research_group research_group_service = my->_db.obtain_service<dbs_research_group>();
-//        chain::dbs_discipline discipline_service = my->_db.obtain_service<dbs_discipline>();
-//        chain::dbs_vote vote_service = my->_db.obtain_service<dbs_vote>();
-//
+        chain::dbs_vote& vote_service = my->_db.obtain_service<dbs_vote>();
+
         auto researches = get_researches(from, limit);
         for (auto research : researches) {
             auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(research.id);
-            flat_set<discipline_api_obj> disciplines;
+            vector<discipline_api_obj> disciplines;
             disciplines.reserve(research_discipline_relations.size());
             for (auto relation_wrapper : research_discipline_relations) {
                 auto& relation = relation_wrapper.get();
                 auto discipline = get_discipline(relation.discipline_id);
-                //disciplines.insert(discipline);
+                disciplines.push_back(discipline);
             }
 
             auto research_group_members = get_research_group_tokens_by_research_group(research.research_group_id);
-            flat_set<account_name_type> authors;
+            vector<account_name_type> authors;
             for (auto member : research_group_members) {
-                authors.insert(member.owner);
+                authors.push_back(member.owner);
             }
 
-            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, authors, disciplines, 0);
+            auto votes = vote_service.get_votes_by_research(research.id);
+
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, authors, disciplines, votes.size());
             results.push_back(listing_api_obj);
         }
 

@@ -626,8 +626,8 @@ struct research_group_invite_api_obj
 struct research_listing_api_obj
 {
     research_listing_api_obj(const research_api_obj& research,
-                             const flat_set<account_name_type>& authors,
-                             const flat_set<discipline_api_obj>& disciplines,
+                             const vector<account_name_type>& authors,
+                             const vector<discipline_api_obj>& disciplines,
                              const int64_t& total_votes)
     {
         this->research_id = research.id;
@@ -646,8 +646,8 @@ struct research_listing_api_obj
     int64_t research_id;
     string title;
     string abstract;
-    flat_set<account_name_type> authors;
-    flat_set<discipline_api_obj> disciplines;
+    vector<account_name_type> authors;
+    vector<discipline_api_obj> disciplines;
     int64_t total_votes;
 };
 
