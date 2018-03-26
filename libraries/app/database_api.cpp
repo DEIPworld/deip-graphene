@@ -27,6 +27,7 @@
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
+#include <deip/chain/dbs_vote.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
@@ -1238,8 +1239,26 @@ database_api::get_research_group_tokens_by_account(const account_name_type accou
     });
 }
 
+vector<research_group_token_api_obj>
+database_api::get_research_group_tokens_by_research_group(const research_group_id_type& research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_group_token_api_obj> results;
+
+        chain::dbs_research_group& research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
+        auto research_group_tokens = research_group_service.get_research_group_tokens(research_group_id);
+
+        for (const chain::research_group_token_object& research_group_token : research_group_tokens)
+        {
+            results.push_back(research_group_token_api_obj(research_group_token));
+        }
+
+        return results;
+    });
+}
+
 research_group_token_api_obj database_api::get_research_group_token_by_account_and_research_group_id(
-    const account_name_type account, const research_group_id_type research_group_id) const
+    const account_name_type account, const research_group_id_type& research_group_id) const
 {
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_group& research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
@@ -1406,8 +1425,7 @@ database_api::get_research_group_invites_by_account_name(const account_name_type
     });
 }
 
-vector<research_group_invite_api_obj>
-database_api::get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const
+vector<research_group_invite_api_obj> database_api::get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const
 {
     return my->_db.with_read_lock([&]() {
         vector<research_group_invite_api_obj> results;
@@ -1422,6 +1440,45 @@ database_api::get_research_group_invites_by_research_group_id(const research_gro
         }
 
         return results;
+    });
+}
+
+vector<research_listing_api_obj> database_api::get_research_listing(const uint64_t& from, const uint32_t& limit = 100) const
+{
+    return my->_db.with_read_lock([&]() {
+        FC_ASSERT(limit <= 10000, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
+        FC_ASSERT(from >= limit, "From must be greater than limit");
+
+        vector<research_listing_api_obj> results;
+        results.reserve(limit);
+        chain::dbs_research_discipline_relation& research_discipline_service = my->_db.obtain_service<dbs_research_discipline_relation>();
+//        chain::dbs_research_group research_group_service = my->_db.obtain_service<dbs_research_group>();
+//        chain::dbs_discipline discipline_service = my->_db.obtain_service<dbs_discipline>();
+//        chain::dbs_vote vote_service = my->_db.obtain_service<dbs_vote>();
+//
+        auto researches = get_researches(from, limit);
+        for (auto research : researches) {
+            auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(research.id);
+            flat_set<discipline_api_obj> disciplines;
+            disciplines.reserve(research_discipline_relations.size());
+            for (auto relation_wrapper : research_discipline_relations) {
+                auto& relation = relation_wrapper.get();
+                auto discipline = get_discipline(relation.discipline_id);
+                //disciplines.insert(discipline);
+            }
+
+            auto research_group_members = get_research_group_tokens_by_research_group(research.research_group_id);
+            flat_set<account_name_type> authors;
+            for (auto member : research_group_members) {
+                authors.insert(member.owner);
+            }
+
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, authors, disciplines, 0);
+            results.push_back(listing_api_obj);
+        }
+
+        return results;
+
     });
 }
 
