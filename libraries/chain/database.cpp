@@ -1596,6 +1596,17 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
 
     std::map<research_group_id_type, share_type> grant_shares_per_research;
 
+    share_type total_active_research_reward_weight = discipline.total_active_research_reward_weight;
+    while (total_votes_itr != total_votes_idx.end())
+    {
+        const auto& research_content = research_content_service.get_content_by_id(total_votes_itr->research_content_id);
+
+        if (total_votes_itr->total_active_research_reward_weight != 0 && research_content.type == research_content_type::final_result)
+            total_active_research_reward_weight -= total_votes_itr->total_active_research_reward_weight;
+        ++total_votes_itr;
+    }
+
+    total_votes_itr = total_votes_idx.find(discipline.id);
     while (total_votes_itr != total_votes_idx.end())
     {
         const auto& research_content = research_content_service.get_content_by_id(total_votes_itr->research_content_id);
@@ -1603,7 +1614,7 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
         if (total_votes_itr->total_active_research_reward_weight != 0 && research_content.type != research_content_type::final_result)
         {
             auto& active_research_reward_weight = total_votes_itr->total_active_research_reward_weight;
-            auto research_content_share = util::calculate_share(grant, active_research_reward_weight, discipline.total_active_research_reward_weight);
+            auto research_content_share = util::calculate_share(grant, active_research_reward_weight, total_active_research_reward_weight);
             auto& research_group_id = research_service.get_research(total_votes_itr->research_id).research_group_id;
             grant_shares_per_research[research_group_id] += research_content_share;
         }
