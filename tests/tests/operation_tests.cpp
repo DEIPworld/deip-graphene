@@ -2473,6 +2473,78 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
    FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(create_research_group_join_request_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: create_research_group_join_request_apply");
+
+        ACTOR(alice);
+
+        generate_block();
+
+        auto& research_group = research_group_create(1, "permlink", "description", 200, 50, 300);
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        create_research_group_join_request_operation op;
+
+        op.owner = "alice";
+        op.research_group_id = 1;
+        op.motivation_letter = "letter";
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& research_group_join_request = db.get<research_group_join_request_object>(0);
+
+        BOOST_CHECK(research_group_join_request.id == 0);
+        BOOST_CHECK(research_group_join_request.research_group_id == 1);
+        BOOST_CHECK(research_group_join_request.account_name == "alice");
+        BOOST_CHECK(research_group_join_request.motivation_letter == "letter");
+        BOOST_CHECK(research_group_join_request.expiration_time == db.head_block_time() + DAYS_TO_SECONDS(14));
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(reject_research_group_join_request_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: reject_research_group_join_request_apply");
+
+        ACTOR(alice);
+
+        generate_block();
+
+        auto& research_group = research_group_create(1, "permlink", "description", 200, 50, 300);
+        auto& research_group_invite = research_group_join_request_create(1, "alice", 1, "letter");
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        reject_research_group_join_request_operation op;
+
+        op.research_group_join_request_id = 1;
+        op.owner = "alice";
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK_THROW((db.get<research_group_join_request_object, by_id>(1)), boost::exception);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+    
 BOOST_AUTO_TEST_SUITE_END()
 
 #endif

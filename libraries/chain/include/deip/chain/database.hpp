@@ -430,6 +430,7 @@ protected:
     void process_content_activity_windows();
     void process_header_extensions(const signed_block& next_block);
     void clear_expired_invites();
+    void clear_expired_join_requests();
 
     void init_hardforks(fc::time_point_sec genesis_time);
     void process_hardforks();
