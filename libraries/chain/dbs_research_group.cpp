@@ -100,7 +100,7 @@ const research_group_token_object& dbs_research_group::create_research_group_tok
     const research_group_token_object& new_research_group_token = db_impl()
             .create<research_group_token_object>([&](research_group_token_object& research_group_token) {
         research_group_token.research_group_id = research_group_id;
-        research_group_token.amount = amount;
+        research_group_token.amount = amount * DEIP_1_PERCENT;
         research_group_token.owner = owner;
     });
 

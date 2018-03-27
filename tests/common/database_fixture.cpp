@@ -365,8 +365,7 @@ database_fixture::research_group_create(const uint32_t& id,
                                         const string& permlink,
                                         const string& description,
                                         const share_type funds,
-                                        const share_type quorum_percent,
-                                        const share_type tokens_amount)
+                                        const share_type quorum_percent)
 {
     const research_group_object& new_research_group
         = db.create<research_group_object>([&](research_group_object& rg) {
@@ -375,7 +374,7 @@ database_fixture::research_group_create(const uint32_t& id,
               rg.description = description;            
               rg.funds = funds;
               rg.quorum_percent = quorum_percent;
-              rg.total_tokens_amount = tokens_amount;
+              rg.total_tokens_amount = DEIP_100_PERCENT;
           });
 
     return new_research_group;
@@ -384,8 +383,7 @@ database_fixture::research_group_create(const uint32_t& id,
 const research_group_object& database_fixture::research_group_create_by_operation(const account_name_type& creator,
                                                                                   const string& permlink,
                                                                                   const string& description,
-                                                                                  const uint32_t quorum_percent,
-                                                                                  const uint32_t tokens_amount)
+                                                                                  const uint32_t quorum_percent)
 {
     try
     {
@@ -397,7 +395,7 @@ const research_group_object& database_fixture::research_group_create_by_operatio
         op.permlink = permlink;
         op.desciption = description;
         op.quorum_percent = quorum_percent;
-        op.tokens_amount = tokens_amount;
+        op.tokens_amount = DEIP_100_PERCENT;
 
         trx.operations.push_back(op);
 
@@ -417,12 +415,17 @@ const research_group_object& database_fixture::research_group_create_by_operatio
 }
 
 const research_group_token_object& database_fixture::research_group_token_create(
-    const research_group_id_type& research_group_id, const account_name_type& account, const share_type amount = 10)
+    const research_group_id_type& research_group_id, const account_name_type& account, const share_type tokens_amount)
 {
     auto& research_group_service = db.obtain_service<dbs_research_group>();
 
-    research_group_service.adjust_research_group_tokens_amount(research_group_id, -amount);
-    const research_group_token_object& new_research_group_token = research_group_service.create_research_group_token(research_group_id, amount, account);
+    if (research_group_service.get_research_group_tokens(research_group_id).size() > 0)
+    {
+        share_type amount = tokens_amount / research_group_service.get_research_group_tokens(research_group_id).size();
+        research_group_service.adjust_research_group_tokens_amount(research_group_id, -amount);
+    }
+
+    const research_group_token_object& new_research_group_token = research_group_service.create_research_group_token(research_group_id, tokens_amount, account);
     return new_research_group_token;
 }
 
@@ -431,25 +434,25 @@ const research_group_object& database_fixture::setup_research_group(const uint32
                                                                     const string &description,
                                                                     const share_type funds,
                                                                     const share_type quorum_percent,
-                                                                    const share_type tokens_amount,
-                                                                    const vector<account_name_type> &accounts)
+                                                                    const vector<std::pair<account_name_type, share_type>> &accounts)
 {
-    const auto& research_group = research_group_create(id, permlink, description, funds, quorum_percent, tokens_amount);
+    const auto& research_group = research_group_create(id, permlink, description, funds, quorum_percent);
 
     for (const auto& account : accounts)
     {
-        research_group_token_create(research_group.id, account, tokens_amount);
+        research_group_token_create(research_group.id, account.first, account.second);
     }
 
     return research_group;
 }
 
-const proposal_object& database_fixture::create_proposal(const uint32_t id, const dbs_proposal::action_t action,
-                                       const std::string json_data,
-                                       const account_name_type& creator,
-                                       const research_group_id_type& research_group_id,
-                                       const fc::time_point_sec expiration_time,
-                                       const share_type quorum_percent)
+const proposal_object& database_fixture::create_proposal(const uint32_t id,
+                                                         const dbs_proposal::action_t action,
+                                                         const std::string json_data,
+                                                         const account_name_type& creator,
+                                                         const research_group_id_type& research_group_id,
+                                                         const fc::time_point_sec expiration_time,
+                                                         const share_type quorum_percent)
 {
     const proposal_object& new_proposal = db.create<proposal_object>([&](proposal_object& proposal) {
         proposal.action = action;
@@ -565,11 +568,12 @@ const research_group_invite_object& database_fixture::research_group_invite_crea
                                                                                    const research_group_id_type& research_group_id,
                                                                                    const share_type research_group_token_amount)
 {
+    FC_ASSERT(research_group_token_amount <= 100, "Amount cant be greater than 100%");
     auto& research_group_invite = db.create<research_group_invite_object>([&](research_group_invite_object& rgi_o) {
         rgi_o.id = id;
         rgi_o.account_name = account_name;
         rgi_o.research_group_id = research_group_id;
-        rgi_o.research_group_token_amount = research_group_token_amount;
+        rgi_o.research_group_token_amount = research_group_token_amount * DEIP_1_PERCENT;
     });
     return research_group_invite;
 }

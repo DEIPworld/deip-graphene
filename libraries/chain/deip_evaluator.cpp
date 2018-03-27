@@ -921,11 +921,11 @@ void approve_research_group_invite_evaluator::do_apply(const approve_research_gr
         }
     }
 
+    research_group_service.adjust_research_group_tokens_amount(research_group_invite.research_group_id,
+                                                               -research_group_invite.research_group_token_amount);
     research_group_service.create_research_group_token(research_group_invite.research_group_id,
                                                        research_group_invite.research_group_token_amount,
                                                        research_group_invite.account_name);
-//    research_group_service.increase_research_group_total_tokens_amount(research_group_invite.research_group_id,
-//                                                                       research_group_invite.research_group_token_amount);
 
     _db._temporary_public_impl().remove(research_group_invite);
 }
