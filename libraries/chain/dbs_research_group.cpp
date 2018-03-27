@@ -162,7 +162,7 @@ const research_group_token_object& dbs_research_group::set_new_research_group_to
                                                                                            const share_type new_amount)
 {
     const research_group_token_object& research_group_token = get_research_group_token_by_account_and_research_group_id(owner, research_group_id);
-    db_impl().modify(research_group_token, [&](research_group_token_object& rgo) { rgo.amount = new_amount; });
+    db_impl().modify(research_group_token, [&](research_group_token_object& rgo) { rgo.amount = new_amount * DEIP_1_PERCENT; });
 
     return research_group_token;
 }

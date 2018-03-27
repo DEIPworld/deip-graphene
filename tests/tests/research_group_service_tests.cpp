@@ -25,7 +25,7 @@ public:
             d.permlink = "test1";
             d.description = "test";
             d.quorum_percent = 40;
-            d.total_tokens_amount = 300;
+            d.total_tokens_amount = DEIP_100_PERCENT;
         });
 
         db.create<research_group_object>([&](research_group_object& d) {
@@ -33,7 +33,7 @@ public:
             d.permlink = "test2";
             d.description = "test";
             d.quorum_percent = 60;
-            d.total_tokens_amount = 500;
+            d.total_tokens_amount = DEIP_100_PERCENT;
         });
     }
 
@@ -42,21 +42,21 @@ public:
         db.create<research_group_token_object>([&](research_group_token_object& d) {
             d.id = 1;
             d.research_group_id = 2;
-            d.amount = 25;
+            d.amount = 55 * DEIP_1_PERCENT;
             d.owner = "alice";
         });
 
         db.create<research_group_token_object>([&](research_group_token_object& d) {
             d.id = 2;
             d.research_group_id = 2;
-            d.amount = 20;
+            d.amount = 45 * DEIP_1_PERCENT;
             d.owner = "bob";
         });
 
         db.create<research_group_token_object>([&](research_group_token_object& d) {
             d.id = 3;
             d.research_group_id = 1;
-            d.amount = 35;
+            d.amount = 100 * DEIP_1_PERCENT;
             d.owner = "alice";
         });
     }
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(get_research_group_by_id_test)
         BOOST_CHECK(research_group.permlink == "test1");
         BOOST_CHECK(research_group.description == "test");
         BOOST_CHECK(research_group.quorum_percent == 40);
-        BOOST_CHECK(research_group.total_tokens_amount == 300);
+        BOOST_CHECK(research_group.total_tokens_amount == DEIP_100_PERCENT);
 
     }
     FC_LOG_AND_RETHROW()
@@ -86,12 +86,12 @@ BOOST_AUTO_TEST_CASE(create_research_group_test)
 {
     try
     {
-        auto& research_group = data_service.create_research_group("test", "test", 34, 1240);
+        auto& research_group = data_service.create_research_group("test", "test", 34);
 
         BOOST_CHECK(research_group.permlink == "test");
         BOOST_CHECK(research_group.description == "test");
         BOOST_CHECK(research_group.quorum_percent == 34);
-        BOOST_CHECK(research_group.total_tokens_amount == 1240);
+        BOOST_CHECK(research_group.total_tokens_amount == DEIP_100_PERCENT);
         BOOST_CHECK(research_group.funds == 0);
 
     }
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(get_research_group_token_by_id_test)
         auto& research_group_token = data_service.get_research_group_token_by_id(1);
 
         BOOST_CHECK(research_group_token.research_group_id == 2);
-        BOOST_CHECK(research_group_token.amount == 25);
+        BOOST_CHECK(research_group_token.amount == 55 * DEIP_1_PERCENT);
         BOOST_CHECK(research_group_token.owner == "alice");
 
         BOOST_CHECK_THROW(data_service.get_research_group_token_by_id(5), boost::exception);
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE(get_research_group_token_by_account_and_research_id_test)
         auto& research_group_token = data_service.get_research_group_token_by_account_and_research_group_id("alice", 1);
 
         BOOST_CHECK(research_group_token.id == 3);
-        BOOST_CHECK(research_group_token.amount == 35);
+        BOOST_CHECK(research_group_token.amount == DEIP_100_PERCENT);
         BOOST_CHECK(research_group_token.owner == "alice");
         BOOST_CHECK(research_group_token.research_group_id == 1);
 
@@ -240,21 +240,37 @@ BOOST_AUTO_TEST_CASE(check_research_group_token_existence_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(increase_research_group_token_amount_test)
+BOOST_AUTO_TEST_CASE(adjust_research_group_tokens_amount)
 {
     try
     {
-        create_research_groups();
+        create_research_group_tokens();
 
-        BOOST_CHECK_NO_THROW(data_service.increase_research_group_total_tokens_amount(1, 25));
+        BOOST_CHECK_NO_THROW(data_service.adjust_research_group_tokens_amount(2, -10));
+        auto& alice_token = db.get<research_group_token_object>(1);
+        auto& bob_token = db.get<research_group_token_object>(2);
 
-        auto research_group = data_service.get_research_group(1);
-
-        BOOST_CHECK(research_group.total_tokens_amount == 325);
+        BOOST_CHECK(alice_token.amount == 45 * DEIP_1_PERCENT);
+        BOOST_CHECK(bob_token.amount == 35 * DEIP_1_PERCENT);
 
     }
     FC_LOG_AND_RETHROW()
 }
+
+BOOST_AUTO_TEST_CASE(set_new_research_group_token_amount)
+{
+    try
+    {
+        create_research_group_tokens();
+
+        auto& alice_token = data_service.set_new_research_group_token_amount(2, "alice", 40);
+
+        BOOST_CHECK(alice_token.amount == 40 * DEIP_1_PERCENT);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace chain
