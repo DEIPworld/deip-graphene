@@ -223,30 +223,8 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
         auto discipline = get<discipline_object, by_id>(expert_token.discipline_id); // verify that discipline exists
         FC_ASSERT(discipline.id._id == expert_token.discipline_id); // verify that discipline exists
 
-        // create<expert_token_object>([&](expert_token_object& d) {
-        //     d.account_name = account.name;
-        //     d.discipline_id = discipline.id._id;
-        //     d.amount = expert_token.amount;
-        // });
-
         dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
-
         expert_token_service.create(expert_token.account_name, expert_token.discipline_id, expert_token.amount);
-
-        const auto& cprops = get_dynamic_global_properties();
-
-        if (discipline.id._id != 0)
-        {
-            modify(cprops, [&](dynamic_global_property_object& props) {
-                props.total_expert_tokens_amount += expert_token.amount;
-            });
-        }
-        else
-        {
-            modify(cprops, [&](dynamic_global_property_object& props) {
-                props.total_common_tokens_amount += expert_token.amount;
-            });
-        }
     }
 }
 
