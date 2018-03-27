@@ -15,7 +15,7 @@ const research_group_invite_object& dbs_research_group_invite::create(const acco
     const auto& new_research_group_invite = db_impl().create<research_group_invite_object>([&](research_group_invite_object& rgi_o) {
         rgi_o.account_name = account_name;
         rgi_o.research_group_id = research_group_id;
-        rgi_o.research_group_token_amount = research_group_token_amount;
+        rgi_o.research_group_token_amount = research_group_token_amount * DEIP_1_PERCENT;
         rgi_o.expiration_time = _get_now() + DAYS_TO_SECONDS(14);
     });
 

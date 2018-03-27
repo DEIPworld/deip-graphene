@@ -105,7 +105,7 @@ struct send_funds_data_type : base_proposal_data_type
 struct rebalance_info
 {
     account_name_type account_name;
-    share_type amount;
+    share_type new_amount;
 };
 
 struct rebalance_research_group_tokens_data_type : base_proposal_data_type
@@ -117,8 +117,14 @@ struct rebalance_research_group_tokens_data_type : base_proposal_data_type
     void validate() const
     {
         int size = accounts.size();
+        share_type total_amount = 0;
         for (int i = 0; i < size; ++i)
-            FC_ASSERT(is_valid_account_name(accounts[i].account_name), "Account name ${n} is invalid", ("n", accounts[i].account_name));
+        {
+            FC_ASSERT(is_valid_account_name(accounts[i].account_name), "Account name ${n} is invalid",
+                      ("n", accounts[i].account_name));
+            total_amount += accounts[i].new_amount;
+        }
+        FC_ASSERT(total_amount <= DEIP_100_PERCENT, "New total amount coudlnt be greater than 100%");
     }
 };
 
@@ -193,7 +199,7 @@ FC_REFLECT(deip::chain::transfer_research_tokens_data_type, (research_id)(total_
 
 FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(account_name)(funds))
 
-FC_REFLECT(deip::chain::rebalance_info, (account_name)(amount))
+FC_REFLECT(deip::chain::rebalance_info, (account_name)(new_amount))
 
 FC_REFLECT(deip::chain::rebalance_research_group_tokens_data_type, (research_group_id)(accounts))
 
