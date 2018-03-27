@@ -13,6 +13,7 @@
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
+#include <deip/chain/dbs_research_group_join_request.hpp>
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>
 
@@ -161,6 +162,11 @@ struct database_fixture
                                                                      const account_name_type& account_name,
                                                                      const research_group_id_type& research_group_id,
                                                                      const share_type research_group_token_amount);
+
+    const research_group_join_request_object& research_group_join_request_create(const uint32_t id,
+                                                                                 const account_name_type& account_name,
+                                                                                 const research_group_id_type& research_group_id,
+                                                                                 const std::string motivation_letter);
 
     void fund(const string& account_name, const share_type& amount = 500000);
     void fund(const string& account_name, const asset& amount);

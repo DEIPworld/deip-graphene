@@ -28,7 +28,7 @@ public:
                                           const string& title,
                                           const string& content,
                                           const std::vector<account_name_type>& authors,
-                                          const std::vector<research_id_type>& references,
+                                          const std::vector<research_reference_data>& references,
                                           const std::vector<string>& external_references);
 
     const research_content_object& get_content_by_id(const research_content_id_type& id) const;
@@ -37,6 +37,7 @@ public:
 
     research_content_refs_type get_content_by_research_id_and_content_type(const research_id_type& research_id, const research_content_type& type) const;
 
+    void check_research_content_existence(const research_content_id_type& research_content_id);
 };
 }
 }

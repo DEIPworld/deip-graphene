@@ -16,9 +16,21 @@ const research_content_object& dbs_research_content::create(const research_id_ty
                                                             const std::string& title,
                                                             const std::string& content,
                                                             const std::vector<account_name_type>& authors,
-                                                            const std::vector<research_id_type>& references,
+                                                            const std::vector<research_reference_data>& references,
                                                             const std::vector<string>& external_references)
 {
+    int size = references.size();
+    for (int i = 0; i < size; ++i)
+    {
+        FC_ASSERT(references[i].research_reference_id != research_id,
+                  "Research material cannot reference research it is being created for.");
+        if (references[i].research_content_reference_id.valid()) {
+            check_research_content_existence(*references[i].research_content_reference_id);
+            auto& research_content = db_impl().get<research_content_object>(*references[i].research_content_reference_id);
+            FC_ASSERT(research_content.research_id == references[i].research_reference_id,
+                      "Research content must be a part of specified research.");
+        }
+    }
     const auto& new_research_content = db_impl().create<research_content_object>([&](research_content_object& rc) {
         
         auto now = db_impl().head_block_time();
@@ -29,7 +41,9 @@ const research_content_object& dbs_research_content::create(const research_id_ty
         fc::from_string(rc.content, content);
         rc.created_at = now;
         rc.authors.insert(authors.begin(), authors.end());
-        rc.references.insert(references.begin(), references.end());
+        for (auto reference : references) {
+            rc.references.push_back(reference);
+        }
         rc.external_references.insert(external_references.begin(), external_references.end());
         rc.activity_round = 1;
         rc.activity_state = research_content_activity_state::active;
@@ -102,6 +116,11 @@ dbs_research_content::research_content_refs_type dbs_research_content::get_conte
     return ret;
 }
 
+void dbs_research_content::check_research_content_existence(const research_content_id_type& research_content_id)
+{
+    auto research_content = db_impl().find<research_content_object, by_id>(research_content_id);
+    FC_ASSERT(research_content != nullptr, "Research content with id \"${1}\" must exist.", ("1", research_content_id));
+}
 
 }
 }

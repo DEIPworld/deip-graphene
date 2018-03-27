@@ -37,7 +37,8 @@ typedef deip::chain::proposal_vote_evaluator_t<dbs_account,
                                                dbs_discipline,
                                                dbs_research_discipline_relation,
                                                dbs_research_group_invite,
-                                               dbs_dynamic_global_properties>
+                                               dbs_dynamic_global_properties,
+                                               dbs_research_group_join_request>
         proposal_vote_evaluator;
 
 
@@ -53,8 +54,9 @@ public:
                      dbs_discipline &discipline_service,
                      dbs_research_discipline_relation &research_discipline_relation_service,
                      dbs_research_group_invite &research_group_invite_service,
-                     dbs_dynamic_global_properties &dynamic_global_properties_service)
-            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service, discipline_service, research_discipline_relation_service, research_group_invite_service, dynamic_global_properties_service) {
+                     dbs_dynamic_global_properties &dynamic_global_properties_service,
+                     dbs_research_group_join_request &research_group_join_request_service)
+            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service, discipline_service, research_discipline_relation_service, research_group_invite_service, dynamic_global_properties_service, research_group_join_request_service) {
     }
 
     void execute_proposal(const proposal_object &proposal) {
@@ -75,7 +77,8 @@ public:
                     db.obtain_service<dbs_discipline>(),
                     db.obtain_service<dbs_research_discipline_relation>(),
                     db.obtain_service<dbs_research_group_invite>(),
-                    db.obtain_service<dbs_dynamic_global_properties>())
+                    db.obtain_service<dbs_dynamic_global_properties>(),
+                    db.obtain_service<dbs_research_group_join_request>())
     {
     }
 
@@ -705,13 +708,17 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         r.owned_tokens = DEIP_100_PERCENT;
     });
 
-    const std::string json_str = "{\"research_id\": 1,\"type\": 2,\"content\":\"milestone for Research #1\", \"authors\":[\"alice\"]}";
+    const std::string json_str = "{\"research_id\": 1,"
+            "\"type\": 2,"
+            "\"content\":\"milestone for Research #2\","
+            "\"authors\":[\"alice\"],"
+            "\"research_references\": [{\"research_reference_id\": 3}]}";
 
-    create_proposal(1, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(2, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
     op.research_group_id = 1;
-    op.proposal_id = 1;
+    op.proposal_id = 2;
     op.voter = "alice";
 
     evaluator.do_apply(op);
@@ -724,8 +731,9 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper) {
             const research_content_object& content = wrapper.get();
             return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone
-                && content.content == "milestone for Research #1" && content.authors.size() == 1
-                && content.authors.find("alice") != content.authors.end();
+                && content.content == "milestone for Research #2" && content.authors.size() == 1
+//                && content.authors.begin() == "alice"
+                   && content.references.size() == 1;
         }));
 }
 
