@@ -329,8 +329,8 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
     // vote
     BOOST_REQUIRE(itr != vote_idx.end());
     auto& vote = *itr;
-    BOOST_REQUIRE(vote.voting_power == (old_voting_power * op.weight / DEIP_100_PERCENT / 10));
-    int64_t expected_tokens_amount = (token.amount.value * old_voting_power * op.weight) / (10 * DEIP_100_PERCENT * DEIP_100_PERCENT);
+    BOOST_REQUIRE(vote.voting_power == (old_voting_power * op.weight / DEIP_100_PERCENT));
+    int64_t expected_tokens_amount = (token.amount.value * old_voting_power * op.weight) / (DEIP_100_PERCENT * DEIP_100_PERCENT);
     BOOST_REQUIRE(vote.tokens_amount.value == expected_tokens_amount);
     BOOST_REQUIRE(vote.voting_time == db.head_block_time());
     BOOST_REQUIRE(vote.voter == op.voter);
