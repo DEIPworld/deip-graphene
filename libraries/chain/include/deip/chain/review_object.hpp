@@ -39,6 +39,8 @@ public:
     time_point_sec created_at;
     bip::map<discipline_id_type, share_type> reward_weights_per_discipline;
     bip::map<discipline_id_type, share_type> curation_reward_weights_per_discipline;
+
+    // TODO: Add references
 };
 
 struct by_author;

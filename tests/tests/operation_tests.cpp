@@ -23,6 +23,7 @@
 #include <deip/chain/expert_token_object.hpp>
 
 #include <deip/chain/dbs_research_token.hpp>
+#include <deip/chain/review_object.hpp>
 
 using namespace deip;
 using namespace deip::chain;
@@ -90,42 +91,76 @@ BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 //
 BOOST_AUTO_TEST_CASE(make_review_research_apply)
 {
-//    try
-//    {
-//        BOOST_TEST_MESSAGE("Testing: make_review_research_apply");
-//
-//        ACTORS((alice));
-//
-//        generate_block();
-//
-//        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-//
-//        private_key_type priv_key = generate_private_key("alice");
-//
-//        make_research_review_operation op;
-//
-//        op.author = "alice";
-//        op.research_id = 1;
-//        op.content = "test";
-//        op.research_references = {1};
-//        op.research_external_references = {"one", "two", "three"};
-//
-//        BOOST_TEST_MESSAGE("--- Test normal research review creation");
-//
-//        signed_transaction tx;
-//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-//        tx.operations.push_back(op);
-//        tx.sign(priv_key, db.get_chain_id());
-//        tx.validate();
-//        db.push_transaction(tx, 0);
-//
-//        auto& research_content = db.get<research_content_object, by_id>(0);
-//
-//        BOOST_CHECK(research_content.type == review);
-//
-//
-//    }
-//    FC_LOG_AND_RETHROW()
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: make_review_research_apply");
+
+        ACTORS((alice));
+
+        generate_block();
+
+        BOOST_TEST_MESSAGE("--- Test normal review creation");
+
+        research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
+        expert_token_create(1, "alice", 1, 100);
+
+        db.create<research_discipline_relation_object>([&](research_discipline_relation_object& rdr) {
+            rdr.discipline_id = 1;
+            rdr.research_id = 1;
+        });
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        make_research_review_operation op;
+
+        op.author = "alice";
+        op.research_id = 1;
+        op.content = "test";
+        op.research_references = {1};
+        op.is_positive = true;
+        op.research_external_references = {"one", "two", "three"};
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        const review_object& review = db.get<review_object, by_id>(0);
+
+        BOOST_CHECK(review.research_id == 1);
+        BOOST_CHECK(review.author == "alice");
+        BOOST_CHECK(review.is_positive == true);
+        BOOST_CHECK(review.content == "test");
+
+        BOOST_TEST_MESSAGE("--- Test failing review creation");
+
+        research_create(2, "test_research11", "abstract11", "permlink111", 1, 10, 1500);
+
+        db.create<research_discipline_relation_object>([&](research_discipline_relation_object& rdr) {
+            rdr.discipline_id = 2;
+            rdr.research_id = 2;
+        });
+
+        op.author = "alice";
+        op.research_id = 1;
+        op.content = "test";
+        op.research_references = {1};
+        op.is_positive = true;
+        op.research_external_references = {"one", "two", "three"};
+
+        tx.operations.clear();
+        tx.signatures.clear();
+
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        BOOST_CHECK_THROW(db.push_transaction(tx, 0), fc::assert_exception);
+
+    }
+    FC_LOG_AND_RETHROW()
 }
 
 BOOST_AUTO_TEST_CASE(vote_apply_failure)

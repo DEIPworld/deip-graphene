@@ -944,24 +944,37 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
 
 void make_research_review_evaluator::do_apply(const make_research_review_operation& op)
 {
-    // TODO: create review
-//    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
-//    dbs_research& research_service = _db.obtain_service<dbs_research>();
-//    dbs_account& account_service = _db.obtain_service<dbs_account>();
-//
-//    account_service.check_account_existence(op.author);
-//    research_service.check_research_existence(op.research_id);
-//
-//    std::vector<research_id_type> references;
-//    int size = op.research_references.size();
-//    for (int i = 0; i < size; ++i)
-//    {
-//        research_service.check_research_existence(op.research_references[i]);
-//        references.push_back((research_id_type)op.research_references[i]);
-//    }
-//
-//    flat_set<account_name_type> review_author = {op.author};
-//    research_content_service.create(op.research_id, research_content_type::review, op.content, review_author, references, op.research_external_references);
+    dbs_review& review_service = _db.obtain_service<dbs_review>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
+
+    account_service.check_account_existence(op.author);
+    research_service.check_research_existence(op.research_id);
+
+    auto expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
+    auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(op.research_id);
+    std::set<discipline_id_type> research_disciplines_ids;
+    for (auto rdr : research_discipline_relations) {
+        research_disciplines_ids.insert(rdr.get().discipline_id);
+    }
+
+    FC_ASSERT(std::any_of(expertise_tokens.begin(), expertise_tokens.end(), [&](std::reference_wrapper<const expert_token_object> etw) {
+        auto token = etw.get();
+        return research_disciplines_ids.find(token.discipline_id) != research_disciplines_ids.end();
+    }), "Reviewer does not have enough expertise to make review.");
+
+    std::vector<research_id_type> references;
+    int size = op.research_references.size();
+    for (int i = 0; i < size; ++i)
+    {
+        research_service.check_research_existence(op.research_references[i]);
+        references.push_back((research_id_type)op.research_references[i]);
+    }
+
+    // TODO: Create review with references
+    review_service.create(op.research_id, op.content, op.is_positive, op.author);
 }
 
 void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)
