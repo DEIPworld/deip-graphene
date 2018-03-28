@@ -30,6 +30,7 @@
 #include <deip/chain/dbs_vote.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
+#define MAX_LIMIT 1000
 
 namespace deip {
 namespace app {
@@ -408,7 +409,7 @@ set<string> database_api::lookup_accounts(const string& lower_bound_name, uint32
 
 set<string> database_api_impl::lookup_accounts(const string& lower_bound_name, uint32_t limit) const
 {
-    FC_ASSERT(limit <= 1000);
+    FC_ASSERT(limit <= MAX_LIMIT);
     const auto& accounts_by_name = _db.get_index<account_index>().indices().get<by_name>();
     set<string> result;
 
@@ -561,7 +562,7 @@ vector<witness_api_obj> database_api::get_witnesses_by_vote(string from, uint32_
 {
     return my->_db.with_read_lock([&]() {
         // idump((from)(limit));
-        FC_ASSERT(limit <= 100);
+        FC_ASSERT(limit <= MAX_LIMIT);
 
         vector<witness_api_obj> result;
         result.reserve(limit);
@@ -602,7 +603,7 @@ set<account_name_type> database_api::lookup_witness_accounts(const string& lower
 
 set<account_name_type> database_api_impl::lookup_witness_accounts(const string& lower_bound_name, uint32_t limit) const
 {
-    FC_ASSERT(limit <= 1000);
+    FC_ASSERT(limit <= MAX_LIMIT);
     const auto& witnesses_by_id = _db.get_index<witness_index>().indices().get<by_id>();
 
     // get all the names and look them all up, sort them, then figure out what
@@ -817,8 +818,7 @@ set<string> database_api_impl::lookup_grant_owners(const string& lower_bound_nam
 map<uint32_t, applied_operation> database_api::get_account_history(string account, uint64_t from, uint32_t limit) const
 {
     return my->_db.with_read_lock([&]() {
-        FC_ASSERT(limit <= 10000, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
-        FC_ASSERT(from >= limit, "From must be greater than limit");
+        FC_ASSERT(limit <= MAX_LIMIT, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
         //   idump((account)(from)(limit));
         const auto& idx = my->_db.get_index<account_history_index>().indices().get<by_account>();
         auto itr = idx.lower_bound(boost::make_tuple(account, from));
@@ -860,7 +860,7 @@ vector<account_name_type> database_api::get_active_witnesses() const
 vector<vesting_delegation_api_obj>
 database_api::get_vesting_delegations(string account, string from, uint32_t limit) const
 {
-    FC_ASSERT(limit <= 1000);
+    FC_ASSERT(limit <= MAX_LIMIT);
 
     return my->_db.with_read_lock([&]() {
         vector<vesting_delegation_api_obj> result;
@@ -881,7 +881,7 @@ database_api::get_vesting_delegations(string account, string from, uint32_t limi
 vector<vesting_delegation_expiration_api_obj>
 database_api::get_expiring_vesting_delegations(string account, time_point_sec from, uint32_t limit) const
 {
-    FC_ASSERT(limit <= 1000);
+    FC_ASSERT(limit <= MAX_LIMIT);
 
     return my->_db.with_read_lock([&]() {
         vector<vesting_delegation_expiration_api_obj> result;
@@ -1081,7 +1081,7 @@ research_api_obj database_api::get_research_by_permlink(const string& permlink) 
 vector<research_api_obj> database_api::get_researches(const research_id_type& from, const uint32_t limit) const
 {
     return my->_db.with_read_lock([&]() {
-        FC_ASSERT(limit <= 100);
+        FC_ASSERT(limit <= MAX_LIMIT);
 
         vector<research_api_obj> result;
         result.reserve(limit);
@@ -1446,8 +1446,7 @@ vector<research_group_invite_api_obj> database_api::get_research_group_invites_b
 vector<research_listing_api_obj> database_api::get_research_listing(const uint64_t& from, const uint32_t& limit = 100) const
 {
     return my->_db.with_read_lock([&]() {
-        FC_ASSERT(limit <= 10000, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
-        FC_ASSERT(from >= limit, "From must be greater than limit");
+        FC_ASSERT(limit <= MAX_LIMIT, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
 
         vector<research_listing_api_obj> results;
         results.reserve(limit);
