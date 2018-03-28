@@ -93,9 +93,9 @@ BOOST_FIXTURE_TEST_SUITE(proposal_vote_evaluator_tests, proposal_vote_evaluator_
 BOOST_AUTO_TEST_CASE(invite_member_execute_test)
 {
     ACTORS((alice)(bob))
-    std::vector<std::pair<account_name_type, share_type>> accounts = {std::make_pair("alice", 100)};
+    std::vector<std::pair<account_name_type, share_type>> accounts = {std::make_pair("alice", 10000)};
     setup_research_group(1, "research_group", "research group", 0, 1, accounts);
-    const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":1,\"research_group_token_amount\":50}";
+    const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":1,\"research_group_token_amount\":5000}";
     create_proposal(1, dbs_proposal::action_t::invite_member, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
 
@@ -122,8 +122,8 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
         ACTORS((alice)(bob));
 
         auto& research_group_service = db.obtain_service<dbs_research_group>();
-        vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 50), std::make_pair("bob", 50) };
-        setup_research_group(1, "research_group", "research group", 0, 1, accounts);
+        vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 9000), std::make_pair("bob", 1000) };
+        setup_research_group(1, "research_group", "research group", 0, 40, accounts);
 
         const std::string exclude_member_json = "{\"name\":\"bob\",\"research_group_id\": 1}";
         create_proposal(1, dbs_proposal::action_t::dropout_member, exclude_member_json, "alice", 1, time_point_sec(0xffffffff), 1);
@@ -137,6 +137,7 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
         evaluator.do_apply(op);
 
         auto& research_group = research_group_service.get_research_group(1);
+        auto& token = research_group_service.get_research_group_token_by_id(0);
 
         BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1), std::out_of_range);
         BOOST_CHECK(research_group_service.get_research_group_token_by_account_and_research_group_id("alice", 1).amount == DEIP_100_PERCENT);
@@ -258,7 +259,7 @@ BOOST_AUTO_TEST_CASE(exclude_member_with_research_token_compensation_test)
         ACTORS((alice)(bob));
 
         auto& research_group_service = db.obtain_service<dbs_research_group>();
-        vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 99), std::make_pair("bob", 1) };
+        vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 8000), std::make_pair("bob", 2000) };
         setup_research_group(1, "research_group", "research group", 0, 1, accounts);
         auto& research = research_create(0, "name","abstract", "permlink", 1, 10, DROPOUT_COMPENSATION_IN_PERCENT);
 
@@ -280,7 +281,7 @@ BOOST_AUTO_TEST_CASE(exclude_member_with_research_token_compensation_test)
         BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1), std::out_of_range);
         BOOST_CHECK(research_group.total_tokens_amount == DEIP_100_PERCENT);
         BOOST_CHECK(research_token.account_name == "bob");
-        BOOST_CHECK(research_token.amount == 499);
+        BOOST_CHECK(research_token.amount == 300);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -292,7 +293,7 @@ BOOST_AUTO_TEST_CASE(change_quorum_test)
         ACTORS((alice)(bob));
 
         auto& research_group_service = db.obtain_service<dbs_research_group>();
-        vector<std::pair<account_name_type,share_type>> accounts = { std::make_pair("alice", 50), std::make_pair("bob", 50) };
+        vector<std::pair<account_name_type,share_type>> accounts = { std::make_pair("alice", 5000), std::make_pair("bob", 5000) };
         setup_research_group(1, "research_group", "research group", 0, 1, accounts);
 
         const std::string change_quorum_json = "{\"quorum_percent\": 80,\"research_group_id\": 1}";
@@ -319,7 +320,7 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
 
     create_disciplines();
 
-    std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
+    std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 10000)};
     setup_research_group(1, "research_group", "research group", 0, 1, accounts);
     const std::string json_str = "{\"name\":\"test\","
             "\"research_group_id\":1,"
@@ -383,7 +384,7 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_execute_test)
 {
     ACTORS((alice)(bob))
     fund("bob", 1000);
-    std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
+    std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 10000)};
     setup_research_group(1, "research_group", "research group", 0, 1, accounts);
     const std::string json_str = "{\"research_id\":0,"
             "\"total_price\":500,"
@@ -415,7 +416,7 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
 {
     ACTORS((alice)(bob))
     fund("bob", 1000);
-    std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
+    std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 10000)};
     setup_research_group(1, "research_group", "research group", 750, 1, accounts);
     const std::string json_str = "{\"research_group_id\":1,"
             "\"account_name\":\"bob\","
@@ -443,16 +444,15 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
 BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
 {
     ACTORS((alice)(bob))
-    std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 50), std::make_pair("bob", 50)};
+    std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 5000), std::make_pair("bob", 5000)};
     setup_research_group(1, "research_group", "research group", 750, 1, accounts);
     const std::string json_str = "{\"research_group_id\":1,"
             "\"accounts\":[{"
             "\"account_name\":\"alice\","
-            "\"amount\":\"75\" },"
+            "\"new_amount\": 7500 },"
             "{"
             "\"account_name\":\"bob\","
-            "\"amount\":\"25\""
-            "}]}";
+            "\"new_amount\": 2500 }]}";
     create_proposal(1, dbs_proposal::action_t::rebalance_research_group_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;

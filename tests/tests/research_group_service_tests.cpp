@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE(adjust_research_group_tokens_amount)
     {
         create_research_group_tokens();
 
-        BOOST_CHECK_NO_THROW(data_service.adjust_research_group_tokens_amount(2, -10));
+        BOOST_CHECK_NO_THROW(data_service.adjust_research_group_tokens_amount(2, -1000));
         auto& alice_token = db.get<research_group_token_object>(1);
         auto& bob_token = db.get<research_group_token_object>(2);
 
@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE(set_new_research_group_token_amount)
     {
         create_research_group_tokens();
 
-        auto& alice_token = data_service.set_new_research_group_token_amount(2, "alice", 40);
+        auto& alice_token = data_service.set_new_research_group_token_amount(2, "alice", 4000);
 
         BOOST_CHECK(alice_token.amount == 40 * DEIP_1_PERCENT);
 

@@ -100,7 +100,7 @@ const research_group_token_object& dbs_research_group::create_research_group_tok
     const research_group_token_object& new_research_group_token = db_impl()
             .create<research_group_token_object>([&](research_group_token_object& research_group_token) {
         research_group_token.research_group_id = research_group_id;
-        research_group_token.amount = amount * DEIP_1_PERCENT;
+        research_group_token.amount = amount;
         research_group_token.owner = owner;
     });
 
@@ -151,7 +151,8 @@ void dbs_research_group::adjust_research_group_tokens_amount(const research_grou
     const auto it_end = it_pair.second;
     while (it != it_end)
     {
-        db_impl().modify(*it, [&](research_group_token_object& rgt) { rgt.amount += delta * DEIP_1_PERCENT; });
+        share_type test = it->amount;
+        db_impl().modify(*it, [&](research_group_token_object& rgt) { rgt.amount += delta; });
         ++it;
     }
 
@@ -162,7 +163,7 @@ const research_group_token_object& dbs_research_group::set_new_research_group_to
                                                                                            const share_type new_amount)
 {
     const research_group_token_object& research_group_token = get_research_group_token_by_account_and_research_group_id(owner, research_group_id);
-    db_impl().modify(research_group_token, [&](research_group_token_object& rgo) { rgo.amount = new_amount * DEIP_1_PERCENT; });
+    db_impl().modify(research_group_token, [&](research_group_token_object& rgo) { rgo.amount = new_amount; });
 
     return research_group_token;
 }
