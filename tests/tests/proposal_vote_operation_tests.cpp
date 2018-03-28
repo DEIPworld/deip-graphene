@@ -712,7 +712,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
             "\"type\": 2,"
             "\"content\":\"milestone for Research #2\","
             "\"authors\":[\"alice\"],"
-            "\"research_references\": [{\"research_reference_id\": 3}]}";
+            "\"references\": [{\"research_reference_id\": 3}]}";
 
     create_proposal(2, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
@@ -732,7 +732,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
             const research_content_object& content = wrapper.get();
             return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone
                 && content.content == "milestone for Research #2" && content.authors.size() == 1
-//                && content.authors.begin() == "alice"
+                && content.authors.find("alice") != content.authors.end()
                    && content.references.size() == 1;
         }));
 }

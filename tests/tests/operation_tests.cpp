@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         std::pair<int64_t, int64_t> data;
         data.first = 2;
 
-        std::vector<std::pair<int64_t, int64_t >> research_references;
+        std::vector<std::pair<int64_t, int64_t>> research_references;
         research_references.push_back(data);
 
         op.author = "alice";

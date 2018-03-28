@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         BOOST_CHECK(milestone.title == "title for milestone for Research #2");
         BOOST_CHECK(milestone.content == "milestone for Research #2");
         BOOST_CHECK(milestone.authors.size() == 1);
-//        BOOST_CHECK(milestone.authors.begin() == "sam");
+        BOOST_CHECK(milestone.authors.find("sam") != milestone.authors.end());
         BOOST_CHECK(milestone.references.size() == 1);
         BOOST_CHECK(milestone.external_references.size() == 3);
 
@@ -297,7 +297,7 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         BOOST_CHECK(db_milestone.title == "title for milestone for Research #2");
         BOOST_CHECK(db_milestone.content == "milestone for Research #2");
         BOOST_CHECK(db_milestone.authors.size() == 1);
-//        BOOST_CHECK(db_milestone.authors.begin() == "sam");
+        BOOST_CHECK(db_milestone.authors.find("sam") != db_milestone.authors.end());
         BOOST_CHECK(db_milestone.references.size() == 1);
         BOOST_CHECK(db_milestone.external_references.size() == 3);
 
