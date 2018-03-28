@@ -527,7 +527,7 @@ void vote_evaluator::do_apply(const vote_operation& o)
 
         FC_ASSERT(o.weight != 0, "Vote weight cannot be 0.");
 
-                _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
+        _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
             t.voting_power = current_power - denominated_used_power;
             t.last_vote_time = _db.head_block_time();
         });
@@ -705,6 +705,10 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
 
         _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
            d.total_active_review_reward_weight += evaluated_review_vote_weight;
+        });
+
+        _db._temporary_public_impl().modify(review, [&](review_object& r) {
+            r.reward_weights_per_discipline[o.discipline_id] += evaluated_review_vote_weight;
         });
 
         uint64_t max_vote_weight = 0;

@@ -67,6 +67,7 @@ typedef multi_index_container<review_object,
 
 FC_REFLECT(deip::chain::review_object,
            (id)(research_id)(content)(is_positive)(author)(created_at)
+           (reward_weights_per_discipline)(curation_reward_weights_per_discipline)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::review_object, deip::chain::review_index)
