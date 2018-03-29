@@ -386,12 +386,6 @@ BOOST_AUTO_TEST_CASE(reward_research_token_holders)
 
         BOOST_CHECK(db.get<research_group_object>(2).funds == (db.get<research_object>(2).owned_tokens * reward) / DEIP_100_PERCENT);
 
-        auto alex_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alex", 1)); 
-        auto jack_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("jack", 1)); 
-
-        BOOST_CHECK(alex_expert_token.amount == (reward * db.get<research_group_token_object>(3).amount) / db.get<research_group_object>(2).total_tokens_amount);
-        BOOST_CHECK(jack_expert_token.amount == (reward * db.get<research_group_token_object>(4).amount) / db.get<research_group_object>(2).total_tokens_amount);
-
         BOOST_CHECK(db.get_account("alice").balance.amount == (db.get<research_token_object>(1).amount * reward) / DEIP_100_PERCENT);
         BOOST_CHECK(db.get_account("bob").balance.amount == (db.get<research_token_object>(2).amount * reward) / DEIP_100_PERCENT);
     }
@@ -419,6 +413,11 @@ BOOST_AUTO_TEST_CASE(reward_research_content)
                 DEIP_CURATORS_REWARD_SHARE_PERCENT - DEIP_REFERENCES_REWARD_SHARE_PERCENT - db.get<research_object>(1).review_share_in_percent));
         BOOST_CHECK(db.get<research_group_object>(2).funds == util::calculate_share(reward,
                     (DEIP_REFERENCES_REWARD_SHARE_PERCENT * db.get<research_object>(2).owned_tokens) / DEIP_100_PERCENT));
+
+        auto john_test_token = db.get<expert_token_object>(0);
+        string name = john_test_token.account_name;
+        auto alextest = db.get<expert_token_object>(1);
+        auto jacktest = db.get<expert_token_object>(2);
 
         auto john_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("john", 10)); 
         auto alex_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alex", 10)); 
@@ -616,7 +615,6 @@ BOOST_AUTO_TEST_CASE(process_grants)
        create_total_votes();
        create_research_groups();
        create_research_group_tokens();
-       create_discipline();
        create_grant();
 
        BOOST_CHECK_NO_THROW(db.process_grants());
