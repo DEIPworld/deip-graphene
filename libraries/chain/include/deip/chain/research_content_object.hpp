@@ -33,6 +33,12 @@ enum research_content_activity_state : uint16_t
     closed = 3
 };
 
+struct research_references_data
+{
+    research_id_type research_reference_id;
+    optional<research_content_id_type> research_content_reference_id;
+};
+
 class research_content_object : public object<research_content_object_type, research_content_object>
 {
     
@@ -52,7 +58,7 @@ public:
     fc::string content;
     flat_set<account_name_type> authors;
     time_point_sec created_at;
-    std::vector<research_id_type> research_references;
+    std::vector<research_references_data> research_references;
     std::vector<string> research_external_references;
 
     uint16_t activity_round;
@@ -104,6 +110,7 @@ typedef multi_index_container<research_content_object,
 FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result)(review) )
 FC_REFLECT_ENUM(deip::chain::research_content_activity_state, (active)(pending)(closed) )
 
+FC_REFLECT(deip::chain::research_references_data, (research_reference_id)(research_content_reference_id))
 FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(content)(authors)(research_references)(research_external_references))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_content_object, deip::chain::research_content_index)

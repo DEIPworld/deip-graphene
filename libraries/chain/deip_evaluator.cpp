@@ -20,6 +20,7 @@
 #include <deip/chain/dbs_expert_token.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_research_token.hpp>
+#include <deip/chain/dbs_research_group_join_request.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -833,16 +834,20 @@ void make_research_review_evaluator::do_apply(const make_research_review_operati
     account_service.check_account_existence(op.author);
     research_service.check_research_existence(op.research_id);
 
-    std::vector<research_id_type> references;
+    std::vector<research_references_data> research_reference_data;
     int size = op.research_references.size();
     for (int i = 0; i < size; ++i)
     {
-        research_service.check_research_existence(op.research_references[i]);
-        references.push_back((research_id_type)op.research_references[i]);
+        research_references_data buf_data;
+        buf_data.research_reference_id = op.research_references[i].first;
+        buf_data.research_content_reference_id = op.research_references[i].second;
+
+        research_service.check_research_existence(buf_data.research_reference_id);
+        research_reference_data.push_back(buf_data);
     }
 
     flat_set<account_name_type> review_author = {op.author};
-    research_content_service.create(op.research_id, research_content_type::review, op.content, review_author, references, op.research_external_references);
+    research_content_service.create(op.research_id, research_content_type::review, op.content, review_author, research_reference_data, op.research_external_references);
 }
 
 void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)
@@ -936,6 +941,30 @@ void reject_research_group_invite_evaluator::do_apply(const reject_research_grou
 
     _db._temporary_public_impl().remove(research_group_invite);
 
+}
+
+void create_research_group_join_request_evaluator::do_apply(const create_research_group_join_request_operation& op)
+{
+    dbs_research_group_join_request &research_group_join_request_service = _db.obtain_service<dbs_research_group_join_request>();
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group &research_group_service = _db.obtain_service<dbs_research_group>();
+
+    account_service.check_account_existence(op.owner);
+    research_group_service.check_research_group_existence(op.research_group_id);
+
+    auto& research_group_join_request = research_group_join_request_service.create(op.owner, op.research_group_id, op.motivation_letter);
+
+}
+
+void reject_research_group_join_request_evaluator::do_apply(const reject_research_group_join_request_operation& op)
+{
+    dbs_research_group_join_request &research_group_join_request_service = _db.obtain_service<dbs_research_group_join_request>();
+
+    research_group_join_request_service.check_research_group_join_request_existence(op.research_group_join_request_id);
+
+    auto& research_group_join_request = research_group_join_request_service.get(op.research_group_join_request_id);
+
+    _db._temporary_public_impl().remove(research_group_join_request);
 }
 
 } // namespace chain

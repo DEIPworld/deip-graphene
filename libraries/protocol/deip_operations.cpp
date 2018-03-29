@@ -221,5 +221,17 @@ void reject_research_group_invite_operation::validate() const
     validate_account_name(owner);
 }
 
+void create_research_group_join_request_operation::validate() const
+{
+    validate_account_name(owner);
+    FC_ASSERT(!motivation_letter.empty(), "Motivation letter cannot be empty");
+    FC_ASSERT(fc::is_utf8(motivation_letter), "Motivation letter is not valid UTF8 string");
+}
+
+void reject_research_group_join_request_operation::validate() const
+{
+    validate_account_name(owner);
+}
+
 }
 } // deip::protocol

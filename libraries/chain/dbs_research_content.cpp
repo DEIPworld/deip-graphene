@@ -15,13 +15,21 @@ const research_content_object& dbs_research_content::create(const research_id_ty
                                                             const research_content_type& type,
                                                             const string& content,
                                                             const flat_set<account_name_type>& authors,
-                                                            const std::vector<research_id_type>& research_references,
+                                                            const std::vector<research_references_data>& research_references,
                                                             const std::vector<string>& research_external_references)
 {
     int size = research_references.size();
     for (int i = 0; i < size; ++i)
-        FC_ASSERT(research_references[i] != research_id, "Research material cannot reference research it is being created for.");
-
+    {
+        FC_ASSERT(research_references[i].research_reference_id != research_id,
+                  "Research material cannot reference research it is being created for.");
+        if (research_references[i].research_content_reference_id.valid()) {
+            check_research_content_existence(*research_references[i].research_content_reference_id);
+            auto& research_content = db_impl().get<research_content_object>(*research_references[i].research_content_reference_id);
+            FC_ASSERT(research_content.research_id == research_references[i].research_reference_id,
+                      "Research content must be a part of specified research.");
+        }
+    }
     const auto& new_research_content = db_impl().create<research_content_object>([&](research_content_object& rc) {
         
         auto now = db_impl().head_block_time();
@@ -105,6 +113,11 @@ dbs_research_content::research_content_refs_type dbs_research_content::get_conte
     return ret;
 }
 
+void dbs_research_content::check_research_content_existence(const research_content_id_type& research_content_id)
+{
+    auto research_content = db_impl().find<research_content_object, by_id>(research_content_id);
+    FC_ASSERT(research_content != nullptr, "Research content with id \"${1}\" must exist.", ("1", research_content_id));
+}
 
 }
 }
