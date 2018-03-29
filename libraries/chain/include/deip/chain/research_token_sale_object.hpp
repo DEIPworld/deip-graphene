@@ -18,6 +18,8 @@
 namespace deip {
 namespace chain {
 
+using fc::time_point;
+
 class research_token_sale_object : public object<research_token_sale_object_type, research_token_sale_object>
 {
 
@@ -32,8 +34,8 @@ public:
     research_token_sale_id_type id;
 
     research_id_type research_id;
-    fc::time_point_sec start_time;
-    fc::time_point_sec end_time;
+    time_point_sec start_time;
+    time_point_sec end_time;
     share_type total_amount;
     share_type balance_tokens;
     share_type soft_cap;

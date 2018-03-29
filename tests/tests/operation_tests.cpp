@@ -105,17 +105,18 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
 
         make_research_review_operation op;
 
-        std::pair<int64_t, int64_t > data;
+        std::pair<int64_t, int64_t> data;
         data.first = 2;
 
-        std::vector<std::pair<int64_t, int64_t >> research_references;
+        std::vector<std::pair<int64_t, int64_t>> research_references;
         research_references.push_back(data);
 
         op.author = "alice";
         op.research_id = 1;
+        op.title = "test";
         op.content = "test";
-        op.research_references = research_references;
-        op.research_external_references = {"one", "two", "three"};
+        op.references = research_references;
+        op.external_references = {"one", "two", "three"};
 
         BOOST_TEST_MESSAGE("--- Test normal research review creation");
 
@@ -145,13 +146,13 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
 
     auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
     auto& discipline = discipline_create(1, "Math", 0, 0);
-    auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.discipline_id = discipline.id;
         r.research_id = research.id;
         r.votes_count = 0;
     });
 
-    auto& token = db.create<expert_token_object>([&](expert_token_object& t) {
+    db.create<expert_token_object>([&](expert_token_object& t) {
         t.id = 1;
         t.discipline_id = discipline.id;
         t.amount = 1000;
@@ -165,8 +166,8 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
         c.research_id = research.id;
         c.authors = { "alice", "bob" };
         c.content = "content";
-        c.research_references = {};
-        c.research_external_references = { "http://google.com" };
+        c.references = {};
+        c.external_references = { "http://google.com" };
         c.type = research_content_type::milestone;
     });
 
@@ -263,7 +264,7 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 
     auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
     auto& discipline = discipline_create(1, "Math", 0, 0);
-    auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.discipline_id = discipline.id;
         r.research_id = research.id;
         r.votes_count = 0;
@@ -283,8 +284,8 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
         c.research_id = research.id;
         c.authors = { "alice", "bob" };
         c.content = "content";
-        c.research_references = {};
-        c.research_external_references = { "http://google.com" };
+        c.references = {};
+        c.external_references = { "http://google.com" };
         c.type = research_content_type::milestone;
         c.activity_state = research_content_activity_state::active;
     });
@@ -295,8 +296,6 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 
     signed_transaction tx;
     tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-
-    bool content_is_active = content.activity_state == research_content_activity_state::active;
 
     BOOST_TEST_MESSAGE("--- Testing success");
 
@@ -407,9 +406,9 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
         //////////////////////////////////////////////////
 
         auto& _research_group_1
-            = research_group_create_by_operation("alice", "permlink rg1", "description rg1", 50, 100);
+            = research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 50, 100);
         auto& _research_group_2
-            = research_group_create_by_operation("alice", "permlink rg2", "description rg2", 50, 200);
+            = research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 50, 200);
 
         research_group_invite_create(0, "bob", 0, 100);
         research_group_invite_create(1, "bob", 1, 100);
@@ -453,21 +452,21 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
          ///  Research #3 from Research Group #2                                        ///
         //////////////////////////////////////////////////////////////////////////////////
 
-        const std::string create_research_1_proposal_json = "{\"name\":\"research #1\","
+        const std::string create_research_1_proposal_json = "{\"title\":\"research #1\","
                                                             "\"research_group_id\":0,"
                                                             "\"abstract\":\"abstract r1\","
                                                             "\"permlink\":\"permlink r1\","
                                                             "\"review_share_in_percent\": 1000,"
                                                             "\"dropout_compensation_in_percent\": 5000,"
                                                             "\"disciplines\": [1, 2, 3]}";
-        const std::string create_research_2_proposal_json = "{\"name\":\"research #2\","
+        const std::string create_research_2_proposal_json = "{\"title\":\"research #2\","
                                                             "\"research_group_id\":0,"
                                                             "\"abstract\":\"abstract r2\","
                                                             "\"permlink\":\"permlink r2\","
                                                             "\"review_share_in_percent\": 1000,"
                                                             "\"dropout_compensation_in_percent\": 2000,"
                                                             "\"disciplines\": [1, 2, 3]}";
-        const std::string create_research_3_proposal_json = "{\"name\":\"research #3\","
+        const std::string create_research_3_proposal_json = "{\"title\":\"research #3\","
                                                             "\"research_group_id\":1,"
                                                             "\"abstract\":\"abstract r3\","
                                                             "\"permlink\":\"permlink r3\","
@@ -610,8 +609,8 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "permlink", "description", 200, 50, 300);
-        auto& research_group_invite = research_group_invite_create(1, "bob", 1, 50);
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50, 300);
+        research_group_invite_create(1, "bob", 1, 50);
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -652,8 +651,8 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
          ///                                            ///
         //////////////////////////////////////////////////
 
-        research_group_create_by_operation("alice", "permlink rg1", "description rg1", 50, 100);
-        research_group_create_by_operation("alice", "permlink rg2", "description rg2", 50, 200);
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 50, 100);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 50, 200);
 
         research_group_invite_create(0, "bob", 0, 100);
         research_group_invite_create(1, "bob", 1, 100);
@@ -2447,9 +2446,10 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
 
        create_research_group_operation op;
 
+       op.name = "test";
        op.creator = "alice";
        op.permlink = "group";
-       op.desciption = "group";
+       op.description = "group";
        op.quorum_percent = 10;
        op.tokens_amount = 100;
 
@@ -2464,6 +2464,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
        auto& research_group_service = db.obtain_service<dbs_research_group>();
        auto& research_group = research_group_service.get_research_group(0);
 
+       BOOST_CHECK(research_group.name == "test");
        BOOST_CHECK(research_group.description == "group");
        BOOST_CHECK(research_group.permlink == "group");
        BOOST_CHECK(research_group.quorum_percent == 10);
@@ -2483,7 +2484,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_join_request_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "permlink", "description", 200, 50, 300);
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50, 300);
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -2522,7 +2523,7 @@ BOOST_AUTO_TEST_CASE(reject_research_group_join_request_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "permlink", "description", 200, 50, 300);
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50, 300);
         auto& research_group_invite = research_group_join_request_create(1, "alice", 1, "letter");
 
         private_key_type priv_key = generate_private_key("alice");

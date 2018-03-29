@@ -25,10 +25,11 @@ public:
 
     const research_content_object& create(const research_id_type& research_id,
                                           const research_content_type& type,
+                                          const string& title,
                                           const string& content,
-                                          const flat_set<account_name_type>& authors,
-                                          const std::vector<research_references_data>& research_references,
-                                          const std::vector<string>& research_external_references);
+                                          const std::vector<account_name_type>& authors,
+                                          const std::vector<research_reference_data>& references,
+                                          const std::vector<string>& external_references);
 
     const research_content_object& get_content_by_id(const research_content_id_type& id) const;
 

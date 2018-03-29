@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deip/chain/deip_object_types.hpp>
+#include <fc/shared_string.hpp>
 #include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 
@@ -9,13 +10,17 @@ using namespace deip::protocol;
 namespace deip {
 namespace chain {
 
+using fc::shared_string;
+using fc::time_point_sec;
+
+
 class proposal_object : public object<proposal_object_type, proposal_object>
 {
     typedef deip::protocol::proposal_action_type action_t;
     typedef deip::protocol::account_name_type account_t;
 
 public:
-    template <typename Constructor, typename Allocator> proposal_object(Constructor&& c, allocator<Allocator> a)
+    template <typename Constructor, typename Allocator> proposal_object(Constructor&& c, allocator<Allocator> a) : data(a)
     {
         c(*this);
     }
@@ -25,10 +30,10 @@ public:
 
     research_group_id_type research_group_id;
     action_t action;
-    fc::time_point_sec creation_time;
-    fc::time_point_sec expiration_time;
+    time_point_sec creation_time;
+    time_point_sec expiration_time;
     account_t creator;
-    std::string data;
+    shared_string data;
     share_type quorum_percent;
     share_type current_votes_amount;
 
@@ -45,12 +50,7 @@ typedef multi_index_container<proposal_object,
                                                                 member<proposal_object,
                                                                        proposal_id_type,
                                                                        &proposal_object::id>>,
-                                                           hashed_unique<tag<by_data>,
-                                                                member<proposal_object,
-                                                                       std::string,
-                                                                       &proposal_object::data>,
-                                                                std::hash<std::string>>,
-                                                           ordered_non_unique<tag<by_expiration_time>,
+                                                           ordered_unique<tag<by_expiration_time>,
                                                                 member<proposal_object,
                                                                         fc::time_point_sec,
                                                                         &proposal_object::expiration_time>>,
