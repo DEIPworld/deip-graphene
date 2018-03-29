@@ -43,9 +43,6 @@ public:
 
     share_type total_curators_reward_weight;
     share_type total_active_curators_reward_weight;
-
-    share_type total_review_reward_weight;
-    share_type total_active_review_reward_weight;
 };
 
 struct by_discipline_id;

@@ -1534,28 +1534,28 @@ flat_set<account_name_type> database::get_all_research_group_token_account_names
 
 share_type database::fund_review_pool(const discipline_id_type& discipline_id, const share_type& amount)
 {
-    auto& research_content_service = obtain_service<dbs_research_content>();
-    auto& votes_service = obtain_service<dbs_vote>();
-
-    auto total_votes = votes_service.get_total_votes_by_discipline(discipline_id);
-
-    std::vector<std::pair<research_content_object, share_type>> votes_by_review;
-    share_type total_weight = 0;
-    share_type used_reward = 0;
-
-    for (auto total_vote_ref: total_votes) {
-        auto& total_vote = total_vote_ref.get();
-
-        if (total_vote.total_review_reward_weight != 0) {
-            total_weight += total_vote.total_review_reward_weight;
-            auto review = research_content_service.get_content_by_id(total_vote.research_content_id);
-            votes_by_review.push_back(std::make_pair(review, total_vote.total_review_reward_weight));
-        }
-    }
-
-    used_reward = allocate_rewards_to_reviews(amount, discipline_id, votes_by_review, total_weight);
-
-    return used_reward;
+//    auto& research_content_service = obtain_service<dbs_research_content>();
+//    auto& votes_service = obtain_service<dbs_vote>();
+//
+//    auto total_votes = votes_service.get_total_votes_by_discipline(discipline_id);
+//
+//    std::vector<std::pair<research_content_object, share_type>> votes_by_review;
+//    share_type total_weight = 0;
+//    share_type used_reward = 0;
+//
+//    for (auto total_vote_ref: total_votes) {
+//        auto& total_vote = total_vote_ref.get();
+//
+//        if (total_vote.total_review_reward_weight != 0) {
+//            total_weight += total_vote.total_review_reward_weight;
+//            auto review = research_content_service.get_content_by_id(total_vote.research_content_id);
+//            votes_by_review.push_back(std::make_pair(review, total_vote.total_review_reward_weight));
+//        }
+//    }
+//
+//    used_reward = allocate_rewards_to_reviews(amount, discipline_id, votes_by_review, total_weight);
+//
+//    return used_reward;
 }
 
 share_type database::allocate_rewards_to_reviews(const share_type& reward, const discipline_id_type& discipline_id,
