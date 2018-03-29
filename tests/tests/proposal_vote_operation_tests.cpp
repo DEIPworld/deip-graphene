@@ -37,7 +37,8 @@ typedef deip::chain::proposal_vote_evaluator_t<dbs_account,
                                                dbs_discipline,
                                                dbs_research_discipline_relation,
                                                dbs_research_group_invite,
-                                               dbs_dynamic_global_properties>
+                                               dbs_dynamic_global_properties,
+                                               dbs_research_group_join_request>
         proposal_vote_evaluator;
 
 
@@ -53,8 +54,9 @@ public:
                      dbs_discipline &discipline_service,
                      dbs_research_discipline_relation &research_discipline_relation_service,
                      dbs_research_group_invite &research_group_invite_service,
-                     dbs_dynamic_global_properties &dynamic_global_properties_service)
-            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service, discipline_service, research_discipline_relation_service, research_group_invite_service, dynamic_global_properties_service) {
+                     dbs_dynamic_global_properties &dynamic_global_properties_service,
+                     dbs_research_group_join_request &research_group_join_request_service)
+            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service, discipline_service, research_discipline_relation_service, research_group_invite_service, dynamic_global_properties_service, research_group_join_request_service) {
     }
 
     void execute_proposal(const proposal_object &proposal) {
@@ -75,7 +77,8 @@ public:
                     db.obtain_service<dbs_discipline>(),
                     db.obtain_service<dbs_research_discipline_relation>(),
                     db.obtain_service<dbs_research_group_invite>(),
-                    db.obtain_service<dbs_dynamic_global_properties>())
+                    db.obtain_service<dbs_dynamic_global_properties>(),
+                    db.obtain_service<dbs_research_group_join_request>())
     {
     }
 
@@ -91,7 +94,7 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test)
 {
     ACTORS((alice)(bob))
     std::vector<account_name_type> accounts = {"alice"};
-    setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
+    setup_research_group(1, "research group name", "research_group", "research group", 0, 1, 100, accounts);
     const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":1,\"research_group_token_amount\":50}";
     create_proposal(1, dbs_proposal::action_t::invite_member, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
@@ -120,7 +123,7 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
 
         auto& research_group_service = db.obtain_service<dbs_research_group>();
         vector<account_name_type> accounts = { "alice", "bob" };
-        setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
+        setup_research_group(1, "research group name", "research_group", "research group", 0, 1, 100, accounts);
 
         const std::string exclude_member_json = "{\"name\":\"bob\",\"research_group_id\": 1}";
         create_proposal(1, dbs_proposal::action_t::dropout_member, exclude_member_json, "alice", 1, time_point_sec(0xffffffff), 1);
@@ -149,10 +152,10 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 
         auto& research_service = db.obtain_service<dbs_research>();
 
-        research_group_create_by_operation("alice", "test permlink", "test description", 50,
+        research_group_create_by_operation("alice", "test name", "test permlink", "test description", 50,
                                            100);
 
-        const std::string create_research_proposal_json = "{\"name\":\"testresearch\","
+        const std::string create_research_proposal_json = "{\"title\":\"testresearch\","
                                                           "\"research_group_id\":0,"
                                                           "\"abstract\":\"abstract\","
                                                           "\"permlink\":\"permlink\","
@@ -205,10 +208,10 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_rate_test)
 
         auto& research_service = db.obtain_service<dbs_research>();
 
-        research_group_create_by_operation("alice", "test permlink", "test description", 50,
+        research_group_create_by_operation("alice", "test name", "test permlink", "test description", 50,
                                            100);
 
-        const std::string create_research_proposal_json = "{\"name\":\"testresearch\","
+        const std::string create_research_proposal_json = "{\"title\":\"testresearch\","
                                                           "\"research_group_id\":0,"
                                                           "\"abstract\":\"abstract\","
                                                           "\"permlink\":\"permlink\","
@@ -257,7 +260,7 @@ BOOST_AUTO_TEST_CASE(exclude_member_with_research_token_compensation_test)
 
         auto& research_group_service = db.obtain_service<dbs_research_group>();
         vector<account_name_type> accounts = { "alice", "bob" };
-        setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
+        setup_research_group(1, "research group name", "research_group", "research group", 0, 1, 100, accounts);
         auto& research = research_create(0, "name","abstract", "permlink", 1, 10, DROPOUT_COMPENSATION_IN_PERCENT);
 
         const std::string exclude_member_json = "{\"name\":\"bob\",\"research_group_id\": 1}";
@@ -291,7 +294,7 @@ BOOST_AUTO_TEST_CASE(change_quorum_test)
 
         auto& research_group_service = db.obtain_service<dbs_research_group>();
         vector<account_name_type> accounts = { "alice", "bob" };
-        setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
+        setup_research_group(1, "research group name", "research_group", "research group", 0, 1, 100, accounts);
 
         const std::string change_quorum_json = "{\"quorum_percent\": 80,\"research_group_id\": 1}";
         create_proposal(1, dbs_proposal::action_t::change_quorum, change_quorum_json, "alice", 1, time_point_sec(0xffffffff), 1);
@@ -318,8 +321,8 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
     create_disciplines();
 
     std::vector<account_name_type> accounts = {"alice"};
-    setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
-    const std::string json_str = "{\"name\":\"test\","
+    setup_research_group(1, "research group name", "research_group", "research group", 0, 1, 100, accounts);
+    const std::string json_str = "{\"title\":\"test\","
             "\"research_group_id\":1,"
             "\"abstract\":\"abstract\","
             "\"permlink\":\"permlink\","
@@ -339,7 +342,7 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
     auto& research_service = db.obtain_service<dbs_research>();
     auto& research = research_service.get_research(0);
 
-    BOOST_CHECK(research.name == "test");
+    BOOST_CHECK(research.title == "test");
     BOOST_CHECK(research.abstract == "abstract");
     BOOST_CHECK(research.permlink == "permlink");
     BOOST_CHECK(research.research_group_id == 1);
@@ -382,7 +385,7 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_execute_test)
     ACTORS((alice)(bob))
     fund("bob", 1000);
     std::vector<account_name_type> accounts = {"alice"};
-    setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
+    setup_research_group(1, "research group name", "research_group", "research group", 0, 1, 100, accounts);
     const std::string json_str = "{\"research_id\":0,"
             "\"total_price\":500,"
             "\"account_name\":\"bob\","
@@ -414,7 +417,7 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
     ACTORS((alice)(bob))
     fund("bob", 1000);
     std::vector<account_name_type> accounts = {"alice"};
-    setup_research_group(1, "research_group", "research group", 750, 1, 100, accounts);
+    setup_research_group(1, "research group name", "research_group", "research group", 750, 1, 100, accounts);
     const std::string json_str = "{\"research_group_id\":1,"
             "\"account_name\":\"bob\","
             "\"funds\": 250}";
@@ -442,7 +445,7 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
 {
     ACTORS((alice)(bob))
     std::vector<account_name_type> accounts = {"alice", "bob"};
-    setup_research_group(1, "research_group", "research group", 750, 1, 100, accounts);
+    setup_research_group(1, "research group name", "research_group", "research group", 750, 1, 100, accounts);
     const std::string json_str = "{\"research_group_id\":1,"
             "\"accounts\":[{"
             "\"account_name\":\"alice\","
@@ -475,7 +478,7 @@ BOOST_AUTO_TEST_CASE(research_token_sale_execute_test)
     {
     ACTORS((alice))
     std::vector<account_name_type> accounts = {"alice"};
-    setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
+    setup_research_group(1, "research group name", "research_group", "research group", 0, 1, 100, accounts);
     const std::string json_str = "{\"research_id\":0,\"amount_for_sale\":90,\"start_time\":\"2020-02-08T16:00:54\",\"end_time\":\"2020-03-08T15:02:31\",\"soft_cap\":60,\"hard_cap\":90}";
 
     create_proposal(1, dbs_proposal::action_t::start_research_token_sale, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
@@ -541,7 +544,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_data_validate_test)
     {
         ACTORS((alice));
 
-        const std::string create_research_proposal_json = "{\"name\":\"testresearch\","
+        const std::string create_research_proposal_json = "{\"title\":\"testresearch\","
                                                           "\"research_group_id\":1,"
                                                           "\"abstract\":\"abstract\","
                                                           "\"permlink\":\"permlink\","
@@ -552,7 +555,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_data_validate_test)
 
         db.obtain_service<dbs_research_group>();
         vector<account_name_type> accounts = { "alice" };
-        setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
+        setup_research_group(1, "research group name", "research_group", "research group", 0, 1, 100, accounts);
         create_disciplines();
 
         create_proposal(1, dbs_proposal::action_t::start_research, create_research_proposal_json, "alice", 1, fc::time_point_sec(0xffffffff),
@@ -598,7 +601,8 @@ BOOST_AUTO_TEST_CASE(change_quorum_data_validate_test)
 
 BOOST_AUTO_TEST_CASE(start_research_validate_test)
 {
-    const std::string json_str = "{\"name\":\"\","
+    const std::string json_str = 
+            "{\"title\":\"\","
             "\"research_group_id\":1,"
             "\"abstract\":\"\","
             "\"permlink\":\"\","
@@ -666,7 +670,7 @@ BOOST_AUTO_TEST_CASE(research_token_sale_data_validate_test)
     {
     ACTORS((alice))
     std::vector<account_name_type> accounts = {"alice"};
-    setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
+    setup_research_group(1, "research group name", "research_group", "research group", 0, 1, 100, accounts);
 
     // TODO: Add check for every value
     const std::string json_str = "{\"research_id\":0,\"amount_for_sale\":9999999999,\"start_time\":\"2020-02-08T15:02:31\",\"end_time\":\"2020-01-08T15:02:31\",\"soft_cap\":9999999999,\"hard_cap\":9999994444}";
@@ -689,11 +693,11 @@ BOOST_AUTO_TEST_CASE(create_research_material)
 {
     ACTORS((alice))
     std::vector<account_name_type> accounts = {"alice"};
-    setup_research_group(1, "research_group", "research group", 0, 1, 100, accounts);
+    setup_research_group(1, "research group name",  "research_group", "research group", 0, 1, 100, accounts);
 
     db.create<research_object>([&](research_object& r) {
         r.id = 1;
-        r.name = "Research #1";
+        r.title = "Research #1";
         r.permlink = "Research #1 permlink";
         r.research_group_id = 1;
         r.review_share_in_percent = 10;
@@ -704,13 +708,17 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         r.owned_tokens = DEIP_100_PERCENT;
     });
 
-    const std::string json_str = "{\"research_id\": 1,\"type\": 2,\"content\":\"milestone for Research #1\", \"authors\":[\"alice\"]}";
+    const std::string json_str = "{\"research_id\": 1,"
+            "\"type\": 2,"
+            "\"content\":\"milestone for Research #2\","
+            "\"authors\":[\"alice\"],"
+            "\"references\": [{\"research_reference_id\": 3}]}";
 
-    create_proposal(1, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(2, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
     op.research_group_id = 1;
-    op.proposal_id = 1;
+    op.proposal_id = 2;
     op.voter = "alice";
 
     evaluator.do_apply(op);
@@ -723,8 +731,9 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper) {
             const research_content_object& content = wrapper.get();
             return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone
-                && content.content == "milestone for Research #1" && content.authors.size() == 1
-                && content.authors.begin()[0] == "alice";
+                && content.content == "milestone for Research #2" && content.authors.size() == 1
+                && content.authors.find("alice") != content.authors.end()
+                   && content.references.size() == 1;
         }));
 }
 

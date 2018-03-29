@@ -43,7 +43,7 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
 {
     const proposal_object& new_proposal = db_impl().create<proposal_object>([&](proposal_object& proposal) {
         proposal.action = action;
-        proposal.data = json_data;
+        fc::from_string(proposal.data, json_data);
         proposal.creator = creator;
         proposal.research_group_id = research_group_id;
         proposal.creation_time = fc::time_point_sec();

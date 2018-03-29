@@ -10,11 +10,14 @@
 namespace deip {
 namespace chain {
 
+using fc::shared_string;
+
 class research_group_object : public object<research_group_object_type, research_group_object>
 {
 
 public:
-    template <typename Constructor, typename Allocator> research_group_object(Constructor&& c, allocator<Allocator> a)
+    template <typename Constructor, typename Allocator> research_group_object(Constructor&& c, allocator<Allocator> a) 
+        : name(a), description(a), permlink(a)
     {
         c(*this);
     }
@@ -22,8 +25,9 @@ public:
 public:
     research_group_id_type id;
 
-    fc::string permlink;
-    fc::string description;
+    shared_string name;
+    shared_string description;
+    shared_string permlink;
     share_type funds = 0;
     share_type quorum_percent;
     share_type total_tokens_amount;
@@ -58,7 +62,7 @@ typedef multi_index_container<research_group_object,
                                                     ordered_unique<
                                                         tag<by_permlink>, 
                                                                 member<research_group_object, 
-                                                                        fc::string, 
+                                                                        shared_string,
                                                                         &research_group_object::permlink>
                                                     >
                                                 >,
