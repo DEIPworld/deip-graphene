@@ -414,11 +414,6 @@ BOOST_AUTO_TEST_CASE(reward_research_content)
         BOOST_CHECK(db.get<research_group_object>(2).funds == util::calculate_share(reward,
                     (DEIP_REFERENCES_REWARD_SHARE_PERCENT * db.get<research_object>(2).owned_tokens) / DEIP_100_PERCENT));
 
-        auto john_test_token = db.get<expert_token_object>(0);
-        string name = john_test_token.account_name;
-        auto alextest = db.get<expert_token_object>(1);
-        auto jacktest = db.get<expert_token_object>(2);
-
         auto john_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("john", 10)); 
         auto alex_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alex", 10)); 
         auto jack_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("jack", 10));       
