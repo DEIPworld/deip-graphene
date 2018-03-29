@@ -134,8 +134,6 @@ const total_votes_object& dbs_vote::create_total_votes(const discipline_id_type&
         v_o.total_active_research_reward_weight = 0;
         v_o.total_curators_reward_weight = 0;
         v_o.total_active_curators_reward_weight = 0;
-        v_o.total_review_reward_weight = 0;
-        v_o.total_active_review_reward_weight = 0;
     });
 
     return new_total_votes;
