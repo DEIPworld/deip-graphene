@@ -2487,7 +2487,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_join_request_apply)
     {
         BOOST_TEST_MESSAGE("Testing: create_research_group_join_request_apply");
 
-        ACTOR(alice);
+        ACTORS_WITH_EXPERT_TOKENS((alice));
 
         generate_block();
 
@@ -2526,7 +2526,7 @@ BOOST_AUTO_TEST_CASE(reject_research_group_join_request_apply)
     {
         BOOST_TEST_MESSAGE("Testing: reject_research_group_join_request_apply");
 
-        ACTOR(alice);
+        ACTORS_WITH_EXPERT_TOKENS((alice));
 
         generate_block();
 
