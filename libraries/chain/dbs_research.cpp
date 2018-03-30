@@ -9,13 +9,14 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 {
 }
 
-const research_object& dbs_research::create(const string &name, const string &abstract, const string &permlink,
-                                            const research_group_id_type &research_group_id, const uint16_t review_share_in_percent, const uint16_t dropout_compensation_in_percent)
+const research_object& dbs_research::create(const string &title, const string &abstract, const string &permlink,
+                                            const research_group_id_type &research_group_id, const uint16_t review_share_in_percent, 
+                                            const uint16_t dropout_compensation_in_percent)
 {
     const auto& new_research = db_impl().create<research_object>([&](research_object& r) {
-        r.name = name;
-        r.abstract = abstract;
-        r.permlink = permlink;
+        fc::from_string(r.title, title);
+        fc::from_string(r.abstract, abstract);
+        fc::from_string(r.permlink, permlink);
         r.research_group_id = research_group_id;
         r.review_share_in_percent = review_share_in_percent;
         r.dropout_compensation_in_percent = dropout_compensation_in_percent;
@@ -69,7 +70,10 @@ const research_object& dbs_research::get_research(const research_id_type& id) co
 
 const research_object& dbs_research::get_research_by_permlink(const string& permlink) const
 {
-    return db_impl().get<research_object, by_permlink>(permlink);
+    const auto& idx = db_impl().get_index<research_index>().indices().get<by_permlink>();
+    auto itr = idx.find(permlink, fc::strcmp_less());
+    FC_ASSERT(itr != idx.end(), "Research by permlink ${n} is not found", ("n", permlink));
+    return *itr;
 }
 
 void dbs_research::check_research_existence(const research_id_type& id) const

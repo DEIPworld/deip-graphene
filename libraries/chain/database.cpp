@@ -1324,8 +1324,11 @@ share_type database::reward_research_content(const research_content_id_type& res
     if (research_content.type == research_content_type::final_result)
         accounts_to_reward_with_expertise = get_all_research_group_token_account_names(research.research_group_id);
 
-    else if (research_content.type != research_content_type::final_result)
-        accounts_to_reward_with_expertise = research_content.authors;
+    else if (research_content.type != research_content_type::final_result) {
+        for (auto author : research_content.authors) {
+            accounts_to_reward_with_expertise.insert(author);
+        }
+    }
 
     reward_research_group_members_with_expertise(research.research_group_id, discipline_id, accounts_to_reward_with_expertise, research_group_expertise_share);
     used_reward += reward_research_token_holders(research, discipline_id, token_holders_share);
@@ -1387,7 +1390,7 @@ share_type database::reward_references(const research_content_id_type& research_
     share_type total_votes_amount = 0;
     share_type used_reward = 0;
 
-    for (auto research_reference_data : research_content.research_references)
+    for (auto research_reference_data : research_content.references)
     {
         const auto& idx = get_index<total_votes_index>().indicies().get<by_research_and_discipline>();
         auto total_votes_itr = idx.find(std::make_tuple(research_reference_data.research_reference_id, discipline_id));
@@ -1398,8 +1401,12 @@ share_type database::reward_references(const research_content_id_type& research_
 
             accounts_to_reward_with_expertise = get_all_research_group_token_account_names(research.research_group_id);
         }
-        else if (research_reference_data.research_content_reference_id.valid())
-            accounts_to_reward_with_expertise = get<research_content_object>(*research_reference_data.research_content_reference_id).authors;
+        else if (research_reference_data.research_content_reference_id.valid()) {
+            auto authors = get<research_content_object>(*research_reference_data.research_content_reference_id).authors;
+            for (auto author : authors) {
+                accounts_to_reward_with_expertise.insert(author);
+            }
+        }
 
         research_votes_by_id[research_reference_data.research_reference_id] = std::make_pair(total_votes_itr->total_research_reward_weight, accounts_to_reward_with_expertise);
     }

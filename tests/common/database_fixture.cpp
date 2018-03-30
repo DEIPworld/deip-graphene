@@ -403,7 +403,8 @@ const witness_object& database_fixture::witness_create(const string& owner,
 }
 
 const research_group_object&
-database_fixture::research_group_create(const uint32_t& id,
+database_fixture::research_group_create(const int64_t& id,
+                                        const string& name,
                                         const string& permlink,
                                         const string& description,
                                         const share_type funds,
@@ -413,8 +414,9 @@ database_fixture::research_group_create(const uint32_t& id,
     const research_group_object& new_research_group
         = db.create<research_group_object>([&](research_group_object& rg) {
               rg.id = id;
-              rg.permlink = permlink;
-              rg.description = description;            
+              fc::from_string(rg.name, name);
+              fc::from_string(rg.permlink, permlink);
+              fc::from_string(rg.description, description);
               rg.funds = funds;
               rg.quorum_percent = quorum_percent;
               rg.total_tokens_amount = tokens_amount;
@@ -424,6 +426,7 @@ database_fixture::research_group_create(const uint32_t& id,
 }
 
 const research_group_object& database_fixture::research_group_create_by_operation(const account_name_type& creator,
+                                                                                  const string& name,
                                                                                   const string& permlink,
                                                                                   const string& description,
                                                                                   const uint32_t quorum_percent,
@@ -435,9 +438,11 @@ const research_group_object& database_fixture::research_group_create_by_operatio
         private_key_type priv_key = generate_private_key(cr);
 
         create_research_group_operation op;
-        op.creator = creator;
+        op.name = name;
         op.permlink = permlink;
-        op.desciption = description;
+        op.description = description;
+
+        op.creator = creator;
         op.quorum_percent = quorum_percent;
         op.tokens_amount = tokens_amount;
 
@@ -467,7 +472,8 @@ const research_group_token_object& database_fixture::research_group_token_create
     return new_research_group_token;
 }
 
-const research_group_object& database_fixture::setup_research_group(const uint32_t &id,
+const research_group_object& database_fixture::setup_research_group(const int64_t &id,
+                                                                    const string &name,
                                                                     const string &permlink,
                                                                     const string &description,
                                                                     const share_type funds,
@@ -475,7 +481,7 @@ const research_group_object& database_fixture::setup_research_group(const uint32
                                                                     const share_type tokens_amount,
                                                                     const vector<account_name_type> &accounts)
 {
-    const auto& research_group = research_group_create(id, permlink, description, funds, quorum_percent, tokens_amount);
+    const auto& research_group = research_group_create(id, name, permlink, description, funds, quorum_percent, tokens_amount);
 
     for (const auto& account : accounts)
     {
@@ -485,7 +491,7 @@ const research_group_object& database_fixture::setup_research_group(const uint32
     return research_group;
 }
 
-const proposal_object& database_fixture::create_proposal(const uint32_t id, const dbs_proposal::action_t action,
+const proposal_object& database_fixture::create_proposal(const int64_t id, const dbs_proposal::action_t action,
                                        const std::string json_data,
                                        const account_name_type& creator,
                                        const research_group_id_type& research_group_id,
@@ -495,7 +501,7 @@ const proposal_object& database_fixture::create_proposal(const uint32_t id, cons
     const proposal_object& new_proposal = db.create<proposal_object>([&](proposal_object& proposal) {
         proposal.action = action;
         proposal.id = id;
-        proposal.data = json_data;
+        fc::from_string(proposal.data, json_data);
         proposal.creator = creator;
         proposal.research_group_id = research_group_id;
         proposal.creation_time = fc::time_point_sec();
@@ -538,8 +544,8 @@ void database_fixture::create_proposal_by_operation(const account_name_type& cre
     FC_CAPTURE_AND_RETHROW((creator))
 }
 
-const research_object& database_fixture::research_create(const uint32_t id,
-                                                         const string &name,
+const research_object& database_fixture::research_create(const int64_t id,
+                                                         const string &title,
                                                          const string &abstract,
                                                          const string &permlink,
                                                          const research_group_id_type &research_group_id,
@@ -548,9 +554,9 @@ const research_object& database_fixture::research_create(const uint32_t id,
 {
     const auto& new_research = db.create<research_object>([&](research_object& r) {
         r.id = id;
-        r.name = name;
-        r.abstract = abstract;
-        r.permlink = permlink;
+        fc::from_string(r.title, title);
+        fc::from_string(r.abstract, abstract);
+        fc::from_string(r.permlink, permlink);
         r.research_group_id = research_group_id;
         r.review_share_in_percent = review_share_in_percent;
         r.dropout_compensation_in_percent = dropout_compensation_in_percent;
@@ -563,7 +569,7 @@ const research_object& database_fixture::research_create(const uint32_t id,
     return new_research;
 }
 
-const expert_token_object& database_fixture::expert_token_create(const uint32_t id,
+const expert_token_object& database_fixture::expert_token_create(const int64_t id,
                                                                  const account_name_type& account,
                                                                  const discipline_id_type& discipline_id,
                                                                  const share_type& amount)
@@ -577,7 +583,31 @@ const expert_token_object& database_fixture::expert_token_create(const uint32_t 
     return expert_token;
 }
 
-const research_group_invite_object& database_fixture::research_group_invite_create(const uint32_t id,
+void database_fixture::create_disciplines()
+{
+    db.create<discipline_object>([&](discipline_object& d) {
+        d.id = 1;
+        d.name = "Physics";
+        d.parent_id = 0;
+        d.votes_in_last_ten_weeks = 100;
+    });
+
+    db.create<discipline_object>([&](discipline_object& d) {
+        d.id = 2;
+        d.name = "Mathematics";
+        d.parent_id = 0;
+        d.votes_in_last_ten_weeks = 150;
+    });
+
+    db.create<discipline_object>([&](discipline_object& d) {
+        d.id = 3;
+        d.name = "Cryptography";
+        d.parent_id = 1;
+        d.votes_in_last_ten_weeks = 30;
+    });
+}
+
+const research_group_invite_object& database_fixture::research_group_invite_create(const int64_t id,
                                                                                    const account_name_type& account_name,
                                                                                    const research_group_id_type& research_group_id,
                                                                                    const share_type research_group_token_amount)

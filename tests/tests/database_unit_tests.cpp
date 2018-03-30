@@ -26,7 +26,7 @@ public:
         db.create<research_object>([&](research_object& d) {
             d.id = 1;
             d.research_group_id = 1;
-            d.name = "name1";
+            d.title = "name1";
             d.abstract = "abstract1";
             d.permlink = "permlink1";
             d.owned_tokens = 100 * DEIP_1_PERCENT;
@@ -36,7 +36,7 @@ public:
         db.create<research_object>([&](research_object& d) {
             d.id = 2;
             d.research_group_id = 2;
-            d.name = "name2";
+            d.title = "name2";
             d.abstract = "abstract2";
             d.permlink = "permlink2";
             d.owned_tokens = 50 * DEIP_1_PERCENT;
@@ -111,27 +111,23 @@ public:
     {
 
         db.create<research_content_object>([&](research_content_object& d) {
-            research_references_data data;
+            research_reference_data data;
             data.research_reference_id = 2;
-            std::vector<research_references_data> research_references;
-            research_references.push_back(data);
             d.id = 1;
             d.research_id = 1;
             d.type = review;
             d.authors = {"alice"};
-            d.research_references = research_references;
+            d.references.push_back(data);
         });
 
         db.create<research_content_object>([&](research_content_object& d) {
-            research_references_data data;
+            research_reference_data data;
             data.research_reference_id = 1;
-            std::vector<research_references_data> research_references;
-            research_references.push_back(data);
             d.id = 2;
             d.research_id = 2;
             d.type = review;
             d.authors = {"alex"};
-            d.research_references = research_references;
+            d.references.push_back(data);
         });
     }
 
@@ -245,15 +241,13 @@ public:
         });
 
         db.create<research_content_object>([&](research_content_object& d) {
-            research_references_data data;
+            research_reference_data data;
             data.research_reference_id = 1;
-            std::vector<research_references_data> research_references;
-            research_references.push_back(data);
             d.id = 3;
             d.research_id = 2;
             d.type = final_result;
             d.authors = {"jack"};
-            d.research_references = research_references;
+            d.references.push_back(data);
         });
     }
 

@@ -363,9 +363,9 @@ struct research_api_obj
     research_api_obj(const chain::research_object& r)
         : id(r.id._id)
         ,  research_group_id(r.research_group_id._id)
-        ,  name(r.name)
-        ,  abstract(r.abstract)
-        ,  permlink(r.permlink)
+        ,  title(fc::to_string(r.title))
+        ,  abstract(fc::to_string(r.abstract))
+        ,  permlink(fc::to_string(r.permlink))
         ,  is_finished(r.is_finished)
         ,  owned_tokens(r.owned_tokens)
         ,  review_share_in_percent(r.review_share_in_percent)
@@ -380,7 +380,7 @@ struct research_api_obj
 
     int64_t id;
     int64_t research_group_id;
-    std::string name;
+    std::string title;
     std::string abstract;
     std::string permlink;
     bool is_finished;
@@ -396,10 +396,21 @@ struct research_content_api_obj
         : id(rc.id._id)
         ,  research_id(rc.research_id._id)
         ,  content_type(rc.type)
-        ,  authors(rc.authors)        
-        ,  content(rc.content)
+        ,  authors(rc.authors.begin(), rc.authors.end())
+        ,  title(fc::to_string(rc.title))        
+        ,  content(fc::to_string(rc.content))
         ,  created_at(rc.created_at)
-    {}
+    {
+        for (auto reference : rc.references) {
+            auto content_id = reference.research_content_reference_id.valid() ? (*reference.research_content_reference_id)._id : -1;
+            references.push_back(std::make_pair(reference.research_reference_id._id, content_id));
+        }
+
+        external_references.insert(
+            rc.external_references.begin(), 
+            rc.external_references.end()
+        );
+    }
 
     // because fc::variant require for temporary object
     research_content_api_obj()
@@ -409,9 +420,13 @@ struct research_content_api_obj
     int64_t id;
     int64_t research_id;
     research_content_type content_type;
-    flat_set<account_name_type> authors;
+    std::set<account_name_type> authors;
+    std::string title;
     std::string content;
-    time_point_sec created_at;
+    fc::time_point_sec created_at;
+
+    std::set<string> external_references;
+    std::vector<std::pair<int64_t, int64_t>> references;
 };
 
 struct expert_token_api_obj
@@ -442,7 +457,7 @@ struct proposal_api_obj
         ,  creation_time(p.creation_time)
         ,  expiration_time(p.expiration_time)
         ,  creator(p.creator)
-        ,  data(p.data)
+        ,  data(fc::to_string(p.data))
         ,  quorum_percent(p.quorum_percent.value)
         ,  current_votes_amount(p.current_votes_amount)
         ,  voted_accounts(p.voted_accounts)
@@ -457,7 +472,7 @@ struct proposal_api_obj
     int8_t action;
     fc::time_point_sec creation_time;
     fc::time_point_sec expiration_time;
-    string creator;
+    std::string creator;
     std::string data;
     uint16_t quorum_percent;
     share_type current_votes_amount;
@@ -513,13 +528,13 @@ struct research_group_api_obj
 {
     research_group_api_obj(const chain::research_group_object& rg)
         : id(rg.id._id)
-        ,  permlink(rg.permlink)
-        ,  description(rg.description)
+        ,  name(fc::to_string(rg.name))
+        ,  permlink(fc::to_string(rg.permlink))
+        ,  description(fc::to_string(rg.description))
         ,  quorum_percent(rg.quorum_percent.value)
         ,  total_tokens_amount(rg.total_tokens_amount.value)
     {
     }
-    // {}
 
     // because fc::variant require for temporary object
     research_group_api_obj()
@@ -527,8 +542,9 @@ struct research_group_api_obj
     }
 
     int64_t id;
-    string permlink;
-    string description;
+    std::string name;
+    std::string permlink;
+    std::string description;
     uint32_t quorum_percent;
     uint32_t total_tokens_amount;
 };
@@ -701,7 +717,7 @@ FC_REFLECT( deip::app::discipline_api_obj,
 FC_REFLECT( deip::app::research_api_obj,
             (id)
             (research_group_id)
-            (name)
+            (title)
             (abstract)
             (permlink)
             (is_finished)
@@ -715,9 +731,12 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (id)
             (research_id)
             (content_type)
+            (title)
             (content)
             (authors)
             (created_at)
+            (references)
+            (external_references)
           )
 
 FC_REFLECT( deip::app::expert_token_api_obj,
@@ -758,6 +777,7 @@ FC_REFLECT( deip::app::research_group_token_api_obj,
 
 FC_REFLECT( deip::app::research_group_api_obj,
             (id)
+            (name)
             (permlink)
             (description)
             (quorum_percent)
