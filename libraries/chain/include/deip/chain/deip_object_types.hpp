@@ -69,7 +69,7 @@ enum object_type
     research_token_object_type,
     research_token_sale_object_type,
     research_token_sale_contribution_object_type,
-    research_group_join_request_object_type
+    research_group_join_request_object_type,
     research_group_invite_object_type,
     review_object_type,
     review_vote_object_type

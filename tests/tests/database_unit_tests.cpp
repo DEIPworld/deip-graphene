@@ -115,7 +115,7 @@ public:
             data.research_reference_id = 2;
             d.id = 1;
             d.research_id = 1;
-            d.type = review;
+            d.type = milestone;
             d.authors = {"alice"};
             d.references.push_back(data);
         });
@@ -125,7 +125,7 @@ public:
             data.research_reference_id = 1;
             d.id = 2;
             d.research_id = 2;
-            d.type = review;
+            d.type = milestone;
             d.authors = {"alex"};
             d.references.push_back(data);
         });
@@ -170,7 +170,6 @@ public:
             d.research_content_id = 1;
             d.total_weight = 40;
             d.total_curators_reward_weight = 40;
-            d.total_review_reward_weight = 40;
             d.total_research_reward_weight = 40;
             d.total_active_research_reward_weight = 40;
         });
@@ -182,7 +181,6 @@ public:
             d.research_content_id = 2;
             d.total_weight = 60;
             d.total_curators_reward_weight = 60;
-            d.total_review_reward_weight = 60;
             d.total_research_reward_weight = 60;
             d.total_active_research_reward_weight = 60;
         });
@@ -231,7 +229,6 @@ public:
             d.research_content_id = 3;
             d.total_weight = 50;
             d.total_curators_reward_weight = 50;
-            d.total_review_reward_weight = 50;
             d.total_research_reward_weight = 50;
             d.total_active_research_reward_weight = 50;
         });

@@ -116,16 +116,15 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         make_research_review_operation op;
 
         std::pair<int64_t, int64_t> data;
-        data.first = 2;
+        data.first = 1;
 
-        std::vector<std::pair<int64_t, int64_t>> research_references;
-        research_references.push_back(data);
+        std::vector<std::pair<int64_t, int64_t>> references;
+        references.push_back(data);
 
         op.author = "alice";
         op.research_id = 1;
-        op.title = "test";
         op.content = "test";
-        op.references = research_references;
+        op.references = references;
         op.external_references = {"one", "two", "three"};
 
         signed_transaction tx;
@@ -154,9 +153,9 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         op.author = "alice";
         op.research_id = 1;
         op.content = "test";
-        op.research_references = {1};
+        op.references = references;
         op.is_positive = true;
-        op.research_external_references = {"one", "two", "three"};
+        op.external_references = {"one", "two", "three"};
 
         tx.operations.clear();
         tx.signatures.clear();

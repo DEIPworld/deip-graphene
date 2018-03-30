@@ -59,9 +59,9 @@ public:
 
             rc.id = 1;
             rc.research_id = 1;
-            rc.type = research_content_type::review;
-            rc.title = "title for review for Research #1";
-            rc.content = "review for Research #1";
+            rc.type = research_content_type::milestone;
+            rc.title = "title for milestone for Research #1";
+            rc.content = "milestone for Research #1";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
             rc.references.push_back(data);
@@ -181,9 +181,9 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                 authors.push_back(author);
 
             return content.id == 1 && content.research_id == 1 && 
-                    content.type == research_content_type::review &&
-                    content.title == "title for review for Research #1" && 
-                    content.content == "review for Research #1" &&
+                    content.type == research_content_type::milestone &&
+                    content.title == "title for milestone for Research #1" &&
+                    content.content == "milestone for Research #1" &&
                     content.authors.size() == 1 && 
                     authors[0] == "alice" &&
                     content.references.size() == 1 &&
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
     try
     {
         create_researches_with_content();
-        auto contents = data_service.get_content_by_research_id_and_content_type(1, research_content_type::review);
+        auto contents = data_service.get_content_by_research_id_and_content_type(1, research_content_type::milestone);
 
         BOOST_CHECK(contents.size() == 1);
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
                 authors.push_back(author);
 
             return content.id == 1 && content.research_id == 1 && 
-                    content.type == research_content_type::review && 
+                    content.type == research_content_type::milestone &&
                     content.title == "title for review for Research #1" &&
                     content.content == "review for Research #1" &&
                     content.authors.size() == 1 && 
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE(get_no_content_for_non_existing_research_by_id_and_content_
     try
     {
         create_researches_with_content();
-        auto contents = data_service.get_content_by_research_id_and_content_type(3, research_content_type::review);
+        auto contents = data_service.get_content_by_research_id_and_content_type(3, research_content_type::milestone);
         BOOST_CHECK(contents.size() == 0);
     }
     FC_LOG_AND_RETHROW()
