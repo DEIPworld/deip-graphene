@@ -56,6 +56,9 @@ public:
     share_type curation_rewards = 0;
     share_type posting_rewards = 0;
 
+    share_type total_expert_tokens_amount = 0;
+    share_type total_common_tokens_amount = 0;
+
     asset vesting_shares =              asset(0, VESTS_SYMBOL); ///< total vesting shares held by this account, controls its voting power
     asset delegated_vesting_shares =    asset(0, VESTS_SYMBOL);
     asset received_vesting_shares =     asset(0, VESTS_SYMBOL);
@@ -513,6 +516,8 @@ FC_REFLECT( deip::chain::account_object,
              (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)
+             (total_expert_tokens_amount)
+             (total_common_tokens_amount)
              (proxied_vsf_votes)(witnesses_voted_for)
              (last_post)(last_root_post)(post_bandwidth)
           )
