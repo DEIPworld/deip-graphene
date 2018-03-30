@@ -76,22 +76,6 @@ struct get_impacted_account_visitor
         _impacted.insert(op.to);
     }
 
-    void operator()(const transfer_to_vesting_operation& op)
-    {
-        _impacted.insert(op.from);
-
-        if (op.to != account_name_type() && op.to != op.from)
-        {
-            _impacted.insert(op.to);
-        }
-    }
-
-    void operator()(const set_withdraw_vesting_route_operation& op)
-    {
-        _impacted.insert(op.from_account);
-        _impacted.insert(op.to_account);
-    }
-
     void operator()(const account_witness_vote_operation& op)
     {
         _impacted.insert(op.account);
@@ -120,33 +104,15 @@ struct get_impacted_account_visitor
         _impacted.insert(op.account_to_recover);
     }
 
-    void operator()(const delegate_vesting_shares_operation& op)
-    {
-        _impacted.insert(op.delegator);
-        _impacted.insert(op.delegatee);
-    }
-
     void operator()(const create_grant_operation& op)
     {
         _impacted.insert(op.owner);
     }
 
     // virtual operations
-
-    void operator()(const fill_vesting_withdraw_operation& op)
-    {
-        _impacted.insert(op.from_account);
-        _impacted.insert(op.to_account);
-    }
-
     void operator()(const shutdown_witness_operation& op)
     {
         _impacted.insert(op.owner);
-    }
-
-    void operator()(const return_vesting_delegation_operation& op)
-    {
-        _impacted.insert(op.account);
     }
 
         void operator()(const producer_reward_operation& op)

@@ -764,8 +764,6 @@ BOOST_FIXTURE_TEST_CASE( hardfork_test, database_fixture )
       ahplugin->plugin_startup();
       db_plugin->plugin_startup();
 
-      vest( "initdelegate", 10000 );
-
       // Fill up the rest of the required miners
       for( int i = DEIP_NUM_INIT_MINERS; i < DEIP_MAX_WITNESSES; i++ )
       {

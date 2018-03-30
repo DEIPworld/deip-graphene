@@ -182,10 +182,6 @@ public:
 
     optional<account_bandwidth_api_obj> get_account_bandwidth(string account, witness::bandwidth_type type) const;
 
-    vector<vesting_delegation_api_obj> get_vesting_delegations(string account, string from, uint32_t limit = 100) const;
-    vector<vesting_delegation_expiration_api_obj> get_expiring_vesting_delegations(
-        string account, time_point_sec from, uint32_t limit = 100) const;
-
     ///////////////
     // Witnesses //
     ///////////////
@@ -427,8 +423,6 @@ FC_API(deip::app::database_api,
    (get_recovery_request)
    (get_withdraw_routes)
    (get_account_bandwidth)
-   (get_vesting_delegations)
-   (get_expiring_vesting_delegations)
 
    // Authority / validation
    (get_transaction_hex)

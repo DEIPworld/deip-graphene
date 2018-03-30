@@ -954,128 +954,6 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when) const
     return (when - first_slot_time).to_seconds() / DEIP_BLOCK_INTERVAL + 1;
 }
 
-void database::process_vesting_withdrawals()
-{
-    dbs_account& account_service = obtain_service<dbs_account>();
-
-    const auto& widx = get_index<account_index>().indices().get<by_next_vesting_withdrawal>();
-    const auto& didx = get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
-    auto current = widx.begin();
-
-    const auto& cprops = get_dynamic_global_properties();
-
-    while (current != widx.end() && current->next_vesting_withdrawal <= head_block_time())
-    {
-        const auto& from_account = *current;
-        ++current;
-
-        /**
-         *  Let T = total tokens in vesting fund
-         *  Let V = total vesting shares
-         *  Let v = total vesting shares being cashed out
-         *
-         *  The user may withdraw  vT / V tokens
-         */
-        share_type to_withdraw;
-        if (from_account.to_withdraw - from_account.withdrawn < from_account.vesting_withdraw_rate.amount)
-            to_withdraw = std::min(from_account.vesting_shares.amount,
-                                   from_account.to_withdraw % from_account.vesting_withdraw_rate.amount)
-                              .value;
-        else
-            to_withdraw = std::min(from_account.vesting_shares.amount, from_account.vesting_withdraw_rate.amount).value;
-
-        share_type vests_deposited_as_deip = 0;
-        share_type vests_deposited_as_vests = 0;
-        asset total_deip_converted = asset(0, DEIP_SYMBOL);
-
-        // Do two passes, the first for vests, the second for deip. Try to maintain as much accuracy for vests as
-        // possible.
-        for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
-             itr != didx.end() && itr->from_account == from_account.id; ++itr)
-        {
-            if (itr->auto_vest)
-            {
-                share_type to_deposit
-                    = ((fc::uint128_t(to_withdraw.value) * itr->percent) / DEIP_100_PERCENT).to_uint64();
-                vests_deposited_as_vests += to_deposit;
-
-                if (to_deposit > 0)
-                {
-                    const auto& to_account = get(itr->to_account);
-
-                    modify(to_account, [&](account_object& a) { a.vesting_shares.amount += to_deposit; });
-
-                    account_service.adjust_proxied_witness_votes(to_account, to_deposit);
-
-                    push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name,
-                                                                           asset(to_deposit, VESTS_SYMBOL),
-                                                                           asset(to_deposit, VESTS_SYMBOL)));
-                }
-            }
-        }
-
-        for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
-             itr != didx.end() && itr->from_account == from_account.id; ++itr)
-        {
-            if (!itr->auto_vest)
-            {
-                const auto& to_account = get(itr->to_account);
-
-                share_type to_deposit
-                    = ((fc::uint128_t(to_withdraw.value) * itr->percent) / DEIP_100_PERCENT).to_uint64();
-                vests_deposited_as_deip += to_deposit;
-                auto converted_deip = asset(to_deposit, VESTS_SYMBOL) * cprops.get_vesting_share_price();
-                total_deip_converted += converted_deip;
-
-                if (to_deposit > 0)
-                {
-                    modify(to_account, [&](account_object& a) { a.balance += converted_deip; });
-
-                    modify(cprops, [&](dynamic_global_property_object& o) {
-                        o.total_vesting_fund_deip -= converted_deip;
-                        o.total_vesting_shares.amount -= to_deposit;
-                    });
-
-                    push_virtual_operation(fill_vesting_withdraw_operation(
-                        from_account.name, to_account.name, asset(to_deposit, VESTS_SYMBOL), converted_deip));
-                }
-            }
-        }
-
-        share_type to_convert = to_withdraw - vests_deposited_as_deip - vests_deposited_as_vests;
-        FC_ASSERT(to_convert >= 0, "Deposited more vests than were supposed to be withdrawn");
-
-        auto converted_deip = asset(to_convert, VESTS_SYMBOL) * cprops.get_vesting_share_price();
-
-        modify(from_account, [&](account_object& a) {
-            a.vesting_shares.amount -= to_withdraw;
-            a.balance += converted_deip;
-            a.withdrawn += to_withdraw;
-
-            if (a.withdrawn >= a.to_withdraw || a.vesting_shares.amount == 0)
-            {
-                a.vesting_withdraw_rate.amount = 0;
-                a.next_vesting_withdrawal = fc::time_point_sec::maximum();
-            }
-            else
-            {
-                a.next_vesting_withdrawal += fc::seconds(DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS);
-            }
-        });
-
-        modify(cprops, [&](dynamic_global_property_object& o) {
-            o.total_vesting_fund_deip -= converted_deip;
-            o.total_vesting_shares.amount -= to_convert;
-        });
-
-        if (to_withdraw > 0)
-            account_service.adjust_proxied_witness_votes(from_account, -to_withdraw);
-
-        push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name,
-                                                               asset(to_withdraw, VESTS_SYMBOL), converted_deip));
-    }
-}
-
 /**
  *  Overall the network has an inflation rate of 102% of virtual deip per year
  *  90% of inflation is directed to vesting shares
@@ -1131,8 +1009,8 @@ void database::process_funds()
         p.current_supply += asset(new_deip, DEIP_SYMBOL);
     });
 
-    const auto& producer_reward
-        = account_service.create_vesting(get_account(cwit.owner), asset(witness_reward, DEIP_SYMBOL));
+    // const auto& producer_reward
+    //     = account_service.create_vesting(get_account(cwit.owner), asset(witness_reward, DEIP_SYMBOL));
     push_virtual_operation(producer_reward_operation(cwit.owner, producer_reward));
 }
 
@@ -1708,9 +1586,6 @@ void database::initialize_evaluators()
 {
     _my->_evaluator_registry.register_evaluator<vote_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_evaluator>();
-    _my->_evaluator_registry.register_evaluator<transfer_to_vesting_evaluator>();
-    _my->_evaluator_registry.register_evaluator<withdraw_vesting_evaluator>();
-    _my->_evaluator_registry.register_evaluator<set_withdraw_vesting_route_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_create_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<witness_update_evaluator>();
@@ -1719,8 +1594,6 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator>();
     _my->_evaluator_registry.register_evaluator<recover_account_evaluator>();
     _my->_evaluator_registry.register_evaluator<change_recovery_account_evaluator>();
-    _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
-    _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<make_research_review_evaluator>();
@@ -1761,13 +1634,10 @@ void database::initialize_indexes()
     add_index<operation_index>();
     add_index<account_history_index>();
     add_index<hardfork_property_index>();
-    add_index<withdraw_vesting_route_index>();
     add_index<owner_authority_history_index>();
     add_index<account_recovery_request_index>();
     add_index<change_recovery_account_request_index>();
     add_index<reward_fund_index>();
-    add_index<vesting_delegation_index>();
-    add_index<vesting_delegation_expiration_index>();
     add_index<grant_index>();
     add_index<proposal_index>();
     add_index<proposal_vote_index>();
@@ -1994,17 +1864,11 @@ void database::_apply_block(const signed_block& next_block)
 
         create_block_summary(next_block);
         clear_expired_transactions();
-        clear_expired_delegations();
-        clear_expired_proposals();
-        clear_expired_invites();
-        clear_expired_join_requests();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
 
         process_funds();
-
-        process_vesting_withdrawals();
 
         account_recovery_processing();
 
@@ -2375,23 +2239,6 @@ void database::clear_expired_transactions()
         remove(*dedupe_index.begin());
 }
 
-void database::clear_expired_delegations()
-{
-    auto now = head_block_time();
-    const auto& delegations_by_exp = get_index<vesting_delegation_expiration_index, by_expiration>();
-    auto itr = delegations_by_exp.begin();
-    while (itr != delegations_by_exp.end() && itr->expiration < now)
-    {
-        modify(get_account(itr->delegator),
-               [&](account_object& a) { a.delegated_vesting_shares -= itr->vesting_shares; });
-
-        push_virtual_operation(return_vesting_delegation_operation(itr->delegator, itr->vesting_shares));
-
-        remove(*itr);
-        itr = delegations_by_exp.begin();
-    }
-}
-
 void database::clear_expired_proposals()
 {
     auto& proposal_service = obtain_service<dbs_proposal>();
@@ -2438,7 +2285,6 @@ void database::adjust_supply(const asset& delta, bool adjust_vesting)
         {
             asset new_vesting((adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, DEIP_SYMBOL);
             props.current_supply += delta + new_vesting;
-            props.total_vesting_fund_deip += new_vesting;
             assert(props.current_supply.amount.value >= 0);
             break;
         }

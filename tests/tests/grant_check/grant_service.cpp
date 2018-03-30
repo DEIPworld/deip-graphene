@@ -130,7 +130,7 @@ DEIP_TEST_CASE(owned_grant_creation_asserts)
 
     BOOST_CHECK_THROW(grant_service.create_grant(fake, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
 
-    asset wrong_currency_balance(GRANT_BALANCE_DEFAULT, VESTS_SYMBOL);
+    // asset wrong_currency_balance(GRANT_BALANCE_DEFAULT, VESTS_SYMBOL);
 
     BOOST_CHECK_THROW(grant_service.create_grant(alice, wrong_currency_balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
 
@@ -142,7 +142,7 @@ DEIP_TEST_CASE(owned_grant_creation_asserts)
 
     BOOST_CHECK_THROW(grant_service.create_grant(alice, wrong_amount_balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
 
-    asset too_large_balance(ALICE_ACCOUNT_GRANT * 2, VESTS_SYMBOL);
+    // asset too_large_balance(ALICE_ACCOUNT_GRANT * 2, VESTS_SYMBOL);
 
     BOOST_CHECK_THROW(grant_service.create_grant(alice, too_large_balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
 }

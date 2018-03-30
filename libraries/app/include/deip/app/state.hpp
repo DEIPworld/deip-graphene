@@ -52,7 +52,7 @@ struct extended_account : public account_api_obj
     {
     }
 
-    map<uint64_t, applied_operation> transfer_history; /// transfer to/from vesting
+    // map<uint64_t, applied_operation> transfer_history; /// transfer to/from vesting
     map<uint64_t, applied_operation> post_history;
     map<uint64_t, applied_operation> vote_history;
     map<uint64_t, applied_operation> other_history;
@@ -94,7 +94,7 @@ struct state
 
 FC_REFLECT_DERIVED( deip::app::extended_account,
                    (deip::app::account_api_obj),
-                   (transfer_history)(post_history)(vote_history)(other_history)(witness_votes)(recent_replies) )
+                   /*(transfer_history)*/(post_history)(vote_history)(other_history)(witness_votes)(recent_replies) )
 
 
 FC_REFLECT( deip::app::vote_state, (voter)(weight)(rshares)(percent)(time) )

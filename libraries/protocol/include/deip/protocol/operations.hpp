@@ -14,8 +14,6 @@ namespace deip {
                 vote_operation,
 
                 transfer_operation,
-                transfer_to_vesting_operation,
-                withdraw_vesting_operation,
 
                 account_create_operation,
                 account_update_operation,
@@ -24,13 +22,10 @@ namespace deip {
                 account_witness_vote_operation,
                 account_witness_proxy_operation,
 
-                set_withdraw_vesting_route_operation,
-
                 request_account_recovery_operation,
                 recover_account_operation,
                 change_recovery_account_operation,
 
-                delegate_vesting_shares_operation,
                 account_create_with_delegation_operation,
 
                 // DEIP native operations
@@ -46,10 +41,8 @@ namespace deip {
                 reject_research_group_join_request_operation,
 
                 // virtual operations
-                fill_vesting_withdraw_operation,
                 shutdown_witness_operation,
                 hardfork_operation,
-                return_vesting_delegation_operation,
                 producer_reward_operation>
                 operation;
 

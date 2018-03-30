@@ -17,10 +17,6 @@ struct is_market_op_visitor
     {
         return true;
     }
-    bool operator()(const transfer_to_vesting_operation&) const
-    {
-        return true;
-    }
 };
 
 bool is_market_operation(const operation& op)

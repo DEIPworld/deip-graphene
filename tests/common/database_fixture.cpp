@@ -108,7 +108,6 @@ clean_database_fixture::clean_database_fixture()
 
         // ahplugin->plugin_startup();
         db_plugin->plugin_startup();
-        vest(TEST_INIT_DELEGATE_NAME, 10000);
 
         // Fill up the rest of the required miners
         for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
@@ -179,8 +178,6 @@ void clean_database_fixture::resize_shared_mem(uint64_t size)
     generate_block();
     db.set_hardfork(DEIP_NUM_HARDFORKS);
     generate_block();
-
-    vest(TEST_INIT_DELEGATE_NAME, 10000);
 
     // Fill up the rest of the required miners
     for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
@@ -681,40 +678,6 @@ void database_fixture::transfer(const string& from, const string& to, const shar
         trx.operations.clear();
     }
     FC_CAPTURE_AND_RETHROW((from)(to)(amount))
-}
-
-void database_fixture::vest(const string& from, const share_type& amount)
-{
-    try
-    {
-        transfer_to_vesting_operation op;
-        op.from = from;
-        op.to = "";
-        op.amount = asset(amount, DEIP_SYMBOL);
-
-        trx.operations.push_back(op);
-        trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        trx.validate();
-        db.push_transaction(trx, ~0);
-        trx.operations.clear();
-    }
-    FC_CAPTURE_AND_RETHROW((from)(amount))
-}
-
-void database_fixture::vest(const string& account, const asset& amount)
-{
-    if (amount.symbol != DEIP_SYMBOL)
-        return;
-
-    db_plugin->debug_update(
-        [=](database& db) {
-            db.modify(db.get_dynamic_global_properties(),
-                      [&](dynamic_global_property_object& gpo) { gpo.current_supply += amount; });
-
-            dbs_account& account_service = db.obtain_service<dbs_account>();
-            account_service.create_vesting(db.get_account(account), amount);
-        },
-        default_skip);
 }
 
 void database_fixture::create_all_discipline_expert_tokens_for_account(const string& account)

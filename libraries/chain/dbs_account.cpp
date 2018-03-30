@@ -90,73 +90,6 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         auth.last_owner_update = fc::time_point_sec::min();
     });
 
-    if (fee.amount > 0)
-        create_vesting(new_account, fee);
-
-    return new_account;
-}
-
-const account_object& dbs_account::create_account_with_delegation(const account_name_type& new_account_name,
-                                                                  const account_name_type& creator_name,
-                                                                  const public_key_type& memo_key,
-                                                                  const string& json_metadata,
-                                                                  const authority& owner,
-                                                                  const authority& active,
-                                                                  const authority& posting,
-                                                                  const asset& fee,
-                                                                  const asset& delegation,
-                                                                  const optional<time_point_sec>& now)
-{
-    FC_ASSERT(fee.symbol == DEIP_SYMBOL, "invalid asset type (symbol)");
-    FC_ASSERT(delegation.symbol == VESTS_SYMBOL, "invalid asset type (symbol)");
-
-    const auto& props = db_impl().get_dynamic_global_properties();
-    const auto& creator = get_account(creator_name);
-
-    db_impl().modify(creator, [&](account_object& c) {
-        c.balance -= fee;
-        c.delegated_vesting_shares += delegation;
-    });
-
-    const auto& new_account = db_impl().create<account_object>([&](account_object& acc) {
-        acc.name = new_account_name;
-        acc.memo_key = memo_key;
-        acc.created = props.time;
-        acc.last_vote_time = props.time;
-        acc.mined = false;
-
-        acc.recovery_account = creator_name;
-
-        acc.received_vesting_shares = delegation;
-
-#ifndef IS_LOW_MEM
-        fc::from_string(acc.json_metadata, json_metadata);
-#endif
-    });
-
-    db_impl().create<account_authority_object>([&](account_authority_object& auth) {
-        auth.account = new_account_name;
-        auth.owner = owner;
-        auth.active = active;
-        auth.posting = posting;
-        auth.last_owner_update = fc::time_point_sec::min();
-    });
-
-    if (delegation.amount > 0)
-    {
-        _time t = _get_now(now);
-
-        db_impl().create<vesting_delegation_object>([&](vesting_delegation_object& vdo) {
-            vdo.delegator = creator_name;
-            vdo.delegatee = new_account_name;
-            vdo.vesting_shares = delegation;
-            vdo.min_delegation_time = t + DEIP_CREATE_ACCOUNT_DELEGATION_TIME;
-        });
-    }
-
-    if (fee.amount > 0)
-        create_vesting(new_account, fee);
-
     return new_account;
 }
 
@@ -225,43 +158,6 @@ void dbs_account::increase_balance(const account_object& account, const asset& d
 void dbs_account::decrease_balance(const account_object& account, const asset& deips)
 {
     increase_balance(account, -deips);
-}
-
-void dbs_account::increase_vesting_shares(const account_object& account, const asset& vesting)
-{
-    FC_ASSERT(vesting.symbol == VESTS_SYMBOL, "invalid asset type (symbol)");
-    db_impl().modify(account, [&](account_object& a) { a.vesting_shares += vesting; });
-}
-
-void dbs_account::increase_delegated_vesting_shares(const account_object& account, const asset& vesting)
-{
-    FC_ASSERT(vesting.symbol == VESTS_SYMBOL, "invalid asset type (symbol)");
-    db_impl().modify(account, [&](account_object& a) { a.delegated_vesting_shares += vesting; });
-}
-
-void dbs_account::increase_received_vesting_shares(const account_object& account, const asset& vesting)
-{
-    FC_ASSERT(vesting.symbol == VESTS_SYMBOL, "invalid asset type (symbol)");
-    db_impl().modify(account, [&](account_object& a) { a.received_vesting_shares += vesting; });
-}
-
-void dbs_account::decrease_received_vesting_shares(const account_object& account, const asset& vesting)
-{
-    increase_received_vesting_shares(account, -vesting);
-}
-
-void dbs_account::update_withdraw(const account_object& account,
-                                  const asset& vesting,
-                                  const time_point_sec& next_vesting_withdrawal,
-                                  const share_type& to_withdrawn,
-                                  const optional<share_type>& withdrawn)
-{
-    db_impl().modify(account, [&](account_object& a) {
-        a.vesting_withdraw_rate = vesting;
-        a.next_vesting_withdrawal = next_vesting_withdrawal;
-        a.to_withdraw = to_withdrawn;
-        a.withdrawn = (withdrawn.valid()) ? (*withdrawn) : 0;
-    });
 }
 
 void dbs_account::increase_withdraw_routes(const account_object& account)
@@ -420,7 +316,11 @@ void dbs_account::update_voting_proxy(const account_object& account, const optio
 {
     /// remove all current votes
     std::array<share_type, DEIP_MAX_PROXY_RECURSION_DEPTH + 1> delta;
-    delta[0] = -account.vesting_shares.amount;
+
+     // Add Common token calculation   
+    // delta[0] = -account.vesting_shares.amount;
+    delta[0] = -1000000;
+
     for (int i = 0; i < DEIP_MAX_PROXY_RECURSION_DEPTH; ++i)
         delta[i + 1] = -account.proxied_vsf_votes[i];
 
@@ -456,41 +356,6 @@ void dbs_account::update_voting_proxy(const account_object& account, const optio
         db_impl().modify(account,
                          [&](account_object& a) { a.proxy = account_name_type(DEIP_PROXY_TO_SELF_ACCOUNT); });
     }
-}
-
-asset dbs_account::create_vesting(const account_object& to_account, const asset& deip)
-{
-    try
-    {
-        const auto& cprops = db_impl().get_dynamic_global_properties();
-
-        /**
-         *  The ratio of total_vesting_shares / total_vesting_fund_deip should not
-         *  change as the result of the user adding funds
-         *
-         *  V / C  = (V+Vn) / (C+Cn)
-         *
-         *  Simplifies to Vn = (V * Cn ) / C
-         *
-         *  If Cn equals o.amount, then we must solve for Vn to know how many new vesting shares
-         *  the user should receive.
-         *
-         *  128 bit math is requred due to multiplying of 64 bit numbers. This is done in asset and price.
-         */
-        asset new_vesting = deip * cprops.get_vesting_share_price();
-
-        db_impl().modify(to_account, [&](account_object& to) { to.vesting_shares += new_vesting; });
-
-        db_impl().modify(cprops, [&](dynamic_global_property_object& props) {
-            props.total_vesting_fund_deip += deip;
-            props.total_vesting_shares += new_vesting;
-        });
-
-        adjust_proxied_witness_votes(to_account, new_vesting.amount);
-
-        return new_vesting;
-    }
-    FC_CAPTURE_AND_RETHROW((to_account.name)(deip))
 }
 
 void dbs_account::clear_witness_votes(const account_object& account)

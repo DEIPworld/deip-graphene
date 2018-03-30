@@ -174,8 +174,6 @@ struct database_fixture
     void fund(const string& account_name, const asset& amount);
     void transfer(const string& from, const string& to, const share_type& deip);
     void convert(const string& account_name, const asset& amount);
-    void vest(const string& from, const share_type& amount);
-    void vest(const string& account, const asset& amount);
     void create_all_discipline_expert_tokens_for_account(const string& account);
     const expert_token_object& common_token(const string& account, const share_type& amount);
     const expert_token_object& expert_token(const string& account, const discipline_id_type& discipline_id, const share_type& amount);

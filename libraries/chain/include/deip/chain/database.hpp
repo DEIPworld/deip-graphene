@@ -277,7 +277,6 @@ public:
     uint32_t get_slot_at_time(fc::time_point_sec when) const;
 
     /** @return the sbd created and deposited to_account, may return DEIP if there is no median feed */
-    asset create_vesting(const account_object& to_account, asset deip);
 
     void adjust_supply(const asset& delta, bool adjust_vesting = false);
 
@@ -292,7 +291,6 @@ public:
      * adjust_proxied_witness_votes( a, -a.witness_vote_weight() )
      */
     void clear_witness_votes(const account_object& a);
-    void process_vesting_withdrawals();
     void process_funds();
     void process_conversions();
     void account_recovery_processing();
@@ -425,7 +423,6 @@ protected:
     void update_signing_witness(const witness_object& signing_witness, const signed_block& new_block);
     void update_last_irreversible_block();
     void clear_expired_transactions();
-    void clear_expired_delegations();
     void clear_expired_proposals();
     void process_content_activity_windows();
     void process_header_extensions(const signed_block& next_block);

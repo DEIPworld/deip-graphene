@@ -48,18 +48,8 @@ public:
     share_type total_common_tokens_amount = 0;
 
     // TODO: remove vesting funds & shares
-    asset total_vesting_fund_deip = asset(0, DEIP_SYMBOL);
-    asset total_vesting_shares = asset(0, VESTS_SYMBOL);
     asset total_reward_fund_deip = asset(0, DEIP_SYMBOL);
     fc::uint128 total_active_disciplines_reward_weight;
-
-    price get_vesting_share_price() const
-    {
-        if (total_vesting_fund_deip.amount == 0 || total_vesting_shares.amount == 0)
-            return price(asset(1000, DEIP_SYMBOL), asset(1000000, VESTS_SYMBOL));
-
-        return price(total_vesting_shares, total_vesting_fund_deip);
-    }
 
     /**
      *  Maximum block size is decided by the set of active witnesses which change every round.
@@ -105,7 +95,6 @@ typedef multi_index_container<dynamic_global_property_object,
 } // deip::chain
 
 FC_REFLECT(deip::chain::dynamic_global_property_object,
-           (id)(head_block_number)(head_block_id)(time)(current_witness)(current_supply)(confidential_supply)(
-               total_vesting_fund_deip)(total_vesting_shares)(total_reward_fund_deip)(total_active_disciplines_reward_weight)(maximum_block_size)(current_aslot)(total_expert_tokens_amount)(total_common_tokens_amount)(
+           (id)(head_block_number)(head_block_id)(time)(current_witness)(current_supply)(confidential_supply)(total_reward_fund_deip)(total_active_disciplines_reward_weight)(maximum_block_size)(current_aslot)(total_expert_tokens_amount)(total_common_tokens_amount)(
                recent_slots_filled)(participation_count)(last_irreversible_block_num)(vote_power_reserve_rate))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::dynamic_global_property_object, deip::chain::dynamic_global_property_index)
