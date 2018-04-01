@@ -33,6 +33,8 @@ namespace chain {
 using namespace deip::protocol;
 
 void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state);
+void create_initdelegate_expert_tokens_for_genesis_state(genesis_state_type& genesis_state);
+void create_disciplines_for_genesis_state(genesis_state_type& genesis_state);
 
 struct database_fixture
 {
@@ -190,6 +192,9 @@ struct database_fixture
     void convert(const string& account_name, const asset& amount);
     void vest(const string& from, const share_type& amount);
     void vest(const string& account, const asset& amount);
+    void create_all_discipline_expert_tokens_for_account(const string& account);
+    const expert_token_object& common_token(const string& account, const share_type& amount);
+    const expert_token_object& expert_token(const string& account, const discipline_id_type& discipline_id, const share_type& amount);
     void proxy(const string& account, const string& proxy);
     const asset& get_balance(const string& account_name) const;
     void sign(signed_transaction& trx, const fc::ecc::private_key& key);

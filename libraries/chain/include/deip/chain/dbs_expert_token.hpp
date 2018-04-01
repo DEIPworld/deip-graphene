@@ -6,6 +6,7 @@
 #include <functional>
 
 #include <deip/chain/expert_token_object.hpp>
+#include <deip/chain/account_object.hpp>
 
 namespace deip {
     namespace chain {
