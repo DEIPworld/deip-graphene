@@ -109,25 +109,20 @@ public:
 
     void create_research_contents()
     {
-
         db.create<research_content_object>([&](research_content_object& d) {
-            research_reference_data data;
-            data.research_reference_id = 2;
             d.id = 1;
             d.research_id = 1;
             d.type = review;
             d.authors = {"alice"};
-            d.references.push_back(data);
+            d.references.insert(2);
         });
 
         db.create<research_content_object>([&](research_content_object& d) {
-            research_reference_data data;
-            data.research_reference_id = 1;
             d.id = 2;
             d.research_id = 2;
             d.type = review;
-            d.authors = {"alex"};
-            d.references.push_back(data);
+            d.authors = {"alex", "jack"};
+            d.references.insert(1);
         });
     }
 
@@ -237,13 +232,11 @@ public:
         });
 
         db.create<research_content_object>([&](research_content_object& d) {
-            research_reference_data data;
-            data.research_reference_id = 1;
             d.id = 3;
             d.research_id = 2;
             d.type = final_result;
             d.authors = {"jack"};
-            d.references.push_back(data);
+            d.references.insert(1);
         });
     }
 
@@ -333,8 +326,8 @@ BOOST_AUTO_TEST_CASE(reward_references)
     {
         ACTORS((alice)(alex)(jack)(bob)(john));
 
-        create_research_contents();
         create_researches();
+        create_research_contents();
         create_total_votes();
         create_research_tokens();
         create_research_groups();
@@ -346,9 +339,11 @@ BOOST_AUTO_TEST_CASE(reward_references)
 
         BOOST_CHECK(db.get<research_group_object>(2).funds == (db.get<research_object>(2).owned_tokens * reward) / DEIP_100_PERCENT);
 
+        // check expert tokens distribution
         BOOST_CHECK(db.get<expert_token_object>(0).amount == (reward * db.get<research_group_token_object>(3).amount) / db.get<research_group_object>(2).total_tokens_amount);
         BOOST_CHECK(db.get<expert_token_object>(1).amount == (reward * db.get<research_group_token_object>(4).amount) / db.get<research_group_object>(2).total_tokens_amount);
 
+        // check distribution for research token holders
         BOOST_CHECK(db.get_account("alice").balance.amount == (db.get<research_token_object>(1).amount * reward) / DEIP_100_PERCENT);
         BOOST_CHECK(db.get_account("bob").balance.amount == (db.get<research_token_object>(2).amount * reward) / DEIP_100_PERCENT);
 
@@ -427,8 +422,8 @@ BOOST_AUTO_TEST_CASE(reward_researches_in_discipline)
     {
         ACTORS((alice)(alex)(jack)(bob)(john));
 
-        create_research_contents();
         create_researches();
+        create_research_contents();
         create_votes();
         create_total_votes();
         create_research_tokens();

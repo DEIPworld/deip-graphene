@@ -527,6 +527,42 @@ const research_object& database_fixture::research_create(const int64_t id,
     return new_research;
 }
 
+const research_content_object& database_fixture::research_content_create(
+                                const int64_t& id,
+                                const int64_t& research_id,
+                                const research_content_type& type,
+                                const std::string& title,
+                                const std::string& content,
+                                const int16_t& activity_round,
+                                const research_content_activity_state& activity_state,
+                                const time_point_sec& activity_window_start,
+                                const time_point_sec& activity_window_end,
+                                const std::vector<account_name_type>& authors,
+                                const std::vector<research_content_id_type>& references,
+                                const std::vector<string>& external_references)
+{
+    const auto& new_research_content = db.create<research_content_object>([&](research_content_object& rc) {
+
+        auto now = db.head_block_time();
+
+        rc.id = id;
+        rc.research_id = research_id;
+        rc.type = type;
+        fc::from_string(rc.title, title);
+        fc::from_string(rc.content, content);
+        rc.created_at = now;
+        rc.authors.insert(authors.begin(), authors.end());
+        rc.references.insert(references.begin(), references.end());
+        rc.external_references.insert(external_references.begin(), external_references.end());
+        rc.activity_round = activity_round;
+        rc.activity_state = activity_state;
+        rc.activity_window_start = activity_window_start;
+        rc.activity_window_end = activity_window_end;
+    });
+
+    return new_research_content;
+}
+
 const expert_token_object& database_fixture::expert_token_create(const int64_t id,
                                                                  const account_name_type& account,
                                                                  const discipline_id_type& discipline_id,

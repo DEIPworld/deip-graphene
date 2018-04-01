@@ -530,7 +530,7 @@ struct make_research_review_operation : public base_operation
     int64_t research_id;
     std::string title;
     std::string content;
-    std::vector<std::pair<int64_t, int64_t>> references;
+    std::vector<int64_t> references;
     std::vector<string> external_references;
 
     void validate() const;

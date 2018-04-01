@@ -128,7 +128,7 @@ struct create_research_content_data_type : base_proposal_data_type
     string title;
     string content;
     std::vector<account_name_type> authors;
-    std::vector<research_reference_data> references;
+    std::vector<research_content_id_type> references;
     std::vector<string> external_references;
     void validate() const
     {

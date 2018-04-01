@@ -153,6 +153,22 @@ struct database_fixture
                                            const uint16_t review_share_in_percent,
                                            const uint16_t dropout_compensation_in_percent);
 
+
+    const research_content_object& research_content_create(
+                                            const int64_t& id,
+                                            const int64_t& research_id,
+                                            const research_content_type& type,
+                                            const std::string& title,
+                                            const std::string& content,
+                                            const int16_t& activity_round,
+                                            const research_content_activity_state& activity_state,
+                                            const time_point_sec& activity_window_start,
+                                            const time_point_sec& activity_window_end,
+                                            const std::vector<account_name_type>& authors,
+                                            const std::vector<research_content_id_type>& references,
+                                            const std::vector<string>& external_references);
+
+
     const expert_token_object& expert_token_create(const int64_t id,
                                                    const account_name_type& account,
                                                    const discipline_id_type& discipline_id,

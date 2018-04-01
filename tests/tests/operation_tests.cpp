@@ -98,21 +98,19 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
 
         generate_block();
 
-        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-        research_create(2, "test_research2", "abstract2", "permlink2", 1, 10, 1500);
+        auto& research1 = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
+        auto& research2 = research_create(2, "test_research2", "abstract2", "permlink2", 1, 10, 1500);
+        research_content_create(0, research2.id._id, milestone, "title", 
+                                "content", 1, active, fc::time_point_sec(), 
+                                fc::time_point_sec(), {"alice"}, {}, {});
 
         private_key_type priv_key = generate_private_key("alice");
 
         make_research_review_operation op;
 
-        std::pair<int64_t, int64_t> data;
-        data.first = 2;
-
-        std::vector<std::pair<int64_t, int64_t>> research_references;
-        research_references.push_back(data);
-
+        std::vector<int64_t> research_references {0};
         op.author = "alice";
-        op.research_id = 1;
+        op.research_id = research1.id._id;
         op.title = "test";
         op.content = "test";
         op.references = research_references;
@@ -127,10 +125,8 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        auto& research_content = db.get<research_content_object, by_id>(0);
-
+        auto& research_content = db.get<research_content_object, by_id>(1);
         BOOST_CHECK(research_content.type == review);
-
     }
     FC_LOG_AND_RETHROW()
 }
