@@ -961,15 +961,19 @@ void make_research_review_evaluator::do_apply(const make_research_review_operati
 
     auto expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
     auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(op.research_id);
+    std::set<discipline_id_type> review_disciplines;
     std::set<discipline_id_type> research_disciplines_ids;
     for (auto rdr : research_discipline_relations) {
         research_disciplines_ids.insert(rdr.get().discipline_id);
     }
 
-    FC_ASSERT(std::any_of(expertise_tokens.begin(), expertise_tokens.end(), [&](std::reference_wrapper<const expert_token_object> etw) {
-        auto token = etw.get();
-        return research_disciplines_ids.find(token.discipline_id) != research_disciplines_ids.end();
-    }), "Reviewer does not have enough expertise to make review.");
+    for (auto expert_token : expertise_tokens)
+    {
+        if (research_disciplines_ids.find(expert_token.get().discipline_id) != research_disciplines_ids.end())
+            review_disciplines.insert(expert_token.get().discipline_id);
+    }
+
+    FC_ASSERT(review_disciplines.size() != 0, "Reviewer does not have enough expertise to make review.");
 
     std::vector<research_reference_data> research_references;
     int size = op.references.size();
@@ -984,7 +988,7 @@ void make_research_review_evaluator::do_apply(const make_research_review_operati
     }
 
     // TODO: Create review with references
-    review_service.create(op.research_id, op.content, op.is_positive, op.author);
+    review_service.create(op.research_id, op.content, op.is_positive, op.author, review_disciplines);
 }
 
 void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)

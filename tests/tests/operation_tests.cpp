@@ -101,9 +101,7 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
 
         BOOST_TEST_MESSAGE("--- Test normal review creation");
         auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-        research_create(2, "test_research2", "abstract2", "permlink2", 1, 10, 1500);
 
-        research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
         expert_token_create(1, "alice", 1, 100);
 
         db.create<research_discipline_relation_object>([&](research_discipline_relation_object& rdr) {
@@ -124,6 +122,7 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         op.author = "alice";
         op.research_id = 1;
         op.content = "test";
+        op.is_positive = true;
         op.references = references;
         op.external_references = {"one", "two", "three"};
 
@@ -136,10 +135,15 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
 
         const review_object& review = db.get<review_object, by_id>(0);
 
+        std::vector<discipline_id_type> disciplines;
+        for (auto discipline : review.disciplines)
+            disciplines.push_back(discipline);
+
         BOOST_CHECK(review.research_id == 1);
         BOOST_CHECK(review.author == "alice");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.content == "test");
+        BOOST_CHECK(disciplines.size() == 1 && disciplines[0] == 1);
 
         BOOST_TEST_MESSAGE("--- Test failing review creation");
 
