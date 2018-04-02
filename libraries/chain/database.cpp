@@ -1477,6 +1477,35 @@ share_type database::reward_voters(const research_content_id_type &research_cont
     return used_reward;
 }
 
+share_type database::reward_review_voters(const review_id_type &review_id,
+                                    const discipline_id_type &discipline_id, const share_type &reward)
+{
+    dbs_account& account_service = obtain_service<dbs_account>();
+    dbs_vote& vote_service = obtain_service<dbs_vote>();
+
+    auto votes = vote_service.get_review_votes_by_discipline(review_id, discipline_id);
+
+    share_type used_reward = 0;
+    share_type total_weight = 0;
+
+    for (auto& vote_ref : votes)
+        total_weight += vote_ref.get().weight;
+
+    for (auto& vote_ref : votes) {
+        auto vote = vote_ref.get();
+
+        if (vote.weight != 0) {
+            auto reward_amount = util::calculate_share(reward, vote.weight, total_weight);
+            account_service.increase_balance(account_service.get_account(vote.voter), asset(reward_amount, DEIP_SYMBOL));
+            used_reward += reward_amount;
+        }
+    }
+
+    FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
+
+    return used_reward;
+}    
+    
 void database::reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                      const share_type &reward)
 {
@@ -1579,8 +1608,8 @@ share_type database::allocate_rewards_to_reviews(const share_type& reward,
         reward_with_expertise(author_name, discipline_id, author_reward);
         used_reward += author_reward;
 
-        used_reward += reward_references(review.id, discipline_id, review_references_reward_share, 0);
-        used_reward += reward_voters(review.id, discipline_id, review_curators_reward_share);
+        //used_reward += reward_references(review.id, discipline_id, review_references_reward_share, 0);
+        used_reward += reward_review_voters(review.id, discipline_id, review_curators_reward_share);
     }
 
     return used_reward;
