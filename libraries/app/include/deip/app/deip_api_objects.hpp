@@ -17,6 +17,7 @@
 #include <deip/chain/research_group_object.hpp>
 #include <deip/chain/research_discipline_relation_object.hpp>
 #include <deip/chain/research_group_invite_object.hpp>
+#include <deip/chain/research_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -638,6 +639,34 @@ struct research_group_invite_api_obj
     share_type research_group_token_amount;
 };
 
+struct research_listing_api_obj
+{
+    research_listing_api_obj(const research_api_obj& research,
+                             const vector<account_name_type>& authors,
+                             const vector<discipline_api_obj>& disciplines,
+                             const int64_t& total_votes)
+    {
+        this->research_id = research.id;
+        this->title = research.name;
+        this->abstract = research.abstract;
+        this->authors = authors;
+        this->disciplines = disciplines;
+        this->total_votes = total_votes;
+    }
+
+    // because fc::variant require for temporary object
+    research_listing_api_obj()
+    {
+    }
+
+    int64_t research_id;
+    string title;
+    string abstract;
+    vector<account_name_type> authors;
+    vector<discipline_api_obj> disciplines;
+    int64_t total_votes;
+};
+
 } // namespace app
 } // namespace deip
 
@@ -816,6 +845,15 @@ FC_REFLECT( deip::app::research_group_invite_api_obj,
             (account_name)
             (research_group_id)
             (research_group_token_amount)
+)
+
+FC_REFLECT( deip::app::research_listing_api_obj,
+           (research_id)
+           (title)
+           (abstract)
+           (authors)
+           (disciplines)
+           (total_votes)
 )
 
 // clang-format on

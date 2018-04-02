@@ -15,7 +15,6 @@
 namespace deip {
 namespace chain {
 
-class proposal_object;
 
 class dbs_research_group : public dbs_base
 {
