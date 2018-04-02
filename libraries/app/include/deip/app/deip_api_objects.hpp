@@ -401,8 +401,8 @@ struct research_content_api_obj
         ,  content(fc::to_string(rc.content))
         ,  created_at(rc.created_at)
     {
-        for (auto research_id : rc.references)
-            references.insert(research_id._id);
+        for (auto reference : rc.references)
+            references.insert(reference._id);
 
         external_references.insert(
             rc.external_references.begin(), 
