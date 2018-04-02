@@ -804,8 +804,6 @@ FC_API( deip::wallet::wallet_api,
         /// transaction api
         (create_account)
         (create_account_with_keys)
-        (create_account_delegated)
-        (create_account_with_keys_delegated)
         (update_account)
         (update_account_auth_key)
         (update_account_auth_account)

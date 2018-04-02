@@ -954,6 +954,8 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when) const
     return (when - first_slot_time).to_seconds() / DEIP_BLOCK_INTERVAL + 1;
 }
 
+
+// TODO: Update information without VESTS
 /**
  *  Overall the network has an inflation rate of 102% of virtual deip per year
  *  90% of inflation is directed to vesting shares
@@ -2402,8 +2404,8 @@ void database::validate_invariants() const
     {
         const auto& account_idx = get_index<account_index>().indices().get<by_name>();
         asset total_supply = asset(0, DEIP_SYMBOL);
-        share_type total_common_tokens = share_type(0);
-        share_type total_expert_tokens = share_type(0);
+        share_type total_common_tokens_amount = share_type(0);
+        share_type total_expert_tokens_amount = share_type(0);
 
         // TODO: Add votes validation
         // share_type total_vsf_votes = share_type(0);
@@ -2413,13 +2415,13 @@ void database::validate_invariants() const
         /// verify no witness has too many votes
         const auto& witness_idx = get_index<witness_index>().indices();
         for (auto itr = witness_idx.begin(); itr != witness_idx.end(); ++itr)
-            FC_ASSERT(itr->votes <= gpo.total_common_tokens, "", ("itr", *itr));
+            FC_ASSERT(itr->votes <= gpo.total_common_tokens_amount, "", ("itr", *itr));
 
         for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr)
         {
             total_supply += itr->balance;
-            total_common_tokens += itr->total_common_tokens;
-            total_expert_tokens += itr->total_expert_tokens;
+            total_common_tokens_amount += itr->total_common_tokens_amount;
+            total_expert_tokens_amount += itr->total_expert_tokens_amount;
             
             // TODO: Add votes validation
             // total_vsf_votes += (itr->proxy == DEIP_PROXY_TO_SELF_ACCOUNT
@@ -2440,10 +2442,10 @@ void database::validate_invariants() const
 
         FC_ASSERT(gpo.current_supply == total_supply, "",
                   ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));
-        FC_ASSERT(gpo.total_common_tokens == total_common_tokens, "",
-                  ("gpo.total_vesting_shares", gpo.total_common_tokens)("total_common_tokens", total_common_tokens));
-        FC_ASSERT(gpo.total_expert_tokens == total_expert_tokens, "",
-                  ("gpo.total_expert_tokens", gpo.total_expert_tokens)("total_expert_tokens", total_expert_tokens));
+        FC_ASSERT(gpo.total_common_tokens_amount == total_common_tokens_amount, "",
+                  ("gpo.total_vesting_shares", gpo.total_common_tokens_amount)("total_common_tokens", total_common_tokens_amount));
+        FC_ASSERT(gpo.total_expert_tokens_amount == total_expert_tokens_amount, "",
+                  ("gpo.total_expert_tokens", gpo.total_expert_tokens_amount)("total_expert_tokens", total_expert_tokens_amount));
 
          // TODO: Add votes validation          
         // FC_ASSERT(gpo.total_vesting_shares.amount == total_vsf_votes, "",

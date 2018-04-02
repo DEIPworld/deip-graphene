@@ -50,16 +50,6 @@ struct statistics
     uint32_t changed_reply_votes = 0; ///< Changed votes on replies
     uint32_t payouts = 0; ///< Number of comment payouts
     share_type deip_paid_to_authors = 0; ///< Ammount of DEIP paid to authors
-    share_type vests_paid_to_authors = 0; ///< Ammount of VESS paid to authors
-    share_type vests_paid_to_curators = 0; ///< Ammount of VESTS paid to curators
-    uint32_t transfers_to_vesting = 0; ///< Transfers of DEIP into VESTS
-    uint32_t new_vesting_withdrawal_requests = 0; ///< New vesting withdrawal requests
-    uint32_t modified_vesting_withdrawal_requests = 0; ///< Changes to vesting withdrawal requests
-    share_type vesting_withdraw_rate_delta = 0;
-    uint32_t vesting_withdrawals_processed = 0; ///< Number of vesting withdrawals
-    uint32_t finished_vesting_withdrawals = 0; ///< Processed vesting withdrawals that are now finished
-    share_type vests_withdrawn = 0; ///< Ammount of VESTS withdrawn to DEIP
-    share_type vests_transferred = 0; ///< Ammount of VESTS transferred to another account
     uint32_t sbd_conversion_requests_created = 0; ///< SBD conversion requests created
     share_type sbd_to_be_converted = 0; ///< Amount of SBD to be converted
     uint32_t sbd_conversion_requests_filled = 0; ///< SBD conversion requests filled
@@ -113,9 +103,7 @@ FC_REFLECT(deip::blockchain_statistics::statistics,
                total_comments_deleted)(root_comments)(root_comment_edits)(root_comments_deleted)(replies)(reply_edits)(
                replies_deleted)(total_votes)(new_votes)(changed_votes)(total_root_votes)(new_root_votes)(
                changed_root_votes)(total_reply_votes)(new_reply_votes)(changed_reply_votes)(payouts)(
-               deip_paid_to_authors)(vests_paid_to_authors)(vests_paid_to_curators)(transfers_to_vesting)(
-               new_vesting_withdrawal_requests)(modified_vesting_withdrawal_requests)(vesting_withdraw_rate_delta)(
-               vesting_withdrawals_processed)(finished_vesting_withdrawals)(vests_withdrawn)(vests_transferred)(
+               deip_paid_to_authors)(
                sbd_conversion_requests_created)(sbd_to_be_converted)(sbd_conversion_requests_filled)(deip_converted)(
                limit_orders_created)(limit_orders_filled)(limit_orders_cancelled)(total_pow)(estimated_hashpower))
 

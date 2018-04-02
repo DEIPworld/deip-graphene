@@ -47,7 +47,6 @@ public:
     share_type total_expert_tokens_amount = 0;
     share_type total_common_tokens_amount = 0;
 
-    // TODO: remove vesting funds & shares
     asset total_reward_fund_deip = asset(0, DEIP_SYMBOL);
     fc::uint128 total_active_disciplines_reward_weight;
 

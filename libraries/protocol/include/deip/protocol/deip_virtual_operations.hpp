@@ -33,9 +33,9 @@ struct hardfork_operation : public virtual_operation
 struct producer_reward_operation : public virtual_operation
 {
     producer_reward_operation() {}
-    producer_reward_operation(const string& p, const asset& v)
+    producer_reward_operation(const string& p, const share_type c)
         : producer(p)
-        , vesting_shares(v)
+        , common_tokens_amount(c)
     {
     }
 
@@ -47,5 +47,4 @@ struct producer_reward_operation : public virtual_operation
 
 FC_REFLECT(deip::protocol::shutdown_witness_operation, (owner))
 FC_REFLECT(deip::protocol::hardfork_operation, (hardfork_id))
-FC_REFLECT(deip::protocol::return_vesting_delegation_operation, (account)(vesting_shares))
 FC_REFLECT(deip::protocol::producer_reward_operation, (producer)(common_tokens_amount))
