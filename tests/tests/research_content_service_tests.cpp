@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
                     content.references.size() == 1 &&
                     content.external_references.size() == 2;
         }));
-        
+
     }
     FC_LOG_AND_RETHROW()
 }
