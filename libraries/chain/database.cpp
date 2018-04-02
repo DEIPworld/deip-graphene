@@ -1086,7 +1086,7 @@ void database::process_vesting_withdrawals()
  */
 void database::process_funds()
 {
-    dbs_account& account_service = obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
 
     const auto& props = get_dynamic_global_properties();
     const auto& wso = get_witness_schedule_object();
@@ -1130,8 +1130,8 @@ void database::process_funds()
     });
 
     const auto& producer_reward
-        = account_service.create_vesting(get_account(cwit.owner), asset(witness_reward, DEIP_SYMBOL));
-    push_virtual_operation(producer_reward_operation(cwit.owner, producer_reward));
+        = expert_token_service.create(get_account(cwit.owner).name, 0, witness_reward);
+    push_virtual_operation(producer_reward_operation(cwit.owner, producer_reward.amount));
 }
 
 void database::account_recovery_processing()
@@ -2472,28 +2472,32 @@ void database::validate_invariants() const
     {
         const auto& account_idx = get_index<account_index>().indices().get<by_name>();
         asset total_supply = asset(0, DEIP_SYMBOL);
-        asset total_vesting = asset(0, VESTS_SYMBOL);
-        share_type total_vsf_votes = share_type(0);
+        share_type total_common_tokens = share_type(0);
+        share_type total_expert_tokens = share_type(0);
+
+        // TODO: Add votes validation
+        // share_type total_vsf_votes = share_type(0);
 
         auto gpo = get_dynamic_global_properties();
 
         /// verify no witness has too many votes
         const auto& witness_idx = get_index<witness_index>().indices();
         for (auto itr = witness_idx.begin(); itr != witness_idx.end(); ++itr)
-            FC_ASSERT(itr->votes <= gpo.total_vesting_shares.amount, "", ("itr", *itr));
+            FC_ASSERT(itr->votes <= gpo.total_common_tokens, "", ("itr", *itr));
 
         for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr)
         {
             total_supply += itr->balance;
-            total_vesting += itr->vesting_shares;
-            total_vsf_votes += (itr->proxy == DEIP_PROXY_TO_SELF_ACCOUNT
-                                    ? itr->witness_vote_weight()
-                                    : (DEIP_MAX_PROXY_RECURSION_DEPTH > 0
-                                           ? itr->proxied_vsf_votes[DEIP_MAX_PROXY_RECURSION_DEPTH - 1]
-                                           : itr->vesting_shares.amount));
+            total_common_tokens += itr->total_common_tokens;
+            total_expert_tokens += itr->total_expert_tokens;
+            
+            // TODO: Add votes validation
+            // total_vsf_votes += (itr->proxy == DEIP_PROXY_TO_SELF_ACCOUNT
+            //                         ? itr->witness_vote_weight()
+            //                         : (DEIP_MAX_PROXY_RECURSION_DEPTH > 0
+            //                                ? itr->proxied_vsf_votes[DEIP_MAX_PROXY_RECURSION_DEPTH - 1]
+            //                                : itr->vesting_shares.amount));
         }
-
-        fc::uint128_t total_rshares2;
 
         const auto& reward_idx = get_index<reward_fund_index, by_id>();
 
@@ -2502,14 +2506,18 @@ void database::validate_invariants() const
             total_supply += itr->reward_balance;
         }
 
-        total_supply += gpo.total_vesting_fund_deip + gpo.total_reward_fund_deip;
+        total_supply += gpo.total_reward_fund_deip;
 
         FC_ASSERT(gpo.current_supply == total_supply, "",
                   ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));
-        FC_ASSERT(gpo.total_vesting_shares == total_vesting, "",
-                  ("gpo.total_vesting_shares", gpo.total_vesting_shares)("total_vesting", total_vesting));
-        FC_ASSERT(gpo.total_vesting_shares.amount == total_vsf_votes, "",
-                  ("total_vesting_shares", gpo.total_vesting_shares)("total_vsf_votes", total_vsf_votes));
+        FC_ASSERT(gpo.total_common_tokens == total_common_tokens, "",
+                  ("gpo.total_vesting_shares", gpo.total_common_tokens)("total_common_tokens", total_common_tokens));
+        FC_ASSERT(gpo.total_expert_tokens == total_expert_tokens, "",
+                  ("gpo.total_expert_tokens", gpo.total_expert_tokens)("total_expert_tokens", total_expert_tokens));
+
+         // TODO: Add votes validation          
+        // FC_ASSERT(gpo.total_vesting_shares.amount == total_vsf_votes, "",
+        //           ("total_vesting_shares", gpo.total_vesting_shares)("total_vsf_votes", total_vsf_votes));
     }
     FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
 }

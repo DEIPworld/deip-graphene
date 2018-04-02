@@ -70,7 +70,7 @@ struct producer_reward_operation : public virtual_operation
     }
 
     account_name_type producer;
-    asset vesting_shares;
+    share_type common_tokens_amount;
 };
 }
 } // deip::protocol
@@ -79,4 +79,4 @@ FC_REFLECT(deip::protocol::fill_vesting_withdraw_operation, (from_account)(to_ac
 FC_REFLECT(deip::protocol::shutdown_witness_operation, (owner))
 FC_REFLECT(deip::protocol::hardfork_operation, (hardfork_id))
 FC_REFLECT(deip::protocol::return_vesting_delegation_operation, (account)(vesting_shares))
-FC_REFLECT(deip::protocol::producer_reward_operation, (producer)(vesting_shares))
+FC_REFLECT(deip::protocol::producer_reward_operation, (producer)(common_tokens_amount))
