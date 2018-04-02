@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 {
     try
     {
-        ACTORS((alice));
+        ACTORS_WITH_EXPERT_TOKENS((alice));
 
         auto& research_service = db.obtain_service<dbs_research>();
 
@@ -175,7 +175,6 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
         op.voter = "alice";
 
         generate_block();
-        create_disciplines();
 
         evaluator.do_apply(op);
         
@@ -204,7 +203,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_rate_test)
 {
     try
     {
-        ACTORS((alice));
+        ACTORS_WITH_EXPERT_TOKENS((alice));
 
         auto& research_service = db.obtain_service<dbs_research>();
 
@@ -229,8 +228,6 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_rate_test)
         op.research_group_id = 0;
         op.proposal_id = 0;
         op.voter = "alice";
-
-        create_disciplines();
 
         evaluator.do_apply(op);
         
@@ -317,8 +314,6 @@ BOOST_AUTO_TEST_CASE(change_quorum_test)
 BOOST_AUTO_TEST_CASE(start_research_execute_test)
 {
     ACTORS((alice))
-
-    create_disciplines();
 
     std::vector<account_name_type> accounts = {"alice"};
     setup_research_group(1, "research group name", "research_group", "research group", 0, 1, 100, accounts);
@@ -556,7 +551,6 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_data_validate_test)
         db.obtain_service<dbs_research_group>();
         vector<account_name_type> accounts = { "alice" };
         setup_research_group(1, "research group name", "research_group", "research group", 0, 1, 100, accounts);
-        create_disciplines();
 
         create_proposal(1, dbs_proposal::action_t::start_research, create_research_proposal_json, "alice", 1, fc::time_point_sec(0xffffffff),
                         1);
@@ -712,7 +706,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
             "\"type\": 2,"
             "\"content\":\"milestone for Research #2\","
             "\"authors\":[\"alice\"],"
-            "\"references\": [{\"research_reference_id\": 3}]}";
+            "\"references\": [3] }";
 
     create_proposal(2, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 

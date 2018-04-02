@@ -975,18 +975,6 @@ void make_research_review_evaluator::do_apply(const make_research_review_operati
 
     FC_ASSERT(review_disciplines.size() != 0, "Reviewer does not have enough expertise to make review.");
 
-    std::vector<research_reference_data> research_references;
-    int size = op.references.size();
-    for (int i = 0; i < size; ++i)
-    {
-        research_reference_data buf_data;
-        buf_data.research_reference_id = op.references[i].first;
-        buf_data.research_content_reference_id = op.references[i].second;
-
-        research_service.check_research_existence(buf_data.research_reference_id);
-        research_references.push_back(buf_data);
-    }
-
     // TODO: Create review with references
     review_service.create(op.research_id, op.content, op.is_positive, op.author, review_disciplines);
 }

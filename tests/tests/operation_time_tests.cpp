@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(vesting_withdrawals)
 {
     try
     {
-        ACTORS((alice))
+        ACTORS_WITH_EXPERT_TOKENS((alice))
         fund("alice", 100000);
         vest("alice", 100000);
 
@@ -167,14 +167,18 @@ BOOST_AUTO_TEST_CASE(vesting_withdraw_route)
 {
     try
     {
-        ACTORS((alice)(bob)(sam))
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(sam))
 
-        auto original_vesting = alice.vesting_shares;
+        const auto& new_alice = db.get_account("alice");
+        const auto& new_bob = db.get_account("bob");
+        const auto& new_sam = db.get_account("sam");
+
+        auto original_vesting = new_alice.vesting_shares;
 
         fund("alice", 1040000);
         vest("alice", 1040000);
 
-        auto withdraw_amount = alice.vesting_shares - original_vesting;
+        auto withdraw_amount = new_alice.vesting_shares - original_vesting;
 
         BOOST_TEST_MESSAGE("Setup vesting withdraw");
         withdraw_vesting_operation wv;
@@ -208,14 +212,14 @@ BOOST_AUTO_TEST_CASE(vesting_withdraw_route)
 
         BOOST_TEST_MESSAGE("Setting up first withdraw");
 
-        auto vesting_withdraw_rate = alice.vesting_withdraw_rate;
-        auto old_alice_balance = alice.balance;
-        auto old_alice_vesting = alice.vesting_shares;
-        auto old_bob_balance = bob.balance;
-        auto old_bob_vesting = bob.vesting_shares;
-        auto old_sam_balance = sam.balance;
-        auto old_sam_vesting = sam.vesting_shares;
-        generate_blocks(alice.next_vesting_withdrawal, true);
+        auto vesting_withdraw_rate = new_alice.vesting_withdraw_rate;
+        auto old_alice_balance = new_alice.balance;
+        auto old_alice_vesting = new_alice.vesting_shares;
+        auto old_bob_balance = new_bob.balance;
+        auto old_bob_vesting = new_bob.vesting_shares;
+        auto old_sam_balance = new_sam.balance;
+        auto old_sam_vesting = new_sam.vesting_shares;
+        generate_blocks(new_alice.next_vesting_withdrawal, true);
 
         {
             const auto& alice = db.get_account("alice");
