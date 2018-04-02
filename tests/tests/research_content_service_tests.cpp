@@ -276,20 +276,6 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         BOOST_CHECK(milestone.authors.find("sam") != milestone.authors.end());
         BOOST_CHECK(milestone.references.size() == 1);
         BOOST_CHECK(milestone.external_references.size() == 3);
-
-        research_references.push_back(2);
-        BOOST_CHECK_THROW(data_service.create(2, type, title, content, authors, research_references, external_references), fc::assert_exception);
-
-        auto db_milestone = db.get<research_content_object, by_id>(milestone.id);
-        BOOST_CHECK(db_milestone.research_id == 2);
-        BOOST_CHECK(db_milestone.type == research_content_type::milestone);
-        BOOST_CHECK(db_milestone.title == "title for milestone for Research #2");
-        BOOST_CHECK(db_milestone.content == "milestone for Research #2");
-        BOOST_CHECK(db_milestone.authors.size() == 1);
-        BOOST_CHECK(db_milestone.authors.find("sam") != db_milestone.authors.end());
-        BOOST_CHECK(db_milestone.references.size() == 1);
-        BOOST_CHECK(db_milestone.external_references.size() == 3);
-
     }
     FC_LOG_AND_RETHROW()
 }

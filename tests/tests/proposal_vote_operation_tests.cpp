@@ -706,7 +706,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
             "\"type\": 2,"
             "\"content\":\"milestone for Research #2\","
             "\"authors\":[\"alice\"],"
-            "\"references\": [{\"research_reference_id\": 3}]}";
+            "\"references\": [3] }";
 
     create_proposal(2, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
