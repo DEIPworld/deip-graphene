@@ -28,7 +28,7 @@ public:
                                           const string& title,
                                           const string& content,
                                           const std::vector<account_name_type>& authors,
-                                          const std::vector<research_reference_data>& references,
+                                          const std::vector<research_content_id_type>& references,
                                           const std::vector<string>& external_references);
 
     const research_content_object& get_content_by_id(const research_content_id_type& id) const;

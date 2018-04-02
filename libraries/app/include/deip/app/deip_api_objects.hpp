@@ -402,10 +402,8 @@ struct research_content_api_obj
         ,  content(fc::to_string(rc.content))
         ,  created_at(rc.created_at)
     {
-        for (auto reference : rc.references) {
-            auto content_id = reference.research_content_reference_id.valid() ? (*reference.research_content_reference_id)._id : -1;
-            references.push_back(std::make_pair(reference.research_reference_id._id, content_id));
-        }
+        for (auto reference : rc.references)
+            references.insert(reference._id);
 
         external_references.insert(
             rc.external_references.begin(), 
@@ -427,7 +425,7 @@ struct research_content_api_obj
     fc::time_point_sec created_at;
 
     std::set<string> external_references;
-    std::vector<std::pair<int64_t, int64_t>> references;
+    std::set<int64_t> references; 
 };
 
 struct expert_token_api_obj
