@@ -645,7 +645,7 @@ struct research_listing_api_obj
                              const int64_t& total_votes)
     {
         this->research_id = research.id;
-        this->title = research.name;
+        this->title = research.title;
         this->abstract = research.abstract;
         this->authors = authors;
         this->disciplines = disciplines;
