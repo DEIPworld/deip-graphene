@@ -130,7 +130,6 @@ statistics& statistics::operator+=(const bucket_object& b)
     this->vests_paid_to_authors += b.vests_paid_to_authors;
     this->vests_paid_to_curators += b.vests_paid_to_curators;
     this->transfers_to_vesting += b.transfers_to_vesting;
-    this->deip_vested += b.deip_vested;
     this->new_vesting_withdrawal_requests += b.new_vesting_withdrawal_requests;
     this->vesting_withdraw_rate_delta += b.vesting_withdraw_rate_delta;
     this->modified_vesting_withdrawal_requests += b.modified_vesting_withdrawal_requests;

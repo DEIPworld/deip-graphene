@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
     {
         BOOST_TEST_MESSAGE("Testing: make_review_research_apply");
 
-        ACTORS((alice));
+        ACTORS_WITH_EXPERT_TOKENS((alice));
 
         generate_block();
 
@@ -105,17 +105,18 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
 
         make_research_review_operation op;
 
-        std::pair<int64_t, int64_t > data;
+        std::pair<int64_t, int64_t> data;
         data.first = 2;
 
-        std::vector<std::pair<int64_t, int64_t >> research_references;
+        std::vector<std::pair<int64_t, int64_t>> research_references;
         research_references.push_back(data);
 
         op.author = "alice";
         op.research_id = 1;
+        op.title = "test";
         op.content = "test";
-        op.research_references = research_references;
-        op.research_external_references = {"one", "two", "three"};
+        op.references = research_references;
+        op.external_references = {"one", "two", "three"};
 
         BOOST_TEST_MESSAGE("--- Test normal research review creation");
 
@@ -139,24 +140,18 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
 
     BOOST_TEST_MESSAGE("Testing: vote_apply failure cases");
 
-    ACTORS((alice)(bob));
+    ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
 
     generate_block();
 
     auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-    auto& discipline = discipline_create(1, "Math", 0, 0);
-    auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+    auto& discipline_service = db.obtain_service<dbs_discipline>();
+    auto& discipline = discipline_service.get_discipline(1);
+    
+    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.discipline_id = discipline.id;
         r.research_id = research.id;
         r.votes_count = 0;
-    });
-
-    auto& token = db.create<expert_token_object>([&](expert_token_object& t) {
-        t.id = 1;
-        t.discipline_id = discipline.id;
-        t.amount = 1000;
-        t.voting_power = DEIP_100_PERCENT;
-        t.account_name = "alice";
     });
 
     auto& content = db.create<research_content_object>([&](research_content_object& c) {
@@ -165,8 +160,8 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
         c.research_id = research.id;
         c.authors = { "alice", "bob" };
         c.content = "content";
-        c.research_references = {};
-        c.research_external_references = { "http://google.com" };
+        c.references = {};
+        c.external_references = { "http://google.com" };
         c.type = research_content_type::milestone;
     });
 
@@ -257,25 +252,22 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 {
     BOOST_TEST_MESSAGE("Testing: vote_apply success cases");
 
-    ACTORS((alice)(bob));
+    ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
 
     generate_block();
 
     auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-    auto& discipline = discipline_create(1, "Math", 0, 0);
-    auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+    auto& discipline_service = db.obtain_service<dbs_discipline>();
+    auto& discipline = discipline_service.get_discipline(1);
+
+    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.discipline_id = discipline.id;
         r.research_id = research.id;
         r.votes_count = 0;
     });
 
-    auto& token = db.create<expert_token_object>([&](expert_token_object& t) {
-        t.id = 1;
-        t.discipline_id = discipline.id;
-        t.amount = 1000;
-        t.voting_power = DEIP_100_PERCENT;
-        t.account_name = "alice";
-    });
+    auto& expert_token_service = db.obtain_service<dbs_expert_token>();
+    auto& token = expert_token_service.get_expert_token_by_account_and_discipline("alice", 1);
 
     auto& content = db.create<research_content_object>([&](research_content_object& c) {
         c.id = 1;
@@ -283,8 +275,8 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
         c.research_id = research.id;
         c.authors = { "alice", "bob" };
         c.content = "content";
-        c.research_references = {};
-        c.research_external_references = { "http://google.com" };
+        c.references = {};
+        c.external_references = { "http://google.com" };
         c.type = research_content_type::milestone;
         c.activity_state = research_content_activity_state::active;
     });
@@ -295,8 +287,6 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 
     signed_transaction tx;
     tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-
-    bool content_is_active = content.activity_state == research_content_activity_state::active;
 
     BOOST_TEST_MESSAGE("--- Testing success");
 
@@ -390,7 +380,9 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
 {
     try
     {
-        ACTORS((alice)(bob));
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+
+        generate_block();
 
         auto& research_service = db.obtain_service<dbs_research>();
         auto& research_group_service = db.obtain_service<dbs_research_group>();
@@ -407,9 +399,9 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
         //////////////////////////////////////////////////
 
         auto& _research_group_1
-            = research_group_create_by_operation("alice", "permlink rg1", "description rg1", 50, 100);
+            = research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 50, 100);
         auto& _research_group_2
-            = research_group_create_by_operation("alice", "permlink rg2", "description rg2", 50, 200);
+            = research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 50, 200);
 
         research_group_invite_create(0, "bob", 0, 100);
         research_group_invite_create(1, "bob", 1, 100);
@@ -453,21 +445,21 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
          ///  Research #3 from Research Group #2                                        ///
         //////////////////////////////////////////////////////////////////////////////////
 
-        const std::string create_research_1_proposal_json = "{\"name\":\"research #1\","
+        const std::string create_research_1_proposal_json = "{\"title\":\"research #1\","
                                                             "\"research_group_id\":0,"
                                                             "\"abstract\":\"abstract r1\","
                                                             "\"permlink\":\"permlink r1\","
                                                             "\"review_share_in_percent\": 1000,"
                                                             "\"dropout_compensation_in_percent\": 5000,"
                                                             "\"disciplines\": [1, 2, 3]}";
-        const std::string create_research_2_proposal_json = "{\"name\":\"research #2\","
+        const std::string create_research_2_proposal_json = "{\"title\":\"research #2\","
                                                             "\"research_group_id\":0,"
                                                             "\"abstract\":\"abstract r2\","
                                                             "\"permlink\":\"permlink r2\","
                                                             "\"review_share_in_percent\": 1000,"
                                                             "\"dropout_compensation_in_percent\": 2000,"
                                                             "\"disciplines\": [1, 2, 3]}";
-        const std::string create_research_3_proposal_json = "{\"name\":\"research #3\","
+        const std::string create_research_3_proposal_json = "{\"title\":\"research #3\","
                                                             "\"research_group_id\":1,"
                                                             "\"abstract\":\"abstract r3\","
                                                             "\"permlink\":\"permlink r3\","
@@ -502,8 +494,6 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
         start_research_3_op.research_group_id = 1;
         start_research_3_op.proposal_id = 2;
         start_research_3_op.voter = "alice";
-
-        create_disciplines();
 
         signed_transaction start_research_tx;
         start_research_tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -606,12 +596,12 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
     {
         BOOST_TEST_MESSAGE("Testing: reject_research_group_invite_apply");
 
-        ACTORS((alice)(bob));
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "permlink", "description", 200, 50, 300);
-        auto& research_group_invite = research_group_invite_create(1, "bob", 1, 50);
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50, 300);
+        research_group_invite_create(1, "bob", 1, 50);
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -640,7 +630,7 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
 {
     try
     {
-        ACTORS((alice)(bob));
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
 
         vector<account_name_type> accounts = { "alice" };
 
@@ -652,8 +642,8 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
          ///                                            ///
         //////////////////////////////////////////////////
 
-        research_group_create_by_operation("alice", "permlink rg1", "description rg1", 50, 100);
-        research_group_create_by_operation("alice", "permlink rg2", "description rg2", 50, 200);
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 50, 100);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 50, 200);
 
         research_group_invite_create(0, "bob", 0, 100);
         research_group_invite_create(1, "bob", 1, 100);
@@ -722,9 +712,6 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        const account_object& acct = db.get_account("alice");
        const account_authority_object& acct_auth = db.get<account_authority_object, by_account>("alice");
 
-       auto vest_shares = gpo.total_vesting_shares;
-       auto vests = gpo.total_vesting_fund_deip;
-
        BOOST_REQUIRE(acct.name == "alice");
        BOOST_REQUIRE(acct_auth.owner == authority(1, priv_key.get_public_key(), 1));
        BOOST_REQUIRE(acct_auth.active == authority(2, priv_key.get_public_key(), 2));
@@ -734,10 +721,6 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        BOOST_REQUIRE(acct.balance.amount.value == ASSET("0.000 TESTS").amount.value);
        BOOST_REQUIRE(acct.id._id == acct_auth.id._id);
 
-       /// because init_witness has created vesting shares and blocks have been produced, 100 DEIP is worth less than
-       /// 100 vesting shares due to rounding
-       BOOST_REQUIRE(acct.vesting_shares.amount.value == (op.fee * (vest_shares / vests)).amount.value);
-       BOOST_REQUIRE(acct.vesting_withdraw_rate.amount.value == ASSET("0.000000 VESTS").amount.value);
        BOOST_REQUIRE(acct.proxied_vsf_votes_total().value == 0);
        BOOST_REQUIRE((init_starting_balance - ASSET("0.100 TESTS")).amount.value == init.balance.amount.value);
        validate_database();
@@ -752,8 +735,6 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        BOOST_REQUIRE(acct.proxy == "");
        BOOST_REQUIRE(acct.created == db.head_block_time());
        BOOST_REQUIRE(acct.balance.amount.value == ASSET("0.000 DEIP ").amount.value);
-       BOOST_REQUIRE(acct.vesting_shares.amount.value == (op.fee * (vest_shares / vests)).amount.value);
-       BOOST_REQUIRE(acct.vesting_withdraw_rate.amount.value == ASSET("0.000000 VESTS").amount.value);
        BOOST_REQUIRE(acct.proxied_vsf_votes_total().value == 0);
        BOOST_REQUIRE((init_starting_balance - ASSET("0.100 TESTS")).amount.value == init.balance.amount.value);
        validate_database();
@@ -828,7 +809,7 @@ BOOST_AUTO_TEST_CASE(account_update_authorities)
    {
        BOOST_TEST_MESSAGE("Testing: account_update_authorities");
 
-       ACTORS((alice)(bob))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
        private_key_type active_key = generate_private_key("new_key");
 
        db.modify(db.get<account_authority_object, by_account>("alice"),
@@ -910,7 +891,7 @@ BOOST_AUTO_TEST_CASE(account_update_apply)
    {
        BOOST_TEST_MESSAGE("Testing: account_update_apply");
 
-       ACTORS((alice))
+       ACTORS_WITH_EXPERT_TOKENS((alice))
        private_key_type new_private_key = generate_private_key("new_key");
 
        BOOST_TEST_MESSAGE("--- Test normal update");
@@ -1007,7 +988,7 @@ BOOST_AUTO_TEST_CASE(transfer_authorities)
 {
    try
    {
-       ACTORS((alice)(bob))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
        fund("alice", 10000);
 
        BOOST_TEST_MESSAGE("Testing: transfer_authorities");
@@ -1058,7 +1039,7 @@ BOOST_AUTO_TEST_CASE(signature_stripping)
        // Legitimate tx signed by (Alice, Bob) goes through.
        // Sam shouldn't be able to add or remove signatures to get the transaction to process multiple times.
 
-       ACTORS((alice)(bob)(sam)(corp))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(sam)(corp))
        fund("corp", 10000);
 
        account_update_operation update_op;
@@ -1110,11 +1091,14 @@ BOOST_AUTO_TEST_CASE(transfer_apply)
    {
        BOOST_TEST_MESSAGE("Testing: transfer_apply");
 
-       ACTORS((alice)(bob))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
        fund("alice", 10000);
 
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("10.000 TESTS").amount.value);
-       BOOST_REQUIRE(bob.balance.amount.value == ASSET(" 0.000 TESTS").amount.value);
+       const auto& new_alice = db.get_account("alice");
+       const auto& new_bob = db.get_account("bob");
+
+       BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("10.000 TESTS").amount.value);
+       BOOST_REQUIRE(new_bob.balance.amount.value == ASSET(" 0.000 TESTS").amount.value);
 
        signed_transaction tx;
        transfer_operation op;
@@ -1129,15 +1113,12 @@ BOOST_AUTO_TEST_CASE(transfer_apply)
        tx.sign(alice_private_key, db.get_chain_id());
        db.push_transaction(tx, 0);
 
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("5.000 TESTS").amount.value);
-       BOOST_REQUIRE(bob.balance.amount.value == ASSET("5.000 TESTS").amount.value);
+       BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("5.000 TESTS").amount.value);
+       BOOST_REQUIRE(new_bob.balance.amount.value == ASSET("5.000 TESTS").amount.value);
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Generating a block");
        generate_block();
-
-       const auto& new_alice = db.get_account("alice");
-       const auto& new_bob = db.get_account("bob");
 
        BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("5.000 TESTS").amount.value);
        BOOST_REQUIRE(new_bob.balance.amount.value == ASSET("5.000 TESTS").amount.value);
@@ -1170,321 +1151,6 @@ BOOST_AUTO_TEST_CASE(transfer_apply)
    FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(transfer_to_vesting_validate)
-{
-   try
-   {
-       BOOST_TEST_MESSAGE("Testing: transfer_to_vesting_validate");
-
-       validate_database();
-   }
-   FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(transfer_to_vesting_authorities)
-{
-   try
-   {
-       ACTORS((alice)(bob))
-       fund("alice", 10000);
-
-       BOOST_TEST_MESSAGE("Testing: transfer_to_vesting_authorities");
-
-       transfer_to_vesting_operation op;
-       op.from = "alice";
-       op.to = "bob";
-       op.amount = ASSET("2.500 TESTS");
-
-       signed_transaction tx;
-       tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-       tx.operations.push_back(op);
-
-       BOOST_TEST_MESSAGE("--- Test failure when no signatures");
-       DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
-
-       BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the account's authority");
-       tx.sign(alice_post_key, db.get_chain_id());
-       DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
-
-       BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
-       tx.signatures.clear();
-       tx.sign(alice_private_key, db.get_chain_id());
-       tx.sign(alice_private_key, db.get_chain_id());
-       DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
-
-       BOOST_TEST_MESSAGE("--- Test failure when signed by an additional signature not in the creator's authority");
-       tx.signatures.clear();
-       tx.sign(alice_private_key, db.get_chain_id());
-       tx.sign(bob_private_key, db.get_chain_id());
-       DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
-
-       BOOST_TEST_MESSAGE("--- Test success with from signature");
-       tx.signatures.clear();
-       tx.sign(alice_private_key, db.get_chain_id());
-       db.push_transaction(tx, 0);
-
-       validate_database();
-   }
-   FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(transfer_to_vesting_apply)
-{
-   try
-   {
-       BOOST_TEST_MESSAGE("Testing: transfer_to_vesting_apply");
-
-       ACTORS((alice)(bob))
-       fund("alice", 10000);
-
-       const auto& gpo = db.get_dynamic_global_properties();
-
-       BOOST_REQUIRE(alice.balance == ASSET("10.000 TESTS"));
-
-       auto shares = asset(gpo.total_vesting_shares.amount, VESTS_SYMBOL);
-       auto vests = asset(gpo.total_vesting_fund_deip.amount, DEIP_SYMBOL);
-       auto alice_shares = alice.vesting_shares;
-       auto bob_shares = bob.vesting_shares;
-
-       transfer_to_vesting_operation op;
-       op.from = "alice";
-       op.to = "";
-       op.amount = ASSET("7.500 TESTS");
-
-       signed_transaction tx;
-       tx.operations.push_back(op);
-       tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-       tx.sign(alice_private_key, db.get_chain_id());
-       db.push_transaction(tx, 0);
-
-       auto new_vest = op.amount * (shares / vests);
-       shares += new_vest;
-       vests += op.amount;
-       alice_shares += new_vest;
-
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("2.500 TESTS").amount.value);
-       BOOST_REQUIRE(alice.vesting_shares.amount.value == alice_shares.amount.value);
-       BOOST_REQUIRE(gpo.total_vesting_fund_deip.amount.value == vests.amount.value);
-       BOOST_REQUIRE(gpo.total_vesting_shares.amount.value == shares.amount.value);
-       validate_database();
-
-       op.to = "bob";
-       op.amount = asset(2000, DEIP_SYMBOL);
-       tx.operations.clear();
-       tx.signatures.clear();
-       tx.operations.push_back(op);
-       tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-       tx.sign(alice_private_key, db.get_chain_id());
-       db.push_transaction(tx, 0);
-
-       new_vest = asset((op.amount * (shares / vests)).amount, VESTS_SYMBOL);
-       shares += new_vest;
-       vests += op.amount;
-       bob_shares += new_vest;
-
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("0.500 TESTS").amount.value);
-       BOOST_REQUIRE(alice.vesting_shares.amount.value == alice_shares.amount.value);
-       BOOST_REQUIRE(bob.balance.amount.value == ASSET("0.000 TESTS").amount.value);
-       BOOST_REQUIRE(bob.vesting_shares.amount.value == bob_shares.amount.value);
-       BOOST_REQUIRE(gpo.total_vesting_fund_deip.amount.value == vests.amount.value);
-       BOOST_REQUIRE(gpo.total_vesting_shares.amount.value == shares.amount.value);
-       validate_database();
-
-       DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
-
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("0.500 TESTS").amount.value);
-       BOOST_REQUIRE(alice.vesting_shares.amount.value == alice_shares.amount.value);
-       BOOST_REQUIRE(bob.balance.amount.value == ASSET("0.000 TESTS").amount.value);
-       BOOST_REQUIRE(bob.vesting_shares.amount.value == bob_shares.amount.value);
-       BOOST_REQUIRE(gpo.total_vesting_fund_deip.amount.value == vests.amount.value);
-       BOOST_REQUIRE(gpo.total_vesting_shares.amount.value == shares.amount.value);
-       validate_database();
-   }
-   FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(withdraw_vesting_validate)
-{
-   try
-   {
-       BOOST_TEST_MESSAGE("Testing: withdraw_vesting_validate");
-
-       validate_database();
-   }
-   FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(withdraw_vesting_authorities)
-{
-   try
-   {
-       BOOST_TEST_MESSAGE("Testing: withdraw_vesting_authorities");
-
-       ACTORS((alice)(bob))
-       fund("alice", 10000);
-       vest("alice", 10000);
-
-       withdraw_vesting_operation op;
-       op.account = "alice";
-       op.vesting_shares = ASSET("0.001000 VESTS");
-
-       signed_transaction tx;
-       tx.operations.push_back(op);
-       tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-
-       BOOST_TEST_MESSAGE("--- Test failure when no signature.");
-       DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
-
-       BOOST_TEST_MESSAGE("--- Test success with account signature");
-       tx.sign(alice_private_key, db.get_chain_id());
-       db.push_transaction(tx, database::skip_transaction_dupe_check);
-
-       BOOST_TEST_MESSAGE("--- Test failure with duplicate signature");
-       tx.sign(alice_private_key, db.get_chain_id());
-       DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_duplicate_sig);
-
-       BOOST_TEST_MESSAGE("--- Test failure with additional incorrect signature");
-       tx.signatures.clear();
-       tx.sign(alice_private_key, db.get_chain_id());
-       tx.sign(bob_private_key, db.get_chain_id());
-       DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
-
-       BOOST_TEST_MESSAGE("--- Test failure with incorrect signature");
-       tx.signatures.clear();
-       tx.sign(alice_post_key, db.get_chain_id());
-       DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
-
-       validate_database();
-   }
-   FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(withdraw_vesting_apply)
-{
-   try
-   {
-       BOOST_TEST_MESSAGE("Testing: withdraw_vesting_apply");
-
-       ACTORS((alice))
-       generate_block();
-       vest("alice", ASSET("10.000 TESTS"));
-
-       BOOST_TEST_MESSAGE("--- Test withdraw of existing VESTS");
-
-       {
-           const auto& alice = db.get_account("alice");
-
-           withdraw_vesting_operation op;
-           op.account = "alice";
-           op.vesting_shares = asset(alice.vesting_shares.amount / 2, VESTS_SYMBOL);
-
-           auto old_vesting_shares = alice.vesting_shares;
-
-           signed_transaction tx;
-           tx.operations.push_back(op);
-           tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-           tx.sign(alice_private_key, db.get_chain_id());
-           db.push_transaction(tx, 0);
-
-           BOOST_REQUIRE(alice.vesting_shares.amount.value == old_vesting_shares.amount.value);
-           BOOST_REQUIRE(alice.vesting_withdraw_rate.amount.value
-                         == (old_vesting_shares.amount / (DEIP_VESTING_WITHDRAW_INTERVALS * 2)).value);
-           BOOST_REQUIRE(alice.to_withdraw.value == op.vesting_shares.amount.value);
-           BOOST_REQUIRE(alice.next_vesting_withdrawal
-                         == db.head_block_time() + DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS);
-           validate_database();
-
-           BOOST_TEST_MESSAGE("--- Test changing vesting withdrawal");
-           tx.operations.clear();
-           tx.signatures.clear();
-
-           op.vesting_shares = asset(alice.vesting_shares.amount / 3, VESTS_SYMBOL);
-           tx.operations.push_back(op);
-           tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-           tx.sign(alice_private_key, db.get_chain_id());
-           db.push_transaction(tx, 0);
-
-           BOOST_REQUIRE(alice.vesting_shares.amount.value == old_vesting_shares.amount.value);
-           BOOST_REQUIRE(alice.vesting_withdraw_rate.amount.value
-                         == (old_vesting_shares.amount / (DEIP_VESTING_WITHDRAW_INTERVALS * 3)).value);
-           BOOST_REQUIRE(alice.to_withdraw.value == op.vesting_shares.amount.value);
-           BOOST_REQUIRE(alice.next_vesting_withdrawal
-                         == db.head_block_time() + DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS);
-           validate_database();
-
-           BOOST_TEST_MESSAGE("--- Test withdrawing more vests than available");
-
-           tx.operations.clear();
-           tx.signatures.clear();
-
-           op.vesting_shares = asset(alice.vesting_shares.amount * 2, VESTS_SYMBOL);
-           tx.operations.push_back(op);
-           tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-           tx.sign(alice_private_key, db.get_chain_id());
-           DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
-
-           BOOST_REQUIRE(alice.vesting_shares.amount.value == old_vesting_shares.amount.value);
-           BOOST_REQUIRE(alice.vesting_withdraw_rate.amount.value
-                         == (old_vesting_shares.amount / (DEIP_VESTING_WITHDRAW_INTERVALS * 3)).value);
-           BOOST_REQUIRE(alice.next_vesting_withdrawal
-                         == db.head_block_time() + DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS);
-           validate_database();
-
-           BOOST_TEST_MESSAGE("--- Test withdrawing 0 to reset vesting withdraw");
-           tx.operations.clear();
-           tx.signatures.clear();
-
-           op.vesting_shares = asset(0, VESTS_SYMBOL);
-           tx.operations.push_back(op);
-           tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-           tx.sign(alice_private_key, db.get_chain_id());
-           db.push_transaction(tx, 0);
-
-           BOOST_REQUIRE(alice.vesting_shares.amount.value == old_vesting_shares.amount.value);
-           BOOST_REQUIRE(alice.vesting_withdraw_rate.amount.value == 0);
-           BOOST_REQUIRE(alice.to_withdraw.value == 0);
-           BOOST_REQUIRE(alice.next_vesting_withdrawal == fc::time_point_sec::maximum());
-
-           BOOST_TEST_MESSAGE("--- Test cancelling a withdraw when below the account creation fee");
-           op.vesting_shares = alice.vesting_shares;
-           tx.clear();
-           tx.operations.push_back(op);
-           tx.sign(alice_private_key, db.get_chain_id());
-           db.push_transaction(tx, 0);
-           generate_block();
-       }
-
-       db_plugin->debug_update(
-           [=](database& db) {
-               auto& wso = db.get_witness_schedule_object();
-
-               db.modify(wso, [&](witness_schedule_object& w) {
-                   w.median_props.account_creation_fee = ASSET("10.000 TESTS");
-               });
-
-               db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object& gpo) {
-                   gpo.current_supply
-                       += wso.median_props.account_creation_fee - ASSET("0.001 TESTS") - gpo.total_vesting_fund_deip;
-                   gpo.total_vesting_fund_deip = wso.median_props.account_creation_fee - ASSET("0.001 TESTS");
-               });
-           },
-           database::skip_witness_signature);
-
-       withdraw_vesting_operation op;
-       signed_transaction tx;
-       op.account = "alice";
-       op.vesting_shares = ASSET("0.000000 VESTS");
-       tx.operations.push_back(op);
-       tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-       tx.sign(alice_private_key, db.get_chain_id());
-       db.push_transaction(tx, 0);
-
-       BOOST_REQUIRE(db.get_account("alice").vesting_withdraw_rate == ASSET("0.000000 VESTS"));
-       validate_database();
-   }
-   FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_CASE(witness_update_validate)
 {
    try
@@ -1502,7 +1168,7 @@ BOOST_AUTO_TEST_CASE(witness_update_authorities)
    {
        BOOST_TEST_MESSAGE("Testing: witness_update_authorities");
 
-       ACTORS((alice)(bob));
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
        fund("alice", 10000);
 
        private_key_type signing_key = generate_private_key("new_key");
@@ -1555,7 +1221,10 @@ BOOST_AUTO_TEST_CASE(witness_update_apply)
    {
        BOOST_TEST_MESSAGE("Testing: witness_update_apply");
 
-       ACTORS((alice))
+       ACTORS_WITH_EXPERT_TOKENS((alice))
+
+       const auto& new_alice = db.get_account("alice");
+
        fund("alice", 10000);
 
        private_key_type signing_key = generate_private_key("new_key");
@@ -1592,7 +1261,7 @@ BOOST_AUTO_TEST_CASE(witness_update_apply)
        BOOST_REQUIRE(alice_witness.virtual_last_update == 0);
        BOOST_REQUIRE(alice_witness.virtual_position == 0);
        BOOST_REQUIRE(alice_witness.virtual_scheduled_time == fc::uint128_t::max_value());
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("10.000 TESTS").amount.value); // No fee
+       BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("10.000 TESTS").amount.value); // No fee
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Test updating a witness");
@@ -1618,7 +1287,7 @@ BOOST_AUTO_TEST_CASE(witness_update_apply)
        BOOST_REQUIRE(alice_witness.virtual_last_update == 0);
        BOOST_REQUIRE(alice_witness.virtual_position == 0);
        BOOST_REQUIRE(alice_witness.virtual_scheduled_time == fc::uint128_t::max_value());
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("10.000 TESTS").amount.value);
+       BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("10.000 TESTS").amount.value);
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Test failure when upgrading a non-existent account");
@@ -1651,7 +1320,7 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_authorities)
     {
         BOOST_TEST_MESSAGE("Testing: account_witness_vote_authorities");
 
-        ACTORS((alice)(bob)(sam))
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(sam))
 
         fund("alice", 1000);
         private_key_type alice_witness_key = generate_private_key("alice_witness");
@@ -1707,12 +1376,17 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
         BOOST_TEST_MESSAGE("Testing: account_witness_vote_apply");
 
         ACTORS((alice)(bob)(sam))
+
+        expert_token("sam", 1, 1000);
+
         fund("alice", 5000);
-        vest("alice", 5000);
-        fund("sam", 1000);
 
         for (int i = 1; i < 4; ++i)
-            expert_token_create(i, "alice", i, i * 100);
+            expert_token("alice", i, i * 100);
+
+        fund("sam", 1000);
+
+        const auto& new_alice = db.get_account("alice");
 
         private_key_type sam_witness_key = generate_private_key("sam_key");
         witness_create("sam", sam_private_key, "foo.bar", sam_witness_key.get_public_key(), 1000);
@@ -1746,7 +1420,7 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
         }
 
         BOOST_REQUIRE(sam_witness.votes == alice_total_vote_weight);
-        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) != witness_vote_idx.end());
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, new_alice.id)) != witness_vote_idx.end());
         validate_database();
 
         BOOST_TEST_MESSAGE("--- Test revoke vote");
@@ -1758,13 +1432,13 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
 
         db.push_transaction(tx, 0);
         BOOST_REQUIRE(sam_witness.votes.value == 0);
-        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) == witness_vote_idx.end());
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, new_alice.id)) == witness_vote_idx.end());
 
         BOOST_TEST_MESSAGE("--- Test failure when attempting to revoke a non-existent vote");
 
         DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
         BOOST_REQUIRE(sam_witness.votes.value == 0);
-        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) == witness_vote_idx.end());
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, new_alice.id)) == witness_vote_idx.end());
 
         BOOST_TEST_MESSAGE("--- Test failure when voting for a non-existent account");
         tx.operations.clear();
@@ -1807,7 +1481,7 @@ BOOST_AUTO_TEST_CASE(account_witness_proxy_authorities)
    {
        BOOST_TEST_MESSAGE("Testing: account_witness_proxy_authorities");
 
-       ACTORS((alice)(bob))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
 
        account_witness_proxy_operation op;
        op.account = "bob";
@@ -1857,14 +1531,13 @@ BOOST_AUTO_TEST_CASE(account_recovery)
    {
        BOOST_TEST_MESSAGE("Testing: account recovery");
 
-       ACTORS((alice));
+       ACTORS_WITH_EXPERT_TOKENS((alice));
        fund("alice", 1000000);
 
        BOOST_TEST_MESSAGE("Creating account bob with alice");
 
        account_create_with_delegation_operation acc_create;
        acc_create.fee = ASSET("10.000 TESTS");
-       acc_create.delegation = ASSET("0.000000 VESTS");
        acc_create.creator = "alice";
        acc_create.new_account_name = "bob";
        acc_create.owner = authority(1, generate_private_key("bob_owner").get_public_key(), 1);
@@ -1878,6 +1551,9 @@ BOOST_AUTO_TEST_CASE(account_recovery)
        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
        tx.sign(alice_private_key, db.get_chain_id());
        db.push_transaction(tx, 0);
+
+       generate_block();
+       expert_token("bob", 1, 10000);
 
        const auto& bob_auth = db.get<account_authority_object, by_account>("bob");
        BOOST_REQUIRE(bob_auth.owner == acc_create.owner);
@@ -2099,7 +1775,7 @@ BOOST_AUTO_TEST_CASE(change_recovery_account)
    {
        BOOST_TEST_MESSAGE("Testing change_recovery_account_operation");
 
-       ACTORS((alice)(bob)(sam)(tyler))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(sam)(tyler))
 
        auto change_recovery_account
            = [&](const std::string& account_to_recover, const std::string& new_recovery_account) {
@@ -2197,11 +1873,9 @@ BOOST_AUTO_TEST_CASE(account_bandwidth)
    try
    {
        BOOST_TEST_MESSAGE("Testing: account_bandwidth");
-       ACTORS((alice)(bob))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
        generate_block();
-       vest("alice", ASSET("10.000 TESTS"));
        fund("alice", ASSET("10.000 TESTS"));
-       vest("bob", ASSET("10.000 TESTS"));
 
        generate_block();
 
@@ -2259,16 +1933,14 @@ BOOST_AUTO_TEST_CASE(account_create_with_delegation_authorities)
        BOOST_TEST_MESSAGE("Testing: account_create_with_delegation_authorities");
 
        signed_transaction tx;
-       ACTORS((alice));
+       ACTORS_WITH_EXPERT_TOKENS((alice));
        generate_blocks(1);
        fund("alice", ASSET("1000.000 TESTS"));
-       vest("alice", ASSET("10000.000000 VESTS"));
 
        private_key_type priv_key = generate_private_key("temp_key");
 
        account_create_with_delegation_operation op;
        op.fee = ASSET("0.000 TESTS");
-       op.delegation = asset(100, VESTS_SYMBOL);
        op.creator = "alice";
        op.new_account_name = "bob";
        op.owner = authority(1, priv_key.get_public_key(), 1);
@@ -2311,145 +1983,23 @@ BOOST_AUTO_TEST_CASE(account_create_with_delegation_authorities)
    FC_LOG_AND_RETHROW()
 }
 
-// BOOST_AUTO_TEST_CASE(account_create_with_delegation_apply)
-// {
-//    try
-//    {
-//        BOOST_TEST_MESSAGE("Testing: account_create_with_delegation_apply");
-//        signed_transaction tx;
-//        ACTORS((alice));
-//        // 150 * fee = ( 5 * DEIP ) + SP
-//        generate_blocks(1);
-//        fund("alice", ASSET("1510.000 TESTS"));
-//        vest("alice", ASSET("1000.000 TESTS"));
-
-//        private_key_type priv_key = generate_private_key("temp_key");
-
-//        generate_block();
-
-//        db_plugin->debug_update([=](database& db) {
-//            db.modify(db.get_witness_schedule_object(),
-//                      [&](witness_schedule_object& w) { w.median_props.account_creation_fee = ASSET("1.000 TESTS"); });
-//        });
-
-//        generate_block();
-
-//        BOOST_TEST_MESSAGE("--- Test failure when VESTS are powering down.");
-//        withdraw_vesting_operation withdraw;
-//        withdraw.account = "alice";
-//        withdraw.vesting_shares = db.get_account("alice").vesting_shares;
-//        account_create_with_delegation_operation op;
-//        op.fee = ASSET("10.000 TESTS");
-//        op.delegation = ASSET("100000000.000000 VESTS");
-//        op.creator = "alice";
-//        op.new_account_name = "bob";
-//        op.owner = authority(1, priv_key.get_public_key(), 1);
-//        op.active = authority(2, priv_key.get_public_key(), 2);
-//        op.memo_key = priv_key.get_public_key();
-//        op.json_metadata = "{\"foo\":\"bar\"}";
-//        tx.operations.push_back(withdraw);
-//        tx.operations.push_back(op);
-//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-//        tx.sign(alice_private_key, db.get_chain_id());
-//        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::assert_exception);
-
-//        BOOST_TEST_MESSAGE("--- Test success under normal conditions. ");
-//        tx.clear();
-//        tx.operations.push_back(op);
-//        tx.sign(alice_private_key, db.get_chain_id());
-//        db.push_transaction(tx, 0);
-
-//        const account_object& bob_acc = db.get_account("bob");
-//        const account_object& alice_acc = db.get_account("alice");
-//        BOOST_REQUIRE(alice_acc.delegated_vesting_shares == ASSET("100000000.000000 VESTS"));
-//        BOOST_REQUIRE(bob_acc.received_vesting_shares == ASSET("100000000.000000 VESTS"));
-//        BOOST_REQUIRE(bob_acc.effective_vesting_shares()
-//                      == bob_acc.vesting_shares - bob_acc.delegated_vesting_shares + bob_acc.received_vesting_shares);
-
-//        BOOST_TEST_MESSAGE("--- Test delegator object integrety. ");
-//        auto delegation
-//            = db.find<vesting_delegation_object, by_delegation>(boost::make_tuple(op.creator, op.new_account_name));
-
-//        BOOST_REQUIRE(delegation != nullptr);
-//        BOOST_REQUIRE(delegation->delegator == op.creator);
-//        BOOST_REQUIRE(delegation->delegatee == op.new_account_name);
-//        BOOST_REQUIRE(delegation->vesting_shares == ASSET("100000000.000000 VESTS"));
-//        BOOST_REQUIRE(delegation->min_delegation_time == db.head_block_time() + DEIP_CREATE_ACCOUNT_DELEGATION_TIME);
-//        auto del_amt = delegation->vesting_shares;
-//        auto exp_time = delegation->min_delegation_time;
-
-//        generate_block();
-
-//        BOOST_TEST_MESSAGE("--- Test success using only DEIP to reach target delegation.");
-
-//        tx.clear();
-//        op.fee = asset(db.get_witness_schedule_object().median_props.account_creation_fee.amount
-//                           * DEIP_CREATE_ACCOUNT_WITH_DEIP_MODIFIER * DEIP_CREATE_ACCOUNT_DELEGATION_RATIO,
-//                       DEIP_SYMBOL);
-//        op.delegation = asset(0, VESTS_SYMBOL);
-//        op.new_account_name = "sam";
-//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-//        tx.operations.push_back(op);
-//        tx.sign(alice_private_key, db.get_chain_id());
-//        db.push_transaction(tx, 0);
-
-//        BOOST_TEST_MESSAGE("--- Test failure when insufficient funds to process transaction.");
-//        tx.clear();
-//        op.fee = ASSET("10.000 TESTS");
-//        op.delegation = ASSET("0.000000 VESTS");
-//        op.new_account_name = "pam";
-//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-//        tx.operations.push_back(op);
-//        tx.sign(alice_private_key, db.get_chain_id());
-
-//        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
-
-//        BOOST_TEST_MESSAGE("--- Test failure when insufficient fee fo reach target delegation.");
-//        fund("alice", asset(db.get_witness_schedule_object().median_props.account_creation_fee.amount
-//                                * DEIP_CREATE_ACCOUNT_WITH_DEIP_MODIFIER * DEIP_CREATE_ACCOUNT_DELEGATION_RATIO,
-//                            DEIP_SYMBOL));
-//        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
-
-//        validate_database();
-
-//        BOOST_TEST_MESSAGE("--- Test removing delegation from new account");
-//        tx.clear();
-//        delegate_vesting_shares_operation delegate;
-//        delegate.delegator = "alice";
-//        delegate.delegatee = "bob";
-//        delegate.vesting_shares = ASSET("0.000000 VESTS");
-//        tx.operations.push_back(delegate);
-//        tx.sign(alice_private_key, db.get_chain_id());
-//        db.push_transaction(tx, 0);
-
-//        auto itr = db.get_index<vesting_delegation_expiration_index, by_id>().begin();
-//        auto end = db.get_index<vesting_delegation_expiration_index, by_id>().end();
-
-//        BOOST_REQUIRE(itr != end);
-//        BOOST_REQUIRE(itr->delegator == "alice");
-//        BOOST_REQUIRE(itr->vesting_shares == del_amt);
-//        BOOST_REQUIRE(itr->expiration == exp_time);
-//        validate_database();
-//    }
-//    FC_LOG_AND_RETHROW()
-// }
-
 BOOST_AUTO_TEST_CASE(create_research_group_apply)
 {
    try
    {
        BOOST_TEST_MESSAGE("Testing: create_research_group_apply");
 
-       ACTORS((alice));
+       ACTORS_WITH_EXPERT_TOKENS((alice));
        generate_block();
 
        private_key_type priv_key = generate_private_key("alice");
 
        create_research_group_operation op;
 
+       op.name = "test";
        op.creator = "alice";
        op.permlink = "group";
-       op.desciption = "group";
+       op.description = "group";
        op.quorum_percent = 10;
        op.tokens_amount = 100;
 
@@ -2464,6 +2014,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
        auto& research_group_service = db.obtain_service<dbs_research_group>();
        auto& research_group = research_group_service.get_research_group(0);
 
+       BOOST_CHECK(research_group.name == "test");
        BOOST_CHECK(research_group.description == "group");
        BOOST_CHECK(research_group.permlink == "group");
        BOOST_CHECK(research_group.quorum_percent == 10);
@@ -2473,6 +2024,78 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
    FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(create_research_group_join_request_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: create_research_group_join_request_apply");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice));
+
+        generate_block();
+
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50, 300);
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        create_research_group_join_request_operation op;
+
+        op.owner = "alice";
+        op.research_group_id = 1;
+        op.motivation_letter = "letter";
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& research_group_join_request = db.get<research_group_join_request_object>(0);
+
+        BOOST_CHECK(research_group_join_request.id == 0);
+        BOOST_CHECK(research_group_join_request.research_group_id == 1);
+        BOOST_CHECK(research_group_join_request.account_name == "alice");
+        BOOST_CHECK(research_group_join_request.motivation_letter == "letter");
+        BOOST_CHECK(research_group_join_request.expiration_time == db.head_block_time() + DAYS_TO_SECONDS(14));
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(reject_research_group_join_request_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: reject_research_group_join_request_apply");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice));
+
+        generate_block();
+
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50, 300);
+        auto& research_group_invite = research_group_join_request_create(1, "alice", 1, "letter");
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        reject_research_group_join_request_operation op;
+
+        op.research_group_join_request_id = 1;
+        op.owner = "alice";
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK_THROW((db.get<research_group_join_request_object, by_id>(1)), boost::exception);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+    
 BOOST_AUTO_TEST_SUITE_END()
 
 #endif

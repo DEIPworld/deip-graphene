@@ -95,30 +95,6 @@ struct operation_process
 //            }
 //        });
     }
-
-    void operator()(const transfer_to_vesting_operation& op) const
-    {
-        _db.modify(_bucket, [&](bucket_object& b) {
-            b.transfers_to_vesting++;
-            b.deip_vested += op.amount.amount;
-        });
-    }
-
-    void operator()(const fill_vesting_withdraw_operation& op) const
-    {
-        const auto& account = _db.get_account(op.from_account);
-
-        _db.modify(_bucket, [&](bucket_object& b) {
-            b.vesting_withdrawals_processed++;
-            if (op.deposited.symbol == DEIP_SYMBOL)
-                b.vests_withdrawn += op.withdrawn.amount;
-            else
-                b.vests_transferred += op.withdrawn.amount;
-
-            if (account.vesting_withdraw_rate.amount == 0)
-                b.finished_vesting_withdrawals++;
-        });
-    }
 };
 
 void blockchain_statistics_plugin_impl::on_block(const signed_block& b)
@@ -206,32 +182,32 @@ void blockchain_statistics_plugin_impl::on_block(const signed_block& b)
 
 void blockchain_statistics_plugin_impl::pre_operation(const operation_notification& o)
 {
-    auto& db = _self.database();
+    // auto& db = _self.database();
 
-    for (auto bucket_id : _current_buckets)
-    {
-        if (o.op.which() == operation::tag<withdraw_vesting_operation>::value)
-        {
-            withdraw_vesting_operation op = o.op.get<withdraw_vesting_operation>();
-            const auto& account = db.get_account(op.account);
-            const auto& bucket = db.get(bucket_id);
+    // for (auto bucket_id : _current_buckets)
+    // {
+    //     if (o.op.which() == operation::tag<withdraw_vesting_operation>::value)
+    //     {
+    //         withdraw_vesting_operation op = o.op.get<withdraw_vesting_operation>();
+    //         const auto& account = db.get_account(op.account);
+    //         const auto& bucket = db.get(bucket_id);
 
-            auto new_vesting_withdrawal_rate = op.vesting_shares.amount / DEIP_VESTING_WITHDRAW_INTERVALS;
-            if (op.vesting_shares.amount > 0 && new_vesting_withdrawal_rate == 0)
-                new_vesting_withdrawal_rate = 1;
+    //         auto new_vesting_withdrawal_rate = op.vesting_shares.amount / DEIP_VESTING_WITHDRAW_INTERVALS;
+    //         if (op.vesting_shares.amount > 0 && new_vesting_withdrawal_rate == 0)
+    //             new_vesting_withdrawal_rate = 1;
 
-            db.modify(bucket, [&](bucket_object& b) {
-                if (account.vesting_withdraw_rate.amount > 0)
-                    b.modified_vesting_withdrawal_requests++;
-                else
-                    b.new_vesting_withdrawal_requests++;
+    //         db.modify(bucket, [&](bucket_object& b) {
+    //             if (account.vesting_withdraw_rate.amount > 0)
+    //                 b.modified_vesting_withdrawal_requests++;
+    //             else
+    //                 b.new_vesting_withdrawal_requests++;
 
-                // TODO: Figure out how to change delta when a vesting withdraw finishes. Have until March 24th 2018 to
-                // figure that out...
-                b.vesting_withdraw_rate_delta += new_vesting_withdrawal_rate - account.vesting_withdraw_rate.amount;
-            });
-        }
-    }
+    //             // TODO: Figure out how to change delta when a vesting withdraw finishes. Have until March 24th 2018 to
+    //             // figure that out...
+    //             b.vesting_withdraw_rate_delta += new_vesting_withdrawal_rate - account.vesting_withdraw_rate.amount;
+    //         });
+    //     }
+    // }
 }
 
 void blockchain_statistics_plugin_impl::post_operation(const operation_notification& o)

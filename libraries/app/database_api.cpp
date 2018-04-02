@@ -462,55 +462,6 @@ optional<account_recovery_request_api_obj> database_api::get_recovery_request(st
     });
 }
 
-vector<withdraw_route> database_api::get_withdraw_routes(string account, withdraw_route_type type) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<withdraw_route> result;
-
-        const auto& acc = my->_db.get_account(account);
-
-        if (type == outgoing || type == all)
-        {
-            const auto& by_route = my->_db.get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
-            auto route = by_route.lower_bound(acc.id);
-
-            while (route != by_route.end() && route->from_account == acc.id)
-            {
-                withdraw_route r;
-                r.from_account = account;
-                r.to_account = my->_db.get(route->to_account).name;
-                r.percent = route->percent;
-                r.auto_vest = route->auto_vest;
-
-                result.push_back(r);
-
-                ++route;
-            }
-        }
-
-        if (type == incoming || type == all)
-        {
-            const auto& by_dest = my->_db.get_index<withdraw_vesting_route_index>().indices().get<by_destination>();
-            auto route = by_dest.lower_bound(acc.id);
-
-            while (route != by_dest.end() && route->to_account == acc.id)
-            {
-                withdraw_route r;
-                r.from_account = my->_db.get(route->from_account).name;
-                r.to_account = account;
-                r.percent = route->percent;
-                r.auto_vest = route->auto_vest;
-
-                result.push_back(r);
-
-                ++route;
-            }
-        }
-
-        return result;
-    });
-}
-
 optional<account_bandwidth_api_obj> database_api::get_account_bandwidth(string account,
                                                                         witness::bandwidth_type type) const
 {
@@ -856,48 +807,6 @@ vector<account_name_type> database_api::get_active_witnesses() const
     });
 }
 
-vector<vesting_delegation_api_obj>
-database_api::get_vesting_delegations(string account, string from, uint32_t limit) const
-{
-    FC_ASSERT(limit <= 1000);
-
-    return my->_db.with_read_lock([&]() {
-        vector<vesting_delegation_api_obj> result;
-        result.reserve(limit);
-
-        const auto& delegation_idx = my->_db.get_index<vesting_delegation_index, by_delegation>();
-        auto itr = delegation_idx.lower_bound(boost::make_tuple(account, from));
-        while (result.size() < limit && itr != delegation_idx.end() && itr->delegator == account)
-        {
-            result.push_back(*itr);
-            ++itr;
-        }
-
-        return result;
-    });
-}
-
-vector<vesting_delegation_expiration_api_obj>
-database_api::get_expiring_vesting_delegations(string account, time_point_sec from, uint32_t limit) const
-{
-    FC_ASSERT(limit <= 1000);
-
-    return my->_db.with_read_lock([&]() {
-        vector<vesting_delegation_expiration_api_obj> result;
-        result.reserve(limit);
-
-        const auto& exp_idx = my->_db.get_index<vesting_delegation_expiration_index, by_account_expiration>();
-        auto itr = exp_idx.lower_bound(boost::make_tuple(account, from));
-        while (result.size() < limit && itr != exp_idx.end() && itr->delegator == account)
-        {
-            result.push_back(*itr);
-            ++itr;
-        }
-
-        return result;
-    });
-}
-
 state database_api::get_state(string path) const
 {
     return my->_db.with_read_lock([&]() {
@@ -935,8 +844,6 @@ state database_api::get_state(string path) const
                     {
                         switch (item.second.op.which())
                         {
-                        case operation::tag<transfer_to_vesting_operation>::value:
-                        case operation::tag<withdraw_vesting_operation>::value:
                         case operation::tag<transfer_operation>::value:
                         case operation::tag<vote_operation>::value:
                         case operation::tag<account_witness_vote_operation>::value:
@@ -1262,8 +1169,6 @@ research_group_api_obj database_api::get_research_group_by_permlink(const string
 {
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_group &research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
-
-        research_group_service.check_research_group_existence_by_permlink(permlink);
         return research_group_service.get_research_group_by_permlink(permlink);
     });
 }

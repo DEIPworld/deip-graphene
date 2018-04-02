@@ -277,7 +277,6 @@ public:
     uint32_t get_slot_at_time(fc::time_point_sec when) const;
 
     /** @return the sbd created and deposited to_account, may return DEIP if there is no median feed */
-    asset create_vesting(const account_object& to_account, asset deip);
 
     void adjust_supply(const asset& delta, bool adjust_vesting = false);
 
@@ -292,7 +291,6 @@ public:
      * adjust_proxied_witness_votes( a, -a.witness_vote_weight() )
      */
     void clear_witness_votes(const account_object& a);
-    void process_vesting_withdrawals();
     void process_funds();
     void process_conversions();
     void account_recovery_processing();
@@ -310,8 +308,7 @@ public:
                                  const share_type &reward);
     share_type reward_research_token_holders(const research_object& research,
                                        const discipline_id_type& discipline_id,
-                                       const share_type& reward,
-                                       const share_type& expertise_reward);
+                                       const share_type& reward);
     share_type reward_references(const research_content_id_type& research_content_id,
                            const discipline_id_type& discipline_id,
                            const share_type& reward,
@@ -323,6 +320,12 @@ public:
                        const discipline_id_type &discipline_id, const share_type &reward);
     void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                const share_type &reward);
+    share_type reward_research_group_members_with_expertise(const research_group_id_type& research_group_id,
+                                                            const discipline_id_type& discipline_id,
+                                                            const flat_set<account_name_type>& accounts,
+                                                            const share_type &expertise_reward);
+
+    flat_set<account_name_type> get_all_research_group_token_account_names(const research_group_id_type& research_group_id);
 
     share_type pay_reward_funds(share_type reward);
     share_type fund_review_pool(const discipline_id_type& discipline_id, const share_type &amount);
@@ -420,11 +423,11 @@ protected:
     void update_signing_witness(const witness_object& signing_witness, const signed_block& new_block);
     void update_last_irreversible_block();
     void clear_expired_transactions();
-    void clear_expired_delegations();
     void clear_expired_proposals();
     void process_content_activity_windows();
     void process_header_extensions(const signed_block& next_block);
     void clear_expired_invites();
+    void clear_expired_join_requests();
 
     void init_hardforks(fc::time_point_sec genesis_time);
     void process_hardforks();

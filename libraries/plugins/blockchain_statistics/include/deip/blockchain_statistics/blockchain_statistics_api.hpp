@@ -53,7 +53,6 @@ struct statistics
     share_type vests_paid_to_authors = 0; ///< Ammount of VESS paid to authors
     share_type vests_paid_to_curators = 0; ///< Ammount of VESTS paid to curators
     uint32_t transfers_to_vesting = 0; ///< Transfers of DEIP into VESTS
-    share_type deip_vested = 0; ///< Ammount of DEIP vested
     uint32_t new_vesting_withdrawal_requests = 0; ///< New vesting withdrawal requests
     uint32_t modified_vesting_withdrawal_requests = 0; ///< Changes to vesting withdrawal requests
     share_type vesting_withdraw_rate_delta = 0;
@@ -114,7 +113,7 @@ FC_REFLECT(deip::blockchain_statistics::statistics,
                total_comments_deleted)(root_comments)(root_comment_edits)(root_comments_deleted)(replies)(reply_edits)(
                replies_deleted)(total_votes)(new_votes)(changed_votes)(total_root_votes)(new_root_votes)(
                changed_root_votes)(total_reply_votes)(new_reply_votes)(changed_reply_votes)(payouts)(
-               deip_paid_to_authors)(vests_paid_to_authors)(vests_paid_to_curators)(transfers_to_vesting)(deip_vested)(
+               deip_paid_to_authors)(vests_paid_to_authors)(vests_paid_to_curators)(transfers_to_vesting)(
                new_vesting_withdrawal_requests)(modified_vesting_withdrawal_requests)(vesting_withdraw_rate_delta)(
                vesting_withdrawals_processed)(finished_vesting_withdrawals)(vests_withdrawn)(vests_transferred)(
                sbd_conversion_requests_created)(sbd_to_be_converted)(sbd_conversion_requests_filled)(deip_converted)(

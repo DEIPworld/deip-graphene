@@ -153,69 +153,6 @@ struct transfer_operation : public base_operation
 };
 
 /**
- *  This operation converts DEIP into VFS (Vesting Fund Shares) at
- *  the current exchange rate. With this operation it is possible to
- *  give another account vesting shares so that faucets can
- *  pre-fund new accounts with vesting shares.
- */
-struct transfer_to_vesting_operation : public base_operation
-{
-    account_name_type from;
-    account_name_type to; ///< if null, then same as from
-    asset amount; ///< must be DEIP
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(from);
-    }
-};
-
-/**
- * At any given point in time an account can be withdrawing from their
- * vesting shares. A user may change the number of shares they wish to
- * cash out at any time between 0 and their total vesting stake.
- *
- * After applying this operation, vesting_shares will be withdrawn
- * at a rate of vesting_shares/104 per week for two years starting
- * one week after this operation is included in the blockchain.
- *
- * This operation is not valid if the user has no vesting shares.
- */
-struct withdraw_vesting_operation : public base_operation
-{
-    account_name_type account;
-    asset vesting_shares;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(account);
-    }
-};
-
-/**
- * Allows an account to setup a vesting withdraw but with the additional
- * request for the funds to be transferred directly to another account's
- * balance rather than the withdrawing account. In addition, those funds
- * can be immediately vested again, circumventing the conversion from
- * vests to deip and back, guaranteeing they maintain their value.
- */
-struct set_withdraw_vesting_route_operation : public base_operation
-{
-    account_name_type from_account;
-    account_name_type to_account;
-    uint16_t percent = 0;
-    bool auto_vest = false;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(from_account);
-    }
-};
-
-/**
  * Witnesses must vote on how to set certain chain properties to ensure a smooth
  * and well functioning network.  Any time @owner is in the active set of witnesses these
  * properties will be used to control the blockchain configuration.
@@ -438,29 +375,6 @@ struct change_recovery_account_operation : public base_operation
     void validate() const;
 };
 
-/**
- * Delegate vesting shares from one account to the other. The vesting shares are still owned
- * by the original account, but content voting rights and bandwidth allocation are transferred
- * to the receiving account. This sets the delegation to `vesting_shares`, increasing it or
- * decreasing it as needed. (i.e. a delegation of 0 removes the delegation)
- *
- * When a delegation is removed the shares are placed in limbo for a week to prevent a satoshi
- * of VESTS from voting on the same content twice.
- */
-struct delegate_vesting_shares_operation : public base_operation
-{
-    account_name_type delegator; ///< The account delegating vesting shares
-    account_name_type delegatee; ///< The account receiving vesting shares
-    asset vesting_shares; ///< The amount of vesting shares delegated
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(delegator);
-    }
-    void validate() const;
-};
-
-
 // DEIP native operations
 
 struct create_grant_operation : public base_operation
@@ -482,8 +396,9 @@ struct create_grant_operation : public base_operation
 struct create_research_group_operation : public base_operation
 {
     account_name_type creator;
-    string permlink;
-    string desciption;
+    std::string name;
+    std::string permlink;
+    std::string description;
     uint32_t quorum_percent;
     uint32_t tokens_amount;
 
@@ -527,9 +442,10 @@ struct make_research_review_operation : public base_operation
 {
     account_name_type author;
     int64_t research_id;
-    string content;
-    vector<std::pair<int64_t, int64_t>> research_references;
-    vector<string> research_external_references;
+    std::string title;
+    std::string content;
+    std::vector<std::pair<int64_t, int64_t>> references;
+    std::vector<string> external_references;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -567,6 +483,31 @@ struct approve_research_group_invite_operation : public base_operation
 struct reject_research_group_invite_operation : public base_operation
 {
     int64_t research_group_invite_id;
+    account_name_type owner;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
+
+struct create_research_group_join_request_operation : public base_operation
+{
+    account_name_type owner;
+    int64_t research_group_id;
+    string motivation_letter;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
+
+struct reject_research_group_join_request_operation : public base_operation
+{
+    int64_t research_group_join_request_id;
     account_name_type owner;
 
     void validate() const;
@@ -614,9 +555,6 @@ FC_REFLECT( deip::protocol::account_update_operation,
             (json_metadata) )
 
 FC_REFLECT( deip::protocol::transfer_operation, (from)(to)(amount)(memo) )
-FC_REFLECT( deip::protocol::transfer_to_vesting_operation, (from)(to)(amount) )
-FC_REFLECT( deip::protocol::withdraw_vesting_operation, (account)(vesting_shares) )
-FC_REFLECT( deip::protocol::set_withdraw_vesting_route_operation, (from_account)(to_account)(percent)(auto_vest) )
 FC_REFLECT( deip::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( deip::protocol::account_witness_vote_operation, (account)(witness)(approve) )
 FC_REFLECT( deip::protocol::account_witness_proxy_operation, (account)(proxy) )
@@ -628,17 +566,17 @@ FC_REFLECT( deip::protocol::beneficiary_route_type, (account)(weight) )
 FC_REFLECT( deip::protocol::request_account_recovery_operation, (recovery_account)(account_to_recover)(new_owner_authority)(extensions) )
 FC_REFLECT( deip::protocol::recover_account_operation, (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions) )
 FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) )
-FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) )
 
 // DEIP native operations
 FC_REFLECT( deip::protocol::create_grant_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
-FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(permlink)(desciption)(quorum_percent)(tokens_amount))
+FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent)(tokens_amount))
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
-FC_REFLECT( deip::protocol::make_research_review_operation, (author)(research_id)(content)(research_references)(research_external_references))
+FC_REFLECT( deip::protocol::make_research_review_operation, (author)(research_id)(title)(content)(references)(external_references))
 
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (owner)(research_token_sale_id)(amount))
 FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner)(research_tokens_conversion_percent))
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
+FC_REFLECT( deip::protocol::create_research_group_join_request_operation, (owner)(research_group_id)(motivation_letter))
+FC_REFLECT( deip::protocol::reject_research_group_join_request_operation, (research_group_join_request_id)(owner))
 // clang-format on
-

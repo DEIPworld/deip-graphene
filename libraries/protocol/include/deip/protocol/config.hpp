@@ -14,7 +14,6 @@
 #define DEIP_ADDRESS_PREFIX                  "DEIP"
 
 #ifdef IS_TEST_NET
-#define VESTS_SYMBOL   (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 #define DEIP_SYMBOL  (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< DEIP with 3 digits of precision
 
 #define DEIP_CASHOUT_WINDOW_SECONDS          (60*60) /// 1 hr
@@ -39,7 +38,6 @@
 #define DEIP_LIMIT_API_GRANTS_LIST_SIZE      DEIP_LIMIT_GRANTS_PER_OWNER
 
 #else // IS LIVE DEIP NETWORK
-#define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 #define DEIP_SYMBOL (uint64_t(3) | (uint64_t('D') << 8) | (uint64_t('E') << 16) | (uint64_t('I') << 24) | (uint64_t('P') << 32)) ///< DEIP with 3 digits of precision
 
 #define DEIP_CASHOUT_WINDOW_SECONDS          (60*60*24*7)  /// 7 days
@@ -71,7 +69,6 @@
 #define DEIP_BLOCKS_PER_YEAR                 (365*24*60*60/DEIP_BLOCK_INTERVAL)
 #define DEIP_BLOCKS_PER_DAY                  (24*60*60/DEIP_BLOCK_INTERVAL)
 #define DEIP_BLOCKS_PER_HOUR                 (60*60/DEIP_BLOCK_INTERVAL)
-#define DEIP_START_VESTING_BLOCK             (DEIP_BLOCKS_PER_DAY * 7)
 #define DEIP_START_MINER_VOTING_BLOCK        (DEIP_BLOCKS_PER_DAY * 30)
 
 #define DEIP_NUM_INIT_DELEGATES              1
@@ -85,9 +82,6 @@
 #define DEIP_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
 #define DEIP_MAX_MEMO_SIZE                   2048
 #define DEIP_MAX_PROXY_RECURSION_DEPTH       4
-#define DEIP_VESTING_WITHDRAW_INTERVALS_PRE_HF_16 104
-#define DEIP_VESTING_WITHDRAW_INTERVALS      13
-#define DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*24*7) /// 1 week per interval
 #define DEIP_MAX_WITHDRAW_ROUTES             10
 #define DEIP_SAVINGS_WITHDRAW_TIME           (fc::days(3))
 #define DEIP_SAVINGS_WITHDRAW_REQUEST_LIMIT  100

@@ -28,6 +28,7 @@
 #include <deip/chain/vote_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/research_group_invite_object.hpp>
+#include <deip/chain/research_group_join_request_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -57,6 +58,7 @@
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
+#include <deip/chain/dbs_research_group_join_request.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_grant.hpp>
 
@@ -952,128 +954,6 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when) const
     return (when - first_slot_time).to_seconds() / DEIP_BLOCK_INTERVAL + 1;
 }
 
-void database::process_vesting_withdrawals()
-{
-    dbs_account& account_service = obtain_service<dbs_account>();
-
-    const auto& widx = get_index<account_index>().indices().get<by_next_vesting_withdrawal>();
-    const auto& didx = get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
-    auto current = widx.begin();
-
-    const auto& cprops = get_dynamic_global_properties();
-
-    while (current != widx.end() && current->next_vesting_withdrawal <= head_block_time())
-    {
-        const auto& from_account = *current;
-        ++current;
-
-        /**
-         *  Let T = total tokens in vesting fund
-         *  Let V = total vesting shares
-         *  Let v = total vesting shares being cashed out
-         *
-         *  The user may withdraw  vT / V tokens
-         */
-        share_type to_withdraw;
-        if (from_account.to_withdraw - from_account.withdrawn < from_account.vesting_withdraw_rate.amount)
-            to_withdraw = std::min(from_account.vesting_shares.amount,
-                                   from_account.to_withdraw % from_account.vesting_withdraw_rate.amount)
-                              .value;
-        else
-            to_withdraw = std::min(from_account.vesting_shares.amount, from_account.vesting_withdraw_rate.amount).value;
-
-        share_type vests_deposited_as_deip = 0;
-        share_type vests_deposited_as_vests = 0;
-        asset total_deip_converted = asset(0, DEIP_SYMBOL);
-
-        // Do two passes, the first for vests, the second for deip. Try to maintain as much accuracy for vests as
-        // possible.
-        for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
-             itr != didx.end() && itr->from_account == from_account.id; ++itr)
-        {
-            if (itr->auto_vest)
-            {
-                share_type to_deposit
-                    = ((fc::uint128_t(to_withdraw.value) * itr->percent) / DEIP_100_PERCENT).to_uint64();
-                vests_deposited_as_vests += to_deposit;
-
-                if (to_deposit > 0)
-                {
-                    const auto& to_account = get(itr->to_account);
-
-                    modify(to_account, [&](account_object& a) { a.vesting_shares.amount += to_deposit; });
-
-                    account_service.adjust_proxied_witness_votes(to_account, to_deposit);
-
-                    push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name,
-                                                                           asset(to_deposit, VESTS_SYMBOL),
-                                                                           asset(to_deposit, VESTS_SYMBOL)));
-                }
-            }
-        }
-
-        for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
-             itr != didx.end() && itr->from_account == from_account.id; ++itr)
-        {
-            if (!itr->auto_vest)
-            {
-                const auto& to_account = get(itr->to_account);
-
-                share_type to_deposit
-                    = ((fc::uint128_t(to_withdraw.value) * itr->percent) / DEIP_100_PERCENT).to_uint64();
-                vests_deposited_as_deip += to_deposit;
-                auto converted_deip = asset(to_deposit, VESTS_SYMBOL) * cprops.get_vesting_share_price();
-                total_deip_converted += converted_deip;
-
-                if (to_deposit > 0)
-                {
-                    modify(to_account, [&](account_object& a) { a.balance += converted_deip; });
-
-                    modify(cprops, [&](dynamic_global_property_object& o) {
-                        o.total_vesting_fund_deip -= converted_deip;
-                        o.total_vesting_shares.amount -= to_deposit;
-                    });
-
-                    push_virtual_operation(fill_vesting_withdraw_operation(
-                        from_account.name, to_account.name, asset(to_deposit, VESTS_SYMBOL), converted_deip));
-                }
-            }
-        }
-
-        share_type to_convert = to_withdraw - vests_deposited_as_deip - vests_deposited_as_vests;
-        FC_ASSERT(to_convert >= 0, "Deposited more vests than were supposed to be withdrawn");
-
-        auto converted_deip = asset(to_convert, VESTS_SYMBOL) * cprops.get_vesting_share_price();
-
-        modify(from_account, [&](account_object& a) {
-            a.vesting_shares.amount -= to_withdraw;
-            a.balance += converted_deip;
-            a.withdrawn += to_withdraw;
-
-            if (a.withdrawn >= a.to_withdraw || a.vesting_shares.amount == 0)
-            {
-                a.vesting_withdraw_rate.amount = 0;
-                a.next_vesting_withdrawal = fc::time_point_sec::maximum();
-            }
-            else
-            {
-                a.next_vesting_withdrawal += fc::seconds(DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS);
-            }
-        });
-
-        modify(cprops, [&](dynamic_global_property_object& o) {
-            o.total_vesting_fund_deip -= converted_deip;
-            o.total_vesting_shares.amount -= to_convert;
-        });
-
-        if (to_withdraw > 0)
-            account_service.adjust_proxied_witness_votes(from_account, -to_withdraw);
-
-        push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name,
-                                                               asset(to_withdraw, VESTS_SYMBOL), converted_deip));
-    }
-}
-
 /**
  *  Overall the network has an inflation rate of 102% of virtual deip per year
  *  90% of inflation is directed to vesting shares
@@ -1300,6 +1180,7 @@ share_type database::reward_research_content(const research_content_id_type& res
 {
     auto& research_content_service = obtain_service<dbs_research_content>();
     auto& research_service = obtain_service<dbs_research>();
+    auto& research_group_service = obtain_service<dbs_research_group>();
     auto& research_content = research_content_service.get_content_by_id(research_content_id);
     auto& research = research_service.get_research(research_content.research_id);
 
@@ -1316,8 +1197,19 @@ share_type database::reward_research_content(const research_content_id_type& res
               "Attempt to allocate funds amount that is greater than reward amount");
 
     share_type used_reward = 0;
+    flat_set<account_name_type> accounts_to_reward_with_expertise;
 
-    used_reward += reward_research_token_holders(research, discipline_id, token_holders_share, research_group_expertise_share);
+    if (research_content.type == research_content_type::final_result)
+        accounts_to_reward_with_expertise = get_all_research_group_token_account_names(research.research_group_id);
+
+    else if (research_content.type != research_content_type::final_result) {
+        for (auto author : research_content.authors) {
+            accounts_to_reward_with_expertise.insert(author);
+        }
+    }
+
+    reward_research_group_members_with_expertise(research.research_group_id, discipline_id, accounts_to_reward_with_expertise, research_group_expertise_share);
+    used_reward += reward_research_token_holders(research, discipline_id, token_holders_share);
     used_reward += reward_references(research_content_id, discipline_id, references_share, references_expertise_share);
     used_reward += reward_voters(research_content_id, discipline_id, curators_share);
     if (research_content.type != research_content_type::review) {
@@ -1331,8 +1223,7 @@ share_type database::reward_research_content(const research_content_id_type& res
 
 share_type database::reward_research_token_holders(const research_object& research,
                                             const discipline_id_type& discipline_id,
-                                            const share_type& reward,
-                                            const share_type& expertise_reward)
+                                            const share_type& reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
 
@@ -1344,14 +1235,6 @@ share_type database::reward_research_token_holders(const research_object& resear
         dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
         research_group_service.increase_research_group_funds(research.research_group_id, research_group_reward);
         used_reward += research_group_reward;
-
-        const auto& research_group = research_group_service.get_research_group(research.research_group_id);
-        auto research_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
-        for (auto& token_ref : research_group_tokens) {
-            auto& token = token_ref.get();
-            auto new_expertise_amount = (expertise_reward * token.amount) / research_group.total_tokens_amount;
-            reward_with_expertise(token.owner, discipline_id, new_expertise_amount);
-        }
     }
 
     const auto& idx = get_index<research_token_index>().indicies().get<by_research_id>().equal_range(research.id);
@@ -1377,26 +1260,43 @@ share_type database::reward_references(const research_content_id_type& research_
 {
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
+    dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
     auto& research_content = research_content_service.get_content_by_id(research_content_id);
 
-    std::vector<std::pair<research_id_type, share_type>> research_votes_by_id;
+    std::map<research_id_type, std::pair<share_type, flat_set<account_name_type>>> research_votes_by_id;
+    flat_set<account_name_type> accounts_to_reward_with_expertise;
     share_type total_votes_amount = 0;
     share_type used_reward = 0;
 
-    for (auto research_reference_data : research_content.research_references)
+    for (auto research_reference_data : research_content.references)
     {
         const auto& idx = get_index<total_votes_index>().indicies().get<by_research_and_discipline>();
         auto total_votes_itr = idx.find(std::make_tuple(research_reference_data.research_reference_id, discipline_id));
         total_votes_amount += total_votes_itr->total_research_reward_weight;
-        research_votes_by_id.push_back(std::make_pair(research_reference_data.research_reference_id, total_votes_itr->total_research_reward_weight));
+        if (!research_reference_data.research_content_reference_id.valid())
+        {
+            auto& research = research_service.get_research(research_reference_data.research_reference_id);
+
+            accounts_to_reward_with_expertise = get_all_research_group_token_account_names(research.research_group_id);
+        }
+        else if (research_reference_data.research_content_reference_id.valid()) {
+            auto authors = get<research_content_object>(*research_reference_data.research_content_reference_id).authors;
+            for (auto author : authors) {
+                accounts_to_reward_with_expertise.insert(author);
+            }
+        }
+
+        research_votes_by_id[research_reference_data.research_reference_id] = std::make_pair(total_votes_itr->total_research_reward_weight, accounts_to_reward_with_expertise);
     }
 
     for (auto& research_votes : research_votes_by_id) {
         auto& research = research_service.get_research(research_votes.first);
-        auto reward_share = util::calculate_share(reward, research_votes.second.value, total_votes_amount);
-        auto expertise_reward_share = util::calculate_share(expertise_reward, research_votes.second.value,
+        auto reward_share = util::calculate_share(reward, research_votes.second.first, total_votes_amount);
+        auto expertise_reward_share = util::calculate_share(expertise_reward, research_votes.second.first,
                                                             total_votes_amount);
-        used_reward += reward_research_token_holders(research, discipline_id, reward_share, expertise_reward_share);
+        reward_research_group_members_with_expertise(research.research_group_id, discipline_id, research_votes.second.second, expertise_reward_share);
+        used_reward += reward_research_token_holders(research, discipline_id, reward_share);
+
     }
 
     FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
@@ -1471,6 +1371,42 @@ void database::reward_with_expertise(const account_name_type &account, const dis
     }
 }
 
+share_type database::reward_research_group_members_with_expertise(const research_group_id_type& research_group_id,
+                                                                  const discipline_id_type& discipline_id,
+                                                                  const flat_set<account_name_type>& accounts,
+                                                                  const share_type &expertise_reward)
+{
+    auto& research_group_service = obtain_service<dbs_research_group>();
+
+    std::vector<research_group_token_object> tokens_to_reward;
+    share_type accounts_total_tokens_amount = 0;
+    for (auto& account : accounts) {
+        auto &token = research_group_service.get_research_group_token_by_account_and_research_group_id(account, research_group_id);
+        accounts_total_tokens_amount += token.amount;
+        tokens_to_reward.push_back(token);
+    }
+
+    for (auto& token : tokens_to_reward) {
+        auto new_expertise_amount = (expertise_reward * token.amount) / accounts_total_tokens_amount;
+        reward_with_expertise(token.owner, discipline_id, new_expertise_amount);
+    }
+
+}
+
+flat_set<account_name_type> database::get_all_research_group_token_account_names(const research_group_id_type& research_group_id)
+{
+    dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
+    flat_set<account_name_type> accounts_to_reward_with_expertise;
+
+    auto research_group_tokens = research_group_service.get_research_group_tokens(research_group_id);
+    for (auto& token_ref : research_group_tokens) {
+        auto& token = token_ref.get();
+        accounts_to_reward_with_expertise.insert(token.owner);
+    }
+
+    return accounts_to_reward_with_expertise;
+}
+
 share_type database::fund_review_pool(const discipline_id_type& discipline_id, const share_type& amount)
 {
     auto& research_content_service = obtain_service<dbs_research_content>();
@@ -1531,6 +1467,7 @@ share_type database::allocate_rewards_to_reviews(const share_type& reward, const
 share_type database::grant_researches_in_discipline(const discipline_id_type& discipline_id, const share_type &grant)
 {
     dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
+    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
     const auto& discipline = discipline_service.get_discipline(discipline_id);
 
     if(discipline.total_active_reward_weight == 0)
@@ -1546,12 +1483,25 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
 
     std::map<research_group_id_type, share_type> grant_shares_per_research;
 
+    share_type total_active_research_reward_weight = discipline.total_active_research_reward_weight;
     while (total_votes_itr != total_votes_idx.end())
     {
-        if (total_votes_itr->total_active_research_reward_weight != 0)
+        const auto& research_content = research_content_service.get_content_by_id(total_votes_itr->research_content_id);
+
+        if (total_votes_itr->total_active_research_reward_weight != 0 && research_content.type == research_content_type::final_result)
+            total_active_research_reward_weight -= total_votes_itr->total_active_research_reward_weight;
+        ++total_votes_itr;
+    }
+
+    total_votes_itr = total_votes_idx.find(discipline.id);
+    while (total_votes_itr != total_votes_idx.end())
+    {
+        const auto& research_content = research_content_service.get_content_by_id(total_votes_itr->research_content_id);
+
+        if (total_votes_itr->total_active_research_reward_weight != 0 && research_content.type != research_content_type::final_result)
         {
             auto& active_research_reward_weight = total_votes_itr->total_active_research_reward_weight;
-            auto research_content_share = util::calculate_share(grant, active_research_reward_weight, discipline.total_active_research_reward_weight);
+            auto research_content_share = util::calculate_share(grant, active_research_reward_weight, total_active_research_reward_weight);
             auto& research_group_id = research_service.get_research(total_votes_itr->research_id).research_group_id;
             grant_shares_per_research[research_group_id] += research_content_share;
         }
@@ -1636,9 +1586,6 @@ void database::initialize_evaluators()
 {
     _my->_evaluator_registry.register_evaluator<vote_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_evaluator>();
-    _my->_evaluator_registry.register_evaluator<transfer_to_vesting_evaluator>();
-    _my->_evaluator_registry.register_evaluator<withdraw_vesting_evaluator>();
-    _my->_evaluator_registry.register_evaluator<set_withdraw_vesting_route_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_create_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<witness_update_evaluator>();
@@ -1647,14 +1594,14 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator>();
     _my->_evaluator_registry.register_evaluator<recover_account_evaluator>();
     _my->_evaluator_registry.register_evaluator<change_recovery_account_evaluator>();
-    _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
-    _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<make_research_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
     _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_group_join_request_evaluator>();
+    _my->_evaluator_registry.register_evaluator<reject_research_group_join_request_evaluator>();
 
     // clang-format off
     _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>(
@@ -1668,7 +1615,8 @@ void database::initialize_evaluators()
                                         this->obtain_service<dbs_discipline>(),
                                         this->obtain_service<dbs_research_discipline_relation>(),
                                         this->obtain_service<dbs_research_group_invite>(),
-                                        this->obtain_service<dbs_dynamic_global_properties>()));
+                                        this->obtain_service<dbs_dynamic_global_properties>(),
+                                        this->obtain_service<dbs_research_group_join_request>()));
     //clang-format on
 }
 
@@ -1686,13 +1634,10 @@ void database::initialize_indexes()
     add_index<operation_index>();
     add_index<account_history_index>();
     add_index<hardfork_property_index>();
-    add_index<withdraw_vesting_route_index>();
     add_index<owner_authority_history_index>();
     add_index<account_recovery_request_index>();
     add_index<change_recovery_account_request_index>();
     add_index<reward_fund_index>();
-    add_index<vesting_delegation_index>();
-    add_index<vesting_delegation_expiration_index>();
     add_index<grant_index>();
     add_index<proposal_index>();
     add_index<proposal_vote_index>();
@@ -1709,6 +1654,7 @@ void database::initialize_indexes()
     add_index<vote_index>();
     add_index<total_votes_index>();
     add_index<research_group_invite_index>();
+    add_index<research_group_join_request_index>();
 
     _plugin_index_signal();
 }
@@ -1918,19 +1864,14 @@ void database::_apply_block(const signed_block& next_block)
 
         create_block_summary(next_block);
         clear_expired_transactions();
-        clear_expired_delegations();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
 
         process_funds();
 
-        process_vesting_withdrawals();
-
         account_recovery_processing();
 
-        clear_expired_proposals();
-        clear_expired_invites();
         process_content_activity_windows();
 
         process_hardforks();
@@ -2298,23 +2239,6 @@ void database::clear_expired_transactions()
         remove(*dedupe_index.begin());
 }
 
-void database::clear_expired_delegations()
-{
-    auto now = head_block_time();
-    const auto& delegations_by_exp = get_index<vesting_delegation_expiration_index, by_expiration>();
-    auto itr = delegations_by_exp.begin();
-    while (itr != delegations_by_exp.end() && itr->expiration < now)
-    {
-        modify(get_account(itr->delegator),
-               [&](account_object& a) { a.delegated_vesting_shares -= itr->vesting_shares; });
-
-        push_virtual_operation(return_vesting_delegation_operation(itr->delegator, itr->vesting_shares));
-
-        remove(*itr);
-        itr = delegations_by_exp.begin();
-    }
-}
-
 void database::clear_expired_proposals()
 {
     auto& proposal_service = obtain_service<dbs_proposal>();
@@ -2326,6 +2250,13 @@ void database::clear_expired_invites()
     auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
     research_group_invite_service.clear_expired_invites();
 }
+
+void database::clear_expired_join_requests()
+{
+    auto& research_group_join_request_service = obtain_service<dbs_research_group_join_request>();
+    research_group_join_request_service.clear_expired_research_group_join_requests();
+}
+
 
 void database::adjust_balance(const account_object& a, const asset& delta)
 {
@@ -2354,7 +2285,6 @@ void database::adjust_supply(const asset& delta, bool adjust_vesting)
         {
             asset new_vesting((adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, DEIP_SYMBOL);
             props.current_supply += delta + new_vesting;
-            props.total_vesting_fund_deip += new_vesting;
             assert(props.current_supply.amount.value >= 0);
             break;
         }

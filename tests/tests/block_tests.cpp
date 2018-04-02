@@ -441,7 +441,7 @@ BOOST_FIXTURE_TEST_CASE(optional_tapos, clean_database_fixture)
     try
     {
         idump((db.get_account(TEST_INIT_DELEGATE_NAME)));
-        ACTORS((alice)(bob));
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
 
         generate_block();
 
@@ -510,7 +510,7 @@ BOOST_FIXTURE_TEST_CASE(double_sign_check, clean_database_fixture)
     try
     {
         generate_block();
-        ACTOR(bob);
+        ACTORS_WITH_EXPERT_TOKENS((bob));
         share_type amount = 1000;
 
         transfer_operation t;
@@ -711,7 +711,7 @@ BOOST_FIXTURE_TEST_CASE(skip_block, clean_database_fixture)
     try
     {
         BOOST_TEST_MESSAGE("Skipping blocks through db");
-        BOOST_REQUIRE(db.head_block_num() == 2);
+        BOOST_REQUIRE(db.head_block_num() == 3);
 
         int init_block_num = db.head_block_num();
         int miss_blocks = fc::minutes(1).to_seconds() / DEIP_BLOCK_INTERVAL;
@@ -763,8 +763,6 @@ BOOST_FIXTURE_TEST_CASE( hardfork_test, database_fixture )
 
       ahplugin->plugin_startup();
       db_plugin->plugin_startup();
-
-      vest( "initdelegate", 10000 );
 
       // Fill up the rest of the required miners
       for( int i = DEIP_NUM_INIT_MINERS; i < DEIP_MAX_WITNESSES; i++ )
