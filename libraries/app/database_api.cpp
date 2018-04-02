@@ -27,8 +27,10 @@
 #include <deip/chain/dbs_research_group.hpp>
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
+#include <deip/chain/dbs_vote.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
+#define MAX_LIMIT 1000
 
 namespace deip {
 namespace app {
@@ -407,7 +409,7 @@ set<string> database_api::lookup_accounts(const string& lower_bound_name, uint32
 
 set<string> database_api_impl::lookup_accounts(const string& lower_bound_name, uint32_t limit) const
 {
-    FC_ASSERT(limit <= 1000);
+    FC_ASSERT(limit <= MAX_LIMIT);
     const auto& accounts_by_name = _db.get_index<account_index>().indices().get<by_name>();
     set<string> result;
 
@@ -560,7 +562,7 @@ vector<witness_api_obj> database_api::get_witnesses_by_vote(string from, uint32_
 {
     return my->_db.with_read_lock([&]() {
         // idump((from)(limit));
-        FC_ASSERT(limit <= 100);
+        FC_ASSERT(limit <= MAX_LIMIT);
 
         vector<witness_api_obj> result;
         result.reserve(limit);
@@ -601,7 +603,7 @@ set<account_name_type> database_api::lookup_witness_accounts(const string& lower
 
 set<account_name_type> database_api_impl::lookup_witness_accounts(const string& lower_bound_name, uint32_t limit) const
 {
-    FC_ASSERT(limit <= 1000);
+    FC_ASSERT(limit <= MAX_LIMIT);
     const auto& witnesses_by_id = _db.get_index<witness_index>().indices().get<by_id>();
 
     // get all the names and look them all up, sort them, then figure out what
@@ -816,8 +818,7 @@ set<string> database_api_impl::lookup_grant_owners(const string& lower_bound_nam
 map<uint32_t, applied_operation> database_api::get_account_history(string account, uint64_t from, uint32_t limit) const
 {
     return my->_db.with_read_lock([&]() {
-        FC_ASSERT(limit <= 10000, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
-        FC_ASSERT(from >= limit, "From must be greater than limit");
+        FC_ASSERT(limit <= MAX_LIMIT, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
         //   idump((account)(from)(limit));
         const auto& idx = my->_db.get_index<account_history_index>().indices().get<by_account>();
         auto itr = idx.lower_bound(boost::make_tuple(account, from));
@@ -859,7 +860,7 @@ vector<account_name_type> database_api::get_active_witnesses() const
 vector<vesting_delegation_api_obj>
 database_api::get_vesting_delegations(string account, string from, uint32_t limit) const
 {
-    FC_ASSERT(limit <= 1000);
+    FC_ASSERT(limit <= MAX_LIMIT);
 
     return my->_db.with_read_lock([&]() {
         vector<vesting_delegation_api_obj> result;
@@ -880,7 +881,7 @@ database_api::get_vesting_delegations(string account, string from, uint32_t limi
 vector<vesting_delegation_expiration_api_obj>
 database_api::get_expiring_vesting_delegations(string account, time_point_sec from, uint32_t limit) const
 {
-    FC_ASSERT(limit <= 1000);
+    FC_ASSERT(limit <= MAX_LIMIT);
 
     return my->_db.with_read_lock([&]() {
         vector<vesting_delegation_expiration_api_obj> result;
@@ -1080,7 +1081,7 @@ research_api_obj database_api::get_research_by_permlink(const string& permlink) 
 vector<research_api_obj> database_api::get_researches(const research_id_type& from, const uint32_t limit) const
 {
     return my->_db.with_read_lock([&]() {
-        FC_ASSERT(limit <= 100);
+        FC_ASSERT(limit <= MAX_LIMIT);
 
         vector<research_api_obj> result;
         result.reserve(limit);
@@ -1238,8 +1239,26 @@ database_api::get_research_group_tokens_by_account(const account_name_type accou
     });
 }
 
+vector<research_group_token_api_obj>
+database_api::get_research_group_tokens_by_research_group(const research_group_id_type& research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_group_token_api_obj> results;
+
+        chain::dbs_research_group& research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
+        auto research_group_tokens = research_group_service.get_research_group_tokens(research_group_id);
+
+        for (const chain::research_group_token_object& research_group_token : research_group_tokens)
+        {
+            results.push_back(research_group_token_api_obj(research_group_token));
+        }
+
+        return results;
+    });
+}
+
 research_group_token_api_obj database_api::get_research_group_token_by_account_and_research_group_id(
-    const account_name_type account, const research_group_id_type research_group_id) const
+    const account_name_type account, const research_group_id_type& research_group_id) const
 {
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_group& research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
@@ -1404,8 +1423,7 @@ database_api::get_research_group_invites_by_account_name(const account_name_type
     });
 }
 
-vector<research_group_invite_api_obj>
-database_api::get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const
+vector<research_group_invite_api_obj> database_api::get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const
 {
     return my->_db.with_read_lock([&]() {
         vector<research_group_invite_api_obj> results;
@@ -1420,6 +1438,44 @@ database_api::get_research_group_invites_by_research_group_id(const research_gro
         }
 
         return results;
+    });
+}
+
+vector<research_listing_api_obj> database_api::get_research_listing(const uint64_t& from, const uint32_t& limit = 100) const
+{
+    return my->_db.with_read_lock([&]() {
+        FC_ASSERT(limit <= MAX_LIMIT, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
+
+        vector<research_listing_api_obj> results;
+        results.reserve(limit);
+        chain::dbs_research_discipline_relation& research_discipline_service = my->_db.obtain_service<dbs_research_discipline_relation>();
+        chain::dbs_vote& vote_service = my->_db.obtain_service<dbs_vote>();
+
+        auto researches = get_researches(from, limit);
+        for (auto research : researches) {
+            auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(research.id);
+            vector<discipline_api_obj> disciplines;
+            disciplines.reserve(research_discipline_relations.size());
+            for (auto relation_wrapper : research_discipline_relations) {
+                auto& relation = relation_wrapper.get();
+                auto discipline = get_discipline(relation.discipline_id);
+                disciplines.push_back(discipline);
+            }
+
+            auto research_group_members = get_research_group_tokens_by_research_group(research.research_group_id);
+            vector<account_name_type> authors;
+            for (auto member : research_group_members) {
+                authors.push_back(member.owner);
+            }
+
+            auto votes = vote_service.get_votes_by_research(research.id);
+
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, authors, disciplines, votes.size());
+            results.push_back(listing_api_obj);
+        }
+
+        return results;
+
     });
 }
 

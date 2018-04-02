@@ -33,6 +33,8 @@ namespace chain {
 using namespace deip::protocol;
 
 void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state);
+void create_initdelegate_expert_tokens_for_genesis_state(genesis_state_type& genesis_state);
+void create_disciplines_for_genesis_state(genesis_state_type& genesis_state);
 
 struct database_fixture
 {
@@ -153,6 +155,22 @@ struct database_fixture
                                            const uint16_t review_share_in_percent,
                                            const uint16_t dropout_compensation_in_percent);
 
+
+    const research_content_object& research_content_create(
+                                            const int64_t& id,
+                                            const int64_t& research_id,
+                                            const research_content_type& type,
+                                            const std::string& title,
+                                            const std::string& content,
+                                            const int16_t& activity_round,
+                                            const research_content_activity_state& activity_state,
+                                            const time_point_sec& activity_window_start,
+                                            const time_point_sec& activity_window_end,
+                                            const std::vector<account_name_type>& authors,
+                                            const std::vector<research_content_id_type>& references,
+                                            const std::vector<string>& external_references);
+
+
     const expert_token_object& expert_token_create(const int64_t id,
                                                    const account_name_type& account,
                                                    const discipline_id_type& discipline_id,
@@ -174,6 +192,9 @@ struct database_fixture
     void convert(const string& account_name, const asset& amount);
     void vest(const string& from, const share_type& amount);
     void vest(const string& account, const asset& amount);
+    void create_all_discipline_expert_tokens_for_account(const string& account);
+    const expert_token_object& common_token(const string& account, const share_type& amount);
+    const expert_token_object& expert_token(const string& account, const discipline_id_type& discipline_id, const share_type& amount);
     void proxy(const string& account, const string& proxy);
     const asset& get_balance(const string& account_name) const;
     void sign(signed_transaction& trx, const fc::ecc::private_key& key);

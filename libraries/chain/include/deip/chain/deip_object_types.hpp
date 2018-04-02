@@ -163,6 +163,9 @@ typedef bip::set<account_name_type, std::less<account_name_type>, account_name_a
 typedef allocator<research_id_type> research_id_allocator_type;
 typedef bip::set<research_id_type, std::less<research_id_type>, research_id_allocator_type> research_id_type_set;
 
+typedef allocator<research_content_id_type> research_content_id_allocator_type;
+typedef bip::set<research_content_id_type, std::less<research_content_id_type>, research_content_id_allocator_type> research_content_id_type_set;
+
 typedef allocator<fc::fixed_string_32> fixed_string_32_allocator_type;
 typedef bip::set<fc::fixed_string_32, std::less<fc::fixed_string_32>, fixed_string_32_allocator_type> fixed_string_32_type_set;
 

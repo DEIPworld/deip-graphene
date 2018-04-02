@@ -345,10 +345,10 @@ public:
     // Research group tokens       //
     /////////////////////////////////
     vector<research_group_token_api_obj> get_research_group_tokens_by_account(const account_name_type account) const;
-
+    vector<research_group_token_api_obj> get_research_group_tokens_by_research_group(const research_group_id_type& research_group_id) const;
     research_group_token_api_obj
     get_research_group_token_by_account_and_research_group_id(const account_name_type account,
-                                                              const research_group_id_type research_group_id) const;
+                                                              const research_group_id_type& research_group_id) const;
 
     /////////////////////////
     // Research token sale //
@@ -375,6 +375,12 @@ public:
     research_group_invite_api_obj get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
     vector<research_group_invite_api_obj> get_research_group_invites_by_account_name(const account_name_type& account_name) const;
     vector<research_group_invite_api_obj> get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const;
+
+    ///////////////////////////////////
+    // Research listing             //
+    //////////////////////////////////
+
+    vector<research_listing_api_obj> get_research_listing(const uint64_t& from, const uint32_t& limit) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -482,6 +488,7 @@ FC_API(deip::app::database_api,
 
    // Research group tokens
    (get_research_group_tokens_by_account)
+   (get_research_group_tokens_by_research_group)
    (get_research_group_token_by_account_and_research_group_id)
 
    // Research Token Sale
@@ -495,6 +502,9 @@ FC_API(deip::app::database_api,
    // Research group invite
     (get_research_group_invites_by_account_name) 
     (get_research_group_invites_by_research_group_id)
+
+   // Research listing
+    (get_research_listing)
 )
 
 // clang-format on
