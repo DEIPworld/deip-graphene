@@ -130,10 +130,15 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
 
         const review_object& review = db.get<review_object, by_id>(0);
 
+        std::vector<discipline_id_type> disciplines;
+        for (auto discipline : review.disciplines)
+            disciplines.push_back(discipline);
+
         BOOST_CHECK(review.research_id == 1);
         BOOST_CHECK(review.author == "alice");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.content == "test");
+        BOOST_CHECK(disciplines.size() == 1 && disciplines[0] == 1);
 
         BOOST_TEST_MESSAGE("--- Test failing review creation");
 

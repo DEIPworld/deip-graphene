@@ -168,7 +168,9 @@ typedef bip::set<research_content_id_type, std::less<research_content_id_type>, 
 
 typedef allocator<fc::fixed_string_32> fixed_string_32_allocator_type;
 typedef bip::set<fc::fixed_string_32, std::less<fc::fixed_string_32>, fixed_string_32_allocator_type> fixed_string_32_type_set;
-
+    
+typedef allocator<discipline_id_type> discipline_id_allocator_type;    
+typedef bip::set<discipline_id_type, std::less<discipline_id_type>, discipline_id_allocator_type> discipline_id_type_set;
 
 enum bandwidth_type
 {

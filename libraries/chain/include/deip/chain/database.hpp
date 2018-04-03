@@ -312,14 +312,18 @@ public:
                                        const discipline_id_type& discipline_id,
                                        const share_type& reward);
     share_type reward_references(const research_content_id_type& research_content_id,
-                           const discipline_id_type& discipline_id,
-                           const share_type& reward,
-                           const share_type& expertise_reward);
+                                 const discipline_id_type& discipline_id,
+                                 const share_type& reward,
+                                 const share_type& expertise_reward);
     share_type reward_reviews(const research_id_type& research_id,
-                        const discipline_id_type& discipline_id,
-                        const share_type& reward);
+                              const discipline_id_type& discipline_id,
+                              const share_type& reward);
     share_type reward_voters(const research_content_id_type &research_content_id,
-                       const discipline_id_type &discipline_id, const share_type &reward);
+                             const discipline_id_type &discipline_id,
+                             const share_type &reward);
+    share_type reward_review_voters(const review_id_type &review_id,
+                                    const discipline_id_type &discipline_id,
+                                    const share_type &reward);
     void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                const share_type &reward);
     share_type reward_research_group_members_with_expertise(const research_group_id_type& research_group_id,
@@ -395,9 +399,9 @@ private:
 
     void _update_median_witness_props();
 
-    share_type allocate_rewards_to_reviews(const share_type& reward, const discipline_id_type& discipline_id,
-                                           const std::vector<std::pair<research_content_object, share_type>>& reviews_weights,
-                                           const share_type& total_weight);
+    share_type allocate_rewards_to_reviews(const share_type& reward,
+                                           const discipline_id_type& discipline_id,
+                                           const std::vector<review_object>& rewarded_reviews);
 
 protected:
     // Mark pop_undo() as protected -- we do not want outside calling pop_undo(); it should call pop_block() instead

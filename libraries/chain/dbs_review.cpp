@@ -43,18 +43,22 @@ dbs_review::review_refs_type dbs_review::get_author_reviews(const account_name_t
     return ret;
 }
 
-const review_object& dbs_review::create(const research_id_type &research_id, const string &content, bool is_positive,
-                                      const account_name_type &author)
+const review_object& dbs_review::create(const research_id_type &research_id,
+                                        const string &content,
+                                        bool is_positive,
+                                        const account_name_type &author,
+                                        const std::set<discipline_id_type>& disciplines)
 {
     const auto& new_review = db_impl().create<review_object>([&](review_object& r) {
 
         auto now = db_impl().head_block_time();
 
         r.research_id = research_id;
-        r.content = content;
+        fc::from_string(r.content, content);
         r.author = author;
         r.is_positive = is_positive;
         r.created_at = now;
+        r.disciplines.insert(disciplines.begin(), disciplines.end());
     });
 
     return new_review;
