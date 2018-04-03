@@ -172,7 +172,7 @@ void create_grant_operation::validate() const
 
 void create_proposal_operation::validate() const
 {
-    validate_enum_value_by_range(action, proposal_action_type::First, proposal_action_type::Last);
+    validate_enum_value_by_range(action, proposal_action_type::First_proposal, proposal_action_type::Last_proposal);
     validate_account_name(creator);
     FC_ASSERT(expiration_time > fc::time_point_sec());
     FC_ASSERT(fc::is_utf8(data), "Data is not valid UTF8 string");
