@@ -315,6 +315,10 @@ public:
                                  const discipline_id_type& discipline_id,
                                  const share_type& reward,
                                  const share_type& expertise_reward);
+    share_type reward_review_references(const review_id_type& review_id,
+                                        const discipline_id_type& discipline_id,
+                                        const share_type& reward,
+                                        const share_type& expertise_reward);
     share_type reward_reviews(const research_id_type& research_id,
                               const discipline_id_type& discipline_id,
                               const share_type& reward);
@@ -402,6 +406,11 @@ private:
     share_type allocate_rewards_to_reviews(const share_type& reward,
                                            const discipline_id_type& discipline_id,
                                            const std::vector<review_object>& rewarded_reviews);
+
+    share_type allocate_rewards_to_review_references(const research_content_id_type_set references,
+                                                     const discipline_id_type& discipline_id,
+                                                     const share_type& reward,
+                                                     const share_type& expertise_reward);
 
 protected:
     // Mark pop_undo() as protected -- we do not want outside calling pop_undo(); it should call pop_block() instead
