@@ -58,12 +58,6 @@ struct get_impacted_account_visitor
         _impacted.insert(op.creator);
     }
 
-    void operator()(const account_create_with_delegation_operation& op)
-    {
-        _impacted.insert(op.new_account_name);
-        _impacted.insert(op.creator);
-    }
-
     void operator()(const vote_operation& op)
     {
         _impacted.insert(op.voter);

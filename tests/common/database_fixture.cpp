@@ -310,11 +310,10 @@ const account_object& database_fixture::account_create(const string& name,
     try
     {
 
-        account_create_with_delegation_operation op;
+        account_create_operation op;
         op.new_account_name = name;
         op.creator = creator;
         op.fee = asset(fee, DEIP_SYMBOL);
-        op.delegation = asset(0, VESTS_SYMBOL);
         op.owner = authority(1, key, 1);
         op.active = authority(1, key, 1);
         op.posting = authority(1, post_key, 1);

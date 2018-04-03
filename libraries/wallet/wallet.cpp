@@ -830,27 +830,6 @@ public:
             }
             return ss.str();
         };
-        m["get_withdraw_routes"] = [](variant result, const fc::variants& a) {
-            auto routes = result.as<vector<withdraw_route>>();
-            std::stringstream ss;
-
-            ss << ' ' << std::left << std::setw(20) << "From";
-            ss << ' ' << std::left << std::setw(20) << "To";
-            ss << ' ' << std::right << std::setw(8) << "Percent";
-            ss << ' ' << std::right << std::setw(9) << "Auto-Vest";
-            ss << "\n==============================================================\n";
-
-            for (auto r : routes)
-            {
-                ss << ' ' << std::left << std::setw(20) << r.from_account;
-                ss << ' ' << std::left << std::setw(20) << r.to_account;
-                ss << ' ' << std::right << std::setw(8) << std::setprecision(2) << std::fixed
-                   << double(r.percent) / 100;
-                ss << ' ' << std::right << std::setw(9) << (r.auto_vest ? "true" : "false") << std::endl;
-            }
-
-            return ss.str();
-        };
 
         return m;
     }
@@ -1875,11 +1854,6 @@ wallet_api::get_account_history(const std::string& account, uint32_t from, uint3
 app::state wallet_api::get_state(const std::string& url)
 {
     return my->_remote_db->get_state(url);
-}
-
-vector<withdraw_route> wallet_api::get_withdraw_routes(const std::string& account, withdraw_route_type type) const
-{
-    return my->_remote_db->get_withdraw_routes(account, type);
 }
 
 annotated_signed_transaction wallet_api::vote(

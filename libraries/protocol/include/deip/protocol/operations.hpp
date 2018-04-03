@@ -26,8 +26,6 @@ namespace deip {
                 recover_account_operation,
                 change_recovery_account_operation,
 
-                account_create_with_delegation_operation,
-
                 // DEIP native operations
                 create_grant_operation,
                 create_research_group_operation,

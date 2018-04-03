@@ -178,8 +178,6 @@ public:
 
     optional<account_recovery_request_api_obj> get_recovery_request(string account) const;
 
-    vector<withdraw_route> get_withdraw_routes(string account, withdraw_route_type type = outgoing) const;
-
     optional<account_bandwidth_api_obj> get_account_bandwidth(string account, witness::bandwidth_type type) const;
 
     ///////////////
@@ -421,7 +419,6 @@ FC_API(deip::app::database_api,
    (get_account_history)
    (get_owner_history)
    (get_recovery_request)
-   (get_withdraw_routes)
    (get_account_bandwidth)
 
    // Authority / validation

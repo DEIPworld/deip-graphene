@@ -142,7 +142,7 @@ FC_REFLECT(
     (id)(open)(seconds)(name)(transactions)(market_bandwidth)(non_market_bandwidth)(total_ops)(market_ops)(forum_ops)(
         root_comments)(root_comment_edits)(root_comments_deleted)(replies)(reply_edits)(replies_deleted)(
         new_root_votes)(changed_root_votes)(new_reply_votes)(changed_reply_votes)(transfers_to)(transfers_from)(deip_sent)(deip_received)(sbd_sent)(
-        sbd_received)(sbd_interest_payments)(sbd_paid_as_interest)(deip_received_from_withdrawls)(sbd_conversion_requests_created)(sbd_to_be_converted)(
+        sbd_received)(sbd_interest_payments)(sbd_paid_as_interest)(sbd_conversion_requests_created)(sbd_to_be_converted)(
         sbd_conversion_requests_filled)(deip_converted)(limit_orders_created)(limit_orders_filled)(
         limit_orders_cancelled)(limit_order_deip_paid)(limit_order_deip_received)(limit_order_sbd_paid)(
         limit_order_sbd_received)(total_pow)(estimated_hashpower))

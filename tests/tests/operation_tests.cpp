@@ -1536,7 +1536,7 @@ BOOST_AUTO_TEST_CASE(account_recovery)
 
        BOOST_TEST_MESSAGE("Creating account bob with alice");
 
-       account_create_with_delegation_operation acc_create;
+       account_create_operation acc_create;
        acc_create.fee = ASSET("10.000 TESTS");
        acc_create.creator = "alice";
        acc_create.new_account_name = "bob";
@@ -1922,63 +1922,6 @@ BOOST_AUTO_TEST_CASE(account_bandwidth)
                                .average_bandwidth;
        BOOST_REQUIRE(last_bandwidth_update == db.head_block_time());
        BOOST_REQUIRE(average_bandwidth == total_bandwidth + fc::raw::pack_size(tx) * 10 * DEIP_BANDWIDTH_PRECISION);
-   }
-   FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(account_create_with_delegation_authorities)
-{
-   try
-   {
-       BOOST_TEST_MESSAGE("Testing: account_create_with_delegation_authorities");
-
-       signed_transaction tx;
-       ACTORS_WITH_EXPERT_TOKENS((alice));
-       generate_blocks(1);
-       fund("alice", ASSET("1000.000 TESTS"));
-
-       private_key_type priv_key = generate_private_key("temp_key");
-
-       account_create_with_delegation_operation op;
-       op.fee = ASSET("0.000 TESTS");
-       op.creator = "alice";
-       op.new_account_name = "bob";
-       op.owner = authority(1, priv_key.get_public_key(), 1);
-       op.active = authority(2, priv_key.get_public_key(), 2);
-       op.memo_key = priv_key.get_public_key();
-       op.json_metadata = "{\"foo\":\"bar\"}";
-
-       tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-       tx.operations.push_back(op);
-
-       BOOST_TEST_MESSAGE("--- Test failure when no signatures");
-       DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
-
-       BOOST_TEST_MESSAGE("--- Test success with witness signature");
-       tx.sign(alice_private_key, db.get_chain_id());
-       db.push_transaction(tx, 0);
-
-       BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
-       tx.operations.clear();
-       tx.signatures.clear();
-       op.new_account_name = "sam";
-       tx.operations.push_back(op);
-       tx.sign(alice_private_key, db.get_chain_id());
-       tx.sign(alice_private_key, db.get_chain_id());
-       DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
-
-       BOOST_TEST_MESSAGE("--- Test failure when signed by an additional signature not in the creator's authority");
-       tx.signatures.clear();
-       tx.sign(init_account_priv_key, db.get_chain_id());
-       tx.sign(alice_private_key, db.get_chain_id());
-       DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
-
-       BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the creator's authority");
-       tx.signatures.clear();
-       tx.sign(init_account_priv_key, db.get_chain_id());
-       DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
-
-       validate_database();
    }
    FC_LOG_AND_RETHROW()
 }

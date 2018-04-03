@@ -10,7 +10,6 @@ namespace chain {
 using namespace deip::protocol;
 
 DEFINE_EVALUATOR(account_create)
-DEFINE_EVALUATOR(account_create_with_delegation)
 DEFINE_EVALUATOR(account_update)
 DEFINE_EVALUATOR(transfer)
 DEFINE_EVALUATOR(witness_update)
