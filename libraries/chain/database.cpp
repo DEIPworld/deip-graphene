@@ -2409,7 +2409,6 @@ void database::validate_invariants() const
         share_type total_common_tokens_amount = share_type(0);
         share_type total_expert_tokens_amount = share_type(0);
 
-        TODO: Add votes validation
         share_type total_vsf_votes = share_type(0);
 
         auto gpo = get_dynamic_global_properties();
