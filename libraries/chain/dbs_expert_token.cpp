@@ -1,4 +1,5 @@
 #include <deip/chain/dbs_expert_token.hpp>
+#include <deip/chain/dbs_account.hpp>
 #include <deip/chain/database.hpp>
 
 #include <tuple>
@@ -20,9 +21,13 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
 
     if (discipline_id != 0)
     {
+        auto& account_service = db_impl().obtain_service<dbs_account>();
+
         db_impl().modify(to_account, [&](account_object& to) { to.total_expert_tokens_amount += amount; });
         db_impl().modify(cprops,
                          [&](dynamic_global_property_object& props) { props.total_expert_tokens_amount += amount; });
+
+        account_service.adjust_proxied_witness_votes(to_account, amount);
     }
     else
     {
