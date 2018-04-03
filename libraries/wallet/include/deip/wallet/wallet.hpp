@@ -805,7 +805,6 @@ FC_API( deip::wallet::wallet_api,
         (set_voting_proxy)
         (vote_for_witness)
         (transfer)
-        (transfer_to_vesting)
         (vote)
         (set_transaction_expiration)
         (challenge)

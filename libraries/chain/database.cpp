@@ -2274,19 +2274,21 @@ void database::adjust_balance(const account_object& a, const asset& delta)
     });
 }
 
-void database::adjust_supply(const asset& delta, bool adjust_vesting)
+void database::adjust_supply(const asset& delta, bool adjust_common_token)
 {
     const auto& props = get_dynamic_global_properties();
     if (props.head_block_number < DEIP_BLOCKS_PER_DAY * 7)
-        adjust_vesting = false;
+        adjust_common_token = false;
 
     modify(props, [&](dynamic_global_property_object& props) {
         switch (delta.symbol)
         {
         case DEIP_SYMBOL:
         {
-            asset new_vesting((adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, DEIP_SYMBOL);
-            props.current_supply += delta + new_vesting;
+            // TODO: remove unusable value
+            asset new_common_token((adjust_common_token && delta.amount > 0) ? delta.amount * 9 : 0, DEIP_SYMBOL);
+
+            props.current_supply += delta + new_common_token;
             assert(props.current_supply.amount.value >= 0);
             break;
         }

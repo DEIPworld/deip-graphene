@@ -55,12 +55,12 @@ DEIP_TEST_CASE(create_grant_operation_check_invalid_balance_amount)
     BOOST_REQUIRE_THROW(create_grant_op.validate(), fc::assert_exception);
 }
 
-// DEIP_TEST_CASE(create_grant_operation_check_invalid_balance_currency)
-// {
-//     create_grant_op.balance = asset(GRANT_BALANCE_DEFAULT, VESTS_SYMBOL);
+DEIP_TEST_CASE(create_grant_operation_check_invalid_balance_currency)
+{
+    create_grant_op.balance = asset(GRANT_BALANCE_DEFAULT, INCORRECT_SYMBOL);
 
-//     BOOST_REQUIRE_THROW(create_grant_op.validate(), fc::assert_exception);
-// }
+    BOOST_REQUIRE_THROW(create_grant_op.validate(), fc::assert_exception);
+}
 
 DEIP_TEST_CASE(create_grant_operation_check_invalid_owner_name)
 {

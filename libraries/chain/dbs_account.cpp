@@ -318,8 +318,7 @@ void dbs_account::update_voting_proxy(const account_object& account, const optio
     std::array<share_type, DEIP_MAX_PROXY_RECURSION_DEPTH + 1> delta;
 
      // Add Common token calculation   
-    // delta[0] = -account.vesting_shares.amount;
-    delta[0] = -1000000;
+    delta[0] = -account.total_common_tokens_amount;
 
     for (int i = 0; i < DEIP_MAX_PROXY_RECURSION_DEPTH; ++i)
         delta[i + 1] = -account.proxied_vsf_votes[i];

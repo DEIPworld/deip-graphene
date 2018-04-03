@@ -278,7 +278,7 @@ public:
 
     /** @return the sbd created and deposited to_account, may return DEIP if there is no median feed */
 
-    void adjust_supply(const asset& delta, bool adjust_vesting = false);
+    void adjust_supply(const asset& delta, bool adjust_common_token = false);
 
     asset get_balance(const account_object& a, asset_symbol_type symbol) const override;
     asset get_balance(const string& aname, asset_symbol_type symbol) const override
