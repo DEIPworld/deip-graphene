@@ -471,7 +471,7 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
     BOOST_REQUIRE(itr != vote_idx.end());
     auto& vote = *itr;
     BOOST_REQUIRE(vote.voting_power == (old_voting_power * op.weight / DEIP_100_PERCENT));
-    int64_t expected_tokens_amount = (token.amount.value * old_voting_power * op.weight) / (DEIP_100_PERCENT * DEIP_100_PERCENT);
+    int64_t expected_tokens_amount = (token.amount.value * old_voting_power * abs(op.weight)) / (DEIP_100_PERCENT * DEIP_100_PERCENT);
     BOOST_REQUIRE(vote.tokens_amount.value == expected_tokens_amount);
     BOOST_REQUIRE(vote.voting_time == db.head_block_time());
     BOOST_REQUIRE(vote.voter == op.voter);
@@ -492,19 +492,19 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
 
     auto& updated_review = db.get<review_object>(review.id);
 
-    uint64_t expected_review_reward_weight = 0;
+    uint64_t expected_review_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, review_reward_curve).to_uint64();
     //BOOST_REQUIRE(updated_review.reward_weights_per_discipline[vote.discipline_id] == expected_review_reward_weight);
     //BOOST_REQUIRE(updated_review.curation_reward_weights_per_discipline[op.discipline_id] == expected_curator_reward_weight);
 
     // Validate discipline
 
-    BOOST_REQUIRE(discipline.total_active_reward_weight == expected_tokens_amount);
+    BOOST_REQUIRE(discipline.total_active_reward_weight == 0);
     BOOST_REQUIRE(discipline.total_active_research_reward_weight == 0);
     BOOST_REQUIRE(discipline.total_active_review_reward_weight == expected_review_reward_weight);
 
     // Validate glopal properties object
-    auto& dgpo = db.get_dynamic_global_properties();
-    BOOST_REQUIRE(dgpo.total_active_disciplines_reward_weight == expected_tokens_amount);
+//    auto& dgpo = db.get_dynamic_global_properties();
+//    BOOST_REQUIRE(dgpo.total_active_disciplines_reward_weight == expected_review_reward_weight);
 
     validate_database();
 }

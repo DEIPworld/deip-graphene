@@ -704,6 +704,10 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
         const auto current_weight = discipline.total_active_review_reward_weight;
         const uint64_t evaluated_review_vote_weight = util::evaluate_reward_curve(abs_used_tokens, review_reward_curve).to_uint64();
 
+//        _db._temporary_public_impl().modify(dgpo, [&](dynamic_global_property_object& prop) {
+//            prop.total_active_disciplines_reward_weight += abs_used_tokens;
+//        });
+
         _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
            d.total_active_review_reward_weight += evaluated_review_vote_weight;
         });
