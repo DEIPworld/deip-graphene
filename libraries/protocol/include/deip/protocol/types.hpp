@@ -161,17 +161,16 @@ enum proposal_action_type : uint16_t
     invite_member = 2,
     dropout_member = 3,
     send_funds = 4,
-    transfer_research_tokens = 5,
-    start_research_token_sale = 6,
-    rebalance_research_group_tokens = 7,
-    change_quorum = 8,
-    change_research_review_share_percent = 9,
-    offer_research_tokens = 10,
-    accept_research_tokens_offer = 11,
-    create_research_material = 12,
+    start_research_token_sale = 5,
+    rebalance_research_group_tokens = 6,
+    change_quorum = 7,
+    change_research_review_share_percent = 8,
+    offer_research_tokens = 9,
+    accept_research_tokens_offer = 10,
+    create_research_material = 11,
 
-    First = start_research,
-    Last = create_research_material
+    First_proposal = start_research,
+    Last_proposal = create_research_material
 };
 
 enum proposal_life_time_type
@@ -205,7 +204,6 @@ FC_REFLECT_ENUM(deip::protocol::proposal_action_type,   (start_research)
                                                         (invite_member)
                                                         (dropout_member)
                                                         (send_funds)
-                                                        (transfer_research_tokens)
                                                         (start_research_token_sale)
                                                         (rebalance_research_group_tokens)
                                                         (change_quorum)

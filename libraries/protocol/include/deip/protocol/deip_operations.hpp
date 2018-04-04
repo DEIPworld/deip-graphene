@@ -679,7 +679,7 @@ FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
 FC_REFLECT( deip::protocol::make_research_review_operation, (author)(research_id)(content)(is_positive)(references)(external_references))
 
-FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (owner)(research_token_sale_id)(amount))
+FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_token_sale_id)(owner)(amount))
 FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner)(research_tokens_conversion_percent))
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::create_research_group_join_request_operation, (owner)(research_group_id)(motivation_letter))
