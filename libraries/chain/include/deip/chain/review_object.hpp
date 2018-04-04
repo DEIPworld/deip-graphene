@@ -26,7 +26,7 @@ class review_object : public object<review_object_type, review_object>
 public:
 
     template <typename Constructor, typename Allocator>
-    review_object(Constructor &&c, allocator<Allocator> a) : content(a), disciplines(a)
+    review_object(Constructor &&c, allocator<Allocator> a) : content(a), disciplines(a), references(a)
     {
         c(*this);
     }
@@ -40,8 +40,7 @@ public:
     bip::map<discipline_id_type, share_type> reward_weights_per_discipline;
     bip::map<discipline_id_type, share_type> curation_reward_weights_per_discipline;
     discipline_id_type_set disciplines;
-
-    // TODO: Add references
+    research_content_id_type_set references;
 };
 
 struct by_author;
@@ -68,7 +67,7 @@ typedef multi_index_container<review_object,
 
 FC_REFLECT(deip::chain::review_object,
            (id)(research_id)(content)(is_positive)(author)(created_at)
-           (reward_weights_per_discipline)(curation_reward_weights_per_discipline)(disciplines)
+           (reward_weights_per_discipline)(curation_reward_weights_per_discipline)(disciplines)(references)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::review_object, deip::chain::review_index)
