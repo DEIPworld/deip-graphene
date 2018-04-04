@@ -1556,9 +1556,9 @@ share_type database::fund_review_pool(const discipline_id_type& discipline_id, c
     for (auto review_vote_ref : review_votes) {
         auto& review_vote = review_vote_ref.get();
 
-        for (auto review_id : reviews)
+        for (auto review : reviews)
         {
-            if (review_vote.id == review_id)
+            if (review_vote.review_id == review.id)
                 continue;
         }
         if (!is_exist)
