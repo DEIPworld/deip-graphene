@@ -33,7 +33,9 @@ public:
                                 const string& content,
                                 bool is_positive,
                                 const account_name_type& author,
-                                const std::set<discipline_id_type>& disciplines);
+                                const std::set<discipline_id_type>& disciplines,
+                                const std::vector<research_content_id_type>& references,
+                                const std::vector<string>& external_references);
 };
 } // namespace chain
 } // namespace deip

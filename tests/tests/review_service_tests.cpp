@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(create)
 {
     try
     {
-        auto& review = data_service.create(1, "content", true, "alice", {1, 2});
+        auto& review = data_service.create(1, "content", true, "alice", {1, 2}, {1, 2}, {"test"});
 
         std::vector<discipline_id_type> disciplines;
         for (auto discipline : review.disciplines)
@@ -68,6 +68,7 @@ BOOST_AUTO_TEST_CASE(create)
         BOOST_CHECK(review.content == "content");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.author == "alice");
+        BOOST_CHECK(review.references.size() == 2);
         BOOST_CHECK(disciplines.size() == 2);
 
     }

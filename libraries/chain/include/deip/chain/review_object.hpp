@@ -41,6 +41,7 @@ public:
     bip::map<discipline_id_type, share_type> curation_reward_weights_per_discipline;
     discipline_id_type_set disciplines;
     research_content_id_type_set references;
+    // TODO: Add external references
 };
 
 struct by_author;
