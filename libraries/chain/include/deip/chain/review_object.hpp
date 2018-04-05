@@ -32,7 +32,7 @@ public:
     }
 
     review_id_type id;
-    research_id_type research_id;
+    research_content_id_type research_content_id;
     fc::shared_string content;
     bool is_positive = true;
     account_name_type author;
@@ -44,7 +44,7 @@ public:
 };
 
 struct by_author;
-struct by_research;
+struct by_research_content;
 
 typedef multi_index_container<review_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -55,10 +55,10 @@ typedef multi_index_container<review_object,
                         member<review_object,
                                 account_name_type,
                                 &review_object::author>>,
-                ordered_non_unique<tag<by_research>,
+                ordered_non_unique<tag<by_research_content>,
                         member<review_object,
-                                research_id_type,
-                                &review_object::research_id>>>,
+                                research_content_id_type,
+                                &review_object::research_content_id>>>,
 
         allocator<review_object>>
         review_index;
@@ -66,7 +66,7 @@ typedef multi_index_container<review_object,
 }
 
 FC_REFLECT(deip::chain::review_object,
-           (id)(research_id)(content)(is_positive)(author)(created_at)
+           (id)(research_content_id)(content)(is_positive)(author)(created_at)
            (reward_weights_per_discipline)(curation_reward_weights_per_discipline)(disciplines)(references)
 )
 

@@ -11,11 +11,11 @@ dbs_review::dbs_review(database &db)
 {
 }
 
-dbs_review::review_refs_type dbs_review::get_research_reviews(const research_id_type &research_id) const
+dbs_review::review_refs_type dbs_review::get_research_content_reviews(const research_content_id_type &research_content_id) const
 {
     review_refs_type ret;
 
-    auto it_pair = db_impl().get_index<review_index>().indicies().get<by_research>().equal_range(research_id);
+    auto it_pair = db_impl().get_index<review_index>().indicies().get<by_research_content>().equal_range(research_content_id);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
@@ -43,7 +43,7 @@ dbs_review::review_refs_type dbs_review::get_author_reviews(const account_name_t
     return ret;
 }
 
-const review_object& dbs_review::create(const research_id_type &research_id,
+const review_object& dbs_review::create(const research_content_id_type &research_content_id,
                                         const string &content,
                                         bool is_positive,
                                         const account_name_type &author,
@@ -53,7 +53,7 @@ const review_object& dbs_review::create(const research_id_type &research_id,
 
         auto now = db_impl().head_block_time();
 
-        r.research_id = research_id;
+        r.research_content_id = research_content_id;
         fc::from_string(r.content, content);
         r.author = author;
         r.is_positive = is_positive;

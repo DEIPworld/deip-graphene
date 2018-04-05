@@ -101,8 +101,16 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
 
         BOOST_TEST_MESSAGE("--- Test normal review creation");
         auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-
-        //expert_token_create(1, "alice", 1, 100);
+        auto& content = db.create<research_content_object>([&](research_content_object& c) {
+            c.id = 1;
+            c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
+            c.research_id = research.id;
+            c.authors = { "alice", "bob" };
+            c.content = "content";
+            c.references = {};
+            c.external_references = { "http://google.com" };
+            c.type = research_content_type::milestone;
+        });
 
         db.create<research_discipline_relation_object>([&](research_discipline_relation_object& rdr) {
             rdr.discipline_id = 1;
@@ -115,7 +123,7 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
 
         std::vector<int64_t> references {1};
         op.author = "alice";
-        op.research_id = 1;
+        op.research_content_id = 1;
         op.content = "test";
         op.is_positive = true;
         op.references = references;
@@ -134,7 +142,7 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         for (auto discipline : review.disciplines)
             disciplines.push_back(discipline);
 
-        BOOST_CHECK(review.research_id == 1);
+        BOOST_CHECK(review.research_content_id == 1);
         BOOST_CHECK(review.author == "alice");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.content == "test");
@@ -150,7 +158,7 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         });
 
         op.author = "alice";
-        op.research_id = 1;
+        op.research_content_id = 1;
         op.content = "test";
         op.references = references;
         op.is_positive = true;
@@ -412,6 +420,12 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
     generate_block();
 
     auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
+    auto& content = db.create<research_content_object>([&](research_content_object& rc) {
+        rc.id = 1;
+        rc.research_id = research.id;
+        rc.content = "content";
+        rc.type = research_content_type::milestone;
+    });
     auto& discipline = discipline_create(1000, "Math", 0, 0);
     auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.discipline_id = discipline.id;
@@ -424,7 +438,7 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
         r.content = "review";
         r.is_positive = true;
         r.author = "bob";
-        r.research_id = research.id;
+        r.research_content_id = content.id;
         r.created_at = db.head_block_time();
     });
 

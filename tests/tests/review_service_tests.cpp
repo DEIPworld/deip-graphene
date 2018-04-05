@@ -20,7 +20,7 @@ public:
     void create_reviews() {
         db.create<review_object>([&](review_object& r) {
             r.id = 1,
-            r.research_id = 1;
+            r.research_content_id = 1;
             r.content = "Content 1";
             r.author = "alice";
             r.is_positive = true;
@@ -30,7 +30,7 @@ public:
 
         db.create<review_object>([&](review_object& r) {
             r.id = 2,
-            r.research_id = 1;
+            r.research_content_id = 1;
             r.content = "Content 2";
             r.author = "bob";
             r.is_positive = true;
@@ -40,7 +40,7 @@ public:
 
         db.create<review_object>([&](review_object& r) {
             r.id = 3,
-            r.research_id = 2;
+            r.research_content_id = 2;
             r.content = "Content 3";
             r.author = "alice";
             r.is_positive = true;
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(create)
         for (auto discipline : review.disciplines)
             disciplines.push_back(discipline);
 
-        BOOST_CHECK(review.research_id == 1);
+        BOOST_CHECK(review.research_content_id == 1);
         BOOST_CHECK(review.content == "content");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.author == "alice");
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(get)
         for (auto discipline : review.disciplines)
             disciplines.push_back(discipline);
 
-        BOOST_CHECK(review.research_id == 1);
+        BOOST_CHECK(review.research_content_id == 1);
         BOOST_CHECK(review.content == "Content 1");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.author == "alice");
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(get_research_reviews)
     {
         create_reviews();
 
-        auto reviews = data_service.get_research_reviews(1);
+        auto reviews = data_service.get_research_content_reviews(1);
 
         BOOST_CHECK(reviews.size() == 2);
         BOOST_CHECK(std::any_of(reviews.begin(), reviews.end(), [](std::reference_wrapper<const review_object> wrapper){
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(get_research_reviews)
                 disciplines.push_back(discipline);
 
             return  review.id == 1 &&
-                    review.research_id == 1 &&
+                    review.research_content_id == 1 &&
                     review.content == "Content 1" &&
                     review.author == "alice" &&
                     review.is_positive == true &&
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(get_research_reviews)
                 disciplines.push_back(discipline);
 
             return  review.id == 2 &&
-                    review.research_id == 1 &&
+                    review.research_content_id == 1 &&
                     review.content == "Content 2" &&
                     review.author == "bob" &&
                     review.is_positive == true &&
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(get_author_reviews)
                 disciplines.push_back(discipline);
 
             return  review.id == 1 &&
-                    review.research_id == 1 &&
+                    review.research_content_id == 1 &&
                     review.content == "Content 1" &&
                     review.author == "alice" &&
                     review.is_positive == true &&
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE(get_author_reviews)
                 disciplines.push_back(discipline);
 
             return  review.id == 3 &&
-                    review.research_id == 2 &&
+                    review.research_content_id == 2 &&
                     review.content == "Content 3" &&
                     review.author == "alice" &&
                     review.is_positive == true &&

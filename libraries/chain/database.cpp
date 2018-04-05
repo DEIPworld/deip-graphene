@@ -1410,12 +1410,12 @@ share_type database::reward_review_references(const review_id_type& review_id,
     return used_reward;
 }
 
-share_type database::reward_reviews(const research_id_type &research_id,
-                              const discipline_id_type &discipline_id, const share_type &reward)
+share_type database::reward_reviews(const research_content_id_type &research_content_id,
+                                    const discipline_id_type &discipline_id, const share_type &reward)
 {
     dbs_review& review_service = obtain_service<dbs_review>();
     dbs_account& account_service = obtain_service<dbs_account>();
-    auto reviews = review_service.get_research_reviews(research_id);
+    auto reviews = review_service.get_research_content_reviews(research_content_id);
 
     std::vector<review_object> rewarded_reviews;
     share_type used_reward = 0;

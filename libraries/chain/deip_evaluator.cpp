@@ -631,6 +631,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_review& review_service = _db.obtain_service<dbs_review>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
 
     const auto& dgpo = _db.get_dynamic_global_properties();
     const auto review_reward_curve = curve_id::power1dot5;
@@ -643,7 +644,8 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
 
         const auto& review = review_service.get(o.review_id);
 
-        research_service.check_research_existence(review.research_id);
+        research_content_service.check_research_content_existence(review.research_content_id);
+        auto content = research_content_service.get_content_by_id(review.research_content_id);
 
         if (o.discipline_id != 0) {
             discipline_service.check_discipline_existence(o.discipline_id);
@@ -654,7 +656,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
         std::vector<discipline_id_type> target_disciplines;
 
         dbs_research_discipline_relation& research_disciplines_service = _db.obtain_service<dbs_research_discipline_relation>();
-        const auto& relations = research_disciplines_service.get_research_discipline_relations_by_research(review.research_id);
+        const auto& relations = research_disciplines_service.get_research_discipline_relations_by_research(content.research_id);
         for (auto& relation_wrapper : relations) {
             const auto& relation = relation_wrapper.get();
             target_disciplines.push_back(relation.discipline_id);
@@ -952,15 +954,17 @@ void make_research_review_evaluator::do_apply(const make_research_review_operati
 {
     dbs_review& review_service = _db.obtain_service<dbs_review>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
     dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
 
     account_service.check_account_existence(op.author);
-    research_service.check_research_existence(op.research_id);
+    research_content_service.check_research_content_existence(op.research_content_id);
+    auto content = research_content_service.get_content_by_id(op.research_content_id);
 
     auto expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
-    auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(op.research_id);
+    auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(content.research_id);
     std::set<discipline_id_type> review_disciplines;
     std::set<discipline_id_type> research_disciplines_ids;
     for (auto rdr : research_discipline_relations) {
@@ -976,7 +980,7 @@ void make_research_review_evaluator::do_apply(const make_research_review_operati
     FC_ASSERT(review_disciplines.size() != 0, "Reviewer does not have enough expertise to make review.");
 
     // TODO: Create review with references
-    review_service.create(op.research_id, op.content, op.is_positive, op.author, review_disciplines);
+    review_service.create(op.research_content_id, op.content, op.is_positive, op.author, review_disciplines);
 }
 
 void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)
