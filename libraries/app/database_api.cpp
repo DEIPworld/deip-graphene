@@ -1078,23 +1078,33 @@ research_api_obj database_api::get_research_by_permlink(const string& permlink) 
     });
 }
 
-vector<research_api_obj> database_api::get_researches(const research_id_type& from, const uint32_t limit) const
+vector<research_api_obj> database_api::get_researches_by_discipline_id(const int64_t from,
+                                                                       const uint32_t limit,
+                                                                       const discipline_id_type& discipline_id) const
 {
     return my->_db.with_read_lock([&]() {
         FC_ASSERT(limit <= MAX_LIMIT);
 
         vector<research_api_obj> result;
+        vector<research_id_type> researches;
         result.reserve(limit);
 
-        const auto& idx = my->_db.get_index<research_index>().indicies().get<by_id>();
+        const auto& rdr_idx = my->_db.get_index<research_discipline_relation_index>().indicies().get<by_discipline_id>();
+        auto rdr_itr = rdr_idx.begin();
 
-        auto itr = idx.find(from);
-        FC_ASSERT(itr != idx.end(), "invalid research id ${n}", ("n", from));
-
-        while (itr != idx.end() && result.size() < limit)
+        while (rdr_itr != rdr_idx.end())
         {
-            result.push_back(research_api_obj(*itr));
-            ++itr;
+            researches.push_back(rdr_itr->research_id);
+            ++rdr_itr;
+        }
+        std::sort(researches.begin(), researches.end());
+
+        auto researches_size = researches.size();
+        FC_ASSERT(from <= researches_size, "from cannot be bigger than size ${n}", ("n", researches_size));
+
+        for (auto i = from; i < researches_size; i++) {
+            auto& research = my->_db.get<research_object>(researches[i]);
+            result.push_back(research_api_obj(research));
         }
 
         return result;
@@ -1441,7 +1451,9 @@ vector<research_group_invite_api_obj> database_api::get_research_group_invites_b
     });
 }
 
-vector<research_listing_api_obj> database_api::get_research_listing(const uint64_t& from, const uint32_t& limit = 100) const
+vector<research_listing_api_obj> database_api::get_research_listing(const discipline_id_type& discipline_id,
+                                                                    const uint64_t& from,
+                                                                    const uint32_t& limit = 100) const
 {
     return my->_db.with_read_lock([&]() {
         FC_ASSERT(limit <= MAX_LIMIT, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
@@ -1451,7 +1463,7 @@ vector<research_listing_api_obj> database_api::get_research_listing(const uint64
         chain::dbs_research_discipline_relation& research_discipline_service = my->_db.obtain_service<dbs_research_discipline_relation>();
         chain::dbs_vote& vote_service = my->_db.obtain_service<dbs_vote>();
 
-        auto researches = get_researches(from, limit);
+        auto researches = get_researches_by_discipline_id(from, limit, discipline_id);
         for (auto research : researches) {
             auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(research.id);
             vector<discipline_api_obj> disciplines;
