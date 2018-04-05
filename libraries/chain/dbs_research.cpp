@@ -23,6 +23,7 @@ const research_object& dbs_research::create(const string &title, const string &a
         r.is_finished = false;
         r.owned_tokens = DEIP_100_PERCENT;
         r.created_at = db_impl().head_block_time();
+        r.last_update_time = db_impl().head_block_time();
         r.review_share_in_percent_last_update = db_impl().head_block_time();
     });
 

@@ -126,6 +126,7 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         db.push_transaction(tx, 0);
 
         auto& research_content = db.get<research_content_object, by_id>(1);
+        BOOST_CHECK(db.get<research_object>(research_content.research_id).last_update_time == db.head_block_time());
         BOOST_CHECK(research_content.type == review);
     }
     FC_LOG_AND_RETHROW()
