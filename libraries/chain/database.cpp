@@ -1336,10 +1336,6 @@ share_type database::reward_research_content(const research_content_id_type& res
     used_reward += reward_research_token_holders(research, discipline_id, token_holders_share);
     used_reward += reward_references(research_content_id, discipline_id, references_share, references_expertise_share);
     used_reward += reward_voters(research_content_id, discipline_id, curators_share);
-    // TODO: Reward reviews
-//    if (research_content.type != research_content_type::review) {
-//        used_reward += reward_reviews(research, discipline_id, review_share);
-//    }
 
     FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
 
