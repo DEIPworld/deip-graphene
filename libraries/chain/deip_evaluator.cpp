@@ -950,7 +950,7 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
     research_group_service.create_research_group_token(research_group.id, op.tokens_amount, op.creator);
 }
 
-void make_research_review_evaluator::do_apply(const make_research_review_operation& op)
+void make_review_evaluator::do_apply(const make_review_operation& op)
 {
     dbs_review& review_service = _db.obtain_service<dbs_review>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();

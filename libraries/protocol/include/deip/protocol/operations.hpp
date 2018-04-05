@@ -38,7 +38,7 @@ namespace deip {
                 create_research_group_operation,
                 create_proposal_operation,
                 vote_proposal_operation,
-                make_research_review_operation,
+                make_review_operation,
                 contribute_to_token_sale_operation,
                 approve_research_group_invite_operation,
                 reject_research_group_invite_operation,

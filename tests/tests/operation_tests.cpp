@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
 
         private_key_type priv_key = generate_private_key("alice");
 
-        make_research_review_operation op;
+        make_review_operation op;
 
         std::vector<int64_t> references {1};
         op.author = "alice";

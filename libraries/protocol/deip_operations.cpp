@@ -200,7 +200,7 @@ void vote_proposal_operation::validate() const
     validate_account_name(voter);
 }
 
-void make_research_review_operation::validate() const
+void make_review_operation::validate() const
 {
     validate_account_name(author);
     FC_ASSERT(!content.empty(), "Research content cannot be empty");
