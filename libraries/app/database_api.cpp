@@ -1090,7 +1090,8 @@ vector<research_api_obj> database_api::get_researches_by_discipline_id(const int
         result.reserve(limit);
 
         const auto& rdr_idx = my->_db.get_index<research_discipline_relation_index>().indicies().get<by_discipline_id>();
-        auto rdr_itr = rdr_idx.begin();
+
+        auto rdr_itr = rdr_idx.find(discipline_id);
 
         while (rdr_itr != rdr_idx.end())
         {
@@ -1099,10 +1100,9 @@ vector<research_api_obj> database_api::get_researches_by_discipline_id(const int
         }
         std::sort(researches.begin(), researches.end());
 
-        auto researches_size = researches.size();
-        FC_ASSERT(from <= researches_size, "from cannot be bigger than size ${n}", ("n", researches_size));
+        FC_ASSERT(from + limit <= researches.size(), "from + limit cannot be bigger than size ${n}", ("n", researches.size()));
 
-        for (auto i = from; i < researches_size; i++) {
+        for (auto i = from; i < from + limit; i++) {
             auto& research = my->_db.get<research_object>(researches[i]);
             result.push_back(research_api_obj(research));
         }
