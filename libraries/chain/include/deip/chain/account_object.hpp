@@ -59,6 +59,10 @@ public:
     share_type total_expert_tokens_amount = 0;
     share_type total_common_tokens_amount = 0;
 
+    share_type received_common_tokens = 0;
+    share_type common_tokens_withdraw_rate = 0; ///< at the time this is updated it can be at most vesting_shares/104
+    time_point_sec next_common_tokens_withdrawal
+        = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
     share_type withdrawn = 0; /// Track how many shares have been withdrawn
     share_type to_withdraw = 0; /// Might be able to look this up with operation history.
     uint16_t withdraw_routes = 0;
@@ -171,7 +175,9 @@ public:
 struct by_name;
 struct by_proxy;
 struct by_last_post;
+struct by_next_common_tokens_withdrawal;
 struct by_deip_balance;
+struct by_ct_balance;
 struct by_post_count;
 struct by_vote_count;
 
@@ -195,6 +201,16 @@ typedef multi_index_container<account_object,
                                                                              &account_object::id>> /// composite key by
                                                                                                    /// proxy
                                                         >,
+                                                        ordered_unique<tag<by_next_common_tokens_withdrawal>,
+                                                        composite_key<account_object,
+                                                                      member<account_object,
+                                                                             time_point_sec,
+                                                                             &account_object::next_common_tokens_withdrawal>,
+                                                                      member<account_object,
+                                                                             account_id_type,
+                                                                             &account_object::id>> /// composite key
+                                                        /// by_next_common_tokens_withdrawal
+                                                        >,
                                          ordered_unique<tag<by_last_post>,
                                                         composite_key<account_object,
                                                                       member<account_object,
@@ -210,6 +226,16 @@ typedef multi_index_container<account_object,
                                                                       member<account_object,
                                                                              asset,
                                                                              &account_object::balance>,
+                                                                      member<account_object,
+                                                                             account_id_type,
+                                                                             &account_object::id>>,
+                                                        composite_key_compare<std::greater<asset>,
+                                                                              std::less<account_id_type>>>,
+                                        ordered_unique<tag<by_ct_balance>,
+                                                        composite_key<account_object,
+                                                                      member<account_object,
+                                                                             share_type,
+                                                                             &account_object::total_common_tokens_amount>,
                                                                       member<account_object,
                                                                              account_id_type,
                                                                              &account_object::id>>,
@@ -375,6 +401,7 @@ FC_REFLECT( deip::chain::account_object,
              (recovery_account)(last_account_recovery)
              (lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
              (balance)
+             (received_common_tokens)(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)
              (withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)

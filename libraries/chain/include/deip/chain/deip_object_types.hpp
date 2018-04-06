@@ -46,6 +46,7 @@ enum object_type
     operation_object_type,
     account_history_object_type,
     hardfork_property_object_type,
+    withdraw_common_tokens_route_object_type,
     owner_authority_history_object_type,
     account_recovery_request_object_type,
     change_recovery_account_request_object_type,
@@ -82,6 +83,8 @@ class witness_vote_object;
 class operation_object;
 class account_history_object;
 class hardfork_property_object;
+class withdraw_common_tokens_route_object;
+
 class owner_authority_history_object;
 class account_recovery_request_object;
 class change_recovery_account_request_object;
@@ -118,6 +121,7 @@ typedef oid<witness_vote_object> witness_vote_id_type;
 typedef oid<operation_object> operation_id_type;
 typedef oid<account_history_object> account_history_id_type;
 typedef oid<hardfork_property_object> hardfork_property_id_type;
+typedef oid<withdraw_common_tokens_route_object> withdraw_common_tokens_route_id_type;
 typedef oid<owner_authority_history_object> owner_authority_history_id_type;
 typedef oid<account_recovery_request_object> account_recovery_request_id_type;
 typedef oid<change_recovery_account_request_object> change_recovery_account_request_id_type;
@@ -176,6 +180,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (operation_object_type)
                  (account_history_object_type)
                  (hardfork_property_object_type)
+                 (withdraw_common_tokens_route_object_type)
                  (owner_authority_history_object_type)
                  (account_recovery_request_object_type)
                  (change_recovery_account_request_object_type)

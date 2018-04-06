@@ -14,6 +14,8 @@ namespace deip {
                 vote_operation,
 
                 transfer_operation,
+                transfer_to_common_tokens_operation,
+                withdraw_common_tokens_operation,
 
                 account_create_operation,
                 account_update_operation,
@@ -21,6 +23,8 @@ namespace deip {
                 witness_update_operation,
                 account_witness_vote_operation,
                 account_witness_proxy_operation,
+
+                set_withdraw_common_tokens_route_operation,
 
                 request_account_recovery_operation,
                 recover_account_operation,
@@ -39,6 +43,7 @@ namespace deip {
                 reject_research_group_join_request_operation,
 
                 // virtual operations
+                fill_common_tokens_withdraw_operation,
                 shutdown_witness_operation,
                 hardfork_operation,
                 producer_reward_operation>

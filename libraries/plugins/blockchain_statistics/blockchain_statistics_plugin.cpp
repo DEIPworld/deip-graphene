@@ -95,6 +95,31 @@ struct operation_process
 //            }
 //        });
     }
+
+    void operator()(const transfer_to_common_tokens_operation& op) const
+    {
+        _db.modify(_bucket, [&](bucket_object& b) {
+            b.transfers_to_common_tokens++;
+            b.deip_to_common_tokens += op.amount.amount;
+        });
+    }
+
+    void operator()(const fill_common_tokens_withdraw_operation& op) const
+    {
+        const auto& account = _db.get_account(op.from_account);
+
+        _db.modify(_bucket, [&](bucket_object& b) {
+            b.common_tokens_withdrawals_processed++;
+            if (op.transfer)
+                b.common_tokens_transferred += op.withdrawn;
+            else
+                b.common_tokens_withdrawn += op.withdrawn;
+
+            if (account.common_tokens_withdraw_rate == 0)
+                b.finished_common_tokens_withdrawals++;
+        });
+    }
+
 };
 
 void blockchain_statistics_plugin_impl::on_block(const signed_block& b)
@@ -182,11 +207,32 @@ void blockchain_statistics_plugin_impl::on_block(const signed_block& b)
 
 void blockchain_statistics_plugin_impl::pre_operation(const operation_notification& o)
 {
-    // auto& db = _self.database();
+    auto& db = _self.database();
 
-    // for (auto bucket_id : _current_buckets)
-    // {
-    // }
+    for (auto bucket_id : _current_buckets)
+    {
+        if (o.op.which() == operation::tag<withdraw_common_tokens_operation>::value)
+        {
+            withdraw_common_tokens_operation op = o.op.get<withdraw_common_tokens_operation>();
+            const auto& account = db.get_account(op.account);
+            const auto& bucket = db.get(bucket_id);
+
+            auto new_common_tokens_withdrawal_rate = op.total_common_tokens_amount / DEIP_VESTING_WITHDRAW_INTERVALS;
+            if (op.total_common_tokens_amount > 0 && new_common_tokens_withdrawal_rate == 0)
+                new_common_tokens_withdrawal_rate = 1;
+
+            db.modify(bucket, [&](bucket_object& b) {
+                if (account.common_tokens_withdraw_rate > 0)
+                    b.modified_common_tokens_withdrawal_requests++;
+                else
+                    b.new_common_tokens_withdrawal_requests++;
+
+                // TODO: Figure out how to change delta when a vesting withdraw finishes. Have until March 24th 2018 to
+                // figure that out...
+                b.common_tokens_withdraw_rate_delta += new_common_tokens_withdrawal_rate - account.common_tokens_withdraw_rate;
+            });
+        }
+    }
 }
 
 void blockchain_statistics_plugin_impl::post_operation(const operation_notification& o)

@@ -462,6 +462,55 @@ optional<account_recovery_request_api_obj> database_api::get_recovery_request(st
     });
 }
 
+vector<withdraw_route> database_api::get_withdraw_routes(string account, withdraw_route_type type) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<withdraw_route> result;
+
+        const auto& acc = my->_db.get_account(account);
+
+        if (type == outgoing || type == all)
+        {
+            const auto& by_route = my->_db.get_index<withdraw_common_tokens_route_index>().indices().get<by_withdraw_route>();
+            auto route = by_route.lower_bound(acc.id);
+
+            while (route != by_route.end() && route->from_account == acc.id)
+            {
+                withdraw_route r;
+                r.from_account = account;
+                r.to_account = my->_db.get(route->to_account).name;
+                r.percent = route->percent;
+                r.auto_common_token = route->auto_common_token;
+
+                result.push_back(r);
+
+                ++route;
+            }
+        }
+
+        if (type == incoming || type == all)
+        {
+            const auto& by_dest = my->_db.get_index<withdraw_common_tokens_route_index>().indices().get<by_destination>();
+            auto route = by_dest.lower_bound(acc.id);
+
+            while (route != by_dest.end() && route->to_account == acc.id)
+            {
+                withdraw_route r;
+                r.from_account = my->_db.get(route->from_account).name;
+                r.to_account = account;
+                r.percent = route->percent;
+                r.auto_common_token = route->auto_common_token;
+
+                result.push_back(r);
+
+                ++route;
+            }
+        }
+
+        return result;
+    });
+}
+
 optional<account_bandwidth_api_obj> database_api::get_account_bandwidth(string account,
                                                                         witness::bandwidth_type type) const
 {
@@ -844,6 +893,7 @@ state database_api::get_state(string path) const
                     {
                         switch (item.second.op.which())
                         {
+                        case operation::tag<withdraw_common_tokens_operation>::value:
                         case operation::tag<transfer_operation>::value:
                         case operation::tag<vote_operation>::value:
                         case operation::tag<account_witness_vote_operation>::value:

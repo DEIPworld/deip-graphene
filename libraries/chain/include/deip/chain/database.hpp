@@ -291,6 +291,7 @@ public:
      * adjust_proxied_witness_votes( a, -a.witness_vote_weight() )
      */
     void clear_witness_votes(const account_object& a);
+    void process_common_tokens_withdrawals();
     void process_funds();
     void process_conversions();
     void account_recovery_processing();

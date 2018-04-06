@@ -189,6 +189,130 @@ void transfer_evaluator::do_apply(const transfer_operation& o)
     account_service.increase_balance(to_account, o.amount);
 }
 
+void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_tokens_operation& o)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+
+    const auto& from_account = account_service.get_account(o.from);
+    const auto& to_account = o.to.size() ? account_service.get_account(o.to) : from_account;
+
+    FC_ASSERT(_db.get_balance(from_account, DEIP_SYMBOL) >= o.amount,
+              "Account does not have sufficient DEIP for transfer.");
+    account_service.decrease_balance(from_account, o.amount);
+    expert_token_service.create(to_account.name, 0, o.amount.amount);
+}
+
+void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_operation& o)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+
+    const auto& account = account_service.get_account(o.account);
+
+    FC_ASSERT(account.total_common_tokens_amount >= 0,
+              "Account does not have sufficient Deip Power for withdraw.");
+
+    if (!account.mined)
+    {
+        const auto& props = _db.get_dynamic_global_properties();
+        const witness_schedule_object& wso = _db.get_witness_schedule_object();
+
+        share_type min_common_tokens = wso.median_props.account_creation_fee.amount /* * props.get_vesting_share_price() */;
+        min_common_tokens *= 10;
+
+        FC_ASSERT(
+            account.total_common_tokens_amount > min_common_tokens || o.total_common_tokens_amount == 0,
+            "Account registered by another account requires 10x account creation fee worth of Deip Power before it "
+            "can be powered down.");
+    }
+
+    if (o.total_common_tokens_amount == 0)
+    {
+        FC_ASSERT(account.common_tokens_withdraw_rate != 0,
+                  "This operation would not change the vesting withdraw rate.");
+
+        account_service.update_withdraw(account, 0, time_point_sec::maximum(), 0);
+    }
+    else
+    {
+
+        // DEIP: We have to decide wether we use 13 weeks vesting period or low it down
+        int common_tokens_withdraw_intervals = DEIP_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
+
+        auto new_common_tokens_withdraw_rate = o.total_common_tokens_amount / share_type(common_tokens_withdraw_intervals);
+
+        if (new_common_tokens_withdraw_rate == 0)
+            new_common_tokens_withdraw_rate = 1;
+
+        FC_ASSERT(account.common_tokens_withdraw_rate != new_common_tokens_withdraw_rate,
+                  "This operation would not change the vesting withdraw rate.");
+
+        account_service.update_withdraw(account, new_common_tokens_withdraw_rate,
+                                        _db.head_block_time() + fc::seconds(DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS),
+                                        o.total_common_tokens_amount);
+    }
+}
+
+void set_withdraw_common_tokens_route_evaluator::do_apply(const set_withdraw_common_tokens_route_operation& o)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    try
+    {
+        const auto& from_account = account_service.get_account(o.from_account);
+        const auto& to_account = account_service.get_account(o.to_account);
+        const auto& wd_idx
+            = _db._temporary_public_impl().get_index<withdraw_common_tokens_route_index>().indices().get<by_withdraw_route>();
+        auto itr = wd_idx.find(boost::make_tuple(from_account.id, to_account.id));
+
+        if (itr == wd_idx.end())
+        {
+            FC_ASSERT(o.percent != 0, "Cannot create a 0% destination.");
+            FC_ASSERT(from_account.withdraw_routes < DEIP_MAX_WITHDRAW_ROUTES,
+                      "Account already has the maximum number of routes.");
+
+            _db._temporary_public_impl().create<withdraw_common_tokens_route_object>(
+                [&](withdraw_common_tokens_route_object& wvdo) {
+                    wvdo.from_account = from_account.id;
+                    wvdo.to_account = to_account.id;
+                    wvdo.percent = o.percent;
+                    wvdo.auto_common_token = o.auto_common_token;
+                });
+
+            account_service.increase_withdraw_routes(from_account);
+        }
+        else if (o.percent == 0)
+        {
+            _db._temporary_public_impl().remove(*itr);
+
+            account_service.decrease_withdraw_routes(from_account);
+        }
+        else
+        {
+            _db._temporary_public_impl().modify(*itr, [&](withdraw_common_tokens_route_object& wvdo) {
+                wvdo.from_account = from_account.id;
+                wvdo.to_account = to_account.id;
+                wvdo.percent = o.percent;
+                wvdo.auto_common_token = o.auto_common_token;
+            });
+        }
+
+        itr = wd_idx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
+        uint16_t total_percent = 0;
+
+        while (itr->from_account == from_account.id && itr != wd_idx.end())
+        {
+            total_percent += itr->percent;
+            ++itr;
+        }
+
+        FC_ASSERT(total_percent <= DEIP_100_PERCENT,
+                  "More than 100% of common_tokens withdrawals allocated to destinations.");
+    }
+    FC_CAPTURE_AND_RETHROW()
+}
+
 void account_witness_proxy_evaluator::do_apply(const account_witness_proxy_operation& o)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();

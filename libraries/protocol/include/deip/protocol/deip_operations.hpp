@@ -132,6 +132,69 @@ struct transfer_operation : public base_operation
 };
 
 /**
+ *  This operation converts DEIP into VFS (Vesting Fund Shares) at
+ *  the current exchange rate. With this operation it is possible to
+ *  give another account vesting shares so that faucets can
+ *  pre-fund new accounts with vesting shares.
+ */
+struct transfer_to_common_tokens_operation : public base_operation
+{
+    account_name_type from;
+    account_name_type to; ///< if null, then same as from
+    asset amount; ///< must be DEIP
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(from);
+    }
+};
+
+/**
+ * At any given point in time an account can be withdrawing from their
+ * vesting shares. A user may change the number of shares they wish to
+ * cash out at any time between 0 and their total vesting stake.
+ *
+ * After applying this operation, vesting_shares will be withdrawn
+ * at a rate of vesting_shares/104 per week for two years starting
+ * one week after this operation is included in the blockchain.
+ *
+ * This operation is not valid if the user has no vesting shares.
+ */
+struct withdraw_common_tokens_operation : public base_operation
+{
+    account_name_type account;
+    share_type total_common_tokens_amount;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(account);
+    }
+};
+
+/**
+ * Allows an account to setup a vesting withdraw but with the additional
+ * request for the funds to be transferred directly to another account's
+ * balance rather than the withdrawing account. In addition, those funds
+ * can be immediately vested again, circumventing the conversion from
+ * vests to deip and back, guaranteeing they maintain their value.
+ */
+struct set_withdraw_common_tokens_route_operation : public base_operation
+{
+    account_name_type from_account;
+    account_name_type to_account;
+    uint16_t percent = 0;
+    bool auto_common_token = false;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(from_account);
+    }
+};
+
+/**
  * Witnesses must vote on how to set certain chain properties to ensure a smooth
  * and well functioning network.  Any time @owner is in the active set of witnesses these
  * properties will be used to control the blockchain configuration.
@@ -522,6 +585,9 @@ FC_REFLECT( deip::protocol::account_update_operation,
             (json_metadata) )
 
 FC_REFLECT( deip::protocol::transfer_operation, (from)(to)(amount)(memo) )
+FC_REFLECT( deip::protocol::transfer_to_common_tokens_operation, (from)(to)(amount) )
+FC_REFLECT( deip::protocol::withdraw_common_tokens_operation, (account)(total_common_tokens_amount) )
+FC_REFLECT( deip::protocol::set_withdraw_common_tokens_route_operation, (from_account)(to_account)(percent)(auto_common_token) )
 FC_REFLECT( deip::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( deip::protocol::account_witness_vote_operation, (account)(witness)(approve) )
 FC_REFLECT( deip::protocol::account_witness_proxy_operation, (account)(proxy) )

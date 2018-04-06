@@ -64,6 +64,22 @@ struct get_impacted_account_visitor
 //        _impacted.insert(op.author);
     }
 
+    void operator()(const transfer_to_common_tokens_operation& op)
+    {
+        _impacted.insert(op.from);
+
+        if (op.to != account_name_type() && op.to != op.from)
+        {
+            _impacted.insert(op.to);
+        }
+    }
+
+    void operator()(const set_withdraw_common_tokens_route_operation& op)
+    {
+        _impacted.insert(op.from_account);
+        _impacted.insert(op.to_account);
+    }
+
     void operator()(const transfer_operation& op)
     {
         _impacted.insert(op.from);
@@ -104,6 +120,13 @@ struct get_impacted_account_visitor
     }
 
     // virtual operations
+
+    void operator()(const fill_common_tokens_withdraw_operation& op)
+    {
+        _impacted.insert(op.from_account);
+        _impacted.insert(op.to_account);
+    }
+
     void operator()(const shutdown_witness_operation& op)
     {
         _impacted.insert(op.owner);

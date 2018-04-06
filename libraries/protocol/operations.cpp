@@ -17,6 +17,10 @@ struct is_market_op_visitor
     {
         return true;
     }
+    bool operator()(const transfer_to_common_tokens_operation&) const
+    {
+        return true;
+    }
 };
 
 bool is_market_operation(const operation& op)

@@ -2,6 +2,7 @@
 #include <deip/chain/database.hpp>
 
 #include <deip/chain/dbs_witness.hpp>
+#include <deip/chain/dbs_expert_token.hpp>
 
 namespace deip {
 namespace chain {
@@ -65,6 +66,7 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
 
     const auto& props = db_impl().get_dynamic_global_properties();
     const auto& creator = get_account(creator_name);
+    dbs_expert_token& expert_token_service = db().obtain_service<dbs_expert_token>();
 
     db_impl().modify(creator, [&](account_object& c) { c.balance -= fee; });
 
@@ -89,6 +91,11 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         auth.posting = posting;
         auth.last_owner_update = fc::time_point_sec::min();
     });
+
+    if (fee.amount > 0)
+    {
+        expert_token_service.create(new_account_name, 0, fee.amount);
+    }
 
     return new_account;
 }
@@ -158,6 +165,20 @@ void dbs_account::increase_balance(const account_object& account, const asset& d
 void dbs_account::decrease_balance(const account_object& account, const asset& deips)
 {
     increase_balance(account, -deips);
+}
+
+void dbs_account::update_withdraw(const account_object& account,
+                                  const share_type& common_tokens_withdraw_rate,
+                                  const time_point_sec& next_common_tokens_withdrawal,
+                                  const share_type& to_withdrawn,
+                                  const optional<share_type>& withdrawn)
+{
+    db_impl().modify(account, [&](account_object& a) {
+        a.common_tokens_withdraw_rate = common_tokens_withdraw_rate;
+        a.next_common_tokens_withdrawal = next_common_tokens_withdrawal;
+        a.to_withdraw = to_withdrawn;
+        a.withdrawn = (withdrawn.valid()) ? (*withdrawn) : 0;
+    });
 }
 
 void dbs_account::increase_withdraw_routes(const account_object& account)
@@ -317,7 +338,6 @@ void dbs_account::update_voting_proxy(const account_object& account, const optio
     /// remove all current votes
     std::array<share_type, DEIP_MAX_PROXY_RECURSION_DEPTH + 1> delta;
 
-     // Add Common token calculation   
     delta[0] = -account.total_common_tokens_amount;
 
     for (int i = 0; i < DEIP_MAX_PROXY_RECURSION_DEPTH; ++i)

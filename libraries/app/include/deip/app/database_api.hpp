@@ -43,7 +43,7 @@ struct withdraw_route
     string from_account;
     string to_account;
     uint16_t percent;
-    bool auto_vest;
+    bool auto_common_token;
 };
 
 enum withdraw_route_type
@@ -177,6 +177,8 @@ public:
     vector<owner_authority_history_api_obj> get_owner_history(string account) const;
 
     optional<account_recovery_request_api_obj> get_recovery_request(string account) const;
+
+    vector<withdraw_route> get_withdraw_routes(string account, withdraw_route_type type = outgoing) const;
 
     optional<account_bandwidth_api_obj> get_account_bandwidth(string account, witness::bandwidth_type type) const;
 
@@ -384,7 +386,7 @@ private:
 // clang-format off
 
 FC_REFLECT( deip::app::scheduled_hardfork, (hf_version)(live_time) )
-FC_REFLECT( deip::app::withdraw_route, (from_account)(to_account)(percent)(auto_vest) )
+FC_REFLECT( deip::app::withdraw_route, (from_account)(to_account)(percent)(auto_common_token) )
 
 FC_REFLECT_ENUM( deip::app::withdraw_route_type, (incoming)(outgoing)(all) )
 
@@ -419,6 +421,7 @@ FC_API(deip::app::database_api,
    (get_account_history)
    (get_owner_history)
    (get_recovery_request)
+   (get_withdraw_routes)
    (get_account_bandwidth)
 
    // Authority / validation

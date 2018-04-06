@@ -66,6 +66,30 @@ void transfer_operation::validate() const
     FC_CAPTURE_AND_RETHROW((*this))
 }
 
+void transfer_to_common_tokens_operation::validate() const
+{
+    validate_account_name(from);
+    FC_ASSERT(is_asset_type(amount, DEIP_SYMBOL), "Amount must be DEIP");
+    if (to != account_name_type())
+        validate_account_name(to);
+    FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Must transfer a nonzero amount");
+}
+
+void withdraw_common_tokens_operation::validate() const
+{
+    validate_account_name(account);
+
+    // TODO Add Common token validation
+    // FC_ASSERT(is_asset_type(vesting_shares, VESTS_SYMBOL), "Amount must be VESTS");
+}
+
+void set_withdraw_common_tokens_route_operation::validate() const
+{
+    validate_account_name(from_account);
+    validate_account_name(to_account);
+    FC_ASSERT(0 <= percent && percent <= DEIP_100_PERCENT, "Percent must be valid deip percent");
+}
+
 void witness_update_operation::validate() const
 {
     validate_account_name(owner);

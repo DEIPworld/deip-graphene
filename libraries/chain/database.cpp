@@ -954,6 +954,128 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when) const
     return (when - first_slot_time).to_seconds() / DEIP_BLOCK_INTERVAL + 1;
 }
 
+void database::process_common_tokens_withdrawals()
+{
+    dbs_account& account_service = obtain_service<dbs_account>();
+
+    const auto& widx = get_index<account_index>().indices().get<by_next_common_tokens_withdrawal>();
+    const auto& didx = get_index<withdraw_common_tokens_route_index>().indices().get<by_withdraw_route>();
+    auto current = widx.begin();
+
+    const auto& cprops = get_dynamic_global_properties();
+
+    while (current != widx.end() && current->next_common_tokens_withdrawal <= head_block_time())
+    {
+        const auto& from_account = *current;
+        ++current;
+
+        /**
+         *  Let T = total tokens in vesting fund
+         *  Let V = total vesting shares
+         *  Let v = total vesting shares being cashed out
+         *
+         *  The user may withdraw  vT / V tokens
+         */
+        share_type to_withdraw;
+        if (from_account.to_withdraw - from_account.withdrawn < from_account.common_tokens_withdraw_rate)
+            to_withdraw = std::min(from_account.total_common_tokens_amount,
+                                   from_account.to_withdraw % from_account.common_tokens_withdraw_rate)
+                              .value;
+        else
+            to_withdraw = std::min(from_account.total_common_tokens_amount, from_account.common_tokens_withdraw_rate).value;
+
+        share_type common_tokens_deposited_as_deip = 0;
+        share_type common_tokens_deposited_as_common_tokens = 0;
+        asset total_deip_converted = asset(0, DEIP_SYMBOL);
+
+        // Do two passes, the first for vests, the second for deip. Try to maintain as much accuracy for vests as
+        // possible.
+        for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
+             itr != didx.end() && itr->from_account == from_account.id; ++itr)
+        {
+            if (itr->auto_common_token)
+            {
+                share_type to_deposit
+                    = ((fc::uint128_t(to_withdraw.value) * itr->percent) / DEIP_100_PERCENT).to_uint64();
+                common_tokens_deposited_as_common_tokens += to_deposit;
+
+                if (to_deposit > 0)
+                {
+                    const auto& to_account = get(itr->to_account);
+
+                    modify(to_account, [&](account_object& a) { a.total_common_tokens_amount += to_deposit; });
+
+                    account_service.adjust_proxied_witness_votes(to_account, to_deposit);
+
+                    push_virtual_operation(fill_common_tokens_withdraw_operation(from_account.name, to_account.name,
+                                                                           to_deposit,
+                                                                           to_deposit,
+                                                                           true));
+                }
+            }
+        }
+
+        for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
+             itr != didx.end() && itr->from_account == from_account.id; ++itr)
+        {
+            if (!itr->auto_common_token)
+            {
+                const auto& to_account = get(itr->to_account);
+
+                share_type to_deposit
+                    = ((fc::uint128_t(to_withdraw.value) * itr->percent) / DEIP_100_PERCENT).to_uint64();
+                common_tokens_deposited_as_deip += to_deposit;
+                share_type converted_deip = to_deposit /* * cprops.get_vesting_share_price() */;
+                total_deip_converted += converted_deip;
+
+                if (to_deposit > 0)
+                {
+                    modify(to_account, [&](account_object& a) { a.balance += converted_deip; });
+
+                    modify(cprops, [&](dynamic_global_property_object& o) {
+                        o.total_common_tokens_amount -= to_deposit;
+                    });
+
+                    push_virtual_operation(fill_common_tokens_withdraw_operation(
+                        from_account.name, to_account.name, to_deposit, converted_deip, false));
+                }
+            }
+        }
+
+        share_type to_convert = to_withdraw - common_tokens_deposited_as_deip - common_tokens_deposited_as_common_tokens;
+        FC_ASSERT(to_convert >= 0, "Deposited more common_tokens than were supposed to be withdrawn");
+
+        share_type converted_deip = to_convert /* * cprops.get_vesting_share_price() */;
+
+        modify(from_account, [&](account_object& a) {
+            a.total_common_tokens_amount -= to_withdraw;
+            a.balance += converted_deip;
+            a.withdrawn += to_withdraw;
+
+            if (a.withdrawn >= a.to_withdraw || a.total_common_tokens_amount == 0)
+            {
+                a.common_tokens_withdraw_rate= 0;
+                a.next_common_tokens_withdrawal = fc::time_point_sec::maximum();
+            }
+            else
+            {
+                a.next_common_tokens_withdrawal += fc::seconds(DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS);
+            }
+        });
+
+        modify(cprops, [&](dynamic_global_property_object& o) {
+            o.total_common_tokens_amount -= to_convert;
+        });
+
+        if (to_withdraw > 0)
+            account_service.adjust_proxied_witness_votes(from_account, -to_withdraw);
+
+        push_virtual_operation(fill_common_tokens_withdraw_operation(from_account.name, from_account.name,
+                                                                                        to_withdraw,
+                                                                                        converted_deip,
+                                                                                        false));
+    }
+}
 
 // TODO: Update information without VESTS
 /**
@@ -1152,9 +1274,6 @@ share_type database::reward_researches_in_discipline(const discipline_object& di
 {
     FC_ASSERT(discipline.total_active_reward_weight != 0, "Attempt to allocate funds to inactive discipline");
 
-    auto& research_service = obtain_service<dbs_research>();
-    auto& research_group_service = obtain_service<dbs_research_group>();
-
     const auto& total_votes_idx = get_index<total_votes_index>().indices().get<by_discipline_id>();
     auto total_votes_itr = total_votes_idx.find(discipline.id);
 
@@ -1182,7 +1301,6 @@ share_type database::reward_research_content(const research_content_id_type& res
 {
     auto& research_content_service = obtain_service<dbs_research_content>();
     auto& research_service = obtain_service<dbs_research>();
-    auto& research_group_service = obtain_service<dbs_research_group>();
     auto& research_content = research_content_service.get_content_by_id(research_content_id);
     auto& research = research_service.get_research(research_content.research_id);
 
@@ -1262,7 +1380,6 @@ share_type database::reward_references(const research_content_id_type& research_
 {
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
-    dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
     auto& research_content = research_content_service.get_content_by_id(research_content_id);
 
     std::map<research_id_type, std::pair<share_type, flat_set<account_name_type>>> research_votes_by_id;
@@ -1311,7 +1428,6 @@ share_type database::reward_reviews(const research_id_type &research_id,
 {
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
     dbs_vote& vote_service = obtain_service<dbs_vote>();
-    dbs_account& account_service = obtain_service<dbs_account>();
     auto reviews = research_content_service.get_content_by_research_id_and_content_type(research_id, research_content_type::review);
     std::vector<std::pair<research_content_object, share_type>> votes_by_review;
     share_type total_weight = 0;
@@ -1525,7 +1641,6 @@ void database::process_grants()
     uint32_t block_num = head_block_num();
 
     dbs_grant& grant_service = obtain_service<dbs_grant>();
-    dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
 
     const auto& grants_idx = get_index<grant_index>().indices().get<by_start_block>();
     auto grants_itr = grants_idx.lower_bound(block_num);
@@ -1588,6 +1703,9 @@ void database::initialize_evaluators()
 {
     _my->_evaluator_registry.register_evaluator<vote_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_evaluator>();
+    _my->_evaluator_registry.register_evaluator<transfer_to_common_tokens_evaluator>();
+    _my->_evaluator_registry.register_evaluator<withdraw_common_tokens_evaluator>();
+    _my->_evaluator_registry.register_evaluator<set_withdraw_common_tokens_route_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_create_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<witness_update_evaluator>();
@@ -1636,6 +1754,7 @@ void database::initialize_indexes()
     add_index<operation_index>();
     add_index<account_history_index>();
     add_index<hardfork_property_index>();
+    add_index<withdraw_common_tokens_route_index>();
     add_index<owner_authority_history_index>();
     add_index<account_recovery_request_index>();
     add_index<change_recovery_account_request_index>();
@@ -1866,11 +1985,16 @@ void database::_apply_block(const signed_block& next_block)
 
         create_block_summary(next_block);
         clear_expired_transactions();
+        clear_expired_proposals();
+        clear_expired_invites();
+        clear_expired_join_requests();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
 
         process_funds();
+
+        process_common_tokens_withdrawals();
 
         account_recovery_processing();
 

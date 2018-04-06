@@ -48,6 +48,12 @@ public:
     void increase_balance(const account_object& account, const asset& deips);
     void decrease_balance(const account_object& account, const asset& deips);
 
+    void update_withdraw(const account_object& account,
+                         const share_type& common_tokens_withdraw_rate,
+                         const time_point_sec& next_common_tokens_withdrawal,
+                         const share_type& to_withdrawn,
+                         const optional<share_type>& withdrawn = optional<share_type>());
+
     void increase_withdraw_routes(const account_object& account);
     void decrease_withdraw_routes(const account_object& account);
 
