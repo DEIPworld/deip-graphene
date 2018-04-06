@@ -2877,5 +2877,42 @@ void database::process_content_activity_windows()
     }
 }
 
+share_type database::calculate_review_weight_modifier(const review_id_type& review_id, const discipline_id_type& discipline_id)
+{
+    dbs_review& review_service = obtain_service<dbs_review>();
+    dbs_expert_token expert_token_service = obtain_service<dbs_expert_token>();
+    dbs_vote& vote_service = obtain_service<dbs_vote>();
+
+    auto& review = review_service.get(review_id);
+    auto content_reviews = review_service.get_research_content_reviews(review.research_content_id);
+
+    share_type total_expertise = 0;
+    share_type total_reviews_votes_weight = 0;
+    for (auto review_wrapper : content_reviews) {
+        auto& content_review = review_wrapper.get();
+        auto& reviewer_token = expert_token_service.get_expert_token_by_account_and_discipline(content_review.author, discipline_id);
+        total_expertise += reviewer_token.amount;
+
+        auto votes = vote_service.get_review_votes(content_review.id);
+        total_reviews_votes_weight += std::accumulate(votes.begin(), votes.end(), share_type(0),
+                                                              [](share_type acc, review_vote_object& rv) {
+                                                                  return acc + rv.weight;
+                                                              });
+
+    }
+
+    if (content_reviews.size() == 0 || total_reviews_votes_weight == 0) return 1;
+
+    share_type avg_expertise = total_expertise / content_reviews.size();
+    auto review_votes = vote_service.get_review_votes(review.id);
+    share_type review_votes_weight = std::accumulate(review_votes.begin(), review_votes.end(), share_type(0),
+                                                     [](share_type acc, review_vote_object& rv) {
+                                                         return acc + rv.weight;
+                                                     });
+    auto& token = expert_token_service.get_expert_token_by_account_and_discipline(review.author, discipline_id);
+    return (token.amount / avg_expertise) + 10 * (1 - 1 / content_reviews.size()) * (review_votes_weight / total_reviews_votes_weight);
+}
+
+
 } // namespace chain
 } // namespace deip

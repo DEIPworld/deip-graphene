@@ -760,8 +760,11 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
             v.weight = w.to_uint64();
         });
 
+//        auto& weight_modifier = _db._temporary_public_impl().
+
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
             r.curation_reward_weights_per_discipline[o.discipline_id] += review_vote.weight;
+
         });
     }
     FC_CAPTURE_AND_RETHROW((o))
@@ -982,7 +985,6 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
     FC_ASSERT(review_disciplines.size() != 0, "Reviewer does not have enough expertise to make review.");
 
-
     std::vector<research_content_id_type> references;
     for (auto ref : op.references) {
         references.push_back((research_content_id_type)ref);
@@ -1000,10 +1002,6 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
         FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
 
         research_service.check_research_existence(content.research_id);
-
-        for (auto discipline : review_disciplines) {
-            expertise_token_service.check_expert_token_existence_by_account_and_discipline(voter.name, discipline);
-        }
 
         for (auto& token_wrapper : expertise_tokens) {
             auto& token = token_wrapper.get();
