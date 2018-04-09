@@ -1411,10 +1411,10 @@ share_type database::reward_review_references(const review_id_type& review_id,
 }
 
 share_type database::reward_reviews(const research_content_id_type &research_content_id,
-                                    const discipline_id_type &discipline_id, const share_type &reward)
+                                    const discipline_id_type &discipline_id,
+                                    const share_type &reward)
 {
     dbs_review& review_service = obtain_service<dbs_review>();
-    dbs_account& account_service = obtain_service<dbs_account>();
     auto reviews = review_service.get_research_content_reviews(research_content_id);
 
     std::vector<review_object> rewarded_reviews;
@@ -1433,7 +1433,8 @@ share_type database::reward_reviews(const research_content_id_type &research_con
 }
 
 share_type database::reward_voters(const research_content_id_type &research_content_id,
-                             const discipline_id_type &discipline_id, const share_type &reward)
+                                   const discipline_id_type &discipline_id,
+                                   const share_type &reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
     dbs_vote& vote_service = obtain_service<dbs_vote>();
@@ -1459,7 +1460,8 @@ share_type database::reward_voters(const research_content_id_type &research_cont
 }
 
 share_type database::reward_review_voters(const review_id_type &review_id,
-                                    const discipline_id_type &discipline_id, const share_type &reward)
+                                          const discipline_id_type &discipline_id,
+                                          const share_type &reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
     dbs_vote& vote_service = obtain_service<dbs_vote>();
@@ -1554,8 +1556,10 @@ share_type database::fund_review_pool(const discipline_id_type& discipline_id, c
 
         for (auto review : reviews)
         {
-            if (review_vote.review_id == review.id)
+            if (review_vote.review_id == review.id) {
+                is_exist = true;
                 continue;
+            }
         }
         if (!is_exist)
             reviews.push_back(review_service.get(review_vote.review_id));
@@ -1591,7 +1595,7 @@ share_type database::allocate_rewards_to_reviews(const share_type& reward,
         reward_with_expertise(author_name, discipline_id, author_reward);
         used_reward += author_reward;
 
-        //used_reward += reward_references(review.id, discipline_id, review_references_reward_share, 0);
+        used_reward += reward_review_references(review.id, discipline_id, review_references_reward_share, 0);
         used_reward += reward_review_voters(review.id, discipline_id, review_curators_reward_share);
     }
 

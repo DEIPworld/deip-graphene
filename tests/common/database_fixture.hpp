@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 
 #include <deip/app/application.hpp>
 #include <deip/chain/database.hpp>
