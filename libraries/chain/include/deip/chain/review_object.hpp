@@ -43,7 +43,7 @@ public:
     research_content_id_type_set references;
     // TODO: Add external references
 
-    share_type weight_modifier_percent = DEIP_100_PERCENT;
+    bip::map<discipline_id_type, share_type> weight_modifiers;
     bip::map<discipline_id_type, share_type> expertise_amounts_used;
 };
 
@@ -71,7 +71,7 @@ typedef multi_index_container<review_object,
 FC_REFLECT(deip::chain::review_object,
            (id)(research_content_id)(content)(is_positive)(author)(created_at)
            (reward_weights_per_discipline)(curation_reward_weights_per_discipline)(disciplines)(references)
-                   (weight_modifier_percent)(expertises_used)
+                   (weight_modifiers)(expertise_amounts_used)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::review_object, deip::chain::review_index)

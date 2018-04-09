@@ -760,11 +760,11 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
             v.weight = w.to_uint64();
         });
 
-//        auto& weight_modifier = _db._temporary_public_impl().
+        auto weight_modifier = _db.calculate_review_weight_modifier(review.id, token.discipline_id);
 
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
             r.curation_reward_weights_per_discipline[o.discipline_id] += review_vote.weight;
-
+            r.weight_modifiers[token.discipline_id] = weight_modifier;
         });
     }
     FC_CAPTURE_AND_RETHROW((o))
@@ -990,7 +990,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
         references.push_back((research_content_id_type)ref);
     }
 
-    review_service.create(op.research_content_id, op.content, op.is_positive, op.author, review_disciplines, references, op.external_references);
+    auto& review = review_service.create(op.research_content_id, op.content, op.is_positive, op.author, review_disciplines, references, op.external_references);
 
     try
     {
@@ -1105,6 +1105,10 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                 w *= delta_t;
                 w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
                 v.weight = w.to_uint64();
+            });
+
+            _db._temporary_public_impl().modify(review, [&](review_object& r) {
+               r.expertise_amounts_used[token.discipline_id] = token.amount;
             });
 
             _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {

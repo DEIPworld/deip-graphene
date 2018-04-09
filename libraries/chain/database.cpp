@@ -2880,7 +2880,7 @@ void database::process_content_activity_windows()
 share_type database::calculate_review_weight_modifier(const review_id_type& review_id, const discipline_id_type& discipline_id)
 {
     dbs_review& review_service = obtain_service<dbs_review>();
-    dbs_expert_token expert_token_service = obtain_service<dbs_expert_token>();
+    dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
     dbs_vote& vote_service = obtain_service<dbs_vote>();
 
     auto& review = review_service.get(review_id);
@@ -2895,7 +2895,8 @@ share_type database::calculate_review_weight_modifier(const review_id_type& revi
 
         auto votes = vote_service.get_review_votes(content_review.id);
         total_reviews_votes_weight += std::accumulate(votes.begin(), votes.end(), share_type(0),
-                                                              [](share_type acc, review_vote_object& rv) {
+                                                              [](share_type acc, std::reference_wrapper<const review_vote_object> rvw) {
+                                                                  auto& rv = rvw.get();
                                                                   return acc + rv.weight;
                                                               });
 
@@ -2906,7 +2907,8 @@ share_type database::calculate_review_weight_modifier(const review_id_type& revi
     share_type avg_expertise = total_expertise / content_reviews.size();
     auto review_votes = vote_service.get_review_votes(review.id);
     share_type review_votes_weight = std::accumulate(review_votes.begin(), review_votes.end(), share_type(0),
-                                                     [](share_type acc, review_vote_object& rv) {
+                                                     [](share_type acc, std::reference_wrapper<const review_vote_object> rvw) {
+                                                         auto& rv = rvw.get();
                                                          return acc + rv.weight;
                                                      });
     auto& token = expert_token_service.get_expert_token_by_account_and_discipline(review.author, discipline_id);
