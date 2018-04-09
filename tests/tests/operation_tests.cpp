@@ -426,7 +426,10 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
         rc.content = "content";
         rc.type = research_content_type::milestone;
     });
-    auto& discipline = discipline_create(1000, "Math", 0, 0);
+
+    dbs_discipline& discipline_service = db.obtain_service<dbs_discipline>();
+    auto& discipline = discipline_service.get_discipline(1);
+
     auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.discipline_id = discipline.id;
         r.research_id = research.id;
@@ -454,7 +457,8 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
     tx.operations.clear();
     tx.signatures.clear();
 
-    auto& token = expert_token("alice", discipline.id, 100);
+    dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
+    auto& token = expert_token_service.get_expert_token_by_account_and_discipline("alice", discipline.id);
     auto old_voting_power = token.voting_power;
 
     op.review_id = review.id._id;
