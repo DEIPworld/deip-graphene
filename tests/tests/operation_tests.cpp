@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_SUITE_END()
 //
 BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 //
-BOOST_AUTO_TEST_CASE(make_review_research_apply)
+BOOST_AUTO_TEST_CASE(make_review_apply)
 {
     try
     {
@@ -142,10 +142,13 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         for (auto discipline : review.disciplines)
             disciplines.push_back(discipline);
 
+        auto& token = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1));
+
         BOOST_CHECK(review.research_content_id == 1);
         BOOST_CHECK(review.author == "alice");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.content == "test");
+        BOOST_CHECK(review.expertise_amounts_used.at(1) == token.amount);
         BOOST_CHECK(disciplines.size() == 1 && disciplines[0] == 1);
 
         BOOST_TEST_MESSAGE("--- Test failing review creation");
@@ -515,10 +518,13 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
     BOOST_REQUIRE(updated_review.curation_reward_weights_per_discipline.at(op.discipline_id) == expected_curator_reward_weight);
 
     // Validate discipline
-
     BOOST_REQUIRE(discipline.total_active_reward_weight == 0);
     BOOST_REQUIRE(discipline.total_active_research_reward_weight == 0);
     BOOST_REQUIRE(discipline.total_active_review_reward_weight == expected_review_reward_weight);
+
+    // Validate review
+    auto weight_modifier = db.calculate_review_weight_modifier(updated_review.id, discipline.id);
+    BOOST_REQUIRE(updated_review.weight_modifiers.at(discipline.id) == weight_modifier);
 
     validate_database();
 }
