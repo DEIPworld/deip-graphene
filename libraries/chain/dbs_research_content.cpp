@@ -1,6 +1,6 @@
 #include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/database.hpp>
-
+#include <deip/chain/research_object.hpp>
 
 
 namespace deip{
@@ -13,35 +13,24 @@ dbs_research_content::dbs_research_content(database &db) : _base_type(db)
 
 const research_content_object& dbs_research_content::create(const research_id_type& research_id,
                                                             const research_content_type& type,
-                                                            const string& content,
-                                                            const flat_set<account_name_type>& authors,
-                                                            const std::vector<research_references_data>& research_references,
-                                                            const std::vector<string>& research_external_references)
+                                                            const std::string& title,
+                                                            const std::string& content,
+                                                            const std::vector<account_name_type>& authors,
+                                                            const std::vector<research_content_id_type>& references,
+                                                            const std::vector<string>& external_references)
 {
-    int size = research_references.size();
-    for (int i = 0; i < size; ++i)
-    {
-        FC_ASSERT(research_references[i].research_reference_id != research_id,
-                  "Research material cannot reference research it is being created for.");
-        if (research_references[i].research_content_reference_id.valid()) {
-            check_research_content_existence(*research_references[i].research_content_reference_id);
-            auto& research_content = db_impl().get<research_content_object>(*research_references[i].research_content_reference_id);
-            FC_ASSERT(research_content.research_id == research_references[i].research_reference_id,
-                      "Research content must be a part of specified research.");
-        }
-    }
     const auto& new_research_content = db_impl().create<research_content_object>([&](research_content_object& rc) {
         
         auto now = db_impl().head_block_time();
         
         rc.research_id = research_id;
         rc.type = type;
-        rc.content = content;
-        rc.authors = authors;
+        fc::from_string(rc.title, title);
+        fc::from_string(rc.content, content);
         rc.created_at = now;
-        rc.research_references = research_references;
-        rc.research_external_references = research_external_references;
-
+        rc.authors.insert(authors.begin(), authors.end());
+        rc.references.insert(references.begin(), references.end());
+        rc.external_references.insert(external_references.begin(), external_references.end());
         rc.activity_round = 1;
         rc.activity_state = research_content_activity_state::active;
 
@@ -60,6 +49,9 @@ const research_content_object& dbs_research_content::create(const research_id_ty
             rc.activity_window_start = now;
             rc.activity_window_end = now + DAYS_TO_SECONDS(60);
         }
+
+        auto& research = db_impl().get<research_object>(research_id);
+        db_impl().modify(research, [&](research_object& r_o) { r_o.last_update_time = now; });
 
     });
 

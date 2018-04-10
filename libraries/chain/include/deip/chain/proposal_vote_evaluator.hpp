@@ -126,8 +126,6 @@ public:
                        std::bind(&EvaluatorType::change_research_review_share_evaluator, this, std::placeholders::_1));
         evaluators.set(proposal_action_type::start_research,
                        std::bind(&EvaluatorType::start_research_evaluator, this, std::placeholders::_1));
-        evaluators.set(proposal_action_type::transfer_research_tokens,
-                       std::bind(&EvaluatorType::transfer_research_tokens_evaluator, this, std::placeholders::_1));
         evaluators.set(proposal_action_type::send_funds,
                        std::bind(&EvaluatorType::send_funds_evaluator, this, std::placeholders::_1));
         evaluators.set(proposal_action_type::rebalance_research_group_tokens,
@@ -200,7 +198,7 @@ protected:
 
     void dropout_evaluator(const proposal_object& proposal)
     {
-        member_proposal_data_type data = get_data<member_proposal_data_type>(proposal);
+        dropout_member_proposal_data_type data = get_data<dropout_member_proposal_data_type>(proposal);
 
         _account_service.check_account_existence(data.name);
         _research_group_service.check_research_group_token_existence(data.name, data.research_group_id);
@@ -225,8 +223,7 @@ protected:
 
             _research_service.decrease_owned_tokens(research, tokens_amount_after_dropout_compensation);
 
-            if (_research_token_service.check_research_token_existence_by_account_name_and_research_id(data.name,
-                                                                                                       research.id))
+            if (_research_token_service.check_research_token_existence_by_account_name_and_research_id(data.name, research.id))
             {
                 auto& research_token = _research_token_service.get_research_token_by_account_name_and_research_id(
                     data.name, research.id);
@@ -234,8 +231,7 @@ protected:
             }
             else
             {
-                _research_token_service.create_research_token(data.name, tokens_amount_after_dropout_compensation,
-                                                              research.id);
+                _research_token_service.create_research_token(data.name, tokens_amount_after_dropout_compensation, research.id);
             }
         }
 
@@ -267,7 +263,7 @@ protected:
     {
         start_research_proposal_data_type data = get_data<start_research_proposal_data_type>(proposal);
         _research_group_service.check_research_group_existence(data.research_group_id);
-        auto& research = _research_service.create(data.name, data.abstract, data.permlink, data.research_group_id, data.review_share_in_percent, data.dropout_compensation_in_percent);
+        auto& research = _research_service.create(data.title, data.abstract, data.permlink, data.research_group_id, data.review_share_in_percent, data.dropout_compensation_in_percent);
         for (auto& discipline_id : data.disciplines)
         {
             _discipline_service.check_discipline_existence(discipline_id);
@@ -275,42 +271,13 @@ protected:
         }
     }
 
-    void transfer_research_tokens_evaluator(const proposal_object& proposal)
-    {
-        transfer_research_tokens_data_type data = get_data<transfer_research_tokens_data_type>(proposal);
-        _research_service.check_research_existence(data.research_id);
-        _account_service.check_account_existence(data.account_name);
-        auto& account = _account_service.get_account(data.account_name);
-        auto& research = _research_service.get_research(data.research_id);
-
-        FC_ASSERT((account.balance.amount - data.total_price > 0),
-                  "Account balance is less that total price (result amount < 0)");
-        FC_ASSERT((research.owned_tokens - data.amount > 0),
-                  "Research balance is less than amount (result amount < 0)");
-        _account_service.decrease_balance(account, asset(data.total_price));
-        _research_group_service.increase_research_group_funds(proposal.research_group_id, data.total_price);
-        _research_service.decrease_owned_tokens(research, data.amount);
-
-        if (_research_token_service.check_research_token_existence_by_account_name_and_research_id(account.name,
-                                                                                                   data.research_id))
-        {
-            auto& research_token = _research_token_service.get_research_token_by_account_name_and_research_id(
-                account.name, data.research_id);
-            _research_token_service.increase_research_token_amount(research_token, data.amount);
-        }
-        else
-        {
-            _research_token_service.create_research_token(account.name, data.amount, data.research_id);
-        }
-    }
-
     void send_funds_evaluator(const proposal_object& proposal)
     {
         send_funds_data_type data = get_data<send_funds_data_type>(proposal);
         _research_group_service.check_research_group_existence(data.research_group_id);
-        _account_service.check_account_existence(data.account_name);
+        _account_service.check_account_existence(data.recipient);
 
-        auto& account = _account_service.get_account(data.account_name);
+        auto& account = _account_service.get_account(data.recipient);
         auto& research_group = _research_group_service.get_research_group(data.research_group_id);
         FC_ASSERT((research_group.funds - data.funds > 0), "Research balance is less than amount (result amount < 0)");
 
@@ -338,10 +305,8 @@ protected:
     {
         create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
 
-        _research_service.check_research_existence(data.research_id);
-        auto &research = _research_service.get_research(data.research_id);
-
-        _research_content_service.create(data.research_id, data.type, data.content, data.authors, data.research_references, data.research_external_references);
+        _research_service.check_research_existence(data.research_id);          
+        _research_content_service.create(data.research_id, data.type, data.title, data.content, data.authors, data.references, data.external_references);
     }
 
     void start_research_token_sale_evaluator(const proposal_object& proposal) {
@@ -376,7 +341,9 @@ private:
 
     template <typename DataType> DataType get_data(const proposal_object& proposal)
     {
-        auto data = fc::json::from_string(proposal.data).as<DataType>();
+        auto data = fc::json::from_string(
+            fc::to_string(proposal.data)
+        ).as<DataType>();
         data.validate();
         return data;
     }

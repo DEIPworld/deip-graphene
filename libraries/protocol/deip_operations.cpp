@@ -172,7 +172,7 @@ void create_grant_operation::validate() const
 
 void create_proposal_operation::validate() const
 {
-    validate_enum_value_by_range(action, proposal_action_type::First, proposal_action_type::Last);
+    validate_enum_value_by_range(action, proposal_action_type::First_proposal, proposal_action_type::Last_proposal);
     validate_account_name(creator);
     FC_ASSERT(expiration_time > fc::time_point_sec());
     FC_ASSERT(fc::is_utf8(data), "Data is not valid UTF8 string");
@@ -182,7 +182,9 @@ void create_research_group_operation::validate() const
 {
     validate_account_name(creator);
     validate_permlink(permlink);
-    FC_ASSERT(fc::is_utf8(desciption), "Description is not valid UTF8 string");
+    FC_ASSERT(name.size() > 0, "Group name must be specified");
+    FC_ASSERT(fc::is_utf8(name), "Group name is not valid UTF8 string");
+    FC_ASSERT(fc::is_utf8(description), "Description is not valid UTF8 string");
     FC_ASSERT(quorum_percent > 5 && quorum_percent <= 100, "Quorum percent must be in 5% to 100& range");
     FC_ASSERT(tokens_amount > 0, "Initial research group tokens amount must be greater than 0");
 }
@@ -196,7 +198,7 @@ void make_research_review_operation::validate() const
 {
     validate_account_name(author);
     FC_ASSERT(!content.empty(), "Research content cannot be empty");
-    for (auto& link : research_external_references)
+    for (auto& link : external_references)
     {
         FC_ASSERT(!link.empty(), "External reference link cannot be empty");
         FC_ASSERT(fc::is_utf8(link), "External reference is not valid UTF8 string");

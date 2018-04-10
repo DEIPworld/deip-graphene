@@ -94,28 +94,27 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
     {
         BOOST_TEST_MESSAGE("Testing: make_review_research_apply");
 
-        ACTORS((alice));
+        ACTORS_WITH_EXPERT_TOKENS((alice));
 
         generate_block();
 
-        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-        research_create(2, "test_research2", "abstract2", "permlink2", 1, 10, 1500);
+        auto& research1 = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
+        auto& research2 = research_create(2, "test_research2", "abstract2", "permlink2", 1, 10, 1500);
+        research_content_create(0, research2.id._id, milestone, "title", 
+                                "content", 1, active, fc::time_point_sec(), 
+                                fc::time_point_sec(), {"alice"}, {}, {});
 
         private_key_type priv_key = generate_private_key("alice");
 
         make_research_review_operation op;
 
-        std::pair<int64_t, int64_t > data;
-        data.first = 2;
-
-        std::vector<std::pair<int64_t, int64_t >> research_references;
-        research_references.push_back(data);
-
+        std::vector<int64_t> research_references {0};
         op.author = "alice";
-        op.research_id = 1;
+        op.research_id = research1.id._id;
+        op.title = "test";
         op.content = "test";
-        op.research_references = research_references;
-        op.research_external_references = {"one", "two", "three"};
+        op.references = research_references;
+        op.external_references = {"one", "two", "three"};
 
         BOOST_TEST_MESSAGE("--- Test normal research review creation");
 
@@ -126,10 +125,9 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        auto& research_content = db.get<research_content_object, by_id>(0);
-
+        auto& research_content = db.get<research_content_object, by_id>(1);
+        BOOST_CHECK(db.get<research_object>(research_content.research_id).last_update_time == db.head_block_time());
         BOOST_CHECK(research_content.type == review);
-
     }
     FC_LOG_AND_RETHROW()
 }
@@ -139,24 +137,18 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
 
     BOOST_TEST_MESSAGE("Testing: vote_apply failure cases");
 
-    ACTORS((alice)(bob));
+    ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
 
     generate_block();
 
     auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-    auto& discipline = discipline_create(1, "Math", 0, 0);
-    auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+    auto& discipline_service = db.obtain_service<dbs_discipline>();
+    auto& discipline = discipline_service.get_discipline(1);
+    
+    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.discipline_id = discipline.id;
         r.research_id = research.id;
         r.votes_count = 0;
-    });
-
-    auto& token = db.create<expert_token_object>([&](expert_token_object& t) {
-        t.id = 1;
-        t.discipline_id = discipline.id;
-        t.amount = 1000;
-        t.voting_power = DEIP_100_PERCENT;
-        t.account_name = "alice";
     });
 
     auto& content = db.create<research_content_object>([&](research_content_object& c) {
@@ -165,8 +157,8 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
         c.research_id = research.id;
         c.authors = { "alice", "bob" };
         c.content = "content";
-        c.research_references = {};
-        c.research_external_references = { "http://google.com" };
+        c.references = {};
+        c.external_references = { "http://google.com" };
         c.type = research_content_type::milestone;
     });
 
@@ -257,25 +249,22 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 {
     BOOST_TEST_MESSAGE("Testing: vote_apply success cases");
 
-    ACTORS((alice)(bob));
+    ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
 
     generate_block();
 
     auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-    auto& discipline = discipline_create(1, "Math", 0, 0);
-    auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+    auto& discipline_service = db.obtain_service<dbs_discipline>();
+    auto& discipline = discipline_service.get_discipline(1);
+
+    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.discipline_id = discipline.id;
         r.research_id = research.id;
         r.votes_count = 0;
     });
 
-    auto& token = db.create<expert_token_object>([&](expert_token_object& t) {
-        t.id = 1;
-        t.discipline_id = discipline.id;
-        t.amount = 1000;
-        t.voting_power = DEIP_100_PERCENT;
-        t.account_name = "alice";
-    });
+    auto& expert_token_service = db.obtain_service<dbs_expert_token>();
+    auto& token = expert_token_service.get_expert_token_by_account_and_discipline("alice", 1);
 
     auto& content = db.create<research_content_object>([&](research_content_object& c) {
         c.id = 1;
@@ -283,8 +272,8 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
         c.research_id = research.id;
         c.authors = { "alice", "bob" };
         c.content = "content";
-        c.research_references = {};
-        c.research_external_references = { "http://google.com" };
+        c.references = {};
+        c.external_references = { "http://google.com" };
         c.type = research_content_type::milestone;
         c.activity_state = research_content_activity_state::active;
     });
@@ -295,8 +284,6 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 
     signed_transaction tx;
     tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-
-    bool content_is_active = content.activity_state == research_content_activity_state::active;
 
     BOOST_TEST_MESSAGE("--- Testing success");
 
@@ -386,219 +373,214 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
     validate_database();
 }
 
-//BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
-//{
-//    try
-//    {
-//        ACTORS((alice)(bob));
-//
-//        auto& research_service = db.obtain_service<dbs_research>();
-//        auto& research_group_service = db.obtain_service<dbs_research_group>();
-//        auto& research_token_service = db.obtain_service<dbs_research_token>();
-//
-//        vector<account_name_type> accounts = { "alice" };
-//
-//        private_key_type bob_priv_key = generate_private_key("bob");
-//        private_key_type alice_priv_key = generate_private_key("alice");
-//
-//           //////////////////////////////////////////////////
-//          /// Сreate two research groups and invite Bob  ///
-//         ///                                            ///
-//        //////////////////////////////////////////////////
-//
-//        auto& _research_group_1
-//            = research_group_create_by_operation("alice", "permlink rg1", "description rg1", 50);
-//        auto& _research_group_2
-//            = research_group_create_by_operation("alice", "permlink rg2", "description rg2", 50);
-//
-//        research_group_invite_create(0, "bob", 0, 50);
-//        research_group_invite_create(1, "bob", 1, 50);
-//
-//        approve_research_group_invite_operation approve_invite_bob_to_rg1_op;
-//
-//        approve_invite_bob_to_rg1_op.research_group_invite_id = 0;
-//        approve_invite_bob_to_rg1_op.owner = "bob";
-//        approve_invite_bob_to_rg1_op.research_tokens_conversion_percent = 5000;
-//
-//        approve_research_group_invite_operation approve_invite_bob_to_rg2_op;
-//
-//        approve_invite_bob_to_rg2_op.research_group_invite_id = 1;
-//        approve_invite_bob_to_rg2_op.owner = "bob";
-//        approve_invite_bob_to_rg2_op.research_tokens_conversion_percent = 1000;
-//
-//        signed_transaction approve_invite_bob_to_rg1_and_rg2_tx;
-//        approve_invite_bob_to_rg1_and_rg2_tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-//        approve_invite_bob_to_rg1_and_rg2_tx.operations.push_back(approve_invite_bob_to_rg1_op);
-//        approve_invite_bob_to_rg1_and_rg2_tx.operations.push_back(approve_invite_bob_to_rg2_op);
-//        approve_invite_bob_to_rg1_and_rg2_tx.sign(bob_priv_key, db.get_chain_id());
-//        approve_invite_bob_to_rg1_and_rg2_tx.validate();
-//        db.push_transaction(approve_invite_bob_to_rg1_and_rg2_tx, 0);
-//
-//        auto& _research_group_1_token = db.get<research_group_token_object, by_owner>(std::make_tuple("bob", 0));
-//        auto& _research_group_2_token = db.get<research_group_token_object, by_owner>(std::make_tuple("bob", 1));
-//
-//        BOOST_CHECK(_research_group_1.total_tokens_amount == DEIP_100_PERCENT);
-//        BOOST_CHECK(_research_group_2.total_tokens_amount == DEIP_100_PERCENT);
-//
-//        BOOST_CHECK(_research_group_1_token.owner == "bob" && _research_group_2_token.owner == "bob");
-//        BOOST_CHECK(_research_group_1_token.research_group_id == 0 && _research_group_2_token.research_group_id == 1);
-//        BOOST_CHECK(_research_group_1_token.amount == 50 * DEIP_1_PERCENT && _research_group_2_token.amount == 50 * DEIP_1_PERCENT);
-//
-//        BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(0)), std::out_of_range);
-//        BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(1)), boost::exception);
-//
-//
-//           //////////////////////////////////////////////////////////////////////////////////
-//          /// Сreate three research. Research #1 and Research #2 from Research Group #1. ///
-//         ///  Research #3 from Research Group #2                                        ///
-//        //////////////////////////////////////////////////////////////////////////////////
-//
-//        const std::string create_research_1_proposal_json = "{\"name\":\"research #1\","
-//                                                            "\"research_group_id\":0,"
-//                                                            "\"abstract\":\"abstract r1\","
-//                                                            "\"permlink\":\"permlink r1\","
-//                                                            "\"review_share_in_percent\": 1000,"
-//                                                            "\"dropout_compensation_in_percent\": 5000,"
-//                                                            "\"disciplines\": [1, 2, 3]}";
-//        const std::string create_research_2_proposal_json = "{\"name\":\"research #2\","
-//                                                            "\"research_group_id\":0,"
-//                                                            "\"abstract\":\"abstract r2\","
-//                                                            "\"permlink\":\"permlink r2\","
-//                                                            "\"review_share_in_percent\": 1000,"
-//                                                            "\"dropout_compensation_in_percent\": 2000,"
-//                                                            "\"disciplines\": [1, 2, 3]}";
-//        const std::string create_research_3_proposal_json = "{\"name\":\"research #3\","
-//                                                            "\"research_group_id\":1,"
-//                                                            "\"abstract\":\"abstract r3\","
-//                                                            "\"permlink\":\"permlink r3\","
-//                                                            "\"review_share_in_percent\": 1000,"
-//                                                            "\"dropout_compensation_in_percent\": 1000,"
-//                                                            "\"disciplines\": [1, 2, 3]}";
-//
-//        create_proposal_by_operation("alice", 0, create_research_1_proposal_json,
-//                                     dbs_proposal::action_t::start_research,
-//                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
-//        create_proposal_by_operation("alice", 0, create_research_2_proposal_json,
-//                                     dbs_proposal::action_t::start_research,
-//                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(3)));
-//        create_proposal_by_operation("alice", 1, create_research_3_proposal_json,
-//                                     dbs_proposal::action_t::start_research,
-//                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(4)));
-//
-//        vote_proposal_operation start_research_1_op;
-//
-//        start_research_1_op.research_group_id = 0;
-//        start_research_1_op.proposal_id = 0;
-//        start_research_1_op.voter = "alice";
-//
-//        vote_proposal_operation start_research_2_op;
-//
-//        start_research_2_op.research_group_id = 0;
-//        start_research_2_op.proposal_id = 1;
-//        start_research_2_op.voter = "alice";
-//
-//        vote_proposal_operation start_research_3_op;
-//
-//        start_research_3_op.research_group_id = 1;
-//        start_research_3_op.proposal_id = 2;
-//        start_research_3_op.voter = "alice";
-//
-//        create_disciplines();
-//
-//        signed_transaction start_research_tx;
-//        start_research_tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-//        start_research_tx.operations.push_back(start_research_1_op);
-//        start_research_tx.operations.push_back(start_research_2_op);
-//        start_research_tx.operations.push_back(start_research_3_op);
-//        start_research_tx.sign(alice_priv_key, db.get_chain_id());
-//        start_research_tx.validate();
-//        db.push_transaction(start_research_tx, 0);
-//
-//
-//           ////////////////////////////////////////////////////////////////
-//          /// Exclude Bob from Research Group #1 and Research Group #1 ///
-//         ///                                                          ///
-//        ////////////////////////////////////////////////////////////////
-//
-//        const std::string exclude_bob_from_rg1_json = "{\"name\":\"bob\",\"research_group_id\": 0}";
-//        const std::string exclude_bob_from_rg2_json = "{\"name\":\"bob\",\"research_group_id\": 1}";
-//
-//        create_proposal_by_operation("alice", 0, exclude_bob_from_rg1_json, dbs_proposal::action_t::dropout_member,
-//                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
-//        create_proposal_by_operation("alice", 1, exclude_bob_from_rg2_json, dbs_proposal::action_t::dropout_member,
-//                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(3)));
-//
-//        vote_proposal_operation exclude_bob_from_rg1_op;
-//
-//        exclude_bob_from_rg1_op.research_group_id = 0;
-//        exclude_bob_from_rg1_op.proposal_id = 3;
-//        exclude_bob_from_rg1_op.voter = "alice";
-//
-//        vote_proposal_operation exclude_bob_from_rg2_op;
-//
-//        exclude_bob_from_rg2_op.research_group_id = 1;
-//        exclude_bob_from_rg2_op.proposal_id = 4;
-//        exclude_bob_from_rg2_op.voter = "alice";
-//
-//        signed_transaction exclude_bob_from_rg1_and_rg2_tx;
-//        exclude_bob_from_rg1_and_rg2_tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-//        exclude_bob_from_rg1_and_rg2_tx.operations.push_back(exclude_bob_from_rg1_op);
-//        exclude_bob_from_rg1_and_rg2_tx.operations.push_back(exclude_bob_from_rg2_op);
-//        exclude_bob_from_rg1_and_rg2_tx.sign(alice_priv_key, db.get_chain_id());
-//        exclude_bob_from_rg1_and_rg2_tx.validate();
-//        db.push_transaction(exclude_bob_from_rg1_and_rg2_tx, 0);
-//
-//        auto& research_1 = research_service.get_research(0);
-//        auto& research_2 = research_service.get_research(1);
-//        auto& research_3 = research_service.get_research(2);
-//
-//        auto& research_1_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", 0);
-//        auto& research_2_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", 1);
-//        auto& research_3_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", 2);
-//
-//        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 0),
-//                          std::out_of_range);
-//        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1),
-//                          std::out_of_range);
-//        BOOST_CHECK(_research_group_1.total_tokens_amount == DEIP_100_PERCENT && _research_group_2.total_tokens_amount == DEIP_100_PERCENT);
-//        BOOST_CHECK(research_1_token.account_name == "bob" && research_2_token.account_name == "bob"
-//                    && research_3_token.account_name == "bob");
-//        BOOST_CHECK(research_1_token.amount == 2500 && research_2_token.amount == 1000
-//                    && research_3_token.amount == 333);
-//        BOOST_CHECK(research_1.owned_tokens == 7500 && research_2.owned_tokens == 9000
-//                    && research_3.owned_tokens == 9667);
-//
-//
-//           //////////////////////////////////////////////////
-//          /// Invite Bob again to Research Group #1 only ///
-//         ///                                            ///
-//        //////////////////////////////////////////////////
-//
-//        research_group_invite_create(2, "bob", 0, 100);
-//
-//        approve_research_group_invite_operation approve_invite_2_to_rg1_op;
-//
-//        approve_invite_2_to_rg1_op.research_group_invite_id = 2;
-//        approve_invite_2_to_rg1_op.owner = "bob";
-//        approve_invite_2_to_rg1_op.research_tokens_conversion_percent = 5000;
-//
-//        signed_transaction approve_invite_2_to_rg1_tx;
-//        approve_invite_2_to_rg1_tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-//        approve_invite_2_to_rg1_tx.operations.push_back(approve_invite_2_to_rg1_op);
-//        approve_invite_2_to_rg1_tx.sign(bob_priv_key, db.get_chain_id());
-//        approve_invite_2_to_rg1_tx.validate();
-//        db.push_transaction(approve_invite_2_to_rg1_tx, 0);
-//
-//        BOOST_CHECK(_research_group_1.total_tokens_amount == DEIP_100_PERCENT);
-//        BOOST_CHECK(research_1_token.account_name == "bob");
-//        BOOST_CHECK(research_1_token.amount == 1250 && research_2_token.amount == 500
-//                    && research_3_token.amount == 333);
-//        BOOST_CHECK(research_1.owned_tokens == 8750 && research_2.owned_tokens == 9500
-//                    && research_3.owned_tokens == 9667);
-//        BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(3)), boost::exception);
-//    }
-//    FC_LOG_AND_RETHROW()
-//}
+BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
+{
+    try
+    {
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+
+        generate_block();
+
+        auto& research_service = db.obtain_service<dbs_research>();
+        auto& research_group_service = db.obtain_service<dbs_research_group>();
+        auto& research_token_service = db.obtain_service<dbs_research_token>();
+
+        vector<account_name_type> accounts = { "alice" };
+
+        private_key_type bob_priv_key = generate_private_key("bob");
+        private_key_type alice_priv_key = generate_private_key("alice");
+
+           //////////////////////////////////////////////////   
+          /// Сreate two research groups and invite Bob  ///
+         ///                                            ///
+        //////////////////////////////////////////////////
+
+        auto& _research_group_1
+            = research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 50);
+        auto& _research_group_2
+            = research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 50);
+
+        research_group_invite_create(0, "bob", 0, 50);
+        research_group_invite_create(1, "bob", 1, 50);
+
+        approve_research_group_invite_operation approve_invite_bob_to_rg1_op;
+
+        approve_invite_bob_to_rg1_op.research_group_invite_id = 0;
+        approve_invite_bob_to_rg1_op.owner = "bob";
+        approve_invite_bob_to_rg1_op.research_tokens_conversion_percent = 5000;
+
+        approve_research_group_invite_operation approve_invite_bob_to_rg2_op;
+
+        approve_invite_bob_to_rg2_op.research_group_invite_id = 1;
+        approve_invite_bob_to_rg2_op.owner = "bob";
+        approve_invite_bob_to_rg2_op.research_tokens_conversion_percent = 1000;
+
+        signed_transaction approve_invite_bob_to_rg1_and_rg2_tx;
+        approve_invite_bob_to_rg1_and_rg2_tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        approve_invite_bob_to_rg1_and_rg2_tx.operations.push_back(approve_invite_bob_to_rg1_op);
+        approve_invite_bob_to_rg1_and_rg2_tx.operations.push_back(approve_invite_bob_to_rg2_op);
+        approve_invite_bob_to_rg1_and_rg2_tx.sign(bob_priv_key, db.get_chain_id());
+        approve_invite_bob_to_rg1_and_rg2_tx.validate();
+        db.push_transaction(approve_invite_bob_to_rg1_and_rg2_tx, 0);
+
+        auto& _research_group_1_token = db.get<research_group_token_object, by_owner>(std::make_tuple("bob", 0));
+        auto& _research_group_2_token = db.get<research_group_token_object, by_owner>(std::make_tuple("bob", 1));
+
+        BOOST_CHECK(_research_group_1_token.owner == "bob" && _research_group_2_token.owner == "bob");
+        BOOST_CHECK(_research_group_1_token.research_group_id == 0 && _research_group_2_token.research_group_id == 1);
+        BOOST_CHECK(_research_group_1_token.amount == 5000 && _research_group_2_token.amount == 5000);
+
+        BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(0)), boost::exception);
+        BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(1)), boost::exception);
+
+
+           //////////////////////////////////////////////////////////////////////////////////   
+          /// Сreate three research. Research #1 and Research #2 from Research Group #1. ///
+         ///  Research #3 from Research Group #2                                        ///
+        //////////////////////////////////////////////////////////////////////////////////
+
+        const std::string create_research_1_proposal_json = "{\"title\":\"research #1\","
+                                                            "\"research_group_id\":0,"
+                                                            "\"abstract\":\"abstract r1\","
+                                                            "\"permlink\":\"permlink r1\","
+                                                            "\"review_share_in_percent\": 1000,"
+                                                            "\"dropout_compensation_in_percent\": 5000,"
+                                                            "\"disciplines\": [1, 2, 3]}";
+        const std::string create_research_2_proposal_json = "{\"title\":\"research #2\","
+                                                            "\"research_group_id\":0,"
+                                                            "\"abstract\":\"abstract r2\","
+                                                            "\"permlink\":\"permlink r2\","
+                                                            "\"review_share_in_percent\": 1000,"
+                                                            "\"dropout_compensation_in_percent\": 2000,"
+                                                            "\"disciplines\": [1, 2, 3]}";
+        const std::string create_research_3_proposal_json = "{\"title\":\"research #3\","
+                                                            "\"research_group_id\":1,"
+                                                            "\"abstract\":\"abstract r3\","
+                                                            "\"permlink\":\"permlink r3\","
+                                                            "\"review_share_in_percent\": 1000,"
+                                                            "\"dropout_compensation_in_percent\": 1000,"
+                                                            "\"disciplines\": [1, 2, 3]}";
+
+        create_proposal_by_operation("alice", 0, create_research_1_proposal_json,
+                                     dbs_proposal::action_t::start_research,
+                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
+        create_proposal_by_operation("alice", 0, create_research_2_proposal_json,
+                                     dbs_proposal::action_t::start_research,
+                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(3)));
+        create_proposal_by_operation("alice", 1, create_research_3_proposal_json,
+                                     dbs_proposal::action_t::start_research,
+                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(4)));
+
+        vote_proposal_operation start_research_1_op;
+
+        start_research_1_op.research_group_id = 0;
+        start_research_1_op.proposal_id = 0;
+        start_research_1_op.voter = "alice";
+
+        vote_proposal_operation start_research_2_op;
+
+        start_research_2_op.research_group_id = 0;
+        start_research_2_op.proposal_id = 1;
+        start_research_2_op.voter = "alice";
+
+        vote_proposal_operation start_research_3_op;
+
+        start_research_3_op.research_group_id = 1;
+        start_research_3_op.proposal_id = 2;
+        start_research_3_op.voter = "alice";
+
+        signed_transaction start_research_tx;
+        start_research_tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        start_research_tx.operations.push_back(start_research_1_op);
+        start_research_tx.operations.push_back(start_research_2_op);
+        start_research_tx.operations.push_back(start_research_3_op);
+        start_research_tx.sign(alice_priv_key, db.get_chain_id());
+        start_research_tx.validate();
+        db.push_transaction(start_research_tx, 0);
+
+
+           ////////////////////////////////////////////////////////////////   
+          /// Exclude Bob from Research Group #1 and Research Group #1 ///
+         ///                                                          ///
+        ////////////////////////////////////////////////////////////////
+
+        const std::string exclude_bob_from_rg1_json = "{\"name\":\"bob\",\"research_group_id\": 0}";
+        const std::string exclude_bob_from_rg2_json = "{\"name\":\"bob\",\"research_group_id\": 1}";
+
+        create_proposal_by_operation("alice", 0, exclude_bob_from_rg1_json, dbs_proposal::action_t::dropout_member,
+                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
+        create_proposal_by_operation("alice", 1, exclude_bob_from_rg2_json, dbs_proposal::action_t::dropout_member,
+                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(3)));
+
+        vote_proposal_operation exclude_bob_from_rg1_op;
+
+        exclude_bob_from_rg1_op.research_group_id = 0;
+        exclude_bob_from_rg1_op.proposal_id = 3;
+        exclude_bob_from_rg1_op.voter = "alice";
+
+        vote_proposal_operation exclude_bob_from_rg2_op;
+
+        exclude_bob_from_rg2_op.research_group_id = 1;
+        exclude_bob_from_rg2_op.proposal_id = 4;
+        exclude_bob_from_rg2_op.voter = "alice";
+
+        signed_transaction exclude_bob_from_rg1_and_rg2_tx;
+        exclude_bob_from_rg1_and_rg2_tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        exclude_bob_from_rg1_and_rg2_tx.operations.push_back(exclude_bob_from_rg1_op);
+        exclude_bob_from_rg1_and_rg2_tx.operations.push_back(exclude_bob_from_rg2_op);
+        exclude_bob_from_rg1_and_rg2_tx.sign(alice_priv_key, db.get_chain_id());
+        exclude_bob_from_rg1_and_rg2_tx.validate();
+        db.push_transaction(exclude_bob_from_rg1_and_rg2_tx, 0);
+
+        auto& research_1 = research_service.get_research(0);
+        auto& research_2 = research_service.get_research(1);
+        auto& research_3 = research_service.get_research(2);
+
+        auto& research_1_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", 0);
+        auto& research_2_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", 1);
+        auto& research_3_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", 2);        
+
+        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 0),
+                          std::out_of_range);
+        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1),
+                          std::out_of_range);
+        BOOST_CHECK(research_1_token.account_name == "bob" && research_2_token.account_name == "bob"
+                    && research_3_token.account_name == "bob");
+        BOOST_CHECK(research_1_token.amount == 2500 && research_2_token.amount == 1000
+                    && research_3_token.amount == 500);
+        BOOST_CHECK(research_1.owned_tokens == 7500 && research_2.owned_tokens == 9000
+                    && research_3.owned_tokens == 9500);
+
+
+           //////////////////////////////////////////////////
+          /// Invite Bob again to Research Group #1 only ///
+         ///                                            ///
+        //////////////////////////////////////////////////
+
+        research_group_invite_create(2, "bob", 0, 100);
+
+        approve_research_group_invite_operation approve_invite_2_to_rg1_op;
+
+        approve_invite_2_to_rg1_op.research_group_invite_id = 2;
+        approve_invite_2_to_rg1_op.owner = "bob";
+        approve_invite_2_to_rg1_op.research_tokens_conversion_percent = 5000;
+
+        signed_transaction approve_invite_2_to_rg1_tx;
+        approve_invite_2_to_rg1_tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        approve_invite_2_to_rg1_tx.operations.push_back(approve_invite_2_to_rg1_op);
+        approve_invite_2_to_rg1_tx.sign(bob_priv_key, db.get_chain_id());
+        approve_invite_2_to_rg1_tx.validate();
+        db.push_transaction(approve_invite_2_to_rg1_tx, 0);
+
+        BOOST_CHECK(research_1_token.account_name == "bob");
+        BOOST_CHECK(research_1_token.amount == 1250 && research_2_token.amount == 500
+                    && research_3_token.amount == 500);
+        BOOST_CHECK(research_1.owned_tokens == 8750 && research_2.owned_tokens == 9500
+                    && research_3.owned_tokens == 9500);
+        BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(3)), boost::exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
 
 BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
 {
@@ -606,11 +588,11 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
     {
         BOOST_TEST_MESSAGE("Testing: reject_research_group_invite_apply");
 
-        ACTORS((alice)(bob));
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "permlink", "description", 200, 50);
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50);
         auto& research_group_invite = research_group_invite_create(1, "bob", 1, 50);
 
         private_key_type priv_key = generate_private_key("bob");
@@ -640,7 +622,7 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
 {
     try
     {
-        ACTORS((alice)(bob));
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
 
         vector<account_name_type> accounts = { "alice" };
 
@@ -652,8 +634,8 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
          ///                                            ///
         //////////////////////////////////////////////////
 
-        research_group_create_by_operation("alice", "permlink rg1", "description rg1", 50);
-        research_group_create_by_operation("alice", "permlink rg2", "description rg2", 50);
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 50);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 50);
 
         research_group_invite_create(0, "bob", 0, 100);
         research_group_invite_create(1, "bob", 1, 100);
@@ -828,7 +810,7 @@ BOOST_AUTO_TEST_CASE(account_update_authorities)
    {
        BOOST_TEST_MESSAGE("Testing: account_update_authorities");
 
-       ACTORS((alice)(bob))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
        private_key_type active_key = generate_private_key("new_key");
 
        db.modify(db.get<account_authority_object, by_account>("alice"),
@@ -910,7 +892,7 @@ BOOST_AUTO_TEST_CASE(account_update_apply)
    {
        BOOST_TEST_MESSAGE("Testing: account_update_apply");
 
-       ACTORS((alice))
+       ACTORS_WITH_EXPERT_TOKENS((alice))
        private_key_type new_private_key = generate_private_key("new_key");
 
        BOOST_TEST_MESSAGE("--- Test normal update");
@@ -1007,7 +989,7 @@ BOOST_AUTO_TEST_CASE(transfer_authorities)
 {
    try
    {
-       ACTORS((alice)(bob))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
        fund("alice", 10000);
 
        BOOST_TEST_MESSAGE("Testing: transfer_authorities");
@@ -1058,7 +1040,7 @@ BOOST_AUTO_TEST_CASE(signature_stripping)
        // Legitimate tx signed by (Alice, Bob) goes through.
        // Sam shouldn't be able to add or remove signatures to get the transaction to process multiple times.
 
-       ACTORS((alice)(bob)(sam)(corp))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(sam)(corp))
        fund("corp", 10000);
 
        account_update_operation update_op;
@@ -1110,11 +1092,14 @@ BOOST_AUTO_TEST_CASE(transfer_apply)
    {
        BOOST_TEST_MESSAGE("Testing: transfer_apply");
 
-       ACTORS((alice)(bob))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
        fund("alice", 10000);
 
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("10.000 TESTS").amount.value);
-       BOOST_REQUIRE(bob.balance.amount.value == ASSET(" 0.000 TESTS").amount.value);
+       const auto& new_alice = db.get_account("alice");
+       const auto& new_bob = db.get_account("bob");
+
+       BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("10.000 TESTS").amount.value);
+       BOOST_REQUIRE(new_bob.balance.amount.value == ASSET(" 0.000 TESTS").amount.value);
 
        signed_transaction tx;
        transfer_operation op;
@@ -1129,15 +1114,12 @@ BOOST_AUTO_TEST_CASE(transfer_apply)
        tx.sign(alice_private_key, db.get_chain_id());
        db.push_transaction(tx, 0);
 
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("5.000 TESTS").amount.value);
-       BOOST_REQUIRE(bob.balance.amount.value == ASSET("5.000 TESTS").amount.value);
+       BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("5.000 TESTS").amount.value);
+       BOOST_REQUIRE(new_bob.balance.amount.value == ASSET("5.000 TESTS").amount.value);
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Generating a block");
        generate_block();
-
-       const auto& new_alice = db.get_account("alice");
-       const auto& new_bob = db.get_account("bob");
 
        BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("5.000 TESTS").amount.value);
        BOOST_REQUIRE(new_bob.balance.amount.value == ASSET("5.000 TESTS").amount.value);
@@ -1185,7 +1167,7 @@ BOOST_AUTO_TEST_CASE(transfer_to_vesting_authorities)
 {
    try
    {
-       ACTORS((alice)(bob))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
        fund("alice", 10000);
 
        BOOST_TEST_MESSAGE("Testing: transfer_to_vesting_authorities");
@@ -1234,17 +1216,20 @@ BOOST_AUTO_TEST_CASE(transfer_to_vesting_apply)
    {
        BOOST_TEST_MESSAGE("Testing: transfer_to_vesting_apply");
 
-       ACTORS((alice)(bob))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
        fund("alice", 10000);
+
+       const auto& new_alice = db.get_account("alice");
+       const auto& new_bob = db.get_account("bob");
 
        const auto& gpo = db.get_dynamic_global_properties();
 
-       BOOST_REQUIRE(alice.balance == ASSET("10.000 TESTS"));
+       BOOST_REQUIRE(new_alice.balance == ASSET("10.000 TESTS"));
 
        auto shares = asset(gpo.total_vesting_shares.amount, VESTS_SYMBOL);
        auto vests = asset(gpo.total_vesting_fund_deip.amount, DEIP_SYMBOL);
-       auto alice_shares = alice.vesting_shares;
-       auto bob_shares = bob.vesting_shares;
+       auto alice_shares = new_alice.vesting_shares;
+       auto bob_shares = new_bob.vesting_shares;
 
        transfer_to_vesting_operation op;
        op.from = "alice";
@@ -1262,8 +1247,8 @@ BOOST_AUTO_TEST_CASE(transfer_to_vesting_apply)
        vests += op.amount;
        alice_shares += new_vest;
 
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("2.500 TESTS").amount.value);
-       BOOST_REQUIRE(alice.vesting_shares.amount.value == alice_shares.amount.value);
+       BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("2.500 TESTS").amount.value);
+       BOOST_REQUIRE(new_alice.vesting_shares.amount.value == alice_shares.amount.value);
        BOOST_REQUIRE(gpo.total_vesting_fund_deip.amount.value == vests.amount.value);
        BOOST_REQUIRE(gpo.total_vesting_shares.amount.value == shares.amount.value);
        validate_database();
@@ -1282,20 +1267,20 @@ BOOST_AUTO_TEST_CASE(transfer_to_vesting_apply)
        vests += op.amount;
        bob_shares += new_vest;
 
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("0.500 TESTS").amount.value);
-       BOOST_REQUIRE(alice.vesting_shares.amount.value == alice_shares.amount.value);
-       BOOST_REQUIRE(bob.balance.amount.value == ASSET("0.000 TESTS").amount.value);
-       BOOST_REQUIRE(bob.vesting_shares.amount.value == bob_shares.amount.value);
+       BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("0.500 TESTS").amount.value);
+       BOOST_REQUIRE(new_alice.vesting_shares.amount.value == alice_shares.amount.value);
+       BOOST_REQUIRE(new_bob.balance.amount.value == ASSET("0.000 TESTS").amount.value);
+       BOOST_REQUIRE(new_bob.vesting_shares.amount.value == bob_shares.amount.value);
        BOOST_REQUIRE(gpo.total_vesting_fund_deip.amount.value == vests.amount.value);
        BOOST_REQUIRE(gpo.total_vesting_shares.amount.value == shares.amount.value);
        validate_database();
 
        DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
 
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("0.500 TESTS").amount.value);
-       BOOST_REQUIRE(alice.vesting_shares.amount.value == alice_shares.amount.value);
-       BOOST_REQUIRE(bob.balance.amount.value == ASSET("0.000 TESTS").amount.value);
-       BOOST_REQUIRE(bob.vesting_shares.amount.value == bob_shares.amount.value);
+       BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("0.500 TESTS").amount.value);
+       BOOST_REQUIRE(new_alice.vesting_shares.amount.value == alice_shares.amount.value);
+       BOOST_REQUIRE(new_bob.balance.amount.value == ASSET("0.000 TESTS").amount.value);
+       BOOST_REQUIRE(new_bob.vesting_shares.amount.value == bob_shares.amount.value);
        BOOST_REQUIRE(gpo.total_vesting_fund_deip.amount.value == vests.amount.value);
        BOOST_REQUIRE(gpo.total_vesting_shares.amount.value == shares.amount.value);
        validate_database();
@@ -1320,7 +1305,7 @@ BOOST_AUTO_TEST_CASE(withdraw_vesting_authorities)
    {
        BOOST_TEST_MESSAGE("Testing: withdraw_vesting_authorities");
 
-       ACTORS((alice)(bob))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
        fund("alice", 10000);
        vest("alice", 10000);
 
@@ -1365,8 +1350,9 @@ BOOST_AUTO_TEST_CASE(withdraw_vesting_apply)
    {
        BOOST_TEST_MESSAGE("Testing: withdraw_vesting_apply");
 
-       ACTORS((alice))
+       ACTORS_WITH_EXPERT_TOKENS((alice))
        generate_block();
+
        vest("alice", ASSET("10.000 TESTS"));
 
        BOOST_TEST_MESSAGE("--- Test withdraw of existing VESTS");
@@ -1502,7 +1488,7 @@ BOOST_AUTO_TEST_CASE(witness_update_authorities)
    {
        BOOST_TEST_MESSAGE("Testing: witness_update_authorities");
 
-       ACTORS((alice)(bob));
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
        fund("alice", 10000);
 
        private_key_type signing_key = generate_private_key("new_key");
@@ -1555,7 +1541,10 @@ BOOST_AUTO_TEST_CASE(witness_update_apply)
    {
        BOOST_TEST_MESSAGE("Testing: witness_update_apply");
 
-       ACTORS((alice))
+       ACTORS_WITH_EXPERT_TOKENS((alice))
+
+       const auto& new_alice = db.get_account("alice");
+
        fund("alice", 10000);
 
        private_key_type signing_key = generate_private_key("new_key");
@@ -1592,7 +1581,7 @@ BOOST_AUTO_TEST_CASE(witness_update_apply)
        BOOST_REQUIRE(alice_witness.virtual_last_update == 0);
        BOOST_REQUIRE(alice_witness.virtual_position == 0);
        BOOST_REQUIRE(alice_witness.virtual_scheduled_time == fc::uint128_t::max_value());
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("10.000 TESTS").amount.value); // No fee
+       BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("10.000 TESTS").amount.value); // No fee
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Test updating a witness");
@@ -1618,7 +1607,7 @@ BOOST_AUTO_TEST_CASE(witness_update_apply)
        BOOST_REQUIRE(alice_witness.virtual_last_update == 0);
        BOOST_REQUIRE(alice_witness.virtual_position == 0);
        BOOST_REQUIRE(alice_witness.virtual_scheduled_time == fc::uint128_t::max_value());
-       BOOST_REQUIRE(alice.balance.amount.value == ASSET("10.000 TESTS").amount.value);
+       BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("10.000 TESTS").amount.value);
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Test failure when upgrading a non-existent account");
@@ -1651,7 +1640,7 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_authorities)
     {
         BOOST_TEST_MESSAGE("Testing: account_witness_vote_authorities");
 
-        ACTORS((alice)(bob)(sam))
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(sam))
 
         fund("alice", 1000);
         private_key_type alice_witness_key = generate_private_key("alice_witness");
@@ -1707,12 +1696,18 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
         BOOST_TEST_MESSAGE("Testing: account_witness_vote_apply");
 
         ACTORS((alice)(bob)(sam))
+
+        expert_token("sam", 1, 1000);
+
         fund("alice", 5000);
+
+        for (int i = 1; i < 4; ++i)
+            expert_token("alice", i, i * 100);
+
         vest("alice", 5000);
         fund("sam", 1000);
 
-        for (int i = 1; i < 4; ++i)
-            expert_token_create(i, "alice", i, i * 100);
+        const auto& new_alice = db.get_account("alice");
 
         private_key_type sam_witness_key = generate_private_key("sam_key");
         witness_create("sam", sam_private_key, "foo.bar", sam_witness_key.get_public_key(), 1000);
@@ -1746,7 +1741,7 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
         }
 
         BOOST_REQUIRE(sam_witness.votes == alice_total_vote_weight);
-        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) != witness_vote_idx.end());
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, new_alice.id)) != witness_vote_idx.end());
         validate_database();
 
         BOOST_TEST_MESSAGE("--- Test revoke vote");
@@ -1758,13 +1753,13 @@ BOOST_AUTO_TEST_CASE(account_witness_vote_apply)
 
         db.push_transaction(tx, 0);
         BOOST_REQUIRE(sam_witness.votes.value == 0);
-        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) == witness_vote_idx.end());
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, new_alice.id)) == witness_vote_idx.end());
 
         BOOST_TEST_MESSAGE("--- Test failure when attempting to revoke a non-existent vote");
 
         DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
         BOOST_REQUIRE(sam_witness.votes.value == 0);
-        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, alice.id)) == witness_vote_idx.end());
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.id, new_alice.id)) == witness_vote_idx.end());
 
         BOOST_TEST_MESSAGE("--- Test failure when voting for a non-existent account");
         tx.operations.clear();
@@ -1807,7 +1802,7 @@ BOOST_AUTO_TEST_CASE(account_witness_proxy_authorities)
    {
        BOOST_TEST_MESSAGE("Testing: account_witness_proxy_authorities");
 
-       ACTORS((alice)(bob))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
 
        account_witness_proxy_operation op;
        op.account = "bob";
@@ -1857,7 +1852,7 @@ BOOST_AUTO_TEST_CASE(account_recovery)
    {
        BOOST_TEST_MESSAGE("Testing: account recovery");
 
-       ACTORS((alice));
+       ACTORS_WITH_EXPERT_TOKENS((alice));
        fund("alice", 1000000);
 
        BOOST_TEST_MESSAGE("Creating account bob with alice");
@@ -1878,6 +1873,9 @@ BOOST_AUTO_TEST_CASE(account_recovery)
        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
        tx.sign(alice_private_key, db.get_chain_id());
        db.push_transaction(tx, 0);
+
+       generate_block();
+       expert_token("bob", 1, 10000);
 
        const auto& bob_auth = db.get<account_authority_object, by_account>("bob");
        BOOST_REQUIRE(bob_auth.owner == acc_create.owner);
@@ -2099,7 +2097,7 @@ BOOST_AUTO_TEST_CASE(change_recovery_account)
    {
        BOOST_TEST_MESSAGE("Testing change_recovery_account_operation");
 
-       ACTORS((alice)(bob)(sam)(tyler))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(sam)(tyler))
 
        auto change_recovery_account
            = [&](const std::string& account_to_recover, const std::string& new_recovery_account) {
@@ -2197,7 +2195,7 @@ BOOST_AUTO_TEST_CASE(account_bandwidth)
    try
    {
        BOOST_TEST_MESSAGE("Testing: account_bandwidth");
-       ACTORS((alice)(bob))
+       ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
        generate_block();
        vest("alice", ASSET("10.000 TESTS"));
        fund("alice", ASSET("10.000 TESTS"));
@@ -2259,7 +2257,7 @@ BOOST_AUTO_TEST_CASE(account_create_with_delegation_authorities)
        BOOST_TEST_MESSAGE("Testing: account_create_with_delegation_authorities");
 
        signed_transaction tx;
-       ACTORS((alice));
+       ACTORS_WITH_EXPERT_TOKENS((alice));
        generate_blocks(1);
        fund("alice", ASSET("1000.000 TESTS"));
        vest("alice", ASSET("10000.000000 VESTS"));
@@ -2440,16 +2438,17 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
    {
        BOOST_TEST_MESSAGE("Testing: create_research_group_apply");
 
-       ACTORS((alice));
+       ACTORS_WITH_EXPERT_TOKENS((alice));
        generate_block();
 
        private_key_type priv_key = generate_private_key("alice");
 
        create_research_group_operation op;
 
+       op.name = "test";
        op.creator = "alice";
        op.permlink = "group";
-       op.desciption = "group";
+       op.description = "group";
        op.quorum_percent = 10;
        op.tokens_amount = 100;
 
@@ -2464,6 +2463,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
        auto& research_group_service = db.obtain_service<dbs_research_group>();
        auto& research_group = research_group_service.get_research_group(0);
 
+       BOOST_CHECK(research_group.name == "test");
        BOOST_CHECK(research_group.description == "group");
        BOOST_CHECK(research_group.permlink == "group");
        BOOST_CHECK(research_group.quorum_percent == 10);
@@ -2479,11 +2479,11 @@ BOOST_AUTO_TEST_CASE(create_research_group_join_request_apply)
     {
         BOOST_TEST_MESSAGE("Testing: create_research_group_join_request_apply");
 
-        ACTOR(alice);
+        ACTORS_WITH_EXPERT_TOKENS((alice));
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "permlink", "description", 200, 50);
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50);
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -2518,11 +2518,11 @@ BOOST_AUTO_TEST_CASE(reject_research_group_join_request_apply)
     {
         BOOST_TEST_MESSAGE("Testing: reject_research_group_join_request_apply");
 
-        ACTOR(alice);
+        ACTORS_WITH_EXPERT_TOKENS((alice));
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "permlink", "description", 200, 50);
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50);
         auto& research_group_invite = research_group_join_request_create(1, "alice", 1, "letter");
 
         private_key_type priv_key = generate_private_key("alice");

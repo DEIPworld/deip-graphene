@@ -22,6 +22,7 @@ public:
     {
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 1;
+            d.name = "test1";
             d.permlink = "test1";
             d.description = "test";
             d.quorum_percent = 40;
@@ -30,6 +31,7 @@ public:
 
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 2;
+            d.name = "test2";
             d.permlink = "test2";
             d.description = "test";
             d.quorum_percent = 60;
@@ -64,7 +66,7 @@ public:
     dbs_research_group& data_service;
 };
 
-BOOST_FIXTURE_TEST_SUITE(research_group_service, research_group_service_fixture)
+BOOST_FIXTURE_TEST_SUITE(research_group_service_tests, research_group_service_fixture)
 
 BOOST_AUTO_TEST_CASE(get_research_group_by_id_test)
 {
@@ -73,6 +75,7 @@ BOOST_AUTO_TEST_CASE(get_research_group_by_id_test)
         create_research_groups();
         auto& research_group = data_service.get_research_group(1);
 
+        BOOST_CHECK(research_group.name == "test1");
         BOOST_CHECK(research_group.permlink == "test1");
         BOOST_CHECK(research_group.description == "test");
         BOOST_CHECK(research_group.quorum_percent == 40);
@@ -86,8 +89,9 @@ BOOST_AUTO_TEST_CASE(create_research_group_test)
 {
     try
     {
-        auto& research_group = data_service.create_research_group("test", "test", 34);
+        auto& research_group = data_service.create_research_group("test", "test", "test", 34);
 
+        BOOST_CHECK(research_group.name == "test");
         BOOST_CHECK(research_group.permlink == "test");
         BOOST_CHECK(research_group.description == "test");
         BOOST_CHECK(research_group.quorum_percent == 34);

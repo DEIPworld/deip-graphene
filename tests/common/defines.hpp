@@ -101,6 +101,14 @@
     account_id_type name##_id = name.id;                                                                               \
     (void)name##_id;
 
+#define ACTOR_WITH_EXPERT_TOKENS(name)                                                                                 \
+    PREP_ACTOR(name)                                                                                                   \
+    const auto& name = account_create(BOOST_PP_STRINGIZE(name), name##_public_key, name##_post_key.get_public_key());  \
+    generate_block();                                                                                                                   \
+    create_all_discipline_expert_tokens_for_account(BOOST_PP_STRINGIZE(name));                                         \
+    account_id_type name##_id = name.id;                                                                               \
+    (void)name##_id;
+
 #define GET_ACTOR(name)                                                                                                \
     fc::ecc::private_key name##_private_key = generate_private_key(BOOST_PP_STRINGIZE(name));                          \
     const account_object& name = get_account(BOOST_PP_STRINGIZE(name));                                                \
@@ -108,8 +116,14 @@
     (void)name##_id
 
 #define ACTORS_IMPL(r, data, elem) ACTOR(elem)
+#define ACTORS_IMPL_WITH_EXPERT_TOKENS(r, data, elem) ACTOR_WITH_EXPERT_TOKENS(elem)
+
 #define ACTORS(names)                                                                                                  \
     BOOST_PP_SEQ_FOR_EACH(ACTORS_IMPL, ~, names)                                                                       \
+    validate_database();
+
+#define ACTORS_WITH_EXPERT_TOKENS(names)                                                                               \
+    BOOST_PP_SEQ_FOR_EACH(ACTORS_IMPL_WITH_EXPERT_TOKENS, ~, names)                                                                       \
     validate_database();
 
 #define ASSET(s) asset::from_string(s)

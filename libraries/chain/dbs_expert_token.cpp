@@ -15,14 +15,29 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
                                                     const discipline_id_type &discipline_id,
                                                     const share_type& amount)
 {
-    const auto& props = db_impl().get_dynamic_global_properties();
+    const auto& cprops = db_impl().get_dynamic_global_properties();
+    const auto& to_account = db_impl().get<account_object, by_name>(account);
+
+    if (discipline_id != 0)
+    {
+        db_impl().modify(to_account, [&](account_object& to) { to.total_expert_tokens_amount += amount; });
+        db_impl().modify(cprops,
+                         [&](dynamic_global_property_object& props) { props.total_expert_tokens_amount += amount; });
+    }
+    else
+    {
+        db_impl().modify(to_account, [&](account_object& to) { to.total_common_tokens_amount += amount; });
+        db_impl().modify(cprops,
+                         [&](dynamic_global_property_object& props) { props.total_common_tokens_amount += amount; });
+    }
 
     auto& token = db_impl().create<expert_token_object>([&](expert_token_object& token) {
         token.account_name = account;
         token.discipline_id = discipline_id;
         token.amount = amount;
-        token.last_vote_time = props.time;
+        token.last_vote_time = cprops.time;
     });
+
     return token;
 }
 

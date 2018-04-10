@@ -289,9 +289,10 @@ void witness_plugin_impl::update_account_bandwidth(const account_object& a,
 {
     database& _db = _self.database();
     const auto& props = _db.get_dynamic_global_properties();
+    
     bool has_bandwidth = true;
 
-    if (props.total_vesting_shares.amount > 0)
+    if ((props.total_common_tokens_amount.value + props.total_expert_tokens_amount.value) > 0)
     {
         auto band = _db.find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(a.name, type));
 
@@ -322,20 +323,24 @@ void witness_plugin_impl::update_account_bandwidth(const account_object& a,
             b.lifetime_bandwidth += trx_bandwidth;
             b.last_bandwidth_update = _db.head_block_time();
         });
+        
+        fc::uint128 total_account_common_tokens_amount(a.total_common_tokens_amount.value);
+        fc::uint128 total_account_expert_tokens_amount(a.total_expert_tokens_amount.value);
+        fc::uint128 total_common_tokens_amount(props.total_common_tokens_amount.value);   
+        fc::uint128 total_expert_tokens_amount(props.total_expert_tokens_amount.value);
 
-        fc::uint128 account_vshares(a.effective_vesting_shares().amount.value);
-        fc::uint128 total_vshares(props.total_vesting_shares.amount.value);
         fc::uint128 account_average_bandwidth(band->average_bandwidth.value);
         fc::uint128 max_virtual_bandwidth(_db.get(reserve_ratio_id_type()).max_virtual_bandwidth);
 
-        has_bandwidth = (account_vshares * max_virtual_bandwidth) > (account_average_bandwidth * total_vshares);
+        has_bandwidth = ((((total_account_common_tokens_amount * 10 * DEIP_1_PERCENT / DEIP_100_PERCENT) + (total_account_expert_tokens_amount * 90 * DEIP_1_PERCENT/DEIP_100_PERCENT)) * max_virtual_bandwidth) > (account_average_bandwidth * (total_common_tokens_amount + total_expert_tokens_amount)));
 
         if (_db.is_producing())
             DEIP_ASSERT(has_bandwidth, chain::plugin_exception,
-                          "Account: ${account} bandwidth limit exceeded. Please wait to transact or power up DEIP.",
-                          ("account", a.name)("account_vshares", account_vshares)("account_average_bandwidth",
-                                                                                  account_average_bandwidth)(
-                              "max_virtual_bandwidth", max_virtual_bandwidth)("total_vesting_shares", total_vshares));
+                        "Account: ${account} bandwidth limit exceeded. Please wait to transact or power up DEIP.",
+                        ("account", a.name)("total_account_common_tokens_amount", total_account_common_tokens_amount)(
+                            "total_account_expert_tokens_amount",
+                            total_account_expert_tokens_amount)("account_average_bandwidth", account_average_bandwidth)(
+                            "max_virtual_bandwidth", max_virtual_bandwidth)("total_common_tokens_amount", total_common_tokens_amount)("total_expert_tokens_amount", total_expert_tokens_amount));
     }
 }
 }
