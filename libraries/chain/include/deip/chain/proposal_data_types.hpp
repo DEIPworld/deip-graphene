@@ -28,12 +28,12 @@ struct invite_member_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
     deip::protocol::account_name_type name;
-    share_type research_group_token_amount;
+    share_type research_group_token_amount_in_percent;
 
     void validate() const
     {
         FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
-        FC_ASSERT(research_group_token_amount > 0, "Research group tokens amount should be > 0");
+        FC_ASSERT(research_group_token_amount_in_percent > 0, "Research group tokens amount should be > 0");
     }
 };
 
@@ -105,7 +105,7 @@ struct send_funds_data_type : base_proposal_data_type
 struct rebalance_info
 {
     account_name_type account_name;
-    share_type new_amount;
+    share_type new_amount_in_percent;
 };
 
 struct rebalance_research_group_tokens_data_type : base_proposal_data_type
@@ -122,9 +122,9 @@ struct rebalance_research_group_tokens_data_type : base_proposal_data_type
         {
             FC_ASSERT(is_valid_account_name(accounts[i].account_name), "Account name ${n} is invalid",
                       ("n", accounts[i].account_name));
-            total_amount += accounts[i].new_amount;
+            total_amount += accounts[i].new_amount_in_percent;
         }
-        FC_ASSERT(total_amount == DEIP_100_PERCENT, "New total amount must be equal to 100%");
+        FC_ASSERT(DEIP_1_PERCENT * total_amount == DEIP_100_PERCENT, "New total amount must be equal to 100%");
     }
 };
 
@@ -189,7 +189,7 @@ struct change_research_review_share_percent_data_type : base_proposal_data_type
 
 FC_REFLECT(deip::chain::member_proposal_data_type, (research_group_id)(name))
 
-FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount))
+FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount_in_percent))
 
 FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
 
@@ -199,7 +199,7 @@ FC_REFLECT(deip::chain::transfer_research_tokens_data_type, (research_id)(total_
 
 FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(account_name)(funds))
 
-FC_REFLECT(deip::chain::rebalance_info, (account_name)(new_amount))
+FC_REFLECT(deip::chain::rebalance_info, (account_name)(new_amount_in_percent))
 
 FC_REFLECT(deip::chain::rebalance_research_group_tokens_data_type, (research_group_id)(accounts))
 

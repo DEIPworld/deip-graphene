@@ -151,7 +151,6 @@ void dbs_research_group::adjust_research_group_tokens_amount(const research_grou
     const auto it_end = it_pair.second;
     while (it != it_end)
     {
-        share_type test = it->amount;
         db_impl().modify(*it, [&](research_group_token_object& rgt) { rgt.amount += delta; });
         ++it;
     }

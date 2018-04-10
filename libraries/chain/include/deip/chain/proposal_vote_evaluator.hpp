@@ -194,8 +194,8 @@ protected:
     {
         invite_member_proposal_data_type data = get_data<invite_member_proposal_data_type>(proposal);
         auto research_group_tokens = _research_group_service.get_research_group_tokens(data.research_group_id);
-        _research_group_service.adjust_research_group_tokens_amount(data.research_group_id, -data.research_group_token_amount);
-        _research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount);
+        _research_group_service.adjust_research_group_tokens_amount(data.research_group_id, -data.research_group_token_amount_in_percent * DEIP_1_PERCENT);
+        _research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount_in_percent * DEIP_1_PERCENT);
     }
 
     void dropout_evaluator(const proposal_object& proposal)
@@ -323,14 +323,15 @@ protected:
         rebalance_research_group_tokens_data_type data = get_data<rebalance_research_group_tokens_data_type>(proposal);
         _research_group_service.check_research_group_existence(data.research_group_id);
 
-        int size = data.accounts.size();
-        for (int i = 0; i < size; ++i)
-        {
-            _account_service.check_account_existence(data.accounts[i].account_name);
+        FC_ASSERT(data.accounts.size() == _research_group_service.get_research_group_tokens(data.research_group_id).size(),
+                  "Accounts for rebalance size must be equal to amount of research group tokens");
+        for (auto account : data.accounts)
+            _research_group_service.check_research_group_token_existence(account.account_name, data.research_group_id);
+
+        for (auto account : data.accounts)
             _research_group_service.set_new_research_group_token_amount(data.research_group_id,
-                                                                        data.accounts[i].account_name,
-                                                                        data.accounts[i].new_amount);
-        }
+                                                                        account.account_name,
+                                                                        account.new_amount_in_percent * DEIP_1_PERCENT);
     }
 
     void create_research_material_evaluator(const proposal_object& proposal)
