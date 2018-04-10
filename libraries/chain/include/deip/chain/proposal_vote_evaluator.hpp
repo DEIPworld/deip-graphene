@@ -178,14 +178,13 @@ protected:
     bool is_quorum(const proposal_object& proposal)
     {
         const research_group_object& research_group = _research_group_service.get_research_group(proposal.research_group_id);
-        auto& total_tokens = research_group.total_tokens_amount;
 
         float total_voted_weight = 0;
         auto& votes = _proposal_service.get_votes_for(proposal.id);
         for (const proposal_vote_object& vote : votes) {
             total_voted_weight += vote.weight.value;
         }
-        return (total_voted_weight * DEIP_1_PERCENT) / total_tokens  >= research_group.quorum_percent;
+        return (total_voted_weight * DEIP_1_PERCENT) / DEIP_100_PERCENT  >= research_group.quorum_percent;
     }
 
     void invite_evaluator(const proposal_object& proposal)
@@ -206,10 +205,7 @@ protected:
         _proposal_service.remove_proposal_votes(data.name, data.research_group_id);
 
         auto& token = _research_group_service.get_research_group_token_by_account_and_research_group_id(data.name, data.research_group_id);
-        auto tokens_amount = token.amount;
         auto& research_group = _research_group_service.get_research_group(data.research_group_id);
-        auto total_rg_tokens_amount = research_group.total_tokens_amount;
-        auto tokens_amount_in_percent = tokens_amount * DEIP_100_PERCENT / total_rg_tokens_amount;
 
         auto researches = _research_service.get_researches_by_research_group(data.research_group_id);
         for (auto& r : researches)
@@ -217,7 +213,7 @@ protected:
             auto& research = r.get();
 
             auto tokens_amount_in_percent_after_dropout_compensation
-                = tokens_amount_in_percent * research.dropout_compensation_in_percent / DEIP_100_PERCENT;
+                = token.amount * research.dropout_compensation_in_percent / DEIP_100_PERCENT;
             auto tokens_amount_after_dropout_compensation
                 = research.owned_tokens * tokens_amount_in_percent_after_dropout_compensation / DEIP_100_PERCENT;
 
@@ -236,7 +232,7 @@ protected:
         }
 
         _research_group_service.remove_token(data.name, data.research_group_id);
-        share_type token_amount = tokens_amount / _research_group_service.get_research_group_tokens(data.research_group_id).size();
+        share_type token_amount = token.amount / _research_group_service.get_research_group_tokens(data.research_group_id).size();
         _research_group_service.adjust_research_group_tokens_amount(data.research_group_id, token_amount);
     }
 

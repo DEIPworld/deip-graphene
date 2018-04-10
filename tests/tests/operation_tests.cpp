@@ -611,7 +611,6 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
 
         auto& _research_group = db.get<research_group_object, by_id>(1);
 
-        BOOST_CHECK(research_group.total_tokens_amount == DEIP_100_PERCENT);
         BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(1)), boost::exception);
 
     }
@@ -2467,7 +2466,6 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
        BOOST_CHECK(research_group.description == "group");
        BOOST_CHECK(research_group.permlink == "group");
        BOOST_CHECK(research_group.quorum_percent == 10);
-       BOOST_CHECK(research_group.total_tokens_amount == DEIP_100_PERCENT);
 
    }
    FC_LOG_AND_RETHROW()

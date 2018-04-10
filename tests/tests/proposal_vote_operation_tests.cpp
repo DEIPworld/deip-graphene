@@ -141,7 +141,6 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
 
         BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1), std::out_of_range);
         BOOST_CHECK(research_group_service.get_research_group_token_by_account_and_research_group_id("alice", 1).amount == DEIP_100_PERCENT);
-        BOOST_CHECK(research_group.total_tokens_amount == DEIP_100_PERCENT);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -276,7 +275,6 @@ BOOST_AUTO_TEST_CASE(exclude_member_with_research_token_compensation_test)
         auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", research.id);
 
         BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1), std::out_of_range);
-        BOOST_CHECK(research_group.total_tokens_amount == DEIP_100_PERCENT);
         BOOST_CHECK(research_token.account_name == "bob");
         BOOST_CHECK(research_token.amount == 300);
     }

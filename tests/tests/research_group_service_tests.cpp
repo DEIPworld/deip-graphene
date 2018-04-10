@@ -26,7 +26,6 @@ public:
             d.permlink = "test1";
             d.description = "test";
             d.quorum_percent = 40;
-            d.total_tokens_amount = DEIP_100_PERCENT;
         });
 
         db.create<research_group_object>([&](research_group_object& d) {
@@ -35,8 +34,7 @@ public:
             d.permlink = "test2";
             d.description = "test";
             d.quorum_percent = 60;
-            d.total_tokens_amount = DEIP_100_PERCENT;
-        });
+          });
     }
 
     void create_research_group_tokens()
@@ -79,7 +77,6 @@ BOOST_AUTO_TEST_CASE(get_research_group_by_id_test)
         BOOST_CHECK(research_group.permlink == "test1");
         BOOST_CHECK(research_group.description == "test");
         BOOST_CHECK(research_group.quorum_percent == 40);
-        BOOST_CHECK(research_group.total_tokens_amount == DEIP_100_PERCENT);
 
     }
     FC_LOG_AND_RETHROW()
@@ -95,7 +92,6 @@ BOOST_AUTO_TEST_CASE(create_research_group_test)
         BOOST_CHECK(research_group.permlink == "test");
         BOOST_CHECK(research_group.description == "test");
         BOOST_CHECK(research_group.quorum_percent == 34);
-        BOOST_CHECK(research_group.total_tokens_amount == DEIP_100_PERCENT);
         BOOST_CHECK(research_group.funds == 0);
 
     }

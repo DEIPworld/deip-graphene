@@ -33,7 +33,6 @@ const research_group_object& dbs_research_group::create_research_group(const std
         fc::from_string(research_group.description, description);
         research_group.funds = 0;
         research_group.quorum_percent = quorum_percent;
-        research_group.total_tokens_amount = DEIP_100_PERCENT;
     });
 
     return new_research_group;

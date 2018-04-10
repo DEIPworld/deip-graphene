@@ -418,7 +418,6 @@ database_fixture::research_group_create(const int64_t& id,
               fc::from_string(rg.description, description);
               rg.funds = funds;
               rg.quorum_percent = quorum_percent;
-              rg.total_tokens_amount = DEIP_100_PERCENT;
           });
 
     return new_research_group;
