@@ -86,9 +86,9 @@ BOOST_AUTO_TEST_CASE(creator_have_active_authority)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-//
+
 BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
-//
+
 BOOST_AUTO_TEST_CASE(make_review_apply)
 {
     try
@@ -446,6 +446,7 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
         r.author = "bob";
         r.research_content_id = content.id;
         r.created_at = db.head_block_time();
+        r.expertise_amounts_used[discipline.id] = 1000;
     });
 
     private_key_type priv_key = generate_private_key("alice");

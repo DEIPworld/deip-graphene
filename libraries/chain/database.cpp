@@ -2890,8 +2890,7 @@ share_type database::calculate_review_weight_modifier(const review_id_type& revi
     share_type total_reviews_votes_weight = 0;
     for (auto review_wrapper : content_reviews) {
         auto& content_review = review_wrapper.get();
-        auto& reviewer_token = expert_token_service.get_expert_token_by_account_and_discipline(content_review.author, discipline_id);
-        total_expertise += reviewer_token.amount;
+        total_expertise += content_review.expertise_amounts_used.at(discipline_id);
 
         auto votes = vote_service.get_review_votes(content_review.id);
         total_reviews_votes_weight += std::accumulate(votes.begin(), votes.end(), share_type(0),
