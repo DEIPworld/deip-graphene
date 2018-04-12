@@ -1,6 +1,6 @@
 #include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/database.hpp>
-
+#include <deip/chain/research_object.hpp>
 
 
 namespace deip{
@@ -48,6 +48,9 @@ const research_content_object& dbs_research_content::create(const research_id_ty
             rc.activity_window_start = now;
             rc.activity_window_end = now + DAYS_TO_SECONDS(60);
         }
+
+        auto& research = db_impl().get<research_object>(research_id);
+        db_impl().modify(research, [&](research_object& r_o) { r_o.last_update_time = now; });
 
     });
 

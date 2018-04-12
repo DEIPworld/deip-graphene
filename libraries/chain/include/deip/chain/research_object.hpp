@@ -40,6 +40,7 @@ public:
     shared_string permlink;
     time_point_sec created_at;
     time_point_sec review_share_in_percent_last_update;
+    time_point_sec last_update_time;
     
     bool is_finished;
     share_type owned_tokens;
@@ -78,7 +79,8 @@ typedef multi_index_container<research_object,
 }
 
 FC_REFLECT(deip::chain::research_object,
-                        (id)(title)(research_group_id)(permlink)(abstract)(created_at)(review_share_in_percent_last_update)(is_finished)(owned_tokens)(review_share_in_percent)(dropout_compensation_in_percent)
+                        (id)(title)(research_group_id)(permlink)(abstract)(created_at)(review_share_in_percent_last_update)
+                        (last_update_time)(is_finished)(owned_tokens)(review_share_in_percent)(dropout_compensation_in_percent)
             )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_object, deip::chain::research_index)
