@@ -602,6 +602,20 @@ struct reject_research_group_join_request_operation : public base_operation
     }
 };
 
+struct transfer_research_tokens_to_research_group_operation : public base_operation
+{
+    int64_t research_token_id;
+    int64_t research_id;
+    account_name_type owner;
+    uint32_t amount;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -668,4 +682,5 @@ FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_g
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::create_research_group_join_request_operation, (owner)(research_group_id)(motivation_letter))
 FC_REFLECT( deip::protocol::reject_research_group_join_request_operation, (research_group_join_request_id)(owner))
+FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_token_id)(research_id)(owner))
 // clang-format on

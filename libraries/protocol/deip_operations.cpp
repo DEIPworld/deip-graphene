@@ -233,5 +233,10 @@ void reject_research_group_join_request_operation::validate() const
     validate_account_name(owner);
 }
 
+void transfer_research_tokens_to_research_group_operation::validate() const 
+{
+    validate_account_name(owner);
+}    
+
 }
 } // deip::protocol
