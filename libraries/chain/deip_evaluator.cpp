@@ -899,26 +899,6 @@ void approve_research_group_invite_evaluator::do_apply(const approve_research_gr
     account_service.check_account_existence(research_group_invite.account_name);
     research_group_service.check_research_group_existence(research_group_invite.research_group_id);
 
-    auto researches = research_service.get_researches_by_research_group(research_group_invite.research_group_id);
-
-    for (auto& r : researches)
-    {
-        auto& research = r.get();
-
-        if (research_token_service.check_research_token_existence_by_account_name_and_research_id(
-                research_group_invite.account_name, research.id))
-        {
-            auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id(
-                research_group_invite.account_name, research.id);
-
-            auto tokens_to_conversion
-                = research_token.amount * op.research_tokens_conversion_percent / DEIP_100_PERCENT;
-
-            research_token_service.decrease_research_token_amount(research_token, tokens_to_conversion);
-            research_service.increase_owned_tokens(research, tokens_to_conversion);
-        }
-    }
-
     research_group_service.create_research_group_token(research_group_invite.research_group_id,
                                                        research_group_invite.research_group_token_amount,
                                                        research_group_invite.account_name);

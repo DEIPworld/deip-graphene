@@ -407,13 +407,11 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
 
         approve_invite_bob_to_rg1_op.research_group_invite_id = 0;
         approve_invite_bob_to_rg1_op.owner = "bob";
-        approve_invite_bob_to_rg1_op.research_tokens_conversion_percent = 5000;
 
         approve_research_group_invite_operation approve_invite_bob_to_rg2_op;
 
         approve_invite_bob_to_rg2_op.research_group_invite_id = 1;
         approve_invite_bob_to_rg2_op.owner = "bob";
-        approve_invite_bob_to_rg2_op.research_tokens_conversion_percent = 1000;
 
         signed_transaction approve_invite_bob_to_rg1_and_rg2_tx;
         approve_invite_bob_to_rg1_and_rg2_tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -567,7 +565,6 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
 
         approve_invite_2_to_rg1_op.research_group_invite_id = 2;
         approve_invite_2_to_rg1_op.owner = "bob";
-        approve_invite_2_to_rg1_op.research_tokens_conversion_percent = 5000;
 
         signed_transaction approve_invite_2_to_rg1_tx;
         approve_invite_2_to_rg1_tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -578,9 +575,9 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
 
         BOOST_CHECK(_research_group_1.total_tokens_amount == 200);
         BOOST_CHECK(research_1_token.account_name == "bob");
-        BOOST_CHECK(research_1_token.amount == 1250 && research_2_token.amount == 500
+        BOOST_CHECK(research_1_token.amount == 2500 && research_2_token.amount == 1000
                     && research_3_token.amount == 333);
-        BOOST_CHECK(research_1.owned_tokens == 8750 && research_2.owned_tokens == 9500
+        BOOST_CHECK(research_1.owned_tokens == 7500 && research_2.owned_tokens == 9000
                     && research_3.owned_tokens == 9667);
         BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(3)), boost::exception);
     }
@@ -649,26 +646,12 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
 
         approve_invite_bob_to_rg2_with_overflow_data_op.research_group_invite_id = 0;
         approve_invite_bob_to_rg2_with_overflow_data_op.owner = "bob";
-        approve_invite_bob_to_rg2_with_overflow_data_op.research_tokens_conversion_percent = 10001; // value is greater than max
 
-        signed_transaction approve_invite_bob_to_rg2_with_overflow_data_tx;
-        approve_invite_bob_to_rg2_with_overflow_data_tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        approve_invite_bob_to_rg2_with_overflow_data_tx.operations.push_back(approve_invite_bob_to_rg2_with_overflow_data_op);
-        approve_invite_bob_to_rg2_with_overflow_data_tx.sign(bob_priv_key, db.get_chain_id());
-
-        BOOST_CHECK_THROW((approve_invite_bob_to_rg2_with_overflow_data_tx.validate()), fc::assert_exception);
 
         approve_research_group_invite_operation approve_invite_bob_to_rg2_with_negative_data_op;
 
         approve_invite_bob_to_rg2_with_negative_data_op.research_group_invite_id = 1;
         approve_invite_bob_to_rg2_with_negative_data_op.owner = "bob";
-        approve_invite_bob_to_rg2_with_negative_data_op.research_tokens_conversion_percent = -1000; // value is less than min
-
-        signed_transaction approve_invite_bob_to_rg2_with_negative_data_tx;
-        approve_invite_bob_to_rg2_with_negative_data_tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        approve_invite_bob_to_rg2_with_negative_data_tx.operations.push_back(approve_invite_bob_to_rg2_with_negative_data_op);
-        approve_invite_bob_to_rg2_with_negative_data_tx.sign(bob_priv_key, db.get_chain_id());
-        BOOST_CHECK_THROW((approve_invite_bob_to_rg2_with_negative_data_tx.validate()), fc::assert_exception);
     }
     FC_LOG_AND_RETHROW()
 }
