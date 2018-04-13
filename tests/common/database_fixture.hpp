@@ -154,6 +154,11 @@ struct database_fixture
                                            const research_group_id_type& research_group_id,
                                            const uint16_t review_share_in_percent,
                                            const uint16_t dropout_compensation_in_percent);
+    
+    const research_token_object& research_token_create(const int64_t id, 
+                                                       const account_name_type& owner,
+                                                       const uint16_t amount,
+                                                       const int64_t research_id);
 
 
     const research_content_object& research_content_create(

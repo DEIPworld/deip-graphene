@@ -2532,7 +2532,47 @@ BOOST_AUTO_TEST_CASE(reject_research_group_join_request_apply)
     }
     FC_LOG_AND_RETHROW()
 }
-    
+
+BOOST_AUTO_TEST_CASE(transfer_research_tokens_to_research_group_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: transfer_research_tokens_to_research_group_apply");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice));
+
+        generate_block();
+
+        auto& research_token = research_token_create(1, "alice", 5000, 1);
+        auto& research = research_create(1, "title", "abstract", "permlink", 1, 1, 1);
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        db.modify(research, [&](research_object& r_o){
+            r_o.owned_tokens = 50 * DEIP_1_PERCENT;
+        });
+
+        transfer_research_tokens_to_research_group_operation op;
+
+        op.research_id = 1;
+        op.amount = 50 * DEIP_1_PERCENT;
+        op.owner = "alice";
+        op.research_token_id = 1;
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK(research.owned_tokens == DEIP_100_PERCENT);
+        BOOST_CHECK_THROW(db.get<research_token_object>(1), std::out_of_range);
+    }
+    FC_LOG_AND_RETHROW()
+
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 #endif
