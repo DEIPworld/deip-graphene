@@ -100,8 +100,8 @@ BOOST_AUTO_TEST_CASE(make_review_research_apply)
 
         auto& research1 = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
         auto& research2 = research_create(2, "test_research2", "abstract2", "permlink2", 1, 10, 1500);
-        research_content_create(0, research2.id._id, milestone, "title", 
-                                "content", 1, active, fc::time_point_sec(), 
+        research_content_create(0, research2.id._id, milestone, "title",
+                                "content", 1, active, fc::time_point_sec(),
                                 fc::time_point_sec(), {"alice"}, {}, {});
 
         private_key_type priv_key = generate_private_key("alice");
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(vote_apply_failure)
     auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
     auto& discipline_service = db.obtain_service<dbs_discipline>();
     auto& discipline = discipline_service.get_discipline(1);
-    
+
     db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.discipline_id = discipline.id;
         r.research_id = research.id;
@@ -390,7 +390,7 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
         private_key_type bob_priv_key = generate_private_key("bob");
         private_key_type alice_priv_key = generate_private_key("alice");
 
-           //////////////////////////////////////////////////   
+           //////////////////////////////////////////////////
           /// Сreate two research groups and invite Bob  ///
          ///                                            ///
         //////////////////////////////////////////////////
@@ -435,7 +435,7 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
         BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(1)), boost::exception);
 
 
-           //////////////////////////////////////////////////////////////////////////////////   
+           //////////////////////////////////////////////////////////////////////////////////
           /// Сreate three research. Research #1 and Research #2 from Research Group #1. ///
          ///  Research #3 from Research Group #2                                        ///
         //////////////////////////////////////////////////////////////////////////////////
@@ -500,7 +500,7 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
         db.push_transaction(start_research_tx, 0);
 
 
-           ////////////////////////////////////////////////////////////////   
+           ////////////////////////////////////////////////////////////////
           /// Exclude Bob from Research Group #1 and Research Group #1 ///
          ///                                                          ///
         ////////////////////////////////////////////////////////////////
@@ -539,7 +539,7 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
 
         auto& research_1_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", 0);
         auto& research_2_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", 1);
-        auto& research_3_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", 2);        
+        auto& research_3_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", 2);
 
         BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 0),
                           std::out_of_range);
@@ -631,7 +631,7 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
         private_key_type bob_priv_key = generate_private_key("bob");
         private_key_type alice_priv_key = generate_private_key("alice");
 
-           //////////////////////////////////////////////////   
+           //////////////////////////////////////////////////
           /// Сreate two research groups and invite Bob  ///
          ///                                            ///
         //////////////////////////////////////////////////
@@ -2572,6 +2572,52 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_to_research_group_apply)
     FC_LOG_AND_RETHROW()
 
 }
+
+BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: contribute_to_token_sale_apply");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        fund("alice", 1000);
+        fund("bob", 5000);
+
+        generate_block();
+
+        private_key_type alice_priv_key = generate_private_key("alice");
+
+        auto& research_token_sale = research_token_sale_create(0, 1, db.head_block_time() - 60 * 60 * 5, db.head_block_time() + 60 * 60 * 5, 200, 1000, 100, 400);
+        auto& research_token_sale_contribution = research_token_sale_contribution_create(0, 0, "bob", 200, db.head_block_time());
+
+        contribute_to_token_sale_operation op;
+
+        op.research_token_sale_id = 0;
+        op.owner = "alice";
+        op.amount = 600;
+
+        BOOST_TEST_MESSAGE("--- Test");
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(alice_priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& alice_account = db.get_account("alice");
+
+        BOOST_CHECK(alice_account.balance.amount == 800);
+
+        auto& alice_research_token = db.get<research_token_object, by_account_name_and_research_id>(std::make_tuple("alice", 1));
+        auto& bob_research_token = db.get<research_token_object, by_account_name_and_research_id>(std::make_tuple("bob", 1));
+
+        BOOST_CHECK(alice_research_token.amount == 500);
+        BOOST_CHECK(bob_research_token.amount == 500);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -38,7 +38,7 @@ public:
      * @returns research group object
      */
     const research_group_object& create_research_group(const std::string& name,
-                                                       const std::string& permlink, 
+                                                       const std::string& permlink,
                                                        const std::string& description,
                                                        const share_type quorum_percent,
                                                        const share_type tokens_amount);
