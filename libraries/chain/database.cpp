@@ -1276,21 +1276,40 @@ share_type database::reward_researches_in_discipline(const discipline_object& di
 
     auto& research_service = obtain_service<dbs_research>();
     auto& research_group_service = obtain_service<dbs_research_group>();
+    auto& review_service = obtain_service<dbs_review>();
 
     const auto& total_votes_idx = get_index<total_votes_index>().indices().get<by_discipline_id>();
     auto total_votes_itr = total_votes_idx.find(discipline.id);
 
     share_type used_reward = 0;
+    share_type total_reviews_weight = 0;
+    map<research_content_id_type, share_type> total_weights_per_content;
 
     while (total_votes_itr != total_votes_idx.end())
     {
         if (total_votes_itr->total_active_research_reward_weight != 0)
         {
-            auto& active_research_reward_weight = total_votes_itr->total_active_research_reward_weight;
-            auto research_content_share = util::calculate_share(reward, active_research_reward_weight, discipline.total_active_research_reward_weight);
-            used_reward += reward_research_content(total_votes_itr->research_content_id, discipline.id, research_content_share);
+            auto reviews = review_service.get_research_content_reviews(total_votes_itr->research_content_id);
+            auto reviews_weight = std::accumulate(reviews.begin(), reviews.end(), share_type(0),
+                                                  [&](share_type acc, std::reference_wrapper<const review_object> rw) {
+                                                      auto r = rw.get();
+                                                      return acc + r.get_weight(discipline.id);
+                                                  });
+            total_weights_per_content[total_votes_itr->research_content_id] =
+                    total_votes_itr->total_active_research_reward_weight + reviews_weight;
+            total_reviews_weight += reviews_weight;
         }
         ++total_votes_itr;
+    }
+
+    share_type total_discipline_contents_weight = discipline.total_active_research_reward_weight + total_reviews_weight;
+
+
+    for (auto& kvp : total_weights_per_content) {
+        auto content_id = kvp.first;
+        auto active_research_reward_weight = kvp.second;
+        auto research_content_share = util::calculate_share(reward, active_research_reward_weight, total_discipline_contents_weight);
+        used_reward += reward_research_content(content_id, discipline.id, research_content_share);
     }
 
     FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
