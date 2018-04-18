@@ -41,7 +41,6 @@ public:
 
         db.create<research_object>([&](research_object& r) {
             r.id = 2;
-            r.name = "Second";
             r.permlink = "Second";
             r.research_group_id = 2;
             r.review_share_in_percent = 10;
@@ -54,7 +53,6 @@ public:
 
         db.create<research_object>([&](research_object& r) {
             r.id = 3;
-            r.name = "Third";
             r.permlink = "Third";
             r.research_group_id = 2;
             r.review_share_in_percent = 10;
@@ -103,8 +101,8 @@ BOOST_AUTO_TEST_CASE(get_researches)
 
         BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
             const research_object &research = wrapper.get();
-            return  research.id == 1 && research.name == RESEARCH_NAME &&
-                    research.permlink == RESEARCH_NAME &&
+            return  research.id == 1 &&
+                    research.permlink == RESEARCH_TITLE &&
                     research.research_group_id == RESEARCH_GROUP_ID &&
                     research.review_share_in_percent == 10 &&
                     research.dropout_compensation_in_percent == DROPOUT_COMPENSATION_IN_PERCENT &&
@@ -115,7 +113,7 @@ BOOST_AUTO_TEST_CASE(get_researches)
 
         BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
             const research_object &research = wrapper.get();
-            return  research.id == 2 && research.name == "Second" &&
+            return  research.id == 2 &&
                     research.permlink == "Second" &&
                     research.research_group_id == 2 &&
                     research.review_share_in_percent == 10 &&
@@ -127,7 +125,7 @@ BOOST_AUTO_TEST_CASE(get_researches)
 
         BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
             const research_object &research = wrapper.get();
-            return  research.id == 3 && research.name == "Third" &&
+            return  research.id == 3 &&
                     research.permlink == "Third" &&
                     research.research_group_id == 2 &&
                     research.review_share_in_percent == 10 &&
@@ -152,7 +150,7 @@ BOOST_AUTO_TEST_CASE(get_researches_by_research_group)
 
         BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
             const research_object &research = wrapper.get();
-            return  research.id == 2 && research.name == "Second" &&
+            return  research.id == 2 &&
                     research.permlink == "Second" &&
                     research.research_group_id == 2 &&
                     research.review_share_in_percent == 10 &&
@@ -164,7 +162,7 @@ BOOST_AUTO_TEST_CASE(get_researches_by_research_group)
 
         BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
             const research_object &research = wrapper.get();
-            return  research.id == 3 && research.name == "Third" &&
+            return  research.id == 3 &&
                     research.permlink == "Third" &&
                     research.research_group_id == 2 &&
                     research.review_share_in_percent == 10 &&
