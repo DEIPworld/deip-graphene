@@ -153,6 +153,20 @@ const total_votes_object& dbs_vote::get_total_votes_by_research_and_discipline(c
     return db_impl().get<total_votes_object, by_research_and_discipline>(boost::make_tuple(research_id, discipline_id));
 }
 
+dbs_vote::total_votes_refs_type dbs_vote::get_total_votes_by_discipline(const discipline_id_type &discipline_id) const {
+    total_votes_refs_type ret;
+
+    auto it_pair = db_impl().get_index<total_votes_index>().indicies().get<by_discipline_id>().equal_range(discipline_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+    return ret;
+}
+
 const total_votes_object& dbs_vote::update_total_votes(const total_votes_object& total_votes, const share_type total_weight)
 {
     db_impl().modify(total_votes, [&](total_votes_object& tv_o) { tv_o.total_weight = total_weight; });

@@ -52,7 +52,6 @@ enum object_type
     change_recovery_account_request_object_type,
     block_stats_object_type,
     reward_fund_object_type,
-    reward_pool_object_type,
     vesting_delegation_object_type,
     vesting_delegation_expiration_object_type,
     grant_object_type,
@@ -70,7 +69,8 @@ enum object_type
     research_token_object_type,
     research_token_sale_object_type,
     research_token_sale_contribution_object_type,
-    research_group_invite_object_type
+    research_group_invite_object_type,
+    research_group_join_request_object_type
 };
 
 class dynamic_global_property_object;
@@ -91,7 +91,6 @@ class account_recovery_request_object;
 class change_recovery_account_request_object;
 class block_stats_object;
 class reward_fund_object;
-class reward_pool_object;
 class vesting_delegation_object;
 class vesting_delegation_expiration_object;
 class grant_object;
@@ -110,6 +109,7 @@ class research_token_object;
 class research_token_sale_object;
 class research_token_sale_contribution_object;
 class research_group_invite_object;
+class research_group_join_request_object;
 
 
 typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
@@ -130,7 +130,6 @@ typedef oid<account_recovery_request_object> account_recovery_request_id_type;
 typedef oid<change_recovery_account_request_object> change_recovery_account_request_id_type;
 typedef oid<block_stats_object> block_stats_id_type;
 typedef oid<reward_fund_object> reward_fund_id_type;
-typedef oid<reward_pool_object> reward_pool_id_type;
 typedef oid<vesting_delegation_object> vesting_delegation_id_type;
 typedef oid<vesting_delegation_expiration_object> vesting_delegation_expiration_id_type;
 typedef oid<grant_object> grant_id_type;
@@ -149,6 +148,20 @@ typedef oid<research_token_object> research_token_id_type;
 typedef oid<research_token_sale_object> research_token_sale_id_type;
 typedef oid<research_token_sale_contribution_object> research_token_sale_contribution_id_type;
 typedef oid<research_group_invite_object> research_group_invite_id_type;
+typedef oid<research_group_join_request_object> research_group_join_request_id_type;
+
+
+typedef allocator<account_name_type> account_name_allocator_type;
+typedef bip::set<account_name_type, std::less<account_name_type>, account_name_allocator_type> account_name_type_set;
+
+typedef allocator<research_id_type> research_id_allocator_type;
+typedef bip::set<research_id_type, std::less<research_id_type>, research_id_allocator_type> research_id_type_set;
+
+typedef allocator<research_content_id_type> research_content_id_allocator_type;
+typedef bip::set<research_content_id_type, std::less<research_content_id_type>, research_content_id_allocator_type> research_content_id_type_set;
+
+typedef allocator<fc::fixed_string_32> fixed_string_32_allocator_type;
+typedef bip::set<fc::fixed_string_32, std::less<fc::fixed_string_32>, fixed_string_32_allocator_type> fixed_string_32_type_set;
 
 
 enum bandwidth_type
@@ -181,7 +194,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (change_recovery_account_request_object_type)
                  (block_stats_object_type)
                  (reward_fund_object_type)
-                 (reward_pool_object_type)
                  (vesting_delegation_object_type)
                  (vesting_delegation_expiration_object_type)
                  (grant_object_type)
@@ -200,6 +212,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (research_token_sale_object_type)
                  (research_token_sale_contribution_object_type)
                  (research_group_invite_object_type)
+                 (research_group_join_request_object_type)
 
                  )
 

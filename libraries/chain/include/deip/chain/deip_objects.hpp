@@ -117,6 +117,7 @@ typedef multi_index_container<reward_fund_object,
                                                                &reward_fund_object::name>>>,
                               allocator<reward_fund_object>>
     reward_fund_index;
+
 // clang-format on
 
 } // namespace chain

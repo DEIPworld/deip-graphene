@@ -18,6 +18,9 @@
 namespace deip {
 namespace chain {
 
+using chainbase::allocator;
+using fc::shared_string;
+
 enum research_content_type : uint16_t
 {
     announcement = 1,
@@ -41,19 +44,25 @@ class research_content_object : public object<research_content_object_type, rese
 public:
 
     template <typename Constructor, typename Allocator>
-    research_content_object(Constructor &&c, allocator<Allocator> a)
+    research_content_object(Constructor &&c, allocator<Allocator> a) 
+        : title(a), content(a), authors(a), references(a), external_references(a) 
     {
         c(*this);
     }
 
     research_content_id_type id;
     research_id_type research_id;
+    
     research_content_type type;
-    fc::string content;
-    flat_set<account_name_type> authors;
+
+    shared_string title;
+    shared_string content;
+    
+    account_name_type_set authors;
     time_point_sec created_at;
-    std::vector<research_id_type> research_references;
-    std::vector<string> research_external_references;
+
+    research_content_id_type_set references;
+    fixed_string_32_type_set external_references;
 
     uint16_t activity_round;
     research_content_activity_state activity_state;
@@ -72,10 +81,12 @@ typedef multi_index_container<research_content_object,
                 member<research_content_object,
                         research_content_id_type,
                         &research_content_object::id>>,
+
                 ordered_non_unique<tag<by_research_id>,
                         member<research_content_object,
                                 research_id_type,
                                 &research_content_object::research_id>>,
+
                 ordered_non_unique<tag<by_research_id_and_content_type>,
                         composite_key<research_content_object,
                                 member<research_content_object,
@@ -84,14 +95,17 @@ typedef multi_index_container<research_content_object,
                                 member<research_content_object,
                                         research_content_type,
                                         &research_content_object::type>>>,
+
                 ordered_non_unique<tag<by_activity_window_start>,
                                 member<research_content_object,
                                         time_point_sec,
                                         &research_content_object::activity_window_start>>,
+
                 ordered_non_unique<tag<by_activity_window_end>,
                                 member<research_content_object,
                                         time_point_sec,
                                         &research_content_object::activity_window_end>>,
+
                 ordered_non_unique<tag<by_activity_state>,
                                 member<research_content_object,
                                         research_content_activity_state,
@@ -103,7 +117,5 @@ typedef multi_index_container<research_content_object,
 
 FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result)(review) )
 FC_REFLECT_ENUM(deip::chain::research_content_activity_state, (active)(pending)(closed) )
-
-FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(content)(authors)(research_references)(research_external_references))
-
+FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(title)(content)(authors)(references)(external_references))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_content_object, deip::chain::research_content_index)

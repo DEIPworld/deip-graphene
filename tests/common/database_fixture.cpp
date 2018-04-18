@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <sstream>
 #include <deip/chain/research_group_invite_object.hpp>
+#include <deip/chain/research_token_object.hpp>
 
 #include "database_fixture.hpp"
 
@@ -30,8 +31,27 @@ void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
 
     genesis_state.accounts.push_back(
         { "initdelegate", "null", init_public_key, genesis_state.init_supply, uint64_t(0) });
-
     genesis_state.witness_candidates.push_back({ "initdelegate", init_public_key });
+}
+
+void create_initdelegate_expert_tokens_for_genesis_state(genesis_state_type& genesis_state)
+{
+    genesis_state.expert_tokens.push_back({ "initdelegate", 0, 10000 });
+    genesis_state.expert_tokens.push_back({ "initdelegate", 1, 10000 });
+}
+
+void create_disciplines_for_genesis_state(genesis_state_type& genesis_state)
+{
+    genesis_state.disciplines.push_back({ 0, "Common", 0, 0 });
+    genesis_state.disciplines.push_back({ 1, "Mathematics", 0, 0 });
+    genesis_state.disciplines.push_back({ 2, "Physics", 0, 0 });
+    genesis_state.disciplines.push_back({ 3, "Chemistry", 0, 0 });
+    genesis_state.disciplines.push_back({ 4, "Biology", 0, 0 });
+    genesis_state.disciplines.push_back({ 5, "Computer Science", 0, 0 });
+    genesis_state.disciplines.push_back({ 6, "Medicine", 0, 0 });
+    genesis_state.disciplines.push_back({ 7, "Pure Mathematics", 0, 1 });
+    genesis_state.disciplines.push_back({ 8, "Applied Mathematics", 0, 1 });
+    genesis_state.disciplines.push_back({ 9, "Law", 0, 0 });
 }
 
 database_fixture::database_fixture()
@@ -47,7 +67,9 @@ database_fixture::database_fixture()
     genesis_state.initial_chain_id = TEST_CHAIN_ID;
     genesis_state.initial_timestamp = fc::time_point_sec(TEST_GENESIS_TIMESTAMP);
 
+    create_disciplines_for_genesis_state(genesis_state);
     create_initdelegate_for_genesis_state(genesis_state);
+    create_initdelegate_expert_tokens_for_genesis_state(genesis_state);
 }
 
 database_fixture::~database_fixture()
@@ -94,10 +116,19 @@ clean_database_fixture::clean_database_fixture()
         {
             account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
             fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), DEIP_MIN_PRODUCER_REWARD.amount.value);
+        }
+
+        generate_block();
+
+        for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
+        {
+            common_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 10000);
+            expert_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1, 10000);
+
             witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
                            init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount);
         }
-
+        
         validate_database();
     }
     catch (const fc::exception& e)
@@ -157,6 +188,18 @@ void clean_database_fixture::resize_shared_mem(uint64_t size)
     {
         account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
         fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), DEIP_MIN_PRODUCER_REWARD.amount.value);
+    }
+
+    generate_block();
+
+    for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
+    {
+        common_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 10000);
+        expert_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1, 10000);
+    }
+
+    for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
+    {
         witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
                        init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount);
     }
@@ -361,7 +404,8 @@ const witness_object& database_fixture::witness_create(const string& owner,
 }
 
 const research_group_object&
-database_fixture::research_group_create(const uint32_t& id,
+database_fixture::research_group_create(const int64_t& id,
+                                        const string& name,
                                         const string& permlink,
                                         const string& description,
                                         const share_type funds,
@@ -371,8 +415,9 @@ database_fixture::research_group_create(const uint32_t& id,
     const research_group_object& new_research_group
         = db.create<research_group_object>([&](research_group_object& rg) {
               rg.id = id;
-              rg.permlink = permlink;
-              rg.description = description;            
+              fc::from_string(rg.name, name);
+              fc::from_string(rg.permlink, permlink);
+              fc::from_string(rg.description, description);
               rg.funds = funds;
               rg.quorum_percent = quorum_percent;
               rg.total_tokens_amount = tokens_amount;
@@ -382,6 +427,7 @@ database_fixture::research_group_create(const uint32_t& id,
 }
 
 const research_group_object& database_fixture::research_group_create_by_operation(const account_name_type& creator,
+                                                                                  const string& name,
                                                                                   const string& permlink,
                                                                                   const string& description,
                                                                                   const uint32_t quorum_percent,
@@ -393,9 +439,11 @@ const research_group_object& database_fixture::research_group_create_by_operatio
         private_key_type priv_key = generate_private_key(cr);
 
         create_research_group_operation op;
-        op.creator = creator;
+        op.name = name;
         op.permlink = permlink;
-        op.desciption = description;
+        op.description = description;
+
+        op.creator = creator;
         op.quorum_percent = quorum_percent;
         op.tokens_amount = tokens_amount;
 
@@ -425,7 +473,8 @@ const research_group_token_object& database_fixture::research_group_token_create
     return new_research_group_token;
 }
 
-const research_group_object& database_fixture::setup_research_group(const uint32_t &id,
+const research_group_object& database_fixture::setup_research_group(const int64_t &id,
+                                                                    const string &name,
                                                                     const string &permlink,
                                                                     const string &description,
                                                                     const share_type funds,
@@ -433,7 +482,7 @@ const research_group_object& database_fixture::setup_research_group(const uint32
                                                                     const share_type tokens_amount,
                                                                     const vector<account_name_type> &accounts)
 {
-    const auto& research_group = research_group_create(id, permlink, description, funds, quorum_percent, tokens_amount);
+    const auto& research_group = research_group_create(id, name, permlink, description, funds, quorum_percent, tokens_amount);
 
     for (const auto& account : accounts)
     {
@@ -443,7 +492,7 @@ const research_group_object& database_fixture::setup_research_group(const uint32
     return research_group;
 }
 
-const proposal_object& database_fixture::create_proposal(const uint32_t id, const dbs_proposal::action_t action,
+const proposal_object& database_fixture::create_proposal(const int64_t id, const dbs_proposal::action_t action,
                                        const std::string json_data,
                                        const account_name_type& creator,
                                        const research_group_id_type& research_group_id,
@@ -453,7 +502,7 @@ const proposal_object& database_fixture::create_proposal(const uint32_t id, cons
     const proposal_object& new_proposal = db.create<proposal_object>([&](proposal_object& proposal) {
         proposal.action = action;
         proposal.id = id;
-        proposal.data = json_data;
+        fc::from_string(proposal.data, json_data);
         proposal.creator = creator;
         proposal.research_group_id = research_group_id;
         proposal.creation_time = fc::time_point_sec();
@@ -496,8 +545,8 @@ void database_fixture::create_proposal_by_operation(const account_name_type& cre
     FC_CAPTURE_AND_RETHROW((creator))
 }
 
-const research_object& database_fixture::research_create(const uint32_t id,
-                                                         const string &name,
+const research_object& database_fixture::research_create(const int64_t id,
+                                                         const string &title,
                                                          const string &abstract,
                                                          const string &permlink,
                                                          const research_group_id_type &research_group_id,
@@ -506,9 +555,9 @@ const research_object& database_fixture::research_create(const uint32_t id,
 {
     const auto& new_research = db.create<research_object>([&](research_object& r) {
         r.id = id;
-        r.name = name;
-        r.abstract = abstract;
-        r.permlink = permlink;
+        fc::from_string(r.title, title);
+        fc::from_string(r.abstract, abstract);
+        fc::from_string(r.permlink, permlink);
         r.research_group_id = research_group_id;
         r.review_share_in_percent = review_share_in_percent;
         r.dropout_compensation_in_percent = dropout_compensation_in_percent;
@@ -521,7 +570,58 @@ const research_object& database_fixture::research_create(const uint32_t id,
     return new_research;
 }
 
-const expert_token_object& database_fixture::expert_token_create(const uint32_t id,
+const research_token_object& database_fixture::research_token_create(const int64_t id, 
+                                                                     const account_name_type& owner,
+                                                                     const uint16_t amount,
+                                                                     const int64_t research_id)    
+{
+    const auto& new_research_token = db.create<research_token_object>([&](research_token_object& r) {
+        r.id = id;
+        r.account_name = owner;
+        r.amount = amount;
+        r.research_id = research_id;
+    });
+
+    return new_research_token;
+}
+    
+const research_content_object& database_fixture::research_content_create(
+                                const int64_t& id,
+                                const int64_t& research_id,
+                                const research_content_type& type,
+                                const std::string& title,
+                                const std::string& content,
+                                const int16_t& activity_round,
+                                const research_content_activity_state& activity_state,
+                                const time_point_sec& activity_window_start,
+                                const time_point_sec& activity_window_end,
+                                const std::vector<account_name_type>& authors,
+                                const std::vector<research_content_id_type>& references,
+                                const std::vector<string>& external_references)
+{
+    const auto& new_research_content = db.create<research_content_object>([&](research_content_object& rc) {
+
+        auto now = db.head_block_time();
+
+        rc.id = id;
+        rc.research_id = research_id;
+        rc.type = type;
+        fc::from_string(rc.title, title);
+        fc::from_string(rc.content, content);
+        rc.created_at = now;
+        rc.authors.insert(authors.begin(), authors.end());
+        rc.references.insert(references.begin(), references.end());
+        rc.external_references.insert(external_references.begin(), external_references.end());
+        rc.activity_round = activity_round;
+        rc.activity_state = activity_state;
+        rc.activity_window_start = activity_window_start;
+        rc.activity_window_end = activity_window_end;
+    });
+
+    return new_research_content;
+}
+
+const expert_token_object& database_fixture::expert_token_create(const int64_t id,
                                                                  const account_name_type& account,
                                                                  const discipline_id_type& discipline_id,
                                                                  const share_type& amount)
@@ -559,7 +659,7 @@ void database_fixture::create_disciplines()
     });
 }
 
-const research_group_invite_object& database_fixture::research_group_invite_create(const uint32_t id,
+const research_group_invite_object& database_fixture::research_group_invite_create(const int64_t id,
                                                                                    const account_name_type& account_name,
                                                                                    const research_group_id_type& research_group_id,
                                                                                    const share_type research_group_token_amount)
@@ -571,6 +671,20 @@ const research_group_invite_object& database_fixture::research_group_invite_crea
         rgi_o.research_group_token_amount = research_group_token_amount;
     });
     return research_group_invite;
+}
+
+const research_group_join_request_object& database_fixture::research_group_join_request_create(const uint32_t id,
+                                                                                               const account_name_type& account_name,
+                                                                                               const research_group_id_type& research_group_id,
+                                                                                               const std::string motivation_letter)
+{
+    auto& research_group_join_request = db.create<research_group_join_request_object>([&](research_group_join_request_object& rgir_o) {
+        rgir_o.id = id;
+        rgir_o.account_name = account_name;
+        rgir_o.research_group_id = research_group_id;
+        fc::from_string(rgir_o.motivation_letter, motivation_letter);
+    });
+    return research_group_join_request;
 }
 
 const research_token_sale_object& database_fixture::research_token_sale_create(const uint32_t id,
@@ -692,6 +806,31 @@ void database_fixture::vest(const string& account, const asset& amount)
             account_service.create_vesting(db.get_account(account), amount);
         },
         default_skip);
+}
+
+void database_fixture::create_all_discipline_expert_tokens_for_account(const string& account)
+{    
+    for (uint32_t i = 0; i < genesis_state.disciplines.size(); i++)
+    {
+        expert_token(account, i, 10000);
+    }
+}
+
+const expert_token_object& database_fixture::common_token(const string& account, const share_type& amount)
+{
+    dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
+    auto& common_token = expert_token_service.create(account, 0, amount);
+
+    return common_token;
+}
+
+const expert_token_object&
+database_fixture::expert_token(const string& account, const discipline_id_type& discipline_id, const share_type& amount)
+{
+    dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
+    auto& expert_token = expert_token_service.create(account, discipline_id, amount);
+
+    return expert_token;
 }
 
 void database_fixture::proxy(const string& account, const string& proxy)

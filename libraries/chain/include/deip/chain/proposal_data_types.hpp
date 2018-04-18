@@ -13,10 +13,10 @@ struct base_proposal_data_type
     virtual void validate() const = 0;
 };
 
-struct member_proposal_data_type : base_proposal_data_type
+struct dropout_member_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
-    deip::protocol::account_name_type name;
+    account_name_type name;
 
     void validate() const
     {
@@ -27,7 +27,7 @@ struct member_proposal_data_type : base_proposal_data_type
 struct invite_member_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
-    deip::protocol::account_name_type name;
+    account_name_type name;
     share_type research_group_token_amount;
 
     void validate() const
@@ -50,14 +50,13 @@ struct change_quorum_proposal_data_type : base_proposal_data_type
 
 struct start_research_proposal_data_type : base_proposal_data_type
 {
-    string name;
+    string title;
     string abstract;
     string permlink;
     research_group_id_type research_group_id;
     uint16_t review_share_in_percent;
     uint16_t dropout_compensation_in_percent;
     std::vector<int64_t> disciplines;
-    // vector<deip::protocol::discipline_name_type> disciplines;
 
 
     void validate() const
@@ -67,7 +66,7 @@ struct start_research_proposal_data_type : base_proposal_data_type
             return discipline_id == 0;
         }), "Research cannot be related to 'common' discipline");
 
-        FC_ASSERT(!name.empty(), "Research name cannot be empty");
+        FC_ASSERT(!title.empty(), "Research name cannot be empty");
         FC_ASSERT(!abstract.empty(), "Research abstract cannot be empty");
         FC_ASSERT(permlink.size() < DEIP_MAX_PERMLINK_LENGTH, "Research permlink is too long");
         FC_ASSERT(fc::is_utf8(permlink), "Research permlink should be valid UTF8 string");
@@ -76,29 +75,15 @@ struct start_research_proposal_data_type : base_proposal_data_type
     }
 };
 
-struct transfer_research_tokens_data_type : base_proposal_data_type
-{
-    research_id_type research_id;
-    share_type total_price;
-    deip::protocol::account_name_type account_name;
-    share_type amount;
-
-    void validate() const
-    {
-        FC_ASSERT(is_valid_account_name(account_name), "Account name ${n} is invalid", ("n", account_name));
-        FC_ASSERT(total_price >= 0, "Total price cant be negative");
-    }
-};
-
 struct send_funds_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
-    account_name_type account_name;
+    account_name_type recipient;
     share_type funds;
 
     void validate() const
     {
-        FC_ASSERT(is_valid_account_name(account_name), "Account name ${n} is invalid", ("n", account_name));
+        FC_ASSERT(is_valid_account_name(recipient), "Account name ${n} is invalid", ("n", recipient));
         FC_ASSERT(funds >= 0, "Amount cant be negative");
     }
 };
@@ -111,7 +96,6 @@ struct rebalance_info
 struct rebalance_research_group_tokens_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
-
     std::vector<rebalance_info> accounts;
 
     void validate() const
@@ -126,10 +110,12 @@ struct create_research_content_data_type : base_proposal_data_type
 {
     research_id_type research_id;
     research_content_type type;
+    string title;
     string content;
-    flat_set<account_name_type> authors;
-    std::vector<research_id_type> research_references;
-    std::vector<string> research_external_references;
+    std::vector<account_name_type> authors;
+    std::vector<research_content_id_type> references;
+    std::vector<string> external_references;
+
     void validate() const
     {
         FC_ASSERT(!content.empty(), "Content cannot be empty");
@@ -139,7 +125,7 @@ struct create_research_content_data_type : base_proposal_data_type
             FC_ASSERT(is_valid_account_name(author), "Account name ${n} is invalid", ("n", author));
         }
 
-        for (auto& link : research_external_references)
+        for (auto& link : external_references)
         {
             FC_ASSERT(!link.empty(), "External reference link cannot be empty");
             FC_ASSERT(fc::is_utf8(link), "External reference link is not valid UTF8 string");
@@ -181,23 +167,21 @@ struct change_research_review_share_percent_data_type : base_proposal_data_type
 }
 }
 
-FC_REFLECT(deip::chain::member_proposal_data_type, (research_group_id)(name))
+FC_REFLECT(deip::chain::dropout_member_proposal_data_type, (research_group_id)(name))
 
 FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount))
 
 FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
 
-FC_REFLECT(deip::chain::start_research_proposal_data_type, (name)(abstract)(permlink)(research_group_id)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines))
+FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(research_group_id)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines))
 
-FC_REFLECT(deip::chain::transfer_research_tokens_data_type, (research_id)(total_price)(account_name)(amount))
-
-FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(account_name)(funds))
+FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(recipient)(funds))
 
 FC_REFLECT(deip::chain::rebalance_info, (account_name)(amount))
 
 FC_REFLECT(deip::chain::rebalance_research_group_tokens_data_type, (research_group_id)(accounts))
 
-FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(content)(authors)(research_references)(research_external_references))
+FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(title)(content)(authors)(references)(external_references))
 
 FC_REFLECT(deip::chain::start_research_token_sale_data_type, (research_id)(start_time)(end_time)(amount_for_sale)(soft_cap)(hard_cap))
 

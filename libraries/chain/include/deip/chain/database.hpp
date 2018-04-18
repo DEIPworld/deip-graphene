@@ -277,7 +277,7 @@ public:
     uint32_t get_slot_at_time(fc::time_point_sec when) const;
 
     /** @return the sbd created and deposited to_account, may return DEIP if there is no median feed */
-    asset create_vesting(const account_object& to_account, asset deip, bool to_reward_balance = false);
+    asset create_vesting(const account_object& to_account, asset deip);
 
     void adjust_supply(const asset& delta, bool adjust_vesting = false);
 
@@ -293,8 +293,6 @@ public:
      */
     void clear_witness_votes(const account_object& a);
     void process_vesting_withdrawals();
-    share_type reward_voters(const research_content_id_type &research_content_id,
-                             const discipline_id_type &discipline_id, const share_type &reward);
     void process_funds();
     void process_conversions();
     void account_recovery_processing();
@@ -302,22 +300,40 @@ public:
     void process_research_token_sales();
     void distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id) override;
     void refund_research_tokens(const research_token_sale_id_type research_token_sale_id);
-    void reward_research_token_holders(const research_object& research,
+
+    /**
+     * Rewards distribution
+     */
+    share_type distribute_reward(const share_type reward);
+    share_type reward_researches_in_discipline(const discipline_object &discipline, const share_type& reward);
+    share_type reward_research_content(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id,
+                                 const share_type &reward);
+    share_type reward_research_token_holders(const research_object& research,
                                        const discipline_id_type& discipline_id,
-                                       const share_type& reward,
-                                       const share_type& expertise_reward);
-    void reward_references(const research_content_id_type& research_content_id,
+                                       const share_type& reward);
+    share_type reward_references(const research_content_id_type& research_content_id,
                            const discipline_id_type& discipline_id,
                            const share_type& reward,
                            const share_type& expertise_reward);
-    void distribute_reward(const share_type reward);
-    void reward_researches_in_discipline(const discipline_object &discipline, const share_type& reward);
-    void reward_research_content(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id,
-                                 const share_type &reward);
+    share_type reward_reviews(const research_id_type& research_id,
+                        const discipline_id_type& discipline_id,
+                        const share_type& reward);
+    share_type reward_voters(const research_content_id_type &research_content_id,
+                       const discipline_id_type &discipline_id, const share_type &reward);
     void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                const share_type &reward);
+    share_type reward_research_group_members_with_expertise(const research_group_id_type& research_group_id,
+                                                            const discipline_id_type& discipline_id,
+                                                            const flat_set<account_name_type>& accounts,
+                                                            const share_type &expertise_reward);
+
+    flat_set<account_name_type> get_all_research_group_token_account_names(const research_group_id_type& research_group_id);
 
     share_type pay_reward_funds(share_type reward);
+    share_type fund_review_pool(const discipline_id_type& discipline_id, const share_type &amount);
+
+    share_type grant_researches_in_discipline(const discipline_id_type& discipline_id, const share_type &amount);
+    void process_grants();
 
     time_point_sec head_block_time() const override;
     uint32_t head_block_num() const;
@@ -379,6 +395,10 @@ private:
 
     void _update_median_witness_props();
 
+    share_type allocate_rewards_to_reviews(const share_type& reward, const discipline_id_type& discipline_id,
+                                           const std::vector<std::pair<research_content_object, share_type>>& reviews_weights,
+                                           const share_type& total_weight);
+
 protected:
     // Mark pop_undo() as protected -- we do not want outside calling pop_undo(); it should call pop_block() instead
     // void pop_undo() { object_database::pop_undo(); }
@@ -409,6 +429,8 @@ protected:
     void clear_expired_proposals();
     void process_content_activity_windows();
     void process_header_extensions(const signed_block& next_block);
+    void clear_expired_invites();
+    void clear_expired_join_requests();
 
     void init_hardforks(fc::time_point_sec genesis_time);
     void process_hardforks();
@@ -419,7 +441,6 @@ protected:
     void init_genesis_witnesses(const genesis_state_type& genesis_state);
     void init_genesis_witness_schedule(const genesis_state_type& genesis_state);
     void init_genesis_global_property_object(const genesis_state_type& genesis_state);
-    void init_genesis_rewards(const genesis_state_type& genesis_state);
     void init_genesis_disciplines(const genesis_state_type& genesis_state);
     void init_expert_tokens(const genesis_state_type& genesis_state);
 

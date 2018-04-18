@@ -42,10 +42,11 @@ namespace deip {
                 contribute_to_token_sale_operation,
                 approve_research_group_invite_operation,
                 reject_research_group_invite_operation,
+                create_research_group_join_request_operation,
+                reject_research_group_join_request_operation,
+                transfer_research_tokens_to_research_group_operation,
 
                 // virtual operations
-                author_reward_operation,
-                curation_reward_operation,
                 fill_vesting_withdraw_operation,
                 shutdown_witness_operation,
                 hardfork_operation,

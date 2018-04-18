@@ -52,11 +52,11 @@ public:
     const int ALICE_ACCOUNT_GRANT = 500;
     const int BOB_ACCOUNT_GRANT = 1001;
 
-    const int START_BLOCK = 0;
-    const int END_BLOCK = 10;
+    const int START_BLOCK = int(db.head_block_num());
+    const int END_BLOCK = START_BLOCK + 20;
 
-    const int GRANT_PER_BLOCK_DEFAULT = 25;
     const int GRANT_BALANCE_DEFAULT = 200;
+    const int GRANT_PER_BLOCK_DEFAULT = GRANT_BALANCE_DEFAULT / (END_BLOCK - START_BLOCK);
 
     const discipline_id_type TARGET_DISCIPLINE = 1;
 
