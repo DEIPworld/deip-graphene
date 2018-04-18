@@ -33,6 +33,7 @@ DEFINE_EVALUATOR(approve_research_group_invite)
 DEFINE_EVALUATOR(reject_research_group_invite)
 DEFINE_EVALUATOR(create_research_group_join_request)
 DEFINE_EVALUATOR(reject_research_group_join_request)
+DEFINE_EVALUATOR(transfer_research_tokens_to_research_group)
 
 }
 } // deip::chain

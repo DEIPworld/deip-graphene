@@ -12,8 +12,8 @@ dbs_research_token::dbs_research_token(database &db)
 }
 
 const research_token_object& dbs_research_token::create_research_token(const account_name_type &owner,
-                                                    const deip::chain::share_type amount,
-                                                    const research_id_type &research_id)
+                                                                       const deip::chain::share_type amount,
+                                                                       const research_id_type &research_id)
 {
     const research_token_object& new_research_token = db_impl().create<research_token_object>([&](research_token_object& research_token) {
         research_token.account_name = owner;

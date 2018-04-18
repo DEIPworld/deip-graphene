@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <sstream>
 #include <deip/chain/research_group_invite_object.hpp>
+#include <deip/chain/research_token_object.hpp>
 
 #include "database_fixture.hpp"
 
@@ -569,6 +570,21 @@ const research_object& database_fixture::research_create(const int64_t id,
     return new_research;
 }
 
+const research_token_object& database_fixture::research_token_create(const int64_t id, 
+                                                                     const account_name_type& owner,
+                                                                     const uint16_t amount,
+                                                                     const int64_t research_id)    
+{
+    const auto& new_research_token = db.create<research_token_object>([&](research_token_object& r) {
+        r.id = id;
+        r.account_name = owner;
+        r.amount = amount;
+        r.research_id = research_id;
+    });
+
+    return new_research_token;
+}
+    
 const research_content_object& database_fixture::research_content_create(
                                 const int64_t& id,
                                 const int64_t& research_id,

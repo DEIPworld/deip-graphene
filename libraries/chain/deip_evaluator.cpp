@@ -899,26 +899,6 @@ void approve_research_group_invite_evaluator::do_apply(const approve_research_gr
     account_service.check_account_existence(research_group_invite.account_name);
     research_group_service.check_research_group_existence(research_group_invite.research_group_id);
 
-    auto researches = research_service.get_researches_by_research_group(research_group_invite.research_group_id);
-
-    for (auto& r : researches)
-    {
-        auto& research = r.get();
-
-        if (research_token_service.check_research_token_existence_by_account_name_and_research_id(
-                research_group_invite.account_name, research.id))
-        {
-            auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id(
-                research_group_invite.account_name, research.id);
-
-            auto tokens_to_conversion
-                = research_token.amount * op.research_tokens_conversion_percent / DEIP_100_PERCENT;
-
-            research_token_service.decrease_research_token_amount(research_token, tokens_to_conversion);
-            research_service.increase_owned_tokens(research, tokens_to_conversion);
-        }
-    }
-
     research_group_service.create_research_group_token(research_group_invite.research_group_id,
                                                        research_group_invite.research_group_token_amount,
                                                        research_group_invite.account_name);
@@ -964,5 +944,30 @@ void reject_research_group_join_request_evaluator::do_apply(const reject_researc
     _db._temporary_public_impl().remove(research_group_join_request);
 }
 
+void transfer_research_tokens_to_research_group_evaluator::do_apply(const transfer_research_tokens_to_research_group_operation& op)
+{
+    dbs_research_token &research_token_service = _db.obtain_service<dbs_research_token>();
+    dbs_research &research_service = _db.obtain_service<dbs_research>();
+
+    research_token_service.check_research_token_existence_by_account_name_and_research_id(op.owner, op.research_id);
+    research_service.check_research_existence(op.research_id);
+
+    auto& research_token = research_token_service.get_research_token(op.research_token_id);
+    auto& research = research_service.get_research(op.research_id);
+
+    FC_ASSERT(op.amount > 0 && share_type(op.amount) <= research_token.amount, "Amount cannot be negative or greater than research token amount");
+
+    _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
+        r_o.owned_tokens += op.amount;
+    });
+
+    if (op.amount == research_token.amount)
+        _db._temporary_public_impl().remove(research_token);
+    else
+        _db._temporary_public_impl().modify(research_token, [&](research_token_object& rt_o) {
+            rt_o.amount -= op.amount;
+        });
+
+}
 } // namespace chain
 } // namespace deip 
