@@ -662,6 +662,7 @@ BOOST_AUTO_TEST_CASE(process_grants)
    FC_LOG_AND_RETHROW()
 }
 
+    
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace chain
