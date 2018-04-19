@@ -1328,13 +1328,15 @@ share_type database::reward_research_content(const research_content_id_type& res
         }
     }
 
-    if (discipline_id == 0) {
-
+    if (discipline_id == 0)
+    {
         used_reward += reward_research_token_holders(research, discipline_id, token_holders_share);
         used_reward += reward_references(research_content_id, discipline_id, references_share, 0);
-    }
-    else if (discipline_id != 0) {
+        used_reward += reward_voters(research_content_id, discipline_id, curators_share);
 
+    }
+    else if (discipline_id != 0)
+    {
         reward_research_group_members_with_expertise(research.research_group_id, discipline_id,
                                                      accounts_to_reward_with_expertise, research_group_expertise_share);
         used_reward += reward_research_token_holders(research, discipline_id, token_holders_share);
