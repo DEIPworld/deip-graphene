@@ -230,10 +230,10 @@ protected:
                 _research_token_service.create_research_token(data.name, tokens_amount_after_dropout_compensation, research.id);
             }
         }
-
+        share_type token_amount = token.amount;
         _research_group_service.remove_token(data.name, data.research_group_id);
-        share_type token_amount = token.amount / _research_group_service.get_research_group_tokens(data.research_group_id).size();
-        _research_group_service.adjust_research_group_tokens_amount(data.research_group_id, token_amount);
+        share_type adjust_amount = token_amount / _research_group_service.get_research_group_tokens(data.research_group_id).size();
+        _research_group_service.adjust_research_group_tokens_amount(data.research_group_id, adjust_amount);
     }
 
     void change_research_review_share_evaluator(const proposal_object& proposal)

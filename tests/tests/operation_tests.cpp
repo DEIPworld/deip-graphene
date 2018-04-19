@@ -571,9 +571,9 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
 
         BOOST_CHECK(research_1_token.account_name == "bob");
         BOOST_CHECK(research_1_token.amount == 2500 && research_2_token.amount == 1000
-                    && research_3_token.amount == 333);
+                    && research_3_token.amount == 500);
         BOOST_CHECK(research_1.owned_tokens == 7500 && research_2.owned_tokens == 9000
-                    && research_3.owned_tokens == 9667);
+                    && research_3.owned_tokens == 9500);
         BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(3)), boost::exception);
     }
     FC_LOG_AND_RETHROW()

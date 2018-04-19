@@ -313,11 +313,9 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
 {
     ACTORS((alice))
 
-    create_disciplines();
-
     std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 10000)};
     setup_research_group(1, "name", "research_group", "research group", 0, 1, accounts);
-    const std::string json_str = "{\"name\":\"test\","
+    const std::string json_str = "{\"title\":\"test\","
             "\"research_group_id\":1,"
             "\"abstract\":\"abstract\","
             "\"permlink\":\"permlink\","
