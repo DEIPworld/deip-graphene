@@ -157,6 +157,36 @@ public:
         });
     }
 
+    void create_votes_for_common_discipline()
+    {
+        db.create<vote_object>([&](vote_object& d) {
+            d.id = 1;
+            d.discipline_id = 0;
+            d.voter = "bob";
+            d.research_id = 1;
+            d.research_content_id = 1;
+            d.weight = 10;
+        });
+
+        db.create<vote_object>([&](vote_object& d) {
+            d.id = 2;
+            d.discipline_id = 0;
+            d.voter = "john";
+            d.research_id = 1;
+            d.research_content_id = 1;
+            d.weight = 30;
+        });
+
+        db.create<vote_object>([&](vote_object& d) {
+            d.id = 3;
+            d.discipline_id = 0;
+            d.voter = "alice";
+            d.research_id = 2;
+            d.research_content_id = 2;
+            d.weight = 60;
+        });
+    }
+
     void create_total_votes()
     {
         db.create<total_votes_object>([&](total_votes_object& d) {
@@ -174,6 +204,33 @@ public:
         db.create<total_votes_object>([&](total_votes_object& d) {
             d.id = 2;
             d.discipline_id = 10;
+            d.research_id = 2;
+            d.research_content_id = 2;
+            d.total_weight = 60;
+            d.total_curators_reward_weight = 60;
+            d.total_review_reward_weight = 60;
+            d.total_research_reward_weight = 60;
+            d.total_active_research_reward_weight = 60;
+        });
+    }
+
+    void create_total_votes_for_common_discipline()
+    {
+        db.create<total_votes_object>([&](total_votes_object& d) {
+            d.id = 1;
+            d.discipline_id = 0;
+            d.research_id = 1;
+            d.research_content_id = 1;
+            d.total_weight = 40;
+            d.total_curators_reward_weight = 40;
+            d.total_review_reward_weight = 40;
+            d.total_research_reward_weight = 40;
+            d.total_active_research_reward_weight = 40;
+        });
+
+        db.create<total_votes_object>([&](total_votes_object& d) {
+            d.id = 2;
+            d.discipline_id = 0;
             d.research_id = 2;
             d.research_content_id = 2;
             d.total_weight = 60;
@@ -661,6 +718,42 @@ BOOST_AUTO_TEST_CASE(process_grants)
    }
    FC_LOG_AND_RETHROW()
 }
+
+BOOST_AUTO_TEST_CASE(reward_research_content_for_common_discipline)
+{
+    try
+    {
+        ACTORS((alice)(alex)(jack)(bob)(john));
+
+        create_discipline_with_weight();
+        create_research_contents();
+        create_researches();
+        create_votes_for_common_discipline();
+        create_total_votes_for_common_discipline();
+        create_research_tokens();
+        create_research_groups();
+        create_research_group_tokens();
+
+        share_type reward = 1000;
+        BOOST_CHECK_NO_THROW(db.reward_research_content(1, 0, reward));
+
+        BOOST_CHECK(db.get<research_group_object>(1).funds == 700);
+        BOOST_CHECK(db.get<research_group_object>(2).funds == 50);
+        
+        BOOST_CHECK_THROW((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 0))), std::out_of_range);
+        BOOST_CHECK_THROW((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("bob", 0))), std::out_of_range);
+        BOOST_CHECK_THROW((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alex", 0))), std::out_of_range);
+        BOOST_CHECK_THROW((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("jack", 0))), std::out_of_range);
+        BOOST_CHECK_THROW((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("john", 0))), std::out_of_range);
+
+
+        BOOST_CHECK(db.get_account("alice").balance.amount == 20);
+        BOOST_CHECK(db.get_account("bob").balance.amount == 42);
+        BOOST_CHECK(db.get_account("john").balance.amount == 37);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 
