@@ -132,7 +132,7 @@ DEIP_TEST_CASE(owned_grant_creation_asserts)
 
     // asset wrong_currency_balance(GRANT_BALANCE_DEFAULT, VESTS_SYMBOL);
 
-    BOOST_CHECK_THROW(grant_service.create_grant(alice, wrong_currency_balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
+    // BOOST_CHECK_THROW(grant_service.create_grant(alice, wrong_currency_balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
 
     asset wrong_amount_balance(0, DEIP_SYMBOL);
 
