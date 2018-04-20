@@ -2539,7 +2539,8 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_to_research_group_apply)
     {
         BOOST_TEST_MESSAGE("Testing: transfer_research_tokens_to_research_group_apply");
 
-        ACTORS_WITH_EXPERT_TOKENS((alice));
+        ACTOR_WITH_EXPERT_TOKENS(alice);
+        ACTOR(bob);
 
         generate_block();
 
@@ -2617,7 +2618,44 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(add_expertise_tokens_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: add_expertise_tokens_apply");
 
+        ACTOR_WITH_EXPERT_TOKENS(alice);
+        ACTOR(bob);
+
+        generate_block();
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        add_expertise_tokens_operation op;
+
+        std::vector<std::pair<int64_t, uint32_t>> disciplines_to_add;
+        disciplines_to_add.push_back(std::make_pair(1, 1000));
+        disciplines_to_add.push_back(std::make_pair(5, 2000));
+        disciplines_to_add.push_back(std::make_pair(7, 2500));
+
+        op.owner = "alice";
+        op.account_name = "bob";
+        op.disciplines_to_add = disciplines_to_add;
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("bob", 1))).amount == 1000);
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("bob", 5))).amount == 2000);
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("bob", 7))).amount == 2500);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 

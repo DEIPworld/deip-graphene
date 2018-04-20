@@ -238,5 +238,12 @@ void transfer_research_tokens_to_research_group_operation::validate() const
     validate_account_name(owner);
 }    
 
+void add_expertise_tokens_operation::validate() const
+{
+    validate_account_name(owner);
+    validate_account_name(account_name);
+    FC_ASSERT(!disciplines_to_add.empty(), "List of disciplines to adjust cannot be empty");
+}
+
 }
 } // deip::protocol

@@ -616,6 +616,19 @@ struct transfer_research_tokens_to_research_group_operation : public base_operat
     }
 };
 
+struct add_expertise_tokens_operation : public base_operation
+{
+    account_name_type owner;
+    account_name_type account_name;
+    std::vector<std::pair<int64_t, uint32_t>> disciplines_to_add;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -683,4 +696,5 @@ FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_gr
 FC_REFLECT( deip::protocol::create_research_group_join_request_operation, (owner)(research_group_id)(motivation_letter))
 FC_REFLECT( deip::protocol::reject_research_group_join_request_operation, (research_group_join_request_id)(owner))
 FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_token_id)(research_id)(owner))
+FC_REFLECT( deip::protocol::add_expertise_tokens_operation, (owner)(account_name)(disciplines_to_add))
 // clang-format on
