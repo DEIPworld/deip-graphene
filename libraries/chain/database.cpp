@@ -1484,16 +1484,19 @@ share_type database::reward_voters(const research_content_id_type &research_cont
 void database::reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
                                      const share_type &reward)
 {
-    const auto& expert_tokens_idx = get_index<expert_token_index>().indices().get<by_account_and_discipline>();
-    auto expert_tokens_itr = expert_tokens_idx.find(std::make_tuple(account, discipline_id));
-    if (expert_tokens_itr != expert_tokens_idx.end()) {
-        auto& expert_token = *expert_tokens_itr;
-        modify(expert_token, [&](expert_token_object& t) {
-            t.amount += reward;
-        });
-    } else {
-        dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
-        expert_token_service.create(account, discipline_id, reward);
+    if (reward > 0)
+    {
+        const auto &expert_tokens_idx = get_index<expert_token_index>().indices().get<by_account_and_discipline>();
+        auto expert_tokens_itr = expert_tokens_idx.find(std::make_tuple(account, discipline_id));
+        if (expert_tokens_itr != expert_tokens_idx.end()) {
+            auto &expert_token = *expert_tokens_itr;
+            modify(expert_token, [&](expert_token_object &t) {
+                t.amount += reward;
+            });
+        } else {
+            dbs_expert_token &expert_token_service = obtain_service<dbs_expert_token>();
+            expert_token_service.create(account, discipline_id, reward);
+        }
     }
 }
 
