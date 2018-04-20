@@ -2553,7 +2553,8 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_to_research_group_apply)
         disciplines_to_add.push_back(std::make_pair(5, 2000));
         disciplines_to_add.push_back(std::make_pair(7, 2500));
 
-        op.owner = "bob";
+        op.owner = "alice";
+        op.account_name = "bob";
         op.disciplines_to_add = disciplines_to_add;
 
         signed_transaction tx;

@@ -980,7 +980,7 @@ void add_expertise_tokens_evaluator::do_apply(const add_expertise_tokens_operati
     {
         FC_ASSERT(discipline_to_add.second > 0, "Amount must be bigger than 0");
         _db._temporary_public_impl().create<expert_token_object>([&](expert_token_object& et_o) {
-            et_o.account_name = op.owner;
+            et_o.account_name = op.account_name;
             et_o.discipline_id = discipline_to_add.first;
             et_o.amount = discipline_to_add.second;
         });
