@@ -46,6 +46,16 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
     return token;
 }
 
+const expert_token_object& dbs_expert_token::increase_common_tokens(const account_name_type &account, const share_type& amount)
+{
+    const auto& to_account = db_impl().get<account_object, by_name>(account);   
+
+    db_impl().modify(to_account, [&](account_object& to) { to.total_common_tokens_amount += amount; });
+    db_impl().modify(to_account, [&](account_object& acnt) { acnt.total_common_tokens_amount += amount; });
+
+    return get_expert_token_by_account_and_discipline(account, 0);
+}
+
 const expert_token_object& dbs_expert_token::get_expert_token(const expert_token_id_type& id) const
 {
     return db_impl().get<expert_token_object>(id);
@@ -97,6 +107,20 @@ void dbs_expert_token::check_expert_token_existence_by_account_and_discipline(co
     FC_ASSERT(idx.find(std::make_tuple(account, discipline_id)) != idx.cend(), "Expert token for account \"${1}\" and discipline \"${2}\" does not exist", ("1", account)("2", discipline_id));
 }
 
+bool dbs_expert_token::check_expert_token_existence_by_account_and_discipline_return(const account_name_type &account,
+                                                                              const discipline_id_type &discipline_id)
+{
+    const auto& idx = db_impl().get_index<expert_token_index>().indices().get<by_account_and_discipline>();
+
+    if (idx.find(boost::make_tuple(account, discipline_id)) != idx.cend())
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
 
 } //namespace chain
 } //namespace deip

@@ -687,10 +687,14 @@ void database_fixture::create_all_discipline_expert_tokens_for_account(const str
     }
 }
 
-const expert_token_object& database_fixture::common_token(const string& account, const share_type& amount)
+const expert_token_object database_fixture::common_token(const string& account, const share_type& amount)
 {
     dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
-    auto& common_token = expert_token_service.create(account, 0, amount);
+
+    expert_token_object common_token
+        = (expert_token_service.check_expert_token_existence_by_account_and_discipline_return(account, 0))
+        ? expert_token_object(common_token = expert_token_service.increase_common_tokens(account, amount))
+        : expert_token_object(common_token = expert_token_service.create(account, 0, amount));
 
     return common_token;
 }

@@ -1134,7 +1134,7 @@ void database::process_funds()
     });
 
     const auto& producer_reward
-        = expert_token_service.create(get_account(cwit.owner).name, 0, witness_reward);
+        = expert_token_service.increase_common_tokens(get_account(cwit.owner).name, witness_reward);
     push_virtual_operation(producer_reward_operation(cwit.owner, producer_reward.amount));
 }
 
