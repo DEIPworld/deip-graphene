@@ -572,22 +572,22 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
 
         db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object& dgpo) { dgpo.total_active_disciplines_reward_weight = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_reward_weight.value; });
 
-        share_type reward = 1000000;
+        share_type reward = 10000000;
 
         BOOST_CHECK_NO_THROW(db.distribute_reward(reward));
 
-        BOOST_CHECK(db.get<research_group_object>(1).funds == 258400);
-        BOOST_CHECK(db.get<research_group_object>(2).funds == 174800);
+        BOOST_CHECK(db.get<research_group_object>(1).funds == 3952000);
+        BOOST_CHECK(db.get<research_group_object>(2).funds == 1103900);
 
-        BOOST_CHECK(db.get_account("alice").balance.amount == 92720);
-        BOOST_CHECK(db.get_account("bob").balance.amount == 108680);
-        BOOST_CHECK(db.get_account("john").balance.amount == 11400);
+        BOOST_CHECK(db.get_account("alice").balance.amount == 826880);
+        BOOST_CHECK(db.get_account("bob").balance.amount == 1135820);
+        BOOST_CHECK(db.get_account("john").balance.amount == 199500);
 
         auto john_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
         auto alex_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alex", 10));
 
-        BOOST_CHECK(john_expert_token.amount == 266000);
-        BOOST_CHECK(alex_expert_token.amount == 380000);
+        BOOST_CHECK(john_expert_token.amount == 4641320);
+        BOOST_CHECK(alex_expert_token.amount == 2090000);
 
     }
     FC_LOG_AND_RETHROW()

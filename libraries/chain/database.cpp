@@ -1299,7 +1299,6 @@ share_type database::reward_researches_in_discipline(const discipline_object& di
                                                   });
             share_type research_weight_with_reviews = total_votes_itr->total_active_research_reward_weight + reviews_weight;
             total_weights_per_content[total_votes_itr->research_content_id] = std::max(int64_t(0), research_weight_with_reviews.value);
-                    ;
             total_reviews_weight += reviews_weight;
         }
         ++total_votes_itr;
