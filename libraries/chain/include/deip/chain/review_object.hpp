@@ -42,6 +42,20 @@ public:
     discipline_id_type_set disciplines;
     research_content_id_type_set references;
     // TODO: Add external references
+
+    bip::map<discipline_id_type, share_type> weight_modifiers;
+    bip::map<discipline_id_type, share_type> expertise_amounts_used;
+
+    share_type get_weight(const discipline_id_type& discipline_id) {
+        FC_ASSERT(weight_modifiers.count(discipline_id) != 0, "No review weight modifier calculated for discipline_id={d}", ("d", discipline_id));
+        FC_ASSERT(expertise_amounts_used.count(discipline_id) != 0, "Review is not made with discipline_id={d}", ("d", discipline_id));
+
+        auto& modifier = weight_modifiers.at(discipline_id);
+        auto sign = is_positive ? 1 : -1;
+        auto& expertise_amount = expertise_amounts_used.at(discipline_id);
+
+        return modifier * sign * expertise_amount;
+    }
 };
 
 struct by_author;
@@ -60,7 +74,6 @@ typedef multi_index_container<review_object,
                         member<review_object,
                                 research_content_id_type,
                                 &review_object::research_content_id>>>,
-
         allocator<review_object>>
         review_index;
 }
@@ -69,6 +82,7 @@ typedef multi_index_container<review_object,
 FC_REFLECT(deip::chain::review_object,
            (id)(research_content_id)(content)(is_positive)(author)(created_at)
            (reward_weights_per_discipline)(curation_reward_weights_per_discipline)(disciplines)(references)
+                   (weight_modifiers)(expertise_amounts_used)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::review_object, deip::chain::review_index)

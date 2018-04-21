@@ -1274,23 +1274,44 @@ share_type database::reward_researches_in_discipline(const discipline_object& di
 {
     FC_ASSERT(discipline.total_active_reward_weight != 0, "Attempt to allocate funds to inactive discipline");
 
-    auto& research_service = obtain_service<dbs_research>();
+    auto& content_service = obtain_service<dbs_research_content>();
     auto& research_group_service = obtain_service<dbs_research_group>();
+    auto& review_service = obtain_service<dbs_review>();
 
     const auto& total_votes_idx = get_index<total_votes_index>().indices().get<by_discipline_id>();
     auto total_votes_itr = total_votes_idx.find(discipline.id);
 
     share_type used_reward = 0;
+    share_type total_reviews_weight = 0;
+    map<research_content_id_type, share_type> total_weights_per_content;
 
     while (total_votes_itr != total_votes_idx.end())
     {
-        if (total_votes_itr->total_active_research_reward_weight != 0)
+        auto content_id = total_votes_itr->research_content_id;
+        auto& content = content_service.get_content_by_id(content_id);
+        if (content.activity_state == research_content_activity_state::active)
         {
-            auto& active_research_reward_weight = total_votes_itr->total_active_research_reward_weight;
-            auto research_content_share = util::calculate_share(reward, active_research_reward_weight, discipline.total_active_research_reward_weight);
-            used_reward += reward_research_content(total_votes_itr->research_content_id, discipline.id, research_content_share);
+            auto reviews = review_service.get_research_content_reviews(content_id);
+            auto reviews_weight = std::accumulate(reviews.begin(), reviews.end(), share_type(0),
+                                                  [&](share_type acc, std::reference_wrapper<const review_object> rw) {
+                                                      auto r = rw.get();
+                                                      return acc + r.get_weight(discipline.id);
+                                                  });
+            share_type research_weight_with_reviews = total_votes_itr->total_active_research_reward_weight + reviews_weight;
+            total_weights_per_content[total_votes_itr->research_content_id] = std::max(int64_t(0), research_weight_with_reviews.value);
+            total_reviews_weight += reviews_weight;
         }
         ++total_votes_itr;
+    }
+
+    share_type total_discipline_contents_weight = discipline.total_active_research_reward_weight + total_reviews_weight;
+
+
+    for (auto& kvp : total_weights_per_content) {
+        auto& content_id = kvp.first;
+        auto& active_research_reward_weight = kvp.second;
+        auto research_content_share = util::calculate_share(reward, active_research_reward_weight, total_discipline_contents_weight);
+        used_reward += reward_research_content(content_id, discipline.id, research_content_share);
     }
 
     FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
@@ -1336,6 +1357,7 @@ share_type database::reward_research_content(const research_content_id_type& res
     used_reward += reward_research_token_holders(research, discipline_id, token_holders_share);
     used_reward += reward_references(research_content_id, discipline_id, references_share, references_expertise_share);
     used_reward += reward_voters(research_content_id, discipline_id, curators_share);
+    used_reward += reward_reviews(research_content_id, discipline_id, review_share);
 
     FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
 
@@ -2880,6 +2902,44 @@ void database::process_content_activity_windows()
         });
     }
 }
+
+share_type database::calculate_review_weight_modifier(const review_id_type& review_id, const discipline_id_type& discipline_id)
+{
+    dbs_review& review_service = obtain_service<dbs_review>();
+    dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
+    dbs_vote& vote_service = obtain_service<dbs_vote>();
+
+    auto& review = review_service.get(review_id);
+    auto content_reviews = review_service.get_research_content_reviews(review.research_content_id);
+
+    share_type total_expertise = 0;
+    share_type total_reviews_votes_weight = 0;
+    for (auto review_wrapper : content_reviews) {
+        auto& content_review = review_wrapper.get();
+        total_expertise += content_review.expertise_amounts_used.at(discipline_id);
+
+        auto votes = vote_service.get_review_votes(content_review.id);
+        total_reviews_votes_weight += std::accumulate(votes.begin(), votes.end(), share_type(0),
+                                                              [](share_type acc, std::reference_wrapper<const review_vote_object> rvw) {
+                                                                  auto& rv = rvw.get();
+                                                                  return acc + rv.weight;
+                                                              });
+
+    }
+
+    if (content_reviews.size() == 0 || total_reviews_votes_weight == 0) return 1;
+
+    share_type avg_expertise = total_expertise / content_reviews.size();
+    auto review_votes = vote_service.get_review_votes(review.id);
+    share_type review_votes_weight = std::accumulate(review_votes.begin(), review_votes.end(), share_type(0),
+                                                     [](share_type acc, std::reference_wrapper<const review_vote_object> rvw) {
+                                                         auto& rv = rvw.get();
+                                                         return acc + rv.weight;
+                                                     });
+    auto& token = expert_token_service.get_expert_token_by_account_and_discipline(review.author, discipline_id);
+    return (token.amount / avg_expertise) + 10 * (1 - 1 / content_reviews.size()) * (review_votes_weight / total_reviews_votes_weight);
+}
+
 
 } // namespace chain
 } // namespace deip

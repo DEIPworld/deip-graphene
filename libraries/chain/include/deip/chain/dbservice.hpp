@@ -44,6 +44,7 @@ public:
     virtual fc::time_point_sec get_genesis_time() const = 0;
 
     virtual void distribute_research_tokens(const research_token_sale_id_type research_token_sale_id) = 0;
+    virtual share_type calculate_review_weight_modifier(const review_id_type& review_id, const discipline_id_type& discipline_id) = 0;
 
     // for TODO only:
     chainbase::database& _temporary_public_impl();
