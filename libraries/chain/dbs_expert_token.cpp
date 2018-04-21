@@ -46,12 +46,15 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
     return token;
 }
 
-const expert_token_object& dbs_expert_token::increase_common_tokens(const account_name_type &account, const share_type& amount)
+const expert_token_object& dbs_expert_token::increase_common_tokens(const account_name_type& account,
+                                                                    const share_type& amount)
 {
-    const auto& to_account = db_impl().get<account_object, by_name>(account);   
+    const auto& cprops = db_impl().get_dynamic_global_properties();
+    const auto& to_account = db_impl().get<account_object, by_name>(account);
 
-    db_impl().modify(to_account, [&](account_object& to) { to.total_common_tokens_amount += amount; });
     db_impl().modify(to_account, [&](account_object& acnt) { acnt.total_common_tokens_amount += amount; });
+    db_impl().modify(cprops,
+                     [&](dynamic_global_property_object& props) { props.total_common_tokens_amount += amount; });
 
     return get_expert_token_by_account_and_discipline(account, 0);
 }
