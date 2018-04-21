@@ -1,5 +1,6 @@
 {
     "initial_timestamp": "2017-11-29T10:03:00",
+
     "init_supply": 1000,
     "accounts": [{
         "name": "initdelegate",
@@ -19,7 +20,26 @@
         "public_key": "DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi",
         "deip_amount": 0,
         "sp_amount": 0
+    }, {
+        "name": "F.L.Lightsom",
+        "recovery_account": "",
+        "public_key": "DEIP5tGaLrD4rt2VSfonzWiG5qLRyp7dYQqbx7pCJHU3UjcVnBu2ug",
+        "deip_amount": 0,
+        "sp_amount": 0
+    }, {
+        "name": "G.Cicchetti",
+        "recovery_account": "",
+        "public_key": "DEIP8CktpdGUUCvTfTXDX4mnMZqUSm97v9Us5jbp84586ca7Z4xYhD",
+        "deip_amount": 0,
+        "sp_amount": 0
+    }, {
+        "name": "C.M.Wahle",
+        "recovery_account": "",
+        "public_key": "DEIP5dcDMFzv9cPEFyW6uZcS8ncbV5g4PNs6Vg7BpCC6cunMVsm2rC",
+        "deip_amount": 0,
+        "sp_amount": 0
     }],
+
 
     "witness_candidates": [{
         "owner_name": "initdelegate",
@@ -82,54 +102,188 @@
         "name": "Law",
         "votes_in_last_ten_weeks": 0,
         "parent_id": 0
+    }, {
+        "id": 10,
+        "name": "Geography",
+        "votes_in_last_ten_weeks": 0,
+        "parent_id": 0
+    }, {
+        "id": 11,
+        "name": "Geology",
+        "votes_in_last_ten_weeks": 0,
+        "parent_id": 10
+    }, {
+        "id": 12,
+        "name": "Hydrology",
+        "votes_in_last_ten_weeks": 0,
+        "parent_id": 10
+    }, {
+        "id": 13,
+        "name": "Oceanography",
+        "votes_in_last_ten_weeks": 0,
+        "parent_id": 12
     }],
+
     "expert_tokens": [{
-        "account_name": "initdelegate",
-        "discipline_id": 1,
-        "amount": 1000
+            "account_name": "initdelegate",
+            "discipline_id": 1,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 2,
+            "amount": 2000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 3,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 4,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 5,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 6,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 7,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 8,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 9,
+            "amount": 1000
+        }, {
+            "account_name": "alice",
+            "discipline_id": 4,
+            "amount": 5000
+        }, {
+            "account_name": "alice",
+            "discipline_id": 6,
+            "amount": 5000
+        }, {
+            "account_name": "bob",
+            "discipline_id": 1,
+            "amount": 10000
+        }, {
+            "account_name": "F.L.Lightsom",
+            "discipline_id": 10,
+            "amount": 2500
+        }, {
+            "account_name": "F.L.Lightsom",
+            "discipline_id": 11,
+            "amount": 2500
+        }, {
+            "account_name": "F.L.Lightsom",
+            "discipline_id": 12,
+            "amount": 2500
+        }, {
+            "account_name": "F.L.Lightsom",
+            "discipline_id": 13,
+            "amount": 2500
+        }, {
+            "account_name": "G.Cicchetti",
+            "discipline_id": 10,
+            "amount": 2500
+        }, {
+            "account_name": "G.Cicchetti",
+            "discipline_id": 11,
+            "amount": 2500
+        }, {
+            "account_name": "G.Cicchetti",
+            "discipline_id": 12,
+            "amount": 2500
+        }, {
+            "account_name": "G.Cicchetti",
+            "discipline_id": 13,
+            "amount": 2500
+        }, {
+            "account_name": "C.M.Wahle",
+            "discipline_id": 10,
+            "amount": 2500
+        }, {
+            "account_name": "C.M.Wahle",
+            "discipline_id": 11,
+            "amount": 2500
+        }, {
+            "account_name": "C.M.Wahle",
+            "discipline_id": 12,
+            "amount": 2500
+        }, {
+            "account_name": "C.M.Wahle",
+            "discipline_id": 13,
+            "amount": 2500
+        }
+
+    ],
+
+    "research_groups": [{
+        "id": 0,
+        "name": "DEIP official",
+        "description": "DEIP team group",
+        "permlink": "deip",
+        "quorum_percent": 95,
+        "members": ["alice", "bob"]
     }, {
-        "account_name": "initdelegate",
-        "discipline_id": 2,
-        "amount": 2000
+        "id": 1,
+        "name": "U.S. Geological Survey",
+        "description": "We provide science about the natural hazards that threaten lives and livelihoods; the water, energy, minerals, and other natural resources we rely on; the health of our ecosystems and environment; and the impacts of climate and land-use change. Our scientists develop new methods and tools to supply timely, relevant, and useful information about the Earth and its processes.",
+        "permlink": "usgs",
+        "quorum_percent": 75,
+        "members": ["F.L.Lightsom", "G.Cicchetti", "C.M.Wahle"]
+    }],
+
+    "researches": [{
+        "id": 0,
+        "research_group_id": 0,
+        "title": "DEIP reports",
+        "abstract": "",
+        "permlink": "deip-activity-report",
+        "is_finished": false,
+        "review_share_in_percent": 50,
+        "dropout_compensation_in_percent": 5,
+        "disciplines": [1, 2]
     }, {
-        "account_name": "initdelegate",
-        "discipline_id": 3,
-        "amount": 1000
-    }, {
-        "account_name": "initdelegate",
-        "discipline_id": 4,
-        "amount": 1000
-    }, {
-        "account_name": "initdelegate",
-        "discipline_id": 5,
-        "amount": 1000
-    }, {
-        "account_name": "initdelegate",
-        "discipline_id": 6,
-        "amount": 1000
-    }, {
-        "account_name": "initdelegate",
-        "discipline_id": 7,
-        "amount": 1000
-    }, {
-        "account_name": "initdelegate",
-        "discipline_id": 8,
-        "amount": 1000
-    }, {
-        "account_name": "initdelegate",
-        "discipline_id": 9,
-        "amount": 1000
-    }, {
-        "account_name": "alice",
-        "discipline_id": 4,
-        "amount": 5000
-    }, {
-        "account_name": "alice",
-        "discipline_id": 6,
-        "amount": 5000
-    }, {
-        "account_name": "bob",
-        "discipline_id": 1,
-        "amount": 10000
-    }]
+        "id": 1,
+        "research_group_id": 1,
+        "title": "Data Categories for Marine Planning",
+        "abstract": "The U.S. National Ocean Policy calls for a science- and ecosystem-based approach to comprehensive planning and management of human activities and their impacts on America’s oceans. The Ocean Community in Data.gov is an outcome of 2010–2011 work by an interagency working group charged with designing a national information management system to support ocean planning. Within the working group, a smaller team developed a list of the data categories specifically relevant to marine planning. This set of categories is an important consensus statement of the breadth of information types required for ocean planning from a national, multidisciplinary perspective. Although the categories were described in a working document in 2011, they have not yet been fully implemented explicitly in online services or geospatial metadata, in part because authoritative definitions were not created formally. This document describes the purpose of the data categories, provides definitions, and identifies relations among the categories and between the categories and external standards. It is intended to be used by ocean data providers, managers, and users in order to provide a transparent and consistent framework for organizing and describing complex information about marine ecosystems and their connections to humans.",
+        "permlink": "data-categories-for-marine-planning",
+        "is_finished": true,
+        "review_share_in_percent": 50,
+        "dropout_compensation_in_percent": 0,
+        "disciplines": [10, 11, 12, 13]
+    }],
+
+    "research_contents": [{
+            "research_id": 0,
+            "type": 1,
+            "title": "DEIP achievements coming soon...",
+            "content": "DEIP activity report",
+            "authors": ["alice", "bob"],
+            "references": []
+        }, {
+            "research_id": 1,
+            "type": 1,
+            "title": "Introduction",
+            "content": "<svg\r\n   xmlns:dc=\"http:\/\/purl.org\/dc\/elements\/1.1\/\"\r\n   xmlns:cc=\"http:\/\/creativecommons.org\/ns#\"\r\n   xmlns:rdf=\"http:\/\/www.w3.org\/1999\/02\/22-rdf-syntax-ns#\"\r\n   xmlns:svg=\"http:\/\/www.w3.org\/2000\/svg\"\r\n   xmlns=\"http:\/\/www.w3.org\/2000\/svg\"\r\n   viewBox=\"0 0 816 1056\"\r\n   height=\"1056\"\r\n   width=\"816\"\r\n   xml:space=\"preserve\"\r\n   id=\"svg2\"\r\n   version=\"1.1\"><metadata\r\n     id=\"metadata8\"><rdf:RDF><cc:Work\r\n         rdf:about=\"\"><dc:format>image\/svg+xml<\/dc:format><dc:type\r\n           rdf:resource=\"http:\/\/purl.org\/dc\/dcmitype\/StillImage\" \/><\/cc:Work><\/rdf:RDF><\/metadata><defs\r\n     id=\"defs6\" \/><g\r\n     transform=\"matrix(1.3333333,0,0,-1.3333333,0,1056)\"\r\n     id=\"g10\"><text\r\n       id=\"text14\"\r\n       style=\"font-variant:normal;font-weight:bold;font-stretch:semi-condensed;font-size:21.95999908px;font-family:'Arial Narrow';-inkscape-font-specification:ArialNarrow-Bold;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,72,669.48)\"><tspan\r\n         id=\"tspan12\"\r\n         y=\"0\"\r\n         x=\"0 12.9564 22.91526 29.035513 39.005352 44.045174 57.12455 67.083405 73.085075 83.043938 94.083229 105.2433 112.20462 117.24444 127.2033 137.17314 142.21297 148.21243 159.25172 166.21304 171.25287 186.37233 196.45197 203.41328 208.45311 219.4924 229.46223 234.62064 246.62178 251.66161 261.63144 272.67075 283.71002 288.74985 299.78912 310.79987\">Data Categories for Marine Planning <\/tspan><\/text>\r\n<text\r\n       id=\"text18\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:semi-condensed;font-size:12px;font-family:'Arial Narrow';-inkscape-font-specification:ArialNarrow;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,72,629.88)\"><tspan\r\n         id=\"tspan16\"\r\n         y=\"0\"\r\n         x=\"0 6.5999999 11.52 14.28 20.280001 23.52 29.040001 34.560001 39.48 45 49.919998 52.560001 58.080002 60.84 63.48 69 71.160004 76.68 82.199997 84.959999 89.760002 95.279999 103.44\">By Frances L. Lightsom,<\/tspan><\/text>\r\n<text\r\n       id=\"text22\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:semi-condensed;font-size:8.03999996px;font-family:'Arial Narrow';-inkscape-font-specification:ArialNarrow;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,178.68,632.88)\"><tspan\r\n         id=\"tspan20\"\r\n         y=\"0\"\r\n         x=\"0\">1<\/tspan><\/text>\r\n<text\r\n       id=\"text26\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:semi-condensed;font-size:12px;font-family:'Arial Narrow';-inkscape-font-specification:ArialNarrow;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,185.16,629.88)\"><tspan\r\n         id=\"tspan24\"\r\n         y=\"0\"\r\n         x=\"0 7.6799998 9.7200003 15.24 20.76 25.68 31.200001 34.439999 36.599998 42.119999 44.880001 51.959999 54.119999 59.040001 63.959999 69.360001 74.879997 77.639999 80.400002 82.559998\">Giancarlo Cicchetti,<\/tspan><\/text>\r\n<text\r\n       id=\"text30\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:semi-condensed;font-size:8.03999996px;font-family:'Arial Narrow';-inkscape-font-specification:ArialNarrow;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,270.84,632.88)\"><tspan\r\n         id=\"tspan28\"\r\n         y=\"0\"\r\n         x=\"0\">2<\/tspan><\/text>\r\n<text\r\n       id=\"text34\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:semi-condensed;font-size:12px;font-family:'Arial Narrow';-inkscape-font-specification:ArialNarrow;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,277.32,629.88)\"><tspan\r\n         id=\"tspan32\"\r\n         y=\"0\"\r\n         x=\"0 5.52 11.04 16.559999 19.32 26.4 31.799999 37.32 40.560001 42.720001 48.240002 53.16 55.919998 64.080002 66.839996 69.599998 78.839996 84.360001 89.879997 92.040001\">and Charles M. Wahle<\/tspan><\/text>\r\n<text\r\n       id=\"text38\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:semi-condensed;font-size:8.03999996px;font-family:'Arial Narrow';-inkscape-font-specification:ArialNarrow;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,375.24,632.88)\"><tspan\r\n         id=\"tspan36\"\r\n         y=\"0\"\r\n         x=\"0\">3<\/tspan><\/text>\r\n<text\r\n       id=\"text42\"\r\n       style=\"font-variant:normal;font-weight:bold;font-stretch:semi-condensed;font-size:15.96000004px;font-family:'Arial Narrow';-inkscape-font-specification:ArialNarrow-Bold;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,72,588.36)\"><tspan\r\n         id=\"tspan40\"\r\n         y=\"0\"\r\n         x=\"0 9.4802399 17.52408 24.84972 29.170092 34.208664 41.534306 48.859943 53.162762\">Abstract <\/tspan><\/text>\r\n<text\r\n       id=\"text74\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRomanPSMT;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,108,567.84)\"><tspan\r\n         id=\"tspan44\"\r\n         y=\"0\"\r\n         x=\"0 7.3200002 13.32 18.6 21.6 30.24 33.240002 39.959999 42.959999 45.959999 54.599998 59.880001 63.240002 66.599998 72.599998 78.599998 83.879997 87.239998 90.239998 98.879997 104.28 109.56 114.84 120.96 123.96 130.67999 136.67999 140.03999 143.39999 148.8 154.56 157.56 162.84 168.12 171.48 174.84 179.52 182.52 186.48 192.48 196.44 199.56 204.84 207.84 212.52 217.8 221.16 226.44 232.56 237.84 243.24001 247.2 250.2 255.48 261.48001 267.48001 270.48001 275.76001 281.04001 287.04001 291.95999 297.72 302.39999 305.76001 311.04001 320.51999 324.48001 330.48001 335.76001 340.44 345.72 351.72 354.84 360.23999 366.23999 372.23999 376.20001 382.20001 387.48001 392.76001 398.76001 401.76001 405.12 411.12\">The U.S. National Ocean Policy calls for a science- and ecosystem-based approach to <\/tspan><tspan\r\n         id=\"tspan46\"\r\n         y=\"13.8\"\r\n         x=\"-36 -30.719999 -24.719999 -15.36 -9.3599997 -5.4000001 -0.12 5.8800001 11.16 17.16 21.84 25.200001 31.200001 36.48 39.48 45.48 48.959999 54.240002 60.240002 66.239998 69.599998 75.599998 81.480003 84.599998 89.879997 95.879997 101.88 104.88 114.24 119.52 125.52 130.92 136.8 142.08 151.56 156.84 162.84 166.2 169.2 175.2 179.16 182.16 188.16 194.16 203.52 208.8 214.8 217.8 223.08 228.36 231.72 235.08 241.08 244.44 247.8 251.16 256.44 261.12 264.12 269.39999 275.39999 281.39999 284.39999 287.76001 293.76001 299.04001 302.39999 306.35999 309.35999 312.72 322.20001 328.20001 333.48001 338.76001 342.12 346.79999 349.79999 355.79999 361.79999 364.79999 373.44 382.79999 388.07999 392.04001 395.39999 400.79999 406.07999 410.04001 414.72\">comprehensive planning and management of human activities and their impacts on America\u2019s <\/tspan><tspan\r\n         id=\"tspan48\"\r\n         y=\"27.6\"\r\n         x=\"-36 -30 -24.719999 -19.440001 -14.16 -8.1599998 -3.48 -0.47999999 2.52 9.8400002 15.96 21.24 24.24 32.880001 38.279999 43.560001 48.84 54.84 57.84 65.879997 71.879997 81.239998 90.599998 96.599998 102.6 105.96 109.44 115.08 118.08 121.44 127.44 130.44 139.2 144.48 147.84 153.12 156.24001 162.12 168.12 174.12 177.12 180.48 185.16 188.16 193.44 199.44 202.56 208.56 214.56 217.92 223.2 229.2 238.56 243.84 246.84 252.84 256.79999 259.79999 265.79999 271.79999 277.79999 283.79999 289.79999 295.79999 301.79999 307.79999 313.79999 316.92001 325.56 331.56 335.51999 341.51999 344.51999 350.76001 356.51999 359.51999 364.79999 370.79999 373.79999 377.16 383.16 386.51999 391.79999 395.88 401.28 407.16 412.44 418.44 423.95999 429.72\">oceans. The Ocean Community in Data.gov is an outcome of 2010\u20132011 work by an interagency <\/tspan><tspan\r\n         id=\"tspan50\"\r\n         y=\"41.400002\"\r\n         x=\"-36 -27.360001 -21.360001 -17.4 -11.4 -8.04 -2.04 3.8399999 6.96 12.96 16.92 22.92 28.92 34.919998 37.919998 43.200001 49.200001 54.599998 58.68 64.559998 69.839996 75.839996 78.959999 87.599998 90.959999 94.32 100.32 103.32 109.32 114.6 119.28 122.64 128.52 134.52 137.88 144 149.88 152.88 158.16 161.16 167.16 172.44 175.8 179.16 185.16 191.16 196.44 199.92 202.92 206.28 212.28 216.24001 222.24001 226.2 235.56 240.84 244.2 247.56 253.56 259.56 262.56 271.92001 277.20001 283.20001 288.60001 294.48001 299.76001 309.12 314.39999 320.51999 323.88 326.88 331.67999 337.44 342.12 345.48001 350.76001 360.12 363.12 366.48001 372.48001 375.48001 380.16 386.16 392.16 398.16 404.16 408.12 411.48001\">working group charged with designing a national information management system to support <\/tspan><tspan\r\n         id=\"tspan52\"\r\n         y=\"55.200001\"\r\n         x=\"-36 -30 -24.719999 -19.440001 -14.16 -8.1599998 -5.1599998 0.83999997 4.1999998 9.4799995 15.48 21.48 24.84 30.959999 36.84 39.84 42.84 54.240002 57.599998 60.959999 66.959999 70.32 76.32 79.32 82.68 88.68 93.959999 96.959999 105.6 111.6 115.56 121.56 124.92 131.03999 136.92 140.03999 145.92 149.88 155.88 161.88 167.88 170.88 173.88 179.16 182.16 186.84 196.32001 201.60001 204.96001 208.32001 213.60001 217.56 220.56 223.92 229.2 234.48 243.84 246.84 252.84 258.12 264.23999 269.51999 272.88 278.88 284.88 290.16 296.16 299.16 304.44 307.44 310.79999 314.16 318.84 322.20001 325.20001 331.20001 335.16 338.16 341.51999 347.51999 352.79999 355.79999 361.79999 367.07999 370.44 375.72 378.72 384.12 389.39999 392.76001 398.16 404.04001 410.04001 414 417.35999 422.64001 427.32001\">ocean planning. Within the working group, a smaller team developed a list of the data categories <\/tspan><tspan\r\n         id=\"tspan54\"\r\n         y=\"69\"\r\n         x=\"-36 -31.32 -25.32 -20.040001 -14.76 -11.4 -7.4400001 -4.0799999 1.2 6.48 9.8400002 13.44 19.200001 22.200001 26.280001 31.559999 34.919998 40.200001 46.200001 51.48 57.48 60.84 63.84 67.199997 73.199997 76.199997 85.68 90.959999 94.919998 98.279999 104.28 109.56 112.56 118.56 121.92 127.2 133.2 139.2 142.56 148.67999 154.56 157.56 160.56 167.88 173.88 177.24001 181.92 184.92 189.60001 194.88 198.24001 201.24001 207.36 211.32001 214.32001 219.60001 224.88 228.24001 233.64 239.52 245.64 249.60001 252.96001 258.23999 262.92001 265.92001 269.28 273.95999 276.95999 282.23999 288.23999 291.23999 294.60001 303.95999 309.95999 315.95999 319.92001 323.28 328.67999 334.67999 338.04001 341.04001 346.32001 352.32001 358.32001 363 368.28 374.28 378.95999 384.95999 389.64001\">specifically relevant to marine planning. This set of categories is an important consensus <\/tspan><tspan\r\n         id=\"tspan56\"\r\n         y=\"82.800003\"\r\n         x=\"-36 -31.32 -27.959999 -22.68 -19.32 -14.04 -4.6799998 0.60000002 6.5999999 9.96 12.96 18.959999 22.92 25.92 29.280001 35.279999 40.560001 43.560001 49.560001 53.52 58.919998 64.199997 70.199997 73.559998 79.559998 82.68 88.68 92.639999 95.639999 99 105 108.96 114.96 118.92 128.28 133.56 136.92 140.28 146.28 152.28 155.28 158.75999 164.52 170.64 175.92 180.60001 183.60001 187.56 192.84 198.84 204.96001 208.32001 212.28 217.56 223.56 226.56 230.52 236.52 240.48 243.48 249.48 254.88 260.16 265.44 271.44 274.44 280.44 283.79999 289.07999 295.07999 301.07999 304.44 310.56 316.44 319.56 323.51999 327.60001 333.60001 342.95999 345.95999 351.23999 354.23999 360.23999 365.51999 368.88 372.23999 378.23999 384.23999 389.51999 392.88 395.88\">statement of the breadth of information types required for ocean planning from a national, <\/tspan><tspan\r\n         id=\"tspan58\"\r\n         y=\"96.599998\"\r\n         x=\"-36 -26.639999 -20.639999 -17.280001 -13.92 -10.56 -4.5599999 -1.2 3.48 8.7600002 12.12 18.120001 21.48 24.84 30.84 36.119999 40.200001 45.84 48.84 54.959999 60.240002 64.199997 68.879997 74.879997 80.279999 85.68 89.040001 92.400002 98.400002 103.68 106.68 109.68 118.32 121.68 125.04 131.03999 137.03999 143.03999 148.92 154.92 157.92 161.28 167.28 172.56 175.56 180.96001 186.24001 189.60001 195 200.88 207 210.96001 214.32001 219.60001 224.28 227.28 235.92 241.2 245.28 250.56 253.56 259.56 264.84 269.51999 274.92001 278.88 282.23999 288.23999 293.51999 299.51999 302.51999 305.88 311.88 314.88 320.16 323.28 331.92001 337.92001 341.88 347.88 351.23999 357.23999 363.12 366.12 372.12 378.23999 383.51999 389.51999 398.88 404.16 410.16 413.51999 416.51999 419.88 425.88\">multidisciplinary perspective. Although the categories were described in a working document in <\/tspan><tspan\r\n         id=\"tspan60\"\r\n         y=\"110.4\"\r\n         x=\"-36 -30 -24 -18 -12 -9 -6 -2.6400001 3.3599999 8.7600002 14.52 17.52 23.639999 28.92 34.919998 40.200001 43.200001 49.200001 55.200001 58.560001 61.799999 67.559998 72.839996 76.199997 79.199997 85.32 90.599998 95.879997 101.88 104.88 108.84 114.84 118.2 121.8 127.56 130.56 133.92 143.28 149.28 152.64 157.92 167.28 172.56 178.56 181.92 187.2 193.2 196.2 201.48 207.60001 213.60001 216.96001 220.32001 225.60001 228.96001 232.32001 235.8 241.44 244.44 247.8 253.8 256.79999 262.79999 268.79999 272.16 275.51999 281.51999 286.79999 289.79999 294.48001 299.88 303.84 309.84 313.20001 318.48001 323.76001 328.56 331.56 337.56 341.51999 344.51999 350.51999 355.79999 361.79999 366.48001 372.48001 377.76001 381.12 384.48001 389.76001 393.12\">2011, they have not yet been fully implemented explicitly in online services or geospatial <\/tspan><tspan\r\n         id=\"tspan62\"\r\n         y=\"124.2\"\r\n         x=\"-36 -26.639999 -21.360001 -18 -12.72 -6.7199998 -1.4400001 1.92 7.1999998 10.2 13.2 16.559999 22.559999 25.559999 31.559999 36.84 40.799999 44.16 47.16 53.279999 58.560001 63.84 69.120003 75.120003 79.919998 85.32 88.32 93.599998 99.599998 102.96 108.96 114.96 118.92 122.28 125.64 130.92 134.28 137.64 143.64 148.92 151.92 157.92 163.2 167.16 170.52 176.52 179.88 183.24001 186.60001 192.5988 198.5988 203.28 206.28 214.92 220.2 224.1588 229.44 232.44 238.44 244.44 247.8 250.8 256.20001 260.16 265.56 270.84 274.20001 279.48001 285.48001 288.48001 292.44 298.44 302.39999 311.88 317.16 320.51999 323.88 329.64001 332.76001 335.76001 343.07999 349.07999 352.44 357.12 360.12 366.12 372.12 377.39999 383.39999 392.76001 398.04001 404.04001 407.39999\">metadata, in part because authoritative definitions were not created formally. This document <\/tspan><tspan\r\n         id=\"tspan64\"\r\n         y=\"138\"\r\n         x=\"-36 -30 -24.719999 -20.040001 -14.76 -10.8 -7.4400001 -1.4400001 3.8399999 8.5200005 11.52 14.88 20.879999 26.16 29.16 35.16 41.279999 45.240002 51.240002 57.240002 61.919998 67.199997 70.199997 76.199997 80.160004 83.160004 86.639999 92.639999 97.919998 100.92 106.92 112.2 115.56 120.84 123.84 129.24001 134.52 137.88 143.28 149.16 155.16 159.12 162.48 167.75999 172.44 175.44 178.44 184.56 188.52 194.52 200.52 203.88 209.88 215.16 219.84 222.84 228.84 234.12 238.08 241.44 247.44 250.8 254.16 257.51999 263.51999 269.51999 274.20001 277.20001 280.20001 285.48001 291.48001 297.48001 300.48001 303.84 309.84 315.12 321.12 324.48001 327.84 331.79999 335.16 340.44 345.12 348.12 352.07999 357.35999 360.72 366 369.35999 372.72 378.72 384.72 389.39999 392.39999 397.67999 407.04001 413.04001 419.16 425.04001\">describes the purpose of the data categories, provides definitions, and identifies relations among <\/tspan><tspan\r\n         id=\"tspan66\"\r\n         y=\"151.8\"\r\n         x=\"-36 -32.639999 -26.639999 -21.360001 -18.360001 -13.08 -7.8000002 -4.4400001 0.95999998 6.8400002 12.84 16.799999 20.280001 25.559999 30.24 33.240002 38.52 44.52 50.52 53.52 59.52 64.800003 68.160004 76.919998 82.32 87.599998 93.599998 96.599998 99.959999 105.96 111.24 114.24 119.52 124.8 128.28 133.67999 139.56 145.56 149.52 152.88 158.16 162.84 165.84 171.12 177.1188 183.12 186.24001 191.52 197.64 201 206.28 210.24001 216.24001 221.52 224.88 227.88 232.56 235.92 241.2 247.2 253.2 258.60001 262.56 268.56 273.23999 276.23999 279.35999 283.20001 286.56 289.56 292.92001 297.60001 300.60001 303.95999 309.95999 313.32001 318.60001 324.60001 330.60001 335.88 341.88 344.88 348.23999 354.23999 357.23999 363.23999 368.51999 371.51999 377.51999 382.20001 387.48001 393.48001 396.48001 402.72 408.48001\">the categories and between the categories and external standards. It is intended to be used by <\/tspan><tspan\r\n         id=\"tspan68\"\r\n         y=\"165.60001\"\r\n         x=\"-36 -30 -24.719999 -19.440001 -14.16 -8.1599998 -5.1599998 0.95999998 6.2399998 9.6000004 14.88 17.879999 23.879999 27.84 33.84 39.84 43.200001 49.200001 54.599998 58.560001 63.240002 66.239998 69.239998 78.599998 84 90 95.279999 101.28 106.56 110.52 115.2 118.2 121.2 126.48 132.48 138.48 141.48 147.48 152.28 157.56 161.52 166.2 169.2 172.56 178.56 181.56 187.56 191.52 197.52 202.92 206.88 209.88 213.24001 219.24001 222.24001 228.24001 232.2 238.2 244.2 247.56 253.56 258.84 261.84 267.12 270.12 273.48001 277.44 282.72 288.72 293.39999 299.51999 304.79999 308.76001 314.04001 320.04001 323.51999 326.51999 331.79999 337.79999 343.79999 346.79999 352.07999 358.07999 364.07999 368.76001 372.12 376.79999 380.16 385.44 391.44 394.79999\">ocean data providers, managers, and users in order to provide a transparent and consistent <\/tspan><tspan\r\n         id=\"tspan70\"\r\n         y=\"179.39999\"\r\n         x=\"-36 -32.040001 -28.08 -22.799999 -13.44 -8.1599998 0.47999999 6.5999999 10.56 16.559999 19.559999 23.52 29.52 33.48 36.48 42.599998 46.68 52.560001 57.84 63.84 67.199997 72.599998 75.959999 81.959999 87.839996 90.839996 96.120003 102.12 108.12 111.12 117.24 122.52 127.2 132.48 136.44 139.8 145.8 149.16 155.28 161.16 164.16 169.44 175.44 184.8 190.8 194.16 199.56 205.67999 208.67999 212.03999 218.03999 222 228 231.96001 241.32001 246.60001 249.96001 253.32001 259.32001 265.32001 268.32001 273.60001 279.60001 285.60001 291.60001 294.95999 297.95999 307.32001 312.60001 316.56 319.92001 325.92001 331.20001 334.20001 339.48001 344.76001 350.76001 355.67999 361.44 366.12 369.48001 374.76001 384.12 388.79999 391.79999 397.07999 403.07999 409.07999\">framework for organizing and describing complex information about marine ecosystems and <\/tspan><tspan\r\n         id=\"tspan72\"\r\n         y=\"193.2\"\r\n         x=\"-36 -32.639999 -26.639999 -21.360001 -18 -14.04 -11.04 -5.7600002 0.23999999 6.2399998 12.24 17.52 22.799999 26.16 29.52 35.52 41.52 46.200001 49.200001 52.560001 58.560001 61.560001 67.559998 73.559998 83.040001 88.32 94.32 99 102\">their connections to humans. <\/tspan><\/text>\r\n<text\r\n       id=\"text78\"\r\n       style=\"font-variant:normal;font-weight:bold;font-stretch:semi-condensed;font-size:15.96000004px;font-family:'Arial Narrow';-inkscape-font-specification:ArialNarrow-Bold;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,72,345)\"><tspan\r\n         id=\"tspan76\"\r\n         y=\"0\"\r\n         x=\"0 3.6005759 11.644416 15.964788 21.004955 29.048796 37.092636 45.136475 52.462116 56.780891 60.38147 68.425308 76.56012\">Introduction <\/tspan><\/text>\r\n<text\r\n       id=\"text112\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRomanPSMT;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,108,324.48)\"><tspan\r\n         id=\"tspan80\"\r\n         y=\"0\"\r\n         x=\"0 7.3200002 13.32 18.6 21.6 30.24 33.240002 39.959999 42.959999 45.959999 52.560001 57.84 63.959999 69.239998 73.199997 78.480003 81.839996 84.839996 93.480003 99.480003 105.6 110.88 114.84 120.96 130.32001 135.60001 141.60001 144.96001 147.96001 153.96001 157.92 163.92 169.92 173.28 179.28 184.56 189.24001 192.24001 198.24001 204.24001 210.24001 213.60001 216.96001 222.24001 225.24001 230.52 235.92 241.32001 246.60001 251.28 255.96001 258.95999 262.32001 268.32001 271.32001 277.20001 283.20001 289.20001 294.60001 298.56 304.56 313.92001 319.20001 325.20001 328.56 331.56 334.92001 340.92001 344.88 350.88 354.95999 364.32001 369.60001 372.95999 376.32001 382.32001 388.32001 391.32001 396.60001 402.60001 408.60001 411.60001 417.60001 422.88 426.23999 431.51999\">The U.S. Federal Government provides public access to government information and data <\/tspan><tspan\r\n         id=\"tspan82\"\r\n         y=\"13.8\"\r\n         x=\"-36 -32.639999 -26.639999 -22.68 -16.68 -10.68 -4.8000002 1.2 4.1999998 9.6000004 15.6 18.6 24.6 28.559999 32.52 35.880001 41.16 44.52 49.799999 53.16 56.16 67.559998 72.839996 78.839996 81.839996 86.639999 90 93.360001 98.639999 101.64 106.92 112.2 115.56 118.92 124.2 130.2 133.2 141.84 147.12 150.48 155.75999 158.88 164.75999 170.88 176.88 179.88 182.88 191.52 196.8 200.16 205.44 208.56 214.44 220.44 226.44 229.44 232.8 237.48 240.48 245.75999 248.75999 254.16 259.44 262.79999 268.07999 271.44 277.56 283.44 286.44 289.79999 295.79999 301.07999 304.44 307.44 310.79999 316.79999 320.16 325.56 331.44 335.51999 340.79999 344.16 349.44 354.12 357.12 361.07999 366.48001 371.76001 377.76001 381.72 387.72 392.39999\">through an official Web site called Data.gov. Data.gov is a catalog that integrates records <\/tspan><tspan\r\n         id=\"tspan84\"\r\n         y=\"27.6\"\r\n         x=\"-36 -30 -24.719999 -20.040001 -14.76 -10.8 -7.4400001 -1.4400001 1.92 8.04 13.92 16.92 22.92 28.200001 31.559999 36.84 39.84 43.919998 47.880001 53.880001 63.240002 66.239998 72.239998 78.239998 84.360001 90.360001 94.32 99.599998 105.6 110.28 113.28 119.28 123.24 126.24 130.92 136.92 142.92 147 152.28 157.56 162.24001 165.24001 168.60001 174.60001 179.88 183.24001 186.24001 191.52 197.52 203.64 208.92 212.88 215.88 219.24001 225.24001 230.52 233.52 237.48 243.48 246.84 250.2 253.2 257.16 262.44 268.56 274.56 279.84 282.84 288.84 292.79999 295.92001 301.79999 307.79999 313.92001 319.20001 323.28 329.28 338.64001 343.92001 349.92001 353.28 358.56 361.92001 364.92001 370.20001 376.20001 382.20001 387.48001 392.88 396.84 402.84 407.51999 410.51999\">describing data from hundreds of sources that cover the full range of governmental concerns. <\/tspan><tspan\r\n         id=\"tspan86\"\r\n         y=\"41.400002\"\r\n         x=\"-36 -27.360001 -24 -20.639999 -14.64 -8.6400003 -2.6400001 3.24 9.2399998 12.24 15.6 21.6 26.879999 29.879999 35.880001 39.84 45.84 55.200001 58.560001 63.240002 68.519997 71.519997 77.519997 81.480003 84.599998 93.239998 98.519997 101.88 107.16 110.28 116.16 122.16 128.16 131.16 134.52 139.2 142.2 145.56 151.56 156.84 160.2 163.2 168.48 174.48 179.88 184.08 189.84 195.84 201.84 207.24001 210.24001 215.52 220.8 226.8 229.8 233.75999 237.12 243.12 249.12 252.12 257.39999 263.39999 269.39999 272.39999 278.39999 283.20001 288.48001 291.48001 294.84 300.84 306.12 309.12 315.12 320.39999 323.76001 329.16 332.16 336.12 342.12 346.07999 349.07999 352.44 355.79999 359.16 365.16 374.51999 377.88 383.88 389.16 392.51999 395.88 401.88 407.76001 410.76001 416.04001 422.04001 428.04001\">Although the promise of Data.gov is that everyone can find and use the data for illuminating and <\/tspan><tspan\r\n         id=\"tspan88\"\r\n         y=\"55.200001\"\r\n         x=\"-36 -30 -26.040001 -20.040001 -16.08 -12.72 -9.3599997 -4.0799999 1.92 5.2800002 10.56 13.56 19.559999 25.559999 29.52 35.52 41.52 46.200001 51.48 56.16 59.16 62.279999 67.559998 72.239998 75.239998 78.599998 84.599998 89.879997 92.879997 98.879997 104.88 108.24 114.24 123.6 128.88 131.88 137.88 141.84 144.84 150.84 156.12 159.48 164.75999 167.88 173.88 177.84 183.84 192.48 197.16 200.16 203.28 209.28 215.28 218.64 223.92 229.92 233.28 236.64 241.92 245.28 248.28 254.27879 258.9588 264.2388 268.20001 272.87881 275.87881 279.83881 285.2388 290.5188 295.7988 298.7988 304.0788 310.19879 315.47879 318.83881 322.19879 327.47879 333.47879 339.47879 344.75879 349.43881 352.43881 356.3988 359.75879 365.75879 371.75879 375.1188 381.2388 387.12 390.12 393.48001 399.48001 404.76001\">profitable purposes, as the volume of data grows, potential users face challenges finding the <\/tspan><tspan\r\n         id=\"tspan90\"\r\n         y=\"69\"\r\n         x=\"-36 -31.32 -25.32 -20.040001 -14.76 -11.4 -7.4400001 -4.0799999 1.2 4.1999998 10.2 15.48 18.959999 24.24 27.24 30.6 36.599998 42.119999 47.880001 50.880001 56.880001 62.16 67.440002 73.559998 76.559998 85.318802 88.68 92.040001 98.038803 101.4 107.3988 110.3988 113.7588 119.7588 125.0388 128.0388 133.3188 139.4388 145.4388 150.7188 156.7188 162.7188 166.0788 172.0788 177.9588 180.9588 186.9588 192.9588 196.3188 202.3188 207.5988 211.55881 216.2388 221.5188 224.5188 230.5188 234.47881 237.47881 242.7588 248.8788 254.1588 257.5188 260.87881 266.15881 272.15881 275.5188 280.7988 283.7988 289.7988 293.75879 297.83881 303.1188 307.0788 310.43881 316.55881 322.43881 327.1188 330.23999 333.35999 340.44 345.84 349.92001 355.79999 361.07999 364.07999 370.07999 376.07999 379.44 382.79999 388.79999 394.07999 397.07999 403.20001 408.48001 411.84 417.12\">specific data they need within the expanding universe of available offerings. Large online data <\/tspan><tspan\r\n         id=\"tspan92\"\r\n         y=\"82.800003\"\r\n         x=\"-36 -30.719999 -25.440001 -22.08 -16.799999 -13.44 -7.3200002 -1.4400001 3.24 6.2399998 11.52 16.799999 22.799999 25.92 31.200001 37.200001 43.200001 47.279999 52.560001 57.240002 61.919998 64.919998 68.279999 74.279999 77.639999 82.32 85.32 90.599998 96.599998 101.88 105.24 108.6 113.88 120 125.88 131.16 134.16 140.39999 146.16 149.16 155.16 159.84 163.2 169.32001 175.2 178.2 183.48 189.48 195.48 198.84 202.92 208.92 212.28 215.64 220.92 226.92 229.92 235.92 241.92 247.2 252.48 258.48001 264.48001 267.84 273.12 277.07999 280.44 285.72 290.39999 293.51999 298.79999 304.79999 310.79999 313.79999 318.48001 323.88 327.23999 331.92001 334.92001 340.92001 344.88 347.88 351.23999 357.23999 363.12 366.48001 371.76001 377.04001 380.39999 383.39999 389.51999 394.79999 398.16 403.44\">catalogs can address this challenge by using controlled vocabularies and sets of logical data <\/tspan><tspan\r\n         id=\"tspan94\"\r\n         y=\"96.599998\"\r\n         x=\"-36 -30.719999 -25.440001 -22.08 -16.68 -10.8 -4.8000002 -0.83999997 2.52 7.8000002 12.48 15.48 18.48 26.52 32.52 38.52 41.880001 45.84 51.84 55.200001 58.560001 63.84 69.839996 72.839996 78.839996 84.959999 90.239998 95.519997 101.52 107.52 110.88 116.16 120.12 123.48 128.75999 133.44 136.56 141.84 145.2 148.56 154.56 163.2 166.2 169.56 175.56 180.84 183.84 187.8 193.2 198.48 204.60001 208.56 214.56 219.24001 222.24001 225.60001 231.60001 234.60001 240.60001 245.88 248.88 252.24001 257.51999 263.51999 268.7988 272.15881 277.43759 283.43759 286.43759 295.0788 298.43881 301.7988 307.7988 310.7988 314.15881 319.43881 323.5188 332.87881 337.55881 340.55881 343.91879 349.91879 355.19879 358.55881 361.55881 366.83881 372.1188 378.1188 381.1188 387.1188 392.3988\">categories. Controlled vocabularies allow the records to be labeled with terms that can be <\/tspan><tspan\r\n         id=\"tspan96\"\r\n         y=\"110.4\"\r\n         x=\"-36 -30.719999 -26.76 -22.799999 -19.440001 -14.16 -10.8 -5.52 0.47999999 3.8399999 7.4400001 13.2 16.200001 20.879999 26.280001 31.559999 35.52 40.799999 46.919998 52.200001 58.200001 61.200001 67.440002 73.199997 76.199997 82.318802 87 92.279999 96.2388 100.9188 103.9188 112.5588 118.5588 124.5588 127.5588 132.83881 136.91879 142.19881 145.19881 149.27879 154.55881 163.91879 167.27879 170.63879 173.99879 179.27879 183.2388 186.2388 194.8788 198.2388 201.5988 207.5988 210.5988 213.9588 219.9588 225.2388 228.2388 233.5188 239.5188 245.5188 250.7988 256.0788 262.0788 265.43881 270.1188 273.1188 276.47879 282.47879 287.75879 290.75879 296.75879 302.87881 308.15881 313.43881 319.55881 325.55881 328.91879 334.19879 338.15759 341.5188 346.7988 351.47879 354.47879 358.43759 363.71759 369.83759 373.79761 379.07761 383.7576 389.0376 395.0376 398.39761 401.39999 404.39999 413.04001\">efficiently searched by users who are familiar with the concepts the vocabularies represent. A <\/tspan><tspan\r\n         id=\"tspan98\"\r\n         y=\"124.2\"\r\n         x=\"-36 -27.360001 -22.08 -18.719999 -15.36 -11.4 -6.1199999 -2.04 3.24 7.1999998 10.56 15.84 21.84 24.84 29.52 34.799999 38.16 41.16 47.16 51.119999 54.240002 59.52 64.800003 68.160004 73.559998 79.440002 85.559998 89.519997 92.879997 98.160004 102.8388 105.8388 111.1188 116.3988 122.3976 125.3976 131.51759 136.79761 139.79761 145.79761 150.4776 155.7576 161.7576 164.7576 168.1176 174.1176 177.1176 181.79761 187.79761 191.7576 195.1176 198.1176 201.1176 207.23759 211.1976 217.1976 225.8376 230.51759 235.79761 238.79761 241.79761 247.07761 253.07761 259.07761 262.07761 268.07761 271.43759 276.11761 281.39761 287.39761 293.51761 298.79761 302.7576 305.7576 311.7576 317.0376 320.51761 325.79761 328.9176 331.9176 341.27759 346.55759 351.83759 355.1976 358.55759 364.55759 370.43759 373.43759 376.79761 382.79761 388.07761\">well-crafted set of categories can be used to sort, browse, and discover data, meeting the <\/tspan><tspan\r\n         id=\"tspan100\"\r\n         y=\"138\"\r\n         x=\"-36 -30.719999 -24.719999 -15.36 -6 0 6 9.3599997 12.84 18.6 22.559999 27.24 30.24 36.240002 41.639999 46.919998 52.919998 57.599998 60.599998 63.599998 75 78.360001 81.599998 87.599998 90.959999 96.959999 99.959999 108.6 113.88 117.24 122.52 125.64 131.52 137.52 143.52 146.52 151.2 156.48 162.48 167.88 171.84 177.12 180.48 183.48 188.75999 194.75999 204.24001 213.60001 219.60001 225.60001 228.96001 232.44 238.08 241.08 252.48 257.76001 263.76001 266.76001 271.44 274.79999 278.16 283.44 288.12 291.12 297.12 301.20001 305.16 310.44 314.39999 317.39999 323.51999 328.79999 332.16 337.44 340.44 346.44 349.79999 354.48001 359.76001 365.76001 371.76001 377.04001 381.23999 387\">community\u2019s needs. Within Data.gov several community Web sites offer data discovery <\/tspan><tspan\r\n         id=\"tspan102\"\r\n         y=\"151.8\"\r\n         x=\"-36 -30.719999 -24.719999 -20.040001 -16.68 -10.68 -1.3200001 2.04 7.4400001 12.72 18.719999 21.719999 25.68 31.68 35.639999 38.639999 44.639999 49.919998 53.880001 57.240002 60.599998 65.879997 71.879997 75.239998 80.519997 84.599998 87.599998 93.599998 98.279999 103.56 107.52 110.52 115.8 121.8 131.16 140.52 146.52 152.52 155.88 159.24001 162.60001 167.88 172.56 175.56 178.56 187.2 193.2 196.2 204.96001 210.24001 215.52 220.8 226.8 229.8 237.84 243.84 253.2 262.56 268.56 274.56 277.92001 281.39999 287.16\">customized for particular user communities. An Ocean Community <\/tspan><tspan\r\n         id=\"tspan104\"\r\n         y=\"165.60001\"\r\n         x=\"-36\">(<\/tspan><tspan\r\n         id=\"tspan106\"\r\n         y=\"165.60001\"\r\n         x=\"-32.040001 -26.040001 -22.68 -19.32 -13.32 -9.96 -6.5999999 -3.24 5.4000001 14.04 22.68 25.68 31.68 36.959999 40.32 45.599998 48.599998 54.48 60.48 66.480003 69.959999 75.239998 81.360001 90.720001 100.08 106.08 112.08 115.44 118.92 124.56 127.92 133.92 139.32001 144.60001 149.88\">http:\/\/www.data.gov\/community\/ocean<\/tspan><tspan\r\n         id=\"tspan108\"\r\n         y=\"165.60001\"\r\n         x=\"155.88 159.84 162.96001 171.60001 176.88 181.56 184.56 189.24001 195.24001 201.36 207.36 212.03999 218.03999 222 227.28 233.28 236.28 242.52 248.28 251.28 254.64 260.64001 265.92001 268.92001 272.28 278.28 281.64001 286.92001 290.88 296.28 302.28 307.56 313.56 318.95999 324.72 327.84 336.60001 341.88 345.23999 348.60001 354.60001 360.60001 365.88 369.23999 372.23999 380.88 386.16 391.56 396.84 402.84\">) was sponsored by the interagency National Ocean <\/tspan><tspan\r\n         id=\"tspan110\"\r\n         y=\"179.39999\"\r\n         x=\"-36 -27.959999 -21.959999 -15.96 -9.96 -4.6799998 -1.3200001 2.04 5.04 9 17.639999 26.280001 34.32 38.279999 41.279999 44.639999 50.639999 53.639999 57 66.360001 72.360001 75.720001 81 90.360001 95.639999 101.64 105 108 111.36 117.36 122.64 125.64 134.28 137.28 144 147 150 158.64 163.92 167.28 170.64 176.64 182.64 187.92 191.28 194.28 203.03999 208.32001 213.60001 218.88 224.88 227.88 234.60001 240.60001 243.96001 247.32001 252.84 258.60001 261.60001 265.56 274.32001 282.95999 289.67999 293.64001 296.64001\">Council (NOC) to implement the U.S. National Ocean Policy (NOP). <\/tspan><\/text>\r\n<text\r\n       id=\"text116\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.03999996px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRomanPSMT;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,72,108.12)\"><tspan\r\n         id=\"tspan114\"\r\n         y=\"0\"\r\n         x=\"0\">1<\/tspan><\/text>\r\n<text\r\n       id=\"text120\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRomanPSMT;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,76.08,102.6)\"><tspan\r\n         id=\"tspan118\"\r\n         y=\"0\"\r\n         x=\"0 8.6400003 11.64 18.360001 21.360001 24.360001 33 38.279999 44.279999 47.639999 53.639999 59.52 62.880001 68.279999 73.559998 76.919998 79.919998 86.639999 92.639999 96.599998 102.6 108.12 113.88 117\">U.S. Geological Survey. <\/tspan><\/text>\r\n<text\r\n       id=\"text124\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.03999996px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRomanPSMT;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,72,94.32)\"><tspan\r\n         id=\"tspan122\"\r\n         y=\"0\"\r\n         x=\"0\">2<\/tspan><\/text>\r\n<text\r\n       id=\"text128\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRomanPSMT;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,76.08,88.8)\"><tspan\r\n         id=\"tspan126\"\r\n         y=\"0\"\r\n         x=\"0 8.6400003 11.64 18.360001 21.360001 24.360001 31.68 37.68 43.68 47.040001 51 57 63 72.360001 77.639999 83.639999 87 92.279999 95.639999 98.639999 105.36 109.32 115.32 118.68 123.96 129.24001 132.60001 135.96001 141.96001 147.96001 150.96001 159.72 165.60001 170.88 176.88 182.39999 188.16 191.28\">U.S. Environmental Protection Agency. <\/tspan><\/text>\r\n<text\r\n       id=\"text132\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.03999996px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRomanPSMT;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,72,80.52)\"><tspan\r\n         id=\"tspan130\"\r\n         y=\"0\"\r\n         x=\"0\">3<\/tspan><\/text>\r\n<text\r\n       id=\"text138\"\r\n       style=\"font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;font-family:'Times New Roman';-inkscape-font-specification:TimesNewRomanPSMT;writing-mode:lr-tb;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       transform=\"matrix(1,0,0,-1,76.08,75)\"><tspan\r\n         id=\"tspan134\"\r\n         y=\"0\"\r\n         x=\"0 8.6400003 13.92 17.280001 20.639999 26.639999 32.639999 37.919998 41.279999 44.279999 52.919998 58.200001 63.599998 68.879997 74.879997 78.239998 83.519997 86.519997 91.800003 97.800003 103.8 106.92 115.56 118.92 128.28 134.28 138.96001 144.96001 150.96001 156.24001 160.2 163.56 168.84 171.84 180.48 186.48 195.84 199.2 205.2 208.56 213.24001 216.60001 220.56 225.84 229.2 232.56 238.56 244.56 247.56\">National Oceanic and Atmospheric Administration. <\/tspan><tspan\r\n         id=\"tspan136\"\r\n         y=\"36\"\r\n         x=\"226.92 232.92\">1 <\/tspan><\/text>\r\n<path\r\n       id=\"path140\"\r\n       style=\"fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none\"\r\n       d=\"m 72,132.72 h 144 v 0.599 H 72 Z\" \/><\/g><\/svg>",
+            "authors": ["F.L.Lightsom", "G.Cicchetti", "C.M.Wahle"],
+            "references": []
+        },
+        {
+            "research_id": 1,
+            "type": 1,
+            "title": "Introduction",
+            "content": "cefe",
+            "authors": ["alice", "bob", "vasiliy"],
+            "references": []
+        }
+    ]
 }

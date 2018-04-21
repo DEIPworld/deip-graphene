@@ -443,6 +443,9 @@ protected:
     void init_genesis_global_property_object(const genesis_state_type& genesis_state);
     void init_genesis_disciplines(const genesis_state_type& genesis_state);
     void init_expert_tokens(const genesis_state_type& genesis_state);
+    void init_research(const genesis_state_type& genesis_state);
+    void init_research_content(const genesis_state_type& genesis_state);
+    void init_research_groups(const genesis_state_type& genesis_state);
 
 
 private:
