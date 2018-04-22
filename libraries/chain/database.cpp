@@ -1419,14 +1419,11 @@ share_type database::reward_references( const research_content_id_type& research
     return used_reward;
 }
 
-share_type database::reward_review_references(const review_id_type& review_id,
-                                              const discipline_id_type& discipline_id,
-                                              const share_type& reward,
-                                              const share_type& expertise_reward)
+share_type database::reward_review_references(const review_object &review,
+                                              const discipline_id_type &discipline_id,
+                                              const share_type &reward,
+                                              const share_type &expertise_reward)
 {
-    dbs_review& review_service = obtain_service<dbs_review>();
-    auto& review = review_service.get(review_id);
-
     share_type used_reward = 0;
 
     used_reward += allocate_rewards_to_references(review.references, discipline_id, reward, expertise_reward);
@@ -1485,22 +1482,23 @@ share_type database::reward_voters(const research_content_id_type &research_cont
     return used_reward;
 }
 
-share_type database::reward_review_voters(const review_id_type &review_id,
+share_type database::reward_review_voters(const review_object &review,
                                           const discipline_id_type &discipline_id,
                                           const share_type &reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
     dbs_vote& vote_service = obtain_service<dbs_vote>();
 
-    auto votes = vote_service.get_review_votes_by_review_and_discipline(review_id, discipline_id);
+    auto votes_wrapper = vote_service.get_review_votes_by_review_and_discipline(review.id, discipline_id);
 
     share_type used_reward = 0;
     share_type total_weight = 0;
 
-    for (auto& vote_ref : votes)
+    for (auto& vote_ref : votes_wrapper) {
         total_weight += vote_ref.get().weight;
+    }
 
-    for (auto& vote_ref : votes) {
+    for (auto& vote_ref : votes_wrapper) {
         auto vote = vote_ref.get();
 
         if (vote.weight != 0) {
@@ -1624,8 +1622,8 @@ share_type database::allocate_rewards_to_reviews(const share_type &reward,
         reward_with_expertise(author_name, discipline_id, author_reward);
         used_reward += author_reward;
 
-        used_reward += reward_review_references(review.id, discipline_id, review_references_reward_share, 0);
-        used_reward += reward_review_voters(review.id, discipline_id, review_curators_reward_share);
+        used_reward += reward_review_references(review, discipline_id, review_references_reward_share, 0);
+        used_reward += reward_review_voters(review, discipline_id, review_curators_reward_share);
     }
 
     return used_reward;

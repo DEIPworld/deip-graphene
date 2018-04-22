@@ -384,12 +384,14 @@ BOOST_AUTO_TEST_CASE(reward_review_voters)
         ACTORS((alice)(bob));
         create_discipline_with_weight();
         create_review_votes();
+        create_reviews();
         fund("alice", 100);
         fund("bob", 100);
 
         share_type reward = 100;
+        auto& review = db.get<review_object, by_id>(1);
 
-        BOOST_CHECK_NO_THROW(db.reward_review_voters(1, 10, reward));
+        BOOST_CHECK_NO_THROW(db.reward_review_voters(review, 10, reward));
 
         BOOST_CHECK(db.get_account("alice").balance.amount == 140);
         BOOST_CHECK(db.get_account("bob").balance.amount == 160);

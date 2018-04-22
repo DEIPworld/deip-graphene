@@ -316,17 +316,17 @@ public:
                                  const discipline_id_type& discipline_id,
                                  const share_type& reward,
                                  const share_type& expertise_reward);
-    share_type reward_review_references(const review_id_type& review_id,
-                                        const discipline_id_type& discipline_id,
-                                        const share_type& reward,
-                                        const share_type& expertise_reward);
+    share_type reward_review_references(const review_object &review,
+                                        const discipline_id_type &discipline_id,
+                                        const share_type &reward,
+                                        const share_type &expertise_reward);
     share_type reward_reviews(const research_content_id_type &research_content_id,
                               const discipline_id_type &discipline_id,
                               const share_type &reward);
     share_type reward_voters(const research_content_id_type &research_content_id,
                              const discipline_id_type &discipline_id,
                              const share_type &reward);
-    share_type reward_review_voters(const review_id_type &review_id,
+    share_type reward_review_voters(const review_object &review,
                                     const discipline_id_type &discipline_id,
                                     const share_type &reward);
     void reward_with_expertise(const account_name_type &account, const discipline_id_type &discipline_id,
