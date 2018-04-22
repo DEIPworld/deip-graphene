@@ -1132,27 +1132,31 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
     account_service.check_account_existence(op.owner);
 
     auto& account = account_service.get_account(op.owner);
-    FC_ASSERT(account.balance.amount < op.amount, "Not enough funds to contribute");
+    FC_ASSERT(account.balance.amount >= op.amount, "Not enough funds to contribute");
 
     research_token_sale_service.check_research_token_sale_existence(op.research_token_sale_id);
 
     fc::time_point_sec contribution_time = _db.head_block_time();
 
+    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(op.research_token_sale_id);
+
+    share_type difference = 0;
+    if (research_token_sale.total_amount + op.amount >= research_token_sale.hard_cap)
+        difference = research_token_sale.hard_cap - research_token_sale.total_amount;
+
     auto research_token_sale_contribution = _db._temporary_public_impl().
             find<research_token_sale_contribution_object, by_owner_and_research_token_sale_id>(boost::make_tuple(op.owner, op.research_token_sale_id));
+
     if (research_token_sale_contribution != nullptr)
         _db._temporary_public_impl().modify(*research_token_sale_contribution,
-                                            [&](research_token_sale_contribution_object& rtsc_o) { rtsc_o.amount += op.amount; });
+                                            [&](research_token_sale_contribution_object& rtsc_o) { rtsc_o.amount += difference; });
     else
         research_token_sale_service.create_research_token_sale_contribution(op.research_token_sale_id,
                                                                                      op.owner,
                                                                                      contribution_time,
-                                                                                     op.amount);
+                                                                                     difference);
 
-    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(op.research_token_sale_id);
-
-    if (research_token_sale.total_amount + op.amount > research_token_sale.hard_cap){
-        share_type difference = research_token_sale.hard_cap - research_token_sale.total_amount;
+    if (research_token_sale.total_amount + op.amount >= research_token_sale.hard_cap){
         account_service.decrease_balance(account_service.get_account(op.owner), asset(difference));
         research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, difference);
         _db.distribute_research_tokens(op.research_token_sale_id);
@@ -1175,26 +1179,6 @@ void approve_research_group_invite_evaluator::do_apply(const approve_research_gr
 
     account_service.check_account_existence(research_group_invite.account_name);
     research_group_service.check_research_group_existence(research_group_invite.research_group_id);
-
-    auto researches = research_service.get_researches_by_research_group(research_group_invite.research_group_id);
-
-    for (auto& r : researches)
-    {
-        auto& research = r.get();
-
-        if (research_token_service.check_research_token_existence_by_account_name_and_research_id(
-                research_group_invite.account_name, research.id))
-        {
-            auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id(
-                research_group_invite.account_name, research.id);
-
-            auto tokens_to_conversion
-                = research_token.amount * op.research_tokens_conversion_percent / DEIP_100_PERCENT;
-
-            research_token_service.decrease_research_token_amount(research_token, tokens_to_conversion);
-            research_service.increase_owned_tokens(research, tokens_to_conversion);
-        }
-    }
 
     research_group_service.create_research_group_token(research_group_invite.research_group_id,
                                                        research_group_invite.research_group_token_amount,
@@ -1239,6 +1223,45 @@ void reject_research_group_join_request_evaluator::do_apply(const reject_researc
     auto& research_group_join_request = research_group_join_request_service.get(op.research_group_join_request_id);
 
     _db._temporary_public_impl().remove(research_group_join_request);
+}
+
+void transfer_research_tokens_to_research_group_evaluator::do_apply(const transfer_research_tokens_to_research_group_operation& op)
+{
+    dbs_research_token &research_token_service = _db.obtain_service<dbs_research_token>();
+    dbs_research &research_service = _db.obtain_service<dbs_research>();
+
+    research_token_service.check_research_token_existence_by_account_name_and_research_id(op.owner, op.research_id);
+    research_service.check_research_existence(op.research_id);
+
+    auto& research_token = research_token_service.get_research_token(op.research_token_id);
+    auto& research = research_service.get_research(op.research_id);
+
+    FC_ASSERT(op.amount > 0 && share_type(op.amount) <= research_token.amount, "Amount cannot be negative or greater than research token amount");
+
+    _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
+        r_o.owned_tokens += op.amount;
+    });
+
+    if (op.amount == research_token.amount)
+        _db._temporary_public_impl().remove(research_token);
+    else
+        _db._temporary_public_impl().modify(research_token, [&](research_token_object& rt_o) {
+            rt_o.amount -= op.amount;
+        });
+
+}
+
+void add_expertise_tokens_evaluator::do_apply(const add_expertise_tokens_operation& op)
+{
+    for (auto& discipline_to_add : op.disciplines_to_add)
+    {
+        FC_ASSERT(discipline_to_add.second > 0, "Amount must be bigger than 0");
+        _db._temporary_public_impl().create<expert_token_object>([&](expert_token_object& et_o) {
+            et_o.account_name = op.account_name;
+            et_o.discipline_id = discipline_to_add.first;
+            et_o.amount = discipline_to_add.second;
+        });
+    }
 }
 
 } // namespace chain

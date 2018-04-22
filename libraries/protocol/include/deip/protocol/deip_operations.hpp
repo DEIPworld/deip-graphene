@@ -572,7 +572,6 @@ struct approve_research_group_invite_operation : public base_operation
 {
     int64_t research_group_invite_id;
     account_name_type owner;
-    uint16_t research_tokens_conversion_percent;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -610,6 +609,33 @@ struct reject_research_group_join_request_operation : public base_operation
 {
     int64_t research_group_join_request_id;
     account_name_type owner;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
+
+struct transfer_research_tokens_to_research_group_operation : public base_operation
+{
+    int64_t research_token_id;
+    int64_t research_id;
+    account_name_type owner;
+    uint32_t amount;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
+
+struct add_expertise_tokens_operation : public base_operation
+{
+    account_name_type owner;
+    account_name_type account_name;
+    std::vector<std::pair<int64_t, uint32_t>> disciplines_to_add;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -680,10 +706,11 @@ FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(resear
 FC_REFLECT( deip::protocol::make_review_operation, (author)(research_content_id)(content)(is_positive)(references)(external_references))
 
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_token_sale_id)(owner)(amount))
-FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner)(research_tokens_conversion_percent))
+FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::create_research_group_join_request_operation, (owner)(research_group_id)(motivation_letter))
 FC_REFLECT( deip::protocol::reject_research_group_join_request_operation, (research_group_join_request_id)(owner))
 FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
-
+FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_token_id)(research_id)(owner))
+FC_REFLECT( deip::protocol::add_expertise_tokens_operation, (owner)(account_name)(disciplines_to_add))
 // clang-format on

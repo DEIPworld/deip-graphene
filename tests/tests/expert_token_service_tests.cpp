@@ -46,32 +46,6 @@ BOOST_AUTO_TEST_CASE(create)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_expert_token_by_id)
-{
-    try
-    {
-        auto token = data_service.get_expert_token(0);
-
-        BOOST_CHECK(token.account_name == "initdelegate");
-        BOOST_CHECK(token.discipline_id == 0);
-        BOOST_CHECK(token.amount == 10000);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(throw_on_get_expert_token_by_non_existing_id)
-{
-    ACTORS((alice)(bob)(john))
-
-    try
-    {
-        create_expert_tokens();
-        BOOST_CHECK_THROW(data_service.get_expert_token(9999999999999999), boost::exception);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-
 BOOST_AUTO_TEST_CASE(get_expert_tokens_vector_by_account_name)
 {
     ACTORS((alice)(bob)(john))

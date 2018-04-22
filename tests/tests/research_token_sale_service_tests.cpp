@@ -218,6 +218,32 @@ BOOST_AUTO_TEST_CASE(get_research_token_sales_by_end_time)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(check_research_token_sale_existence)
+{
+    try
+    {
+        create_research_token_sales();
+
+        BOOST_CHECK_NO_THROW(data_service.check_research_token_sale_existence(2));
+        BOOST_CHECK_THROW(data_service.check_research_token_sale_existence(5), fc::assert_exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(increase_research_token_sale_tokens_amount)
+{
+    try
+    {
+        create_research_token_sales();
+
+        data_service.increase_research_token_sale_tokens_amount(2, 50);
+        auto& research_token_sale = db.get<research_token_sale_object>(2);
+
+        BOOST_CHECK(research_token_sale.total_amount == 50);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(create_research_token_sale_contribution)
 {
     try
