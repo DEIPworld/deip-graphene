@@ -406,9 +406,9 @@ private:
 
     void _update_median_witness_props();
 
-    share_type allocate_rewards_to_reviews(const share_type& reward,
-                                           const discipline_id_type& discipline_id,
-                                           const std::vector<review_object>& rewarded_reviews);
+    share_type allocate_rewards_to_reviews(const share_type &reward,
+                                           const discipline_id_type &discipline_id,
+                                           const std::vector<review_object> &reviews_to_reward);
 
     share_type allocate_rewards_to_references(const research_content_id_type_set references,
                                               const discipline_id_type& discipline_id,
