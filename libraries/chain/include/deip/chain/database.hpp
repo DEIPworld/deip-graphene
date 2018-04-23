@@ -320,9 +320,8 @@ public:
                                         const discipline_id_type &discipline_id,
                                         const share_type &reward,
                                         const share_type &expertise_reward);
-    share_type reward_reviews(const research_content_id_type &research_content_id,
-                              const discipline_id_type &discipline_id,
-                              const share_type &reward);
+    share_type reward_reviews(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id,
+                                  const share_type &reward, const share_type &expertise_reward);
     share_type reward_voters(const research_content_id_type &research_content_id,
                              const discipline_id_type &discipline_id,
                              const share_type &reward);
@@ -406,9 +405,9 @@ private:
 
     void _update_median_witness_props();
 
-    share_type allocate_rewards_to_reviews(const share_type &reward,
-                                           const discipline_id_type &discipline_id,
-                                           const std::vector<review_object> &reviews_to_reward);
+    share_type allocate_rewards_to_reviews(const share_type &reward, const share_type &expertise_reward,
+                                               const discipline_id_type &discipline_id,
+                                               const std::vector<review_object> &reviews_to_reward);
 
     share_type allocate_rewards_to_references(const research_content_id_type_set references,
                                               const discipline_id_type& discipline_id,
