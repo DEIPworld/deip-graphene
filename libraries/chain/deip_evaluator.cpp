@@ -987,5 +987,23 @@ void add_expertise_tokens_evaluator::do_apply(const add_expertise_tokens_operati
     }
 }
 
+void research_update_evaluator::do_apply(const research_update_operation& op)
+{
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    account_service.check_account_existence(op.owner);
+    research_service.check_research_existence(op.research_id);
+
+    auto& research = research_service.get_research(op.research_id);
+    research_group_service.check_research_group_token_existence(op.owner, research.research_group_id);
+
+    _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
+        fc::from_string(r_o.title, op.title);
+        fc::from_string(r_o.abstract, op.abstract);
+        fc::from_string(r_o.permlink, op.permlink);
+    });
+}
+
 } // namespace chain
 } // namespace deip 

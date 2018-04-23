@@ -2657,6 +2657,43 @@ BOOST_AUTO_TEST_CASE(add_expertise_tokens_apply)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(research_update_apply)
+{
+    try {
+        BOOST_TEST_MESSAGE("Testing: add_expertise_tokens_apply");
+
+        ACTOR_WITH_EXPERT_TOKENS(alice);
+
+        generate_block();
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        auto& research = research_create(0, "title", "abstract", "permlink", 1, 10, 10);
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 100, 100, DEIP_100_PERCENT);
+        auto& research_group_token = research_group_token_create(1, "alice", DEIP_100_PERCENT);
+
+        research_update_operation op;
+
+        op.research_id = 0;
+        op.title = "new_title";
+        op.abstract = "new_abstract";
+        op.permlink = "new_permlink";
+        op.owner = "alice";
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK(research.title == "new_title");
+        BOOST_CHECK(research.abstract == "new_abstract");
+        BOOST_CHECK(research.permlink == "new_permlink");
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 #endif

@@ -245,5 +245,13 @@ void add_expertise_tokens_operation::validate() const
     FC_ASSERT(!disciplines_to_add.empty(), "List of disciplines to adjust cannot be empty");
 }
 
+void research_update_operation::validate() const
+{
+    FC_ASSERT(!title.empty(), "Title cannot be empty");
+    FC_ASSERT(!abstract.empty(), "Abstract cannot be empty");
+    FC_ASSERT(!permlink.empty(), "Permlink cannot be empty");
+    validate_account_name(owner);
+}
+
 }
 } // deip::protocol
