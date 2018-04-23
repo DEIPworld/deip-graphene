@@ -307,7 +307,12 @@ protected:
         create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
 
         _research_service.check_research_existence(data.research_id);          
-        _research_content_service.create(data.research_id, data.type, data.title, data.content, data.authors, data.references, data.external_references);
+        auto& research_content = _research_content_service.create(data.research_id, data.type, data.title, data.content, data.authors, data.references, data.external_references);
+
+        if (data.type == research_content_type::final_result)
+        {
+            _vote_service.get_total_votes_by_research(research_content.research_id);
+        }
     }
 
     void start_research_token_sale_evaluator(const proposal_object& proposal) {

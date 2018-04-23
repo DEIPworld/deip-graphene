@@ -57,7 +57,10 @@ public:
     total_votes_refs_type get_total_votes_by_discipline(const discipline_id_type& discipline_id) const;
 
     const total_votes_object& update_total_votes(const total_votes_object& total_votes, const share_type total_weight);
+
     total_votes_refs_type get_total_votes_by_content(const research_content_id_type& research_content_id) const;
+
+    total_votes_refs_type get_total_votes_by_research(const research_id_type& research_id) const;
 
 
 
