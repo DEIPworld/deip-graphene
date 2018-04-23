@@ -1752,7 +1752,8 @@ void database::initialize_evaluators()
                                         this->obtain_service<dbs_research_discipline_relation>(),
                                         this->obtain_service<dbs_research_group_invite>(),
                                         this->obtain_service<dbs_dynamic_global_properties>(),
-                                        this->obtain_service<dbs_research_group_join_request>()));
+                                        this->obtain_service<dbs_research_group_join_request>(),
+                                        this->obtain_service<dbs_vote>()));
     //clang-format on
 }
 

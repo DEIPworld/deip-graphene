@@ -21,6 +21,7 @@
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_research_group_join_request.hpp>
+#include <deip/chain/dbs_vote.hpp>
 
 #include <deip/chain/proposal_object.hpp>
 #include <deip/chain/proposal_data_types.hpp>
@@ -43,6 +44,7 @@ template <typename AccountService,
         typename ResearchGroupInviteService,
         typename DynamicGlobalPropertiesService,
         typename ResearchGroupJoinRequestService,
+        typename VoteService,
         typename OperationType = deip::protocol::operation>
 class proposal_vote_evaluator_t : public evaluator<OperationType>
 // clang-format on
@@ -61,6 +63,7 @@ public:
             ResearchGroupInviteService,
             DynamicGlobalPropertiesService,
             ResearchGroupJoinRequestService,
+            VoteService,
             OperationType>
             EvaluatorType;
 
@@ -101,7 +104,8 @@ public:
                               ResearchDisciplineRelationService& research_discipline_relation_service,
                               ResearchGroupInviteService& research_group_invite_service,
                               DynamicGlobalPropertiesService& dynamic_global_properties_service,
-                              ResearchGroupJoinRequestService& research_group_join_request_service)
+                              ResearchGroupJoinRequestService& research_group_join_request_service,
+                              VoteService& vote_service)
                               
             : _account_service(account_service)
             , _proposal_service(proposal_service)
@@ -115,6 +119,7 @@ public:
             , _research_group_invite_service(research_group_invite_service)
             , _dynamic_global_properties_service(dynamic_global_properties_service)
             , _research_group_join_request_service(research_group_join_request_service)
+            , _vote_service(vote_service)
     {
         evaluators.set(proposal_action_type::invite_member,
                        std::bind(&EvaluatorType::invite_evaluator, this, std::placeholders::_1));
@@ -330,6 +335,7 @@ protected:
     ResearchGroupInviteService& _research_group_invite_service;
     DynamicGlobalPropertiesService& _dynamic_global_properties_service;
     ResearchGroupJoinRequestService& _research_group_join_request_service;
+    VoteService& _vote_service;
 
 
 private:
@@ -356,9 +362,10 @@ typedef proposal_vote_evaluator_t<dbs_account,
                                   dbs_research_discipline_relation,
                                   dbs_research_group_invite,
                                   dbs_dynamic_global_properties,
-                                  dbs_research_group_join_request>
+                                  dbs_research_group_join_request,
+                                  dbs_vote>
     proposal_vote_evaluator;
-typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_content, dbs_research_token_sale, dbs_discipline, dbs_research_discipline_relation, dbs_research_group_invite, dbs_dynamic_global_properties, dbs_research_group_join_request>
+typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_content, dbs_research_token_sale, dbs_discipline, dbs_research_discipline_relation, dbs_research_group_invite, dbs_dynamic_global_properties, dbs_research_group_join_request, dbs_vote>
         proposal_vote_evaluator;
 
 } // namespace chain
