@@ -203,5 +203,33 @@ dbs_vote::total_votes_refs_type dbs_vote::get_total_votes_by_research(const rese
     return ret;
 }
 
+bool dbs_vote::is_exists_by_research_and_discipline(const research_content_id_type &research_content_id,
+                                                    const discipline_id_type &discipline_id)
+{
+    const auto& idx = db_impl().get_index<total_votes_index>().indices().get<by_content_and_discipline>();
+
+    if (idx.find(boost::make_tuple(research_content_id, discipline_id)) != idx.cend())
+        return true;
+    else
+        return false;
+}
+
+const total_votes_object& dbs_vote::update_total_votes_for_final_result(const total_votes_object& total_votes,
+                                                                        const share_type total_weight,
+                                                                        const share_type total_active_weight,
+                                                                        const share_type total_research_reward_weight,
+                                                                        const share_type total_active_research_reward_weight)
+{
+    db_impl().modify(total_votes, [&](total_votes_object& tv_o)
+    {
+        tv_o.total_weight = total_weight;
+        tv_o.total_active_weight = total_active_weight;
+        tv_o.total_research_reward_weight = total_research_reward_weight;
+        tv_o.total_active_research_reward_weight = total_active_research_reward_weight;
+    });
+
+    return total_votes;
+}
+
 } //namespace chain
 } //namespace deip
