@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
     std::vector<account_name_type> accounts = {"alice"};
     setup_research_group(1, "research group name", "research_group", "research group", 750, 1, 100, accounts);
     const std::string json_str = "{\"research_group_id\":1,"
-            "\"account_name\":\"bob\","
+            "\"recipient\":\"bob\","
             "\"funds\": 250}";
 
     create_proposal(1, dbs_proposal::action_t::send_funds, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
