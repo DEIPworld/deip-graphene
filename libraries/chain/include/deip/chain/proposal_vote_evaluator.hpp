@@ -335,12 +335,12 @@ protected:
                 {
                    auto& total_vote_for_final_result =  _vote_service.create_total_votes(total_vote.discipline_id, research_content.research_id, research_content.id);
                    _vote_service.update_total_votes_for_final_result(total_vote_for_final_result,
-                                                                     total_vote_for_final_result.total_weight,
-                                                                     total_vote_for_final_result.total_active_weight,
-                                                                     total_vote_for_final_result.total_research_reward_weight,
-                                                                     total_vote_for_final_result.total_active_research_reward_weight);
+                                                                     total_vote.total_weight,
+                                                                     total_vote.total_active_weight,
+                                                                     total_vote.total_research_reward_weight,
+                                                                     total_vote.total_active_research_reward_weight);
 
-                    disciplines_to_increase[total_vote.discipline_id] += total_vote_for_final_result.total_active_research_reward_weight;
+                    disciplines_to_increase[total_vote.discipline_id] += total_vote.total_active_research_reward_weight;
                 }
             }
 
