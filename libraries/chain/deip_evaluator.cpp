@@ -200,7 +200,11 @@ void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_toke
     FC_ASSERT(_db.get_balance(from_account, DEIP_SYMBOL) >= o.amount,
               "Account does not have sufficient DEIP for transfer.");
     account_service.decrease_balance(from_account, o.amount);
-    expert_token_service.create(to_account.name, 0, o.amount.amount);
+
+    if (!expert_token_service.check_expert_token_existence_by_account_and_discipline_return(to_account.name, 0))
+        expert_token_service.create(to_account.name, 0, o.amount.amount);
+    else
+        expert_token_service.increase_common_tokens(to_account.name, o.amount.amount);
 }
 
 void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_operation& o)
@@ -210,7 +214,8 @@ void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_ope
 
     const auto& account = account_service.get_account(o.account);
 
-    FC_ASSERT(account.total_common_tokens_amount >= 0,
+    FC_ASSERT(account.total_common_tokens_amount >= 0, "Account does not have sufficient Deip Power for withdraw.");
+    FC_ASSERT(account.total_common_tokens_amount >= o.total_common_tokens_amount,
               "Account does not have sufficient Deip Power for withdraw.");
 
     if (!account.mined)

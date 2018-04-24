@@ -34,6 +34,8 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
         db_impl().modify(to_account, [&](account_object& to) { to.total_common_tokens_amount += amount; });
         db_impl().modify(cprops,
                          [&](dynamic_global_property_object& props) { props.total_common_tokens_amount += amount; });
+        db_impl().modify(cprops,
+                         [&](dynamic_global_property_object& props) { props.total_common_tokens_fund_deip += asset(amount, DEIP_SYMBOL); });
     }
 
     auto& token = db_impl().create<expert_token_object>([&](expert_token_object& token) {
@@ -55,6 +57,9 @@ const expert_token_object& dbs_expert_token::increase_common_tokens(const accoun
     db_impl().modify(to_account, [&](account_object& acnt) { acnt.total_common_tokens_amount += amount; });
     db_impl().modify(cprops,
                      [&](dynamic_global_property_object& props) { props.total_common_tokens_amount += amount; });
+    db_impl().modify(cprops, [&](dynamic_global_property_object& props) {
+        props.total_common_tokens_fund_deip += asset(amount, DEIP_SYMBOL);
+    });
 
     return get_expert_token_by_account_and_discipline(account, 0);
 }

@@ -725,7 +725,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
 
        /// because init_witness has created vesting shares and blocks have been produced, 100 DEIP is worth less than
        /// 100 vesting shares due to rounding
-       BOOST_REQUIRE(acct.total_common_tokens_amount == op.fee.amount.value * 1000);
+       BOOST_REQUIRE(acct.total_common_tokens_amount == op.fee.amount.value);
        BOOST_REQUIRE(acct.common_tokens_withdraw_rate == 0);
        BOOST_REQUIRE(acct.proxied_vsf_votes_total() == 0);
        BOOST_REQUIRE((init_starting_balance - ASSET("0.100 TESTS")).amount.value == init.balance.amount.value);
@@ -741,7 +741,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        BOOST_REQUIRE(acct.proxy == "");
        BOOST_REQUIRE(acct.created == db.head_block_time());
        BOOST_REQUIRE(acct.balance.amount.value == ASSET("0.000 DEIP ").amount.value);
-       BOOST_REQUIRE(acct.total_common_tokens_amount == op.fee.amount.value * 1000);
+       BOOST_REQUIRE(acct.total_common_tokens_amount == op.fee.amount.value);
        BOOST_REQUIRE(acct.common_tokens_withdraw_rate == 0);
        BOOST_REQUIRE(acct.proxied_vsf_votes_total().value == 0);
        BOOST_REQUIRE((init_starting_balance - ASSET("0.100 TESTS")).amount.value == init.balance.amount.value);
@@ -1247,7 +1247,7 @@ BOOST_AUTO_TEST_CASE(transfer_to_common_tokens_apply)
        tx.sign(alice_private_key, db.get_chain_id());
        db.push_transaction(tx, 0);
 
-       share_type new_vest = share_type(op.amount.amount * 1000);
+       share_type new_vest = share_type(op.amount.amount);
        shares += new_vest;
        alice_common_tokens += new_vest;
 
@@ -1265,7 +1265,7 @@ BOOST_AUTO_TEST_CASE(transfer_to_common_tokens_apply)
        tx.sign(alice_private_key, db.get_chain_id());
        db.push_transaction(tx, 0);
 
-       new_vest = op.amount.amount * 1000;
+       new_vest = op.amount.amount;
        shares += new_vest;
        bob_common_tokens += new_vest;
 
@@ -1310,7 +1310,7 @@ BOOST_AUTO_TEST_CASE(withdraw_common_tokens_authorities)
 
        withdraw_common_tokens_operation op;
        op.account = "alice";
-       op.total_common_tokens_amount = 0.001000;
+       op.total_common_tokens_amount = 1000;
 
        signed_transaction tx;
        tx.operations.push_back(op);
@@ -1447,7 +1447,8 @@ BOOST_AUTO_TEST_CASE(withdraw_common_tokens_apply)
 
                db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object& gpo) {
                    gpo.current_supply
-                       += wso.median_props.account_creation_fee - ASSET("0.001 TESTS");
+                       += wso.median_props.account_creation_fee - ASSET("0.001 TESTS") - gpo.total_common_tokens_fund_deip;
+                   gpo.total_common_tokens_fund_deip = wso.median_props.account_creation_fee - ASSET("0.001 TESTS");
                });
            },
            database::skip_witness_signature);

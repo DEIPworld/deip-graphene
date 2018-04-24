@@ -81,7 +81,7 @@ public:
     /// This function should be used only when the account votes for a witness directly
     share_type witness_vote_weight() const
     {
-        return total_common_tokens_amount;
+        return std::accumulate(proxied_vsf_votes.begin(), proxied_vsf_votes.end(), total_common_tokens_amount);
     }
     share_type proxied_vsf_votes_total() const
     {
