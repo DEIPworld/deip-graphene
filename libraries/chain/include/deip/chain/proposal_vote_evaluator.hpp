@@ -343,6 +343,8 @@ protected:
                     disciplines_to_increase[total_vote.discipline_id] += total_vote.total_active_research_reward_weight;
                 }
             }
+            for (auto& disciplines : disciplines_to_increase)
+                _discipline_service.increase_total_active_research_reward_weight(disciplines.first, disciplines.second);
 
         }
     }
