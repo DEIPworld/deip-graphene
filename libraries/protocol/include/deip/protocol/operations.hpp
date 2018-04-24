@@ -47,6 +47,7 @@ namespace deip {
                 reject_research_group_join_request_operation,
                 transfer_research_tokens_to_research_group_operation,
                 add_expertise_tokens_operation,
+                research_update_operation,
 
                 // virtual operations
                 fill_vesting_withdraw_operation,

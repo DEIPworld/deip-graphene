@@ -1827,6 +1827,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<reject_research_group_join_request_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<add_expertise_tokens_evaluator>();
+    _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
 
     // clang-format off
     _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>(

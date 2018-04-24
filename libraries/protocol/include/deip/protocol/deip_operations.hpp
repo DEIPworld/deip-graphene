@@ -644,6 +644,22 @@ struct add_expertise_tokens_operation : public base_operation
     }
 };
 
+struct research_update_operation : public base_operation
+{
+    int64_t research_id;
+    string title;
+    string abstract;
+    string permlink;
+    account_name_type owner;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -713,4 +729,5 @@ FC_REFLECT( deip::protocol::reject_research_group_join_request_operation, (resea
 FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
 FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_token_id)(research_id)(owner))
 FC_REFLECT( deip::protocol::add_expertise_tokens_operation, (owner)(account_name)(disciplines_to_add))
+FC_REFLECT( deip::protocol::research_update_operation, (research_id)(title)(abstract)(permlink)(owner))
 // clang-format on
