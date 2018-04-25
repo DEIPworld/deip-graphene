@@ -304,11 +304,30 @@ protected:
 
     void create_research_material_evaluator(const proposal_object& proposal)
     {
+        struct total_votes_weights
+        {
+            total_votes_weights(share_type t_w = 0, share_type ta_w = 0, share_type trr_w = 0, share_type tarr_w = 0) :
+                    total_weight(t_w), total_active_weight(ta_w), total_research_reward_weight(trr_w), total_active_research_reward_weight(tarr_w){}
+            share_type total_weight;
+            share_type total_active_weight;
+            share_type total_research_reward_weight;
+            share_type total_active_research_reward_weight;
+
+            total_votes_weights& operator += (const total_votes_weights& rvalue)
+            {
+                total_weight = total_weight + rvalue.total_weight;
+                total_active_weight = total_active_weight + rvalue.total_active_weight;
+                total_research_reward_weight = total_research_reward_weight + rvalue.total_research_reward_weight;
+                total_active_research_reward_weight = total_active_research_reward_weight + rvalue.total_active_research_reward_weight;
+                return *this;
+            }
+        };
         create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
 
         _research_service.check_research_existence(data.research_id);          
         auto& research_content = _research_content_service.create(data.research_id, data.type, data.title, data.content, data.authors, data.references, data.external_references);
 
+        std::map<discipline_id_type, total_votes_weights> total_votes_to_create;
         std::map<discipline_id_type, share_type> disciplines_to_increase;
         if (data.type == research_content_type::final_result)
         {
@@ -316,32 +335,21 @@ protected:
             for (auto& t : total_votes)
             {
                 auto& total_vote = t.get();
-                if (_vote_service.is_exists_by_research_and_discipline(research_content.id, total_vote.discipline_id))
-                {
-                    auto& total_vote_for_final_result = _vote_service.get_total_votes_by_content_and_discipline(research_content.id, total_vote.discipline_id);
-                    share_type new_total_weight = total_vote_for_final_result.total_weight + total_vote.total_weight;
-                    share_type new_total_active_weight = total_vote_for_final_result.total_active_weight + total_vote.total_active_weight;
-                    share_type new_total_research_reward_weight = total_vote_for_final_result.total_research_reward_weight + total_vote.total_research_reward_weight;
-                    share_type new_total_active_research_reward_weight = total_vote_for_final_result.total_active_research_reward_weight + total_vote.total_active_research_reward_weight;
+                total_votes_to_create[total_vote.discipline_id] += total_votes_weights(total_vote.total_weight,
+                                                                                       total_vote.total_active_weight,
+                                                                                       total_vote.total_research_reward_weight,
+                                                                                       total_vote.total_active_research_reward_weight);
+            }
 
-                    _vote_service.update_total_votes_for_final_result(total_vote_for_final_result,
-                                                                      new_total_weight,
-                                                                      new_total_active_weight,
-                                                                      new_total_research_reward_weight,
-                                                                      new_total_active_research_reward_weight);
-                    disciplines_to_increase[total_vote.discipline_id] += new_total_active_research_reward_weight;
-                }
-                else
-                {
-                   auto& total_vote_for_final_result =  _vote_service.create_total_votes(total_vote.discipline_id, research_content.research_id, research_content.id);
-                   _vote_service.update_total_votes_for_final_result(total_vote_for_final_result,
-                                                                     total_vote.total_weight,
-                                                                     total_vote.total_active_weight,
-                                                                     total_vote.total_research_reward_weight,
-                                                                     total_vote.total_active_research_reward_weight);
-
-                    disciplines_to_increase[total_vote.discipline_id] += total_vote.total_active_research_reward_weight;
-                }
+            for (auto& total_vote : total_votes_to_create)
+            {
+                auto& total_vote_for_final_result =  _vote_service.create_total_votes(total_vote.first, research_content.research_id, research_content.id);
+                _vote_service.update_total_votes_for_final_result(total_vote_for_final_result,
+                                                                  total_vote.second.total_weight,
+                                                                  total_vote.second.total_active_weight,
+                                                                  total_vote.second.total_research_reward_weight,
+                                                                  total_vote.second.total_active_research_reward_weight);
+                disciplines_to_increase[total_vote.first] +=  total_vote.second.total_active_research_reward_weight;
             }
             for (auto& disciplines : disciplines_to_increase)
                 _discipline_service.increase_total_active_research_reward_weight(disciplines.first, disciplines.second);
