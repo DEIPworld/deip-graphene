@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdraw_route)
 {
     try
     {
-        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(sam))
+        ACTORS((alice)(bob)(sam))
 
         const auto& new_alice = db.get_account("alice");
         const auto& new_bob = db.get_account("bob");
@@ -174,7 +174,8 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdraw_route)
 
         auto original_common_tokens = new_alice.total_common_tokens_amount;
 
-        fund("alice", 1040000);
+        fund("alice", 1040000000);
+        convert_deip_to_common_token("alice", 1040000000);
 
         auto withdraw_amount = new_alice.total_common_tokens_amount - original_common_tokens;
 

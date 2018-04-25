@@ -690,6 +690,24 @@ void database_fixture::create_all_discipline_expert_tokens_for_account(const str
     }
 }
 
+void database_fixture::convert_deip_to_common_token(const string& from, const share_type& amount)
+{
+    try
+    {
+        transfer_to_common_tokens_operation op;
+        op.from = from;
+        op.to = "";
+        op.amount = asset(amount, DEIP_SYMBOL);
+
+        trx.operations.push_back(op);
+        trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        trx.validate();
+        db.push_transaction(trx, ~0);
+        trx.operations.clear();
+    }
+    FC_CAPTURE_AND_RETHROW((from)(amount))
+}
+
 const expert_token_object database_fixture::common_token(const string& account, const share_type& amount)
 {
     dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();

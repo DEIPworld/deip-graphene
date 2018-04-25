@@ -54,7 +54,9 @@ void db_setup_and_open(database& db, const fc::path& path)
     genesis.initial_chain_id = TEST_CHAIN_ID;
     genesis.initial_timestamp = fc::time_point_sec(TEST_GENESIS_TIMESTAMP);
 
+    create_disciplines_for_genesis_state(genesis);
     create_initdelegate_for_genesis_state(genesis);
+    create_initdelegate_expert_tokens_for_genesis_state(genesis);
 
     db._log_hardforks = false;
     db.open(path, path, TEST_SHARED_MEM_SIZE_8MB, chainbase::database::read_write, genesis);
