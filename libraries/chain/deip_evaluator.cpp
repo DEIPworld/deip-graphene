@@ -20,6 +20,7 @@
 #include <deip/chain/dbs_expert_token.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_research_token.hpp>
+#include <deip/chain/dbs_review.hpp>
 #include <deip/chain/dbs_research_group_join_request.hpp>
 
 #ifndef IS_LOW_MEM
@@ -454,7 +455,6 @@ void vote_evaluator::do_apply(const vote_operation& o)
 
     const auto research_reward_curve = curve_id::power1dot5;
     const auto curators_reward_curve = curve_id::power1dot5;
-    const auto review_reward_curve = curve_id::power1dot5;
 
     try
     {
@@ -516,21 +516,17 @@ void vote_evaluator::do_apply(const vote_operation& o)
         const int64_t used_power = (current_power * abs_weight) / DEIP_100_PERCENT;
         const int64_t denominated_used_power = used_power / 10;
 
-        FC_ASSERT(denominated_used_power <= current_power, "Account does not have enough power to vote.");
+        FC_ASSERT(used_power <= current_power, "Account does not have enough power to vote.");
 
         const uint64_t abs_used_tokens
-            = ((uint128_t(token.amount.value) * denominated_used_power) / (DEIP_100_PERCENT)).to_uint64();
+            = ((uint128_t(token.amount.value) * used_power) / (DEIP_100_PERCENT)).to_uint64();
 
         const auto& tvo = vote_service
                 .get_total_votes_by_content_and_discipline(o.research_content_id, o.discipline_id);
 
         const bool content_is_active = content.activity_state == research_content_activity_state::active;
-        const bool content_is_review = content.type == research_content_type::review;
 
         FC_ASSERT(o.weight != 0, "Vote weight cannot be 0.");
-
-        /// this is the rshares voting for or against the post
-        const int64_t rshares = o.weight < 0 ? -abs_used_tokens : abs_used_tokens;
 
         _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
             t.voting_power = current_power - denominated_used_power;
@@ -540,49 +536,33 @@ void vote_evaluator::do_apply(const vote_operation& o)
         FC_ASSERT(abs_used_tokens > 0, "Cannot vote with 0 rshares.");
 
         const auto current_weight = tvo.total_weight;
-        const uint64_t evaluated_research_rshares = util::evaluate_reward_curve(rshares, research_reward_curve).to_uint64();
-        const uint64_t evaluated_review_rshares = util::evaluate_reward_curve(rshares, review_reward_curve).to_uint64();
+        const uint64_t evaluated_research_rshares = util::evaluate_reward_curve(abs_used_tokens, research_reward_curve).to_uint64();
 
         _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
-            t.total_weight += rshares;
+            t.total_weight += abs_used_tokens;
             if (content_is_active) {
-                t.total_active_weight += rshares;
+                t.total_active_weight += abs_used_tokens;
             }
 
-            if (!content_is_review) {
-                t.total_research_reward_weight += evaluated_research_rshares;
-                if (content_is_active) {
-                    t.total_active_research_reward_weight += evaluated_research_rshares;
-                }
-            }
-
-            if (content_is_review) {
-                t.total_review_reward_weight += evaluated_review_rshares;
-                if (content_is_active) {
-                    t.total_active_review_reward_weight += evaluated_review_rshares;
-                }
+            t.total_research_reward_weight += evaluated_research_rshares;
+            if (content_is_active) {
+                t.total_active_research_reward_weight += evaluated_research_rshares;
             }
         });
 
         if (content_is_active) {
             _db._temporary_public_impl().modify(dgpo, [&](dynamic_global_property_object& prop) {
-                prop.total_active_disciplines_reward_weight += rshares;
+                prop.total_active_disciplines_reward_weight += abs_used_tokens;
             });
         }
 
         const auto& discipline = discipline_service.get_discipline(o.discipline_id);
         _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
 
-            if (!content_is_review) {
-                d.total_active_research_reward_weight += evaluated_research_rshares;
-            }
-
-            if (content_is_review){
-                d.total_active_review_reward_weight += evaluated_review_rshares;
-            }
+            d.total_active_research_reward_weight += evaluated_research_rshares;
 
             if (content_is_active) {
-                d.total_active_reward_weight += rshares;
+                d.total_active_reward_weight += abs_used_tokens;
             }
         });
 
@@ -613,7 +593,7 @@ void vote_evaluator::do_apply(const vote_operation& o)
             v.research_id = o.research_id;
             v.research_content_id = o.research_content_id;
             v.weight = o.weight;
-            v.voting_power = denominated_used_power;
+            v.voting_power = used_power;
             v.tokens_amount = abs_used_tokens;
             v.voting_time = _db.head_block_time();
 
@@ -638,6 +618,153 @@ void vote_evaluator::do_apply(const vote_operation& o)
             if (content_is_active) {
                 t.total_active_curators_reward_weight += vote.weight;
             }
+        });
+    }
+    FC_CAPTURE_AND_RETHROW((o))
+}
+
+void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+    dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_review& review_service = _db.obtain_service<dbs_review>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+
+    const auto& dgpo = _db.get_dynamic_global_properties();
+    const auto review_reward_curve = curve_id::power1dot5;
+    const auto curators_reward_curve = curve_id::power1dot5;
+
+    try
+    {
+        const auto& voter = account_service.get_account(o.voter);
+        FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
+
+        const auto& review = review_service.get(o.review_id);
+
+        research_content_service.check_research_content_existence(review.research_content_id);
+        auto content = research_content_service.get_content_by_id(review.research_content_id);
+
+        if (o.discipline_id != 0) {
+            discipline_service.check_discipline_existence(o.discipline_id);
+        }
+
+        expert_token_service.check_expert_token_existence_by_account_and_discipline(o.voter, o.discipline_id);
+
+        std::vector<discipline_id_type> target_disciplines;
+
+        dbs_research_discipline_relation& research_disciplines_service = _db.obtain_service<dbs_research_discipline_relation>();
+        const auto& relations = research_disciplines_service.get_research_discipline_relations_by_research(content.research_id);
+        for (auto& relation_wrapper : relations) {
+            const auto& relation = relation_wrapper.get();
+            target_disciplines.push_back(relation.discipline_id);
+        }
+
+        const auto& token = expert_token_service.get_expert_token_by_account_and_discipline(o.voter, o.discipline_id);
+
+        // Validate that research has discipline we are trying to vote with
+        if (o.discipline_id != 0)
+        {
+            const auto& itr = std::find(target_disciplines.begin(), target_disciplines.end(), o.discipline_id);
+            const bool discipline_found = (itr != target_disciplines.end());
+            FC_ASSERT(discipline_found, "Cannot vote with {d} token as research is not in this discipline",
+                      ("d", discipline_service.get_discipline(o.discipline_id).name));
+        }
+
+        const auto& review_vote_idx = _db._temporary_public_impl().get_index<review_vote_index>().indices().get<by_voter_discipline_and_review>();
+        const auto& itr = review_vote_idx.find(std::make_tuple(voter.name, o.discipline_id, o.review_id));
+
+        FC_ASSERT(itr == review_vote_idx.end(), "You have already voted for this review");
+
+        const int64_t elapsed_seconds   = (_db.head_block_time() - token.last_vote_time).to_seconds();
+
+        const int64_t regenerated_power = (DEIP_100_PERCENT * elapsed_seconds) / DEIP_VOTE_REGENERATION_SECONDS;
+        const int64_t current_power = std::min(int64_t(token.voting_power + regenerated_power), int64_t(DEIP_100_PERCENT));
+        FC_ASSERT(current_power > 0, "Account currently does not have voting power.");
+
+        const int64_t abs_weight = abs(o.weight);
+        const int64_t used_power = (current_power * abs_weight) / DEIP_100_PERCENT;
+        const int64_t denominated_used_power = used_power / 10;
+
+        FC_ASSERT(used_power <= current_power, "Account does not have enough power to vote.");
+
+        const uint64_t abs_used_tokens
+                = ((uint128_t(token.amount.value) * used_power) / (DEIP_100_PERCENT)).to_uint64();
+
+        FC_ASSERT(o.weight != 0, "Vote weight cannot be 0.");
+
+        _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
+            t.voting_power = current_power - denominated_used_power;
+            t.last_vote_time = _db.head_block_time();
+        });
+
+        FC_ASSERT(abs_used_tokens > 0, "Cannot vote with 0 rshares.");
+
+        const auto& discipline = discipline_service.get_discipline(o.discipline_id);
+        const auto current_weight = discipline.total_active_review_reward_weight;
+        const uint64_t evaluated_review_vote_weight = util::evaluate_reward_curve(abs_used_tokens, review_reward_curve).to_uint64();
+
+        _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
+           d.total_active_review_reward_weight += evaluated_review_vote_weight;
+        });
+
+        _db._temporary_public_impl().modify(review, [&](review_object& r) {
+            r.reward_weights_per_discipline[o.discipline_id] += evaluated_review_vote_weight;
+        });
+
+        uint64_t max_vote_weight = 0;
+
+        /** this verifies uniqueness of voter
+         *
+         *  cv.weight / c.total_vote_weight ==> % of rshares increase that is accounted for by the vote
+         *
+         *  W(R) = B * R / ( R + 2S )
+         *  W(R) is bounded above by B. B is fixed at 2^64 - 1, so all weights fit in a 64 bit integer.
+         *
+         *  The equation for an individual vote is:
+         *    W(R_N) - W(R_N-1), which is the delta increase of proportional weight
+         *
+         *  c.total_vote_weight =
+         *    W(R_1) - W(R_0) +
+         *    W(R_2) - W(R_1) + ...
+         *    W(R_N) - W(R_N-1) = W(R_N) - W(R_0)
+         *
+         *  Since W(R_0) = 0, c.total_vote_weight is also bounded above by B and will always fit in a 64 bit
+         *integer.
+         *
+         **/
+        auto& review_vote = _db._temporary_public_impl().create<review_vote_object>([&](review_vote_object& v) {
+            v.voter = voter.name;
+            v.discipline_id = o.discipline_id;
+            v.review_id = o.review_id;
+            v.weight = o.weight;
+            v.voting_power = used_power;
+            v.tokens_amount = abs_used_tokens;
+            v.voting_time = _db.head_block_time();
+
+            const uint64_t old_weight = util::evaluate_reward_curve(current_weight.value, curators_reward_curve).to_uint64();
+            const uint64_t new_weight = util::evaluate_reward_curve(discipline.total_active_review_reward_weight.value, curators_reward_curve).to_uint64();
+            v.weight = new_weight - old_weight;
+
+            max_vote_weight = v.weight;
+
+            /// discount weight by time
+            uint128_t w(max_vote_weight);
+            const uint64_t delta_t = std::min(uint64_t((v.voting_time - review.created_at).to_seconds()),
+                                              uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
+
+            w *= delta_t;
+            w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
+            v.weight = w.to_uint64();
+        });
+
+        auto weight_modifier = _db.calculate_review_weight_modifier(review.id, token.discipline_id);
+
+        _db._temporary_public_impl().modify(review, [&](review_object& r) {
+            r.curation_reward_weights_per_discipline[o.discipline_id] += review_vote.weight;
+            r.weight_modifiers[token.discipline_id] = weight_modifier;
         });
     }
     FC_CAPTURE_AND_RETHROW((o))
@@ -825,25 +952,175 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
     research_group_service.create_research_group_token(research_group.id, op.tokens_amount, op.creator);
 }
 
-void make_research_review_evaluator::do_apply(const make_research_review_operation& op)
+void make_review_evaluator::do_apply(const make_review_operation& op)
 {
-    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+    dbs_review& review_service = _db.obtain_service<dbs_review>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+    dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
+    dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
+    dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
 
     account_service.check_account_existence(op.author);
-    research_service.check_research_existence(op.research_id);
+    research_content_service.check_research_content_existence(op.research_content_id);
+    auto content = research_content_service.get_content_by_id(op.research_content_id);
 
-    std::vector<research_content_id_type> references;
-    int size = op.references.size();
-    for (int i = 0; i < size; i++)
-    {
-        research_content_service.check_research_content_existence((research_content_id_type) op.references[i]);
-        references.push_back((research_content_id_type) op.references[i]);
+    auto expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
+    auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(content.research_id);
+    std::set<discipline_id_type> review_disciplines;
+    std::set<discipline_id_type> research_disciplines_ids;
+    for (auto rdr : research_discipline_relations) {
+        research_disciplines_ids.insert(rdr.get().discipline_id);
     }
 
-    std::vector<account_name_type> review_author = {op.author};
-    research_content_service.create(op.research_id, research_content_type::review, op.title, op.content, review_author, references, op.external_references);
+    for (auto expert_token : expertise_tokens)
+    {
+        auto& token = expert_token.get();
+        if (research_disciplines_ids.find(token.discipline_id) != research_disciplines_ids.end())
+            review_disciplines.insert(token.discipline_id);
+    }
+
+    FC_ASSERT(review_disciplines.size() != 0, "Reviewer does not have enough expertise to make review.");
+
+    std::vector<research_content_id_type> references;
+    for (auto ref : op.references) {
+        references.push_back((research_content_id_type)ref);
+    }
+
+    auto& review = review_service.create(op.research_content_id, op.content, op.is_positive, op.author, review_disciplines, references, op.external_references);
+
+    if (review.is_positive) {
+        try
+        {
+            const auto& research_reward_curve = curve_id::power1dot5;
+            const auto& curators_reward_curve = curve_id::power1dot5;
+
+            const auto& voter = account_service.get_account(op.author);
+
+            FC_ASSERT(voter.can_vote, "Voter has declined their voting rights.");
+
+            research_service.check_research_existence(content.research_id);
+
+            for (auto& token_wrapper : expertise_tokens) {
+                auto& token = token_wrapper.get();
+                const auto& vote_idx = _db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
+                const auto& itr = vote_idx.find(std::make_tuple(voter.name, token.discipline_id, content.id));
+
+                FC_ASSERT(itr == vote_idx.end(), "You have already voted for this research content");
+
+                const auto& total_votes_idx = _db._temporary_public_impl().get_index<total_votes_index>().indices().get<by_content_and_discipline>();
+                const auto& total_votes_itr = total_votes_idx.find(std::make_tuple(content.id, token.discipline_id));
+
+                // Create total_votes_object if it does not exist yet
+                if (total_votes_itr == total_votes_idx.end())
+                {
+                    vote_service.create_total_votes(token.discipline_id, content.research_id, content.id);
+                }
+
+                const int64_t elapsed_seconds   = (_db.head_block_time() - token.last_vote_time).to_seconds();
+
+                const int64_t regenerated_power = (DEIP_100_PERCENT * elapsed_seconds) / DEIP_VOTE_REGENERATION_SECONDS;
+                const int64_t current_power = std::min(int64_t(token.voting_power + regenerated_power), int64_t(DEIP_100_PERCENT));
+                FC_ASSERT(current_power > 0, "Account currently does not have voting power.");
+
+                const int64_t abs_weight = DEIP_100_PERCENT;
+                const int64_t used_power = (current_power * abs_weight) / DEIP_100_PERCENT;
+                const int64_t denominated_used_power = used_power / 10;
+
+                FC_ASSERT(used_power <= current_power, "Account does not have enough power to vote.");
+
+                // TODO: Calculate used tokens
+                const uint64_t abs_used_tokens
+                        = ((uint128_t(token.amount.value) * used_power) / (DEIP_100_PERCENT)).to_uint64();
+
+                const auto& tvo = vote_service
+                        .get_total_votes_by_content_and_discipline(content.id, token.discipline_id);
+
+                const bool content_is_active = content.activity_state == research_content_activity_state::active;
+
+                _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
+                    t.voting_power = current_power - denominated_used_power;
+                    t.last_vote_time = _db.head_block_time();
+                });
+
+                FC_ASSERT(abs_used_tokens > 0, "Cannot vote with 0 rshares.");
+
+                const auto current_weight = tvo.total_weight;
+                const uint64_t evaluated_research_rshares = util::evaluate_reward_curve(abs_used_tokens, research_reward_curve).to_uint64();
+
+                _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
+                    t.total_weight += abs_used_tokens;
+                    if (content_is_active) {
+                        t.total_active_weight += abs_used_tokens;
+                    }
+
+                    t.total_research_reward_weight += evaluated_research_rshares;
+                    if (content_is_active) {
+                        t.total_active_research_reward_weight += evaluated_research_rshares;
+                    }
+                });
+
+                auto& dgpo = _db.get_dynamic_global_properties();
+
+                if (content_is_active) {
+                    _db._temporary_public_impl().modify(dgpo, [&](dynamic_global_property_object& prop) {
+                        prop.total_active_disciplines_reward_weight += abs_used_tokens;
+                    });
+                }
+
+                const auto& discipline = discipline_service.get_discipline(token.discipline_id);
+                _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
+
+                    d.total_active_research_reward_weight += evaluated_research_rshares;
+
+                    if (content_is_active) {
+                        d.total_active_reward_weight += abs_used_tokens;
+                    }
+                });
+
+                uint64_t max_vote_weight = 0;
+                auto& vote = _db._temporary_public_impl().create<vote_object>([&](vote_object& v) {
+                    v.voter = voter.name;
+                    v.discipline_id = token.discipline_id;
+                    v.research_id = content.research_id;
+                    v.research_content_id = content.id;
+                    v.weight = DEIP_100_PERCENT;
+                    v.voting_power = used_power;
+                    v.tokens_amount = abs_used_tokens;
+                    v.voting_time = _db.head_block_time();
+
+                    const uint64_t old_weight = util::evaluate_reward_curve(current_weight.value, curators_reward_curve).to_uint64();
+                    const uint64_t new_weight = util::evaluate_reward_curve(tvo.total_weight.value, curators_reward_curve).to_uint64();
+                    v.weight = new_weight - old_weight;
+
+                    max_vote_weight = v.weight;
+
+                    /// discount weight by time
+                    uint128_t w(max_vote_weight);
+                    const uint64_t delta_t = std::min(uint64_t((v.voting_time - content.created_at).to_seconds()),
+                                                      uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
+
+                    w *= delta_t;
+                    w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
+                    v.weight = w.to_uint64();
+                });
+
+                _db._temporary_public_impl().modify(review, [&](review_object& r) {
+                    r.expertise_amounts_used[token.discipline_id] = token.amount;
+                });
+
+                _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
+                    t.total_curators_reward_weight += vote.weight;
+                    if (content_is_active) {
+                        t.total_active_curators_reward_weight += vote.weight;
+                    }
+                });
+            }
+        }
+        FC_CAPTURE_AND_RETHROW((op))
+    }
 }
 
 void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)
@@ -970,5 +1247,37 @@ void transfer_research_tokens_to_research_group_evaluator::do_apply(const transf
         });
 
 }
+
+void add_expertise_tokens_evaluator::do_apply(const add_expertise_tokens_operation& op)
+{
+    for (auto& discipline_to_add : op.disciplines_to_add)
+    {
+        FC_ASSERT(discipline_to_add.second > 0, "Amount must be bigger than 0");
+        _db._temporary_public_impl().create<expert_token_object>([&](expert_token_object& et_o) {
+            et_o.account_name = op.account_name;
+            et_o.discipline_id = discipline_to_add.first;
+            et_o.amount = discipline_to_add.second;
+        });
+    }
+}
+
+void research_update_evaluator::do_apply(const research_update_operation& op)
+{
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    account_service.check_account_existence(op.owner);
+    research_service.check_research_existence(op.research_id);
+
+    auto& research = research_service.get_research(op.research_id);
+    research_group_service.check_research_group_token_existence(op.owner, research.research_group_id);
+
+    _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
+        fc::from_string(r_o.title, op.title);
+        fc::from_string(r_o.abstract, op.abstract);
+        fc::from_string(r_o.permlink, op.permlink);
+    });
+}
+
 } // namespace chain
 } // namespace deip 

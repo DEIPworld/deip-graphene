@@ -380,7 +380,7 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
     std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 10000)};
     setup_research_group(1, "name", "research_group", "research group", 750, 1, accounts);
     const std::string json_str = "{\"research_group_id\":1,"
-            "\"account_name\":\"bob\","
+            "\"recipient\":\"bob\","
             "\"funds\": 250}";
 
     create_proposal(1, dbs_proposal::action_t::send_funds, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);

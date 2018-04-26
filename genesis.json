@@ -1,5 +1,6 @@
 {
     "initial_timestamp": "2017-11-29T10:03:00",
+
     "init_supply": 1000,
     "accounts": [{
         "name": "initdelegate",
@@ -19,7 +20,26 @@
         "public_key": "DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi",
         "deip_amount": 0,
         "sp_amount": 0
+    }, {
+        "name": "F.L.Lightsom",
+        "recovery_account": "",
+        "public_key": "DEIP5tGaLrD4rt2VSfonzWiG5qLRyp7dYQqbx7pCJHU3UjcVnBu2ug",
+        "deip_amount": 0,
+        "sp_amount": 0
+    }, {
+        "name": "G.Cicchetti",
+        "recovery_account": "",
+        "public_key": "DEIP8CktpdGUUCvTfTXDX4mnMZqUSm97v9Us5jbp84586ca7Z4xYhD",
+        "deip_amount": 0,
+        "sp_amount": 0
+    }, {
+        "name": "C.M.Wahle",
+        "recovery_account": "",
+        "public_key": "DEIP5dcDMFzv9cPEFyW6uZcS8ncbV5g4PNs6Vg7BpCC6cunMVsm2rC",
+        "deip_amount": 0,
+        "sp_amount": 0
     }],
+
 
     "witness_candidates": [{
         "owner_name": "initdelegate",
@@ -82,54 +102,205 @@
         "name": "Law",
         "votes_in_last_ten_weeks": 0,
         "parent_id": 0
+    }, {
+        "id": 10,
+        "name": "Geography",
+        "votes_in_last_ten_weeks": 0,
+        "parent_id": 0
+    }, {
+        "id": 11,
+        "name": "Geology",
+        "votes_in_last_ten_weeks": 0,
+        "parent_id": 10
+    }, {
+        "id": 12,
+        "name": "Hydrology",
+        "votes_in_last_ten_weeks": 0,
+        "parent_id": 10
+    }, {
+        "id": 13,
+        "name": "Oceanography",
+        "votes_in_last_ten_weeks": 0,
+        "parent_id": 12
     }],
+
     "expert_tokens": [{
-        "account_name": "initdelegate",
-        "discipline_id": 1,
-        "amount": 1000
+            "account_name": "initdelegate",
+            "discipline_id": 1,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 2,
+            "amount": 2000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 3,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 4,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 5,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 6,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 7,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 8,
+            "amount": 1000
+        }, {
+            "account_name": "initdelegate",
+            "discipline_id": 9,
+            "amount": 1000
+        }, {
+            "account_name": "alice",
+            "discipline_id": 4,
+            "amount": 5000
+        }, {
+            "account_name": "alice",
+            "discipline_id": 6,
+            "amount": 5000
+        }, {
+            "account_name": "bob",
+            "discipline_id": 1,
+            "amount": 10000
+        }, {
+            "account_name": "F.L.Lightsom",
+            "discipline_id": 10,
+            "amount": 2500
+        }, {
+            "account_name": "F.L.Lightsom",
+            "discipline_id": 11,
+            "amount": 2500
+        }, {
+            "account_name": "F.L.Lightsom",
+            "discipline_id": 12,
+            "amount": 2500
+        }, {
+            "account_name": "F.L.Lightsom",
+            "discipline_id": 13,
+            "amount": 2500
+        }, {
+            "account_name": "G.Cicchetti",
+            "discipline_id": 10,
+            "amount": 2500
+        }, {
+            "account_name": "G.Cicchetti",
+            "discipline_id": 11,
+            "amount": 2500
+        }, {
+            "account_name": "G.Cicchetti",
+            "discipline_id": 12,
+            "amount": 2500
+        }, {
+            "account_name": "G.Cicchetti",
+            "discipline_id": 13,
+            "amount": 2500
+        }, {
+            "account_name": "C.M.Wahle",
+            "discipline_id": 10,
+            "amount": 2500
+        }, {
+            "account_name": "C.M.Wahle",
+            "discipline_id": 11,
+            "amount": 2500
+        }, {
+            "account_name": "C.M.Wahle",
+            "discipline_id": 12,
+            "amount": 2500
+        }, {
+            "account_name": "C.M.Wahle",
+            "discipline_id": 13,
+            "amount": 2500
+        }
+
+    ],
+
+    "research_groups": [{
+        "id": 0,
+        "name": "DEIP official",
+        "description": "DEIP team group",
+        "permlink": "deip",
+        "quorum_percent": 95,
+        "members": ["initdelegate", "alice", "bob"]
     }, {
-        "account_name": "initdelegate",
-        "discipline_id": 2,
-        "amount": 2000
+        "id": 1,
+        "name": "U.S. Geological Survey",
+        "description": "We provide science about the natural hazards that threaten lives and livelihoods; the water, energy, minerals, and other natural resources we rely on; the health of our ecosystems and environment; and the impacts of climate and land-use change. Our scientists develop new methods and tools to supply timely, relevant, and useful information about the Earth and its processes.",
+        "permlink": "usgs",
+        "quorum_percent": 75,
+        "members": ["initdelegate", "F.L.Lightsom", "G.Cicchetti", "C.M.Wahle"]
+    }],
+
+    "researches": [{
+        "id": 0,
+        "research_group_id": 0,
+        "title": "DEIP reports",
+        "abstract": "Some abstract here",
+        "permlink": "deip-activity-report",
+        "is_finished": false,
+        "review_share_in_percent": 50,
+        "dropout_compensation_in_percent": 5,
+        "disciplines": [1, 2]
     }, {
-        "account_name": "initdelegate",
-        "discipline_id": 3,
-        "amount": 1000
-    }, {
-        "account_name": "initdelegate",
-        "discipline_id": 4,
-        "amount": 1000
-    }, {
-        "account_name": "initdelegate",
-        "discipline_id": 5,
-        "amount": 1000
-    }, {
-        "account_name": "initdelegate",
-        "discipline_id": 6,
-        "amount": 1000
-    }, {
-        "account_name": "initdelegate",
-        "discipline_id": 7,
-        "amount": 1000
-    }, {
-        "account_name": "initdelegate",
-        "discipline_id": 8,
-        "amount": 1000
-    }, {
-        "account_name": "initdelegate",
-        "discipline_id": 9,
-        "amount": 1000
-    }, {
-        "account_name": "alice",
-        "discipline_id": 4,
-        "amount": 5000
-    }, {
-        "account_name": "alice",
-        "discipline_id": 6,
-        "amount": 5000
-    }, {
-        "account_name": "bob",
-        "discipline_id": 1,
-        "amount": 10000
-    }]
+        "id": 1,
+        "research_group_id": 1,
+        "title": "Data Categories for Marine Planning",
+        "abstract": "The U.S. National Ocean Policy calls for a science- and ecosystem-based approach to comprehensive planning and management of human activities and their impacts on America’s oceans. The Ocean Community in Data.gov is an outcome of 2010–2011 work by an interagency working group charged with designing a national information management system to support ocean planning. Within the working group, a smaller team developed a list of the data categories specifically relevant to marine planning. This set of categories is an important consensus statement of the breadth of information types required for ocean planning from a national, multidisciplinary perspective. Although the categories were described in a working document in 2011, they have not yet been fully implemented explicitly in online services or geospatial metadata, in part because authoritative definitions were not created formally. This document describes the purpose of the data categories, provides definitions, and identifies relations among the categories and between the categories and external standards. It is intended to be used by ocean data providers, managers, and users in order to provide a transparent and consistent framework for organizing and describing complex information about marine ecosystems and their connections to humans.",
+        "permlink": "data-categories-for-marine-planning",
+        "is_finished": true,
+        "review_share_in_percent": 50,
+        "dropout_compensation_in_percent": 0,
+        "disciplines": [10, 11, 12, 13]
+    }],
+
+    "research_contents": [
+
+        {
+            "research_id": 0,
+            "type": 1,
+            "title": "DEIP achievements coming soon...",
+            "content": "DEIP activity report",
+            "authors": ["alice", "bob"],
+            "references": []
+        },
+        {
+            "research_id": 1,
+            "type": 1,
+            "title": "Table of Content",
+            "content": "Prepared in cooperation with the U.S. Environmental Protection Agency and the National Oceanic and Atmospheric Administration. \nAbstract ...........................................................................................................................................1 \nIntroduction .....................................................................................................................................1\n Purpose of Category Terms ...........................................................................................................3\n Use Cases ......................................................................................................................................3 \nData Needs for Ocean and Coastal Management ........................................................................6 \nData Category Terms and Definitions............................................................................................8 \nData Content Types ....................................................................................................................8 \n Data Content Subjects ................................................................................................................8 \nNonliving Resources ..............................................................................................................11\n Living Resources....................................................................................................................15\n Ocean Uses............................................................................................................................17 \nGovernance ............................................................................................................................21\n Infrastructure ..........................................................................................................................22 \nIdentifying Data and Using the Categories ..................................................................................22\n Summary.......................................................................................................................................23 \nReferences Cited..........................................................................................................................23 \nIndex .............................................................................................................................................24",
+            "authors": ["F.L.Lightsom", "G.Cicchetti", "C.M.Wahle"],
+            "references": []
+        },
+        {
+            "research_id": 1,
+            "type": 2,
+            "title": "Data Categories for Marine Planning",
+            "content": "The U.S. Federal Government provides public access to government information and data through an official Web site called Data.gov. Data.gov is a catalog that integrates records describing data from hundreds of sources that cover the full range of governmental concerns. Although the promise of Data.gov is that everyone can find and use the data for illuminating and profitable purposes, as the volume of data grows, potential users face challenges finding the specific data they need within the expanding universe of available offerings. Large online data catalogs can address this challenge by using controlled vocabularies and sets of logical data categories. Controlled vocabularies allow the records to be labeled with terms that can be efficiently searched by users who are familiar with the concepts the vocabularies represent. A well-crafted set of categories can be used to sort, browse, and discover data, meeting the community’s needs. Within Data.gov several community Web sites offer data discovery customized for particular user communities. An Ocean Community (http://www.data.gov/community/ocean) was sponsored by the interagency National Ocean Council (NOC) to implement the U.S. National Ocean Policy (NOP). On July 19, 2010, the President issued Executive Order 13547, “Stewardship of the Ocean, Our Coasts, and the Great Lakes” (3 CFR EO 13547; http://www.gpo.gov/fdsys/pkg/FR- 2010-07-22/pdf/2010-18169.pdf), which enacted a new National Ocean Policy as set forth in the “Final Recommendations of the Interagency Ocean Policy Task Force” document (White House Council on Environmental Quality, 2010, hereafter referred to as the “Final Recommendations”). The recommendations include a framework for guiding regional implementation of coastal and marine spatial planning (CMSP). In an effort to provide an information foundation for CMSP, the NOC established the Interagency Information Management System and CMSP Data Portal Working Group in 2010. The working group then created the Information Needs Team charged with identifying the broad categories of ocean data considered most vital to effective CMSP.",
+            "authors": ["F.L.Lightsom", "G.Cicchetti", "C.M.Wahle"],
+            "references": []
+        }, {
+            "research_id": 1,
+            "type": 2,
+            "title": "Purpose of Category Terms",
+            "content": "The category terms can be used to achieve the goals of three user classes, as summarized in the “Use Cases” section and shown in figure 1. The members of CMSP Regional Planning Bodies ultimately benefit from the terms but might not make direct use of them, instead relying on regional databases produced by geographic information system (GIS) specialists. As described in Use Case 1, data specialists in Federal agencies can use the categories to submit records to Data.gov that will be identified and properly classified as part of the ocean planning data system. A data specialist can use the category definitions to identify and prioritize agency data for marine planning. Data category terms used in metadata as keywords can identify the records for the ocean planning data system and assist in their appropriate classification within the ocean planning data system. As described in Use Case 2, the Federal committee maintaining the ocean planning data system can use the categories not only as a source of search keywords for identifying potential new records but also as a framework for organizing the ocean planning data system: the structure of categories can be provided as a browse tree, the records can be tagged with category names for more efficient searching, and links to the category definitions can be provided to assist data system users. The records in the ocean planning data system will be selected from among those submitted to Data.gov by Federal agencies. As described in Use Case 3, a GIS specialist supporting a regional planning body can use the categories as a reference in defining different types of data that are needed, as a checklist in tracking progress toward meeting data requirements, and as a source of terms to use in searching and browsing for data. A major resource used by the GIS specialist is the national ocean planning data system, which is a catalog of data selected and organized by a Federal committee. The value of the data categories will increase if the ocean planning data system includes a comment form that collects information about additional data types that are needed. These types would be evaluated for inclusion in future versions of the data categories list.",
+            "authors": ["F.L.Lightsom", "G.Cicchetti", "C.M.Wahle"],
+            "references": []
+        }, {
+            "research_id": 1,
+            "type": 2,
+            "title": "Data Needs for Ocean and Coastal Management",
+            "content": "Coastal and marine spatial planning (CMSP) is both a goal and a foundational core component of the National Ocean Policy under Executive Order 13547 and the “Final Recommendations” document. The policy recognizes that current sector-specific management does not adequately evaluate the tradeoffs and environmental impacts associated with multiple human uses such as commerce, recreation, energy development, conservation, national security, and the traditional practices of indigenous peoples. The CMSP process provides a foundation for the transition to ecosystem-based management of coastal and marine resources that considers both ecological and human needs. The policy also recognizes that sound scientific understanding is essential to achieving an integrated decision-making process that includes knowledge of ecosystems, existing and evolving environmental conditions, and the potential consequences of natural and anthropogenic events. Comprehensive CMSP involves complex analyses of the statuses and potential uses of three-dimensional areas of coastal, marine and Great Lakes ecosystems (including the water column) and their potential changes over time. Relevant spatial data and derived analytical products inform all phases of the CMSP process, including identification of regional objectives for the long-term use and conservation of specific areas; assessment of the status and trends of ecosystems, resources, and human uses; and creation, long-term implementation, and adaptive management of comprehensive plans to sustainably match those uses to appropriate areas. To this end, the National Ocean Policy’s “Framework for Effective Coastal and Marine Spatial Planning” (part 4 of the “Final Recommendations” document) identifies several key science and data issues inherent to informed regional decision-making about how and where human uses should occur in U.S. waters (listed here verbatim):",
+            "authors": ["F.L.Lightsom", "G.Cicchetti", "C.M.Wahle"],
+            "references": []
+        }
+    ]
 }

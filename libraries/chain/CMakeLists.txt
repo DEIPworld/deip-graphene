@@ -40,6 +40,7 @@ add_library( deip_chain
              dbs_research_group_invite.cpp
              dbs_dynamic_global_properties.cpp
              dbs_research_group_join_request.cpp
+             dbs_review.cpp
 
              deip_evaluator.cpp
              deip_objects.cpp

@@ -70,6 +70,12 @@ void vote_operation::validate() const
     FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
 }
 
+void vote_for_review_operation::validate() const
+{
+    validate_account_name(voter);
+    FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
+}
+
 void transfer_operation::validate() const
 {
     try
@@ -194,7 +200,7 @@ void vote_proposal_operation::validate() const
     validate_account_name(voter);
 }
 
-void make_research_review_operation::validate() const
+void make_review_operation::validate() const
 {
     validate_account_name(author);
     FC_ASSERT(!content.empty(), "Research content cannot be empty");
@@ -237,6 +243,21 @@ void transfer_research_tokens_to_research_group_operation::validate() const
 {
     validate_account_name(owner);
 }    
+
+void add_expertise_tokens_operation::validate() const
+{
+    validate_account_name(owner);
+    validate_account_name(account_name);
+    FC_ASSERT(!disciplines_to_add.empty(), "List of disciplines to adjust cannot be empty");
+}
+
+void research_update_operation::validate() const
+{
+    FC_ASSERT(!title.empty(), "Title cannot be empty");
+    FC_ASSERT(!abstract.empty(), "Abstract cannot be empty");
+    FC_ASSERT(!permlink.empty(), "Permlink cannot be empty");
+    validate_account_name(owner);
+}
 
 }
 } // deip::protocol
