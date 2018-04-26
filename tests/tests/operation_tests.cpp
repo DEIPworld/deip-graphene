@@ -2883,7 +2883,7 @@ BOOST_AUTO_TEST_CASE(research_update_apply)
         private_key_type priv_key = generate_private_key("alice");
 
         auto& research = research_create(0, "title", "abstract", "permlink", 1, 10, 10);
-        auto& research_group = research_group_create(1, "name", "permlink", "description", 100, 100, DEIP_100_PERCENT);
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 100, 100);
         auto& research_group_token = research_group_token_create(1, "alice", DEIP_100_PERCENT);
 
         research_update_operation op;
