@@ -217,7 +217,7 @@ void blockchain_statistics_plugin_impl::pre_operation(const operation_notificati
             const auto& account = db.get_account(op.account);
             const auto& bucket = db.get(bucket_id);
 
-            auto new_common_tokens_withdrawal_rate = op.total_common_tokens_amount / DEIP_VESTING_WITHDRAW_INTERVALS;
+            auto new_common_tokens_withdrawal_rate = op.total_common_tokens_amount / DEIP_COMMON_TOKENS_WITHDRAW_INTERVALS;
             if (op.total_common_tokens_amount > 0 && new_common_tokens_withdrawal_rate == 0)
                 new_common_tokens_withdrawal_rate = 1;
 

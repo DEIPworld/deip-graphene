@@ -60,7 +60,7 @@ public:
     share_type total_common_tokens_amount = 0;
 
     share_type received_common_tokens = 0;
-    share_type common_tokens_withdraw_rate = 0; ///< at the time this is updated it can be at most vesting_shares/104
+    share_type common_tokens_withdraw_rate = 0; ///< at the time this is updated it can be at most common_tokens/104
     time_point_sec next_common_tokens_withdrawal
         = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
     share_type withdrawn = 0; /// Track how many shares have been withdrawn

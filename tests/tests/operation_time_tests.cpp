@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdrawals)
         tx.sign(alice_private_key, db.get_chain_id());
         db.push_transaction(tx, 0);
 
-        auto next_withdrawal = db.head_block_time() + DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS;
+        auto next_withdrawal = db.head_block_time() + DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS;
         share_type common_tokens_amount = new_alice.total_common_tokens_amount;
         share_type to_withdraw = op.total_common_tokens_amount;
         share_type original_common_tokens = common_tokens_amount;
@@ -80,9 +80,9 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdrawals)
         auto balance = db.get_account("alice").balance;
         auto old_next_common_tokens_w = db.get_account("alice").next_common_tokens_withdrawal;
 
-        for (int i = 1; i < DEIP_VESTING_WITHDRAW_INTERVALS - 1; i++)
+        for (int i = 1; i < DEIP_COMMON_TOKENS_WITHDRAW_INTERVALS - 1; i++)
         {
-            generate_blocks(db.head_block_time() + DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS);
+            generate_blocks(db.head_block_time() + DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS);
 
             const auto& alice = db.get_account("alice");
 
@@ -99,11 +99,11 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdrawals)
             BOOST_REQUIRE(std::abs((fill_op.deposited - fill_op.withdrawn).value)
                           <= 1);
 
-            if (i == DEIP_VESTING_WITHDRAW_INTERVALS - 1)
+            if (i == DEIP_COMMON_TOKENS_WITHDRAW_INTERVALS - 1)
                 BOOST_REQUIRE(alice.next_common_tokens_withdrawal == fc::time_point_sec::maximum());
             else
                 BOOST_REQUIRE(alice.next_common_tokens_withdrawal.sec_since_epoch()
-                              == (old_next_common_tokens_w + DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS).sec_since_epoch());
+                              == (old_next_common_tokens_w + DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS).sec_since_epoch());
 
             validate_database();
 
@@ -115,19 +115,19 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdrawals)
         if (to_withdraw % withdraw_rate != 0)
         {
             BOOST_TEST_MESSAGE("Generating one more block to take care of remainder");
-            generate_blocks(db.head_block_time() + DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS, true);
+            generate_blocks(db.head_block_time() + DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS, true);
             fill_op = get_last_operations(1)[0].get<fill_common_tokens_withdraw_operation>();
             gpo = db.get_dynamic_global_properties();
 
             BOOST_REQUIRE(db.get_account("alice").next_common_tokens_withdrawal.sec_since_epoch()
-                          == (old_next_common_tokens_w + DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS).sec_since_epoch());
+                          == (old_next_common_tokens_w + DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS).sec_since_epoch());
             BOOST_REQUIRE(fill_op.from_account == "alice");
             BOOST_REQUIRE(fill_op.to_account == "alice");
             BOOST_REQUIRE(fill_op.withdrawn == withdraw_rate);
             BOOST_REQUIRE(std::abs((fill_op.deposited - fill_op.withdrawn).value)
                           <= 1);
 
-            generate_blocks(db.head_block_time() + DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS, true);
+            generate_blocks(db.head_block_time() + DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS, true);
             gpo = db.get_dynamic_global_properties();
             fill_op = get_last_operations(1)[0].get<fill_common_tokens_withdraw_operation>();
 
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdrawals)
         }
         else
         {
-            generate_blocks(db.head_block_time() + DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS, true);
+            generate_blocks(db.head_block_time() + DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS, true);
 
             BOOST_REQUIRE(db.get_account("alice").next_common_tokens_withdrawal.sec_since_epoch()
                           == fc::time_point_sec::maximum().sec_since_epoch());

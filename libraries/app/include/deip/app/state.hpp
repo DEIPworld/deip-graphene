@@ -41,9 +41,7 @@ struct account_vote
     int16_t percent = 0;
     time_point_sec time;
 };
-/**
- *  Convert's vesting shares
- */
+
 struct extended_account : public account_api_obj
 {
     extended_account() {}

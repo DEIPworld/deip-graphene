@@ -1562,7 +1562,7 @@ BOOST_AUTO_TEST_CASE(withdraw_common_tokens_apply)
            op.account = "alice";
            op.total_common_tokens_amount = alice.total_common_tokens_amount / 2;
 
-           share_type old_vesting_shares = alice.total_common_tokens_amount;
+           share_type old_common_tokens = alice.total_common_tokens_amount;
 
            signed_transaction tx;
            tx.operations.push_back(op);
@@ -1570,12 +1570,12 @@ BOOST_AUTO_TEST_CASE(withdraw_common_tokens_apply)
            tx.sign(alice_private_key, db.get_chain_id());
            db.push_transaction(tx, 0);
 
-           BOOST_REQUIRE(alice.total_common_tokens_amount == old_vesting_shares);
+           BOOST_REQUIRE(alice.total_common_tokens_amount == old_common_tokens);
            BOOST_REQUIRE(alice.common_tokens_withdraw_rate.value
-                         == (old_vesting_shares / (DEIP_VESTING_WITHDRAW_INTERVALS * 2)).value);
+                         == (old_common_tokens / (DEIP_COMMON_TOKENS_WITHDRAW_INTERVALS * 2)).value);
            BOOST_REQUIRE(alice.to_withdraw.value == op.total_common_tokens_amount.value);
            BOOST_REQUIRE(alice.next_common_tokens_withdrawal
-                         == db.head_block_time() + DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS);
+                         == db.head_block_time() + DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS);
            validate_database();
 
            BOOST_TEST_MESSAGE("--- Test changing vesting withdrawal");
@@ -1588,12 +1588,12 @@ BOOST_AUTO_TEST_CASE(withdraw_common_tokens_apply)
            tx.sign(alice_private_key, db.get_chain_id());
            db.push_transaction(tx, 0);
 
-           BOOST_REQUIRE(alice.total_common_tokens_amount == old_vesting_shares.value);
+           BOOST_REQUIRE(alice.total_common_tokens_amount == old_common_tokens.value);
            BOOST_REQUIRE(alice.common_tokens_withdraw_rate.value
-                         == (old_vesting_shares / (DEIP_VESTING_WITHDRAW_INTERVALS * 3)).value);
+                         == (old_common_tokens / (DEIP_COMMON_TOKENS_WITHDRAW_INTERVALS * 3)).value);
            BOOST_REQUIRE(alice.to_withdraw.value == op.total_common_tokens_amount.value);
            BOOST_REQUIRE(alice.next_common_tokens_withdrawal
-                         == db.head_block_time() + DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS);
+                         == db.head_block_time() + DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS);
            validate_database();
 
            BOOST_TEST_MESSAGE("--- Test withdrawing more vests than available");
@@ -1607,11 +1607,11 @@ BOOST_AUTO_TEST_CASE(withdraw_common_tokens_apply)
            tx.sign(alice_private_key, db.get_chain_id());
            DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
-           BOOST_REQUIRE(alice.total_common_tokens_amount.value == old_vesting_shares.value);
+           BOOST_REQUIRE(alice.total_common_tokens_amount.value == old_common_tokens.value);
            BOOST_REQUIRE(alice.common_tokens_withdraw_rate.value
-                         == (old_vesting_shares / (DEIP_VESTING_WITHDRAW_INTERVALS * 3)).value);
+                         == (old_common_tokens / (DEIP_COMMON_TOKENS_WITHDRAW_INTERVALS * 3)).value);
            BOOST_REQUIRE(alice.next_common_tokens_withdrawal
-                         == db.head_block_time() + DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS);
+                         == db.head_block_time() + DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS);
            validate_database();
 
            BOOST_TEST_MESSAGE("--- Test withdrawing 0 to reset vesting withdraw");
@@ -1624,7 +1624,7 @@ BOOST_AUTO_TEST_CASE(withdraw_common_tokens_apply)
            tx.sign(alice_private_key, db.get_chain_id());
            db.push_transaction(tx, 0);
 
-           BOOST_REQUIRE(alice.total_common_tokens_amount == old_vesting_shares.value);
+           BOOST_REQUIRE(alice.total_common_tokens_amount == old_common_tokens.value);
            BOOST_REQUIRE(alice.common_tokens_withdraw_rate.value == 0);
            BOOST_REQUIRE(alice.to_withdraw.value == 0);
            BOOST_REQUIRE(alice.next_common_tokens_withdrawal == fc::time_point_sec::maximum());

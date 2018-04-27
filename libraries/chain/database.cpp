@@ -973,9 +973,9 @@ void database::process_common_tokens_withdrawals()
         ++current;
 
         /**
-         *  Let T = total tokens in vesting fund
-         *  Let V = total vesting shares
-         *  Let v = total vesting shares being cashed out
+         *  Let T = total tokens in common_tokens fund
+         *  Let V = total common_tokens
+         *  Let v = total common_tokens being cashed out
          *
          *  The user may withdraw  vT / V tokens
          */
@@ -991,7 +991,7 @@ void database::process_common_tokens_withdrawals()
         share_type common_tokens_deposited_as_common_tokens = 0;
         asset total_deip_converted = asset(0, DEIP_SYMBOL);
 
-        // Do two passes, the first for vests, the second for deip. Try to maintain as much accuracy for vests as
+        // Do two passes, the first for common tokens, the second for deip. Try to maintain as much accuracy for common tokens as
         // possible.
         for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
              itr != didx.end() && itr->from_account == from_account.id; ++itr)
@@ -1028,7 +1028,7 @@ void database::process_common_tokens_withdrawals()
                 share_type to_deposit
                     = ((fc::uint128_t(to_withdraw.value) * itr->percent) / DEIP_100_PERCENT).to_uint64();
                 common_tokens_deposited_as_deip += to_deposit;
-                share_type converted_deip = to_deposit /* * cprops.get_vesting_share_price() */;
+                share_type converted_deip = to_deposit;
                 total_deip_converted += converted_deip;
 
                 if (to_deposit > 0)
@@ -1049,7 +1049,7 @@ void database::process_common_tokens_withdrawals()
         share_type to_convert = to_withdraw - common_tokens_deposited_as_deip - common_tokens_deposited_as_common_tokens;
         FC_ASSERT(to_convert >= 0, "Deposited more common_tokens than were supposed to be withdrawn");
 
-        share_type converted_deip = to_convert /* * cprops.get_vesting_share_price() */;
+        share_type converted_deip = to_convert;
 
         modify(from_account, [&](account_object& a) {
             a.total_common_tokens_amount -= to_withdraw;
@@ -1063,7 +1063,7 @@ void database::process_common_tokens_withdrawals()
             }
             else
             {
-                a.next_common_tokens_withdrawal += fc::seconds(DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS);
+                a.next_common_tokens_withdrawal += fc::seconds(DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS);
             }
         });
 

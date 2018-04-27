@@ -224,7 +224,7 @@ void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_ope
         const auto& props = _db.get_dynamic_global_properties();
         const witness_schedule_object& wso = _db.get_witness_schedule_object();
 
-        share_type min_common_tokens = wso.median_props.account_creation_fee.amount /* * props.get_vesting_share_price() */;
+        share_type min_common_tokens = wso.median_props.account_creation_fee.amount;
         min_common_tokens *= 10;
 
         FC_ASSERT(
@@ -243,8 +243,8 @@ void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_ope
     else
     {
 
-        // DEIP: We have to decide wether we use 13 weeks vesting period or low it down
-        int common_tokens_withdraw_intervals = DEIP_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
+        // DEIP: We have to decide wether we use 13 weeks vesting withdraw period or low it down
+        int common_tokens_withdraw_intervals = DEIP_COMMON_TOKENS_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
 
         auto new_common_tokens_withdraw_rate = o.total_common_tokens_amount / share_type(common_tokens_withdraw_intervals);
 
@@ -255,7 +255,7 @@ void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_ope
                   "This operation would not change the vesting withdraw rate.");
 
         account_service.update_withdraw(account, new_common_tokens_withdraw_rate,
-                                        _db.head_block_time() + fc::seconds(DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS),
+                                        _db.head_block_time() + fc::seconds(DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS),
                                         o.total_common_tokens_amount);
     }
 }

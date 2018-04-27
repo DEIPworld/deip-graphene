@@ -169,8 +169,8 @@ struct transfer_to_common_tokens_operation : public base_operation
  * vesting shares. A user may change the number of shares they wish to
  * cash out at any time between 0 and their total vesting stake.
  *
- * After applying this operation, vesting_shares will be withdrawn
- * at a rate of vesting_shares/104 per week for two years starting
+ * After applying this operation, common_tokens will be withdrawn
+ * at a rate of common_tokens/104 per week for two years starting
  * one week after this operation is included in the blockchain.
  *
  * This operation is not valid if the user has no vesting shares.
