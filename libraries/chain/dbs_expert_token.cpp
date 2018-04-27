@@ -115,7 +115,7 @@ void dbs_expert_token::check_expert_token_existence_by_account_and_discipline(co
     FC_ASSERT(idx.find(std::make_tuple(account, discipline_id)) != idx.cend(), "Expert token for account \"${1}\" and discipline \"${2}\" does not exist", ("1", account)("2", discipline_id));
 }
 
-bool dbs_expert_token::check_expert_token_existence_by_account_and_discipline_return(const account_name_type &account,
+bool dbs_expert_token::is_expert_token_existence_by_account_and_discipline(const account_name_type &account,
                                                                               const discipline_id_type &discipline_id)
 {
     const auto& idx = db_impl().get_index<expert_token_index>().indices().get<by_account_and_discipline>();

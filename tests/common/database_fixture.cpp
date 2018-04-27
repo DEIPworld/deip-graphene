@@ -807,7 +807,7 @@ const expert_token_object database_fixture::common_token(const string& account, 
                       [&](dynamic_global_property_object& gpo) { gpo.current_supply += asset(amount, DEIP_SYMBOL); });
 
     expert_token_object common_token
-        = (expert_token_service.check_expert_token_existence_by_account_and_discipline_return(account, 0))
+        = (expert_token_service.is_expert_token_existence_by_account_and_discipline(account, 0))
         ? expert_token_object(common_token = expert_token_service.increase_common_tokens(account, amount))
         : expert_token_object(common_token = expert_token_service.create(account, 0, amount));
 

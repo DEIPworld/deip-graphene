@@ -53,7 +53,7 @@ public:
 
     void check_expert_token_existence_by_account_and_discipline(const account_name_type& account,
                                                                 const discipline_id_type& discipline_id);
-    bool check_expert_token_existence_by_account_and_discipline_return(const account_name_type& account,
+    bool is_expert_token_existence_by_account_and_discipline(const account_name_type& account,
                                                                 const discipline_id_type& discipline_id);
 };
 } // namespace chain

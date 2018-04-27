@@ -1138,9 +1138,17 @@ void database::process_funds()
         p.current_supply += asset(new_deip, DEIP_SYMBOL);
     });
 
-    const auto& producer_reward
-        = expert_token_service.increase_common_tokens(get_account(cwit.owner).name, witness_reward);
-    push_virtual_operation(producer_reward_operation(cwit.owner, producer_reward.amount));
+    if (expert_token_service.is_expert_token_existence_by_account_and_discipline(get_account(cwit.owner).name, 0))
+    {
+        expert_token_service.increase_common_tokens(get_account(cwit.owner).name, witness_reward);
+    }
+    else
+    {
+        expert_token_service.create(get_account(cwit.owner).name, 0, witness_reward);
+    }
+
+    // witness_reward = producer_reward because 1 DEIP = 1 Common Token. Add producer_reward as separate value if 1 DEIP != 1 Common Token
+    push_virtual_operation(producer_reward_operation(cwit.owner, witness_reward));
 }
 
 void database::account_recovery_processing()
