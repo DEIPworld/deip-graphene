@@ -8,6 +8,10 @@
 #include <deip/chain/deip_objects.hpp>
 #include <deip/chain/discipline_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
+#include <deip/chain/research_group_object.hpp>
+#include <deip/chain/research_object.hpp>
+#include <deip/chain/research_content_object.hpp>
+#include <deip/chain/research_discipline_relation_object.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
 
 #include <fc/io/json.hpp>
@@ -79,6 +83,9 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_genesis_global_property_object(genesis_state);
         init_genesis_disciplines(genesis_state);
         init_expert_tokens(genesis_state);
+        init_research_groups(genesis_state);
+        init_research(genesis_state);
+        init_research_content(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
@@ -227,6 +234,115 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
         expert_token_service.create(expert_token.account_name, expert_token.discipline_id, expert_token.amount);
     }
 }
+
+
+
+void database::init_research(const genesis_state_type& genesis_state)
+{
+    const vector<genesis_state_type::research_type>& researches = genesis_state.researches;
+
+    for (auto& research : researches)
+    {
+        FC_ASSERT(!research.title.empty(), "Research 'title' must be provided");
+        FC_ASSERT(!research.permlink.empty(),  "Research group 'permlink' must be provided");
+        FC_ASSERT(research.dropout_compensation_in_percent >= 0 && research.dropout_compensation_in_percent <= 100, "Percent for dropout compensation should be in 0 to 100 range");
+        FC_ASSERT(research.review_share_in_percent >= 0 && research.review_share_in_percent <= 50, "Percent for review should be in 0 to 50 range");
+
+        create<research_object>([&](research_object& r){
+            r.id = research.id;
+            r.research_group_id = research.research_group_id;
+            fc::from_string(r.title, research.title);
+            fc::from_string(r.abstract, research.abstract);
+            fc::from_string(r.permlink, research.permlink);
+            r.created_at = get_genesis_time();
+            r.last_update_time = get_genesis_time();
+            r.is_finished = research.is_finished;
+            r.owned_tokens = DEIP_100_PERCENT;
+            r.review_share_in_percent = research.review_share_in_percent * DEIP_1_PERCENT;
+            r.review_share_in_percent_last_update = get_genesis_time();
+            r.dropout_compensation_in_percent = research.dropout_compensation_in_percent * DEIP_1_PERCENT;
+        });
+
+        for (auto& discipline_id : research.disciplines)
+        {
+            create<research_discipline_relation_object>([&](research_discipline_relation_object& rel){
+                rel.research_id = research.id;
+                rel.discipline_id = discipline_id;
+                rel.votes_count = 0;
+            });
+        }
+    }
+}
+
+void database::init_research_content(const genesis_state_type& genesis_state)
+{
+    const vector<genesis_state_type::research_content_type>& research_contents = genesis_state.research_contents;
+    
+    for (auto& research_content : research_contents)
+    {
+        FC_ASSERT(!research_content.title.empty(), "Research content 'title' must be specified");
+        FC_ASSERT(!research_content.content.empty(),  "Research content must be specified");
+        FC_ASSERT(research_content.authors.size() > 0, "Research group must contain at least 1 member");
+
+        for (auto& author : research_content.authors)
+        {
+            // validate for account existence
+            auto account = get<account_object, by_name>(author);
+        }
+
+        auto research = get<research_object, by_id>(research_content.research_id);
+
+        create<research_content_object>([&](research_content_object& rc) {
+
+            rc.research_id = research_content.research_id;
+            rc.type = static_cast<deip::chain::research_content_type>(research_content.type);
+            fc::from_string(rc.title, research_content.title);
+            fc::from_string(rc.content, research_content.content);
+            rc.authors.insert(research_content.authors.begin(), research_content.authors.end());
+            rc.references.insert(research_content.references.begin(), research_content.references.end());
+            rc.created_at = get_genesis_time();
+            rc.activity_round = 1;
+            rc.activity_state = static_cast<deip::chain::research_content_activity_state>(1);
+            rc.activity_window_start = get_genesis_time();
+            rc.activity_window_end = get_genesis_time() + DAYS_TO_SECONDS(14);
+        });
+    }
+}
+
+void database::init_research_groups(const genesis_state_type& genesis_state)
+{
+    const vector<genesis_state_type::research_group_type>& research_groups = genesis_state.research_groups;
+
+    for (auto& research_group : research_groups)
+    {
+        FC_ASSERT(!research_group.name.empty(), "Research group 'name' must be specified");
+        FC_ASSERT(!research_group.permlink.empty(), "Research group 'permlink' must be specified");
+        FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
+        FC_ASSERT(research_group.quorum_percent >= 5 && research_group.quorum_percent <= 100, "Quorum percent should be in 5 to 100 range");
+
+        create<research_group_object>([&](research_group_object& rg) {
+           rg.id = research_group.id;
+           fc::from_string(rg.name, research_group.name);
+           fc::from_string(rg.description, research_group.description);
+           fc::from_string(rg.permlink, research_group.permlink);
+           rg.funds = share_type(0);
+           rg.quorum_percent = research_group.quorum_percent * DEIP_1_PERCENT;
+        });
+
+        for (auto& member : research_group.members)
+        {
+           // check for account
+           auto account = get<account_object, by_name>(member);
+           create<research_group_token_object>([&](research_group_token_object& rgt) {
+               rgt.research_group_id = research_group.id;
+               rgt.amount = DEIP_100_PERCENT / research_group.members.size();
+               rgt.owner = account.name;
+           });
+        }
+    }
+}
+
+
 
 } // namespace chain
 } // namespace deip

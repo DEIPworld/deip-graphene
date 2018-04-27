@@ -29,15 +29,7 @@ public:
 
     typedef deip::protocol::proposal_action_type action_t;
 
-    /** Get proposal by id
-     */
-    const proposal_object& get_proposal(const proposal_id_type& id) const;
-
-    /** Get proposals by research group
-     */
-    const proposal_ref_type get_proposals_by_research_group_id(const research_group_id_type& research_group_id) const;
-
-    /** Create proposal object.
+        /** Create proposal object.
      *
      * @param action - type of proposal
      * @param json_data - data attached to particular action type
@@ -51,6 +43,14 @@ public:
                                            const research_group_id_type& research_group_id,
                                            const fc::time_point_sec expiration_time,
                                            const share_type quorum_percent);
+
+    /** Get proposal by id
+     */
+    const proposal_object& get_proposal(const proposal_id_type& id) const;
+
+    /** Get proposals by research group
+     */
+    const proposal_ref_type get_proposals_by_research_group_id(const research_group_id_type& research_group_id) const;
 
     void remove(const proposal_object& proposal);
 

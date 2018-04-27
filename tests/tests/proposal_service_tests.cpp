@@ -54,6 +54,17 @@ public:
             d.quorum_percent = 72;
             d.voted_accounts.insert("alice");
         });
+
+        db.create<proposal_object>([&](proposal_object& d) {
+            d.id = 4;
+            d.action = proposal_action_type::change_research_review_share_percent;
+            d.data = "1123";
+            d.creator = "alice";
+            d.research_group_id = 1;
+            d.expiration_time = fc::time_point_sec(12313);
+            d.quorum_percent = 50;
+            d.voted_accounts.insert("bob"); d.voted_accounts.insert("john");
+        });
     }
 
     void create_proposal_votes()
@@ -124,6 +135,40 @@ BOOST_AUTO_TEST_CASE(get_proposal_by_id)
      FC_LOG_AND_RETHROW()
  }
 
+BOOST_AUTO_TEST_CASE(get_proposals_by_research_group_id)
+{
+    try
+    {
+        create_proposals();
+
+        auto proposals = data_service.get_proposals_by_research_group_id(1);
+
+        BOOST_CHECK(proposals.size() == 2);
+
+        BOOST_CHECK(std::any_of(proposals.begin(), proposals.end(), [](std::reference_wrapper<const proposal_object> wrapper){
+            const proposal_object &proposal = wrapper.get();
+            return  proposal.id == 1 && proposal.research_group_id == 1 &&
+                    proposal.action == proposal_action_type::dropout_member &&
+                    proposal.data == "1" &&
+                    proposal.creator == "alice" &&
+                    proposal.expiration_time == fc::time_point_sec(0xffffffff) &&
+                    proposal.quorum_percent == 40 &&
+                    proposal.voted_accounts.size() == 2;
+        }));
+        BOOST_CHECK(std::any_of(proposals.begin(), proposals.end(), [](std::reference_wrapper<const proposal_object> wrapper){
+            const proposal_object &proposal = wrapper.get();
+            return  proposal.id == 4 && proposal.research_group_id == 1 &&
+                    proposal.action == proposal_action_type::change_research_review_share_percent &&
+                    proposal.data == "1123" &&
+                    proposal.creator == "alice" &&
+                    proposal.expiration_time == fc::time_point_sec(12313) &&
+                    proposal.quorum_percent == 50 &&
+                    proposal.voted_accounts.size() == 2;
+        }));
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(throw_on_get_proposal_by_non_existing_id)
 {
     try
@@ -146,6 +191,27 @@ BOOST_AUTO_TEST_CASE(remove_proposal)
      FC_LOG_AND_RETHROW()
  }
 
+BOOST_AUTO_TEST_CASE(check_proposal_existence)
+ {
+     try
+     {
+         create_proposals();
+         BOOST_CHECK_THROW(data_service.check_proposal_existence(23), fc::assert_exception);
+     }
+     FC_LOG_AND_RETHROW()
+ }
+
+BOOST_AUTO_TEST_CASE(is_expired)
+ {
+     try
+     {
+         create_proposals();
+         BOOST_CHECK(data_service.is_expired(db.get<proposal_object, by_id>(1)) == false);
+         BOOST_CHECK(data_service.is_expired(db.get<proposal_object, by_id>(4)) == true);
+     }
+     FC_LOG_AND_RETHROW()
+ }
+
 BOOST_AUTO_TEST_CASE(clear_expired_proposals)
  {
      try
@@ -154,6 +220,19 @@ BOOST_AUTO_TEST_CASE(clear_expired_proposals)
 
          BOOST_CHECK_NO_THROW(data_service.clear_expired_proposals());
          BOOST_CHECK_THROW((db.get<proposal_object, by_id>(2)), boost::exception);
+
+     }
+     FC_LOG_AND_RETHROW()
+ }
+
+BOOST_AUTO_TEST_CASE(remove_proposal_votes)
+ {
+     try
+     {
+         create_proposal_votes();
+
+         BOOST_CHECK_NO_THROW(data_service.remove_proposal_votes("alice", 3));
+         BOOST_CHECK_THROW((db.get<proposal_vote_object, by_voter>(boost::make_tuple("alice", 3))), boost::exception);
 
      }
      FC_LOG_AND_RETHROW()
@@ -185,15 +264,31 @@ BOOST_AUTO_TEST_CASE(vote_for_proposal)
      FC_LOG_AND_RETHROW()
  }
 
-BOOST_AUTO_TEST_CASE(remove_proposal_votes)
+BOOST_AUTO_TEST_CASE(get_votes_for)
  {
      try
      {
          create_proposal_votes();
 
-         BOOST_CHECK_NO_THROW(data_service.remove_proposal_votes("alice", 3));
-         BOOST_CHECK_THROW((db.get<proposal_vote_object, by_voter>(boost::make_tuple("alice", 3))), boost::exception);
+         auto votes = data_service.get_votes_for(1);
 
+         BOOST_CHECK(votes.size() == 2);
+
+         BOOST_CHECK(std::any_of(votes.begin(), votes.end(), [](std::reference_wrapper<const proposal_vote_object> wrapper){
+             const proposal_vote_object &vote = wrapper.get();
+             return  vote.id == 1 && vote.research_group_id == 3 &&
+                     vote.voter == "alice" &&
+                     vote.proposal_id == 1 &&
+                     vote.weight == 50;
+         }));
+
+         BOOST_CHECK(std::any_of(votes.begin(), votes.end(), [](std::reference_wrapper<const proposal_vote_object> wrapper){
+             const proposal_vote_object &vote = wrapper.get();
+             return  vote.id == 3 && vote.research_group_id == 2 &&
+                     vote.voter == "bob" &&
+                     vote.proposal_id == 1 &&
+                     vote.weight == 60;
+         }));
      }
      FC_LOG_AND_RETHROW()
  }
@@ -203,7 +298,4 @@ BOOST_AUTO_TEST_SUITE_END()
 } // namespace chain
 } // namespace deip
 
-#endif//
-// Created by dzeranov on 19.1.18.
-//
-
+#endif

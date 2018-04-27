@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <sstream>
 #include <deip/chain/research_group_invite_object.hpp>
+#include <deip/chain/research_token_object.hpp>
 
 #include "database_fixture.hpp"
 
@@ -565,6 +566,57 @@ const research_object& database_fixture::research_create(const int64_t id,
     return new_research;
 }
 
+const research_token_object& database_fixture::research_token_create(const int64_t id, 
+                                                                     const account_name_type& owner,
+                                                                     const uint16_t amount,
+                                                                     const int64_t research_id)    
+{
+    const auto& new_research_token = db.create<research_token_object>([&](research_token_object& r) {
+        r.id = id;
+        r.account_name = owner;
+        r.amount = amount;
+        r.research_id = research_id;
+    });
+
+    return new_research_token;
+}
+    
+const research_content_object& database_fixture::research_content_create(
+                                const int64_t& id,
+                                const int64_t& research_id,
+                                const research_content_type& type,
+                                const std::string& title,
+                                const std::string& content,
+                                const int16_t& activity_round,
+                                const research_content_activity_state& activity_state,
+                                const time_point_sec& activity_window_start,
+                                const time_point_sec& activity_window_end,
+                                const std::vector<account_name_type>& authors,
+                                const std::vector<research_content_id_type>& references,
+                                const std::vector<string>& external_references)
+{
+    const auto& new_research_content = db.create<research_content_object>([&](research_content_object& rc) {
+
+        auto now = db.head_block_time();
+
+        rc.id = id;
+        rc.research_id = research_id;
+        rc.type = type;
+        fc::from_string(rc.title, title);
+        fc::from_string(rc.content, content);
+        rc.created_at = now;
+        rc.authors.insert(authors.begin(), authors.end());
+        rc.references.insert(references.begin(), references.end());
+        rc.external_references.insert(external_references.begin(), external_references.end());
+        rc.activity_round = activity_round;
+        rc.activity_state = activity_state;
+        rc.activity_window_start = activity_window_start;
+        rc.activity_window_end = activity_window_end;
+    });
+
+    return new_research_content;
+}
+
 const expert_token_object& database_fixture::expert_token_create(const int64_t id,
                                                                  const account_name_type& account,
                                                                  const discipline_id_type& discipline_id,
@@ -630,6 +682,45 @@ const research_group_join_request_object& database_fixture::research_group_join_
     });
     return research_group_join_request;
 }
+
+const research_token_sale_object& database_fixture::research_token_sale_create(const uint32_t id,
+                                                                               research_id_type research_id,
+                                                                               fc::time_point_sec start_time,
+                                                                               fc::time_point_sec end_time,
+                                                                               share_type total_amount,
+                                                                               share_type balance_tokens,
+                                                                               share_type soft_cap,
+                                                                               share_type hard_cap)
+{
+    auto& research_token_sale = db.create<research_token_sale_object>([&](research_token_sale_object& rts_o) {
+        rts_o.id = id;
+        rts_o.research_id = research_id;
+        rts_o.start_time = start_time;
+        rts_o.end_time = end_time;
+        rts_o.total_amount = total_amount;
+        rts_o.balance_tokens = balance_tokens;
+        rts_o.soft_cap = soft_cap;
+        rts_o.hard_cap = hard_cap;
+    });
+    return research_token_sale;
+}
+
+const research_token_sale_contribution_object& database_fixture::research_token_sale_contribution_create(research_token_sale_contribution_id_type id,
+                                                                                                         research_token_sale_id_type research_token_sale_id,
+                                                                                                         account_name_type owner,
+                                                                                                         share_type amount,
+                                                                                                         fc::time_point_sec contribution_time)
+{
+    auto& research_token_sale_contribution = db.create<research_token_sale_contribution_object>([&](research_token_sale_contribution_object& rtsc_o) {
+        rtsc_o.id = id;
+        rtsc_o.research_token_sale_id = research_token_sale_id;
+        rtsc_o.owner = owner;
+        rtsc_o.amount = amount;
+        rtsc_o.contribution_time = contribution_time;
+    });
+    return research_token_sale_contribution;
+}
+
 
 void database_fixture::fund(const string& account_name, const share_type& amount)
 {

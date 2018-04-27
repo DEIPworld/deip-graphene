@@ -67,8 +67,10 @@ enum object_type
     research_token_object_type,
     research_token_sale_object_type,
     research_token_sale_contribution_object_type,
+    research_group_join_request_object_type,
     research_group_invite_object_type,
-    research_group_join_request_object_type
+    review_object_type,
+    review_vote_object_type
 };
 
 class dynamic_global_property_object;
@@ -107,6 +109,8 @@ class research_token_sale_object;
 class research_token_sale_contribution_object;
 class research_group_invite_object;
 class research_group_join_request_object;
+class review_object;
+class review_vote_object;
 
 
 typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
@@ -144,6 +148,8 @@ typedef oid<research_token_sale_object> research_token_sale_id_type;
 typedef oid<research_token_sale_contribution_object> research_token_sale_contribution_id_type;
 typedef oid<research_group_invite_object> research_group_invite_id_type;
 typedef oid<research_group_join_request_object> research_group_join_request_id_type;
+typedef oid<review_object> review_id_type;
+typedef oid<review_vote_object> review_vote_id_type;
 
 
 typedef allocator<account_name_type> account_name_allocator_type;
@@ -152,9 +158,14 @@ typedef bip::set<account_name_type, std::less<account_name_type>, account_name_a
 typedef allocator<research_id_type> research_id_allocator_type;
 typedef bip::set<research_id_type, std::less<research_id_type>, research_id_allocator_type> research_id_type_set;
 
+typedef allocator<research_content_id_type> research_content_id_allocator_type;
+typedef bip::set<research_content_id_type, std::less<research_content_id_type>, research_content_id_allocator_type> research_content_id_type_set;
+
 typedef allocator<fc::fixed_string_32> fixed_string_32_allocator_type;
 typedef bip::set<fc::fixed_string_32, std::less<fc::fixed_string_32>, fixed_string_32_allocator_type> fixed_string_32_type_set;
-
+    
+typedef allocator<discipline_id_type> discipline_id_allocator_type;    
+typedef bip::set<discipline_id_type, std::less<discipline_id_type>, discipline_id_allocator_type> discipline_id_type_set;
 
 enum bandwidth_type
 {
@@ -202,6 +213,8 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (research_token_sale_object_type)
                  (research_token_sale_contribution_object_type)
                  (research_group_invite_object_type)
+                 (review_object_type)
+                 (review_vote_object_type)
                  (research_group_join_request_object_type)
 
                  )

@@ -375,38 +375,6 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
 
 }
 
-BOOST_AUTO_TEST_CASE(transfer_research_tokens_execute_test)
-{
-    ACTORS((alice)(bob))
-    fund("bob", 1000);
-    std::vector<account_name_type> accounts = {"alice"};
-    setup_research_group(1, "research group name", "research_group", "research group", 0, 1, 100, accounts);
-    const std::string json_str = "{\"research_id\":0,"
-            "\"total_price\":500,"
-            "\"account_name\":\"bob\","
-            "\"amount\": 5}";
-
-    auto& research = research_create(0, "name","abstract", "permlink", 1, 10, DROPOUT_COMPENSATION_IN_PERCENT);
-    create_proposal(1, dbs_proposal::action_t::transfer_research_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
-
-    vote_proposal_operation op;
-    op.research_group_id = 1;
-    op.proposal_id = 1;
-    op.voter = "alice";
-
-    evaluator.do_apply(op);
-
-    auto& research_token_service = db.obtain_service<dbs_research_token>();
-    auto& bobs_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", 0);
-
-    auto& research_group_service = db.obtain_service<dbs_research_group>();
-    auto& research_group = research_group_service.get_research_group(1);
-
-    BOOST_CHECK(bobs_token.amount == 5);
-    BOOST_CHECK(research_group.funds == 500);
-    BOOST_CHECK(research.owned_tokens == 9995);
-}
-
 BOOST_AUTO_TEST_CASE(send_funds_execute_test)
 {
     ACTORS((alice)(bob))
@@ -414,7 +382,7 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
     std::vector<account_name_type> accounts = {"alice"};
     setup_research_group(1, "research group name", "research_group", "research group", 750, 1, 100, accounts);
     const std::string json_str = "{\"research_group_id\":1,"
-            "\"account_name\":\"bob\","
+            "\"recipient\":\"bob\","
             "\"funds\": 250}";
 
     create_proposal(1, dbs_proposal::action_t::send_funds, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
@@ -612,37 +580,6 @@ BOOST_AUTO_TEST_CASE(start_research_validate_test)
     BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
 }
 
-BOOST_AUTO_TEST_CASE(transfer_research_tokens_data_validate_test)
-{
-    const std::string json_str = "{\"research_id\":0,"
-            "\"total_price\":500,"
-            "\"account_name\":\"bob\","
-            "\"amount\": 5}";
-    create_proposal(1, dbs_proposal::action_t::transfer_research_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
-
-    vote_proposal_operation op;
-    op.research_group_id = 1;
-    op.proposal_id = 1;
-    op.voter = "alice";
-
-    BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
-}
-
-BOOST_AUTO_TEST_CASE(send_funds_data_validate_test)
-{
-    const std::string json_str = "{\"research_group_id\":1,"
-            "\"account_name\":\"bob\","
-            "\"funds\": 250}";
-    create_proposal(1, dbs_proposal::action_t::transfer_research_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
-
-    vote_proposal_operation op;
-    op.research_group_id = 1;
-    op.proposal_id = 1;
-    op.voter = "alice";
-
-    BOOST_CHECK_THROW(evaluator.do_apply(op), fc::assert_exception);
-}
-
 BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_data_validate_test)
 {
     const std::string json_str = "{\"research_group_id\":1,"
@@ -706,7 +643,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
             "\"type\": 2,"
             "\"content\":\"milestone for Research #2\","
             "\"authors\":[\"alice\"],"
-            "\"references\": [{\"research_reference_id\": 3}]}";
+            "\"references\": [3] }";
 
     create_proposal(2, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 

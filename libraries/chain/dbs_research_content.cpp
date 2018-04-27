@@ -1,6 +1,6 @@
 #include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/database.hpp>
-
+#include <deip/chain/research_object.hpp>
 
 
 namespace deip{
@@ -16,21 +16,9 @@ const research_content_object& dbs_research_content::create(const research_id_ty
                                                             const std::string& title,
                                                             const std::string& content,
                                                             const std::vector<account_name_type>& authors,
-                                                            const std::vector<research_reference_data>& references,
+                                                            const std::vector<research_content_id_type>& references,
                                                             const std::vector<string>& external_references)
 {
-    int size = references.size();
-    for (int i = 0; i < size; ++i)
-    {
-        FC_ASSERT(references[i].research_reference_id != research_id,
-                  "Research material cannot reference research it is being created for.");
-        if (references[i].research_content_reference_id.valid()) {
-            check_research_content_existence(*references[i].research_content_reference_id);
-            auto& research_content = db_impl().get<research_content_object>(*references[i].research_content_reference_id);
-            FC_ASSERT(research_content.research_id == references[i].research_reference_id,
-                      "Research content must be a part of specified research.");
-        }
-    }
     const auto& new_research_content = db_impl().create<research_content_object>([&](research_content_object& rc) {
         
         auto now = db_impl().head_block_time();
@@ -41,16 +29,13 @@ const research_content_object& dbs_research_content::create(const research_id_ty
         fc::from_string(rc.content, content);
         rc.created_at = now;
         rc.authors.insert(authors.begin(), authors.end());
-        for (auto reference : references) {
-            rc.references.push_back(reference);
-        }
+        rc.references.insert(references.begin(), references.end());
         rc.external_references.insert(external_references.begin(), external_references.end());
         rc.activity_round = 1;
         rc.activity_state = research_content_activity_state::active;
 
         if (type == research_content_type::announcement || 
-            type == research_content_type::milestone ||
-            type == research_content_type::review) {
+            type == research_content_type::milestone) {
 
             // the 1st activity period for intermediate result starts immediately 
             // after publishing and continues for 2 weeks
@@ -63,6 +48,9 @@ const research_content_object& dbs_research_content::create(const research_id_ty
             rc.activity_window_start = now;
             rc.activity_window_end = now + DAYS_TO_SECONDS(60);
         }
+
+        auto& research = db_impl().get<research_object>(research_id);
+        db_impl().modify(research, [&](research_object& r_o) { r_o.last_update_time = now; });
 
     });
 

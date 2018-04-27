@@ -23,6 +23,7 @@ const research_object& dbs_research::create(const string &title, const string &a
         r.is_finished = false;
         r.owned_tokens = DEIP_100_PERCENT;
         r.created_at = db_impl().head_block_time();
+        r.last_update_time = db_impl().head_block_time();
         r.review_share_in_percent_last_update = db_impl().head_block_time();
     });
 
@@ -33,8 +34,8 @@ dbs_research::research_refs_type dbs_research::get_researches() const
 {
     research_refs_type ret;
 
-    auto idx = db_impl().get_index<research_index>().indicies();
-    auto it = idx.cbegin();
+    const auto& idx = db_impl().get_index<research_index>().indicies().get<by_id>();
+    auto it = idx.lower_bound(0);
     const auto it_end = idx.cend();
     while (it != it_end)
     {

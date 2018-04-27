@@ -13,10 +13,10 @@ struct base_proposal_data_type
     virtual void validate() const = 0;
 };
 
-struct member_proposal_data_type : base_proposal_data_type
+struct dropout_member_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
-    deip::protocol::account_name_type name;
+    account_name_type name;
 
     void validate() const
     {
@@ -27,7 +27,7 @@ struct member_proposal_data_type : base_proposal_data_type
 struct invite_member_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
-    deip::protocol::account_name_type name;
+    account_name_type name;
     share_type research_group_token_amount;
 
     void validate() const
@@ -75,29 +75,15 @@ struct start_research_proposal_data_type : base_proposal_data_type
     }
 };
 
-struct transfer_research_tokens_data_type : base_proposal_data_type
-{
-    research_id_type research_id;
-    share_type total_price;
-    deip::protocol::account_name_type account_name;
-    share_type amount;
-
-    void validate() const
-    {
-        FC_ASSERT(is_valid_account_name(account_name), "Account name ${n} is invalid", ("n", account_name));
-        FC_ASSERT(total_price >= 0, "Total price cant be negative");
-    }
-};
-
 struct send_funds_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
-    account_name_type account_name;
+    account_name_type recipient;
     share_type funds;
 
     void validate() const
     {
-        FC_ASSERT(is_valid_account_name(account_name), "Account name ${n} is invalid", ("n", account_name));
+        FC_ASSERT(is_valid_account_name(recipient), "Account name ${n} is invalid", ("n", recipient));
         FC_ASSERT(funds >= 0, "Amount cant be negative");
     }
 };
@@ -110,7 +96,6 @@ struct rebalance_info
 struct rebalance_research_group_tokens_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
-
     std::vector<rebalance_info> accounts;
 
     void validate() const
@@ -128,8 +113,9 @@ struct create_research_content_data_type : base_proposal_data_type
     string title;
     string content;
     std::vector<account_name_type> authors;
-    std::vector<research_reference_data> references;
+    std::vector<research_content_id_type> references;
     std::vector<string> external_references;
+
     void validate() const
     {
         FC_ASSERT(!content.empty(), "Content cannot be empty");
@@ -181,7 +167,7 @@ struct change_research_review_share_percent_data_type : base_proposal_data_type
 }
 }
 
-FC_REFLECT(deip::chain::member_proposal_data_type, (research_group_id)(name))
+FC_REFLECT(deip::chain::dropout_member_proposal_data_type, (research_group_id)(name))
 
 FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount))
 
@@ -189,9 +175,7 @@ FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(qu
 
 FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(research_group_id)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines))
 
-FC_REFLECT(deip::chain::transfer_research_tokens_data_type, (research_id)(total_price)(account_name)(amount))
-
-FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(account_name)(funds))
+FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(recipient)(funds))
 
 FC_REFLECT(deip::chain::rebalance_info, (account_name)(amount))
 

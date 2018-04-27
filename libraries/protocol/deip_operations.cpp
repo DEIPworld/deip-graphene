@@ -49,6 +49,12 @@ void vote_operation::validate() const
     FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
 }
 
+void vote_for_review_operation::validate() const
+{
+    validate_account_name(voter);
+    FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
+}
+
 void transfer_operation::validate() const
 {
     try
@@ -147,7 +153,7 @@ void create_grant_operation::validate() const
 
 void create_proposal_operation::validate() const
 {
-    validate_enum_value_by_range(action, proposal_action_type::First, proposal_action_type::Last);
+    validate_enum_value_by_range(action, proposal_action_type::First_proposal, proposal_action_type::Last_proposal);
     validate_account_name(creator);
     FC_ASSERT(expiration_time > fc::time_point_sec());
     FC_ASSERT(fc::is_utf8(data), "Data is not valid UTF8 string");
@@ -169,7 +175,7 @@ void vote_proposal_operation::validate() const
     validate_account_name(voter);
 }
 
-void make_research_review_operation::validate() const
+void make_review_operation::validate() const
 {
     validate_account_name(author);
     FC_ASSERT(!content.empty(), "Research content cannot be empty");
@@ -189,8 +195,6 @@ void contribute_to_token_sale_operation::validate() const
 void approve_research_group_invite_operation::validate() const
 {
     validate_account_name(owner);
-    FC_ASSERT(research_tokens_conversion_percent > 0 && research_tokens_conversion_percent <= DEIP_100_PERCENT,
-              "Conversion percent should be in 0 to 100 range");
 }
 
 void reject_research_group_invite_operation::validate() const
@@ -207,6 +211,26 @@ void create_research_group_join_request_operation::validate() const
 
 void reject_research_group_join_request_operation::validate() const
 {
+    validate_account_name(owner);
+}
+
+void transfer_research_tokens_to_research_group_operation::validate() const 
+{
+    validate_account_name(owner);
+}    
+
+void add_expertise_tokens_operation::validate() const
+{
+    validate_account_name(owner);
+    validate_account_name(account_name);
+    FC_ASSERT(!disciplines_to_add.empty(), "List of disciplines to adjust cannot be empty");
+}
+
+void research_update_operation::validate() const
+{
+    FC_ASSERT(!title.empty(), "Title cannot be empty");
+    FC_ASSERT(!abstract.empty(), "Abstract cannot be empty");
+    FC_ASSERT(!permlink.empty(), "Permlink cannot be empty");
     validate_account_name(owner);
 }
 

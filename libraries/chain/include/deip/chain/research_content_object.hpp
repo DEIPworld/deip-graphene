@@ -25,8 +25,7 @@ enum research_content_type : uint16_t
 {
     announcement = 1,
     milestone = 2,
-    final_result = 3,
-    review = 4
+    final_result = 3
 };
 
 enum research_content_activity_state : uint16_t
@@ -35,15 +34,6 @@ enum research_content_activity_state : uint16_t
     pending = 2,
     closed = 3
 };
-
-struct research_reference_data
-{
-    research_id_type research_reference_id;
-    optional<research_content_id_type> research_content_reference_id;
-};
-
-typedef allocator<research_reference_data> research_reference_data_allocator_type;
-typedef bip::vector<research_reference_data, research_reference_data_allocator_type> research_reference_data_type_vector;
 
 class research_content_object : public object<research_content_object_type, research_content_object>
 {
@@ -70,7 +60,7 @@ public:
     account_name_type_set authors;
     time_point_sec created_at;
 
-    research_reference_data_type_vector references;
+    research_content_id_type_set references;
     fixed_string_32_type_set external_references;
 
     uint16_t activity_round;
@@ -124,8 +114,7 @@ typedef multi_index_container<research_content_object,
 }
 }
 
-FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result)(review) )
+FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result))
 FC_REFLECT_ENUM(deip::chain::research_content_activity_state, (active)(pending)(closed) )
 FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(title)(content)(authors)(references)(external_references))
-FC_REFLECT(deip::chain::research_reference_data, (research_reference_id)(research_content_reference_id))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_content_object, deip::chain::research_content_index)

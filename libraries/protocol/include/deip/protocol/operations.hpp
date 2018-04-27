@@ -35,12 +35,16 @@ namespace deip {
                 create_research_group_operation,
                 create_proposal_operation,
                 vote_proposal_operation,
-                make_research_review_operation,
+                make_review_operation,
                 contribute_to_token_sale_operation,
                 approve_research_group_invite_operation,
                 reject_research_group_invite_operation,
+                vote_for_review_operation,
                 create_research_group_join_request_operation,
                 reject_research_group_join_request_operation,
+                transfer_research_tokens_to_research_group_operation,
+                add_expertise_tokens_operation,
+                research_update_operation,
 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,

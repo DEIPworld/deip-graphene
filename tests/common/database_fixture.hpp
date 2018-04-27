@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 
 #include <deip/app/application.hpp>
 #include <deip/chain/database.hpp>
@@ -14,6 +15,8 @@
 #include <deip/chain/dbs_expert_token.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_research_group_join_request.hpp>
+#include <deip/chain/dbs_research_token_sale.hpp>
+#include <deip/chain/dbs_research_token.hpp>
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>
 
@@ -154,6 +157,27 @@ struct database_fixture
                                            const research_group_id_type& research_group_id,
                                            const uint16_t review_share_in_percent,
                                            const uint16_t dropout_compensation_in_percent);
+    
+    const research_token_object& research_token_create(const int64_t id, 
+                                                       const account_name_type& owner,
+                                                       const uint16_t amount,
+                                                       const int64_t research_id);
+
+
+    const research_content_object& research_content_create(
+                                            const int64_t& id,
+                                            const int64_t& research_id,
+                                            const research_content_type& type,
+                                            const std::string& title,
+                                            const std::string& content,
+                                            const int16_t& activity_round,
+                                            const research_content_activity_state& activity_state,
+                                            const time_point_sec& activity_window_start,
+                                            const time_point_sec& activity_window_end,
+                                            const std::vector<account_name_type>& authors,
+                                            const std::vector<research_content_id_type>& references,
+                                            const std::vector<string>& external_references);
+
 
     const expert_token_object& expert_token_create(const int64_t id,
                                                    const account_name_type& account,
@@ -169,6 +193,21 @@ struct database_fixture
                                                                                  const account_name_type& account_name,
                                                                                  const research_group_id_type& research_group_id,
                                                                                  const std::string motivation_letter);
+
+    const research_token_sale_object& research_token_sale_create(const uint32_t id,
+                                                                 research_id_type research_id,
+                                                                 fc::time_point_sec start_time,
+                                                                 fc::time_point_sec end_time,
+                                                                 share_type total_amount,
+                                                                 share_type balance_tokens,
+                                                                 share_type soft_cap,
+                                                                 share_type hard_cap);
+
+    const research_token_sale_contribution_object& research_token_sale_contribution_create(research_token_sale_contribution_id_type id,
+                                                                                           research_token_sale_id_type research_token_sale_id,
+                                                                                           account_name_type owner,
+                                                                                           share_type amount,
+                                                                                           fc::time_point_sec contribution_time);
 
     void fund(const string& account_name, const share_type& amount = 500000);
     void fund(const string& account_name, const asset& amount);

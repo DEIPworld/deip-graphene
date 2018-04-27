@@ -43,9 +43,6 @@ public:
 
     share_type total_curators_reward_weight;
     share_type total_active_curators_reward_weight;
-
-    share_type total_review_reward_weight;
-    share_type total_active_review_reward_weight;
 };
 
 struct by_discipline_id;
@@ -67,7 +64,7 @@ typedef multi_index_container<total_votes_object,
                         member<total_votes_object,
                                 discipline_id_type,
                                 &total_votes_object::discipline_id>>,
-                ordered_unique<tag<by_research_and_discipline>,
+                ordered_non_unique<tag<by_research_and_discipline>,
                         composite_key<total_votes_object,
                                 member<total_votes_object,
                                        research_id_type,

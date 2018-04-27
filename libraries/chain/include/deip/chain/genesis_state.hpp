@@ -47,6 +47,39 @@ struct genesis_state_type
         uint32_t amount;
     };
 
+    struct research_group_type
+    {
+        dc::research_group_id_type id;
+        std::string name;
+        std::string description;
+        std::string permlink;
+        uint16_t quorum_percent;
+        std::vector<std::string> members;
+    };
+
+    struct research_type
+    {
+        dc::research_id_type id;
+        dc::research_group_id_type research_group_id;
+        std::string title;
+        std::string abstract;
+        std::string permlink;
+        bool is_finished;
+        uint16_t review_share_in_percent;
+        uint16_t dropout_compensation_in_percent;
+        std::vector<int64_t> disciplines;
+    };
+
+    struct research_content_type
+    {
+        dc::research_id_type research_id;
+        uint16_t type;
+        std::string title;
+        std::string content;
+        std::vector<std::string> authors;
+        std::vector<int64_t> references;
+    };
+    
     genesis_state_type()
         : init_supply(0)
     {
@@ -64,7 +97,9 @@ struct genesis_state_type
     std::vector<witness_type> witness_candidates;
     std::vector<discipline_type> disciplines;
     std::vector<expert_token_type> expert_tokens;
-
+    std::vector<research_group_type> research_groups;
+    std::vector<research_type> researches;
+    std::vector<research_content_type> research_contents;
 
     sp::chain_id_type initial_chain_id;
 };
@@ -100,13 +135,46 @@ FC_REFLECT(deip::chain::genesis_state_type::expert_token_type,
            (discipline_id)
            (amount))
 
+FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
+           (id)
+           (name)
+           (description)
+           (permlink)
+           (quorum_percent)
+           (members))
+
+
+FC_REFLECT(deip::chain::genesis_state_type::research_type,
+           (id)
+           (research_group_id)
+           (title)
+           (abstract)
+           (permlink)
+           (is_finished)
+           (review_share_in_percent)
+           (dropout_compensation_in_percent)
+           (disciplines))
+
+
+FC_REFLECT(deip::chain::genesis_state_type::research_content_type,
+           (research_id)
+           (type)
+           (title)
+           (content)
+           (authors)
+           (references))
+
+
 FC_REFLECT(deip::chain::genesis_state_type,
            (init_supply)
            (init_rewards_supply)
            (initial_timestamp)
            (accounts)
            (witness_candidates)
-           (disciplines)
            (expert_tokens)
+           (disciplines)
+           (research_groups)
+           (researches)
+           (research_contents)
            (initial_chain_id))
 // clang-format on

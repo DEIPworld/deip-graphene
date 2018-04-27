@@ -25,12 +25,16 @@ DEFINE_EVALUATOR(change_recovery_account)
 DEFINE_EVALUATOR(create_grant)
 DEFINE_EVALUATOR(create_proposal)
 DEFINE_EVALUATOR(create_research_group)
-DEFINE_EVALUATOR(make_research_review)
+DEFINE_EVALUATOR(make_review)
 DEFINE_EVALUATOR(contribute_to_token_sale)
 DEFINE_EVALUATOR(approve_research_group_invite)
 DEFINE_EVALUATOR(reject_research_group_invite)
+DEFINE_EVALUATOR(vote_for_review)
 DEFINE_EVALUATOR(create_research_group_join_request)
 DEFINE_EVALUATOR(reject_research_group_join_request)
+DEFINE_EVALUATOR(transfer_research_tokens_to_research_group)
+DEFINE_EVALUATOR(add_expertise_tokens)
+DEFINE_EVALUATOR(research_update)
 
 }
 } // deip::chain
