@@ -170,6 +170,8 @@ public:
      */
     uint64_t get_account_count() const;
 
+    vector<account_api_obj> get_all_accounts() const;
+
     vector<grant_api_obj> get_grants(const set<string>& account_names) const;
 
     set<string> lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const;
@@ -314,6 +316,7 @@ public:
     research_api_obj get_research_by_permlink(const string& permlink) const;
     vector<research_api_obj> get_researches(const research_id_type& from, const uint32_t limit) const;
     vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
+    bool check_research_existence_by_permlink(const string& permlink) const;
 
     //////////////////////
     // Research Content //
@@ -340,6 +343,7 @@ public:
     ////////////////////
     research_group_api_obj get_research_group_by_id(const research_group_id_type research_group_id) const;
     research_group_api_obj get_research_group_by_permlink(const string& permlink) const;
+    bool check_research_group_existence_by_permlink(const string& permlink) const;
 
     /////////////////////////////////
     // Research group tokens       //
@@ -428,6 +432,7 @@ FC_API(deip::app::database_api,
    (lookup_account_names)
    (lookup_accounts)
    (get_account_count)
+   (get_all_accounts)
    (get_account_history)
    (get_owner_history)
    (get_recovery_request)
@@ -467,6 +472,8 @@ FC_API(deip::app::database_api,
    (get_research_by_permlink)
    (get_researches)
    (get_researches_by_research_group_id)
+   (check_research_existence_by_permlink)
+
 
    // Research Content
    (get_research_content_by_id)
@@ -485,6 +492,7 @@ FC_API(deip::app::database_api,
    // Research group
    (get_research_group_by_id)
    (get_research_group_by_permlink)
+   (check_research_group_existence_by_permlink)
 
    // Research group tokens
    (get_research_group_tokens_by_account)
