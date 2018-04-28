@@ -69,9 +69,9 @@ public:
 
     const research_group_object& decrease_research_group_total_tokens_amount(const research_group_id_type& research_group_id, const share_type delta);
 
-    const research_group_object& increase_research_group_funds(const research_group_id_type& research_group_id, const share_type deips);
+    const research_group_object& increase_research_group_balance(const research_group_id_type& research_group_id, const asset& deips);
 
-    const research_group_object& decrease_research_group_funds(const research_group_id_type& research_group_id, const share_type deips);
+    const research_group_object& decrease_research_group_balance(const research_group_id_type& research_group_id, const asset& deips);
 
     const research_group_token_object& increase_research_group_token_amount(const research_group_id_type& research_group_id,
                                                                             const account_name_type& account_name,

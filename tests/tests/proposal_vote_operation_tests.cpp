@@ -400,7 +400,7 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
     auto& research_group_service = db.obtain_service<dbs_research_group>();
     auto& research_group = research_group_service.get_research_group(1);
 
-    BOOST_CHECK(research_group.funds == 500);
+    BOOST_CHECK(research_group.balance.amount == 500);
     BOOST_CHECK(bobs_account.balance.amount == 1250);
 }
 

@@ -1384,7 +1384,7 @@ share_type database::reward_research_token_holders(const research_object& resear
     if(research_group_reward > 0)
     {
         dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
-        research_group_service.increase_research_group_funds(research.research_group_id, research_group_reward);
+        research_group_service.increase_research_group_balance(research.research_group_id, research_group_reward);
         used_reward += research_group_reward;
     }
 
@@ -1727,7 +1727,7 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
     }
 
     for (auto key_value_pair : grant_shares_per_research) {
-        research_group_service.increase_research_group_funds(key_value_pair.first, key_value_pair.second);
+        research_group_service.increase_research_group_balance(key_value_pair.first, key_value_pair.second);
         used_grant += key_value_pair.second;
     }
 

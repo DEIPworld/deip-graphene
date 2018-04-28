@@ -96,7 +96,7 @@ namespace deip {
                     BOOST_CHECK(research_group.description == "test");
                     BOOST_CHECK(research_group.quorum_percent == 34);
                     BOOST_CHECK(research_group.total_tokens_amount == 1240);
-                    BOOST_CHECK(research_group.funds == 0);
+                    BOOST_CHECK(research_group.balance.amount == 0);
 
                 }
                 FC_LOG_AND_RETHROW()
