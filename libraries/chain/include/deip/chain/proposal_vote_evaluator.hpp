@@ -21,6 +21,7 @@
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_research_group_join_request.hpp>
+#include <deip/chain/dbs_vote.hpp>
 
 #include <deip/chain/proposal_object.hpp>
 #include <deip/chain/proposal_data_types.hpp>
@@ -43,6 +44,7 @@ template <typename AccountService,
         typename ResearchGroupInviteService,
         typename DynamicGlobalPropertiesService,
         typename ResearchGroupJoinRequestService,
+        typename VoteService,
         typename OperationType = deip::protocol::operation>
 class proposal_vote_evaluator_t : public evaluator<OperationType>
 // clang-format on
@@ -61,6 +63,7 @@ public:
             ResearchGroupInviteService,
             DynamicGlobalPropertiesService,
             ResearchGroupJoinRequestService,
+            VoteService,
             OperationType>
             EvaluatorType;
 
@@ -101,7 +104,8 @@ public:
                               ResearchDisciplineRelationService& research_discipline_relation_service,
                               ResearchGroupInviteService& research_group_invite_service,
                               DynamicGlobalPropertiesService& dynamic_global_properties_service,
-                              ResearchGroupJoinRequestService& research_group_join_request_service)
+                              ResearchGroupJoinRequestService& research_group_join_request_service,
+                              VoteService& vote_service)
                               
             : _account_service(account_service)
             , _proposal_service(proposal_service)
@@ -115,6 +119,7 @@ public:
             , _research_group_invite_service(research_group_invite_service)
             , _dynamic_global_properties_service(dynamic_global_properties_service)
             , _research_group_join_request_service(research_group_join_request_service)
+            , _vote_service(vote_service)
     {
         evaluators.set(proposal_action_type::invite_member,
                        std::bind(&EvaluatorType::invite_evaluator, this, std::placeholders::_1));
@@ -299,10 +304,57 @@ protected:
 
     void create_research_material_evaluator(const proposal_object& proposal)
     {
+        struct total_votes_weights
+        {
+            total_votes_weights(share_type t_w = 0, share_type ta_w = 0, share_type trr_w = 0, share_type tarr_w = 0) :
+                    total_weight(t_w), total_active_weight(ta_w), total_research_reward_weight(trr_w), total_active_research_reward_weight(tarr_w){}
+            share_type total_weight;
+            share_type total_active_weight;
+            share_type total_research_reward_weight;
+            share_type total_active_research_reward_weight;
+
+            total_votes_weights& operator += (const total_votes_weights& rvalue)
+            {
+                total_weight = total_weight + rvalue.total_weight;
+                total_active_weight = total_active_weight + rvalue.total_active_weight;
+                total_research_reward_weight = total_research_reward_weight + rvalue.total_research_reward_weight;
+                total_active_research_reward_weight = total_active_research_reward_weight + rvalue.total_active_research_reward_weight;
+                return *this;
+            }
+        };
         create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
 
         _research_service.check_research_existence(data.research_id);          
-        _research_content_service.create(data.research_id, data.type, data.title, data.content, data.authors, data.references, data.external_references);
+        auto& research_content = _research_content_service.create(data.research_id, data.type, data.title, data.content, data.authors, data.references, data.external_references);
+
+        std::map<discipline_id_type, total_votes_weights> total_votes_to_create;
+        std::map<discipline_id_type, share_type> disciplines_to_increase;
+        if (data.type == research_content_type::final_result)
+        {
+            auto total_votes = _vote_service.get_total_votes_by_research(research_content.research_id);
+            for (auto& t : total_votes)
+            {
+                auto& total_vote = t.get();
+                total_votes_to_create[total_vote.discipline_id] += total_votes_weights(total_vote.total_weight,
+                                                                                       total_vote.total_active_weight,
+                                                                                       total_vote.total_research_reward_weight,
+                                                                                       total_vote.total_active_research_reward_weight);
+            }
+
+            for (auto& total_vote : total_votes_to_create)
+            {
+                auto& total_vote_for_final_result =  _vote_service.create_total_votes(total_vote.first, research_content.research_id, research_content.id);
+                _vote_service.update_total_votes_for_final_result(total_vote_for_final_result,
+                                                                  total_vote.second.total_weight,
+                                                                  total_vote.second.total_active_weight,
+                                                                  total_vote.second.total_research_reward_weight,
+                                                                  total_vote.second.total_active_research_reward_weight);
+                disciplines_to_increase[total_vote.first] +=  total_vote.second.total_active_research_reward_weight;
+            }
+            for (auto& disciplines : disciplines_to_increase)
+                _discipline_service.increase_total_active_research_reward_weight(disciplines.first, disciplines.second);
+
+        }
     }
 
     void start_research_token_sale_evaluator(const proposal_object& proposal) {
@@ -330,6 +382,7 @@ protected:
     ResearchGroupInviteService& _research_group_invite_service;
     DynamicGlobalPropertiesService& _dynamic_global_properties_service;
     ResearchGroupJoinRequestService& _research_group_join_request_service;
+    VoteService& _vote_service;
 
 
 private:
@@ -356,9 +409,10 @@ typedef proposal_vote_evaluator_t<dbs_account,
                                   dbs_research_discipline_relation,
                                   dbs_research_group_invite,
                                   dbs_dynamic_global_properties,
-                                  dbs_research_group_join_request>
+                                  dbs_research_group_join_request,
+                                  dbs_vote>
     proposal_vote_evaluator;
-typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_content, dbs_research_token_sale, dbs_discipline, dbs_research_discipline_relation, dbs_research_group_invite, dbs_dynamic_global_properties, dbs_research_group_join_request>
+typedef proposal_vote_evaluator_t<dbs_account, dbs_proposal, dbs_research_group, dbs_research, dbs_research_token, dbs_research_content, dbs_research_token_sale, dbs_discipline, dbs_research_discipline_relation, dbs_research_group_invite, dbs_dynamic_global_properties, dbs_research_group_join_request, dbs_vote>
         proposal_vote_evaluator;
 
 } // namespace chain

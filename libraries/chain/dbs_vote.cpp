@@ -174,7 +174,7 @@ const total_votes_object& dbs_vote::update_total_votes(const total_votes_object&
 dbs_vote::total_votes_refs_type dbs_vote::get_total_votes_by_content(const research_content_id_type& research_content_id) const
 {
     total_votes_refs_type ret;
-    
+
     auto it_pair = db_impl().get_index<total_votes_index>().indicies().get<by_research_content_id>().equal_range(research_content_id);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
@@ -255,6 +255,49 @@ dbs_vote::review_vote_refs_type dbs_vote::get_review_votes_by_discipline(const d
         ++it;
     }
     return ret;
+}
+
+dbs_vote::total_votes_refs_type dbs_vote::get_total_votes_by_research(const research_id_type& research_id) const
+{
+    total_votes_refs_type ret;
+
+    auto it_pair = db_impl().get_index<total_votes_index>().indicies().get<by_research_id>().equal_range(research_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+    return ret;
+}
+
+bool dbs_vote::is_exists_by_research_and_discipline(const research_content_id_type &research_content_id,
+                                                    const discipline_id_type &discipline_id)
+{
+    const auto& idx = db_impl().get_index<total_votes_index>().indices().get<by_content_and_discipline>();
+
+    if (idx.find(boost::make_tuple(research_content_id, discipline_id)) != idx.cend())
+        return true;
+    else
+        return false;
+}
+
+const total_votes_object& dbs_vote::update_total_votes_for_final_result(const total_votes_object& total_votes,
+                                                                        const share_type total_weight,
+                                                                        const share_type total_active_weight,
+                                                                        const share_type total_research_reward_weight,
+                                                                        const share_type total_active_research_reward_weight)
+{
+    db_impl().modify(total_votes, [&](total_votes_object& tv_o)
+    {
+        tv_o.total_weight = total_weight;
+        tv_o.total_active_weight = total_active_weight;
+        tv_o.total_research_reward_weight = total_research_reward_weight;
+        tv_o.total_active_research_reward_weight = total_active_research_reward_weight;
+    });
+
+    return total_votes;
 }
 
 } //namespace chain

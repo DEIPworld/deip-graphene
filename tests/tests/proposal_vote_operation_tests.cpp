@@ -11,6 +11,7 @@
 #include <deip/chain/dbs_research_token_sale.hpp>
 #include <deip/chain/dbs_research_content.hpp>
 #include <deip/chain/dbs_dynamic_global_properties.hpp>
+#include <deip/chain/dbs_vote.hpp>
 
 #include <deip/chain/proposal_vote_evaluator.hpp>
 #include <deip/chain/deip_objects.hpp>
@@ -38,7 +39,8 @@ typedef deip::chain::proposal_vote_evaluator_t<dbs_account,
                                                dbs_research_discipline_relation,
                                                dbs_research_group_invite,
                                                dbs_dynamic_global_properties,
-                                               dbs_research_group_join_request>
+                                               dbs_research_group_join_request,
+                                               dbs_vote>
         proposal_vote_evaluator;
 
 
@@ -55,8 +57,9 @@ public:
                      dbs_research_discipline_relation &research_discipline_relation_service,
                      dbs_research_group_invite &research_group_invite_service,
                      dbs_dynamic_global_properties &dynamic_global_properties_service,
-                     dbs_research_group_join_request &research_group_join_request_service)
-            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service, discipline_service, research_discipline_relation_service, research_group_invite_service, dynamic_global_properties_service, research_group_join_request_service) {
+                     dbs_research_group_join_request &research_group_join_request_service,
+                     dbs_vote& vote_service)
+            : proposal_vote_evaluator(account_service, proposal_service, research_group_service, research_service, research_token_service, research_content_service, research_token_sale_service, discipline_service, research_discipline_relation_service, research_group_invite_service, dynamic_global_properties_service, research_group_join_request_service, vote_service) {
     }
 
     void execute_proposal(const proposal_object &proposal) {
@@ -78,7 +81,8 @@ public:
                     db.obtain_service<dbs_research_discipline_relation>(),
                     db.obtain_service<dbs_research_group_invite>(),
                     db.obtain_service<dbs_dynamic_global_properties>(),
-                    db.obtain_service<dbs_research_group_join_request>())
+                    db.obtain_service<dbs_research_group_join_request>(),
+                    db.obtain_service<dbs_vote>())
     {
     }
 
@@ -666,6 +670,56 @@ BOOST_AUTO_TEST_CASE(create_research_material)
                 && content.authors.find("alice") != content.authors.end()
                    && content.references.size() == 1;
         }));
+
+    db.create<total_votes_object>([&](total_votes_object& r) {
+        r.id = 10,
+        r.research_id = 1;
+        r.research_content_id = 0;
+        r.discipline_id = 1;
+        r.total_weight = 2000;
+        r.total_active_weight = 2000;
+        r.total_active_weight = 2000;
+        r.total_research_reward_weight = 2000;
+        r.total_active_research_reward_weight = 2000;
+    });
+
+    db.create<total_votes_object>([&](total_votes_object& r) {
+        r.id = 20,
+        r.research_id = 1;
+        r.research_content_id = 0;
+        r.discipline_id = 2;
+        r.total_weight = 1000;
+        r.total_active_weight = 1000;
+        r.total_research_reward_weight = 100;
+        r.total_active_research_reward_weight = 1000;
+    });
+
+    const std::string json_str2 = "{\"research_id\": 1,"
+                                  "\"type\": 3,"
+                                  "\"content\":\"final result for Research #2\","
+                                  "\"authors\":[\"alice\"],"
+                                  "\"references\": [3] }";
+
+    create_proposal(3, dbs_proposal::action_t::create_research_material, json_str2, "alice", 1, fc::time_point_sec(0xffff1fff), 1);
+
+    vote_proposal_operation op2;
+    op2.research_group_id = 1;
+    op2.proposal_id = 3;
+    op2.voter = "alice";
+
+    evaluator.do_apply(op2);
+
+    auto& total_vote = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(1, 1));
+    auto& total_vote2 = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(1, 2));
+
+    BOOST_CHECK(total_vote.total_weight == 2000);
+    BOOST_CHECK(total_vote2.total_weight == 1000);
+
+    auto& discipline = db.get<discipline_object, by_id>(1);
+    auto& discipline2 = db.get<discipline_object, by_id>(2);
+
+    BOOST_CHECK(discipline.total_active_research_reward_weight == 2000);
+    BOOST_CHECK(discipline2.total_active_research_reward_weight == 1000);
 }
 
 
