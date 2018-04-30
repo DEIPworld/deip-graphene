@@ -381,6 +381,7 @@ public:
     //////////////////////////////////
 
     vector<research_listing_api_obj> get_research_listing(const discipline_id_type& discipline_id, const uint64_t& from, const uint32_t& limit) const;
+    vector<research_listing_api_obj> get_all_researches_listing(const discipline_id_type& discipline_id, const uint32_t& limit) const;
 
     ////////////////////////////
     // Handlers - not exposed //
