@@ -327,6 +327,7 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
            fc::from_string(rg.permlink, research_group.permlink);
            rg.funds = share_type(0);
            rg.quorum_percent = research_group.quorum_percent * DEIP_1_PERCENT;
+           rg.total_tokens_amount = DEIP_100_PERCENT;
         });
 
         for (auto& member : research_group.members)
