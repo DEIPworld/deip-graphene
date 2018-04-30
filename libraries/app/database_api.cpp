@@ -1095,23 +1095,33 @@ research_api_obj database_api::get_research_by_permlink(const string& permlink) 
     });
 }
 
-vector<research_api_obj> database_api::get_researches(const research_id_type& from, const uint32_t limit) const
+vector<research_api_obj> database_api::get_researches_by_discipline_id(const int64_t from,
+                                                                       const uint32_t limit,
+                                                                       const discipline_id_type& discipline_id) const
 {
     return my->_db.with_read_lock([&]() {
         FC_ASSERT(limit <= MAX_LIMIT);
 
         vector<research_api_obj> result;
+        vector<research_id_type> researches;
         result.reserve(limit);
 
-        const auto& idx = my->_db.get_index<research_index>().indicies().get<by_id>();
+        const auto& rdr_idx = my->_db.get_index<research_discipline_relation_index>().indicies().get<by_discipline_id>();
 
-        auto itr = idx.find(from);
-        FC_ASSERT(itr != idx.end(), "invalid research id ${n}", ("n", from));
+        auto rdr_itr = rdr_idx.find(discipline_id);
 
-        while (itr != idx.end() && result.size() < limit)
+        while (rdr_itr != rdr_idx.end())
         {
-            result.push_back(research_api_obj(*itr));
-            ++itr;
+            researches.push_back(rdr_itr->research_id);
+            ++rdr_itr;
+        }
+        std::sort(researches.begin(), researches.end());
+
+        FC_ASSERT(from + limit <= researches.size(), "from + limit cannot be bigger than size ${n}", ("n", researches.size()));
+
+        for (auto i = from; i < from + limit; i++) {
+            auto& research = my->_db.get<research_object>(researches[i]);
+            result.push_back(research_api_obj(research));
         }
 
         return result;
@@ -1479,17 +1489,19 @@ vector<research_group_invite_api_obj> database_api::get_research_group_invites_b
     });
 }
 
-vector<research_listing_api_obj> database_api::get_research_listing(const uint64_t& from, const uint32_t& limit = 100) const
+vector<research_listing_api_obj> database_api::get_research_listing(const discipline_id_type& discipline_id,
+                                                                    const uint64_t& from,
+                                                                    const uint32_t& limit = 100) const
 {
     return my->_db.with_read_lock([&]() {
-        FC_ASSERT(limit <= MAX_LIMIT, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
+        FC_ASSERT(limit <= MAX_LIMIT, "Limit of ${l} is greater than maximum allowed", ("l", limit));
 
         vector<research_listing_api_obj> results;
         results.reserve(limit);
         chain::dbs_research_discipline_relation& research_discipline_service = my->_db.obtain_service<dbs_research_discipline_relation>();
         chain::dbs_vote& vote_service = my->_db.obtain_service<dbs_vote>();
 
-        auto researches = get_researches(from, limit);
+        auto researches = get_researches_by_discipline_id(from, limit, discipline_id);
         for (auto research : researches) {
             auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(research.id);
             vector<discipline_api_obj> disciplines;
@@ -1509,6 +1521,71 @@ vector<research_listing_api_obj> database_api::get_research_listing(const uint64
             auto votes = vote_service.get_votes_by_research(research.id);
 
             research_listing_api_obj listing_api_obj = research_listing_api_obj(research, authors, disciplines, votes.size());
+            results.push_back(listing_api_obj);
+        }
+
+        return results;
+
+    });
+}
+
+vector<research_listing_api_obj> database_api::get_all_researches_listing(const discipline_id_type& discipline_id,
+                                                                          const uint32_t& limit = 0) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_listing_api_obj> results;
+        chain::dbs_research_discipline_relation& research_discipline_service = my->_db.obtain_service<dbs_research_discipline_relation>();
+        chain::dbs_vote& vote_service = my->_db.obtain_service<dbs_vote>();
+
+        vector<research_api_obj> researches;
+
+
+        if (discipline_id != 0) {
+            const auto& rdr_idx = my->_db.get_index<research_discipline_relation_index>().indicies().get<by_discipline_id>();
+            auto rdr_itr = rdr_idx.find(discipline_id);
+            while (rdr_itr != rdr_idx.end())
+            {
+                auto& research = my->_db.get<research_object>(rdr_itr->research_id);
+                researches.push_back(research_api_obj(research));
+                ++rdr_itr;
+            }
+        } else {
+            const auto& rdr_idx = my->_db.get_index<research_index>().indicies().get<by_id>();
+            auto rdr_itr = rdr_idx.lower_bound(0);
+            while (rdr_itr != rdr_idx.end())
+            {
+                auto& research = *rdr_itr;
+                researches.push_back(research_api_obj(research));
+                ++rdr_itr;
+            }
+        }
+
+        for (auto research : researches) {
+            auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(research.id);
+            vector<discipline_api_obj> disciplines;
+            disciplines.reserve(research_discipline_relations.size());
+            for (auto relation_wrapper : research_discipline_relations) {
+                auto& relation = relation_wrapper.get();
+                auto discipline = get_discipline(relation.discipline_id);
+                disciplines.push_back(discipline);
+            }
+
+            auto research_group_members = get_research_group_tokens_by_research_group(research.research_group_id);
+            vector<account_name_type> authors;
+            for (auto member : research_group_members) {
+                authors.push_back(member.owner);
+            }
+
+            auto votes = vote_service.get_votes_by_research(research.id);
+
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, authors, disciplines, votes.size());
+
+            if (limit != 0) {
+                if (results.size() + 1 > limit) {
+                    break;
+                }
+            }
+            
             results.push_back(listing_api_obj);
         }
 
