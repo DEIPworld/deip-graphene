@@ -67,6 +67,7 @@ share_type calculate_share(const share_type &amount, const share_type& share_per
 
 share_type calculate_share(const share_type &amount, const share_type &weight, const share_type &total_weight)
 {
+    FC_ASSERT(total_weight != 0, "Dividing by zero is restricted");
     return (amount * weight) / total_weight;
 }
 

@@ -28,6 +28,7 @@
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_vote.hpp>
+#include <deip/chain/dbs_account.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 #define MAX_LIMIT 1000
@@ -424,6 +425,22 @@ set<string> database_api_impl::lookup_accounts(const string& lower_bound_name, u
 uint64_t database_api::get_account_count() const
 {
     return my->_db.with_read_lock([&]() { return my->get_account_count(); });
+}
+
+vector<account_api_obj> database_api::get_all_accounts() const
+{
+    vector<account_api_obj> results;
+
+    const auto& idx = my->_db.get_index<account_index>().indicies().get<by_id>();
+    auto it = idx.lower_bound(0);
+    const auto it_end = idx.cend();
+    while (it != it_end)
+    {
+        results.push_back(account_api_obj(*it, my->_db));
+        ++it;
+    }
+
+    return results;
 }
 
 uint64_t database_api_impl::get_account_count() const
@@ -1117,6 +1134,16 @@ vector<research_api_obj> database_api::get_researches_by_research_group_id(const
     });
 }
 
+bool database_api::check_research_existence_by_permlink(const string& permlink) const
+{
+    const auto& idx = my->_db.get_index<research_index>().indices().get<by_permlink>();
+    auto itr = idx.find(permlink, fc::strcmp_less());
+    if (itr != idx.end())
+        return true;
+    else
+        return false;
+}
+
 research_content_api_obj database_api::get_research_content_by_id(const research_content_id_type& id) const
 {
     return my->_db.with_read_lock([&]() {
@@ -1284,6 +1311,17 @@ research_group_api_obj database_api::get_research_group_by_permlink(const string
         return research_group_service.get_research_group_by_permlink(permlink);
     });
 }
+
+bool database_api::check_research_group_existence_by_permlink(const string& permlink) const
+{
+    const auto& idx = my->_db.get_index<research_group_index>().indices().get<by_permlink>();
+    auto itr = idx.find(permlink, fc::strcmp_less());
+    if (itr != idx.end())
+        return true;
+    else
+        return false;
+}
+
 
 research_token_sale_api_obj
 database_api::get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const
