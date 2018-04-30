@@ -1,0 +1,31 @@
+{
+    "alice": [{
+        "private_key": "5JGoCjh27sfuCzp7kQme5yMipaQtgdVLPiZPr9zaCwJVrSrbGYx",
+        "public_key": "DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83"
+    }],
+
+    "bob": [{
+        "private_key": "5JgsnUtjj3gpgpFMMpbXFJFVfLAsiq1tJQ7ZdBBuyaU1RFVevU2",
+        "public_key": "DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi"
+    }],
+
+    "initdelegate": [{
+        "private_key": "5JidFW79ttL9YP3W2Joc5Zer49opYU3fKNeBx9B6cpEH1GiDm5p",
+        "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ"
+    }],
+
+    "F.L.Lightsom": [{
+        "private_key": "5JQ7Sn7xKDJCRA28GGVkjXBHFe4YAaQXzUywvr32DnVMfYHkKh4",
+        "public_key": "DEIP5tGaLrD4rt2VSfonzWiG5qLRyp7dYQqbx7pCJHU3UjcVnBu2ug"
+    }],
+
+    "G.Cicchetti": [{
+        "private_key": "5J3cGm2w8QF1hM3wKBdhUKKcYKZrwYmaPvhgvYAK7wBJz1vwmfz",
+        "public_key": "DEIP8CktpdGUUCvTfTXDX4mnMZqUSm97v9Us5jbp84586ca7Z4xYhD"
+    }],
+
+    "C.M.Wahle": [{
+        "private_key": "5KPn54wfb42mCkUoamzU2FUW98FQ8kt1soY59L7L99AXUrXWVRV",
+        "public_key": "DEIP5dcDMFzv9cPEFyW6uZcS8ncbV5g4PNs6Vg7BpCC6cunMVsm2rC"
+    }]
+}
