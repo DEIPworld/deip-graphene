@@ -514,6 +514,7 @@ FC_API(deip::app::database_api,
 
    // Research listing
     (get_research_listing)
+    (get_all_researches_listing)
 )
 
 // clang-format on
