@@ -91,12 +91,12 @@
         "id": 7,
         "name": "Space sciences",
         "votes_in_last_ten_weeks": 0,
-        "parent_id": 1
+        "parent_id": 0
     }, {
         "id": 8,
         "name": "Computer Science",
         "votes_in_last_ten_weeks": 0,
-        "parent_id": 1
+        "parent_id": 0
     }, {
         "id": 9,
         "name": "Medicine and health",
