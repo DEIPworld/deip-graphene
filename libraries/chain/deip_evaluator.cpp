@@ -22,6 +22,7 @@
 #include <deip/chain/dbs_research_token.hpp>
 #include <deip/chain/dbs_review.hpp>
 #include <deip/chain/dbs_research_group_join_request.hpp>
+#include <deip/chain/dbs_vesting_contract.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1282,5 +1283,41 @@ void research_update_evaluator::do_apply(const research_update_operation& op)
     });
 }
 
+void deposit_to_vesting_contract_evaluator::do_apply(const deposit_to_vesting_contract_operation& op)
+{
+    dbs_vesting_contract& vesting_contract_service = _db.obtain_service<dbs_vesting_contract>();
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+
+    account_service.check_account_existence(op.sender);
+    account_service.check_account_existence(op.reciever);
+
+    vesting_contract_service.create(op.sender, op.reciever, op.amount, op.contract_parts, op.contract_duration);
+
+}
+
+void withdraw_from_vesting_contract_evaluator::do_apply(const withdraw_from_vesting_contract_operation& op)
+{
+    dbs_vesting_contract& vesting_contract_service = _db.obtain_service<dbs_vesting_contract>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    account_service.check_account_existence(op.sender);
+    account_service.check_account_existence(op.reciever);
+    vesting_contract_service.check_vesting_contract_existence_by_sender_and_reciever(op.sender, op.reciever);
+
+    auto& vesting_contract = vesting_contract_service.get_by_sender_and_reviever(op.sender, op.reciever);
+    auto now = _db.head_block_time();
+
+    share_type max_withdraw = vesting_contract.amount * ((now.sec_since_epoch() - vesting_contract.start_date.sec_since_epoch()) * vesting_contract.contract_parts) /
+            (vesting_contract.expiration_date.sec_since_epoch() - vesting_contract.start_date.sec_since_epoch());
+    share_type available_withdraw = max_withdraw - vesting_contract.withdrawn;
+
+    if (available_withdraw > 0)
+    {
+        account_service.increase_balance(_db.get_account(op.reciever), available_withdraw);
+        vesting_contract_service.increase_withdrawn_amount(vesting_contract, available_withdraw);
+    }
+
+}
+    
 } // namespace chain
 } // namespace deip 

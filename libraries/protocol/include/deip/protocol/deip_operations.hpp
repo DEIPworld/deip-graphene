@@ -660,6 +660,36 @@ struct research_update_operation : public base_operation
     }
 };
 
+struct deposit_to_vesting_contract_operation : public base_operation
+{
+    account_name_type sender;
+    account_name_type reciever;
+    uint32_t amount;
+    uint32_t contract_parts;
+    uint32_t contract_duration;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(sender);
+    }
+};
+
+struct withdraw_from_vesting_contract_operation : public base_operation
+{
+    account_name_type sender;
+    account_name_type reciever;
+    uint32_t amount;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(sender);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -730,4 +760,6 @@ FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discip
 FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_token_id)(research_id)(owner))
 FC_REFLECT( deip::protocol::add_expertise_tokens_operation, (owner)(account_name)(disciplines_to_add))
 FC_REFLECT( deip::protocol::research_update_operation, (research_id)(title)(abstract)(permlink)(owner))
+FC_REFLECT( deip::protocol::deposit_to_vesting_contract_operation, (sender)(reciever)(amount)(contract_parts)(contract_duration))
+FC_REFLECT( deip::protocol::withdraw_from_vesting_contract_operation, (sender)(reciever)(amount))
 // clang-format on
