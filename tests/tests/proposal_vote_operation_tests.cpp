@@ -410,10 +410,10 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
     const std::string json_str = "{\"research_group_id\":1,"
             "\"accounts\":[{"
             "\"account_name\":\"alice\","
-            "\"new_amount_in_percent\": 75 },"
+            "\"new_amount_in_percent\": 7500 },"
             "{"
             "\"account_name\":\"bob\","
-            "\"new_amount_in_percent\": 25 }]}";
+            "\"new_amount_in_percent\": 2500 }]}";
     create_proposal(1, dbs_proposal::action_t::rebalance_research_group_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;

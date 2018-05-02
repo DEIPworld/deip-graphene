@@ -287,14 +287,14 @@ protected:
         _research_group_service.check_research_group_existence(data.research_group_id);
 
         FC_ASSERT(data.accounts.size() == _research_group_service.get_research_group_tokens(data.research_group_id).size(),
-                  "Accounts for rebalance size must be equal to amount of research group tokens");
+                  "New amount of tokens should be provided for every research group member");
         for (auto account : data.accounts)
             _research_group_service.check_research_group_token_existence(account.account_name, data.research_group_id);
 
         for (auto account : data.accounts)
             _research_group_service.set_new_research_group_token_amount(data.research_group_id,
                                                                         account.account_name,
-                                                                        account.new_amount_in_percent * DEIP_1_PERCENT);
+                                                                        account.new_amount_in_percent);
     }
 
     void create_research_material_evaluator(const proposal_object& proposal)

@@ -108,7 +108,7 @@ struct rebalance_research_group_tokens_data_type : base_proposal_data_type
                       ("n", accounts[i].account_name));
             total_amount += accounts[i].new_amount_in_percent;
         }
-        FC_ASSERT(DEIP_1_PERCENT * total_amount == DEIP_100_PERCENT, "New total amount must be equal to 100%");
+        FC_ASSERT(total_amount == DEIP_100_PERCENT, "New total amount must be equal to 100%");
     }
 };
 
