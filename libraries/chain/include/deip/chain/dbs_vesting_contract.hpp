@@ -22,10 +22,10 @@ public:
 
     using vesting_contract_refs_type = std::vector<std::reference_wrapper<const vesting_contract_object>>;
 
-    const vesting_contract_object& create(const account_name_type& sender,
-                                          const account_name_type& receiver,
+    const vesting_contract_object& create(const account_name_type &sender,
+                                          const account_name_type &receiver,
                                           const share_type amount,
-                                          const uint32_t withdrawal_period,
+                                          const uint32_t withdrawal_periods,
                                           const uint32_t contract_duration);
 
     const vesting_contract_object& get(const vesting_contract_id_type& id);
@@ -35,8 +35,8 @@ public:
 
     vesting_contract_refs_type get_by_receiver(const account_name_type& receiver);
 
-    const vesting_contract_object& increase_withdrawn_amount(const vesting_contract_object& vesting_contract,
-                                                             const share_type withdraw);
+    const vesting_contract_object& withdraw(const vesting_contract_object &vesting_contract,
+                                            const share_type to_withdraw);
 
     void check_vesting_contract_existence_by_sender_and_receiver(const account_name_type& sender,
                                                                  const account_name_type& receiver);

@@ -9,10 +9,10 @@ dbs_vesting_contract::dbs_vesting_contract(database &db)
 {
 }
 
-const vesting_contract_object& dbs_vesting_contract::create(const account_name_type& sender,
-                                                            const account_name_type& receiver,
+const vesting_contract_object& dbs_vesting_contract::create(const account_name_type &sender,
+                                                            const account_name_type &receiver,
                                                             const share_type amount,
-                                                            const uint32_t withdrawal_period,
+                                                            const uint32_t withdrawal_periods,
                                                             const uint32_t contract_duration)
 {
     const vesting_contract_object& new_vesting_contract = db_impl().create<vesting_contract_object>([&](vesting_contract_object& vesting_contract) {
@@ -20,7 +20,7 @@ const vesting_contract_object& dbs_vesting_contract::create(const account_name_t
         vesting_contract.receiver = receiver;
         vesting_contract.amount = amount;
         vesting_contract.withdrawn = 0;
-        vesting_contract.withdrawal_period = withdrawal_period;
+        vesting_contract.withdrawal_period = withdrawal_periods;
         vesting_contract.start_date = db_impl().head_block_time();
         vesting_contract.expiration_date = db_impl().head_block_time() + DAYS_TO_SECONDS(contract_duration);
         vesting_contract.contract_duration = time_point_sec(DAYS_TO_SECONDS(contract_duration));
@@ -56,14 +56,15 @@ dbs_vesting_contract::vesting_contract_refs_type dbs_vesting_contract::get_by_re
     return ret;
 }
 
-const vesting_contract_object& dbs_vesting_contract::increase_withdrawn_amount(const vesting_contract_object& vesting_contract,
-                                                                               const share_type withdraw)
+const vesting_contract_object& dbs_vesting_contract::withdraw(const vesting_contract_object &vesting_contract,
+                                                              const share_type to_withdraw)
 {
-    FC_ASSERT(vesting_contract.withdrawn + withdraw <= vesting_contract.amount, "You cant withdraw more than contract amount");
-    if (vesting_contract.withdrawn + withdraw == vesting_contract.amount)
+    FC_ASSERT(vesting_contract.withdrawn + to_withdraw <= vesting_contract.amount, "You cant withdraw more than contract amount");
+    if (vesting_contract.withdrawn + to_withdraw == vesting_contract.amount) {
         db_impl().remove(vesting_contract);
+    }
 
-    db_impl().modify(vesting_contract, [&](vesting_contract_object& v) { v.withdrawn += withdraw; });
+    db_impl().modify(vesting_contract, [&](vesting_contract_object& v) { v.withdrawn += to_withdraw; });
 }
 
 void dbs_vesting_contract::check_vesting_contract_existence_by_sender_and_receiver(const account_name_type& sender,

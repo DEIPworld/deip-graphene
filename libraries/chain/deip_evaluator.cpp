@@ -1308,21 +1308,21 @@ void withdraw_from_vesting_contract_evaluator::do_apply(const withdraw_from_vest
     auto now = _db.head_block_time();
 
     share_type time_since_contract_start = now.sec_since_epoch() - vesting_contract.start_date.sec_since_epoch();
-    share_type max_withdraw = 0;
+    share_type max_amount_to_withdraw = 0;
 
-    if (now >= vesting_contract.expiration_date)
-        max_withdraw = vesting_contract.amount;
-    else {
-        share_type periods = (time_since_contract_start * vesting_contract.withdrawal_period) / vesting_contract.contract_duration.sec_since_epoch();
-        max_withdraw = (vesting_contract.amount * periods) / vesting_contract.withdrawal_period;
+    if (now >= vesting_contract.expiration_date) {
+        max_amount_to_withdraw = vesting_contract.amount;
+    } else {
+        share_type current_period = (time_since_contract_start * vesting_contract.withdrawal_period) / vesting_contract.contract_duration.sec_since_epoch();
+        max_amount_to_withdraw = (vesting_contract.amount * current_period) / vesting_contract.withdrawal_period;
     }
 
-    share_type available_withdraw = max_withdraw - vesting_contract.withdrawn;
+    share_type to_withdraw = max_amount_to_withdraw - vesting_contract.withdrawn;
 
-    if (available_withdraw > 0)
+    if (to_withdraw > 0)
     {
-        account_service.increase_balance(_db.get_account(op.receiver), available_withdraw);
-        vesting_contract_service.increase_withdrawn_amount(vesting_contract, available_withdraw);
+        account_service.increase_balance(_db.get_account(op.receiver), to_withdraw);
+        vesting_contract_service.withdraw(vesting_contract, to_withdraw);
     }
 
 }
