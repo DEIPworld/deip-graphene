@@ -104,6 +104,7 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
     for (auto& account : accounts)
     {
         FC_ASSERT(!account.name.empty(), "Account 'name' should not be empty.");
+        FC_ASSERT(is_valid_account_name(account.name), "Account name ${n} is invalid", ("n", account.name));
 
         create<account_object>([&](account_object& a) {
             a.name = account.name;
