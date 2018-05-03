@@ -191,7 +191,6 @@ protected:
     {
         invite_member_proposal_data_type data = get_data<invite_member_proposal_data_type>(proposal);
         auto research_group_tokens = _research_group_service.get_research_group_tokens(data.research_group_id);
-        _research_group_service.adjust_research_group_tokens_amount(data.research_group_id, -data.research_group_token_amount);
         _research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount);
     }
 
