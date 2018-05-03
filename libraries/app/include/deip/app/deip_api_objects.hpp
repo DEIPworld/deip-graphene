@@ -369,9 +369,9 @@ struct research_api_obj
         ,  permlink(fc::to_string(r.permlink))
         ,  is_finished(r.is_finished)
         ,  owned_tokens(r.owned_tokens)
-        ,  review_share_in_percent(r.review_share_in_percent)
+        ,  review_share(r.review_share)
         ,  created_at(r.created_at)
-        ,  dropout_compensation_in_percent(r.dropout_compensation_in_percent)
+        ,  dropout_compensation(r.dropout_compensation)
     {}
 
     // because fc::variant require for temporary object
@@ -386,9 +386,9 @@ struct research_api_obj
     std::string permlink;
     bool is_finished;
     share_type owned_tokens;
-    uint16_t review_share_in_percent;
+    uint16_t review_share;
     time_point_sec created_at;
-    int16_t dropout_compensation_in_percent;
+    int16_t dropout_compensation;
 };
 
 struct research_content_api_obj
@@ -747,9 +747,9 @@ FC_REFLECT( deip::app::research_api_obj,
             (permlink)
             (is_finished)
             (owned_tokens)
-            (review_share_in_percent)
+            (review_share)
             (created_at)
-            (dropout_compensation_in_percent)
+            (dropout_compensation)
           )
 
 FC_REFLECT( deip::app::research_content_api_obj,

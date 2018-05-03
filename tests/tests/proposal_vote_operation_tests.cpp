@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test)
     ACTORS((alice)(bob))
     std::vector<std::pair<account_name_type, share_type>> accounts = {std::make_pair("alice", 10000)};
     setup_research_group(1, "name", "research_group", "research group", 0, 1, accounts);
-    const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":1,\"research_group_token_amount_in_percent\":50}";
+    const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":1,\"research_group_token_amount\":5000}";
     create_proposal(1, dbs_proposal::action_t::invite_member, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
 
@@ -159,10 +159,10 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
                                                           "\"research_group_id\":0,"
                                                           "\"abstract\":\"abstract\","
                                                           "\"permlink\":\"permlink\","
-                                                          "\"review_share_in_percent\": 1000,"
-                                                          "\"dropout_compensation_in_percent\": 1500,"
+                                                          "\"review_share\": 1000,"
+                                                          "\"dropout_compensation\": 1500,"
                                                           "\"disciplines\": [1, 2, 3]}";
-        const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 4500,\"research_id\": 0}";
+        const std::string change_review_share_proposal_json = "{\"review_share\": 4500,\"research_id\": 0}";
 
         create_proposal_by_operation("alice", 0, create_research_proposal_json,
                                      dbs_proposal::action_t::start_research,
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 
         auto& research = research_service.get_research(0);
 
-        BOOST_CHECK(research.review_share_in_percent == 4500);
+        BOOST_CHECK(research.review_share == 4500);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -213,10 +213,10 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_rate_test)
                                                           "\"research_group_id\":0,"
                                                           "\"abstract\":\"abstract\","
                                                           "\"permlink\":\"permlink\","
-                                                          "\"review_share_in_percent\": 1000,"
-                                                          "\"dropout_compensation_in_percent\": 1500,"
+                                                          "\"review_share\": 1000,"
+                                                          "\"dropout_compensation\": 1500,"
                                                           "\"disciplines\": [1, 2, 3]}";
-        const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 4500,\"research_id\": 0}";
+        const std::string change_review_share_proposal_json = "{\"review_share\": 4500,\"research_id\": 0}";
 
         create_proposal_by_operation("alice", 0, create_research_proposal_json,
                                      dbs_proposal::action_t::start_research,
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_rate_test)
         auto& research = research_service.get_research(0);
 
         BOOST_CHECK_THROW(evaluator.do_apply(crs_op), fc::assert_exception);
-        BOOST_CHECK(research.review_share_in_percent == 1000);
+        BOOST_CHECK(research.review_share == 1000);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -319,8 +319,8 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
             "\"research_group_id\":1,"
             "\"abstract\":\"abstract\","
             "\"permlink\":\"permlink\","
-            "\"review_share_in_percent\": 10,"
-            "\"dropout_compensation_in_percent\": 1500,"
+            "\"review_share\": 10,"
+            "\"dropout_compensation\": 1500,"
             "\"disciplines\": [1, 2, 3]}";
 
     create_proposal(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
@@ -339,8 +339,8 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
     BOOST_CHECK(research.abstract == "abstract");
     BOOST_CHECK(research.permlink == "permlink");
     BOOST_CHECK(research.research_group_id == 1);
-    BOOST_CHECK(research.review_share_in_percent == 10);
-    BOOST_CHECK(research.dropout_compensation_in_percent == DROPOUT_COMPENSATION_IN_PERCENT);
+    BOOST_CHECK(research.review_share == 10);
+    BOOST_CHECK(research.dropout_compensation == DROPOUT_COMPENSATION_IN_PERCENT);
 
     auto& research_discipline_relation_service = db.obtain_service<dbs_research_discipline_relation>();
     auto relations = research_discipline_relation_service.get_research_discipline_relations_by_research(0);
@@ -410,10 +410,10 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
     const std::string json_str = "{\"research_group_id\":1,"
             "\"accounts\":[{"
             "\"account_name\":\"alice\","
-            "\"new_amount_in_percent\": 7500 },"
+            "\"new_amount\": 7500 },"
             "{"
             "\"account_name\":\"bob\","
-            "\"new_amount_in_percent\": 2500 }]}";
+            "\"new_amount\": 2500 }]}";
     create_proposal(1, dbs_proposal::action_t::rebalance_research_group_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
@@ -508,11 +508,11 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_data_validate_test)
                                                           "\"research_group_id\":1,"
                                                           "\"abstract\":\"abstract\","
                                                           "\"permlink\":\"permlink\","
-                                                          "\"review_share_in_percent\": 10,"
-                                                          "\"dropout_compensation_in_percent\": 1500,"
+                                                          "\"review_share\": 1000,"
+                                                          "\"dropout_compensation\": 1500,"
                                                           "\"disciplines\": [1, 2, 3]}";
 
-        const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 51,\"research_id\": 0}";
+        const std::string change_review_share_proposal_json = "{\"review_share\": 5100,\"research_id\": 0}";
 
         std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
         setup_research_group(1, "name", "research_group", "research group", 0, 1, accounts);
@@ -565,8 +565,8 @@ BOOST_AUTO_TEST_CASE(start_research_validate_test)
             "\"research_group_id\":1,"
             "\"abstract\":\"\","
             "\"permlink\":\"\","
-            "\"review_share_in_percent\": 5,"
-            "\"dropout_compensation_in_percent\": 1500}";
+            "\"review_share\": 500,"
+            "\"dropout_compensation\": 1500}";
     create_proposal(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
@@ -628,8 +628,8 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         r.title = "Research #1";
         r.permlink = "Research #1 permlink";
         r.research_group_id = 1;
-        r.review_share_in_percent = 10;
-        r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
+        r.review_share = 1000;
+        r.dropout_compensation = DROPOUT_COMPENSATION_IN_PERCENT;
         r.is_finished = false;
         r.created_at = db.head_block_time();
         r.abstract = "abstract for Research #1";

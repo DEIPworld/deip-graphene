@@ -245,8 +245,8 @@ void database::init_research(const genesis_state_type& genesis_state)
     {
         FC_ASSERT(!research.title.empty(), "Research 'title' must be provided");
         FC_ASSERT(!research.permlink.empty(),  "Research group 'permlink' must be provided");
-        FC_ASSERT(research.dropout_compensation_in_percent >= 0 && research.dropout_compensation_in_percent <= 100, "Percent for dropout compensation should be in 0 to 100 range");
-        FC_ASSERT(research.review_share_in_percent >= 0 && research.review_share_in_percent <= 50, "Percent for review should be in 0 to 50 range");
+        FC_ASSERT(research.dropout_compensation >= 0 && research.dropout_compensation <= 10000, "Percent for dropout compensation should be in 0 to 100 range");
+        FC_ASSERT(research.review_share >= 0 && research.review_share <= 5000, "Percent for review should be in 0 to 50 range");
 
         create<research_object>([&](research_object& r){
             r.id = research.id;
@@ -258,9 +258,9 @@ void database::init_research(const genesis_state_type& genesis_state)
             r.last_update_time = get_genesis_time();
             r.is_finished = research.is_finished;
             r.owned_tokens = DEIP_100_PERCENT;
-            r.review_share_in_percent = research.review_share_in_percent * DEIP_1_PERCENT;
-            r.review_share_in_percent_last_update = get_genesis_time();
-            r.dropout_compensation_in_percent = research.dropout_compensation_in_percent * DEIP_1_PERCENT;
+            r.review_share = research.review_share;
+            r.review_share_last_update = get_genesis_time();
+            r.dropout_compensation = research.dropout_compensation;
         });
 
         for (auto& discipline_id : research.disciplines)

@@ -545,8 +545,8 @@ const research_object& database_fixture::research_create(const int64_t id,
                                                          const string &abstract,
                                                          const string &permlink,
                                                          const research_group_id_type &research_group_id,
-                                                         const uint16_t review_share_in_percent,
-                                                         const uint16_t dropout_compensation_in_percent)
+                                                         const uint16_t review_share,
+                                                         const uint16_t dropout_compensation)
 {
     const auto& new_research = db.create<research_object>([&](research_object& r) {
         r.id = id;
@@ -554,12 +554,12 @@ const research_object& database_fixture::research_create(const int64_t id,
         fc::from_string(r.abstract, abstract);
         fc::from_string(r.permlink, permlink);
         r.research_group_id = research_group_id;
-        r.review_share_in_percent = review_share_in_percent;
-        r.dropout_compensation_in_percent = dropout_compensation_in_percent;
+        r.review_share = review_share;
+        r.dropout_compensation = dropout_compensation;
         r.is_finished = false;
         r.owned_tokens = DEIP_100_PERCENT;
         r.created_at = db.head_block_time();
-        r.review_share_in_percent_last_update = db.head_block_time();
+        r.review_share_last_update = db.head_block_time();
     });
 
     return new_research;

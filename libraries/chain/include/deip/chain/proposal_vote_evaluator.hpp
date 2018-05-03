@@ -191,8 +191,8 @@ protected:
     {
         invite_member_proposal_data_type data = get_data<invite_member_proposal_data_type>(proposal);
         auto research_group_tokens = _research_group_service.get_research_group_tokens(data.research_group_id);
-        _research_group_service.adjust_research_group_tokens_amount(data.research_group_id, -data.research_group_token_amount_in_percent * DEIP_1_PERCENT);
-        _research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount_in_percent * DEIP_1_PERCENT);
+        _research_group_service.adjust_research_group_tokens_amount(data.research_group_id, -data.research_group_token_amount);
+        _research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount);
     }
 
     void dropout_evaluator(const proposal_object& proposal)
@@ -213,7 +213,7 @@ protected:
             auto& research = r.get();
 
             auto tokens_amount_in_percent_after_dropout_compensation
-                = token.amount * research.dropout_compensation_in_percent / DEIP_100_PERCENT;
+                = token.amount * research.dropout_compensation / DEIP_100_PERCENT;
             auto tokens_amount_after_dropout_compensation
                 = research.owned_tokens * tokens_amount_in_percent_after_dropout_compensation / DEIP_100_PERCENT;
 
@@ -242,11 +242,11 @@ protected:
         auto& research = _research_service.get_research(data.research_id);
 
         int64_t time_period_from_last_update
-            = (_dynamic_global_properties_service.get_dynamic_global_properties().time - research.review_share_in_percent_last_update).to_seconds();
+            = (_dynamic_global_properties_service.get_dynamic_global_properties().time - research.review_share_last_update).to_seconds();
         FC_ASSERT((time_period_from_last_update >= DAYS_TO_SECONDS(90)),
                   "Cannot update review_share (time period from last update < 90)");
 
-        _research_service.change_research_review_share_percent(data.research_id, data.review_share_in_percent);
+        _research_service.change_research_review_share_percent(data.research_id, data.review_share);
     }
 
     void change_quorum_evaluator(const proposal_object& proposal)
@@ -259,7 +259,7 @@ protected:
     {
         start_research_proposal_data_type data = get_data<start_research_proposal_data_type>(proposal);
         _research_group_service.check_research_group_existence(data.research_group_id);
-        auto& research = _research_service.create(data.title, data.abstract, data.permlink, data.research_group_id, data.review_share_in_percent, data.dropout_compensation_in_percent);
+        auto& research = _research_service.create(data.title, data.abstract, data.permlink, data.research_group_id, data.review_share, data.dropout_compensation);
         for (auto& discipline_id : data.disciplines)
         {
             _discipline_service.check_discipline_existence(discipline_id);
@@ -294,7 +294,7 @@ protected:
         for (auto account : data.accounts)
             _research_group_service.set_new_research_group_token_amount(data.research_group_id,
                                                                         account.account_name,
-                                                                        account.new_amount_in_percent);
+                                                                        account.new_amount);
     }
 
     void create_research_material_evaluator(const proposal_object& proposal)
