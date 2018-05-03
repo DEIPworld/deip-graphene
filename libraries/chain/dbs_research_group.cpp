@@ -152,7 +152,13 @@ void dbs_research_group::adjust_research_group_tokens_amount(const research_grou
     const auto it_end = it_pair.second;
     while (it != it_end)
     {
-        db_impl().modify(*it, [&](research_group_token_object& rgt) { rgt.amount += delta; });
+        db_impl().modify(*it, [&](research_group_token_object& rgt)
+        {
+            if (delta < 0)
+                rgt.amount += (delta * rgt.amount) / DEIP_100_PERCENT;
+            else if (delta > 0)
+                rgt.amount = (rgt.amount * DEIP_100_PERCENT) / (DEIP_100_PERCENT - delta);
+        });
         ++it;
     }
 
