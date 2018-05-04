@@ -369,7 +369,7 @@ public:
     // Research discipline relation //
     //////////////////////////////////
 
-    vector<int64_t> get_disciplines_by_research(const research_id_type& research_id) const;
+    vector<discipline_api_obj> get_disciplines_by_research(const research_id_type& research_id) const;
 
     ///////////////////////////////////
     // Research group invite        //
