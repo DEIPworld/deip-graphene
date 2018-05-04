@@ -22,8 +22,8 @@ const vesting_contract_object& dbs_vesting_contract::create(const account_name_t
         vesting_contract.withdrawn = 0;
         vesting_contract.withdrawal_period = withdrawal_periods;
         vesting_contract.start_date = db_impl().head_block_time();
-        vesting_contract.expiration_date = db_impl().head_block_time() + DAYS_TO_SECONDS(contract_duration);
-        vesting_contract.contract_duration = time_point_sec(DAYS_TO_SECONDS(contract_duration));
+        vesting_contract.expiration_date = db_impl().head_block_time() + contract_duration;
+        vesting_contract.contract_duration = fc::time_point_sec(contract_duration);
     });
 
     return new_vesting_contract;
@@ -64,7 +64,8 @@ const vesting_contract_object& dbs_vesting_contract::withdraw(const vesting_cont
         db_impl().remove(vesting_contract);
     }
 
-    db_impl().modify(vesting_contract, [&](vesting_contract_object& v) { v.withdrawn += to_withdraw; });
+    db_impl().modify(vesting_contract, [&](vesting_contract_object& v) { v.withdrawn += to_withdraw;
+                                                                         v.amount -= to_withdraw; });
 }
 
 void dbs_vesting_contract::check_vesting_contract_existence_by_sender_and_receiver(const account_name_type& sender,
