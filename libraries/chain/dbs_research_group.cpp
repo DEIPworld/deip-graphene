@@ -161,7 +161,7 @@ const share_type dbs_research_group::decrease_research_group_tokens_amount(const
             auto temp = (delta * rgt.amount) / DEIP_100_PERCENT;
             if (rgt.amount - temp < DEIP_1_PERCENT)
             {
-                total_amount += temp;
+                total_amount += rgt.amount - DEIP_1_PERCENT;
                 rgt.amount = DEIP_1_PERCENT;
             }
             else
@@ -192,11 +192,11 @@ void dbs_research_group::increase_research_group_tokens_amount(const research_gr
         {
             auto temp = (rgt.amount * DEIP_100_PERCENT) / (DEIP_100_PERCENT - delta);
             total_increase += (temp - rgt.amount);
-            rgt.amount += temp;
+            rgt.amount = temp;
         });
         ++it;
     }
-
+    --it;
     share_type difference = delta - total_increase;
     db_impl().modify(*it, [&](research_group_token_object& rgt)
     {

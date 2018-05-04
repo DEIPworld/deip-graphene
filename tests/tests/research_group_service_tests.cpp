@@ -61,34 +61,51 @@ namespace chain {
         });
     }
 
-    void create_research_group_tokens_for_adjust()
+    void create_research_group_tokens_for_decrease()
     {
         db.create<research_group_token_object>([&](research_group_token_object& d) {
             d.id = 1;
             d.research_group_id = 1;
-            d.amount = 4950;
+            d.amount = 5000;
             d.owner = "alice";
         });
 
         db.create<research_group_token_object>([&](research_group_token_object& d) {
             d.id = 2;
             d.research_group_id = 1;
-            d.amount = 550;
+            d.amount = 4000;
             d.owner = "bob";
         });
 
         db.create<research_group_token_object>([&](research_group_token_object& d) {
             d.id = 3;
             d.research_group_id = 1;
-            d.amount = 4000;
+            d.amount = 100;
             d.owner = "john";
         });
 
         db.create<research_group_token_object>([&](research_group_token_object& d) {
             d.id = 4;
             d.research_group_id = 1;
-            d.amount = 1500;
+            d.amount = 900;
             d.owner = "alex";
+        });
+    }
+
+    void create_research_group_tokens_for_increase()
+    {
+        db.create<research_group_token_object>([&](research_group_token_object& d) {
+            d.id = 1;
+            d.research_group_id = 1;
+            d.amount = 1491;
+            d.owner = "alice";
+        });
+
+        db.create<research_group_token_object>([&](research_group_token_object& d) {
+            d.id = 2;
+            d.research_group_id = 1;
+            d.amount = 4645;
+            d.owner = "bob";
         });
     }
 
@@ -270,29 +287,40 @@ BOOST_AUTO_TEST_CASE(check_research_group_token_existence_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(adjust_research_group_tokens_amount)
+BOOST_AUTO_TEST_CASE(decrease_research_group_tokens_amount)
 {
     try
     {
-        create_research_group_tokens_for_adjust();
+        create_research_group_tokens_for_decrease();
 
-        BOOST_CHECK_NO_THROW(data_service.adjust_research_group_tokens_amount(1, -1000));
+        BOOST_CHECK(data_service.decrease_research_group_tokens_amount(1, 1000) == 990);
         auto& alice_token = db.get<research_group_token_object>(1);
         auto& bob_token = db.get<research_group_token_object>(2);
         auto& john_token = db.get<research_group_token_object>(3);
         auto& alex_token = db.get<research_group_token_object>(4);
 
-        BOOST_CHECK(alice_token.amount == 4455);
-        BOOST_CHECK(bob_token.amount == 495);
-        BOOST_CHECK(john_token.amount == 3600);
-        BOOST_CHECK(alex_token.amount == 1350);
+        BOOST_CHECK(alice_token.amount == 4500);
+        BOOST_CHECK(bob_token.amount == 3600);
+        BOOST_CHECK(john_token.amount == 100);
+        BOOST_CHECK(alex_token.amount == 810);
 
-        BOOST_CHECK_NO_THROW(data_service.adjust_research_group_tokens_amount(1, 1000));
+    }
+    FC_LOG_AND_RETHROW()
+}
 
-        BOOST_CHECK(alice_token.amount == 4950);
-        BOOST_CHECK(bob_token.amount == 550);
-        BOOST_CHECK(john_token.amount == 4000);
-        BOOST_CHECK(alex_token.amount == 1500);
+BOOST_AUTO_TEST_CASE(increase_research_group_tokens_amount)
+{
+    try
+    {
+        create_research_group_tokens_for_increase();
+
+        BOOST_CHECK_NO_THROW(data_service.increase_research_group_tokens_amount(1, 3864));
+        auto& alice_token = db.get<research_group_token_object>(1);
+        auto& bob_token = db.get<research_group_token_object>(2);
+
+        BOOST_CHECK(alice_token.amount == 2429);
+        BOOST_CHECK(bob_token.amount == 7571);
+        BOOST_CHECK(alice_token.amount + bob_token.amount == DEIP_100_PERCENT);
 
     }
     FC_LOG_AND_RETHROW()
