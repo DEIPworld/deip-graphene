@@ -387,6 +387,13 @@ public:
     vector<research_listing_api_obj> get_research_listing(const discipline_id_type& discipline_id, const uint64_t& from, const uint32_t& limit) const;
     vector<research_listing_api_obj> get_all_researches_listing(const discipline_id_type& discipline_id, const uint32_t& limit) const;
 
+    ///////////////////////////////////
+    // Total votes                  //
+    /////////////////////////////////
+    vector<total_votes_api_obj> get_total_votes_by_research(const research_id_type& research_id) const;
+    vector<total_votes_api_obj> get_total_votes_by_research_and_discipline(const research_id_type& research_id,
+                                                                   const discipline_id_type& discipline_id) const;
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -518,6 +525,10 @@ FC_API(deip::app::database_api,
    // Research listing
     (get_research_listing)
     (get_all_researches_listing)
+
+   // Total votes
+   (get_total_votes_by_research)
+   (get_total_votes_by_research_and_discipline)
 )
 
 // clang-format on

@@ -18,6 +18,7 @@
 #include <deip/chain/research_discipline_relation_object.hpp>
 #include <deip/chain/research_group_invite_object.hpp>
 #include <deip/chain/research_object.hpp>
+#include <deip/chain/total_votes_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -665,6 +666,41 @@ struct research_listing_api_obj
     int64_t total_votes;
 };
 
+struct total_votes_api_obj
+{
+    total_votes_api_obj(const chain::total_votes_object& vo)
+        : id(vo.id._id)
+        ,  discipline_id(vo.discipline_id._id)
+        ,  research_id(vo.research_id._id)
+        ,  research_content_id(vo.research_content_id._id)
+        ,  total_weight(vo.total_weight)
+        ,  total_active_weight(vo.total_active_weight)
+        ,  total_research_reward_weight(vo.total_research_reward_weight)
+        ,  total_active_research_reward_weight(vo.total_active_research_reward_weight)
+        ,  total_curators_reward_weight(vo.total_curators_reward_weight)
+        ,  total_active_curators_reward_weight(vo.total_active_curators_reward_weight)
+    {}
+
+    // because fc::variant require for temporary object
+    total_votes_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t discipline_id;
+    int64_t research_id;
+    int64_t research_content_id;
+
+    share_type total_weight;
+    share_type total_active_weight;
+
+    share_type total_research_reward_weight;
+    share_type total_active_research_reward_weight;
+
+    share_type total_curators_reward_weight;
+    share_type total_active_curators_reward_weight;
+};
+
 } // namespace app
 } // namespace deip
 
@@ -852,6 +888,19 @@ FC_REFLECT( deip::app::research_listing_api_obj,
            (authors)
            (disciplines)
            (total_votes)
+)
+
+FC_REFLECT( deip::app::total_votes_api_obj,
+           (id)
+           (discipline_id)
+           (research_id)
+           (research_content_id)
+           (total_weight)
+           (total_active_weight)
+           (total_research_reward_weight)
+           (total_active_research_reward_weight)
+           (total_curators_reward_weight)
+           (total_active_curators_reward_weight)
 )
 
 // clang-format on
