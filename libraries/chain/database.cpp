@@ -1331,11 +1331,11 @@ share_type database::reward_research_content(const research_content_id_type& res
 
     auto curators_share = util::calculate_share(reward, DEIP_CURATORS_REWARD_SHARE_PERCENT);
     auto references_share = util::calculate_share(reward, DEIP_REFERENCES_REWARD_SHARE_PERCENT);
-    auto review_share = util::calculate_share(reward, research.review_share);
+    auto review_share = util::calculate_share(reward, research.review_share_in_percent);
     auto token_holders_share = reward - curators_share - references_share - review_share;
 
     auto references_expertise_share = util::calculate_share(reward, DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT);
-    auto review_expertise_share = util::calculate_share(reward, research.review_share);
+    auto review_expertise_share = util::calculate_share(reward, research.review_share_in_percent);
     auto research_group_expertise_share = reward - references_expertise_share - review_expertise_share;
 
     FC_ASSERT(token_holders_share + review_share + references_share + curators_share <= reward,

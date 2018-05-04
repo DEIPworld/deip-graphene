@@ -10,21 +10,21 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 }
 
 const research_object& dbs_research::create(const string &title, const string &abstract, const string &permlink,
-                                            const research_group_id_type &research_group_id, const uint16_t review_share,
-                                            const uint16_t dropout_compensation)
+                                            const research_group_id_type &research_group_id, const uint16_t review_share_in_percent,
+                                            const uint16_t dropout_compensation_in_percent)
 {
     const auto& new_research = db_impl().create<research_object>([&](research_object& r) {
         fc::from_string(r.title, title);
         fc::from_string(r.abstract, abstract);
         fc::from_string(r.permlink, permlink);
         r.research_group_id = research_group_id;
-        r.review_share = review_share;
-        r.dropout_compensation = dropout_compensation;
+        r.review_share_in_percent = review_share_in_percent;
+        r.dropout_compensation_in_percent = dropout_compensation_in_percent;
         r.is_finished = false;
         r.owned_tokens = DEIP_100_PERCENT;
         r.created_at = db_impl().head_block_time();
         r.last_update_time = db_impl().head_block_time();
-        r.review_share_last_update = db_impl().head_block_time();
+        r.review_share_in_percent_last_update = db_impl().head_block_time();
     });
 
     return new_research;
@@ -96,13 +96,13 @@ void dbs_research::increase_owned_tokens(const research_object& research, const 
 }
 
 void dbs_research::change_research_review_share_percent(const research_id_type& research_id,
-                                                        const uint16_t review_share)
+                                                        const uint16_t review_share_in_percent)
 {
     check_research_existence(research_id);
     const research_object& research = get_research(research_id);
     db_impl().modify(research, [&](research_object& r) {
-        r.review_share = review_share;
-        r.review_share_last_update = db_impl().head_block_time();
+        r.review_share_in_percent = review_share_in_percent;
+        r.review_share_in_percent_last_update = db_impl().head_block_time();
     });
 }
 }

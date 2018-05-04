@@ -28,12 +28,12 @@ struct invite_member_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
     deip::protocol::account_name_type name;
-    share_type research_group_token_amount;
+    share_type research_group_token_amount_in_percent;
 
     void validate() const
     {
         FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
-        FC_ASSERT(research_group_token_amount > 0, "Research group tokens amount should be > 0");
+        FC_ASSERT(research_group_token_amount_in_percent > 0, "Research group tokens amount should be > 0");
     }
 };
 
@@ -54,8 +54,8 @@ struct start_research_proposal_data_type : base_proposal_data_type
     string abstract;
     string permlink;
     research_group_id_type research_group_id;
-    uint16_t review_share;
-    uint16_t dropout_compensation;
+    uint16_t review_share_in_percent;
+    uint16_t dropout_compensation_in_percent;
     std::vector<int64_t> disciplines;
 
 
@@ -70,8 +70,8 @@ struct start_research_proposal_data_type : base_proposal_data_type
         FC_ASSERT(!abstract.empty(), "Research abstract cannot be empty");
         FC_ASSERT(permlink.size() < DEIP_MAX_PERMLINK_LENGTH, "Research permlink is too long");
         FC_ASSERT(fc::is_utf8(permlink), "Research permlink should be valid UTF8 string");
-        FC_ASSERT(review_share >= 0 && review_share <= 50 * DEIP_1_PERCENT, "Percent for review should be in 0 to 50 range");
-        FC_ASSERT(dropout_compensation >= 0 && dropout_compensation <= DEIP_100_PERCENT, "Percent for dropout compensation should be in 0 to 100 range");
+        FC_ASSERT(review_share_in_percent >= 0 && review_share_in_percent <= 50 * DEIP_1_PERCENT, "Percent for review should be in 0 to 50 range");
+        FC_ASSERT(dropout_compensation_in_percent >= 0 && dropout_compensation_in_percent <= DEIP_100_PERCENT, "Percent for dropout compensation should be in 0 to 100 range");
     }
 };
 
@@ -90,7 +90,7 @@ struct send_funds_data_type : base_proposal_data_type
 struct rebalance_info
 {
     account_name_type account_name;
-    share_type new_amount;
+    share_type new_amount_in_percent;
 };
 
 struct rebalance_research_group_tokens_data_type : base_proposal_data_type
@@ -106,7 +106,7 @@ struct rebalance_research_group_tokens_data_type : base_proposal_data_type
         {
             FC_ASSERT(is_valid_account_name(accounts[i].account_name), "Account name ${n} is invalid",
                       ("n", accounts[i].account_name));
-            total_amount += accounts[i].new_amount;
+            total_amount += accounts[i].new_amount_in_percent;
         }
         FC_ASSERT(total_amount == DEIP_100_PERCENT, "New total amount must be equal to 100%");
     }
@@ -161,11 +161,11 @@ struct start_research_token_sale_data_type : base_proposal_data_type
 struct change_research_review_share_percent_data_type : base_proposal_data_type
 {
     research_id_type research_id;
-    uint16_t review_share;
+    uint16_t review_share_in_percent;
 
     void validate() const
     {
-        FC_ASSERT(review_share >= 0 && review_share <= 50 * DEIP_1_PERCENT,
+        FC_ASSERT(review_share_in_percent >= 0 && review_share_in_percent <= 50 * DEIP_1_PERCENT,
                   "Percent for review should be in 0 to 50 range");
     }
 };
@@ -175,15 +175,15 @@ struct change_research_review_share_percent_data_type : base_proposal_data_type
 
 FC_REFLECT(deip::chain::dropout_member_proposal_data_type, (research_group_id)(name))
 
-FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount))
+FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount_in_percent))
 
 FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
 
-FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(research_group_id)(review_share)(dropout_compensation)(disciplines))
+FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(research_group_id)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines))
 
 FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(recipient)(funds))
 
-FC_REFLECT(deip::chain::rebalance_info, (account_name)(new_amount))
+FC_REFLECT(deip::chain::rebalance_info, (account_name)(new_amount_in_percent))
 
 FC_REFLECT(deip::chain::rebalance_research_group_tokens_data_type, (research_group_id)(accounts))
 
@@ -191,4 +191,4 @@ FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(t
 
 FC_REFLECT(deip::chain::start_research_token_sale_data_type, (research_id)(start_time)(end_time)(amount_for_sale)(soft_cap)(hard_cap))
 
-FC_REFLECT(deip::chain::change_research_review_share_percent_data_type, (research_id)(review_share))
+FC_REFLECT(deip::chain::change_research_review_share_percent_data_type, (research_id)(review_share_in_percent))

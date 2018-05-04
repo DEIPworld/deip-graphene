@@ -152,8 +152,8 @@ struct database_fixture
                                            const string& abstract,
                                            const string& permlink,
                                            const research_group_id_type& research_group_id,
-                                           const uint16_t review_share,
-                                           const uint16_t dropout_compensation);
+                                           const uint16_t review_share_in_percent,
+                                           const uint16_t dropout_compensation_in_percent);
     
     const research_token_object& research_token_create(const int64_t id, 
                                                        const account_name_type& owner,

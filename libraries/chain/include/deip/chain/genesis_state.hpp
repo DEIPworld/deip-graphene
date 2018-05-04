@@ -65,8 +65,8 @@ struct genesis_state_type
         std::string abstract;
         std::string permlink;
         bool is_finished;
-        uint16_t review_share;
-        uint16_t dropout_compensation;
+        uint16_t review_share_in_percent;
+        uint16_t dropout_compensation_in_percent;
         std::vector<int64_t> disciplines;
     };
 
@@ -151,8 +151,8 @@ FC_REFLECT(deip::chain::genesis_state_type::research_type,
            (abstract)
            (permlink)
            (is_finished)
-           (review_share)
-           (dropout_compensation)
+           (review_share_in_percent)
+           (dropout_compensation_in_percent)
            (disciplines))
 
 

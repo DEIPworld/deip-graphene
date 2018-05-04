@@ -662,22 +662,22 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
                                                             "\"research_group_id\":0,"
                                                             "\"abstract\":\"abstract r1\","
                                                             "\"permlink\":\"permlink r1\","
-                                                            "\"review_share\": 1000,"
-                                                            "\"dropout_compensation\": 5000,"
+                                                            "\"review_share_in_percent\": 1000,"
+                                                            "\"dropout_compensation_in_percent\": 5000,"
                                                             "\"disciplines\": [1, 2, 3]}";
         const std::string create_research_2_proposal_json = "{\"title\":\"research #2\","
                                                             "\"research_group_id\":0,"
                                                             "\"abstract\":\"abstract r2\","
                                                             "\"permlink\":\"permlink r2\","
-                                                            "\"review_share\": 1000,"
-                                                            "\"dropout_compensation\": 2000,"
+                                                            "\"review_share_in_percent\": 1000,"
+                                                            "\"dropout_compensation_in_percent\": 2000,"
                                                             "\"disciplines\": [1, 2, 3]}";
         const std::string create_research_3_proposal_json = "{\"title\":\"research #3\","
                                                             "\"research_group_id\":1,"
                                                             "\"abstract\":\"abstract r3\","
                                                             "\"permlink\":\"permlink r3\","
-                                                            "\"review_share\": 1000,"
-                                                            "\"dropout_compensation\": 1000,"
+                                                            "\"review_share_in_percent\": 1000,"
+                                                            "\"dropout_compensation_in_percent\": 1000,"
                                                             "\"disciplines\": [1, 2, 3]}";
 
         create_proposal_by_operation("alice", 0, create_research_1_proposal_json,

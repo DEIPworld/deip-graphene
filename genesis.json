@@ -247,8 +247,8 @@
         "abstract": "Some abstract here",
         "permlink": "deip-activity-report",
         "is_finished": false,
-        "review_share": 5000,
-        "dropout_compensation": 500,
+        "review_share_in_percent": 5000,
+        "dropout_compensation_in_percent": 500,
         "disciplines": [1, 2]
     }, {
         "id": 1,
@@ -257,8 +257,8 @@
         "abstract": "The U.S. National Ocean Policy calls for a science- and ecosystem-based approach to comprehensive planning and management of human activities and their impacts on America’s oceans. The Ocean Community in Data.gov is an outcome of 2010–2011 work by an interagency working group charged with designing a national information management system to support ocean planning. Within the working group, a smaller team developed a list of the data categories specifically relevant to marine planning. This set of categories is an important consensus statement of the breadth of information types required for ocean planning from a national, multidisciplinary perspective. Although the categories were described in a working document in 2011, they have not yet been fully implemented explicitly in online services or geospatial metadata, in part because authoritative definitions were not created formally. This document describes the purpose of the data categories, provides definitions, and identifies relations among the categories and between the categories and external standards. It is intended to be used by ocean data providers, managers, and users in order to provide a transparent and consistent framework for organizing and describing complex information about marine ecosystems and their connections to humans.",
         "permlink": "data-categories-for-marine-planning",
         "is_finished": true,
-        "review_share": 5000,
-        "dropout_compensation": 0,
+        "review_share_in_percent": 5000,
+        "dropout_compensation_in_percent": 0,
         "disciplines": [10, 11, 12, 13]
     }],
 

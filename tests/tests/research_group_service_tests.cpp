@@ -250,8 +250,8 @@ BOOST_AUTO_TEST_CASE(adjust_research_group_tokens_amount)
         auto& alice_token = db.get<research_group_token_object>(1);
         auto& bob_token = db.get<research_group_token_object>(2);
 
-        BOOST_CHECK(alice_token.amount == 45 * DEIP_1_PERCENT);
-        BOOST_CHECK(bob_token.amount == 35 * DEIP_1_PERCENT);
+        BOOST_CHECK(alice_token.amount == 4950);
+        BOOST_CHECK(bob_token.amount == 4050);
 
     }
     FC_LOG_AND_RETHROW()
