@@ -508,6 +508,9 @@ FC_API(deip::app::database_api,
    (get_research_token_sale_contributions_by_research_token_sale_id)
    (get_research_token_sale_contribution_by_account_name_and_research_token_sale_id)
 
+   // Research discipline relation
+   (get_disciplines_by_research)
+
    // Research group invite
     (get_research_group_invites_by_account_name) 
     (get_research_group_invites_by_research_group_id)
