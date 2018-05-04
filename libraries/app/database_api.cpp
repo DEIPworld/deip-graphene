@@ -1412,11 +1412,11 @@ database_api::get_research_token_sale_contribution_by_account_name_and_research_
     });
 }
 
-vector<int64_t>
+vector<discipline_api_obj>
 database_api::get_disciplines_by_research(const research_id_type& research_id) const
 {
     return my->_db.with_read_lock([&]() {
-        vector<int64_t> results;
+        vector<discipline_api_obj> results;
         chain::dbs_research_discipline_relation& research_discipline_relation_service
                 = my->_db.obtain_service<chain::dbs_research_discipline_relation>();
 
@@ -1424,7 +1424,7 @@ database_api::get_disciplines_by_research(const research_id_type& research_id) c
 
         for (const chain::research_discipline_relation_object& research_discipline_relation : research_discipline_relations)
         {
-            results.push_back(research_discipline_relation.discipline_id._id);
+            results.push_back(get_discipline(research_discipline_relation.discipline_id));
         }
 
         return results;
@@ -1591,6 +1591,44 @@ vector<research_listing_api_obj> database_api::get_all_researches_listing(const 
 
         return results;
 
+    });
+}
+
+vector<total_votes_api_obj>
+database_api::get_total_votes_by_research(const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<total_votes_api_obj> results;
+        chain::dbs_vote& vote_service
+            = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto total_votes_r = vote_service.get_total_votes_by_research(research_id);
+
+        for (const chain::total_votes_object& total_votes : total_votes_r)
+        {
+            results.push_back(total_votes);
+        }
+
+        return results;
+    });
+}
+
+vector<total_votes_api_obj>
+database_api::get_total_votes_by_research_and_discipline(const research_id_type& research_id,
+                                                         const discipline_id_type& discipline_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<total_votes_api_obj> results;
+        chain::dbs_vote& vote_service = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto total_votes_r = vote_service.get_total_votes_by_research_and_discipline(research_id, discipline_id);
+
+        for (const chain::total_votes_object& total_votes : total_votes_r)
+        {
+            results.push_back(total_votes);
+        }
+
+        return results;
     });
 }
 

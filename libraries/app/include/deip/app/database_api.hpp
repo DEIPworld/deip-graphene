@@ -369,7 +369,7 @@ public:
     // Research discipline relation //
     //////////////////////////////////
 
-    vector<int64_t> get_disciplines_by_research(const research_id_type& research_id) const;
+    vector<discipline_api_obj> get_disciplines_by_research(const research_id_type& research_id) const;
 
     ///////////////////////////////////
     // Research group invite        //
@@ -386,6 +386,13 @@ public:
 
     vector<research_listing_api_obj> get_research_listing(const discipline_id_type& discipline_id, const uint64_t& from, const uint32_t& limit) const;
     vector<research_listing_api_obj> get_all_researches_listing(const discipline_id_type& discipline_id, const uint32_t& limit) const;
+
+    ///////////////////////////////////
+    // Total votes                  //
+    /////////////////////////////////
+    vector<total_votes_api_obj> get_total_votes_by_research(const research_id_type& research_id) const;
+    vector<total_votes_api_obj> get_total_votes_by_research_and_discipline(const research_id_type& research_id,
+                                                                   const discipline_id_type& discipline_id) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -508,6 +515,9 @@ FC_API(deip::app::database_api,
    (get_research_token_sale_contributions_by_research_token_sale_id)
    (get_research_token_sale_contribution_by_account_name_and_research_token_sale_id)
 
+   // Research discipline relation
+   (get_disciplines_by_research)
+
    // Research group invite
     (get_research_group_invites_by_account_name) 
     (get_research_group_invites_by_research_group_id)
@@ -515,6 +525,10 @@ FC_API(deip::app::database_api,
    // Research listing
     (get_research_listing)
     (get_all_researches_listing)
+
+   // Total votes
+   (get_total_votes_by_research)
+   (get_total_votes_by_research_and_discipline)
 )
 
 // clang-format on
