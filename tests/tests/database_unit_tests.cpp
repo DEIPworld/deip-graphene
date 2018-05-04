@@ -744,13 +744,12 @@ BOOST_AUTO_TEST_CASE(reward_research_content_for_common_discipline)
 
         BOOST_CHECK(db.get<research_group_object>(1).funds == 700);
         BOOST_CHECK(db.get<research_group_object>(2).funds == 50);
-        
-        BOOST_CHECK_THROW((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 0))), std::out_of_range);
-        BOOST_CHECK_THROW((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("bob", 0))), std::out_of_range);
-        BOOST_CHECK_THROW((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alex", 0))), std::out_of_range);
-        BOOST_CHECK_THROW((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("jack", 0))), std::out_of_range);
-        BOOST_CHECK_THROW((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("john", 0))), std::out_of_range);
 
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 0))).amount == 10000);
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("bob", 0))).amount == 10000);
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alex", 0))).amount == 10000);
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("jack", 0))).amount == 10000);
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("john", 0))).amount == 10000);
 
         BOOST_CHECK(db.get_account("alice").balance.amount == 20);
         BOOST_CHECK(db.get_account("bob").balance.amount == 42);
