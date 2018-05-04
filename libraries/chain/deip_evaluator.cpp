@@ -1179,9 +1179,9 @@ void approve_research_group_invite_evaluator::do_apply(const approve_research_gr
     account_service.check_account_existence(research_group_invite.account_name);
     research_group_service.check_research_group_existence(research_group_invite.research_group_id);
 
-    research_group_service.adjust_research_group_tokens_amount(research_group_invite.research_group_id, -research_group_invite.research_group_token_amount);
+    auto amount = research_group_service.decrease_research_group_tokens_amount(research_group_invite.research_group_id, research_group_invite.research_group_token_amount);
     research_group_service.create_research_group_token(research_group_invite.research_group_id,
-                                                       research_group_invite.research_group_token_amount,
+                                                       amount,
                                                        research_group_invite.account_name);
 
     _db._temporary_public_impl().remove(research_group_invite);

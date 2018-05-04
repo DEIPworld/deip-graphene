@@ -68,8 +68,10 @@ public:
 
     const research_group_object& decrease_research_group_funds(const research_group_id_type& research_group_id, const share_type deips);
 
-    void adjust_research_group_tokens_amount(const research_group_id_type& research_group_id,
-                                             const share_type delta);
+    const share_type decrease_research_group_tokens_amount(const research_group_id_type& research_group_id,
+                                                     const share_type delta);
+    void increase_research_group_tokens_amount(const research_group_id_type& research_group_id,
+                                                     const share_type delta);
 
     const research_group_token_object& set_new_research_group_token_amount(const research_group_id_type& research_group_id,
                                                                            const account_name_type& owner,

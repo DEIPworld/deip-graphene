@@ -8,7 +8,7 @@
 #include "database_fixture.hpp"
 
 namespace deip {
-    namespace chain {
+namespace chain {
 
         class research_group_service_fixture : public clean_database_fixture
         {
@@ -61,26 +61,57 @@ namespace deip {
         });
     }
 
-            dbs_research_group& data_service;
-        };
+    void create_research_group_tokens_for_adjust()
+    {
+        db.create<research_group_token_object>([&](research_group_token_object& d) {
+            d.id = 1;
+            d.research_group_id = 1;
+            d.amount = 4950;
+            d.owner = "alice";
+        });
 
-        BOOST_FIXTURE_TEST_SUITE(research_group_service_tests, research_group_service_fixture)
+        db.create<research_group_token_object>([&](research_group_token_object& d) {
+            d.id = 2;
+            d.research_group_id = 1;
+            d.amount = 550;
+            d.owner = "bob";
+        });
 
-            BOOST_AUTO_TEST_CASE(get_research_group_by_id_test)
-            {
-                try
-                {
-                    create_research_groups();
-                    auto& research_group = data_service.get_research_group(1);
+        db.create<research_group_token_object>([&](research_group_token_object& d) {
+            d.id = 3;
+            d.research_group_id = 1;
+            d.amount = 4000;
+            d.owner = "john";
+        });
+
+        db.create<research_group_token_object>([&](research_group_token_object& d) {
+            d.id = 4;
+            d.research_group_id = 1;
+            d.amount = 1500;
+            d.owner = "alex";
+        });
+    }
+
+    dbs_research_group& data_service;
+};
+
+BOOST_FIXTURE_TEST_SUITE(research_group_service_tests, research_group_service_fixture)
+
+BOOST_AUTO_TEST_CASE(get_research_group_by_id_test)
+{
+    try
+    {
+        create_research_groups();
+        auto& research_group = data_service.get_research_group(1);
 
         BOOST_CHECK(research_group.name == "test1");
         BOOST_CHECK(research_group.permlink == "test1");
         BOOST_CHECK(research_group.description == "test");
         BOOST_CHECK(research_group.quorum_percent == 40);
 
-                }
-                FC_LOG_AND_RETHROW()
-            }
+    }
+    FC_LOG_AND_RETHROW()
+}
 
 BOOST_AUTO_TEST_CASE(create_research_group_test)
 {
@@ -94,164 +125,174 @@ BOOST_AUTO_TEST_CASE(create_research_group_test)
         BOOST_CHECK(research_group.quorum_percent == 34);
         BOOST_CHECK(research_group.funds == 0);
 
-                }
-                FC_LOG_AND_RETHROW()
-            }
+    }
+    FC_LOG_AND_RETHROW()
+}
 
-            BOOST_AUTO_TEST_CASE(change_quorum_test)
-            {
-                try
-                {
-                    create_research_groups();
-                    data_service.change_quorum(24, 1);
+BOOST_AUTO_TEST_CASE(change_quorum_test)
+{
+    try
+    {
+        create_research_groups();
+        data_service.change_quorum(24, 1);
 
-                    auto& research_group = data_service.get_research_group(1);
+        auto& research_group = data_service.get_research_group(1);
 
-                    BOOST_CHECK(research_group.quorum_percent == 24);
+        BOOST_CHECK(research_group.quorum_percent == 24);
 
-                }
-                FC_LOG_AND_RETHROW()
-            }
+    }
+    FC_LOG_AND_RETHROW()
+}
 
-            BOOST_AUTO_TEST_CASE(check_research_group_existence_test)
-            {
-                try
-                {
-                    create_research_groups();
+BOOST_AUTO_TEST_CASE(check_research_group_existence_test)
+{
+    try
+    {
+        create_research_groups();
 
-                    BOOST_CHECK_NO_THROW(data_service.check_research_group_existence(1));
-                    BOOST_CHECK_THROW(data_service.check_research_group_existence(4), fc::assert_exception);
-                    BOOST_CHECK_THROW(data_service.check_research_group_existence(25), fc::assert_exception);
+        BOOST_CHECK_NO_THROW(data_service.check_research_group_existence(1));
+        BOOST_CHECK_THROW(data_service.check_research_group_existence(4), fc::assert_exception);
+        BOOST_CHECK_THROW(data_service.check_research_group_existence(25), fc::assert_exception);
 
+    }
+    FC_LOG_AND_RETHROW()
+}
 
-                }
-                FC_LOG_AND_RETHROW()
-            }
+BOOST_AUTO_TEST_CASE(get_research_group_token_by_id_test)
+{
+    try
+    {
+        create_research_group_tokens();
 
-            BOOST_AUTO_TEST_CASE(get_research_group_token_by_id_test)
-            {
-                try
-                {
-                    create_research_group_tokens();
-
-                    auto& research_group_token = data_service.get_research_group_token_by_id(1);
+        auto& research_group_token = data_service.get_research_group_token_by_id(1);
 
         BOOST_CHECK(research_group_token.research_group_id == 2);
         BOOST_CHECK(research_group_token.amount == 55 * DEIP_1_PERCENT);
         BOOST_CHECK(research_group_token.owner == "alice");
 
-                    BOOST_CHECK_THROW(data_service.get_research_group_token_by_id(5), boost::exception);
-                }
-                FC_LOG_AND_RETHROW()
-            }
+        BOOST_CHECK_THROW(data_service.get_research_group_token_by_id(5), boost::exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
 
-            BOOST_AUTO_TEST_CASE(get_research_group_tokens_by_account_name_test)
-            {
-                try
-                {
-                    create_research_group_tokens();
+BOOST_AUTO_TEST_CASE(get_research_group_tokens_by_account_name_test)
+{
+    try
+    {
+        create_research_group_tokens();
 
-                    auto research_group_tokens = data_service.get_research_group_tokens_by_account_name("alice");
+        auto research_group_tokens = data_service.get_research_group_tokens_by_account_name("alice");
 
-                    BOOST_CHECK(research_group_tokens.size() == 2);
-                    for (const research_group_token_object& token : research_group_tokens)
-                    {
-                        BOOST_CHECK(token.owner == "alice");
-                    }
-                }
-                FC_LOG_AND_RETHROW()
-            }
+        BOOST_CHECK(research_group_tokens.size() == 2);
+        for (const research_group_token_object& token : research_group_tokens)
+        {
+            BOOST_CHECK(token.owner == "alice");
+        }
+    }
+    FC_LOG_AND_RETHROW()
+}
 
-            BOOST_AUTO_TEST_CASE(get_research_group_tokens_test)
-            {
-                try
-                {
-                    create_research_group_tokens();
+BOOST_AUTO_TEST_CASE(get_research_group_tokens_test)
+{
+    try
+    {
+        create_research_group_tokens();
 
-                    auto research_group_tokens = data_service.get_research_group_tokens(2);
+        auto research_group_tokens = data_service.get_research_group_tokens(2);
 
-                    BOOST_CHECK(research_group_tokens.size() == 2);
-                    for (const research_group_token_object& token : research_group_tokens)
-                    {
-                        BOOST_CHECK(token.research_group_id == 2);
-                    }
-                }
-                FC_LOG_AND_RETHROW()
-            }
+        BOOST_CHECK(research_group_tokens.size() == 2);
+        for (const research_group_token_object& token : research_group_tokens)
+        {
+            BOOST_CHECK(token.research_group_id == 2);
+        }
+    }
+    FC_LOG_AND_RETHROW()
+}
 
-            BOOST_AUTO_TEST_CASE(get_research_group_token_by_account_and_research_id_test)
-            {
-                try
-                {
-                    create_research_group_tokens();
+BOOST_AUTO_TEST_CASE(get_research_group_token_by_account_and_research_id_test)
+{
+    try
+    {
+        create_research_group_tokens();
 
-                    auto& research_group_token = data_service.get_research_group_token_by_account_and_research_group_id("alice", 1);
+        auto& research_group_token = data_service.get_research_group_token_by_account_and_research_group_id("alice", 1);
 
         BOOST_CHECK(research_group_token.id == 3);
         BOOST_CHECK(research_group_token.amount == DEIP_100_PERCENT);
         BOOST_CHECK(research_group_token.owner == "alice");
         BOOST_CHECK(research_group_token.research_group_id == 1);
 
-                    BOOST_CHECK_THROW(data_service.get_research_group_token_by_account_and_research_group_id("alice", 4), boost::exception);
-                    BOOST_CHECK_THROW(data_service.get_research_group_token_by_account_and_research_group_id("john", 1), boost::exception);
-                    BOOST_CHECK_THROW(data_service.get_research_group_token_by_account_and_research_group_id("john", 5), boost::exception);
-                }
-                FC_LOG_AND_RETHROW()
-            }
+        BOOST_CHECK_THROW(data_service.get_research_group_token_by_account_and_research_group_id("alice", 4), boost::exception);
+        BOOST_CHECK_THROW(data_service.get_research_group_token_by_account_and_research_group_id("john", 1), boost::exception);
+        BOOST_CHECK_THROW(data_service.get_research_group_token_by_account_and_research_group_id("john", 5), boost::exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
 
-            BOOST_AUTO_TEST_CASE(create_research_group_token_test)
-            {
-                try
-                {
-                    auto research_group_token = data_service.create_research_group_token(1, 34, "alice");
+BOOST_AUTO_TEST_CASE(create_research_group_token_test)
+{
+    try
+    {
+        auto research_group_token = data_service.create_research_group_token(1, 34, "alice");
 
-                    BOOST_CHECK(research_group_token.research_group_id == 1);
-                    BOOST_CHECK(research_group_token.amount == 34);
-                    BOOST_CHECK(research_group_token.owner == "alice");
+        BOOST_CHECK(research_group_token.research_group_id == 1);
+        BOOST_CHECK(research_group_token.amount == 34);
+        BOOST_CHECK(research_group_token.owner == "alice");
 
-                }
-                FC_LOG_AND_RETHROW()
-            }
+    }
+    FC_LOG_AND_RETHROW()
+}
 
-            BOOST_AUTO_TEST_CASE(remove_token_test)
-            {
-                try
-                {
-                    create_research_group_tokens();
-
-                    BOOST_CHECK_NO_THROW(data_service.remove_token("alice", 1 ));
-                    BOOST_CHECK_THROW(data_service.get_research_group_token_by_account_and_research_group_id("alice", 1), std::exception);
-                }
-                FC_LOG_AND_RETHROW()
-            }
-
-            BOOST_AUTO_TEST_CASE(check_research_group_token_existence_test)
-            {
-                try
-                {
-                    create_research_group_tokens();
-
-                    BOOST_CHECK_NO_THROW(data_service.check_research_group_token_existence("alice", 1));
-                    BOOST_CHECK_NO_THROW(data_service.check_research_group_token_existence("bob", 2));
-                    BOOST_CHECK_THROW(data_service.check_research_group_token_existence("john", 2), fc::assert_exception);
-                    BOOST_CHECK_THROW(data_service.check_research_group_token_existence("alice", 3), fc::assert_exception);
-
-                }
-                FC_LOG_AND_RETHROW()
-            }
-
-BOOST_AUTO_TEST_CASE(adjust_research_group_tokens_amount)
+BOOST_AUTO_TEST_CASE(remove_token_test)
 {
     try
     {
         create_research_group_tokens();
 
-        BOOST_CHECK_NO_THROW(data_service.adjust_research_group_tokens_amount(2, -1000));
+        BOOST_CHECK_NO_THROW(data_service.remove_token("alice", 1 ));
+        BOOST_CHECK_THROW(data_service.get_research_group_token_by_account_and_research_group_id("alice", 1), std::exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(check_research_group_token_existence_test)
+{
+    try
+    {
+        create_research_group_tokens();
+
+        BOOST_CHECK_NO_THROW(data_service.check_research_group_token_existence("alice", 1));
+        BOOST_CHECK_NO_THROW(data_service.check_research_group_token_existence("bob", 2));
+        BOOST_CHECK_THROW(data_service.check_research_group_token_existence("john", 2), fc::assert_exception);
+        BOOST_CHECK_THROW(data_service.check_research_group_token_existence("alice", 3), fc::assert_exception);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(adjust_research_group_tokens_amount)
+{
+    try
+    {
+        create_research_group_tokens_for_adjust();
+
+        BOOST_CHECK_NO_THROW(data_service.adjust_research_group_tokens_amount(1, -1000));
         auto& alice_token = db.get<research_group_token_object>(1);
         auto& bob_token = db.get<research_group_token_object>(2);
+        auto& john_token = db.get<research_group_token_object>(3);
+        auto& alex_token = db.get<research_group_token_object>(4);
+
+        BOOST_CHECK(alice_token.amount == 4455);
+        BOOST_CHECK(bob_token.amount == 495);
+        BOOST_CHECK(john_token.amount == 3600);
+        BOOST_CHECK(alex_token.amount == 1350);
+
+        BOOST_CHECK_NO_THROW(data_service.adjust_research_group_tokens_amount(1, 1000));
 
         BOOST_CHECK(alice_token.amount == 4950);
-        BOOST_CHECK(bob_token.amount == 4050);
+        BOOST_CHECK(bob_token.amount == 550);
+        BOOST_CHECK(john_token.amount == 4000);
+        BOOST_CHECK(alex_token.amount == 1500);
 
     }
     FC_LOG_AND_RETHROW()
@@ -273,7 +314,7 @@ BOOST_AUTO_TEST_CASE(set_new_research_group_token_amount)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-    } // namespace chain
+} // namespace chain
 } // namespace deip
 
 #endif

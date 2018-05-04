@@ -231,7 +231,7 @@ protected:
         }
         share_type token_amount = token.amount;
         _research_group_service.remove_token(data.name, data.research_group_id);
-        _research_group_service.adjust_research_group_tokens_amount(data.research_group_id, token_amount);
+        _research_group_service.increase_research_group_tokens_amount(data.research_group_id, token_amount);
     }
 
     void change_research_review_share_evaluator(const proposal_object& proposal)
