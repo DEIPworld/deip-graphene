@@ -1313,8 +1313,8 @@ void withdraw_from_vesting_contract_evaluator::do_apply(const withdraw_from_vest
     if (now >= vesting_contract.expiration_date) {
         max_amount_to_withdraw = vesting_contract.amount;
     } else {
-        share_type current_period = (time_since_contract_start * vesting_contract.withdrawal_period) / vesting_contract.contract_duration.sec_since_epoch();
-        max_amount_to_withdraw = (vesting_contract.amount * current_period) / vesting_contract.withdrawal_period;
+        share_type current_period = (time_since_contract_start * vesting_contract.withdrawal_periods) / vesting_contract.contract_duration.sec_since_epoch();
+        max_amount_to_withdraw = (vesting_contract.amount * current_period) / vesting_contract.withdrawal_periods;
     }
 
     share_type to_withdraw = max_amount_to_withdraw - vesting_contract.withdrawn;

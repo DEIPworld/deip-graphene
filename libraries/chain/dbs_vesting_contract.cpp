@@ -20,7 +20,7 @@ const vesting_contract_object& dbs_vesting_contract::create(const account_name_t
         vesting_contract.receiver = receiver;
         vesting_contract.amount = amount;
         vesting_contract.withdrawn = 0;
-        vesting_contract.withdrawal_period = withdrawal_periods;
+        vesting_contract.withdrawal_periods = withdrawal_periods;
         vesting_contract.start_date = db_impl().head_block_time();
         vesting_contract.expiration_date = db_impl().head_block_time() + contract_duration;
         vesting_contract.contract_duration = fc::time_point_sec(contract_duration);

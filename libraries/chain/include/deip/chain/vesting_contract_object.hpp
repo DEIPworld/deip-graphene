@@ -25,7 +25,7 @@ public:
     account_name_type receiver;
     share_type amount;
     share_type withdrawn;
-    uint32_t withdrawal_period;
+    uint32_t withdrawal_periods;
     time_point_sec start_date;
     time_point_sec expiration_date;
     time_point_sec contract_duration;
@@ -58,7 +58,7 @@ typedef multi_index_container<vesting_contract_object,
 }
 
 FC_REFLECT(deip::chain::vesting_contract_object,
-                        (id)(sender)(receiver)(amount)(withdrawal_period)(start_date)(expiration_date)(contract_duration)
+                        (id)(sender)(receiver)(amount)(withdrawal_periods)(start_date)(expiration_date)(contract_duration)
             )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::vesting_contract_object, deip::chain::vesting_contract_index)

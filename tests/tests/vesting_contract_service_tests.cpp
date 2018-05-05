@@ -24,7 +24,7 @@ public:
             v.sender = "alice";
             v.receiver = "bob";
             v.amount = 100;
-            v.withdrawal_period = 4;
+            v.withdrawal_periods = 4;
             v.contract_duration = time_point_sec(DAYS_TO_SECONDS(365));
         });
 
@@ -33,7 +33,7 @@ public:
             v.sender = "jack";
             v.receiver = "bob";
             v.amount = 1000;
-            v.withdrawal_period = 2;
+            v.withdrawal_periods = 2;
             v.contract_duration = time_point_sec(DAYS_TO_SECONDS(730));
         });
 
@@ -42,7 +42,7 @@ public:
             v.sender = "john";
             v.receiver = "alice";
             v.amount = 10000;
-            v.withdrawal_period = 3;
+            v.withdrawal_periods = 3;
             v.contract_duration = time_point_sec(DAYS_TO_SECONDS(900));
         });
     }
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(create_vesting_contract)
         BOOST_CHECK(vesting_contract.sender == "alice");
         BOOST_CHECK(vesting_contract.receiver == "bob");
         BOOST_CHECK(vesting_contract.amount == 1000);
-        BOOST_CHECK(vesting_contract.withdrawal_period == 4);
+        BOOST_CHECK(vesting_contract.withdrawal_periods == 4);
         BOOST_CHECK(vesting_contract.start_date == db.head_block_time());
         BOOST_CHECK(vesting_contract.expiration_date.sec_since_epoch() == db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(365));
         BOOST_CHECK(vesting_contract.contract_duration == fc::time_point_sec(DAYS_TO_SECONDS(365)));
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(get_vesting_contract)
         BOOST_CHECK(vesting_contract.sender == "alice");
         BOOST_CHECK(vesting_contract.receiver == "bob");
         BOOST_CHECK(vesting_contract.amount == 100);
-        BOOST_CHECK(vesting_contract.withdrawal_period == 4);
+        BOOST_CHECK(vesting_contract.withdrawal_periods == 4);
         BOOST_CHECK(vesting_contract.contract_duration == fc::time_point_sec(DAYS_TO_SECONDS(365)));
     }
     FC_LOG_AND_RETHROW()
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(get_vesting_contract_get_by_sender_and_reviever)
         BOOST_CHECK(vesting_contract.sender == "jack");
         BOOST_CHECK(vesting_contract.receiver == "bob");
         BOOST_CHECK(vesting_contract.amount == 1000);
-        BOOST_CHECK(vesting_contract.withdrawal_period == 2);
+        BOOST_CHECK(vesting_contract.withdrawal_periods == 2);
         BOOST_CHECK(vesting_contract.contract_duration == fc::time_point_sec(DAYS_TO_SECONDS(730)));
     }
     FC_LOG_AND_RETHROW()
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(get_vesting_contract_get_by_receiver)
                     vesting_contract.sender == "alice" &&
                     vesting_contract.receiver == "bob" &&
                     vesting_contract.amount == 100 &&
-                    vesting_contract.withdrawal_period == 4 &&
+                    vesting_contract.withdrawal_periods == 4 &&
                     vesting_contract.contract_duration == time_point_sec(DAYS_TO_SECONDS(365));
         }));
 
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(get_vesting_contract_get_by_receiver)
                     vesting_contract.sender == "jack" &&
                     vesting_contract.receiver == "bob" &&
                     vesting_contract.amount == 1000 &&
-                    vesting_contract.withdrawal_period == 2 &&
+                    vesting_contract.withdrawal_periods == 2 &&
                     vesting_contract.contract_duration == time_point_sec(DAYS_TO_SECONDS(730));
         }));
 
