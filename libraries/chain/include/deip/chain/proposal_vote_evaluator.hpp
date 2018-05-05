@@ -184,7 +184,7 @@ protected:
         for (const proposal_vote_object& vote : votes) {
             total_voted_weight += vote.weight.value;
         }
-        return (total_voted_weight * DEIP_1_PERCENT) / DEIP_100_PERCENT  >= research_group.quorum_percent;
+        return total_voted_weight  >= research_group.quorum_percent;
     }
 
     void invite_evaluator(const proposal_object& proposal)

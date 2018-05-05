@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 
         auto& research_service = db.obtain_service<dbs_research>();
 
-        research_group_create_by_operation("alice", "name", "test permlink", "test description", 50);
+        research_group_create_by_operation("alice", "name", "test permlink", "test description", 5000);
 
         const std::string create_research_proposal_json = "{\"title\":\"testresearch\","
                                                           "\"research_group_id\":0,"
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_rate_test)
 
         auto& research_service = db.obtain_service<dbs_research>();
 
-        research_group_create_by_operation("alice", "name", "test permlink", "test description", 50);
+        research_group_create_by_operation("alice", "name", "test permlink", "test description", 5000);
 
         const std::string create_research_proposal_json = "{\"title\":\"testresearch\","
                                                           "\"research_group_id\":0,"
@@ -239,6 +239,8 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_rate_test)
         crs_op.research_group_id = 0;
         crs_op.proposal_id = 1;
         crs_op.voter = "alice";
+
+
 
         auto& research = research_service.get_research(0);
 
