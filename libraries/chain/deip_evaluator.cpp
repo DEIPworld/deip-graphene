@@ -949,7 +949,7 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
                                                                                                op.description,
                                                                                                op.quorum_percent);
     
-    research_group_service.create_research_group_token(research_group.id, op.tokens_amount, op.creator);
+    research_group_service.create_research_group_token(research_group.id, DEIP_100_PERCENT, op.creator);
 }
 
 void make_review_evaluator::do_apply(const make_review_operation& op)
