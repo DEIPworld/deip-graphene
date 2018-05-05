@@ -1188,14 +1188,14 @@
         "name": "DEIP official",
         "description": "DEIP team group",
         "permlink": "deip",
-        "quorum_percent": 95,
+        "quorum_percent": 9500,
         "members": ["initdelegate", "alice", "bob"]
     }, {
         "id": 1,
         "name": "U.S. Geological Survey",
         "description": "We provide science about the natural hazards that threaten lives and livelihoods; the water, energy, minerals, and other natural resources we rely on; the health of our ecosystems and environment; and the impacts of climate and land-use change. Our scientists develop new methods and tools to supply timely, relevant, and useful information about the Earth and its processes.",
         "permlink": "usgs",
-        "quorum_percent": 75,
+        "quorum_percent": 7500,
         "members": ["initdelegate", "lightsom", "cicchetti", "wahle"]
     }],
 

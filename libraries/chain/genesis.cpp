@@ -321,16 +321,16 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
         FC_ASSERT(!research_group.name.empty(), "Research group 'name' must be specified");
         FC_ASSERT(!research_group.permlink.empty(), "Research group 'permlink' must be specified");
         FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
-        FC_ASSERT(research_group.quorum_percent >= 5 && research_group.quorum_percent <= 100, "Quorum percent should be in 5 to 100 range");
+        FC_ASSERT(research_group.quorum_percent >= 5 * DEIP_1_PERCENT && research_group.quorum_percent <= DEIP_100_PERCENT,
+                  "Quorum percent should be in 5% to 100% range");
 
         create<research_group_object>([&](research_group_object& rg) {
            rg.id = research_group.id;
            fc::from_string(rg.name, research_group.name);
            fc::from_string(rg.description, research_group.description);
            fc::from_string(rg.permlink, research_group.permlink);
-           rg.funds = share_type(0);                          // uncomment this after https://trello.com/c/J5uF8hKM/135-make-quorumpercent-field-in-researchgroupobject-to-accept-values-according-to-deippercent-conventions
-           rg.quorum_percent = research_group.quorum_percent; //* DEIP_1_PERCENT;
-           rg.total_tokens_amount = DEIP_100_PERCENT;
+           rg.funds = share_type(0);
+           rg.quorum_percent = research_group.quorum_percent;
         });
 
         // TODO: Check that total amount of research group tokens is 10000
