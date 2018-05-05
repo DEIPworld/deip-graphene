@@ -261,7 +261,7 @@ void research_update_operation::validate() const
 
 void deposit_to_vesting_contract_operation::validate() const
 {
-    FC_ASSERT(amount > 0, "Deposit amount must be bigger than 0");
+    FC_ASSERT(balance > 0, "Deposit balance must be bigger than 0");
     FC_ASSERT(withdrawal_period > 0, "You must divide contract at least by 1 part");
     FC_ASSERT(contract_duration > 0, "Contract duration must be longer than 0");
     validate_account_name(sender);
