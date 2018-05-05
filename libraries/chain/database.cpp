@@ -30,6 +30,7 @@
 #include <deip/chain/research_group_invite_object.hpp>
 #include <deip/chain/research_group_join_request_object.hpp>
 #include <deip/chain/review_object.hpp>
+#include <deip/chain/vesting_contract_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -65,6 +66,7 @@
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_grant.hpp>
 #include <deip/chain/dbs_review.hpp>
+#include <deip/chain/dbs_vesting_contract.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
 namespace deip {
@@ -1888,6 +1890,7 @@ void database::initialize_indexes()
     add_index<review_index>();
     add_index<review_vote_index>();
     add_index<research_group_join_request_index>();
+    add_index<vesting_contract_index>();
 
     _plugin_index_signal();
 }

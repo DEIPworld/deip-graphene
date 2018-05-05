@@ -37,6 +37,8 @@ DEFINE_EVALUATOR(reject_research_group_join_request)
 DEFINE_EVALUATOR(transfer_research_tokens_to_research_group)
 DEFINE_EVALUATOR(add_expertise_tokens)
 DEFINE_EVALUATOR(research_update)
+DEFINE_EVALUATOR(deposit_to_vesting_contract)
+DEFINE_EVALUATOR(withdraw_from_vesting_contract)
 
 }
 } // deip::chain

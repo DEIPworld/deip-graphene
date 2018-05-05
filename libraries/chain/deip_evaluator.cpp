@@ -22,6 +22,7 @@
 #include <deip/chain/dbs_research_token.hpp>
 #include <deip/chain/dbs_review.hpp>
 #include <deip/chain/dbs_research_group_join_request.hpp>
+#include <deip/chain/dbs_vesting_contract.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1282,5 +1283,49 @@ void research_update_evaluator::do_apply(const research_update_operation& op)
     });
 }
 
+void deposit_to_vesting_contract_evaluator::do_apply(const deposit_to_vesting_contract_operation& op)
+{
+    dbs_vesting_contract& vesting_contract_service = _db.obtain_service<dbs_vesting_contract>();
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+
+    account_service.check_account_existence(op.sender);
+    account_service.check_account_existence(op.receiver);
+
+    vesting_contract_service.create(op.sender, op.receiver, op.amount, op.withdrawal_period, op.contract_duration);
+
+}
+
+void withdraw_from_vesting_contract_evaluator::do_apply(const withdraw_from_vesting_contract_operation& op)
+{
+    dbs_vesting_contract& vesting_contract_service = _db.obtain_service<dbs_vesting_contract>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    account_service.check_account_existence(op.sender);
+    account_service.check_account_existence(op.receiver);
+    vesting_contract_service.check_vesting_contract_existence_by_sender_and_receiver(op.sender, op.receiver);
+
+    auto& vesting_contract = vesting_contract_service.get_by_sender_and_reviever(op.sender, op.receiver);
+    auto now = _db.head_block_time();
+
+    share_type time_since_contract_start = now.sec_since_epoch() - vesting_contract.start_date.sec_since_epoch();
+    share_type max_amount_to_withdraw = 0;
+
+    if (now >= vesting_contract.expiration_date) {
+        max_amount_to_withdraw = vesting_contract.amount;
+    } else {
+        share_type current_period = (time_since_contract_start * vesting_contract.withdrawal_periods) / vesting_contract.contract_duration.sec_since_epoch();
+        max_amount_to_withdraw = (vesting_contract.amount * current_period) / vesting_contract.withdrawal_periods;
+    }
+
+    share_type to_withdraw = max_amount_to_withdraw - vesting_contract.withdrawn;
+
+    if (to_withdraw > 0)
+    {
+        account_service.increase_balance(_db.get_account(op.receiver), to_withdraw);
+        vesting_contract_service.withdraw(vesting_contract, to_withdraw);
+    }
+
+}
+    
 } // namespace chain
 } // namespace deip 
