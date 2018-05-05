@@ -35,8 +35,7 @@ public:
 
     vesting_contract_refs_type get_by_receiver(const account_name_type& receiver);
 
-    const vesting_contract_object& withdraw(const vesting_contract_id_type& id,
-                                            const asset& to_withdraw);
+    void withdraw(const vesting_contract_id_type& id, const asset& to_withdraw);
 
     void check_vesting_contract_existence_by_sender_and_receiver(const account_name_type& sender,
                                                                  const account_name_type& receiver);

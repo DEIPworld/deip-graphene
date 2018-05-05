@@ -56,7 +56,7 @@ dbs_vesting_contract::vesting_contract_refs_type dbs_vesting_contract::get_by_re
     return ret;
 }
 
-const vesting_contract_object& dbs_vesting_contract::withdraw(const vesting_contract_id_type& id,
+void dbs_vesting_contract::withdraw(const vesting_contract_id_type& id,
                                                               const asset& to_withdraw)
 {
     auto& vesting_contract = db_impl().get<vesting_contract_object, by_id>(id);
@@ -65,9 +65,9 @@ const vesting_contract_object& dbs_vesting_contract::withdraw(const vesting_cont
 
     if (to_withdraw.amount == vesting_contract.balance.amount)
         db_impl().remove(vesting_contract);
-
-    db_impl().modify(vesting_contract, [&](vesting_contract_object& v) { v.withdrawn += to_withdraw.amount;
-                                                                         v.balance -= to_withdraw; });
+    else
+        db_impl().modify(vesting_contract, [&](vesting_contract_object& v) { v.withdrawn += to_withdraw.amount;
+                                                                             v.balance -= to_withdraw; });
 }
 
 void dbs_vesting_contract::check_vesting_contract_existence_by_sender_and_receiver(const account_name_type& sender,
