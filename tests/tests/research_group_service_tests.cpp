@@ -1,6 +1,8 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
+#include <deip/chain/witness_objects.hpp>
+
 #include <deip/chain/research_group_object.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 
