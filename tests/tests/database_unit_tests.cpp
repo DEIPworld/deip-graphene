@@ -67,13 +67,11 @@ public:
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 1;
             d.permlink = "permlink";
-            d.total_tokens_amount = 10000;
         });
 
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 2;
             d.permlink = "permlink2";
-            d.total_tokens_amount = 10000;
         });
     }
 

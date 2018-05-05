@@ -38,10 +38,9 @@ public:
      * @returns research group object
      */
     const research_group_object& create_research_group(const std::string& name,
-                                                       const std::string& permlink,
-                                                       const std::string& description,
-                                                       const share_type quorum_percent,
-                                                       const share_type tokens_amount);
+                                                       const string& permlink,
+                                                       const string& description,
+                                                       const share_type quorum_percent);
 
     void change_quorum(const uint32_t quorum_percent, const research_group_id_type& research_group_id);
 
@@ -65,17 +64,18 @@ public:
     void check_research_group_token_existence(const account_name_type& account,
                                         const research_group_id_type& research_group_id) const;
 
-    const research_group_object& increase_research_group_total_tokens_amount(const research_group_id_type& research_group_id, const share_type delta);
-
-    const research_group_object& decrease_research_group_total_tokens_amount(const research_group_id_type& research_group_id, const share_type delta);
-
     const research_group_object& increase_research_group_balance(const research_group_id_type& research_group_id, const asset& deips);
 
     const research_group_object& decrease_research_group_balance(const research_group_id_type& research_group_id, const asset& deips);
 
-    const research_group_token_object& increase_research_group_token_amount(const research_group_id_type& research_group_id,
-                                                                            const account_name_type& account_name,
-                                                                            const share_type amount);
+    const share_type decrease_research_group_tokens_amount(const research_group_id_type& research_group_id,
+                                                     const share_type delta);
+    void increase_research_group_tokens_amount(const research_group_id_type& research_group_id,
+                                                     const share_type delta);
+
+    const research_group_token_object& set_new_research_group_token_amount(const research_group_id_type& research_group_id,
+                                                                           const account_name_type& owner,
+                                                                           const share_type new_amount);
 
 };
 

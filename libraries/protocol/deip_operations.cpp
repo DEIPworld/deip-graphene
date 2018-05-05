@@ -191,7 +191,7 @@ void create_research_group_operation::validate() const
     FC_ASSERT(name.size() > 0, "Group name must be specified");
     FC_ASSERT(fc::is_utf8(name), "Group name is not valid UTF8 string");
     FC_ASSERT(fc::is_utf8(description), "Description is not valid UTF8 string");
-    FC_ASSERT(quorum_percent > 5 && quorum_percent <= 100, "Quorum percent must be in 5% to 100& range");
+    FC_ASSERT(quorum_percent > 5 * DEIP_1_PERCENT && quorum_percent <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
     FC_ASSERT(tokens_amount > 0, "Initial research group tokens amount must be greater than 0");
 }
 
@@ -257,6 +257,22 @@ void research_update_operation::validate() const
     FC_ASSERT(!abstract.empty(), "Abstract cannot be empty");
     FC_ASSERT(!permlink.empty(), "Permlink cannot be empty");
     validate_account_name(owner);
+}
+
+void deposit_to_vesting_contract_operation::validate() const
+{
+    FC_ASSERT(amount > 0, "Deposit amount must be bigger than 0");
+    FC_ASSERT(withdrawal_period > 0, "You must divide contract at least by 1 part");
+    FC_ASSERT(contract_duration > 0, "Contract duration must be longer than 0");
+    validate_account_name(sender);
+    validate_account_name(receiver);
+}
+
+void withdraw_from_vesting_contract_operation::validate() const
+{
+    FC_ASSERT(amount > 0, "Withdraw amount must be bigger than 0");
+    validate_account_name(sender);
+    validate_account_name(receiver);
 }
 
 }

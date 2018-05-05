@@ -170,6 +170,8 @@ public:
      */
     uint64_t get_account_count() const;
 
+    vector<account_api_obj> get_all_accounts() const;
+
     vector<grant_api_obj> get_grants(const set<string>& account_names) const;
 
     set<string> lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const;
@@ -312,8 +314,9 @@ public:
     ////////////////
     research_api_obj get_research_by_id(const research_id_type& id) const;
     research_api_obj get_research_by_permlink(const string& permlink) const;
-    vector<research_api_obj> get_researches(const research_id_type& from, const uint32_t limit) const;
+    vector<research_api_obj> get_researches_by_discipline_id(const int64_t from, const uint32_t limit, const discipline_id_type& discipline_id) const;
     vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
+    bool check_research_existence_by_permlink(const string& permlink) const;
 
     //////////////////////
     // Research Content //
@@ -340,6 +343,7 @@ public:
     ////////////////////
     research_group_api_obj get_research_group_by_id(const research_group_id_type research_group_id) const;
     research_group_api_obj get_research_group_by_permlink(const string& permlink) const;
+    bool check_research_group_existence_by_permlink(const string& permlink) const;
 
     /////////////////////////////////
     // Research group tokens       //
@@ -365,7 +369,7 @@ public:
     // Research discipline relation //
     //////////////////////////////////
 
-    vector<int64_t> get_disciplines_by_research(const research_id_type& research_id) const;
+    vector<discipline_api_obj> get_disciplines_by_research(const research_id_type& research_id) const;
 
     ///////////////////////////////////
     // Research group invite        //
@@ -380,7 +384,15 @@ public:
     // Research listing             //
     //////////////////////////////////
 
-    vector<research_listing_api_obj> get_research_listing(const uint64_t& from, const uint32_t& limit) const;
+    vector<research_listing_api_obj> get_research_listing(const discipline_id_type& discipline_id, const uint64_t& from, const uint32_t& limit) const;
+    vector<research_listing_api_obj> get_all_researches_listing(const discipline_id_type& discipline_id, const uint32_t& limit) const;
+
+    ///////////////////////////////////
+    // Total votes                  //
+    /////////////////////////////////
+    vector<total_votes_api_obj> get_total_votes_by_research(const research_id_type& research_id) const;
+    vector<total_votes_api_obj> get_total_votes_by_research_and_discipline(const research_id_type& research_id,
+                                                                   const discipline_id_type& discipline_id) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -428,6 +440,7 @@ FC_API(deip::app::database_api,
    (lookup_account_names)
    (lookup_accounts)
    (get_account_count)
+   (get_all_accounts)
    (get_account_history)
    (get_owner_history)
    (get_recovery_request)
@@ -465,8 +478,10 @@ FC_API(deip::app::database_api,
    // Research
    (get_research_by_id)
    (get_research_by_permlink)
-   (get_researches)
+   (get_researches_by_discipline_id)
    (get_researches_by_research_group_id)
+   (check_research_existence_by_permlink)
+
 
    // Research Content
    (get_research_content_by_id)
@@ -485,6 +500,7 @@ FC_API(deip::app::database_api,
    // Research group
    (get_research_group_by_id)
    (get_research_group_by_permlink)
+   (check_research_group_existence_by_permlink)
 
    // Research group tokens
    (get_research_group_tokens_by_account)
@@ -499,12 +515,20 @@ FC_API(deip::app::database_api,
    (get_research_token_sale_contributions_by_research_token_sale_id)
    (get_research_token_sale_contribution_by_account_name_and_research_token_sale_id)
 
+   // Research discipline relation
+   (get_disciplines_by_research)
+
    // Research group invite
     (get_research_group_invites_by_account_name) 
     (get_research_group_invites_by_research_group_id)
 
    // Research listing
     (get_research_listing)
+    (get_all_researches_listing)
+
+   // Total votes
+   (get_total_votes_by_research)
+   (get_total_votes_by_research_and_discipline)
 )
 
 // clang-format on
