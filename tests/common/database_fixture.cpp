@@ -659,12 +659,12 @@ const research_group_invite_object& database_fixture::research_group_invite_crea
                                                                                    const research_group_id_type& research_group_id,
                                                                                    const share_type research_group_token_amount)
 {
-    FC_ASSERT(research_group_token_amount <= 100, "Amount cant be greater than 100%");
+    FC_ASSERT(research_group_token_amount <= DEIP_100_PERCENT, "Amount can't be greater than 100%");
     auto& research_group_invite = db.create<research_group_invite_object>([&](research_group_invite_object& rgi_o) {
         rgi_o.id = id;
         rgi_o.account_name = account_name;
         rgi_o.research_group_id = research_group_id;
-        rgi_o.research_group_token_amount = research_group_token_amount * DEIP_1_PERCENT;
+        rgi_o.research_group_token_amount = research_group_token_amount;
     });
     return research_group_invite;
 }

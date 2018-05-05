@@ -147,9 +147,9 @@ const research_group_object& dbs_research_group::decrease_research_group_funds(c
 const share_type dbs_research_group::decrease_research_group_tokens_amount(const research_group_id_type& research_group_id,
                                                                      const share_type delta)
 {
-    FC_ASSERT(delta > 0, "Delta must be bigger than 0");
+    FC_ASSERT(delta > 0, "Delta must be greater than 0");
 
-    share_type total_amount = 0;
+    share_type total_deducted_amount = 0;
 
     auto it_pair = db_impl().get_index<research_group_token_index>().indicies().get<by_research_group>().equal_range(research_group_id);
     auto it = it_pair.first;
@@ -158,22 +158,22 @@ const share_type dbs_research_group::decrease_research_group_tokens_amount(const
     {
         db_impl().modify(*it, [&](research_group_token_object& rgt)
         {
-            auto temp = (delta * rgt.amount) / DEIP_100_PERCENT;
-            if (rgt.amount - temp < DEIP_1_PERCENT)
+            auto amount_to_deduct = (delta * rgt.amount) / DEIP_100_PERCENT;
+            if (rgt.amount - amount_to_deduct < DEIP_1_PERCENT)
             {
-                total_amount += rgt.amount - DEIP_1_PERCENT;
+                total_deducted_amount += rgt.amount - DEIP_1_PERCENT;
                 rgt.amount = DEIP_1_PERCENT;
             }
             else
             {
-                total_amount += temp;
-                rgt.amount -= temp;
+                total_deducted_amount += amount_to_deduct;
+                rgt.amount -= amount_to_deduct;
             }
         });
         ++it;
     }
 
-    return total_amount;
+    return total_deducted_amount;
 }
 
 void dbs_research_group::increase_research_group_tokens_amount(const research_group_id_type& research_group_id,
@@ -190,17 +190,17 @@ void dbs_research_group::increase_research_group_tokens_amount(const research_gr
     {
         db_impl().modify(*it, [&](research_group_token_object& rgt)
         {
-            auto temp = (rgt.amount * DEIP_100_PERCENT) / (DEIP_100_PERCENT - delta);
-            total_increase += (temp - rgt.amount);
-            rgt.amount = temp;
+            auto new_amount = (rgt.amount * DEIP_100_PERCENT) / (DEIP_100_PERCENT - delta);
+            total_increase += (new_amount - rgt.amount);
+            rgt.amount = new_amount;
         });
         ++it;
     }
     --it;
-    share_type difference = delta - total_increase;
+    share_type unused_balance = delta - total_increase;
     db_impl().modify(*it, [&](research_group_token_object& rgt)
     {
-        rgt.amount += difference;
+        rgt.amount += unused_balance;
     });
 }
 

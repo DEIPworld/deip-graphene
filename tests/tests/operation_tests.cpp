@@ -621,8 +621,8 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
         auto& _research_group_2
             = research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 50);
 
-        research_group_invite_create(0, "bob", 0, 50);
-        research_group_invite_create(1, "bob", 1, 50);
+        research_group_invite_create(0, "bob", 0, 5000);
+        research_group_invite_create(1, "bob", 1, 5000);
 
         approve_research_group_invite_operation approve_invite_bob_to_rg1_op;
 
@@ -776,7 +776,7 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
          ///                                            ///
         //////////////////////////////////////////////////
 
-        research_group_invite_create(2, "bob", 0, 100);
+        research_group_invite_create(2, "bob", 0, 10000);
 
         approve_research_group_invite_operation approve_invite_2_to_rg1_op;
 
@@ -811,7 +811,7 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
         generate_block();
 
         auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50);
-        auto& research_group_invite = research_group_invite_create(1, "bob", 1, 50);
+        auto& research_group_invite = research_group_invite_create(1, "bob", 1, 5000);
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -854,8 +854,8 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
         research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 50);
         research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 50);
 
-        research_group_invite_create(0, "bob", 0, 100);
-        research_group_invite_create(1, "bob", 1, 100);
+        research_group_invite_create(0, "bob", 0, 10000);
+        research_group_invite_create(1, "bob", 1, 10000);
 
         approve_research_group_invite_operation approve_invite_bob_to_rg2_with_overflow_data_op;
 

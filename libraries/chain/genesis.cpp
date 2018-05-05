@@ -245,8 +245,10 @@ void database::init_research(const genesis_state_type& genesis_state)
     {
         FC_ASSERT(!research.title.empty(), "Research 'title' must be provided");
         FC_ASSERT(!research.permlink.empty(),  "Research group 'permlink' must be provided");
-        FC_ASSERT(research.dropout_compensation_in_percent >= 0 && research.dropout_compensation_in_percent <= 10000, "Percent for dropout compensation should be in 0 to 100 range");
-        FC_ASSERT(research.review_share_in_percent >= 0 && research.review_share_in_percent <= 5000, "Percent for review should be in 0 to 50 range");
+        FC_ASSERT(research.dropout_compensation_in_percent >= 0 && research.dropout_compensation_in_percent <= DEIP_100_PERCENT,
+                  "Dropout compensation percent should be in 0% to 100% range");
+        FC_ASSERT(research.review_share_in_percent >= 0 && research.review_share_in_percent <= 50 * DEIP_1_PERCENT,
+                  "Percent for review should be in 0% to 50% range");
 
         create<research_object>([&](research_object& r){
             r.id = research.id;
@@ -329,11 +331,11 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
            rg.quorum_percent = research_group.quorum_percent * DEIP_1_PERCENT;
         });
 
+        // TODO: Check that total amount of research group tokens is 10000
         for (auto& member : research_group.members)
         {
-           // check for account
-           auto account = get<account_object, by_name>(member);
-           create<research_group_token_object>([&](research_group_token_object& rgt) {
+            auto account = get<account_object, by_name>(member);
+            create<research_group_token_object>([&](research_group_token_object& rgt) {
                rgt.research_group_id = research_group.id;
                rgt.amount = DEIP_100_PERCENT / research_group.members.size();
                rgt.owner = account.name;
