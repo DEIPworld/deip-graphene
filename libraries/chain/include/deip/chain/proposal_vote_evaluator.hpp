@@ -183,20 +183,20 @@ protected:
     bool is_quorum(const proposal_object& proposal)
     {
         const research_group_object& research_group = _research_group_service.get_research_group(proposal.research_group_id);
-        auto& total_tokens = research_group.total_tokens_amount;
 
         float total_voted_weight = 0;
         auto& votes = _proposal_service.get_votes_for(proposal.id);
         for (const proposal_vote_object& vote : votes) {
             total_voted_weight += vote.weight.value;
         }
-        return (total_voted_weight * DEIP_1_PERCENT) / total_tokens  >= research_group.quorum_percent;
+        return total_voted_weight  >= research_group.quorum_percent;
     }
 
     void invite_evaluator(const proposal_object& proposal)
     {
         invite_member_proposal_data_type data = get_data<invite_member_proposal_data_type>(proposal);
-        _research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount);
+        auto research_group_tokens = _research_group_service.get_research_group_tokens(data.research_group_id);
+        _research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount_in_percent);
     }
 
     void dropout_evaluator(const proposal_object& proposal)
@@ -209,10 +209,7 @@ protected:
         _proposal_service.remove_proposal_votes(data.name, data.research_group_id);
 
         auto& token = _research_group_service.get_research_group_token_by_account_and_research_group_id(data.name, data.research_group_id);
-        auto tokens_amount = token.amount;
         auto& research_group = _research_group_service.get_research_group(data.research_group_id);
-        auto total_rg_tokens_amount = research_group.total_tokens_amount;
-        auto tokens_amount_in_percent = tokens_amount * DEIP_100_PERCENT / total_rg_tokens_amount;
 
         auto researches = _research_service.get_researches_by_research_group(data.research_group_id);
         for (auto& r : researches)
@@ -220,7 +217,7 @@ protected:
             auto& research = r.get();
 
             auto tokens_amount_in_percent_after_dropout_compensation
-                = tokens_amount_in_percent * research.dropout_compensation_in_percent / DEIP_100_PERCENT;
+                = token.amount * research.dropout_compensation_in_percent / DEIP_100_PERCENT;
             auto tokens_amount_after_dropout_compensation
                 = research.owned_tokens * tokens_amount_in_percent_after_dropout_compensation / DEIP_100_PERCENT;
 
@@ -237,9 +234,9 @@ protected:
                 _research_token_service.create_research_token(data.name, tokens_amount_after_dropout_compensation, research.id);
             }
         }
-
+        share_type token_amount = token.amount;
         _research_group_service.remove_token(data.name, data.research_group_id);
-        _research_group_service.decrease_research_group_total_tokens_amount(data.research_group_id, tokens_amount);
+        _research_group_service.increase_research_group_tokens_amount(data.research_group_id, token_amount);
     }
 
     void change_research_review_share_evaluator(const proposal_object& proposal)
@@ -292,14 +289,15 @@ protected:
         rebalance_research_group_tokens_data_type data = get_data<rebalance_research_group_tokens_data_type>(proposal);
         _research_group_service.check_research_group_existence(data.research_group_id);
 
-        int size = data.accounts.size();
-        for (int i = 0; i < size; ++i)
-        {
-            _account_service.check_account_existence(data.accounts[i].account_name);
-            _research_group_service.increase_research_group_token_amount(data.research_group_id, 
-                                                                         data.accounts[i].account_name, 
-                                                                         data.accounts[i].amount);
-        }
+        FC_ASSERT(data.accounts.size() == _research_group_service.get_research_group_tokens(data.research_group_id).size(),
+                  "New amount of tokens should be provided for every research group member");
+        for (auto account : data.accounts)
+            _research_group_service.check_research_group_token_existence(account.account_name, data.research_group_id);
+
+        for (auto account : data.accounts)
+            _research_group_service.set_new_research_group_token_amount(data.research_group_id,
+                                                                        account.account_name,
+                                                                        account.new_amount_in_percent);
     }
 
     void create_research_material_evaluator(const proposal_object& proposal)

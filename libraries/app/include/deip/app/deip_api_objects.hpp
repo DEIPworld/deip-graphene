@@ -532,7 +532,6 @@ struct research_group_api_obj
         ,  permlink(fc::to_string(rg.permlink))
         ,  description(fc::to_string(rg.description))
         ,  quorum_percent(rg.quorum_percent.value)
-        ,  total_tokens_amount(rg.total_tokens_amount.value)
     {
     }
 
@@ -546,7 +545,6 @@ struct research_group_api_obj
     std::string permlink;
     std::string description;
     uint32_t quorum_percent;
-    uint32_t total_tokens_amount;
 };
 
 struct research_token_sale_api_obj
@@ -844,8 +842,6 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (permlink)
             (description)
             (quorum_percent)
-            (total_tokens_amount)
-            // (research_group_tokens)
 )
 
 FC_REFLECT( deip::app::research_token_sale_api_obj,
