@@ -28,7 +28,7 @@ public:
     shared_string name;
     shared_string description;
     shared_string permlink;
-    asset balance;
+    asset balance = asset(0, DEIP_SYMBOL);
     share_type quorum_percent;
 };
 
