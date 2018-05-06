@@ -330,7 +330,7 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
            fc::from_string(rg.description, research_group.description);
            fc::from_string(rg.permlink, research_group.permlink);
            rg.balance = asset(0, DEIP_SYMBOL);
-           rg.quorum_percent = research_group.quorum_percent * DEIP_1_PERCENT;
+           rg.quorum_percent = research_group.quorum_percent;
         });
 
         // TODO: Check that total amount of research group tokens is 10000
