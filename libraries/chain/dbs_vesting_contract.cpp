@@ -11,14 +11,14 @@ dbs_vesting_contract::dbs_vesting_contract(database &db)
 
 const vesting_contract_object& dbs_vesting_contract::create(const account_name_type &sender,
                                                             const account_name_type &receiver,
-                                                            const share_type amount,
+                                                            const asset& balance,
                                                             const uint32_t withdrawal_periods,
                                                             const uint32_t contract_duration)
 {
     const vesting_contract_object& new_vesting_contract = db_impl().create<vesting_contract_object>([&](vesting_contract_object& vesting_contract) {
         vesting_contract.sender = sender;
         vesting_contract.receiver = receiver;
-        vesting_contract.amount = amount;
+        vesting_contract.balance = balance;
         vesting_contract.withdrawn = 0;
         vesting_contract.withdrawal_periods = withdrawal_periods;
         vesting_contract.start_date = db_impl().head_block_time();
@@ -56,16 +56,18 @@ dbs_vesting_contract::vesting_contract_refs_type dbs_vesting_contract::get_by_re
     return ret;
 }
 
-const vesting_contract_object& dbs_vesting_contract::withdraw(const vesting_contract_object &vesting_contract,
-                                                              const share_type to_withdraw)
+void dbs_vesting_contract::withdraw(const vesting_contract_id_type& id,
+                                                              const asset& to_withdraw)
 {
-    FC_ASSERT(vesting_contract.withdrawn + to_withdraw <= vesting_contract.amount, "You cant withdraw more than contract amount");
-    if (vesting_contract.withdrawn + to_withdraw == vesting_contract.amount) {
-        db_impl().remove(vesting_contract);
-    }
+    auto& vesting_contract = db_impl().get<vesting_contract_object, by_id>(id);
 
-    db_impl().modify(vesting_contract, [&](vesting_contract_object& v) { v.withdrawn += to_withdraw;
-                                                                         v.amount -= to_withdraw; });
+    FC_ASSERT(to_withdraw.amount <= vesting_contract.balance.amount, "You cant withdraw more than contract balance");
+
+    if (to_withdraw.amount == vesting_contract.balance.amount)
+        db_impl().remove(vesting_contract);
+    else
+        db_impl().modify(vesting_contract, [&](vesting_contract_object& v) { v.withdrawn += to_withdraw.amount;
+                                                                             v.balance -= to_withdraw; });
 }
 
 void dbs_vesting_contract::check_vesting_contract_existence_by_sender_and_receiver(const account_name_type& sender,

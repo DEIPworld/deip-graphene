@@ -214,7 +214,7 @@ void make_review_operation::validate() const
 void contribute_to_token_sale_operation::validate() const
 {
     validate_account_name(owner);
-    FC_ASSERT(amount > 0, "Amount must be bigger than 0");
+    FC_ASSERT(amount > 0, "Amount must be greater than 0");
 }
 
 void approve_research_group_invite_operation::validate() const
@@ -261,7 +261,7 @@ void research_update_operation::validate() const
 
 void deposit_to_vesting_contract_operation::validate() const
 {
-    FC_ASSERT(amount > 0, "Deposit amount must be bigger than 0");
+    FC_ASSERT(balance > 0, "Deposit balance must be greater than 0");
     FC_ASSERT(withdrawal_period > 0, "You must divide contract at least by 1 part");
     FC_ASSERT(contract_duration > 0, "Contract duration must be longer than 0");
     validate_account_name(sender);

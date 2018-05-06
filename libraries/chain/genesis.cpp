@@ -329,7 +329,7 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
            fc::from_string(rg.name, research_group.name);
            fc::from_string(rg.description, research_group.description);
            fc::from_string(rg.permlink, research_group.permlink);
-           rg.funds = share_type(0);
+           rg.balance = asset(0, DEIP_SYMBOL);
            rg.quorum_percent = research_group.quorum_percent;
         });
 

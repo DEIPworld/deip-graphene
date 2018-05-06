@@ -278,10 +278,10 @@ protected:
 
         auto& account = _account_service.get_account(data.recipient);
         auto& research_group = _research_group_service.get_research_group(data.research_group_id);
-        FC_ASSERT((research_group.funds - data.funds > 0), "Research balance is less than amount (result amount < 0)");
+        FC_ASSERT((research_group.balance.amount - data.funds >= 0), "Research balance is less than amount (result amount < 0)");
 
         _account_service.increase_balance(account, data.funds);
-        _research_group_service.decrease_research_group_funds(proposal.research_group_id, data.funds);
+        _research_group_service.decrease_research_group_balance(proposal.research_group_id, data.funds);
     }
 
     void rebalance_research_group_tokens_evaluator(const proposal_object& proposal)

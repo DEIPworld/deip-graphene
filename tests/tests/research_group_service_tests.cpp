@@ -1,6 +1,8 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
+#include <deip/chain/witness_objects.hpp>
+
 #include <deip/chain/research_group_object.hpp>
 #include <deip/chain/dbs_research_group.hpp>
 
@@ -140,7 +142,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_test)
         BOOST_CHECK(research_group.permlink == "test");
         BOOST_CHECK(research_group.description == "test");
         BOOST_CHECK(research_group.quorum_percent == 34);
-        BOOST_CHECK(research_group.funds == 0);
+        BOOST_CHECK(research_group.balance.amount == 0);
 
     }
     FC_LOG_AND_RETHROW()

@@ -417,7 +417,7 @@ database_fixture::research_group_create(const int64_t& id,
               fc::from_string(rg.name, name);
               fc::from_string(rg.permlink, permlink);
               fc::from_string(rg.description, description);
-              rg.funds = funds;
+              rg.balance = funds;
               rg.quorum_percent = quorum_percent;
           });
 

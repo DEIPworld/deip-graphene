@@ -3,6 +3,7 @@
 #include <deip/protocol/types.hpp>
 #include <deip/chain/deip_object_types.hpp>
 #include <boost/multi_index/composite_key.hpp>
+#include <deip/chain/util/asset.hpp>
 
 namespace deip{
 namespace chain{
@@ -23,7 +24,7 @@ public:
     vesting_contract_id_type id;
     account_name_type sender;
     account_name_type receiver;
-    share_type amount;
+    deip::protocol::asset balance = deip::protocol::asset(0, DEIP_SYMBOL);
     share_type withdrawn;
     uint32_t withdrawal_periods;
     time_point_sec start_date;
@@ -58,7 +59,7 @@ typedef multi_index_container<vesting_contract_object,
 }
 
 FC_REFLECT(deip::chain::vesting_contract_object,
-                        (id)(sender)(receiver)(amount)(withdrawal_periods)(start_date)(expiration_date)(contract_duration)
+                        (id)(sender)(receiver)(balance)(withdrawal_periods)(start_date)(expiration_date)(contract_duration)
             )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::vesting_contract_object, deip::chain::vesting_contract_index)

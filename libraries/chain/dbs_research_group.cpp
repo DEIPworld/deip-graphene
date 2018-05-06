@@ -31,7 +31,6 @@ const research_group_object& dbs_research_group::create_research_group(const std
         fc::from_string(research_group.name, name);
         fc::from_string(research_group.permlink, permlink);
         fc::from_string(research_group.description, description);
-        research_group.funds = 0;
         research_group.quorum_percent = quorum_percent;
     });
 
@@ -125,24 +124,25 @@ void dbs_research_group::remove_token(const account_name_type& account,
     db_impl().remove(token);
 }
 
-const research_group_object& dbs_research_group::increase_research_group_funds(const research_group_id_type& research_group_id,
-                                                                               const share_type deips)
+const research_group_object& dbs_research_group::increase_research_group_balance(const research_group_id_type& research_group_id,
+                                                                                 const asset& deips)
 {
     const research_group_object& research_group = get_research_group(research_group_id);
-    db_impl().modify(research_group, [&](research_group_object& rg) { rg.funds += deips; });
+    db_impl().modify(research_group, [&](research_group_object& rg) { rg.balance += deips; });
 
     return research_group;
 }
 
-const research_group_object& dbs_research_group::decrease_research_group_funds(const research_group_id_type& research_group_id,
-                                                                               const share_type deips)
+const research_group_object& dbs_research_group::decrease_research_group_balance(const research_group_id_type& research_group_id,
+                                                                                 const asset& deips)
 {
     const research_group_object& research_group = get_research_group(research_group_id);
-    FC_ASSERT(research_group.funds > deips, "Not enough funds");
-    db_impl().modify(research_group, [&](research_group_object& rg) { rg.funds -= deips; });
+    FC_ASSERT(research_group.balance >= deips, "Not enough funds");
+    db_impl().modify(research_group, [&](research_group_object& rg) { rg.balance -= deips; });
 
     return research_group;
 }
+
 
 const share_type dbs_research_group::decrease_research_group_tokens_amount(const research_group_id_type& research_group_id,
                                                                      const share_type delta)

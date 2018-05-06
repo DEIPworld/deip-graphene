@@ -64,9 +64,9 @@ public:
     void check_research_group_token_existence(const account_name_type& account,
                                         const research_group_id_type& research_group_id) const;
 
-    const research_group_object& increase_research_group_funds(const research_group_id_type& research_group_id, const share_type deips);
+    const research_group_object& increase_research_group_balance(const research_group_id_type& research_group_id, const asset& deips);
 
-    const research_group_object& decrease_research_group_funds(const research_group_id_type& research_group_id, const share_type deips);
+    const research_group_object& decrease_research_group_balance(const research_group_id_type& research_group_id, const asset& deips);
 
     const share_type decrease_research_group_tokens_amount(const research_group_id_type& research_group_id,
                                                      const share_type delta);
