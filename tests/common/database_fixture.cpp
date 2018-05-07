@@ -442,7 +442,6 @@ const research_group_object& database_fixture::research_group_create_by_operatio
 
         op.creator = creator;
         op.quorum_percent = quorum_percent;
-        op.tokens_amount = DEIP_100_PERCENT;
 
         trx.operations.push_back(op);
 

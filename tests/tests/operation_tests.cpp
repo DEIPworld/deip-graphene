@@ -2653,7 +2653,6 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
        op.permlink = "group";
        op.description = "group";
        op.quorum_percent = 1000;
-       op.tokens_amount = 100;
 
        BOOST_TEST_MESSAGE("--- Test");
        signed_transaction tx;
