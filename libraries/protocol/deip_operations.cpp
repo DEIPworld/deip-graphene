@@ -192,7 +192,6 @@ void create_research_group_operation::validate() const
     FC_ASSERT(fc::is_utf8(name), "Group name is not valid UTF8 string");
     FC_ASSERT(fc::is_utf8(description), "Description is not valid UTF8 string");
     FC_ASSERT(quorum_percent > 5 * DEIP_1_PERCENT && quorum_percent <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
-    FC_ASSERT(tokens_amount > 0, "Initial research group tokens amount must be greater than 0");
 }
 
 void vote_proposal_operation::validate() const
