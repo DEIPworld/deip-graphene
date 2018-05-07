@@ -578,14 +578,11 @@ void vote_evaluator::do_apply(const vote_operation& o)
 void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
     dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
-    dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_review& review_service = _db.obtain_service<dbs_review>();
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
 
-    const auto& dgpo = _db.get_dynamic_global_properties();
     const auto review_reward_curve = curve_id::power1dot5;
     const auto curators_reward_curve = curve_id::power1dot5;
 
@@ -1031,8 +1028,6 @@ void approve_research_group_invite_evaluator::do_apply(const approve_research_gr
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
-    dbs_research &research_service = _db.obtain_service<dbs_research>();
-    dbs_research_token &research_token_service = _db.obtain_service<dbs_research_token>();
     dbs_research_group_invite &research_group_invite_service = _db.obtain_service<dbs_research_group_invite>();
 
     auto& research_group_invite = research_group_invite_service.get(op.research_group_invite_id);
@@ -1069,7 +1064,7 @@ void create_research_group_join_request_evaluator::do_apply(const create_researc
     account_service.check_account_existence(op.owner);
     research_group_service.check_research_group_existence(op.research_group_id);
 
-    auto& research_group_join_request = research_group_join_request_service.create(op.owner, op.research_group_id, op.motivation_letter);
+    research_group_join_request_service.create(op.owner, op.research_group_id, op.motivation_letter);
 
 }
 
