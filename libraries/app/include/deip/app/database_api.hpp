@@ -314,7 +314,7 @@ public:
     ////////////////
     research_api_obj get_research_by_id(const research_id_type& id) const;
     research_api_obj get_research_by_permlink(const string& permlink) const;
-    vector<research_api_obj> get_researches_by_discipline_id(const int64_t from, const uint32_t limit, const discipline_id_type& discipline_id) const;
+    vector<research_api_obj> get_researches_by_discipline_id(const uint64_t from, const uint32_t limit, const discipline_id_type& discipline_id) const;
     vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
     bool check_research_existence_by_permlink(const string& permlink) const;
 
