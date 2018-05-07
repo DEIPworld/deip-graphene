@@ -24,6 +24,7 @@
 
 #include <deip/chain/dbs_research_token.hpp>
 #include <deip/chain/review_object.hpp>
+#include <deip/chain/vesting_contract_object.hpp>
 
 using namespace deip;
 using namespace deip::chain;
@@ -178,7 +179,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         BOOST_REQUIRE(vote.research_content_id == op.research_content_id);
 
         // Calculate vote weight
-        uint64_t expected_curator_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, curator_reward_curve).to_uint64();
+        int64_t expected_curator_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, curator_reward_curve).to_uint64();
         /// discount weight by time
         uint128_t w(expected_curator_reward_weight);
         uint64_t delta_t = std::min(uint64_t((vote.voting_time - content.created_at).to_seconds()),
@@ -443,7 +444,7 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
     BOOST_REQUIRE(vote.research_content_id == op.research_content_id);
 
     // Calculate vote weight
-    uint64_t expected_curator_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, curator_reward_curve).to_uint64();
+    int64_t expected_curator_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, curator_reward_curve).to_uint64();
     /// discount weight by time
     uint128_t w(expected_curator_reward_weight);
     uint64_t delta_t = std::min(uint64_t((vote.voting_time - content.created_at).to_seconds()),
@@ -497,7 +498,7 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
     dbs_discipline& discipline_service = db.obtain_service<dbs_discipline>();
     auto& discipline = discipline_service.get_discipline(1);
 
-    auto& research_discipline = db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.discipline_id = discipline.id;
         r.research_id = research.id;
         r.votes_count = 0;
@@ -546,8 +547,6 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
     BOOST_REQUIRE(token.last_vote_time == db.head_block_time());
 
     // Validate vote
-    auto& vote_service = db.obtain_service<dbs_vote>();
-
     const auto& vote_idx = db._temporary_public_impl().get_index<review_vote_index>().indices().get<by_voter_discipline_and_review>();
     auto itr = vote_idx.find(std::make_tuple(op.voter, op.discipline_id, op.review_id));
     auto review_reward_curve = curve_id::power1dot5;
@@ -565,7 +564,7 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
     BOOST_REQUIRE(vote.review_id == op.review_id);
 
     // Calculate vote weight
-    uint64_t expected_curator_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, curator_reward_curve).to_uint64();
+    int64_t expected_curator_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, curator_reward_curve).to_uint64();
     /// discount weight by time
     uint128_t w(expected_curator_reward_weight);
     uint64_t delta_t = std::min(uint64_t((vote.voting_time - review.created_at).to_seconds()),
@@ -602,10 +601,6 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
 
         generate_block();
 
-        auto& research_service = db.obtain_service<dbs_research>();
-        auto& research_group_service = db.obtain_service<dbs_research_group>();
-        auto& research_token_service = db.obtain_service<dbs_research_token>();
-
         vector<account_name_type> accounts = { "alice" };
 
         private_key_type bob_priv_key = generate_private_key("bob");
@@ -616,10 +611,8 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
          ///                                            ///
         //////////////////////////////////////////////////
 
-        auto& _research_group_1
-            = research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000);
-        auto& _research_group_2
-            = research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000);
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000);
 
         research_group_invite_create(0, "bob", 0, 5000);
         research_group_invite_create(1, "bob", 1, 5000);
@@ -666,8 +659,8 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50);
-        auto& research_group_invite = research_group_invite_create(1, "bob", 1, 5000);
+        research_group_create(1, "name", "permlink", "description", 200, 50);
+        research_group_invite_create(1, "bob", 1, 5000);
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -682,8 +675,6 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
         tx.sign(priv_key, db.get_chain_id());
         tx.validate();
         db.push_transaction(tx, 0);
-
-        auto& _research_group = db.get<research_group_object, by_id>(1);
 
         BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(1)), boost::exception);
 
@@ -2540,7 +2531,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_join_request_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50);
+        research_group_create(1, "name", "permlink", "description", 200, 50);
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -2579,8 +2570,8 @@ BOOST_AUTO_TEST_CASE(reject_research_group_join_request_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50);
-        auto& research_group_invite = research_group_join_request_create(1, "alice", 1, "letter");
+        research_group_create(1, "name", "permlink", "description", 200, 50);
+        research_group_join_request_create(1, "alice", 1, "letter");
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -2613,7 +2604,7 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_to_research_group_apply)
 
         generate_block();
 
-        auto& research_token = research_token_create(1, "alice", 5000, 1);
+        research_token_create(1, "alice", 5000, 1);
         auto& research = research_create(1, "title", "abstract", "permlink", 1, 1, 1);
 
         private_key_type priv_key = generate_private_key("alice");
@@ -2657,8 +2648,8 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
 
         private_key_type alice_priv_key = generate_private_key("alice");
 
-        auto& research_token_sale = research_token_sale_create(0, 1, db.head_block_time() - 60 * 60 * 5, db.head_block_time() + 60 * 60 * 5, 200, 1000, 100, 400);
-        auto& research_token_sale_contribution = research_token_sale_contribution_create(0, 0, "bob", 200, db.head_block_time());
+        research_token_sale_create(0, 1, db.head_block_time() - 60 * 60 * 5, db.head_block_time() + 60 * 60 * 5, 200, 1000, 100, 400);
+        research_token_sale_contribution_create(0, 0, "bob", 200, db.head_block_time());
 
         contribute_to_token_sale_operation op;
 
@@ -2738,8 +2729,8 @@ BOOST_AUTO_TEST_CASE(research_update_apply)
         private_key_type priv_key = generate_private_key("alice");
 
         auto& research = research_create(0, "title", "abstract", "permlink", 1, 10, 10);
-        auto& research_group = research_group_create(1, "name", "permlink", "description", 100, 100);
-        auto& research_group_token = research_group_token_create(1, "alice", DEIP_100_PERCENT);
+        research_group_create(1, "name", "permlink", "description", 100, 100);
+        research_group_token_create(1, "alice", DEIP_100_PERCENT);
 
         research_update_operation op;
 
@@ -2759,6 +2750,90 @@ BOOST_AUTO_TEST_CASE(research_update_apply)
         BOOST_CHECK(research.title == "new_title");
         BOOST_CHECK(research.abstract == "new_abstract");
         BOOST_CHECK(research.permlink == "new_permlink");
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(deposit_to_vesting_contract_apply)
+{
+    try {
+        BOOST_TEST_MESSAGE("Testing: deposit_to_vesting_contract_apply");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+
+        generate_block();
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        deposit_to_vesting_contract_operation op;
+
+        op.sender = "alice";
+        op.receiver = "bob";
+        op.balance = 1000;
+        op.withdrawal_period = 4;
+        op.contract_duration = DAYS_TO_SECONDS(365);
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& vesting_contract = db.get<vesting_contract_object, by_sender_and_receiver>(std::make_tuple("alice", "bob"));
+
+        BOOST_CHECK(vesting_contract.sender == "alice");
+        BOOST_CHECK(vesting_contract.receiver == "bob");
+        BOOST_CHECK(vesting_contract.balance.amount == 1000);
+        BOOST_CHECK(vesting_contract.contract_duration == fc::time_point_sec(DAYS_TO_SECONDS(365)));
+        BOOST_CHECK(vesting_contract.start_date == db.head_block_time());
+        BOOST_CHECK(vesting_contract.expiration_date.sec_since_epoch() == db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(365));
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(withdraw_from_vesting_contract_apply)
+{
+    try {
+        BOOST_TEST_MESSAGE("Testing: withdraw_from_vesting_contract_apply");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+
+        generate_block();
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        auto& contract = db.create<vesting_contract_object>([&](vesting_contract_object& v) {
+            v.id = 1;
+            v.sender = "alice";
+            v.receiver = "bob";
+            v.balance = asset(1000, DEIP_SYMBOL);
+            v.start_date = fc::time_point_sec(db.head_block_time().sec_since_epoch() - DAYS_TO_SECONDS(366));
+            v.contract_duration = fc::time_point_sec(DAYS_TO_SECONDS(730));
+            v.expiration_date = fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(364));
+            v.withdrawal_periods = 4;
+        });
+
+        withdraw_from_vesting_contract_operation op;
+
+        op.sender = "alice";
+        op.receiver = "bob";
+        op.amount = 500;
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK(contract.sender == "alice");
+        BOOST_CHECK(contract.receiver == "bob");
+        BOOST_CHECK(contract.balance.amount == 500);
+
+        auto bob_acc = db.get_account("bob");
+
+        BOOST_CHECK(bob_acc.balance.amount == 500);
     }
     FC_LOG_AND_RETHROW()
 }

@@ -25,7 +25,7 @@ public:
     account_name_type sender;
     account_name_type receiver;
     deip::protocol::asset balance = deip::protocol::asset(0, DEIP_SYMBOL);
-    share_type withdrawn;
+    share_type withdrawn = 0;
     uint32_t withdrawal_periods;
     time_point_sec start_date;
     time_point_sec expiration_date;
