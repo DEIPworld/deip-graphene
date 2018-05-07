@@ -1095,7 +1095,7 @@ research_api_obj database_api::get_research_by_permlink(const string& permlink) 
     });
 }
 
-vector<research_api_obj> database_api::get_researches_by_discipline_id(const int64_t from,
+vector<research_api_obj> database_api::get_researches_by_discipline_id(const uint64_t from,
                                                                        const uint32_t limit,
                                                                        const discipline_id_type& discipline_id) const
 {

@@ -209,7 +209,6 @@ protected:
         _proposal_service.remove_proposal_votes(data.name, data.research_group_id);
 
         auto& token = _research_group_service.get_research_group_token_by_account_and_research_group_id(data.name, data.research_group_id);
-        auto& research_group = _research_group_service.get_research_group(data.research_group_id);
 
         auto researches = _research_service.get_researches_by_research_group(data.research_group_id);
         for (auto& r : researches)

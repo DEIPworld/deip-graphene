@@ -1277,7 +1277,6 @@ share_type database::reward_researches_in_discipline(const discipline_object& di
     FC_ASSERT(discipline.total_active_reward_weight != 0, "Attempt to allocate funds to inactive discipline");
 
     auto& content_service = obtain_service<dbs_research_content>();
-    auto& research_group_service = obtain_service<dbs_research_group>();
     auto& review_service = obtain_service<dbs_review>();
 
     const auto& total_votes_idx = get_index<total_votes_index>().indices().get<by_discipline_id>();
@@ -1327,7 +1326,6 @@ share_type database::reward_research_content(const research_content_id_type& res
 {
     auto& research_content_service = obtain_service<dbs_research_content>();
     auto& research_service = obtain_service<dbs_research>();
-    auto& research_group_service = obtain_service<dbs_research_group>();
     auto& research_content = research_content_service.get_content_by_id(research_content_id);
     auto& research = research_service.get_research(research_content.research_id);
 
@@ -1546,6 +1544,8 @@ share_type database::reward_research_group_members_with_expertise(const research
 {
     auto& research_group_service = obtain_service<dbs_research_group>();
 
+    share_type used_reward = 0;
+    
     std::vector<research_group_token_object> tokens_to_reward;
     share_type accounts_total_tokens_amount = 0;
     for (auto& account : accounts) {
@@ -1557,8 +1557,10 @@ share_type database::reward_research_group_members_with_expertise(const research
     for (auto& token : tokens_to_reward) {
         auto new_expertise_amount = (expertise_reward * token.amount) / accounts_total_tokens_amount;
         reward_with_expertise(token.owner, discipline_id, new_expertise_amount);
+        used_reward += new_expertise_amount;
     }
 
+    FC_ASSERT(used_reward <= expertise_reward, "Attempt to allocate expertise reward amount that is greater than reward amount");
 }
 
 flat_set<account_name_type> database::get_all_research_group_token_account_names(const research_group_id_type& research_group_id)
@@ -1743,7 +1745,6 @@ void database::process_grants()
     uint32_t block_num = head_block_num();
 
     dbs_grant& grant_service = obtain_service<dbs_grant>();
-    dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
 
     const auto& grants_idx = get_index<grant_index>().indices().get<by_start_block>();
     auto grants_itr = grants_idx.lower_bound(block_num);
