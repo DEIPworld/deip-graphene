@@ -617,12 +617,12 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
         //////////////////////////////////////////////////
 
         auto& _research_group_1
-            = research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 50, 100);
+            = research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000);
         auto& _research_group_2
-            = research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 50, 200);
+            = research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000);
 
-        research_group_invite_create(0, "bob", 0, 100);
-        research_group_invite_create(1, "bob", 1, 100);
+        research_group_invite_create(0, "bob", 0, 5000);
+        research_group_invite_create(1, "bob", 1, 5000);
 
         approve_research_group_invite_operation approve_invite_bob_to_rg1_op;
 
@@ -645,12 +645,9 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
         auto& _research_group_1_token = db.get<research_group_token_object, by_owner>(std::make_tuple("bob", 0));
         auto& _research_group_2_token = db.get<research_group_token_object, by_owner>(std::make_tuple("bob", 1));
 
-        BOOST_CHECK(_research_group_1.total_tokens_amount == 200);
-        BOOST_CHECK(_research_group_2.total_tokens_amount == 300);
-
         BOOST_CHECK(_research_group_1_token.owner == "bob" && _research_group_2_token.owner == "bob");
         BOOST_CHECK(_research_group_1_token.research_group_id == 0 && _research_group_2_token.research_group_id == 1);
-        BOOST_CHECK(_research_group_1_token.amount == 100 && _research_group_2_token.amount == 100);
+        BOOST_CHECK(_research_group_1_token.amount == 5000 && _research_group_2_token.amount == 5000);
 
         BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(0)), boost::exception);
         BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(1)), boost::exception);
@@ -766,13 +763,12 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
                           std::out_of_range);
         BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1),
                           std::out_of_range);
-        BOOST_CHECK(_research_group_1.total_tokens_amount == 100 && _research_group_2.total_tokens_amount == 200);
         BOOST_CHECK(research_1_token.account_name == "bob" && research_2_token.account_name == "bob"
                     && research_3_token.account_name == "bob");
         BOOST_CHECK(research_1_token.amount == 2500 && research_2_token.amount == 1000
-                    && research_3_token.amount == 333);
+                    && research_3_token.amount == 500);
         BOOST_CHECK(research_1.owned_tokens == 7500 && research_2.owned_tokens == 9000
-                    && research_3.owned_tokens == 9667);
+                    && research_3.owned_tokens == 9500);
 
 
            //////////////////////////////////////////////////
@@ -780,7 +776,7 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
          ///                                            ///
         //////////////////////////////////////////////////
 
-        research_group_invite_create(2, "bob", 0, 100);
+        research_group_invite_create(2, "bob", 0, 10000);
 
         approve_research_group_invite_operation approve_invite_2_to_rg1_op;
 
@@ -794,12 +790,11 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
         approve_invite_2_to_rg1_tx.validate();
         db.push_transaction(approve_invite_2_to_rg1_tx, 0);
 
-        BOOST_CHECK(_research_group_1.total_tokens_amount == 200);
         BOOST_CHECK(research_1_token.account_name == "bob");
         BOOST_CHECK(research_1_token.amount == 2500 && research_2_token.amount == 1000
-                    && research_3_token.amount == 333);
+                    && research_3_token.amount == 500);
         BOOST_CHECK(research_1.owned_tokens == 7500 && research_2.owned_tokens == 9000
-                    && research_3.owned_tokens == 9667);
+                    && research_3.owned_tokens == 9500);
         BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(3)), boost::exception);
     }
     FC_LOG_AND_RETHROW()
@@ -815,8 +810,8 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50, 300);
-        research_group_invite_create(1, "bob", 1, 50);
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50);
+        auto& research_group_invite = research_group_invite_create(1, "bob", 1, 5000);
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -834,7 +829,6 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
 
         auto& _research_group = db.get<research_group_object, by_id>(1);
 
-        BOOST_CHECK(research_group.total_tokens_amount == 300);
         BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(1)), boost::exception);
 
     }
@@ -857,11 +851,11 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
          ///                                            ///
         //////////////////////////////////////////////////
 
-        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 50, 100);
-        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 50, 200);
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000);
 
-        research_group_invite_create(0, "bob", 0, 100);
-        research_group_invite_create(1, "bob", 1, 100);
+        research_group_invite_create(0, "bob", 0, 10000);
+        research_group_invite_create(1, "bob", 1, 10000);
 
         approve_research_group_invite_operation approve_invite_bob_to_rg2_with_overflow_data_op;
 
@@ -2642,8 +2636,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
        op.creator = "alice";
        op.permlink = "group";
        op.description = "group";
-       op.quorum_percent = 10;
-       op.tokens_amount = 100;
+       op.quorum_percent = 1000;
 
        BOOST_TEST_MESSAGE("--- Test");
        signed_transaction tx;
@@ -2659,8 +2652,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
        BOOST_CHECK(research_group.name == "test");
        BOOST_CHECK(research_group.description == "group");
        BOOST_CHECK(research_group.permlink == "group");
-       BOOST_CHECK(research_group.quorum_percent == 10);
-       BOOST_CHECK(research_group.total_tokens_amount == 100);
+       BOOST_CHECK(research_group.quorum_percent == 1000);
 
    }
    FC_LOG_AND_RETHROW()
@@ -2676,7 +2668,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_join_request_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50, 300);
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50);
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -2715,7 +2707,7 @@ BOOST_AUTO_TEST_CASE(reject_research_group_join_request_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50, 300);
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50);
         auto& research_group_invite = research_group_join_request_create(1, "alice", 1, "letter");
 
         private_key_type priv_key = generate_private_key("alice");
@@ -2874,7 +2866,7 @@ BOOST_AUTO_TEST_CASE(research_update_apply)
         private_key_type priv_key = generate_private_key("alice");
 
         auto& research = research_create(0, "title", "abstract", "permlink", 1, 10, 10);
-        auto& research_group = research_group_create(1, "name", "permlink", "description", 100, 100, DEIP_100_PERCENT);
+        auto& research_group = research_group_create(1, "name", "permlink", "description", 100, 100);
         auto& research_group_token = research_group_token_create(1, "alice", DEIP_100_PERCENT);
 
         research_update_operation op;

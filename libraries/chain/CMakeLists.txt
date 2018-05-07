@@ -41,6 +41,7 @@ add_library( deip_chain
              dbs_dynamic_global_properties.cpp
              dbs_research_group_join_request.cpp
              dbs_review.cpp
+             dbs_vesting_contract.cpp
 
              deip_evaluator.cpp
              deip_objects.cpp

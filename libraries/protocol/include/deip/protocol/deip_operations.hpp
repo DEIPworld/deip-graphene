@@ -456,7 +456,6 @@ struct create_research_group_operation : public base_operation
     std::string permlink;
     std::string description;
     uint32_t quorum_percent;
-    uint32_t tokens_amount;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -616,6 +615,36 @@ struct research_update_operation : public base_operation
     }
 };
 
+struct deposit_to_vesting_contract_operation : public base_operation
+{
+    account_name_type sender;
+    account_name_type receiver;
+    uint32_t balance;
+    uint32_t withdrawal_period;
+    uint32_t contract_duration;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(sender);
+    }
+};
+
+struct withdraw_from_vesting_contract_operation : public base_operation
+{
+    account_name_type sender;
+    account_name_type receiver;
+    uint32_t amount;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(sender);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -659,7 +688,7 @@ FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recov
 
 // DEIP native operations
 FC_REFLECT( deip::protocol::create_grant_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
-FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent)(tokens_amount))
+FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent))
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
 FC_REFLECT( deip::protocol::make_review_operation, (author)(research_content_id)(content)(is_positive)(references)(external_references))
@@ -673,4 +702,6 @@ FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discip
 FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_token_id)(research_id)(owner))
 FC_REFLECT( deip::protocol::add_expertise_tokens_operation, (owner)(account_name)(disciplines_to_add))
 FC_REFLECT( deip::protocol::research_update_operation, (research_id)(title)(abstract)(permlink)(owner))
+FC_REFLECT( deip::protocol::deposit_to_vesting_contract_operation, (sender)(receiver)(balance)(withdrawal_period)(contract_duration))
+FC_REFLECT( deip::protocol::withdraw_from_vesting_contract_operation, (sender)(receiver)(amount))
 // clang-format on

@@ -30,6 +30,7 @@
 #include <deip/chain/research_group_invite_object.hpp>
 #include <deip/chain/research_group_join_request_object.hpp>
 #include <deip/chain/review_object.hpp>
+#include <deip/chain/vesting_contract_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -65,6 +66,7 @@
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_grant.hpp>
 #include <deip/chain/dbs_review.hpp>
+#include <deip/chain/dbs_vesting_contract.hpp>
 
 namespace deip {
 namespace chain {
@@ -1394,7 +1396,7 @@ share_type database::reward_research_token_holders(const research_object& resear
     if(research_group_reward > 0)
     {
         dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
-        research_group_service.increase_research_group_funds(research.research_group_id, research_group_reward);
+        research_group_service.increase_research_group_balance(research.research_group_id, research_group_reward);
         used_reward += research_group_reward;
     }
 
@@ -1737,7 +1739,7 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
     }
 
     for (auto key_value_pair : grant_shares_per_research) {
-        research_group_service.increase_research_group_funds(key_value_pair.first, key_value_pair.second);
+        research_group_service.increase_research_group_balance(key_value_pair.first, key_value_pair.second);
         used_grant += key_value_pair.second;
     }
 
@@ -1850,7 +1852,8 @@ void database::initialize_evaluators()
                                         this->obtain_service<dbs_research_discipline_relation>(),
                                         this->obtain_service<dbs_research_group_invite>(),
                                         this->obtain_service<dbs_dynamic_global_properties>(),
-                                        this->obtain_service<dbs_research_group_join_request>()));
+                                        this->obtain_service<dbs_research_group_join_request>(),
+                                        this->obtain_service<dbs_vote>()));
     //clang-format on
 }
 
@@ -1892,6 +1895,7 @@ void database::initialize_indexes()
     add_index<review_index>();
     add_index<review_vote_index>();
     add_index<research_group_join_request_index>();
+    add_index<vesting_contract_index>();
 
     _plugin_index_signal();
 }

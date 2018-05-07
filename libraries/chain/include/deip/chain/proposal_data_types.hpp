@@ -27,13 +27,13 @@ struct dropout_member_proposal_data_type : base_proposal_data_type
 struct invite_member_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
-    account_name_type name;
-    share_type research_group_token_amount;
+    deip::protocol::account_name_type name;
+    share_type research_group_token_amount_in_percent;
 
     void validate() const
     {
         FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
-        FC_ASSERT(research_group_token_amount > 0, "Research group tokens amount should be > 0");
+        FC_ASSERT(research_group_token_amount_in_percent > 0, "Research group tokens amount should be > 0");
     }
 };
 
@@ -90,7 +90,7 @@ struct send_funds_data_type : base_proposal_data_type
 struct rebalance_info
 {
     account_name_type account_name;
-    share_type amount;
+    share_type new_amount_in_percent;
 };
 
 struct rebalance_research_group_tokens_data_type : base_proposal_data_type
@@ -101,8 +101,14 @@ struct rebalance_research_group_tokens_data_type : base_proposal_data_type
     void validate() const
     {
         int size = accounts.size();
+        share_type total_amount = 0;
         for (int i = 0; i < size; ++i)
-            FC_ASSERT(is_valid_account_name(accounts[i].account_name), "Account name ${n} is invalid", ("n", accounts[i].account_name));
+        {
+            FC_ASSERT(is_valid_account_name(accounts[i].account_name), "Account name ${n} is invalid",
+                      ("n", accounts[i].account_name));
+            total_amount += accounts[i].new_amount_in_percent;
+        }
+        FC_ASSERT(total_amount == DEIP_100_PERCENT, "New total amount must be equal to 100%");
     }
 };
 
@@ -169,7 +175,7 @@ struct change_research_review_share_percent_data_type : base_proposal_data_type
 
 FC_REFLECT(deip::chain::dropout_member_proposal_data_type, (research_group_id)(name))
 
-FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount))
+FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount_in_percent))
 
 FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
 
@@ -177,7 +183,7 @@ FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(per
 
 FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(recipient)(funds))
 
-FC_REFLECT(deip::chain::rebalance_info, (account_name)(amount))
+FC_REFLECT(deip::chain::rebalance_info, (account_name)(new_amount_in_percent))
 
 FC_REFLECT(deip::chain::rebalance_research_group_tokens_data_type, (research_group_id)(accounts))
 

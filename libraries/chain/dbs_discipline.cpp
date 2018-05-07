@@ -67,5 +67,14 @@ dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines_by_parent_id
     return ret;
 }
 
+const discipline_object& dbs_discipline::increase_total_active_research_reward_weight(const discipline_id_type& discipline_id,
+                                                                                      const share_type amount)
+{
+    auto& discipline = db_impl().get<discipline_object, by_id>(discipline_id);
+    db_impl().modify(discipline, [&](discipline_object& d_o) { d_o.total_active_research_reward_weight += amount; });
+
+    return discipline;
+}
+
 } //namespace chain
 } //namespace deip

@@ -45,6 +45,8 @@ namespace deip {
                 transfer_research_tokens_to_research_group_operation,
                 add_expertise_tokens_operation,
                 research_update_operation,
+                deposit_to_vesting_contract_operation,
+                withdraw_from_vesting_contract_operation,
 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,
