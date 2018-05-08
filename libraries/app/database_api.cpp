@@ -29,6 +29,7 @@
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_account.hpp>
+#include <deip/chain/dbs_review.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 #define MAX_LIMIT 1000
@@ -1626,6 +1627,49 @@ database_api::get_total_votes_by_research_and_discipline(const research_id_type&
         for (const chain::total_votes_object& total_votes : total_votes_r)
         {
             results.push_back(total_votes);
+        }
+
+        return results;
+    });
+}
+
+vector<review_api_obj> database_api::get_reviews_by_research(const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<review_api_obj> results;
+        chain::dbs_research_content& research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+
+
+        auto contents = research_content_service.get_content_by_research_id(research_id);
+
+        for (const chain::research_content_object& content : contents) {
+            auto reviews = get_reviews_by_content(content.id);
+            results.insert(results.end(), reviews.begin(), reviews.end());
+        }
+        return results;
+    });
+}
+
+vector<review_api_obj> database_api::get_reviews_by_content(const research_content_id_type& research_content_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<review_api_obj> results;
+        chain::dbs_review& review_service = my->_db.obtain_service<chain::dbs_review>();
+        chain::dbs_discipline& discipline_service = my->_db.obtain_service<chain::dbs_discipline>();
+
+        auto reviews = review_service.get_research_content_reviews(research_content_id);
+
+        for (const chain::review_object& review : reviews)
+        {
+            vector<discipline_api_obj> disciplines;
+
+            for (const auto discipline_id : review.disciplines) {
+                auto discipline_ao = get_discipline(discipline_id);
+                disciplines.push_back(discipline_ao);
+            }
+
+            review_api_obj api_obj = review_api_obj(review, disciplines);
+            results.push_back(api_obj);
         }
 
         return results;

@@ -19,6 +19,7 @@
 #include <deip/chain/research_group_invite_object.hpp>
 #include <deip/chain/research_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
+#include <deip/chain/review_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -699,6 +700,33 @@ struct total_votes_api_obj
     share_type total_active_curators_reward_weight;
 };
 
+struct review_api_obj
+{
+    review_api_obj(const chain::review_object& r, const vector<discipline_api_obj>& disciplines)
+            : id(r.id._id)
+            , research_content_id(r.research_content_id._id)
+            , author(r.author)
+            , content(fc::to_string(r.content))
+            , is_positive(r.is_positive)
+            , created_at(r.created_at)
+    {
+        this->disciplines = disciplines;
+    }
+
+    // because fc::variant require for temporary object
+    review_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t research_content_id;
+    string content;
+    bool is_positive;
+    account_name_type author;
+    time_point_sec created_at;
+    vector<discipline_api_obj> disciplines;
+};
+
 } // namespace app
 } // namespace deip
 
@@ -897,6 +925,12 @@ FC_REFLECT( deip::app::total_votes_api_obj,
            (total_active_research_reward_weight)
            (total_curators_reward_weight)
            (total_active_curators_reward_weight)
+)
+
+FC_REFLECT( deip::app::review_api_obj,
+            (id)
+            (research_content_id)
+                    (content)(is_positive)(author)(created_at)(disciplines)
 )
 
 // clang-format on
