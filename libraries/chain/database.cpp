@@ -1422,21 +1422,7 @@ share_type database::reward_references( const research_content_id_type& research
 
     return used_reward;
 }
-
-share_type database::reward_review_references(const review_object &review,
-                                              const discipline_id_type &discipline_id,
-                                              const share_type &reward,
-                                              const share_type &expertise_reward)
-{
-    share_type used_reward = 0;
-
-    used_reward += allocate_rewards_to_references(review.references, discipline_id, reward, expertise_reward);
-
-    FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
-
-    return used_reward;
-}
-
+    
 share_type database::reward_reviews(const research_content_id_type &research_content_id,
                                     const discipline_id_type &discipline_id,
                                     const share_type &reward,
@@ -1625,16 +1611,13 @@ share_type database::allocate_rewards_to_reviews(const share_type &reward,
         auto author_name = review.author;
         auto review_curators_reward_share = util::calculate_share(review_reward_share,
                                                                       DEIP_CURATORS_REWARD_SHARE_PERCENT);
-        auto review_references_reward_share = util::calculate_share(review_reward_share,
-                                                                      DEIP_REFERENCES_REWARD_SHARE_PERCENT);
 
-        auto author_reward = review_reward_share - review_curators_reward_share - review_references_reward_share;
+        auto author_reward = review_reward_share - review_curators_reward_share;
 
         auto& author = account_service.get_account(author_name);
         account_service.increase_balance(author, asset(author_reward, DEIP_SYMBOL));
         used_reward += author_reward;
-
-        used_reward += reward_review_references(review, discipline_id, review_references_reward_share, 0);
+        
         used_reward += reward_review_voters(review, discipline_id, review_curators_reward_share);
 
         // reward expertise

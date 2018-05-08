@@ -47,9 +47,7 @@ const review_object& dbs_review::create(const research_content_id_type &research
                                         const string &content,
                                         bool is_positive,
                                         const account_name_type &author,
-                                        const std::set<discipline_id_type>& disciplines,
-                                        const std::vector<research_content_id_type>& references,
-                                        const std::vector<string>& external_references)
+                                        const std::set<discipline_id_type>& disciplines)
 {
     const auto& new_review = db_impl().create<review_object>([&](review_object& r) {
 
@@ -61,7 +59,6 @@ const review_object& dbs_review::create(const research_content_id_type &research
         r.is_positive = is_positive;
         r.created_at = now;
         r.disciplines.insert(disciplines.begin(), disciplines.end());
-        r.references.insert(references.begin(), references.end());
     });
 
     return new_review;
