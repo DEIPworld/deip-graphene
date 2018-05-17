@@ -136,13 +136,14 @@ BOOST_AUTO_TEST_CASE(create_research_group_test)
 {
     try
     {
-        auto& research_group = data_service.create_research_group("test", "test", "test", 34);
+        auto& research_group = data_service.create_research_group("test", "test", "test", 34, false);
 
         BOOST_CHECK(research_group.name == "test");
         BOOST_CHECK(research_group.permlink == "test");
         BOOST_CHECK(research_group.description == "test");
         BOOST_CHECK(research_group.quorum_percent == 34);
         BOOST_CHECK(research_group.balance.amount == 0);
+        BOOST_CHECK(research_group.is_personal == false);
 
     }
     FC_LOG_AND_RETHROW()

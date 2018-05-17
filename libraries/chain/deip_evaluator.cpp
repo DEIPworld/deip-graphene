@@ -108,6 +108,7 @@ void witness_update_evaluator::do_apply(const witness_update_operation& o)
 void account_create_evaluator::do_apply(const account_create_operation& o)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     const auto& creator = account_service.get_account(o.creator);
 
@@ -138,6 +139,12 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
 
     account_service.create_account_by_faucets(o.new_account_name, o.creator, o.memo_key, o.json_metadata, o.owner,
                                               o.active, o.posting, o.fee);
+
+    bool is_personal = true;
+
+    auto& personal_research_group = research_group_service.create_research_group(o.new_account_name, o.new_account_name, o.new_account_name, 0, is_personal);
+    research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
+
 }
 
 void account_create_with_delegation_evaluator::do_apply(const account_create_with_delegation_operation& o)
@@ -145,6 +152,7 @@ void account_create_with_delegation_evaluator::do_apply(const account_create_wit
     const auto& props = _db.get_dynamic_global_properties();
 
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     const auto& creator = account_service.get_account(o.creator);
 
@@ -192,6 +200,12 @@ void account_create_with_delegation_evaluator::do_apply(const account_create_wit
 
     account_service.create_account_with_delegation(o.new_account_name, o.creator, o.memo_key, o.json_metadata, o.owner,
                                                    o.active, o.posting, o.fee, o.delegation);
+
+
+    bool is_personal = true;
+
+    auto& personal_research_group = research_group_service.create_research_group(o.new_account_name, o.new_account_name, o.new_account_name, 0, is_personal);
+    research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
 }
 
 void account_update_evaluator::do_apply(const account_update_operation& o)
@@ -942,10 +956,12 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
 {
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
+    bool is_personal = false;
     const research_group_object& research_group = research_group_service.create_research_group(op.name,
                                                                                                op.permlink,
                                                                                                op.description,
-                                                                                               op.quorum_percent);
+                                                                                               op.quorum_percent,
+                                                                                               is_personal);
     
     research_group_service.create_research_group_token(research_group.id, DEIP_100_PERCENT, op.creator);
 }
