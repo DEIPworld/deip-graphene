@@ -142,7 +142,11 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
 
     bool is_personal = true;
 
-    auto& personal_research_group = research_group_service.create_research_group(o.new_account_name, o.new_account_name, o.new_account_name, 0, is_personal);
+    auto& personal_research_group = research_group_service.create_research_group(o.new_account_name,
+                                                                                 o.new_account_name,
+                                                                                 o.new_account_name,
+                                                                                 DEIP_100_PERCENT,
+                                                                                 is_personal);
     research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
 
 }
@@ -204,7 +208,11 @@ void account_create_with_delegation_evaluator::do_apply(const account_create_wit
 
     bool is_personal = true;
 
-    auto& personal_research_group = research_group_service.create_research_group(o.new_account_name, o.new_account_name, o.new_account_name, 0, is_personal);
+    auto& personal_research_group = research_group_service.create_research_group(o.new_account_name,
+                                                                                 o.new_account_name,
+                                                                                 o.new_account_name,
+                                                                                 DEIP_100_PERCENT,
+                                                                                 is_personal);
     research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
 }
 
@@ -946,7 +954,11 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     auto& research_group = research_group_service.get_research_group(op.research_group_id);
     auto quorum_percent = research_group.quorum_percent;
     // the range must be checked in create_proposal_operation::validate()
-    deip::protocol::proposal_action_type action = static_cast<deip::protocol::proposal_action_type>(op.action); 
+    deip::protocol::proposal_action_type action = static_cast<deip::protocol::proposal_action_type>(op.action);
+
+    if (action == deip::protocol::proposal_action_type::invite_member ||
+            action == deip::protocol::proposal_action_type::dropout_member)
+        FC_ASSERT(research_group.is_personal == false, "You cannot invite or dropout member from personal group");
 
     // quorum_percent should be taken from research_group_object
     proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
