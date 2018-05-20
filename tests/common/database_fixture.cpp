@@ -128,7 +128,7 @@ clean_database_fixture::clean_database_fixture()
             witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
                            init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount);
         }
-        
+
         validate_database();
     }
     catch (const fc::exception& e)
