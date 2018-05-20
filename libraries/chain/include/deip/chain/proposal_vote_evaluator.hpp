@@ -195,10 +195,6 @@ protected:
     void invite_evaluator(const proposal_object& proposal)
     {
         invite_member_proposal_data_type data = get_data<invite_member_proposal_data_type>(proposal);
-
-        auto& research_group = _research_group_service.get_research_group(data.research_group_id);
-
-        FC_ASSERT(research_group.is_personal == false, "You cannot invite members to personal group");
         _research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount_in_percent);
     }
 
