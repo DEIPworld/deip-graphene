@@ -617,9 +617,9 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
         //////////////////////////////////////////////////
 
         auto& _research_group_1
-            = research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000);
+            = research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000, false);
         auto& _research_group_2
-            = research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000);
+            = research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000, false);
 
         research_group_invite_create(0, "bob", 0, 5000);
         research_group_invite_create(1, "bob", 1, 5000);
@@ -666,7 +666,7 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(31, "name", "permlink", "description", 200, 50);
+        auto& research_group = research_group_create(31, "name", "permlink", "description", 200, 50, false);
         auto& research_group_invite = research_group_invite_create(1, "bob", 31, 5000);
 
         private_key_type priv_key = generate_private_key("bob");
@@ -705,8 +705,8 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
          ///                                            ///
         //////////////////////////////////////////////////
 
-        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000);
-        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000);
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000, false);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000, false);
 
         research_group_invite_create(0, "bob", 0, 10000);
         research_group_invite_create(1, "bob", 1, 10000);
@@ -2538,7 +2538,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_join_request_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(31, "name", "permlink", "description", 200, 50);
+        auto& research_group = research_group_create(31, "name", "permlink", "description", 200, 50, false);
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -2577,7 +2577,7 @@ BOOST_AUTO_TEST_CASE(reject_research_group_join_request_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(31, "name", "permlink", "description", 200, 50);
+        auto& research_group = research_group_create(31, "name", "permlink", "description", 200, 50, false);
         auto& research_group_invite = research_group_join_request_create(1, "alice", 31, "letter");
 
         private_key_type priv_key = generate_private_key("alice");
@@ -2736,7 +2736,7 @@ BOOST_AUTO_TEST_CASE(research_update_apply)
         private_key_type priv_key = generate_private_key("alice");
 
         auto& research = research_create(0, "title", "abstract", "permlink", 31, 10, 10);
-        auto& research_group = research_group_create(31, "name", "permlink", "description", 100, 100);
+        auto& research_group = research_group_create(31, "name", "permlink", "description", 100, 100, false);
         auto& research_group_token = research_group_token_create(31, "alice", DEIP_100_PERCENT);
 
         research_update_operation op;

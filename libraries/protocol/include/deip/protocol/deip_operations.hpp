@@ -500,6 +500,7 @@ struct create_research_group_operation : public base_operation
     std::string permlink;
     std::string description;
     uint32_t quorum_percent;
+    bool is_personal;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -745,7 +746,7 @@ FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(deleg
 
 // DEIP native operations
 FC_REFLECT( deip::protocol::create_grant_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
-FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent))
+FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent)(is_personal))
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
 FC_REFLECT( deip::protocol::make_review_operation, (author)(research_content_id)(content)(is_positive)(references)(external_references))

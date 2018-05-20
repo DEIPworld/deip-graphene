@@ -98,24 +98,24 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test)
 {
     ACTORS((alice)(bob))
     std::vector<std::pair<account_name_type, share_type>> accounts = {std::make_pair("alice", 10000)};
-    setup_research_group(1, "name", "research_group", "research group", 0, 1, accounts);
-    const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":1,\"research_group_token_amount_in_percent\":5000}";
-    create_proposal(1, dbs_proposal::action_t::invite_member, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
+    const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":31,\"research_group_token_amount_in_percent\":5000}";
+    create_proposal(1, dbs_proposal::action_t::invite_member, json_str, "alice", 31, fc::time_point_sec(0xffffffff), 1);
 
 
     auto& research_group_invite_service = db.obtain_service<dbs_research_group_invite>();
- 
+
     vote_proposal_operation op;
-    op.research_group_id = 1;
+    op.research_group_id = 31;
     op.proposal_id = 1;
     op.voter = "alice";
 
     evaluator.do_apply(op);
 
-    auto& research_group_invite = research_group_invite_service.get_research_group_invite_by_account_name_and_research_group_id("bob", 1);
+    auto& research_group_invite = research_group_invite_service.get_research_group_invite_by_account_name_and_research_group_id("bob", 31);
 
     BOOST_CHECK(research_group_invite.account_name == "bob");
-    BOOST_CHECK(research_group_invite.research_group_id == 1);
+    BOOST_CHECK(research_group_invite.research_group_id == 31);
     BOOST_CHECK(research_group_invite.research_group_token_amount == 50 * DEIP_1_PERCENT);
 }
 
@@ -127,24 +127,21 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
 
         auto& research_group_service = db.obtain_service<dbs_research_group>();
         vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 9000), std::make_pair("bob", 1000) };
-        setup_research_group(1, "name", "research_group", "research group", 0, 40, accounts);
+        setup_research_group(31, "name", "research_group", "research group", 0, 40, false, accounts);
 
-        const std::string exclude_member_json = "{\"name\":\"bob\",\"research_group_id\": 1}";
-        create_proposal(1, dbs_proposal::action_t::dropout_member, exclude_member_json, "alice", 1, time_point_sec(0xffffffff), 1);
+        const std::string exclude_member_json = "{\"name\":\"bob\",\"research_group_id\": 31}";
+        create_proposal(1, dbs_proposal::action_t::dropout_member, exclude_member_json, "alice", 31, time_point_sec(0xffffffff), 1);
 
         vote_proposal_operation op;
 
-        op.research_group_id = 1;
+        op.research_group_id = 31;
         op.proposal_id = 1;
         op.voter = "alice";
 
         evaluator.do_apply(op);
 
-        auto& research_group = research_group_service.get_research_group(1);
-        auto& token = research_group_service.get_research_group_token_by_id(0);
-
-        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1), std::out_of_range);
-        BOOST_CHECK(research_group_service.get_research_group_token_by_account_and_research_group_id("alice", 1).amount == DEIP_100_PERCENT);
+        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 31), std::out_of_range);
+        BOOST_CHECK(research_group_service.get_research_group_token_by_account_and_research_group_id("alice", 31).amount == DEIP_100_PERCENT);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -157,10 +154,10 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 
         auto& research_service = db.obtain_service<dbs_research>();
 
-        research_group_create_by_operation("alice", "name", "test permlink", "test description", 5000);
+        research_group_create_by_operation("alice", "name", "test permlink", "test description", 5000, false);
 
         const std::string create_research_proposal_json = "{\"title\":\"testresearch\","
-                                                          "\"research_group_id\":0,"
+                                                          "\"research_group_id\":21,"
                                                           "\"abstract\":\"abstract\","
                                                           "\"permlink\":\"permlink\","
                                                           "\"review_share_in_percent\": 1000,"
@@ -168,29 +165,29 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
                                                           "\"disciplines\": [1, 2, 3]}";
         const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 4500,\"research_id\": 0}";
 
-        create_proposal_by_operation("alice", 0, create_research_proposal_json,
+        create_proposal_by_operation("alice", 21, create_research_proposal_json,
                                      dbs_proposal::action_t::start_research,
                                      fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
 
         vote_proposal_operation op;
 
-        op.research_group_id = 0;
+        op.research_group_id = 21;
         op.proposal_id = 0;
         op.voter = "alice";
 
         generate_block();
 
         evaluator.do_apply(op);
-        
+
         generate_blocks(fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(90)), true);
 
-        create_proposal_by_operation("alice", 0, change_review_share_proposal_json,
+        create_proposal_by_operation("alice", 21, change_review_share_proposal_json,
                                      dbs_proposal::action_t::change_research_review_share_percent,
                                      fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
 
         vote_proposal_operation crs_op;
 
-        crs_op.research_group_id = 0;
+        crs_op.research_group_id = 21;
         crs_op.proposal_id = 1;
         crs_op.voter = "alice";
 
@@ -211,10 +208,10 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_rate_test)
 
         auto& research_service = db.obtain_service<dbs_research>();
 
-        research_group_create_by_operation("alice", "name", "test permlink", "test description", 5000);
+        research_group_create_by_operation("alice", "name", "test permlink", "test description", 5000, false);
 
         const std::string create_research_proposal_json = "{\"title\":\"testresearch\","
-                                                          "\"research_group_id\":0,"
+                                                          "\"research_group_id\":21,"
                                                           "\"abstract\":\"abstract\","
                                                           "\"permlink\":\"permlink\","
                                                           "\"review_share_in_percent\": 1000,"
@@ -222,25 +219,25 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_rate_test)
                                                           "\"disciplines\": [1, 2, 3]}";
         const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 4500,\"research_id\": 0}";
 
-        create_proposal_by_operation("alice", 0, create_research_proposal_json,
+        create_proposal_by_operation("alice", 21, create_research_proposal_json,
                                      dbs_proposal::action_t::start_research,
                                      fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
 
         vote_proposal_operation op;
 
-        op.research_group_id = 0;
+        op.research_group_id = 21;
         op.proposal_id = 0;
         op.voter = "alice";
 
         evaluator.do_apply(op);
-        
-        create_proposal_by_operation("alice", 0, change_review_share_proposal_json,
+
+        create_proposal_by_operation("alice", 21, change_review_share_proposal_json,
                                      dbs_proposal::action_t::change_research_review_share_percent,
                                      fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
 
         vote_proposal_operation crs_op;
 
-        crs_op.research_group_id = 0;
+        crs_op.research_group_id = 21;
         crs_op.proposal_id = 1;
         crs_op.voter = "alice";
 
@@ -262,21 +259,20 @@ BOOST_AUTO_TEST_CASE(exclude_member_with_research_token_compensation_test)
 
         auto& research_group_service = db.obtain_service<dbs_research_group>();
         vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 8000), std::make_pair("bob", 2000) };
-        setup_research_group(1, "name", "research_group", "research group", 0, 1, accounts);
-        auto& research = research_create(0, "name","abstract", "permlink", 1, 10, DROPOUT_COMPENSATION_IN_PERCENT);
+        setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
+        auto& research = research_create(0, "name","abstract", "permlink", 31, 10, DROPOUT_COMPENSATION_IN_PERCENT);
 
-        const std::string exclude_member_json = "{\"name\":\"bob\",\"research_group_id\": 1}";
-        create_proposal(1, dbs_proposal::action_t::dropout_member, exclude_member_json, "alice", 1, time_point_sec(0xffffffff), 1);
+        const std::string exclude_member_json = "{\"name\":\"bob\",\"research_group_id\": 31}";
+        create_proposal(1, dbs_proposal::action_t::dropout_member, exclude_member_json, "alice", 31, time_point_sec(0xffffffff), 1);
 
         vote_proposal_operation op;
 
-        op.research_group_id = 1;
+        op.research_group_id = 31;
         op.proposal_id = 1;
         op.voter = "alice";
 
         evaluator.do_apply(op);
 
-        auto& research_group = research_group_service.get_research_group(1);
         auto& research_token_service = db.obtain_service<dbs_research_token>();
         auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", research.id);
 
@@ -295,20 +291,20 @@ BOOST_AUTO_TEST_CASE(change_quorum_test)
 
         auto& research_group_service = db.obtain_service<dbs_research_group>();
         vector<std::pair<account_name_type,share_type>> accounts = { std::make_pair("alice", 5000), std::make_pair("bob", 5000) };
-        setup_research_group(1, "name", "research_group", "research group", 0, 1, accounts);
+        setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
 
-        const std::string change_quorum_json = "{\"quorum_percent\": 80,\"research_group_id\": 1}";
-        create_proposal(1, dbs_proposal::action_t::change_quorum, change_quorum_json, "alice", 1, time_point_sec(0xffffffff), 1);
+        const std::string change_quorum_json = "{\"quorum_percent\": 80,\"research_group_id\": 31}";
+        create_proposal(1, dbs_proposal::action_t::change_quorum, change_quorum_json, "alice", 31, time_point_sec(0xffffffff), 1);
 
         vote_proposal_operation op;
 
-        op.research_group_id = 1;
+        op.research_group_id = 31;
         op.proposal_id = 1;
         op.voter = "alice";
 
         evaluator.do_apply(op);
 
-        auto& research_group = research_group_service.get_research_group(1);
+        auto& research_group = research_group_service.get_research_group(31);
 
         BOOST_CHECK(research_group.quorum_percent == 80);
     }
@@ -320,19 +316,19 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
     ACTORS((alice))
 
     std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 10000)};
-    setup_research_group(1, "name", "research_group", "research group", 0, 1, accounts);
+    setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
     const std::string json_str = "{\"title\":\"test\","
-            "\"research_group_id\":1,"
+            "\"research_group_id\":31,"
             "\"abstract\":\"abstract\","
             "\"permlink\":\"permlink\","
             "\"review_share_in_percent\": 10,"
             "\"dropout_compensation_in_percent\": 1500,"
             "\"disciplines\": [1, 2, 3]}";
 
-    create_proposal(1, dbs_proposal::action_t::start_research, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::start_research, json_str, "alice", 31, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
-    op.research_group_id = 1;
+    op.research_group_id = 31;
     op.proposal_id = 1;
     op.voter = "alice";
 
@@ -344,7 +340,7 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
     BOOST_CHECK(research.title == "test");
     BOOST_CHECK(research.abstract == "abstract");
     BOOST_CHECK(research.permlink == "permlink");
-    BOOST_CHECK(research.research_group_id == 1);
+    BOOST_CHECK(research.research_group_id == 31);
     BOOST_CHECK(research.review_share_in_percent == 10);
     BOOST_CHECK(research.dropout_compensation_in_percent == DROPOUT_COMPENSATION_IN_PERCENT);
 
@@ -384,15 +380,15 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
     ACTORS((alice)(bob))
     fund("bob", 1000);
     std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 10000)};
-    setup_research_group(1, "name", "research_group", "research group", 750, 1, accounts);
-    const std::string json_str = "{\"research_group_id\":1,"
+    setup_research_group(31, "name", "research_group", "research group", 750, 1, false, accounts);
+    const std::string json_str = "{\"research_group_id\":31,"
             "\"recipient\":\"bob\","
             "\"funds\": 250}";
 
-    create_proposal(1, dbs_proposal::action_t::send_funds, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::send_funds, json_str, "alice", 31, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
-    op.research_group_id = 1;
+    op.research_group_id = 31;
     op.proposal_id = 1;
     op.voter = "alice";
 
@@ -402,7 +398,7 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
     auto& bobs_account = account_service.get_account("bob");
 
     auto& research_group_service = db.obtain_service<dbs_research_group>();
-    auto& research_group = research_group_service.get_research_group(1);
+    auto& research_group = research_group_service.get_research_group(31);
 
     BOOST_CHECK(research_group.balance.amount == 500);
     BOOST_CHECK(bobs_account.balance.amount == 1250);
@@ -412,18 +408,18 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
 {
     ACTORS((alice)(bob))
     std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 5000), std::make_pair("bob", 5000)};
-    setup_research_group(1, "name", "research_group", "research group", 750, 1, accounts);
-    const std::string json_str = "{\"research_group_id\":1,"
+    setup_research_group(31, "name", "research_group", "research group", 750, 1, false, accounts);
+    const std::string json_str = "{\"research_group_id\":31,"
             "\"accounts\":[{"
             "\"account_name\":\"alice\","
             "\"new_amount_in_percent\": 7500 },"
             "{"
             "\"account_name\":\"bob\","
             "\"new_amount_in_percent\": 2500 }]}";
-    create_proposal(1, dbs_proposal::action_t::rebalance_research_group_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::rebalance_research_group_tokens, json_str, "alice", 31, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
-    op.research_group_id = 1;
+    op.research_group_id = 31;
     op.proposal_id = 1;
     op.voter = "alice";
 
@@ -431,8 +427,8 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
 
 
     auto& research_group_service = db.obtain_service<dbs_research_group>();
-    auto& alice_token = research_group_service.get_research_group_token_by_account_and_research_group_id("alice", 1);
-    auto& bobs_token = research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1);
+    auto& alice_token = research_group_service.get_research_group_token_by_account_and_research_group_id("alice", 31);
+    auto& bobs_token = research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 31);
 
     BOOST_CHECK(alice_token.amount == 75 * DEIP_1_PERCENT);
     BOOST_CHECK(bobs_token.amount == 25 * DEIP_1_PERCENT);
@@ -444,16 +440,16 @@ BOOST_AUTO_TEST_CASE(research_token_sale_execute_test)
     {
     ACTORS((alice))
     std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
-    setup_research_group(1, "name", "research_group", "research group", 0, 1, accounts);
+    setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
     const std::string json_str = "{\"research_id\":0,\"amount_for_sale\":90,\"start_time\":\"2020-02-08T16:00:54\",\"end_time\":\"2020-03-08T15:02:31\",\"soft_cap\":60,\"hard_cap\":90}";
 
-    create_proposal(1, dbs_proposal::action_t::start_research_token_sale, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::start_research_token_sale, json_str, "alice", 31, fc::time_point_sec(0xffffffff), 1);
 
-    auto& research = research_create(0, "name","abstract", "permlink", 1, 10, DROPOUT_COMPENSATION_IN_PERCENT);
+    auto& research = research_create(0, "name","abstract", "permlink", 31, 10, DROPOUT_COMPENSATION_IN_PERCENT);
     auto& research_token_sale_service = db.obtain_service<dbs_research_token_sale>();
 
     vote_proposal_operation op;
-    op.research_group_id = 1;
+    op.research_group_id = 31;
     op.proposal_id = 1;
     op.voter = "alice";
 
@@ -511,7 +507,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_data_validate_test)
         ACTORS((alice));
 
         const std::string create_research_proposal_json = "{\"title\":\"testresearch\","
-                                                          "\"research_group_id\":1,"
+                                                          "\"research_group_id\":31,"
                                                           "\"abstract\":\"abstract\","
                                                           "\"permlink\":\"permlink\","
                                                           "\"review_share_in_percent\": 1000,"
@@ -521,23 +517,23 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_data_validate_test)
         const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 5100,\"research_id\": 0}";
 
         std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
-        setup_research_group(1, "name", "research_group", "research group", 0, 1, accounts);
+        setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
 
-        create_proposal(1, dbs_proposal::action_t::start_research, create_research_proposal_json, "alice", 1, fc::time_point_sec(0xffffffff),
+        create_proposal(1, dbs_proposal::action_t::start_research, create_research_proposal_json, "alice", 31, fc::time_point_sec(0xffffffff),
                         1);
 
         vote_proposal_operation start_research_vote_op;
-        start_research_vote_op.research_group_id = 1;
+        start_research_vote_op.research_group_id = 31;
         start_research_vote_op.proposal_id = 1;
         start_research_vote_op.voter = "alice";
 
         evaluator.do_apply(start_research_vote_op);
 
-        create_proposal(2, dbs_proposal::action_t::change_research_review_share_percent, change_review_share_proposal_json, "alice", 1, time_point_sec(0xfffff1ff), 1);
+        create_proposal(2, dbs_proposal::action_t::change_research_review_share_percent, change_review_share_proposal_json, "alice", 31, time_point_sec(0xfffff1ff), 1);
 
         vote_proposal_operation change_review_share_vote_op;
 
-        change_review_share_vote_op.research_group_id = 1;
+        change_review_share_vote_op.research_group_id = 31;
         change_review_share_vote_op.proposal_id = 2;
         change_review_share_vote_op.voter = "alice";
 
@@ -585,10 +581,10 @@ BOOST_AUTO_TEST_CASE(start_research_validate_test)
 
 BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_data_validate_test)
 {
-    const std::string json_str = "{\"research_group_id\":1,"
+    const std::string json_str = "{\"research_group_id\":31,"
             "\"account_name\":\"bob\","
             "\"funds\": 250}";
-    create_proposal(1, dbs_proposal::action_t::rebalance_research_group_tokens, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(1, dbs_proposal::action_t::rebalance_research_group_tokens, json_str, "alice", 31, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
     op.research_group_id = 1;
@@ -604,16 +600,16 @@ BOOST_AUTO_TEST_CASE(research_token_sale_data_validate_test)
     {
     ACTORS((alice))
     std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
-    setup_research_group(1, "name", "research_group", "research group", 0, 1, accounts);
+    setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
 
     // TODO: Add check for every value
     const std::string json_str = "{\"research_id\":0,\"amount_for_sale\":9999999999,\"start_time\":\"2020-02-08T15:02:31\",\"end_time\":\"2020-01-08T15:02:31\",\"soft_cap\":9999999999,\"hard_cap\":9999994444}";
 
-    create_proposal(1, dbs_proposal::action_t::start_research_token_sale, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
-    research_create(0, "name","abstract", "permlink", 1, 10, DROPOUT_COMPENSATION_IN_PERCENT);
+    create_proposal(1, dbs_proposal::action_t::start_research_token_sale, json_str, "alice", 31, fc::time_point_sec(0xffffffff), 1);
+    research_create(0, "name","abstract", "permlink", 31, 10, DROPOUT_COMPENSATION_IN_PERCENT);
 
     vote_proposal_operation op;
-    op.research_group_id = 1;
+    op.research_group_id = 31;
     op.proposal_id = 1;
     op.voter = "alice";
 
@@ -627,13 +623,13 @@ BOOST_AUTO_TEST_CASE(create_research_material)
 {
     ACTORS((alice))
     std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
-    setup_research_group(1, "name", "research_group", "research group", 0, 1, accounts);
+    setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
 
     db.create<research_object>([&](research_object& r) {
         r.id = 1;
         r.title = "Research #1";
         r.permlink = "Research #1 permlink";
-        r.research_group_id = 1;
+        r.research_group_id = 31;
         r.review_share_in_percent = 1000;
         r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
         r.is_finished = false;
@@ -648,10 +644,10 @@ BOOST_AUTO_TEST_CASE(create_research_material)
             "\"authors\":[\"alice\"],"
             "\"references\": [3] }";
 
-    create_proposal(2, dbs_proposal::action_t::create_research_material, json_str, "alice", 1, fc::time_point_sec(0xffffffff), 1);
+    create_proposal(2, dbs_proposal::action_t::create_research_material, json_str, "alice", 31, fc::time_point_sec(0xffffffff), 1);
 
     vote_proposal_operation op;
-    op.research_group_id = 1;
+    op.research_group_id = 31;
     op.proposal_id = 2;
     op.voter = "alice";
 
@@ -699,10 +695,10 @@ BOOST_AUTO_TEST_CASE(create_research_material)
                                   "\"authors\":[\"alice\"],"
                                   "\"references\": [3] }";
 
-    create_proposal(3, dbs_proposal::action_t::create_research_material, json_str2, "alice", 1, fc::time_point_sec(0xffff1fff), 1);
+    create_proposal(3, dbs_proposal::action_t::create_research_material, json_str2, "alice", 31, fc::time_point_sec(0xffff1fff), 1);
 
     vote_proposal_operation op2;
-    op2.research_group_id = 1;
+    op2.research_group_id = 31;
     op2.proposal_id = 3;
     op2.voter = "alice";
 
