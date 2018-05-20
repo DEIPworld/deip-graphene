@@ -666,8 +666,8 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50);
-        auto& research_group_invite = research_group_invite_create(1, "bob", 1, 5000);
+        auto& research_group = research_group_create(31, "name", "permlink", "description", 200, 50);
+        auto& research_group_invite = research_group_invite_create(1, "bob", 31, 5000);
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -682,8 +682,6 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
         tx.sign(priv_key, db.get_chain_id());
         tx.validate();
         db.push_transaction(tx, 0);
-
-        auto& _research_group = db.get<research_group_object, by_id>(1);
 
         BOOST_CHECK_THROW((db.get<research_group_invite_object, by_id>(1)), boost::exception);
 
@@ -2519,7 +2517,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
        db.push_transaction(tx, 0);
 
        auto& research_group_service = db.obtain_service<dbs_research_group>();
-       auto& research_group = research_group_service.get_research_group(0);
+       auto& research_group = research_group_service.get_research_group_by_permlink("group");
 
        BOOST_CHECK(research_group.name == "test");
        BOOST_CHECK(research_group.description == "group");
@@ -2540,14 +2538,14 @@ BOOST_AUTO_TEST_CASE(create_research_group_join_request_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50);
+        auto& research_group = research_group_create(31, "name", "permlink", "description", 200, 50);
 
         private_key_type priv_key = generate_private_key("alice");
 
         create_research_group_join_request_operation op;
 
         op.owner = "alice";
-        op.research_group_id = 1;
+        op.research_group_id = 31;
         op.motivation_letter = "letter";
 
         signed_transaction tx;
@@ -2560,7 +2558,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_join_request_apply)
         auto& research_group_join_request = db.get<research_group_join_request_object>(0);
 
         BOOST_CHECK(research_group_join_request.id == 0);
-        BOOST_CHECK(research_group_join_request.research_group_id == 1);
+        BOOST_CHECK(research_group_join_request.research_group_id == 31);
         BOOST_CHECK(research_group_join_request.account_name == "alice");
         BOOST_CHECK(research_group_join_request.motivation_letter == "letter");
         BOOST_CHECK(research_group_join_request.expiration_time == db.head_block_time() + DAYS_TO_SECONDS(14));
@@ -2579,8 +2577,8 @@ BOOST_AUTO_TEST_CASE(reject_research_group_join_request_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(1, "name", "permlink", "description", 200, 50);
-        auto& research_group_invite = research_group_join_request_create(1, "alice", 1, "letter");
+        auto& research_group = research_group_create(31, "name", "permlink", "description", 200, 50);
+        auto& research_group_invite = research_group_join_request_create(1, "alice", 31, "letter");
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -2737,9 +2735,9 @@ BOOST_AUTO_TEST_CASE(research_update_apply)
 
         private_key_type priv_key = generate_private_key("alice");
 
-        auto& research = research_create(0, "title", "abstract", "permlink", 1, 10, 10);
-        auto& research_group = research_group_create(1, "name", "permlink", "description", 100, 100);
-        auto& research_group_token = research_group_token_create(1, "alice", DEIP_100_PERCENT);
+        auto& research = research_create(0, "title", "abstract", "permlink", 31, 10, 10);
+        auto& research_group = research_group_create(31, "name", "permlink", "description", 100, 100);
+        auto& research_group_token = research_group_token_create(31, "alice", DEIP_100_PERCENT);
 
         research_update_operation op;
 
