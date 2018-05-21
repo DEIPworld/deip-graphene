@@ -982,12 +982,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
     FC_ASSERT(review_disciplines.size() != 0, "Reviewer does not have enough expertise to make review.");
 
-    std::vector<research_content_id_type> references;
-    for (auto ref : op.references) {
-        references.push_back((research_content_id_type)ref);
-    }
-
-    auto& review = review_service.create(op.research_content_id, op.content, op.is_positive, op.author, review_disciplines, references, op.external_references);
+    auto& review = review_service.create(op.research_content_id, op.content, op.is_positive, op.author, review_disciplines);
 
     if (review.is_positive) {
         try

@@ -128,8 +128,6 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = true;
-        op.references = references;
-        op.external_references = {"one", "two", "three"};
 
         auto& token = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1));
         auto old_voting_power = token.voting_power;
@@ -228,9 +226,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         op.author = "alice";
         op.research_content_id = 1;
         op.content = "test";
-        op.references = references;
         op.is_positive = true;
-        op.external_references = {"one", "two", "three"};
 
         tx.operations.clear();
         tx.signatures.clear();
