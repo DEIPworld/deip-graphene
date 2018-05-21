@@ -1537,7 +1537,7 @@ void database::reward_with_expertise(const account_name_type &account, const dis
     }
 }
 
-share_type database::reward_research_group_members_with_expertise(const research_group_id_type& research_group_id,
+void database::reward_research_group_members_with_expertise(const research_group_id_type& research_group_id,
                                                                   const discipline_id_type& discipline_id,
                                                                   const flat_set<account_name_type>& accounts,
                                                                   const share_type &expertise_reward)
@@ -1832,6 +1832,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<add_expertise_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
+    _my->_evaluator_registry.register_evaluator<deposit_to_vesting_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<withdraw_from_vesting_contract_evaluator>();
 
     // clang-format off
     _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>(
