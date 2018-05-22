@@ -36,6 +36,7 @@ public:
     shared_string data;
     share_type quorum_percent;
     share_type current_votes_amount;
+    bool is_completed;
 
     flat_set<account_name_type> voted_accounts;
 };
@@ -43,6 +44,7 @@ public:
 struct by_research_group_id;
 struct by_expiration_time;
 struct by_data;
+struct by_completion;
 
 
 typedef multi_index_container<proposal_object,
@@ -50,10 +52,14 @@ typedef multi_index_container<proposal_object,
                                                                 member<proposal_object,
                                                                        proposal_id_type,
                                                                        &proposal_object::id>>,
-                                                           ordered_unique<tag<by_expiration_time>,
+                                                           ordered_non_unique<tag<by_expiration_time>,
                                                                 member<proposal_object,
                                                                         fc::time_point_sec,
                                                                         &proposal_object::expiration_time>>,
+                                                           ordered_non_unique<tag<by_completion>,
+                                                                member<proposal_object,
+                                                                    bool,
+                                                                    &proposal_object::is_completed>>,
                                                            ordered_non_unique<tag<by_research_group_id>,
                                                                 member<proposal_object,
                                                                         research_group_id_type,
@@ -66,6 +72,7 @@ typedef multi_index_container<proposal_object,
 } // namespace deip
 
 
-FC_REFLECT(deip::chain::proposal_object, (id)(research_group_id)(action)(creation_time)(expiration_time)(creator)(data)(quorum_percent)(current_votes_amount))
+FC_REFLECT(deip::chain::proposal_object, (id)(research_group_id)(action)(creation_time)
+        (expiration_time)(creator)(data)(quorum_percent)(current_votes_amount)(is_completed)(voted_accounts))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::proposal_object, deip::chain::proposal_index)
