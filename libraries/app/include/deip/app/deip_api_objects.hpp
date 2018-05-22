@@ -461,6 +461,7 @@ struct proposal_api_obj
         ,  data(fc::to_string(p.data))
         ,  quorum_percent(p.quorum_percent.value)
         ,  current_votes_amount(p.current_votes_amount)
+        ,  is_completed(p.is_completed)
         ,  voted_accounts(p.voted_accounts)
     {}
 
@@ -477,6 +478,7 @@ struct proposal_api_obj
     std::string data;
     uint16_t quorum_percent;
     share_type current_votes_amount;
+    bool is_completed;
 
     flat_set<account_name_type> voted_accounts;
 };
@@ -845,6 +847,7 @@ FC_REFLECT( deip::app::proposal_api_obj,
             (data)
             (quorum_percent)
             (current_votes_amount)
+            (is_completed)
             (voted_accounts)
 )
 
