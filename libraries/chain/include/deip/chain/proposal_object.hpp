@@ -36,7 +36,7 @@ public:
     shared_string data;
     share_type quorum_percent;
     share_type current_votes_amount;
-    bool is_completed;
+    bool is_completed = false;
 
     flat_set<account_name_type> voted_accounts;
 };
