@@ -176,7 +176,7 @@ protected:
         if (is_quorum(proposal))
         {
             evaluators.execute(proposal);
-            _proposal_service.remove(proposal);
+            _proposal_service.complete(proposal);
         }
     }
 
