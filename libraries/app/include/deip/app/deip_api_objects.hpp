@@ -707,9 +707,9 @@ struct review_api_obj
     review_api_obj(const chain::review_object& r, const vector<discipline_api_obj>& disciplines)
             : id(r.id._id)
             , research_content_id(r.research_content_id._id)
-            , author(r.author)
             , content(fc::to_string(r.content))
             , is_positive(r.is_positive)
+            , author(r.author)
             , created_at(r.created_at)
     {
         this->disciplines = disciplines;
