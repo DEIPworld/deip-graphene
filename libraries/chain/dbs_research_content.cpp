@@ -15,6 +15,7 @@ const research_content_object& dbs_research_content::create(const research_id_ty
                                                             const research_content_type& type,
                                                             const std::string& title,
                                                             const std::string& content,
+                                                            const std::string& permlink,
                                                             const std::vector<account_name_type>& authors,
                                                             const std::vector<research_content_id_type>& references,
                                                             const std::vector<string>& external_references)
@@ -27,6 +28,7 @@ const research_content_object& dbs_research_content::create(const research_id_ty
         rc.type = type;
         fc::from_string(rc.title, title);
         fc::from_string(rc.content, content);
+        fc::from_string(rc.permlink, permlink);
         rc.created_at = now;
         rc.authors.insert(authors.begin(), authors.end());
         rc.references.insert(references.begin(), references.end());
@@ -64,6 +66,15 @@ const research_content_object& dbs_research_content::get_content_by_id(const res
         return db_impl().get<research_content_object, by_id>(id);
     }
     FC_CAPTURE_AND_RETHROW((id))
+}
+
+const research_content_object& dbs_research_content::get_content_by_permlink(const research_id_type &research_id,
+                                                                             const string &permlink) const
+{
+    const auto& idx = db_impl().get_index<research_content_index>().indices().get<by_permlink>();
+    auto itr = idx.find(std::make_tuple(research_id, permlink));
+    FC_ASSERT(itr != idx.end(), "Research content by permlink ${p} is not found", ("p", permlink));
+    return *itr;
 }
 
 dbs_research_content::research_content_refs_type dbs_research_content::get_content_by_research_id(const research_id_type& research_id) const

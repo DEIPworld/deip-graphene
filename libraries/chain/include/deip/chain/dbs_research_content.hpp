@@ -27,11 +27,14 @@ public:
                                           const research_content_type& type,
                                           const string& title,
                                           const string& content,
+                                          const string& permlink,
                                           const std::vector<account_name_type>& authors,
                                           const std::vector<research_content_id_type>& references,
                                           const std::vector<string>& external_references);
 
     const research_content_object& get_content_by_id(const research_content_id_type& id) const;
+
+    const research_content_object& get_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
 
     research_content_refs_type get_content_by_research_id(const research_id_type& research_id) const;
 
