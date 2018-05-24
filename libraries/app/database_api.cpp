@@ -1163,6 +1163,14 @@ research_content_api_obj database_api::get_research_content_by_id(const research
     });
 }
 
+research_content_api_obj database_api::get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+        return research_content_service.get_content_by_permlink(research_id, permlink);
+    });
+}
+
 vector<research_content_api_obj> database_api::get_all_research_content(const research_id_type& research_id) const
 {
     return my->_db.with_read_lock([&]() {

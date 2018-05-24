@@ -60,12 +60,21 @@ public:
 
 struct by_author;
 struct by_research_content;
+struct by_author_and_research_content;
 
 typedef multi_index_container<review_object,
         indexed_by<ordered_unique<tag<by_id>,
                 member<review_object,
                         review_id_type,
                         &review_object::id>>,
+                ordered_unique<tag<by_author_and_research_content>,
+                        composite_key<review_object,
+                                member<review_object,
+                                        account_name_type,
+                                        &review_object::author>,
+                                member<review_object,
+                                        research_content_id_type,
+                                        &review_object::research_content_id>>>,
                 ordered_non_unique<tag<by_author>,
                         member<review_object,
                                 account_name_type,
