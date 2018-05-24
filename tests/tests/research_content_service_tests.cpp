@@ -45,6 +45,7 @@ public:
             rc.type = research_content_type::milestone;
             rc.title = "title for milestone for Research #1";
             rc.content = "milestone for Research #1";
+            rc.permlink = "milestone-research-one";
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
@@ -58,6 +59,7 @@ public:
             rc.type = research_content_type::milestone;
             rc.title = "title for milestone for Research #1";
             rc.content = "milestone for Research #1";
+            rc.permlink = "another-milestone-research-one";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
@@ -71,6 +73,7 @@ public:
             rc.type = research_content_type::final_result;
             rc.title = "title for final result for Research #1";
             rc.content = "final result for Research #1";
+            rc.permlink = "final-research-one";
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
@@ -98,6 +101,7 @@ public:
             rc.type = research_content_type::announcement;
             rc.title = "title for announcement for Research #2";
             rc.content = "announcement for Research #2";
+            rc.permlink = "announcement-research-two";
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
             rc.references.insert(1);
@@ -268,11 +272,12 @@ BOOST_AUTO_TEST_CASE(create_research_content)
         research_references.push_back(1);
         std::vector<string> external_references = {"one", "two", "three"};
 
-        auto milestone = data_service.create(2, type, title, content, authors, research_references, external_references);
+        auto milestone = data_service.create(2, type, title, content, "permlink", authors, research_references, external_references);
         BOOST_CHECK(milestone.research_id == 2);
         BOOST_CHECK(milestone.type == research_content_type::milestone);
         BOOST_CHECK(milestone.title == "title for milestone for Research #2");
         BOOST_CHECK(milestone.content == "milestone for Research #2");
+        BOOST_CHECK(milestone.permlink == "permlink");
         BOOST_CHECK(milestone.authors.size() == 1);
         BOOST_CHECK(milestone.authors.find("sam") != milestone.authors.end());
         BOOST_CHECK(milestone.references.size() == 1);

@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE(get_research_by_permlink)
     {
         create_researches();
 
-        auto& research = data_service.get_research_by_permlink(RESEARCH_TITLE);
+        auto& research = data_service.get_research_by_permlink(RESEARCH_GROUP_ID, RESEARCH_TITLE);
 
         BOOST_CHECK(research.title == RESEARCH_TITLE);
         BOOST_CHECK(research.permlink == RESEARCH_TITLE);

@@ -1088,11 +1088,11 @@ research_api_obj database_api::get_research_by_id(const research_id_type& id) co
     });
 }
 
-research_api_obj database_api::get_research_by_permlink(const string& permlink) const
+research_api_obj database_api::get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const
 {
     return my->_db.with_read_lock([&]() {
         chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
-        return research_service.get_research_by_permlink(permlink);
+        return research_service.get_research_by_permlink(research_group_id, permlink);
     });
 }
 
@@ -1145,10 +1145,10 @@ vector<research_api_obj> database_api::get_researches_by_research_group_id(const
     });
 }
 
-bool database_api::check_research_existence_by_permlink(const string& permlink) const
+bool database_api::check_research_existence_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const
 {
     const auto& idx = my->_db.get_index<research_index>().indices().get<by_permlink>();
-    auto itr = idx.find(permlink, fc::strcmp_less());
+    auto itr = idx.find(std::make_tuple(research_group_id, permlink));
     if (itr != idx.end())
         return true;
     else
@@ -1160,6 +1160,14 @@ research_content_api_obj database_api::get_research_content_by_id(const research
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
         return research_content_service.get_content_by_id(id);
+    });
+}
+
+research_content_api_obj database_api::get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+        return research_content_service.get_content_by_permlink(research_id, permlink);
     });
 }
 
@@ -1655,7 +1663,6 @@ vector<review_api_obj> database_api::get_reviews_by_content(const research_conte
     return my->_db.with_read_lock([&]() {
         vector<review_api_obj> results;
         chain::dbs_review& review_service = my->_db.obtain_service<chain::dbs_review>();
-        chain::dbs_discipline& discipline_service = my->_db.obtain_service<chain::dbs_discipline>();
 
         auto reviews = review_service.get_research_content_reviews(research_content_id);
 

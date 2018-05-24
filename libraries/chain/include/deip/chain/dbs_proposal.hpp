@@ -58,6 +58,8 @@ public:
 
     bool is_expired(const proposal_object& proposal);
 
+    void complete(const proposal_object& proposal);
+
     void clear_expired_proposals();
 
     void remove_proposal_votes(const account_name_type& account, const research_group_id_type& research_group_id);

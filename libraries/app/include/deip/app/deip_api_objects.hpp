@@ -402,6 +402,7 @@ struct research_content_api_obj
         ,  authors(rc.authors.begin(), rc.authors.end())
         ,  title(fc::to_string(rc.title))        
         ,  content(fc::to_string(rc.content))
+        ,  permlink(fc::to_string(rc.permlink))
         ,  created_at(rc.created_at)
     {
         for (auto reference : rc.references)
@@ -424,6 +425,7 @@ struct research_content_api_obj
     std::set<account_name_type> authors;
     std::string title;
     std::string content;
+    std::string permlink;
     fc::time_point_sec created_at;
 
     std::set<string> external_references;
@@ -461,6 +463,7 @@ struct proposal_api_obj
         ,  data(fc::to_string(p.data))
         ,  quorum_percent(p.quorum_percent.value)
         ,  current_votes_amount(p.current_votes_amount)
+        ,  is_completed(p.is_completed)
         ,  voted_accounts(p.voted_accounts)
     {}
 
@@ -477,6 +480,7 @@ struct proposal_api_obj
     std::string data;
     uint16_t quorum_percent;
     share_type current_votes_amount;
+    bool is_completed;
 
     flat_set<account_name_type> voted_accounts;
 };
@@ -705,12 +709,18 @@ struct review_api_obj
     review_api_obj(const chain::review_object& r, const vector<discipline_api_obj>& disciplines)
             : id(r.id._id)
             , research_content_id(r.research_content_id._id)
-            , author(r.author)
             , content(fc::to_string(r.content))
             , is_positive(r.is_positive)
+            , author(r.author)
             , created_at(r.created_at)
     {
         this->disciplines = disciplines;
+
+        for (const auto& kvp : r.reward_weights_per_discipline) {
+            discipline_id_type discipline_id = kvp.first;
+            share_type weight = kvp.second;
+            this->weight_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
+        }
     }
 
     // because fc::variant require for temporary object
@@ -725,6 +735,8 @@ struct review_api_obj
     account_name_type author;
     time_point_sec created_at;
     vector<discipline_api_obj> disciplines;
+
+    map<int64_t, int64_t> weight_per_discipline;
 };
 
 } // namespace app
@@ -822,6 +834,7 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (content_type)
             (title)
             (content)
+            (permlink)
             (authors)
             (created_at)
             (references)
@@ -845,6 +858,7 @@ FC_REFLECT( deip::app::proposal_api_obj,
             (data)
             (quorum_percent)
             (current_votes_amount)
+            (is_completed)
             (voted_accounts)
 )
 
@@ -930,7 +944,12 @@ FC_REFLECT( deip::app::total_votes_api_obj,
 FC_REFLECT( deip::app::review_api_obj,
             (id)
             (research_content_id)
-                    (content)(is_positive)(author)(created_at)(disciplines)
+            (content)
+            (is_positive)
+            (author)
+            (created_at)
+            (disciplines)
+            (weight_per_discipline)
 )
 
 // clang-format on

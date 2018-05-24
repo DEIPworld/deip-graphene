@@ -69,11 +69,11 @@ const research_object& dbs_research::get_research(const research_id_type& id) co
     return db_impl().get<research_object>(id);
 }
 
-const research_object& dbs_research::get_research_by_permlink(const string& permlink) const
+const research_object& dbs_research::get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const
 {
     const auto& idx = db_impl().get_index<research_index>().indices().get<by_permlink>();
-    auto itr = idx.find(permlink, fc::strcmp_less());
-    FC_ASSERT(itr != idx.end(), "Research by permlink ${n} is not found", ("n", permlink));
+    auto itr = idx.find(std::make_tuple(research_group_id, permlink));
+    FC_ASSERT(itr != idx.end(), "Research by permlink ${p} is not found", ("p", permlink));
     return *itr;
 }
 
