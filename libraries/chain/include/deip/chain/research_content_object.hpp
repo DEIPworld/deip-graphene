@@ -129,5 +129,5 @@ typedef multi_index_container<research_content_object,
 
 FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result))
 FC_REFLECT_ENUM(deip::chain::research_content_activity_state, (active)(pending)(closed) )
-FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(title)(content)(permlink)(authors)(references)(external_references))
+FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(title)(content)(permlink)(authors)(created_at)(references)(external_references)(activity_round)(activity_state)(activity_window_start)(activity_window_end))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_content_object, deip::chain::research_content_index)
