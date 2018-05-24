@@ -59,7 +59,7 @@ typedef multi_index_container<vesting_contract_object,
 }
 
 FC_REFLECT(deip::chain::vesting_contract_object,
-                        (id)(sender)(receiver)(balance)(withdrawal_periods)(start_date)(expiration_date)(contract_duration)
+                        (id)(sender)(receiver)(balance)(withdrawn)(withdrawal_periods)(start_date)(expiration_date)(contract_duration)
             )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::vesting_contract_object, deip::chain::vesting_contract_index)
