@@ -678,7 +678,9 @@ BOOST_AUTO_TEST_CASE(create_research_material)
 
     const std::string json_str = "{\"research_id\": 1,"
             "\"type\": 2,"
+            "\"title\":\"milestone for Research #2\","
             "\"content\":\"milestone for Research #2\","
+            "\"permlink\":\"milestone-research-two\","
             "\"authors\":[\"alice\"],"
             "\"references\": [3] }";
 
@@ -703,9 +705,9 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper) {
             const research_content_object& content = wrapper.get();
             return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone
-                && content.content == "milestone for Research #2" && content.authors.size() == 1
-                && content.authors.find("alice") != content.authors.end()
-                   && content.references.size() == 1;
+                && content.content == "milestone for Research #2" && content.permlink == "milestone-research-two"
+                && content.authors.size() == 1 && content.authors.find("alice") != content.authors.end()
+                && content.references.size() == 1;
         }));
 
     db.create<total_votes_object>([&](total_votes_object& r) {
@@ -733,7 +735,9 @@ BOOST_AUTO_TEST_CASE(create_research_material)
 
     const std::string json_str2 = "{\"research_id\": 1,"
                                   "\"type\": 3,"
+                                  "\"title\":\"final result for Research #2\","
                                   "\"content\":\"final result for Research #2\","
+                                  "\"permlink\":\"final-result-research-two\","
                                   "\"authors\":[\"alice\"],"
                                   "\"references\": [3] }";
 

@@ -111,6 +111,7 @@ public:
         db.create<research_content_object>([&](research_content_object& d) {
             d.id = 1;
             d.research_id = 1;
+            d.permlink = "milestone_research_1";
             d.type = milestone;
             d.authors = {"alice"};
             d.references.insert(2);
@@ -120,6 +121,7 @@ public:
         db.create<research_content_object>([&](research_content_object& d) {
             d.id = 2;
             d.research_id = 2;
+            d.permlink = "milestone_research_2";
             d.type = milestone;
             d.authors = {"alex"};
             d.references.insert(1);
