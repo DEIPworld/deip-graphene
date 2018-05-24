@@ -322,6 +322,7 @@ public:
     // Research Content //
     //////////////////////
     research_content_api_obj get_research_content_by_id(const research_content_id_type& id) const;
+    research_content_api_obj get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
     vector<research_content_api_obj> get_all_research_content(const research_id_type& research_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
 

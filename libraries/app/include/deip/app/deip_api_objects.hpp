@@ -402,6 +402,7 @@ struct research_content_api_obj
         ,  authors(rc.authors.begin(), rc.authors.end())
         ,  title(fc::to_string(rc.title))        
         ,  content(fc::to_string(rc.content))
+        ,  permlink(fc::to_string(rc.permlink))
         ,  created_at(rc.created_at)
     {
         for (auto reference : rc.references)
@@ -424,6 +425,7 @@ struct research_content_api_obj
     std::set<account_name_type> authors;
     std::string title;
     std::string content;
+    std::string permlink;
     fc::time_point_sec created_at;
 
     std::set<string> external_references;
