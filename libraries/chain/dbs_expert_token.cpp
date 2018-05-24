@@ -53,12 +53,16 @@ const expert_token_object& dbs_expert_token::increase_common_tokens(const accoun
 {
     const auto& cprops = db_impl().get_dynamic_global_properties();
     const auto& to_account = db_impl().get<account_object, by_name>(account);
+    const auto& common_token = get_expert_token_by_account_and_discipline(account, 0);
 
     db_impl().modify(to_account, [&](account_object& acnt) { acnt.total_common_tokens_amount += amount; });
     db_impl().modify(cprops,
                      [&](dynamic_global_property_object& props) { props.total_common_tokens_amount += amount; });
     db_impl().modify(cprops, [&](dynamic_global_property_object& props) {
         props.total_common_tokens_fund_deip += asset(amount, DEIP_SYMBOL);
+    });
+    db_impl().modify(common_token, [&](expert_token_object& token) {
+        token.amount += amount;
     });
 
     return get_expert_token_by_account_and_discipline(account, 0);

@@ -130,6 +130,17 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         op.references = references;
         op.external_references = {"one", "two", "three"};
 
+        fc::uint128 total_expert_tokens_amount; // With Common Token
+        auto it_pair = db.get_index<expert_token_index>().indicies().get<by_account_name>().equal_range("alice");
+        auto it = it_pair.first;
+        const auto it_end = it_pair.second;
+        while (it != it_end)
+        {
+            fc::uint128 amount(it->amount.value);
+            total_expert_tokens_amount += amount;
+            ++it;
+        }
+
         auto& token = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1));
         auto old_voting_power = token.voting_power;
 
@@ -209,9 +220,10 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         BOOST_REQUIRE(discipline.total_active_research_reward_weight == expected_research_reward_weight);
         BOOST_REQUIRE(discipline.total_active_review_reward_weight == 0);
 
+
         // Validate global properties object
         auto& dgpo = db.get_dynamic_global_properties();
-        BOOST_REQUIRE(dgpo.total_active_disciplines_reward_weight == expected_tokens_amount * 10);
+        BOOST_REQUIRE(dgpo.total_active_disciplines_reward_weight == total_expert_tokens_amount);
 
         validate_database();
 
