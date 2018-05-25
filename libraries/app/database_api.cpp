@@ -1096,6 +1096,17 @@ research_api_obj database_api::get_research_by_permlink(const research_group_id_
     });
 }
 
+research_api_obj database_api::get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group &research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
+        chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
+        
+        auto& rg = research_group_service.get_research_group_by_permlink(research_group_permlink);
+        return research_service.get_research_by_permlink(rg.id, research_permlink);
+    });
+}
+
 vector<research_api_obj> database_api::get_researches_by_discipline_id(const uint64_t from,
                                                                        const uint32_t limit,
                                                                        const discipline_id_type& discipline_id) const
@@ -1168,6 +1179,20 @@ research_content_api_obj database_api::get_research_content_by_permlink(const re
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
         return research_content_service.get_content_by_permlink(research_id, permlink);
+    });
+}
+
+research_content_api_obj database_api::get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group &research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
+        chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
+        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+
+        auto& rg = research_group_service.get_research_group_by_permlink(research_group_permlink);
+        auto& r = research_service.get_research_by_permlink(rg.id, research_permlink);
+
+        return research_content_service.get_content_by_permlink(r.id, research_content_permlink);
     });
 }
 
@@ -1527,9 +1552,10 @@ vector<research_listing_api_obj> database_api::get_research_listing(const discip
                 authors.push_back(member.owner);
             }
 
+            auto research_group = get_research_group_by_id(research.research_group_id);
             auto votes = vote_service.get_votes_by_research(research.id);
 
-            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, authors, disciplines, votes.size());
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, research_group, authors, disciplines, votes.size());
             results.push_back(listing_api_obj);
         }
 
@@ -1584,10 +1610,11 @@ vector<research_listing_api_obj> database_api::get_all_researches_listing(const 
             for (auto member : research_group_members) {
                 authors.push_back(member.owner);
             }
-
+            
+            auto research_group = get_research_group_by_id(research.research_group_id);
             auto votes = vote_service.get_votes_by_research(research.id);
 
-            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, authors, disciplines, votes.size());
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, research_group, authors, disciplines, votes.size());
 
             if (limit != 0) {
                 if (results.size() + 1 > limit) {
