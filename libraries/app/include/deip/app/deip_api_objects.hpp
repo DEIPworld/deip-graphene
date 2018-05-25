@@ -643,18 +643,21 @@ struct research_group_invite_api_obj
 
 struct research_listing_api_obj
 {
-    research_listing_api_obj(const research_api_obj& research,
+    research_listing_api_obj(const research_api_obj& r,
+                             const research_group_api_obj& rg,
                              const vector<account_name_type>& authors,
                              const vector<discipline_api_obj>& disciplines,
-                             const int64_t& total_votes)
-    {
-        this->research_id = research.id;
-        this->title = research.title;
-        this->abstract = research.abstract;
-        this->authors = authors;
-        this->disciplines = disciplines;
-        this->total_votes = total_votes;
-    }
+                             const int64_t& votes_count) :
+
+        research_id(r.id),
+        title(r.title),
+        abstract(r.abstract),
+        permlink(r.permlink),
+        authors(authors.begin(), authors.end()),
+        disciplines(disciplines.begin(), disciplines.end()),
+        votes_count(votes_count),
+        group_id(rg.id),
+        group_permlink(rg.permlink) {}
 
     // because fc::variant require for temporary object
     research_listing_api_obj()
@@ -664,9 +667,12 @@ struct research_listing_api_obj
     int64_t research_id;
     string title;
     string abstract;
+    string permlink;
     vector<account_name_type> authors;
     vector<discipline_api_obj> disciplines;
-    int64_t total_votes;
+    int64_t votes_count;
+    int64_t group_id;
+    string group_permlink;
 };
 
 struct total_votes_api_obj
@@ -923,9 +929,12 @@ FC_REFLECT( deip::app::research_listing_api_obj,
            (research_id)
            (title)
            (abstract)
+           (permlink)
            (authors)
            (disciplines)
-           (total_votes)
+           (votes_count)
+           (group_id)
+           (group_permlink)
 )
 
 FC_REFLECT( deip::app::total_votes_api_obj,
