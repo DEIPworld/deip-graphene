@@ -20,6 +20,7 @@
 #include <deip/chain/research_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/review_object.hpp>
+#include <deip/chain/research_group_join_request_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -745,6 +746,28 @@ struct review_api_obj
     map<int64_t, int64_t> weight_per_discipline;
 };
 
+struct research_group_join_request_api_obj
+{
+    research_group_join_request_api_obj(const chain::research_group_join_request_object& jr)
+            : id(jr.id._id)
+            , account_name(jr.account_name)
+            , research_group_id(jr.research_group_id._id)            
+            , motivation_letter(fc::to_string(jr.motivation_letter))
+            , expiration_time(jr.expiration_time)
+    {}
+
+    // because fc::variant require for temporary object
+    research_group_join_request_api_obj()
+    {
+    }
+
+    int64_t id;
+
+    account_name_type account_name;
+    int64_t research_group_id;
+    string motivation_letter;
+    time_point_sec expiration_time;
+};
 } // namespace app
 } // namespace deip
 
@@ -959,6 +982,14 @@ FC_REFLECT( deip::app::review_api_obj,
             (created_at)
             (disciplines)
             (weight_per_discipline)
+)
+
+FC_REFLECT( deip::app::research_group_join_request_api_obj,
+            (id)
+            (account_name)
+            (research_group_id)
+            (motivation_letter)
+            (expiration_time)
 )
 
 // clang-format on
