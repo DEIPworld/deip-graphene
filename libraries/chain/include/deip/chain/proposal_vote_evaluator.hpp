@@ -12,16 +12,7 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
-#include <deip/chain/dbs_research_token.hpp>
-#include <deip/chain/dbs_research.hpp>
-#include <deip/chain/dbs_research_content.hpp>
-#include <deip/chain/dbs_research_token_sale.hpp>
-#include <deip/chain/dbs_dynamic_global_properties.hpp>
-#include <deip/chain/dbs_discipline.hpp>
-#include <deip/chain/dbs_research_discipline_relation.hpp>
-#include <deip/chain/dbs_research_group_invite.hpp>
-#include <deip/chain/dbs_research_group_join_request.hpp>
-#include <deip/chain/dbs_vote.hpp>
+
 #include <deip/chain/dbs_proposal_execution.hpp>
 
 #include <deip/chain/proposal_object.hpp>

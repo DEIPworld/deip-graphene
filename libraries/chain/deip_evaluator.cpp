@@ -969,7 +969,7 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     if (research_group.is_personal == true)
     {
         auto& proposal_execution_service = _db.obtain_service<dbs_proposal_execution>();
-        proposal_execution_service.execute_proposal(proposal); 
+        proposal_execution_service.execute_proposal(proposal);
     }
 
 }
