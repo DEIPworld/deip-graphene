@@ -1839,16 +1839,6 @@ void database::initialize_evaluators()
             new proposal_vote_evaluator(this->obtain_service<dbs_account>(),
                                         this->obtain_service<dbs_proposal>(),
                                         this->obtain_service<dbs_research_group>(),
-//                                        this->obtain_service<dbs_research>(),
-//                                        this->obtain_service<dbs_research_token>(),
-//                                        this->obtain_service<dbs_research_content>(),
-//                                        this->obtain_service<dbs_research_token_sale>(),
-//                                        this->obtain_service<dbs_discipline>(),
-//                                        this->obtain_service<dbs_research_discipline_relation>(),
-//                                        this->obtain_service<dbs_research_group_invite>(),
-//                                        this->obtain_service<dbs_dynamic_global_properties>(),
-//                                        this->obtain_service<dbs_research_group_join_request>(),
-//                                        this->obtain_service<dbs_vote>(),
                                         this->obtain_service<dbs_proposal_execution>()));
     //clang-format on
 }

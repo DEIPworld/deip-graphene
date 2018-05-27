@@ -23,6 +23,7 @@
 #include <deip/chain/dbs_review.hpp>
 #include <deip/chain/dbs_research_group_join_request.hpp>
 #include <deip/chain/dbs_vesting_contract.hpp>
+#include <deip/chain/dbs_proposal_execution.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -957,11 +958,20 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     deip::protocol::proposal_action_type action = static_cast<deip::protocol::proposal_action_type>(op.action);
 
     if (action == deip::protocol::proposal_action_type::invite_member ||
-            action == deip::protocol::proposal_action_type::dropout_member)
+            action == deip::protocol::proposal_action_type::dropout_member ||
+            action == deip::protocol::proposal_action_type::change_quorum ||
+            action == deip::protocol::proposal_action_type::rebalance_research_group_tokens)
         FC_ASSERT(research_group.is_personal == false, "You cannot invite or dropout member from personal group");
 
     // quorum_percent should be taken from research_group_object
-    proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
+    auto& proposal = proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
+
+    if (research_group.is_personal == true)
+    {
+        auto& proposal_execution_service = _db.obtain_service<dbs_proposal_execution>();
+        proposal_execution_service.execute_proposal(proposal); 
+    }
+
 }
 
 void create_research_group_evaluator::do_apply(const create_research_group_operation& op)

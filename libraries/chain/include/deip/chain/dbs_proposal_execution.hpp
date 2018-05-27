@@ -73,6 +73,14 @@ protected:
     explicit dbs_proposal_execution(database &db);
 
     void invite(const proposal_object& proposal);
+    void dropout(const proposal_object& proposal);
+    void change_research_review_share(const proposal_object& proposal);
+    void change_quorum(const proposal_object& proposal);
+    void start_research(const proposal_object& proposal);
+    void send_funds(const proposal_object& proposal);
+    void rebalance_research_group_tokens(const proposal_object& proposal);
+    void create_research_material(const proposal_object& proposal);
+    void start_research_token_sale(const proposal_object& proposal);
 
 private:
     proposal_evaluators_register executions;
