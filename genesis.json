@@ -6,37 +6,37 @@
         "name": "initdelegate",
         "recovery_account": "",
         "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ",
-        "deip_amount": 1000,
+        "deip_amount": 100,
         "sp_amount": 0
     }, {
         "name": "alice",
         "recovery_account": "",
         "public_key": "DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83",
-        "deip_amount": 0,
+        "deip_amount": 100,
         "sp_amount": 0
     }, {
         "name": "bob",
         "recovery_account": "",
         "public_key": "DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi",
-        "deip_amount": 0,
+        "deip_amount": 100,
         "sp_amount": 0
     }, {
         "name": "lightsom",
         "recovery_account": "",
         "public_key": "DEIP8bwPxtWUEffTs7C8vRNT98Sv7XGCVDWCXVUeHvtNH5TxvrwVLj",
-        "deip_amount": 0,
+        "deip_amount": 200,
         "sp_amount": 0
     }, {
         "name": "cicchetti",
         "recovery_account": "",
         "public_key": "DEIP5mFLmqoifrz3c9iTmFVpxjU29QjyKSGiKZf7GUM2T6cJpm6Gb7",
-        "deip_amount": 0,
+        "deip_amount": 200,
         "sp_amount": 0
     }, {
         "name": "wahle",
         "recovery_account": "",
         "public_key": "DEIP7NAFzGdNUBhR1B3bf9g38yy4qEENJK1TSff2YdSstLQ6ztXrG6",
-        "deip_amount": 0,
+        "deip_amount": 300,
         "sp_amount": 0
     }],
 

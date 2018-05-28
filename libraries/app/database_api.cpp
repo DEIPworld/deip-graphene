@@ -1378,6 +1378,16 @@ database_api::get_research_token_sale_by_id(const research_token_sale_id_type re
     });
 }
 
+bool database_api::check_research_token_sale_existence_by_research_id(const research_id_type& research_id) const
+{
+    const auto& idx = my->_db.get_index<research_token_sale_index>().indices().get<by_research_id>();
+    auto itr = idx.find(research_id);
+    if (itr != idx.end())
+        return true;
+    else
+        return false;
+}
+
 research_token_sale_api_obj
 database_api::get_research_token_sale_by_research_id(const research_id_type& research_id) const
 {
