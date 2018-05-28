@@ -23,6 +23,7 @@
 #include <deip/chain/dbs_review.hpp>
 #include <deip/chain/dbs_research_group_join_request.hpp>
 #include <deip/chain/dbs_vesting_contract.hpp>
+#include <deip/chain/dbs_proposal_execution.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -108,6 +109,7 @@ void witness_update_evaluator::do_apply(const witness_update_operation& o)
 void account_create_evaluator::do_apply(const account_create_operation& o)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     const auto& creator = account_service.get_account(o.creator);
 
@@ -138,6 +140,16 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
 
     account_service.create_account_by_faucets(o.new_account_name, o.creator, o.memo_key, o.json_metadata, o.owner,
                                               o.active, o.posting, o.fee);
+
+    bool is_personal = true;
+
+    auto& personal_research_group = research_group_service.create_research_group(o.new_account_name,
+                                                                                 o.new_account_name,
+                                                                                 o.new_account_name,
+                                                                                 DEIP_100_PERCENT,
+                                                                                 is_personal);
+    research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
+
 }
 
 void account_create_with_delegation_evaluator::do_apply(const account_create_with_delegation_operation& o)
@@ -145,6 +157,7 @@ void account_create_with_delegation_evaluator::do_apply(const account_create_wit
     const auto& props = _db.get_dynamic_global_properties();
 
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     const auto& creator = account_service.get_account(o.creator);
 
@@ -192,6 +205,16 @@ void account_create_with_delegation_evaluator::do_apply(const account_create_wit
 
     account_service.create_account_with_delegation(o.new_account_name, o.creator, o.memo_key, o.json_metadata, o.owner,
                                                    o.active, o.posting, o.fee, o.delegation);
+
+
+    bool is_personal = true;
+
+    auto& personal_research_group = research_group_service.create_research_group(o.new_account_name,
+                                                                                 o.new_account_name,
+                                                                                 o.new_account_name,
+                                                                                 DEIP_100_PERCENT,
+                                                                                 is_personal);
+    research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
 }
 
 void account_update_evaluator::do_apply(const account_update_operation& o)
@@ -932,20 +955,37 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     auto& research_group = research_group_service.get_research_group(op.research_group_id);
     auto quorum_percent = research_group.quorum_percent;
     // the range must be checked in create_proposal_operation::validate()
-    deip::protocol::proposal_action_type action = static_cast<deip::protocol::proposal_action_type>(op.action); 
+    deip::protocol::proposal_action_type action = static_cast<deip::protocol::proposal_action_type>(op.action);
+
+    if (action == deip::protocol::proposal_action_type::invite_member ||
+            action == deip::protocol::proposal_action_type::dropout_member ||
+            action == deip::protocol::proposal_action_type::change_quorum ||
+            action == deip::protocol::proposal_action_type::rebalance_research_group_tokens)
+        FC_ASSERT(!research_group.is_personal,
+                  "You cannot invite or dropout member, change quorum and rebalance tokens in personal research group");
 
     // quorum_percent should be taken from research_group_object
-    proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
+    auto& proposal = proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
+
+    if (research_group.is_personal)
+    {
+        auto& proposal_execution_service = _db.obtain_service<dbs_proposal_execution>();
+        proposal_execution_service.execute_proposal(proposal);
+        proposal_service.complete(proposal);
+    }
+
 }
 
 void create_research_group_evaluator::do_apply(const create_research_group_operation& op)
 {
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
+    bool is_personal = false;
     const research_group_object& research_group = research_group_service.create_research_group(op.name,
                                                                                                op.permlink,
                                                                                                op.description,
-                                                                                               op.quorum_percent);
+                                                                                               op.quorum_percent,
+                                                                                               is_personal);
     
     research_group_service.create_research_group_token(research_group.id, DEIP_100_PERCENT, op.creator);
 }
@@ -1312,6 +1352,42 @@ void withdraw_from_vesting_contract_evaluator::do_apply(const withdraw_from_vest
     }
 
 }
-    
+
+void vote_proposal_evaluator::do_apply(const vote_proposal_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
+    dbs_proposal_execution& proposal_execution_service = _db.obtain_service<dbs_proposal_execution>();
+
+    research_group_service.check_research_group_token_existence(op.voter, op.research_group_id);
+    account_service.check_account_existence(op.voter);
+    proposal_service.check_proposal_existence(op.proposal_id);
+
+    const proposal_object& proposal = proposal_service.get_proposal(op.proposal_id);
+
+    FC_ASSERT(proposal.voted_accounts.find(op.voter) == proposal.voted_accounts.end(),
+              "Account \"${account}\" already voted", ("account", op.voter));
+
+    FC_ASSERT(!proposal_service.is_expired(proposal), "Proposal '${id}' is expired.", ("id", op.proposal_id));
+
+    proposal_service.vote_for(op.proposal_id, op.voter);
+
+    const research_group_object& research_group = research_group_service.get_research_group(proposal.research_group_id);
+
+    float total_voted_weight = 0;
+    auto& votes = proposal_service.get_votes_for(proposal.id);
+    for (const proposal_vote_object& vote : votes) {
+        total_voted_weight += vote.weight.value;
+    }
+
+    if (total_voted_weight  >= research_group.quorum_percent)
+    {
+        proposal_execution_service.execute_proposal(proposal);
+        proposal_service.complete(proposal);
+    }
+
+}
+
 } // namespace chain
 } // namespace deip 
