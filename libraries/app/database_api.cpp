@@ -31,6 +31,7 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_review.hpp>
 #include <deip/chain/dbs_research_group_join_request.hpp>
+#include <deip/chain/dbs_research_token.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 #define MAX_LIMIT 1000
@@ -1786,6 +1787,57 @@ vector<research_group_join_request_api_obj> database_api::get_research_group_joi
         }
 
         return results;
+    });
+}
+
+research_token_api_obj database_api::get_research_token_by_id(const research_token_id_type& research_token_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_token& research_token_service
+            = my->_db.obtain_service<chain::dbs_research_token>();
+        return research_token_service.get_research_token(research_token_id);
+    });
+}
+
+vector<research_token_api_obj> database_api::get_research_tokens_by_account_name(const account_name_type &account_name) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_token_api_obj> results;
+        chain::dbs_research_token& research_token_service
+                = my->_db.obtain_service<chain::dbs_research_token>();
+
+        auto research_tokens = research_token_service.get_research_tokens_by_account_name(account_name);
+
+        for (const chain::research_token_object& research_token : research_tokens)
+            results.push_back(research_token);
+
+        return results;
+    });
+}
+
+vector<research_token_api_obj> database_api::get_research_tokens_by_research_id(const research_id_type &research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_token_api_obj> results;
+        chain::dbs_research_token& research_token_service
+                = my->_db.obtain_service<chain::dbs_research_token>();
+
+        auto research_tokens = research_token_service.get_research_tokens_by_research_id(research_id);
+
+        for (const chain::research_token_object& research_token : research_tokens)
+            results.push_back(research_token);
+
+        return results;
+    });
+}
+
+research_token_api_obj database_api::get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
+                                                                                        const research_id_type &research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_token& research_token_service
+                = my->_db.obtain_service<chain::dbs_research_token>();
+        return research_token_service.get_research_token_by_account_name_and_research_id(account_name, research_id);
     });
 }
 

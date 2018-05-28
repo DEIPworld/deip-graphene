@@ -412,6 +412,15 @@ public:
     vector<research_group_join_request_api_obj> get_research_group_join_requests_by_account_name(const account_name_type& account_name) const;
     vector<research_group_join_request_api_obj> get_research_group_join_requests_by_research_group_id(const research_group_id_type& research_group_id) const;
 
+    /////////////////////
+    // Research token ///
+    /////////////////////
+
+    research_token_api_obj get_research_token_by_id(const research_token_id_type& research_token_id) const;
+    vector<research_token_api_obj> get_research_tokens_by_account_name(const account_name_type &account_name) const;
+    vector<research_token_api_obj> get_research_tokens_by_research_id(const research_id_type &research_id) const;
+    research_token_api_obj get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
+                                                                              const research_id_type &research_id) const;
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -561,6 +570,13 @@ FC_API(deip::app::database_api,
    (get_research_group_join_request_by_account_name_and_research_group_id)
    (get_research_group_join_requests_by_account_name)
    (get_research_group_join_requests_by_research_group_id)
+
+   // Research token
+   (get_research_token_by_id)
+   (get_research_tokens_by_account_name)
+   (get_research_tokens_by_research_id)
+   (get_research_token_by_account_name_and_research_id)
+
 )
 
 // clang-format on
