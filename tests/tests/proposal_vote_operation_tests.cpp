@@ -32,16 +32,7 @@ using deip::protocol::proposal_action_type;
 typedef deip::chain::proposal_vote_evaluator_t<dbs_account,
                                                dbs_proposal,
                                                dbs_research_group,
-//                                               dbs_research,
-//                                               dbs_research_token,
-//                                               dbs_research_content,
-//                                               dbs_research_token_sale,
-//                                               dbs_discipline,
-//                                               dbs_research_discipline_relation,
-//                                               dbs_research_group_invite,
-//                                               dbs_dynamic_global_properties,
-//                                               dbs_research_group_join_request,
-//                                               dbs_vote,
+
         dbs_proposal_execution>
         proposal_vote_evaluator;
 
@@ -51,30 +42,10 @@ public:
     evaluator_mocked(dbs_account &account_service,
                      dbs_proposal &proposal_service,
                      dbs_research_group &research_group_service,
-//                     dbs_research &research_service,
-//                     dbs_research_token &research_token_service,
-//                     dbs_research_content &research_content_service,
-//                     dbs_research_token_sale &research_token_sale_service,
-//                     dbs_discipline &discipline_service,
-//                     dbs_research_discipline_relation &research_discipline_relation_service,
-//                     dbs_research_group_invite &research_group_invite_service,
-//                     dbs_dynamic_global_properties &dynamic_global_properties_service,
-//                     dbs_research_group_join_request &research_group_join_request_service,
-//                     dbs_vote& vote_service,
                      dbs_proposal_execution& proposal_execution_service)
             : proposal_vote_evaluator(account_service,
                                       proposal_service,
                                       research_group_service,
-//                                      research_service,
-//                                      research_token_service,
-//                                      research_content_service,
-//                                      research_token_sale_service,
-//                                      discipline_service,
-//                                      research_discipline_relation_service,
-//                                      research_group_invite_service,
-//                                      dynamic_global_properties_service,
-//                                      research_group_join_request_service,
-//                                      vote_service,
                                       proposal_execution_service) {
     }
 
@@ -89,16 +60,6 @@ public:
         : evaluator(db.obtain_service<dbs_account>(),
                     db.obtain_service<dbs_proposal>(),
                     db.obtain_service<dbs_research_group>(),
-//                    db.obtain_service<dbs_research>(),
-//                    db.obtain_service<dbs_research_token>(),
-//                    db.obtain_service<dbs_research_content>(),
-//                    db.obtain_service<dbs_research_token_sale>(),
-//                    db.obtain_service<dbs_discipline>(),
-//                    db.obtain_service<dbs_research_discipline_relation>(),
-//                    db.obtain_service<dbs_research_group_invite>(),
-//                    db.obtain_service<dbs_dynamic_global_properties>(),
-//                    db.obtain_service<dbs_research_group_join_request>(),
-//                    db.obtain_service<dbs_vote>(),
                     db.obtain_service<dbs_proposal_execution>())
     {
     }
@@ -131,10 +92,6 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test)
 
     auto& research_group_invite = research_group_invite_service.get_research_group_invite_by_account_name_and_research_group_id("bob", 31);
 
-    auto& proposal_service = db.obtain_service<dbs_proposal>();
-    auto& proposal = proposal_service.get_proposal(1);
-    BOOST_CHECK(proposal.is_completed == true);
-
     BOOST_CHECK(research_group_invite.account_name == "bob");
     BOOST_CHECK(research_group_invite.research_group_id == 31);
     BOOST_CHECK(research_group_invite.research_group_token_amount == 50 * DEIP_1_PERCENT);
@@ -161,12 +118,8 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
 
         evaluator.do_apply(op);
 
-        auto& proposal_service = db.obtain_service<dbs_proposal>();
-        auto& proposal = proposal_service.get_proposal(1);
-        BOOST_CHECK(proposal.is_completed == true);
-
-        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1), std::out_of_range);
-        BOOST_CHECK(research_group_service.get_research_group_token_by_account_and_research_group_id("alice", 1).amount == DEIP_100_PERCENT);
+        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 31), std::out_of_range);
+        BOOST_CHECK(research_group_service.get_research_group_token_by_account_and_research_group_id("alice", 31).amount == DEIP_100_PERCENT);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -204,10 +157,6 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 
         evaluator.do_apply(op);
 
-        auto& proposal_service = db.obtain_service<dbs_proposal>();
-        auto& proposal = proposal_service.get_proposal(0);
-        BOOST_CHECK(proposal.is_completed == true);
-        
         generate_blocks(fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(90)), true);
 
         create_proposal_by_operation("alice", 21, change_review_share_proposal_json,
@@ -260,11 +209,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_rate_test)
 
         evaluator.do_apply(op);
 
-        auto& proposal_service = db.obtain_service<dbs_proposal>();
-        auto& proposal = proposal_service.get_proposal(0);
-        BOOST_CHECK(proposal.is_completed == true);
-        
-        create_proposal_by_operation("alice", 0, change_review_share_proposal_json,
+        create_proposal_by_operation("alice", 21, change_review_share_proposal_json,
                                      dbs_proposal::action_t::change_research_review_share_percent,
                                      fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
 
@@ -273,6 +218,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_rate_test)
         crs_op.research_group_id = 21;
         crs_op.proposal_id = 1;
         crs_op.voter = "alice";
+
 
 
         auto& research = research_service.get_research(0);
@@ -305,10 +251,6 @@ BOOST_AUTO_TEST_CASE(exclude_member_with_research_token_compensation_test)
 
         evaluator.do_apply(op);
 
-        auto& proposal_service = db.obtain_service<dbs_proposal>();
-        auto& proposal = proposal_service.get_proposal(1);
-        BOOST_CHECK(proposal.is_completed == true);
-
         auto& research_token_service = db.obtain_service<dbs_research_token>();
         auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", research.id);
 
@@ -340,11 +282,7 @@ BOOST_AUTO_TEST_CASE(change_quorum_test)
 
         evaluator.do_apply(op);
 
-        auto& proposal_service = db.obtain_service<dbs_proposal>();
-        auto& proposal = proposal_service.get_proposal(1);
-        BOOST_CHECK(proposal.is_completed == true);
-
-        auto& research_group = research_group_service.get_research_group(1);
+        auto& research_group = research_group_service.get_research_group(31);
 
         BOOST_CHECK(research_group.quorum_percent == 80);
     }
@@ -373,10 +311,6 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
     op.voter = "alice";
 
     evaluator.do_apply(op);
-
-    auto& proposal_service = db.obtain_service<dbs_proposal>();
-    auto& proposal = proposal_service.get_proposal(1);
-    BOOST_CHECK(proposal.is_completed == true);
 
     auto& research_service = db.obtain_service<dbs_research>();
     auto& research = research_service.get_research(0);
@@ -438,10 +372,6 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
 
     evaluator.do_apply(op);
 
-    auto& proposal_service = db.obtain_service<dbs_proposal>();
-    auto& proposal = proposal_service.get_proposal(1);
-    BOOST_CHECK(proposal.is_completed == true);
-
     auto& account_service = db.obtain_service<dbs_account>();
     auto& bobs_account = account_service.get_account("bob");
 
@@ -473,9 +403,6 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
 
     evaluator.do_apply(op);
 
-    auto& proposal_service = db.obtain_service<dbs_proposal>();
-    auto& proposal = proposal_service.get_proposal(1);
-    BOOST_CHECK(proposal.is_completed == true);
 
     auto& research_group_service = db.obtain_service<dbs_research_group>();
     auto& alice_token = research_group_service.get_research_group_token_by_account_and_research_group_id("alice", 31);
@@ -505,10 +432,6 @@ BOOST_AUTO_TEST_CASE(research_token_sale_execute_test)
     op.voter = "alice";
 
     evaluator.do_apply(op);
-
-    auto& proposal_service = db.obtain_service<dbs_proposal>();
-    auto& proposal = proposal_service.get_proposal(1);
-    BOOST_CHECK(proposal.is_completed == true);
 
     auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_research_id(0);
 
@@ -782,6 +705,8 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     BOOST_CHECK(discipline.total_active_research_reward_weight == 2000);
     BOOST_CHECK(discipline2.total_active_research_reward_weight == 1000);
 }
+
+
 
 
 BOOST_AUTO_TEST_SUITE_END()

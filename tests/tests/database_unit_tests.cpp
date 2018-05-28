@@ -452,8 +452,6 @@ BOOST_AUTO_TEST_CASE(reward_reviews)
 
         BOOST_CHECK_NO_THROW(db.reward_reviews(1, 10, reward, expertise_reward));
 
-        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 50);
-
         BOOST_CHECK(db.get_account("alice").balance.amount == 380);
         BOOST_CHECK(db.get_account("bob").balance.amount == 570);
 
@@ -648,7 +646,7 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
         BOOST_CHECK_NO_THROW(db.distribute_reward(reward));
 
         BOOST_CHECK(db.get<research_group_object>(31).balance.amount == 3952000);
-        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 1103900);
+        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 1064000);
 
         BOOST_CHECK(db.get_account("alice").balance.amount == 842840);
         BOOST_CHECK(db.get_account("bob").balance.amount == 1159760);

@@ -82,7 +82,7 @@ protected:
         if (is_quorum(proposal))
         {
             _proposal_execution_service.execute_proposal(proposal);
-            _proposal_service.remove(proposal);
+            _proposal_service.complete(proposal);
         }
     }
 
