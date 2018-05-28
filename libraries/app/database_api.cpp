@@ -1231,8 +1231,10 @@ expert_token_api_obj database_api::get_expert_token(const expert_token_id_type i
 {
     return my->_db.with_read_lock([&]() {
         chain::dbs_expert_token &expert_token_service = my->_db.obtain_service<chain::dbs_expert_token>();
+        chain::dbs_discipline& discipline_service = my->_db.obtain_service<chain::dbs_discipline>();
         auto expert_token = expert_token_service.get_expert_token(id);
-        return expert_token_api_obj(expert_token);
+        auto& discipline = discipline_service.get_discipline(expert_token.discipline_id);
+        return expert_token_api_obj(expert_token, discipline.name);
     });
 }
 
@@ -1241,10 +1243,12 @@ vector<expert_token_api_obj> database_api::get_expert_tokens_by_account_name(con
     return my->_db.with_read_lock([&]() {
         vector<expert_token_api_obj> results;
         chain::dbs_expert_token &expert_token_service = my->_db.obtain_service<chain::dbs_expert_token>();
+        chain::dbs_discipline& discipline_service = my->_db.obtain_service<chain::dbs_discipline>();
         auto expert_tokens = expert_token_service.get_expert_tokens_by_account_name(account_name);
 
         for (const chain::expert_token_object &expert_token : expert_tokens) {
-            results.push_back(expert_token_api_obj(expert_token));
+            auto& discipline = discipline_service.get_discipline(expert_token.discipline_id);
+            results.push_back(expert_token_api_obj(expert_token, discipline.name));
         }
         return results;
     });
@@ -1256,10 +1260,12 @@ vector<expert_token_api_obj> database_api::get_expert_tokens_by_discipline_id(co
         vector<expert_token_api_obj> results;
 
         chain::dbs_expert_token &expert_token_service = my->_db.obtain_service<chain::dbs_expert_token>();
+        chain::dbs_discipline& discipline_service = my->_db.obtain_service<chain::dbs_discipline>();
         auto expert_tokens = expert_token_service.get_expert_tokens_by_discipline_id(discipline_id);
 
         for (const chain::expert_token_object &expert_token : expert_tokens) {
-            results.push_back(expert_token_api_obj(expert_token));
+            auto& discipline = discipline_service.get_discipline(expert_token.discipline_id);
+            results.push_back(expert_token_api_obj(expert_token, discipline.name));
         }
 
         return results;
