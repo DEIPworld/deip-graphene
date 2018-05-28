@@ -418,9 +418,9 @@ public:
 
     research_token_api_obj get_research_token_by_id(const research_token_id_type& research_token_id) const;
     vector<research_token_api_obj> get_research_tokens_by_account_name(const account_name_type &account_name) const;
-//    vector<research_token_api_obj> get_research_tokens_by_research_id(const research_id_type &research_id) const;
-//    research_token_api_obj get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
-//                                                                              const research_id_type &research_id) const;
+    vector<research_token_api_obj> get_research_tokens_by_research_id(const research_id_type &research_id) const;
+    research_token_api_obj get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
+                                                                              const research_id_type &research_id) const;
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -574,8 +574,8 @@ FC_API(deip::app::database_api,
    // Research token
    (get_research_token_by_id)
    (get_research_tokens_by_account_name)
-//   (get_research_tokens_by_research_id)
-//   (get_research_token_by_account_name_and_research_id)
+   (get_research_tokens_by_research_id)
+   (get_research_token_by_account_name_and_research_id)
 
 )
 
