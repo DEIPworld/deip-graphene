@@ -108,6 +108,7 @@ typedef multi_index_container<research_group_token_object,
   
 
 FC_REFLECT(deip::chain::research_group_object, (id)(permlink)(description)(balance)(quorum_percent)(is_personal))
+FC_REFLECT(deip::chain::research_group_object, (id)(name)(description)(permlink)(balance)(quorum_percent))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_group_object, deip::chain::research_group_index)
 

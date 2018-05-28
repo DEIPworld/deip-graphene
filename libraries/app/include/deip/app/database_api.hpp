@@ -313,15 +313,18 @@ public:
     // Researches //
     ////////////////
     research_api_obj get_research_by_id(const research_id_type& id) const;
-    research_api_obj get_research_by_permlink(const string& permlink) const;
+    research_api_obj get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
+    research_api_obj get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
     vector<research_api_obj> get_researches_by_discipline_id(const uint64_t from, const uint32_t limit, const discipline_id_type& discipline_id) const;
     vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
-    bool check_research_existence_by_permlink(const string& permlink) const;
+    bool check_research_existence_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
 
     //////////////////////
     // Research Content //
     //////////////////////
     research_content_api_obj get_research_content_by_id(const research_content_id_type& id) const;
+    research_content_api_obj get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
+    research_content_api_obj get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
     vector<research_content_api_obj> get_all_research_content(const research_id_type& research_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
 
@@ -358,6 +361,7 @@ public:
     // Research token sale //
     /////////////////////////
     research_token_sale_api_obj get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const;
+    bool check_research_token_sale_existence_by_research_id(const research_id_type& research_id) const;
     research_token_sale_api_obj get_research_token_sale_by_research_id(const research_id_type& research_id) const;
     vector<research_token_sale_api_obj> get_research_token_sale_by_end_time(const time_point_sec end_time) const;
     research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type research_token_sale_contribution_id) const;
@@ -366,14 +370,14 @@ public:
                                                                                                                              const research_token_sale_id_type research_token_sale_id) const;
 
     ///////////////////////////////////
-    // Research discipline relation //
-    //////////////////////////////////
+    // Research discipline relation  //
+    ///////////////////////////////////
 
     vector<discipline_api_obj> get_disciplines_by_research(const research_id_type& research_id) const;
 
     ///////////////////////////////////
-    // Research group invite        //
-    //////////////////////////////////
+    // Research group invite         //
+    ///////////////////////////////////
 
     research_group_invite_api_obj get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id) const;
     research_group_invite_api_obj get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
@@ -381,24 +385,32 @@ public:
     vector<research_group_invite_api_obj> get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const;
 
     ///////////////////////////////////
-    // Research listing             //
-    //////////////////////////////////
+    // Research listing              //
+    ///////////////////////////////////
 
     vector<research_listing_api_obj> get_research_listing(const discipline_id_type& discipline_id, const uint64_t& from, const uint32_t& limit) const;
     vector<research_listing_api_obj> get_all_researches_listing(const discipline_id_type& discipline_id, const uint32_t& limit) const;
 
     ///////////////////////////////////
-    // Total votes                  //
-    /////////////////////////////////
+    // Total votes                   //
+    ///////////////////////////////////
     vector<total_votes_api_obj> get_total_votes_by_research(const research_id_type& research_id) const;
     vector<total_votes_api_obj> get_total_votes_by_research_and_discipline(const research_id_type& research_id,
                                                                    const discipline_id_type& discipline_id) const;
 
     ///////////////////////////////
-    // Reviews                  //
-    /////////////////////////////
+    // Reviews                   //
+    ///////////////////////////////
     vector<review_api_obj> get_reviews_by_research(const research_id_type& research_id) const;
     vector<review_api_obj> get_reviews_by_content(const research_content_id_type& research_content_id) const;
+
+    /////////////////////////////////
+    // Research group join request //
+    ////////////////////////////////
+    research_group_join_request_api_obj get_research_group_join_request_by_id(const research_group_join_request_id_type& research_group_join_request_id) const;
+    research_group_join_request_api_obj get_research_group_join_request_by_account_name_and_research_group_id(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
+    vector<research_group_join_request_api_obj> get_research_group_join_requests_by_account_name(const account_name_type& account_name) const;
+    vector<research_group_join_request_api_obj> get_research_group_join_requests_by_research_group_id(const research_group_id_type& research_group_id) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -486,6 +498,7 @@ FC_API(deip::app::database_api,
    (get_research_by_permlink)
    (get_researches_by_discipline_id)
    (get_researches_by_research_group_id)
+   (get_research_by_absolute_permlink)
    (check_research_existence_by_permlink)
 
 
@@ -493,6 +506,8 @@ FC_API(deip::app::database_api,
    (get_research_content_by_id)
    (get_all_research_content)
    (get_research_content_by_type)
+   (get_research_content_by_permlink)
+   (get_research_content_by_absolute_permlink)
 
    // Expert Tokens
    (get_expert_token)
@@ -520,6 +535,7 @@ FC_API(deip::app::database_api,
    (get_research_token_sale_contribution_by_id)
    (get_research_token_sale_contributions_by_research_token_sale_id)
    (get_research_token_sale_contribution_by_account_name_and_research_token_sale_id)
+   (check_research_token_sale_existence_by_research_id)
 
    // Research discipline relation
    (get_disciplines_by_research)
@@ -539,6 +555,12 @@ FC_API(deip::app::database_api,
    // Reviews
    (get_reviews_by_research)
    (get_reviews_by_content)
+
+   // Research group join request
+   (get_research_group_join_request_by_id)
+   (get_research_group_join_request_by_account_name_and_research_group_id)
+   (get_research_group_join_requests_by_account_name)
+   (get_research_group_join_requests_by_research_group_id)
 )
 
 // clang-format on

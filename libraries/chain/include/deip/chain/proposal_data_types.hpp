@@ -118,6 +118,7 @@ struct create_research_content_data_type : base_proposal_data_type
     research_content_type type;
     string title;
     string content;
+    string permlink;
     std::vector<account_name_type> authors;
     std::vector<research_content_id_type> references;
     std::vector<string> external_references;
@@ -125,6 +126,8 @@ struct create_research_content_data_type : base_proposal_data_type
     void validate() const
     {
         FC_ASSERT(!content.empty(), "Content cannot be empty");
+        FC_ASSERT(!permlink.empty(), "Permlink cannot be empty");
+        FC_ASSERT(fc::is_utf8(permlink), "Permlink is not valid UTF8 string");
         FC_ASSERT(!authors.empty(), "Content should have author(s)");
         for (auto& author : authors)
         {
@@ -187,7 +190,7 @@ FC_REFLECT(deip::chain::rebalance_info, (account_name)(new_amount_in_percent))
 
 FC_REFLECT(deip::chain::rebalance_research_group_tokens_data_type, (research_group_id)(accounts))
 
-FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(title)(content)(authors)(references)(external_references))
+FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(title)(content)(permlink)(authors)(references)(external_references))
 
 FC_REFLECT(deip::chain::start_research_token_sale_data_type, (research_id)(start_time)(end_time)(amount_for_sale)(soft_cap)(hard_cap))
 

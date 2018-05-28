@@ -6,37 +6,37 @@
         "name": "initdelegate",
         "recovery_account": "",
         "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ",
-        "deip_amount": 1000,
+        "deip_amount": 100,
         "sp_amount": 0
     }, {
         "name": "alice",
         "recovery_account": "",
         "public_key": "DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83",
-        "deip_amount": 0,
+        "deip_amount": 100,
         "sp_amount": 0
     }, {
         "name": "bob",
         "recovery_account": "",
         "public_key": "DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi",
-        "deip_amount": 0,
+        "deip_amount": 100,
         "sp_amount": 0
     }, {
         "name": "lightsom",
         "recovery_account": "",
         "public_key": "DEIP8bwPxtWUEffTs7C8vRNT98Sv7XGCVDWCXVUeHvtNH5TxvrwVLj",
-        "deip_amount": 0,
+        "deip_amount": 200,
         "sp_amount": 0
     }, {
         "name": "cicchetti",
         "recovery_account": "",
         "public_key": "DEIP5mFLmqoifrz3c9iTmFVpxjU29QjyKSGiKZf7GUM2T6cJpm6Gb7",
-        "deip_amount": 0,
+        "deip_amount": 200,
         "sp_amount": 0
     }, {
         "name": "wahle",
         "recovery_account": "",
         "public_key": "DEIP7NAFzGdNUBhR1B3bf9g38yy4qEENJK1TSff2YdSstLQ6ztXrG6",
-        "deip_amount": 0,
+        "deip_amount": 300,
         "sp_amount": 0
     }],
 
@@ -1111,7 +1111,7 @@
 
     "expert_tokens": [{
         "account_name": "initdelegate",
-        "discipline_id": 1,
+        "discipline_id": 17,
         "amount": 1000
     }, {
         "account_name": "initdelegate",
@@ -1147,7 +1147,7 @@
         "amount": 1000
     }, {
         "account_name": "alice",
-        "discipline_id": 4,
+        "discipline_id": 17,
         "amount": 5000
     }, {
         "account_name": "alice",
@@ -1155,7 +1155,7 @@
         "amount": 5000
     }, {
         "account_name": "bob",
-        "discipline_id": 1,
+        "discipline_id": 8,
         "amount": 10000
     }, {
         "account_name": "lightsom",
@@ -1210,13 +1210,13 @@
         "is_finished": false,
         "review_share_in_percent": 5000,
         "dropout_compensation_in_percent": 500,
-        "disciplines": [1, 2]
+        "disciplines": [8, 17]
     }, {
         "id": 1,
         "research_group_id": 1,
         "title": "Data Categories for Marine Planning",
         "abstract": "The U.S. National Ocean Policy calls for a science- and ecosystem-based approach to comprehensive planning and management of human activities and their impacts on America’s oceans. The Ocean Community in Data.gov is an outcome of 2010–2011 work by an interagency working group charged with designing a national information management system to support ocean planning. Within the working group, a smaller team developed a list of the data categories specifically relevant to marine planning. This set of categories is an important consensus statement of the breadth of information types required for ocean planning from a national, multidisciplinary perspective. Although the categories were described in a working document in 2011, they have not yet been fully implemented explicitly in online services or geospatial metadata, in part because authoritative definitions were not created formally. This document describes the purpose of the data categories, provides definitions, and identifies relations among the categories and between the categories and external standards. It is intended to be used by ocean data providers, managers, and users in order to provide a transparent and consistent framework for organizing and describing complex information about marine ecosystems and their connections to humans.",
-        "permlink": "data-categories-for-marine-planning",
+        "permlink": "data-categories-for-marine-planning-open-report",
         "is_finished": true,
         "review_share_in_percent": 5000,
         "dropout_compensation_in_percent": 0,
@@ -1227,6 +1227,7 @@
             "research_id": 0,
             "type": 1,
             "title": "DEIP High-Level Roadmap",
+            "permlink": "deip-high-level-roadmap",
             "content": "48640902e8359a6d88d6d0b66874b526",
             "authors": ["alice", "bob"],
             "references": []
@@ -1234,6 +1235,7 @@
             "research_id": 1,
             "type": 1,
             "title": "Table of Content",
+            "permlink": "table-of-content",
             "content": "f867256996d41105e8c107ce97fea2e7",
             "authors": ["lightsom", "cicchetti", "wahle"],
             "references": []
@@ -1242,6 +1244,7 @@
             "research_id": 1,
             "type": 2,
             "title": "Data Categories for Marine Planning",
+            "permlink": "data-categories-for-marine-planning",
             "content": "d754b06ef0eb56dd49096df283bcdf99",
             "authors": ["lightsom", "cicchetti", "wahle"],
             "references": []
@@ -1249,6 +1252,7 @@
             "research_id": 1,
             "type": 2,
             "title": "Purpose of Category Terms",
+            "permlink": "purpose-of-category-terms",
             "content": "74144b7b2b2b85261c91387928ed111d",
             "authors": ["lightsom", "cicchetti", "wahle"],
             "references": []
@@ -1256,6 +1260,7 @@
             "research_id": 1,
             "type": 2,
             "title": "Data Needs for Ocean and Coastal Management",
+            "permlink": "data-needs-for-ocean-and-coastal-management",
             "content": "341e9b964a19f6a12a5074c781d74192",
             "authors": ["lightsom", "cicchetti", "wahle"],
             "references": []
@@ -1263,6 +1268,7 @@
             "research_id": 1,
             "type": 2,
             "title": "Data Category Terms and Definitions",
+            "permlink": "data-category-terms-and-definitions",
             "content": "8534d97c33301247f30e086b4bd27ece",
             "authors": ["lightsom", "cicchetti", "wahle"],
             "references": []
@@ -1270,6 +1276,7 @@
             "research_id": 1,
             "type": 2,
             "title": "Summary",
+            "permlink": "summary",
             "content": "61077788d46f6f1331b15270bbca5df6",
             "authors": ["lightsom", "cicchetti", "wahle"],
             "references": []

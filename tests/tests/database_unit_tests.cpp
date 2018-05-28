@@ -111,6 +111,7 @@ public:
         db.create<research_content_object>([&](research_content_object& d) {
             d.id = 1;
             d.research_id = 1;
+            d.permlink = "milestone_research_1";
             d.type = milestone;
             d.authors = {"alice"};
             d.references.insert(2);
@@ -120,6 +121,7 @@ public:
         db.create<research_content_object>([&](research_content_object& d) {
             d.id = 2;
             d.research_id = 2;
+            d.permlink = "milestone_research_2";
             d.type = milestone;
             d.authors = {"alex"};
             d.references.insert(1);
@@ -137,7 +139,6 @@ public:
             d.is_positive = true;
             d.author = "alice";
             d.reward_weights_per_discipline = reward_weights_per_discipline;
-            d.references = {2};
             d.expertise_amounts_used[10] = 50;
             d.weight_modifiers[10] = 1;
         });
@@ -150,7 +151,6 @@ public:
             d.is_positive = true;
             d.author = "bob";
             d.reward_weights_per_discipline = reward_weights_per_discipline;
-            d.references = {2};
             d.expertise_amounts_used[10] = 50;
             d.weight_modifiers[10] = 1;
         });
@@ -454,8 +454,8 @@ BOOST_AUTO_TEST_CASE(reward_reviews)
 
         BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 50);
 
-        BOOST_CHECK(db.get_account("alice").balance.amount == 360);
-        BOOST_CHECK(db.get_account("bob").balance.amount == 540);
+        BOOST_CHECK(db.get_account("alice").balance.amount == 380);
+        BOOST_CHECK(db.get_account("bob").balance.amount == 570);
 
         BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("alice", 10).amount == 400);
         BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("bob", 10).amount == 600);
@@ -575,12 +575,6 @@ BOOST_AUTO_TEST_CASE(fund_review_pool)
         auto& group_1 = db.get<research_group_object>(31);
         auto& group_2 = db.get<research_group_object>(32);
 
-        BOOST_CHECK(group_1.balance.amount == 0);
-        BOOST_CHECK(group_2.balance.amount == 50);
-
-        BOOST_CHECK(alice.balance.amount == 380);
-        BOOST_CHECK(bob.balance.amount == 570);
-
         BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("alice", 10).amount == 400);
         BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("bob", 10).amount == 600);
     }
@@ -615,10 +609,10 @@ BOOST_AUTO_TEST_CASE(reward_researches_in_discipline)
         auto& group_2 = db.get<research_group_object>(32);
 
         BOOST_CHECK(group_1.balance.amount == 52000);
-        BOOST_CHECK(group_2.balance.amount == 14525);
+        BOOST_CHECK(group_2.balance.amount == 14000);
 
-        BOOST_CHECK(alice.balance.amount == 11090);
-        BOOST_CHECK(bob.balance.amount == 15260);
+        BOOST_CHECK(alice.balance.amount == 11300);
+        BOOST_CHECK(bob.balance.amount == 15575);
         BOOST_CHECK(john.balance.amount == 2625);
 
         auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
@@ -656,8 +650,8 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
         BOOST_CHECK(db.get<research_group_object>(31).balance.amount == 3952000);
         BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 1103900);
 
-        BOOST_CHECK(db.get_account("alice").balance.amount == 826880);
-        BOOST_CHECK(db.get_account("bob").balance.amount == 1135820);
+        BOOST_CHECK(db.get_account("alice").balance.amount == 842840);
+        BOOST_CHECK(db.get_account("bob").balance.amount == 1159760);
         BOOST_CHECK(db.get_account("john").balance.amount == 199500);
 
         auto john_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));

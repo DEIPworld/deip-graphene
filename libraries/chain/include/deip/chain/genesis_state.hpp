@@ -76,6 +76,7 @@ struct genesis_state_type
         uint16_t type;
         std::string title;
         std::string content;
+        std::string permlink;
         std::vector<std::string> authors;
         std::vector<int64_t> references;
     };
@@ -160,6 +161,7 @@ FC_REFLECT(deip::chain::genesis_state_type::research_content_type,
            (research_id)
            (type)
            (title)
+           (permlink)
            (content)
            (authors)
            (references))

@@ -1020,12 +1020,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
     FC_ASSERT(review_disciplines.size() != 0, "Reviewer does not have enough expertise to make review.");
 
-    std::vector<research_content_id_type> references;
-    for (auto ref : op.references) {
-        references.push_back((research_content_id_type)ref);
-    }
-
-    auto& review = review_service.create(op.research_content_id, op.content, op.is_positive, op.author, review_disciplines, references, op.external_references);
+    auto& review = review_service.create(op.research_content_id, op.content, op.is_positive, op.author, review_disciplines);
 
     if (review.is_positive) {
         try
@@ -1174,31 +1169,29 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
     fc::time_point_sec contribution_time = _db.head_block_time();
 
     auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(op.research_token_sale_id);
+    bool is_hard_cap_reached = research_token_sale.total_amount + op.amount >= research_token_sale.hard_cap;
 
-    share_type difference = 0;
-    if (research_token_sale.total_amount + op.amount >= research_token_sale.hard_cap)
-        difference = research_token_sale.hard_cap - research_token_sale.total_amount;
+    share_type amount_to_contribute = op.amount;
+    if (is_hard_cap_reached)
+        amount_to_contribute = research_token_sale.hard_cap - research_token_sale.total_amount;
 
     auto research_token_sale_contribution = _db._temporary_public_impl().
             find<research_token_sale_contribution_object, by_owner_and_research_token_sale_id>(boost::make_tuple(op.owner, op.research_token_sale_id));
 
     if (research_token_sale_contribution != nullptr)
         _db._temporary_public_impl().modify(*research_token_sale_contribution,
-                                            [&](research_token_sale_contribution_object& rtsc_o) { rtsc_o.amount += difference; });
+                                            [&](research_token_sale_contribution_object& rtsc_o) { rtsc_o.amount += amount_to_contribute; });
     else
-        research_token_sale_service.create_research_token_sale_contribution(op.research_token_sale_id,
-                                                                                     op.owner,
-                                                                                     contribution_time,
-                                                                                     difference);
+        research_token_sale_service.create_research_token_sale_contribution(op.research_token_sale_id, op.owner, contribution_time, amount_to_contribute);
 
-    if (research_token_sale.total_amount + op.amount >= research_token_sale.hard_cap){
-        account_service.decrease_balance(account_service.get_account(op.owner), asset(difference));
-        research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, difference);
+    if (is_hard_cap_reached) {
+        account_service.decrease_balance(account_service.get_account(op.owner), asset(amount_to_contribute));
+        research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, amount_to_contribute);
         _db.distribute_research_tokens(op.research_token_sale_id);
     }
     else {
-        account_service.decrease_balance(account_service.get_account(op.owner), asset(op.amount));
-        research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, op.amount);
+        account_service.decrease_balance(account_service.get_account(op.owner), asset(amount_to_contribute));
+        research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, amount_to_contribute);
     }
 }
 

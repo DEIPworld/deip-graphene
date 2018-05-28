@@ -20,6 +20,7 @@
 #include <deip/chain/research_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/review_object.hpp>
+#include <deip/chain/research_group_join_request_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -402,6 +403,7 @@ struct research_content_api_obj
         ,  authors(rc.authors.begin(), rc.authors.end())
         ,  title(fc::to_string(rc.title))        
         ,  content(fc::to_string(rc.content))
+        ,  permlink(fc::to_string(rc.permlink))
         ,  created_at(rc.created_at)
     {
         for (auto reference : rc.references)
@@ -424,6 +426,7 @@ struct research_content_api_obj
     std::set<account_name_type> authors;
     std::string title;
     std::string content;
+    std::string permlink;
     fc::time_point_sec created_at;
 
     std::set<string> external_references;
@@ -461,6 +464,7 @@ struct proposal_api_obj
         ,  data(fc::to_string(p.data))
         ,  quorum_percent(p.quorum_percent.value)
         ,  current_votes_amount(p.current_votes_amount)
+        ,  is_completed(p.is_completed)
         ,  voted_accounts(p.voted_accounts)
     {}
 
@@ -477,6 +481,7 @@ struct proposal_api_obj
     std::string data;
     uint16_t quorum_percent;
     share_type current_votes_amount;
+    bool is_completed;
 
     flat_set<account_name_type> voted_accounts;
 };
@@ -639,18 +644,21 @@ struct research_group_invite_api_obj
 
 struct research_listing_api_obj
 {
-    research_listing_api_obj(const research_api_obj& research,
+    research_listing_api_obj(const research_api_obj& r,
+                             const research_group_api_obj& rg,
                              const vector<account_name_type>& authors,
                              const vector<discipline_api_obj>& disciplines,
-                             const int64_t& total_votes)
-    {
-        this->research_id = research.id;
-        this->title = research.title;
-        this->abstract = research.abstract;
-        this->authors = authors;
-        this->disciplines = disciplines;
-        this->total_votes = total_votes;
-    }
+                             const int64_t& votes_count) :
+
+        research_id(r.id),
+        title(r.title),
+        abstract(r.abstract),
+        permlink(r.permlink),
+        authors(authors.begin(), authors.end()),
+        disciplines(disciplines.begin(), disciplines.end()),
+        votes_count(votes_count),
+        group_id(rg.id),
+        group_permlink(rg.permlink) {}
 
     // because fc::variant require for temporary object
     research_listing_api_obj()
@@ -660,9 +668,12 @@ struct research_listing_api_obj
     int64_t research_id;
     string title;
     string abstract;
+    string permlink;
     vector<account_name_type> authors;
     vector<discipline_api_obj> disciplines;
-    int64_t total_votes;
+    int64_t votes_count;
+    int64_t group_id;
+    string group_permlink;
 };
 
 struct total_votes_api_obj
@@ -705,12 +716,18 @@ struct review_api_obj
     review_api_obj(const chain::review_object& r, const vector<discipline_api_obj>& disciplines)
             : id(r.id._id)
             , research_content_id(r.research_content_id._id)
-            , author(r.author)
             , content(fc::to_string(r.content))
             , is_positive(r.is_positive)
+            , author(r.author)
             , created_at(r.created_at)
     {
         this->disciplines = disciplines;
+
+        for (const auto& kvp : r.reward_weights_per_discipline) {
+            discipline_id_type discipline_id = kvp.first;
+            share_type weight = kvp.second;
+            this->weight_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
+        }
     }
 
     // because fc::variant require for temporary object
@@ -725,8 +742,32 @@ struct review_api_obj
     account_name_type author;
     time_point_sec created_at;
     vector<discipline_api_obj> disciplines;
+
+    map<int64_t, int64_t> weight_per_discipline;
 };
 
+struct research_group_join_request_api_obj
+{
+    research_group_join_request_api_obj(const chain::research_group_join_request_object& jr)
+            : id(jr.id._id)
+            , account_name(jr.account_name)
+            , research_group_id(jr.research_group_id._id)            
+            , motivation_letter(fc::to_string(jr.motivation_letter))
+            , expiration_time(jr.expiration_time)
+    {}
+
+    // because fc::variant require for temporary object
+    research_group_join_request_api_obj()
+    {
+    }
+
+    int64_t id;
+
+    account_name_type account_name;
+    int64_t research_group_id;
+    string motivation_letter;
+    time_point_sec expiration_time;
+};
 } // namespace app
 } // namespace deip
 
@@ -822,6 +863,7 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (content_type)
             (title)
             (content)
+            (permlink)
             (authors)
             (created_at)
             (references)
@@ -845,6 +887,7 @@ FC_REFLECT( deip::app::proposal_api_obj,
             (data)
             (quorum_percent)
             (current_votes_amount)
+            (is_completed)
             (voted_accounts)
 )
 
@@ -909,9 +952,12 @@ FC_REFLECT( deip::app::research_listing_api_obj,
            (research_id)
            (title)
            (abstract)
+           (permlink)
            (authors)
            (disciplines)
-           (total_votes)
+           (votes_count)
+           (group_id)
+           (group_permlink)
 )
 
 FC_REFLECT( deip::app::total_votes_api_obj,
@@ -930,7 +976,20 @@ FC_REFLECT( deip::app::total_votes_api_obj,
 FC_REFLECT( deip::app::review_api_obj,
             (id)
             (research_content_id)
-                    (content)(is_positive)(author)(created_at)(disciplines)
+            (content)
+            (is_positive)
+            (author)
+            (created_at)
+            (disciplines)
+            (weight_per_discipline)
+)
+
+FC_REFLECT( deip::app::research_group_join_request_api_obj,
+            (id)
+            (account_name)
+            (research_group_id)
+            (motivation_letter)
+            (expiration_time)
 )
 
 // clang-format on
