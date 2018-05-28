@@ -961,15 +961,17 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
             action == deip::protocol::proposal_action_type::dropout_member ||
             action == deip::protocol::proposal_action_type::change_quorum ||
             action == deip::protocol::proposal_action_type::rebalance_research_group_tokens)
-        FC_ASSERT(research_group.is_personal == false, "You cannot invite or dropout member from personal group");
+        FC_ASSERT(!research_group.is_personal,
+                  "You cannot invite or dropout member, change quorum and rebalance tokens in personal research group");
 
     // quorum_percent should be taken from research_group_object
     auto& proposal = proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
 
-    if (research_group.is_personal == true)
+    if (research_group.is_personal)
     {
         auto& proposal_execution_service = _db.obtain_service<dbs_proposal_execution>();
         proposal_execution_service.execute_proposal(proposal);
+        proposal_service.complete(proposal);
     }
 
 }
