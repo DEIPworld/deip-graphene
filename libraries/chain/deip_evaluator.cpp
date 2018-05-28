@@ -1352,6 +1352,42 @@ void withdraw_from_vesting_contract_evaluator::do_apply(const withdraw_from_vest
     }
 
 }
-    
+
+void vote_proposal_evaluator::do_apply(const vote_proposal_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_proposal& proposal_service = _db.obtain_service<dbs_proposal>();
+    dbs_proposal_execution& proposal_execution_service = _db.obtain_service<dbs_proposal_execution>();
+
+    research_group_service.check_research_group_token_existence(op.voter, op.research_group_id);
+    account_service.check_account_existence(op.voter);
+    proposal_service.check_proposal_existence(op.proposal_id);
+
+    const proposal_object& proposal = proposal_service.get_proposal(op.proposal_id);
+
+    FC_ASSERT(proposal.voted_accounts.find(op.voter) == proposal.voted_accounts.end(),
+              "Account \"${account}\" already voted", ("account", op.voter));
+
+    FC_ASSERT(!proposal_service.is_expired(proposal), "Proposal '${id}' is expired.", ("id", op.proposal_id));
+
+    proposal_service.vote_for(op.proposal_id, op.voter);
+
+    const research_group_object& research_group = research_group_service.get_research_group(proposal.research_group_id);
+
+    float total_voted_weight = 0;
+    auto& votes = proposal_service.get_votes_for(proposal.id);
+    for (const proposal_vote_object& vote : votes) {
+        total_voted_weight += vote.weight.value;
+    }
+
+    if (total_voted_weight  >= research_group.quorum_percent)
+    {
+        proposal_execution_service.execute_proposal(proposal);
+        proposal_service.complete(proposal);
+    }
+
+}
+
 } // namespace chain
 } // namespace deip 

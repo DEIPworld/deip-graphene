@@ -39,6 +39,7 @@ DEFINE_EVALUATOR(add_expertise_tokens)
 DEFINE_EVALUATOR(research_update)
 DEFINE_EVALUATOR(deposit_to_vesting_contract)
 DEFINE_EVALUATOR(withdraw_from_vesting_contract)
+DEFINE_EVALUATOR(vote_proposal)    
 
 }
 } // deip::chain

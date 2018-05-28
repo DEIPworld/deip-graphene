@@ -24,7 +24,6 @@
 #include <deip/chain/research_token_sale_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
 #include <deip/chain/research_token_object.hpp>
-#include <deip/chain/proposal_vote_evaluator.hpp>
 #include <deip/chain/vote_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/research_group_invite_object.hpp>
@@ -1818,14 +1817,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<deposit_to_vesting_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_from_vesting_contract_evaluator>();
-
-    // clang-format off
-    _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>(
-            new proposal_vote_evaluator(this->obtain_service<dbs_account>(),
-                                        this->obtain_service<dbs_proposal>(),
-                                        this->obtain_service<dbs_research_group>(),
-                                        this->obtain_service<dbs_proposal_execution>()));
-    //clang-format on
+    _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
 }
 
 void database::initialize_indexes()
