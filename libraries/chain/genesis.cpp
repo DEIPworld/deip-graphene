@@ -301,6 +301,7 @@ void database::init_research_content(const genesis_state_type& genesis_state)
             rc.type = static_cast<deip::chain::research_content_type>(research_content.type);
             fc::from_string(rc.title, research_content.title);
             fc::from_string(rc.content, research_content.content);
+            fc::from_string(rc.permlink, research_content.permlink);
             rc.authors.insert(research_content.authors.begin(), research_content.authors.end());
             rc.references.insert(research_content.references.begin(), research_content.references.end());
             rc.created_at = get_genesis_time();

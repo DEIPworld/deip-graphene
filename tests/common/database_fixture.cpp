@@ -803,8 +803,8 @@ const expert_token_object database_fixture::common_token(const string& account, 
 
     expert_token_object common_token
         = (expert_token_service.is_expert_token_existence_by_account_and_discipline(account, 0))
-        ? expert_token_object(common_token = expert_token_service.increase_common_tokens(account, amount))
-        : expert_token_object(common_token = expert_token_service.create(account, 0, amount));
+        ? expert_token_object(expert_token_service.increase_common_tokens(account, amount))
+        : expert_token_object(expert_token_service.create(account, 0, amount));
 
     return common_token;
 }

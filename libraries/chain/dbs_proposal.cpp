@@ -70,6 +70,12 @@ bool dbs_proposal::is_expired(const proposal_object& proposal)
     return _get_now() > proposal.expiration_time;
 }
 
+void dbs_proposal::complete(const proposal_object &proposal) {
+    db_impl().modify(proposal, [&](proposal_object& p) {
+       p.is_completed = true;
+    });
+}
+
 void dbs_proposal::clear_expired_proposals()
 {
     const auto& proposal_expiration_index = db_impl().get_index<proposal_index>().indices().get<by_expiration_time>();

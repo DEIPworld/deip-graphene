@@ -29,6 +29,8 @@
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_account.hpp>
+#include <deip/chain/dbs_review.hpp>
+#include <deip/chain/dbs_research_group_join_request.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 #define MAX_LIMIT 1000
@@ -1044,11 +1046,22 @@ research_api_obj database_api::get_research_by_id(const research_id_type& id) co
     });
 }
 
-research_api_obj database_api::get_research_by_permlink(const string& permlink) const
+research_api_obj database_api::get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const
 {
     return my->_db.with_read_lock([&]() {
         chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
-        return research_service.get_research_by_permlink(permlink);
+        return research_service.get_research_by_permlink(research_group_id, permlink);
+    });
+}
+
+research_api_obj database_api::get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group &research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
+        chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
+        
+        auto& rg = research_group_service.get_research_group_by_permlink(research_group_permlink);
+        return research_service.get_research_by_permlink(rg.id, research_permlink);
     });
 }
 
@@ -1101,10 +1114,10 @@ vector<research_api_obj> database_api::get_researches_by_research_group_id(const
     });
 }
 
-bool database_api::check_research_existence_by_permlink(const string& permlink) const
+bool database_api::check_research_existence_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const
 {
     const auto& idx = my->_db.get_index<research_index>().indices().get<by_permlink>();
-    auto itr = idx.find(permlink, fc::strcmp_less());
+    auto itr = idx.find(std::make_tuple(research_group_id, permlink));
     if (itr != idx.end())
         return true;
     else
@@ -1116,6 +1129,28 @@ research_content_api_obj database_api::get_research_content_by_id(const research
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
         return research_content_service.get_content_by_id(id);
+    });
+}
+
+research_content_api_obj database_api::get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+        return research_content_service.get_content_by_permlink(research_id, permlink);
+    });
+}
+
+research_content_api_obj database_api::get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group &research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
+        chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
+        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+
+        auto& rg = research_group_service.get_research_group_by_permlink(research_group_permlink);
+        auto& r = research_service.get_research_by_permlink(rg.id, research_permlink);
+
+        return research_content_service.get_content_by_permlink(r.id, research_content_permlink);
     });
 }
 
@@ -1300,6 +1335,16 @@ database_api::get_research_token_sale_by_id(const research_token_sale_id_type re
     });
 }
 
+bool database_api::check_research_token_sale_existence_by_research_id(const research_id_type& research_id) const
+{
+    const auto& idx = my->_db.get_index<research_token_sale_index>().indices().get<by_research_id>();
+    auto itr = idx.find(research_id);
+    if (itr != idx.end())
+        return true;
+    else
+        return false;
+}
+
 research_token_sale_api_obj
 database_api::get_research_token_sale_by_research_id(const research_id_type& research_id) const
 {
@@ -1475,9 +1520,10 @@ vector<research_listing_api_obj> database_api::get_research_listing(const discip
                 authors.push_back(member.owner);
             }
 
+            auto research_group = get_research_group_by_id(research.research_group_id);
             auto votes = vote_service.get_votes_by_research(research.id);
 
-            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, authors, disciplines, votes.size());
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, research_group, authors, disciplines, votes.size());
             results.push_back(listing_api_obj);
         }
 
@@ -1532,10 +1578,11 @@ vector<research_listing_api_obj> database_api::get_all_researches_listing(const 
             for (auto member : research_group_members) {
                 authors.push_back(member.owner);
             }
-
+            
+            auto research_group = get_research_group_by_id(research.research_group_id);
             auto votes = vote_service.get_votes_by_research(research.id);
 
-            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, authors, disciplines, votes.size());
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, research_group, authors, disciplines, votes.size());
 
             if (limit != 0) {
                 if (results.size() + 1 > limit) {
@@ -1583,6 +1630,110 @@ database_api::get_total_votes_by_research_and_discipline(const research_id_type&
         for (const chain::total_votes_object& total_votes : total_votes_r)
         {
             results.push_back(total_votes);
+        }
+
+        return results;
+    });
+}
+
+vector<review_api_obj> database_api::get_reviews_by_research(const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<review_api_obj> results;
+        chain::dbs_research_content& research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+
+
+        auto contents = research_content_service.get_content_by_research_id(research_id);
+
+        for (const chain::research_content_object& content : contents) {
+            auto reviews = get_reviews_by_content(content.id);
+            results.insert(results.end(), reviews.begin(), reviews.end());
+        }
+        return results;
+    });
+}
+
+vector<review_api_obj> database_api::get_reviews_by_content(const research_content_id_type& research_content_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<review_api_obj> results;
+        chain::dbs_review& review_service = my->_db.obtain_service<chain::dbs_review>();
+
+        auto reviews = review_service.get_research_content_reviews(research_content_id);
+
+        for (const chain::review_object& review : reviews)
+        {
+            vector<discipline_api_obj> disciplines;
+
+            for (const auto discipline_id : review.disciplines) {
+                auto discipline_ao = get_discipline(discipline_id);
+                disciplines.push_back(discipline_ao);
+            }
+
+            review_api_obj api_obj = review_api_obj(review, disciplines);
+            results.push_back(api_obj);
+        }
+
+        return results;
+    });
+}
+
+research_group_join_request_api_obj database_api::get_research_group_join_request_by_id(
+    const research_group_join_request_id_type& research_group_join_request_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group_join_request& research_group_join_request_service
+            = my->_db.obtain_service<chain::dbs_research_group_join_request>();
+        return research_group_join_request_service.get(research_group_join_request_id);
+    });
+}
+
+research_group_join_request_api_obj database_api::get_research_group_join_request_by_account_name_and_research_group_id(
+    const account_name_type& account_name, const research_group_id_type& research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_group_join_request& research_group_join_request_service
+            = my->_db.obtain_service<chain::dbs_research_group_join_request>();
+        return research_group_join_request_service
+            .get_research_group_join_request_by_account_name_and_research_group_id(account_name, research_group_id);
+    });
+}
+
+vector<research_group_join_request_api_obj>
+database_api::get_research_group_join_requests_by_account_name(const account_name_type& account_name) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_group_join_request_api_obj> results;
+        chain::dbs_research_group_join_request& research_group_join_request_service
+            = my->_db.obtain_service<chain::dbs_research_group_join_request>();
+
+        auto research_group_join_requests = research_group_join_request_service.get_research_group_join_requests_by_account_name(account_name);
+
+        for (const chain::research_group_join_request_object& research_group_join_request :
+             research_group_join_requests)
+        {
+            results.push_back(research_group_join_request);
+        }
+
+        return results;
+    });
+}
+
+vector<research_group_join_request_api_obj> database_api::get_research_group_join_requests_by_research_group_id(
+    const research_group_id_type& research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_group_join_request_api_obj> results;
+        chain::dbs_research_group_join_request& research_group_join_request_service
+            = my->_db.obtain_service<chain::dbs_research_group_join_request>();
+
+        auto research_group_join_requests
+            = research_group_join_request_service.get_research_group_join_requests_by_research_group_id(research_group_id);
+
+        for (const chain::research_group_join_request_object& research_group_join_request :
+             research_group_join_requests)
+        {
+            results.push_back(research_group_join_request);
         }
 
         return results;

@@ -44,7 +44,7 @@ public:
 
     template <typename Constructor, typename Allocator>
     research_content_object(Constructor &&c, allocator<Allocator> a) 
-        : title(a), content(a), authors(a), references(a), external_references(a) 
+        : title(a), content(a), permlink(a), authors(a), references(a), external_references(a)
     {
         c(*this);
     }
@@ -56,6 +56,7 @@ public:
 
     shared_string title;
     shared_string content;
+    shared_string permlink;
     
     account_name_type_set authors;
     time_point_sec created_at;
@@ -74,6 +75,7 @@ struct by_research_id_and_content_type;
 struct by_activity_state;
 struct by_activity_window_start;
 struct by_activity_window_end;
+struct by_permlink;
 
 typedef multi_index_container<research_content_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -94,6 +96,17 @@ typedef multi_index_container<research_content_object,
                                 member<research_content_object,
                                         research_content_type,
                                         &research_content_object::type>>>,
+
+                ordered_unique<tag<by_permlink>,
+                        composite_key<research_content_object,
+                                member<research_content_object,
+                                        research_id_type,
+                                        &research_content_object::research_id>,
+                                member<research_content_object,
+                                        shared_string,
+                                        &research_content_object::permlink>>,
+                        composite_key_compare<std::less<research_id_type>,
+                                              fc::strcmp_less>>,
 
                 ordered_non_unique<tag<by_activity_window_start>,
                                 member<research_content_object,
@@ -116,5 +129,5 @@ typedef multi_index_container<research_content_object,
 
 FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result))
 FC_REFLECT_ENUM(deip::chain::research_content_activity_state, (active)(pending)(closed) )
-FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(title)(content)(authors)(references)(external_references))
+FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(title)(content)(permlink)(authors)(created_at)(references)(external_references)(activity_round)(activity_state)(activity_window_start)(activity_window_end))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_content_object, deip::chain::research_content_index)

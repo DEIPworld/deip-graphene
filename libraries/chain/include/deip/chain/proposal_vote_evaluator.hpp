@@ -176,7 +176,7 @@ protected:
         if (is_quorum(proposal))
         {
             evaluators.execute(proposal);
-            _proposal_service.remove(proposal);
+            _proposal_service.complete(proposal);
         }
     }
 
@@ -324,7 +324,8 @@ protected:
         _research_service.check_research_existence(data.research_id);
         FC_ASSERT((!_research_service.get_research(data.research_id).is_finished), "You can't add content to finished research");
                           
-        auto& research_content = _research_content_service.create(data.research_id, data.type, data.title, data.content, data.authors, data.references, data.external_references);
+        auto& research_content = _research_content_service.create(data.research_id, data.type, data.title, data.content, data.permlink,
+                                                                  data.authors, data.references, data.external_references);
 
         std::map<discipline_id_type, total_votes_weights> total_votes_to_create;
         std::map<discipline_id_type, share_type> disciplines_to_increase;
