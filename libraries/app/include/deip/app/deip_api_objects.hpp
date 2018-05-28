@@ -21,6 +21,7 @@
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/review_object.hpp>
 #include <deip/chain/research_group_join_request_object.hpp>
+#include <deip/chain/research_token_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -768,6 +769,27 @@ struct research_group_join_request_api_obj
     string motivation_letter;
     time_point_sec expiration_time;
 };
+
+struct research_token_api_obj
+{
+   research_token_api_obj(const chain::research_token_object& rt)
+            : id(rt.id._id)
+            , account_name(rt.account_name)
+            , research_id(rt.research_id._id)            
+            , amount(rt.amount)
+    {}
+
+    // because fc::variant require for temporary object
+    research_token_api_obj()
+    {
+    }
+
+    int64_t id;
+    account_name_type account_name;
+    int64_t research_id;
+    share_type amount;
+};
+
 } // namespace app
 } // namespace deip
 
@@ -990,6 +1012,13 @@ FC_REFLECT( deip::app::research_group_join_request_api_obj,
             (research_group_id)
             (motivation_letter)
             (expiration_time)
+)
+
+FC_REFLECT( deip::app::research_token_api_obj,
+            (id)
+            (account_name)
+            (research_id)
+            (amount)
 )
 
 // clang-format on
