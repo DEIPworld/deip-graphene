@@ -365,7 +365,7 @@ struct discipline_api_obj
 
 struct research_api_obj
 {
-    research_api_obj(const chain::research_object& r)
+    research_api_obj(const chain::research_object& r, const vector<discipline_api_obj>& disciplines)
         : id(r.id._id)
         ,  research_group_id(r.research_group_id._id)
         ,  title(fc::to_string(r.title))
@@ -376,6 +376,7 @@ struct research_api_obj
         ,  review_share_in_percent(r.review_share_in_percent)
         ,  created_at(r.created_at)
         ,  dropout_compensation_in_percent(r.dropout_compensation_in_percent)
+        ,  disciplines(disciplines.begin(), disciplines.end())
     {}
 
     // because fc::variant require for temporary object
@@ -393,6 +394,7 @@ struct research_api_obj
     uint16_t review_share_in_percent;
     time_point_sec created_at;
     int16_t dropout_compensation_in_percent;
+    vector<discipline_api_obj> disciplines;
 };
 
 struct research_content_api_obj
@@ -652,7 +654,6 @@ struct research_listing_api_obj
     research_listing_api_obj(const research_api_obj& r,
                              const research_group_api_obj& rg,
                              const vector<account_name_type>& authors,
-                             const vector<discipline_api_obj>& disciplines,
                              const int64_t& votes_count) :
 
         research_id(r.id),
@@ -660,7 +661,7 @@ struct research_listing_api_obj
         abstract(r.abstract),
         permlink(r.permlink),
         authors(authors.begin(), authors.end()),
-        disciplines(disciplines.begin(), disciplines.end()),
+        disciplines(r.disciplines.begin(), r.disciplines.end()),
         votes_count(votes_count),
         group_id(rg.id),
         group_permlink(rg.permlink) {}
@@ -881,6 +882,7 @@ FC_REFLECT( deip::app::research_api_obj,
             (review_share_in_percent)
             (created_at)
             (dropout_compensation_in_percent)
+            (disciplines)
           )
 
 FC_REFLECT( deip::app::research_content_api_obj,
