@@ -143,7 +143,8 @@ FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
            (description)
            (permlink)
            (quorum_percent)
-           (members))
+           (members)
+           (is_personal))
 
 
 FC_REFLECT(deip::chain::genesis_state_type::research_type,
