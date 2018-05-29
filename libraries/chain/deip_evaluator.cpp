@@ -1190,6 +1190,7 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
     if (is_hard_cap_reached) {
         account_service.decrease_balance(account_service.get_account(op.owner), asset(amount_to_contribute));
         research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, amount_to_contribute);
+        research_token_sale_service.change_research_token_sale_status(op.research_token_sale_id, token_sale_finished);
         _db.distribute_research_tokens(op.research_token_sale_id);
     }
     else {
