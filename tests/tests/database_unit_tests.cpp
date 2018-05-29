@@ -138,7 +138,7 @@ public:
             d.research_content_id = 1;
             d.is_positive = true;
             d.author = "alice";
-            d.reward_weights_per_discipline = reward_weights_per_discipline;
+            d.reward_weights_per_discipline.insert(reward_weights_per_discipline.begin(), reward_weights_per_discipline.end());
             d.expertise_amounts_used[10] = 50;
             d.weight_modifiers[10] = 1;
         });
@@ -150,7 +150,7 @@ public:
             d.research_content_id = 1;
             d.is_positive = true;
             d.author = "bob";
-            d.reward_weights_per_discipline = reward_weights_per_discipline;
+            d.reward_weights_per_discipline.insert(reward_weights_per_discipline.begin(), reward_weights_per_discipline.end());
             d.expertise_amounts_used[10] = 50;
             d.weight_modifiers[10] = 1;
         });
