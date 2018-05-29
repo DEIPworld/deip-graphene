@@ -1167,10 +1167,11 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
     FC_ASSERT(account.balance.amount >= op.amount, "Not enough funds to contribute");
 
     research_token_sale_service.check_research_token_sale_existence(op.research_token_sale_id);
-
     fc::time_point_sec contribution_time = _db.head_block_time();
 
     auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(op.research_token_sale_id);
+    FC_ASSERT(research_token_sale.status == research_token_sale_status::token_sale_active, "You cannot contribute to finished or expired token sale");
+
     bool is_hard_cap_reached = research_token_sale.total_amount + op.amount >= research_token_sale.hard_cap;
 
     share_type amount_to_contribute = op.amount;

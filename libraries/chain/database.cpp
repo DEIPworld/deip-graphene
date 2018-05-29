@@ -1744,20 +1744,28 @@ void database::process_grants()
 
 void database::process_research_token_sales()
 {
+    dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
     const auto& idx = get_index<research_token_sale_index>().indices().get<by_end_time>();
     auto itr = idx.begin();
     auto _head_block_time = head_block_time();
 
-    while (itr->end_time <= _head_block_time)
+    while (itr->end_time <= _head_block_time && itr != idx.end())
     {
-        if (itr->total_amount < itr->soft_cap){
-            refund_research_tokens(itr->id);
+        if (itr->status == research_token_sale_status::token_sale_active)
+        {
+            if (itr->total_amount < itr->soft_cap)
+            {
+                research_token_sale_service.change_research_token_sale_status(itr->id,
+                                                                              research_token_sale_status::token_sale_expired);
+                refund_research_tokens(itr->id);
+            } else if (itr->total_amount >= itr->soft_cap)
+            {
+                research_token_sale_service.change_research_token_sale_status(itr->id,
+                                                                              research_token_sale_status::token_sale_finished);
+                distribute_research_tokens(itr->id);
+            }
         }
-        else if (itr->total_amount >= itr->soft_cap){
-            distribute_research_tokens(itr->id);
-        }
-        remove(*itr);
-        itr = idx.begin();
+        itr++;
     }
 }
 
@@ -2077,6 +2085,8 @@ void database::_apply_block(const signed_block& next_block)
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
+
+        process_research_token_sales();
 
         process_funds();
 

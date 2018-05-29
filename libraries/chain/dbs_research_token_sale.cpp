@@ -25,6 +25,7 @@ const research_token_sale_object& dbs_research_token_sale::start_research_token_
               research_token_sale.balance_tokens = balance_tokens;
               research_token_sale.soft_cap = soft_cap;
               research_token_sale.hard_cap = hard_cap;
+              research_token_sale.status = research_token_sale_status::token_sale_active;
           });
 
     return new_research_token_sale;
@@ -87,6 +88,13 @@ const research_token_sale_object& dbs_research_token_sale::increase_research_tok
     return research_token_sale;
 }
 
+const research_token_sale_object& dbs_research_token_sale::change_research_token_sale_status(const research_token_sale_id_type& id,
+                                                                                             const research_token_sale_status status)
+{
+    const research_token_sale_object& research_token_sale = get_research_token_sale_by_id(id);
+    db_impl().modify(research_token_sale, [&](research_token_sale_object& rts) { rts.status = status; });
+    return research_token_sale;
+}
 
 const research_token_sale_contribution_object&
     dbs_research_token_sale::create_research_token_sale_contribution(const research_token_sale_id_type& research_token_sale_id,
