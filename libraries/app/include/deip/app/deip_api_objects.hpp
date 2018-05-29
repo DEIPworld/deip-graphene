@@ -440,8 +440,8 @@ struct expert_token_api_obj
         : id(d.id._id)
         ,  account_name(d.account_name)
         ,  discipline_id(d.discipline_id._id)
+        ,  discipline_name(discipline_name)
         ,  amount(d.amount)
-        , discipline_name(discipline_name)
     {}
 
     // because fc::variant require for temporary object
@@ -900,6 +900,7 @@ FC_REFLECT( deip::app::expert_token_api_obj,
             (id)
             (account_name)
             (discipline_id)
+            (discipline_name)
             (amount)
 )
 
