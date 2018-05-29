@@ -175,6 +175,9 @@ typedef bip::set<fc::fixed_string_32, std::less<fc::fixed_string_32>, fixed_stri
 typedef allocator<discipline_id_type> discipline_id_allocator_type;    
 typedef bip::set<discipline_id_type, std::less<discipline_id_type>, discipline_id_allocator_type> discipline_id_type_set;
 
+typedef allocator<std::pair<const discipline_id_type, share_type>> discipline_id_share_type_allocator_type;
+typedef bip::map<discipline_id_type, share_type, std::less<discipline_id_type>, discipline_id_share_type_allocator_type> discipline_id_share_type_map;
+
 enum bandwidth_type
 {
     post, ///< Rate limiting posting reward eligibility over time
