@@ -456,39 +456,6 @@ struct expert_token_api_obj
     share_type amount;
 };
 
-struct proposal_api_obj
-{
-    proposal_api_obj(const chain::proposal_object& p)
-        : id(p.id._id)
-        ,  action(p.action)
-        ,  creation_time(p.creation_time)
-        ,  expiration_time(p.expiration_time)
-        ,  creator(p.creator)
-        ,  data(fc::to_string(p.data))
-        ,  quorum_percent(p.quorum_percent.value)
-        ,  current_votes_amount(p.current_votes_amount)
-        ,  is_completed(p.is_completed)
-        ,  voted_accounts(p.voted_accounts)
-    {}
-
-    // because fc::variant require for temporary object
-    proposal_api_obj()
-    {
-    }
-
-    int64_t id;
-    int8_t action;
-    fc::time_point_sec creation_time;
-    fc::time_point_sec expiration_time;
-    std::string creator;
-    std::string data;
-    uint16_t quorum_percent;
-    share_type current_votes_amount;
-    bool is_completed;
-
-    flat_set<account_name_type> voted_accounts;
-};
-
 struct proposal_vote_api_obj
 {
     proposal_vote_api_obj(const chain::proposal_vote_object& pv)
@@ -511,6 +478,41 @@ struct proposal_vote_api_obj
     fc::time_point_sec voting_time;
     account_name_type voter;
     share_type weight;
+};
+
+struct proposal_api_obj
+{
+    proposal_api_obj(const chain::proposal_object& p, const vector<proposal_vote_api_obj>& _votes)
+        : id(p.id._id)
+        ,  action(p.action)
+        ,  creation_time(p.creation_time)
+        ,  expiration_time(p.expiration_time)
+        ,  creator(p.creator)
+        ,  data(fc::to_string(p.data))
+        ,  quorum_percent(p.quorum_percent.value)
+        ,  current_votes_amount(p.current_votes_amount)
+        ,  is_completed(p.is_completed)
+        ,  voted_accounts(p.voted_accounts)
+        ,  votes(_votes)
+    {}
+
+    // because fc::variant require for temporary object
+    proposal_api_obj()
+    {
+    }
+
+    int64_t id;
+    int8_t action;
+    fc::time_point_sec creation_time;
+    fc::time_point_sec expiration_time;
+    std::string creator;
+    std::string data;
+    uint16_t quorum_percent;
+    share_type current_votes_amount;
+    bool is_completed;
+
+    flat_set<account_name_type> voted_accounts;
+    vector<proposal_vote_api_obj> votes;
 };
 
 struct research_group_token_api_obj
@@ -916,6 +918,7 @@ FC_REFLECT( deip::app::proposal_api_obj,
             (current_votes_amount)
             (is_completed)
             (voted_accounts)
+            (votes)
 )
 
 FC_REFLECT( deip::app::proposal_vote_api_obj,
