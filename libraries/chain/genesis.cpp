@@ -86,6 +86,7 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_research_groups(genesis_state);
         init_research(genesis_state);
         init_research_content(genesis_state);
+        init_personal_research_groups(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
@@ -348,6 +349,24 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
     }
 }
 
+void database::init_personal_research_groups(const genesis_state_type& genesis_state)
+{
+    const vector<genesis_state_type::account_type>& accounts = genesis_state.accounts;
+
+    for (auto& account : accounts)
+    {
+        FC_ASSERT(!account.name.empty(), "Account 'name' should not be empty.");
+        FC_ASSERT(is_valid_account_name(account.name), "Account name ${n} is invalid", ("n", account.name));
+
+        create<research_group_object>([&](research_group_object& research_group) {
+            fc::from_string(research_group.name, account.name);
+            fc::from_string(research_group.permlink, account.name);
+            fc::from_string(research_group.description, account.name);
+            research_group.quorum_percent = DEIP_100_PERCENT;
+            research_group.is_personal = true;
+        });
+    }
+}
 
 
 } // namespace chain
