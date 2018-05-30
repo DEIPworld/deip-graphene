@@ -42,6 +42,9 @@ public:
 
     const research_token_sale_object& increase_research_token_sale_tokens_amount(const research_token_sale_id_type& id, const share_type amount);
 
+    const research_token_sale_object& change_research_token_sale_status(const research_token_sale_id_type& id,
+                                                                        const research_token_sale_status status);
+
     //research_token_sale_contribution
 
     using research_token_sale_contribution_refs_type = std::vector<std::reference_wrapper<const research_token_sale_contribution_object>>;

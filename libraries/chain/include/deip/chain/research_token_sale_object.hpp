@@ -20,6 +20,13 @@ namespace chain {
 
 using fc::time_point;
 
+enum research_token_sale_status : uint16_t
+{
+    token_sale_active = 1,
+    token_sale_finished = 2,
+    token_sale_expired = 3
+};
+
 class research_token_sale_object : public object<research_token_sale_object_type, research_token_sale_object>
 {
 
@@ -40,6 +47,7 @@ public:
     share_type balance_tokens;
     share_type soft_cap;
     share_type hard_cap;
+    research_token_sale_status status;
 };
 
 class research_token_sale_contribution_object : public object<research_token_sale_contribution_object_type, research_token_sale_contribution_object>
@@ -102,6 +110,8 @@ typedef multi_index_container<research_token_sale_contribution_object,
 
 } // namespace chain
 } // namespace deip
+
+FC_REFLECT_ENUM(deip::chain::research_token_sale_status, (token_sale_active)(token_sale_finished)(token_sale_expired))
 
 FC_REFLECT(deip::chain::research_token_sale_object, (id)(research_id)(start_time)(end_time)(total_amount)(balance_tokens)(soft_cap)(hard_cap))
 

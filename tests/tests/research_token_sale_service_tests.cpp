@@ -32,6 +32,7 @@ public:
             ts.balance_tokens = BALANCE_TOKENS;
             ts.soft_cap = SOFT_CAP;
             ts.hard_cap = HARD_CAP;
+            ts.status = token_sale_active;
         });
 
         db.create<research_token_sale_object>([&](research_token_sale_object& ts) {
@@ -41,6 +42,7 @@ public:
             ts.balance_tokens = 200;
             ts.soft_cap = SOFT_CAP;
             ts.hard_cap = HARD_CAP;
+            ts.status = token_sale_active;
         });
 
         db.create<research_token_sale_object>([&](research_token_sale_object& ts) {
@@ -50,6 +52,7 @@ public:
             ts.balance_tokens = 90;
             ts.soft_cap = 60;
             ts.hard_cap = 90;
+            ts.status = token_sale_active;
         });
     }
 
