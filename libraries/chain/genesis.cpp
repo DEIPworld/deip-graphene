@@ -13,6 +13,8 @@
 #include <deip/chain/research_content_object.hpp>
 #include <deip/chain/research_discipline_relation_object.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
+#include <deip/chain/proposal_object.hpp>
+#include <deip/chain/proposal_vote_object.hpp>
 
 #include <fc/io/json.hpp>
 
@@ -326,12 +328,13 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
                   "Quorum percent should be in 5% to 100% range");
 
         create<research_group_object>([&](research_group_object& rg) {
-           rg.id = research_group.id;
-           fc::from_string(rg.name, research_group.name);
-           fc::from_string(rg.description, research_group.description);
-           fc::from_string(rg.permlink, research_group.permlink);
-           rg.balance = asset(0, DEIP_SYMBOL);
-           rg.quorum_percent = research_group.quorum_percent;
+            rg.id = research_group.id;
+            fc::from_string(rg.name, research_group.name);
+            fc::from_string(rg.description, research_group.description);
+            fc::from_string(rg.permlink, research_group.permlink);
+            rg.balance = asset(0, DEIP_SYMBOL);
+            rg.quorum_percent = research_group.quorum_percent;
+            rg.is_personal = research_group.is_personal;
         });
 
         // TODO: Check that total amount of research group tokens is 10000

@@ -26,7 +26,7 @@ public:
     {
         db.create<research_object>([&](research_object& d) {
             d.id = 1;
-            d.research_group_id = 1;
+            d.research_group_id = 31;
             d.title = "name1";
             d.abstract = "abstract1";
             d.permlink = "permlink1";
@@ -36,7 +36,7 @@ public:
 
         db.create<research_object>([&](research_object& d) {
             d.id = 2;
-            d.research_group_id = 2;
+            d.research_group_id = 32;
             d.title = "name2";
             d.abstract = "abstract2";
             d.permlink = "permlink2";
@@ -65,42 +65,42 @@ public:
     void create_research_groups()
     {
         db.create<research_group_object>([&](research_group_object& d) {
-            d.id = 1;
-            d.permlink = "permlink";
+            d.id = 31;
+            d.permlink = "permlink31";
         });
 
         db.create<research_group_object>([&](research_group_object& d) {
-            d.id = 2;
-            d.permlink = "permlink2";
+            d.id = 32;
+            d.permlink = "permlink32";
         });
     }
 
     void create_research_group_tokens()
     {
         db.create<research_group_token_object>([&](research_group_token_object& d) {
-            d.id = 1;
-            d.research_group_id = 1;
+            d.id = 31;
+            d.research_group_id = 31;
             d.owner = "alice";
             d.amount = 2000;
         });
 
         db.create<research_group_token_object>([&](research_group_token_object& d) {
-            d.id = 2;
-            d.research_group_id = 1;
+            d.id = 32;
+            d.research_group_id = 31;
             d.owner = "alex";
             d.amount = 8000;
         });
 
         db.create<research_group_token_object>([&](research_group_token_object& d) {
-            d.id = 3;
-            d.research_group_id = 2;
+            d.id = 33;
+            d.research_group_id = 32;
             d.owner = "alex";
             d.amount = 2000;
         });
 
         db.create<research_group_token_object>([&](research_group_token_object& d) {
-            d.id = 4;
-            d.research_group_id = 2;
+            d.id = 34;
+            d.research_group_id = 32;
             d.owner = "jack";
             d.amount = 8000;
         });
@@ -138,7 +138,7 @@ public:
             d.research_content_id = 1;
             d.is_positive = true;
             d.author = "alice";
-            d.reward_weights_per_discipline = reward_weights_per_discipline;
+            d.reward_weights_per_discipline.insert(reward_weights_per_discipline.begin(), reward_weights_per_discipline.end());
             d.expertise_amounts_used[10] = 50;
             d.weight_modifiers[10] = 1;
         });
@@ -150,7 +150,7 @@ public:
             d.research_content_id = 1;
             d.is_positive = true;
             d.author = "bob";
-            d.reward_weights_per_discipline = reward_weights_per_discipline;
+            d.reward_weights_per_discipline.insert(reward_weights_per_discipline.begin(), reward_weights_per_discipline.end());
             d.expertise_amounts_used[10] = 50;
             d.weight_modifiers[10] = 1;
         });
@@ -452,10 +452,6 @@ BOOST_AUTO_TEST_CASE(reward_reviews)
 
         BOOST_CHECK_NO_THROW(db.reward_reviews(1, 10, reward, expertise_reward));
 
-        auto k = db.get<research_group_object>(2);
-        auto a = db.get_account("alice");
-        auto b = db.get_account("bob");
-
         BOOST_CHECK(db.get_account("alice").balance.amount == 380);
         BOOST_CHECK(db.get_account("bob").balance.amount == 570);
 
@@ -483,7 +479,7 @@ BOOST_AUTO_TEST_CASE(reward_references)
 
         BOOST_CHECK_NO_THROW(db.reward_references(1, 10, reward, reward));
 
-        BOOST_CHECK(db.get<research_group_object>(2).balance.amount == 500);
+        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 500);
 
         auto alex_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alex", 10));
 
@@ -512,7 +508,7 @@ BOOST_AUTO_TEST_CASE(reward_research_token_holders)
 
         BOOST_CHECK_NO_THROW(db.reward_research_token_holders(db.get<research_object>(2), 1, reward));
 
-        BOOST_CHECK(db.get<research_group_object>(2).balance.amount == 500);
+        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 500);
 
         BOOST_CHECK(db.get_account("alice").balance.amount == 200);
         BOOST_CHECK(db.get_account("bob").balance.amount == 300);
@@ -538,8 +534,8 @@ BOOST_AUTO_TEST_CASE(reward_research_content)
         share_type reward = 1000;
         BOOST_CHECK_NO_THROW(db.reward_research_content(1, 10, reward));
 
-        BOOST_CHECK(db.get<research_group_object>(1).balance.amount == 700);
-        BOOST_CHECK(db.get<research_group_object>(2).balance.amount == 50);
+        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == 700);
+        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 50);
 
         auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
 
@@ -574,8 +570,8 @@ BOOST_AUTO_TEST_CASE(fund_review_pool)
 
         BOOST_CHECK_NO_THROW(db.fund_review_pool(10, reward));
 
-        BOOST_CHECK(alice.balance.amount == 400);
-        BOOST_CHECK(bob.balance.amount == 600);
+        auto& group_1 = db.get<research_group_object>(31);
+        auto& group_2 = db.get<research_group_object>(32);
 
         BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("alice", 10).amount == 400);
         BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("bob", 10).amount == 600);
@@ -607,8 +603,8 @@ BOOST_AUTO_TEST_CASE(reward_researches_in_discipline)
         share_type used_reward = 0;
         BOOST_CHECK_NO_THROW(used_reward = db.reward_researches_in_discipline(discipline, reward));
 
-        auto& group_1 = db.get<research_group_object>(1);
-        auto& group_2 = db.get<research_group_object>(2);
+        auto& group_1 = db.get<research_group_object>(31);
+        auto& group_2 = db.get<research_group_object>(32);
 
         BOOST_CHECK(group_1.balance.amount == 52000);
         BOOST_CHECK(group_2.balance.amount == 14000);
@@ -649,8 +645,8 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
 
         BOOST_CHECK_NO_THROW(db.distribute_reward(reward));
 
-        BOOST_CHECK(db.get<research_group_object>(1).balance.amount == 3952000);
-        BOOST_CHECK(db.get<research_group_object>(2).balance.amount == 1064000);
+        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == 3952000);
+        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 1064000);
 
         BOOST_CHECK(db.get_account("alice").balance.amount == 842840);
         BOOST_CHECK(db.get_account("bob").balance.amount == 1159760);
@@ -684,8 +680,8 @@ BOOST_AUTO_TEST_CASE(grant_researches_in_discipline)
 
         BOOST_CHECK_NO_THROW(db.grant_researches_in_discipline(db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").id, grant));
 
-        BOOST_CHECK(db.get<research_group_object>(1).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(1).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").total_active_reward_weight - db.get<total_votes_object>(3).total_weight));
-        BOOST_CHECK(db.get<research_group_object>(2).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(2).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").total_active_reward_weight - db.get<total_votes_object>(3).total_weight));
+        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(1).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").total_active_reward_weight - db.get<total_votes_object>(3).total_weight));
+        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(2).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").total_active_reward_weight - db.get<total_votes_object>(3).total_weight));
     }
     FC_LOG_AND_RETHROW()
 }
@@ -711,8 +707,8 @@ BOOST_AUTO_TEST_CASE(process_grants)
 
        BOOST_CHECK_NO_THROW(db.process_grants());
 
-       BOOST_CHECK(db.get<research_group_object>(1).balance.amount == util::calculate_share(100, db.get<total_votes_object>(1).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_reward_weight));
-       BOOST_CHECK(db.get<research_group_object>(2).balance.amount == util::calculate_share(100, db.get<total_votes_object>(2).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_reward_weight));
+       BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(100, db.get<total_votes_object>(1).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_reward_weight));
+       BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(100, db.get<total_votes_object>(2).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_reward_weight));
 
    }
    FC_LOG_AND_RETHROW()
@@ -736,8 +732,8 @@ BOOST_AUTO_TEST_CASE(reward_research_content_for_common_discipline)
         share_type reward = 1000;
         BOOST_CHECK_NO_THROW(db.reward_research_content(1, 0, reward));
 
-        BOOST_CHECK(db.get<research_group_object>(1).balance.amount == 700);
-        BOOST_CHECK(db.get<research_group_object>(2).balance.amount == 50);
+        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == 700);
+        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 50);
         
         BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 0))).amount == 10000);
         BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("bob", 0))).amount == 10000);

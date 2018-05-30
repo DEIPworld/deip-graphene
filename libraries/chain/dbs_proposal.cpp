@@ -46,7 +46,7 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
         fc::from_string(proposal.data, json_data);
         proposal.creator = creator;
         proposal.research_group_id = research_group_id;
-        proposal.creation_time = fc::time_point_sec();
+        proposal.creation_time = db_impl().head_block_time();
         proposal.expiration_time = expiration_time;
         proposal.quorum_percent = quorum_percent;
     });

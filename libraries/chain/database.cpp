@@ -24,7 +24,6 @@
 #include <deip/chain/research_token_sale_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
 #include <deip/chain/research_token_object.hpp>
-#include <deip/chain/proposal_vote_evaluator.hpp>
 #include <deip/chain/vote_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/research_group_invite_object.hpp>
@@ -67,6 +66,8 @@
 #include <deip/chain/dbs_grant.hpp>
 #include <deip/chain/dbs_review.hpp>
 #include <deip/chain/dbs_vesting_contract.hpp>
+#include <deip/chain/dbs_proposal_execution.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 
 namespace deip {
 namespace chain {
@@ -1755,20 +1756,28 @@ void database::process_grants()
 
 void database::process_research_token_sales()
 {
+    dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
     const auto& idx = get_index<research_token_sale_index>().indices().get<by_end_time>();
     auto itr = idx.begin();
     auto _head_block_time = head_block_time();
 
-    while (itr->end_time <= _head_block_time)
+    while (itr->end_time <= _head_block_time && itr != idx.end())
     {
-        if (itr->total_amount < itr->soft_cap){
-            refund_research_tokens(itr->id);
+        if (itr->status == research_token_sale_status::token_sale_active)
+        {
+            if (itr->total_amount < itr->soft_cap)
+            {
+                research_token_sale_service.change_research_token_sale_status(itr->id,
+                                                                              research_token_sale_status::token_sale_expired);
+                refund_research_tokens(itr->id);
+            } else if (itr->total_amount >= itr->soft_cap)
+            {
+                research_token_sale_service.change_research_token_sale_status(itr->id,
+                                                                              research_token_sale_status::token_sale_finished);
+                distribute_research_tokens(itr->id);
+            }
         }
-        else if (itr->total_amount >= itr->soft_cap){
-            distribute_research_tokens(itr->id);
-        }
-        remove(*itr);
-        itr = idx.begin();
+        itr++;
     }
 }
 
@@ -1826,23 +1835,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<deposit_to_vesting_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_from_vesting_contract_evaluator>();
-
-    // clang-format off
-    _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>(
-            new proposal_vote_evaluator(this->obtain_service<dbs_account>(),
-                                        this->obtain_service<dbs_proposal>(),
-                                        this->obtain_service<dbs_research_group>(),
-                                        this->obtain_service<dbs_research>(),
-                                        this->obtain_service<dbs_research_token>(),
-                                        this->obtain_service<dbs_research_content>(),
-                                        this->obtain_service<dbs_research_token_sale>(),
-                                        this->obtain_service<dbs_discipline>(),
-                                        this->obtain_service<dbs_research_discipline_relation>(),
-                                        this->obtain_service<dbs_research_group_invite>(),
-                                        this->obtain_service<dbs_dynamic_global_properties>(),
-                                        this->obtain_service<dbs_research_group_join_request>(),
-                                        this->obtain_service<dbs_vote>()));
-    //clang-format on
+    _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -2099,6 +2092,8 @@ void database::_apply_block(const signed_block& next_block)
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
+
+        process_research_token_sales();
 
         process_funds();
 

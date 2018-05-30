@@ -127,7 +127,7 @@ clean_database_fixture::clean_database_fixture()
             witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
                            init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount.value);
         }
-        
+
         validate_database();
     }
     catch (const fc::exception& e)
@@ -405,7 +405,8 @@ database_fixture::research_group_create(const int64_t& id,
                                         const string& permlink,
                                         const string& description,
                                         const share_type funds,
-                                        const share_type quorum_percent)
+                                        const share_type quorum_percent,
+                                        const bool is_personal)
 {
     const research_group_object& new_research_group
         = db.create<research_group_object>([&](research_group_object& rg) {
@@ -415,6 +416,7 @@ database_fixture::research_group_create(const int64_t& id,
               fc::from_string(rg.description, description);
               rg.balance = funds;
               rg.quorum_percent = quorum_percent;
+              rg.is_personal = is_personal;
           });
 
     return new_research_group;
@@ -424,7 +426,8 @@ const research_group_object& database_fixture::research_group_create_by_operatio
                                                                                   const string& name,
                                                                                   const string& permlink,
                                                                                   const string& description,
-                                                                                  const uint32_t quorum_percent)
+                                                                                  const uint32_t quorum_percent,
+                                                                                  const bool is_personal)
 {
     try
     {
@@ -438,6 +441,7 @@ const research_group_object& database_fixture::research_group_create_by_operatio
 
         op.creator = creator;
         op.quorum_percent = quorum_percent;
+        op.is_personal = is_personal;
 
         trx.operations.push_back(op);
 
@@ -470,9 +474,10 @@ const research_group_object& database_fixture::setup_research_group(const int64_
                                                                     const string &description,
                                                                     const share_type funds,
                                                                     const share_type quorum_percent,
+                                                                    const bool is_personal,
                                                                     const vector<std::pair<account_name_type, share_type>> &accounts)
 {
-    const auto& research_group = research_group_create(id, name, permlink, description, funds, quorum_percent);
+    const auto& research_group = research_group_create(id, name, permlink, description, funds, quorum_percent, is_personal);
 
     for (const auto& account : accounts)
     {
@@ -696,6 +701,7 @@ const research_token_sale_object& database_fixture::research_token_sale_create(c
         rts_o.balance_tokens = balance_tokens;
         rts_o.soft_cap = soft_cap;
         rts_o.hard_cap = hard_cap;
+        rts_o.status = research_token_sale_status ::token_sale_active;
     });
     return research_token_sale;
 }

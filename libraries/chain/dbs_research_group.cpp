@@ -26,12 +26,15 @@ const research_group_object& dbs_research_group::get_research_group_by_permlink(
 const research_group_object& dbs_research_group::create_research_group(const std::string& name,
                                                                        const string& permlink,
                                                                        const string& description,
-                                                                       const share_type quorum_percent) {
+                                                                       const share_type quorum_percent,
+                                                                       const bool is_personal)
+{
     const research_group_object& new_research_group = db_impl().create<research_group_object>([&](research_group_object& research_group) {
         fc::from_string(research_group.name, name);
         fc::from_string(research_group.permlink, permlink);
         fc::from_string(research_group.description, description);
         research_group.quorum_percent = quorum_percent;
+        research_group.is_personal = is_personal;
     });
 
     return new_research_group;

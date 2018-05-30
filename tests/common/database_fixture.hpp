@@ -111,13 +111,15 @@ struct database_fixture
                                                        const string& permlink,
                                                        const string& desciption,
                                                        const share_type funds,
-                                                       const share_type quorum_percent);
+                                                       const share_type quorum_percent,
+                                                       const bool is_personal);
                                                        
     const research_group_object& research_group_create_by_operation(const account_name_type& creator,
                                                                     const string& name,
                                                                     const string& permlink,
                                                                     const string& description,
-                                                                    const uint32_t quorum_percent);
+                                                                    const uint32_t quorum_percent,
+                                                                    const bool is_personal);
 
     const research_group_token_object& research_group_token_create(const research_group_id_type& research_group_id,
                                                                    const account_name_type& account,
@@ -129,6 +131,7 @@ struct database_fixture
                                                       const string &desciption,
                                                       const share_type funds,
                                                       const share_type quorum_percent,
+                                                      const bool is_personal,
                                                       const vector<std::pair<account_name_type, share_type>> &accounts);
 
     const proposal_object& create_proposal(const int64_t id,
