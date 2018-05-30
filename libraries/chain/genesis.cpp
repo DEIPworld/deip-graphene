@@ -13,6 +13,8 @@
 #include <deip/chain/research_content_object.hpp>
 #include <deip/chain/research_discipline_relation_object.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
+#include <deip/chain/proposal_object.hpp>
+#include <deip/chain/proposal_vote_object.hpp>
 
 #include <fc/io/json.hpp>
 

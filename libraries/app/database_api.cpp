@@ -1293,7 +1293,11 @@ database_api::get_proposals_by_research_group_id(const research_group_id_type re
 
         for (const chain::proposal_object& proposal : proposals)
         {
-            results.push_back(proposal_api_obj(proposal));
+            auto& votes = proposal_service.get_votes_for(proposal.id);
+            vector<proposal_vote_api_obj> votes_for;
+            for (const proposal_vote_object& vote : votes)
+                votes_for.push_back(vote);
+            results.push_back(proposal_api_obj(proposal, votes_for));
         }
 
         return results;
@@ -1304,8 +1308,12 @@ proposal_api_obj database_api::get_proposal(const proposal_id_type id) const
 {
     return my->_db.with_read_lock([&]() {
         chain::dbs_proposal &proposal_service = my->_db.obtain_service<chain::dbs_proposal>();
-
-        return proposal_service.get_proposal(id);
+        auto& proposal = proposal_service.get_proposal(id);
+        vector<proposal_vote_api_obj> votes_for;
+        auto& votes = proposal_service.get_votes_for(id);
+        for (const proposal_vote_object& vote : votes)
+            votes_for.push_back(vote);
+        return proposal_api_obj(proposal, votes_for);
     });
 }
 
