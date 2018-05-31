@@ -456,6 +456,7 @@ protected:
     void init_research(const genesis_state_type& genesis_state);
     void init_research_content(const genesis_state_type& genesis_state);
     void init_research_groups(const genesis_state_type& genesis_state);
+    void init_personal_research_groups(const genesis_state_type& genesis_state);
 
 
 private:
