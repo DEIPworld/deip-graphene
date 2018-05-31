@@ -36,17 +36,6 @@ public:
                                    const authority& posting,
                                    const asset& fee_in_deips);
 
-    const account_object& create_account_with_delegation(const account_name_type& new_account_name,
-                                        const account_name_type& creator_name,
-                                        const public_key_type& memo_key,
-                                        const string& json_metadata,
-                                        const authority& owner,
-                                        const authority& active,
-                                        const authority& posting,
-                                        const asset& fee_in_deips,
-                                        const asset& delegation_in_vests,
-                                        const optional<time_point_sec>& now = optional<time_point_sec>());
-
     void update_acount(const account_object& account,
                        const account_authority_object& account_authority,
                        const public_key_type& memo_key,
@@ -59,16 +48,9 @@ public:
     void increase_balance(const account_object& account, const asset& deips);
     void decrease_balance(const account_object& account, const asset& deips);
 
-    void increase_vesting_shares(const account_object& account, const asset& vesting);
-
-    void increase_delegated_vesting_shares(const account_object& account, const asset& vesting);
-
-    void increase_received_vesting_shares(const account_object& account, const asset& vesting);
-    void decrease_received_vesting_shares(const account_object& account, const asset& vesting);
-
     void update_withdraw(const account_object& account,
-                         const asset& vesting,
-                         const time_point_sec& next_vesting_withdrawal,
+                         const share_type& common_tokens_withdraw_rate,
+                         const time_point_sec& next_common_tokens_withdrawal,
                          const share_type& to_withdrawn,
                          const optional<share_type>& withdrawn = optional<share_type>());
 
@@ -104,13 +86,6 @@ public:
                                  const optional<time_point_sec>& now = optional<time_point_sec>());
 
     void update_voting_proxy(const account_object& account, const optional<account_object>& proxy_account);
-
-    /**
-    * @param to_account - the account to receive the new vesting shares
-    * @param DEIP - DEIP to be converted to vesting shares
-    * @return the sbd created and deposited to_account, may return DEIP if there is no median feed
-    */
-    asset create_vesting(const account_object& to_account, const asset &deip);
 
     /** clears all vote records for a particular account but does not update the
     * witness vote totals.  Vote totals should be updated first via a call to

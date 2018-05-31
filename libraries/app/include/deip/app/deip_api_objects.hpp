@@ -35,11 +35,9 @@ using research_group_token_refs_type = std::vector<std::reference_wrapper<const 
 
 typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
 typedef chain::block_summary_object block_summary_api_obj;
-typedef chain::withdraw_vesting_route_object withdraw_vesting_route_api_obj;
+typedef chain::withdraw_common_tokens_route_object withdraw_common_tokens_route_api_obj;
 typedef chain::witness_vote_object witness_vote_api_obj;
 typedef chain::witness_schedule_object witness_schedule_api_obj;
-typedef chain::vesting_delegation_object vesting_delegation_api_obj;
-typedef chain::vesting_delegation_expiration_object vesting_delegation_expiration_api_obj;
 typedef chain::reward_fund_object reward_fund_api_obj;
 typedef witness::account_bandwidth_object account_bandwidth_api_obj;
 
@@ -62,11 +60,10 @@ struct account_api_obj
         , voting_power(a.voting_power)
         , last_vote_time(a.last_vote_time)
         , balance(a.balance)
-        , vesting_shares(a.vesting_shares)
-        , delegated_vesting_shares(a.delegated_vesting_shares)
-        , received_vesting_shares(a.received_vesting_shares)
-        , vesting_withdraw_rate(a.vesting_withdraw_rate)
-        , next_vesting_withdrawal(a.next_vesting_withdrawal)
+        , common_tokens(a.total_common_tokens_amount)
+        , received_common_tokens(a.received_common_tokens)
+        , common_tokens_withdraw_rate(a.common_tokens_withdraw_rate)
+        , next_common_tokens_withdrawal(a.next_common_tokens_withdrawal)
         , withdrawn(a.withdrawn)
         , to_withdraw(a.to_withdraw)
         , withdraw_routes(a.withdraw_routes)
@@ -138,12 +135,11 @@ struct account_api_obj
     time_point_sec last_vote_time;
 
     asset balance;
+    share_type common_tokens;
 
-    asset vesting_shares;
-    asset delegated_vesting_shares;
-    asset received_vesting_shares;
-    asset vesting_withdraw_rate;
-    time_point_sec next_vesting_withdrawal;
+    share_type received_common_tokens;
+    share_type common_tokens_withdraw_rate;
+    time_point_sec next_common_tokens_withdrawal;
     share_type withdrawn;
     share_type to_withdraw;
     uint16_t withdraw_routes = 0;
@@ -808,7 +804,7 @@ FC_REFLECT( deip::app::account_api_obj,
              (recovery_account)(last_account_recovery)
              (lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
              (balance)
-             (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
+             (common_tokens)(received_common_tokens)(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (proxied_vsf_votes)(witnesses_voted_for)
              (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
              (average_market_bandwidth)(lifetime_market_bandwidth)(last_market_bandwidth_update)

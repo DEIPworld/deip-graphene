@@ -493,7 +493,7 @@ vector<withdraw_route> database_api::get_withdraw_routes(string account, withdra
 
         if (type == outgoing || type == all)
         {
-            const auto& by_route = my->_db.get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
+            const auto& by_route = my->_db.get_index<withdraw_common_tokens_route_index>().indices().get<by_withdraw_route>();
             auto route = by_route.lower_bound(acc.id);
 
             while (route != by_route.end() && route->from_account == acc.id)
@@ -502,7 +502,7 @@ vector<withdraw_route> database_api::get_withdraw_routes(string account, withdra
                 r.from_account = account;
                 r.to_account = my->_db.get(route->to_account).name;
                 r.percent = route->percent;
-                r.auto_vest = route->auto_vest;
+                r.auto_common_token = route->auto_common_token;
 
                 result.push_back(r);
 
@@ -512,7 +512,7 @@ vector<withdraw_route> database_api::get_withdraw_routes(string account, withdra
 
         if (type == incoming || type == all)
         {
-            const auto& by_dest = my->_db.get_index<withdraw_vesting_route_index>().indices().get<by_destination>();
+            const auto& by_dest = my->_db.get_index<withdraw_common_tokens_route_index>().indices().get<by_destination>();
             auto route = by_dest.lower_bound(acc.id);
 
             while (route != by_dest.end() && route->to_account == acc.id)
@@ -521,7 +521,7 @@ vector<withdraw_route> database_api::get_withdraw_routes(string account, withdra
                 r.from_account = my->_db.get(route->from_account).name;
                 r.to_account = account;
                 r.percent = route->percent;
-                r.auto_vest = route->auto_vest;
+                r.auto_common_token = route->auto_common_token;
 
                 result.push_back(r);
 
@@ -877,48 +877,6 @@ vector<account_name_type> database_api::get_active_witnesses() const
     });
 }
 
-vector<vesting_delegation_api_obj>
-database_api::get_vesting_delegations(string account, string from, uint32_t limit) const
-{
-    FC_ASSERT(limit <= MAX_LIMIT);
-
-    return my->_db.with_read_lock([&]() {
-        vector<vesting_delegation_api_obj> result;
-        result.reserve(limit);
-
-        const auto& delegation_idx = my->_db.get_index<vesting_delegation_index, by_delegation>();
-        auto itr = delegation_idx.lower_bound(boost::make_tuple(account, from));
-        while (result.size() < limit && itr != delegation_idx.end() && itr->delegator == account)
-        {
-            result.push_back(*itr);
-            ++itr;
-        }
-
-        return result;
-    });
-}
-
-vector<vesting_delegation_expiration_api_obj>
-database_api::get_expiring_vesting_delegations(string account, time_point_sec from, uint32_t limit) const
-{
-    FC_ASSERT(limit <= MAX_LIMIT);
-
-    return my->_db.with_read_lock([&]() {
-        vector<vesting_delegation_expiration_api_obj> result;
-        result.reserve(limit);
-
-        const auto& exp_idx = my->_db.get_index<vesting_delegation_expiration_index, by_account_expiration>();
-        auto itr = exp_idx.lower_bound(boost::make_tuple(account, from));
-        while (result.size() < limit && itr != exp_idx.end() && itr->delegator == account)
-        {
-            result.push_back(*itr);
-            ++itr;
-        }
-
-        return result;
-    });
-}
-
 state database_api::get_state(string path) const
 {
     return my->_db.with_read_lock([&]() {
@@ -956,8 +914,7 @@ state database_api::get_state(string path) const
                     {
                         switch (item.second.op.which())
                         {
-                        case operation::tag<transfer_to_vesting_operation>::value:
-                        case operation::tag<withdraw_vesting_operation>::value:
+                        case operation::tag<withdraw_common_tokens_operation>::value:
                         case operation::tag<transfer_operation>::value:
                         case operation::tag<vote_operation>::value:
                         case operation::tag<account_witness_vote_operation>::value:

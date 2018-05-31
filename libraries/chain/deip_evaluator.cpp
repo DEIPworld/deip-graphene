@@ -152,71 +152,6 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
 
 }
 
-void account_create_with_delegation_evaluator::do_apply(const account_create_with_delegation_operation& o)
-{
-    const auto& props = _db.get_dynamic_global_properties();
-
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
-
-    const auto& creator = account_service.get_account(o.creator);
-
-    const witness_schedule_object& wso = _db.get_witness_schedule_object();
-
-    // check creator balance
-
-    FC_ASSERT(creator.balance >= o.fee, "Insufficient balance to create account.",
-              ("creator.balance", creator.balance)("required", o.fee));
-
-    // check delegation fee
-
-    FC_ASSERT(creator.vesting_shares - creator.delegated_vesting_shares
-                      - asset(creator.to_withdraw - creator.withdrawn, VESTS_SYMBOL)
-                  >= o.delegation,
-              "Insufficient vesting shares to delegate to new account.",
-              ("creator.vesting_shares", creator.vesting_shares)(
-                  "creator.delegated_vesting_shares", creator.delegated_vesting_shares)("required", o.delegation));
-
-    auto target_delegation
-        = asset(wso.median_props.account_creation_fee.amount * DEIP_CREATE_ACCOUNT_WITH_DEIP_MODIFIER
-                    * DEIP_CREATE_ACCOUNT_DELEGATION_RATIO,
-                DEIP_SYMBOL)
-        * props.get_vesting_share_price();
-
-    auto current_delegation
-        = asset(o.fee.amount * DEIP_CREATE_ACCOUNT_DELEGATION_RATIO, DEIP_SYMBOL) * props.get_vesting_share_price()
-        + o.delegation;
-
-    FC_ASSERT(current_delegation >= target_delegation, "Inssufficient Delegation ${f} required, ${p} provided.",
-              ("f", target_delegation)("p", current_delegation)(
-                  "account_creation_fee", wso.median_props.account_creation_fee)("o.fee", o.fee)("o.delegation",
-                                                                                                 o.delegation));
-
-    FC_ASSERT(o.fee >= wso.median_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided.",
-              ("f", wso.median_props.account_creation_fee)("p", o.fee));
-
-    // check accounts existence
-
-    account_service.check_account_existence(o.owner.account_auths);
-
-    account_service.check_account_existence(o.active.account_auths);
-
-    account_service.check_account_existence(o.posting.account_auths);
-
-    account_service.create_account_with_delegation(o.new_account_name, o.creator, o.memo_key, o.json_metadata, o.owner,
-                                                   o.active, o.posting, o.fee, o.delegation);
-
-
-    bool is_personal = true;
-
-    auto& personal_research_group = research_group_service.create_research_group(o.new_account_name,
-                                                                                 o.new_account_name,
-                                                                                 o.new_account_name,
-                                                                                 DEIP_100_PERCENT,
-                                                                                 is_personal);
-    research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
-}
-
 void account_update_evaluator::do_apply(const account_update_operation& o)
 {
     if (o.posting)
@@ -268,9 +203,10 @@ void transfer_evaluator::do_apply(const transfer_operation& o)
     account_service.increase_balance(to_account, o.amount);
 }
 
-void transfer_to_vesting_evaluator::do_apply(const transfer_to_vesting_operation& o)
+void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_tokens_operation& o)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
 
     const auto& from_account = account_service.get_account(o.from);
     const auto& to_account = o.to.size() ? account_service.get_account(o.to) : from_account;
@@ -278,18 +214,22 @@ void transfer_to_vesting_evaluator::do_apply(const transfer_to_vesting_operation
     FC_ASSERT(_db.get_balance(from_account, DEIP_SYMBOL) >= o.amount,
               "Account does not have sufficient DEIP for transfer.");
     account_service.decrease_balance(from_account, o.amount);
-    account_service.create_vesting(to_account, o.amount);
+
+    if (!expert_token_service.is_expert_token_existence_by_account_and_discipline(to_account.name, 0))
+        expert_token_service.create(to_account.name, 0, o.amount.amount);
+    else
+        expert_token_service.increase_common_tokens(to_account.name, o.amount.amount);
 }
 
-void withdraw_vesting_evaluator::do_apply(const withdraw_vesting_operation& o)
+void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_operation& o)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
 
     const auto& account = account_service.get_account(o.account);
 
-    FC_ASSERT(account.vesting_shares >= asset(0, VESTS_SYMBOL),
-              "Account does not have sufficient Deip Power for withdraw.");
-    FC_ASSERT(account.vesting_shares - account.delegated_vesting_shares >= o.vesting_shares,
+    FC_ASSERT(account.total_common_tokens_amount >= 0, "Account does not have sufficient Deip Power for withdraw.");
+    FC_ASSERT(account.total_common_tokens_amount >= o.total_common_tokens_amount,
               "Account does not have sufficient Deip Power for withdraw.");
 
     if (!account.mined)
@@ -297,43 +237,43 @@ void withdraw_vesting_evaluator::do_apply(const withdraw_vesting_operation& o)
         const auto& props = _db.get_dynamic_global_properties();
         const witness_schedule_object& wso = _db.get_witness_schedule_object();
 
-        asset min_vests = wso.median_props.account_creation_fee * props.get_vesting_share_price();
-        min_vests.amount.value *= 10;
+        share_type min_common_tokens = wso.median_props.account_creation_fee.amount;
+        min_common_tokens *= 10;
 
         FC_ASSERT(
-            account.vesting_shares > min_vests || o.vesting_shares.amount == 0,
+            account.total_common_tokens_amount > min_common_tokens || o.total_common_tokens_amount == 0,
             "Account registered by another account requires 10x account creation fee worth of Deip Power before it "
             "can be powered down.");
     }
 
-    if (o.vesting_shares.amount == 0)
+    if (o.total_common_tokens_amount == 0)
     {
-        FC_ASSERT(account.vesting_withdraw_rate.amount != 0,
+        FC_ASSERT(account.common_tokens_withdraw_rate != 0,
                   "This operation would not change the vesting withdraw rate.");
 
-        account_service.update_withdraw(account, asset(0, VESTS_SYMBOL), time_point_sec::maximum(), 0);
+        account_service.update_withdraw(account, 0, time_point_sec::maximum(), 0);
     }
     else
     {
 
-        // DEIP: We have to decide wether we use 13 weeks vesting period or low it down
-        int vesting_withdraw_intervals = DEIP_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
+        // DEIP: We have to decide wether we use 13 weeks vesting withdraw period or low it down
+        int common_tokens_withdraw_intervals = DEIP_COMMON_TOKENS_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
 
-        auto new_vesting_withdraw_rate = asset(o.vesting_shares.amount / vesting_withdraw_intervals, VESTS_SYMBOL);
+        auto new_common_tokens_withdraw_rate = o.total_common_tokens_amount / share_type(common_tokens_withdraw_intervals);
 
-        if (new_vesting_withdraw_rate.amount == 0)
-            new_vesting_withdraw_rate.amount = 1;
+        if (new_common_tokens_withdraw_rate == 0)
+            new_common_tokens_withdraw_rate = 1;
 
-        FC_ASSERT(account.vesting_withdraw_rate != new_vesting_withdraw_rate,
+        FC_ASSERT(account.common_tokens_withdraw_rate != new_common_tokens_withdraw_rate,
                   "This operation would not change the vesting withdraw rate.");
 
-        account_service.update_withdraw(account, new_vesting_withdraw_rate,
-                                        _db.head_block_time() + fc::seconds(DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS),
-                                        o.vesting_shares.amount);
+        account_service.update_withdraw(account, new_common_tokens_withdraw_rate,
+                                        _db.head_block_time() + fc::seconds(DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS),
+                                        o.total_common_tokens_amount);
     }
 }
 
-void set_withdraw_vesting_route_evaluator::do_apply(const set_withdraw_vesting_route_operation& o)
+void set_withdraw_common_tokens_route_evaluator::do_apply(const set_withdraw_common_tokens_route_operation& o)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
@@ -342,7 +282,7 @@ void set_withdraw_vesting_route_evaluator::do_apply(const set_withdraw_vesting_r
         const auto& from_account = account_service.get_account(o.from_account);
         const auto& to_account = account_service.get_account(o.to_account);
         const auto& wd_idx
-            = _db._temporary_public_impl().get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
+            = _db._temporary_public_impl().get_index<withdraw_common_tokens_route_index>().indices().get<by_withdraw_route>();
         auto itr = wd_idx.find(boost::make_tuple(from_account.id, to_account.id));
 
         if (itr == wd_idx.end())
@@ -351,12 +291,12 @@ void set_withdraw_vesting_route_evaluator::do_apply(const set_withdraw_vesting_r
             FC_ASSERT(from_account.withdraw_routes < DEIP_MAX_WITHDRAW_ROUTES,
                       "Account already has the maximum number of routes.");
 
-            _db._temporary_public_impl().create<withdraw_vesting_route_object>(
-                [&](withdraw_vesting_route_object& wvdo) {
+            _db._temporary_public_impl().create<withdraw_common_tokens_route_object>(
+                [&](withdraw_common_tokens_route_object& wvdo) {
                     wvdo.from_account = from_account.id;
                     wvdo.to_account = to_account.id;
                     wvdo.percent = o.percent;
-                    wvdo.auto_vest = o.auto_vest;
+                    wvdo.auto_common_token = o.auto_common_token;
                 });
 
             account_service.increase_withdraw_routes(from_account);
@@ -369,11 +309,11 @@ void set_withdraw_vesting_route_evaluator::do_apply(const set_withdraw_vesting_r
         }
         else
         {
-            _db._temporary_public_impl().modify(*itr, [&](withdraw_vesting_route_object& wvdo) {
+            _db._temporary_public_impl().modify(*itr, [&](withdraw_common_tokens_route_object& wvdo) {
                 wvdo.from_account = from_account.id;
                 wvdo.to_account = to_account.id;
                 wvdo.percent = o.percent;
-                wvdo.auto_vest = o.auto_vest;
+                wvdo.auto_common_token = o.auto_common_token;
             });
         }
 
@@ -387,7 +327,7 @@ void set_withdraw_vesting_route_evaluator::do_apply(const set_withdraw_vesting_r
         }
 
         FC_ASSERT(total_percent <= DEIP_100_PERCENT,
-                  "More than 100% of vesting withdrawals allocated to destinations.");
+                  "More than 100% of common_tokens withdrawals allocated to destinations.");
     }
     FC_CAPTURE_AND_RETHROW()
 }
@@ -828,97 +768,6 @@ void change_recovery_account_evaluator::do_apply(const change_recovery_account_o
     const auto& account_to_recover = account_service.get_account(o.account_to_recover);
 
     account_service.change_recovery_account(account_to_recover, o.new_recovery_account);
-}
-
-void delegate_vesting_shares_evaluator::do_apply(const delegate_vesting_shares_operation& op)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    const auto& delegator = account_service.get_account(op.delegator);
-    const auto& delegatee = account_service.get_account(op.delegatee);
-    auto delegation = _db._temporary_public_impl().find<vesting_delegation_object, by_delegation>(
-        boost::make_tuple(op.delegator, op.delegatee));
-
-    auto available_shares = delegator.vesting_shares - delegator.delegated_vesting_shares
-        - asset(delegator.to_withdraw - delegator.withdrawn, VESTS_SYMBOL);
-
-    const auto& wso = _db.get_witness_schedule_object();
-    const auto& gpo = _db.get_dynamic_global_properties();
-    auto min_delegation
-        = asset(wso.median_props.account_creation_fee.amount * 10, DEIP_SYMBOL) * gpo.get_vesting_share_price();
-    auto min_update = wso.median_props.account_creation_fee * gpo.get_vesting_share_price();
-
-    // If delegation doesn't exist, create it
-    if (delegation == nullptr)
-    {
-        FC_ASSERT(available_shares >= op.vesting_shares, "Account does not have enough vesting shares to delegate.");
-        FC_ASSERT(op.vesting_shares >= min_delegation, "Account must delegate a minimum of ${v}",
-                  ("v", min_delegation));
-
-        _db._temporary_public_impl().create<vesting_delegation_object>([&](vesting_delegation_object& obj) {
-            obj.delegator = op.delegator;
-            obj.delegatee = op.delegatee;
-            obj.vesting_shares = op.vesting_shares;
-            obj.min_delegation_time = _db.head_block_time();
-        });
-
-        account_service.increase_delegated_vesting_shares(delegator, op.vesting_shares);
-        account_service.increase_received_vesting_shares(delegatee, op.vesting_shares);
-    }
-    // Else if the delegation is increasing
-    else if (op.vesting_shares >= delegation->vesting_shares)
-    {
-        auto delta = op.vesting_shares - delegation->vesting_shares;
-
-        FC_ASSERT(delta >= min_update, "Deip Power increase is not enough of a difference. min_update: ${min}",
-                  ("min", min_update));
-        FC_ASSERT(available_shares >= op.vesting_shares - delegation->vesting_shares,
-                  "Account does not have enough vesting shares to delegate.");
-
-        account_service.increase_delegated_vesting_shares(delegator, delta);
-        account_service.increase_received_vesting_shares(delegatee, delta);
-
-        _db._temporary_public_impl().modify(
-            *delegation, [&](vesting_delegation_object& obj) { obj.vesting_shares = op.vesting_shares; });
-    }
-    // Else the delegation is decreasing
-    else /* delegation->vesting_shares > op.vesting_shares */
-    {
-        auto delta = delegation->vesting_shares - op.vesting_shares;
-
-        if (op.vesting_shares.amount > 0)
-        {
-            FC_ASSERT(delta >= min_update, "Deip Power decrease is not enough of a difference. min_update: ${min}",
-                      ("min", min_update));
-            FC_ASSERT(op.vesting_shares >= min_delegation,
-                      "Delegation must be removed or leave minimum delegation amount of ${v}", ("v", min_delegation));
-        }
-        else
-        {
-            FC_ASSERT(delegation->vesting_shares.amount > 0,
-                      "Delegation would set vesting_shares to zero, but it is already zero");
-        }
-
-        _db._temporary_public_impl().create<vesting_delegation_expiration_object>(
-            [&](vesting_delegation_expiration_object& obj) {
-                obj.delegator = op.delegator;
-                obj.vesting_shares = delta;
-                obj.expiration
-                    = std::max(_db.head_block_time() + DEIP_CASHOUT_WINDOW_SECONDS, delegation->min_delegation_time);
-            });
-
-        account_service.decrease_received_vesting_shares(delegatee, delta);
-
-        if (op.vesting_shares.amount > 0)
-        {
-            _db._temporary_public_impl().modify(
-                *delegation, [&](vesting_delegation_object& obj) { obj.vesting_shares = op.vesting_shares; });
-        }
-        else
-        {
-            _db._temporary_public_impl().remove(*delegation);
-        }
-    }
 }
 
 void create_grant_evaluator::do_apply(const create_grant_operation& op)

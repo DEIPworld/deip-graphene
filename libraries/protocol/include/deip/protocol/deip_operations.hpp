@@ -46,27 +46,6 @@ struct account_create_operation : public base_operation
     }
 };
 
-struct account_create_with_delegation_operation : public base_operation
-{
-    asset fee;
-    asset delegation;
-    account_name_type creator;
-    account_name_type new_account_name;
-    authority owner;
-    authority active;
-    authority posting;
-    public_key_type memo_key;
-    string json_metadata;
-
-    extensions_type extensions;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(creator);
-    }
-};
-
 struct account_update_operation : public base_operation
 {
     account_name_type account;
@@ -172,7 +151,7 @@ struct transfer_operation : public base_operation
  *  give another account vesting shares so that faucets can
  *  pre-fund new accounts with vesting shares.
  */
-struct transfer_to_vesting_operation : public base_operation
+struct transfer_to_common_tokens_operation : public base_operation
 {
     account_name_type from;
     account_name_type to; ///< if null, then same as from
@@ -190,16 +169,16 @@ struct transfer_to_vesting_operation : public base_operation
  * vesting shares. A user may change the number of shares they wish to
  * cash out at any time between 0 and their total vesting stake.
  *
- * After applying this operation, vesting_shares will be withdrawn
- * at a rate of vesting_shares/104 per week for two years starting
+ * After applying this operation, common_tokens will be withdrawn
+ * at a rate of common_tokens/104 per week for two years starting
  * one week after this operation is included in the blockchain.
  *
  * This operation is not valid if the user has no vesting shares.
  */
-struct withdraw_vesting_operation : public base_operation
+struct withdraw_common_tokens_operation : public base_operation
 {
     account_name_type account;
-    asset vesting_shares;
+    share_type total_common_tokens_amount;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -215,12 +194,12 @@ struct withdraw_vesting_operation : public base_operation
  * can be immediately vested again, circumventing the conversion from
  * vests to deip and back, guaranteeing they maintain their value.
  */
-struct set_withdraw_vesting_route_operation : public base_operation
+struct set_withdraw_common_tokens_route_operation : public base_operation
 {
     account_name_type from_account;
     account_name_type to_account;
     uint16_t percent = 0;
-    bool auto_vest = false;
+    bool auto_common_token = false;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -452,29 +431,6 @@ struct change_recovery_account_operation : public base_operation
     void validate() const;
 };
 
-/**
- * Delegate vesting shares from one account to the other. The vesting shares are still owned
- * by the original account, but content voting rights and bandwidth allocation are transferred
- * to the receiving account. This sets the delegation to `vesting_shares`, increasing it or
- * decreasing it as needed. (i.e. a delegation of 0 removes the delegation)
- *
- * When a delegation is removed the shares are placed in limbo for a week to prevent a satoshi
- * of VESTS from voting on the same content twice.
- */
-struct delegate_vesting_shares_operation : public base_operation
-{
-    account_name_type delegator; ///< The account delegating vesting shares
-    account_name_type delegatee; ///< The account receiving vesting shares
-    asset vesting_shares; ///< The amount of vesting shares delegated
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(delegator);
-    }
-    void validate() const;
-};
-
-
 // DEIP native operations
 
 struct create_grant_operation : public base_operation
@@ -704,18 +660,6 @@ FC_REFLECT( deip::protocol::account_create_operation,
             (memo_key)
             (json_metadata) )
 
-FC_REFLECT( deip::protocol::account_create_with_delegation_operation,
-            (fee)
-            (delegation)
-            (creator)
-            (new_account_name)
-            (owner)
-            (active)
-            (posting)
-            (memo_key)
-            (json_metadata)
-            (extensions) )
-
 FC_REFLECT( deip::protocol::account_update_operation,
             (account)
             (owner)
@@ -725,9 +669,9 @@ FC_REFLECT( deip::protocol::account_update_operation,
             (json_metadata) )
 
 FC_REFLECT( deip::protocol::transfer_operation, (from)(to)(amount)(memo) )
-FC_REFLECT( deip::protocol::transfer_to_vesting_operation, (from)(to)(amount) )
-FC_REFLECT( deip::protocol::withdraw_vesting_operation, (account)(vesting_shares) )
-FC_REFLECT( deip::protocol::set_withdraw_vesting_route_operation, (from_account)(to_account)(percent)(auto_vest) )
+FC_REFLECT( deip::protocol::transfer_to_common_tokens_operation, (from)(to)(amount) )
+FC_REFLECT( deip::protocol::withdraw_common_tokens_operation, (account)(total_common_tokens_amount) )
+FC_REFLECT( deip::protocol::set_withdraw_common_tokens_route_operation, (from_account)(to_account)(percent)(auto_common_token) )
 FC_REFLECT( deip::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( deip::protocol::account_witness_vote_operation, (account)(witness)(approve) )
 FC_REFLECT( deip::protocol::account_witness_proxy_operation, (account)(proxy) )
@@ -739,7 +683,6 @@ FC_REFLECT( deip::protocol::beneficiary_route_type, (account)(weight) )
 FC_REFLECT( deip::protocol::request_account_recovery_operation, (recovery_account)(account_to_recover)(new_owner_authority)(extensions) )
 FC_REFLECT( deip::protocol::recover_account_operation, (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions) )
 FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) )
-FC_REFLECT( deip::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) )
 
 // DEIP native operations
 FC_REFLECT( deip::protocol::create_grant_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )

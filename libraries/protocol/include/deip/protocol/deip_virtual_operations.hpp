@@ -8,21 +8,23 @@
 namespace deip {
 namespace protocol {
 
-struct fill_vesting_withdraw_operation : public virtual_operation
+struct fill_common_tokens_withdraw_operation : public virtual_operation
 {
-    fill_vesting_withdraw_operation() {}
-    fill_vesting_withdraw_operation(const string& f, const string& t, const asset& w, const asset& d)
+    fill_common_tokens_withdraw_operation() {}
+    fill_common_tokens_withdraw_operation(const string& f, const string& t, const share_type& w, const share_type& d, const bool tr)
         : from_account(f)
         , to_account(t)
         , withdrawn(w)
         , deposited(d)
+        , transfer(tr)
     {
     }
 
     account_name_type from_account;
     account_name_type to_account;
-    asset withdrawn;
-    asset deposited;
+    share_type withdrawn;
+    share_type deposited;
+    bool transfer;
 };
 
 struct shutdown_witness_operation : public virtual_operation
@@ -47,36 +49,22 @@ struct hardfork_operation : public virtual_operation
     uint32_t hardfork_id = 0;
 };
 
-struct return_vesting_delegation_operation : public virtual_operation
-{
-    return_vesting_delegation_operation() {}
-    return_vesting_delegation_operation(const account_name_type& a, const asset& v)
-        : account(a)
-        , vesting_shares(v)
-    {
-    }
-
-    account_name_type account;
-    asset vesting_shares;
-};
-
 struct producer_reward_operation : public virtual_operation
 {
     producer_reward_operation() {}
-    producer_reward_operation(const string& p, const asset& v)
+    producer_reward_operation(const string& p, const share_type c)
         : producer(p)
-        , vesting_shares(v)
+        , common_tokens_amount(c)
     {
     }
 
     account_name_type producer;
-    asset vesting_shares;
+    share_type common_tokens_amount;
 };
 }
 } // deip::protocol
 
-FC_REFLECT(deip::protocol::fill_vesting_withdraw_operation, (from_account)(to_account)(withdrawn)(deposited))
+FC_REFLECT(deip::protocol::fill_common_tokens_withdraw_operation, (from_account)(to_account)(withdrawn)(deposited)(transfer))
 FC_REFLECT(deip::protocol::shutdown_witness_operation, (owner))
 FC_REFLECT(deip::protocol::hardfork_operation, (hardfork_id))
-FC_REFLECT(deip::protocol::return_vesting_delegation_operation, (account)(vesting_shares))
-FC_REFLECT(deip::protocol::producer_reward_operation, (producer)(vesting_shares))
+FC_REFLECT(deip::protocol::producer_reward_operation, (producer)(common_tokens_amount))

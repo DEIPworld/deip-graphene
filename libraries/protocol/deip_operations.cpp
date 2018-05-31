@@ -26,27 +26,6 @@ void account_create_operation::validate() const
     FC_ASSERT(fee >= asset(0, DEIP_SYMBOL), "Account creation fee cannot be negative");
 }
 
-void account_create_with_delegation_operation::validate() const
-{
-    validate_account_name(new_account_name);
-    validate_account_name(creator);
-    FC_ASSERT(is_asset_type(fee, DEIP_SYMBOL), "Account creation fee must be DEIP");
-    FC_ASSERT(is_asset_type(delegation, VESTS_SYMBOL), "Delegation must be VESTS");
-
-    owner.validate();
-    active.validate();
-    posting.validate();
-
-    if (json_metadata.size() > 0)
-    {
-        FC_ASSERT(fc::is_utf8(json_metadata), "JSON Metadata not formatted in UTF8");
-        FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
-    }
-
-    FC_ASSERT(fee >= asset(0, DEIP_SYMBOL), "Account creation fee cannot be negative");
-    FC_ASSERT(delegation >= asset(0, VESTS_SYMBOL), "Delegation cannot be negative");
-}
-
 void account_update_operation::validate() const
 {
     validate_account_name(account);
@@ -82,7 +61,10 @@ void transfer_operation::validate() const
     {
         validate_account_name(from);
         validate_account_name(to);
-        FC_ASSERT(amount.symbol != VESTS_SYMBOL, "transferring of Deip Power (STMP) is not allowed.");
+
+        // TODO: Add check token != exp token
+        // FC_ASSERT(amount.symbol != VESTS_SYMBOL, "transferring of Deip Power (STMP) is not allowed.");
+        
         FC_ASSERT(amount.amount > 0, "Cannot transfer a negative amount (aka: stealing)");
         FC_ASSERT(memo.size() < DEIP_MAX_MEMO_SIZE, "Memo is too large");
         FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
@@ -90,7 +72,7 @@ void transfer_operation::validate() const
     FC_CAPTURE_AND_RETHROW((*this))
 }
 
-void transfer_to_vesting_operation::validate() const
+void transfer_to_common_tokens_operation::validate() const
 {
     validate_account_name(from);
     FC_ASSERT(is_asset_type(amount, DEIP_SYMBOL), "Amount must be DEIP");
@@ -99,13 +81,15 @@ void transfer_to_vesting_operation::validate() const
     FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Must transfer a nonzero amount");
 }
 
-void withdraw_vesting_operation::validate() const
+void withdraw_common_tokens_operation::validate() const
 {
     validate_account_name(account);
-    FC_ASSERT(is_asset_type(vesting_shares, VESTS_SYMBOL), "Amount must be VESTS");
+
+    // TODO Add Common token validation
+    // FC_ASSERT(is_asset_type(vesting_shares, VESTS_SYMBOL), "Amount must be VESTS");
 }
 
-void set_withdraw_vesting_route_operation::validate() const
+void set_withdraw_common_tokens_route_operation::validate() const
 {
     validate_account_name(from_account);
     validate_account_name(to_account);
@@ -158,15 +142,6 @@ void change_recovery_account_operation::validate() const
 {
     validate_account_name(account_to_recover);
     validate_account_name(new_recovery_account);
-}
-
-void delegate_vesting_shares_operation::validate() const
-{
-    validate_account_name(delegator);
-    validate_account_name(delegatee);
-    FC_ASSERT(delegator != delegatee, "You cannot delegate VESTS to yourself");
-    FC_ASSERT(is_asset_type(vesting_shares, VESTS_SYMBOL), "Delegation must be VESTS");
-    FC_ASSERT(vesting_shares >= asset(0, VESTS_SYMBOL), "Delegation cannot be negative");
 }
 
 void create_grant_operation::validate() const

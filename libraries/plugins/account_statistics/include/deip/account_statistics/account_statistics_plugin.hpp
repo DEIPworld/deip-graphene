@@ -71,18 +71,18 @@ struct account_stats_bucket_object : public object<account_stats_bucket_object_t
     share_type sbd_received = 0; ///< SBD received by this account
     uint32_t sbd_interest_payments = 0; ///< Number of times interest was paid to SBD
     share_type sbd_paid_as_interest = 0; ///< Amount of SBD paid as interest
-    uint32_t transfers_to_vesting = 0; ///< Transfers to vesting by this account. Note: Transfer to vesting from A to B
+    uint32_t transfers_to_common_tokens = 0; ///< Transfers to vesting by this account. Note: Transfer to vesting from A to B
     /// counts as a transfer from A to B followed by a vesting deposit by B.
-    share_type deip_vested = 0; ///< DEIP vested by the account
-    share_type new_vests = 0; ///< New VESTS by vesting transfers
-    uint32_t new_vesting_withdrawal_requests = 0; ///< New vesting withdrawal requests
-    uint32_t modified_vesting_withdrawal_requests = 0; ///< Changes to vesting withdraw requests
-    uint32_t vesting_withdrawals_processed = 0; ///< Vesting withdrawals processed for this account
-    uint32_t finished_vesting_withdrawals = 0; ///< Processed vesting withdrawals that are now finished
-    share_type vests_withdrawn = 0; ///< VESTS withdrawn from the account
+    share_type deip_to_common_tokens = 0; ///< DEIP vested by the account
+    share_type new_common_tokens = 0; ///< New VESTS by vesting transfers
+    uint32_t new_common_tokens_withdrawal_requests = 0; ///< New vesting withdrawal requests
+    uint32_t modified_common_tokens_withdrawal_requests = 0; ///< Changes to vesting withdraw requests
+    uint32_t common_tokens_withdrawals_processed = 0; ///< Vesting withdrawals processed for this account
+    uint32_t finished_common_tokens_withdrawals = 0; ///< Processed vesting withdrawals that are now finished
+    share_type common_tokens_withdrawn = 0; ///< VESTS withdrawn from the account
     share_type deip_received_from_withdrawls = 0; ///< DEIP received from this account's vesting withdrawals
     share_type deip_received_from_routes = 0; ///< DEIP received from another account's vesting withdrawals
-    share_type vests_received_from_routes = 0; ///< VESTS received from another account's vesting withdrawals
+    share_type common_tokens_received_from_routes = 0; ///< VESTS received from another account's vesting withdrawals
     uint32_t sbd_conversion_requests_created = 0; ///< SBD conversion requests created
     share_type sbd_to_be_converted = 0; ///< Amount of SBD to be converted
     uint32_t sbd_conversion_requests_filled = 0; ///< SBD conversion requests filled
@@ -154,10 +154,10 @@ FC_REFLECT(
     (id)(open)(seconds)(name)(transactions)(market_bandwidth)(non_market_bandwidth)(total_ops)(market_ops)(forum_ops)(
         root_comments)(root_comment_edits)(root_comments_deleted)(replies)(reply_edits)(replies_deleted)(
         new_root_votes)(changed_root_votes)(new_reply_votes)(changed_reply_votes)(transfers_to)(transfers_from)(deip_sent)(deip_received)(sbd_sent)(
-        sbd_received)(sbd_interest_payments)(sbd_paid_as_interest)(transfers_to_vesting)(deip_vested)(new_vests)(
-        new_vesting_withdrawal_requests)(modified_vesting_withdrawal_requests)(vesting_withdrawals_processed)(
-        finished_vesting_withdrawals)(vests_withdrawn)(deip_received_from_withdrawls)(deip_received_from_routes)(
-        vests_received_from_routes)(sbd_conversion_requests_created)(sbd_to_be_converted)(
+        sbd_received)(sbd_interest_payments)(sbd_paid_as_interest)(transfers_to_common_tokens)(deip_to_common_tokens)(new_common_tokens)(
+        new_common_tokens_withdrawal_requests)(modified_common_tokens_withdrawal_requests)(common_tokens_withdrawals_processed)(
+        finished_common_tokens_withdrawals)(common_tokens_withdrawn)(deip_received_from_withdrawls)(deip_received_from_routes)(
+        common_tokens_received_from_routes)(sbd_conversion_requests_created)(sbd_to_be_converted)(
         sbd_conversion_requests_filled)(deip_converted)(limit_orders_created)(limit_orders_filled)(
         limit_orders_cancelled)(limit_order_deip_paid)(limit_order_deip_received)(limit_order_sbd_paid)(
         limit_order_sbd_received)(total_pow)(estimated_hashpower))

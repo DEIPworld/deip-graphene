@@ -55,7 +55,11 @@ BOOST_AUTO_TEST_CASE(get_expert_tokens_vector_by_account_name)
         create_expert_tokens();
         auto expert_tokens = data_service.get_expert_tokens_by_account_name("alice");
 
-        BOOST_CHECK(expert_tokens.size() == 2);
+        BOOST_CHECK(expert_tokens.size() == 3);
+        BOOST_CHECK(std::any_of(expert_tokens.begin(), expert_tokens.end(), [](std::reference_wrapper<const expert_token_object> wrapper){
+            const expert_token_object &token = wrapper.get();
+            return token.account_name == "alice" && token.discipline_id == 0 && token.amount == 10000;
+        }));
         BOOST_CHECK(std::any_of(expert_tokens.begin(), expert_tokens.end(), [](std::reference_wrapper<const expert_token_object> wrapper){
             const expert_token_object &token = wrapper.get();
             return token.account_name == "alice" && token.discipline_id == 1 && token.amount == 100;
