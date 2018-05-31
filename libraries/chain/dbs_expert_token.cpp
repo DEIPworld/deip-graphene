@@ -43,13 +43,19 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
 
 const expert_token_object& dbs_expert_token::get_expert_token(const expert_token_id_type& id) const
 {
-    return db_impl().get<expert_token_object>(id);
+    try {
+        return db_impl().get<expert_token_object>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
 }
 
 const expert_token_object& dbs_expert_token::get_expert_token_by_account_and_discipline(
         const account_name_type &account, const discipline_id_type &discipline_id) const
 {
-    return db_impl().get<expert_token_object, by_account_and_discipline>(std::make_tuple(account, discipline_id));
+    try {
+        return db_impl().get<expert_token_object, by_account_and_discipline>(std::make_tuple(account, discipline_id));
+    }
+    FC_CAPTURE_AND_RETHROW((discipline_id))
 }
 
 dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_account_name(const account_name_type& account_name) const
