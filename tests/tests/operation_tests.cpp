@@ -2918,92 +2918,31 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
 
         auto& research_service = db.obtain_service<dbs_research>();
 
-        research_group_create_by_operation("alice", "name", "test permlink", "test description", 5000, false);
+        vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 9000), std::make_pair("bob", 1000) };
+        setup_research_group(31, "name", "research_group", "research group", 0, 40, false, accounts);
 
-        const std::string create_research_proposal_json = "{\"title\":\"testresearch\","
-                                                          "\"research_group_id\":21,"
-                                                          "\"abstract\":\"abstract\","
-                                                          "\"permlink\":\"permlink\","
-                                                          "\"review_share_in_percent\": 1000,"
-                                                          "\"dropout_compensation_in_percent\": 1500,"
-                                                          "\"disciplines\": [1, 2, 3]}";
-        const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 4500,\"research_id\": 0}";
+        const auto& new_research = db.create<research_object>([&](research_object& r) {
+            r.id = 20;
+            fc::from_string(r.title, "title");
+            fc::from_string(r.abstract, "abstract");
+            fc::from_string(r.permlink, "permlink");
+            r.research_group_id = 31;
+            r.review_share_in_percent = 1500;
+            r.dropout_compensation_in_percent = 1500;
+            r.is_finished = false;
+            r.owned_tokens = DEIP_100_PERCENT;
+            r.created_at = db.head_block_time();
+            r.last_update_time = db.head_block_time();
+            r.review_share_in_percent_last_update = fc::time_point_sec(db.head_block_time().sec_since_epoch() - DAYS_TO_SECONDS(100));
+        });
 
-        create_proposal_by_operation("alice", 21, create_research_proposal_json,
-                                     dbs_proposal::action_t::start_research,
-                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
-
-        vote_proposal_operation op;
-
-        op.research_group_id = 21;
-        op.proposal_id = 0;
-        op.voter = "alice";
-
-        generate_block();
-
-        private_key_type priv_key = generate_private_key("alice");
-
-        signed_transaction tx;
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.operations.push_back(op);
-        tx.sign(priv_key, db.get_chain_id());
-        tx.validate();
-        db.push_transaction(tx, 0);
-
-        generate_blocks(fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(90)), true);
-
-        create_proposal_by_operation("alice", 21, change_review_share_proposal_json,
-                                     dbs_proposal::action_t::change_research_review_share_percent,
-                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
-
-        vote_proposal_operation crs_op;
-
-        crs_op.research_group_id = 21;
-        crs_op.proposal_id = 1;
-        crs_op.voter = "alice";
-
-
-        signed_transaction tx2;
-        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx2.operations.push_back(crs_op);
-        tx2.sign(priv_key, db.get_chain_id());
-        tx2.validate();
-        db.push_transaction(tx2, 0);
-
-        auto& research = research_service.get_research(0);
-
-        BOOST_CHECK(research.review_share_in_percent == 4500);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(change_research_review_share_rate_test)
-{
-    try
-    {
-        ACTORS_WITH_EXPERT_TOKENS((alice));
-
-        auto& research_service = db.obtain_service<dbs_research>();
-
-        research_group_create_by_operation("alice", "name", "test permlink", "test description", 5000, false);
-
-        const std::string create_research_proposal_json = "{\"title\":\"testresearch\","
-                                                          "\"research_group_id\":21,"
-                                                          "\"abstract\":\"abstract\","
-                                                          "\"permlink\":\"permlink\","
-                                                          "\"review_share_in_percent\": 1000,"
-                                                          "\"dropout_compensation_in_percent\": 1500,"
-                                                          "\"disciplines\": [1, 2, 3]}";
-        const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 4500,\"research_id\": 0}";
-
-        create_proposal_by_operation("alice", 21, create_research_proposal_json,
-                                     dbs_proposal::action_t::start_research,
-                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
+        const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 4500,\"research_id\": 20}";
+        create_proposal(1, dbs_proposal::action_t::change_research_review_share_percent, change_review_share_proposal_json, "alice", 31, time_point_sec(0xffffffff), 4000);
 
         vote_proposal_operation op;
 
-        op.research_group_id = 21;
-        op.proposal_id = 0;
+        op.research_group_id = 31;
+        op.proposal_id = 1;
         op.voter = "alice";
 
         private_key_type priv_key = generate_private_key("alice");
@@ -3015,26 +2954,7 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_rate_test)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        create_proposal_by_operation("alice", 21, change_review_share_proposal_json,
-                                     dbs_proposal::action_t::change_research_review_share_percent,
-                                     fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(2)));
-
-        vote_proposal_operation crs_op;
-
-        crs_op.research_group_id = 21;
-        crs_op.proposal_id = 1;
-        crs_op.voter = "alice";
-
-        signed_transaction tx2;
-        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx2.operations.push_back(crs_op);
-        tx2.sign(priv_key, db.get_chain_id());
-        tx2.validate();
-
-        auto& research = research_service.get_research(0);
-
-        BOOST_CHECK_THROW(db.push_transaction(tx2, 0), fc::assert_exception);
-        BOOST_CHECK(research.review_share_in_percent == 1000);
+        BOOST_CHECK(new_research.review_share_in_percent == 4500);
     }
     FC_LOG_AND_RETHROW()
 }

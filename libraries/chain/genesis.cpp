@@ -84,9 +84,9 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_genesis_disciplines(genesis_state);
         init_expert_tokens(genesis_state);
         init_research_groups(genesis_state);
+        init_personal_research_groups(genesis_state);
         init_research(genesis_state);
         init_research_content(genesis_state);
-        init_personal_research_groups(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
@@ -358,12 +358,18 @@ void database::init_personal_research_groups(const genesis_state_type& genesis_s
         FC_ASSERT(!account.name.empty(), "Account 'name' should not be empty.");
         FC_ASSERT(is_valid_account_name(account.name), "Account name ${n} is invalid", ("n", account.name));
 
-        create<research_group_object>([&](research_group_object& research_group) {
+        auto& research_group = create<research_group_object>([&](research_group_object& research_group) {
             fc::from_string(research_group.name, account.name);
             fc::from_string(research_group.permlink, account.name);
             fc::from_string(research_group.description, account.name);
             research_group.quorum_percent = DEIP_100_PERCENT;
             research_group.is_personal = true;
+        });
+
+        create<research_group_token_object>([&](research_group_token_object& research_group_token) {
+            research_group_token.research_group_id = research_group.id;
+            research_group_token.amount = DEIP_100_PERCENT;
+            research_group_token.owner = account.name;
         });
     }
 }
