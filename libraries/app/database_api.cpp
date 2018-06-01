@@ -30,7 +30,6 @@
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_review.hpp>
-#include <deip/chain/dbs_research_group_join_request.hpp>
 #include <deip/chain/dbs_research_token.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
@@ -1684,7 +1683,7 @@ vector<review_api_obj> database_api::get_reviews_by_content(const research_conte
         return results;
     });
 }
-        
+
 research_token_api_obj database_api::get_research_token_by_id(const research_token_id_type& research_token_id) const
 {
     return my->_db.with_read_lock([&]() {

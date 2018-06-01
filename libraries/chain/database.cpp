@@ -27,7 +27,6 @@
 #include <deip/chain/vote_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/research_group_invite_object.hpp>
-#include <deip/chain/research_group_join_request_object.hpp>
 #include <deip/chain/review_object.hpp>
 #include <deip/chain/vesting_contract_object.hpp>
 
@@ -61,7 +60,6 @@
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
-#include <deip/chain/dbs_research_group_join_request.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_grant.hpp>
 #include <deip/chain/dbs_review.hpp>
@@ -1828,8 +1826,6 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_review_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_research_group_join_request_evaluator>();
-    _my->_evaluator_registry.register_evaluator<reject_research_group_join_request_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<add_expertise_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
@@ -1875,7 +1871,6 @@ void database::initialize_indexes()
     add_index<research_group_invite_index>();
     add_index<review_index>();
     add_index<review_vote_index>();
-    add_index<research_group_join_request_index>();
     add_index<vesting_contract_index>();
 
     _plugin_index_signal();
@@ -2088,7 +2083,6 @@ void database::_apply_block(const signed_block& next_block)
         clear_expired_transactions();
         clear_expired_proposals();
         clear_expired_invites();
-        clear_expired_join_requests();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
@@ -2479,13 +2473,6 @@ void database::clear_expired_invites()
     auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
     research_group_invite_service.clear_expired_invites();
 }
-
-void database::clear_expired_join_requests()
-{
-    auto& research_group_join_request_service = obtain_service<dbs_research_group_join_request>();
-    research_group_join_request_service.clear_expired_research_group_join_requests();
-}
-
 
 void database::adjust_balance(const account_object& a, const asset& delta)
 {
