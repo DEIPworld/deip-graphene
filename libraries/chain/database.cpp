@@ -2043,6 +2043,7 @@ void database::_apply_block(const signed_block& next_block)
                     throw e;
             }
         }
+        auto& dynamic_global_properties_service = obtain_service<dbs_dynamic_global_properties>();
 
         const witness_object& signing_witness = validate_block_header(skip, next_block);
 
@@ -2104,6 +2105,8 @@ void database::_apply_block(const signed_block& next_block)
         process_content_activity_windows();
 
         process_hardforks();
+
+        dynamic_global_properties_service.reset_used_expertise_per_block();
 
         // notify observers that the block has been applied
         notify_applied_block(next_block);
