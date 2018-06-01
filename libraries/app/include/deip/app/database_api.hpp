@@ -400,14 +400,6 @@ public:
     vector<review_api_obj> get_reviews_by_research(const research_id_type& research_id) const;
     vector<review_api_obj> get_reviews_by_content(const research_content_id_type& research_content_id) const;
 
-    /////////////////////////////////
-    // Research group join request //
-    ////////////////////////////////
-    research_group_join_request_api_obj get_research_group_join_request_by_id(const research_group_join_request_id_type& research_group_join_request_id) const;
-    research_group_join_request_api_obj get_research_group_join_request_by_account_name_and_research_group_id(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
-    vector<research_group_join_request_api_obj> get_research_group_join_requests_by_account_name(const account_name_type& account_name) const;
-    vector<research_group_join_request_api_obj> get_research_group_join_requests_by_research_group_id(const research_group_id_type& research_group_id) const;
-
     /////////////////////
     // Research token ///
     /////////////////////
@@ -558,12 +550,6 @@ FC_API(deip::app::database_api,
    // Reviews
    (get_reviews_by_research)
    (get_reviews_by_content)
-
-   // Research group join request
-   (get_research_group_join_request_by_id)
-   (get_research_group_join_request_by_account_name_and_research_group_id)
-   (get_research_group_join_requests_by_account_name)
-   (get_research_group_join_requests_by_research_group_id)
 
    // Research token
    (get_research_token_by_id)
