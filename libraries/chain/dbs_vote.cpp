@@ -142,7 +142,11 @@ const total_votes_object& dbs_vote::create_total_votes(const discipline_id_type&
 const total_votes_object& dbs_vote::get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id,
                                                                                      const discipline_id_type& discipline_id) const
 {
-    return db_impl().get<total_votes_object, by_content_and_discipline>(boost::make_tuple(research_content_id, discipline_id));
+    try {
+        return db_impl().get<total_votes_object, by_content_and_discipline>(
+                boost::make_tuple(research_content_id, discipline_id));
+    }
+    FC_CAPTURE_AND_RETHROW((research_content_id)(discipline_id));
 }
 
 dbs_vote::total_votes_refs_type dbs_vote::get_total_votes_by_research_and_discipline(const research_id_type& research_id,

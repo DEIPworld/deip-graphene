@@ -31,13 +31,19 @@ const vesting_contract_object& dbs_vesting_contract::create(const account_name_t
 
 const vesting_contract_object& dbs_vesting_contract::get(const vesting_contract_id_type& id)
 {
-    return db_impl().get<vesting_contract_object, by_id>(id);
+    try {
+        return db_impl().get<vesting_contract_object, by_id>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
 }
 
 const vesting_contract_object& dbs_vesting_contract::get_by_sender_and_reviever(const account_name_type& sender,
                                                                                 const account_name_type& receiver)
 {
-    return db_impl().get<vesting_contract_object, by_sender_and_receiver>(boost::make_tuple(sender, receiver));
+    try {
+        return db_impl().get<vesting_contract_object, by_sender_and_receiver>(boost::make_tuple(sender, receiver));
+    }
+    FC_CAPTURE_AND_RETHROW((sender)(receiver))
 }
 
 dbs_vesting_contract::vesting_contract_refs_type dbs_vesting_contract::get_by_receiver(const account_name_type& receiver)

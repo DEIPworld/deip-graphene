@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(throw_on_get_proposal_by_non_existing_id)
     try
     {
         create_proposals();
-        BOOST_CHECK_THROW(data_service.get_proposal(123), boost::exception);
+        BOOST_CHECK_THROW(data_service.get_proposal(123), fc::exception);
     }
     FC_LOG_AND_RETHROW()
 }

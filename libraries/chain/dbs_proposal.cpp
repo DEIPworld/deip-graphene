@@ -14,7 +14,10 @@ dbs_proposal::dbs_proposal(database& db)
 
 const proposal_object& dbs_proposal::get_proposal(const proposal_id_type& id) const
 {
-    return db_impl().get<proposal_object>(id);
+    try {
+        return db_impl().get<proposal_object>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
 }
 
 const dbs_proposal::proposal_ref_type

@@ -29,12 +29,18 @@ dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines() const
 
 const discipline_object& dbs_discipline::get_discipline(const discipline_id_type& id) const
 {
-    return db_impl().get<discipline_object>(id);
+    try {
+        return db_impl().get<discipline_object>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
 }
 
 const discipline_object& dbs_discipline::get_discipline_by_name(const discipline_name_type& name) const
 {
-    return db_impl().get<discipline_object, by_discipline_name>(name);
+    try {
+        return db_impl().get<discipline_object, by_discipline_name>(name);
+    }
+    FC_CAPTURE_AND_RETHROW((name))
 }
 
 void dbs_discipline::check_discipline_existence_by_name(const discipline_name_type &name)

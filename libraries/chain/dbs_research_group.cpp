@@ -12,7 +12,10 @@ dbs_research_group::dbs_research_group(database& db)
 
 const research_group_object& dbs_research_group::get_research_group(const research_group_id_type& id) const 
 {
-    return db_impl().get<research_group_object, by_id>(id);
+    try {
+        return db_impl().get<research_group_object, by_id>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
 }
 
 const research_group_object& dbs_research_group::get_research_group_by_permlink(const fc::string& permlink) const 
@@ -55,7 +58,10 @@ void dbs_research_group::check_research_group_existence(const research_group_id_
 
 const research_group_token_object& dbs_research_group::get_research_group_token_by_id(const research_group_token_id_type& id) const 
 {
-    return db_impl().get<research_group_token_object>(id);
+    try {
+        return db_impl().get<research_group_token_object>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
 }
 
 dbs_research_group::research_group_token_refs_type dbs_research_group::get_research_group_tokens_by_account_name(const account_name_type
@@ -93,8 +99,12 @@ dbs_research_group::get_research_group_tokens(const research_group_id_type &rese
 }
 
 const research_group_token_object& dbs_research_group::get_research_group_token_by_account_and_research_group_id(const account_name_type &account,
-                                                                                           const research_group_id_type &research_group_id) const  {
-    return db_impl().get<research_group_token_object, by_owner>(boost::make_tuple(account, research_group_id));
+                                                                                           const research_group_id_type &research_group_id) const
+{
+    try {
+        return db_impl().get<research_group_token_object, by_owner>(boost::make_tuple(account, research_group_id));
+    }
+    FC_CAPTURE_AND_RETHROW((account)(research_group_id))
 }
 
 const research_group_token_object& dbs_research_group::create_research_group_token(const research_group_id_type& research_group_id,

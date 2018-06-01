@@ -61,8 +61,7 @@ const research_content_object& dbs_research_content::create(const research_id_ty
 
 const research_content_object& dbs_research_content::get_content_by_id(const research_content_id_type& id) const
 {
-    try 
-    {
+    try {
         return db_impl().get<research_content_object, by_id>(id);
     }
     FC_CAPTURE_AND_RETHROW((id))
