@@ -1286,7 +1286,8 @@ share_type database::distribute_reward(const share_type reward)
 
 share_type database::reward_researches_in_discipline(const discipline_object& discipline, const share_type& reward)
 {
-    FC_ASSERT(discipline.total_active_reward_weight != 0, "Attempt to allocate funds to inactive discipline");
+    if (discipline.total_active_reward_weight == 0)
+        return 0;
 
     auto& content_service = obtain_service<dbs_research_content>();
     auto& review_service = obtain_service<dbs_review>();
@@ -1615,6 +1616,10 @@ share_type database::allocate_rewards_to_reviews(const share_type &reward,
     dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
 
     auto& discipline = discipline_service.get_discipline(discipline_id);
+
+    if (discipline.total_active_review_reward_weight == 0)
+        return 0;
+
     share_type used_reward = 0;
 
     for (auto& review : reviews_to_reward) {

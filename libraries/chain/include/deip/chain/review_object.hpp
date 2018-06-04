@@ -53,7 +53,8 @@ public:
     discipline_id_share_type_map expertise_amounts_used;
 
     share_type get_weight(const discipline_id_type& discipline_id) {
-        FC_ASSERT(weight_modifiers.count(discipline_id) != 0, "No review weight modifier calculated for discipline_id={d}", ("d", discipline_id));
+        if (weight_modifiers.count(discipline_id) == 0)
+            return 1;
         FC_ASSERT(expertise_amounts_used.count(discipline_id) != 0, "Review is not made with discipline_id={d}", ("d", discipline_id));
 
         auto& modifier = weight_modifiers.at(discipline_id);

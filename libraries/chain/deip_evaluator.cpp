@@ -1000,6 +1000,8 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
                 _db._temporary_public_impl().modify(review, [&](review_object& r) {
                     r.expertise_amounts_used[token.discipline_id] = token.amount;
+                    r.reward_weights_per_discipline[token.discipline_id] = 0;
+                    r.curation_reward_weights_per_discipline[token.discipline_id] = 0;
                 });
 
                 _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
