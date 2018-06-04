@@ -454,14 +454,14 @@ struct invitee_type
     invitee_type()
     {
     }
-    invitee_type(const account_name_type& a, const share_type t)
+    invitee_type(const account_name_type& a, const uint32_t& t)
         : account(a)
         , research_group_tokens_in_percent(t)
     {
     }
 
     account_name_type account;
-    share_type research_group_tokens_in_percent;
+    uint32_t research_group_tokens_in_percent;
 };
 
 struct create_research_group_operation : public base_operation
