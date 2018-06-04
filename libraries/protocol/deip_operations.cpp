@@ -167,6 +167,16 @@ void create_research_group_operation::validate() const
     FC_ASSERT(fc::is_utf8(name), "Group name is not valid UTF8 string");
     FC_ASSERT(fc::is_utf8(description), "Description is not valid UTF8 string");
     FC_ASSERT(quorum_percent > 5 * DEIP_1_PERCENT && quorum_percent <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
+
+    auto total_tokens_percents = share_type(0);
+    for (auto& invitee : invitees) {
+        validate_account_name(invitee.account);
+        FC_ASSERT(invitee.research_group_tokens_in_percent > 0
+                  && invitee.research_group_tokens_in_percent <= 95 * DEIP_1_PERCENT,
+                  "Invitee should receive 0% to 95% of research group tokens");
+        total_tokens_percents += invitee.research_group_tokens_in_percent;
+    }
+    FC_ASSERT(total_tokens_percents <= 95 * DEIP_1_PERCENT);
 }
 
 void vote_proposal_operation::validate() const
