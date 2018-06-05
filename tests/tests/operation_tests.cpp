@@ -2557,18 +2557,18 @@ BOOST_AUTO_TEST_CASE(create_research_group_with_invitees_apply)
        BOOST_CHECK(research_group.quorum_percent == 1000);
 
        auto& research_group_invite_service = db.obtain_service<dbs_research_group_invite>();
-       auto& rg_invite_bob = research_group_invite_service.get_research_group_invite_by_account_name_and_research_group_id("bob", 24);
-       auto& rg_invite_sam = research_group_invite_service.get_research_group_invite_by_account_name_and_research_group_id("sam", 24);
-       auto& rg_invite_corp = research_group_invite_service.get_research_group_invite_by_account_name_and_research_group_id("corp", 24);
+       auto& rg_invite_bob = research_group_invite_service.get_research_group_invite_by_account_name_and_research_group_id("bob", 25);
+       auto& rg_invite_sam = research_group_invite_service.get_research_group_invite_by_account_name_and_research_group_id("sam", 25);
+       auto& rg_invite_corp = research_group_invite_service.get_research_group_invite_by_account_name_and_research_group_id("corp", 25);
 
        BOOST_CHECK(rg_invite_bob.account_name == "bob");
-       BOOST_CHECK(rg_invite_bob.research_group_id == 24);
+       BOOST_CHECK(rg_invite_bob.research_group_id == 25);
        BOOST_CHECK(rg_invite_bob.research_group_token_amount == 1000);
        BOOST_CHECK(rg_invite_sam.account_name == "sam");
-       BOOST_CHECK(rg_invite_sam.research_group_id == 24);
+       BOOST_CHECK(rg_invite_sam.research_group_id == 25);
        BOOST_CHECK(rg_invite_sam.research_group_token_amount == 1000);
        BOOST_CHECK(rg_invite_corp.account_name == "corp");
-       BOOST_CHECK(rg_invite_corp.research_group_id == 24);
+       BOOST_CHECK(rg_invite_corp.research_group_id == 25);
        BOOST_CHECK(rg_invite_corp.research_group_token_amount == 6000);
    }
    FC_LOG_AND_RETHROW()
