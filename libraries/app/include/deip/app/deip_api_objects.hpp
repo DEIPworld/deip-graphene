@@ -361,7 +361,7 @@ struct discipline_api_obj
 
 struct research_api_obj
 {
-    research_api_obj(const chain::research_object& r, const vector<discipline_api_obj>& disciplines)
+    research_api_obj(const chain::research_object& r, const vector<discipline_api_obj>& disciplines, const string& group_permlink)
         : id(r.id._id)
         ,  research_group_id(r.research_group_id._id)
         ,  title(fc::to_string(r.title))
@@ -373,6 +373,7 @@ struct research_api_obj
         ,  created_at(r.created_at)
         ,  dropout_compensation_in_percent(r.dropout_compensation_in_percent)
         ,  disciplines(disciplines.begin(), disciplines.end())
+        ,  group_permlink(group_permlink)
     {}
 
     // because fc::variant require for temporary object
@@ -391,6 +392,7 @@ struct research_api_obj
     time_point_sec created_at;
     int16_t dropout_compensation_in_percent;
     vector<discipline_api_obj> disciplines;
+    string group_permlink;
 };
 
 struct research_content_api_obj
@@ -881,6 +883,7 @@ FC_REFLECT( deip::app::research_api_obj,
             (created_at)
             (dropout_compensation_in_percent)
             (disciplines)
+            (group_permlink)
           )
 
 FC_REFLECT( deip::app::research_content_api_obj,
