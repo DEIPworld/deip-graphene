@@ -33,7 +33,7 @@ struct invite_member_proposal_data_type : base_proposal_data_type
     void validate() const
     {
         FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
-        FC_ASSERT(research_group_token_amount_in_percent > 0, "Research group tokens amount should be > 0");
+        FC_ASSERT(research_group_token_amount_in_percent > 0 && research_group_token_amount_in_percent <= DEIP_100_PERCENT, "Research group tokens amount should be > 0");
     }
 };
 

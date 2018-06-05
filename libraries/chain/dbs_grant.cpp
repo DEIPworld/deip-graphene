@@ -66,7 +66,10 @@ dbs_grant::grant_refs_type dbs_grant::get_grants(const account_name_type& owner)
 
 const grant_object& dbs_grant::get_grant(grant_id_type id) const
 {
-    return db_impl().get<grant_object>(id);
+    try {
+        return db_impl().get<grant_object>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
 }
 
 const grant_object& dbs_grant::create_grant(const account_object& owner,

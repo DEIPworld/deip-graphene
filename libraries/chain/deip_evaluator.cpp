@@ -827,6 +827,8 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
 void create_research_group_evaluator::do_apply(const create_research_group_operation& op)
 {
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_research_group_invite& research_group_invite_service = _db.obtain_service<dbs_research_group_invite>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
 
     bool is_personal = false;
     const research_group_object& research_group = research_group_service.create_research_group(op.name,
@@ -836,6 +838,12 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
                                                                                                is_personal);
     
     research_group_service.create_research_group_token(research_group.id, DEIP_100_PERCENT, op.creator);
+
+    for (const auto& invitee : op.invitees)
+    {
+        account_service.check_account_existence(invitee.account);
+        research_group_invite_service.create(invitee.account, research_group.id, invitee.research_group_tokens_in_percent);
+    }
 }
 
 void make_review_evaluator::do_apply(const make_review_operation& op)

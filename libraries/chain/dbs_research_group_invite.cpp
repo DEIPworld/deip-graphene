@@ -24,14 +24,21 @@ const research_group_invite_object& dbs_research_group_invite::create(const acco
 
 const research_group_invite_object& dbs_research_group_invite::get(const research_group_invite_id_type& research_group_invite_id)
 {
-    return db_impl().get<research_group_invite_object>(research_group_invite_id);
+    try {
+        return db_impl().get<research_group_invite_object>(research_group_invite_id);
+    }
+    FC_CAPTURE_AND_RETHROW((research_group_invite_id))
 }
 
 const research_group_invite_object&
     dbs_research_group_invite::get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name,
                                                                                                const research_group_id_type& research_group_id)
 {
-    return db_impl().get<research_group_invite_object, by_account_and_research_group_id>(boost::make_tuple(account_name, research_group_id));
+    try {
+        return db_impl().get<research_group_invite_object, by_account_and_research_group_id>(
+                boost::make_tuple(account_name, research_group_id));
+    }
+    FC_CAPTURE_AND_RETHROW((account_name)(research_group_id))
 }
 
 void dbs_research_group_invite::check_research_group_invite_existence(const research_group_invite_id_type& research_group_invite_id)
