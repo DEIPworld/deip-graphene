@@ -66,7 +66,7 @@ RUN \
     cd build && \
     cmake \
         -DCMAKE_INSTALL_PREFIX=/usr/local/deipd-default \
-        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_BUILD_TYPE=Release \
         -DLOW_MEMORY_NODE=ON \
         -DCLEAR_VOTES=ON \
         -DSKIP_BY_TX_ID=ON \
@@ -179,11 +179,6 @@ RUN chmod +x /usr/local/bin/deip-sv-run.sh
 # add nginx templates
 ADD contrib/deipd.nginx.conf /etc/nginx/deipd.nginx.conf
 ADD contrib/healthcheck.conf.template /etc/nginx/healthcheck.conf.template
-
-# add config
-ADD config.ini /usr/local/deipd-default/bin/config.ini
-ADD config.ini /usr/local/deipd-full/bin/config.ini
-ADD config.ini /etc/deipd/config.ini
 
 # add PaaS startup script and service script
 ADD contrib/startpaasdeipd.sh /usr/local/bin/startpaasdeipd.sh
