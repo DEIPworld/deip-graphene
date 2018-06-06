@@ -566,6 +566,45 @@ public:
                                           const std::string& memo,
                                           bool broadcast = false);
 
+    /**
+     * Transfer DEIP into a vesting fund represented by vesting shares (VESTS). VESTS are required to vesting
+     * for a minimum of one coin year and can be withdrawn once a week over a two year withdraw period.
+     * VESTS are protected against dilution up until 90% of DEIP is vesting.
+     *
+     * @param from The account the DEIP is coming from
+     * @param to The account getting the VESTS
+     * @param amount The amount of DEIP to vest i.e. "100.00 DEIP"
+     * @param broadcast true if you wish to broadcast the transaction
+     */
+    annotated_signed_transaction
+    transfer_to_common_tokens(const std::string& from, const std::string& to, const asset& amount, bool broadcast = false);
+
+    /**
+     * Set up a vesting withdraw request. The request is fulfilled once a week over the next two year (104 weeks).
+     *
+     * @param from The account the VESTS are withdrawn from
+     * @param vesting_shares The amount of VESTS to withdraw over the next two years. Each week (amount/104) shares are
+     *    withdrawn and deposited back as DEIP. i.e. "10.000000 VESTS"
+     * @param broadcast true if you wish to broadcast the transaction
+     */
+    annotated_signed_transaction
+    withdraw_common_tokens(const std::string& from, const share_type& vesting_shares, bool broadcast = false);
+
+    /**
+     * Set up a vesting withdraw route. When vesting shares are withdrawn, they will be routed to these accounts
+     * based on the specified weights.
+     *
+     * @param from The account the VESTS are withdrawn from.
+     * @param to   The account receiving either VESTS or DEIP.
+     * @param percent The percent of the withdraw to go to the 'to' account. This is denoted in hundreths of a percent.
+     *    i.e. 100 is 1% and 10000 is 100%. This value must be between 1 and 100000
+     * @param auto_common_token Set to true if the from account should receive the VESTS as VESTS, or false if it should receive
+     *    them as DEIP.
+     * @param broadcast true if you wish to broadcast the transaction.
+     */
+    annotated_signed_transaction set_withdraw_common_tokens_route(
+        const std::string& from, const std::string& to, uint16_t percent, bool auto_common_token, bool broadcast = false);
+
     /** Signs a transaction.
      *
      * Given a fully-formed transaction that is only lacking signatures, this signs
@@ -814,6 +853,9 @@ FC_API( deip::wallet::wallet_api,
         (set_voting_proxy)
         (vote_for_witness)
         (transfer)
+        (transfer_to_common_tokens)
+        (withdraw_common_tokens)
+        (set_withdraw_common_tokens_route)
         (vote)
         (set_transaction_expiration)
         (challenge)

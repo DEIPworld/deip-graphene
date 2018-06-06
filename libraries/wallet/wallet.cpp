@@ -1809,6 +1809,54 @@ annotated_signed_transaction wallet_api::transfer(
     FC_CAPTURE_AND_RETHROW((from)(to)(amount)(memo)(broadcast))
 }
 
+annotated_signed_transaction
+wallet_api::transfer_to_common_tokens(const std::string& from, const std::string& to, const asset& amount, bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+    transfer_to_common_tokens_operation op;
+    op.from = from;
+    op.to = (to == from ? "" : to);
+    op.amount = amount;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction
+wallet_api::withdraw_common_tokens(const std::string& from, const share_type& common_tokens_amount, bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+    withdraw_common_tokens_operation op;
+    op.account = from;
+    op.total_common_tokens_amount = common_tokens_amount;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::set_withdraw_common_tokens_route(
+    const std::string& from, const std::string& to, uint16_t percent, bool auto_common_token, bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+    set_withdraw_common_tokens_route_operation op;
+    op.from_account = from;
+    op.to_account = to;
+    op.percent = percent;
+    op.auto_common_token = auto_common_token;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
 string wallet_api::decrypt_memo(const std::string& encrypted_memo)
 {
     if (is_locked())
