@@ -1045,7 +1045,8 @@ research_api_obj database_api::get_research_by_id(const research_id_type& id) co
         chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
         auto& research = research_service.get_research(id);
         vector<discipline_api_obj> disciplines = get_disciplines_by_research(research.id);
-        return research_api_obj(research, disciplines);
+        auto research_group = get_research_group_by_id(research.research_group_id);
+        return research_api_obj(research, disciplines, research_group.permlink);
     });
 }
 
@@ -1055,7 +1056,8 @@ research_api_obj database_api::get_research_by_permlink(const research_group_id_
         chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
         auto& research = research_service.get_research_by_permlink(research_group_id, permlink);
         vector<discipline_api_obj> disciplines = get_disciplines_by_research(research.id);
-        return research_api_obj(research, disciplines);
+        auto research_group = get_research_group_by_id(research.research_group_id);
+        return research_api_obj(research, disciplines, research_group.permlink);
     });
 }
 
@@ -1068,7 +1070,8 @@ research_api_obj database_api::get_research_by_absolute_permlink(const string& r
         auto& rg = research_group_service.get_research_group_by_permlink(research_group_permlink);
         auto& research = research_service.get_research_by_permlink(rg.id, research_permlink);
         vector<discipline_api_obj> disciplines = get_disciplines_by_research(research.id);
-        return research_api_obj(research, disciplines);
+        auto research_group = get_research_group_by_id(research.research_group_id);
+        return research_api_obj(research, disciplines, research_group.permlink);
     });
 }
 
@@ -1100,7 +1103,8 @@ vector<research_api_obj> database_api::get_researches_by_discipline_id(const uin
             auto& research = my->_db.get<research_object>(researches[i]);
 
             vector<discipline_api_obj> disciplines = get_disciplines_by_research(research.id);
-            result.push_back(research_api_obj(research, disciplines));
+            auto research_group = get_research_group_by_id(research.research_group_id);
+            result.push_back(research_api_obj(research, disciplines, research_group.permlink));
         }
 
         return result;
@@ -1117,7 +1121,8 @@ vector<research_api_obj> database_api::get_researches_by_research_group_id(const
 
         for (const chain::research_object &research : researches) {
             vector<discipline_api_obj> disciplines = get_disciplines_by_research(research.id);
-            results.push_back(research_api_obj(research, disciplines));
+            auto research_group = get_research_group_by_id(research.research_group_id);
+            results.push_back(research_api_obj(research, disciplines, research_group.permlink));
         }
 
         return results;
@@ -1564,7 +1569,8 @@ vector<research_listing_api_obj> database_api::get_all_researches_listing(const 
             {
                 auto& research = my->_db.get<research_object>(rdr_itr->research_id);
                 vector<discipline_api_obj> disciplines = get_disciplines_by_research(research.id);
-                researches.push_back(research_api_obj(research, disciplines));
+                auto research_group = get_research_group_by_id(research.research_group_id);
+                researches.push_back(research_api_obj(research, disciplines, research_group.permlink));
                 ++rdr_itr;
             }
         } else {
@@ -1574,7 +1580,8 @@ vector<research_listing_api_obj> database_api::get_all_researches_listing(const 
             {
                 auto& research = *rdr_itr;
                 vector<discipline_api_obj> disciplines = get_disciplines_by_research(research.id);
-                researches.push_back(research_api_obj(research, disciplines));
+                auto research_group = get_research_group_by_id(research.research_group_id);
+                researches.push_back(research_api_obj(research, disciplines, research_group.permlink));
                 ++rdr_itr;
             }
         }
