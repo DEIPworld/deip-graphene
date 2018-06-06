@@ -794,14 +794,14 @@ public:
                 total_expert_tokens_amount += a.total_expert_tokens_amount;
                 out << std::left << std::setw(17) << std::string(a.name) << std::right << std::setw(18)
                     << fc::variant(a.balance).as_string() << " " << std::right << std::setw(26)
-                    << std::to_string(total_common_tokens_amount)<< " " << std::right << std::setw(28)
-                    << std::to_string(total_expert_tokens_amount) << "\n";
+                    << std::to_string(total_common_tokens_amount.value)<< " " << std::right << std::setw(28)
+                    << std::to_string(total_expert_tokens_amount.value) << "\n";
             }
             out << "-------------------------------------------------------------------------\n";
             out << std::left << std::setw(17) << "TOTAL" << std::right << std::setw(18)
                 << fc::variant(total_deip).as_string() << " " << std::right << std::setw(26)
-                    << std::to_string(total_common_tokens_amount)<< " " << std::right << std::setw(28)
-                    << std::to_string(total_expert_tokens_amount) << "\n";
+                    << std::to_string(total_common_tokens_amount.value)<< " " << std::right << std::setw(28)
+                    << std::to_string(total_expert_tokens_amount.value) << "\n";
             return out.str();
         };
         m["get_account_history"] = [](variant result, const fc::variants& a) {
