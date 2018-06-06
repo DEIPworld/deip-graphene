@@ -77,8 +77,7 @@ dbs_research_discipline_relation::research_discipline_relation_refs_type dbs_res
 
 const research_discipline_relation_object& dbs_research_discipline_relation::get_research_discipline_relations_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const
 {
-    try
-    {
+    try {
         return db_impl().get<research_discipline_relation_object, by_research_and_discipline>(boost::make_tuple(research_id, discipline_id));
     }
     FC_CAPTURE_AND_RETHROW((research_id)(discipline_id))

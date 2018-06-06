@@ -28,6 +28,7 @@ public:
             d.data = "1";
             d.creator = "alice";
             d.research_group_id = 1;
+            d.creation_time = db.head_block_time();
             d.expiration_time = fc::time_point_sec(0xffffffff);
             d.quorum_percent = 40;
             d.voted_accounts.insert("bob"); d.voted_accounts.insert("john");
@@ -39,6 +40,7 @@ public:
             d.data = "123";
             d.creator = "bob";
             d.research_group_id = 2;
+            d.creation_time = db.head_block_time();
             d.expiration_time = fc::time_point_sec(123);
             d.quorum_percent = 38;
             d.voted_accounts.insert("alice"); d.voted_accounts.insert("john");
@@ -50,6 +52,7 @@ public:
             d.data = "1123john";
             d.creator = "john";
             d.research_group_id = 123;
+            d.creation_time = db.head_block_time();
             d.expiration_time = fc::time_point_sec(0xffffff2f);
             d.quorum_percent = 72;
             d.voted_accounts.insert("alice");
@@ -61,6 +64,7 @@ public:
             d.data = "1123";
             d.creator = "alice";
             d.research_group_id = 1;
+            d.creation_time = db.head_block_time();
             d.expiration_time = fc::time_point_sec(12313);
             d.quorum_percent = 50;
             d.voted_accounts.insert("bob"); d.voted_accounts.insert("john");
@@ -174,7 +178,7 @@ BOOST_AUTO_TEST_CASE(throw_on_get_proposal_by_non_existing_id)
     try
     {
         create_proposals();
-        BOOST_CHECK_THROW(data_service.get_proposal(123), boost::exception);
+        BOOST_CHECK_THROW(data_service.get_proposal(123), fc::exception);
     }
     FC_LOG_AND_RETHROW()
 }

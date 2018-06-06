@@ -30,6 +30,7 @@ public:
     shared_string permlink;
     asset balance = asset(0, DEIP_SYMBOL);
     share_type quorum_percent;
+    bool is_personal;
 };
 
 class research_group_token_object : public object<research_group_token_object_type, research_group_token_object>
@@ -106,7 +107,7 @@ typedef multi_index_container<research_group_token_object,
 
   
 
-FC_REFLECT(deip::chain::research_group_object, (id)(name)(description)(permlink)(balance)(quorum_percent))
+FC_REFLECT(deip::chain::research_group_object, (id)(name)(permlink)(description)(balance)(quorum_percent)(is_personal))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_group_object, deip::chain::research_group_index)
 

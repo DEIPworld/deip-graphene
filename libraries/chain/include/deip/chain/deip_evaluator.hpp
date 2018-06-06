@@ -10,20 +10,18 @@ namespace chain {
 using namespace deip::protocol;
 
 DEFINE_EVALUATOR(account_create)
-DEFINE_EVALUATOR(account_create_with_delegation)
 DEFINE_EVALUATOR(account_update)
 DEFINE_EVALUATOR(transfer)
-DEFINE_EVALUATOR(transfer_to_vesting)
+DEFINE_EVALUATOR(transfer_to_common_tokens)
 DEFINE_EVALUATOR(witness_update)
 DEFINE_EVALUATOR(account_witness_vote)
 DEFINE_EVALUATOR(account_witness_proxy)
-DEFINE_EVALUATOR(withdraw_vesting)
-DEFINE_EVALUATOR(set_withdraw_vesting_route)
+DEFINE_EVALUATOR(withdraw_common_tokens)
+DEFINE_EVALUATOR(set_withdraw_common_tokens_route)
 DEFINE_EVALUATOR(vote)
 DEFINE_EVALUATOR(request_account_recovery)
 DEFINE_EVALUATOR(recover_account)
 DEFINE_EVALUATOR(change_recovery_account)
-DEFINE_EVALUATOR(delegate_vesting_shares)
 DEFINE_EVALUATOR(create_grant)
 DEFINE_EVALUATOR(create_proposal)
 DEFINE_EVALUATOR(create_research_group)
@@ -39,6 +37,7 @@ DEFINE_EVALUATOR(add_expertise_tokens)
 DEFINE_EVALUATOR(research_update)
 DEFINE_EVALUATOR(deposit_to_vesting_contract)
 DEFINE_EVALUATOR(withdraw_from_vesting_contract)
+DEFINE_EVALUATOR(vote_proposal)    
 
 }
 } // deip::chain

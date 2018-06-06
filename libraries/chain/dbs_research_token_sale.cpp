@@ -25,6 +25,7 @@ const research_token_sale_object& dbs_research_token_sale::start_research_token_
               research_token_sale.balance_tokens = balance_tokens;
               research_token_sale.soft_cap = soft_cap;
               research_token_sale.hard_cap = hard_cap;
+              research_token_sale.status = research_token_sale_status::token_sale_active;
           });
 
     return new_research_token_sale;
@@ -48,12 +49,18 @@ dbs_research_token_sale::research_token_sale_refs_type dbs_research_token_sale::
 
 const research_token_sale_object& dbs_research_token_sale::get_research_token_sale_by_id(const research_token_sale_id_type& id) const
 {
-    return db_impl().get<research_token_sale_object, by_id>(id);
+    try {
+        return db_impl().get<research_token_sale_object, by_id>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
 }
 
 const research_token_sale_object& dbs_research_token_sale::get_research_token_sale_by_research_id(const research_id_type& research_id) const
 {
-    return db_impl().get<research_token_sale_object, by_research_id>(research_id);
+    try {
+        return db_impl().get<research_token_sale_object, by_research_id>(research_id);
+    }
+    FC_CAPTURE_AND_RETHROW((research_id))
 }
 
 dbs_research_token_sale::research_token_sale_refs_type
@@ -87,6 +94,13 @@ const research_token_sale_object& dbs_research_token_sale::increase_research_tok
     return research_token_sale;
 }
 
+const research_token_sale_object& dbs_research_token_sale::change_research_token_sale_status(const research_token_sale_id_type& id,
+                                                                                             const research_token_sale_status status)
+{
+    const research_token_sale_object& research_token_sale = get_research_token_sale_by_id(id);
+    db_impl().modify(research_token_sale, [&](research_token_sale_object& rts) { rts.status = status; });
+    return research_token_sale;
+}
 
 const research_token_sale_contribution_object&
     dbs_research_token_sale::create_research_token_sale_contribution(const research_token_sale_id_type& research_token_sale_id,
@@ -108,7 +122,10 @@ const research_token_sale_contribution_object&
 const research_token_sale_contribution_object&
     dbs_research_token_sale::get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type& id) const
 {
-    return db_impl().get<research_token_sale_contribution_object, by_id>(id);
+    try {
+        return db_impl().get<research_token_sale_contribution_object, by_id>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
 }
 
 dbs_research_token_sale::research_token_sale_contribution_refs_type
@@ -132,7 +149,11 @@ const research_token_sale_contribution_object&
     dbs_research_token_sale::get_research_token_sale_contribution_by_account_name_and_research_token_sale_id(const account_name_type& owner,
                                                                                                              const research_token_sale_id_type& research_token_sale_id) const
 {
-    return db_impl().get<research_token_sale_contribution_object, by_owner_and_research_token_sale_id>(boost::make_tuple(owner, research_token_sale_id));
+    try {
+        return db_impl().get<research_token_sale_contribution_object, by_owner_and_research_token_sale_id>(
+                boost::make_tuple(owner, research_token_sale_id));
+    }
+    FC_CAPTURE_AND_RETHROW((owner)(research_token_sale_id))
 }
 
 } // namespace chain

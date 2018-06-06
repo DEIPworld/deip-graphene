@@ -24,7 +24,6 @@
 #include <deip/chain/research_token_sale_object.hpp>
 #include <deip/chain/expert_token_object.hpp>
 #include <deip/chain/research_token_object.hpp>
-#include <deip/chain/proposal_vote_evaluator.hpp>
 #include <deip/chain/vote_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/research_group_invite_object.hpp>
@@ -67,6 +66,7 @@
 #include <deip/chain/dbs_grant.hpp>
 #include <deip/chain/dbs_review.hpp>
 #include <deip/chain/dbs_vesting_contract.hpp>
+#include <deip/chain/dbs_proposal_execution.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
 namespace deip {
@@ -960,62 +960,63 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when) const
     return (when - first_slot_time).to_seconds() / DEIP_BLOCK_INTERVAL + 1;
 }
 
-void database::process_vesting_withdrawals()
+void database::process_common_tokens_withdrawals()
 {
     dbs_account& account_service = obtain_service<dbs_account>();
 
-    const auto& widx = get_index<account_index>().indices().get<by_next_vesting_withdrawal>();
-    const auto& didx = get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
+    const auto& widx = get_index<account_index>().indices().get<by_next_common_tokens_withdrawal>();
+    const auto& didx = get_index<withdraw_common_tokens_route_index>().indices().get<by_withdraw_route>();
     auto current = widx.begin();
 
     const auto& cprops = get_dynamic_global_properties();
 
-    while (current != widx.end() && current->next_vesting_withdrawal <= head_block_time())
+    while (current != widx.end() && current->next_common_tokens_withdrawal <= head_block_time())
     {
         const auto& from_account = *current;
         ++current;
 
         /**
-         *  Let T = total tokens in vesting fund
-         *  Let V = total vesting shares
-         *  Let v = total vesting shares being cashed out
+         *  Let T = total tokens in common_tokens fund
+         *  Let V = total common_tokens
+         *  Let v = total common_tokens being cashed out
          *
          *  The user may withdraw  vT / V tokens
          */
         share_type to_withdraw;
-        if (from_account.to_withdraw - from_account.withdrawn < from_account.vesting_withdraw_rate.amount)
-            to_withdraw = std::min(from_account.vesting_shares.amount,
-                                   from_account.to_withdraw % from_account.vesting_withdraw_rate.amount)
+        if (from_account.to_withdraw - from_account.withdrawn < from_account.common_tokens_withdraw_rate)
+            to_withdraw = std::min(from_account.total_common_tokens_amount,
+                                   from_account.to_withdraw % from_account.common_tokens_withdraw_rate)
                               .value;
         else
-            to_withdraw = std::min(from_account.vesting_shares.amount, from_account.vesting_withdraw_rate.amount).value;
+            to_withdraw = std::min(from_account.total_common_tokens_amount, from_account.common_tokens_withdraw_rate).value;
 
-        share_type vests_deposited_as_deip = 0;
-        share_type vests_deposited_as_vests = 0;
+        share_type common_tokens_deposited_as_deip = 0;
+        share_type common_tokens_deposited_as_common_tokens = 0;
         asset total_deip_converted = asset(0, DEIP_SYMBOL);
 
-        // Do two passes, the first for vests, the second for deip. Try to maintain as much accuracy for vests as
+        // Do two passes, the first for common tokens, the second for deip. Try to maintain as much accuracy for common tokens as
         // possible.
         for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
              itr != didx.end() && itr->from_account == from_account.id; ++itr)
         {
-            if (itr->auto_vest)
+            if (itr->auto_common_token)
             {
                 share_type to_deposit
                     = ((fc::uint128_t(to_withdraw.value) * itr->percent) / DEIP_100_PERCENT).to_uint64();
-                vests_deposited_as_vests += to_deposit;
+                common_tokens_deposited_as_common_tokens += to_deposit;
 
                 if (to_deposit > 0)
                 {
                     const auto& to_account = get(itr->to_account);
 
-                    modify(to_account, [&](account_object& a) { a.vesting_shares.amount += to_deposit; });
+                    modify(to_account, [&](account_object& a) { a.total_common_tokens_amount += to_deposit; });
 
                     account_service.adjust_proxied_witness_votes(to_account, to_deposit);
 
-                    push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, to_account.name,
-                                                                           asset(to_deposit, VESTS_SYMBOL),
-                                                                           asset(to_deposit, VESTS_SYMBOL)));
+                    push_virtual_operation(fill_common_tokens_withdraw_operation(from_account.name, to_account.name,
+                                                                           to_deposit,
+                                                                           to_deposit,
+                                                                           true));
                 }
             }
         }
@@ -1023,14 +1024,14 @@ void database::process_vesting_withdrawals()
         for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
              itr != didx.end() && itr->from_account == from_account.id; ++itr)
         {
-            if (!itr->auto_vest)
+            if (!itr->auto_common_token)
             {
                 const auto& to_account = get(itr->to_account);
 
                 share_type to_deposit
                     = ((fc::uint128_t(to_withdraw.value) * itr->percent) / DEIP_100_PERCENT).to_uint64();
-                vests_deposited_as_deip += to_deposit;
-                auto converted_deip = asset(to_deposit, VESTS_SYMBOL) * cprops.get_vesting_share_price();
+                common_tokens_deposited_as_deip += to_deposit;
+                share_type converted_deip = to_deposit;
                 total_deip_converted += converted_deip;
 
                 if (to_deposit > 0)
@@ -1038,50 +1039,53 @@ void database::process_vesting_withdrawals()
                     modify(to_account, [&](account_object& a) { a.balance += converted_deip; });
 
                     modify(cprops, [&](dynamic_global_property_object& o) {
-                        o.total_vesting_fund_deip -= converted_deip;
-                        o.total_vesting_shares.amount -= to_deposit;
+                        o.total_common_tokens_fund_deip -= converted_deip;
+                        o.total_common_tokens_amount -= to_deposit;
                     });
 
-                    push_virtual_operation(fill_vesting_withdraw_operation(
-                        from_account.name, to_account.name, asset(to_deposit, VESTS_SYMBOL), converted_deip));
+                    push_virtual_operation(fill_common_tokens_withdraw_operation(
+                        from_account.name, to_account.name, to_deposit, converted_deip, false));
                 }
             }
         }
 
-        share_type to_convert = to_withdraw - vests_deposited_as_deip - vests_deposited_as_vests;
-        FC_ASSERT(to_convert >= 0, "Deposited more vests than were supposed to be withdrawn");
+        share_type to_convert = to_withdraw - common_tokens_deposited_as_deip - common_tokens_deposited_as_common_tokens;
+        FC_ASSERT(to_convert >= 0, "Deposited more common_tokens than were supposed to be withdrawn");
 
-        auto converted_deip = asset(to_convert, VESTS_SYMBOL) * cprops.get_vesting_share_price();
+        share_type converted_deip = to_convert;
 
         modify(from_account, [&](account_object& a) {
-            a.vesting_shares.amount -= to_withdraw;
+            a.total_common_tokens_amount -= to_withdraw;
             a.balance += converted_deip;
             a.withdrawn += to_withdraw;
 
-            if (a.withdrawn >= a.to_withdraw || a.vesting_shares.amount == 0)
+            if (a.withdrawn >= a.to_withdraw || a.total_common_tokens_amount == 0)
             {
-                a.vesting_withdraw_rate.amount = 0;
-                a.next_vesting_withdrawal = fc::time_point_sec::maximum();
+                a.common_tokens_withdraw_rate= 0;
+                a.next_common_tokens_withdrawal = fc::time_point_sec::maximum();
             }
             else
             {
-                a.next_vesting_withdrawal += fc::seconds(DEIP_VESTING_WITHDRAW_INTERVAL_SECONDS);
+                a.next_common_tokens_withdrawal += fc::seconds(DEIP_COMMON_TOKENS_WITHDRAW_INTERVAL_SECONDS);
             }
         });
 
         modify(cprops, [&](dynamic_global_property_object& o) {
-            o.total_vesting_fund_deip -= converted_deip;
-            o.total_vesting_shares.amount -= to_convert;
+            o.total_common_tokens_fund_deip -= converted_deip;
+            o.total_common_tokens_amount -= to_convert;
         });
 
         if (to_withdraw > 0)
             account_service.adjust_proxied_witness_votes(from_account, -to_withdraw);
 
-        push_virtual_operation(fill_vesting_withdraw_operation(from_account.name, from_account.name,
-                                                               asset(to_withdraw, VESTS_SYMBOL), converted_deip));
+        push_virtual_operation(fill_common_tokens_withdraw_operation(from_account.name, from_account.name,
+                                                                                        to_withdraw,
+                                                                                        converted_deip,
+                                                                                        false));
     }
 }
 
+// TODO: Update information without VESTS
 /**
  *  Overall the network has an inflation rate of 102% of virtual deip per year
  *  90% of inflation is directed to vesting shares
@@ -1094,7 +1098,7 @@ void database::process_vesting_withdrawals()
  */
 void database::process_funds()
 {
-    dbs_account& account_service = obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
 
     const auto& props = get_dynamic_global_properties();
     const auto& wso = get_witness_schedule_object();
@@ -1137,9 +1141,17 @@ void database::process_funds()
         p.current_supply += asset(new_deip, DEIP_SYMBOL);
     });
 
-    const auto& producer_reward
-        = account_service.create_vesting(get_account(cwit.owner), asset(witness_reward, DEIP_SYMBOL));
-    push_virtual_operation(producer_reward_operation(cwit.owner, producer_reward));
+    if (expert_token_service.is_expert_token_existence_by_account_and_discipline(get_account(cwit.owner).name, 0))
+    {
+        expert_token_service.increase_common_tokens(get_account(cwit.owner).name, witness_reward);
+    }
+    else
+    {
+        expert_token_service.create(get_account(cwit.owner).name, 0, witness_reward);
+    }
+
+    // witness_reward = producer_reward because 1 DEIP = 1 Common Token. Add producer_reward as separate value if 1 DEIP != 1 Common Token
+    push_virtual_operation(producer_reward_operation(cwit.owner, witness_reward));
 }
 
 void database::account_recovery_processing()
@@ -1744,20 +1756,28 @@ void database::process_grants()
 
 void database::process_research_token_sales()
 {
+    dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
     const auto& idx = get_index<research_token_sale_index>().indices().get<by_end_time>();
     auto itr = idx.begin();
     auto _head_block_time = head_block_time();
 
-    while (itr->end_time <= _head_block_time)
+    while (itr->end_time <= _head_block_time && itr != idx.end())
     {
-        if (itr->total_amount < itr->soft_cap){
-            refund_research_tokens(itr->id);
+        if (itr->status == research_token_sale_status::token_sale_active)
+        {
+            if (itr->total_amount < itr->soft_cap)
+            {
+                research_token_sale_service.change_research_token_sale_status(itr->id,
+                                                                              research_token_sale_status::token_sale_expired);
+                refund_research_tokens(itr->id);
+            } else if (itr->total_amount >= itr->soft_cap)
+            {
+                research_token_sale_service.change_research_token_sale_status(itr->id,
+                                                                              research_token_sale_status::token_sale_finished);
+                distribute_research_tokens(itr->id);
+            }
         }
-        else if (itr->total_amount >= itr->soft_cap){
-            distribute_research_tokens(itr->id);
-        }
-        remove(*itr);
-        itr = idx.begin();
+        itr++;
     }
 }
 
@@ -1790,9 +1810,9 @@ void database::initialize_evaluators()
 {
     _my->_evaluator_registry.register_evaluator<vote_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_evaluator>();
-    _my->_evaluator_registry.register_evaluator<transfer_to_vesting_evaluator>();
-    _my->_evaluator_registry.register_evaluator<withdraw_vesting_evaluator>();
-    _my->_evaluator_registry.register_evaluator<set_withdraw_vesting_route_evaluator>();
+    _my->_evaluator_registry.register_evaluator<transfer_to_common_tokens_evaluator>();
+    _my->_evaluator_registry.register_evaluator<withdraw_common_tokens_evaluator>();
+    _my->_evaluator_registry.register_evaluator<set_withdraw_common_tokens_route_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_create_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<witness_update_evaluator>();
@@ -1801,8 +1821,6 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator>();
     _my->_evaluator_registry.register_evaluator<recover_account_evaluator>();
     _my->_evaluator_registry.register_evaluator<change_recovery_account_evaluator>();
-    _my->_evaluator_registry.register_evaluator<account_create_with_delegation_evaluator>();
-    _my->_evaluator_registry.register_evaluator<delegate_vesting_shares_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<make_review_evaluator>();
@@ -1817,23 +1835,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<deposit_to_vesting_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_from_vesting_contract_evaluator>();
-
-    // clang-format off
-    _my->_evaluator_registry.register_evaluator<proposal_vote_evaluator>(
-            new proposal_vote_evaluator(this->obtain_service<dbs_account>(),
-                                        this->obtain_service<dbs_proposal>(),
-                                        this->obtain_service<dbs_research_group>(),
-                                        this->obtain_service<dbs_research>(),
-                                        this->obtain_service<dbs_research_token>(),
-                                        this->obtain_service<dbs_research_content>(),
-                                        this->obtain_service<dbs_research_token_sale>(),
-                                        this->obtain_service<dbs_discipline>(),
-                                        this->obtain_service<dbs_research_discipline_relation>(),
-                                        this->obtain_service<dbs_research_group_invite>(),
-                                        this->obtain_service<dbs_dynamic_global_properties>(),
-                                        this->obtain_service<dbs_research_group_join_request>(),
-                                        this->obtain_service<dbs_vote>()));
-    //clang-format on
+    _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -1850,13 +1852,11 @@ void database::initialize_indexes()
     add_index<operation_index>();
     add_index<account_history_index>();
     add_index<hardfork_property_index>();
-    add_index<withdraw_vesting_route_index>();
+    add_index<withdraw_common_tokens_route_index>();
     add_index<owner_authority_history_index>();
     add_index<account_recovery_request_index>();
     add_index<change_recovery_account_request_index>();
     add_index<reward_fund_index>();
-    add_index<vesting_delegation_index>();
-    add_index<vesting_delegation_expiration_index>();
     add_index<grant_index>();
     add_index<proposal_index>();
     add_index<proposal_vote_index>();
@@ -2086,7 +2086,6 @@ void database::_apply_block(const signed_block& next_block)
 
         create_block_summary(next_block);
         clear_expired_transactions();
-        clear_expired_delegations();
         clear_expired_proposals();
         clear_expired_invites();
         clear_expired_join_requests();
@@ -2094,9 +2093,11 @@ void database::_apply_block(const signed_block& next_block)
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
 
+        process_research_token_sales();
+
         process_funds();
 
-        process_vesting_withdrawals();
+        process_common_tokens_withdrawals();
 
         account_recovery_processing();
 
@@ -2467,23 +2468,6 @@ void database::clear_expired_transactions()
         remove(*dedupe_index.begin());
 }
 
-void database::clear_expired_delegations()
-{
-    auto now = head_block_time();
-    const auto& delegations_by_exp = get_index<vesting_delegation_expiration_index, by_expiration>();
-    auto itr = delegations_by_exp.begin();
-    while (itr != delegations_by_exp.end() && itr->expiration < now)
-    {
-        modify(get_account(itr->delegator),
-               [&](account_object& a) { a.delegated_vesting_shares -= itr->vesting_shares; });
-
-        push_virtual_operation(return_vesting_delegation_operation(itr->delegator, itr->vesting_shares));
-
-        remove(*itr);
-        itr = delegations_by_exp.begin();
-    }
-}
-
 void database::clear_expired_proposals()
 {
     auto& proposal_service = obtain_service<dbs_proposal>();
@@ -2517,20 +2501,21 @@ void database::adjust_balance(const account_object& a, const asset& delta)
     });
 }
 
-void database::adjust_supply(const asset& delta, bool adjust_vesting)
+void database::adjust_supply(const asset& delta, bool adjust_common_token)
 {
     const auto& props = get_dynamic_global_properties();
     if (props.head_block_number < DEIP_BLOCKS_PER_DAY * 7)
-        adjust_vesting = false;
+        adjust_common_token = false;
 
     modify(props, [&](dynamic_global_property_object& props) {
         switch (delta.symbol)
         {
         case DEIP_SYMBOL:
         {
-            asset new_vesting((adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, DEIP_SYMBOL);
-            props.current_supply += delta + new_vesting;
-            props.total_vesting_fund_deip += new_vesting;
+            // TODO: remove unusable value
+            asset new_common_token((adjust_common_token && delta.amount > 0) ? delta.amount * 9 : 0, DEIP_SYMBOL);
+            props.current_supply += delta + new_common_token;
+            props.total_common_tokens_fund_deip += new_common_token;
             assert(props.current_supply.amount.value >= 0);
             break;
         }
@@ -2648,7 +2633,9 @@ void database::validate_invariants() const
     {
         const auto& account_idx = get_index<account_index>().indices().get<by_name>();
         asset total_supply = asset(0, DEIP_SYMBOL);
-        asset total_vesting = asset(0, VESTS_SYMBOL);
+        share_type total_common_tokens_amount = share_type(0);
+        share_type total_expert_tokens_amount = share_type(0);
+
         share_type total_vsf_votes = share_type(0);
 
         auto gpo = get_dynamic_global_properties();
@@ -2656,20 +2643,20 @@ void database::validate_invariants() const
         /// verify no witness has too many votes
         const auto& witness_idx = get_index<witness_index>().indices();
         for (auto itr = witness_idx.begin(); itr != witness_idx.end(); ++itr)
-            FC_ASSERT(itr->votes <= gpo.total_vesting_shares.amount, "", ("itr", *itr));
+            FC_ASSERT(itr->votes <= gpo.total_common_tokens_amount, "", ("itr", *itr));
 
         for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr)
         {
             total_supply += itr->balance;
-            total_vesting += itr->vesting_shares;
+            total_common_tokens_amount += itr->total_common_tokens_amount;
+            total_expert_tokens_amount += itr->total_expert_tokens_amount;
+            
             total_vsf_votes += (itr->proxy == DEIP_PROXY_TO_SELF_ACCOUNT
                                     ? itr->witness_vote_weight()
                                     : (DEIP_MAX_PROXY_RECURSION_DEPTH > 0
                                            ? itr->proxied_vsf_votes[DEIP_MAX_PROXY_RECURSION_DEPTH - 1]
-                                           : itr->vesting_shares.amount));
+                                           : itr->total_common_tokens_amount));
         }
-
-        fc::uint128_t total_rshares2;
 
         const auto& reward_idx = get_index<reward_fund_index, by_id>();
 
@@ -2678,14 +2665,17 @@ void database::validate_invariants() const
             total_supply += itr->reward_balance;
         }
 
-        total_supply += gpo.total_vesting_fund_deip + gpo.total_reward_fund_deip;
+        total_supply +=  gpo.total_common_tokens_fund_deip + gpo.total_reward_fund_deip;
 
         FC_ASSERT(gpo.current_supply == total_supply, "",
                   ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));
-        FC_ASSERT(gpo.total_vesting_shares == total_vesting, "",
-                  ("gpo.total_vesting_shares", gpo.total_vesting_shares)("total_vesting", total_vesting));
-        FC_ASSERT(gpo.total_vesting_shares.amount == total_vsf_votes, "",
-                  ("total_vesting_shares", gpo.total_vesting_shares)("total_vsf_votes", total_vsf_votes));
+        FC_ASSERT(gpo.total_common_tokens_amount == total_common_tokens_amount, "",
+                  ("gpo.total_common_tokens_amount", gpo.total_common_tokens_amount)("total_common_tokens", total_common_tokens_amount));
+        FC_ASSERT(gpo.total_expert_tokens_amount == total_expert_tokens_amount, "",
+                  ("gpo.total_expert_tokens", gpo.total_expert_tokens_amount)("total_expert_tokens", total_expert_tokens_amount));
+
+        FC_ASSERT(gpo.total_common_tokens_amount == total_vsf_votes, "",
+                  ("total_common_tokens_amount", gpo.total_common_tokens_amount)("total_vsf_votes", total_vsf_votes));
     }
     FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
 }

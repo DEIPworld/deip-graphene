@@ -13,6 +13,8 @@
 #include <deip/chain/research_content_object.hpp>
 #include <deip/chain/research_discipline_relation_object.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
+#include <deip/chain/proposal_object.hpp>
+#include <deip/chain/proposal_vote_object.hpp>
 
 #include <fc/io/json.hpp>
 
@@ -84,6 +86,7 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_genesis_disciplines(genesis_state);
         init_expert_tokens(genesis_state);
         init_research_groups(genesis_state);
+        init_personal_research_groups(genesis_state);
         init_research(genesis_state);
         init_research_content(genesis_state);
 
@@ -326,12 +329,13 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
                   "Quorum percent should be in 5% to 100% range");
 
         create<research_group_object>([&](research_group_object& rg) {
-           rg.id = research_group.id;
-           fc::from_string(rg.name, research_group.name);
-           fc::from_string(rg.description, research_group.description);
-           fc::from_string(rg.permlink, research_group.permlink);
-           rg.balance = asset(0, DEIP_SYMBOL);
-           rg.quorum_percent = research_group.quorum_percent;
+            rg.id = research_group.id;
+            fc::from_string(rg.name, research_group.name);
+            fc::from_string(rg.description, research_group.description);
+            fc::from_string(rg.permlink, research_group.permlink);
+            rg.balance = asset(0, DEIP_SYMBOL);
+            rg.quorum_percent = research_group.quorum_percent;
+            rg.is_personal = research_group.is_personal;
         });
 
         // TODO: Check that total amount of research group tokens is 10000
@@ -347,6 +351,30 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
     }
 }
 
+void database::init_personal_research_groups(const genesis_state_type& genesis_state)
+{
+    const vector<genesis_state_type::account_type>& accounts = genesis_state.accounts;
+
+    for (auto& account : accounts)
+    {
+        FC_ASSERT(!account.name.empty(), "Account 'name' should not be empty.");
+        FC_ASSERT(is_valid_account_name(account.name), "Account name ${n} is invalid", ("n", account.name));
+
+        auto& research_group = create<research_group_object>([&](research_group_object& research_group) {
+            fc::from_string(research_group.name, account.name);
+            fc::from_string(research_group.permlink, account.name);
+            fc::from_string(research_group.description, account.name);
+            research_group.quorum_percent = DEIP_100_PERCENT;
+            research_group.is_personal = true;
+        });
+
+        create<research_group_token_object>([&](research_group_token_object& research_group_token) {
+            research_group_token.research_group_id = research_group.id;
+            research_group_token.amount = DEIP_100_PERCENT;
+            research_group_token.owner = account.name;
+        });
+    }
+}
 
 
 } // namespace chain

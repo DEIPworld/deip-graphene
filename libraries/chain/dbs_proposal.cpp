@@ -14,7 +14,10 @@ dbs_proposal::dbs_proposal(database& db)
 
 const proposal_object& dbs_proposal::get_proposal(const proposal_id_type& id) const
 {
-    return db_impl().get<proposal_object>(id);
+    try {
+        return db_impl().get<proposal_object>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
 }
 
 const dbs_proposal::proposal_ref_type
@@ -46,7 +49,7 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
         fc::from_string(proposal.data, json_data);
         proposal.creator = creator;
         proposal.research_group_id = research_group_id;
-        proposal.creation_time = fc::time_point_sec();
+        proposal.creation_time = db_impl().head_block_time();
         proposal.expiration_time = expiration_time;
         proposal.quorum_percent = quorum_percent;
     });

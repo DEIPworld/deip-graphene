@@ -32,6 +32,7 @@ public:
             ts.balance_tokens = BALANCE_TOKENS;
             ts.soft_cap = SOFT_CAP;
             ts.hard_cap = HARD_CAP;
+            ts.status = token_sale_active;
         });
 
         db.create<research_token_sale_object>([&](research_token_sale_object& ts) {
@@ -41,6 +42,7 @@ public:
             ts.balance_tokens = 200;
             ts.soft_cap = SOFT_CAP;
             ts.hard_cap = HARD_CAP;
+            ts.status = token_sale_active;
         });
 
         db.create<research_token_sale_object>([&](research_token_sale_object& ts) {
@@ -50,6 +52,7 @@ public:
             ts.balance_tokens = 90;
             ts.soft_cap = 60;
             ts.hard_cap = 90;
+            ts.status = token_sale_active;
         });
     }
 
@@ -272,8 +275,8 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_id)
         BOOST_CHECK(research_token_sale_contribution.amount == 100);
         BOOST_CHECK(research_token_sale_contribution.research_token_sale_id == 1);
 
-        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_id(4), boost::exception);
-        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_id(0), boost::exception);
+        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_id(4), fc::exception);
+        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_id(0), fc::exception);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -323,8 +326,8 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_account_name_and_re
         BOOST_CHECK(research_token_sale_contribution.amount == 200);
         BOOST_CHECK(research_token_sale_contribution.research_token_sale_id == 1);
 
-        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_account_name_and_research_token_sale_id("alex", 1), boost::exception);
-        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_account_name_and_research_token_sale_id("bob", 123), boost::exception);
+        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_account_name_and_research_token_sale_id("alex", 1), fc::exception);
+        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_account_name_and_research_token_sale_id("bob", 123), fc::exception);
     }
     FC_LOG_AND_RETHROW()
 }

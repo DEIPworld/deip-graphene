@@ -66,7 +66,10 @@ dbs_research::research_refs_type dbs_research::get_researches_by_research_group(
 
 const research_object& dbs_research::get_research(const research_id_type& id) const
 {
-    return db_impl().get<research_object>(id);
+    try {
+        return db_impl().get<research_object>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
 }
 
 const research_object& dbs_research::get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const

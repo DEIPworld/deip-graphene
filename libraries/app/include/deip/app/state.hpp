@@ -41,9 +41,7 @@ struct account_vote
     int16_t percent = 0;
     time_point_sec time;
 };
-/**
- *  Convert's vesting shares
- */
+
 struct extended_account : public account_api_obj
 {
     extended_account() {}
@@ -52,7 +50,7 @@ struct extended_account : public account_api_obj
     {
     }
 
-    map<uint64_t, applied_operation> transfer_history; /// transfer to/from vesting
+    map<uint64_t, applied_operation> transfer_history; /// transfer to/from common tokens
     map<uint64_t, applied_operation> post_history;
     map<uint64_t, applied_operation> vote_history;
     map<uint64_t, applied_operation> other_history;

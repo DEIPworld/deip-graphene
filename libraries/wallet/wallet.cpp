@@ -785,19 +785,23 @@ public:
 
             auto accounts = result.as<vector<account_api_obj>>();
             asset total_deip;
-            asset total_vest(0, VESTS_SYMBOL);
+            share_type total_common_tokens_amount;
+            share_type total_expert_tokens_amount;
             for (const auto& a : accounts)
             {
                 total_deip += a.balance;
-                total_vest += a.vesting_shares;
+                total_common_tokens_amount += a.total_common_tokens_amount;
+                total_expert_tokens_amount += a.total_expert_tokens_amount;
                 out << std::left << std::setw(17) << std::string(a.name) << std::right << std::setw(18)
                     << fc::variant(a.balance).as_string() << " " << std::right << std::setw(26)
-                    << fc::variant(a.vesting_shares).as_string() << "\n";
+                    << std::to_string(total_common_tokens_amount.value)<< " " << std::right << std::setw(28)
+                    << std::to_string(total_expert_tokens_amount.value) << "\n";
             }
             out << "-------------------------------------------------------------------------\n";
             out << std::left << std::setw(17) << "TOTAL" << std::right << std::setw(18)
                 << fc::variant(total_deip).as_string() << " " << std::right << std::setw(26)
-                << fc::variant(total_vest).as_string() << "\n";
+                    << std::to_string(total_common_tokens_amount.value)<< " " << std::right << std::setw(28)
+                    << std::to_string(total_expert_tokens_amount.value) << "\n";
             return out.str();
         };
         m["get_account_history"] = [](variant result, const fc::variants& a) {
@@ -842,7 +846,7 @@ public:
                 ss << ' ' << std::left << std::setw(20) << r.to_account;
                 ss << ' ' << std::right << std::setw(8) << std::setprecision(2) << std::fixed
                    << double(r.percent) / 100;
-                ss << ' ' << std::right << std::setw(9) << (r.auto_vest ? "true" : "false") << std::endl;
+                ss << ' ' << std::right << std::setw(9) << (r.auto_common_token ? "true" : "false") << std::endl;
             }
 
             return ss.str();
@@ -1270,45 +1274,6 @@ annotated_signed_transaction wallet_api::create_account_with_keys(const std::str
     FC_CAPTURE_AND_RETHROW((creator)(newname)(json_meta)(owner)(active)(memo)(broadcast))
 }
 
-/**
- * This method is used by faucets to create new accounts for other users which must
- * provide their desired keys. The resulting account may not be controllable by this
- * wallet.
- */
-annotated_signed_transaction wallet_api::create_account_with_keys_delegated(const std::string& creator,
-                                                                            const asset& deip_fee,
-                                                                            const asset& delegated_vests,
-                                                                            const string& newname,
-                                                                            const string& json_meta,
-                                                                            const public_key_type& owner,
-                                                                            const public_key_type& active,
-                                                                            const public_key_type& posting,
-                                                                            const public_key_type& memo,
-                                                                            bool broadcast) const
-{
-    try
-    {
-        FC_ASSERT(!is_locked());
-        account_create_with_delegation_operation op;
-        op.creator = creator;
-        op.new_account_name = newname;
-        op.owner = authority(1, owner, 1);
-        op.active = authority(1, active, 1);
-        op.posting = authority(1, posting, 1);
-        op.memo_key = memo;
-        op.json_metadata = json_meta;
-        op.fee = deip_fee;
-        op.delegation = delegated_vests;
-
-        signed_transaction tx;
-        tx.operations.push_back(op);
-        tx.validate();
-
-        return my->sign_transaction(tx, broadcast);
-    }
-    FC_CAPTURE_AND_RETHROW((creator)(newname)(json_meta)(owner)(active)(memo)(broadcast))
-}
-
 annotated_signed_transaction wallet_api::request_account_recovery(const std::string& recovery_account,
                                                                   const std::string& account_to_recover,
                                                                   const authority& new_authority,
@@ -1644,30 +1609,6 @@ wallet_api::update_account_memo_key(const std::string& account_name, const publi
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::delegate_vesting_shares(const std::string& delegator,
-                                                                 const std::string& delegatee,
-                                                                 const asset& vesting_shares,
-                                                                 bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    auto accounts = my->_remote_db->get_accounts({ delegator, delegatee });
-    FC_ASSERT(accounts.size() == 2, "One or more of the accounts specified do not exist.");
-    FC_ASSERT(delegator == accounts[0].name, "Delegator account is not right?");
-    FC_ASSERT(delegatee == accounts[1].name, "Delegator account is not right?");
-
-    delegate_vesting_shares_operation op;
-    op.delegator = delegator;
-    op.delegatee = delegatee;
-    op.vesting_shares = vesting_shares;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
 /**
  *  This method will genrate new owner, active, and memo keys for the new account which
  *  will be controlable by this wallet.
@@ -1690,35 +1631,6 @@ annotated_signed_transaction wallet_api::create_account(const std::string& creat
         import_key(memo.wif_priv_key);
         return create_account_with_keys(creator, newname, json_meta, owner.pub_key, active.pub_key, posting.pub_key,
                                         memo.pub_key, broadcast);
-    }
-    FC_CAPTURE_AND_RETHROW((creator)(newname)(json_meta))
-}
-
-/**
- *  This method will genrate new owner, active, and memo keys for the new account which
- *  will be controlable by this wallet.
- */
-annotated_signed_transaction wallet_api::create_account_delegated(const std::string& creator,
-                                                                  const asset& deip_fee,
-                                                                  const asset& delegated_vests,
-                                                                  const std::string& newname,
-                                                                  const std::string& json_meta,
-                                                                  bool broadcast)
-{
-    try
-    {
-        FC_ASSERT(!is_locked());
-        auto owner = suggest_brain_key();
-        auto active = suggest_brain_key();
-        auto posting = suggest_brain_key();
-        auto memo = suggest_brain_key();
-        import_key(owner.wif_priv_key);
-        import_key(active.wif_priv_key);
-        import_key(posting.wif_priv_key);
-        import_key(memo.wif_priv_key);
-        return create_account_with_keys_delegated(creator, deip_fee, delegated_vests, newname, json_meta,
-                                                  owner.pub_key, active.pub_key, posting.pub_key, memo.pub_key,
-                                                  broadcast);
     }
     FC_CAPTURE_AND_RETHROW((creator)(newname)(json_meta))
 }
@@ -1898,10 +1810,10 @@ annotated_signed_transaction wallet_api::transfer(
 }
 
 annotated_signed_transaction
-wallet_api::transfer_to_vesting(const std::string& from, const std::string& to, const asset& amount, bool broadcast)
+wallet_api::transfer_to_common_tokens(const std::string& from, const std::string& to, const asset& amount, bool broadcast)
 {
     FC_ASSERT(!is_locked());
-    transfer_to_vesting_operation op;
+    transfer_to_common_tokens_operation op;
     op.from = from;
     op.to = (to == from ? "" : to);
     op.amount = amount;
@@ -1914,12 +1826,12 @@ wallet_api::transfer_to_vesting(const std::string& from, const std::string& to, 
 }
 
 annotated_signed_transaction
-wallet_api::withdraw_vesting(const std::string& from, const asset& vesting_shares, bool broadcast)
+wallet_api::withdraw_common_tokens(const std::string& from, const share_type& common_tokens_amount, bool broadcast)
 {
     FC_ASSERT(!is_locked());
-    withdraw_vesting_operation op;
+    withdraw_common_tokens_operation op;
     op.account = from;
-    op.vesting_shares = vesting_shares;
+    op.total_common_tokens_amount = common_tokens_amount;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -1928,15 +1840,15 @@ wallet_api::withdraw_vesting(const std::string& from, const asset& vesting_share
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::set_withdraw_vesting_route(
-    const std::string& from, const std::string& to, uint16_t percent, bool auto_vest, bool broadcast)
+annotated_signed_transaction wallet_api::set_withdraw_common_tokens_route(
+    const std::string& from, const std::string& to, uint16_t percent, bool auto_common_token, bool broadcast)
 {
     FC_ASSERT(!is_locked());
-    set_withdraw_vesting_route_operation op;
+    set_withdraw_common_tokens_route_operation op;
     op.from_account = from;
     op.to_account = to;
     op.percent = percent;
-    op.auto_vest = auto_vest;
+    op.auto_common_token = auto_common_token;
 
     signed_transaction tx;
     tx.operations.push_back(op);

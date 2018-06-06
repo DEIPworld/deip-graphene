@@ -43,7 +43,7 @@ struct withdraw_route
     string from_account;
     string to_account;
     uint16_t percent;
-    bool auto_vest;
+    bool auto_common_token;
 };
 
 enum withdraw_route_type
@@ -183,10 +183,6 @@ public:
     vector<withdraw_route> get_withdraw_routes(string account, withdraw_route_type type = outgoing) const;
 
     optional<account_bandwidth_api_obj> get_account_bandwidth(string account, witness::bandwidth_type type) const;
-
-    vector<vesting_delegation_api_obj> get_vesting_delegations(string account, string from, uint32_t limit = 100) const;
-    vector<vesting_delegation_expiration_api_obj> get_expiring_vesting_delegations(
-        string account, time_point_sec from, uint32_t limit = 100) const;
 
     ///////////////
     // Witnesses //
@@ -361,6 +357,7 @@ public:
     // Research token sale //
     /////////////////////////
     research_token_sale_api_obj get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const;
+    bool check_research_token_sale_existence_by_research_id(const research_id_type& research_id) const;
     research_token_sale_api_obj get_research_token_sale_by_research_id(const research_id_type& research_id) const;
     vector<research_token_sale_api_obj> get_research_token_sale_by_end_time(const time_point_sec end_time) const;
     research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type research_token_sale_contribution_id) const;
@@ -403,6 +400,23 @@ public:
     vector<review_api_obj> get_reviews_by_research(const research_id_type& research_id) const;
     vector<review_api_obj> get_reviews_by_content(const research_content_id_type& research_content_id) const;
 
+    /////////////////////////////////
+    // Research group join request //
+    ////////////////////////////////
+    research_group_join_request_api_obj get_research_group_join_request_by_id(const research_group_join_request_id_type& research_group_join_request_id) const;
+    research_group_join_request_api_obj get_research_group_join_request_by_account_name_and_research_group_id(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
+    vector<research_group_join_request_api_obj> get_research_group_join_requests_by_account_name(const account_name_type& account_name) const;
+    vector<research_group_join_request_api_obj> get_research_group_join_requests_by_research_group_id(const research_group_id_type& research_group_id) const;
+
+    /////////////////////
+    // Research token ///
+    /////////////////////
+
+    research_token_api_obj get_research_token_by_id(const research_token_id_type& research_token_id) const;
+    vector<research_token_api_obj> get_research_tokens_by_account_name(const account_name_type &account_name) const;
+    vector<research_token_api_obj> get_research_tokens_by_research_id(const research_id_type &research_id) const;
+    research_token_api_obj get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
+                                                                              const research_id_type &research_id) const;
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -417,7 +431,7 @@ private:
 // clang-format off
 
 FC_REFLECT( deip::app::scheduled_hardfork, (hf_version)(live_time) )
-FC_REFLECT( deip::app::withdraw_route, (from_account)(to_account)(percent)(auto_vest) )
+FC_REFLECT( deip::app::withdraw_route, (from_account)(to_account)(percent)(auto_common_token) )
 
 FC_REFLECT_ENUM( deip::app::withdraw_route_type, (incoming)(outgoing)(all) )
 
@@ -455,8 +469,6 @@ FC_API(deip::app::database_api,
    (get_recovery_request)
    (get_withdraw_routes)
    (get_account_bandwidth)
-   (get_vesting_delegations)
-   (get_expiring_vesting_delegations)
 
    // Authority / validation
    (get_transaction_hex)
@@ -526,6 +538,7 @@ FC_API(deip::app::database_api,
    (get_research_token_sale_contribution_by_id)
    (get_research_token_sale_contributions_by_research_token_sale_id)
    (get_research_token_sale_contribution_by_account_name_and_research_token_sale_id)
+   (check_research_token_sale_existence_by_research_id)
 
    // Research discipline relation
    (get_disciplines_by_research)
@@ -545,6 +558,19 @@ FC_API(deip::app::database_api,
    // Reviews
    (get_reviews_by_research)
    (get_reviews_by_content)
+
+   // Research group join request
+   (get_research_group_join_request_by_id)
+   (get_research_group_join_request_by_account_name_and_research_group_id)
+   (get_research_group_join_requests_by_account_name)
+   (get_research_group_join_requests_by_research_group_id)
+
+   // Research token
+   (get_research_token_by_id)
+   (get_research_tokens_by_account_name)
+   (get_research_tokens_by_research_id)
+   (get_research_token_by_account_name_and_research_id)
+
 )
 
 // clang-format on

@@ -27,5 +27,30 @@
     "wahle": [{
         "private_key": "5K7ftAZ6eJCGCP3mNr1wh56RpyZKfgt2AyivHn9pWVJFxmG8kmX",
         "public_key": "DEIP7NAFzGdNUBhR1B3bf9g38yy4qEENJK1TSff2YdSstLQ6ztXrG6"
+    }],
+
+    "ingopr": [{
+        "private_key": "5JTFNZETXD3huHnVtvWx8mJoB5u4zFcNKctiz7SYpYArKFknpxk",
+        "public_key": "DEIP7gp8xGzRdzVHqyiCbBqQn2FqUV1h94iwFwtS6RuqdaseyYgwEk"
+    }],
+
+    "dorette": [{
+        "private_key": "5HzDaSLBuJ87oxYikzEEYnn8FBS65BBU34zKsbdonQxV7hhW38q",
+        "public_key": "DEIP7uK6Q7aXjdUL6M6b2s8YdnJ9pbf7UHKPhjHqpFdmypFSUDFUTp"
+    }],
+
+    "christa-sonja": [{
+        "private_key": "5KSaWMyUJxrShvAhunacCYCa3whX78HS8hBw79TKJscc1rztWKJ",
+        "public_key": "DEIP5YJaWc5RSQHnqd8pSmaWdqQhNGGEeiesgUZ34hAYM9VDdikabE"
+    }],
+
+    "esmeralda": [{
+        "private_key": "5K1UPWFrd8V9XFow5zPWcZZCEnAmuJUWbYtCZnZLRXvwRsj4Uyv",
+        "public_key": "DEIP5qm2iZaNGGcWqpJwnWmHjPorXZZBhudRp5jQSGfkrLphoLcQTh"
+    }],
+
+    "ferdinand": [{
+        "private_key": "5JaEUU5k3hT78cD6qWKrbMLwzFu9UT8g1sFDbGhnL4fUzh8VkYk",
+        "public_key": "DEIP7SRfpY6Un2YBTa2y1ec5gju7s4MwqzQx8p8GDqZEFPewAJLVu7"
     }]
 }

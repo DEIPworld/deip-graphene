@@ -381,58 +381,6 @@ public:
                                                           bool broadcast) const;
 
     /**
-     *  This method will genrate new owner, active, and memo keys for the new account which
-     *  will be controlable by this wallet. There is a fee associated with account creation
-     *  that is paid by the creator. The current account creation fee can be found with the
-     *  'info' wallet command.
-     *
-     *  These accounts are created with combination of DEIP and delegated SP
-     *
-     *  @param creator The account creating the new account
-     *  @param deip_fee The amount of the fee to be paid with DEIP
-     *  @param delegated_vests The amount of the fee to be paid with delegation
-     *  @param new_account_name The name of the new account
-     *  @param json_meta JSON Metadata associated with the new account
-     *  @param broadcast true if you wish to broadcast the transaction
-     */
-    annotated_signed_transaction create_account_delegated(const std::string& creator,
-                                                          const asset& deip_fee,
-                                                          const asset& delegated_vests,
-                                                          const std::string& new_account_name,
-                                                          const std::string& json_meta,
-                                                          bool broadcast);
-
-    /**
-     * This method is used by faucets to create new accounts for other users which must
-     * provide their desired keys. The resulting account may not be controllable by this
-     * wallet. There is a fee associated with account creation that is paid by the creator.
-     * The current account creation fee can be found with the 'info' wallet command.
-     *
-     * These accounts are created with combination of DEIP and delegated SP
-     *
-     * @param creator The account creating the new account
-     * @param deip_fee The amount of the fee to be paid with DEIP
-     * @param delegated_vests The amount of the fee to be paid with delegation
-     * @param newname The name of the new account
-     * @param json_meta JSON Metadata associated with the new account
-     * @param owner public owner key of the new account
-     * @param active public active key of the new account
-     * @param posting public posting key of the new account
-     * @param memo public memo key of the new account
-     * @param broadcast true if you wish to broadcast the transaction
-     */
-    annotated_signed_transaction create_account_with_keys_delegated(const std::string& creator,
-                                                                    const asset& deip_fee,
-                                                                    const asset& delegated_vests,
-                                                                    const std::string& newname,
-                                                                    const std::string& json_meta,
-                                                                    const public_key_type& owner,
-                                                                    const public_key_type& active,
-                                                                    const public_key_type& posting,
-                                                                    const public_key_type& memo,
-                                                                    bool broadcast) const;
-
-    /**
      * This method updates the keys of an existing account.
      *
      * @param accountname The name of the account
@@ -524,19 +472,6 @@ public:
      */
     annotated_signed_transaction
     update_account_memo_key(const std::string& account_name, const public_key_type& key, bool broadcast);
-
-    /**
-     * This method delegates VESTS from one account to another.
-     *
-     * @param delegator The name of the account delegating VESTS
-     * @param delegatee The name of the account receiving VESTS
-     * @param vesting_shares The amount of VESTS to delegate
-     * @param broadcast true if you wish to broadcast the transaction
-     */
-    annotated_signed_transaction delegate_vesting_shares(const std::string& delegator,
-                                                         const std::string& delegatee,
-                                                         const asset& vesting_shares,
-                                                         bool broadcast);
 
     /**
      *  This method is used to convert a JSON transaction to its transaction ID.
@@ -642,7 +577,7 @@ public:
      * @param broadcast true if you wish to broadcast the transaction
      */
     annotated_signed_transaction
-    transfer_to_vesting(const std::string& from, const std::string& to, const asset& amount, bool broadcast = false);
+    transfer_to_common_tokens(const std::string& from, const std::string& to, const asset& amount, bool broadcast = false);
 
     /**
      * Set up a vesting withdraw request. The request is fulfilled once a week over the next two year (104 weeks).
@@ -653,7 +588,7 @@ public:
      * @param broadcast true if you wish to broadcast the transaction
      */
     annotated_signed_transaction
-    withdraw_vesting(const std::string& from, const asset& vesting_shares, bool broadcast = false);
+    withdraw_common_tokens(const std::string& from, const share_type& vesting_shares, bool broadcast = false);
 
     /**
      * Set up a vesting withdraw route. When vesting shares are withdrawn, they will be routed to these accounts
@@ -663,12 +598,12 @@ public:
      * @param to   The account receiving either VESTS or DEIP.
      * @param percent The percent of the withdraw to go to the 'to' account. This is denoted in hundreths of a percent.
      *    i.e. 100 is 1% and 10000 is 100%. This value must be between 1 and 100000
-     * @param auto_vest Set to true if the from account should receive the VESTS as VESTS, or false if it should receive
+     * @param auto_common_token Set to true if the from account should receive the VESTS as VESTS, or false if it should receive
      *    them as DEIP.
      * @param broadcast true if you wish to broadcast the transaction.
      */
-    annotated_signed_transaction set_withdraw_vesting_route(
-        const std::string& from, const std::string& to, uint16_t percent, bool auto_vest, bool broadcast = false);
+    annotated_signed_transaction set_withdraw_common_tokens_route(
+        const std::string& from, const std::string& to, uint16_t percent, bool auto_common_token, bool broadcast = false);
 
     /** Signs a transaction.
      *
@@ -908,22 +843,19 @@ FC_API( deip::wallet::wallet_api,
         /// transaction api
         (create_account)
         (create_account_with_keys)
-        (create_account_delegated)
-        (create_account_with_keys_delegated)
         (update_account)
         (update_account_auth_key)
         (update_account_auth_account)
         (update_account_auth_threshold)
         (update_account_meta)
         (update_account_memo_key)
-        (delegate_vesting_shares)
         (update_witness)
         (set_voting_proxy)
         (vote_for_witness)
         (transfer)
-        (transfer_to_vesting)
-        (withdraw_vesting)
-        (set_withdraw_vesting_route)
+        (transfer_to_common_tokens)
+        (withdraw_common_tokens)
+        (set_withdraw_common_tokens_route)
         (vote)
         (set_transaction_expiration)
         (challenge)

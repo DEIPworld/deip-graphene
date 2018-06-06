@@ -26,7 +26,13 @@ class review_object : public object<review_object_type, review_object>
 public:
 
     template <typename Constructor, typename Allocator>
-    review_object(Constructor &&c, allocator<Allocator> a) : content(a), disciplines(a), references(a)
+    review_object(Constructor &&c, allocator<Allocator> a) : content(a)
+            , reward_weights_per_discipline(a)
+            , curation_reward_weights_per_discipline(a)
+            , disciplines(a)
+            , references(a)
+            , weight_modifiers(a)
+            , expertise_amounts_used(a)
     {
         c(*this);
     }
@@ -37,14 +43,14 @@ public:
     bool is_positive = true;
     account_name_type author;
     time_point_sec created_at;
-    bip::map<discipline_id_type, share_type> reward_weights_per_discipline;
-    bip::map<discipline_id_type, share_type> curation_reward_weights_per_discipline;
+    discipline_id_share_type_map reward_weights_per_discipline;
+    discipline_id_share_type_map curation_reward_weights_per_discipline;
     discipline_id_type_set disciplines;
     research_content_id_type_set references;
     // TODO: Add external references
 
-    bip::map<discipline_id_type, share_type> weight_modifiers;
-    bip::map<discipline_id_type, share_type> expertise_amounts_used;
+    discipline_id_share_type_map weight_modifiers;
+    discipline_id_share_type_map expertise_amounts_used;
 
     share_type get_weight(const discipline_id_type& discipline_id) {
         FC_ASSERT(weight_modifiers.count(discipline_id) != 0, "No review weight modifier calculated for discipline_id={d}", ("d", discipline_id));

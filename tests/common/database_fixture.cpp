@@ -30,7 +30,7 @@ void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
     public_key_type init_public_key = init_delegate_priv_key.get_public_key();
 
     genesis_state.accounts.push_back(
-        { "initdelegate", "null", init_public_key, genesis_state.init_supply, uint64_t(0) });
+        { "initdelegate", "null", init_public_key, genesis_state.init_supply - 10000, uint64_t(0) });
     genesis_state.witness_candidates.push_back({ "initdelegate", init_public_key });
 }
 
@@ -109,7 +109,6 @@ clean_database_fixture::clean_database_fixture()
 
         // ahplugin->plugin_startup();
         db_plugin->plugin_startup();
-        vest(TEST_INIT_DELEGATE_NAME, 10000);
 
         // Fill up the rest of the required miners
         for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
@@ -126,9 +125,9 @@ clean_database_fixture::clean_database_fixture()
             expert_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1, 10000);
 
             witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
-                           init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount);
+                           init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount.value);
         }
-        
+
         validate_database();
     }
     catch (const fc::exception& e)
@@ -181,8 +180,6 @@ void clean_database_fixture::resize_shared_mem(uint64_t size)
     db.set_hardfork(DEIP_NUM_HARDFORKS);
     generate_block();
 
-    vest(TEST_INIT_DELEGATE_NAME, 10000);
-
     // Fill up the rest of the required miners
     for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
     {
@@ -201,7 +198,7 @@ void clean_database_fixture::resize_shared_mem(uint64_t size)
     for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
     {
         witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
-                       init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount);
+                       init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount.value);
     }
 
     validate_database();
@@ -314,11 +311,10 @@ const account_object& database_fixture::account_create(const string& name,
     try
     {
 
-        account_create_with_delegation_operation op;
+        account_create_operation op;
         op.new_account_name = name;
         op.creator = creator;
         op.fee = asset(fee, DEIP_SYMBOL);
-        op.delegation = asset(0, VESTS_SYMBOL);
         op.owner = authority(1, key, 1);
         op.active = authority(1, key, 1);
         op.posting = authority(1, post_key, 1);
@@ -349,7 +345,7 @@ database_fixture::account_create(const string& name, const public_key_type& key,
         return account_create(name, TEST_INIT_DELEGATE_NAME, init_account_priv_key,
                               std::max(db.get_witness_schedule_object().median_props.account_creation_fee.amount
                                            * DEIP_CREATE_ACCOUNT_WITH_DEIP_MODIFIER,
-                                       share_type(100)),
+                                       share_type(10000)),
                               key, post_key, "");
     }
     FC_CAPTURE_AND_RETHROW((name));
@@ -409,7 +405,8 @@ database_fixture::research_group_create(const int64_t& id,
                                         const string& permlink,
                                         const string& description,
                                         const share_type funds,
-                                        const share_type quorum_percent)
+                                        const share_type quorum_percent,
+                                        const bool is_personal)
 {
     const research_group_object& new_research_group
         = db.create<research_group_object>([&](research_group_object& rg) {
@@ -419,6 +416,7 @@ database_fixture::research_group_create(const int64_t& id,
               fc::from_string(rg.description, description);
               rg.balance = funds;
               rg.quorum_percent = quorum_percent;
+              rg.is_personal = is_personal;
           });
 
     return new_research_group;
@@ -428,7 +426,8 @@ const research_group_object& database_fixture::research_group_create_by_operatio
                                                                                   const string& name,
                                                                                   const string& permlink,
                                                                                   const string& description,
-                                                                                  const uint32_t quorum_percent)
+                                                                                  const uint32_t quorum_percent,
+                                                                                  const bool is_personal)
 {
     try
     {
@@ -442,6 +441,7 @@ const research_group_object& database_fixture::research_group_create_by_operatio
 
         op.creator = creator;
         op.quorum_percent = quorum_percent;
+        op.is_personal = is_personal;
 
         trx.operations.push_back(op);
 
@@ -474,9 +474,10 @@ const research_group_object& database_fixture::setup_research_group(const int64_
                                                                     const string &description,
                                                                     const share_type funds,
                                                                     const share_type quorum_percent,
+                                                                    const bool is_personal,
                                                                     const vector<std::pair<account_name_type, share_type>> &accounts)
 {
-    const auto& research_group = research_group_create(id, name, permlink, description, funds, quorum_percent);
+    const auto& research_group = research_group_create(id, name, permlink, description, funds, quorum_percent, is_personal);
 
     for (const auto& account : accounts)
     {
@@ -700,6 +701,7 @@ const research_token_sale_object& database_fixture::research_token_sale_create(c
         rts_o.balance_tokens = balance_tokens;
         rts_o.soft_cap = soft_cap;
         rts_o.hard_cap = hard_cap;
+        rts_o.status = research_token_sale_status ::token_sale_active;
     });
     return research_token_sale;
 }
@@ -769,11 +771,22 @@ void database_fixture::transfer(const string& from, const string& to, const shar
     FC_CAPTURE_AND_RETHROW((from)(to)(amount))
 }
 
-void database_fixture::vest(const string& from, const share_type& amount)
+void database_fixture::create_all_discipline_expert_tokens_for_account(const string& account)
+{    
+    for (uint32_t i = 0; i < genesis_state.disciplines.size(); i++)
+    {
+        if(i != 0)
+            expert_token(account, i, 10000);
+        else
+            common_token(account, 10000);
+    }
+}
+
+void database_fixture::convert_deip_to_common_token(const string& from, const share_type& amount)
 {
     try
     {
-        transfer_to_vesting_operation op;
+        transfer_to_common_tokens_operation op;
         op.from = from;
         op.to = "";
         op.amount = asset(amount, DEIP_SYMBOL);
@@ -787,34 +800,17 @@ void database_fixture::vest(const string& from, const share_type& amount)
     FC_CAPTURE_AND_RETHROW((from)(amount))
 }
 
-void database_fixture::vest(const string& account, const asset& amount)
-{
-    if (amount.symbol != DEIP_SYMBOL)
-        return;
-
-    db_plugin->debug_update(
-        [=](database& db) {
-            db.modify(db.get_dynamic_global_properties(),
-                      [&](dynamic_global_property_object& gpo) { gpo.current_supply += amount; });
-
-            dbs_account& account_service = db.obtain_service<dbs_account>();
-            account_service.create_vesting(db.get_account(account), amount);
-        },
-        default_skip);
-}
-
-void database_fixture::create_all_discipline_expert_tokens_for_account(const string& account)
-{    
-    for (uint32_t i = 0; i < genesis_state.disciplines.size(); i++)
-    {
-        expert_token(account, i, 10000);
-    }
-}
-
-const expert_token_object& database_fixture::common_token(const string& account, const share_type& amount)
+const expert_token_object database_fixture::common_token(const string& account, const share_type& amount)
 {
     dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
-    auto& common_token = expert_token_service.create(account, 0, amount);
+
+    db.modify(db.get_dynamic_global_properties(),
+                      [&](dynamic_global_property_object& gpo) { gpo.current_supply += asset(amount, DEIP_SYMBOL); });
+
+    expert_token_object common_token
+        = (expert_token_service.is_expert_token_existence_by_account_and_discipline(account, 0))
+        ? expert_token_object(expert_token_service.increase_common_tokens(account, amount))
+        : expert_token_object(expert_token_service.create(account, 0, amount));
 
     return common_token;
 }

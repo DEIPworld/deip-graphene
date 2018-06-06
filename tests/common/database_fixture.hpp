@@ -111,13 +111,15 @@ struct database_fixture
                                                        const string& permlink,
                                                        const string& desciption,
                                                        const share_type funds,
-                                                       const share_type quorum_percent);
+                                                       const share_type quorum_percent,
+                                                       const bool is_personal);
                                                        
     const research_group_object& research_group_create_by_operation(const account_name_type& creator,
                                                                     const string& name,
                                                                     const string& permlink,
                                                                     const string& description,
-                                                                    const uint32_t quorum_percent);
+                                                                    const uint32_t quorum_percent,
+                                                                    const bool is_personal);
 
     const research_group_token_object& research_group_token_create(const research_group_id_type& research_group_id,
                                                                    const account_name_type& account,
@@ -129,6 +131,7 @@ struct database_fixture
                                                       const string &desciption,
                                                       const share_type funds,
                                                       const share_type quorum_percent,
+                                                      const bool is_personal,
                                                       const vector<std::pair<account_name_type, share_type>> &accounts);
 
     const proposal_object& create_proposal(const int64_t id,
@@ -210,10 +213,9 @@ struct database_fixture
     void fund(const string& account_name, const asset& amount);
     void transfer(const string& from, const string& to, const share_type& deip);
     void convert(const string& account_name, const asset& amount);
-    void vest(const string& from, const share_type& amount);
-    void vest(const string& account, const asset& amount);
     void create_all_discipline_expert_tokens_for_account(const string& account);
-    const expert_token_object& common_token(const string& account, const share_type& amount);
+    void convert_deip_to_common_token(const string& from, const share_type& amount);
+    const expert_token_object common_token(const string& account, const share_type& amount);
     const expert_token_object& expert_token(const string& account, const discipline_id_type& discipline_id, const share_type& amount);
     void proxy(const string& account, const string& proxy);
     const asset& get_balance(const string& account_name) const;

@@ -58,25 +58,13 @@ struct get_impacted_account_visitor
         _impacted.insert(op.creator);
     }
 
-    void operator()(const account_create_with_delegation_operation& op)
-    {
-        _impacted.insert(op.new_account_name);
-        _impacted.insert(op.creator);
-    }
-
     void operator()(const vote_operation& op)
     {
         _impacted.insert(op.voter);
 //        _impacted.insert(op.author);
     }
 
-    void operator()(const transfer_operation& op)
-    {
-        _impacted.insert(op.from);
-        _impacted.insert(op.to);
-    }
-
-    void operator()(const transfer_to_vesting_operation& op)
+    void operator()(const transfer_to_common_tokens_operation& op)
     {
         _impacted.insert(op.from);
 
@@ -86,10 +74,16 @@ struct get_impacted_account_visitor
         }
     }
 
-    void operator()(const set_withdraw_vesting_route_operation& op)
+    void operator()(const set_withdraw_common_tokens_route_operation& op)
     {
         _impacted.insert(op.from_account);
         _impacted.insert(op.to_account);
+    }
+
+    void operator()(const transfer_operation& op)
+    {
+        _impacted.insert(op.from);
+        _impacted.insert(op.to);
     }
 
     void operator()(const account_witness_vote_operation& op)
@@ -120,12 +114,6 @@ struct get_impacted_account_visitor
         _impacted.insert(op.account_to_recover);
     }
 
-    void operator()(const delegate_vesting_shares_operation& op)
-    {
-        _impacted.insert(op.delegator);
-        _impacted.insert(op.delegatee);
-    }
-
     void operator()(const create_grant_operation& op)
     {
         _impacted.insert(op.owner);
@@ -133,7 +121,7 @@ struct get_impacted_account_visitor
 
     // virtual operations
 
-    void operator()(const fill_vesting_withdraw_operation& op)
+    void operator()(const fill_common_tokens_withdraw_operation& op)
     {
         _impacted.insert(op.from_account);
         _impacted.insert(op.to_account);
@@ -142,11 +130,6 @@ struct get_impacted_account_visitor
     void operator()(const shutdown_witness_operation& op)
     {
         _impacted.insert(op.owner);
-    }
-
-    void operator()(const return_vesting_delegation_operation& op)
-    {
-        _impacted.insert(op.account);
     }
 
         void operator()(const producer_reward_operation& op)

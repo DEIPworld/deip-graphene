@@ -40,7 +40,8 @@ public:
     const research_group_object& create_research_group(const std::string& name,
                                                        const string& permlink,
                                                        const string& description,
-                                                       const share_type quorum_percent);
+                                                       const share_type quorum_percent,
+                                                       const bool is_personal);
 
     void change_quorum(const uint32_t quorum_percent, const research_group_id_type& research_group_id);
 
