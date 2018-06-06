@@ -40,24 +40,24 @@ RUN \
 
 ADD . /usr/local/src/deip
 
-RUN \
-    cd /usr/local/src/deip && \
-    git submodule update --init --recursive && \
-    mkdir build && \
-    cd build && \
-    cmake \
-        -DCMAKE_BUILD_TYPE=Debug \
-        -DBUILD_DEIP_TESTNET=ON \
-        -DLOW_MEMORY_NODE=OFF \
-        -DCLEAR_VOTES=ON \
-        -DSKIP_BY_TX_ID=ON \
-        .. && \
-    make -j$(nproc) deipd && \
-    cd /usr/local/src/deip && \
-    doxygen && \
-    programs/build_helpers/check_reflect.py && \
-    programs/build_helpers/get_config_check.sh && \
-    rm -rf /usr/local/src/deip/build
+#RUN \
+#    cd /usr/local/src/deip && \
+#    git submodule update --init --recursive && \
+#    mkdir build && \
+#    cd build && \
+#    cmake \
+#        -DCMAKE_BUILD_TYPE=Debug \
+#        -DBUILD_DEIP_TESTNET=ON \
+#        -DLOW_MEMORY_NODE=OFF \
+#        -DCLEAR_VOTES=ON \
+#        -DSKIP_BY_TX_ID=ON \
+#        .. && \
+#    make -j$(nproc) deipd && \
+#    cd /usr/local/src/deip && \
+#    doxygen && \
+#    programs/build_helpers/check_reflect.py && \
+#    programs/build_helpers/get_config_check.sh && \
+#    rm -rf /usr/local/src/deip/build
 
 RUN \
     cd /usr/local/src/deip && \
@@ -75,28 +75,28 @@ RUN \
     && \
     make -j$(nproc) && \
     make install && \
-    cd .. && \
-    ( /usr/local/deipd-default/bin/deipd --version \
-      | grep -o '[0-9]*\.[0-9]*\.[0-9]*' \
-      && echo '_' \
-      && git rev-parse --short HEAD ) \
-      | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g' \
-      > /etc/deipdversion && \
-    cat /etc/deipdversion && \
-    rm -rfv build && \
-    mkdir build && \
-    cd build && \
-    cmake \
-        -DCMAKE_INSTALL_PREFIX=/usr/local/deipd-full \
-        -DCMAKE_BUILD_TYPE=Debug \
-        -DLOW_MEMORY_NODE=OFF \
-        -DCLEAR_VOTES=OFF \
-        -DSKIP_BY_TX_ID=ON \
-        -DBUILD_DEIP_TESTNET=OFF \
-        .. \
-    && \
-    make -j$(nproc) && \
-    make install && \
+#    cd .. && \
+#    ( /usr/local/deipd-default/bin/deipd --version \
+#      | grep -o '[0-9]*\.[0-9]*\.[0-9]*' \
+#      && echo '_' \
+#      && git rev-parse --short HEAD ) \
+#      | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g' \
+#      > /etc/deipdversion && \
+#    cat /etc/deipdversion && \
+#    rm -rfv build && \
+#    mkdir build && \
+#    cd build && \
+#    cmake \
+#        -DCMAKE_INSTALL_PREFIX=/usr/local/deipd-full \
+#        -DCMAKE_BUILD_TYPE=Debug \
+#        -DLOW_MEMORY_NODE=OFF \
+#        -DCLEAR_VOTES=OFF \
+#        -DSKIP_BY_TX_ID=ON \
+#        -DBUILD_DEIP_TESTNET=OFF \
+#        .. \
+#    && \
+#    make -j$(nproc) && \
+#    make install && \
     rm -rf /usr/local/src/deip
 
 RUN \
@@ -183,6 +183,7 @@ ADD contrib/healthcheck.conf.template /etc/nginx/healthcheck.conf.template
 # add config
 ADD config.ini /usr/local/deipd-default/bin/config.ini
 ADD config.ini /usr/local/deipd-full/bin/config.ini
+ADD config.ini /etc/deipd/config.ini
 
 # add PaaS startup script and service script
 ADD contrib/startpaasdeipd.sh /usr/local/bin/startpaasdeipd.sh

@@ -7,7 +7,6 @@ ulimit -c unlimited
 if [[ ! "$USE_PAAS" ]]; then
   mkdir -p /etc/service/deipd
   cp /usr/local/bin/deip-sv-run.sh /etc/service/deipd/run
-  cp /usr/local/bin/config.ini /etc/service/deipd
   chmod +x /etc/service/deipd/run
   runsv /etc/service/deipd
 else
