@@ -1204,18 +1204,21 @@
         "account_name": "lightsom",
         "discipline_id": 113,
         "amount": 5000
-    }, {
-        "account_name": "cicchetti",
-        "discipline_id": 6,
-        "amount": 5000
     }, 
-    
+
 
     {
         "account_name": "cicchetti",
-        "discipline_id": 113,
+        "discipline_id": 6,
         "amount": 5000
     }, {
+        "account_name": "cicchetti",
+        "discipline_id": 113,
+        "amount": 5000
+    }, 
+    
+    
+    {
         "account_name": "wahle",
         "discipline_id": 6,
         "amount": 5000
