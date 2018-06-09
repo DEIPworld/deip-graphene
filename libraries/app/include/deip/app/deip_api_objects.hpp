@@ -573,6 +573,7 @@ struct research_token_sale_api_obj
         ,  balance_tokens(rts.balance_tokens)
         ,  soft_cap(rts.soft_cap)
         ,  hard_cap(rts.hard_cap)
+        ,  status(rts.status)
     {}
 
     // because fc::variant require for temporary object
@@ -588,6 +589,7 @@ struct research_token_sale_api_obj
     share_type balance_tokens;
     share_type soft_cap;
     share_type hard_cap;
+    uint16_t status;
 };
 
 struct research_token_sale_contribution_api_obj
@@ -958,6 +960,7 @@ FC_REFLECT( deip::app::research_token_sale_api_obj,
             (balance_tokens)
             (soft_cap)
             (hard_cap)
+            (status)
 )
 
 FC_REFLECT( deip::app::research_token_sale_contribution_api_obj,
