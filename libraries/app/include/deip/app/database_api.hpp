@@ -417,6 +417,16 @@ public:
     vector<research_token_api_obj> get_research_tokens_by_research_id(const research_id_type &research_id) const;
     research_token_api_obj get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
                                                                               const research_id_type &research_id) const;
+
+    //////////////////
+    // Vote object ///
+    //////////////////
+
+    vector<vote_api_obj> get_votes_by_voter(const account_name_type &voter) const;
+    vector<vote_api_obj> get_votes_by_research_id(const research_id_type &research_id) const;
+    vector<vote_api_obj> get_votes_by_research_content_id(const research_content_id_type &research_content_id) const;
+
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -570,6 +580,11 @@ FC_API(deip::app::database_api,
    (get_research_tokens_by_account_name)
    (get_research_tokens_by_research_id)
    (get_research_token_by_account_name_and_research_id)
+
+   // Votes
+   (get_votes_by_voter)
+   (get_votes_by_research_id)
+   (get_votes_by_research_content_id)
 
 )
 

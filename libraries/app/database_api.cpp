@@ -1805,5 +1805,54 @@ research_token_api_obj database_api::get_research_token_by_account_name_and_rese
     });
 }
 
+vector<vote_api_obj> database_api::get_votes_by_voter(const account_name_type &voter) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<vote_api_obj> results;
+        chain::dbs_vote& vote_service
+                = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto votes = vote_service.get_votes_by_voter(voter);
+
+        for (const chain::vote_object& vote : votes)
+            results.push_back(vote);
+
+        return results;
+    });
+}
+
+vector<vote_api_obj> database_api::get_votes_by_research_id(const research_id_type &research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<vote_api_obj> results;
+        chain::dbs_vote& vote_service
+                = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto votes = vote_service.get_votes_by_research(research_id);
+
+        for (const chain::vote_object& vote : votes)
+            results.push_back(vote);
+
+        return results;
+    });
+}
+
+vector<vote_api_obj> database_api::get_votes_by_research_content_id(const research_content_id_type &research_content_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<vote_api_obj> results;
+        chain::dbs_vote& vote_service
+                = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto votes = vote_service.get_votes_by_research_content(research_content_id);
+
+        for (const chain::vote_object& vote : votes)
+            results.push_back(vote);
+
+        return results;
+    });
+}
+
+
 } // namespace app
 } // namespace deip
