@@ -26,6 +26,8 @@
 #include <deip/witness/witness_objects.hpp>
 
 #include <deip/chain/database.hpp>
+#include <deip/chain/vote_object.hpp>
+#include <deip/chain/review_vote_object.hpp>
 
 namespace deip {
 namespace app {
@@ -799,6 +801,69 @@ struct research_token_api_obj
     share_type amount;
 };
 
+struct vote_api_obj
+{
+    vote_api_obj(const chain::vote_object& vo)
+            : id(vo.id._id)
+            , discipline_id(vo.discipline_id._id)
+            , voter(vo.voter)
+            , research_id(vo.research_id._id)
+            , research_content_id(vo.research_content_id._id)
+            , tokens_amount(vo.tokens_amount)
+            , weight(vo.weight)
+            , voting_power(vo.voting_power)
+            , voting_time(vo.voting_time)
+    {}
+
+    // because fc::variant require for temporary object
+    vote_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t discipline_id;
+    account_name_type voter;
+    int64_t research_id;
+    int64_t research_content_id;
+
+    share_type tokens_amount;
+    int64_t weight;
+    uint16_t voting_power;
+    time_point_sec voting_time;
+
+};
+
+struct review_vote_api_obj
+{
+    review_vote_api_obj(const chain::review_vote_object& rvo)
+            : id(rvo.id._id)
+            , discipline_id(rvo.discipline_id._id)
+            , voter(rvo.voter)
+            , review_id(rvo.review_id._id)
+            , tokens_amount(rvo.tokens_amount)
+            , weight(rvo.weight)
+            , voting_power(rvo.voting_power)
+            , voting_time(rvo.voting_time)
+    {}
+
+    // because fc::variant require for temporary object
+    review_vote_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t discipline_id;
+    account_name_type voter;
+    int64_t review_id;
+
+    share_type tokens_amount;
+    int64_t weight;
+    uint16_t voting_power;
+    time_point_sec voting_time;
+
+};
+
+
 } // namespace app
 } // namespace deip
 
@@ -1034,6 +1099,31 @@ FC_REFLECT( deip::app::research_token_api_obj,
             (account_name)
             (research_id)
             (amount)
+)
+
+FC_REFLECT( deip::app::vote_api_obj,
+            (id)
+            (discipline_id)
+            (voter)
+            (research_id)
+            (research_content_id)
+            (tokens_amount)
+            (weight)
+            (voting_power)
+            (voting_time)
+
+)
+
+FC_REFLECT( deip::app::review_vote_api_obj,
+            (id)
+            (discipline_id)
+            (voter)
+            (review_id)
+            (tokens_amount)
+            (weight)
+            (voting_power)
+            (voting_time)
+
 )
 
 // clang-format on
