@@ -330,6 +330,8 @@ public:
     expert_token_api_obj get_expert_token(const expert_token_id_type id) const;
     vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_name_type account_name) const;
     vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
+    expert_token_api_obj get_common_token_by_account_name(const account_name_type account_name) const;
+    expert_token_api_obj get_expert_token_by_account_name_and_discipline_id(const account_name_type account_name, const discipline_id_type discipline_id) const;
 
     ////////////////////
     // Proposal       //
@@ -533,6 +535,8 @@ FC_API(deip::app::database_api,
    (get_expert_token)
    (get_expert_tokens_by_account_name)
    (get_expert_tokens_by_discipline_id)
+   (get_common_token_by_account_name)
+   (get_expert_token_by_account_name_and_discipline_id)
 
    // Proposal
    (get_proposals_by_research_group_id)

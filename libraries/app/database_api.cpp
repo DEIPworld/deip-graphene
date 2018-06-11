@@ -1220,7 +1220,8 @@ vector<expert_token_api_obj> database_api::get_expert_tokens_by_account_name(con
 
         for (const chain::expert_token_object &expert_token : expert_tokens) {
             auto& discipline = discipline_service.get_discipline(expert_token.discipline_id);
-            results.push_back(expert_token_api_obj(expert_token, discipline.name));
+            if (expert_token.discipline_id != 0)
+                results.push_back(expert_token_api_obj(expert_token, discipline.name));
         }
         return results;
     });
@@ -1243,6 +1244,31 @@ vector<expert_token_api_obj> database_api::get_expert_tokens_by_discipline_id(co
         return results;
     });
 }
+
+expert_token_api_obj database_api::get_common_token_by_account_name(const account_name_type account_name) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_expert_token &expert_token_service = my->_db.obtain_service<chain::dbs_expert_token>();
+        chain::dbs_discipline& discipline_service = my->_db.obtain_service<chain::dbs_discipline>();
+        auto expert_token = expert_token_service.get_expert_token_by_account_and_discipline(account_name, 0);
+        auto& discipline = discipline_service.get_discipline(expert_token.discipline_id);
+        return expert_token_api_obj(expert_token, discipline.name);
+    });
+}
+
+expert_token_api_obj database_api::get_expert_token_by_account_name_and_discipline_id(const account_name_type account_name,
+                                                                                      const discipline_id_type discipline_id) const
+{
+    FC_ASSERT(discipline_id != 0, "Use get_common_token_by_account_name method to get common token");
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_expert_token &expert_token_service = my->_db.obtain_service<chain::dbs_expert_token>();
+        chain::dbs_discipline& discipline_service = my->_db.obtain_service<chain::dbs_discipline>();
+        auto expert_token = expert_token_service.get_expert_token_by_account_and_discipline(account_name, discipline_id);
+        auto& discipline = discipline_service.get_discipline(expert_token.discipline_id);
+        return expert_token_api_obj(expert_token, discipline.name);
+    });
+}
+
 
 vector<proposal_api_obj>
 database_api::get_proposals_by_research_group_id(const research_group_id_type research_group_id) const

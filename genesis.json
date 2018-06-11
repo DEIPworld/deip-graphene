@@ -1186,9 +1186,9 @@
         "account_name": "alice",
         "discipline_id": 6,
         "amount": 5000
-    }, 
-    
-    
+    },
+
+
     {
         "account_name": "bob",
         "discipline_id": 8,

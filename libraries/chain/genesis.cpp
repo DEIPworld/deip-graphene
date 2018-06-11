@@ -15,7 +15,8 @@
 #include <deip/chain/dbs_expert_token.hpp>
 #include <deip/chain/proposal_object.hpp>
 #include <deip/chain/proposal_vote_object.hpp>
-
+#include <deip/chain/vote_object.hpp>
+#include <deip/chain/review_vote_object.hpp>
 #include <fc/io/json.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
