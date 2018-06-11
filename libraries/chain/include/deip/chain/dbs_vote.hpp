@@ -85,6 +85,7 @@ public:
                                                  const time_point_sec& voting_time);
 
     review_vote_refs_type get_review_votes(const review_id_type& review_id) const;
+    review_vote_refs_type get_review_votes_by_voter(const account_name_type& voter) const;
     review_vote_refs_type get_review_votes_by_review_and_discipline(const review_id_type &review_id,
                                                                     const discipline_id_type &discipline_id) const;
     review_vote_refs_type get_review_votes_by_discipline(const discipline_id_type &discipline_id) const;

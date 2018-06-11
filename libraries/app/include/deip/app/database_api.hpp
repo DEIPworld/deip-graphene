@@ -427,6 +427,13 @@ public:
     vector<vote_api_obj> get_votes_by_research_content_id(const research_content_id_type &research_content_id) const;
 
 
+    /////////////////////////
+    // Review vote object ///
+    /////////////////////////
+
+    vector<review_vote_api_obj> get_review_votes_by_voter(const account_name_type &voter) const;
+    vector<review_vote_api_obj> get_review_votes_by_review_id(const review_id_type &review_id) const;
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -586,6 +593,9 @@ FC_API(deip::app::database_api,
    (get_votes_by_research_id)
    (get_votes_by_research_content_id)
 
+   // Review votes
+   (get_review_votes_by_voter)
+   (get_review_votes_by_review_id)
 )
 
 // clang-format on

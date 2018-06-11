@@ -1853,6 +1853,38 @@ vector<vote_api_obj> database_api::get_votes_by_research_content_id(const resear
     });
 }
 
+vector<review_vote_api_obj> database_api::get_review_votes_by_voter(const account_name_type &voter) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<review_vote_api_obj> results;
+        chain::dbs_vote& vote_service
+                = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto review_votes = vote_service.get_review_votes_by_voter(voter);
+
+        for (const chain::review_vote_object& review_vote : review_votes)
+            results.push_back(review_vote);
+
+        return results;
+    });
+}
+
+vector<review_vote_api_obj> database_api::get_review_votes_by_review_id(const review_id_type &review_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<review_vote_api_obj> results;
+        chain::dbs_vote& vote_service
+                = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto review_votes = vote_service.get_review_votes(review_id);
+
+        for (const chain::review_vote_object& review_vote : review_votes)
+            results.push_back(review_vote);
+
+        return results;
+    });
+}
+
 
 } // namespace app
 } // namespace deip
