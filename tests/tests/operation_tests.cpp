@@ -3657,6 +3657,8 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
             ++it;
         }
 
+        total_expert_tokens_amount *= 2;
+
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
         tx.operations.push_back(op);
@@ -3668,8 +3670,8 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         auto& dgpo = db.get_dynamic_global_properties();
 
-//        BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == total_expert_tokens_amount);
- //       BOOST_CHECK(fc::uint128(dgpo.all_used_expertise.value) == total_expert_tokens_amount);
+        BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == total_expert_tokens_amount);
+        BOOST_CHECK(fc::uint128(dgpo.all_used_expertise.value) == total_expert_tokens_amount);
 
         generate_block();
 
@@ -3700,7 +3702,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         const review_vote_object& vote_for_review = db.get<review_vote_object, by_voter_discipline_and_review>(std::make_tuple("john", 1, 0));
         BOOST_CHECK(dgpo.used_expertise_per_block == vote_for_review.tokens_amount);
-//        BOOST_CHECK(dgpo.all_used_expertise == total_expert_tokens_amount.lo +  vote_for_review.tokens_amount);
+        BOOST_CHECK(dgpo.all_used_expertise == total_expert_tokens_amount.lo +  vote_for_review.tokens_amount);
 
         generate_block();
 
@@ -3728,12 +3730,12 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         const vote_object& vote_for_content = db.get<vote_object, by_voter_discipline_and_content>(std::make_tuple("john", 1, content.id));
         BOOST_CHECK(dgpo.used_expertise_per_block == vote_for_content.tokens_amount);
-//        BOOST_CHECK(dgpo.all_used_expertise == total_expert_tokens_amount.lo + vote_for_review.tokens_amount + vote_for_content.tokens_amount);
+        BOOST_CHECK(dgpo.all_used_expertise == total_expert_tokens_amount.lo + vote_for_review.tokens_amount + vote_for_content.tokens_amount);
     }
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(vote_for_negative_review_apply_success)
+BOOST_AUTO_TEST_CASE(vote_for_negative_review)
 {
     try {
         BOOST_TEST_MESSAGE("Testing: make_review_research_apply");
@@ -3779,7 +3781,7 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review_apply_success)
         db.push_transaction(tx, 0);
 
         const review_object &review = db.get<review_object, by_id>(0);
-        
+
         vote_for_review_operation op2;
 
         signed_transaction tx2;
