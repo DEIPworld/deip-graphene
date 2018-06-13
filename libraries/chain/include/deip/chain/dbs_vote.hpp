@@ -27,6 +27,7 @@ public:
     using vote_refs_type = std::vector<std::reference_wrapper<const vote_object>>;
 
     vote_refs_type get_votes_by_discipline(const discipline_id_type& discipline_id) const;
+    vote_refs_type get_votes_by_voter(const account_name_type& voter) const;
     vote_refs_type get_votes_by_research(const research_id_type& research_id) const;
     vote_refs_type get_votes_by_research_content(const research_content_id_type& research_content_id) const;
     vote_refs_type get_votes_by_research_and_discipline(const research_id_type& research_id,
@@ -84,6 +85,7 @@ public:
                                                  const time_point_sec& voting_time);
 
     review_vote_refs_type get_review_votes(const review_id_type& review_id) const;
+    review_vote_refs_type get_review_votes_by_voter(const account_name_type& voter) const;
     review_vote_refs_type get_review_votes_by_review_and_discipline(const review_id_type &review_id,
                                                                     const discipline_id_type &discipline_id) const;
     review_vote_refs_type get_review_votes_by_discipline(const discipline_id_type &discipline_id) const;

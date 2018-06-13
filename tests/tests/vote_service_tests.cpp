@@ -102,6 +102,25 @@ BOOST_AUTO_TEST_CASE(get_votes_by_discipline)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(get_votes_by_voter)
+{
+    try
+    {
+        create_votes();
+
+        const auto& votes = data_service.get_votes_by_voter("alice");
+
+
+        BOOST_CHECK_EQUAL(votes.size(), 1);
+
+        for (const chain::vote_object& vote : votes) {
+            BOOST_CHECK(vote.voter == "alice");
+        }
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(get_votes_by_research)
 {
     try
