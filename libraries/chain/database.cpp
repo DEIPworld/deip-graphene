@@ -1286,7 +1286,8 @@ share_type database::distribute_reward(const share_type reward)
 
 share_type database::reward_researches_in_discipline(const discipline_object& discipline, const share_type& reward)
 {
-    FC_ASSERT(discipline.total_active_reward_weight != 0, "Attempt to allocate funds to inactive discipline");
+    if (discipline.total_active_reward_weight == 0)
+        return 0;
 
     auto& content_service = obtain_service<dbs_research_content>();
     auto& review_service = obtain_service<dbs_review>();
@@ -1615,6 +1616,10 @@ share_type database::allocate_rewards_to_reviews(const share_type &reward,
     dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
 
     auto& discipline = discipline_service.get_discipline(discipline_id);
+
+    if (discipline.total_active_review_reward_weight == 0)
+        return 0;
+
     share_type used_reward = 0;
 
     for (auto& review : reviews_to_reward) {
@@ -2043,6 +2048,7 @@ void database::_apply_block(const signed_block& next_block)
                     throw e;
             }
         }
+        auto& dynamic_global_properties_service = obtain_service<dbs_dynamic_global_properties>();
 
         const witness_object& signing_witness = validate_block_header(skip, next_block);
 
@@ -2104,6 +2110,8 @@ void database::_apply_block(const signed_block& next_block)
         process_content_activity_windows();
 
         process_hardforks();
+
+        dynamic_global_properties_service.reset_used_expertise_per_block();
 
         // notify observers that the block has been applied
         notify_applied_block(next_block);

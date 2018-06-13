@@ -3603,7 +3603,135 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     BOOST_CHECK(discipline2.total_active_research_reward_weight == 1000);
 }
 
+BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: make_review expertise");
 
+        ACTORS_WITH_EXPERT_TOKENS((john)(alice));
+
+        generate_block();
+
+        auto& research = research_create(1, "test_research", "test_abstract", "test_permlink", 30, 10, 1500);
+        research_group_create(30, "group3", "test3", "test3", 100, 7000, false);
+        research_group_token_create(30, "john", DEIP_1_PERCENT * 60);
+        research_group_token_create(30, "alice", DEIP_1_PERCENT * 40);
+
+        auto& content = db.create<research_content_object>([&](research_content_object& c) {
+            c.id = 1;
+            c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
+            c.research_id = research.id;
+            c.authors = {"alice"};
+            c.content = "content";
+            c.references = {};
+            c.external_references = { "http://google.com" };
+            c.type = research_content_type::milestone;
+            c.activity_state = research_content_activity_state::active;
+        });
+
+        db.create<research_discipline_relation_object>([&](research_discipline_relation_object& rdr) {
+            rdr.discipline_id = 1;
+            rdr.research_id = 1;
+        });
+
+        private_key_type priv_key = generate_private_key("john");
+        private_key_type alice_key = generate_private_key("alice");
+
+        make_review_operation op;
+
+        std::vector<int64_t> references {1};
+        op.author = "alice";
+        op.research_content_id = 1;
+        op.content = "test";
+        op.is_positive = true;
+
+        fc::uint128 total_expert_tokens_amount;
+        auto it_pair = db.get_index<expert_token_index>().indicies().get<by_account_name>().equal_range("john");
+        auto it = it_pair.first;
+        const auto it_end = it_pair.second;
+        while (it != it_end)
+        {
+            fc::uint128 amount(it->amount.value);
+            total_expert_tokens_amount += amount;
+            ++it;
+        }
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(alice_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        const review_object& review = db.get<review_object, by_id>(0);
+
+        auto& dgpo = db.get_dynamic_global_properties();
+
+        BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == total_expert_tokens_amount);
+        BOOST_CHECK(fc::uint128(dgpo.all_used_expertise.value) == total_expert_tokens_amount);
+
+        generate_block();
+
+        BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == 0);
+
+        BOOST_TEST_MESSAGE("Testing: vote for review expertise");
+
+        vote_for_review_operation op2;
+
+        tx.operations.clear();
+        tx.signatures.clear();
+
+        dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
+        auto& token = expert_token_service.get_expert_token_by_account_and_discipline("john", 1);
+        auto old_voting_power = token.voting_power;
+
+        op2.review_id = 0;
+        op2.discipline_id = 1;
+        op2.weight = 50 * DEIP_1_PERCENT;
+        op2.voter = "john";
+
+        tx.operations.clear();
+        tx.signatures.clear();
+        tx.operations.push_back(op2);
+        tx.sign(priv_key, db.get_chain_id());
+
+        db.push_transaction(tx, 0);
+
+        const review_vote_object& vote_for_review = db.get<review_vote_object, by_voter_discipline_and_review>(std::make_tuple("john", 1, 0));
+        BOOST_CHECK(dgpo.used_expertise_per_block == vote_for_review.tokens_amount);
+        BOOST_CHECK(dgpo.all_used_expertise == total_expert_tokens_amount.lo +  vote_for_review.tokens_amount);
+
+        generate_block();
+
+        BOOST_TEST_MESSAGE("Vote for content expertise");
+
+        BOOST_CHECK(dgpo.used_expertise_per_block == 0);
+
+        vote_operation op3;
+
+        tx.operations.clear();
+        tx.signatures.clear();
+
+        op3.research_id = research.id._id;
+        op3.research_content_id = content.id._id;
+        op3.discipline_id = 1;
+        op3.weight = 50 * DEIP_1_PERCENT;
+        op3.voter = "john";
+
+        tx.operations.clear();
+        tx.signatures.clear();
+        tx.operations.push_back(op3);
+        tx.sign(priv_key, db.get_chain_id());
+
+        db.push_transaction(tx, 0);
+
+        const vote_object& vote_for_content = db.get<vote_object, by_voter_discipline_and_content>(std::make_tuple("john", 1, content.id));
+        BOOST_CHECK(dgpo.used_expertise_per_block == vote_for_content.tokens_amount);
+        BOOST_CHECK(dgpo.all_used_expertise == total_expert_tokens_amount.lo + vote_for_review.tokens_amount + vote_for_content.tokens_amount);
+    }
+    FC_LOG_AND_RETHROW()
+}
 BOOST_AUTO_TEST_SUITE_END()
 
 #endif
