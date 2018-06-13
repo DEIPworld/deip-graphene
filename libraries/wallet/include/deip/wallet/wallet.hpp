@@ -588,7 +588,7 @@ public:
      * @param broadcast true if you wish to broadcast the transaction
      */
     annotated_signed_transaction
-    withdraw_common_tokens(const std::string& from, const asset& vesting_shares, bool broadcast = false);
+    withdraw_common_tokens(const std::string& from, const share_type& vesting_shares, bool broadcast = false);
 
     /**
      * Set up a vesting withdraw route. When vesting shares are withdrawn, they will be routed to these accounts

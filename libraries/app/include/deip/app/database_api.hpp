@@ -330,6 +330,8 @@ public:
     expert_token_api_obj get_expert_token(const expert_token_id_type id) const;
     vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_name_type account_name) const;
     vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
+    expert_token_api_obj get_common_token_by_account_name(const account_name_type account_name) const;
+    expert_token_api_obj get_expert_token_by_account_name_and_discipline_id(const account_name_type account_name, const discipline_id_type discipline_id) const;
 
     ////////////////////
     // Proposal       //
@@ -409,6 +411,23 @@ public:
     vector<research_token_api_obj> get_research_tokens_by_research_id(const research_id_type &research_id) const;
     research_token_api_obj get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
                                                                               const research_id_type &research_id) const;
+
+    //////////////////
+    // Vote object ///
+    //////////////////
+
+    vector<vote_api_obj> get_votes_by_voter(const account_name_type &voter) const;
+    vector<vote_api_obj> get_votes_by_research_id(const research_id_type &research_id) const;
+    vector<vote_api_obj> get_votes_by_research_content_id(const research_content_id_type &research_content_id) const;
+
+
+    /////////////////////////
+    // Review vote object ///
+    /////////////////////////
+
+    vector<review_vote_api_obj> get_review_votes_by_voter(const account_name_type &voter) const;
+    vector<review_vote_api_obj> get_review_votes_by_review_id(const review_id_type &review_id) const;
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -508,6 +527,8 @@ FC_API(deip::app::database_api,
    (get_expert_token)
    (get_expert_tokens_by_account_name)
    (get_expert_tokens_by_discipline_id)
+   (get_common_token_by_account_name)
+   (get_expert_token_by_account_name_and_discipline_id)
 
    // Proposal
    (get_proposals_by_research_group_id)
@@ -557,6 +578,14 @@ FC_API(deip::app::database_api,
    (get_research_tokens_by_research_id)
    (get_research_token_by_account_name_and_research_id)
 
+   // Votes
+   (get_votes_by_voter)
+   (get_votes_by_research_id)
+   (get_votes_by_research_content_id)
+
+   // Review votes
+   (get_review_votes_by_voter)
+   (get_review_votes_by_review_id)
 )
 
 // clang-format on

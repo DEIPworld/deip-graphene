@@ -582,6 +582,10 @@ void vote_evaluator::do_apply(const vote_operation& o)
                 t.total_active_curators_reward_weight += vote.weight;
             }
         });
+
+
+        auto& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
+        dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(abs_used_tokens);
     }
     FC_CAPTURE_AND_RETHROW((o))
 }
@@ -726,6 +730,10 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
             r.curation_reward_weights_per_discipline[o.discipline_id] += review_vote.weight;
             r.weight_modifiers[token.discipline_id] = weight_modifier;
         });
+
+
+        auto& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
+        dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(abs_used_tokens);
     }
     FC_CAPTURE_AND_RETHROW((o))
 }
@@ -856,6 +864,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
     dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
+    dbs_dynamic_global_properties& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
 
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
@@ -998,6 +1007,8 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
                 _db._temporary_public_impl().modify(review, [&](review_object& r) {
                     r.expertise_amounts_used[token.discipline_id] = token.amount;
+                    r.reward_weights_per_discipline[token.discipline_id] = 0;
+                    r.curation_reward_weights_per_discipline[token.discipline_id] = 0;
                 });
 
                 _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
@@ -1006,6 +1017,10 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                         t.total_active_curators_reward_weight += vote.weight;
                     }
                 });
+
+
+                auto& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
+                dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(abs_used_tokens);
             }
         }
         FC_CAPTURE_AND_RETHROW((op))
