@@ -1022,9 +1022,25 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
                 auto& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
                 dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(abs_used_tokens);
+                dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(token.amount);
             }
         }
         FC_CAPTURE_AND_RETHROW((op))
+    }
+
+    else if (!review.is_positive)
+    {
+        for (auto& token_wrapper : expertise_tokens) {
+            auto &token = token_wrapper.get();
+
+            _db._temporary_public_impl().modify(review, [&](review_object& r) {
+                r.expertise_amounts_used[token.discipline_id] = token.amount;
+                r.reward_weights_per_discipline[token.discipline_id] = 0;
+                r.curation_reward_weights_per_discipline[token.discipline_id] = 0;
+            });
+
+            dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(token.amount);
+        }
     }
 }
 
