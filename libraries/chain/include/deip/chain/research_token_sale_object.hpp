@@ -24,7 +24,8 @@ enum research_token_sale_status : uint16_t
 {
     token_sale_active = 1,
     token_sale_finished = 2,
-    token_sale_expired = 3
+    token_sale_expired = 3,
+    token_sale_inactive = 4
 };
 
 class research_token_sale_object : public object<research_token_sale_object_type, research_token_sale_object>
@@ -111,9 +112,9 @@ typedef multi_index_container<research_token_sale_contribution_object,
 } // namespace chain
 } // namespace deip
 
-FC_REFLECT_ENUM(deip::chain::research_token_sale_status, (token_sale_active)(token_sale_finished)(token_sale_expired))
+FC_REFLECT_ENUM(deip::chain::research_token_sale_status, (token_sale_active)(token_sale_finished)(token_sale_expired)(token_sale_inactive))
 
-FC_REFLECT(deip::chain::research_token_sale_object, (id)(research_id)(start_time)(end_time)(total_amount)(balance_tokens)(soft_cap)(hard_cap))
+FC_REFLECT(deip::chain::research_token_sale_object, (id)(research_id)(start_time)(end_time)(total_amount)(balance_tokens)(soft_cap)(hard_cap)(status))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_token_sale_object, deip::chain::research_token_sale_index)
 
