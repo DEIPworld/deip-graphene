@@ -21,7 +21,6 @@
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_research_token.hpp>
 #include <deip/chain/dbs_review.hpp>
-#include <deip/chain/dbs_research_group_join_request.hpp>
 #include <deip/chain/dbs_vesting_contract.hpp>
 #include <deip/chain/dbs_proposal_execution.hpp>
 
@@ -1100,30 +1099,6 @@ void reject_research_group_invite_evaluator::do_apply(const reject_research_grou
 
     _db._temporary_public_impl().remove(research_group_invite);
 
-}
-
-void create_research_group_join_request_evaluator::do_apply(const create_research_group_join_request_operation& op)
-{
-    dbs_research_group_join_request &research_group_join_request_service = _db.obtain_service<dbs_research_group_join_request>();
-    dbs_account &account_service = _db.obtain_service<dbs_account>();
-    dbs_research_group &research_group_service = _db.obtain_service<dbs_research_group>();
-
-    account_service.check_account_existence(op.owner);
-    research_group_service.check_research_group_existence(op.research_group_id);
-
-    research_group_join_request_service.create(op.owner, op.research_group_id, op.motivation_letter);
-
-}
-
-void reject_research_group_join_request_evaluator::do_apply(const reject_research_group_join_request_operation& op)
-{
-    dbs_research_group_join_request &research_group_join_request_service = _db.obtain_service<dbs_research_group_join_request>();
-
-    research_group_join_request_service.check_research_group_join_request_existence(op.research_group_join_request_id);
-
-    auto& research_group_join_request = research_group_join_request_service.get(op.research_group_join_request_id);
-
-    _db._temporary_public_impl().remove(research_group_join_request);
 }
 
 void transfer_research_tokens_to_research_group_evaluator::do_apply(const transfer_research_tokens_to_research_group_operation& op)

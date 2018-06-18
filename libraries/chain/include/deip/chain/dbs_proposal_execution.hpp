@@ -20,7 +20,6 @@
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
-#include <deip/chain/dbs_research_group_join_request.hpp>
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_proposal_execution.hpp>
 
