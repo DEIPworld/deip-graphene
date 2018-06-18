@@ -137,9 +137,9 @@ BOOST_AUTO_TEST_CASE(check_research_token_existence_by_account_name_and_research
     {
         create_research_tokens();
 
-        BOOST_CHECK_NO_THROW(data_service.check_research_token_existence_by_account_name_and_research_id("alice", 1));
-        BOOST_CHECK_NO_THROW(data_service.check_research_token_existence_by_account_name_and_research_id("bob", 5));
-        BOOST_CHECK(data_service.check_research_token_existence_by_account_name_and_research_id("john", 2) == false);
+        BOOST_CHECK_NO_THROW(data_service.check_research_token_existence_by_account_name_and_research_id("alice", 2));
+        BOOST_CHECK_NO_THROW(data_service.check_research_token_existence_by_account_name_and_research_id("bob", 3));
+        BOOST_CHECK(data_service.is_research_token_exists_by_account_name_and_research_id("john", 2) == false);
 
     }
     FC_LOG_AND_RETHROW()

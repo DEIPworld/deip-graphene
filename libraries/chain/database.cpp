@@ -1204,7 +1204,7 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
     {
         auto transfer_amount = (it->amount * research_token_sale.balance_tokens) / research_token_sale.total_amount;
 
-        if (research_token_service.check_research_token_existence_by_account_name_and_research_id(
+        if (research_token_service.is_research_token_exists_by_account_name_and_research_id(
                 it->owner, research_token_sale.research_id))
         {
             auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id(
@@ -1837,6 +1837,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<deposit_to_vesting_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_from_vesting_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
+    _my->_evaluator_registry.register_evaluator<transfer_research_tokens_evaluator>();
 }
 
 void database::initialize_indexes()
