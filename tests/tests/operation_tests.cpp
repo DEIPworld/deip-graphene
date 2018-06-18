@@ -3732,6 +3732,68 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
     }
     FC_LOG_AND_RETHROW()
 }
+
+BOOST_AUTO_TEST_CASE(transfer_research_tokens_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: transfer_research_tokens_apply");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+
+        generate_block();
+
+        auto& alice_token = research_token_create(0, "alice", 5000, 1);
+        auto& research = research_create(1, "title", "abstract", "permlink", 1, 1, 1);
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        db.modify(research, [&](research_object& r_o){
+            r_o.owned_tokens = 50 * DEIP_1_PERCENT;
+        });
+
+        transfer_research_tokens_operation op;
+
+        op.research_id = 1;
+        op.amount = 40 * DEIP_1_PERCENT;
+        op.sender = "alice";
+        op.receiver = "bob";
+        op.research_token_id = 0;
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+        
+        auto& bob_token = db.get<research_token_object>(1);
+
+        BOOST_CHECK(alice_token.amount == 10 * DEIP_1_PERCENT);
+        BOOST_CHECK(bob_token.amount == 40 * DEIP_1_PERCENT);
+
+        transfer_research_tokens_operation op2;
+
+        op2.research_id = 1;
+        op2.amount = 10 * DEIP_1_PERCENT;
+        op2.sender = "alice";
+        op2.receiver = "bob";
+        op2.research_token_id = 0;
+
+        signed_transaction tx2;
+        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2.operations.push_back(op2);
+        tx2.sign(priv_key, db.get_chain_id());
+        tx2.validate();
+        db.push_transaction(tx2, 0);
+        
+        BOOST_CHECK_THROW(db.get<research_token_object>(0), std::out_of_range);
+        BOOST_CHECK(bob_token.amount == 50 * DEIP_1_PERCENT);
+    }
+    FC_LOG_AND_RETHROW()
+
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 #endif
