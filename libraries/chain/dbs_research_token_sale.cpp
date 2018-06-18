@@ -16,6 +16,8 @@ const research_token_sale_object& dbs_research_token_sale::start_research_token_
                                                                                      const deip::chain::share_type soft_cap,
                                                                                      const deip::chain::share_type hard_cap)
 {
+    FC_ASSERT(start_time >= db_impl().head_block_time(), "Start time must be >= current time");
+    FC_ASSERT(end_time > start_time, "End time must be >= start time");
     const research_token_sale_object& new_research_token_sale
         = db_impl().create<research_token_sale_object>([&](research_token_sale_object& research_token_sale) {
               research_token_sale.research_id = research_id;
@@ -25,7 +27,7 @@ const research_token_sale_object& dbs_research_token_sale::start_research_token_
               research_token_sale.balance_tokens = balance_tokens;
               research_token_sale.soft_cap = soft_cap;
               research_token_sale.hard_cap = hard_cap;
-              research_token_sale.status = research_token_sale_status::token_sale_active;
+              research_token_sale.status = research_token_sale_status::token_sale_inactive;
           });
 
     return new_research_token_sale;

@@ -1766,6 +1766,12 @@ void database::process_research_token_sales()
 
     while (itr->end_time <= _head_block_time && itr != idx.end())
     {
+        if (_head_block_time >= itr->start_time && itr->status == research_token_sale_status::token_sale_inactive)
+        {
+            modify(*itr, [&](research_token_sale_object& _rts_o) {
+                _rts_o.status = research_token_sale_status::token_sale_active;
+                });
+        }
         if (itr->status == research_token_sale_status::token_sale_active)
         {
             if (itr->total_amount < itr->soft_cap)

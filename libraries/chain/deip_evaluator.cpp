@@ -1038,23 +1038,26 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
     fc::time_point_sec contribution_time = _db.head_block_time();
 
     auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(op.research_token_sale_id);
-    FC_ASSERT(research_token_sale.status == research_token_sale_status::token_sale_active, "You cannot contribute to finished or expired token sale");
+    FC_ASSERT(research_token_sale.status == research_token_sale_status::token_sale_active, "You cannot contribute to inactive, finished or expired token sale");
 
     bool is_hard_cap_reached = research_token_sale.total_amount + op.amount >= research_token_sale.hard_cap;
 
     share_type amount_to_contribute = op.amount;
-    if (is_hard_cap_reached)
+    if (is_hard_cap_reached) {
         amount_to_contribute = research_token_sale.hard_cap - research_token_sale.total_amount;
+    }
 
     auto research_token_sale_contribution = _db._temporary_public_impl().
             find<research_token_sale_contribution_object, by_owner_and_research_token_sale_id>(boost::make_tuple(op.owner, op.research_token_sale_id));
 
-    if (research_token_sale_contribution != nullptr)
+    if (research_token_sale_contribution != nullptr) {
         _db._temporary_public_impl().modify(*research_token_sale_contribution,
-                                            [&](research_token_sale_contribution_object& rtsc_o) { rtsc_o.amount += amount_to_contribute; });
-    else
-        research_token_sale_service.create_research_token_sale_contribution(op.research_token_sale_id, op.owner, contribution_time, amount_to_contribute);
-
+                                            [&](research_token_sale_contribution_object &rtsc_o) { rtsc_o.amount += amount_to_contribute; });
+    } else {
+        research_token_sale_service.create_research_token_sale_contribution(op.research_token_sale_id, op.owner,
+                                                                            contribution_time, amount_to_contribute);
+    }
+    
     if (is_hard_cap_reached) {
         account_service.decrease_balance(account_service.get_account(op.owner), asset(amount_to_contribute));
         research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, amount_to_contribute);
