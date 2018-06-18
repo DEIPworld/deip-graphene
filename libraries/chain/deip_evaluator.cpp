@@ -224,7 +224,6 @@ void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_toke
 void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_operation& o)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
 
     const auto& account = account_service.get_account(o.account);
 
@@ -234,7 +233,6 @@ void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_ope
 
     if (!account.mined)
     {
-        const auto& props = _db.get_dynamic_global_properties();
         const witness_schedule_object& wso = _db.get_witness_schedule_object();
 
         share_type min_common_tokens = wso.median_props.account_creation_fee.amount;
@@ -865,7 +863,6 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
     dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
-    dbs_dynamic_global_properties& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
 
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
@@ -1263,12 +1260,12 @@ void vote_proposal_evaluator::do_apply(const vote_proposal_operation& op)
 
 }
 
-void transfer_research_tokens_evaluator::do_apply(const transfer_research_tokens_operation& op) {
+void transfer_research_tokens_evaluator::do_apply(const transfer_research_tokens_operation& op)
+{
     dbs_research_token &research_token_service = _db.obtain_service<dbs_research_token>();
     dbs_research &research_service = _db.obtain_service<dbs_research>();
 
     research_service.check_research_existence(op.research_id);
-    // TODO: Throw if not exists, currently returns bool
     research_token_service.check_research_token_existence_by_account_name_and_research_id(op.sender, op.research_id);
 
     auto &research_token_to_transfer = research_token_service.get_research_token(op.research_token_id);
@@ -1276,10 +1273,10 @@ void transfer_research_tokens_evaluator::do_apply(const transfer_research_tokens
     FC_ASSERT(op.amount > 0 && share_type(op.amount) <= research_token_to_transfer.amount,
               "Amount cannot be negative or greater than total research token amount");
 
-    if (research_token_service.check_research_token_existence_by_account_name_and_research_id(op.receiver,
-                                                                                              op.research_id)) {
-        auto &research_token_receiver = research_token_service.get_research_token_by_account_name_and_research_id(
-                op.receiver, op.research_id);
+    if (research_token_service.is_research_token_exists_by_account_name_and_research_id(op.receiver,
+                                                                                        op.research_id)) {
+        auto &research_token_receiver = research_token_service.get_research_token_by_account_name_and_research_id(op.receiver,
+                                                                                                                  op.research_id);
         _db._temporary_public_impl().modify(research_token_receiver, [&](research_token_object &r_o) {
             r_o.amount += op.amount;
         });
