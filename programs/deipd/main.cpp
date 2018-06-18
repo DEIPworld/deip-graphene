@@ -76,7 +76,8 @@ int main(int argc, char** argv)
         app_options.add_options()
                 ("help,h", "Print this help message and exit.")
                 ("config-file", bpo::value<boost::filesystem::path>(),
-                 "Path to config file. Defaults to data_dir/" DEIP_DAEMON_DEFAULT_CONFIG_FILE_NAME);
+                 "Path to config file. Defaults to data_dir/" DEIP_DAEMON_DEFAULT_CONFIG_FILE_NAME)
+                 ("version,v", "Print deipd version and exit.");
         // clang-format on
 
         bpo::variables_map options;
@@ -101,8 +102,8 @@ int main(int argc, char** argv)
         if (options.count("version"))
         {
             std::cout << "deip_blockchain_version: " << fc::string(DEIP_BLOCKCHAIN_VERSION) << "\n";
-            std::cout << "deip_git_revision:       " << fc::string(graphene::utilities::git_revision_sha) << "\n";
-            std::cout << "fc_git_revision:           " << fc::string(fc::git_revision_sha) << "\n";
+            // std::cout << "deip_git_revision:       " << fc::string(graphene::utilities::git_revision_sha) << "\n";
+            // std::cout << "fc_git_revision:           " << fc::string(fc::git_revision_sha) << "\n";
             return 0;
         }
 
