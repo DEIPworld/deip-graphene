@@ -20,12 +20,13 @@
 #include <deip/chain/research_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/review_object.hpp>
-#include <deip/chain/research_group_join_request_object.hpp>
 #include <deip/chain/research_token_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
 #include <deip/chain/database.hpp>
+#include <deip/chain/vote_object.hpp>
+#include <deip/chain/review_vote_object.hpp>
 
 namespace deip {
 namespace app {
@@ -573,6 +574,7 @@ struct research_token_sale_api_obj
         ,  balance_tokens(rts.balance_tokens)
         ,  soft_cap(rts.soft_cap)
         ,  hard_cap(rts.hard_cap)
+        ,  status(rts.status)
     {}
 
     // because fc::variant require for temporary object
@@ -588,6 +590,7 @@ struct research_token_sale_api_obj
     share_type balance_tokens;
     share_type soft_cap;
     share_type hard_cap;
+    uint16_t status;
 };
 
 struct research_token_sale_contribution_api_obj
@@ -754,29 +757,6 @@ struct review_api_obj
     map<int64_t, int64_t> weight_per_discipline;
 };
 
-struct research_group_join_request_api_obj
-{
-    research_group_join_request_api_obj(const chain::research_group_join_request_object& jr)
-            : id(jr.id._id)
-            , account_name(jr.account_name)
-            , research_group_id(jr.research_group_id._id)            
-            , motivation_letter(fc::to_string(jr.motivation_letter))
-            , expiration_time(jr.expiration_time)
-    {}
-
-    // because fc::variant require for temporary object
-    research_group_join_request_api_obj()
-    {
-    }
-
-    int64_t id;
-
-    account_name_type account_name;
-    int64_t research_group_id;
-    string motivation_letter;
-    time_point_sec expiration_time;
-};
-
 struct research_token_api_obj
 {
    research_token_api_obj(const chain::research_token_object& rt)
@@ -796,6 +776,69 @@ struct research_token_api_obj
     int64_t research_id;
     share_type amount;
 };
+
+struct vote_api_obj
+{
+    vote_api_obj(const chain::vote_object& vo)
+            : id(vo.id._id)
+            , discipline_id(vo.discipline_id._id)
+            , voter(vo.voter)
+            , research_id(vo.research_id._id)
+            , research_content_id(vo.research_content_id._id)
+            , tokens_amount(vo.tokens_amount)
+            , weight(vo.weight)
+            , voting_power(vo.voting_power)
+            , voting_time(vo.voting_time)
+    {}
+
+    // because fc::variant require for temporary object
+    vote_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t discipline_id;
+    account_name_type voter;
+    int64_t research_id;
+    int64_t research_content_id;
+
+    share_type tokens_amount;
+    int64_t weight;
+    uint16_t voting_power;
+    time_point_sec voting_time;
+
+};
+
+struct review_vote_api_obj
+{
+    review_vote_api_obj(const chain::review_vote_object& rvo)
+            : id(rvo.id._id)
+            , discipline_id(rvo.discipline_id._id)
+            , voter(rvo.voter)
+            , review_id(rvo.review_id._id)
+            , tokens_amount(rvo.tokens_amount)
+            , weight(rvo.weight)
+            , voting_power(rvo.voting_power)
+            , voting_time(rvo.voting_time)
+    {}
+
+    // because fc::variant require for temporary object
+    review_vote_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t discipline_id;
+    account_name_type voter;
+    int64_t review_id;
+
+    share_type tokens_amount;
+    int64_t weight;
+    uint16_t voting_power;
+    time_point_sec voting_time;
+
+};
+
 
 } // namespace app
 } // namespace deip
@@ -958,6 +1001,7 @@ FC_REFLECT( deip::app::research_token_sale_api_obj,
             (balance_tokens)
             (soft_cap)
             (hard_cap)
+            (status)
 )
 
 FC_REFLECT( deip::app::research_token_sale_contribution_api_obj,
@@ -1018,19 +1062,36 @@ FC_REFLECT( deip::app::review_api_obj,
             (weight_per_discipline)
 )
 
-FC_REFLECT( deip::app::research_group_join_request_api_obj,
-            (id)
-            (account_name)
-            (research_group_id)
-            (motivation_letter)
-            (expiration_time)
-)
-
 FC_REFLECT( deip::app::research_token_api_obj,
             (id)
             (account_name)
             (research_id)
             (amount)
+)
+
+FC_REFLECT( deip::app::vote_api_obj,
+            (id)
+            (discipline_id)
+            (voter)
+            (research_id)
+            (research_content_id)
+            (tokens_amount)
+            (weight)
+            (voting_power)
+            (voting_time)
+
+)
+
+FC_REFLECT( deip::app::review_vote_api_obj,
+            (id)
+            (discipline_id)
+            (voter)
+            (review_id)
+            (tokens_amount)
+            (weight)
+            (voting_power)
+            (voting_time)
+
 )
 
 // clang-format on

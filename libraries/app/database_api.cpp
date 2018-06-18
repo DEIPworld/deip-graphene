@@ -30,7 +30,6 @@
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_review.hpp>
-#include <deip/chain/dbs_research_group_join_request.hpp>
 #include <deip/chain/dbs_research_token.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
@@ -1220,7 +1219,8 @@ vector<expert_token_api_obj> database_api::get_expert_tokens_by_account_name(con
 
         for (const chain::expert_token_object &expert_token : expert_tokens) {
             auto& discipline = discipline_service.get_discipline(expert_token.discipline_id);
-            results.push_back(expert_token_api_obj(expert_token, discipline.name));
+            if (expert_token.discipline_id != 0)
+                results.push_back(expert_token_api_obj(expert_token, discipline.name));
         }
         return results;
     });
@@ -1243,6 +1243,31 @@ vector<expert_token_api_obj> database_api::get_expert_tokens_by_discipline_id(co
         return results;
     });
 }
+
+expert_token_api_obj database_api::get_common_token_by_account_name(const account_name_type account_name) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_expert_token &expert_token_service = my->_db.obtain_service<chain::dbs_expert_token>();
+        chain::dbs_discipline& discipline_service = my->_db.obtain_service<chain::dbs_discipline>();
+        auto expert_token = expert_token_service.get_expert_token_by_account_and_discipline(account_name, 0);
+        auto& discipline = discipline_service.get_discipline(expert_token.discipline_id);
+        return expert_token_api_obj(expert_token, discipline.name);
+    });
+}
+
+expert_token_api_obj database_api::get_expert_token_by_account_name_and_discipline_id(const account_name_type account_name,
+                                                                                      const discipline_id_type discipline_id) const
+{
+    FC_ASSERT(discipline_id != 0, "Use get_common_token_by_account_name method to get common token");
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_expert_token &expert_token_service = my->_db.obtain_service<chain::dbs_expert_token>();
+        chain::dbs_discipline& discipline_service = my->_db.obtain_service<chain::dbs_discipline>();
+        auto expert_token = expert_token_service.get_expert_token_by_account_and_discipline(account_name, discipline_id);
+        auto& discipline = discipline_service.get_discipline(expert_token.discipline_id);
+        return expert_token_api_obj(expert_token, discipline.name);
+    });
+}
+
 
 vector<proposal_api_obj>
 database_api::get_proposals_by_research_group_id(const research_group_id_type research_group_id) const
@@ -1692,68 +1717,6 @@ vector<review_api_obj> database_api::get_reviews_by_content(const research_conte
     });
 }
 
-research_group_join_request_api_obj database_api::get_research_group_join_request_by_id(
-    const research_group_join_request_id_type& research_group_join_request_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        chain::dbs_research_group_join_request& research_group_join_request_service
-            = my->_db.obtain_service<chain::dbs_research_group_join_request>();
-        return research_group_join_request_service.get(research_group_join_request_id);
-    });
-}
-
-research_group_join_request_api_obj database_api::get_research_group_join_request_by_account_name_and_research_group_id(
-    const account_name_type& account_name, const research_group_id_type& research_group_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        chain::dbs_research_group_join_request& research_group_join_request_service
-            = my->_db.obtain_service<chain::dbs_research_group_join_request>();
-        return research_group_join_request_service
-            .get_research_group_join_request_by_account_name_and_research_group_id(account_name, research_group_id);
-    });
-}
-
-vector<research_group_join_request_api_obj>
-database_api::get_research_group_join_requests_by_account_name(const account_name_type& account_name) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<research_group_join_request_api_obj> results;
-        chain::dbs_research_group_join_request& research_group_join_request_service
-            = my->_db.obtain_service<chain::dbs_research_group_join_request>();
-
-        auto research_group_join_requests = research_group_join_request_service.get_research_group_join_requests_by_account_name(account_name);
-
-        for (const chain::research_group_join_request_object& research_group_join_request :
-             research_group_join_requests)
-        {
-            results.push_back(research_group_join_request);
-        }
-
-        return results;
-    });
-}
-
-vector<research_group_join_request_api_obj> database_api::get_research_group_join_requests_by_research_group_id(
-    const research_group_id_type& research_group_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<research_group_join_request_api_obj> results;
-        chain::dbs_research_group_join_request& research_group_join_request_service
-            = my->_db.obtain_service<chain::dbs_research_group_join_request>();
-
-        auto research_group_join_requests
-            = research_group_join_request_service.get_research_group_join_requests_by_research_group_id(research_group_id);
-
-        for (const chain::research_group_join_request_object& research_group_join_request :
-             research_group_join_requests)
-        {
-            results.push_back(research_group_join_request);
-        }
-
-        return results;
-    });
-}
-
 research_token_api_obj database_api::get_research_token_by_id(const research_token_id_type& research_token_id) const
 {
     return my->_db.with_read_lock([&]() {
@@ -1804,6 +1767,87 @@ research_token_api_obj database_api::get_research_token_by_account_name_and_rese
         return research_token_service.get_research_token_by_account_name_and_research_id(account_name, research_id);
     });
 }
+
+vector<vote_api_obj> database_api::get_votes_by_voter(const account_name_type &voter) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<vote_api_obj> results;
+        chain::dbs_vote& vote_service
+                = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto votes = vote_service.get_votes_by_voter(voter);
+
+        for (const chain::vote_object& vote : votes)
+            results.push_back(vote);
+
+        return results;
+    });
+}
+
+vector<vote_api_obj> database_api::get_votes_by_research_id(const research_id_type &research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<vote_api_obj> results;
+        chain::dbs_vote& vote_service
+                = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto votes = vote_service.get_votes_by_research(research_id);
+
+        for (const chain::vote_object& vote : votes)
+            results.push_back(vote);
+
+        return results;
+    });
+}
+
+vector<vote_api_obj> database_api::get_votes_by_research_content_id(const research_content_id_type &research_content_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<vote_api_obj> results;
+        chain::dbs_vote& vote_service
+                = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto votes = vote_service.get_votes_by_research_content(research_content_id);
+
+        for (const chain::vote_object& vote : votes)
+            results.push_back(vote);
+
+        return results;
+    });
+}
+
+vector<review_vote_api_obj> database_api::get_review_votes_by_voter(const account_name_type &voter) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<review_vote_api_obj> results;
+        chain::dbs_vote& vote_service
+                = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto review_votes = vote_service.get_review_votes_by_voter(voter);
+
+        for (const chain::review_vote_object& review_vote : review_votes)
+            results.push_back(review_vote);
+
+        return results;
+    });
+}
+
+vector<review_vote_api_obj> database_api::get_review_votes_by_review_id(const review_id_type &review_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<review_vote_api_obj> results;
+        chain::dbs_vote& vote_service
+                = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto review_votes = vote_service.get_review_votes(review_id);
+
+        for (const chain::review_vote_object& review_vote : review_votes)
+            results.push_back(review_vote);
+
+        return results;
+    });
+}
+
 
 } // namespace app
 } // namespace deip

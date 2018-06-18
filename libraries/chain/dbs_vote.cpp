@@ -27,6 +27,22 @@ dbs_vote::vote_refs_type dbs_vote::get_votes_by_discipline(const discipline_id_t
     return ret;
 }
 
+dbs_vote::vote_refs_type dbs_vote::get_votes_by_voter(const account_name_type& voter) const
+{
+    vote_refs_type ret;
+
+    auto it_pair = db_impl().get_index<vote_index>().indicies().get<by_voter>().equal_range(voter);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
 dbs_vote::vote_refs_type dbs_vote::get_votes_by_research(const research_id_type &research_id) const
 {
     vote_refs_type ret;
@@ -245,6 +261,21 @@ dbs_vote::review_vote_refs_type dbs_vote::get_review_votes(const review_id_type 
     review_vote_refs_type ret;
 
     auto it_pair = db_impl().get_index<review_vote_index>().indicies().get<by_review_id>().equal_range(review_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+    return ret;
+}
+
+dbs_vote::review_vote_refs_type dbs_vote::get_review_votes_by_voter(const account_name_type& voter) const
+{
+    review_vote_refs_type ret;
+
+    auto it_pair = db_impl().get_index<review_vote_index>().indicies().get<by_voter>().equal_range(voter);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)

@@ -27,7 +27,6 @@
 #include <deip/chain/vote_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/research_group_invite_object.hpp>
-#include <deip/chain/research_group_join_request_object.hpp>
 #include <deip/chain/review_object.hpp>
 #include <deip/chain/vesting_contract_object.hpp>
 
@@ -61,7 +60,6 @@
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
-#include <deip/chain/dbs_research_group_join_request.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_grant.hpp>
 #include <deip/chain/dbs_review.hpp>
@@ -1206,7 +1204,7 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
     {
         auto transfer_amount = (it->amount * research_token_sale.balance_tokens) / research_token_sale.total_amount;
 
-        if (research_token_service.check_research_token_existence_by_account_name_and_research_id(
+        if (research_token_service.is_research_token_exists_by_account_name_and_research_id(
                 it->owner, research_token_sale.research_id))
         {
             auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id(
@@ -1286,7 +1284,8 @@ share_type database::distribute_reward(const share_type reward)
 
 share_type database::reward_researches_in_discipline(const discipline_object& discipline, const share_type& reward)
 {
-    FC_ASSERT(discipline.total_active_reward_weight != 0, "Attempt to allocate funds to inactive discipline");
+    if (discipline.total_active_reward_weight == 0)
+        return 0;
 
     auto& content_service = obtain_service<dbs_research_content>();
     auto& review_service = obtain_service<dbs_review>();
@@ -1615,6 +1614,10 @@ share_type database::allocate_rewards_to_reviews(const share_type &reward,
     dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
 
     auto& discipline = discipline_service.get_discipline(discipline_id);
+
+    if (discipline.total_active_review_reward_weight == 0)
+        return 0;
+
     share_type used_reward = 0;
 
     for (auto& review : reviews_to_reward) {
@@ -1763,6 +1766,12 @@ void database::process_research_token_sales()
 
     while (itr->end_time <= _head_block_time && itr != idx.end())
     {
+        if (_head_block_time >= itr->start_time && itr->status == research_token_sale_status::token_sale_inactive)
+        {
+            modify(*itr, [&](research_token_sale_object& _rts_o) {
+                _rts_o.status = research_token_sale_status::token_sale_active;
+                });
+        }
         if (itr->status == research_token_sale_status::token_sale_active)
         {
             if (itr->total_amount < itr->soft_cap)
@@ -1828,14 +1837,13 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_review_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_research_group_join_request_evaluator>();
-    _my->_evaluator_registry.register_evaluator<reject_research_group_join_request_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<add_expertise_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<deposit_to_vesting_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_from_vesting_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
+    _my->_evaluator_registry.register_evaluator<transfer_research_tokens_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -1875,7 +1883,6 @@ void database::initialize_indexes()
     add_index<research_group_invite_index>();
     add_index<review_index>();
     add_index<review_vote_index>();
-    add_index<research_group_join_request_index>();
     add_index<vesting_contract_index>();
 
     _plugin_index_signal();
@@ -2043,6 +2050,7 @@ void database::_apply_block(const signed_block& next_block)
                     throw e;
             }
         }
+        auto& dynamic_global_properties_service = obtain_service<dbs_dynamic_global_properties>();
 
         const witness_object& signing_witness = validate_block_header(skip, next_block);
 
@@ -2088,7 +2096,6 @@ void database::_apply_block(const signed_block& next_block)
         clear_expired_transactions();
         clear_expired_proposals();
         clear_expired_invites();
-        clear_expired_join_requests();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
@@ -2104,6 +2111,8 @@ void database::_apply_block(const signed_block& next_block)
         process_content_activity_windows();
 
         process_hardforks();
+
+        dynamic_global_properties_service.reset_used_expertise_per_block();
 
         // notify observers that the block has been applied
         notify_applied_block(next_block);
@@ -2479,13 +2488,6 @@ void database::clear_expired_invites()
     auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
     research_group_invite_service.clear_expired_invites();
 }
-
-void database::clear_expired_join_requests()
-{
-    auto& research_group_join_request_service = obtain_service<dbs_research_group_join_request>();
-    research_group_join_request_service.clear_expired_research_group_join_requests();
-}
-
 
 void database::adjust_balance(const account_object& a, const asset& delta)
 {

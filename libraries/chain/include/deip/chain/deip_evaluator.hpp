@@ -30,14 +30,13 @@ DEFINE_EVALUATOR(contribute_to_token_sale)
 DEFINE_EVALUATOR(approve_research_group_invite)
 DEFINE_EVALUATOR(reject_research_group_invite)
 DEFINE_EVALUATOR(vote_for_review)
-DEFINE_EVALUATOR(create_research_group_join_request)
-DEFINE_EVALUATOR(reject_research_group_join_request)
 DEFINE_EVALUATOR(transfer_research_tokens_to_research_group)
 DEFINE_EVALUATOR(add_expertise_tokens)
 DEFINE_EVALUATOR(research_update)
 DEFINE_EVALUATOR(deposit_to_vesting_contract)
 DEFINE_EVALUATOR(withdraw_from_vesting_contract)
-DEFINE_EVALUATOR(vote_proposal)    
+DEFINE_EVALUATOR(vote_proposal)
+DEFINE_EVALUATOR(transfer_research_tokens)
 
 }
 } // deip::chain

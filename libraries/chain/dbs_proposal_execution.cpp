@@ -65,7 +65,7 @@ void dbs_proposal_execution::dropout(const proposal_object& proposal)
 
         research_service.decrease_owned_tokens(research, tokens_amount_after_dropout_compensation);
 
-        if (research_token_service.check_research_token_existence_by_account_name_and_research_id(data.name, research.id))
+        if (research_token_service.is_research_token_exists_by_account_name_and_research_id(data.name, research.id))
         {
             auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id(data.name, research.id);
             research_token_service.increase_research_token_amount(research_token, tokens_amount_after_dropout_compensation);

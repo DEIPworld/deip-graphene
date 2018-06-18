@@ -21,7 +21,6 @@
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_research_token.hpp>
 #include <deip/chain/dbs_review.hpp>
-#include <deip/chain/dbs_research_group_join_request.hpp>
 #include <deip/chain/dbs_vesting_contract.hpp>
 #include <deip/chain/dbs_proposal_execution.hpp>
 
@@ -224,7 +223,6 @@ void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_toke
 void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_operation& o)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
 
     const auto& account = account_service.get_account(o.account);
 
@@ -234,7 +232,6 @@ void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_ope
 
     if (!account.mined)
     {
-        const auto& props = _db.get_dynamic_global_properties();
         const witness_schedule_object& wso = _db.get_witness_schedule_object();
 
         share_type min_common_tokens = wso.median_props.account_creation_fee.amount;
@@ -583,6 +580,10 @@ void vote_evaluator::do_apply(const vote_operation& o)
                 t.total_active_curators_reward_weight += vote.weight;
             }
         });
+
+
+        auto& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
+        dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(abs_used_tokens);
     }
     FC_CAPTURE_AND_RETHROW((o))
 }
@@ -727,6 +728,10 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
             r.curation_reward_weights_per_discipline[o.discipline_id] += review_vote.weight;
             r.weight_modifiers[token.discipline_id] = weight_modifier;
         });
+
+
+        auto& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
+        dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(abs_used_tokens);
     }
     FC_CAPTURE_AND_RETHROW((o))
 }
@@ -999,6 +1004,8 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
                 _db._temporary_public_impl().modify(review, [&](review_object& r) {
                     r.expertise_amounts_used[token.discipline_id] = token.amount;
+                    r.reward_weights_per_discipline[token.discipline_id] = 0;
+                    r.curation_reward_weights_per_discipline[token.discipline_id] = 0;
                 });
 
                 _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
@@ -1007,6 +1014,10 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                         t.total_active_curators_reward_weight += vote.weight;
                     }
                 });
+
+
+                auto& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
+                dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(abs_used_tokens);
             }
         }
         FC_CAPTURE_AND_RETHROW((op))
@@ -1027,23 +1038,26 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
     fc::time_point_sec contribution_time = _db.head_block_time();
 
     auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(op.research_token_sale_id);
-    FC_ASSERT(research_token_sale.status == research_token_sale_status::token_sale_active, "You cannot contribute to finished or expired token sale");
+    FC_ASSERT(research_token_sale.status == research_token_sale_status::token_sale_active, "You cannot contribute to inactive, finished or expired token sale");
 
     bool is_hard_cap_reached = research_token_sale.total_amount + op.amount >= research_token_sale.hard_cap;
 
     share_type amount_to_contribute = op.amount;
-    if (is_hard_cap_reached)
+    if (is_hard_cap_reached) {
         amount_to_contribute = research_token_sale.hard_cap - research_token_sale.total_amount;
+    }
 
     auto research_token_sale_contribution = _db._temporary_public_impl().
             find<research_token_sale_contribution_object, by_owner_and_research_token_sale_id>(boost::make_tuple(op.owner, op.research_token_sale_id));
 
-    if (research_token_sale_contribution != nullptr)
+    if (research_token_sale_contribution != nullptr) {
         _db._temporary_public_impl().modify(*research_token_sale_contribution,
-                                            [&](research_token_sale_contribution_object& rtsc_o) { rtsc_o.amount += amount_to_contribute; });
-    else
-        research_token_sale_service.create_research_token_sale_contribution(op.research_token_sale_id, op.owner, contribution_time, amount_to_contribute);
-
+                                            [&](research_token_sale_contribution_object &rtsc_o) { rtsc_o.amount += amount_to_contribute; });
+    } else {
+        research_token_sale_service.create_research_token_sale_contribution(op.research_token_sale_id, op.owner,
+                                                                            contribution_time, amount_to_contribute);
+    }
+    
     if (is_hard_cap_reached) {
         account_service.decrease_balance(account_service.get_account(op.owner), asset(amount_to_contribute));
         research_token_sale_service.increase_research_token_sale_tokens_amount(op.research_token_sale_id, amount_to_contribute);
@@ -1085,30 +1099,6 @@ void reject_research_group_invite_evaluator::do_apply(const reject_research_grou
 
     _db._temporary_public_impl().remove(research_group_invite);
 
-}
-
-void create_research_group_join_request_evaluator::do_apply(const create_research_group_join_request_operation& op)
-{
-    dbs_research_group_join_request &research_group_join_request_service = _db.obtain_service<dbs_research_group_join_request>();
-    dbs_account &account_service = _db.obtain_service<dbs_account>();
-    dbs_research_group &research_group_service = _db.obtain_service<dbs_research_group>();
-
-    account_service.check_account_existence(op.owner);
-    research_group_service.check_research_group_existence(op.research_group_id);
-
-    research_group_join_request_service.create(op.owner, op.research_group_id, op.motivation_letter);
-
-}
-
-void reject_research_group_join_request_evaluator::do_apply(const reject_research_group_join_request_operation& op)
-{
-    dbs_research_group_join_request &research_group_join_request_service = _db.obtain_service<dbs_research_group_join_request>();
-
-    research_group_join_request_service.check_research_group_join_request_existence(op.research_group_join_request_id);
-
-    auto& research_group_join_request = research_group_join_request_service.get(op.research_group_join_request_id);
-
-    _db._temporary_public_impl().remove(research_group_join_request);
 }
 
 void transfer_research_tokens_to_research_group_evaluator::do_apply(const transfer_research_tokens_to_research_group_operation& op)
@@ -1246,6 +1236,39 @@ void vote_proposal_evaluator::do_apply(const vote_proposal_operation& op)
         proposal_service.complete(proposal);
     }
 
+}
+
+void transfer_research_tokens_evaluator::do_apply(const transfer_research_tokens_operation& op)
+{
+    dbs_research_token &research_token_service = _db.obtain_service<dbs_research_token>();
+    dbs_research &research_service = _db.obtain_service<dbs_research>();
+
+    research_service.check_research_existence(op.research_id);
+    research_token_service.check_research_token_existence_by_account_name_and_research_id(op.sender, op.research_id);
+
+    auto &research_token_to_transfer = research_token_service.get_research_token(op.research_token_id);
+
+    FC_ASSERT(op.amount > 0 && share_type(op.amount) <= research_token_to_transfer.amount,
+              "Amount cannot be negative or greater than total research token amount");
+
+    if (research_token_service.is_research_token_exists_by_account_name_and_research_id(op.receiver,
+                                                                                        op.research_id)) {
+        auto &research_token_receiver = research_token_service.get_research_token_by_account_name_and_research_id(op.receiver,
+                                                                                                                  op.research_id);
+        _db._temporary_public_impl().modify(research_token_receiver, [&](research_token_object &r_o) {
+            r_o.amount += op.amount;
+        });
+    } else {
+        research_token_service.create_research_token(op.receiver, op.amount, op.research_id);
+    }
+
+    if (op.amount == research_token_to_transfer.amount) {
+        _db._temporary_public_impl().remove(research_token_to_transfer);
+    } else {
+        _db._temporary_public_impl().modify(research_token_to_transfer, [&](research_token_object &rt_o) {
+            rt_o.amount -= op.amount;
+        });
+    }
 }
 
 } // namespace chain

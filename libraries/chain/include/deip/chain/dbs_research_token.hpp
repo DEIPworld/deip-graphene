@@ -51,8 +51,11 @@ namespace deip {
             const research_token_object& get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
                                                                                          const research_id_type &research_id) const;
 
-            bool check_research_token_existence_by_account_name_and_research_id(const account_name_type& account_name,
-                                                                                const research_id_type& research_id) const;
+            void check_research_token_existence_by_account_name_and_research_id(const account_name_type& account_name,
+                                                                                const research_id_type& research_id);
+
+            bool is_research_token_exists_by_account_name_and_research_id(const account_name_type& account_name,
+                                                                          const research_id_type& research_id);
         };
     } // namespace chain
 } // namespace deip

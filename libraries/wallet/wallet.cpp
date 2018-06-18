@@ -1857,6 +1857,24 @@ annotated_signed_transaction wallet_api::set_withdraw_common_tokens_route(
     return my->sign_transaction(tx, broadcast);
 }
 
+annotated_signed_transaction
+wallet_api::transfer_research_tokens(const int64_t research_token_id, const int64_t research_id, const std::string& from, const std::string& to, const uint32_t amount, bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+    transfer_research_tokens_operation op;
+    op.research_token_id = research_token_id;
+    op.research_id = research_id;
+    op.sender = from;
+    op.receiver = to;
+    op.amount = amount;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
 string wallet_api::decrypt_memo(const std::string& encrypted_memo)
 {
     if (is_locked())

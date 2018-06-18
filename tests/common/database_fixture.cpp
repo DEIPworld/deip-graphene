@@ -669,20 +669,6 @@ const research_group_invite_object& database_fixture::research_group_invite_crea
     return research_group_invite;
 }
 
-const research_group_join_request_object& database_fixture::research_group_join_request_create(const uint32_t id,
-                                                                                               const account_name_type& account_name,
-                                                                                               const research_group_id_type& research_group_id,
-                                                                                               const std::string motivation_letter)
-{
-    auto& research_group_join_request = db.create<research_group_join_request_object>([&](research_group_join_request_object& rgir_o) {
-        rgir_o.id = id;
-        rgir_o.account_name = account_name;
-        rgir_o.research_group_id = research_group_id;
-        fc::from_string(rgir_o.motivation_letter, motivation_letter);
-    });
-    return research_group_join_request;
-}
-
 const research_token_sale_object& database_fixture::research_token_sale_create(const uint32_t id,
                                                                                research_id_type research_id,
                                                                                fc::time_point_sec start_time,
