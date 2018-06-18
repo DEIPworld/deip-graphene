@@ -46,7 +46,7 @@ RUN \
     mkdir build && \
     cd build && \
     cmake \
-        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_BUILD_TYPE=Release \
         -DBUILD_DEIP_TESTNET=ON \
         -DLOW_MEMORY_NODE=OFF \
         -DCLEAR_VOTES=ON \
@@ -88,7 +88,7 @@ RUN \
     cd build && \
     cmake \
         -DCMAKE_INSTALL_PREFIX=/usr/local/deipd-full \
-        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_BUILD_TYPE=Release \
         -DLOW_MEMORY_NODE=OFF \
         -DCLEAR_VOTES=OFF \
         -DSKIP_BY_TX_ID=ON \
