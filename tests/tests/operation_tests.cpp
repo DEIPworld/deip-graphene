@@ -2674,10 +2674,10 @@ BOOST_AUTO_TEST_CASE(add_expertise_tokens_apply)
 
         add_expertise_tokens_operation op;
 
-        std::vector<std::pair<int64_t, uint32_t>> disciplines_to_add;
-        disciplines_to_add.push_back(std::make_pair(1, 1000));
-        disciplines_to_add.push_back(std::make_pair(5, 2000));
-        disciplines_to_add.push_back(std::make_pair(7, 2500));
+        std::vector<expertise_amount_pair_type> disciplines_to_add;
+        disciplines_to_add.push_back(expertise_amount_pair_type(1, 1000));
+        disciplines_to_add.push_back(expertise_amount_pair_type(5, 2000));
+        disciplines_to_add.push_back(expertise_amount_pair_type(7, 2500));
 
         op.owner = "alice";
         op.account_name = "bob";
