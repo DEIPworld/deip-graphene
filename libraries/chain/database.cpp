@@ -1764,15 +1764,9 @@ void database::process_research_token_sales()
     auto itr = idx.begin();
     auto _head_block_time = head_block_time();
 
-    while (itr->end_time <= _head_block_time && itr != idx.end())
+    while (itr != idx.end())
     {
-        if (_head_block_time >= itr->start_time && itr->status == research_token_sale_status::token_sale_inactive)
-        {
-            modify(*itr, [&](research_token_sale_object& _rts_o) {
-                _rts_o.status = research_token_sale_status::token_sale_active;
-                });
-        }
-        if (itr->status == research_token_sale_status::token_sale_active)
+        if (itr->end_time <= _head_block_time && itr->status == research_token_sale_status::token_sale_active)
         {
             if (itr->total_amount < itr->soft_cap)
             {
@@ -1784,6 +1778,15 @@ void database::process_research_token_sales()
                 research_token_sale_service.change_research_token_sale_status(itr->id,
                                                                               research_token_sale_status::token_sale_finished);
                 distribute_research_tokens(itr->id);
+            }
+        }
+        else if (itr->end_time > _head_block_time)
+        {
+            if (_head_block_time >= itr->start_time && itr->status == research_token_sale_status::token_sale_inactive)
+            {
+                modify(*itr, [&](research_token_sale_object &_rts_o) {
+                    _rts_o.status = research_token_sale_status::token_sale_active;
+                });
             }
         }
         itr++;
