@@ -1194,7 +1194,7 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
     dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
     dbs_research_token& research_token_service = obtain_service<dbs_research_token>();
 
-    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(research_token_sale_id);
+    auto& research_token_sale = research_token_sale_service.get_by_id(research_token_sale_id);
 
     const auto& idx = get_index<research_token_sale_contribution_index>().indicies().get<by_research_token_sale_id>();
 
@@ -1226,7 +1226,7 @@ void database::refund_research_tokens(const research_token_sale_id_type research
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
 
-    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(research_token_sale_id);
+    auto& research_token_sale = research_token_sale_service.get_by_id(research_token_sale_id);
 
     const auto& idx = get_index<research_token_sale_contribution_index>().indicies().
             get<by_research_token_sale_id>().equal_range(research_token_sale_id);
@@ -1764,26 +1764,19 @@ void database::process_research_token_sales()
     auto itr = idx.begin();
     auto _head_block_time = head_block_time();
 
-    while (itr->end_time <= _head_block_time && itr != idx.end())
+    while (itr != idx.end())
     {
-        if (_head_block_time >= itr->start_time && itr->status == research_token_sale_status::token_sale_inactive)
-        {
-            modify(*itr, [&](research_token_sale_object& _rts_o) {
-                _rts_o.status = research_token_sale_status::token_sale_active;
-                });
-        }
-        if (itr->status == research_token_sale_status::token_sale_active)
-        {
-            if (itr->total_amount < itr->soft_cap)
-            {
-                research_token_sale_service.change_research_token_sale_status(itr->id,
-                                                                              research_token_sale_status::token_sale_expired);
+        if (itr->end_time <= _head_block_time && itr->status == research_token_sale_status::token_sale_active) {
+            if (itr->total_amount < itr->soft_cap) {
+                research_token_sale_service.update_status(itr->id, research_token_sale_status::token_sale_expired);
                 refund_research_tokens(itr->id);
-            } else if (itr->total_amount >= itr->soft_cap)
-            {
-                research_token_sale_service.change_research_token_sale_status(itr->id,
-                                                                              research_token_sale_status::token_sale_finished);
+            } else if (itr->total_amount >= itr->soft_cap) {
+                research_token_sale_service.update_status(itr->id, research_token_sale_status::token_sale_finished);
                 distribute_research_tokens(itr->id);
+            }
+        } else if (itr->end_time > _head_block_time) {
+            if (_head_block_time >= itr->start_time && itr->status == research_token_sale_status::token_sale_inactive) {
+                research_token_sale_service.update_status(itr->id, research_token_sale_status::token_sale_active);
             }
         }
         itr++;

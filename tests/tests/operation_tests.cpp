@@ -3197,7 +3197,7 @@ BOOST_AUTO_TEST_CASE(research_token_sale_execute_test)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_research_id(0);
+        auto& research_token_sale = research_token_sale_service.get_by_research_id(0);
 
         BOOST_CHECK(research_token_sale.research_id == 0);
         BOOST_CHECK(research_token_sale.start_time == fc::time_point_sec(1581177654));

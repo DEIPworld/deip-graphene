@@ -82,7 +82,8 @@ BOOST_AUTO_TEST_CASE(create_research_token_sale)
 {
     try
     {
-        auto& research_token_sale = data_service.start_research_token_sale(RESEARCH_ID, START_TIME, END_TIME, BALANCE_TOKENS, SOFT_CAP, HARD_CAP);
+        auto& research_token_sale = data_service.start(RESEARCH_ID, START_TIME, END_TIME, BALANCE_TOKENS, SOFT_CAP,
+                                                       HARD_CAP);
 
         BOOST_CHECK(research_token_sale.research_id == RESEARCH_ID);
         BOOST_CHECK(research_token_sale.start_time == START_TIME);
@@ -99,7 +100,7 @@ BOOST_AUTO_TEST_CASE(get_all_research_token_sales)
 {
     create_research_token_sales();
 
-    auto research_token_sales = data_service.get_all_research_token_sales();
+    auto research_token_sales = data_service.get_all();
 
     BOOST_CHECK(research_token_sales.size() == 3);
 
@@ -149,7 +150,7 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_by_id)
     {
         create_research_token_sales();
 
-        auto& research_token_sale = data_service.get_research_token_sale_by_id(0);
+        auto& research_token_sale = data_service.get_by_id(0);
 
         BOOST_CHECK(research_token_sale.research_id == RESEARCH_ID);
         BOOST_CHECK(research_token_sale.start_time == START_TIME);
@@ -169,7 +170,7 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_by_research_id)
     {
         create_research_token_sales();
 
-        auto& research_token_sale = data_service.get_research_token_sale_by_research_id(RESEARCH_ID);
+        auto& research_token_sale = data_service.get_by_research_id(RESEARCH_ID);
 
         BOOST_CHECK(research_token_sale.research_id == RESEARCH_ID);
         BOOST_CHECK(research_token_sale.start_time == START_TIME);
@@ -189,7 +190,7 @@ BOOST_AUTO_TEST_CASE(get_research_token_sales_by_end_time)
     {
         create_research_token_sales();
 
-        auto research_token_sales = data_service.get_research_token_sale_by_end_time(END_TIME);
+        auto research_token_sales = data_service.get_by_end_time(END_TIME);
 
         BOOST_CHECK(research_token_sales.size() == 2);
 
@@ -239,7 +240,7 @@ BOOST_AUTO_TEST_CASE(increase_research_token_sale_tokens_amount)
     {
         create_research_token_sales();
 
-        data_service.increase_research_token_sale_tokens_amount(2, 50);
+        data_service.increase_tokens_amount(2, 50);
         auto& research_token_sale = db.get<research_token_sale_object>(2);
 
         BOOST_CHECK(research_token_sale.total_amount == 50);
@@ -252,7 +253,7 @@ BOOST_AUTO_TEST_CASE(create_research_token_sale_contribution)
     try
     {
         auto& research_token_sale_contribution =
-                data_service.create_research_token_sale_contribution(1, "alice", fc::time_point_sec(0xffffffff), 100);
+                data_service.contribute(1, "alice", fc::time_point_sec(0xffffffff), 100);
 
         BOOST_CHECK(research_token_sale_contribution.research_token_sale_id == 1);
         BOOST_CHECK(research_token_sale_contribution.owner == "alice");
