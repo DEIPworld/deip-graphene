@@ -1385,7 +1385,7 @@ database_api::get_research_token_sale_by_id(const research_token_sale_id_type re
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_token_sale& research_token_sale_service
             = my->_db.obtain_service<chain::dbs_research_token_sale>();
-        return research_token_sale_service.get_research_token_sale_by_id(research_token_sale_id);
+        return research_token_sale_service.get_by_id(research_token_sale_id);
     });
 }
 
@@ -1405,7 +1405,7 @@ database_api::get_research_token_sale_by_research_id(const research_id_type& res
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_token_sale& research_token_sale_service
             = my->_db.obtain_service<chain::dbs_research_token_sale>();
-        return research_token_sale_service.get_research_token_sale_by_research_id(research_id);
+        return research_token_sale_service.get_by_research_id(research_id);
     });
 }
 
@@ -1417,7 +1417,7 @@ database_api::get_research_token_sale_by_end_time(const time_point_sec end_time)
         chain::dbs_research_token_sale& research_token_sale_service
             = my->_db.obtain_service<chain::dbs_research_token_sale>();
 
-        auto research_token_sales = research_token_sale_service.get_research_token_sale_by_end_time(end_time);
+        auto research_token_sales = research_token_sale_service.get_by_end_time(end_time);
 
         for (const chain::research_token_sale_object& research_token_sale : research_token_sales)
         {

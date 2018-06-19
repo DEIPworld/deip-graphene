@@ -232,8 +232,8 @@ void dbs_proposal_execution::start_research_token_sale(const proposal_object& pr
     FC_ASSERT((research.owned_tokens - data.amount_for_sale >= 0), "Tokens for sale is more than research balance");
 
     research_service.decrease_owned_tokens(research, data.amount_for_sale);
-    research_token_sale_service.start_research_token_sale(data.research_id, data.start_time, data.end_time,
-                                                               data.amount_for_sale, data.soft_cap, data.hard_cap);
+    research_token_sale_service.start(data.research_id, data.start_time, data.end_time,
+                                      data.amount_for_sale, data.soft_cap, data.hard_cap);
 }
 
 } //namespace chain
