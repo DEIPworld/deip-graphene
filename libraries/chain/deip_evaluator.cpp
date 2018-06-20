@@ -862,6 +862,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
     dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
+    dbs_dynamic_global_properties& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
 
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
@@ -879,12 +880,26 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     {
         auto& token = expert_token.get();
         if (research_disciplines_ids.find(token.discipline_id) != research_disciplines_ids.end())
+        {
             review_disciplines.insert(token.discipline_id);
+        }
     }
 
     FC_ASSERT(review_disciplines.size() != 0, "Reviewer does not have enough expertise to make review.");
 
     auto& review = review_service.create(op.research_content_id, op.content, op.is_positive, op.author, review_disciplines);
+
+    for (auto& review_discipline : review_disciplines) {
+        auto &token = expertise_token_service.get_expert_token_by_account_and_discipline(op.author, review_discipline);
+
+        _db._temporary_public_impl().modify(review, [&](review_object& r) {
+            r.expertise_amounts_used[token.discipline_id] = token.amount;
+            r.reward_weights_per_discipline[token.discipline_id] = 0;
+            r.curation_reward_weights_per_discipline[token.discipline_id] = 0;
+        });
+
+        dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(token.amount);
+    }
 
     if (review.is_positive) {
         try
@@ -898,8 +913,8 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
             research_service.check_research_existence(content.research_id);
 
-            for (auto& token_wrapper : expertise_tokens) {
-                auto& token = token_wrapper.get();
+            for (auto& review_discipline : review_disciplines) {
+                auto& token = expertise_token_service.get_expert_token_by_account_and_discipline(op.author, review_discipline);
                 const auto& vote_idx = _db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
                 const auto& itr = vote_idx.find(std::make_tuple(voter.name, token.discipline_id, content.id));
 
@@ -1002,12 +1017,6 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                     v.weight = w.to_uint64();
                 });
 
-                _db._temporary_public_impl().modify(review, [&](review_object& r) {
-                    r.expertise_amounts_used[token.discipline_id] = token.amount;
-                    r.reward_weights_per_discipline[token.discipline_id] = 0;
-                    r.curation_reward_weights_per_discipline[token.discipline_id] = 0;
-                });
-
                 _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
                     t.total_curators_reward_weight += vote.weight;
                     if (content_is_active) {
@@ -1015,8 +1024,6 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                     }
                 });
 
-
-                auto& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
                 dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(abs_used_tokens);
             }
         }
