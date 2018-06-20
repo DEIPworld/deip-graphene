@@ -20,7 +20,7 @@ class proposal_object : public object<proposal_object_type, proposal_object>
     typedef deip::protocol::account_name_type account_t;
 
 public:
-    template <typename Constructor, typename Allocator> proposal_object(Constructor&& c, allocator<Allocator> a) : data(a)
+    template <typename Constructor, typename Allocator> proposal_object(Constructor&& c, allocator<Allocator> a) : data(a), voted_accounts(a)
     {
         c(*this);
     }
@@ -38,7 +38,7 @@ public:
     share_type current_votes_amount;
     bool is_completed = false;
 
-    flat_set<account_name_type> voted_accounts;
+    account_name_type_set voted_accounts;
 };
 
 struct by_research_group_id;

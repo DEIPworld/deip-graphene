@@ -495,7 +495,7 @@ struct proposal_api_obj
         ,  quorum_percent(p.quorum_percent.value)
         ,  current_votes_amount(p.current_votes_amount)
         ,  is_completed(p.is_completed)
-        ,  voted_accounts(p.voted_accounts)
+        ,  voted_accounts(p.voted_accounts.begin(), p.voted_accounts.end())
         ,  votes(_votes)
     {}
 
