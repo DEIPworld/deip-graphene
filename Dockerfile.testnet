@@ -70,7 +70,7 @@ RUN \
         -DLOW_MEMORY_NODE=ON \
         -DCLEAR_VOTES=ON \
         -DSKIP_BY_TX_ID=ON \
-        -DBUILD_DEIP_TESTNET=OFF \
+        -DBUILD_DEIP_TESTNET=ON \
         .. \
     && \
     make -j$(nproc) && \
@@ -92,7 +92,7 @@ RUN \
         -DLOW_MEMORY_NODE=OFF \
         -DCLEAR_VOTES=OFF \
         -DSKIP_BY_TX_ID=ON \
-        -DBUILD_DEIP_TESTNET=OFF \
+        -DBUILD_DEIP_TESTNET=ON \
         .. \
     && \
     make -j$(nproc) && \

@@ -605,6 +605,16 @@ public:
     annotated_signed_transaction set_withdraw_common_tokens_route(
         const std::string& from, const std::string& to, uint16_t percent, bool auto_common_token, bool broadcast = false);
 
+    /**
+     * TODO: Add description
+     */
+    annotated_signed_transaction transfer_research_tokens(const int64_t research_token_id,
+                                                           const int64_t research_id,
+                                                           const std::string& from,
+                                                           const std::string& to,
+                                                           const uint32_t amount,
+                                                           bool broadcast = false);
+
     /** Signs a transaction.
      *
      * Given a fully-formed transaction that is only lacking signatures, this signs
@@ -856,6 +866,7 @@ FC_API( deip::wallet::wallet_api,
         (transfer_to_common_tokens)
         (withdraw_common_tokens)
         (set_withdraw_common_tokens_route)
+        (transfer_research_tokens)
         (vote)
         (set_transaction_expiration)
         (challenge)

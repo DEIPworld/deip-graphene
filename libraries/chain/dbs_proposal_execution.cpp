@@ -65,7 +65,7 @@ void dbs_proposal_execution::dropout(const proposal_object& proposal)
 
         research_service.decrease_owned_tokens(research, tokens_amount_after_dropout_compensation);
 
-        if (research_token_service.check_research_token_existence_by_account_name_and_research_id(data.name, research.id))
+        if (research_token_service.is_research_token_exists_by_account_name_and_research_id(data.name, research.id))
         {
             auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id(data.name, research.id);
             research_token_service.increase_research_token_amount(research_token, tokens_amount_after_dropout_compensation);
@@ -232,8 +232,8 @@ void dbs_proposal_execution::start_research_token_sale(const proposal_object& pr
     FC_ASSERT((research.owned_tokens - data.amount_for_sale >= 0), "Tokens for sale is more than research balance");
 
     research_service.decrease_owned_tokens(research, data.amount_for_sale);
-    research_token_sale_service.start_research_token_sale(data.research_id, data.start_time, data.end_time,
-                                                               data.amount_for_sale, data.soft_cap, data.hard_cap);
+    research_token_sale_service.start(data.research_id, data.start_time, data.end_time,
+                                      data.amount_for_sale, data.soft_cap, data.hard_cap);
 }
 
 } //namespace chain

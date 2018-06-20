@@ -27,7 +27,6 @@
 #include <deip/chain/vote_object.hpp>
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/research_group_invite_object.hpp>
-#include <deip/chain/research_group_join_request_object.hpp>
 #include <deip/chain/review_object.hpp>
 #include <deip/chain/vesting_contract_object.hpp>
 
@@ -61,7 +60,6 @@
 #include <deip/chain/dbs_vote.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/dbs_expert_token.hpp>
-#include <deip/chain/dbs_research_group_join_request.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_grant.hpp>
 #include <deip/chain/dbs_review.hpp>
@@ -1196,7 +1194,7 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
     dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
     dbs_research_token& research_token_service = obtain_service<dbs_research_token>();
 
-    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(research_token_sale_id);
+    auto& research_token_sale = research_token_sale_service.get_by_id(research_token_sale_id);
 
     const auto& idx = get_index<research_token_sale_contribution_index>().indicies().get<by_research_token_sale_id>();
 
@@ -1206,7 +1204,7 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
     {
         auto transfer_amount = (it->amount * research_token_sale.balance_tokens) / research_token_sale.total_amount;
 
-        if (research_token_service.check_research_token_existence_by_account_name_and_research_id(
+        if (research_token_service.is_research_token_exists_by_account_name_and_research_id(
                 it->owner, research_token_sale.research_id))
         {
             auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id(
@@ -1228,7 +1226,7 @@ void database::refund_research_tokens(const research_token_sale_id_type research
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
 
-    auto& research_token_sale = research_token_sale_service.get_research_token_sale_by_id(research_token_sale_id);
+    auto& research_token_sale = research_token_sale_service.get_by_id(research_token_sale_id);
 
     const auto& idx = get_index<research_token_sale_contribution_index>().indicies().
             get<by_research_token_sale_id>().equal_range(research_token_sale_id);
@@ -1766,20 +1764,19 @@ void database::process_research_token_sales()
     auto itr = idx.begin();
     auto _head_block_time = head_block_time();
 
-    while (itr->end_time <= _head_block_time && itr != idx.end())
+    while (itr != idx.end())
     {
-        if (itr->status == research_token_sale_status::token_sale_active)
-        {
-            if (itr->total_amount < itr->soft_cap)
-            {
-                research_token_sale_service.change_research_token_sale_status(itr->id,
-                                                                              research_token_sale_status::token_sale_expired);
+        if (itr->end_time <= _head_block_time && itr->status == research_token_sale_status::token_sale_active) {
+            if (itr->total_amount < itr->soft_cap) {
+                research_token_sale_service.update_status(itr->id, research_token_sale_status::token_sale_expired);
                 refund_research_tokens(itr->id);
-            } else if (itr->total_amount >= itr->soft_cap)
-            {
-                research_token_sale_service.change_research_token_sale_status(itr->id,
-                                                                              research_token_sale_status::token_sale_finished);
+            } else if (itr->total_amount >= itr->soft_cap) {
+                research_token_sale_service.update_status(itr->id, research_token_sale_status::token_sale_finished);
                 distribute_research_tokens(itr->id);
+            }
+        } else if (itr->end_time > _head_block_time) {
+            if (_head_block_time >= itr->start_time && itr->status == research_token_sale_status::token_sale_inactive) {
+                research_token_sale_service.update_status(itr->id, research_token_sale_status::token_sale_active);
             }
         }
         itr++;
@@ -1833,14 +1830,13 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_review_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_research_group_join_request_evaluator>();
-    _my->_evaluator_registry.register_evaluator<reject_research_group_join_request_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<add_expertise_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<deposit_to_vesting_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_from_vesting_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
+    _my->_evaluator_registry.register_evaluator<transfer_research_tokens_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -1880,7 +1876,6 @@ void database::initialize_indexes()
     add_index<research_group_invite_index>();
     add_index<review_index>();
     add_index<review_vote_index>();
-    add_index<research_group_join_request_index>();
     add_index<vesting_contract_index>();
 
     _plugin_index_signal();
@@ -2094,7 +2089,6 @@ void database::_apply_block(const signed_block& next_block)
         clear_expired_transactions();
         clear_expired_proposals();
         clear_expired_invites();
-        clear_expired_join_requests();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
@@ -2487,13 +2481,6 @@ void database::clear_expired_invites()
     auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
     research_group_invite_service.clear_expired_invites();
 }
-
-void database::clear_expired_join_requests()
-{
-    auto& research_group_join_request_service = obtain_service<dbs_research_group_join_request>();
-    research_group_join_request_service.clear_expired_research_group_join_requests();
-}
-
 
 void database::adjust_balance(const account_object& a, const asset& delta)
 {

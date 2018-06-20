@@ -67,7 +67,6 @@ enum object_type
     research_token_object_type,
     research_token_sale_object_type,
     research_token_sale_contribution_object_type,
-    research_group_join_request_object_type,
     research_group_invite_object_type,
     review_object_type,
     review_vote_object_type,
@@ -109,7 +108,6 @@ class research_token_object;
 class research_token_sale_object;
 class research_token_sale_contribution_object;
 class research_group_invite_object;
-class research_group_join_request_object;
 class review_object;
 class review_vote_object;
 class vesting_contract_object;
@@ -149,7 +147,6 @@ typedef oid<research_token_object> research_token_id_type;
 typedef oid<research_token_sale_object> research_token_sale_id_type;
 typedef oid<research_token_sale_contribution_object> research_token_sale_contribution_id_type;
 typedef oid<research_group_invite_object> research_group_invite_id_type;
-typedef oid<research_group_join_request_object> research_group_join_request_id_type;
 typedef oid<review_object> review_id_type;
 typedef oid<review_vote_object> review_vote_id_type;
 typedef oid< vesting_contract_object> vesting_contract_id_type;
@@ -221,7 +218,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (research_group_invite_object_type)
                  (review_object_type)
                  (review_vote_object_type)
-                 (research_group_join_request_object_type)
                  (vesting_contract_object_type)
 
                  )

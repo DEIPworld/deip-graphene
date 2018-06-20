@@ -433,6 +433,37 @@ struct change_recovery_account_operation : public base_operation
 
 // DEIP native operations
 
+struct invitee_type
+{
+    invitee_type()
+    {
+    }
+    invitee_type(const account_name_type& a, const uint32_t& t)
+            : account(a)
+            , research_group_tokens_in_percent(t)
+    {
+    }
+
+    account_name_type account;
+    uint32_t research_group_tokens_in_percent;
+};
+
+struct expertise_amount_pair_type
+{
+    expertise_amount_pair_type()
+    {
+    }
+
+    expertise_amount_pair_type(const int64_t& d, const int64_t& a)
+            : discipline_id(d)
+            , amount(a)
+    {
+    }
+
+    int64_t discipline_id;
+    int64_t amount;
+};
+
 struct create_grant_operation : public base_operation
 {
     account_name_type owner;
@@ -447,21 +478,6 @@ struct create_grant_operation : public base_operation
     {
         a.insert(owner);
     }
-};
-
-struct invitee_type
-{
-    invitee_type()
-    {
-    }
-    invitee_type(const account_name_type& a, const uint32_t& t)
-        : account(a)
-        , research_group_tokens_in_percent(t)
-    {
-    }
-
-    account_name_type account;
-    uint32_t research_group_tokens_in_percent;
 };
 
 struct create_research_group_operation : public base_operation
@@ -561,31 +577,6 @@ struct reject_research_group_invite_operation : public base_operation
     }
 };
 
-struct create_research_group_join_request_operation : public base_operation
-{
-    account_name_type owner;
-    int64_t research_group_id;
-    string motivation_letter;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
-
-struct reject_research_group_join_request_operation : public base_operation
-{
-    int64_t research_group_join_request_id;
-    account_name_type owner;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
-
 struct transfer_research_tokens_to_research_group_operation : public base_operation
 {
     int64_t research_token_id;
@@ -604,7 +595,7 @@ struct add_expertise_tokens_operation : public base_operation
 {
     account_name_type owner;
     account_name_type account_name;
-    std::vector<std::pair<int64_t, uint32_t>> disciplines_to_add;
+    std::vector<expertise_amount_pair_type> disciplines_to_add;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -659,6 +650,22 @@ struct withdraw_from_vesting_contract_operation : public base_operation
     }
 };
 
+struct transfer_research_tokens_operation : public base_operation
+{
+    int64_t research_token_id;
+    int64_t research_id;
+    account_name_type sender;
+    account_name_type receiver;
+    uint32_t amount;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(sender);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -701,8 +708,9 @@ FC_REFLECT( deip::protocol::recover_account_operation, (account_to_recover)(new_
 FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) )
 
 // DEIP native operations
-FC_REFLECT( deip::protocol::create_grant_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
 FC_REFLECT( deip::protocol::invitee_type, (account)(research_group_tokens_in_percent) )
+FC_REFLECT( deip::protocol::expertise_amount_pair_type, (discipline_id)(amount) )
+FC_REFLECT( deip::protocol::create_grant_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
 FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent)(is_personal)(invitees))
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
@@ -711,12 +719,11 @@ FC_REFLECT( deip::protocol::make_review_operation, (author)(research_content_id)
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_token_sale_id)(owner)(amount))
 FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
-FC_REFLECT( deip::protocol::create_research_group_join_request_operation, (owner)(research_group_id)(motivation_letter))
-FC_REFLECT( deip::protocol::reject_research_group_join_request_operation, (research_group_join_request_id)(owner))
 FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
-FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_token_id)(research_id)(owner))
+FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_token_id)(research_id)(owner)(amount))
 FC_REFLECT( deip::protocol::add_expertise_tokens_operation, (owner)(account_name)(disciplines_to_add))
 FC_REFLECT( deip::protocol::research_update_operation, (research_id)(title)(abstract)(permlink)(owner))
 FC_REFLECT( deip::protocol::deposit_to_vesting_contract_operation, (sender)(receiver)(balance)(withdrawal_period)(contract_duration))
 FC_REFLECT( deip::protocol::withdraw_from_vesting_contract_operation, (sender)(receiver)(amount))
+FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_token_id)(research_id)(sender)(receiver)(amount))
 // clang-format on

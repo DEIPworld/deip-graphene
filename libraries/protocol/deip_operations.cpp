@@ -206,20 +206,9 @@ void reject_research_group_invite_operation::validate() const
     validate_account_name(owner);
 }
 
-void create_research_group_join_request_operation::validate() const
-{
-    validate_account_name(owner);
-    FC_ASSERT(!motivation_letter.empty(), "Motivation letter cannot be empty");
-    FC_ASSERT(fc::is_utf8(motivation_letter), "Motivation letter is not valid UTF8 string");
-}
-
-void reject_research_group_join_request_operation::validate() const
-{
-    validate_account_name(owner);
-}
-
 void transfer_research_tokens_to_research_group_operation::validate() const 
 {
+    FC_ASSERT(amount > 0, "Transfer amount must be greater than 0");
     validate_account_name(owner);
 }    
 
@@ -249,7 +238,14 @@ void deposit_to_vesting_contract_operation::validate() const
 
 void withdraw_from_vesting_contract_operation::validate() const
 {
-    FC_ASSERT(amount > 0, "Withdraw amount must be bigger than 0");
+    FC_ASSERT(amount > 0, "Withdraw amount must be greater than 0");
+    validate_account_name(sender);
+    validate_account_name(receiver);
+}
+
+void transfer_research_tokens_operation::validate() const
+{
+    FC_ASSERT(amount > 0, "Transfer amount must be greater than 0");
     validate_account_name(sender);
     validate_account_name(receiver);
 }
