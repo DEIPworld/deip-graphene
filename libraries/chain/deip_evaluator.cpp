@@ -862,6 +862,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
     dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
+    dbs_dynamic_global_properties& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
 
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
@@ -1017,8 +1018,6 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                     }
                 });
 
-
-                auto& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
                 dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(abs_used_tokens);
                 dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(token.amount);
             }
