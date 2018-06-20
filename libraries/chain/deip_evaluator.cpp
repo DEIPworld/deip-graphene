@@ -889,6 +889,18 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
     auto& review = review_service.create(op.research_content_id, op.content, op.is_positive, op.author, review_disciplines);
 
+    for (auto& review_discipline : review_disciplines) {
+        auto &token = expertise_token_service.get_expert_token_by_account_and_discipline(op.author, review_discipline);
+
+        _db._temporary_public_impl().modify(review, [&](review_object& r) {
+            r.expertise_amounts_used[token.discipline_id] = token.amount;
+            r.reward_weights_per_discipline[token.discipline_id] = 0;
+            r.curation_reward_weights_per_discipline[token.discipline_id] = 0;
+        });
+
+        dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(token.amount);
+    }
+
     if (review.is_positive) {
         try
         {
@@ -1005,12 +1017,6 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                     v.weight = w.to_uint64();
                 });
 
-                _db._temporary_public_impl().modify(review, [&](review_object& r) {
-                    r.expertise_amounts_used[token.discipline_id] = token.amount;
-                    r.reward_weights_per_discipline[token.discipline_id] = 0;
-                    r.curation_reward_weights_per_discipline[token.discipline_id] = 0;
-                });
-
                 _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
                     t.total_curators_reward_weight += vote.weight;
                     if (content_is_active) {
@@ -1019,25 +1025,9 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                 });
 
                 dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(abs_used_tokens);
-                dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(token.amount);
             }
         }
         FC_CAPTURE_AND_RETHROW((op))
-    }
-
-    else if (!review.is_positive)
-    {
-        for (auto& review_discipline : review_disciplines) {
-            auto &token = expertise_token_service.get_expert_token_by_account_and_discipline(op.author, review_discipline);
-
-            _db._temporary_public_impl().modify(review, [&](review_object& r) {
-                r.expertise_amounts_used[token.discipline_id] = token.amount;
-                r.reward_weights_per_discipline[token.discipline_id] = 0;
-                r.curation_reward_weights_per_discipline[token.discipline_id] = 0;
-            });
-
-            dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(token.amount);
-        }
     }
 }
 
