@@ -39,12 +39,14 @@ public:
     bool is_completed = false;
 
     account_name_type_set voted_accounts;
+    size_t object_hash;
 };
 
 struct by_research_group_id;
 struct by_expiration_time;
 struct by_data;
 struct by_completion;
+struct by_object_hash;
 
 
 typedef multi_index_container<proposal_object,
@@ -52,6 +54,10 @@ typedef multi_index_container<proposal_object,
                                                                 member<proposal_object,
                                                                        proposal_id_type,
                                                                        &proposal_object::id>>,
+                                                           ordered_unique<tag<by_object_hash>,
+                                                           member<proposal_object,
+                                                                   size_t,
+                                                                   &proposal_object::object_hash>>,
                                                            ordered_non_unique<tag<by_expiration_time>,
                                                                 member<proposal_object,
                                                                         fc::time_point_sec,
@@ -73,6 +79,6 @@ typedef multi_index_container<proposal_object,
 
 
 FC_REFLECT(deip::chain::proposal_object, (id)(research_group_id)(action)(creation_time)
-        (expiration_time)(creator)(data)(quorum_percent)(current_votes_amount)(is_completed)(voted_accounts))
+        (expiration_time)(creator)(data)(quorum_percent)(current_votes_amount)(is_completed)(voted_accounts)(object_hash))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::proposal_object, deip::chain::proposal_index)

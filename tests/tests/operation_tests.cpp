@@ -3724,7 +3724,6 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
     FC_LOG_AND_RETHROW()
 }
 
-
 BOOST_AUTO_TEST_CASE(transfer_research_tokens_apply)
 {
     try
@@ -3784,6 +3783,84 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_apply)
     }
     FC_LOG_AND_RETHROW()
 
+}
+
+BOOST_AUTO_TEST_CASE(unique_proposal_hash_test)
+{
+    try {
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
+        std::vector<std::pair<account_name_type, share_type>> accounts = {std::make_pair("alice", 10000)};
+        setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
+
+        const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":31,\"research_group_token_amount_in_percent\":5000}";
+
+        create_proposal_operation op;
+        op.creator = "alice";
+        op.research_group_id = 31;
+        op.data = json_str;
+        op.action = dbs_proposal::action_t::invite_member;
+        op.expiration_time = db.head_block_time() + DAYS_TO_SECONDS(7);
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        dbs_proposal& proposal_service = db.obtain_service<dbs_proposal>();
+        auto &invite_proposal = proposal_service.get_proposal(0);
+
+        BOOST_CHECK(invite_proposal.id == 0);
+        BOOST_CHECK(invite_proposal.research_group_id == 31);
+        BOOST_CHECK(invite_proposal.creator == "alice");
+        BOOST_CHECK(invite_proposal.action == dbs_proposal::action_t::invite_member);
+
+        const std::string json_str_with_spaces = "{\"name\":\"bob\", \"research_group_id\":31        ,\"research_group_token_amount_in_percent\":             5000}";
+
+        create_proposal_operation op2;
+        op2.creator = "alice";
+        op2.research_group_id = 31;
+        op2.data = json_str_with_spaces;
+        op2.action = dbs_proposal::action_t::invite_member;
+        op2.expiration_time = db.head_block_time() + DAYS_TO_SECONDS(5);
+
+        tx.operations.clear();
+        tx.signatures.clear();
+
+        tx.operations.push_back(op2);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+
+        BOOST_CHECK_THROW(db.push_transaction(tx, 0), fc::assert_exception);
+
+        const std::string exclude_member_json = "{\"name\":\"bob\",\"research_group_id\": 31}";
+
+        create_proposal_operation op3;
+        op3.creator = "alice";
+        op3.research_group_id = 31;
+        op3.data = exclude_member_json;
+        op3.action = dbs_proposal::action_t::dropout_member;
+        op3.expiration_time = db.head_block_time() + DAYS_TO_SECONDS(7);
+
+        tx.operations.clear();
+        tx.signatures.clear();
+
+        tx.operations.push_back(op3);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto &dropout_proposal = proposal_service.get_proposal(1);
+
+        BOOST_CHECK(dropout_proposal.id == 1);
+        BOOST_CHECK(dropout_proposal.research_group_id == 31);
+        BOOST_CHECK(dropout_proposal.creator == "alice");
+        BOOST_CHECK(dropout_proposal.action == dbs_proposal::action_t::dropout_member);
+    }
+    FC_LOG_AND_RETHROW()
 }
 
 BOOST_AUTO_TEST_SUITE_END()

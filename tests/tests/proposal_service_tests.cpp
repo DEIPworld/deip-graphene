@@ -32,6 +32,7 @@ public:
             d.expiration_time = fc::time_point_sec(0xffffffff);
             d.quorum_percent = 40;
             d.voted_accounts.insert("bob"); d.voted_accounts.insert("john");
+            d.object_hash = 1;
         });
 
         db.create<proposal_object>([&](proposal_object& d) {
@@ -44,6 +45,7 @@ public:
             d.expiration_time = fc::time_point_sec(123);
             d.quorum_percent = 38;
             d.voted_accounts.insert("alice"); d.voted_accounts.insert("john");
+            d.object_hash = 2;
         });
 
         db.create<proposal_object>([&](proposal_object& d) {
@@ -56,6 +58,7 @@ public:
             d.expiration_time = fc::time_point_sec(0xffffff2f);
             d.quorum_percent = 72;
             d.voted_accounts.insert("alice");
+            d.object_hash = 3;
         });
 
         db.create<proposal_object>([&](proposal_object& d) {
@@ -68,6 +71,7 @@ public:
             d.expiration_time = fc::time_point_sec(12313);
             d.quorum_percent = 50;
             d.voted_accounts.insert("bob"); d.voted_accounts.insert("john");
+            d.object_hash = 4;
         });
     }
 
@@ -107,7 +111,7 @@ BOOST_AUTO_TEST_CASE(create_proposal)
     try
     {
         const proposal_object& proposal = data_service.create_proposal(proposal_action_type::dropout_member, "1", "alice",
-                                                                       1, fc::time_point_sec(0xffffffff), 40);
+                                                                       1, fc::time_point_sec(0xffffffff), 40, 123);
 
         BOOST_CHECK(proposal.action == proposal_action_type::dropout_member);
         BOOST_CHECK(proposal.data == "1");

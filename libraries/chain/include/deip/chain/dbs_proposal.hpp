@@ -42,7 +42,8 @@ public:
                                            const account_name_type& initiator,
                                            const research_group_id_type& research_group_id,
                                            const fc::time_point_sec expiration_time,
-                                           const share_type quorum_percent);
+                                           const share_type quorum_percent,
+                                           const size_t object_hash);
 
     /** Get proposal by id
      */
