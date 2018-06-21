@@ -57,7 +57,7 @@ int main(int argc, char** argv)
             std::cerr << argc << " " << argv[1] << "\n";
             std::cerr << "get-dev-key <prefix> <suffix> ...\n"
                          "\n"
-                         "example:\n"
+                         "example:\n"get-
                          "\n"
                          "get-dev-key wxyz- owner-5 active-7 balance-9 wit-block-signing-3 wit-owner-5 wit-active-33\n"
                          "get-dev-key wxyz- wit-block-signing-0:101\n"

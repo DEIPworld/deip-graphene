@@ -52,5 +52,130 @@
     "ferdinand": [{
         "private_key": "5JaEUU5k3hT78cD6qWKrbMLwzFu9UT8g1sFDbGhnL4fUzh8VkYk",
         "public_key": "DEIP7SRfpY6Un2YBTa2y1ec5gju7s4MwqzQx8p8GDqZEFPewAJLVu7"
+    }],
+
+    "initdelegate1": [{
+        "private_key": "5JgGXpUFNiZuWSu2DD1ewFTM6WEthN6gueq86meHDFcGNtg5wfF",
+        "public_key": "DEIP6GGrScrv5S8MDwAiQrg5Tvh4KPndcEV7ZDu8f9zfQ96gfTsNXP"
+    }],
+
+    "initdelegate2": [{
+        "private_key": "5JsJJeMLFacDkE7aaprjLnwt4v2iJBU8aU4HJbQcbiUveb95KHc",
+        "public_key": "DEIP69cfB2TGrQgZRXKspwBn9E94CjLZDMABEFyyq9BeLVo8JhaXgZ"
+    }],
+
+    "initdelegate3": [{
+        "private_key": "5Jvk2C4ABiesignVk2HX56hNaCirgUMS9oaUYyYGM6GNDU4i2Ea",
+        "public_key": "DEIP5hekKQBAR3KqWEtWj33FwfvydBJRD6Ljf1dYu9UQ9xqxgMxVuX"
+    }],
+
+    "initdelegate4": [{
+        "private_key": "5K3wPSfzUqfniFUZzmkE33kGfsCsegiiKdmUyxnsePuhCfrZUjm",
+        "public_key": "DEIP6zbXJKP7aSpHeUU7vdCkfR2Cgj6yGLJjn5jw9kPydk2dqnK3Eb"
+    }],
+
+    "initdelegate5": [{
+        "private_key": "5J4ZViJH4w1cxz4ujEDXkHWY9whDjxB6FuHiXoELVAbcsjwAzSh",
+        "public_key": "DEIP6NBZTeR4g1VoPXr39dvspo4BHExoxwzwXoQtxzofqpSQeFXfZs"
+    }],
+
+    "initdelegate6": [{
+        "private_key": "5Hu8x1zKYevk2ebTcfnN1CEXErVyHkBGKUW787SDKXaveh3q6hf",
+        "public_key": "DEIP5FcF3TpCHmNGAAYLiefsQB67RgPBq69Hmj6sYDJKe3CoiQAZcr"
+    }],
+
+    "initdelegate7": [{
+        "private_key": "5JWsdWqbUMqNz4MNhhtirc5Z1FbmnHSZogpBp2CbRBbHGgq77rE",
+        "public_key": "DEIP7dqBjfGYCPfffJVBWGvhUasGc6eWqxmNvJw7Es2Zu1yquXgV3Q"
+    }],
+
+    "initdelegate8": [{
+        "private_key": "5KiPeXMRePGEAL5imUPPdtmXkZQkkC9yXW9acuFFUvxGzpWEoPi",
+        "public_key": "DEIP5QUc3pPePUaaaK5dEDs3hh2MGdy5M3qdjBpqGCv1fYhckbUwR9"
+    }],
+
+    "initdelegate9": [{
+        "private_key": "5KE8UWD4BwfD8kkTHuHyFtQZmDv2iPeGeWrgTvrPs18U77pLcbx",
+        "public_key": "DEIP6sxa3PhM3D3KwL2kW2sMyL1tEz493x1gPJ3Sb4HiB8MaAutuDV"
+    }],
+
+    "initdelegate10": [{
+        "private_key": "5Ji4ck728Hq4HVSXdygzZwjjjjdQi3C9BDzSJXTmfSC95sfV2Lc",
+        "public_key": "DEIP5noaUskFp96Z4gGkq9VcvyMnDXiqzmepd2tXW5xobUAJNv8Bi1"
+    }],
+
+    "initdelegate11": [{
+        "private_key": "5K7hTEZDpAy7CVDNFrB2gmrwf2Gk3T57sJ9jGTJaaRKiDoDv23B",
+        "public_key": "DEIP7tes2eyeTcRVX3ua6R3egfn6i2CuhDUWhYNk4mmsxk9UaCkGSL"
+    }],
+
+    "initdelegate12": [{
+        "private_key": "5JPPRsncTZJLKvDf4bm3g8GbhhCf6j89TvqkuQ8jYdfcpFazW16",
+        "public_key": "DEIP5HQrZAwQXcqWgA1tHnJZsoBLUC74JCFbopUYBtki2UnZqp52PV"
+    }],
+
+    "initdelegate13": [{
+        "private_key": "5JYEsRsqq4dypAMitqdKBU9kEMTpzh8fPKrvB8HZAPCTvjhz1Pm",
+        "public_key": "DEIP7AKTn2qsMSFSNmRKjLR4gJWvfmKfne1wn1te2SALBUTawo2WUp"
+    }],
+
+    "initdelegate14": [{
+        "private_key": "5KJbLaQZmVtjPgxi7Q5KbPkDaqLm2wEtdjL1AdP1azTgR8E9d8a",
+        "public_key": "DEIP5HXtXkcdMMCeYQe3U6xp1y9hue4pR4wDa25FtC1tA6KPVg4sPd"
+    }],
+
+    "initdelegate15": [{
+        "private_key": "5JNSScdbCz1qyFVio8eKrTJE4CJvnLHphDgSNCSf2yFs7htBvW9",
+        "public_key": "DEIP5EAv48B9FJSbTKkjYVxpk7uyAxYWwKfRjwdbVxjTaMzqM7H7NT"
+    }],
+
+    "initdelegate16": [{
+        "private_key": "5HyMetDYbNsdWeb9fPoCTFxX1FjFXJGnz6sKQdM6a8igqfN2KwW",
+        "public_key": "DEIP5EkxX7qJvc2kantTuTfZbip2QDmtf12AHDGYcWe9KN4aUPwzs9"
+    }],
+
+    "initdelegate17": [{
+        "private_key": "5HuHcq85uNssAqbNBTKYfL4ZDMXoxkdgiL3ap1beoTuxzMikT7N",
+        "public_key": "DEIP83Gd6H5Ag5h9ch6PKVw3Y42rW6r2tLbe5UBKHB6GNQtm2sXpc4"
+    }],
+
+    "initdelegate18": [{
+        "private_key": "5HxktqPmznUrKqcV1qKJC9LnXyPzjR33s8SjWP6P75beuD69iK1",
+        "public_key": "DEIP7JNjyisnHeqxDKPKhiGxtBW2UBhaV1BKWqBKy19Sj2bduLKpcL"
+    }],
+
+    "initdelegate19": [{
+        "private_key": "5HvP1FNnnCTgnhr32cNrhQL28bj7jM3Vp6ihfCSVAkwvh77kmpH",
+        "public_key": "DEIP89Nm1Z7i14DTCeKczBvakyCwVfmqcpAsTtbQFujbtGsa1vwC1G"
+    }],
+
+    "initdelegate20": [{
+        "private_key": "5KEKYJ3Cb1M4phF3accXA7qT3de6XhRydXSRW3tyPhmP7BuyjV8",
+        "public_key": "DEIP8M5LTnXBAZNYwQXjJRWcVKUWypretebzD8ksT1iY3HezDW4Jpg"
+    }],
+
+    "initdelegate21": [{
+        "private_key": "5JYgGtvDKn5C8FmcDH7G7c5MrkC9LJU1gMMgTNb8Z4zXMuxnery",
+        "public_key": "DEIP7zda2KdXD9ceWoxG5WNrLB9jjgVGdbifPFi2bSXGCRF3B1wgDC"
+    }],
+
+    "initdelegate22": [{
+        "private_key": "5HqGcjRKwEzEwpsRoLhiviRdhWbWw7NjfgPxgkZxd3mtbGCxLRm",
+        "public_key": "DEIP6XH2YRxEhsLUEj6GGb65oqZmHgVumg3jDGp5S1F5rBm6dhQ6tK"
+    }],
+
+    "initdelegate23": [{
+        "private_key": "5KVfySRXkbmkFeoxUFUh7mobBCPrXJh7Lx1uHTyn8YeEmPs2Wec",
+        "public_key": "DEIP8Qe6M37dswGCqYPNxheZgiEsXodCgcsQMooPD235VSyZ5jvd26"
+    }],
+
+    "initdelegate24": [{
+        "private_key": "5JNUTVS2Tj6ZBQvkGhqyGy1iKVXPdzRft2HTtaWa9vRJdbhSAmg",
+        "public_key": "DEIP5vKtZEWwCV6dK7qacMKwd1M4zCP5U4Gf8i61FjZKAvoqENrrB2"
+    }],
+
+    "initdelegate25": [{
+        "private_key": "5JtT3Tgz6pLt6tVhbX4wjGwmxccfvCAUxMPJCDnh1JDSRMJDj81",
+        "public_key": "DEIP6mh7S7KaZK3gh8bGG8TcggK2woCSNmx3SEv6vMTtJQMDvsuQzb"
     }]
 }
