@@ -215,9 +215,9 @@ void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_toke
     account_service.decrease_balance(from_account, o.amount);
 
     if (!expert_token_service.is_expert_token_existence_by_account_and_discipline(to_account.name, 0))
-        expert_token_service.create(to_account.name, 0, o.amount.amount);
+        expert_token_service.create(to_account.name, 0, o.amount.amount.value);
     else
-        expert_token_service.increase_common_tokens(to_account.name, o.amount.amount);
+        expert_token_service.increase_common_tokens(to_account.name, o.amount.amount.value);
 }
 
 void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_operation& o)
