@@ -822,15 +822,18 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     std::string unique_string = op.data;
     unique_string.erase(std::remove_if(unique_string.begin(),
                                    unique_string.end(),
-                                   [](unsigned char x){return std::isspace(x);}),
+                                   [](unsigned char x) { return std::isspace(x); }),
                     unique_string.end());
     unique_string += std::to_string(op.action);
+    unique_string += std::to_string(op.research_group_id);
 
+    auto hash = hash_string(unique_string);
     auto proposals = proposal_service.get_proposals_by_research_group_id(op.research_group_id);
 
-    for (auto proposal : proposals)
+    for (auto proposal_wrapper : proposals)
     {
-        FC_ASSERT(hash_string(unique_string) != proposal.get().object_hash, "Proposal must be unique by json and action");
+        auto& proposal = proposal_wrapper.get();
+        FC_ASSERT(hash != proposal.object_hash, "Proposal must be unique within research group");
     }
     auto& proposal = proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent, hash_string(unique_string));
 
