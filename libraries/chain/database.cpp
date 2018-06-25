@@ -1253,7 +1253,6 @@ share_type database::distribute_reward(const share_type reward)
     auto total_disciplines_reward_weight = dgpo.total_active_disciplines_reward_weight.to_uint64();
 
     // Distribute among all disciplines pools
-    auto all_disciplines_pool_share = util::calculate_share(reward, DEIP_ALL_DISCIPLINES_POOL_SHARE_PERCENT);
     share_type used_reward = 0;
 
     auto disciplines = discipline_service.get_disciplines();
@@ -1262,7 +1261,7 @@ share_type database::distribute_reward(const share_type reward)
         if (discipline.total_active_reward_weight != 0)
         {
             // Distribute among disciplines in all disciplines pool
-            auto total_discipline_reward_share = util::calculate_share(all_disciplines_pool_share,
+            auto total_discipline_reward_share = util::calculate_share(reward,
                                                                        discipline.total_active_reward_weight,
                                                                        total_disciplines_reward_weight);
             auto discipline_review_reward_pool_share = util::calculate_share(total_discipline_reward_share, DEIP_REVIEW_REWARD_POOL_SHARE_PERCENT);
