@@ -645,18 +645,18 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
 
         BOOST_CHECK_NO_THROW(db.distribute_reward(reward));
 
-        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == 3952000);
-        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 1064000);
+        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == 4940000);
+        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 1330000);
 
-        BOOST_CHECK(db.get_account("alice").balance.amount == 842840);
-        BOOST_CHECK(db.get_account("bob").balance.amount == 1159760);
-        BOOST_CHECK(db.get_account("john").balance.amount == 199500);
+        BOOST_CHECK(db.get_account("alice").balance.amount == 1053550);
+        BOOST_CHECK(db.get_account("bob").balance.amount == 1449700);
+        BOOST_CHECK(db.get_account("john").balance.amount == 249375);
 
         auto john_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
         auto alex_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alex", 10));
 
-        BOOST_CHECK(john_expert_token.amount == 4689200);
-        BOOST_CHECK(alex_expert_token.amount == 2090000);
+        BOOST_CHECK(john_expert_token.amount == 5861500);
+        BOOST_CHECK(alex_expert_token.amount == 2612500);
 
     }
     FC_LOG_AND_RETHROW()
@@ -713,41 +713,6 @@ BOOST_AUTO_TEST_CASE(process_grants)
    }
    FC_LOG_AND_RETHROW()
 }
-
-BOOST_AUTO_TEST_CASE(reward_research_content_for_common_discipline)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_research_contents();
-        create_researches();
-        create_votes_for_common_discipline();
-        create_total_votes_for_common_discipline();
-        create_research_tokens();
-        create_research_groups();
-        create_research_group_tokens();
-
-        share_type reward = 1000;
-        BOOST_CHECK_NO_THROW(db.reward_research_content(1, 0, reward));
-
-        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == 700);
-        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 50);
-        
-        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 0))).amount == 10000);
-        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("bob", 0))).amount == 10000);
-        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alex", 0))).amount == 10000);
-        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("jack", 0))).amount == 10000);
-        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("john", 0))).amount == 10000);
-
-        BOOST_CHECK(db.get_account("alice").balance.amount == 20);
-        BOOST_CHECK(db.get_account("bob").balance.amount == 42);
-        BOOST_CHECK(db.get_account("john").balance.amount == 37);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
 
 BOOST_AUTO_TEST_SUITE_END()
 

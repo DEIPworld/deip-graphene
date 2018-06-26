@@ -1252,9 +1252,7 @@ share_type database::distribute_reward(const share_type reward)
     auto& dgpo = get_dynamic_global_properties();
     auto total_disciplines_reward_weight = dgpo.total_active_disciplines_reward_weight.to_uint64();
 
-    // Distribute among common and all disciplines pools
-    auto common_pool_share = util::calculate_share(reward, DEIP_COMMON_POOL_SHARE_PERCENT);
-    auto all_disciplines_pool_share = util::calculate_share(reward, DEIP_ALL_DISCIPLINES_POOL_SHARE_PERCENT);
+    // Distribute among all disciplines pools
     share_type used_reward = 0;
 
     auto disciplines = discipline_service.get_disciplines();
@@ -1262,18 +1260,14 @@ share_type database::distribute_reward(const share_type reward)
         const auto& discipline = discipline_ref.get();
         if (discipline.total_active_reward_weight != 0)
         {
-            if (discipline.id == 0) {
-                used_reward += reward_researches_in_discipline(discipline, common_pool_share);
-            } else {
-                // Distribute among disciplines in all disciplines pool
-                auto total_discipline_reward_share = util::calculate_share(all_disciplines_pool_share,
-                                                                     discipline.total_active_reward_weight,
-                                                                     total_disciplines_reward_weight);
-                auto discipline_review_reward_pool_share = util::calculate_share(total_discipline_reward_share, DEIP_REVIEW_REWARD_POOL_SHARE_PERCENT);
-                auto discipline_reward_share = total_discipline_reward_share - discipline_review_reward_pool_share;
-                used_reward += reward_researches_in_discipline(discipline, discipline_reward_share);
-                used_reward += fund_review_pool(discipline.id, discipline_review_reward_pool_share);
-            }
+            // Distribute among disciplines in all disciplines pool
+            auto total_discipline_reward_share = util::calculate_share(reward,
+                                                                       discipline.total_active_reward_weight,
+                                                                       total_disciplines_reward_weight);
+            auto discipline_review_reward_pool_share = util::calculate_share(total_discipline_reward_share, DEIP_REVIEW_REWARD_POOL_SHARE_PERCENT);
+            auto discipline_reward_share = total_discipline_reward_share - discipline_review_reward_pool_share;
+            used_reward += reward_researches_in_discipline(discipline, discipline_reward_share);
+            used_reward += fund_review_pool(discipline.id, discipline_review_reward_pool_share);
         }
     }
 
@@ -1363,21 +1357,13 @@ share_type database::reward_research_content(const research_content_id_type& res
         }
     }
 
-    if (discipline_id == 0)
-    {
-        used_reward += reward_research_token_holders(research, discipline_id, token_holders_share);
-        used_reward += reward_references(research_content_id, discipline_id, references_share, 0);
-        used_reward += reward_voters(research_content_id, discipline_id, curators_share);
-        used_reward += reward_reviews(research_content_id, discipline_id, review_share, 0);
-    } else if (discipline_id != 0) {
-        reward_research_group_members_with_expertise(research.research_group_id, discipline_id,
-                                                     accounts_to_reward_with_expertise, research_group_expertise_share);
-        used_reward += reward_research_token_holders(research, discipline_id, token_holders_share);
-        used_reward += reward_references(research_content_id, discipline_id, references_share, references_expertise_share);
-        used_reward += reward_voters(research_content_id, discipline_id, curators_share);
-        used_reward += reward_reviews(research_content_id, discipline_id, review_share, review_expertise_share);
-    }
-    
+    reward_research_group_members_with_expertise(research.research_group_id, discipline_id,
+                                                 accounts_to_reward_with_expertise, research_group_expertise_share);
+    used_reward += reward_research_token_holders(research, discipline_id, token_holders_share);
+    used_reward += reward_references(research_content_id, discipline_id, references_share, references_expertise_share);
+    used_reward += reward_voters(research_content_id, discipline_id, curators_share);
+    used_reward += reward_reviews(research_content_id, discipline_id, review_share, review_expertise_share);
+
     FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
 
     return used_reward;
