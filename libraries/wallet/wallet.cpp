@@ -2063,6 +2063,240 @@ annotated_signed_transaction wallet_api::create_grant(const std::string& grant_o
     return my->sign_transaction(tx, broadcast);
 }
 
+annotated_signed_transaction wallet_api::vote_for_review(const std::string& voter,
+                                                         const int64_t review_id,
+                                                         const int64_t discipline_id,
+                                                         const int16_t weight,
+                                                         const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    vote_for_review_operation op;
+
+    op.voter = voter;
+    op.review_id = review_id;
+    op.discipline_id = discipline_id;
+    op.weight = weight * DEIP_1_PERCENT;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::create_proposal(const std::string& creator,
+                                                         const int64_t research_group_id,
+                                                         const std::string& data,
+                                                         const uint16_t action,
+                                                         const time_point_sec expiration_time,
+                                                         const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    create_proposal_operation op;
+
+    op.creator = creator;
+    op.research_group_id = research_group_id;
+    op.data = data;
+    op.action = action;
+    op.expiration_time = expiration_time;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::make_review(const std::string& author,
+                                                     const int64_t research_content_id,
+                                                     const bool is_positive,
+                                                     const std::string& content,
+                                                     const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    make_review_operation op;
+
+    op.author = author;
+    op.research_content_id = research_content_id;
+    op.is_positive = is_positive;
+    op.content = content;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::contribute_to_token_sale(const int64_t research_token_sale_id,
+                                                                  const std::string& owner,
+                                                                  const uint32_t amount,
+                                                                  const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    contribute_to_token_sale_operation op;
+
+    op.research_token_sale_id = research_token_sale_id;
+    op.owner = owner;
+    op.amount = amount;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::approve_research_group_invite(const int64_t research_group_invite_id,
+                                                                       const std::string& owner,
+                                                                       const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    approve_research_group_invite_operation op;
+
+    op.research_group_invite_id = research_group_invite_id;
+    op.owner = owner;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::reject_research_group_invite(const int64_t research_group_invite_id,
+                                                                      const std::string &owner,
+                                                                      const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    reject_research_group_invite_operation op;
+
+    op.research_group_invite_id = research_group_invite_id;
+    op.owner = owner;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_group(const int64_t research_token_id,
+                                                                                    const int64_t research_id,
+                                                                                    const std::string& owner,
+                                                                                    const uint32_t amount,
+                                                                                    const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    transfer_research_tokens_to_research_group_operation op;
+
+    op.research_token_id = research_token_id;
+    op.research_id = research_id;
+    op.owner = owner;
+    op.amount = amount;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::research_update(const int64_t research_id,
+                                                                   const std::string& title,
+                                                                   const std::string& abstract,
+                                                                   const std::string& permlink,
+                                                                   const std::string& owner,
+                                                                   const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    research_update_operation op;
+
+    op.research_id = research_id;
+    op.title = title;
+    op.abstract = abstract;
+    op.permlink = permlink;
+    op.owner = owner;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::deposit_to_vesting_contract(const std::string& sender,
+                                                                     const std::string& receiver,
+                                                                     const uint32_t balance,
+                                                                     const uint32_t withdrawal_period,
+                                                                     const uint32_t contract_duration,
+                                                                     const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    deposit_to_vesting_contract_operation op;
+
+    op.sender = sender;
+    op.receiver = receiver;
+    op.balance = balance;
+    op.withdrawal_period = withdrawal_period;
+    op.contract_duration = contract_duration;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::withdraw_from_vesting_contract(const std::string& sender,
+                                                                        const std::string& receiver,
+                                                                        const uint32_t amount,
+                                                                        const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    withdraw_from_vesting_contract_operation op;
+
+    op.sender = sender;
+    op.receiver = receiver;
+    op.amount = amount;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::vote_proposal(const std::string& voter,
+                                                       const int64_t proposal_id,
+                                                       const int64_t research_group_id,
+                                                       const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    vote_proposal_operation op;
+
+    op.voter = voter;
+    op.proposal_id = proposal_id;
+    op.research_group_id = research_group_id;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
 namespace utils {
 
 fc::ecc::private_key derive_private_key(const std::string& prefix_string, int sequence_number)
