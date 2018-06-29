@@ -176,8 +176,8 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
 
         const auto& vote_idx = db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
         auto itr = vote_idx.find(std::make_tuple(op.author, token.discipline_id, op.research_content_id));
-        auto research_reward_curve = curve_id::power1dot5;
-        auto curator_reward_curve = curve_id::power1dot5;
+        auto research_reward_curve = curve_id::linear;
+        auto curator_reward_curve = curve_id::linear;
 
         // vote
         BOOST_REQUIRE(itr != vote_idx.end());
@@ -439,8 +439,8 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 
     const auto& vote_idx = db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
     auto itr = vote_idx.find(std::make_tuple(op.voter, op.discipline_id, op.research_content_id));
-    auto research_reward_curve = curve_id::power1dot5;
-    auto curator_reward_curve = curve_id::power1dot5;
+    auto research_reward_curve = curve_id::linear;
+    auto curator_reward_curve = curve_id::linear;
 
     // vote
     BOOST_REQUIRE(itr != vote_idx.end());
@@ -560,8 +560,8 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
     // Validate vote
     const auto& vote_idx = db._temporary_public_impl().get_index<review_vote_index>().indices().get<by_voter_discipline_and_review>();
     auto itr = vote_idx.find(std::make_tuple(op.voter, op.discipline_id, op.review_id));
-    auto review_reward_curve = curve_id::power1dot5;
-    auto curator_reward_curve = curve_id::power1dot5;
+    auto review_reward_curve = curve_id::linear;
+    auto curator_reward_curve = curve_id::linear;
 
     // vote
     BOOST_REQUIRE(itr != vote_idx.end());

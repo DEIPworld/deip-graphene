@@ -414,8 +414,8 @@ void vote_evaluator::do_apply(const vote_operation& o)
 
     const auto& dgpo = _db.get_dynamic_global_properties();
 
-    const auto research_reward_curve = curve_id::power1dot5;
-    const auto curators_reward_curve = curve_id::power1dot5;
+    const auto research_reward_curve = curve_id::linear;
+    const auto curators_reward_curve = curve_id::linear;
 
     try
     {
@@ -596,8 +596,8 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
     dbs_review& review_service = _db.obtain_service<dbs_review>();
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
 
-    const auto review_reward_curve = curve_id::power1dot5;
-    const auto curators_reward_curve = curve_id::power1dot5;
+    const auto review_reward_curve = curve_id::linear;
+    const auto curators_reward_curve = curve_id::linear;
 
     try
     {
@@ -920,8 +920,8 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     if (review.is_positive) {
         try
         {
-            const auto& research_reward_curve = curve_id::power1dot5;
-            const auto& curators_reward_curve = curve_id::power1dot5;
+            const auto& research_reward_curve = curve_id::linear;
+            const auto& curators_reward_curve = curve_id::linear;
 
             const auto& voter = account_service.get_account(op.author);
 
