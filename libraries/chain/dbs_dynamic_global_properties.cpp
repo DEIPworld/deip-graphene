@@ -19,16 +19,16 @@ const dynamic_global_property_object& dbs_dynamic_global_properties::get_dynamic
 
 const dynamic_global_property_object& dbs_dynamic_global_properties::reset_used_expertise_per_block()
 {
-    auto& global_property_object = db_impl().get_dynamic_global_properties();
+    auto& global_property_object = get_dynamic_global_properties();
     db_impl().modify(global_property_object, [&](dynamic_global_property_object& dgp_o) { dgp_o.used_expertise_per_block = 0; });
     return global_property_object;
 }
 
-const dynamic_global_property_object& dbs_dynamic_global_properties::increase_all_used_and_used_per_block_expertise(const share_type& delta)
+const dynamic_global_property_object& dbs_dynamic_global_properties::update_used_expertise(const share_type &delta)
 {
     FC_ASSERT((delta >= 0), "Cannot update all used expertise.(delta < 0)");
     auto& global_property_object = db_impl().get_dynamic_global_properties();
-    db_impl().modify(global_property_object, [&](dynamic_global_property_object& dgp_o) { dgp_o.all_used_expertise += delta;
+    db_impl().modify(global_property_object, [&](dynamic_global_property_object& dgp_o) { dgp_o.total_used_expertise += delta;
                                                                                           dgp_o.used_expertise_per_block += delta; });
     return global_property_object;
 }

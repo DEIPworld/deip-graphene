@@ -722,7 +722,7 @@ struct review_api_obj
     {
         this->disciplines = disciplines;
 
-        for (const auto& kvp : r.reward_weights_per_discipline) {
+        for (const auto& kvp : r.weights_per_discipline) {
             discipline_id_type discipline_id = kvp.first;
             share_type weight = kvp.second;
             this->weight_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
@@ -804,9 +804,7 @@ struct review_vote_api_obj
             , discipline_id(rvo.discipline_id._id)
             , voter(rvo.voter)
             , review_id(rvo.review_id._id)
-            , tokens_amount(rvo.tokens_amount)
             , weight(rvo.weight)
-            , voting_power(rvo.voting_power)
             , voting_time(rvo.voting_time)
     {}
 
@@ -820,9 +818,7 @@ struct review_vote_api_obj
     account_name_type voter;
     int64_t review_id;
 
-    share_type tokens_amount;
     int64_t weight;
-    uint16_t voting_power;
     time_point_sec voting_time;
 
 };
@@ -1058,9 +1054,7 @@ FC_REFLECT( deip::app::vote_api_obj,
             (voter)
             (research_id)
             (research_content_id)
-            (tokens_amount)
             (weight)
-            (voting_power)
             (voting_time)
 
 )
@@ -1070,9 +1064,7 @@ FC_REFLECT( deip::app::review_vote_api_obj,
             (discipline_id)
             (voter)
             (review_id)
-            (tokens_amount)
             (weight)
-            (voting_power)
             (voting_time)
 
 )

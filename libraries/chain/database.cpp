@@ -1607,7 +1607,7 @@ share_type database::allocate_rewards_to_reviews(const share_type &reward,
     share_type used_reward = 0;
 
     for (auto& review : reviews_to_reward) {
-        auto review_reward_share = util::calculate_share(reward, review.reward_weights_per_discipline.at(discipline_id),
+        auto review_reward_share = util::calculate_share(reward, review.weights_per_discipline.at(discipline_id),
                                                          discipline.total_review_weight);
         auto author_name = review.author;
         auto review_curators_reward_share = util::calculate_share(review_reward_share,
@@ -1622,7 +1622,7 @@ share_type database::allocate_rewards_to_reviews(const share_type &reward,
         used_reward += reward_review_voters(review, discipline_id, review_curators_reward_share);
 
         // reward expertise
-        auto author_expertise = util::calculate_share(expertise_reward, review.reward_weights_per_discipline.at(discipline_id),
+        auto author_expertise = util::calculate_share(expertise_reward, review.weights_per_discipline.at(discipline_id),
                                                       discipline.total_review_weight);
 
         reward_with_expertise(author_name, discipline_id, author_expertise);

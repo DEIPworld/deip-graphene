@@ -27,8 +27,8 @@ public:
 
     template <typename Constructor, typename Allocator>
     review_object(Constructor &&c, allocator<Allocator> a) : content(a)
-            , reward_weights_per_discipline(a)
-            , curation_reward_weights_per_discipline(a)
+            , weights_per_discipline(a)
+            , curation_weights_per_discipline(a)
             , disciplines(a)
             , references(a)
             , weight_modifiers(a)
@@ -43,8 +43,8 @@ public:
     bool is_positive = true;
     account_name_type author;
     time_point_sec created_at;
-    discipline_id_share_type_map reward_weights_per_discipline;
-    discipline_id_share_type_map curation_reward_weights_per_discipline;
+    discipline_id_share_type_map weights_per_discipline;
+    discipline_id_share_type_map curation_weights_per_discipline;
     discipline_id_type_set disciplines;
     research_content_id_type_set references;
     // TODO: Add external references
@@ -97,7 +97,7 @@ typedef multi_index_container<review_object,
 
 FC_REFLECT(deip::chain::review_object,
            (id)(research_content_id)(content)(is_positive)(author)(created_at)
-           (reward_weights_per_discipline)(curation_reward_weights_per_discipline)(disciplines)(references)
+           (weights_per_discipline)(curation_weights_per_discipline)(disciplines)(references)
                    (weight_modifiers)(expertise_amounts_used)
 )
 

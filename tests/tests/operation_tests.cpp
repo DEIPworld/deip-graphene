@@ -514,6 +514,7 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
         r.research_content_id = content.id;
         r.created_at = db.head_block_time();
         r.expertise_amounts_used[discipline.id] = 1000;
+        r.disciplines.insert(discipline.id);
     });
 
     private_key_type priv_key = generate_private_key("alice");
@@ -551,24 +552,20 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
     // Validate vote
     const auto& vote_idx = db._temporary_public_impl().get_index<review_vote_index>().indices().get<by_voter_discipline_and_review>();
     auto itr = vote_idx.find(std::make_tuple(op.voter, op.discipline_id, op.review_id));
-    auto review_reward_curve = curve_id::linear;
-    auto curator_reward_curve = curve_id::linear;
 
     // vote
     BOOST_REQUIRE(itr != vote_idx.end());
     auto& vote = *itr;
-    BOOST_REQUIRE(vote.voting_power == (old_voting_power * op.weight / DEIP_100_PERCENT));
     int64_t expected_tokens_amount = (token.amount.value * old_voting_power * abs(op.weight)) / (DEIP_100_PERCENT * DEIP_100_PERCENT);
-    BOOST_REQUIRE(vote.tokens_amount.value == expected_tokens_amount);
     BOOST_REQUIRE(vote.voting_time == db.head_block_time());
     BOOST_REQUIRE(vote.voter == op.voter);
     BOOST_REQUIRE(vote.discipline_id == op.discipline_id);
     BOOST_REQUIRE(vote.review_id == op.review_id);
 
     // Calculate vote weight
-    int64_t expected_curator_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, curator_reward_curve).to_uint64();
+    int64_t expected_curator_reward_weight = expected_tokens_amount;
     /// discount weight by time
-    uint128_t w(expected_curator_reward_weight);
+    uint128_t w(expected_tokens_amount);
     uint64_t delta_t = std::min(uint64_t((vote.voting_time - review.created_at).to_seconds()),
                                 uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
 
@@ -579,14 +576,13 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
 
     auto& updated_review = db.get<review_object>(review.id);
 
-    uint64_t expected_review_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, review_reward_curve).to_uint64();
-    BOOST_REQUIRE(updated_review.reward_weights_per_discipline.at(vote.discipline_id) == expected_review_reward_weight);
-    BOOST_REQUIRE(updated_review.curation_reward_weights_per_discipline.at(op.discipline_id) == expected_curator_reward_weight);
+    BOOST_REQUIRE(updated_review.weights_per_discipline.at(vote.discipline_id) == expected_tokens_amount);
+    BOOST_REQUIRE(updated_review.curation_weights_per_discipline.at(op.discipline_id) == expected_curator_reward_weight);
 
     // Validate discipline
     BOOST_REQUIRE(discipline.total_weight == 0);
     BOOST_REQUIRE(discipline.total_research_weight == 0);
-    BOOST_REQUIRE(discipline.total_review_weight == expected_review_reward_weight);
+    BOOST_REQUIRE(discipline.total_review_weight == expected_tokens_amount);
 
     // Validate review
     auto weight_modifier = db.calculate_review_weight_modifier(updated_review.id, discipline.id);
@@ -3564,7 +3560,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         auto& dgpo = db.get_dynamic_global_properties();
 
         BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == 20000);
-        BOOST_CHECK(fc::uint128(dgpo.all_used_expertise.value) == 20000);
+        BOOST_CHECK(fc::uint128(dgpo.total_used_expertise.value) == 20000);
 
         generate_block();
 
@@ -3594,7 +3590,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         db.push_transaction(tx, 0);
 
         BOOST_CHECK(dgpo.used_expertise_per_block == 5000);
-        BOOST_CHECK(dgpo.all_used_expertise == 25000);
+        BOOST_CHECK(dgpo.total_used_expertise == 25000);
 
         generate_block();
 
@@ -3621,7 +3617,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         db.push_transaction(tx, 0);
 
         BOOST_CHECK(dgpo.used_expertise_per_block == 4750);
-        BOOST_CHECK(dgpo.all_used_expertise == 29750);
+        BOOST_CHECK(dgpo.total_used_expertise == 29750);
     }
     FC_LOG_AND_RETHROW()
 }
