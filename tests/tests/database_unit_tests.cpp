@@ -224,9 +224,6 @@ public:
             d.research_id = 1;
             d.research_content_id = 1;
             d.total_weight = 40;
-            d.total_curators_reward_weight = 40;
-            d.total_research_reward_weight = 40;
-            d.total_active_research_reward_weight = 40;
         });
 
         db.create<total_votes_object>([&](total_votes_object& d) {
@@ -235,9 +232,6 @@ public:
             d.research_id = 2;
             d.research_content_id = 2;
             d.total_weight = 60;
-            d.total_curators_reward_weight = 60;
-            d.total_research_reward_weight = 60;
-            d.total_active_research_reward_weight = 60;
         });
     }
 
@@ -249,9 +243,6 @@ public:
             d.research_id = 1;
             d.research_content_id = 1;
             d.total_weight = 40;
-            d.total_curators_reward_weight = 40;
-            d.total_research_reward_weight = 40;
-            d.total_active_research_reward_weight = 40;
         });
 
         db.create<total_votes_object>([&](total_votes_object& d) {
@@ -260,9 +251,6 @@ public:
             d.research_id = 2;
             d.research_content_id = 2;
             d.total_weight = 60;
-            d.total_curators_reward_weight = 60;
-            d.total_research_reward_weight = 60;
-            d.total_active_research_reward_weight = 60;
         });
     }
 
@@ -347,9 +335,6 @@ public:
             d.research_id = 3;
             d.research_content_id = 3;
             d.total_weight = 50;
-            d.total_curators_reward_weight = 50;
-            d.total_research_reward_weight = 50;
-            d.total_active_research_reward_weight = 50;
         });
 
         db.create<research_content_object>([&](research_content_object& d) {

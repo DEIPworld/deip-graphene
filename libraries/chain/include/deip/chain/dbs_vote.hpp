@@ -66,13 +66,6 @@ public:
 
     bool is_exists_by_research_and_discipline(const research_content_id_type& research_content_id, const discipline_id_type& discipline_id);
 
-    const total_votes_object& update_total_votes_for_final_result(const total_votes_object& total_votes,
-                                                                  const share_type total_weight,
-                                                                  const share_type total_active_weight,
-                                                                  const share_type total_research_reward_weight,
-                                                                  const share_type total_active_research_reward_weight);
-
-
     // review_votes_object
     using review_vote_refs_type = std::vector<std::reference_wrapper<const review_vote_object>>;
 

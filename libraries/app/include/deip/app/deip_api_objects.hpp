@@ -695,11 +695,6 @@ struct total_votes_api_obj
         ,  research_id(vo.research_id._id)
         ,  research_content_id(vo.research_content_id._id)
         ,  total_weight(vo.total_weight)
-        ,  total_active_weight(vo.total_active_weight)
-        ,  total_research_reward_weight(vo.total_research_reward_weight)
-        ,  total_active_research_reward_weight(vo.total_active_research_reward_weight)
-        ,  total_curators_reward_weight(vo.total_curators_reward_weight)
-        ,  total_active_curators_reward_weight(vo.total_active_curators_reward_weight)
     {}
 
     // because fc::variant require for temporary object
@@ -713,13 +708,6 @@ struct total_votes_api_obj
     int64_t research_content_id;
 
     share_type total_weight;
-    share_type total_active_weight;
-
-    share_type total_research_reward_weight;
-    share_type total_active_research_reward_weight;
-
-    share_type total_curators_reward_weight;
-    share_type total_active_curators_reward_weight;
 };
 
 struct review_api_obj
@@ -1044,11 +1032,6 @@ FC_REFLECT( deip::app::total_votes_api_obj,
            (research_id)
            (research_content_id)
            (total_weight)
-           (total_active_weight)
-           (total_research_reward_weight)
-           (total_active_research_reward_weight)
-           (total_curators_reward_weight)
-           (total_active_curators_reward_weight)
 )
 
 FC_REFLECT( deip::app::review_api_obj,

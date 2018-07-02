@@ -145,11 +145,6 @@ const total_votes_object& dbs_vote::create_total_votes(const discipline_id_type&
         v_o.research_id = research_id;
         v_o.research_content_id = research_content_id;
         v_o.total_weight = 0;
-        v_o.total_active_weight = 0;
-        v_o.total_research_reward_weight = 0;
-        v_o.total_active_research_reward_weight = 0;
-        v_o.total_curators_reward_weight = 0;
-        v_o.total_active_curators_reward_weight = 0;
     });
 
     return new_total_votes;
@@ -327,23 +322,6 @@ bool dbs_vote::is_exists_by_research_and_discipline(const research_content_id_ty
         return true;
     else
         return false;
-}
-
-const total_votes_object& dbs_vote::update_total_votes_for_final_result(const total_votes_object& total_votes,
-                                                                        const share_type total_weight,
-                                                                        const share_type total_active_weight,
-                                                                        const share_type total_research_reward_weight,
-                                                                        const share_type total_active_research_reward_weight)
-{
-    db_impl().modify(total_votes, [&](total_votes_object& tv_o)
-    {
-        tv_o.total_weight = total_weight;
-        tv_o.total_active_weight = total_active_weight;
-        tv_o.total_research_reward_weight = total_research_reward_weight;
-        tv_o.total_active_research_reward_weight = total_active_research_reward_weight;
-    });
-
-    return total_votes;
 }
 
 } //namespace chain

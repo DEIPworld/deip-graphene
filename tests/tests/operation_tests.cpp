@@ -204,14 +204,9 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
 
         // total_votes
         BOOST_REQUIRE(total_votes.total_weight == expected_tokens_amount);
-        BOOST_REQUIRE(total_votes.total_active_weight == expected_tokens_amount);
 
         uint64_t expected_research_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, research_reward_curve).to_uint64();
-        BOOST_REQUIRE(total_votes.total_research_reward_weight == expected_research_reward_weight);
-        BOOST_REQUIRE(total_votes.total_active_research_reward_weight == expected_research_reward_weight);
-
-        BOOST_REQUIRE(total_votes.total_curators_reward_weight == expected_curator_reward_weight);
-        BOOST_REQUIRE(total_votes.total_active_curators_reward_weight == expected_curator_reward_weight);
+        BOOST_REQUIRE(total_votes.total_weight == expected_research_reward_weight);
 
         // Validate discipline
 
@@ -468,14 +463,10 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 
     // total_votes
     BOOST_REQUIRE(total_votes.total_weight == expected_tokens_amount);
-    BOOST_REQUIRE(total_votes.total_active_weight == expected_tokens_amount);
 
     uint64_t expected_research_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, research_reward_curve).to_uint64();
-    BOOST_REQUIRE(total_votes.total_research_reward_weight == expected_research_reward_weight);
-    BOOST_REQUIRE(total_votes.total_active_research_reward_weight == expected_research_reward_weight);
-
-    BOOST_REQUIRE(total_votes.total_curators_reward_weight == expected_curator_reward_weight);
-    BOOST_REQUIRE(total_votes.total_active_curators_reward_weight == expected_curator_reward_weight);
+    BOOST_REQUIRE(total_votes.total_weight == expected_research_reward_weight);
+    BOOST_REQUIRE(total_votes.total_weight == expected_curator_reward_weight);
 
     // Validate discipline
 
@@ -622,10 +613,8 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
          ///                                            ///
         //////////////////////////////////////////////////
 
-        auto& _research_group_1
-            = research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000, false);
-        auto& _research_group_2
-            = research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000, false);
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000, false);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000, false);
 
         research_group_invite_create(0, "bob", 0, 5000);
         research_group_invite_create(1, "bob", 1, 5000);
@@ -672,8 +661,8 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(31, "name", "permlink", "description", 200, 50, false);
-        auto& research_group_invite = research_group_invite_create(1, "bob", 31, 5000);
+        research_group_create(31, "name", "permlink", "description", 200, 50, false);
+        research_group_invite_create(1, "bob", 31, 5000);
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -2710,8 +2699,8 @@ BOOST_AUTO_TEST_CASE(research_update_apply)
         private_key_type priv_key = generate_private_key("alice");
 
         auto& research = research_create(0, "title", "abstract", "permlink", 31, 10, 10);
-        auto& research_group = research_group_create(31, "name", "permlink", "description", 100, 100, false);
-        auto& research_group_token = research_group_token_create(31, "alice", DEIP_100_PERCENT);
+        research_group_create(31, "name", "permlink", "description", 100, 100, false);
+        research_group_token_create(31, "alice", DEIP_100_PERCENT);
 
         research_update_operation op;
 
@@ -2895,8 +2884,6 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
     try
     {
         ACTORS_WITH_EXPERT_TOKENS((alice));
-
-        auto& research_service = db.obtain_service<dbs_research>();
 
         vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 9000), std::make_pair("bob", 1000) };
         setup_research_group(31, "name", "research_group", "research group", 0, 40, false, accounts);
@@ -3476,10 +3463,6 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         r.research_content_id = 0;
         r.discipline_id = 1;
         r.total_weight = 2000;
-        r.total_active_weight = 2000;
-        r.total_active_weight = 2000;
-        r.total_research_reward_weight = 2000;
-        r.total_active_research_reward_weight = 2000;
     });
 
     db.create<total_votes_object>([&](total_votes_object& r) {
@@ -3488,9 +3471,6 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         r.research_content_id = 0;
         r.discipline_id = 2;
         r.total_weight = 1000;
-        r.total_active_weight = 1000;
-        r.total_research_reward_weight = 100;
-        r.total_active_research_reward_weight = 1000;
     });
 
     const std::string json_str2 = "{\"research_id\": 1,"
@@ -3581,8 +3561,6 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        const review_object& review = db.get<review_object, by_id>(0);
-
         auto& dgpo = db.get_dynamic_global_properties();
 
         BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == 20000);
@@ -3615,7 +3593,6 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         db.push_transaction(tx, 0);
 
-        const review_vote_object& vote_for_review = db.get<review_vote_object, by_voter_discipline_and_review>(std::make_tuple("john", 1, 0));
         BOOST_CHECK(dgpo.used_expertise_per_block == 5000);
         BOOST_CHECK(dgpo.all_used_expertise == 25000);
 
@@ -3643,7 +3620,6 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         db.push_transaction(tx, 0);
 
-        const vote_object& vote_for_content = db.get<vote_object, by_voter_discipline_and_content>(std::make_tuple("john", 1, content.id));
         BOOST_CHECK(dgpo.used_expertise_per_block == 4750);
         BOOST_CHECK(dgpo.all_used_expertise == 29750);
     }

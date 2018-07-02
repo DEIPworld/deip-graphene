@@ -190,32 +190,32 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
 
     auto& research_content = research_content_service.create(data.research_id, data.type, data.title, data.content, data.permlink, data.authors, data.references, data.external_references);
 
-    std::map<discipline_id_type, total_votes_weights> total_votes_to_create;
-    std::map<discipline_id_type, share_type> disciplines_to_increase;
+    std::map<discipline_id_type, share_type> research_votes_per_discipline;
     if (data.type == research_content_type::final_result)
     {
         auto total_votes = vote_service.get_total_votes_by_research(research_content.research_id);
-        for (auto& t : total_votes)
+        for (auto& tv : total_votes)
         {
-            auto& total_vote = t.get();
-            total_votes_to_create[total_vote.discipline_id] += total_votes_weights(total_vote.total_weight,
-                                                                                   total_vote.total_active_weight,
-                                                                                   total_vote.total_research_reward_weight,
-                                                                                   total_vote.total_active_research_reward_weight);
+            auto& total_vote = tv.get();
+            research_votes_per_discipline[total_vote.discipline_id] += total_vote.total_weight;
         }
 
-        for (auto& total_vote : total_votes_to_create)
+        for (auto& tv : research_votes_per_discipline)
         {
-            auto& total_vote_for_final_result =  vote_service.create_total_votes(total_vote.first, research_content.research_id, research_content.id);
-            vote_service.update_total_votes_for_final_result(total_vote_for_final_result,
-                                                              total_vote.second.total_weight,
-                                                              total_vote.second.total_active_weight,
-                                                              total_vote.second.total_research_reward_weight,
-                                                              total_vote.second.total_active_research_reward_weight);
-            disciplines_to_increase[total_vote.first] +=  total_vote.second.total_active_research_reward_weight;
+            auto discipline_id = tv.first;
+            auto weight = tv.second;
+            auto& total_vote_for_final_result =  vote_service.create_total_votes(discipline_id, research_content.research_id, research_content.id);
+            db_impl().modify(total_vote_for_final_result, [&](total_votes_object& tv_o)
+            {
+                tv_o.total_weight = weight;
+            });
+
+            auto& discipline = db_impl().get<discipline_object, by_id>(discipline_id);
+            db_impl().modify(discipline, [&](discipline_object& d_o) {
+                d_o.total_active_research_reward_weight += weight;
+            });
         }
-        for (auto& disciplines : disciplines_to_increase)
-            discipline_service.increase_total_active_research_reward_weight(disciplines.first, disciplines.second);
+
     }
 }
 

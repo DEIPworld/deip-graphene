@@ -501,14 +501,6 @@ void vote_evaluator::do_apply(const vote_operation& o)
 
         _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
             t.total_weight += abs_used_tokens;
-            if (content_is_active) {
-                t.total_active_weight += abs_used_tokens;
-            }
-
-            t.total_research_reward_weight += evaluated_research_rshares;
-            if (content_is_active) {
-                t.total_active_research_reward_weight += evaluated_research_rshares;
-            }
         });
 
         if (content_is_active) {
@@ -573,14 +565,6 @@ void vote_evaluator::do_apply(const vote_operation& o)
             w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
             v.weight = w.to_uint64();
         });
-
-        _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
-            t.total_curators_reward_weight += vote.weight;
-            if (content_is_active) {
-                t.total_active_curators_reward_weight += vote.weight;
-            }
-        });
-
 
         auto& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
         dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(abs_used_tokens);
@@ -978,14 +962,6 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
                 _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
                     t.total_weight += abs_used_tokens;
-                    if (content_is_active) {
-                        t.total_active_weight += abs_used_tokens;
-                    }
-
-                    t.total_research_reward_weight += evaluated_research_rshares;
-                    if (content_is_active) {
-                        t.total_active_research_reward_weight += evaluated_research_rshares;
-                    }
                 });
 
                 auto& dgpo = _db.get_dynamic_global_properties();
@@ -1031,13 +1007,6 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                     w *= delta_t;
                     w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
                     v.weight = w.to_uint64();
-                });
-
-                _db._temporary_public_impl().modify(tvo, [&](total_votes_object& t) {
-                    t.total_curators_reward_weight += vote.weight;
-                    if (content_is_active) {
-                        t.total_active_curators_reward_weight += vote.weight;
-                    }
                 });
 
                 dynamic_global_properties_service.increase_all_used_and_used_per_block_expertise(abs_used_tokens);
