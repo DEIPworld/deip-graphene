@@ -1250,7 +1250,7 @@ share_type database::distribute_reward(const share_type reward)
     auto& discipline_service = obtain_service<dbs_discipline>();
 
     auto& dgpo = get_dynamic_global_properties();
-    auto total_disciplines_reward_weight = dgpo.total_active_disciplines_reward_weight.to_uint64();
+    auto total_disciplines_reward_weight = dgpo.total_disciplines_weight.to_uint64();
 
     // Distribute among all disciplines pools
     share_type used_reward = 0;
@@ -1258,11 +1258,11 @@ share_type database::distribute_reward(const share_type reward)
     auto disciplines = discipline_service.get_disciplines();
     for (auto& discipline_ref : disciplines) {
         const auto& discipline = discipline_ref.get();
-        if (discipline.total_active_reward_weight != 0)
+        if (discipline.total_weight != 0)
         {
             // Distribute among disciplines in all disciplines pool
             auto total_discipline_reward_share = util::calculate_share(reward,
-                                                                       discipline.total_active_reward_weight,
+                                                                       discipline.total_weight,
                                                                        total_disciplines_reward_weight);
             auto discipline_review_reward_pool_share = util::calculate_share(total_discipline_reward_share, DEIP_REVIEW_REWARD_POOL_SHARE_PERCENT);
             auto discipline_reward_share = total_discipline_reward_share - discipline_review_reward_pool_share;
@@ -1278,7 +1278,7 @@ share_type database::distribute_reward(const share_type reward)
 
 share_type database::reward_researches_in_discipline(const discipline_object& discipline, const share_type& reward)
 {
-    if (discipline.total_active_reward_weight == 0)
+    if (discipline.total_weight == 0)
         return 0;
 
     auto& content_service = obtain_service<dbs_research_content>();
@@ -1310,7 +1310,7 @@ share_type database::reward_researches_in_discipline(const discipline_object& di
         ++total_votes_itr;
     }
 
-    share_type total_discipline_contents_weight = discipline.total_active_research_reward_weight + total_reviews_weight;
+    share_type total_discipline_contents_weight = discipline.total_research_weight + total_reviews_weight;
 
 
     for (auto& kvp : total_weights_per_content) {
@@ -1601,14 +1601,14 @@ share_type database::allocate_rewards_to_reviews(const share_type &reward,
 
     auto& discipline = discipline_service.get_discipline(discipline_id);
 
-    if (discipline.total_active_review_reward_weight == 0)
+    if (discipline.total_review_weight == 0)
         return 0;
 
     share_type used_reward = 0;
 
     for (auto& review : reviews_to_reward) {
         auto review_reward_share = util::calculate_share(reward, review.reward_weights_per_discipline.at(discipline_id),
-                                                         discipline.total_active_review_reward_weight);
+                                                         discipline.total_review_weight);
         auto author_name = review.author;
         auto review_curators_reward_share = util::calculate_share(review_reward_share,
                                                                       DEIP_CURATORS_REWARD_SHARE_PERCENT);
@@ -1623,7 +1623,7 @@ share_type database::allocate_rewards_to_reviews(const share_type &reward,
 
         // reward expertise
         auto author_expertise = util::calculate_share(expertise_reward, review.reward_weights_per_discipline.at(discipline_id),
-                                                      discipline.total_active_review_reward_weight);
+                                                      discipline.total_review_weight);
 
         reward_with_expertise(author_name, discipline_id, author_expertise);
     }
@@ -1676,7 +1676,7 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
     const auto& discipline = discipline_service.get_discipline(discipline_id);
 
-    if(discipline.total_active_reward_weight == 0)
+    if(discipline.total_weight == 0)
         return 0;
 
     auto& research_service = obtain_service<dbs_research>();
@@ -1689,7 +1689,7 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
 
     std::map<research_group_id_type, share_type> grant_shares_per_research;
 
-    share_type total_active_research_reward_weight = discipline.total_active_research_reward_weight;
+    share_type total_active_research_reward_weight = discipline.total_research_weight;
     while (total_votes_itr != total_votes_idx.end())
     {
         const auto& research_content = research_content_service.get_content_by_id(total_votes_itr->research_content_id);
@@ -2814,8 +2814,8 @@ void database::process_content_activity_windows()
                         });
 
         modify(discipline_service.get_discipline(discipline_id), [&](discipline_object& d) {
-            //d.total_active_review_reward_weight -= expired_review_weight;
-            d.total_active_research_reward_weight -= expired_research_weight;
+            //d.total_review_weight -= expired_review_weight;
+            d.total_research_weight -= expired_research_weight;
         });
     }
 
@@ -2880,8 +2880,8 @@ void database::process_content_activity_windows()
                         });
 
         modify(discipline_service.get_discipline(discipline_id), [&](discipline_object& d) {
-            //d.total_active_review_reward_weight += resumed_review_weight;
-            d.total_active_research_reward_weight += resumed_research_weight;
+            //d.total_review_weight += resumed_review_weight;
+            d.total_research_weight += resumed_research_weight;
         });
     }
 }

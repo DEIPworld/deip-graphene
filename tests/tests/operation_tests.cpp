@@ -213,14 +213,14 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         auto& discipline_service = db.obtain_service<dbs_discipline>();
         auto& discipline = discipline_service.get_discipline(token.discipline_id);
 
-        BOOST_REQUIRE(discipline.total_active_reward_weight == expected_tokens_amount);
-        BOOST_REQUIRE(discipline.total_active_research_reward_weight == expected_research_reward_weight);
-        BOOST_REQUIRE(discipline.total_active_review_reward_weight == 0);
+        BOOST_REQUIRE(discipline.total_weight == expected_tokens_amount);
+        BOOST_REQUIRE(discipline.total_research_weight == expected_research_reward_weight);
+        BOOST_REQUIRE(discipline.total_review_weight == 0);
 
 
         // Validate global properties object
         auto& dgpo = db.get_dynamic_global_properties();
-        BOOST_REQUIRE(dgpo.total_active_disciplines_reward_weight == 10000);
+        BOOST_REQUIRE(dgpo.total_disciplines_weight == 10000);
 
         validate_database();
 
@@ -470,13 +470,13 @@ BOOST_AUTO_TEST_CASE(vote_apply_success)
 
     // Validate discipline
 
-    BOOST_REQUIRE(discipline.total_active_reward_weight == expected_tokens_amount);
-    BOOST_REQUIRE(discipline.total_active_research_reward_weight == expected_research_reward_weight);
-    BOOST_REQUIRE(discipline.total_active_review_reward_weight == 0);
+    BOOST_REQUIRE(discipline.total_weight == expected_tokens_amount);
+    BOOST_REQUIRE(discipline.total_research_weight == expected_research_reward_weight);
+    BOOST_REQUIRE(discipline.total_review_weight == 0);
 
     // Validate global properties object
     auto& dgpo = db.get_dynamic_global_properties();
-    BOOST_REQUIRE(dgpo.total_active_disciplines_reward_weight == expected_tokens_amount);
+    BOOST_REQUIRE(dgpo.total_disciplines_weight == expected_tokens_amount);
 
     validate_database();
 }
@@ -584,9 +584,9 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
     BOOST_REQUIRE(updated_review.curation_reward_weights_per_discipline.at(op.discipline_id) == expected_curator_reward_weight);
 
     // Validate discipline
-    BOOST_REQUIRE(discipline.total_active_reward_weight == 0);
-    BOOST_REQUIRE(discipline.total_active_research_reward_weight == 0);
-    BOOST_REQUIRE(discipline.total_active_review_reward_weight == expected_review_reward_weight);
+    BOOST_REQUIRE(discipline.total_weight == 0);
+    BOOST_REQUIRE(discipline.total_research_weight == 0);
+    BOOST_REQUIRE(discipline.total_review_weight == expected_review_reward_weight);
 
     // Validate review
     auto weight_modifier = db.calculate_review_weight_modifier(updated_review.id, discipline.id);
@@ -3507,8 +3507,8 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     auto& discipline = db.get<discipline_object, by_id>(1);
     auto& discipline2 = db.get<discipline_object, by_id>(2);
 
-    BOOST_CHECK(discipline.total_active_research_reward_weight == 2000);
-    BOOST_CHECK(discipline2.total_active_research_reward_weight == 1000);
+    BOOST_CHECK(discipline.total_research_weight == 2000);
+    BOOST_CHECK(discipline2.total_research_weight == 1000);
 }
 
 BOOST_AUTO_TEST_CASE(check_dgpo_used_power)

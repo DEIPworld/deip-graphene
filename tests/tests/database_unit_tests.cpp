@@ -297,9 +297,9 @@ public:
             d.id = discipline_service.get_disciplines().size();
             d.parent_id = 1;
             d.name = "Test Discipline With Weight";
-            d.total_active_review_reward_weight = 100;
-            d.total_active_research_reward_weight = 100;
-            d.total_active_reward_weight = 100;
+            d.total_review_weight = 100;
+            d.total_research_weight = 100;
+            d.total_weight = 100;
         });
     }
 
@@ -324,9 +324,9 @@ public:
             d.id = discipline_service.get_disciplines().size();
             d.parent_id = 1;
             d.name = "Test Discipline For Grant With Weight";
-            d.total_active_review_reward_weight = 150;
-            d.total_active_research_reward_weight = 150;
-            d.total_active_reward_weight = 150;
+            d.total_review_weight = 150;
+            d.total_research_weight = 150;
+            d.total_weight = 150;
         });
 
         db.create<total_votes_object>([&](total_votes_object& d) {
@@ -624,7 +624,7 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
         create_research_groups();
         create_research_group_tokens();
 
-        db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object& dgpo) { dgpo.total_active_disciplines_reward_weight = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_reward_weight.value; });
+        db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object& dgpo) { dgpo.total_disciplines_weight = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_weight.value; });
 
         share_type reward = 10000000;
 
@@ -665,8 +665,8 @@ BOOST_AUTO_TEST_CASE(grant_researches_in_discipline)
 
         BOOST_CHECK_NO_THROW(db.grant_researches_in_discipline(db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").id, grant));
 
-        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(1).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").total_active_reward_weight - db.get<total_votes_object>(3).total_weight));
-        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(2).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").total_active_reward_weight - db.get<total_votes_object>(3).total_weight));
+        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(1).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").total_weight - db.get<total_votes_object>(3).total_weight));
+        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(2).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").total_weight - db.get<total_votes_object>(3).total_weight));
     }
     FC_LOG_AND_RETHROW()
 }
@@ -692,8 +692,8 @@ BOOST_AUTO_TEST_CASE(process_grants)
 
        BOOST_CHECK_NO_THROW(db.process_grants());
 
-       BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(100, db.get<total_votes_object>(1).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_reward_weight));
-       BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(100, db.get<total_votes_object>(2).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_reward_weight));
+       BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(100, db.get<total_votes_object>(1).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_weight));
+       BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(100, db.get<total_votes_object>(2).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_weight));
 
    }
    FC_LOG_AND_RETHROW()

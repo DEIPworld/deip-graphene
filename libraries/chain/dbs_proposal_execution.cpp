@@ -212,7 +212,7 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
 
             auto& discipline = db_impl().get<discipline_object, by_id>(discipline_id);
             db_impl().modify(discipline, [&](discipline_object& d_o) {
-                d_o.total_active_research_reward_weight += weight;
+                d_o.total_research_weight += weight;
             });
         }
 
