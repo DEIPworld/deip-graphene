@@ -164,25 +164,6 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
     auto& vote_service = db_impl().obtain_service<dbs_vote>();
     auto& discipline_service = db_impl().obtain_service<dbs_discipline>();
 
-    struct total_votes_weights
-    {
-        total_votes_weights(share_type t_w = 0, share_type ta_w = 0, share_type trr_w = 0, share_type tarr_w = 0) :
-                total_weight(t_w), total_active_weight(ta_w), total_research_reward_weight(trr_w), total_active_research_reward_weight(tarr_w){}
-        share_type total_weight;
-        share_type total_active_weight;
-        share_type total_research_reward_weight;
-        share_type total_active_research_reward_weight;
-
-        total_votes_weights& operator += (const total_votes_weights& rvalue)
-        {
-            total_weight = total_weight + rvalue.total_weight;
-            total_active_weight = total_active_weight + rvalue.total_active_weight;
-            total_research_reward_weight = total_research_reward_weight + rvalue.total_research_reward_weight;
-            total_active_research_reward_weight = total_active_research_reward_weight + rvalue.total_active_research_reward_weight;
-            return *this;
-        }
-    };
-
     create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
 
     research_service.check_research_existence(data.research_id);
@@ -212,7 +193,7 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
 
             auto& discipline = db_impl().get<discipline_object, by_id>(discipline_id);
             db_impl().modify(discipline, [&](discipline_object& d_o) {
-                d_o.total_research_weight += weight;
+                d_o.total_active_weight += weight;
             });
         }
 

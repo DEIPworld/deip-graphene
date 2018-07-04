@@ -359,14 +359,12 @@ const account_object& database_fixture::account_create(const string& name, const
 
 const discipline_object& database_fixture::discipline_create(const discipline_id_type& id, 
                                                             const discipline_name_type& name, 
-                                                            const discipline_id_type& parent_id,
-                                                            const share_type& votes_in_last_ten_weeks)
+                                                            const discipline_id_type& parent_id)
 {
    const discipline_object& discipline = db.create<discipline_object>([&](discipline_object& d) {
             d.id = id;
             d.name = name;
             d.parent_id = parent_id;
-            d.votes_in_last_ten_weeks = votes_in_last_ten_weeks;
     });
 
     return discipline;
@@ -636,21 +634,18 @@ void database_fixture::create_disciplines()
         d.id = 1;
         d.name = "Physics";
         d.parent_id = 0;
-        d.votes_in_last_ten_weeks = 100;
     });
 
     db.create<discipline_object>([&](discipline_object& d) {
         d.id = 2;
         d.name = "Mathematics";
         d.parent_id = 0;
-        d.votes_in_last_ten_weeks = 150;
     });
 
     db.create<discipline_object>([&](discipline_object& d) {
         d.id = 3;
         d.name = "Cryptography";
         d.parent_id = 1;
-        d.votes_in_last_ten_weeks = 30;
     });
 }
 

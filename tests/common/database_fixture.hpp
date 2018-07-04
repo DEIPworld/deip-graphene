@@ -102,8 +102,7 @@ struct database_fixture
 
     const discipline_object& discipline_create(const discipline_id_type& id, 
                                                 const discipline_name_type& name, 
-                                                const discipline_id_type& parent_id,
-                                                const share_type& votes_in_last_ten_weeks);
+                                                const discipline_id_type& parent_id);
 
     const research_group_object& research_group_create(const int64_t& id,
                                                        const string& name, 

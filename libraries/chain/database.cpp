@@ -1258,11 +1258,11 @@ share_type database::distribute_reward(const share_type reward)
     auto disciplines = discipline_service.get_disciplines();
     for (auto& discipline_ref : disciplines) {
         const auto& discipline = discipline_ref.get();
-        if (discipline.total_weight != 0)
+        if (discipline.total_active_weight != 0)
         {
             // Distribute among disciplines in all disciplines pool
             auto total_discipline_reward_share = util::calculate_share(reward,
-                                                                       discipline.total_weight,
+                                                                       discipline.total_active_weight,
                                                                        total_disciplines_reward_weight);
             auto discipline_review_reward_pool_share = util::calculate_share(total_discipline_reward_share, DEIP_REVIEW_REWARD_POOL_SHARE_PERCENT);
             auto discipline_reward_share = total_discipline_reward_share - discipline_review_reward_pool_share;
@@ -1278,7 +1278,7 @@ share_type database::distribute_reward(const share_type reward)
 
 share_type database::reward_researches_in_discipline(const discipline_object& discipline, const share_type& reward)
 {
-    if (discipline.total_weight == 0)
+    if (discipline.total_active_weight == 0)
         return 0;
 
     auto& content_service = obtain_service<dbs_research_content>();
@@ -1288,8 +1288,6 @@ share_type database::reward_researches_in_discipline(const discipline_object& di
     auto total_votes_itr = total_votes_idx.find(discipline.id);
 
     share_type used_reward = 0;
-    share_type total_reviews_weight = 0;
-    map<research_content_id_type, share_type> total_weights_per_content;
 
     while (total_votes_itr != total_votes_idx.end())
     {
@@ -1297,27 +1295,11 @@ share_type database::reward_researches_in_discipline(const discipline_object& di
         auto& content = content_service.get_content_by_id(content_id);
         if (content.activity_state == research_content_activity_state::active)
         {
-            auto reviews = review_service.get_research_content_reviews(content_id);
-            auto reviews_weight = std::accumulate(reviews.begin(), reviews.end(), share_type(0),
-                                                  [&](share_type acc, std::reference_wrapper<const review_object> rw) {
-                                                      auto r = rw.get();
-                                                      return acc + r.get_weight(discipline.id);
-                                                  });
-            share_type research_weight_with_reviews = total_votes_itr->total_weight + reviews_weight;
-            total_weights_per_content[total_votes_itr->research_content_id] = std::max(int64_t(0), research_weight_with_reviews.value);
-            total_reviews_weight += reviews_weight;
+            auto weight = std::max(int64_t(0), total_votes_itr->total_weight.value);
+            auto research_content_share = util::calculate_share(reward, weight, discipline.total_active_weight);
+            used_reward += reward_research_content(content_id, discipline.id, research_content_share);
         }
         ++total_votes_itr;
-    }
-
-    share_type total_discipline_contents_weight = discipline.total_research_weight + total_reviews_weight;
-
-
-    for (auto& kvp : total_weights_per_content) {
-        auto& content_id = kvp.first;
-        auto& active_research_reward_weight = kvp.second;
-        auto research_content_share = util::calculate_share(reward, active_research_reward_weight, total_discipline_contents_weight);
-        used_reward += reward_research_content(content_id, discipline.id, research_content_share);
     }
 
     FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
@@ -1601,14 +1583,14 @@ share_type database::allocate_rewards_to_reviews(const share_type &reward,
 
     auto& discipline = discipline_service.get_discipline(discipline_id);
 
-    if (discipline.total_review_weight == 0)
+    if (discipline.total_active_weight == 0)
         return 0;
 
     share_type used_reward = 0;
 
     for (auto& review : reviews_to_reward) {
         auto review_reward_share = util::calculate_share(reward, review.weights_per_discipline.at(discipline_id),
-                                                         discipline.total_review_weight);
+                                                         discipline.total_active_weight);
         auto author_name = review.author;
         auto review_curators_reward_share = util::calculate_share(review_reward_share,
                                                                       DEIP_CURATORS_REWARD_SHARE_PERCENT);
@@ -1623,7 +1605,7 @@ share_type database::allocate_rewards_to_reviews(const share_type &reward,
 
         // reward expertise
         auto author_expertise = util::calculate_share(expertise_reward, review.weights_per_discipline.at(discipline_id),
-                                                      discipline.total_review_weight);
+                                                      discipline.total_active_weight);
 
         reward_with_expertise(author_name, discipline_id, author_expertise);
     }
@@ -1676,7 +1658,7 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
     const auto& discipline = discipline_service.get_discipline(discipline_id);
 
-    if(discipline.total_weight == 0)
+    if(discipline.total_active_weight == 0)
         return 0;
 
     auto& research_service = obtain_service<dbs_research>();
@@ -1689,7 +1671,7 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
 
     std::map<research_group_id_type, share_type> grant_shares_per_research;
 
-    share_type total_active_research_reward_weight = discipline.total_research_weight;
+    share_type total_active_research_reward_weight = discipline.total_active_weight;
     while (total_votes_itr != total_votes_idx.end())
     {
         const auto& research_content = research_content_service.get_content_by_id(total_votes_itr->research_content_id);
@@ -1796,7 +1778,6 @@ uint32_t database::last_non_undoable_block_num() const
 
 void database::initialize_evaluators()
 {
-    _my->_evaluator_registry.register_evaluator<vote_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_to_common_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_common_tokens_evaluator>();
@@ -2705,7 +2686,8 @@ void database::process_content_activity_windows()
 
     const auto& research_content_by_activity_end = get_index<research_content_index, by_activity_window_end>();
     auto itr_by_end = research_content_by_activity_end.begin();
-    std::map<discipline_id_type, std::map<research_content_type, share_type>> expired_active_weight;
+
+    std::map<discipline_id_type, share_type> expired_active_weight;
 
     // close activity windows for content with expired end point
     while (itr_by_end != research_content_by_activity_end.end() && itr_by_end->activity_window_end < now)
@@ -2774,24 +2756,12 @@ void database::process_content_activity_windows()
         auto rc_total_votes_refs = votes_service.get_total_votes_by_content(itr_by_end->id);
         for (auto wrapper : rc_total_votes_refs) {
             const total_votes_object& rc_total_votes = wrapper.get();
-
-            share_type expired_votes = rc_total_votes.total_weight;
-    
             if (expired_active_weight.find(rc_total_votes.discipline_id) != expired_active_weight.end()) {
-
-                std::map<research_content_type, share_type>& votes_by_content_type = expired_active_weight[rc_total_votes.discipline_id];
-
-                if (votes_by_content_type.find(itr_by_end->type) != votes_by_content_type.end()) {
-                    votes_by_content_type[itr_by_end->type] += expired_votes;
-                } else {
-                    votes_by_content_type[itr_by_end->type] = expired_votes;
-                }
-
+                expired_active_weight[rc_total_votes.discipline_id] += rc_total_votes.total_weight;
             } else {
-                expired_active_weight[rc_total_votes.discipline_id][itr_by_end->type] = expired_votes;
+                expired_active_weight[rc_total_votes.discipline_id] = rc_total_votes.total_weight;
             }
         }
-
         ++itr_by_end;
     }
 
@@ -2799,23 +2769,9 @@ void database::process_content_activity_windows()
     // decrease total active votes in discipline object
     for(auto it = expired_active_weight.begin(); it != expired_active_weight.end(); it++)
     {
-        discipline_id_type discipline_id = it->first;
-        std::map<research_content_type, share_type> votes_by_content_type = it->second;
-
-        // TODO: Recalculate weights for review
-
-//        share_type expired_review_weight =
-//            votes_by_content_type.find(research_content_type::review) != votes_by_content_type.end()
-//            ? votes_by_content_type[research_content_type::review] : share_type(0);
-
-        share_type expired_research_weight = std::accumulate( votes_by_content_type.begin(), votes_by_content_type.end(), share_type(0),
-                        [](share_type acc, std::pair<research_content_type, share_type> p) {
-                            return acc + p.second;
-                        });
-
-        modify(discipline_service.get_discipline(discipline_id), [&](discipline_object& d) {
-            //d.total_review_weight -= expired_review_weight;
-            d.total_research_weight -= expired_research_weight;
+        auto& discipline = discipline_service.get_discipline(it->first);
+        modify(discipline, [&](discipline_object& d) {
+            d.total_active_weight -= it->second;
         });
     }
 
@@ -2823,15 +2779,15 @@ void database::process_content_activity_windows()
 
     const auto& research_content_by_activity_start = get_index<research_content_index, by_activity_window_start>();
     auto itr_by_start = research_content_by_activity_start.begin();
-    std::map<discipline_id_type, std::map<research_content_type, share_type>> resumed_active_weight;
+    std::map<discipline_id_type, share_type> resumed_active_weight;
 
     // reopen activity windows for content with actual start point
     while (itr_by_start != research_content_by_activity_start.end() && itr_by_start->activity_window_start < now)
     {
         if(itr_by_start->activity_state == research_content_activity_state::pending)
         {
-            modify(research_content_service.get_content_by_id(itr_by_start->id),
-               [&](research_content_object& rc) {
+            auto& content = research_content_service.get_content_by_id(itr_by_start->id);
+            modify(content, [&](research_content_object& rc) {
                     rc.activity_state = research_content_activity_state::active;
             });
 
@@ -2839,49 +2795,22 @@ void database::process_content_activity_windows()
             auto rc_total_votes_refs = votes_service.get_total_votes_by_content(itr_by_start->id);
             for (auto wrapper : rc_total_votes_refs) {
                 const total_votes_object& rc_total_votes = wrapper.get();
-
-                share_type resumed_votes = rc_total_votes.total_weight;
-
                 if (resumed_active_weight.find(rc_total_votes.discipline_id) != resumed_active_weight.end()) {
-
-                    std::map<research_content_type, share_type>& votes_by_content_type = resumed_active_weight[rc_total_votes.discipline_id];
-
-                    if (votes_by_content_type.find(itr_by_start->type) != votes_by_content_type.end()) {
-                        votes_by_content_type[itr_by_start->type] += resumed_votes;
-                    } else {
-                        votes_by_content_type[itr_by_start->type] = resumed_votes;
-                    }
-
+                    resumed_active_weight[rc_total_votes.discipline_id] += rc_total_votes.total_weight;
                 } else {
-                    resumed_active_weight[rc_total_votes.discipline_id][itr_by_start->type] = resumed_votes;
+                    resumed_active_weight[rc_total_votes.discipline_id] = rc_total_votes.total_weight;
                 }
             }
         }
-
         ++itr_by_start;
     }
-
 
     // increase total active votes in discipline object
     for(auto it = resumed_active_weight.begin(); it != resumed_active_weight.end(); it++)
     {
-        discipline_id_type discipline_id = it->first;
-        std::map<research_content_type, share_type> votes_by_content_type = it->second;
-
-        // TODO: Recalculate weights for review
-
-//        share_type resumed_review_weight =
-//            votes_by_content_type.find(research_content_type::review) != votes_by_content_type.end()
-//            ? votes_by_content_type[research_content_type::review] : share_type(0);
-
-        share_type resumed_research_weight = std::accumulate( votes_by_content_type.begin(), votes_by_content_type.end(), share_type(0),
-                        [](share_type acc, std::pair<research_content_type, share_type> p) {
-                            return acc + p.second;
-                        });
-
-        modify(discipline_service.get_discipline(discipline_id), [&](discipline_object& d) {
-            //d.total_review_weight += resumed_review_weight;
-            d.total_research_weight += resumed_research_weight;
+        auto& discipline = discipline_service.get_discipline(it->first);
+        modify(discipline, [&](discipline_object& d) {
+            d.total_active_weight += it->second;
         });
     }
 }
@@ -2889,38 +2818,34 @@ void database::process_content_activity_windows()
 share_type database::calculate_review_weight_modifier(const review_id_type& review_id, const discipline_id_type& discipline_id)
 {
     dbs_review& review_service = obtain_service<dbs_review>();
-    dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
     dbs_vote& vote_service = obtain_service<dbs_vote>();
 
     auto& review = review_service.get(review_id);
     auto content_reviews = review_service.get_research_content_reviews(review.research_content_id);
 
     share_type total_expertise = 0;
-    share_type total_reviews_votes_weight = 0;
+    share_type total_weight = 0;
+    std::map<review_id_type, share_type> weights_per_review;
     for (auto review_wrapper : content_reviews) {
         auto& content_review = review_wrapper.get();
         total_expertise += content_review.expertise_amounts_used.at(discipline_id);
 
-        auto votes = vote_service.get_review_votes(content_review.id);
-        total_reviews_votes_weight += std::accumulate(votes.begin(), votes.end(), share_type(0),
-                                                              [](share_type acc, std::reference_wrapper<const review_vote_object> rvw) {
-                                                                  auto& rv = rvw.get();
-                                                                  return acc + rv.weight;
-                                                              });
+        auto votes = vote_service.get_review_votes_by_review_and_discipline(content_review.id, discipline_id);
+        auto review_weight = std::accumulate(votes.begin(), votes.end(), share_type(0), [](share_type acc, std::reference_wrapper<const review_vote_object> vw) {
+            auto& vote = vw.get();
+            return acc + vote.weight;
+        });
 
+        weights_per_review[content_review.id] = review_weight;
+        total_weight += review_weight;
     }
 
-    if (content_reviews.size() == 0 || total_reviews_votes_weight == 0) return 1;
+    if (content_reviews.size() == 0 || total_weight == 0) return 0;
 
     share_type avg_expertise = total_expertise / content_reviews.size();
-    auto review_votes = vote_service.get_review_votes(review.id);
-    share_type review_votes_weight = std::accumulate(review_votes.begin(), review_votes.end(), share_type(0),
-                                                     [](share_type acc, std::reference_wrapper<const review_vote_object> rvw) {
-                                                         auto& rv = rvw.get();
-                                                         return acc + rv.weight;
-                                                     });
-    auto& token = expert_token_service.get_expert_token_by_account_and_discipline(review.author, discipline_id);
-    return (token.amount / avg_expertise) + 10 * (1 - 1 / content_reviews.size()) * (review_votes_weight / total_reviews_votes_weight);
+    auto review_weight = weights_per_review[review.id];
+    auto review_used_expertise = review.expertise_amounts_used.at(discipline_id);
+    return 1 * (review_used_expertise / avg_expertise) + 10 * (1 - 1 / content_reviews.size()) * (review_weight / total_weight);
 }
 
 

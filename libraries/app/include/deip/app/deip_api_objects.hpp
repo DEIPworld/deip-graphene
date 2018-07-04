@@ -348,7 +348,6 @@ struct discipline_api_obj
         : id(d.id._id)
         ,  parent_id(d.parent_id._id)
         ,  name(d.name)
-        ,  votes_in_last_ten_weeks(d.votes_in_last_ten_weeks)
     {}
 
     // because fc::variant require for temporary object
@@ -896,7 +895,6 @@ FC_REFLECT( deip::app::discipline_api_obj,
             (id)
             (parent_id)
             (name)
-            (votes_in_last_ten_weeks)
           )
 
 
