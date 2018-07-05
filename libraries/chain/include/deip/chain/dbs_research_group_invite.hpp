@@ -31,7 +31,8 @@ public:
 
     const research_group_invite_object& create(const account_name_type& account_name,
                                                const research_group_id_type& research_group_id,
-                                               const share_type research_group_token_amount);
+                                               const share_type research_group_token_amount,
+                                               const std::string& cover_letter);
 
     const research_group_invite_object& get(const research_group_invite_id_type& research_group_invite_id);
 

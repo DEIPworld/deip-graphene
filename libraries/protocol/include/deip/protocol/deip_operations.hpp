@@ -438,14 +438,16 @@ struct invitee_type
     invitee_type()
     {
     }
-    invitee_type(const account_name_type& a, const uint32_t& t)
+    invitee_type(const account_name_type& a, const uint32_t& t, const std::string& c)
             : account(a)
             , research_group_tokens_in_percent(t)
+            , cover_letter(c)
     {
     }
 
     account_name_type account;
     uint32_t research_group_tokens_in_percent;
+    std::string cover_letter;
 };
 
 struct expertise_amount_pair_type
@@ -708,7 +710,7 @@ FC_REFLECT( deip::protocol::recover_account_operation, (account_to_recover)(new_
 FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) )
 
 // DEIP native operations
-FC_REFLECT( deip::protocol::invitee_type, (account)(research_group_tokens_in_percent) )
+FC_REFLECT( deip::protocol::invitee_type, (account)(research_group_tokens_in_percent)(cover_letter))
 FC_REFLECT( deip::protocol::expertise_amount_pair_type, (discipline_id)(amount) )
 FC_REFLECT( deip::protocol::create_grant_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
 FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent)(is_personal)(invitees))

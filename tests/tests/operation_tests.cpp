@@ -2536,9 +2536,9 @@ BOOST_AUTO_TEST_CASE(create_research_group_with_invitees_apply)
        op.permlink = "group";
        op.description = "group";
        op.quorum_percent = 1000;
-       op.invitees.push_back(invitee_type("bob", 1000));
-       op.invitees.push_back(invitee_type("sam", 1000));
-       op.invitees.push_back(invitee_type("corp", 6000));
+       op.invitees.push_back(invitee_type("bob", 1000, "good"));
+       op.invitees.push_back(invitee_type("sam", 1000, "best"));
+       op.invitees.push_back(invitee_type("corp", 6000, "bad"));
 
        BOOST_TEST_MESSAGE("--- Test");
        signed_transaction tx;
@@ -2564,12 +2564,15 @@ BOOST_AUTO_TEST_CASE(create_research_group_with_invitees_apply)
        BOOST_CHECK(rg_invite_bob.account_name == "bob");
        BOOST_CHECK(rg_invite_bob.research_group_id == 25);
        BOOST_CHECK(rg_invite_bob.research_group_token_amount == 1000);
+       BOOST_CHECK(rg_invite_bob.cover_letter == "good");
        BOOST_CHECK(rg_invite_sam.account_name == "sam");
        BOOST_CHECK(rg_invite_sam.research_group_id == 25);
        BOOST_CHECK(rg_invite_sam.research_group_token_amount == 1000);
+       BOOST_CHECK(rg_invite_sam.cover_letter == "best");
        BOOST_CHECK(rg_invite_corp.account_name == "corp");
        BOOST_CHECK(rg_invite_corp.research_group_id == 25);
        BOOST_CHECK(rg_invite_corp.research_group_token_amount == 6000);
+       BOOST_CHECK(rg_invite_corp.cover_letter == "bad");
    }
    FC_LOG_AND_RETHROW()
 }
