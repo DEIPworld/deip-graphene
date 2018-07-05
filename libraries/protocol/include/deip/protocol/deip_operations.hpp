@@ -70,7 +70,7 @@ struct account_update_operation : public base_operation
     }
 };
 
-    struct beneficiary_route_type
+struct beneficiary_route_type
 {
     beneficiary_route_type()
     {
