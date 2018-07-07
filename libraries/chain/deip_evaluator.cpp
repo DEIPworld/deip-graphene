@@ -431,7 +431,7 @@ void account_witness_vote_evaluator::do_apply(const account_witness_vote_operati
 //
 //        expert_token_service.check_expert_token_existence_by_account_and_discipline(o.voter, o.discipline_id);
 //
-//        const auto& content = research_content_service.get_content_by_id(o.research_content_id);
+//        const auto& content = research_content_service.get(o.research_content_id);
 //
 //        std::vector<discipline_id_type> target_disciplines;
 //
@@ -821,7 +821,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
-    auto content = research_content_service.get_content_by_id(op.research_content_id);
+    auto content = research_content_service.get(op.research_content_id);
 
     auto expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
     auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(content.research_id);
@@ -850,6 +850,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
             r.expertise_amounts_used[token.discipline_id] = token.amount;
             r.weights_per_discipline[token.discipline_id] = 0;
+            r.weight_modifiers[token.discipline_id] = 1;
         });
 
         _db._temporary_public_impl().create<total_votes_object>([&](total_votes_object& tv) {
@@ -857,6 +858,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             tv.research_content_id = content.id;
             tv.research_id = content.research_id;
             tv.total_weight = 0;
+            tv.research_content_type = content.type;
         });
 
         dynamic_global_properties_service.update_used_expertise(token.amount);

@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(get_research_group_tokens_by_account_name_test)
     {
         create_research_group_tokens();
 
-        auto research_group_tokens = data_service.get_research_group_tokens_by_account_name("alice");
+        auto research_group_tokens = data_service.get_tokens_by_account("alice");
 
         BOOST_CHECK(research_group_tokens.size() == 2);
         for (const research_group_token_object& token : research_group_tokens)
@@ -236,16 +236,16 @@ BOOST_AUTO_TEST_CASE(get_research_group_token_by_account_and_research_id_test)
     {
         create_research_group_tokens();
 
-        auto& research_group_token = data_service.get_research_group_token_by_account_and_research_group_id("alice", 21);
+        auto& research_group_token = data_service.get_token_by_account_and_research_group("alice", 21);
 
         BOOST_CHECK(research_group_token.id == 23);
         BOOST_CHECK(research_group_token.amount == DEIP_100_PERCENT);
         BOOST_CHECK(research_group_token.owner == "alice");
         BOOST_CHECK(research_group_token.research_group_id == 21);
 
-        BOOST_CHECK_THROW(data_service.get_research_group_token_by_account_and_research_group_id("alice", 4), fc::exception);
-        BOOST_CHECK_THROW(data_service.get_research_group_token_by_account_and_research_group_id("john", 1), fc::exception);
-        BOOST_CHECK_THROW(data_service.get_research_group_token_by_account_and_research_group_id("john", 5), fc::exception);
+        BOOST_CHECK_THROW(data_service.get_token_by_account_and_research_group("alice", 4), fc::exception);
+        BOOST_CHECK_THROW(data_service.get_token_by_account_and_research_group("john", 1), fc::exception);
+        BOOST_CHECK_THROW(data_service.get_token_by_account_and_research_group("john", 5), fc::exception);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -271,7 +271,7 @@ BOOST_AUTO_TEST_CASE(remove_token_test)
         create_research_group_tokens();
 
         BOOST_CHECK_NO_THROW(data_service.remove_token("alice", 21));
-        BOOST_CHECK_THROW(data_service.get_research_group_token_by_account_and_research_group_id("alice", 21), fc::exception);
+        BOOST_CHECK_THROW(data_service.get_token_by_account_and_research_group("alice", 21), fc::exception);
     }
     FC_LOG_AND_RETHROW()
 }

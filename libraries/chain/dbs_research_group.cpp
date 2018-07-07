@@ -64,8 +64,8 @@ const research_group_token_object& dbs_research_group::get_research_group_token_
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-dbs_research_group::research_group_token_refs_type dbs_research_group::get_research_group_tokens_by_account_name(const account_name_type
-                                                                                                                 &account_name) const
+dbs_research_group::research_group_token_refs_type dbs_research_group::get_tokens_by_account(const account_name_type
+                                                                                             &account_name) const
 {
     research_group_token_refs_type ret;
 
@@ -81,8 +81,7 @@ dbs_research_group::research_group_token_refs_type dbs_research_group::get_resea
     return ret;
 }
 
-dbs_research_group::research_group_token_refs_type
-dbs_research_group::get_research_group_tokens(const research_group_id_type &research_group_id) const
+dbs_research_group::research_group_token_refs_type dbs_research_group::get_research_group_tokens(const research_group_id_type &research_group_id) const
 {
     research_group_token_refs_type ret;
 
@@ -98,8 +97,9 @@ dbs_research_group::get_research_group_tokens(const research_group_id_type &rese
     return ret;
 }
 
-const research_group_token_object& dbs_research_group::get_research_group_token_by_account_and_research_group_id(const account_name_type &account,
-                                                                                           const research_group_id_type &research_group_id) const
+const research_group_token_object& dbs_research_group::get_token_by_account_and_research_group(
+        const account_name_type &account,
+        const research_group_id_type &research_group_id) const
 {
     try {
         return db_impl().get<research_group_token_object, by_owner>(boost::make_tuple(account, research_group_id));
@@ -133,26 +133,28 @@ void dbs_research_group::remove_token(const account_name_type& account,
                                       const research_group_id_type& research_group_id)
 {
     check_research_group_token_existence(account, research_group_id);
-    const research_group_token_object& token = get_research_group_token_by_account_and_research_group_id(account, research_group_id);
+    const research_group_token_object& token = get_token_by_account_and_research_group(account, research_group_id);
     db_impl().remove(token);
 }
 
-const research_group_object& dbs_research_group::increase_research_group_balance(const research_group_id_type& research_group_id,
-                                                                                 const asset& deips)
+const research_group_object& dbs_research_group::increase_balance(const research_group_id_type &research_group_id,
+                                                                  const asset &deips)
 {
     const research_group_object& research_group = get_research_group(research_group_id);
-    db_impl().modify(research_group, [&](research_group_object& rg) { rg.balance += deips; });
-
+    db_impl().modify(research_group, [&](research_group_object& rg) {
+        rg.balance += deips;
+    });
     return research_group;
 }
 
-const research_group_object& dbs_research_group::decrease_research_group_balance(const research_group_id_type& research_group_id,
-                                                                                 const asset& deips)
+const research_group_object& dbs_research_group::decrease_balance(const research_group_id_type &research_group_id,
+                                                                  const asset &deips)
 {
     const research_group_object& research_group = get_research_group(research_group_id);
     FC_ASSERT(research_group.balance >= deips, "Not enough funds");
-    db_impl().modify(research_group, [&](research_group_object& rg) { rg.balance -= deips; });
-
+    db_impl().modify(research_group, [&](research_group_object& rg) {
+        rg.balance -= deips;
+    });
     return research_group;
 }
 
@@ -221,10 +223,26 @@ const research_group_token_object& dbs_research_group::set_new_research_group_to
                                                                                            const account_name_type& owner,
                                                                                            const share_type new_amount)
 {
-    const research_group_token_object& research_group_token = get_research_group_token_by_account_and_research_group_id(owner, research_group_id);
+    const research_group_token_object& research_group_token = get_token_by_account_and_research_group(owner,
+                                                                                                      research_group_id);
     db_impl().modify(research_group_token, [&](research_group_token_object& rgo) { rgo.amount = new_amount; });
 
     return research_group_token;
+}
+
+const flat_set<account_name_type> dbs_research_group::get_members(const research_group_id_type& id) const
+{
+    flat_set<account_name_type> ret;
+
+    auto it_pair = db_impl().get_index<research_group_token_index>().indicies().get<by_research_group>().equal_range(id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.insert(it->owner);
+        ++it;
+    }
+    return ret;
 }
 
 } // namespace chain

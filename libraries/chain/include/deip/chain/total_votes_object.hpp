@@ -7,6 +7,7 @@
 
 #include <deip/chain/deip_object_types.hpp>
 #include <deip/chain/shared_authority.hpp>
+#include <deip/chain/research_content_object.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 
@@ -16,7 +17,6 @@ namespace deip {
 namespace chain {
 
 using deip::protocol::asset;
-
 
 class total_votes_object : public object<total_votes_object_type, total_votes_object>
 {
@@ -34,6 +34,7 @@ public:
     discipline_id_type discipline_id;
     research_id_type research_id;
     research_content_id_type research_content_id;
+    research_content_type research_content_type;
 
     share_type total_weight;
 };
@@ -43,6 +44,8 @@ struct by_research_id;
 struct by_research_content_id;
 struct by_research_and_discipline;
 struct by_content_and_discipline;
+struct by_research_content_type;
+struct by_discipline_and_research_content_type;
 
 typedef multi_index_container<total_votes_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -57,6 +60,10 @@ typedef multi_index_container<total_votes_object,
                         member<total_votes_object,
                                 discipline_id_type,
                                 &total_votes_object::discipline_id>>,
+                ordered_non_unique<tag<by_research_content_type>,
+                        member<total_votes_object,
+                                research_content_type,
+                                &total_votes_object::research_content_type>>,
                 ordered_non_unique<tag<by_research_and_discipline>,
                         composite_key<total_votes_object,
                                 member<total_votes_object,
@@ -65,6 +72,14 @@ typedef multi_index_container<total_votes_object,
                                 member<total_votes_object,
                                        discipline_id_type,
                                        &total_votes_object::discipline_id>>>,
+                ordered_non_unique<tag<by_discipline_and_research_content_type>,
+                        composite_key<total_votes_object,
+                                member<total_votes_object,
+                                        discipline_id_type,
+                                        &total_votes_object::discipline_id>,
+                                member<total_votes_object,
+                                        research_content_type,
+                                        &total_votes_object::research_content_type>>>,
                 ordered_unique<tag<by_content_and_discipline>,
                         composite_key<total_votes_object,
                                 member<total_votes_object,
@@ -82,7 +97,7 @@ typedef multi_index_container<total_votes_object,
 }
 }
 
-FC_REFLECT( deip::chain::total_votes_object,(id)(discipline_id)(research_id)(research_content_id)(total_weight))
+FC_REFLECT( deip::chain::total_votes_object,(id)(discipline_id)(research_id)(research_content_id)(total_weight)(research_content_type))
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::total_votes_object, deip::chain::total_votes_index )
 

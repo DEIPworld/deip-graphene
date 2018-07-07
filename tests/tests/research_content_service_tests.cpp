@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_id)
     try
     {
         create_researches_with_content();
-        auto announcement = data_service.get_content_by_id(3);
+        auto announcement = data_service.get(3);
         
         std::vector<string> authors;
         for (auto author : announcement.authors)
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(get_no_content_by_non_existing_id)
     try
     {
         create_researches_with_content();
-        BOOST_CHECK_THROW(data_service.get_content_by_id(10), fc::exception);
+        BOOST_CHECK_THROW(data_service.get(10), fc::exception);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
     try
     {
         create_researches_with_content();
-        auto contents = data_service.get_content_by_research_id(1);
+        auto contents = data_service.get_by_research_id(1);
 
         BOOST_CHECK(contents.size() == 3);
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(get_no_content_for_non_existing_research_by_id)
     try
     {
         create_researches_with_content();
-        auto contents = data_service.get_content_by_research_id(3);
+        auto contents = data_service.get_by_research_id(3);
         BOOST_CHECK(contents.size() == 0);
 
     }
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
     try
     {
         create_researches_with_content();
-        auto contents = data_service.get_content_by_research_id_and_content_type(2, research_content_type::announcement);
+        auto contents = data_service.get_by_research_and_type(2, research_content_type::announcement);
 
         BOOST_CHECK(contents.size() == 1);
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE(get_no_content_for_non_existing_research_by_id_and_content_
     try
     {
         create_researches_with_content();
-        auto contents = data_service.get_content_by_research_id_and_content_type(3, research_content_type::milestone);
+        auto contents = data_service.get_by_research_and_type(3, research_content_type::milestone);
         BOOST_CHECK(contents.size() == 0);
     }
     FC_LOG_AND_RETHROW()

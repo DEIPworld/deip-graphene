@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
 
         BOOST_TEST_MESSAGE("--- Test normal review creation");
         auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-        auto& content = db.create<research_content_object>([&](research_content_object& c) {
+        db.create<research_content_object>([&](research_content_object& c) {
             c.id = 1;
             c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
             c.research_id = research.id;
@@ -2815,8 +2815,9 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 31), fc::exception);
-        BOOST_CHECK(research_group_service.get_research_group_token_by_account_and_research_group_id("alice", 31).amount == DEIP_100_PERCENT);
+        BOOST_CHECK_THROW(research_group_service.get_token_by_account_and_research_group("bob", 31), fc::exception);
+        BOOST_CHECK(
+                research_group_service.get_token_by_account_and_research_group("alice", 31).amount == DEIP_100_PERCENT);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -2900,7 +2901,7 @@ BOOST_AUTO_TEST_CASE(exclude_member_with_research_token_compensation_test)
         auto& research_token_service = db.obtain_service<dbs_research_token>();
         auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", research.id);
 
-        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1), fc::exception);
+        BOOST_CHECK_THROW(research_group_service.get_token_by_account_and_research_group("bob", 1), fc::exception);
         BOOST_CHECK(research_token.account_name == "bob");
         BOOST_CHECK(research_token.amount == 300);
     }
@@ -3088,9 +3089,9 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
         db.push_transaction(tx, 0);
 
         auto &research_group_service = db.obtain_service<dbs_research_group>();
-        auto &alice_token = research_group_service.get_research_group_token_by_account_and_research_group_id("alice",
-                                                                                                             31);
-        auto &bobs_token = research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 31);
+        auto &alice_token = research_group_service.get_token_by_account_and_research_group("alice",
+                                                                                           31);
+        auto &bobs_token = research_group_service.get_token_by_account_and_research_group("bob", 31);
 
         BOOST_CHECK(alice_token.amount == 75 * DEIP_1_PERCENT);
         BOOST_CHECK(bobs_token.amount == 25 * DEIP_1_PERCENT);
@@ -3387,7 +3388,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     BOOST_CHECK(proposal.is_completed == true);
 
     auto& research_content_service = db.obtain_service<dbs_research_content>();
-    auto contents = research_content_service.get_content_by_research_id(1);
+    auto contents = research_content_service.get_by_research_id(1);
 
     BOOST_CHECK(contents.size() == 1);
     BOOST_CHECK(std::any_of(
@@ -3468,7 +3469,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         research_group_token_create(30, "john", DEIP_1_PERCENT * 60);
         research_group_token_create(30, "alice", DEIP_1_PERCENT * 40);
 
-        auto& content = db.create<research_content_object>([&](research_content_object& c) {
+        db.create<research_content_object>([&](research_content_object& c) {
             c.id = 1;
             c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
             c.research_id = research.id;
@@ -3581,7 +3582,7 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
 
         BOOST_TEST_MESSAGE("--- Test normal review creation");
         auto &research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-        auto &content = db.create<research_content_object>([&](research_content_object &c) {
+        db.create<research_content_object>([&](research_content_object &c) {
             c.id = 1;
             c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
             c.research_id = research.id;
@@ -3639,7 +3640,7 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
 
         db.push_transaction(tx2, 0);
 
-        auto &review_vote = db.get<review_vote_object>(0);
+        // TODO: Complete test
     }
     FC_LOG_AND_RETHROW()
 }

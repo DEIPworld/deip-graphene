@@ -256,7 +256,7 @@ BOOST_AUTO_TEST_CASE(vote_for_proposal)
 
          research_group_service.create_research_group_token(1, 10, "alice");
 
-         auto& token = research_group_service.get_research_group_token_by_account_and_research_group_id("alice", 1);
+         auto& token = research_group_service.get_token_by_account_and_research_group("alice", 1);
          auto& proposal = data_service.get_proposal(1);
          auto weight = token.amount;
 

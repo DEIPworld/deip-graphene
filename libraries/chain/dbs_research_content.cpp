@@ -59,7 +59,7 @@ const research_content_object& dbs_research_content::create(const research_id_ty
     return new_research_content;
 }
 
-const research_content_object& dbs_research_content::get_content_by_id(const research_content_id_type& id) const
+const research_content_object& dbs_research_content::get(const research_content_id_type& id) const
 {
     try {
         return db_impl().get<research_content_object, by_id>(id);
@@ -67,8 +67,8 @@ const research_content_object& dbs_research_content::get_content_by_id(const res
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-const research_content_object& dbs_research_content::get_content_by_permlink(const research_id_type &research_id,
-                                                                             const string &permlink) const
+const research_content_object& dbs_research_content::get_by_permlink(const research_id_type &research_id,
+                                                                     const string &permlink) const
 {
     const auto& idx = db_impl().get_index<research_content_index>().indices().get<by_permlink>();
     auto itr = idx.find(std::make_tuple(research_id, permlink));
@@ -76,7 +76,8 @@ const research_content_object& dbs_research_content::get_content_by_permlink(con
     return *itr;
 }
 
-dbs_research_content::research_content_refs_type dbs_research_content::get_content_by_research_id(const research_id_type& research_id) const
+dbs_research_content::research_content_refs_type dbs_research_content::get_by_research_id(
+        const research_id_type &research_id) const
 {
     research_content_refs_type ret;
     
@@ -95,7 +96,8 @@ dbs_research_content::research_content_refs_type dbs_research_content::get_conte
     return ret;
 }
 
-dbs_research_content::research_content_refs_type dbs_research_content::get_content_by_research_id_and_content_type(const research_id_type& research_id, const research_content_type& type) const
+dbs_research_content::research_content_refs_type dbs_research_content::get_by_research_and_type(
+        const research_id_type &research_id, const research_content_type &type) const
 {
     research_content_refs_type ret;
 

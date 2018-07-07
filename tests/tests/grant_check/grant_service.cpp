@@ -255,13 +255,12 @@ DEIP_TEST_CASE(check_get_grant_count)
 
 DEIP_TEST_CASE(allocate_cash_per_block)
 {
-    asset balance(GRANT_BALANCE_DEFAULT, DEIP_SYMBOL);
-
     const auto& grant = grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE);
 
-    auto cash = grant_service.allocate_funds(grant);
-
-    BOOST_REQUIRE_EQUAL(cash.amount, 200); // wait next block
+    for (auto i = 0; i < END_BLOCK - START_BLOCK; i++) {
+        auto cash = grant_service.allocate_funds(grant);
+        BOOST_REQUIRE_EQUAL(cash.amount, grant.per_block);
+    }
 }
 
 // TODO rework this test

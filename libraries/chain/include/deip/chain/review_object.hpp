@@ -27,9 +27,9 @@ public:
 
     template <typename Constructor, typename Allocator>
     review_object(Constructor &&c, allocator<Allocator> a) : content(a)
-            , weights_per_discipline(a)
             , disciplines(a)
             , references(a)
+            , weights_per_discipline(a)
             , weight_modifiers(a)
             , expertise_amounts_used(a)
     {
@@ -42,18 +42,19 @@ public:
     bool is_positive = true;
     account_name_type author;
     time_point_sec created_at;
-    discipline_id_share_type_map weights_per_discipline;
     discipline_id_type_set disciplines;
     research_content_id_type_set references;
     // TODO: Add external references
 
+    discipline_id_share_type_map weights_per_discipline;
     discipline_id_share_type_map weight_modifiers;
     discipline_id_share_type_map expertise_amounts_used;
 
     share_type get_weight(const discipline_id_type& discipline_id) const {
         if (weight_modifiers.count(discipline_id) == 0)
             return 0;
-        FC_ASSERT(expertise_amounts_used.count(discipline_id) != 0, "Review is not made within discipline_id={d}", ("d", discipline_id));
+        FC_ASSERT(expertise_amounts_used.count(discipline_id) != 0,
+                  "Review is not made within discipline_id={d}", ("d", discipline_id));
 
         auto& modifier = weight_modifiers.at(discipline_id);
         auto sign = is_positive ? 1 : -1;

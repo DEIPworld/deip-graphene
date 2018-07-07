@@ -51,7 +51,7 @@ void dbs_proposal_execution::dropout(const proposal_object& proposal)
 
     proposal_service.remove_proposal_votes(data.name, data.research_group_id);
 
-    auto& token = research_group_service.get_research_group_token_by_account_and_research_group_id(data.name, data.research_group_id);
+    auto& token = research_group_service.get_token_by_account_and_research_group(data.name, data.research_group_id);
 
     auto researches = research_service.get_researches_by_research_group(data.research_group_id);
     for (auto& r : researches)
@@ -136,7 +136,7 @@ void dbs_proposal_execution::send_funds(const proposal_object &proposal)
     FC_ASSERT((research_group.balance.amount - data.funds >= 0), "Research balance is less than amount (result amount < 0)");
 
     account_service.increase_balance(account, data.funds);
-    research_group_service.decrease_research_group_balance(proposal.research_group_id, data.funds);
+    research_group_service.decrease_balance(proposal.research_group_id, data.funds);
 }
 
 void dbs_proposal_execution::rebalance_research_group_tokens(const proposal_object& proposal)
