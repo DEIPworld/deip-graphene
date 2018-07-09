@@ -164,8 +164,6 @@ void database::init_genesis_global_property_object(const genesis_state_type& gen
         gpo.participation_count = 128;
         gpo.current_supply = asset(genesis_state.init_supply, DEIP_SYMBOL);
         gpo.maximum_block_size = DEIP_MAX_BLOCK_SIZE;
-
-        gpo.total_reward_fund_deip = asset(0, DEIP_SYMBOL);
     });
 }
 

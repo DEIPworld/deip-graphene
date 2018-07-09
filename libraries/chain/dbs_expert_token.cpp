@@ -19,24 +19,15 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
     const auto& cprops = db_impl().get_dynamic_global_properties();
     const auto& to_account = db_impl().get<account_object, by_name>(account);
 
-    if (discipline_id != 0)
-    {
-        auto& account_service = db_impl().obtain_service<dbs_account>();
+    auto& account_service = db_impl().obtain_service<dbs_account>();
+    
+    FC_ASSERT(discipline_id != 0, "You cannot create expert token with discipline 0");
 
-        db_impl().modify(to_account, [&](account_object& to) { to.total_expert_tokens_amount += amount; });
-        db_impl().modify(cprops,
-                         [&](dynamic_global_property_object& props) { props.total_expert_tokens_amount += amount; });
+    db_impl().modify(to_account, [&](account_object& to) { to.total_expert_tokens_amount += amount; });
+    db_impl().modify(cprops,
+                     [&](dynamic_global_property_object& props) { props.total_expert_tokens_amount += amount; });
 
-        account_service.adjust_proxied_witness_votes(to_account, amount);
-    }
-    else
-    {
-        db_impl().modify(to_account, [&](account_object& to) { to.total_common_tokens_amount += amount; });
-        db_impl().modify(cprops,
-                         [&](dynamic_global_property_object& props) { props.total_common_tokens_amount += amount; });
-        db_impl().modify(cprops,
-                         [&](dynamic_global_property_object& props) { props.total_common_tokens_fund_deip += asset(amount, DEIP_SYMBOL); });
-    }
+    account_service.adjust_proxied_witness_votes(to_account, amount);
 
     auto& token = db_impl().create<expert_token_object>([&](expert_token_object& token) {
         token.account_name = account;
@@ -46,26 +37,6 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
     });
 
     return token;
-}
-
-const expert_token_object& dbs_expert_token::increase_common_tokens(const account_name_type& account,
-                                                                    const share_type& amount)
-{
-    const auto& cprops = db_impl().get_dynamic_global_properties();
-    const auto& to_account = db_impl().get<account_object, by_name>(account);
-    const auto& common_token = get_expert_token_by_account_and_discipline(account, 0);
-
-    db_impl().modify(to_account, [&](account_object& acnt) { acnt.total_common_tokens_amount += amount; });
-    db_impl().modify(cprops,
-                     [&](dynamic_global_property_object& props) { props.total_common_tokens_amount += amount; });
-    db_impl().modify(cprops, [&](dynamic_global_property_object& props) {
-        props.total_common_tokens_fund_deip += asset(amount, DEIP_SYMBOL);
-    });
-    db_impl().modify(common_token, [&](expert_token_object& token) {
-        token.amount += amount;
-    });
-
-    return get_expert_token_by_account_and_discipline(account, 0);
 }
 
 const expert_token_object& dbs_expert_token::get_expert_token(const expert_token_id_type& id) const

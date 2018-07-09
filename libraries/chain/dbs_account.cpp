@@ -94,7 +94,7 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
 
     if (fee.amount > 0)
     {
-        expert_token_service.create(new_account_name, 0, fee.amount);
+        db_impl().modify(get_account(new_account_name), [&](account_object& a) { a.total_common_tokens_amount += fee.amount; });
     }
 
     return new_account;

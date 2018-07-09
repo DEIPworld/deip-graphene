@@ -33,8 +33,6 @@ public:
     */
     const expert_token_object& get_expert_token(const expert_token_id_type& id) const;
 
-    const expert_token_object& increase_common_tokens(const account_name_type &account, const share_type& amount);
-
     /* Get expert token by account name & discipline
     * @returns expert token in specified discipline for account
     */

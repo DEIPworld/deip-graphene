@@ -1007,8 +1007,6 @@ void database::process_common_tokens_withdrawals()
                 {
                     const auto& to_account = get(itr->to_account);
 
-                    modify(to_account, [&](account_object& a) { a.total_common_tokens_amount += to_deposit; });
-
                     account_service.adjust_proxied_witness_votes(to_account, to_deposit);
 
                     push_virtual_operation(fill_common_tokens_withdraw_operation(from_account.name, to_account.name,
@@ -1037,7 +1035,6 @@ void database::process_common_tokens_withdrawals()
                     modify(to_account, [&](account_object& a) { a.balance += converted_deip; });
 
                     modify(cprops, [&](dynamic_global_property_object& o) {
-                        o.total_common_tokens_fund_deip -= converted_deip;
                         o.total_common_tokens_amount -= to_deposit;
                     });
 
@@ -1069,7 +1066,6 @@ void database::process_common_tokens_withdrawals()
         });
 
         modify(cprops, [&](dynamic_global_property_object& o) {
-            o.total_common_tokens_fund_deip -= converted_deip;
             o.total_common_tokens_amount -= to_convert;
         });
 
@@ -1097,6 +1093,7 @@ void database::process_common_tokens_withdrawals()
 void database::process_funds()
 {
     dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
+    dbs_account& account_service = obtain_service<dbs_account>();
 
     const auto& props = get_dynamic_global_properties();
     const auto& wso = get_witness_schedule_object();
@@ -1139,14 +1136,9 @@ void database::process_funds()
         p.current_supply += asset(new_deip, DEIP_SYMBOL);
     });
 
-    if (expert_token_service.is_expert_token_existence_by_account_and_discipline(get_account(cwit.owner).name, 0))
-    {
-        expert_token_service.increase_common_tokens(get_account(cwit.owner).name, witness_reward);
-    }
-    else
-    {
-        expert_token_service.create(get_account(cwit.owner).name, 0, witness_reward);
-    }
+    account_service.check_account_existence(cwit.owner);
+    modify(get_account(cwit.owner),
+                       [&](account_object& a) { a.total_common_tokens_amount += witness_reward; });
 
     // witness_reward = producer_reward because 1 DEIP = 1 Common Token. Add producer_reward as separate value if 1 DEIP != 1 Common Token
     push_virtual_operation(producer_reward_operation(cwit.owner, witness_reward));
@@ -2496,7 +2488,6 @@ void database::adjust_supply(const asset& delta, bool adjust_common_token)
             // TODO: remove unusable value
             asset new_common_token((adjust_common_token && delta.amount > 0) ? delta.amount * 9 : 0, DEIP_SYMBOL);
             props.current_supply += delta + new_common_token;
-            props.total_common_tokens_fund_deip += new_common_token;
             assert(props.current_supply.amount.value >= 0);
             break;
         }
@@ -2646,12 +2637,12 @@ void database::validate_invariants() const
             total_supply += itr->reward_balance;
         }
 
-        total_supply +=  gpo.total_common_tokens_fund_deip + gpo.total_reward_fund_deip;
+        total_supply += asset(gpo.total_common_tokens_amount, DEIP_SYMBOL);
 
         FC_ASSERT(gpo.current_supply == total_supply, "",
                   ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));
         FC_ASSERT(gpo.total_common_tokens_amount == total_common_tokens_amount, "",
-                  ("gpo.total_common_tokens_amount", gpo.total_common_tokens_amount)("total_common_tokens", total_common_tokens_amount));
+                  ("gpo.total_common_tokens_ amount", gpo.total_common_tokens_amount)("total_common_tokens", total_common_tokens_amount));
         FC_ASSERT(gpo.total_expert_tokens_amount == total_expert_tokens_amount, "",
                   ("gpo.total_expert_tokens", gpo.total_expert_tokens_amount)("total_expert_tokens", total_expert_tokens_amount));
 
