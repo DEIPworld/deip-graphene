@@ -13,7 +13,7 @@ namespace chain {
 class research_group_invite_object : public object<research_group_invite_object_type, research_group_invite_object>
 {
 public:
-    template <typename Constructor, typename Allocator> research_group_invite_object(Constructor&& c, allocator<Allocator> a)
+    template <typename Constructor, typename Allocator> research_group_invite_object(Constructor&& c, allocator<Allocator> a) : cover_letter(a)
     {
         c(*this);
     }
@@ -25,6 +25,7 @@ public:
     research_group_id_type research_group_id;
     share_type research_group_token_amount;
     fc::time_point_sec expiration_time;
+    fc::shared_string cover_letter;
 
 };
 
@@ -68,6 +69,6 @@ typedef multi_index_container<research_group_invite_object,
 
 
 
-FC_REFLECT(deip::chain::research_group_invite_object, (id)(account_name)(research_group_id)(research_group_token_amount)(expiration_time))
+FC_REFLECT(deip::chain::research_group_invite_object, (id)(account_name)(research_group_id)(research_group_token_amount)(expiration_time)(cover_letter))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_group_invite_object, deip::chain::research_group_invite_index)

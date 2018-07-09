@@ -864,7 +864,7 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
     for (const auto& invitee : op.invitees)
     {
         account_service.check_account_existence(invitee.account);
-        research_group_invite_service.create(invitee.account, research_group.id, invitee.research_group_tokens_in_percent);
+        research_group_invite_service.create(invitee.account, research_group.id, invitee.research_group_tokens_in_percent, invitee.cover_letter);
     }
 }
 
