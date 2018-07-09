@@ -494,9 +494,6 @@ BOOST_AUTO_TEST_CASE(fund_review_pool)
         auto& discipline = db.get<discipline_object>(10);
         BOOST_CHECK_NO_THROW(db.fund_review_pool(discipline, reward));
 
-        auto& group_1 = db.get<research_group_object>(31);
-        auto& group_2 = db.get<research_group_object>(32);
-
         BOOST_CHECK(alice.balance.amount == 475);
         BOOST_CHECK(bob.balance.amount == 475);
         BOOST_CHECK(jack.balance.amount == 20);
@@ -555,16 +552,17 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
         create_discipline_with_weight();
         create_research_contents();
         create_reviews();
+        create_review_votes();
         create_researches();
-        create_votes();
         create_total_votes();
         create_research_tokens();
         create_research_groups();
         create_research_group_tokens();
 
         share_type reward = 1000;
+        auto used_reward = share_type(0);
 
-        BOOST_CHECK_NO_THROW(db.distribute_reward(reward));
+        BOOST_CHECK_NO_THROW(used_reward = db.distribute_reward(reward));
 
         auto& rg31 = db.get<research_group_object>(31);
         auto& rg32 = db.get<research_group_object>(32);
@@ -572,8 +570,8 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
         BOOST_CHECK(rg31.balance.amount == 428);
         BOOST_CHECK(rg32.balance.amount == 213);
 
-        BOOST_CHECK(alice.balance.amount == 107);
-        BOOST_CHECK(bob.balance.amount == 150);
+        BOOST_CHECK(alice.balance.amount == 131);
+        BOOST_CHECK(bob.balance.amount == 174);
 
         auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
         auto alex_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alex", 10));
