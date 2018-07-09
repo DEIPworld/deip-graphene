@@ -1565,17 +1565,19 @@ share_type database::allocate_rewards_to_reviews(const std::vector<review_object
                                                  const share_type &reward, const share_type &expertise_reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
-    dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
 
-    auto& discipline = discipline_service.get_discipline(discipline_id);
-    if (discipline.total_active_weight == 0)
-        return 0;
+    share_type total_reviews_weight = std::accumulate(reviews.begin(), reviews.end(), share_type(0),
+                    [&](share_type acc, review_object r) {
+                        return acc + r.weights_per_discipline.at(discipline_id);
+                    });
+
+    if (total_reviews_weight == 0) return 0;
 
     share_type used_reward = 0;
 
     for (auto& review : reviews) {
         auto review_reward_share = util::calculate_share(reward, review.weights_per_discipline.at(discipline_id),
-                                                         discipline.total_active_weight);
+                                                         total_reviews_weight);
         auto author_name = review.author;
         auto review_curators_reward_share = util::calculate_share(review_reward_share,
                                                                       DEIP_CURATORS_REWARD_SHARE_PERCENT);
@@ -1592,7 +1594,7 @@ share_type database::allocate_rewards_to_reviews(const std::vector<review_object
         // reward expertise
         if (expertise_reward != 0) {
             auto author_expertise = util::calculate_share(expertise_reward, review.weights_per_discipline.at(discipline_id),
-                                                          discipline.total_active_weight);
+                                                          total_reviews_weight);
             reward_account_with_expertise(author_name, discipline_id, author_expertise);
         }
     }
