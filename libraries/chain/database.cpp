@@ -1250,11 +1250,12 @@ share_type database::distribute_reward(const share_type reward)
     auto& discipline_service = obtain_service<dbs_discipline>();
     auto disciplines = discipline_service.get_disciplines();
 
-    auto total_disciplines_weight = std::accumulate(disciplines.begin(), disciplines.end(), share_type(0),
-        [](share_type acc, std::reference_wrapper<const discipline_object> discipline_ref) {
-            auto& discipline = discipline_ref.get();
-            return acc + discipline.total_active_weight;
-        });
+    share_type total_disciplines_weight = share_type(0);
+
+    for (uint32_t i = 0; i < disciplines.size(); i++) {
+        auto& discipline = disciplines.at(i).get();
+        total_disciplines_weight += discipline.total_active_weight;
+    }
 
     // Distribute among all disciplines pools
     share_type used_reward = 0;
@@ -1560,10 +1561,11 @@ share_type database::allocate_rewards_to_reviews(const std::vector<review_object
 {
     dbs_account& account_service = obtain_service<dbs_account>();
 
-    share_type total_reviews_weight = std::accumulate(reviews.begin(), reviews.end(), share_type(0),
-                    [&](share_type acc, review_object r) {
-                        return acc + r.weights_per_discipline.at(discipline_id);
-                    });
+    share_type total_reviews_weight = share_type(0);
+
+    for (uint32_t i = 0; i < reviews.size(); i++) {
+        total_reviews_weight += reviews.at(i).weights_per_discipline.at(discipline_id);
+    }
 
     if (total_reviews_weight == 0) return 0;
 
@@ -2773,13 +2775,15 @@ share_type database::calculate_review_weight_modifier(const review_id_type& revi
         total_expertise += content_review.expertise_amounts_used.at(discipline_id);
 
         auto votes = vote_service.get_review_votes_by_review_and_discipline(content_review.id, discipline_id);
-        auto review_weight = std::accumulate(votes.begin(), votes.end(), share_type(0), [](share_type acc, std::reference_wrapper<const review_vote_object> vw) {
-            auto& vote = vw.get();
-            return acc + vote.weight;
-        });
+        share_type votes_weight = share_type(0);
 
-        weights_per_review[content_review.id] = review_weight;
-        total_weight += review_weight;
+        for (uint32_t i = 0; i < votes.size(); i++) {
+            auto& vote = votes.at(i).get();
+            votes_weight += vote.weight;
+        }
+
+        weights_per_review[content_review.id] = votes_weight;
+        total_weight += votes_weight;
     }
 
     if (content_reviews.size() == 0 || total_weight == 0) return 0;
