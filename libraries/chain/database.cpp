@@ -2624,6 +2624,7 @@ void database::validate_invariants() const
 
         for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr)
         {
+            string str = itr->name;
             total_supply += itr->balance;
             total_common_tokens_amount += itr->total_common_tokens_amount;
             total_expert_tokens_amount += itr->total_expert_tokens_amount;
