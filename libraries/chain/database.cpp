@@ -1529,24 +1529,25 @@ share_type database::fund_review_pool(const discipline_object& discipline, const
     auto& vote_service = obtain_service<dbs_vote>();
     auto& review_service = obtain_service<dbs_review>();
 
-    auto review_votes = vote_service.get_review_votes_by_discipline(discipline.id);
-
+    flat_set<review_id_type> reviews_ids;
     std::vector<review_object> reviews;
+
     share_type used_reward = 0;
 
-    auto filtered_reviews_ids = review_votes | boost::adaptors::transformed([](std::reference_wrapper<const review_vote_object> wrapper) {
-        auto& vote = wrapper.get();
-        return vote.review_id;
-    });
+    auto it_pair = get_index<review_vote_index>().indicies().get<by_discipline_id>().equal_range(discipline.id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        auto id = it->review_id;
+        if (reviews_ids.count(id) == 0)
+        {
+            reviews_ids.insert(id);
 
-    std::vector<review_id_type> reviews_ids(boost::begin(filtered_reviews_ids), boost::end(filtered_reviews_ids));
-    std::sort(reviews_ids.begin(), reviews_ids.end());
-
-    auto unique_ids = boost::adaptors::unique(reviews_ids);
-
-    for (auto id : unique_ids) {
-        auto& review = review_service.get(id);
-        reviews.push_back(review);
+            auto& review = review_service.get(id);
+            reviews.push_back(review);
+        }
+        ++it;
     }
 
     used_reward = allocate_rewards_to_reviews(reviews, discipline.id, amount, 0);
