@@ -311,10 +311,8 @@ public:
     share_type reward_research_token_holders(const research_object& research,
                                        const discipline_id_type& discipline_id,
                                        const share_type& reward);
-    share_type reward_references(const research_content_id_type& research_content_id,
-                                 const discipline_id_type& discipline_id,
-                                 const share_type& reward,
-                                 const share_type& expertise_reward);
+    share_type reward_references(const research_content_id_type &research_content_id,
+                                     const discipline_id_type &discipline_id, const share_type &reward);
     share_type reward_reviews(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id,
                                   const share_type &reward, const share_type &expertise_reward);
     share_type reward_review_voters(const review_object &review,

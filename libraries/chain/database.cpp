@@ -1250,7 +1250,7 @@ share_type database::distribute_reward(const share_type reward)
     auto& discipline_service = obtain_service<dbs_discipline>();
     auto disciplines = discipline_service.get_disciplines();
 
-    auto total_disciplines_reward_weight = std::accumulate(disciplines.begin(), disciplines.end(), share_type(0),
+    auto total_disciplines_weight = std::accumulate(disciplines.begin(), disciplines.end(), share_type(0),
         [](share_type acc, std::reference_wrapper<const discipline_object> discipline_ref) {
             auto& discipline = discipline_ref.get();
             return acc + discipline.total_active_weight;
@@ -1264,7 +1264,7 @@ share_type database::distribute_reward(const share_type reward)
         if (discipline.total_active_weight != 0)
         {
             // Distribute among disciplines in all disciplines pool
-            auto discipline_reward_share = util::calculate_share(reward, discipline.total_active_weight, total_disciplines_reward_weight);
+            auto discipline_reward_share = util::calculate_share(reward, discipline.total_active_weight, total_disciplines_weight);
             // TODO: Adjustable review reward pool share
             auto discipline_review_reward_pool_share = util::calculate_share(discipline_reward_share, DEIP_REVIEW_REWARD_POOL_SHARE_PERCENT);
             discipline_reward_share -= discipline_review_reward_pool_share;
@@ -1322,9 +1322,8 @@ share_type database::reward_research_content(const research_content_id_type& res
     auto review_share = util::calculate_share(reward, research.review_share_in_percent);
     auto token_holders_share = reward - references_share - review_share;
 
-    auto references_expertise_share = util::calculate_share(reward, DEIP_EXPERTISE_REFERENCES_REWARD_SHARE_PERCENT);
     auto review_expertise_share = util::calculate_share(reward, research.review_share_in_percent);
-    auto authors_expertise_share = reward - references_expertise_share - review_expertise_share;
+    auto authors_expertise_share = reward - review_expertise_share;
 
     FC_ASSERT(token_holders_share + review_share + references_share <= reward,
               "Attempt to allocate funds amount that is greater than reward amount");
@@ -1334,7 +1333,7 @@ share_type database::reward_research_content(const research_content_id_type& res
     reward_research_authors_with_expertise(research, research_content, discipline_id, authors_expertise_share);
 
     used_reward += reward_research_token_holders(research, discipline_id, token_holders_share);
-    used_reward += reward_references(research_content_id, discipline_id, references_share, references_expertise_share);
+    used_reward += reward_references(research_content_id, discipline_id, references_share);
     used_reward += reward_reviews(research_content_id, discipline_id, review_share, review_expertise_share);
 
     FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
@@ -1377,10 +1376,8 @@ share_type database::reward_research_token_holders(const research_object& resear
     return used_reward;
 }
 
-share_type database::reward_references( const research_content_id_type& research_content_id,
-                                        const discipline_id_type& discipline_id,
-                                        const share_type& reward,
-                                        const share_type& expertise_reward)
+share_type database::reward_references(const research_content_id_type &research_content_id,
+                                       const discipline_id_type &discipline_id, const share_type &reward)
 {
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
@@ -1404,10 +1401,6 @@ share_type database::reward_references( const research_content_id_type& research
         auto total_votes_itr = idx.find(std::make_tuple(content_id, discipline_id));
         if (total_votes_itr != idx.end()) {
             auto& research = research_service.get_research(total_votes_itr->research_id);
-            auto& research_content = research_content_service.get(total_votes_itr->research_content_id);
-
-            auto expertise_reward_share = util::calculate_share(expertise_reward, total_votes_itr->total_weight, total_votes_amount);
-            reward_research_authors_with_expertise(research, research_content, discipline_id, expertise_reward_share);
 
             auto reward_share = util::calculate_share(reward, total_votes_itr->total_weight, total_votes_amount);
             used_reward += reward_research_token_holders(research, discipline_id, reward_share);
