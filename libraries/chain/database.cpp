@@ -1142,14 +1142,7 @@ void database::process_funds()
 
     account_service.check_account_existence(cwit.owner);
 
-    modify(get_account(cwit.owner),
-                       [&](account_object& a) { a.total_common_tokens_amount += witness_reward; });
-    modify(props,
-           [&](dynamic_global_property_object& gpo) { gpo.total_common_tokens_amount += witness_reward; });
-    modify(props,
-           [&](dynamic_global_property_object& gpo) { gpo.total_common_tokens_fund_deip += asset(witness_reward, DEIP_SYMBOL);
-    });
-
+    account_service.increase_total_common_tokens_amount(get_account(cwit.owner), witness_reward);
 
     // witness_reward = producer_reward because 1 DEIP = 1 Common Token. Add producer_reward as separate value if 1 DEIP != 1 Common Token
     push_virtual_operation(producer_reward_operation(cwit.owner, witness_reward));

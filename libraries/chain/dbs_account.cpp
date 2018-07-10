@@ -94,9 +94,7 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
 
     if (fee.amount > 0)
     {
-        db_impl().modify(get_account(new_account_name), [&](account_object& a) { a.total_common_tokens_amount += fee.amount; });
-        db_impl().modify(props, [&](dynamic_global_property_object& dgpo) { dgpo.total_common_tokens_fund_deip += fee.amount; });
-        db_impl().modify(props, [&](dynamic_global_property_object& props) { props.total_common_tokens_amount += fee.amount; });
+        increase_total_common_tokens_amount(get_account(new_account_name), fee.amount);
     }
 
     return new_account;
@@ -452,6 +450,19 @@ const account_object& dbs_account::get_account(const account_id_type& account_id
         return db_impl().get<account_object, by_id>(account_id);
     }
     FC_CAPTURE_AND_RETHROW((account_id))
+}
+
+void dbs_account::increase_total_common_tokens_amount(const account_object& account, share_type amount)
+{
+    FC_ASSERT(amount >= 0, "Amount cannot be < 0");
+
+    auto& props = db_impl().get_dynamic_global_properties();
+
+    db_impl().modify(account,
+                     [&](account_object& a) { a.total_common_tokens_amount += amount; });
+    db_impl().modify(props,
+                     [&](dynamic_global_property_object& gpo) { gpo.total_common_tokens_amount += amount;
+                                                                gpo.total_common_tokens_fund_deip += asset(amount, DEIP_SYMBOL);});
 }
 
 }

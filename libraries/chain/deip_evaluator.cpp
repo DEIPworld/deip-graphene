@@ -216,15 +216,7 @@ void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_toke
               "Account does not have sufficient DEIP for transfer.");
     account_service.decrease_balance(from_account, o.amount);
 
-    _db._temporary_public_impl().modify(to_account,
-                                        [&](account_object& a) { a.total_common_tokens_amount += o.amount.amount.value; });
-    _db._temporary_public_impl().modify(props,
-                                        [&](dynamic_global_property_object& gpo) { gpo.total_common_tokens_amount += o.amount.amount.value; });
-    _db._temporary_public_impl().modify(props,
-                                        [&](dynamic_global_property_object& gpo) { gpo.total_common_tokens_fund_deip += asset(o.amount.amount.value, DEIP_SYMBOL);
-    });
-
-
+    account_service.increase_total_common_tokens_amount(to_account, o.amount.amount);
 }
 
 void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_operation& o)
