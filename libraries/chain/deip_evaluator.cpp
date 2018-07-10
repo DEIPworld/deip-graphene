@@ -216,7 +216,7 @@ void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_toke
               "Account does not have sufficient DEIP for transfer.");
     account_service.decrease_balance(from_account, o.amount);
 
-    account_service.increase_total_common_tokens_amount(to_account, o.amount.amount);
+    account_service.increase_common_tokens(to_account, o.amount.amount);
 }
 
 void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_operation& o)
@@ -225,8 +225,8 @@ void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_ope
 
     const auto& account = account_service.get_account(o.account);
 
-    FC_ASSERT(account.total_common_tokens_amount >= 0, "Account does not have sufficient Deip Power for withdraw.");
-    FC_ASSERT(account.total_common_tokens_amount >= o.total_common_tokens_amount,
+    FC_ASSERT(account.common_tokens_balance >= 0, "Account does not have sufficient Deip Power for withdraw.");
+    FC_ASSERT(account.common_tokens_balance >= o.total_common_tokens_amount,
               "Account does not have sufficient Deip Power for withdraw.");
 
     if (!account.mined)
@@ -237,7 +237,7 @@ void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_ope
         min_common_tokens *= 10;
 
         FC_ASSERT(
-            account.total_common_tokens_amount > min_common_tokens || o.total_common_tokens_amount == 0,
+            account.common_tokens_balance > min_common_tokens || o.total_common_tokens_amount == 0,
             "Account registered by another account requires 10x account creation fee worth of Deip Power before it "
             "can be powered down.");
     }

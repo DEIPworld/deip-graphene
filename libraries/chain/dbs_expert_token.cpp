@@ -16,24 +16,21 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
                                                     const discipline_id_type &discipline_id,
                                                     const share_type& amount)
 {
-    const auto& cprops = db_impl().get_dynamic_global_properties();
-    const auto& to_account = db_impl().get<account_object, by_name>(account);
-
     auto& account_service = db_impl().obtain_service<dbs_account>();
-    
+
+    const auto& props = db_impl().get_dynamic_global_properties();
+    const auto& to_account = account_service.get_account(account);
+
     FC_ASSERT(discipline_id != 0, "You cannot create expert token with discipline 0");
 
-    db_impl().modify(to_account, [&](account_object& to) { to.total_expert_tokens_amount += amount; });
-    db_impl().modify(cprops,
-                     [&](dynamic_global_property_object& props) { props.total_expert_tokens_amount += amount; });
-
+    account_service.increase_expertise_tokens(to_account, amount);
     account_service.adjust_proxied_witness_votes(to_account, amount);
 
     auto& token = db_impl().create<expert_token_object>([&](expert_token_object& token) {
         token.account_name = account;
         token.discipline_id = discipline_id;
         token.amount = amount;
-        token.last_vote_time = cprops.time;
+        token.last_vote_time = props.time;
     });
 
     return token;
@@ -100,15 +97,21 @@ bool dbs_expert_token::is_expert_token_existence_by_account_and_discipline(const
                                                                               const discipline_id_type &discipline_id)
 {
     const auto& idx = db_impl().get_index<expert_token_index>().indices().get<by_account_and_discipline>();
+    return idx.find(boost::make_tuple(account, discipline_id)) != idx.cend();
+}
 
-    if (idx.find(boost::make_tuple(account, discipline_id)) != idx.cend())
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+void dbs_expert_token::increase_expertise_tokens(const account_object &account,
+                                                 const discipline_id_type &discipline_id,
+                                                 const share_type &amount) {
+    FC_ASSERT(amount >= 0, "Amount cannot be < 0");
+
+    dbs_account& account_service = db_impl().obtain_service<dbs_account>();
+
+    auto& token = get_expert_token_by_account_and_discipline(account.name, discipline_id);
+    db_impl().modify(token, [&](expert_token_object et) {
+        et.amount += amount;
+    });
+    account_service.increase_expertise_tokens(account, amount);
 }
 
 } //namespace chain
