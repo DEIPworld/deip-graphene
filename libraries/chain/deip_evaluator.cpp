@@ -210,12 +210,20 @@ void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_toke
     const auto& from_account = account_service.get_account(o.from);
     const auto& to_account = o.to.size() ? account_service.get_account(o.to) : from_account;
 
+    const auto& props = _db.get_dynamic_global_properties();
+
     FC_ASSERT(_db.get_balance(from_account, DEIP_SYMBOL) >= o.amount,
               "Account does not have sufficient DEIP for transfer.");
     account_service.decrease_balance(from_account, o.amount);
 
     _db._temporary_public_impl().modify(to_account,
                                         [&](account_object& a) { a.total_common_tokens_amount += o.amount.amount.value; });
+    _db._temporary_public_impl().modify(props,
+                                        [&](dynamic_global_property_object& gpo) { gpo.total_common_tokens_amount += o.amount.amount.value; });
+    _db._temporary_public_impl().modify(props,
+                                        [&](dynamic_global_property_object& gpo) { gpo.total_common_tokens_fund_deip += asset(o.amount.amount.value, DEIP_SYMBOL);
+    });
+
 
 }
 

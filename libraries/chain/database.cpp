@@ -1141,8 +1141,15 @@ void database::process_funds()
     });
 
     account_service.check_account_existence(cwit.owner);
+
     modify(get_account(cwit.owner),
                        [&](account_object& a) { a.total_common_tokens_amount += witness_reward; });
+    modify(props,
+           [&](dynamic_global_property_object& gpo) { gpo.total_common_tokens_amount += witness_reward; });
+    modify(props,
+           [&](dynamic_global_property_object& gpo) { gpo.total_common_tokens_fund_deip += asset(witness_reward, DEIP_SYMBOL);
+    });
+
 
     // witness_reward = producer_reward because 1 DEIP = 1 Common Token. Add producer_reward as separate value if 1 DEIP != 1 Common Token
     push_virtual_operation(producer_reward_operation(cwit.owner, witness_reward));
@@ -2624,7 +2631,6 @@ void database::validate_invariants() const
 
         for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr)
         {
-            string str = itr->name;
             total_supply += itr->balance;
             total_common_tokens_amount += itr->total_common_tokens_amount;
             total_expert_tokens_amount += itr->total_expert_tokens_amount;
@@ -2643,7 +2649,15 @@ void database::validate_invariants() const
             total_supply += itr->reward_balance;
         }
 
-        total_supply +=  gpo.total_common_tokens_fund_deip;
+        const auto& research_group_idx = get_index<research_group_index, by_id>();
+
+        for (auto itr = research_group_idx.begin(); itr != research_group_idx.end(); ++itr)
+        {
+            total_supply += itr->balance;
+        }
+
+
+        total_supply +=  gpo.total_common_tokens_fund_deip + gpo.total_reward_fund_deip;
 
         FC_ASSERT(gpo.current_supply == total_supply, "",
                   ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));

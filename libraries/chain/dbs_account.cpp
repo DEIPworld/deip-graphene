@@ -96,6 +96,7 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
     {
         db_impl().modify(get_account(new_account_name), [&](account_object& a) { a.total_common_tokens_amount += fee.amount; });
         db_impl().modify(props, [&](dynamic_global_property_object& dgpo) { dgpo.total_common_tokens_fund_deip += fee.amount; });
+        db_impl().modify(props, [&](dynamic_global_property_object& props) { props.total_common_tokens_amount += fee.amount; });
     }
 
     return new_account;
