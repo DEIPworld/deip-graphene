@@ -324,8 +324,8 @@ void witness_plugin_impl::update_account_bandwidth(const account_object& a,
             b.last_bandwidth_update = _db.head_block_time();
         });
         
-        fc::uint128 total_account_common_tokens_amount(a.total_common_tokens_amount.value);
-        fc::uint128 total_account_expert_tokens_amount(a.total_expert_tokens_amount.value);
+        fc::uint128 total_account_common_tokens_amount(a.common_tokens_balance.value);
+        fc::uint128 total_account_expert_tokens_amount(a.expertise_tokens_balance.value);
         fc::uint128 total_common_tokens_amount(props.total_common_tokens_amount.value);   
         fc::uint128 total_expert_tokens_amount(props.total_expert_tokens_amount.value);
 
@@ -340,7 +340,7 @@ void witness_plugin_impl::update_account_bandwidth(const account_object& a,
                         ("account", a.name)("total_account_common_tokens_amount", total_account_common_tokens_amount)(
                             "total_account_expert_tokens_amount",
                             total_account_expert_tokens_amount)("account_average_bandwidth", account_average_bandwidth)(
-                            "max_virtual_bandwidth", max_virtual_bandwidth)("total_common_tokens_amount", total_common_tokens_amount)("total_expert_tokens_amount", total_expert_tokens_amount));
+                            "max_virtual_bandwidth", max_virtual_bandwidth)("common_tokens_balance", total_common_tokens_amount)("expertise_tokens_balance", total_expert_tokens_amount));
     }
 }
 }

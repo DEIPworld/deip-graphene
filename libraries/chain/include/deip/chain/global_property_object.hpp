@@ -99,6 +99,6 @@ typedef multi_index_container<dynamic_global_property_object,
 } // deip::chain
 
 FC_REFLECT(deip::chain::dynamic_global_property_object,
-           (id)(head_block_number)(head_block_id)(time)(current_witness)(current_supply)(confidential_supply)(total_reward_fund_deip)(total_active_disciplines_reward_weight)(maximum_block_size)(current_aslot)(total_common_tokens_fund_deip)(total_expert_tokens_amount)(total_common_tokens_amount)(
-               recent_slots_filled)(participation_count)(last_irreversible_block_num)(vote_power_reserve_rate)(used_expertise_per_block)(all_used_expertise))
+           (id)(head_block_number)(head_block_id)(time)(current_witness)(current_supply)(confidential_supply)(total_common_tokens_fund_deip)(total_expert_tokens_amount)(total_common_tokens_amount)(total_reward_fund_deip)(total_active_disciplines_reward_weight)(maximum_block_size)(current_aslot)
+                   (recent_slots_filled)(participation_count)(last_irreversible_block_num)(vote_power_reserve_rate)(used_expertise_per_block)(all_used_expertise))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::dynamic_global_property_object, deip::chain::dynamic_global_property_index)

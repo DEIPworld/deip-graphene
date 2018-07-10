@@ -33,8 +33,6 @@ public:
     */
     const expert_token_object& get_expert_token(const expert_token_id_type& id) const;
 
-    const expert_token_object& increase_common_tokens(const account_name_type &account, const share_type& amount);
-
     /* Get expert token by account name & discipline
     * @returns expert token in specified discipline for account
     */
@@ -53,8 +51,12 @@ public:
 
     void check_expert_token_existence_by_account_and_discipline(const account_name_type& account,
                                                                 const discipline_id_type& discipline_id);
+
     bool is_expert_token_existence_by_account_and_discipline(const account_name_type& account,
                                                                 const discipline_id_type& discipline_id);
+
+    void increase_expertise_tokens(const account_object &account, const discipline_id_type &discipline_id,
+                                   const share_type &amount);
 };
 } // namespace chain
 } // namespace deip

@@ -66,7 +66,6 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
 
     const auto& props = db_impl().get_dynamic_global_properties();
     const auto& creator = get_account(creator_name);
-    dbs_expert_token& expert_token_service = db().obtain_service<dbs_expert_token>();
 
     db_impl().modify(creator, [&](account_object& c) { c.balance -= fee; });
 
@@ -92,10 +91,8 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         auth.last_owner_update = fc::time_point_sec::min();
     });
 
-    if (fee.amount > 0)
-    {
-        expert_token_service.create(new_account_name, 0, fee.amount);
-    }
+    // Convert fee to Common tokens and increase account common tokens balance
+    increase_common_tokens(get_account(new_account_name), fee.amount);
 
     return new_account;
 }
@@ -338,7 +335,7 @@ void dbs_account::update_voting_proxy(const account_object& account, const optio
     /// remove all current votes
     std::array<share_type, DEIP_MAX_PROXY_RECURSION_DEPTH + 1> delta;
 
-    delta[0] = -account.total_common_tokens_amount;
+    delta[0] = -account.common_tokens_balance;
 
     for (int i = 0; i < DEIP_MAX_PROXY_RECURSION_DEPTH; ++i)
         delta[i + 1] = -account.proxied_vsf_votes[i];
@@ -450,6 +447,39 @@ const account_object& dbs_account::get_account(const account_id_type& account_id
         return db_impl().get<account_object, by_id>(account_id);
     }
     FC_CAPTURE_AND_RETHROW((account_id))
+}
+
+void dbs_account::increase_common_tokens(const account_object &account, const share_type &amount)
+{
+    FC_ASSERT(amount >= 0, "Amount cannot be < 0");
+
+    auto& props = db_impl().get_dynamic_global_properties();
+    db_impl().modify(account, [&](account_object& a) { a.common_tokens_balance += amount; });
+    db_impl().modify(props, [&](dynamic_global_property_object& gpo) {
+        gpo.total_common_tokens_amount += amount;
+        gpo.total_common_tokens_fund_deip += asset(amount, DEIP_SYMBOL);
+    });
+}
+
+void dbs_account::decrease_common_tokens(const account_object &account, const share_type &amount)
+{
+    FC_ASSERT(amount >= 0, "Amount cannot be < 0");
+    auto& props = db_impl().get_dynamic_global_properties();
+    db_impl().modify(account, [&](account_object& a) { a.common_tokens_balance -= amount; });
+    db_impl().modify(props, [&](dynamic_global_property_object& gpo) {
+        gpo.total_common_tokens_amount -= amount;
+        gpo.total_common_tokens_fund_deip -= asset(amount, DEIP_SYMBOL);
+    });
+}
+
+void dbs_account::increase_expertise_tokens(const account_object &account, const share_type &amount)
+{
+    FC_ASSERT(amount >= 0, "Amount cannot be < 0");
+    auto& props = db_impl().get_dynamic_global_properties();
+    db_impl().modify(account, [&](account_object& a) { a.expertise_tokens_balance += amount; });
+    db_impl().modify(props, [&](dynamic_global_property_object& gpo) {
+        gpo.total_expert_tokens_amount += amount;
+    });
 }
 
 }
