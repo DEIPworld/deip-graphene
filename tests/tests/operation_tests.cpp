@@ -622,10 +622,8 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
          ///                                            ///
         //////////////////////////////////////////////////
 
-        auto& _research_group_1
-            = research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000, false);
-        auto& _research_group_2
-            = research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000, false);
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000, false);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000, false);
 
         research_group_invite_create(0, "bob", 0, 5000);
         research_group_invite_create(1, "bob", 1, 5000);
@@ -672,8 +670,8 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
 
         generate_block();
 
-        auto& research_group = research_group_create(31, "name", "permlink", "description", 200, 50, false);
-        auto& research_group_invite = research_group_invite_create(1, "bob", 31, 5000);
+        research_group_create(31, "name", "permlink", "description", 200, 50, false);
+        research_group_invite_create(1, "bob", 31, 5000);
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -2714,8 +2712,8 @@ BOOST_AUTO_TEST_CASE(research_update_apply)
         private_key_type priv_key = generate_private_key("alice");
 
         auto& research = research_create(0, "title", "abstract", "permlink", 31, 10, 10);
-        auto& research_group = research_group_create(31, "name", "permlink", "description", 100, 100, false);
-        auto& research_group_token = research_group_token_create(31, "alice", DEIP_100_PERCENT);
+        research_group_create(31, "name", "permlink", "description", 100, 100, false);
+        research_group_token_create(31, "alice", DEIP_100_PERCENT);
 
         research_update_operation op;
 
@@ -3585,8 +3583,6 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        const review_object& review = db.get<review_object, by_id>(0);
-
         auto& dgpo = db.get_dynamic_global_properties();
 
         BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == 20000);
@@ -3605,7 +3601,6 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
         auto& token = expert_token_service.get_expert_token_by_account_and_discipline("john", 1);
-        auto old_voting_power = token.voting_power;
 
         op2.review_id = 0;
         op2.discipline_id = 1;
@@ -3647,7 +3642,6 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         db.push_transaction(tx, 0);
 
-        const vote_object& vote_for_content = db.get<vote_object, by_voter_discipline_and_content>(std::make_tuple("john", 1, content.id));
         BOOST_CHECK(dgpo.used_expertise_per_block == 4750);
         BOOST_CHECK(dgpo.all_used_expertise == 29750);
     }
@@ -3665,7 +3659,7 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
 
         BOOST_TEST_MESSAGE("--- Test normal review creation");
         auto &research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-        auto &content = db.create<research_content_object>([&](research_content_object &c) {
+        db.create<research_content_object>([&](research_content_object &c) {
             c.id = 1;
             c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
             c.research_id = research.id;
@@ -3722,8 +3716,6 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
         tx2.sign(alice_private_key, db.get_chain_id());
 
         db.push_transaction(tx2, 0);
-
-        auto &review_vote = db.get<review_vote_object>(0);
     }
     FC_LOG_AND_RETHROW()
 }

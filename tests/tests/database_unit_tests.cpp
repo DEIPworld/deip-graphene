@@ -570,9 +570,6 @@ BOOST_AUTO_TEST_CASE(fund_review_pool)
 
         BOOST_CHECK_NO_THROW(db.fund_review_pool(10, reward));
 
-        auto& group_1 = db.get<research_group_object>(31);
-        auto& group_2 = db.get<research_group_object>(32);
-
         BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("alice", 10).amount == 400);
         BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("bob", 10).amount == 600);
     }

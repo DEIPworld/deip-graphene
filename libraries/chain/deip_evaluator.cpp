@@ -205,12 +205,9 @@ void transfer_evaluator::do_apply(const transfer_operation& o)
 void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_tokens_operation& o)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
 
     const auto& from_account = account_service.get_account(o.from);
     const auto& to_account = o.to.size() ? account_service.get_account(o.to) : from_account;
-
-    const auto& props = _db.get_dynamic_global_properties();
 
     FC_ASSERT(_db.get_balance(from_account, DEIP_SYMBOL) >= o.amount,
               "Account does not have sufficient DEIP for transfer.");
