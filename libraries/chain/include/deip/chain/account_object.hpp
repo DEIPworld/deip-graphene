@@ -51,15 +51,10 @@ public:
     uint16_t voting_power = DEIP_100_PERCENT; ///< current voting power of this account, it falls after every vote
     time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
 
-    asset balance = asset(0, DEIP_SYMBOL);    ///< total liquid shares held by this account
+    asset balance = asset(0, DEIP_SYMBOL); ///< total liquid shares held by this account
+    share_type expertise_tokens_balance = 0; ///< total expertise tokens held by this account
+    share_type common_tokens_balance = 0; ///< total common tokens held by this account
 
-    share_type curation_rewards = 0;
-    share_type posting_rewards = 0;
-
-    share_type total_expert_tokens_amount = 0;
-    share_type total_common_tokens_amount = 0;
-
-    share_type received_common_tokens = 0;
     share_type common_tokens_withdraw_rate = 0; ///< at the time this is updated it can be at most common_tokens/104
     time_point_sec next_common_tokens_withdrawal
         = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
@@ -81,7 +76,7 @@ public:
     /// This function should be used only when the account votes for a witness directly
     share_type witness_vote_weight() const
     {
-        return std::accumulate(proxied_vsf_votes.begin(), proxied_vsf_votes.end(), total_common_tokens_amount);
+        return std::accumulate(proxied_vsf_votes.begin(), proxied_vsf_votes.end(), common_tokens_balance);
     }
     share_type proxied_vsf_votes_total() const
     {
@@ -235,7 +230,7 @@ typedef multi_index_container<account_object,
                                                         composite_key<account_object,
                                                                       member<account_object,
                                                                              share_type,
-                                                                             &account_object::total_common_tokens_amount>,
+                                                                             &account_object::common_tokens_balance>,
                                                                       member<account_object,
                                                                              account_id_type,
                                                                              &account_object::id>>,
@@ -400,13 +395,10 @@ FC_REFLECT( deip::chain::account_object,
              (created)(mined)
              (recovery_account)(last_account_recovery)
              (lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
-             (balance)
-             (received_common_tokens)(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)
+             (balance)(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)
              (withdrawn)(to_withdraw)(withdraw_routes)
-             (curation_rewards)
-             (posting_rewards)
-             (total_expert_tokens_amount)
-             (total_common_tokens_amount)
+             (expertise_tokens_balance)
+             (common_tokens_balance)
              (proxied_vsf_votes)(witnesses_voted_for)
              (last_post)(last_root_post)(post_bandwidth)
           )

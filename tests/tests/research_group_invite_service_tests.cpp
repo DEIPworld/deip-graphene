@@ -52,11 +52,12 @@ BOOST_AUTO_TEST_CASE(create)
 {
     try
     {
-        auto& research_group_invite = data_service.create("bob", 2, 100);
+        auto& research_group_invite = data_service.create("bob", 2, 100, "test");
 
         BOOST_CHECK(research_group_invite.account_name == "bob");
         BOOST_CHECK(research_group_invite.research_group_id == 2);
         BOOST_CHECK(research_group_invite.research_group_token_amount == 100);
+        BOOST_CHECK(research_group_invite.cover_letter == "test");
 
     }
     FC_LOG_AND_RETHROW()
@@ -68,7 +69,7 @@ BOOST_AUTO_TEST_CASE(throw_on_create_research_invite_object)
     {
         create_research_invite_objects();
 
-        BOOST_CHECK_THROW(data_service.create("alice", 1, 200), boost::exception);
+        BOOST_CHECK_THROW(data_service.create("alice", 1, 200, "test"), boost::exception);
 
     }
     FC_LOG_AND_RETHROW()

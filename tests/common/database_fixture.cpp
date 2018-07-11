@@ -30,13 +30,12 @@ void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
     public_key_type init_public_key = init_delegate_priv_key.get_public_key();
 
     genesis_state.accounts.push_back(
-        { "initdelegate", "null", init_public_key, genesis_state.init_supply - 10000, uint64_t(0) });
+        { "initdelegate", "null", init_public_key, genesis_state.init_supply, uint64_t(0) });
     genesis_state.witness_candidates.push_back({ "initdelegate", init_public_key });
 }
 
 void create_initdelegate_expert_tokens_for_genesis_state(genesis_state_type& genesis_state)
 {
-    genesis_state.expert_tokens.push_back({ "initdelegate", 0, 10000 });
     genesis_state.expert_tokens.push_back({ "initdelegate", 1, 10000 });
 }
 
@@ -114,14 +113,13 @@ clean_database_fixture::clean_database_fixture()
         for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
         {
             account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
-            fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), DEIP_MIN_PRODUCER_REWARD.amount.value);
+            fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1000);
         }
 
         generate_block();
 
         for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
         {
-            common_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 10000);
             expert_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1, 10000);
 
             witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
@@ -191,7 +189,6 @@ void clean_database_fixture::resize_shared_mem(uint64_t size)
 
     for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
     {
-        common_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 10000);
         expert_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1, 10000);
     }
 
@@ -754,12 +751,9 @@ void database_fixture::transfer(const string& from, const string& to, const shar
 
 void database_fixture::create_all_discipline_expert_tokens_for_account(const string& account)
 {    
-    for (uint32_t i = 0; i < genesis_state.disciplines.size(); i++)
+    for (uint32_t i = 1; i < genesis_state.disciplines.size(); i++)
     {
-        if(i != 0)
-            expert_token(account, i, 10000);
-        else
-            common_token(account, 10000);
+        expert_token(account, i, 10000);
     }
 }
 
@@ -779,21 +773,6 @@ void database_fixture::convert_deip_to_common_token(const string& from, const sh
         trx.operations.clear();
     }
     FC_CAPTURE_AND_RETHROW((from)(amount))
-}
-
-const expert_token_object database_fixture::common_token(const string& account, const share_type& amount)
-{
-    dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
-
-    db.modify(db.get_dynamic_global_properties(),
-                      [&](dynamic_global_property_object& gpo) { gpo.current_supply += asset(amount, DEIP_SYMBOL); });
-
-    expert_token_object common_token
-        = (expert_token_service.is_expert_token_existence_by_account_and_discipline(account, 0))
-        ? expert_token_object(expert_token_service.increase_common_tokens(account, amount))
-        : expert_token_object(expert_token_service.create(account, 0, amount));
-
-    return common_token;
 }
 
 const expert_token_object&

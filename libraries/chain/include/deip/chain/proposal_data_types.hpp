@@ -29,11 +29,13 @@ struct invite_member_proposal_data_type : base_proposal_data_type
     research_group_id_type research_group_id;
     deip::protocol::account_name_type name;
     share_type research_group_token_amount_in_percent;
+    std::string cover_letter;
 
     void validate() const
     {
         FC_ASSERT(is_valid_account_name(name), "Account name ${n} is invalid", ("n", name));
         FC_ASSERT(research_group_token_amount_in_percent > 0 && research_group_token_amount_in_percent <= DEIP_100_PERCENT, "Research group tokens amount should be > 0");
+        FC_ASSERT(fc::is_utf8(cover_letter), "Cover letter should be valid UTF8 string");
     }
 };
 
@@ -178,7 +180,7 @@ struct change_research_review_share_percent_data_type : base_proposal_data_type
 
 FC_REFLECT(deip::chain::dropout_member_proposal_data_type, (research_group_id)(name))
 
-FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount_in_percent))
+FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount_in_percent)(cover_letter))
 
 FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
 

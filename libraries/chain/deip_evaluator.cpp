@@ -210,14 +210,13 @@ void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_toke
     const auto& from_account = account_service.get_account(o.from);
     const auto& to_account = o.to.size() ? account_service.get_account(o.to) : from_account;
 
+    const auto& props = _db.get_dynamic_global_properties();
+
     FC_ASSERT(_db.get_balance(from_account, DEIP_SYMBOL) >= o.amount,
               "Account does not have sufficient DEIP for transfer.");
     account_service.decrease_balance(from_account, o.amount);
 
-    if (!expert_token_service.is_expert_token_existence_by_account_and_discipline(to_account.name, 0))
-        expert_token_service.create(to_account.name, 0, o.amount.amount.value);
-    else
-        expert_token_service.increase_common_tokens(to_account.name, o.amount.amount.value);
+    account_service.increase_common_tokens(to_account, o.amount.amount);
 }
 
 void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_operation& o)
@@ -226,8 +225,8 @@ void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_ope
 
     const auto& account = account_service.get_account(o.account);
 
-    FC_ASSERT(account.total_common_tokens_amount >= 0, "Account does not have sufficient Deip Power for withdraw.");
-    FC_ASSERT(account.total_common_tokens_amount >= o.total_common_tokens_amount,
+    FC_ASSERT(account.common_tokens_balance >= 0, "Account does not have sufficient Deip Power for withdraw.");
+    FC_ASSERT(account.common_tokens_balance >= o.total_common_tokens_amount,
               "Account does not have sufficient Deip Power for withdraw.");
 
     if (!account.mined)
@@ -238,7 +237,7 @@ void withdraw_common_tokens_evaluator::do_apply(const withdraw_common_tokens_ope
         min_common_tokens *= 10;
 
         FC_ASSERT(
-            account.total_common_tokens_amount > min_common_tokens || o.total_common_tokens_amount == 0,
+            account.common_tokens_balance > min_common_tokens || o.total_common_tokens_amount == 0,
             "Account registered by another account requires 10x account creation fee worth of Deip Power before it "
             "can be powered down.");
     }
@@ -806,7 +805,7 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
     for (const auto& invitee : op.invitees)
     {
         account_service.check_account_existence(invitee.account);
-        research_group_invite_service.create(invitee.account, research_group.id, invitee.research_group_tokens_in_percent);
+        research_group_invite_service.create(invitee.account, research_group.id, invitee.research_group_tokens_in_percent, invitee.cover_letter);
     }
 }
 

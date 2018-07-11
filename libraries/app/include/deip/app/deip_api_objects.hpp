@@ -61,9 +61,8 @@ struct account_api_obj
         , voting_power(a.voting_power)
         , last_vote_time(a.last_vote_time)
         , balance(a.balance)
-        , total_common_tokens_amount(a.total_common_tokens_amount)
-        , total_expert_tokens_amount(a.total_expert_tokens_amount)
-        , received_common_tokens(a.received_common_tokens)
+        , common_tokens_balance(a.common_tokens_balance)
+        , expert_tokens_balance(a.expertise_tokens_balance)
         , common_tokens_withdraw_rate(a.common_tokens_withdraw_rate)
         , next_common_tokens_withdrawal(a.next_common_tokens_withdrawal)
         , withdrawn(a.withdrawn)
@@ -137,8 +136,8 @@ struct account_api_obj
     time_point_sec last_vote_time;
 
     asset balance;
-    share_type total_common_tokens_amount;
-    share_type total_expert_tokens_amount;
+    share_type common_tokens_balance;
+    share_type expert_tokens_balance;
 
     share_type received_common_tokens;
     share_type common_tokens_withdraw_rate;
@@ -834,7 +833,7 @@ FC_REFLECT( deip::app::account_api_obj,
              (recovery_account)(last_account_recovery)
              (lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
              (balance)
-             (total_common_tokens_amount)(total_expert_tokens_amount)(received_common_tokens)(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
+             (common_tokens_balance)(expert_tokens_balance)(received_common_tokens)(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (proxied_vsf_votes)(witnesses_voted_for)
              (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
              (average_market_bandwidth)(lifetime_market_bandwidth)(last_market_bandwidth_update)

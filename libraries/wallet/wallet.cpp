@@ -790,8 +790,8 @@ public:
             for (const auto& a : accounts)
             {
                 total_deip += a.balance;
-                total_common_tokens_amount += a.total_common_tokens_amount;
-                total_expert_tokens_amount += a.total_expert_tokens_amount;
+                total_common_tokens_amount += a.common_tokens_balance;
+                total_expert_tokens_amount += a.expert_tokens_balance;
                 out << std::left << std::setw(17) << std::string(a.name) << std::right << std::setw(18)
                     << fc::variant(a.balance).as_string() << " " << std::right << std::setw(26)
                     << std::to_string(total_common_tokens_amount.value)<< " " << std::right << std::setw(28)

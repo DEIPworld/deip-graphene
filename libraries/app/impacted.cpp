@@ -58,10 +58,19 @@ struct get_impacted_account_visitor
         _impacted.insert(op.creator);
     }
 
+    void operator()(const account_update_operation& op)
+    {
+        _impacted.insert(op.account);
+    }
+
     void operator()(const vote_operation& op)
     {
         _impacted.insert(op.voter);
-//        _impacted.insert(op.author);
+    }
+
+    void operator()(const vote_for_review_operation& op)
+    {
+        _impacted.insert(op.voter);
     }
 
     void operator()(const transfer_to_common_tokens_operation& op)
@@ -74,6 +83,11 @@ struct get_impacted_account_visitor
         }
     }
 
+    void operator()(const withdraw_common_tokens_operation& op)
+    {
+        _impacted.insert(op.account);
+    }
+
     void operator()(const set_withdraw_common_tokens_route_operation& op)
     {
         _impacted.insert(op.from_account);
@@ -84,6 +98,11 @@ struct get_impacted_account_visitor
     {
         _impacted.insert(op.from);
         _impacted.insert(op.to);
+    }
+
+    void operator()(const witness_update_operation& op)
+    {
+        _impacted.insert(op.owner);
     }
 
     void operator()(const account_witness_vote_operation& op)
@@ -119,6 +138,74 @@ struct get_impacted_account_visitor
         _impacted.insert(op.owner);
     }
 
+    void operator()(const create_research_group_operation& op)
+    {
+        _impacted.insert(op.creator);
+    }
+
+    void operator()(const create_proposal_operation& op)
+    {
+        _impacted.insert(op.creator);
+    }
+
+    void operator()(const vote_proposal_operation& op)
+    {
+        _impacted.insert(op.voter);
+    }
+
+    void operator()(const make_review_operation& op)
+    {
+        _impacted.insert(op.author);
+    }
+
+    void operator()(const contribute_to_token_sale_operation& op)
+    {
+        _impacted.insert(op.owner);
+    }
+
+    void operator()(const approve_research_group_invite_operation& op)
+    {
+        _impacted.insert(op.owner);
+    }
+
+    void operator()(const reject_research_group_invite_operation& op)
+    {
+        _impacted.insert(op.owner);
+    }
+
+    void operator()(const transfer_research_tokens_to_research_group_operation& op)
+    {
+        _impacted.insert(op.owner);
+    }
+
+    void operator()(const add_expertise_tokens_operation& op)
+    {
+        _impacted.insert(op.owner);
+    }
+
+    void operator()(const research_update_operation& op)
+    {
+        _impacted.insert(op.owner);
+    }
+
+    void operator()(const deposit_to_vesting_contract_operation& op)
+    {
+        _impacted.insert(op.sender);
+        _impacted.insert(op.receiver);
+    }
+
+    void operator()(const withdraw_from_vesting_contract_operation& op)
+    {
+        _impacted.insert(op.sender);
+        _impacted.insert(op.receiver);
+    }
+
+    void operator()(const transfer_research_tokens_operation& op)
+    {
+        _impacted.insert(op.sender);
+        _impacted.insert(op.receiver);
+    }
+
     // virtual operations
 
     void operator()(const fill_common_tokens_withdraw_operation& op)
@@ -132,7 +219,7 @@ struct get_impacted_account_visitor
         _impacted.insert(op.owner);
     }
 
-        void operator()(const producer_reward_operation& op)
+    void operator()(const producer_reward_operation& op)
     {
         _impacted.insert(op.producer);
     }

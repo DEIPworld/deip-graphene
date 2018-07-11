@@ -982,11 +982,11 @@ void database::process_common_tokens_withdrawals()
          */
         share_type to_withdraw;
         if (from_account.to_withdraw - from_account.withdrawn < from_account.common_tokens_withdraw_rate)
-            to_withdraw = std::min(from_account.total_common_tokens_amount,
+            to_withdraw = std::min(from_account.common_tokens_balance,
                                    from_account.to_withdraw % from_account.common_tokens_withdraw_rate)
                               .value;
         else
-            to_withdraw = std::min(from_account.total_common_tokens_amount, from_account.common_tokens_withdraw_rate).value;
+            to_withdraw = std::min(from_account.common_tokens_balance, from_account.common_tokens_withdraw_rate).value;
 
         share_type common_tokens_deposited_as_deip = 0;
         share_type common_tokens_deposited_as_common_tokens = 0;
@@ -1007,7 +1007,7 @@ void database::process_common_tokens_withdrawals()
                 {
                     const auto& to_account = get(itr->to_account);
 
-                    modify(to_account, [&](account_object& a) { a.total_common_tokens_amount += to_deposit; });
+                    modify(to_account, [&](account_object& a) { a.common_tokens_balance += to_deposit; });
 
                     account_service.adjust_proxied_witness_votes(to_account, to_deposit);
 
@@ -1053,11 +1053,11 @@ void database::process_common_tokens_withdrawals()
         share_type converted_deip = to_convert;
 
         modify(from_account, [&](account_object& a) {
-            a.total_common_tokens_amount -= to_withdraw;
+            a.common_tokens_balance -= to_withdraw;
             a.balance += converted_deip;
             a.withdrawn += to_withdraw;
 
-            if (a.withdrawn >= a.to_withdraw || a.total_common_tokens_amount == 0)
+            if (a.withdrawn >= a.to_withdraw || a.common_tokens_balance == 0)
             {
                 a.common_tokens_withdraw_rate= 0;
                 a.next_common_tokens_withdrawal = fc::time_point_sec::maximum();
@@ -1096,7 +1096,7 @@ void database::process_common_tokens_withdrawals()
  */
 void database::process_funds()
 {
-    dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
+    dbs_account& account_service = obtain_service<dbs_account>();
 
     const auto& props = get_dynamic_global_properties();
     const auto& wso = get_witness_schedule_object();
@@ -1139,14 +1139,8 @@ void database::process_funds()
         p.current_supply += asset(new_deip, DEIP_SYMBOL);
     });
 
-    if (expert_token_service.is_expert_token_existence_by_account_and_discipline(get_account(cwit.owner).name, 0))
-    {
-        expert_token_service.increase_common_tokens(get_account(cwit.owner).name, witness_reward);
-    }
-    else
-    {
-        expert_token_service.create(get_account(cwit.owner).name, 0, witness_reward);
-    }
+    account_service.check_account_existence(cwit.owner);
+    account_service.increase_common_tokens(get_account(cwit.owner), witness_reward);
 
     // witness_reward = producer_reward because 1 DEIP = 1 Common Token. Add producer_reward as separate value if 1 DEIP != 1 Common Token
     push_virtual_operation(producer_reward_operation(cwit.owner, witness_reward));
@@ -2554,14 +2548,14 @@ void database::validate_invariants() const
         for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr)
         {
             total_supply += itr->balance;
-            total_common_tokens_amount += itr->total_common_tokens_amount;
-            total_expert_tokens_amount += itr->total_expert_tokens_amount;
-
+            total_common_tokens_amount += itr->common_tokens_balance;
+            total_expert_tokens_amount += itr->expertise_tokens_balance;
+            
             total_vsf_votes += (itr->proxy == DEIP_PROXY_TO_SELF_ACCOUNT
                                     ? itr->witness_vote_weight()
                                     : (DEIP_MAX_PROXY_RECURSION_DEPTH > 0
                                            ? itr->proxied_vsf_votes[DEIP_MAX_PROXY_RECURSION_DEPTH - 1]
-                                           : itr->total_common_tokens_amount));
+                                           : itr->common_tokens_balance));
         }
 
         const auto& reward_idx = get_index<reward_fund_index, by_id>();
@@ -2571,17 +2565,25 @@ void database::validate_invariants() const
             total_supply += itr->reward_balance;
         }
 
+        const auto& research_group_idx = get_index<research_group_index, by_id>();
+
+        for (auto itr = research_group_idx.begin(); itr != research_group_idx.end(); ++itr)
+        {
+            total_supply += itr->balance;
+        }
+
+
         total_supply +=  gpo.total_common_tokens_fund_deip + gpo.total_reward_fund_deip;
 
         FC_ASSERT(gpo.current_supply == total_supply, "",
                   ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));
         FC_ASSERT(gpo.total_common_tokens_amount == total_common_tokens_amount, "",
-                  ("gpo.total_common_tokens_amount", gpo.total_common_tokens_amount)("total_common_tokens", total_common_tokens_amount));
+                  ("gpo.common_tokens_balance", gpo.total_common_tokens_amount)("total_common_tokens", total_common_tokens_amount));
         FC_ASSERT(gpo.total_expert_tokens_amount == total_expert_tokens_amount, "",
                   ("gpo.total_expert_tokens", gpo.total_expert_tokens_amount)("total_expert_tokens", total_expert_tokens_amount));
 
         FC_ASSERT(gpo.total_common_tokens_amount == total_vsf_votes, "",
-                  ("total_common_tokens_amount", gpo.total_common_tokens_amount)("total_vsf_votes", total_vsf_votes));
+                  ("common_tokens_balance", gpo.total_common_tokens_amount)("total_vsf_votes", total_vsf_votes));
     }
     FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
 }
