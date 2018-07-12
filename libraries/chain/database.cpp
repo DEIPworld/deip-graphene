@@ -1114,8 +1114,10 @@ void database::process_funds()
     // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
     int64_t current_inflation_rate = std::max(start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor);
 
-    auto new_deip = (props.current_supply.amount * current_inflation_rate)
-        / (int64_t(DEIP_100_PERCENT) * int64_t(DEIP_BLOCKS_PER_YEAR));
+    auto new_deip = (props.current_supply.amount * current_inflation_rate) / (int64_t(DEIP_100_PERCENT) * int64_t(DEIP_BLOCKS_PER_YEAR));
+    // TODO: Expertise adaptive emission model
+    auto new_expertise = new_deip;
+
     auto contribution_reward = util::calculate_share(new_deip, DEIP_CONTRIBUTION_REWARD_PERCENT); /// 97% to contribution rewards
     auto witness_reward = new_deip - contribution_reward; /// Remaining 3% to witness pay
 
@@ -1131,7 +1133,7 @@ void database::process_funds()
 
     witness_reward /= wso.witness_pay_normalization_factor;
 
-    contribution_reward = distribute_reward(contribution_reward);
+    contribution_reward = distribute_reward(contribution_reward, new_expertise);
 
     new_deip = contribution_reward + witness_reward;
 
@@ -1139,7 +1141,6 @@ void database::process_funds()
         p.current_supply += asset(new_deip, DEIP_SYMBOL);
     });
 
-    account_service.check_account_existence(cwit.owner);
     account_service.increase_common_tokens(get_account(cwit.owner), witness_reward);
 
     // witness_reward = producer_reward because 1 DEIP = 1 Common Token. Add producer_reward as separate value if 1 DEIP != 1 Common Token
@@ -1239,7 +1240,7 @@ void database::refund_research_tokens(const research_token_sale_id_type research
     modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
 }
 
-share_type database::distribute_reward(const share_type reward)
+share_type database::distribute_reward(const share_type &reward, const share_type &expertise)
 {
     auto& discipline_service = obtain_service<dbs_discipline>();
     auto disciplines = discipline_service.get_disciplines();
@@ -1260,10 +1261,11 @@ share_type database::distribute_reward(const share_type reward)
         {
             // Distribute among disciplines in all disciplines pool
             auto discipline_reward_share = util::calculate_share(reward, discipline.total_active_weight, total_disciplines_weight);
+            auto discipline_expertise_share = util::calculate_share(expertise, discipline.total_active_weight, total_disciplines_weight);
             // TODO: Adjustable review reward pool share
             auto discipline_review_reward_pool_share = util::calculate_share(discipline_reward_share, DEIP_REVIEW_REWARD_POOL_SHARE_PERCENT);
             discipline_reward_share -= discipline_review_reward_pool_share;
-            used_reward += reward_researches_in_discipline(discipline, discipline_reward_share);
+            used_reward += reward_researches_in_discipline(discipline, discipline_reward_share, discipline_expertise_share);
             used_reward += fund_review_pool(discipline, discipline_review_reward_pool_share);
         }
     }
@@ -1273,7 +1275,9 @@ share_type database::distribute_reward(const share_type reward)
     return used_reward;
 }
 
-share_type database::reward_researches_in_discipline(const discipline_object& discipline, const share_type& reward)
+share_type database::reward_researches_in_discipline(const discipline_object &discipline,
+                                                     const share_type &reward,
+                                                     const share_type &expertise)
 {
     FC_ASSERT(discipline.total_active_weight != 0, "Attempt to reward research in inactive discipline");
 
@@ -1292,8 +1296,9 @@ share_type database::reward_researches_in_discipline(const discipline_object& di
         if (content.activity_state == research_content_activity_state::active)
         {
             auto weight = std::max(int64_t(0), total_votes_itr->total_weight.value);
-            auto research_content_share = util::calculate_share(reward, weight, discipline.total_active_weight);
-            used_reward += reward_research_content(content_id, discipline.id, research_content_share);
+            auto reward_share = util::calculate_share(reward, weight, discipline.total_active_weight);
+            auto expertise_share = util::calculate_share(expertise, weight,discipline.total_active_weight);
+            used_reward += reward_research_content(content_id, discipline.id, reward_share, expertise_share);
         }
         ++total_votes_itr;
     }
@@ -1303,9 +1308,10 @@ share_type database::reward_researches_in_discipline(const discipline_object& di
     return used_reward;
 }
 
-share_type database::reward_research_content(const research_content_id_type& research_content_id,
-                                             const discipline_id_type& discipline_id,
-                                             const share_type& reward)
+share_type database::reward_research_content(const research_content_id_type &research_content_id,
+                                             const discipline_id_type &discipline_id,
+                                             const share_type &reward,
+                                             const share_type &expertise)
 {
     auto& research_content_service = obtain_service<dbs_research_content>();
     auto& research_service = obtain_service<dbs_research>();
@@ -1317,8 +1323,8 @@ share_type database::reward_research_content(const research_content_id_type& res
     auto review_share = util::calculate_share(reward, research.review_share_in_percent);
     auto token_holders_share = reward - references_share - review_share;
 
-    auto review_expertise_share = util::calculate_share(reward, research.review_share_in_percent);
-    auto authors_expertise_share = reward - review_expertise_share;
+    auto review_expertise_share = util::calculate_share(expertise, research.review_share_in_percent);
+    auto authors_expertise_share = expertise - review_expertise_share;
 
     FC_ASSERT(token_holders_share + review_share + references_share <= reward,
               "Attempt to allocate funds amount that is greater than reward amount");

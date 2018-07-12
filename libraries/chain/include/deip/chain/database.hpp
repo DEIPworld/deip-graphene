@@ -303,11 +303,12 @@ public:
     /**
      * Rewards distribution
      */
-    share_type distribute_reward(const share_type reward);
-    share_type reward_researches_in_discipline(const discipline_object &discipline, const share_type& reward);
+    share_type distribute_reward(const share_type &reward, const share_type &expertise);
+    share_type reward_researches_in_discipline(const discipline_object &discipline, const share_type &reward,
+                                                   const share_type &expertise);
     share_type reward_research_content(const research_content_id_type &research_content_id,
-                                       const discipline_id_type &discipline_id,
-                                       const share_type &reward);
+                                           const discipline_id_type &discipline_id, const share_type &reward,
+                                           const share_type &expertise);
     share_type reward_research_token_holders(const research_object& research,
                                        const discipline_id_type& discipline_id,
                                        const share_type& reward);
