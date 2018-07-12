@@ -131,6 +131,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = true;
+        op.weight =  50 * DEIP_1_PERCENT;
 
         fc::uint128 total_expert_tokens_amount; // With Common Token
         auto it_pair = db.get_index<expert_token_index>().indicies().get<by_account_name>().equal_range("alice");
@@ -163,7 +164,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         BOOST_CHECK(review.author == "alice");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.content == "test");
-        BOOST_CHECK(review.expertise_amounts_used.at(1) == token.amount);
+        BOOST_CHECK(review.expertise_amounts_used.at(1) == (op.weight * token.amount) / DEIP_100_PERCENT);
         BOOST_CHECK(disciplines.size() == 1 && disciplines[0] == 1);
 
         validate_database();
@@ -3502,6 +3503,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = true;
+        op.weight = DEIP_100_PERCENT;
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -3612,6 +3614,7 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = false;
+        op.weight = DEIP_100_PERCENT;
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);

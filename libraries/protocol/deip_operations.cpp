@@ -187,6 +187,7 @@ void vote_proposal_operation::validate() const
 void make_review_operation::validate() const
 {
     validate_account_name(author);
+    FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
     FC_ASSERT(!content.empty(), "Research content cannot be empty");
 }
 
