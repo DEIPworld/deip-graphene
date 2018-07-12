@@ -915,7 +915,6 @@ state database_api::get_state(string path) const
                         {
                         case operation::tag<withdraw_common_tokens_operation>::value:
                         case operation::tag<transfer_operation>::value:
-                        case operation::tag<vote_operation>::value:
                         case operation::tag<account_witness_vote_operation>::value:
                         case operation::tag<account_witness_proxy_operation>::value:
                             //   eacnt.vote_history[item.first] =  item.second;

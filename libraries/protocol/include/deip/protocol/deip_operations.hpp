@@ -91,21 +91,6 @@ struct beneficiary_route_type
     }
 };
 
-struct vote_operation : public base_operation
-{
-    account_name_type voter;
-    int64_t discipline_id;
-    int16_t weight = 0;
-    int64_t research_id;
-    int64_t research_content_id;
-
-    void validate() const;
-    void get_required_posting_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(voter);
-    }
-};
-
 struct vote_for_review_operation : public base_operation
 {
     account_name_type voter;
@@ -701,7 +686,6 @@ FC_REFLECT( deip::protocol::set_withdraw_common_tokens_route_operation, (from_ac
 FC_REFLECT( deip::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( deip::protocol::account_witness_vote_operation, (account)(witness)(approve) )
 FC_REFLECT( deip::protocol::account_witness_proxy_operation, (account)(proxy) )
-FC_REFLECT( deip::protocol::vote_operation, (voter)(discipline_id)(weight)(research_id)(research_content_id))
 
 
 FC_REFLECT( deip::protocol::beneficiary_route_type, (account)(weight) )
