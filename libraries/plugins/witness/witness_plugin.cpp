@@ -340,7 +340,7 @@ void witness_plugin_impl::update_account_bandwidth(const account_object& a,
                         ("account", a.name)("total_account_common_tokens_amount", total_account_common_tokens_amount)(
                             "total_account_expert_tokens_amount",
                             total_account_expert_tokens_amount)("account_average_bandwidth", account_average_bandwidth)(
-                            "max_virtual_bandwidth", max_virtual_bandwidth)("common_tokens_balance", total_common_tokens_amount)("expertise_tokens_balance", total_expert_tokens_amount));
+                            "max_virtual_bandwidth", max_virtual_bandwidth)("total_common_tokens_amount", total_common_tokens_amount)("total_expert_tokens_amount", total_expert_tokens_amount));
     }
 }
 }
