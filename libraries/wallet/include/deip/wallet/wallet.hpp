@@ -790,6 +790,68 @@ public:
                                                const discipline_name_type& target_discipline,
                                                const bool broadcast);
 
+    annotated_signed_transaction vote_for_review(const std::string& voter,
+                                                 const int64_t review_id,
+                                                 const int64_t discipline_id,
+                                                 const int16_t weight,
+                                                 const bool broadcast);
+
+    annotated_signed_transaction create_proposal(const std::string& creator,
+                                                 const int64_t research_group_id,
+                                                 const std::string& data, const uint16_t action,
+                                                 const time_point_sec expiration_time,
+                                                 const bool broadcast);
+
+    annotated_signed_transaction make_review(const std::string& author,
+                                             const int64_t research_content_id,
+                                             const bool is_positive,
+                                             const std::string& content,
+                                             const bool broadcast);
+
+    annotated_signed_transaction contribute_to_token_sale(const int64_t research_token_sale_id,
+                                                          const std::string& owner,
+                                                          const uint32_t amount,
+                                                          const bool broadcast);
+
+    annotated_signed_transaction approve_research_group_invite(const int64_t research_group_invite_id,
+                                                               const std::string& owner,
+                                                               const bool broadcast);
+
+    annotated_signed_transaction reject_research_group_invite(const int64_t research_group_invite_id,
+                                                              const std::string& owner,
+                                                              const bool broadcast);
+
+    annotated_signed_transaction transfer_research_tokens_to_research_group(const int64_t research_token_id,
+                                                                            const int64_t research_id,
+                                                                            const std::string& owner,
+                                                                            const uint32_t amount,
+                                                                            const bool broadcast);
+
+    annotated_signed_transaction research_update(const int64_t research_id,
+                                                 const std::string& title,
+                                                 const std::string& abstract,
+                                                 const std::string& permlink,
+                                                 const std::string& owner,
+                                                 const bool broadcast);
+
+    annotated_signed_transaction deposit_to_vesting_contract(const std::string& sender,
+                                                             const std::string& receiver,
+                                                             const uint32_t balance,
+                                                             const uint32_t withdrawal_period,
+                                                             const uint32_t contract_duration,
+                                                             const bool broadcast);
+
+    annotated_signed_transaction withdraw_from_vesting_contract(const std::string& sender,
+                                                                const std::string& receiver,
+                                                                const uint32_t amount,
+                                                                const bool broadcast);
+
+    annotated_signed_transaction vote_proposal(const std::string& voter,
+                                               const int64_t proposal_id,
+                                               const int64_t research_group_id,
+                                               const bool broadcast);
+
+
 public:
     fc::signal<void(bool)> lock_changed;
 
@@ -877,6 +939,17 @@ FC_API( deip::wallet::wallet_api,
         (get_encrypted_memo)
         (decrypt_memo)
         (create_grant)
+        (vote_for_review)
+        (create_proposal)
+        (make_review)
+        (contribute_to_token_sale)
+        (approve_research_group_invite)
+        (reject_research_group_invite)
+        (transfer_research_tokens_to_research_group)
+        (research_update)
+        (deposit_to_vesting_contract)
+        (withdraw_from_vesting_contract)
+        (vote_proposal)
 
         /// helper api
         (get_prototype_operation)
