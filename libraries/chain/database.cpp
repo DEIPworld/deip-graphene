@@ -2549,7 +2549,7 @@ void database::validate_invariants() const
         /// verify no witness has too many votes
         const auto& witness_idx = get_index<witness_index>().indices();
         for (auto itr = witness_idx.begin(); itr != witness_idx.end(); ++itr)
-            FC_ASSERT(itr->votes <= gpo.total_common_tokens_amount, "", ("itr", *itr));
+            FC_ASSERT(itr->votes <= gpo.total_expert_tokens_amount, "", ("itr", *itr));
 
         for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr)
         {
@@ -2561,7 +2561,7 @@ void database::validate_invariants() const
                                     ? itr->witness_vote_weight()
                                     : (DEIP_MAX_PROXY_RECURSION_DEPTH > 0
                                            ? itr->proxied_vsf_votes[DEIP_MAX_PROXY_RECURSION_DEPTH - 1]
-                                           : itr->common_tokens_balance));
+                                           : itr->expertise_tokens_balance));
         }
 
         const auto& reward_idx = get_index<reward_fund_index, by_id>();
@@ -2588,8 +2588,8 @@ void database::validate_invariants() const
         FC_ASSERT(gpo.total_expert_tokens_amount == total_expert_tokens_amount, "",
                   ("gpo.total_expert_tokens", gpo.total_expert_tokens_amount)("total_expert_tokens", total_expert_tokens_amount));
 
-        FC_ASSERT(gpo.total_common_tokens_amount == total_vsf_votes, "",
-                  ("common_tokens_balance", gpo.total_common_tokens_amount)("total_vsf_votes", total_vsf_votes));
+        FC_ASSERT(gpo.total_expert_tokens_amount == total_vsf_votes, "",
+                  ("total_expert_tokens_amount", gpo.total_expert_tokens_amount)("total_vsf_votes", total_vsf_votes));
     }
     FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
 }
