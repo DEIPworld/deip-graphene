@@ -1298,12 +1298,15 @@ void delegate_expertise_evaluator::do_apply(const delegate_expertise_operation& 
     account_service.check_account_existence(op.sender);
     account_service.check_account_existence(op.receiver);
 
+    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.sender, op.discipline_id);
+    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.receiver, op.discipline_id);
+
     auto& receiver = _db.get_account(op.receiver);
 
-    auto& accounts = receiver.delegated_expertise.at(op.discipline_id);
+    auto idx = receiver.delegated_expertise.equal_range(op.discipline_id);
 
-    for (auto& account : accounts)
-        FC_ASSERT(account != op.sender, "This account have already delegate his expertise in this discipline");
+    for (auto it = idx.first; it != idx.second; ++it)
+        FC_ASSERT(it->second != op.sender, "This account have already delegate his expertise in this discipline");
 
     account_service.delegate_expertise(receiver, op.sender, op.discipline_id);
 }
