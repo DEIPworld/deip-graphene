@@ -1614,7 +1614,7 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
     std::map<research_group_id_type, share_type> grant_shares_per_research;
 
     // Exclude final results from share calculation and grant distribution
-    const auto& final_results_idx = get_index<total_votes_index>().indices().get<by_discipline_and_research_content_type>();
+    const auto& final_results_idx = get_index<total_votes_index>().indices().get<by_discipline_and_content_type>();
     auto final_results_itr = final_results_idx.find(std::make_tuple(discipline.id, research_content_type::final_result));
     while (final_results_itr != final_results_idx.end())
     {

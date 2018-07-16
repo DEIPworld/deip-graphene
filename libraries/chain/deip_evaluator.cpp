@@ -832,6 +832,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
         auto& token = expert_token.get();
         if (research_disciplines_ids.find(token.discipline_id) != research_disciplines_ids.end())
         {
+            FC_ASSERT(token.voting_power >= 20 * DEIP_1_PERCENT, "You don't have enough expertise in this discipline to make a review");
             review_disciplines.insert(token.discipline_id);
         }
     }
@@ -845,6 +846,10 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
         auto used_expertise = (op.weight * token.amount) / DEIP_100_PERCENT;
 
+        _db._temporary_public_impl().modify(token, [&](expert_token_object& e) {
+            e.voting_power -= 20 * DEIP_1_PERCENT;
+        });
+
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
             r.expertise_amounts_used[token.discipline_id] = used_expertise;
             r.weights_per_discipline[token.discipline_id] = 0;
@@ -856,7 +861,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             tv.research_content_id = content.id;
             tv.research_id = content.research_id;
             tv.total_weight = 0;
-            tv.research_content_type = content.type;
+            tv.content_type = content.type;
         });
 
         dynamic_global_properties_service.update_used_expertise(used_expertise);
