@@ -252,7 +252,7 @@ void transfer_research_tokens_operation::validate() const
 
 void delegate_expertise_operation::validate() const
 {
-    FC_ASSERT(discipline_id > 0, "Discipline id cannot be negative");
+    FC_ASSERT(discipline_id > 0, "Discipline id must be greater than zero");
     validate_account_name(sender);
     validate_account_name(receiver);
 }

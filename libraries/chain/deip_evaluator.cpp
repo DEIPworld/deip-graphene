@@ -1290,5 +1290,23 @@ void transfer_research_tokens_evaluator::do_apply(const transfer_research_tokens
     }
 }
 
+void delegate_expertise_evaluator::do_apply(const delegate_expertise_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+
+    account_service.check_account_existence(op.sender);
+    account_service.check_account_existence(op.receiver);
+
+    auto& receiver = _db.get_account(op.receiver);
+
+    auto& accounts = receiver.delegated_expertise.at(op.discipline_id);
+
+    for (auto& account : accounts)
+        FC_ASSERT(account != op.sender, "This account have already delegate his expertise in this discipline");
+
+    account_service.delegate_expertise(receiver, op.sender, op.discipline_id);
+}
+
 } // namespace chain
 } // namespace deip 

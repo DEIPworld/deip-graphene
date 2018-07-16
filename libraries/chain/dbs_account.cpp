@@ -482,5 +482,12 @@ void dbs_account::increase_expertise_tokens(const account_object &account, const
     });
 }
 
+void dbs_account::delegate_expertise(const account_object& receiver, const account_name_type& sender, const discipline_id_type& discipline_id)
+{
+    FC_ASSERT(discipline_id > 0, "Discipline id must be greater than zero");
+
+    db_impl().modify(receiver, [&](account_object& a) { a.delegated_expertise[discipline_id].push_back(sender); });
+}
+
 }
 }
