@@ -103,6 +103,8 @@
 #define DEIP_1_PERCENT                       (DEIP_100_PERCENT/100)
 #define DEIP_1_TENTH_PERCENT                 (DEIP_100_PERCENT/1000)
 
+#define DEIP_REVIEW_REQUIRED_POWER 20
+
 #define DEIP_INFLATION_RATE_START_PERCENT    (978) // Fixes block 7,000,000 to 9.5%
 #define DEIP_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
 #define DEIP_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
