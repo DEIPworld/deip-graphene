@@ -66,23 +66,12 @@ public:
 
     bool is_exists_by_research_and_discipline(const research_content_id_type& research_content_id, const discipline_id_type& discipline_id);
 
-    const total_votes_object& update_total_votes_for_final_result(const total_votes_object& total_votes,
-                                                                  const share_type total_weight,
-                                                                  const share_type total_active_weight,
-                                                                  const share_type total_research_reward_weight,
-                                                                  const share_type total_active_research_reward_weight);
-
-
     // review_votes_object
     using review_vote_refs_type = std::vector<std::reference_wrapper<const review_vote_object>>;
 
-    const review_vote_object& create_review_vote(const review_id_type& review_id,
-                                                 const discipline_id_type& discipline_id,
-                                                 const account_name_type& voter,
-                                                 const share_type& tokens_amount,
-                                                 const int16_t& weight,
-                                                 const uint16_t& voting_power,
-                                                 const time_point_sec& voting_time);
+    const review_vote_object &create_review_vote(const review_id_type &review_id, const discipline_id_type &discipline_id,
+                                                     const account_name_type &voter, const int16_t &weight,
+                                                     const time_point_sec &voting_time);
 
     review_vote_refs_type get_review_votes(const review_id_type& review_id) const;
     review_vote_refs_type get_review_votes_by_voter(const account_name_type& voter) const;

@@ -32,13 +32,14 @@ public:
                                           const std::vector<research_content_id_type>& references,
                                           const std::vector<string>& external_references);
 
-    const research_content_object& get_content_by_id(const research_content_id_type& id) const;
+    const research_content_object& get(const research_content_id_type& id) const;
 
-    const research_content_object& get_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
+    const research_content_object& get_by_permlink(const research_id_type &research_id, const string &permlink) const;
 
-    research_content_refs_type get_content_by_research_id(const research_id_type& research_id) const;
+    research_content_refs_type get_by_research_id(const research_id_type &research_id) const;
 
-    research_content_refs_type get_content_by_research_id_and_content_type(const research_id_type& research_id, const research_content_type& type) const;
+    research_content_refs_type get_by_research_and_type(const research_id_type &research_id,
+                                                        const research_content_type &type) const;
 
     void check_research_content_existence(const research_content_id_type& research_content_id);
 };

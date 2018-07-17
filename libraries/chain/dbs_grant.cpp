@@ -118,7 +118,7 @@ const grant_object& dbs_grant::create_grant(const account_object& owner,
 
 asset dbs_grant::allocate_funds(const grant_object& grant)
 {
-    auto amount = asset(std::max(grant.per_block, grant.balance.amount), DEIP_SYMBOL);
+    auto amount = asset(std::min(grant.per_block, grant.balance.amount), DEIP_SYMBOL);
     db_impl().modify(grant, [&](grant_object& b) {
         b.balance -= amount;
     });

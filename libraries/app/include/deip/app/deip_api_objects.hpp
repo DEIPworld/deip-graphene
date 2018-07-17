@@ -347,7 +347,6 @@ struct discipline_api_obj
         : id(d.id._id)
         ,  parent_id(d.parent_id._id)
         ,  name(d.name)
-        ,  votes_in_last_ten_weeks(d.votes_in_last_ten_weeks)
     {}
 
     // because fc::variant require for temporary object
@@ -694,11 +693,6 @@ struct total_votes_api_obj
         ,  research_id(vo.research_id._id)
         ,  research_content_id(vo.research_content_id._id)
         ,  total_weight(vo.total_weight)
-        ,  total_active_weight(vo.total_active_weight)
-        ,  total_research_reward_weight(vo.total_research_reward_weight)
-        ,  total_active_research_reward_weight(vo.total_active_research_reward_weight)
-        ,  total_curators_reward_weight(vo.total_curators_reward_weight)
-        ,  total_active_curators_reward_weight(vo.total_active_curators_reward_weight)
     {}
 
     // because fc::variant require for temporary object
@@ -712,13 +706,6 @@ struct total_votes_api_obj
     int64_t research_content_id;
 
     share_type total_weight;
-    share_type total_active_weight;
-
-    share_type total_research_reward_weight;
-    share_type total_active_research_reward_weight;
-
-    share_type total_curators_reward_weight;
-    share_type total_active_curators_reward_weight;
 };
 
 struct review_api_obj
@@ -733,7 +720,7 @@ struct review_api_obj
     {
         this->disciplines = disciplines;
 
-        for (const auto& kvp : r.reward_weights_per_discipline) {
+        for (const auto& kvp : r.weights_per_discipline) {
             discipline_id_type discipline_id = kvp.first;
             share_type weight = kvp.second;
             this->weight_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
@@ -815,9 +802,7 @@ struct review_vote_api_obj
             , discipline_id(rvo.discipline_id._id)
             , voter(rvo.voter)
             , review_id(rvo.review_id._id)
-            , tokens_amount(rvo.tokens_amount)
             , weight(rvo.weight)
-            , voting_power(rvo.voting_power)
             , voting_time(rvo.voting_time)
     {}
 
@@ -831,9 +816,7 @@ struct review_vote_api_obj
     account_name_type voter;
     int64_t review_id;
 
-    share_type tokens_amount;
     int64_t weight;
-    uint16_t voting_power;
     time_point_sec voting_time;
 
 };
@@ -911,7 +894,6 @@ FC_REFLECT( deip::app::discipline_api_obj,
             (id)
             (parent_id)
             (name)
-            (votes_in_last_ten_weeks)
           )
 
 
@@ -1043,11 +1025,6 @@ FC_REFLECT( deip::app::total_votes_api_obj,
            (research_id)
            (research_content_id)
            (total_weight)
-           (total_active_weight)
-           (total_research_reward_weight)
-           (total_active_research_reward_weight)
-           (total_curators_reward_weight)
-           (total_active_curators_reward_weight)
 )
 
 FC_REFLECT( deip::app::review_api_obj,
@@ -1074,9 +1051,7 @@ FC_REFLECT( deip::app::vote_api_obj,
             (voter)
             (research_id)
             (research_content_id)
-            (tokens_amount)
             (weight)
-            (voting_power)
             (voting_time)
 
 )
@@ -1086,9 +1061,7 @@ FC_REFLECT( deip::app::review_vote_api_obj,
             (discipline_id)
             (voter)
             (review_id)
-            (tokens_amount)
             (weight)
-            (voting_power)
             (voting_time)
 
 )

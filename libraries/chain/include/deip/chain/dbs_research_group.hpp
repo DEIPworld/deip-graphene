@@ -49,12 +49,12 @@ public:
 
     const research_group_token_object& get_research_group_token_by_id(const research_group_token_id_type& id) const;
 
-    research_group_token_refs_type get_research_group_tokens_by_account_name(const account_name_type &account_name) const;
+    research_group_token_refs_type get_tokens_by_account(const account_name_type &account_name) const;
 
     research_group_token_refs_type get_research_group_tokens(const research_group_id_type& research_group_id) const;
 
-    const research_group_token_object& get_research_group_token_by_account_and_research_group_id(const account_name_type& account,
-                                                                const research_group_id_type& research_group_id) const;
+    const research_group_token_object& get_token_by_account_and_research_group(const account_name_type &account,
+                                                                               const research_group_id_type &research_group_id) const;
 
     const research_group_token_object& create_research_group_token(const research_group_id_type& research_group_id,
                                                                    const share_type amount,
@@ -65,9 +65,9 @@ public:
     void check_research_group_token_existence(const account_name_type& account,
                                         const research_group_id_type& research_group_id) const;
 
-    const research_group_object& increase_research_group_balance(const research_group_id_type& research_group_id, const asset& deips);
+    const research_group_object& increase_balance(const research_group_id_type &research_group_id, const asset &deips);
 
-    const research_group_object& decrease_research_group_balance(const research_group_id_type& research_group_id, const asset& deips);
+    const research_group_object& decrease_balance(const research_group_id_type &research_group_id, const asset &deips);
 
     const share_type decrease_research_group_tokens_amount(const research_group_id_type& research_group_id,
                                                      const share_type delta);
@@ -77,6 +77,8 @@ public:
     const research_group_token_object& set_new_research_group_token_amount(const research_group_id_type& research_group_id,
                                                                            const account_name_type& owner,
                                                                            const share_type new_amount);
+
+    const flat_set<account_name_type> get_members(const research_group_id_type& id) const;
 
 };
 

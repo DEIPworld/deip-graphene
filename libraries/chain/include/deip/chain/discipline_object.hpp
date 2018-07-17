@@ -32,11 +32,8 @@ public:
     discipline_id_type id;
     discipline_id_type parent_id;
     discipline_name_type name;
-    share_type votes_in_last_ten_weeks;
 
-    share_type total_active_review_reward_weight;
-    share_type total_active_research_reward_weight;
-    share_type total_active_reward_weight;
+    share_type total_active_weight;
 };
 
 struct by_discipline_name;
@@ -61,8 +58,7 @@ typedef multi_index_container<discipline_object,
 }
 
 FC_REFLECT( deip::chain::discipline_object,
-            (id)(parent_id)(name)(votes_in_last_ten_weeks)(total_active_review_reward_weight)
-                    (total_active_research_reward_weight)(total_active_reward_weight)
+            (id)(parent_id)(name)(total_active_weight)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::discipline_object, deip::chain::discipline_index )

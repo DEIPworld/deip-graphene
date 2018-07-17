@@ -34,9 +34,7 @@ public:
     discipline_id_type discipline_id;
     account_name_type voter;
     review_id_type review_id;
-    share_type tokens_amount;
     int64_t weight;
-    uint16_t voting_power;
     time_point_sec voting_time;
 };
 
@@ -88,7 +86,7 @@ typedef multi_index_container<review_vote_object,
 }
 
 FC_REFLECT( deip::chain::review_vote_object,
-            (id)(discipline_id)(voter)(review_id)(tokens_amount)(weight)(voting_power)(voting_time)
+            (id)(discipline_id)(voter)(review_id)(weight)(voting_time)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::review_vote_object, deip::chain::review_vote_index )

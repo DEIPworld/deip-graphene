@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
 
         BOOST_TEST_MESSAGE("--- Test normal review creation");
         auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-        auto& content = db.create<research_content_object>([&](research_content_object& c) {
+        db.create<research_content_object>([&](research_content_object& c) {
             c.id = 1;
             c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
             c.research_id = research.id;
@@ -131,6 +131,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = true;
+        op.weight =  50 * DEIP_1_PERCENT;
 
         fc::uint128 total_expert_tokens_amount; // With Common Token
         auto it_pair = db.get_index<expert_token_index>().indicies().get<by_account_name>().equal_range("alice");
@@ -153,6 +154,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
+        auto new_voting_power = token.voting_power;
         const review_object& review = db.get<review_object, by_id>(0);
 
         std::vector<discipline_id_type> disciplines;
@@ -163,69 +165,9 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         BOOST_CHECK(review.author == "alice");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.content == "test");
-        BOOST_CHECK(review.expertise_amounts_used.at(1) == token.amount);
+        BOOST_CHECK(review.expertise_amounts_used.at(1) == (op.weight * token.amount) / DEIP_100_PERCENT);
         BOOST_CHECK(disciplines.size() == 1 && disciplines[0] == 1);
-
-        // Validate token
-        BOOST_REQUIRE(token.voting_power == old_voting_power - (old_voting_power / 10));
-        BOOST_REQUIRE(token.last_vote_time == db.head_block_time());
-
-        // Validate vote & total_votes objects
-        auto& vote_service = db.obtain_service<dbs_vote>();
-        auto& total_votes = vote_service.get_total_votes_by_content_and_discipline(op.research_content_id, token.discipline_id);
-
-        const auto& vote_idx = db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
-        auto itr = vote_idx.find(std::make_tuple(op.author, token.discipline_id, op.research_content_id));
-        auto research_reward_curve = curve_id::power1dot5;
-        auto curator_reward_curve = curve_id::power1dot5;
-
-        // vote
-        BOOST_REQUIRE(itr != vote_idx.end());
-        auto& vote = *itr;
-        BOOST_REQUIRE(vote.voting_power == (old_voting_power * DEIP_100_PERCENT / DEIP_100_PERCENT));
-        int64_t expected_tokens_amount = (token.amount.value * old_voting_power * DEIP_100_PERCENT) / (DEIP_100_PERCENT * DEIP_100_PERCENT);
-        BOOST_REQUIRE(vote.tokens_amount.value == expected_tokens_amount);
-        BOOST_REQUIRE(vote.voting_time == db.head_block_time());
-        BOOST_REQUIRE(vote.voter == op.author);
-        BOOST_REQUIRE(vote.discipline_id == token.discipline_id);
-        BOOST_REQUIRE(vote.research_content_id == op.research_content_id);
-
-        // Calculate vote weight
-        int64_t expected_curator_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, curator_reward_curve).to_uint64();
-        /// discount weight by time
-        uint128_t w(expected_curator_reward_weight);
-        uint64_t delta_t = std::min(uint64_t((vote.voting_time - content.created_at).to_seconds()),
-                                    uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
-
-        w *= delta_t;
-        w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
-        expected_curator_reward_weight = w.to_uint64();
-        BOOST_REQUIRE(vote.weight == expected_curator_reward_weight);
-
-        // total_votes
-        BOOST_REQUIRE(total_votes.total_weight == expected_tokens_amount);
-        BOOST_REQUIRE(total_votes.total_active_weight == expected_tokens_amount);
-
-        uint64_t expected_research_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, research_reward_curve).to_uint64();
-        BOOST_REQUIRE(total_votes.total_research_reward_weight == expected_research_reward_weight);
-        BOOST_REQUIRE(total_votes.total_active_research_reward_weight == expected_research_reward_weight);
-
-        BOOST_REQUIRE(total_votes.total_curators_reward_weight == expected_curator_reward_weight);
-        BOOST_REQUIRE(total_votes.total_active_curators_reward_weight == expected_curator_reward_weight);
-
-        // Validate discipline
-
-        auto& discipline_service = db.obtain_service<dbs_discipline>();
-        auto& discipline = discipline_service.get_discipline(token.discipline_id);
-
-        BOOST_REQUIRE(discipline.total_active_reward_weight == expected_tokens_amount);
-        BOOST_REQUIRE(discipline.total_active_research_reward_weight == expected_research_reward_weight);
-        BOOST_REQUIRE(discipline.total_active_review_reward_weight == 0);
-
-
-        // Validate global properties object
-        auto& dgpo = db.get_dynamic_global_properties();
-        BOOST_REQUIRE(dgpo.total_active_disciplines_reward_weight == 10000);
+        BOOST_CHECK(old_voting_power - new_voting_power == DEIP_REVIEW_REQUIRED_POWER * DEIP_1_PERCENT);
 
         validate_database();
 
@@ -256,239 +198,233 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(vote_apply_failure)
-{
-
-    BOOST_TEST_MESSAGE("Testing: vote_apply failure cases");
-
-    ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
-
-    generate_block();
-
-    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-    auto& discipline_service = db.obtain_service<dbs_discipline>();
-    auto& discipline = discipline_service.get_discipline(1);
-
-    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
-        r.discipline_id = discipline.id;
-        r.research_id = research.id;
-        r.votes_count = 0;
-    });
-
-    auto& content = db.create<research_content_object>([&](research_content_object& c) {
-        c.id = 1;
-        c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
-        c.research_id = research.id;
-        c.authors = { "alice", "bob" };
-        c.content = "content";
-        c.references = {};
-        c.external_references = { "http://google.com" };
-        c.type = research_content_type::milestone;
-    });
-
-    private_key_type priv_key = generate_private_key("alice");
-
-    vote_operation op;
-
-    signed_transaction tx;
-    tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-
-    BOOST_TEST_MESSAGE("--- Testing voting on a non-existent research");
-
-    tx.operations.clear();
-    tx.signatures.clear();
-
-    op.research_id = 100;
-    op.research_content_id = content.id._id;
-    op.discipline_id = discipline.id._id;
-    op.weight = 50 * DEIP_1_PERCENT;
-    op.voter = "alice";
-
-    tx.operations.push_back(op);
-    tx.sign(priv_key, db.get_chain_id());
-    tx.validate();
-
-    DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
-
-    validate_database();
-
-    BOOST_TEST_MESSAGE("--- Testing voting on a non-existent content");
-
-    tx.operations.clear();
-    tx.signatures.clear();
-
-    op.research_id = research.id._id;
-    op.research_content_id = 100;
-    op.discipline_id = discipline.id._id;
-    op.weight = 50 * DEIP_1_PERCENT;
-    op.voter = "alice";
-
-    tx.operations.push_back(op);
-    tx.sign(priv_key, db.get_chain_id());
-    tx.validate();
-
-    DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
-
-    validate_database();
-
-    BOOST_TEST_MESSAGE("--- Testing voting with non-existent discipline");
-
-    tx.operations.clear();
-    tx.signatures.clear();
-
-    op.research_id = research.id._id;
-    op.research_content_id = content.id._id;
-    op.discipline_id = 100;
-    op.weight = 50 * DEIP_1_PERCENT;
-    op.voter = "alice";
-
-    tx.operations.push_back(op);
-    tx.sign(priv_key, db.get_chain_id());
-    tx.validate();
-
-    DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
-
-    validate_database();
-
-    BOOST_TEST_MESSAGE("--- Testing voting with a weight of 0");
-
-    tx.operations.clear();
-    tx.signatures.clear();
-
-    op.research_id = research.id._id;
-    op.research_content_id = content.id._id;
-    op.discipline_id = discipline.id._id;
-    op.weight = 0;
-    op.voter = "alice";
-
-    tx.operations.push_back(op);
-    tx.sign(alice_private_key, db.get_chain_id());
-
-    DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
-
-    validate_database();
-}
-
-BOOST_AUTO_TEST_CASE(vote_apply_success)
-{
-    BOOST_TEST_MESSAGE("Testing: vote_apply success cases");
-
-    ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
-
-    generate_block();
-
-    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
-    auto& discipline_service = db.obtain_service<dbs_discipline>();
-    auto& discipline = discipline_service.get_discipline(1);
-
-    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
-        r.discipline_id = discipline.id;
-        r.research_id = research.id;
-        r.votes_count = 0;
-    });
-
-    auto& expert_token_service = db.obtain_service<dbs_expert_token>();
-    auto& token = expert_token_service.get_expert_token_by_account_and_discipline("alice", 1);
-
-    auto& content = db.create<research_content_object>([&](research_content_object& c) {
-        c.id = 1;
-        c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
-        c.research_id = research.id;
-        c.authors = { "alice", "bob" };
-        c.content = "content";
-        c.references = {};
-        c.external_references = { "http://google.com" };
-        c.type = research_content_type::milestone;
-        c.activity_state = research_content_activity_state::active;
-    });
-
-    private_key_type priv_key = generate_private_key("alice");
-
-    vote_operation op;
-
-    signed_transaction tx;
-    tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-
-    BOOST_TEST_MESSAGE("--- Testing success");
-
-    tx.operations.clear();
-    tx.signatures.clear();
-
-    auto old_voting_power = token.voting_power;
-
-    op.research_id = research.id._id;
-    op.research_content_id = content.id._id;
-    op.discipline_id = discipline.id._id;
-    op.weight = 50 * DEIP_1_PERCENT;
-    op.voter = "alice";
-
-    tx.operations.clear();
-    tx.signatures.clear();
-    tx.operations.push_back(op);
-    tx.sign(alice_private_key, db.get_chain_id());
-
-    db.push_transaction(tx, 0);
-
-    // Validate token
-    BOOST_REQUIRE(token.voting_power == old_voting_power - (old_voting_power * op.weight / DEIP_100_PERCENT / 10));
-    BOOST_REQUIRE(token.last_vote_time == db.head_block_time());
-
-    // Validate vote & total_votes objects
-    auto& vote_service = db.obtain_service<dbs_vote>();
-    auto& total_votes = vote_service.get_total_votes_by_content_and_discipline(op.research_content_id, op.discipline_id);
-
-    const auto& vote_idx = db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
-    auto itr = vote_idx.find(std::make_tuple(op.voter, op.discipline_id, op.research_content_id));
-    auto research_reward_curve = curve_id::power1dot5;
-    auto curator_reward_curve = curve_id::power1dot5;
-
-    // vote
-    BOOST_REQUIRE(itr != vote_idx.end());
-    auto& vote = *itr;
-    BOOST_REQUIRE(vote.voting_power == (old_voting_power * op.weight / DEIP_100_PERCENT));
-    int64_t expected_tokens_amount = (token.amount.value * old_voting_power * op.weight) / (DEIP_100_PERCENT * DEIP_100_PERCENT);
-    BOOST_REQUIRE(vote.tokens_amount.value == expected_tokens_amount);
-    BOOST_REQUIRE(vote.voting_time == db.head_block_time());
-    BOOST_REQUIRE(vote.voter == op.voter);
-    BOOST_REQUIRE(vote.discipline_id == op.discipline_id);
-    BOOST_REQUIRE(vote.research_id == op.research_id);
-    BOOST_REQUIRE(vote.research_content_id == op.research_content_id);
-
-    // Calculate vote weight
-    int64_t expected_curator_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, curator_reward_curve).to_uint64();
-    /// discount weight by time
-    uint128_t w(expected_curator_reward_weight);
-    uint64_t delta_t = std::min(uint64_t((vote.voting_time - content.created_at).to_seconds()),
-                                uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
-
-    w *= delta_t;
-    w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
-    expected_curator_reward_weight = w.to_uint64();
-    BOOST_REQUIRE(vote.weight == expected_curator_reward_weight);
-
-    // total_votes
-    BOOST_REQUIRE(total_votes.total_weight == expected_tokens_amount);
-    BOOST_REQUIRE(total_votes.total_active_weight == expected_tokens_amount);
-
-    uint64_t expected_research_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, research_reward_curve).to_uint64();
-    BOOST_REQUIRE(total_votes.total_research_reward_weight == expected_research_reward_weight);
-    BOOST_REQUIRE(total_votes.total_active_research_reward_weight == expected_research_reward_weight);
-
-    BOOST_REQUIRE(total_votes.total_curators_reward_weight == expected_curator_reward_weight);
-    BOOST_REQUIRE(total_votes.total_active_curators_reward_weight == expected_curator_reward_weight);
-
-    // Validate discipline
-
-    BOOST_REQUIRE(discipline.total_active_reward_weight == expected_tokens_amount);
-    BOOST_REQUIRE(discipline.total_active_research_reward_weight == expected_research_reward_weight);
-    BOOST_REQUIRE(discipline.total_active_review_reward_weight == 0);
-
-    // Validate global properties object
-    auto& dgpo = db.get_dynamic_global_properties();
-    BOOST_REQUIRE(dgpo.total_active_disciplines_reward_weight == expected_tokens_amount);
-
-    validate_database();
-}
+//BOOST_AUTO_TEST_CASE(vote_apply_failure)
+//{
+//
+//    BOOST_TEST_MESSAGE("Testing: vote_apply failure cases");
+//
+//    ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+//
+//    generate_block();
+//
+//    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
+//    auto& discipline_service = db.obtain_service<dbs_discipline>();
+//    auto& discipline = discipline_service.get_discipline(1);
+//
+//    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+//        r.discipline_id = discipline.id;
+//        r.research_id = research.id;
+//        r.votes_count = 0;
+//    });
+//
+//    auto& content = db.create<research_content_object>([&](research_content_object& c) {
+//        c.id = 1;
+//        c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
+//        c.research_id = research.id;
+//        c.authors = { "alice", "bob" };
+//        c.content = "content";
+//        c.references = {};
+//        c.external_references = { "http://google.com" };
+//        c.type = research_content_type::milestone;
+//    });
+//
+//    private_key_type priv_key = generate_private_key("alice");
+//
+//    vote_operation op;
+//
+//    signed_transaction tx;
+//    tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//
+//    BOOST_TEST_MESSAGE("--- Testing voting on a non-existent research");
+//
+//    tx.operations.clear();
+//    tx.signatures.clear();
+//
+//    op.research_id = 100;
+//    op.research_content_id = content.id._id;
+//    op.discipline_id = discipline.id._id;
+//    op.weight = 50 * DEIP_1_PERCENT;
+//    op.voter = "alice";
+//
+//    tx.operations.push_back(op);
+//    tx.sign(priv_key, db.get_chain_id());
+//    tx.validate();
+//
+//    DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+//
+//    validate_database();
+//
+//    BOOST_TEST_MESSAGE("--- Testing voting on a non-existent content");
+//
+//    tx.operations.clear();
+//    tx.signatures.clear();
+//
+//    op.research_id = research.id._id;
+//    op.research_content_id = 100;
+//    op.discipline_id = discipline.id._id;
+//    op.weight = 50 * DEIP_1_PERCENT;
+//    op.voter = "alice";
+//
+//    tx.operations.push_back(op);
+//    tx.sign(priv_key, db.get_chain_id());
+//    tx.validate();
+//
+//    DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+//
+//    validate_database();
+//
+//    BOOST_TEST_MESSAGE("--- Testing voting with non-existent discipline");
+//
+//    tx.operations.clear();
+//    tx.signatures.clear();
+//
+//    op.research_id = research.id._id;
+//    op.research_content_id = content.id._id;
+//    op.discipline_id = 100;
+//    op.weight = 50 * DEIP_1_PERCENT;
+//    op.voter = "alice";
+//
+//    tx.operations.push_back(op);
+//    tx.sign(priv_key, db.get_chain_id());
+//    tx.validate();
+//
+//    DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+//
+//    validate_database();
+//
+//    BOOST_TEST_MESSAGE("--- Testing voting with a weight of 0");
+//
+//    tx.operations.clear();
+//    tx.signatures.clear();
+//
+//    op.research_id = research.id._id;
+//    op.research_content_id = content.id._id;
+//    op.discipline_id = discipline.id._id;
+//    op.weight = 0;
+//    op.voter = "alice";
+//
+//    tx.operations.push_back(op);
+//    tx.sign(alice_private_key, db.get_chain_id());
+//
+//    DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+//
+//    validate_database();
+//}
+//
+//BOOST_AUTO_TEST_CASE(vote_apply_success)
+//{
+//    BOOST_TEST_MESSAGE("Testing: vote_apply success cases");
+//
+//    ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+//
+//    generate_block();
+//
+//    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
+//    auto& discipline_service = db.obtain_service<dbs_discipline>();
+//    auto& discipline = discipline_service.get_discipline(1);
+//
+//    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+//        r.discipline_id = discipline.id;
+//        r.research_id = research.id;
+//        r.votes_count = 0;
+//    });
+//
+//    auto& expert_token_service = db.obtain_service<dbs_expert_token>();
+//    auto& token = expert_token_service.get_expert_token_by_account_and_discipline("alice", 1);
+//
+//    auto& content = db.create<research_content_object>([&](research_content_object& c) {
+//        c.id = 1;
+//        c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
+//        c.research_id = research.id;
+//        c.authors = { "alice", "bob" };
+//        c.content = "content";
+//        c.references = {};
+//        c.external_references = { "http://google.com" };
+//        c.type = research_content_type::milestone;
+//        c.activity_state = research_content_activity_state::active;
+//    });
+//
+//    private_key_type priv_key = generate_private_key("alice");
+//
+//    vote_operation op;
+//
+//    signed_transaction tx;
+//    tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//
+//    BOOST_TEST_MESSAGE("--- Testing success");
+//
+//    tx.operations.clear();
+//    tx.signatures.clear();
+//
+//    auto old_voting_power = token.voting_power;
+//
+//    op.research_id = research.id._id;
+//    op.research_content_id = content.id._id;
+//    op.discipline_id = discipline.id._id;
+//    op.weight = 50 * DEIP_1_PERCENT;
+//    op.voter = "alice";
+//
+//    tx.operations.clear();
+//    tx.signatures.clear();
+//    tx.operations.push_back(op);
+//    tx.sign(alice_private_key, db.get_chain_id());
+//
+//    db.push_transaction(tx, 0);
+//
+//    // Validate token
+//    BOOST_REQUIRE(token.voting_power == old_voting_power - (old_voting_power * op.weight / DEIP_100_PERCENT / 10));
+//    BOOST_REQUIRE(token.last_vote_time == db.head_block_time());
+//
+//    // Validate vote & total_votes objects
+//    auto& vote_service = db.obtain_service<dbs_vote>();
+//    auto& total_votes = vote_service.get_total_votes_by_content_and_discipline(op.research_content_id, op.discipline_id);
+//
+//    const auto& vote_idx = db._temporary_public_impl().get_index<vote_index>().indices().get<by_voter_discipline_and_content>();
+//    auto itr = vote_idx.find(std::make_tuple(op.voter, op.discipline_id, op.research_content_id));
+//    auto research_reward_curve = curve_id::linear;
+//    auto curator_reward_curve = curve_id::linear;
+//
+//    // vote
+//    BOOST_REQUIRE(itr != vote_idx.end());
+//    auto& vote = *itr;
+//    BOOST_REQUIRE(vote.voting_power == (old_voting_power * op.weight / DEIP_100_PERCENT));
+//    int64_t expected_tokens_amount = (token.amount.value * old_voting_power * op.weight) / (DEIP_100_PERCENT * DEIP_100_PERCENT);
+//    BOOST_REQUIRE(vote.tokens_amount.value == expected_tokens_amount);
+//    BOOST_REQUIRE(vote.voting_time == db.head_block_time());
+//    BOOST_REQUIRE(vote.voter == op.voter);
+//    BOOST_REQUIRE(vote.discipline_id == op.discipline_id);
+//    BOOST_REQUIRE(vote.research_id == op.research_id);
+//    BOOST_REQUIRE(vote.research_content_id == op.research_content_id);
+//
+//    // Calculate vote weight
+//    int64_t expected_curator_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, curator_reward_curve).to_uint64();
+//    /// discount weight by time
+//    uint128_t w(expected_curator_reward_weight);
+//    uint64_t delta_t = std::min(uint64_t((vote.voting_time - content.created_at).to_seconds()),
+//                                uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
+//
+//    w *= delta_t;
+//    w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
+//    expected_curator_reward_weight = w.to_uint64();
+//    BOOST_REQUIRE(vote.weight == expected_curator_reward_weight);
+//
+//    // total_votes
+//    BOOST_REQUIRE(total_votes.total_weight == expected_tokens_amount);
+//
+//    uint64_t expected_research_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, research_reward_curve).to_uint64();
+//    BOOST_REQUIRE(total_votes.total_weight == expected_research_reward_weight);
+//    BOOST_REQUIRE(total_votes.total_weight == expected_curator_reward_weight);
+//
+//    // Validate discipline
+//
+//    BOOST_REQUIRE(discipline.total_active_weight == expected_tokens_amount);
+//
+//    // Validate global properties object
+//    auto& dgpo = db.get_dynamic_global_properties();
+//    BOOST_REQUIRE(dgpo.total_disciplines_weight == expected_tokens_amount);
+//
+//    validate_database();
+//}
 
 BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
 {
@@ -523,6 +459,14 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
         r.research_content_id = content.id;
         r.created_at = db.head_block_time();
         r.expertise_amounts_used[discipline.id] = 1000;
+        r.disciplines.insert(discipline.id);
+    });
+
+    db.create<total_votes_object>([&](total_votes_object& tv) {
+        tv.total_weight = 0;
+        tv.research_id = research.id;
+        tv.research_content_id = content.id;
+        tv.discipline_id = discipline.id;
     });
 
     private_key_type priv_key = generate_private_key("alice");
@@ -560,42 +504,34 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
     // Validate vote
     const auto& vote_idx = db._temporary_public_impl().get_index<review_vote_index>().indices().get<by_voter_discipline_and_review>();
     auto itr = vote_idx.find(std::make_tuple(op.voter, op.discipline_id, op.review_id));
-    auto review_reward_curve = curve_id::power1dot5;
-    auto curator_reward_curve = curve_id::power1dot5;
 
     // vote
     BOOST_REQUIRE(itr != vote_idx.end());
     auto& vote = *itr;
-    BOOST_REQUIRE(vote.voting_power == (old_voting_power * op.weight / DEIP_100_PERCENT));
     int64_t expected_tokens_amount = (token.amount.value * old_voting_power * abs(op.weight)) / (DEIP_100_PERCENT * DEIP_100_PERCENT);
-    BOOST_REQUIRE(vote.tokens_amount.value == expected_tokens_amount);
     BOOST_REQUIRE(vote.voting_time == db.head_block_time());
     BOOST_REQUIRE(vote.voter == op.voter);
     BOOST_REQUIRE(vote.discipline_id == op.discipline_id);
     BOOST_REQUIRE(vote.review_id == op.review_id);
 
     // Calculate vote weight
-    int64_t expected_curator_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, curator_reward_curve).to_uint64();
+    int64_t expected_weight = expected_tokens_amount;
     /// discount weight by time
-    uint128_t w(expected_curator_reward_weight);
+    uint128_t w(expected_tokens_amount);
     uint64_t delta_t = std::min(uint64_t((vote.voting_time - review.created_at).to_seconds()),
                                 uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
 
     w *= delta_t;
     w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
-    expected_curator_reward_weight = w.to_uint64();
-    BOOST_REQUIRE(vote.weight == expected_curator_reward_weight);
+    expected_weight = w.to_uint64();
+    BOOST_REQUIRE(vote.weight == expected_weight);
 
     auto& updated_review = db.get<review_object>(review.id);
 
-    uint64_t expected_review_reward_weight = util::evaluate_reward_curve(expected_tokens_amount, review_reward_curve).to_uint64();
-    BOOST_REQUIRE(updated_review.reward_weights_per_discipline.at(vote.discipline_id) == expected_review_reward_weight);
-    BOOST_REQUIRE(updated_review.curation_reward_weights_per_discipline.at(op.discipline_id) == expected_curator_reward_weight);
+    BOOST_REQUIRE(updated_review.weights_per_discipline.at(vote.discipline_id) == expected_weight);
 
     // Validate discipline
-    BOOST_REQUIRE(discipline.total_active_reward_weight == 0);
-    BOOST_REQUIRE(discipline.total_active_research_reward_weight == 0);
-    BOOST_REQUIRE(discipline.total_active_review_reward_weight == expected_review_reward_weight);
+    BOOST_REQUIRE(discipline.total_active_weight == 0);
 
     // Validate review
     auto weight_modifier = db.calculate_review_weight_modifier(updated_review.id, discipline.id);
@@ -2886,8 +2822,9 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 31), fc::exception);
-        BOOST_CHECK(research_group_service.get_research_group_token_by_account_and_research_group_id("alice", 31).amount == DEIP_100_PERCENT);
+        BOOST_CHECK_THROW(research_group_service.get_token_by_account_and_research_group("bob", 31), fc::exception);
+        BOOST_CHECK(
+                research_group_service.get_token_by_account_and_research_group("alice", 31).amount == DEIP_100_PERCENT);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -2897,8 +2834,6 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
     try
     {
         ACTORS_WITH_EXPERT_TOKENS((alice));
-
-        auto& research_service = db.obtain_service<dbs_research>();
 
         vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 9000), std::make_pair("bob", 1000) };
         setup_research_group(31, "name", "research_group", "research group", 0, 40, false, accounts);
@@ -2973,7 +2908,7 @@ BOOST_AUTO_TEST_CASE(exclude_member_with_research_token_compensation_test)
         auto& research_token_service = db.obtain_service<dbs_research_token>();
         auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", research.id);
 
-        BOOST_CHECK_THROW(research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 1), fc::exception);
+        BOOST_CHECK_THROW(research_group_service.get_token_by_account_and_research_group("bob", 1), fc::exception);
         BOOST_CHECK(research_token.account_name == "bob");
         BOOST_CHECK(research_token.amount == 300);
     }
@@ -3161,9 +3096,9 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
         db.push_transaction(tx, 0);
 
         auto &research_group_service = db.obtain_service<dbs_research_group>();
-        auto &alice_token = research_group_service.get_research_group_token_by_account_and_research_group_id("alice",
-                                                                                                             31);
-        auto &bobs_token = research_group_service.get_research_group_token_by_account_and_research_group_id("bob", 31);
+        auto &alice_token = research_group_service.get_token_by_account_and_research_group("alice",
+                                                                                           31);
+        auto &bobs_token = research_group_service.get_token_by_account_and_research_group("bob", 31);
 
         BOOST_CHECK(alice_token.amount == 75 * DEIP_1_PERCENT);
         BOOST_CHECK(bobs_token.amount == 25 * DEIP_1_PERCENT);
@@ -3460,7 +3395,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     BOOST_CHECK(proposal.is_completed == true);
 
     auto& research_content_service = db.obtain_service<dbs_research_content>();
-    auto contents = research_content_service.get_content_by_research_id(1);
+    auto contents = research_content_service.get_by_research_id(1);
 
     BOOST_CHECK(contents.size() == 1);
     BOOST_CHECK(std::any_of(
@@ -3478,10 +3413,6 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         r.research_content_id = 0;
         r.discipline_id = 1;
         r.total_weight = 2000;
-        r.total_active_weight = 2000;
-        r.total_active_weight = 2000;
-        r.total_research_reward_weight = 2000;
-        r.total_active_research_reward_weight = 2000;
     });
 
     db.create<total_votes_object>([&](total_votes_object& r) {
@@ -3490,9 +3421,6 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         r.research_content_id = 0;
         r.discipline_id = 2;
         r.total_weight = 1000;
-        r.total_active_weight = 1000;
-        r.total_research_reward_weight = 100;
-        r.total_active_research_reward_weight = 1000;
     });
 
     const std::string json_str2 = "{\"research_id\": 1,"
@@ -3529,8 +3457,8 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     auto& discipline = db.get<discipline_object, by_id>(1);
     auto& discipline2 = db.get<discipline_object, by_id>(2);
 
-    BOOST_CHECK(discipline.total_active_research_reward_weight == 2000);
-    BOOST_CHECK(discipline2.total_active_research_reward_weight == 1000);
+    BOOST_CHECK(discipline.total_active_weight == 2000);
+    BOOST_CHECK(discipline2.total_active_weight == 1000);
 }
 
 BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
@@ -3548,7 +3476,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         research_group_token_create(30, "john", DEIP_1_PERCENT * 60);
         research_group_token_create(30, "alice", DEIP_1_PERCENT * 40);
 
-        auto& content = db.create<research_content_object>([&](research_content_object& c) {
+        db.create<research_content_object>([&](research_content_object& c) {
             c.id = 1;
             c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
             c.research_id = research.id;
@@ -3568,6 +3496,8 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         private_key_type priv_key = generate_private_key("john");
         private_key_type alice_key = generate_private_key("alice");
 
+        generate_block();
+
         make_review_operation op;
 
         std::vector<int64_t> references {1};
@@ -3575,6 +3505,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = true;
+        op.weight = DEIP_100_PERCENT;
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -3585,10 +3516,10 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         auto& dgpo = db.get_dynamic_global_properties();
 
-        BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == 20000);
-        BOOST_CHECK(fc::uint128(dgpo.all_used_expertise.value) == 20000);
+        BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == 10000);
+        BOOST_CHECK(fc::uint128(dgpo.total_used_expertise.value) == 10000);
 
-        generate_block();
+        generate_blocks(DEIP_BLOCKS_PER_HOUR / 2);
 
         BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == 0);
 
@@ -3601,6 +3532,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
         auto& token = expert_token_service.get_expert_token_by_account_and_discipline("john", 1);
+        auto old_voting_power = token.voting_power;
 
         op2.review_id = 0;
         op2.discipline_id = 1;
@@ -3614,36 +3546,35 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         db.push_transaction(tx, 0);
 
-        const review_vote_object& vote_for_review = db.get<review_vote_object, by_voter_discipline_and_review>(std::make_tuple("john", 1, 0));
         BOOST_CHECK(dgpo.used_expertise_per_block == 5000);
-        BOOST_CHECK(dgpo.all_used_expertise == 25000);
+        BOOST_CHECK(dgpo.total_used_expertise == 15000);
 
-        generate_block();
-
-        BOOST_TEST_MESSAGE("Vote for content expertise");
-
-        BOOST_CHECK(dgpo.used_expertise_per_block == 0);
-
-        vote_operation op3;
-
-        tx.operations.clear();
-        tx.signatures.clear();
-
-        op3.research_id = research.id._id;
-        op3.research_content_id = content.id._id;
-        op3.discipline_id = 1;
-        op3.weight = 50 * DEIP_1_PERCENT;
-        op3.voter = "john";
-
-        tx.operations.clear();
-        tx.signatures.clear();
-        tx.operations.push_back(op3);
-        tx.sign(priv_key, db.get_chain_id());
-
-        db.push_transaction(tx, 0);
-
-        BOOST_CHECK(dgpo.used_expertise_per_block == 4750);
-        BOOST_CHECK(dgpo.all_used_expertise == 29750);
+//        generate_block();
+//
+//        BOOST_TEST_MESSAGE("Vote for content expertise");
+//
+//        BOOST_CHECK(dgpo.used_expertise_per_block == 0);
+//
+//        vote_operation op3;
+//
+//        tx.operations.clear();
+//        tx.signatures.clear();
+//
+//        op3.research_id = research.id._id;
+//        op3.research_content_id = content.id._id;
+//        op3.discipline_id = 1;
+//        op3.weight = 50 * DEIP_1_PERCENT;
+//        op3.voter = "john";
+//
+//        tx.operations.clear();
+//        tx.signatures.clear();
+//        tx.operations.push_back(op3);
+//        tx.sign(priv_key, db.get_chain_id());
+//
+//        db.push_transaction(tx, 0);
+//
+//        BOOST_CHECK(dgpo.used_expertise_per_block == 4750);
+//        BOOST_CHECK(dgpo.total_used_expertise == 29750);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -3685,6 +3616,7 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = false;
+        op.weight = DEIP_100_PERCENT;
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -3716,6 +3648,8 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
         tx2.sign(alice_private_key, db.get_chain_id());
 
         db.push_transaction(tx2, 0);
+
+        // TODO: Complete test
     }
     FC_LOG_AND_RETHROW()
 }

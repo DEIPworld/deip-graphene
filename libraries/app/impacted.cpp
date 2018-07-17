@@ -63,11 +63,6 @@ struct get_impacted_account_visitor
         _impacted.insert(op.account);
     }
 
-    void operator()(const vote_operation& op)
-    {
-        _impacted.insert(op.voter);
-    }
-
     void operator()(const vote_for_review_operation& op)
     {
         _impacted.insert(op.voter);

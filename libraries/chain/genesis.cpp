@@ -212,7 +212,6 @@ void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
             d.id = discipline.id;
             d.name = discipline.name;
             d.parent_id = discipline.parent_id;
-            d.votes_in_last_ten_weeks = discipline.votes_in_last_ten_weeks;
         });
     }
 }

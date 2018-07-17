@@ -43,16 +43,11 @@ void account_update_operation::validate() const
     }
 }
 
-void vote_operation::validate() const
-{
-    validate_account_name(voter);
-    FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
-}
-
 void vote_for_review_operation::validate() const
 {
     validate_account_name(voter);
     FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
+    FC_ASSERT(discipline_id != 0, "You cannot vote with common token");
 }
 
 void transfer_operation::validate() const
@@ -62,8 +57,7 @@ void transfer_operation::validate() const
         validate_account_name(from);
         validate_account_name(to);
 
-        // TODO: Add check token != exp token
-        // FC_ASSERT(amount.symbol != VESTS_SYMBOL, "transferring of Deip Power (STMP) is not allowed.");
+        FC_ASSERT(amount.symbol == DEIP_SYMBOL, "Only transferring of Deip (DEIP) token is allowed.");
         
         FC_ASSERT(amount.amount > 0, "Cannot transfer a negative amount (aka: stealing)");
         FC_ASSERT(memo.size() < DEIP_MAX_MEMO_SIZE, "Memo is too large");
@@ -187,6 +181,7 @@ void vote_proposal_operation::validate() const
 void make_review_operation::validate() const
 {
     validate_account_name(author);
+    FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
     FC_ASSERT(!content.empty(), "Research content cannot be empty");
 }
 

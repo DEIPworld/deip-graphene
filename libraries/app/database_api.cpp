@@ -915,7 +915,6 @@ state database_api::get_state(string path) const
                         {
                         case operation::tag<withdraw_common_tokens_operation>::value:
                         case operation::tag<transfer_operation>::value:
-                        case operation::tag<vote_operation>::value:
                         case operation::tag<account_witness_vote_operation>::value:
                         case operation::tag<account_witness_proxy_operation>::value:
                             //   eacnt.vote_history[item.first] =  item.second;
@@ -1142,7 +1141,7 @@ research_content_api_obj database_api::get_research_content_by_id(const research
 {
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
-        return research_content_service.get_content_by_id(id);
+        return research_content_service.get(id);
     });
 }
 
@@ -1150,7 +1149,7 @@ research_content_api_obj database_api::get_research_content_by_permlink(const re
 {
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
-        return research_content_service.get_content_by_permlink(research_id, permlink);
+        return research_content_service.get_by_permlink(research_id, permlink);
     });
 }
 
@@ -1164,7 +1163,7 @@ research_content_api_obj database_api::get_research_content_by_absolute_permlink
         auto& rg = research_group_service.get_research_group_by_permlink(research_group_permlink);
         auto& r = research_service.get_research_by_permlink(rg.id, research_permlink);
 
-        return research_content_service.get_content_by_permlink(r.id, research_content_permlink);
+        return research_content_service.get_by_permlink(r.id, research_content_permlink);
     });
 }
 
@@ -1173,7 +1172,7 @@ vector<research_content_api_obj> database_api::get_all_research_content(const re
     return my->_db.with_read_lock([&]() {
         vector<research_content_api_obj> results;
         chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
-        auto contents = research_content_service.get_content_by_research_id(research_id);
+        auto contents = research_content_service.get_by_research_id(research_id);
 
         for (const chain::research_content_object &content : contents) {
             results.push_back(research_content_api_obj(content));
@@ -1188,7 +1187,7 @@ vector<research_content_api_obj> database_api::get_research_content_by_type(cons
     return my->_db.with_read_lock([&]() {
         vector<research_content_api_obj> results;
         chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
-        auto contents = research_content_service.get_content_by_research_id_and_content_type(research_id, type);
+        auto contents = research_content_service.get_by_research_and_type(research_id, type);
 
         for (const chain::research_content_object &content : contents) {
             results.push_back(research_content_api_obj(content));
@@ -1311,7 +1310,7 @@ database_api::get_research_group_tokens_by_account(const account_name_type accou
         vector<research_group_token_api_obj> results;
 
         chain::dbs_research_group& research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
-        auto research_group_tokens = research_group_service.get_research_group_tokens_by_account_name(account);
+        auto research_group_tokens = research_group_service.get_tokens_by_account(account);
 
         for (const chain::research_group_token_object& research_group_token : research_group_tokens)
         {
@@ -1346,7 +1345,7 @@ research_group_token_api_obj database_api::get_research_group_token_by_account_a
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_group& research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
 
-        return research_group_service.get_research_group_token_by_account_and_research_group_id(account, research_group_id);
+        return research_group_service.get_token_by_account_and_research_group(account, research_group_id);
     });
 }
 
@@ -1682,7 +1681,7 @@ vector<review_api_obj> database_api::get_reviews_by_research(const research_id_t
         chain::dbs_research_content& research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
 
 
-        auto contents = research_content_service.get_content_by_research_id(research_id);
+        auto contents = research_content_service.get_by_research_id(research_id);
 
         for (const chain::research_content_object& content : contents) {
             auto reviews = get_reviews_by_content(content.id);

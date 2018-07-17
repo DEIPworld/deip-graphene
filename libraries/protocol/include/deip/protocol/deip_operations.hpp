@@ -91,21 +91,6 @@ struct beneficiary_route_type
     }
 };
 
-struct vote_operation : public base_operation
-{
-    account_name_type voter;
-    int64_t discipline_id;
-    int16_t weight = 0;
-    int64_t research_id;
-    int64_t research_content_id;
-
-    void validate() const;
-    void get_required_posting_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(voter);
-    }
-};
-
 struct vote_for_review_operation : public base_operation
 {
     account_name_type voter;
@@ -534,6 +519,7 @@ struct make_review_operation : public base_operation
     int64_t research_content_id;
     bool is_positive;
     std::string content;
+    uint16_t weight;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -700,7 +686,6 @@ FC_REFLECT( deip::protocol::set_withdraw_common_tokens_route_operation, (from_ac
 FC_REFLECT( deip::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( deip::protocol::account_witness_vote_operation, (account)(witness)(approve) )
 FC_REFLECT( deip::protocol::account_witness_proxy_operation, (account)(proxy) )
-FC_REFLECT( deip::protocol::vote_operation, (voter)(discipline_id)(weight)(research_id)(research_content_id))
 
 
 FC_REFLECT( deip::protocol::beneficiary_route_type, (account)(weight) )
@@ -716,7 +701,7 @@ FC_REFLECT( deip::protocol::create_grant_operation, (owner)(balance)(target_disc
 FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent)(is_personal)(invitees))
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
-FC_REFLECT( deip::protocol::make_review_operation, (author)(research_content_id)(content)(is_positive))
+FC_REFLECT( deip::protocol::make_review_operation, (author)(research_content_id)(content)(is_positive)(weight))
 
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_token_sale_id)(owner)(amount))
 FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner))

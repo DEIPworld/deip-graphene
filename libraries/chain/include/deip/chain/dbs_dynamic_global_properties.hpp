@@ -18,7 +18,7 @@ protected:
 public:
     const dynamic_global_property_object& get_dynamic_global_properties() const;
     const dynamic_global_property_object& reset_used_expertise_per_block();
-    const dynamic_global_property_object& increase_all_used_and_used_per_block_expertise(const share_type& delta);
+    const dynamic_global_property_object& update_used_expertise(const share_type &delta);
 };
 } // namespace chain
 } // namespace deip

@@ -145,11 +145,6 @@ const total_votes_object& dbs_vote::create_total_votes(const discipline_id_type&
         v_o.research_id = research_id;
         v_o.research_content_id = research_content_id;
         v_o.total_weight = 0;
-        v_o.total_active_weight = 0;
-        v_o.total_research_reward_weight = 0;
-        v_o.total_active_research_reward_weight = 0;
-        v_o.total_curators_reward_weight = 0;
-        v_o.total_active_curators_reward_weight = 0;
     });
 
     return new_total_votes;
@@ -232,28 +227,22 @@ dbs_vote::total_votes_refs_type dbs_vote::get_total_votes_by_content(const resea
     return ret;
 }
 
-const review_vote_object& dbs_vote::create_review_vote(const review_id_type &review_id,
-                                                       const discipline_id_type &discipline_id,
-                                                       const account_name_type &voter, const share_type &tokens_amount,
-                                                       const int16_t &weight, const uint16_t &voting_power,
-                                                       const time_point_sec &voting_time)
+const review_vote_object & dbs_vote::create_review_vote(const review_id_type &review_id, const discipline_id_type &discipline_id,
+                                                        const account_name_type &voter, const int16_t &weight,
+                                                        const time_point_sec &voting_time)
 {
-    FC_ASSERT(tokens_amount != 0, "Cannot vote with 0 tokens");
     FC_ASSERT(weight != 0, "Cannot vote with 0 weight");
-    FC_ASSERT(voting_power > 0, "Cannot vote without voting power");
     FC_ASSERT(voting_time <= db_impl().head_block_time(), "Voting time cannot be in future");
 
-    const auto& new_review_vote = db_impl().create<review_vote_object>([&](review_vote_object& v) {
+    const auto& vote = db_impl().create<review_vote_object>([&](review_vote_object& v) {
         v.discipline_id = discipline_id;
         v.review_id = review_id;
         v.voter = voter;
-        v.tokens_amount = tokens_amount;
         v.weight = weight;
-        v.voting_power = voting_power;
         v.voting_time = voting_time;
     });
 
-    return new_review_vote;
+    return vote;
 }
 
 dbs_vote::review_vote_refs_type dbs_vote::get_review_votes(const review_id_type &review_id) const
@@ -327,23 +316,6 @@ bool dbs_vote::is_exists_by_research_and_discipline(const research_content_id_ty
         return true;
     else
         return false;
-}
-
-const total_votes_object& dbs_vote::update_total_votes_for_final_result(const total_votes_object& total_votes,
-                                                                        const share_type total_weight,
-                                                                        const share_type total_active_weight,
-                                                                        const share_type total_research_reward_weight,
-                                                                        const share_type total_active_research_reward_weight)
-{
-    db_impl().modify(total_votes, [&](total_votes_object& tv_o)
-    {
-        tv_o.total_weight = total_weight;
-        tv_o.total_active_weight = total_active_weight;
-        tv_o.total_research_reward_weight = total_research_reward_weight;
-        tv_o.total_active_research_reward_weight = total_active_research_reward_weight;
-    });
-
-    return total_votes;
 }
 
 } //namespace chain

@@ -44,9 +44,6 @@ public:
     */
     discipline_ref_type get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
 
-    const discipline_object& increase_total_active_research_reward_weight(const discipline_id_type& discipline_id,
-                                                                          const share_type amount);
-
 };
 } // namespace chain
 } // namespace deip
