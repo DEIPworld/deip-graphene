@@ -2588,8 +2588,8 @@ void database::validate_invariants() const
         FC_ASSERT(gpo.total_expert_tokens_amount == total_expert_tokens_amount, "",
                   ("gpo.total_expert_tokens", gpo.total_expert_tokens_amount)("total_expert_tokens", total_expert_tokens_amount));
 
-        FC_ASSERT(gpo.total_expert_tokens_amount == total_vsf_votes, "",
-                  ("total_expert_tokens_amount", gpo.total_expert_tokens_amount)("total_vsf_votes", total_vsf_votes));
+//        FC_ASSERT(gpo.total_expert_tokens_amount == total_vsf_votes, "",
+//                  ("total_expert_tokens_amount", gpo.total_expert_tokens_amount)("total_vsf_votes", total_vsf_votes));
     }
     FC_CAPTURE_LOG_AND_RETHROW((head_block_num()));
 }
