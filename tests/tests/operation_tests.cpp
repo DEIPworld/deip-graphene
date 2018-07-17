@@ -154,6 +154,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
+        auto new_voting_power = token.voting_power;
         const review_object& review = db.get<review_object, by_id>(0);
 
         std::vector<discipline_id_type> disciplines;
@@ -166,6 +167,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         BOOST_CHECK(review.content == "test");
         BOOST_CHECK(review.expertise_amounts_used.at(1) == (op.weight * token.amount) / DEIP_100_PERCENT);
         BOOST_CHECK(disciplines.size() == 1 && disciplines[0] == 1);
+        BOOST_CHECK(old_voting_power - new_voting_power == DEIP_REVIEW_REQUIRED_POWER * DEIP_1_PERCENT);
 
         validate_database();
 
