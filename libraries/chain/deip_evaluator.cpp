@@ -832,7 +832,22 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
         auto& token = expert_token.get();
         if (research_disciplines_ids.find(token.discipline_id) != research_disciplines_ids.end())
         {
-            FC_ASSERT(token.voting_power >= 20 * DEIP_1_PERCENT, "You don't have enough expertise in this discipline to make a review");
+            const int64_t elapsed_seconds   = (_db.head_block_time() - token.last_vote_time).to_seconds();
+
+            const int64_t regenerated_power = (DEIP_100_PERCENT * elapsed_seconds) / DEIP_VOTE_REGENERATION_SECONDS;
+            const int64_t current_power = std::min(int64_t(token.voting_power + regenerated_power), int64_t(DEIP_100_PERCENT));
+            FC_ASSERT(current_power > 0, "Account currently does not have voting power.");
+
+            const int64_t used_power = 20 * DEIP_1_PERCENT;
+
+            FC_ASSERT(used_power <= current_power, "Account does not have enough power to vote.");
+
+            const uint64_t abs_used_tokens = ((uint128_t(token.amount.value) * used_power) / (DEIP_100_PERCENT)).to_uint64();
+
+            _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
+                t.voting_power = current_power - used_power;
+                t.last_vote_time = _db.head_block_time();
+            });
             review_disciplines.insert(token.discipline_id);
         }
     }
@@ -845,10 +860,6 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
         auto &token = expertise_token_service.get_expert_token_by_account_and_discipline(op.author, review_discipline);
 
         auto used_expertise = (op.weight * token.amount) / DEIP_100_PERCENT;
-
-        _db._temporary_public_impl().modify(token, [&](expert_token_object& e) {
-            e.voting_power -= 20 * DEIP_1_PERCENT;
-        });
 
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
             r.expertise_amounts_used[token.discipline_id] = used_expertise;
