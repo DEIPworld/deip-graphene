@@ -486,7 +486,16 @@ void dbs_account::delegate_expertise(const account_object& receiver, const accou
 {
     FC_ASSERT(discipline_id > 0, "Discipline id must be greater than zero");
 
-    db_impl().modify(receiver, [&](account_object& a) { a.delegated_expertise.insert(std::make_pair(discipline_id, sender)); });
+    db_impl().modify(receiver,[&](account_object &a)
+                     {
+                         if (a.delegated_expertise.find(discipline_id) != a.delegated_expertise.end())
+                             a.delegated_expertise[discipline_id].push_back(sender);
+                         else {
+                             std::vector<account_name_type> accounts;
+                             accounts.push_back(sender);
+                             a.delegated_expertise.insert(std::make_pair(discipline_id, accounts));
+                         }
+                     });
 }
 
 }

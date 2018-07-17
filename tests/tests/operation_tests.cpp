@@ -3884,7 +3884,7 @@ BOOST_AUTO_TEST_CASE(delegate_expertise_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        BOOST_CHECK(alice.delegated_expertise.count(1) == 1);
+        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 1);
 
         BOOST_CHECK_THROW(db.push_transaction(tx, 0), fc::assert_exception);
 
@@ -3901,7 +3901,7 @@ BOOST_AUTO_TEST_CASE(delegate_expertise_apply)
         tx2.validate();
         db.push_transaction(tx2, 0);
 
-        BOOST_CHECK(alice.delegated_expertise.count(1) == 2);
+        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 2);
     }
     FC_LOG_AND_RETHROW()
 }

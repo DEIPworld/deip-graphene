@@ -170,8 +170,8 @@ typedef bip::set<discipline_id_type, std::less<discipline_id_type>, discipline_i
 typedef allocator<std::pair<const discipline_id_type, share_type>> discipline_id_share_type_allocator_type;
 typedef bip::map<discipline_id_type, share_type, std::less<discipline_id_type>, discipline_id_share_type_allocator_type> discipline_id_share_type_map;
 
-typedef allocator<std::pair<const discipline_id_type, account_name_type>> discipline_id_account_name_allocator_type;
-typedef bip::multimap<discipline_id_type, account_name_type, std::less<discipline_id_type>, discipline_id_account_name_allocator_type> delegated_expertise_type_map;
+typedef allocator<std::pair<const discipline_id_type, std::vector<account_name_type>>> discipline_id_account_name_allocator_type;
+typedef bip::map<discipline_id_type, std::vector<account_name_type>, std::less<discipline_id_type>, discipline_id_account_name_allocator_type> delegated_expertise_type_map;
 
 enum bandwidth_type
 {

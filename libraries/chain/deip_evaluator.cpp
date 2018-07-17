@@ -1303,10 +1303,13 @@ void delegate_expertise_evaluator::do_apply(const delegate_expertise_operation& 
 
     auto& receiver = _db.get_account(op.receiver);
 
-    auto idx = receiver.delegated_expertise.equal_range(op.discipline_id);
+    auto it = receiver.delegated_expertise.find(op.discipline_id);
+    if (it != receiver.delegated_expertise.end()) {
+        auto accounts = receiver.delegated_expertise.at(op.discipline_id);
 
-    for (auto it = idx.first; it != idx.second; ++it)
-        FC_ASSERT(it->second != op.sender, "This account have already delegate his expertise in this discipline");
+        for (auto account : accounts)
+            FC_ASSERT(account != op.sender, "This account have already delegate his expertise in this discipline");
+    }
 
     account_service.delegate_expertise(receiver, op.sender, op.discipline_id);
 }
