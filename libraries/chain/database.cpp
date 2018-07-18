@@ -1283,6 +1283,7 @@ share_type database::reward_researches_in_discipline(const discipline_object &di
 
     auto& content_service = obtain_service<dbs_research_content>();
     auto& review_service = obtain_service<dbs_review>();
+    dbs_
 
     const auto& total_votes_idx = get_index<total_votes_index>().indices().get<by_discipline_id>();
     auto total_votes_itr = total_votes_idx.find(discipline.id);
