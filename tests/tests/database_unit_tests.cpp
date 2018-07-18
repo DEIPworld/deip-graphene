@@ -6,6 +6,7 @@
 #include <deip/chain/util/reward.hpp>
 #include <deip/chain/grant_objects.hpp>
 #include <deip/chain/review_object.hpp>
+#include <deip/chain/research_content_reward_pool_object.hpp>
 
 #include "database_fixture.hpp"
 
@@ -524,20 +525,11 @@ BOOST_AUTO_TEST_CASE(reward_researches_in_discipline)
 
         BOOST_CHECK_NO_THROW(db.reward_researches_in_discipline(discipline, reward, reward));
 
-        auto& group_1 = db.get<research_group_object>(31);
-        auto& group_2 = db.get<research_group_object>(32);
+        auto& reward_pool_1 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(1, discipline.id));
+        auto& reward_pool_2 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(2, discipline.id));
 
-        BOOST_CHECK(group_1.balance.amount == 450);
-        BOOST_CHECK(group_2.balance.amount == 225);
-
-        BOOST_CHECK(alice.balance.amount == 114);
-        BOOST_CHECK(bob.balance.amount == 159);
-
-        auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
-        auto alex_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alex", 10));
-
-        BOOST_CHECK(alice_expert_token.amount == 475);
-        BOOST_CHECK(alex_expert_token.amount == 450);
+        BOOST_CHECK(reward_pool_1.reward_share + reward_pool_2.reward_share == 1000);
+        BOOST_CHECK(reward_pool_1.expertise_share + reward_pool_2.expertise_share == 1000);
 
     }
     FC_LOG_AND_RETHROW()
@@ -564,21 +556,16 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
 
         BOOST_CHECK_NO_THROW(used_reward = db.distribute_reward(reward, reward));
 
-        auto& rg31 = db.get<research_group_object>(31);
-        auto& rg32 = db.get<research_group_object>(32);
+        BOOST_CHECK(alice.balance.amount == 24);
+        BOOST_CHECK(bob.balance.amount == 24);
 
-        BOOST_CHECK(rg31.balance.amount == 428);
-        BOOST_CHECK(rg32.balance.amount == 213);
+        auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight");
 
-        BOOST_CHECK(alice.balance.amount == 131);
-        BOOST_CHECK(bob.balance.amount == 174);
+        auto& reward_pool_1 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(1, discipline.id));
+        auto& reward_pool_2 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(2, discipline.id));
 
-        auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
-        auto alex_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alex", 10));
-
-        BOOST_CHECK(alice_expert_token.amount == 475);
-        BOOST_CHECK(alex_expert_token.amount == 450);
-
+        BOOST_CHECK(reward_pool_1.reward_share + reward_pool_2.reward_share == 950);
+        BOOST_CHECK(reward_pool_1.expertise_share + reward_pool_2.expertise_share == 1000);
     }
     FC_LOG_AND_RETHROW()
 }
