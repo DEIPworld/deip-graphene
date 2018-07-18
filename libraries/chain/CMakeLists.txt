@@ -42,7 +42,7 @@ add_library( deip_chain
              dbs_review.cpp
              dbs_vesting_contract.cpp
              dbs_proposal_execution.cpp
-             dbs_research_reward_pool.cpp
+             dbs_research_content_reward_pool.cpp
 
              deip_evaluator.cpp
              deip_objects.cpp
