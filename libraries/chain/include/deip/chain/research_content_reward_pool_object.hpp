@@ -32,6 +32,7 @@ public:
     share_type expertise_share;
 };
 
+struct by_research_content;
 struct by_content_and_discipline;
 
 typedef multi_index_container<research_content_reward_pool_object,
@@ -39,6 +40,10 @@ typedef multi_index_container<research_content_reward_pool_object,
                             member<research_content_reward_pool_object,
                                     research_content_reward_pool_id_type,
                                     &research_content_reward_pool_object::id>>,
+                           ordered_non_unique<tag<by_research_content>,
+                            member<research_content_reward_pool_object,
+                                    research_content_id_type,
+                                    &research_content_reward_pool_object::research_content_id>>,
                            ordered_unique<tag<by_content_and_discipline>,
                            composite_key<research_content_reward_pool_object,
                                   member<research_content_reward_pool_object,

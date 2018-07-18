@@ -2650,6 +2650,7 @@ void database::process_content_activity_windows()
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
     dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
     dbs_vote& votes_service = obtain_service<dbs_vote>();
+    dbs_research_content_reward_pool& research_content_reward_pool_service = obtain_service<dbs_research_content_reward_pool>();
 
     const auto& research_content_by_activity_end = get_index<research_content_index, by_activity_window_end>();
     auto itr_by_end = research_content_by_activity_end.begin();
@@ -2730,13 +2731,17 @@ void database::process_content_activity_windows()
             }
         }
 
-//        //distribute content reward
-//
-//        if(research_reward_pool_service.is_research_reward_pool_exists_by_research_content_id(itr_by_end->id)
-//        {
-//            auto& research_reward_pool = research_reward_pool_service.get_by_research_content_id(content_id);
-//            reward_research_content(itr_by_end->id, discipline.id, research_reward_pool.reward_share, research_reward_pool.expertise_share);
-//        }
+        //distribute content reward
+
+        auto research_content_reward_pools = research_content_reward_pool_service.get_research_content_reward_pools_by_content_id(itr_by_end->id);
+
+        for (const research_content_reward_pool_object& research_content_reward_pool : research_content_reward_pools)
+        {
+            reward_research_content(itr_by_end->id,
+                                    research_content_reward_pool.discipline_id,
+                                    research_content_reward_pool.reward_share,
+                                    research_content_reward_pool.expertise_share);
+        }
 
         ++itr_by_end;
     }

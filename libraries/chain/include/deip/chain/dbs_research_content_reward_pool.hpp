@@ -19,6 +19,7 @@ protected:
     explicit dbs_research_content_reward_pool(database &db);
 
 public:
+    using research_content_reward_pool_refs_type = std::vector<std::reference_wrapper<const research_content_reward_pool_object>>;
 
     const research_content_reward_pool_object& create(const research_content_id_type& research_content_id,
                                                       const discipline_id_type& discipline_id,
@@ -29,6 +30,8 @@ public:
 
     const research_content_reward_pool_object& get_by_research_content_id_and_discipline_id(const research_content_id_type& research_content_id,
                                                                                             const discipline_id_type& discipline_id) const;
+
+    research_content_reward_pool_refs_type get_research_content_reward_pools_by_content_id(const research_content_id_type &research_content_id) const;
 
     bool is_research_reward_pool_exists_by_research_content_id_and_discipline_id(const research_content_id_type& research_content_id,
                                                                                  const discipline_id_type& discipline_id);

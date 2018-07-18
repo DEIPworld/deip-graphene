@@ -42,6 +42,23 @@ const research_content_reward_pool_object& dbs_research_content_reward_pool::get
     FC_CAPTURE_AND_RETHROW((research_content_id))
 }
 
+dbs_research_content_reward_pool::research_content_reward_pool_refs_type
+dbs_research_content_reward_pool::get_research_content_reward_pools_by_content_id(const research_content_id_type &research_content_id) const
+{
+    research_content_reward_pool_refs_type ret;
+
+    auto it_pair = db_impl().get_index<research_content_reward_pool_index>().indicies().get<by_research_content>().equal_range(research_content_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
 bool dbs_research_content_reward_pool::is_research_reward_pool_exists_by_research_content_id_and_discipline_id(const research_content_id_type& research_content_id,
                                                                                                                const discipline_id_type& discipline_id)
 {
