@@ -1803,6 +1803,7 @@ void database::initialize_indexes()
     add_index<review_index>();
     add_index<review_vote_index>();
     add_index<vesting_contract_index>();
+    add_index<research_content_reward_pool_index>();
 
     _plugin_index_signal();
 }
