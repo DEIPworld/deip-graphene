@@ -2594,6 +2594,12 @@ void database::validate_invariants() const
             total_supply += itr->balance;
         }
 
+        const auto& research_content_reward_pool_idx = get_index<research_content_reward_pool_index, by_id>();
+
+        for (auto itr = research_content_reward_pool_idx.begin(); itr != research_content_reward_pool_idx.end(); ++itr)
+        {
+            total_supply += itr->reward_share;
+        }
 
         total_supply +=  gpo.total_common_tokens_fund_deip + gpo.total_reward_fund_deip;
 
