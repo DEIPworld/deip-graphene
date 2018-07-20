@@ -2744,10 +2744,16 @@ void database::process_content_activity_windows()
 
         for (const research_content_reward_pool_object& research_content_reward_pool : research_content_reward_pools)
         {
-            reward_research_content(itr_by_end->id,
-                                    research_content_reward_pool.discipline_id,
-                                    research_content_reward_pool.reward_share,
-                                    research_content_reward_pool.expertise_share);
+            auto used_reward = reward_research_content(itr_by_end->id,
+                                                       research_content_reward_pool.discipline_id,
+                                                       research_content_reward_pool.reward_share,
+                                                       research_content_reward_pool.expertise_share);
+
+            modify(research_content_reward_pool, [&](research_content_reward_pool_object& rcrp) {
+                rcrp.reward_share -= used_reward;
+                rcrp.expertise_share = 0;
+            });
+
         }
 
         ++itr_by_end;
