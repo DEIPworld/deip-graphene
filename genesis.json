@@ -1,7 +1,7 @@
 {
     "initial_timestamp": "2017-11-29T10:03:00",
 
-    "init_supply": 35000,
+    "init_supply": 40000,
     "accounts": [{
         "name": "initdelegate",
         "recovery_account": "",
@@ -217,6 +217,12 @@
         "recovery_account": "",
         "public_key": "DEIP6mh7S7KaZK3gh8bGG8TcggK2woCSNmx3SEv6vMTtJQMDvsuQzb",
         "deip_amount": 1000,
+        "sp_amount": 0
+    }, {
+        "name": "soenkeba",
+        "recovery_account": "",
+        "public_key": "DEIP79L7Xomcy8EqUC9Jpve4sSn1niJr9dZJ2CdHtZcb9f6J4aLPyf",
+        "deip_amount": 5000,
         "sp_amount": 0
     }],
 
