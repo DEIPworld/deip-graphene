@@ -482,11 +482,13 @@ void dbs_account::increase_expertise_tokens(const account_object &account, const
     });
 }
 
-void dbs_account::delegate_expertise(const account_object& receiver, const account_name_type& sender, const discipline_id_type& discipline_id)
+void dbs_account::delegate_expertise(const account_name_type &sender, const account_name_type &receiver,
+                                     const discipline_id_type &discipline_id)
 {
     FC_ASSERT(discipline_id > 0, "Discipline id must be greater than zero");
+    auto& receiver_account = get_account(receiver);
 
-    db_impl().modify(receiver,[&](account_object &a)
+    db_impl().modify(receiver_account,[&](account_object &a)
                      {
                          if (a.delegated_expertise.find(discipline_id) != a.delegated_expertise.end())
                              a.delegated_expertise[discipline_id].push_back(sender);

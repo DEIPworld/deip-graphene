@@ -106,7 +106,8 @@ public:
 
     void increase_expertise_tokens(const account_object &account, const share_type &amount);
 
-    void delegate_expertise(const account_object& to, const account_name_type& from, const discipline_id_type& discipline_id);
+    void delegate_expertise(const account_name_type &from, const account_name_type &to,
+                                const discipline_id_type &discipline_id);
 
 private:
     const account_object& get_account(const account_id_type &) const;

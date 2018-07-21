@@ -1306,12 +1306,10 @@ void delegate_expertise_evaluator::do_apply(const delegate_expertise_operation& 
     auto it = receiver.delegated_expertise.find(op.discipline_id);
     if (it != receiver.delegated_expertise.end()) {
         auto accounts = receiver.delegated_expertise.at(op.discipline_id);
-
-        for (auto account : accounts)
-            FC_ASSERT(account != op.sender, "This account have already delegate his expertise in this discipline");
+        FC_ASSERT(std::find(accounts.begin(), accounts.end(), op.sender) == accounts.end(), "This account have already delegate his expertise in this discipline");
     }
 
-    account_service.delegate_expertise(receiver, op.sender, op.discipline_id);
+    account_service.delegate_expertise(op.sender, op.receiver, op.discipline_id);
 }
 
 } // namespace chain
