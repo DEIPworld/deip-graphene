@@ -65,6 +65,7 @@
 #include <deip/chain/dbs_review.hpp>
 #include <deip/chain/dbs_vesting_contract.hpp>
 #include <deip/chain/dbs_proposal_execution.hpp>
+#include <deip/chain/dbs_research_content_reward_pool.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
 namespace deip {
@@ -1283,6 +1284,7 @@ share_type database::reward_researches_in_discipline(const discipline_object &di
 
     auto& content_service = obtain_service<dbs_research_content>();
     auto& review_service = obtain_service<dbs_review>();
+    dbs_research_content_reward_pool& research_reward_pool_service = obtain_service<dbs_research_content_reward_pool>();
 
     const auto& total_votes_idx = get_index<total_votes_index>().indices().get<by_discipline_id>();
     auto total_votes_itr = total_votes_idx.find(discipline.id);
@@ -1298,7 +1300,20 @@ share_type database::reward_researches_in_discipline(const discipline_object &di
             auto weight = std::max(int64_t(0), total_votes_itr->total_weight.value);
             auto reward_share = util::calculate_share(reward, weight, discipline.total_active_weight);
             auto expertise_share = util::calculate_share(expertise, weight,discipline.total_active_weight);
-            used_reward += reward_research_content(content_id, discipline.id, reward_share, expertise_share);
+
+            if(research_reward_pool_service.is_research_reward_pool_exists_by_research_content_id_and_discipline_id(content_id, discipline.id))
+            {
+                auto& research_reward_pool = research_reward_pool_service.get_by_research_content_id_and_discipline_id(content_id, discipline.id);
+
+                research_reward_pool_service.increase_reward_pool(research_reward_pool, reward_share);
+                research_reward_pool_service.increase_expertise_pool(research_reward_pool, expertise_share);
+
+                used_reward += reward_share;
+            }
+            else
+            {
+                auto& research_reward_pool = research_reward_pool_service.create(content_id, discipline.id, reward_share, expertise_share);
+            }
         }
         ++total_votes_itr;
     }
@@ -1788,6 +1803,7 @@ void database::initialize_indexes()
     add_index<review_index>();
     add_index<review_vote_index>();
     add_index<vesting_contract_index>();
+    add_index<research_content_reward_pool_index>();
 
     _plugin_index_signal();
 }
@@ -2578,6 +2594,12 @@ void database::validate_invariants() const
             total_supply += itr->balance;
         }
 
+        const auto& research_content_reward_pool_idx = get_index<research_content_reward_pool_index, by_id>();
+
+        for (auto itr = research_content_reward_pool_idx.begin(); itr != research_content_reward_pool_idx.end(); ++itr)
+        {
+            total_supply += itr->reward_share;
+        }
 
         total_supply +=  gpo.total_common_tokens_fund_deip + gpo.total_reward_fund_deip;
 
@@ -2635,6 +2657,7 @@ void database::process_content_activity_windows()
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
     dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
     dbs_vote& votes_service = obtain_service<dbs_vote>();
+    dbs_research_content_reward_pool& research_content_reward_pool_service = obtain_service<dbs_research_content_reward_pool>();
 
     const auto& research_content_by_activity_end = get_index<research_content_index, by_activity_window_end>();
     auto itr_by_end = research_content_by_activity_end.begin();
@@ -2714,6 +2737,25 @@ void database::process_content_activity_windows()
                 expired_active_weight[rc_total_votes.discipline_id] = rc_total_votes.total_weight;
             }
         }
+
+        //distribute content reward
+
+        auto research_content_reward_pools = research_content_reward_pool_service.get_research_content_reward_pools_by_content_id(itr_by_end->id);
+
+        for (const research_content_reward_pool_object& research_content_reward_pool : research_content_reward_pools)
+        {
+            auto used_reward = reward_research_content(itr_by_end->id,
+                                                       research_content_reward_pool.discipline_id,
+                                                       research_content_reward_pool.reward_share,
+                                                       research_content_reward_pool.expertise_share);
+
+            modify(research_content_reward_pool, [&](research_content_reward_pool_object& rcrp) {
+                rcrp.reward_share -= used_reward;
+                rcrp.expertise_share = 0;
+            });
+
+        }
+
         ++itr_by_end;
     }
 
