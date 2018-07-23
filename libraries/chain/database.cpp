@@ -1818,6 +1818,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_expertise_evaluator>();
+    _my->_evaluator_registry.register_evaluator<withdraw_expertise_evaluator>();
 }
 
 void database::initialize_indexes()

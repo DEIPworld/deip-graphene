@@ -1312,5 +1312,25 @@ void delegate_expertise_evaluator::do_apply(const delegate_expertise_operation& 
     account_service.delegate_expertise(op.sender, op.receiver, op.discipline_id);
 }
 
+void withdraw_expertise_evaluator::do_apply(const withdraw_expertise_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+
+    account_service.check_account_existence(op.sender);
+    account_service.check_account_existence(op.receiver);
+
+    auto& receiver = _db.get_account(op.receiver);
+
+    auto it = receiver.delegated_expertise.find(op.discipline_id);
+
+    FC_ASSERT(it != receiver.delegated_expertise.end(), "Account doesn't have delegated expertise in this discipline");
+
+    auto accounts = receiver.delegated_expertise.at(op.discipline_id);
+    FC_ASSERT(std::find(accounts.begin(), accounts.end(), op.sender) != accounts.end(), "Account doesn't have delegated expertise");
+
+    account_service.withdraw_expertise(op.sender, op.receiver, op.discipline_id);
+}
+
 } // namespace chain
 } // namespace deip 

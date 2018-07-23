@@ -257,5 +257,12 @@ void delegate_expertise_operation::validate() const
     validate_account_name(receiver);
 }
 
+void withdraw_expertise_operation::validate() const
+{
+    FC_ASSERT(discipline_id > 0, "Cannot use root discipline (id = 0)");
+    validate_account_name(sender);
+    validate_account_name(receiver);
+}
+
 }
 } // deip::protocol
