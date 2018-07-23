@@ -3953,7 +3953,7 @@ BOOST_AUTO_TEST_CASE(withdraw_expertise_apply)
 
         BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 2);
 
-        withdraw_expertise_operation op3;
+        revoke_expertise_delegation_operation op3;
 
         op3.sender = "jack";
         op3.receiver = "alice";
@@ -3969,7 +3969,7 @@ BOOST_AUTO_TEST_CASE(withdraw_expertise_apply)
         auto a = db.get_account("alice").delegated_expertise.at(1);
         BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 1);
 
-        withdraw_expertise_operation op4;
+        revoke_expertise_delegation_operation op4;
 
         op4.sender = "mike";
         op4.receiver = "alice";
