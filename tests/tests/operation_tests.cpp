@@ -3712,7 +3712,6 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_apply)
         BOOST_CHECK(bob_token.amount == 50 * DEIP_1_PERCENT);
     }
     FC_LOG_AND_RETHROW()
-
 }
 
 BOOST_AUTO_TEST_CASE(unique_proposal_hash_test)
@@ -3789,6 +3788,134 @@ BOOST_AUTO_TEST_CASE(unique_proposal_hash_test)
         BOOST_CHECK(dropout_proposal.research_group_id == 31);
         BOOST_CHECK(dropout_proposal.creator == "alice");
         BOOST_CHECK(dropout_proposal.action == dbs_proposal::action_t::dropout_member);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(delegate_expertise_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: delegate_expertise_apply");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(jack));
+
+        generate_block();
+
+        private_key_type bob_priv_key = generate_private_key("bob");
+        private_key_type jack_priv_key = generate_private_key("jack");
+
+        delegate_expertise_operation op;
+
+        op.sender = "bob";
+        op.receiver = "alice";
+        op.discipline_id = 1;
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(bob_priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 1);
+
+        BOOST_CHECK_THROW(db.push_transaction(tx, 0), fc::assert_exception);
+
+        delegate_expertise_operation op2;
+
+        op2.sender = "jack";
+        op2.receiver = "alice";
+        op2.discipline_id = 1;
+
+        signed_transaction tx2;
+        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2.operations.push_back(op2);
+        tx2.sign(jack_priv_key, db.get_chain_id());
+        tx2.validate();
+        db.push_transaction(tx2, 0);
+
+        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 2);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+
+BOOST_AUTO_TEST_CASE(withdraw_expertise_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: delegate expertise and withdraw then");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(jack)(mike));
+
+        generate_block();
+
+        private_key_type bob_priv_key = generate_private_key("bob");
+        private_key_type jack_priv_key = generate_private_key("jack");
+        private_key_type mike_priv_key = generate_private_key("mike");
+
+        delegate_expertise_operation op;
+
+        op.sender = "bob";
+        op.receiver = "alice";
+        op.discipline_id = 1;
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(bob_priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 1);
+
+        BOOST_CHECK_THROW(db.push_transaction(tx, 0), fc::assert_exception);
+
+        delegate_expertise_operation op2;
+
+        op2.sender = "jack";
+        op2.receiver = "alice";
+        op2.discipline_id = 1;
+
+        signed_transaction tx2;
+        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2.operations.push_back(op2);
+        tx2.sign(jack_priv_key, db.get_chain_id());
+        tx2.validate();
+        db.push_transaction(tx2, 0);
+
+        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 2);
+
+        revoke_expertise_delegation_operation op3;
+
+        op3.sender = "jack";
+        op3.receiver = "alice";
+        op3.discipline_id = 1;
+
+        signed_transaction tx3;
+        tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx3.operations.push_back(op3);
+        tx3.sign(jack_priv_key, db.get_chain_id());
+        tx3.validate();
+        db.push_transaction(tx3, 0);
+
+        auto a = db.get_account("alice").delegated_expertise.at(1);
+        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 1);
+
+        revoke_expertise_delegation_operation op4;
+
+        op4.sender = "mike";
+        op4.receiver = "alice";
+        op4.discipline_id = 1;
+
+        signed_transaction tx4;
+        tx4.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx4.operations.push_back(op4);
+        tx4.sign(mike_priv_key, db.get_chain_id());
+        tx4.validate();
+        BOOST_CHECK_THROW(db.push_transaction(tx4, 0), fc::assert_exception);
+
     }
     FC_LOG_AND_RETHROW()
 }
