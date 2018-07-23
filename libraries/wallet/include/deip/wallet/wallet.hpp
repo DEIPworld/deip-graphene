@@ -645,7 +645,7 @@ public:
 
     void network_add_nodes(const vector<string>& nodes);
     vector<variant> network_get_connected_peers();
-    
+
     /**
      * Sets the amount of time in the future until a transaction expires.
      */
