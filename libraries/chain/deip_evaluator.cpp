@@ -808,6 +808,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
     auto expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
     auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(content.research_id);
+    std::map<discipline_id_type, share_type> review_disciplines_with_weght;
     std::set<discipline_id_type> review_disciplines;
     std::set<discipline_id_type> research_disciplines_ids;
     for (auto rdr : research_discipline_relations) {
@@ -825,7 +826,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             const int64_t current_power = std::min(int64_t(token.voting_power + regenerated_power), int64_t(DEIP_100_PERCENT));
             FC_ASSERT(current_power > 0, "Account currently does not have voting power.");
 
-            const int64_t used_power = DEIP_REVIEW_REQUIRED_POWER * DEIP_1_PERCENT;
+            const int64_t used_power = (DEIP_REVIEW_REQUIRED_POWER * DEIP_1_PERCENT * op.weight) / DEIP_100_PERCENT;
 
             FC_ASSERT(used_power <= current_power, "Account does not have enough power to vote.");
 
@@ -835,6 +836,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                 t.voting_power = current_power - used_power;
                 t.last_vote_time = _db.head_block_time();
             });
+            review_disciplines_with_weght.insert(std::make_pair(token.discipline_id, abs_used_tokens));
             review_disciplines.insert(token.discipline_id);
         }
     }
@@ -849,7 +851,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
         auto used_expertise = (op.weight * token.amount) / DEIP_100_PERCENT;
 
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
-            r.expertise_amounts_used[token.discipline_id] = used_expertise;
+            r.expertise_amounts_used[token.discipline_id] = review_disciplines_with_weght.at(token.discipline_id);
             r.weights_per_discipline[token.discipline_id] = 0;
             r.weight_modifiers[token.discipline_id] = 1;
         });
@@ -1138,7 +1140,6 @@ void delegate_expertise_evaluator::do_apply(const delegate_expertise_operation& 
 void revoke_expertise_delegation_evaluator::do_apply(const revoke_expertise_delegation_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
 
     account_service.check_account_existence(op.sender);
     account_service.check_account_existence(op.receiver);

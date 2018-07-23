@@ -165,9 +165,9 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         BOOST_CHECK(review.author == "alice");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.content == "test");
-        BOOST_CHECK(review.expertise_amounts_used.at(1) == (op.weight * token.amount) / DEIP_100_PERCENT);
+        BOOST_CHECK(review.expertise_amounts_used.at(1) == (DEIP_REVIEW_REQUIRED_POWER * DEIP_1_PERCENT * op.weight * token.amount) / (DEIP_100_PERCENT * DEIP_100_PERCENT));
         BOOST_CHECK(disciplines.size() == 1 && disciplines[0] == 1);
-        BOOST_CHECK(old_voting_power - new_voting_power == DEIP_REVIEW_REQUIRED_POWER * DEIP_1_PERCENT);
+        BOOST_CHECK(old_voting_power - new_voting_power == (DEIP_REVIEW_REQUIRED_POWER * DEIP_1_PERCENT * op.weight) / DEIP_100_PERCENT);
 
         validate_database();
 
@@ -3531,8 +3531,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         tx.signatures.clear();
 
         dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
-        auto& token = expert_token_service.get_expert_token_by_account_and_discipline("john", 1);
-        auto old_voting_power = token.voting_power;
+        expert_token_service.get_expert_token_by_account_and_discipline("john", 1);
 
         op2.review_id = 0;
         op2.discipline_id = 1;

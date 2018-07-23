@@ -1283,7 +1283,6 @@ share_type database::reward_researches_in_discipline(const discipline_object &di
     FC_ASSERT(discipline.total_active_weight != 0, "Attempt to reward research in inactive discipline");
 
     auto& content_service = obtain_service<dbs_research_content>();
-    auto& review_service = obtain_service<dbs_review>();
     dbs_research_content_reward_pool& research_reward_pool_service = obtain_service<dbs_research_content_reward_pool>();
 
     const auto& total_votes_idx = get_index<total_votes_index>().indices().get<by_discipline_id>();
@@ -1312,7 +1311,7 @@ share_type database::reward_researches_in_discipline(const discipline_object &di
             }
             else
             {
-                auto& research_reward_pool = research_reward_pool_service.create(content_id, discipline.id, reward_share, expertise_share);
+                research_reward_pool_service.create(content_id, discipline.id, reward_share, expertise_share);
             }
         }
         ++total_votes_itr;
@@ -1433,7 +1432,6 @@ share_type database::reward_reviews(const research_content_id_type &research_con
                                     const share_type &reward,
                                     const share_type &expertise_reward)
 {
-    dbs_review& review_service = obtain_service<dbs_review>();
     std::vector<review_object> reviews;
 
     share_type used_reward = 0;
@@ -1542,7 +1540,6 @@ void database::reward_research_authors_with_expertise(const research_object &res
 
 share_type database::fund_review_pool(const discipline_object& discipline, const share_type& amount)
 {
-    auto& vote_service = obtain_service<dbs_vote>();
     auto& review_service = obtain_service<dbs_review>();
 
     flat_set<review_id_type> reviews_ids;
