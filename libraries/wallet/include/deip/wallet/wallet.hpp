@@ -645,22 +645,7 @@ public:
 
     void network_add_nodes(const vector<string>& nodes);
     vector<variant> network_get_connected_peers();
-
-    /**
-     * Vote on a comment to be paid DEIP
-     *
-     * @param voter The account voting
-     * @param author The author of the comment to be voted on
-     * @param permlink The permlink of the comment to be voted on. (author, permlink) is a unique pair
-     * @param weight The weight [-100,100] of the vote
-     * @param broadcast true if you wish to broadcast the transaction
-     */
-    annotated_signed_transaction vote(const std::string& voter,
-                                      const std::string& author,
-                                      const std::string& permlink,
-                                      int16_t weight,
-                                      bool broadcast);
-
+    
     /**
      * Sets the amount of time in the future until a transaction expires.
      */
@@ -929,7 +914,6 @@ FC_API( deip::wallet::wallet_api,
         (withdraw_common_tokens)
         (set_withdraw_common_tokens_route)
         (transfer_research_tokens)
-        (vote)
         (set_transaction_expiration)
         (challenge)
         (request_account_recovery)

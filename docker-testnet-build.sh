@@ -2,6 +2,7 @@
 set -e
 
 TAG=$(git log -1 --pretty=%h)
+echo ${TAG}
 LATEST="latest"
 
 

@@ -1948,23 +1948,6 @@ vector<withdraw_route> wallet_api::get_withdraw_routes(const std::string& accoun
     return my->_remote_db->get_withdraw_routes(account, type);
 }
 
-annotated_signed_transaction wallet_api::vote(
-    const std::string& voter, const std::string& author, const std::string& permlink, int16_t weight, bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-    FC_ASSERT(abs(weight) <= 100, "Weight must be between -100 and 100 and not 0");
-
-    vote_operation op;
-    op.voter = voter;
-    op.weight = weight * DEIP_1_PERCENT;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
 void wallet_api::set_transaction_expiration(uint32_t seconds)
 {
     my->set_transaction_expiration(seconds);
