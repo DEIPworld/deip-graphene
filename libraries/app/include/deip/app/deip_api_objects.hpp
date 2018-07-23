@@ -357,7 +357,6 @@ struct discipline_api_obj
     int64_t id;
     int64_t parent_id;
     string name;
-    share_type votes_in_last_ten_weeks;
 };
 
 struct research_api_obj
@@ -1053,6 +1052,8 @@ FC_REFLECT( deip::app::vote_api_obj,
             (research_content_id)
             (weight)
             (voting_time)
+            (voting_power)
+            (tokens_amount)
 
 )
 
