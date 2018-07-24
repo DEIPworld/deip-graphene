@@ -31,8 +31,7 @@ public:
     account_name_type initiator;
     account_name_type claimer;
     discipline_id_type discipline_id;
-    share_type amount = 0;
-    int16_t total_voted_expertise = 0;
+    share_type total_voted_expertise = 0;
     vector<account_name_type> upvoted_accounts;
     vector<account_name_type> downvoted_accounts;
 
@@ -56,11 +55,11 @@ typedef multi_index_container<expertise_allocation_proposal_object,
             ordered_unique<tag<by_discipline_and_claimer>,
                     composite_key<expertise_allocation_proposal_object,
                             member<expertise_allocation_proposal_object,
-                                   account_name_type,
-                                   &expertise_allocation_proposal_object::claimer>,
-                            member<expertise_allocation_proposal_object,
                                    discipline_id_type,
-                                   &expertise_allocation_proposal_object::discipline_id>>>,
+                                   &expertise_allocation_proposal_object::discipline_id>,
+                            member<expertise_allocation_proposal_object,
+                                    account_name_type,
+                                   &expertise_allocation_proposal_object::claimer>>>,
             ordered_non_unique<tag<by_discipline_id>,
                     member<expertise_allocation_proposal_object,
                            discipline_id_type,
@@ -71,7 +70,7 @@ typedef multi_index_container<expertise_allocation_proposal_object,
 }
 
 FC_REFLECT( deip::chain::expertise_allocation_proposal_object,
-            (id)(initiator)(claimer)(discipline_id)(amount)(total_voted_expertise)(upvoted_accounts)(downvoted_accounts)(creation_time)(expiration_time)
+            (id)(initiator)(claimer)(discipline_id)(total_voted_expertise)(upvoted_accounts)(downvoted_accounts)(creation_time)(expiration_time)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::expertise_allocation_proposal_object, deip::chain::expertise_allocation_proposal_index )
