@@ -31,7 +31,7 @@ public:
     account_name_type initiator;
     account_name_type claimer;
     discipline_id_type discipline_id;
-    share_type total_voted_expertise = 0;
+    int16_t total_voted_expertise = 0;
     vector<account_name_type> upvoted_accounts;
     vector<account_name_type> downvoted_accounts;
 
@@ -41,6 +41,7 @@ public:
 
 struct by_initiator;
 struct by_discipline_and_claimer;
+struct by_discipline_initiator_and_claimer;
 struct by_discipline_id;
 
 typedef multi_index_container<expertise_allocation_proposal_object,
@@ -52,7 +53,7 @@ typedef multi_index_container<expertise_allocation_proposal_object,
                     member<expertise_allocation_proposal_object,
                            account_name_type,
                            &expertise_allocation_proposal_object::initiator>>,
-            ordered_unique<tag<by_discipline_and_claimer>,
+            ordered_non_unique<tag<by_discipline_and_claimer>,
                     composite_key<expertise_allocation_proposal_object,
                             member<expertise_allocation_proposal_object,
                                    discipline_id_type,
@@ -60,6 +61,17 @@ typedef multi_index_container<expertise_allocation_proposal_object,
                             member<expertise_allocation_proposal_object,
                                     account_name_type,
                                    &expertise_allocation_proposal_object::claimer>>>,
+            ordered_unique<tag<by_discipline_initiator_and_claimer>,
+                    composite_key<expertise_allocation_proposal_object,
+                            member<expertise_allocation_proposal_object,
+                                    discipline_id_type,
+                                    &expertise_allocation_proposal_object::discipline_id>,
+                            member<expertise_allocation_proposal_object,
+                                    account_name_type,
+                                    &expertise_allocation_proposal_object::initiator>,
+                            member<expertise_allocation_proposal_object,
+                                    account_name_type,
+                                    &expertise_allocation_proposal_object::claimer>>>,
             ordered_non_unique<tag<by_discipline_id>,
                     member<expertise_allocation_proposal_object,
                            discipline_id_type,

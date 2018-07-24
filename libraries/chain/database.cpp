@@ -29,6 +29,7 @@
 #include <deip/chain/research_group_invite_object.hpp>
 #include <deip/chain/review_object.hpp>
 #include <deip/chain/vesting_contract_object.hpp>
+#include <deip/chain/expertise_allocation_proposal_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1803,6 +1804,7 @@ void database::initialize_indexes()
     add_index<review_vote_index>();
     add_index<vesting_contract_index>();
     add_index<research_content_reward_pool_index>();
+    add_index<expertise_allocation_proposal_index>();
 
     _plugin_index_signal();
 }
