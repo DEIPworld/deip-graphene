@@ -1,228 +1,228 @@
 {
     "initial_timestamp": "2017-11-29T10:03:00",
 
-    "init_supply": 40000,
+    "init_supply": 400000000,
     "accounts": [{
         "name": "initdelegate",
         "recovery_account": "",
         "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ",
-        "deip_amount": 100,
+        "deip_amount": 1000000,
         "sp_amount": 0
     }, {
         "name": "alice",
         "recovery_account": "",
         "public_key": "DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83",
-        "deip_amount": 100,
+        "deip_amount": 1000000,
         "sp_amount": 0
     }, {
         "name": "bob",
         "recovery_account": "",
         "public_key": "DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi",
-        "deip_amount": 100,
+        "deip_amount": 1000000,
         "sp_amount": 0
     }, {
         "name": "lightsom",
         "recovery_account": "",
         "public_key": "DEIP8bwPxtWUEffTs7C8vRNT98Sv7XGCVDWCXVUeHvtNH5TxvrwVLj",
-        "deip_amount": 200,
+        "deip_amount": 2000000,
         "sp_amount": 0
     }, {
         "name": "cicchetti",
         "recovery_account": "",
         "public_key": "DEIP5mFLmqoifrz3c9iTmFVpxjU29QjyKSGiKZf7GUM2T6cJpm6Gb7",
-        "deip_amount": 200,
+        "deip_amount": 2000000,
         "sp_amount": 0
     }, {
         "name": "wahle",
         "recovery_account": "",
         "public_key": "DEIP7NAFzGdNUBhR1B3bf9g38yy4qEENJK1TSff2YdSstLQ6ztXrG6",
-        "deip_amount": 300,
+        "deip_amount": 3000000,
         "sp_amount": 0
     }, {
         "name": "ingopr",
         "recovery_account": "",
         "public_key": "DEIP7gp8xGzRdzVHqyiCbBqQn2FqUV1h94iwFwtS6RuqdaseyYgwEk",
-        "deip_amount": 5000,
+        "deip_amount": 50000000,
         "sp_amount": 0
     }, {
         "name": "dorette",
         "recovery_account": "",
         "public_key": "DEIP7uK6Q7aXjdUL6M6b2s8YdnJ9pbf7UHKPhjHqpFdmypFSUDFUTp",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "christa-sonja",
         "recovery_account": "",
         "public_key": "DEIP5YJaWc5RSQHnqd8pSmaWdqQhNGGEeiesgUZ34hAYM9VDdikabE",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "esmeralda",
         "recovery_account": "",
         "public_key": "DEIP5qm2iZaNGGcWqpJwnWmHjPorXZZBhudRp5jQSGfkrLphoLcQTh",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "ferdinand",
         "recovery_account": "",
         "public_key": "DEIP7SRfpY6Un2YBTa2y1ec5gju7s4MwqzQx8p8GDqZEFPewAJLVu7",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate1",
         "recovery_account": "",
         "public_key": "DEIP6GGrScrv5S8MDwAiQrg5Tvh4KPndcEV7ZDu8f9zfQ96gfTsNXP",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate2",
         "recovery_account": "",
         "public_key": "DEIP69cfB2TGrQgZRXKspwBn9E94CjLZDMABEFyyq9BeLVo8JhaXgZ",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate3",
         "recovery_account": "",
         "public_key": "DEIP5hekKQBAR3KqWEtWj33FwfvydBJRD6Ljf1dYu9UQ9xqxgMxVuX",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate4",
         "recovery_account": "",
         "public_key": "DEIP6zbXJKP7aSpHeUU7vdCkfR2Cgj6yGLJjn5jw9kPydk2dqnK3Eb",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate5",
         "recovery_account": "",
         "public_key": "DEIP6NBZTeR4g1VoPXr39dvspo4BHExoxwzwXoQtxzofqpSQeFXfZs",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate6",
         "recovery_account": "",
         "public_key": "DEIP5FcF3TpCHmNGAAYLiefsQB67RgPBq69Hmj6sYDJKe3CoiQAZcr",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate7",
         "recovery_account": "",
         "public_key": "DEIP7dqBjfGYCPfffJVBWGvhUasGc6eWqxmNvJw7Es2Zu1yquXgV3Q",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate8",
         "recovery_account": "",
         "public_key": "DEIP5QUc3pPePUaaaK5dEDs3hh2MGdy5M3qdjBpqGCv1fYhckbUwR9",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate9",
         "recovery_account": "",
         "public_key": "DEIP6sxa3PhM3D3KwL2kW2sMyL1tEz493x1gPJ3Sb4HiB8MaAutuDV",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate10",
         "recovery_account": "",
         "public_key": "DEIP5noaUskFp96Z4gGkq9VcvyMnDXiqzmepd2tXW5xobUAJNv8Bi1",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate11",
         "recovery_account": "",
         "public_key": "DEIP7tes2eyeTcRVX3ua6R3egfn6i2CuhDUWhYNk4mmsxk9UaCkGSL",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate12",
         "recovery_account": "",
         "public_key": "DEIP5HQrZAwQXcqWgA1tHnJZsoBLUC74JCFbopUYBtki2UnZqp52PV",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate13",
         "recovery_account": "",
         "public_key": "DEIP7AKTn2qsMSFSNmRKjLR4gJWvfmKfne1wn1te2SALBUTawo2WUp",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate14",
         "recovery_account": "",
         "public_key": "DEIP5HXtXkcdMMCeYQe3U6xp1y9hue4pR4wDa25FtC1tA6KPVg4sPd",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate15",
         "recovery_account": "",
         "public_key": "DEIP5EAv48B9FJSbTKkjYVxpk7uyAxYWwKfRjwdbVxjTaMzqM7H7NT",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate16",
         "recovery_account": "",
         "public_key": "DEIP5EkxX7qJvc2kantTuTfZbip2QDmtf12AHDGYcWe9KN4aUPwzs9",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate17",
         "recovery_account": "",
         "public_key": "DEIP83Gd6H5Ag5h9ch6PKVw3Y42rW6r2tLbe5UBKHB6GNQtm2sXpc4",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate18",
         "recovery_account": "",
         "public_key": "DEIP7JNjyisnHeqxDKPKhiGxtBW2UBhaV1BKWqBKy19Sj2bduLKpcL",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate19",
         "recovery_account": "",
         "public_key": "DEIP89Nm1Z7i14DTCeKczBvakyCwVfmqcpAsTtbQFujbtGsa1vwC1G",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate20",
         "recovery_account": "",
         "public_key": "DEIP8M5LTnXBAZNYwQXjJRWcVKUWypretebzD8ksT1iY3HezDW4Jpg",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate21",
         "recovery_account": "",
         "public_key": "DEIP7zda2KdXD9ceWoxG5WNrLB9jjgVGdbifPFi2bSXGCRF3B1wgDC",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate22",
         "recovery_account": "",
         "public_key": "DEIP6XH2YRxEhsLUEj6GGb65oqZmHgVumg3jDGp5S1F5rBm6dhQ6tK",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate23",
         "recovery_account": "",
         "public_key": "DEIP8Qe6M37dswGCqYPNxheZgiEsXodCgcsQMooPD235VSyZ5jvd26",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate24",
         "recovery_account": "",
         "public_key": "DEIP5vKtZEWwCV6dK7qacMKwd1M4zCP5U4Gf8i61FjZKAvoqENrrB2",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "initdelegate25",
         "recovery_account": "",
         "public_key": "DEIP6mh7S7KaZK3gh8bGG8TcggK2woCSNmx3SEv6vMTtJQMDvsuQzb",
-        "deip_amount": 1000,
+        "deip_amount": 10000000,
         "sp_amount": 0
     }, {
         "name": "soenkeba",
         "recovery_account": "",
         "public_key": "DEIP79L7Xomcy8EqUC9Jpve4sSn1niJr9dZJ2CdHtZcb9f6J4aLPyf",
-        "deip_amount": 5000,
+        "deip_amount": 50000000,
         "sp_amount": 0
     }],
 
