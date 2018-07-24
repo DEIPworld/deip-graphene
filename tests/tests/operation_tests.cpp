@@ -26,6 +26,7 @@
 #include <deip/chain/review_object.hpp>
 #include <deip/chain/vesting_contract_object.hpp>
 #include <deip/chain/dbs_research_discipline_relation.hpp>
+#include <deip/chain/grant_objects.hpp>
 
 #define DROPOUT_COMPENSATION_IN_PERCENT 1500
 
@@ -3060,6 +3061,36 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
 
         BOOST_CHECK(research_group.balance.amount == 500);
         BOOST_CHECK(bobs_account.balance.amount == 1250);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(create_grant_execute_test)
+{
+    try {
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
+        fund("alice", 1000);
+
+        create_grant_operation op;
+        op.owner = "alice";
+        op.balance = asset(100, DEIP_SYMBOL);
+        op.target_discipline = "Mathematics";
+        op.start_block = 1000;
+        op.end_block = 1010;
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& grant = db.get<grant_object, by_owner_name>("alice");
+        BOOST_CHECK(grant.target_discipline == 1);
+        BOOST_CHECK(grant.start_block == 1000);
+        BOOST_CHECK(grant.end_block == 1010);
     }
     FC_LOG_AND_RETHROW()
 }
