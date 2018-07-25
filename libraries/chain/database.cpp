@@ -1763,6 +1763,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_expertise_evaluator>();
     _my->_evaluator_registry.register_evaluator<revoke_expertise_delegation_evaluator>();
+    _my->_evaluator_registry.register_evaluator<expertise_allocation_proposal_evaluator>();
 }
 
 void database::initialize_indexes()

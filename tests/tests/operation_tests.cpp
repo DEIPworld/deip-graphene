@@ -26,6 +26,7 @@
 #include <deip/chain/review_object.hpp>
 #include <deip/chain/vesting_contract_object.hpp>
 #include <deip/chain/dbs_research_discipline_relation.hpp>
+#include <deip/chain/expertise_allocation_proposal_object.hpp>
 
 #define DROPOUT_COMPENSATION_IN_PERCENT 1500
 
@@ -3915,6 +3916,53 @@ BOOST_AUTO_TEST_CASE(withdraw_expertise_apply)
         tx4.validate();
         BOOST_CHECK_THROW(db.push_transaction(tx4, 0), fc::assert_exception);
 
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(expertise_allocation_proposal_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: delegate expertise and withdraw then");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+
+        generate_block();
+
+        private_key_type alice_priv_key = generate_private_key("alice");
+
+        expertise_allocation_proposal_operation op;
+
+        op.initiator = "alice";
+        op.claimer = "bob";
+        op.discipline_id = 1;
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(alice_priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& expertise_allocation_proposal = db.get<expertise_allocation_proposal_object, by_id>(0);
+
+        BOOST_CHECK(expertise_allocation_proposal.initiator == "alice");
+        BOOST_CHECK(expertise_allocation_proposal.claimer == "bob");
+        BOOST_CHECK(expertise_allocation_proposal.discipline_id == 1);
+
+        expertise_allocation_proposal_operation op2;
+
+        op2.initiator = "alice";
+        op2.claimer = "bob";
+        op2.discipline_id = 1;
+
+        signed_transaction tx2;
+        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2.operations.push_back(op2);
+        tx2.sign(alice_priv_key, db.get_chain_id());
+        tx2.validate();
+        BOOST_CHECK_THROW(db.push_transaction(tx2, 0), fc::assert_exception);
     }
     FC_LOG_AND_RETHROW()
 }
