@@ -45,13 +45,13 @@ public:
                                                        const account_name_type &initiator,
                                                        const account_name_type &claimer);
 
-    void increase_total_voted_expertise(const expertise_allocation_proposal_object& expertise_allocation_proposal,
-                                        const account_name_type &voter,
-                                        const int16_t amount);
+    void upvote(const expertise_allocation_proposal_object &expertise_allocation_proposal,
+                const account_name_type &voter,
+                const share_type amount);
 
-    void decrease_total_voted_expertise(const expertise_allocation_proposal_object& expertise_allocation_proposal,
-                                        const account_name_type &voter,
-                                        const int16_t amount);
+    void downvote(const expertise_allocation_proposal_object &expertise_allocation_proposal,
+                  const account_name_type &voter,
+                  const share_type amount);
 
 };
 

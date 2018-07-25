@@ -96,27 +96,9 @@ bool dbs_expertise_allocation_proposal::is_exists_by_discipline_initiator_and_cl
     return idx.find(boost::make_tuple(discipline_id, initiator, claimer)) != idx.cend();
 }
 
-void dbs_expertise_allocation_proposal::increase_total_voted_expertise(const expertise_allocation_proposal_object& expertise_allocation_proposal,
-                                                                       const account_name_type &voter,
-                                                                       const int16_t amount)
-{
-    FC_ASSERT(amount >= 0, "Amount cannot be <= 0");
-
-    db_impl().modify(expertise_allocation_proposal, [&](expertise_allocation_proposal_object& eap_o) {
-        if (std::find(eap_o.downvoted_accounts.begin(), eap_o.downvoted_accounts.end(), voter) != eap_o.downvoted_accounts.end())
-        {
-            eap_o.downvoted_accounts.erase(std::remove(eap_o.downvoted_accounts.begin(), eap_o.downvoted_accounts.end(), voter), eap_o.downvoted_accounts.end());
-              eap_o.total_voted_expertise += 2 * amount;
-        } else
-            eap_o.total_voted_expertise += amount;
-
-        eap_o.upvoted_accounts.push_back(voter);
-    });
-}
-
-void dbs_expertise_allocation_proposal::decrease_total_voted_expertise(const expertise_allocation_proposal_object& expertise_allocation_proposal,
-                                                                       const account_name_type &voter,
-                                                                       const int16_t amount)
+void dbs_expertise_allocation_proposal::upvote(const expertise_allocation_proposal_object& expertise_allocation_proposal,
+                                               const account_name_type &voter,
+                                               const share_type amount)
 {
     FC_ASSERT(amount >= 0, "Amount cannot be <= 0");
 
@@ -124,11 +106,47 @@ void dbs_expertise_allocation_proposal::decrease_total_voted_expertise(const exp
         if (std::find(eap_o.upvoted_accounts.begin(), eap_o.upvoted_accounts.end(), voter) != eap_o.upvoted_accounts.end())
         {
             eap_o.upvoted_accounts.erase(std::remove(eap_o.upvoted_accounts.begin(), eap_o.upvoted_accounts.end(), voter), eap_o.upvoted_accounts.end());
-            eap_o.total_voted_expertise -= 2 * amount;
-        } else
-            eap_o.total_voted_expertise -= amount;
+            eap_o.total_voted_expertise -= amount.value;
+        }
+        else {
+            if (std::find(eap_o.downvoted_accounts.begin(), eap_o.downvoted_accounts.end(), voter) !=
+                eap_o.downvoted_accounts.end()) {
+                eap_o.downvoted_accounts.erase(
+                        std::remove(eap_o.downvoted_accounts.begin(), eap_o.downvoted_accounts.end(), voter),
+                        eap_o.downvoted_accounts.end());
+                eap_o.total_voted_expertise += 2 * amount.value;
+            } else
+                eap_o.total_voted_expertise += amount.value;
 
-        eap_o.downvoted_accounts.push_back(voter);
+            eap_o.upvoted_accounts.push_back(voter);
+        }
+    });
+}
+
+void dbs_expertise_allocation_proposal::downvote(const expertise_allocation_proposal_object& expertise_allocation_proposal,
+                                                 const account_name_type &voter,
+                                                 const share_type amount)
+{
+    FC_ASSERT(amount >= 0, "Amount cannot be <= 0");
+
+    db_impl().modify(expertise_allocation_proposal, [&](expertise_allocation_proposal_object& eap_o) {
+        if (std::find(eap_o.downvoted_accounts.begin(), eap_o.downvoted_accounts.end(), voter) != eap_o.downvoted_accounts.end())
+        {
+            eap_o.downvoted_accounts.erase(std::remove(eap_o.downvoted_accounts.begin(), eap_o.downvoted_accounts.end(), voter), eap_o.downvoted_accounts.end());
+            eap_o.total_voted_expertise -= amount.value;
+        }
+        else {
+            if (std::find(eap_o.upvoted_accounts.begin(), eap_o.upvoted_accounts.end(), voter) !=
+                eap_o.upvoted_accounts.end()) {
+                eap_o.upvoted_accounts.erase(
+                        std::remove(eap_o.upvoted_accounts.begin(), eap_o.upvoted_accounts.end(), voter),
+                        eap_o.upvoted_accounts.end());
+                eap_o.total_voted_expertise -= 2 * amount.value;
+            } else
+                eap_o.total_voted_expertise -= amount.value;
+
+            eap_o.downvoted_accounts.push_back(voter);
+        }
     });
 }
 

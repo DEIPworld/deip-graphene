@@ -152,13 +152,13 @@ BOOST_AUTO_TEST_CASE(increase_total_voted_expertise)
         expertise_allocation_proposals();
         auto& expertise_allocation_proposal = data_service.get_by_discipline_initiator_and_claimer(2, "alice", "bob");
 
-        data_service.decrease_total_voted_expertise(expertise_allocation_proposal, "john", 1000);
+        data_service.downvote(expertise_allocation_proposal, "john", 1000);
         BOOST_CHECK(expertise_allocation_proposal.total_voted_expertise == -1000);
 
-        data_service.increase_total_voted_expertise(expertise_allocation_proposal, "john", 1000);
+        data_service.upvote(expertise_allocation_proposal, "john", 1000);
         BOOST_CHECK(expertise_allocation_proposal.total_voted_expertise == 1000);
 
-        data_service.increase_total_voted_expertise(expertise_allocation_proposal, "mike", 1000);
+        data_service.upvote(expertise_allocation_proposal, "mike", 1000);
         BOOST_CHECK(expertise_allocation_proposal.total_voted_expertise == 2000);
 
     }
@@ -173,13 +173,13 @@ BOOST_AUTO_TEST_CASE(decrease_total_voted_expertise)
         expertise_allocation_proposals();
         auto &expertise_allocation_proposal = data_service.get_by_discipline_initiator_and_claimer(2, "alice", "bob");
 
-        data_service.increase_total_voted_expertise(expertise_allocation_proposal, "john", 1000);
+        data_service.upvote(expertise_allocation_proposal, "john", 1000);
         BOOST_CHECK(expertise_allocation_proposal.total_voted_expertise == 1000);
 
-        data_service.decrease_total_voted_expertise(expertise_allocation_proposal, "john", 1000);
+        data_service.downvote(expertise_allocation_proposal, "john", 1000);
         BOOST_CHECK(expertise_allocation_proposal.total_voted_expertise == -1000);
 
-        data_service.decrease_total_voted_expertise(expertise_allocation_proposal, "mike", 1000);
+        data_service.downvote(expertise_allocation_proposal, "mike", 1000);
         BOOST_CHECK(expertise_allocation_proposal.total_voted_expertise == -2000);
     }
     FC_LOG_AND_RETHROW()

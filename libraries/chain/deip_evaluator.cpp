@@ -1175,5 +1175,30 @@ void expertise_allocation_proposal_evaluator::do_apply(const expertise_allocatio
     expertise_allocation_proposal_service.create(op.initiator, op.claimer, op.discipline_id);
 }
 
+void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_expertise_allocation_proposal_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+    dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = _db.obtain_service<dbs_expertise_allocation_proposal>();
+
+    account_service.check_account_existence(op.initiator);
+    account_service.check_account_existence(op.claimer);
+    account_service.check_account_existence(op.voter);
+
+    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.initiator, op.discipline_id);
+    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.claimer, op.discipline_id);
+    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.voter, op.discipline_id);
+
+    expertise_allocation_proposal_service.check_existence_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer);
+
+    auto& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.voter, op.discipline_id);
+    auto& expertise_allocation_proposal = expertise_allocation_proposal_service.get_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer);
+
+    if (op.voting_power == DEIP_100_PERCENT)
+        expertise_allocation_proposal_service.upvote(expertise_allocation_proposal, op.voter, expert_token.amount);
+    else if (op.voting_power == -DEIP_100_PERCENT)
+        expertise_allocation_proposal_service.downvote(expertise_allocation_proposal, op.voter, expert_token.amount);
+}
+
 } // namespace chain
 } // namespace deip 
