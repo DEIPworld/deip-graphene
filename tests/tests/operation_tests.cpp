@@ -3967,6 +3967,127 @@ BOOST_AUTO_TEST_CASE(expertise_allocation_proposal_apply)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
+{
+    try
+    {
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(john)(jack));
+
+        generate_block();
+
+        private_key_type alice_priv_key = generate_private_key("alice");
+        private_key_type jack_priv_key = generate_private_key("jack");
+        private_key_type john_priv_key = generate_private_key("john");
+
+        expertise_allocation_proposal_operation op;
+
+        op.initiator = "alice";
+        op.claimer = "bob";
+        op.discipline_id = 1;
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(alice_priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& expertise_allocation_proposal = db.get<expertise_allocation_proposal_object, by_id>(0);
+
+        BOOST_CHECK(expertise_allocation_proposal.initiator == "alice");
+        BOOST_CHECK(expertise_allocation_proposal.claimer == "bob");
+        BOOST_CHECK(expertise_allocation_proposal.discipline_id == 1);
+
+        vote_for_expertise_allocation_proposal_operation op2;
+
+        op2.initiator = "alice";
+        op2.claimer = "bob";
+        op2.discipline_id = 1;
+        op2.voter = "jack";
+        op2.voting_power = DEIP_100_PERCENT;
+
+        signed_transaction tx2;
+        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2.operations.push_back(op2);
+        tx2.sign(jack_priv_key, db.get_chain_id());
+        tx2.validate();
+        db.push_transaction(tx2, 0);
+
+        BOOST_CHECK(expertise_allocation_proposal.upvoted_accounts.size() == 1);
+        BOOST_CHECK(expertise_allocation_proposal.total_voted_expertise == 10000);
+
+        vote_for_expertise_allocation_proposal_operation op2_1;
+
+        op2_1.initiator = "alice";
+        op2_1.claimer = "bob";
+        op2_1.discipline_id = 1;
+        op2_1.voter = "jack";
+        op2_1.voting_power = DEIP_100_PERCENT;
+
+        generate_block();
+
+        signed_transaction tx2_1;
+        tx2_1.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2_1.operations.push_back(op2_1);
+        tx2_1.sign(jack_priv_key, db.get_chain_id());
+        tx2_1.validate();
+        db.push_transaction(tx2_1, 0);
+
+        auto& expertise_allocation_proposal_2 = db.get<expertise_allocation_proposal_object, by_id>(0);
+
+        BOOST_CHECK(expertise_allocation_proposal_2.upvoted_accounts.size() == 0);
+        BOOST_CHECK(expertise_allocation_proposal_2.total_voted_expertise == 0);
+
+        vote_for_expertise_allocation_proposal_operation op3;
+
+        op3.initiator = "alice";
+        op3.claimer = "bob";
+        op3.discipline_id = 1;
+        op3.voter = "jack";
+        op3.voting_power = -DEIP_100_PERCENT;
+
+        generate_block();
+
+        signed_transaction tx4;
+        tx4.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx4.operations.push_back(op3);
+        tx4.sign(jack_priv_key, db.get_chain_id());
+        tx4.validate();
+        db.push_transaction(tx4, 0);
+
+        auto& expertise_allocation_proposal_3 = db.get<expertise_allocation_proposal_object, by_id>(0);
+
+        BOOST_CHECK(expertise_allocation_proposal_3.downvoted_accounts.size() == 1);
+        BOOST_CHECK(expertise_allocation_proposal_3.total_voted_expertise == -10000);
+
+        vote_for_expertise_allocation_proposal_operation op4;
+
+        op4.initiator = "alice";
+        op4.claimer = "bob";
+        op4.discipline_id = 1;
+        op4.voter = "jack";
+        op4.voting_power = DEIP_100_PERCENT;
+
+        generate_block();
+
+        signed_transaction tx5;
+        tx5.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx5.operations.push_back(op4);
+        tx5.sign(jack_priv_key, db.get_chain_id());
+        tx5.validate();
+        db.push_transaction(tx5, 0);
+
+        auto& expertise_allocation_proposal_4 = db.get<expertise_allocation_proposal_object, by_id>(0);
+
+        BOOST_CHECK(expertise_allocation_proposal_4.downvoted_accounts.size() == 0);
+        BOOST_CHECK(expertise_allocation_proposal_4.upvoted_accounts.size() == 1);
+        BOOST_CHECK(expertise_allocation_proposal_4.total_voted_expertise == 10000);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()
 
 #endif
