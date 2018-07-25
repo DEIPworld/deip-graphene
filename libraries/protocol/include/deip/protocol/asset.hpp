@@ -86,6 +86,11 @@ struct asset
         FC_ASSERT(a.symbol == b.symbol);
         return asset(a.amount + b.amount, a.symbol);
     }
+    friend asset operator*(const asset& a, const asset& b)
+    {
+        FC_ASSERT(a.symbol == b.symbol);
+        return asset(a.amount * b.amount, a.symbol);
+    }
 };
 
 template <typename Stream> Stream& operator<<(Stream& stream, const deip::protocol::asset& a)
