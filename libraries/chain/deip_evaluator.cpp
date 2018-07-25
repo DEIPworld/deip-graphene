@@ -23,6 +23,7 @@
 #include <deip/chain/dbs_review.hpp>
 #include <deip/chain/dbs_vesting_contract.hpp>
 #include <deip/chain/dbs_proposal_execution.hpp>
+#include <deip/chain/dbs_expertise_allocation_proposal.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1154,6 +1155,24 @@ void revoke_expertise_delegation_evaluator::do_apply(const revoke_expertise_dele
     FC_ASSERT(std::find(accounts.begin(), accounts.end(), op.sender) != accounts.end(), "Account doesn't have delegated expertise");
 
     account_service.revoke_expertise_delegation(op.sender, op.receiver, op.discipline_id);
+}
+
+void expertise_allocation_proposal_evaluator::do_apply(const expertise_allocation_proposal_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+    dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = _db.obtain_service<dbs_expertise_allocation_proposal>();
+
+    account_service.check_account_existence(op.initiator);
+    account_service.check_account_existence(op.claimer);
+
+    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.initiator, op.discipline_id);
+    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.claimer, op.discipline_id);
+
+    FC_ASSERT(expertise_allocation_proposal_service.is_exists_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer) == false,
+              "You have already create an expertise allocation proposal");
+
+    expertise_allocation_proposal_service.create(op.initiator, op.claimer, op.discipline_id);
 }
 
 } // namespace chain

@@ -682,6 +682,20 @@ struct revoke_expertise_delegation_operation : public base_operation
     }
 };
 
+struct expertise_allocation_proposal_operation : public base_operation
+{
+    account_name_type initiator;
+    account_name_type claimer;
+    int64_t discipline_id;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(initiator);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -743,5 +757,6 @@ FC_REFLECT( deip::protocol::withdraw_from_vesting_contract_operation, (sender)(r
 FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_token_id)(research_id)(sender)(receiver)(amount))
 FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(discipline_id))
 FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(receiver)(discipline_id))
+FC_REFLECT( deip::protocol::expertise_allocation_proposal_operation, (initiator)(claimer)(discipline_id))
 
 // clang-format on
