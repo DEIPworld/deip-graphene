@@ -1,4 +1,5 @@
 #include <deip/chain/dbs_expertise_allocation_proposal.hpp>
+#include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/database.hpp>
 
 #include <tuple>
@@ -13,12 +14,15 @@ dbs_expertise_allocation_proposal::dbs_expertise_allocation_proposal(database &d
 
 const expertise_allocation_proposal_object& dbs_expertise_allocation_proposal::create(const account_name_type& initiator,
                                                                                       const account_name_type& claimer,
-                                                                                      const discipline_id_type& discipline_id)
+                                                                                      const discipline_id_type& discipline_id,
+                                                                                      const share_type amount)
 {
     auto& expertise_allocation_proposal = db_impl().create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
         eap_o.initiator = initiator;
         eap_o.claimer = claimer;
         eap_o.discipline_id = discipline_id;
+        eap_o.amount = amount;
+        eap_o.quorum_percent = 15 * DEIP_1_PERCENT;
         eap_o.creation_time = db_impl().head_block_time();
         eap_o.expiration_time = db_impl().head_block_time() + DAYS_TO_SECONDS(14);
     });
@@ -150,6 +154,24 @@ void dbs_expertise_allocation_proposal::downvote(const expertise_allocation_prop
     });
 }
 
+bool dbs_expertise_allocation_proposal::is_quorum(const expertise_allocation_proposal_object &expertise_allocation_proposal)
+{
+    auto& discipline = db_impl().get<discipline_object, by_id>(expertise_allocation_proposal.discipline_id);
+
+    auto quorum_amount = (expertise_allocation_proposal.quorum_percent * discipline.total_expertise_amount) / DEIP_100_PERCENT;
+
+    return expertise_allocation_proposal.total_voted_expertise >= quorum_amount.value;
+
+}
+
+void dbs_expertise_allocation_proposal::delete_by_discipline_and_claimer(const discipline_id_type& discipline_id,
+                                                                         const account_name_type &claimer)
+{
+    auto expertise_allocation_proposals = get_by_discipline_and_claimer(discipline_id, claimer);
+
+    for (auto expertise_allocation_proposal : expertise_allocation_proposals)
+        db_impl().remove(expertise_allocation_proposal);
+}
 
 } //namespace chain
 } //namespace deip

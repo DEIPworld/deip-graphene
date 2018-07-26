@@ -1172,7 +1172,7 @@ void expertise_allocation_proposal_evaluator::do_apply(const expertise_allocatio
     FC_ASSERT(expertise_allocation_proposal_service.is_exists_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer) == false,
               "You have already create an expertise allocation proposal");
 
-    expertise_allocation_proposal_service.create(op.initiator, op.claimer, op.discipline_id);
+    expertise_allocation_proposal_service.create(op.initiator, op.claimer, op.discipline_id, op.amount);
 }
 
 void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_expertise_allocation_proposal_operation& op)
@@ -1194,8 +1194,14 @@ void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_e
     auto& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.voter, op.discipline_id);
     auto& expertise_allocation_proposal = expertise_allocation_proposal_service.get_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer);
 
-    if (op.voting_power == DEIP_100_PERCENT)
+    if (op.voting_power == DEIP_100_PERCENT) {
         expertise_allocation_proposal_service.upvote(expertise_allocation_proposal, op.voter, expert_token.amount);
+        if (expertise_allocation_proposal_service.is_quorum(expertise_allocation_proposal))
+        {
+            expert_token_service.create(op.claimer, op.discipline_id, expertise_allocation_proposal.amount);
+            expertise_allocation_proposal_service.delete_by_discipline_and_claimer(expertise_allocation_proposal.discipline_id, expertise_allocation_proposal.claimer);
+        }
+    }
     else if (op.voting_power == -DEIP_100_PERCENT)
         expertise_allocation_proposal_service.downvote(expertise_allocation_proposal, op.voter, expert_token.amount);
 }

@@ -24,7 +24,8 @@ public:
 
     const expertise_allocation_proposal_object& create(const account_name_type& initiator,
                                                        const account_name_type& claimer,
-                                                       const discipline_id_type& discipline_id);
+                                                       const discipline_id_type& discipline_id,
+                                                       const share_type amount);
 
     const expertise_allocation_proposal_object& get(const expertise_allocation_proposal_id_type& id) const;
 
@@ -52,6 +53,11 @@ public:
     void downvote(const expertise_allocation_proposal_object &expertise_allocation_proposal,
                   const account_name_type &voter,
                   const share_type amount);
+
+    bool is_quorum(const expertise_allocation_proposal_object &expertise_allocation_proposal);
+
+    void delete_by_discipline_and_claimer(const discipline_id_type& discipline_id,
+                                          const account_name_type &claimer)  ;
 
 };
 
