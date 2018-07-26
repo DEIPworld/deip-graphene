@@ -3937,6 +3937,7 @@ BOOST_AUTO_TEST_CASE(expertise_allocation_proposal_apply)
         op.initiator = "alice";
         op.claimer = "bob";
         op.discipline_id = 1;
+        op.amount = 100;
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -3956,6 +3957,7 @@ BOOST_AUTO_TEST_CASE(expertise_allocation_proposal_apply)
         op2.initiator = "alice";
         op2.claimer = "bob";
         op2.discipline_id = 1;
+        op2.amount = 100;
 
         signed_transaction tx2;
         tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -3984,6 +3986,7 @@ BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
         op.initiator = "alice";
         op.claimer = "bob";
         op.discipline_id = 1;
+        op.amount = 100;
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
