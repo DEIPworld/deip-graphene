@@ -3973,13 +3973,19 @@ BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
 {
     try
     {
-        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(john)(jack));
+        ACTORS_WITH_EXPERT_TOKENS((alice)(john)(jack)(mike)(peter)(miles)(kate));
+        ACTOR(bob);
 
         generate_block();
 
         private_key_type alice_priv_key = generate_private_key("alice");
         private_key_type jack_priv_key = generate_private_key("jack");
         private_key_type john_priv_key = generate_private_key("john");
+        private_key_type kate_priv_key = generate_private_key("kate");
+
+        db.modify(db.get<discipline_object>(1), [&](discipline_object& d) {
+            d.total_expertise_amount = 70000;
+        });
 
         expertise_allocation_proposal_operation op;
 
@@ -4085,6 +4091,29 @@ BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
         BOOST_CHECK(expertise_allocation_proposal_4.downvoted_accounts.size() == 0);
         BOOST_CHECK(expertise_allocation_proposal_4.upvoted_accounts.size() == 1);
         BOOST_CHECK(expertise_allocation_proposal_4.total_voted_expertise == 10000);
+
+        vote_for_expertise_allocation_proposal_operation op5;
+
+        op5.initiator = "alice";
+        op5.claimer = "bob";
+        op5.discipline_id = 1;
+        op5.voter = "kate";
+        op5.voting_power = DEIP_100_PERCENT;
+
+        generate_block();
+
+        signed_transaction tx6;
+        tx6.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx6.operations.push_back(op5);
+        tx6.sign(kate_priv_key, db.get_chain_id());
+        tx6.validate();
+        db.push_transaction(tx6, 0);
+
+        BOOST_CHECK_THROW((db.get<expertise_allocation_proposal_object, by_id>(0)), std::out_of_range);
+
+        auto& expert_token = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("bob", 1));
+
+        BOOST_CHECK(expert_token.amount == 100);
 
     }
     FC_LOG_AND_RETHROW()

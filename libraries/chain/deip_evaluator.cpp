@@ -1167,7 +1167,6 @@ void expertise_allocation_proposal_evaluator::do_apply(const expertise_allocatio
     account_service.check_account_existence(op.claimer);
 
     expert_token_service.check_expert_token_existence_by_account_and_discipline(op.initiator, op.discipline_id);
-    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.claimer, op.discipline_id);
 
     FC_ASSERT(expertise_allocation_proposal_service.is_exists_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer) == false,
               "You have already create an expertise allocation proposal");
@@ -1186,7 +1185,6 @@ void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_e
     account_service.check_account_existence(op.voter);
 
     expert_token_service.check_expert_token_existence_by_account_and_discipline(op.initiator, op.discipline_id);
-    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.claimer, op.discipline_id);
     expert_token_service.check_expert_token_existence_by_account_and_discipline(op.voter, op.discipline_id);
 
     expertise_allocation_proposal_service.check_existence_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer);
