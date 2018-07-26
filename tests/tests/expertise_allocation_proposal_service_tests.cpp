@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(create)
     ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
     try
     {
-        auto expertise_allocation_proposal = data_service.create("alice", "bob", 1);
+        auto expertise_allocation_proposal = data_service.create("alice", "bob", 1, 100);
 
         BOOST_CHECK(expertise_allocation_proposal.id == 0);
         BOOST_CHECK(expertise_allocation_proposal.initiator == "alice");

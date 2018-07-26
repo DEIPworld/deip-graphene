@@ -1242,6 +1242,13 @@ void database::refund_research_tokens(const research_token_sale_id_type research
     modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
 }
 
+void database::process_expertise_allocation_proposals()
+{
+    const auto& idx = get_index<expertise_allocation_proposal_index>().indices().get<by_expiration_time>();
+    while ((!idx.empty()) && (head_block_time() > idx.begin()->expiration_time))
+        remove(*idx.begin());
+}
+
 share_type database::distribute_reward(const share_type &reward, const share_type &expertise)
 {
     auto& discipline_service = obtain_service<dbs_discipline>();
@@ -2036,6 +2043,8 @@ void database::_apply_block(const signed_block& next_block)
         process_hardforks();
 
         dynamic_global_properties_service.reset_used_expertise_per_block();
+
+        process_expertise_allocation_proposals();
 
         // notify observers that the block has been applied
         notify_applied_block(next_block);

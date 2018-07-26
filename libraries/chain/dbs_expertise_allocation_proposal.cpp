@@ -167,10 +167,9 @@ bool dbs_expertise_allocation_proposal::is_quorum(const expertise_allocation_pro
 void dbs_expertise_allocation_proposal::delete_by_discipline_and_claimer(const discipline_id_type& discipline_id,
                                                                          const account_name_type &claimer)
 {
-    auto expertise_allocation_proposals = get_by_discipline_and_claimer(discipline_id, claimer);
-
-    for (auto expertise_allocation_proposal : expertise_allocation_proposals)
-        db_impl().remove(expertise_allocation_proposal);
+    const auto& idx = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_discipline_and_claimer>();
+    while (!idx.empty())
+        db_impl().remove(*idx.begin());
 }
 
 } //namespace chain
