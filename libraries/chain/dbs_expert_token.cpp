@@ -1,5 +1,6 @@
 #include <deip/chain/dbs_expert_token.hpp>
 #include <deip/chain/dbs_account.hpp>
+#include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/database.hpp>
 
 #include <tuple>
@@ -31,6 +32,12 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
         token.discipline_id = discipline_id;
         token.amount = amount;
         token.last_vote_time = props.time;
+    });
+
+    auto& discipline = db_impl().get<discipline_object, by_id>(discipline_id);
+
+    db_impl().modify(discipline, [&](discipline_object d) {
+        d.total_expertise_amount += amount;
     });
 
     return token;
@@ -111,6 +118,13 @@ void dbs_expert_token::increase_expertise_tokens(const account_object &account,
     db_impl().modify(token, [&](expert_token_object et) {
         et.amount += amount;
     });
+
+    auto& discipline = db_impl().get<discipline_object, by_id>(discipline_id);
+
+    db_impl().modify(discipline, [&](discipline_object d) {
+        d.total_expertise_amount += amount;
+    });
+
     account_service.increase_expertise_tokens(account, amount);
 }
 
