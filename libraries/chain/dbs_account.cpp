@@ -482,42 +482,5 @@ void dbs_account::increase_expertise_tokens(const account_object &account, const
     });
 }
 
-void dbs_account::delegate_expertise(const account_name_type &sender,
-                                     const account_name_type &receiver,
-                                     const discipline_id_type &discipline_id)
-{
-    FC_ASSERT(discipline_id > 0, "Discipline id must be greater than zero");
-    auto& to_account = get_account(receiver);
-
-    db_impl().modify(to_account,[&](account_object &a)
-                     {
-                         if (a.delegated_expertise.find(discipline_id) != a.delegated_expertise.end())
-                             a.delegated_expertise[discipline_id].push_back(sender);
-                         else {
-                             std::vector<account_name_type> accounts;
-                             accounts.push_back(sender);
-                             a.delegated_expertise.insert(std::make_pair(discipline_id, accounts));
-                         }
-                     });
-}
-
-void dbs_account::revoke_expertise_delegation(const account_name_type &sender,
-                                              const account_name_type &receiver,
-                                              const discipline_id_type &discipline_id)
-{
-    FC_ASSERT(discipline_id > 0, "Discipline id must be greater than zero");
-    auto& receiver_account = get_account(receiver);
-
-    db_impl().modify(receiver_account,[&](account_object &a)
-                     {
-                         if (a.delegated_expertise.find(discipline_id) != a.delegated_expertise.end())
-                         {
-                             auto accounts = a.delegated_expertise.at(discipline_id);
-                             accounts.erase(std::remove(accounts.begin(), accounts.end(), sender), accounts.end());
-                             a.delegated_expertise.at(discipline_id) = accounts;
-                         }
-                     });
-}
-
 }
 }

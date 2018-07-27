@@ -67,6 +67,7 @@
 #include <deip/chain/dbs_vesting_contract.hpp>
 #include <deip/chain/dbs_proposal_execution.hpp>
 #include <deip/chain/dbs_research_content_reward_pool.hpp>
+#include <deip/chain/dbs_expertise_allocation_proposal.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
 namespace deip {
@@ -1244,9 +1245,24 @@ void database::refund_research_tokens(const research_token_sale_id_type research
 
 void database::process_expertise_allocation_proposals()
 {
+    dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = obtain_service<dbs_expertise_allocation_proposal>();
+    dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
+
     const auto& idx = get_index<expertise_allocation_proposal_index>().indices().get<by_expiration_time>();
     while ((!idx.empty()) && (head_block_time() > idx.begin()->expiration_time))
         remove(*idx.begin());
+
+    auto current = idx.begin();
+
+    while (current != idx.end())
+    {
+        auto& proposal = expertise_allocation_proposal_service.get(current->id);
+        if (expertise_allocation_proposal_service.is_quorum(proposal))
+        {
+            expert_token_service.create(proposal.claimer, proposal.discipline_id, proposal.amount);
+            expertise_allocation_proposal_service.delete_by_discipline_and_claimer(proposal.discipline_id, proposal.claimer);
+        }
+    }
 }
 
 share_type database::distribute_reward(const share_type &reward, const share_type &expertise)

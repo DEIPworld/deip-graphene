@@ -183,12 +183,16 @@ bool dbs_expertise_allocation_proposal::is_quorum(const expertise_allocation_pro
 void dbs_expertise_allocation_proposal::delete_by_discipline_and_claimer(const discipline_id_type& discipline_id,
                                                                          const account_name_type &claimer)
 {
-    const auto& idx = db_impl().get_index<expertise_allocation_proposal_index>().indices().
-            get<by_discipline_and_claimer>().equal_range(std::make_tuple(discipline_id, claimer));
-    while (!idx.empty())
+    const auto& idx
+            = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_discipline_and_claimer>();
+
+    auto itr = idx.find(boost::make_tuple(discipline_id, claimer));
+
+    while(itr != idx.end())
     {
-        delete_votes_by_expertise_allocation_proposal_id(*idx.begin().id);
-        db_impl().remove(*idx.begin());
+        const auto& current_proposal = *itr;
+        ++itr;
+        db_impl().remove(current_proposal);
     }
 }
 
@@ -245,10 +249,17 @@ bool dbs_expertise_allocation_proposal::is_vote_exists_by_voter_and_expertise_al
 
 void dbs_expertise_allocation_proposal::delete_votes_by_expertise_allocation_proposal_id(const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id)
 {
-    const auto& idx = db_impl().get_index<expertise_allocation_proposal_vote_index>().indices().
-            get<by_expertise_allocation_proposal_id>().equal_range(expertise_allocation_proposal_id);
-    while (!idx.empty())
-        db_impl().remove(*idx.begin());
+    const auto& idx
+            = db_impl().get_index<expertise_allocation_proposal_vote_index>().indices().get<by_expertise_allocation_proposal_id>();
+
+    auto itr = idx.find(expertise_allocation_proposal_id);
+
+    while(itr != idx.end())
+    {
+        const auto& current_vote = *itr;
+        ++itr;
+        db_impl().remove(current_vote);
+    }
 }
 
 

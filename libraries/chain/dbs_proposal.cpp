@@ -107,7 +107,7 @@ const proposal_vote_object& dbs_proposal::vote_for(const proposal_id_type &propo
 }
 
 void dbs_proposal::remove_proposal_votes(const account_name_type& account,
-                                                  const research_group_id_type& research_group_id)
+                                         const research_group_id_type& research_group_id)
 {
     const auto& proposal_votes_idx
             = db_impl().get_index<proposal_vote_index>().indices().get<by_voter>();

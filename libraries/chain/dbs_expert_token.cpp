@@ -2,6 +2,7 @@
 #include <deip/chain/dbs_account.hpp>
 #include <deip/chain/dbs_discipline.hpp>
 #include <deip/chain/database.hpp>
+#include <deip/chain/dbs_expertise_allocation_proposal.hpp>
 
 #include <tuple>
 
@@ -126,7 +127,7 @@ void dbs_expert_token::increase_expertise_tokens(const account_object &account,
     });
 
     account_service.increase_expertise_tokens(account, amount);
-    //adjust_proxied_expertise()
+    adjust_proxied_expertise(token, amount);
 }
 
 void dbs_expert_token::update_expertise_proxy(const expert_token_object& expert_token, const optional<expert_token_object>& proxy_expert_token)
@@ -195,8 +196,10 @@ void dbs_expert_token::adjust_proxied_expertise(const expert_token_object& exper
 
 void dbs_expert_token::adjust_proxied_expertise(const expert_token_object& expert_token,
                                                 share_type delta,
-                                                int depth = 0)
+                                                int depth)
 {
+    dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = db_impl().obtain_service<dbs_expertise_allocation_proposal>();
+
     if (expert_token.proxy != DEIP_PROXY_TO_SELF_EXPERT_TOKEN)
     {
         /// nested proxies are not supported, vote will not propagate
@@ -209,10 +212,10 @@ void dbs_expert_token::adjust_proxied_expertise(const expert_token_object& exper
 
         adjust_proxied_expertise(proxy, delta, depth + 1);
     }
-//    else
-//    {
-//        witness_service.adjust_witness_votes(account, delta);
-//    }
+    else
+    {
+        expertise_allocation_proposal_service.adjust_expert_token_vote(expert_token, delta);
+    }
 }
 
 } //namespace chain
