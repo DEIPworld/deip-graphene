@@ -1127,34 +1127,31 @@ void delegate_expertise_evaluator::do_apply(const delegate_expertise_operation& 
     expert_token_service.check_expert_token_existence_by_account_and_discipline(op.sender, op.discipline_id);
     expert_token_service.check_expert_token_existence_by_account_and_discipline(op.receiver, op.discipline_id);
 
-    auto& receiver = _db.get_account(op.receiver);
+    auto& sender_token = expert_token_service.get_expert_token_by_account_and_discipline(op.sender, op.discipline_id);
 
-    auto it = receiver.delegated_expertise.find(op.discipline_id);
-    if (it != receiver.delegated_expertise.end()) {
-        auto accounts = receiver.delegated_expertise.at(op.discipline_id);
-        FC_ASSERT(std::find(accounts.begin(), accounts.end(), op.sender) == accounts.end(), "This account have already delegate his expertise in this discipline");
-    }
+    FC_ASSERT(sender_token.proxy != op.receiver, "Proxy must change.");
 
-    account_service.delegate_expertise(op.sender, op.receiver, op.discipline_id);
+    auto& proxy_token = expert_token_service.get_expert_token_by_account_and_discipline(op.sender, op.discipline_id);
+
+    expert_token_service.update_expertise_proxy(sender_token, proxy_token);
+
 }
 
 void revoke_expertise_delegation_evaluator::do_apply(const revoke_expertise_delegation_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
 
     account_service.check_account_existence(op.sender);
-    account_service.check_account_existence(op.receiver);
+    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.sender, op.discipline_id);
 
-    auto& receiver = _db.get_account(op.receiver);
+    auto& sender_token = expert_token_service.get_expert_token_by_account_and_discipline(op.sender, op.discipline_id);
 
-    auto it = receiver.delegated_expertise.find(op.discipline_id);
+    FC_ASSERT(sender_token.proxy.size() != 0, "You have no proxy");
 
-    FC_ASSERT(it != receiver.delegated_expertise.end(), "Account doesn't have delegated expertise in this discipline");
+    optional<expert_token_object> proxy;
 
-    auto accounts = receiver.delegated_expertise.at(op.discipline_id);
-    FC_ASSERT(std::find(accounts.begin(), accounts.end(), op.sender) != accounts.end(), "Account doesn't have delegated expertise");
-
-    account_service.revoke_expertise_delegation(op.sender, op.receiver, op.discipline_id);
+    expert_token_service.update_expertise_proxy(sender_token, proxy);
 }
 
 void expertise_allocation_proposal_evaluator::do_apply(const expertise_allocation_proposal_operation& op)
@@ -1190,10 +1187,13 @@ void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_e
     expertise_allocation_proposal_service.check_existence_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer);
 
     auto& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.voter, op.discipline_id);
+
+    FC_ASSERT(expert_token.proxy.size() == 0, "A proxy is currently set, please clear the proxy before voting.");
+
     auto& expertise_allocation_proposal = expertise_allocation_proposal_service.get_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer);
 
     if (op.voting_power == DEIP_100_PERCENT) {
-        expertise_allocation_proposal_service.upvote(expertise_allocation_proposal, op.voter, expert_token.amount);
+        expertise_allocation_proposal_service.upvote(expertise_allocation_proposal, op.voter, expert_token.amount + expert_token.proxied_expertise_total());
         if (expertise_allocation_proposal_service.is_quorum(expertise_allocation_proposal))
         {
             expert_token_service.create(op.claimer, op.discipline_id, expertise_allocation_proposal.amount);
@@ -1201,7 +1201,7 @@ void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_e
         }
     }
     else if (op.voting_power == -DEIP_100_PERCENT)
-        expertise_allocation_proposal_service.downvote(expertise_allocation_proposal, op.voter, expert_token.amount);
+        expertise_allocation_proposal_service.downvote(expertise_allocation_proposal, op.voter, expert_token.amount + expert_token.proxied_expertise_total());
 }
 
 } // namespace chain

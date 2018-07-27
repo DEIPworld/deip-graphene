@@ -26,7 +26,7 @@ class account_object : public object<account_object_type, account_object>
 public:
     template <typename Constructor, typename Allocator>
     account_object(Constructor&& c, allocator<Allocator> a)
-        : json_metadata(a), delegated_expertise(a)
+        : json_metadata(a)
     {
         c(*this);
     };
@@ -73,7 +73,6 @@ public:
     time_point_sec last_root_post = fc::time_point_sec::min();
     uint32_t post_bandwidth = 0;
 
-    delegated_expertise_type_map delegated_expertise;
     /// This function should be used only when the account votes for a witness directly
     share_type witness_vote_weight() const
     {
@@ -401,7 +400,7 @@ FC_REFLECT( deip::chain::account_object,
              (expertise_tokens_balance)
              (common_tokens_balance)
              (proxied_vsf_votes)(witnesses_voted_for)
-             (last_post)(last_root_post)(post_bandwidth)(delegated_expertise)
+             (last_post)(last_root_post)(post_bandwidth)
           )
 CHAINBASE_SET_INDEX_TYPE( deip::chain::account_object, deip::chain::account_index )
 

@@ -55,8 +55,15 @@ public:
     bool is_expert_token_existence_by_account_and_discipline(const account_name_type& account,
                                                                 const discipline_id_type& discipline_id);
 
-    void increase_expertise_tokens(const account_object &account, const discipline_id_type &discipline_id,
+    void increase_expertise_tokens(const account_object &account,
+                                   const discipline_id_type &discipline_id,
                                    const share_type &amount);
+
+    void update_expertise_proxy(const expert_token_object& expert_token, const optional<expert_token_object>& proxy_expert_token);
+
+    void adjust_proxied_expertise(const expert_token_object& expert_token,
+                                  const std::array<share_type,DEIP_MAX_PROXY_RECURSION_DEPTH + 1>& delta,
+                                  int depth = 0);
 };
 } // namespace chain
 } // namespace deip

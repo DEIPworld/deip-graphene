@@ -205,6 +205,8 @@
 /// Represents the canonical root post parent account
 #define DEIP_ROOT_POST_PARENT                (account_name_type())
 
+#define DEIP_PROXY_TO_SELF_EXPERT_TOKEN      ""
+
 ///@}
 
 // clang-format on
