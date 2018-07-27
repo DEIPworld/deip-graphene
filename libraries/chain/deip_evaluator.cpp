@@ -1200,8 +1200,10 @@ void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_e
             expertise_allocation_proposal_service.delete_by_discipline_and_claimer(expertise_allocation_proposal.discipline_id, expertise_allocation_proposal.claimer);
         }
     }
-    else if (op.voting_power == -DEIP_100_PERCENT)
-        expertise_allocation_proposal_service.downvote(expertise_allocation_proposal, op.voter, expert_token.amount + expert_token.proxied_expertise_total());
+    else if (op.voting_power == -DEIP_100_PERCENT) {
+        expertise_allocation_proposal_service.downvote(expertise_allocation_proposal, op.voter,
+                                                       expert_token.amount + expert_token.proxied_expertise_total());
+    }
 }
 
 } // namespace chain

@@ -64,6 +64,11 @@ public:
     void adjust_proxied_expertise(const expert_token_object& expert_token,
                                   const std::array<share_type,DEIP_MAX_PROXY_RECURSION_DEPTH + 1>& delta,
                                   int depth = 0);
+
+    void adjust_proxied_expertise(const expert_token_object& expert_token,
+                                  share_type delta,
+                                  int depth = 0);
 };
+
 } // namespace chain
 } // namespace deip

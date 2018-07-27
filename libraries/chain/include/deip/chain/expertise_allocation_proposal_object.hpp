@@ -35,8 +35,6 @@ public:
     share_type amount;
 
     int16_t total_voted_expertise = 0;
-    vector<account_name_type> upvoted_accounts;
-    vector<account_name_type> downvoted_accounts;
 
     share_type quorum_percent;
 
@@ -92,8 +90,8 @@ typedef multi_index_container<expertise_allocation_proposal_object,
 }
 
 FC_REFLECT( deip::chain::expertise_allocation_proposal_object,
-            (id)(initiator)(claimer)(discipline_id)(amount)(total_voted_expertise)(upvoted_accounts)
-                    (downvoted_accounts)(quorum_percent)(creation_time)(expiration_time)
+            (id)(initiator)(claimer)(discipline_id)(amount)(total_voted_expertise)
+                    (quorum_percent)(creation_time)(expiration_time)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::expertise_allocation_proposal_object, deip::chain::expertise_allocation_proposal_index )

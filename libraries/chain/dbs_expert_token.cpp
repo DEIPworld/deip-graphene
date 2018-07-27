@@ -126,6 +126,7 @@ void dbs_expert_token::increase_expertise_tokens(const account_object &account,
     });
 
     account_service.increase_expertise_tokens(account, amount);
+    //adjust_proxied_expertise()
 }
 
 void dbs_expert_token::update_expertise_proxy(const expert_token_object& expert_token, const optional<expert_token_object>& proxy_expert_token)
@@ -190,6 +191,28 @@ void dbs_expert_token::adjust_proxied_expertise(const expert_token_object& exper
 
         adjust_proxied_expertise(proxy, delta, depth + 1);
     }
+}
+
+void dbs_expert_token::adjust_proxied_expertise(const expert_token_object& expert_token,
+                                                share_type delta,
+                                                int depth = 0)
+{
+    if (expert_token.proxy != DEIP_PROXY_TO_SELF_EXPERT_TOKEN)
+    {
+        /// nested proxies are not supported, vote will not propagate
+        if (depth >= DEIP_MAX_PROXY_RECURSION_DEPTH)
+            return;
+
+        const auto& proxy = get_expert_token_by_account_and_discipline(expert_token.proxy, expert_token.discipline_id);
+
+        db_impl().modify(proxy, [&](expert_token_object& e) { e.proxied_expertise[depth] += delta; });
+
+        adjust_proxied_expertise(proxy, delta, depth + 1);
+    }
+//    else
+//    {
+//        witness_service.adjust_witness_votes(account, delta);
+//    }
 }
 
 } //namespace chain

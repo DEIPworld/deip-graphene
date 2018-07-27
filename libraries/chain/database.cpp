@@ -1814,6 +1814,7 @@ void database::initialize_indexes()
     add_index<vesting_contract_index>();
     add_index<research_content_reward_pool_index>();
     add_index<expertise_allocation_proposal_index>();
+    add_index<expertise_allocation_proposal_vote_index>();
 
     _plugin_index_signal();
 }
