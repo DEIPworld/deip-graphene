@@ -320,6 +320,8 @@ struct grant_api_obj
         , per_block(b.per_block)
         , start_block(b.start_block)
         , end_block(b.end_block)
+        , is_extendable(b.is_extendable)
+        , content_hash(fc::to_string(b.content_hash))
     {
     }
 
@@ -339,6 +341,9 @@ struct grant_api_obj
     share_type per_block;
     uint32_t start_block;
     uint32_t end_block;
+
+    bool is_extendable;
+    string content_hash;
 };
 
 struct discipline_api_obj
@@ -887,6 +892,8 @@ FC_REFLECT( deip::app::grant_api_obj,
             (per_block)
             (start_block)
             (end_block)
+            (is_extendable)
+            (content_hash)
           )
 
 FC_REFLECT( deip::app::discipline_api_obj,
