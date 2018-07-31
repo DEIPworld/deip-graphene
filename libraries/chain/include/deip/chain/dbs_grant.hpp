@@ -76,6 +76,10 @@ public:
      */
     asset allocate_funds(const grant_object& grant);
 
+    void clear_expired_grants();
+
+    bool is_expired(const grant_object& grant);
+
 private:
     uint64_t _get_grants_count(const account_name_type& owner) const;
 };

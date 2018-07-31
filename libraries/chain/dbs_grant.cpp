@@ -132,6 +132,32 @@ asset dbs_grant::allocate_funds(const grant_object& grant)
     return amount;
 }
 
+void dbs_grant::clear_expired_grants()
+{
+    const auto& grant_expiration_index = db_impl().get_index<grant_index>().indices().get<by_end_block>();
+
+    while (!grant_expiration_index.empty() && is_expired(*grant_expiration_index.begin()))
+    {
+        auto& grant = *grant_expiration_index.begin();
+        if(grant.balance.amount > 0)
+        {
+            auto& owner = db_impl().get_account(grant.owner);
+            db_impl().modify(owner, [&](account_object& a) {
+                a.balance += grant.balance;
+            });
+            db_impl().modify(grant, [&](grant_object& g) {
+                g.balance = asset(0, DEIP_SYMBOL);
+            });
+        }
+        db_impl().remove(*grant_expiration_index.begin());
+    }
+}
+
+bool dbs_grant::is_expired(const grant_object& grant)
+{
+    return grant.end_block > db_impl().head_block_num();
+}
+
 uint64_t dbs_grant::_get_grants_count(const account_name_type& owner) const
 {
     return db_impl().get_index<grant_index>().indicies().get<by_owner_name>().count(owner);

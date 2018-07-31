@@ -1674,8 +1674,14 @@ void database::process_grants()
     while (grants_itr != grants_idx.end())
     {
         auto& grant = *grants_itr;
-        grant_researches_in_discipline(grant.target_discipline, grant.per_block);
+        auto used_grant = grant_researches_in_discipline(grant.target_discipline, grant.per_block);
         grant_service.allocate_funds(grant);
+
+        if (used_grant == 0 && grant.is_extendable)
+            modify(grant, [&](grant_object& g_o) { g_o.end_block++;} );
+        else if (used_grant != 0)
+            grant_service.allocate_funds(grant);
+
         ++grants_itr;
     }
 }
@@ -2016,6 +2022,7 @@ void database::_apply_block(const signed_block& next_block)
         clear_expired_transactions();
         clear_expired_proposals();
         clear_expired_invites();
+        clear_expired_grants();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
@@ -2031,6 +2038,8 @@ void database::_apply_block(const signed_block& next_block)
         process_content_activity_windows();
 
         process_hardforks();
+
+        process_grants();
 
         dynamic_global_properties_service.reset_used_expertise_per_block();
 
@@ -2407,6 +2416,12 @@ void database::clear_expired_invites()
 {
     auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
     research_group_invite_service.clear_expired_invites();
+}
+
+void database::clear_expired_grants()
+{
+    dbs_grant& grant_service = obtain_service<dbs_grant>();
+    grant_service.clear_expired_grants();
 }
 
 void database::adjust_balance(const account_object& a, const asset& delta)
