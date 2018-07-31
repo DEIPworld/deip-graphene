@@ -73,10 +73,11 @@ const grant_object& dbs_grant::get_grant(grant_id_type id) const
 }
 
 const grant_object& dbs_grant::create_grant(const account_object& owner,
-                                       const asset& balance,
-                                       const uint32_t& start_block, 
-                                       const uint32_t& end_block,
-                                       const discipline_id_type& target_discipline)
+                                            const asset& balance,
+                                            const uint32_t& start_block,
+                                            const uint32_t& end_block,
+                                            const discipline_id_type& target_discipline,
+                                            const bool is_extendable)
 {
     // clang-format off
     FC_ASSERT(balance.symbol == DEIP_SYMBOL, "invalid asset type (symbol)");
@@ -112,6 +113,7 @@ const grant_object& dbs_grant::create_grant(const account_object& owner,
         grant.end_block = end_block;
         grant.balance = balance;
         grant.per_block = per_block;
+        grant.is_extendable = is_extendable;
     });
     return new_grant;
 }

@@ -61,10 +61,11 @@ public:
      * @returns a grant object
      */
     const grant_object& create_grant(const account_object& owner,
-                                       const asset& balance,
-                                       const uint32_t& start_block, 
-                                       const uint32_t& end_block,
-                                       const discipline_id_type& target_discipline);
+                                     const asset& balance,
+                                     const uint32_t& start_block,
+                                     const uint32_t& end_block,
+                                     const discipline_id_type& target_discipline,
+                                     const bool is_extendable);
 
 
     /** Distribute asset from grant.

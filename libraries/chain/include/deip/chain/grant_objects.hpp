@@ -40,6 +40,8 @@ public:
     share_type per_block = 0;
     uint32_t start_block = 0;
     uint32_t end_block = 0;
+
+    bool is_extendable;
 };
 
 struct by_owner_name;
@@ -65,7 +67,7 @@ typedef multi_index_container<grant_object,
 }
 
 FC_REFLECT( deip::chain::grant_object,
-             (id)(owner)(target_discipline)(created)(balance)(per_block)(start_block)(end_block)
+             (id)(owner)(target_discipline)(created)(balance)(per_block)(start_block)(end_block)(is_extendable)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::grant_object, deip::chain::grant_index )

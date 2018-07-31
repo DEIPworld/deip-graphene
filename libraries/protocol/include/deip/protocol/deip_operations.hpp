@@ -460,6 +460,8 @@ struct create_grant_operation : public base_operation
     uint32_t start_block;
     uint32_t end_block;
 
+    bool is_extendable;
+
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
@@ -725,7 +727,7 @@ FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recov
 // DEIP native operations
 FC_REFLECT( deip::protocol::invitee_type, (account)(research_group_tokens_in_percent)(cover_letter))
 FC_REFLECT( deip::protocol::expertise_amount_pair_type, (discipline_id)(amount) )
-FC_REFLECT( deip::protocol::create_grant_operation, (owner)(balance)(target_discipline)(start_block)(end_block) )
+FC_REFLECT( deip::protocol::create_grant_operation, (owner)(balance)(target_discipline)(start_block)(end_block)(is_extendable) )
 FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent)(is_personal)(invitees))
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
