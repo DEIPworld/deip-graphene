@@ -709,7 +709,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
     const auto& owner = account_service.get_account(op.owner);
     discipline_service.check_discipline_existence_by_name(op.target_discipline);
     auto& discipline = discipline_service.get_discipline_by_name(op.target_discipline);
-    grant_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id, op.is_extendable);
+    grant_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id, op.is_extendable, op.content_hash);
 }
 
 void create_proposal_evaluator::do_apply(const create_proposal_operation& op)

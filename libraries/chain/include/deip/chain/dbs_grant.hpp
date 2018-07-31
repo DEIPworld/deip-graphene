@@ -65,7 +65,8 @@ public:
                                      const uint32_t& start_block,
                                      const uint32_t& end_block,
                                      const discipline_id_type& target_discipline,
-                                     const bool is_extendable);
+                                     const bool is_extendable,
+                                     const std::string& content_hash);
 
 
     /** Distribute asset from grant.

@@ -77,7 +77,8 @@ const grant_object& dbs_grant::create_grant(const account_object& owner,
                                             const uint32_t& start_block,
                                             const uint32_t& end_block,
                                             const discipline_id_type& target_discipline,
-                                            const bool is_extendable)
+                                            const bool is_extendable,
+                                            const std::string& content_hash)
 {
     // clang-format off
     FC_ASSERT(balance.symbol == DEIP_SYMBOL, "invalid asset type (symbol)");
@@ -114,6 +115,7 @@ const grant_object& dbs_grant::create_grant(const account_object& owner,
         grant.balance = balance;
         grant.per_block = per_block;
         grant.is_extendable = is_extendable;
+        fc::from_string(grant.content_hash, content_hash);
     });
     return new_grant;
 }

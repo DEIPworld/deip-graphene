@@ -23,7 +23,7 @@ class grant_object : public object<grant_object_type, grant_object>
 public:
 
     template <typename Constructor, typename Allocator>
-    grant_object(Constructor&& c, allocator<Allocator> a)
+    grant_object(Constructor&& c, allocator<Allocator> a) : content_hash(a)
     {
         c(*this);
     }
@@ -42,6 +42,7 @@ public:
     uint32_t end_block = 0;
 
     bool is_extendable;
+    fc::shared_string content_hash;
 };
 
 struct by_owner_name;
@@ -67,7 +68,7 @@ typedef multi_index_container<grant_object,
 }
 
 FC_REFLECT( deip::chain::grant_object,
-             (id)(owner)(target_discipline)(created)(balance)(per_block)(start_block)(end_block)(is_extendable)
+             (id)(owner)(target_discipline)(created)(balance)(per_block)(start_block)(end_block)(is_extendable)(content_hash)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::grant_object, deip::chain::grant_index )

@@ -143,6 +143,8 @@ void create_grant_operation::validate() const
     validate_account_name(owner);
     FC_ASSERT(is_asset_type(balance, DEIP_SYMBOL), "Balance must be DEIP");
     FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Balance must be positive");
+    FC_ASSERT(content_hash.size() > 0, "Content hash must be specified");
+    FC_ASSERT(fc::is_utf8(content_hash), "Content hash is not valid UTF8 string");
 }
 
 void create_proposal_operation::validate() const
