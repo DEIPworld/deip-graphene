@@ -3077,6 +3077,8 @@ BOOST_AUTO_TEST_CASE(create_grant_execute_test)
         op.target_discipline = "Mathematics";
         op.start_block = 1000;
         op.end_block = 1010;
+        op.is_extendable = false;
+        op.content_hash = "hash";
 
         private_key_type priv_key = generate_private_key("alice");
 

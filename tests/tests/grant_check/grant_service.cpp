@@ -77,7 +77,7 @@ DEIP_TEST_CASE(is_const_ref_to_same_memory)
 {
     asset balance(GRANT_BALANCE_DEFAULT, DEIP_SYMBOL);
 
-    const auto& grant = grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE);
+    const auto& grant = grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash");
 
     db.modify(grant, [&](grant_object& b) { b.balance.amount -= 1; });
 
@@ -90,7 +90,7 @@ DEIP_TEST_CASE(owned_grant_creation)
 
     auto reqired_alice_balance = alice.balance.amount;
 
-    const auto& grant = grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE);
+    const auto& grant = grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash");
 
     BOOST_CHECK(grant.balance.amount == GRANT_BALANCE_DEFAULT);
     BOOST_CHECK(grant.per_block == GRANT_PER_BLOCK_DEFAULT);
@@ -108,11 +108,11 @@ DEIP_TEST_CASE(second_owned_grant_creation)
 
     auto reqired_alice_balance = alice.balance.amount;
 
-    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
+    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
 
     reqired_alice_balance -= GRANT_BALANCE_DEFAULT;
 
-    const auto& grant = grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE);
+    const auto& grant = grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash");
 
     BOOST_CHECK(grant.balance.amount == GRANT_BALANCE_DEFAULT);
     BOOST_CHECK(grant.per_block == GRANT_PER_BLOCK_DEFAULT);
@@ -128,23 +128,23 @@ DEIP_TEST_CASE(owned_grant_creation_asserts)
 {
     asset balance(GRANT_BALANCE_DEFAULT, DEIP_SYMBOL);
 
-    BOOST_CHECK_THROW(grant_service.create_grant(fake, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
+    BOOST_CHECK_THROW(grant_service.create_grant(fake, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"), fc::assert_exception);
 
     // asset wrong_currency_balance(GRANT_BALANCE_DEFAULT, VESTS_SYMBOL);
 
-    // BOOST_CHECK_THROW(grant_service.create_grant(alice, wrong_currency_balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
+    // BOOST_CHECK_THROW(grant_service.create_grants(alice, wrong_currency_balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
 
     asset wrong_amount_balance(0, DEIP_SYMBOL);
 
-    BOOST_CHECK_THROW(grant_service.create_grant(alice, wrong_amount_balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
+    BOOST_CHECK_THROW(grant_service.create_grant(alice, wrong_amount_balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"), fc::assert_exception);
 
     wrong_amount_balance = asset(-100, DEIP_SYMBOL);
 
-    BOOST_CHECK_THROW(grant_service.create_grant(alice, wrong_amount_balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
+    BOOST_CHECK_THROW(grant_service.create_grant(alice, wrong_amount_balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"), fc::assert_exception);
 
     asset too_large_balance(ALICE_ACCOUNT_GRANT * 2, DEIP_SYMBOL);
 
-    BOOST_CHECK_THROW(grant_service.create_grant(alice, too_large_balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
+    BOOST_CHECK_THROW(grant_service.create_grant(alice, too_large_balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"), fc::assert_exception);
 }
 
 DEIP_TEST_CASE(grant_creation_limit)
@@ -156,20 +156,20 @@ DEIP_TEST_CASE(grant_creation_limit)
 
     for (int ci = 0; ci < DEIP_LIMIT_GRANTS_PER_OWNER; ++ci)
     {
-        BOOST_REQUIRE_NO_THROW(grant_service.create_grant(bob, balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
+        BOOST_REQUIRE_NO_THROW(grant_service.create_grant(bob, balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
     }
 
     BOOST_CHECK(bob.balance.amount == (BOB_ACCOUNT_GRANT - DEIP_LIMIT_GRANTS_PER_OWNER * balance.amount));
 
-    BOOST_REQUIRE_THROW(grant_service.create_grant(bob, balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE), fc::assert_exception);
+    BOOST_REQUIRE_THROW(grant_service.create_grant(bob, balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"), fc::assert_exception);
 }
 
 DEIP_TEST_CASE(get_all_grants)
 {
     asset balance(GRANT_BALANCE_DEFAULT, DEIP_SYMBOL);
 
-    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
-    BOOST_CHECK_NO_THROW(grant_service.create_grant(bob, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
+    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
+    BOOST_CHECK_NO_THROW(grant_service.create_grant(bob, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
 
     auto grants = grant_service.get_grants();
     BOOST_REQUIRE(grants.size() == 2);
@@ -179,8 +179,8 @@ DEIP_TEST_CASE(get_all_grant_count)
 {
     asset balance(GRANT_BALANCE_DEFAULT, DEIP_SYMBOL);
 
-    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
-    BOOST_CHECK_NO_THROW(grant_service.create_grant(bob, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
+    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
+    BOOST_CHECK_NO_THROW(grant_service.create_grant(bob, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
 
     BOOST_REQUIRE(grant_service.get_grants().size() == 2);
 }
@@ -189,9 +189,9 @@ DEIP_TEST_CASE(lookup_grant_owners)
 {
     asset balance(GRANT_BALANCE_DEFAULT, DEIP_SYMBOL);
 
-    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
-    BOOST_CHECK_NO_THROW(grant_service.create_grant(bob, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
-    BOOST_CHECK_NO_THROW(grant_service.create_grant(bob, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
+    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
+    BOOST_CHECK_NO_THROW(grant_service.create_grant(bob, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
+    BOOST_CHECK_NO_THROW(grant_service.create_grant(bob, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
 
     BOOST_REQUIRE(grant_service.get_grants().size() == 3);
 
@@ -225,11 +225,11 @@ DEIP_TEST_CASE(check_get_grants)
 
     BOOST_REQUIRE_EQUAL(grant_service.get_grants("alice").size(), 0u);
 
-    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
+    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
 
     BOOST_REQUIRE_EQUAL(grant_service.get_grants("alice").size(), 1u);
 
-    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
+    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
 
     BOOST_REQUIRE_EQUAL(grant_service.get_grants("alice").size(), 2u);
 
@@ -245,9 +245,9 @@ DEIP_TEST_CASE(check_get_grant_count)
 
     BOOST_REQUIRE_EQUAL(grant_service.get_grants("alice").size(), 0u);
 
-    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
-    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
-    BOOST_CHECK_NO_THROW(grant_service.create_grant(bob, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE));
+    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
+    BOOST_CHECK_NO_THROW(grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
+    BOOST_CHECK_NO_THROW(grant_service.create_grant(bob, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash"));
 
     BOOST_REQUIRE_EQUAL(grant_service.get_grants("alice").size(), 2u);
     BOOST_REQUIRE_EQUAL(grant_service.get_grants("bob").size(), 1u);
@@ -255,7 +255,7 @@ DEIP_TEST_CASE(check_get_grant_count)
 
 DEIP_TEST_CASE(allocate_cash_per_block)
 {
-    const auto& grant = grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE);
+    const auto& grant = grant_service.create_grant(alice, GRANT_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false, "hash");
 
     for (auto i = 0; i < END_BLOCK - START_BLOCK; i++) {
         auto cash = grant_service.allocate_funds(grant);

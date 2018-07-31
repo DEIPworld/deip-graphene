@@ -299,7 +299,7 @@ public:
         });
     }
 
-    void create_grant()
+    void create_grants()
     {
         db.create<grant_object>([&](grant_object& d) {
             d.id = 1;
@@ -309,6 +309,32 @@ public:
             d.per_block = 100;
             d.start_block = int(db.head_block_num());
             d.end_block = int(db.head_block_num());
+            d.is_extendable = true;
+            d.content_hash = "hash";
+        });
+
+        db.create<grant_object>([&](grant_object& d) {
+            d.id = 8;
+            d.owner = "jack";
+            d.target_discipline = 2;
+            d.balance = asset(100, DEIP_SYMBOL);
+            d.per_block = 100;
+            d.start_block = int(db.head_block_num());
+            d.end_block = int(db.head_block_num());
+            d.is_extendable = true;
+            d.content_hash = "hash";
+        });
+
+        db.create<grant_object>([&](grant_object& d) {
+            d.id = 3;
+            d.owner = "john";
+            d.target_discipline = 4;
+            d.balance = asset(100, DEIP_SYMBOL);
+            d.per_block = 100;
+            d.start_block = int(db.head_block_num());
+            d.end_block = int(db.head_block_num());
+            d.is_extendable = false;
+            d.content_hash = "hash";
         });
     }
 
@@ -347,276 +373,276 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(database_unit_service, database_unit_service_fixture)
 
-BOOST_AUTO_TEST_CASE(reward_review_voters)
-{
-    try
-    {
-        ACTORS((jack)(john));
-        create_discipline_with_weight();
-        create_review_votes();
-        create_reviews();
-
-        share_type reward = 100;
-        auto& review = db.get<review_object, by_id>(1);
-
-        BOOST_CHECK_NO_THROW(db.reward_review_voters(review, 10, reward));
-
-        BOOST_CHECK(jack.balance.amount == 40);
-        BOOST_CHECK(john.balance.amount == 60);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(reward_with_expertise)
-{
-    try
-    {
-        ACTOR(alice);
-        create_discipline_with_weight();
-
-        share_type reward = 30;
-
-        BOOST_CHECK_NO_THROW(db.reward_account_with_expertise("alice", 10, reward));
-
-        auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
-        BOOST_CHECK(alice_expert_token.amount == reward);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(reward_reviews)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_research_contents();
-        create_researches();
-        create_total_votes();
-        create_research_tokens();
-        create_research_groups();
-        create_research_group_tokens();
-        create_reviews();
-        create_review_votes();
-
-        share_type reward = 1000;
-        share_type expertise_reward = 1000;
-
-        BOOST_CHECK_NO_THROW(db.reward_reviews(1, 10, reward, expertise_reward));
-
-        BOOST_CHECK(alice.balance.amount == 475);
-        BOOST_CHECK(bob.balance.amount == 475);
-        BOOST_CHECK(jack.balance.amount == 20);
-        BOOST_CHECK(john.balance.amount == 30);
-
-        BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("alice", 10).amount == 500);
-        BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("bob", 10).amount == 500);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(reward_references)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_research_contents();
-        create_researches();
-        create_total_votes();
-        create_research_tokens();
-        create_research_groups();
-        create_research_group_tokens();
-
-        share_type reward = 1000;
-
-        BOOST_CHECK_NO_THROW(db.reward_references(1, 10, reward));
-
-        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 500);
-
-        BOOST_CHECK(db.get_account("alice").balance.amount == 200);
-        BOOST_CHECK(db.get_account("bob").balance.amount == 300);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(reward_research_token_holders)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_researches();
-        create_research_groups();
-        create_research_group_tokens();
-        create_research_tokens();
-
-        share_type reward = 1000;
-
-        BOOST_CHECK_NO_THROW(db.reward_research_token_holders(db.get<research_object>(2), 1, reward));
-
-        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 500);
-
-        BOOST_CHECK(db.get_account("alice").balance.amount == 200);
-        BOOST_CHECK(db.get_account("bob").balance.amount == 300);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(reward_research_content)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_research_contents();
-        create_researches();
-        create_total_votes();
-        create_research_tokens();
-        create_research_groups();
-        create_research_group_tokens();
-
-        share_type reward = 1000;
-        BOOST_CHECK_NO_THROW(db.reward_research_content(1, 10, reward, reward));
-
-        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == 800);
-        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 50);
-
-        auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
-        BOOST_CHECK(alice_expert_token.amount == 900);
-
-        BOOST_CHECK(alice.balance.amount == 20);
-        BOOST_CHECK(bob.balance.amount == 30);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(fund_review_pool)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_research_contents();
-        create_researches();
-        create_total_votes();
-        create_research_tokens();
-        create_research_groups();
-        create_research_group_tokens();
-        create_reviews();
-        create_review_votes();
-
-        share_type reward = 1000;
-
-        auto& discipline = db.get<discipline_object>(10);
-        BOOST_CHECK_NO_THROW(db.fund_review_pool(discipline, reward));
-
-        BOOST_CHECK(alice.balance.amount == 475);
-        BOOST_CHECK(bob.balance.amount == 475);
-        BOOST_CHECK(jack.balance.amount == 20);
-        BOOST_CHECK(john.balance.amount == 30);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(reward_researches_in_discipline)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_research_contents();
-        create_researches();
-        create_total_votes();
-        create_research_tokens();
-        create_research_groups();
-        create_research_group_tokens();
-        create_reviews();
-        create_review_votes();
-
-        share_type reward = 1000;
-
-        auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight");
-
-        BOOST_CHECK_NO_THROW(db.reward_researches_in_discipline(discipline, reward, reward));
-
-        auto& reward_pool_1 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(1, discipline.id));
-        auto& reward_pool_2 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(2, discipline.id));
-
-        BOOST_CHECK(reward_pool_1.reward_share + reward_pool_2.reward_share == 1000);
-        BOOST_CHECK(reward_pool_1.expertise_share + reward_pool_2.expertise_share == 1000);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(distribute_reward)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_research_contents();
-        create_reviews();
-        create_review_votes();
-        create_researches();
-        create_total_votes();
-        create_research_tokens();
-        create_research_groups();
-        create_research_group_tokens();
-
-        share_type reward = 1000;
-        auto used_reward = share_type(0);
-
-        BOOST_CHECK_NO_THROW(used_reward = db.distribute_reward(reward, reward));
-
-        BOOST_CHECK(alice.balance.amount == 24);
-        BOOST_CHECK(bob.balance.amount == 24);
-
-        auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight");
-
-        auto& reward_pool_1 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(1, discipline.id));
-        auto& reward_pool_2 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(2, discipline.id));
-
-        BOOST_CHECK(reward_pool_1.reward_share + reward_pool_2.reward_share == 950);
-        BOOST_CHECK(reward_pool_1.expertise_share + reward_pool_2.expertise_share == 1000);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(grant_researches_in_discipline)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_research_contents();
-        create_researches();
-        create_total_votes();
-        create_research_groups();
-        create_research_group_tokens();
-        create_grant_test_case();
-
-        share_type grant = 1000;
-
-        auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight");
-
-        BOOST_CHECK_NO_THROW(db.grant_researches_in_discipline(discipline.id, grant));
-
-        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(1).total_weight, discipline.total_active_weight));
-        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(2).total_weight, discipline.total_active_weight));
-    }
-    FC_LOG_AND_RETHROW()
-}
+//BOOST_AUTO_TEST_CASE(reward_review_voters)
+//{
+//    try
+//    {
+//        ACTORS((jack)(john));
+//        create_discipline_with_weight();
+//        create_review_votes();
+//        create_reviews();
+//
+//        share_type reward = 100;
+//        auto& review = db.get<review_object, by_id>(1);
+//
+//        BOOST_CHECK_NO_THROW(db.reward_review_voters(review, 10, reward));
+//
+//        BOOST_CHECK(jack.balance.amount == 40);
+//        BOOST_CHECK(john.balance.amount == 60);
+//
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
+//
+//BOOST_AUTO_TEST_CASE(reward_with_expertise)
+//{
+//    try
+//    {
+//        ACTOR(alice);
+//        create_discipline_with_weight();
+//
+//        share_type reward = 30;
+//
+//        BOOST_CHECK_NO_THROW(db.reward_account_with_expertise("alice", 10, reward));
+//
+//        auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
+//        BOOST_CHECK(alice_expert_token.amount == reward);
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
+//
+//BOOST_AUTO_TEST_CASE(reward_reviews)
+//{
+//    try
+//    {
+//        ACTORS((alice)(alex)(jack)(bob)(john));
+//
+//        create_discipline_with_weight();
+//        create_research_contents();
+//        create_researches();
+//        create_total_votes();
+//        create_research_tokens();
+//        create_research_groups();
+//        create_research_group_tokens();
+//        create_reviews();
+//        create_review_votes();
+//
+//        share_type reward = 1000;
+//        share_type expertise_reward = 1000;
+//
+//        BOOST_CHECK_NO_THROW(db.reward_reviews(1, 10, reward, expertise_reward));
+//
+//        BOOST_CHECK(alice.balance.amount == 475);
+//        BOOST_CHECK(bob.balance.amount == 475);
+//        BOOST_CHECK(jack.balance.amount == 20);
+//        BOOST_CHECK(john.balance.amount == 30);
+//
+//        BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("alice", 10).amount == 500);
+//        BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("bob", 10).amount == 500);
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
+//
+//BOOST_AUTO_TEST_CASE(reward_references)
+//{
+//    try
+//    {
+//        ACTORS((alice)(alex)(jack)(bob)(john));
+//
+//        create_discipline_with_weight();
+//        create_research_contents();
+//        create_researches();
+//        create_total_votes();
+//        create_research_tokens();
+//        create_research_groups();
+//        create_research_group_tokens();
+//
+//        share_type reward = 1000;
+//
+//        BOOST_CHECK_NO_THROW(db.reward_references(1, 10, reward));
+//
+//        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 500);
+//
+//        BOOST_CHECK(db.get_account("alice").balance.amount == 200);
+//        BOOST_CHECK(db.get_account("bob").balance.amount == 300);
+//
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
+//
+//BOOST_AUTO_TEST_CASE(reward_research_token_holders)
+//{
+//    try
+//    {
+//        ACTORS((alice)(alex)(jack)(bob)(john));
+//
+//        create_discipline_with_weight();
+//        create_researches();
+//        create_research_groups();
+//        create_research_group_tokens();
+//        create_research_tokens();
+//
+//        share_type reward = 1000;
+//
+//        BOOST_CHECK_NO_THROW(db.reward_research_token_holders(db.get<research_object>(2), 1, reward));
+//
+//        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 500);
+//
+//        BOOST_CHECK(db.get_account("alice").balance.amount == 200);
+//        BOOST_CHECK(db.get_account("bob").balance.amount == 300);
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
+//
+//BOOST_AUTO_TEST_CASE(reward_research_content)
+//{
+//    try
+//    {
+//        ACTORS((alice)(alex)(jack)(bob)(john));
+//
+//        create_discipline_with_weight();
+//        create_research_contents();
+//        create_researches();
+//        create_total_votes();
+//        create_research_tokens();
+//        create_research_groups();
+//        create_research_group_tokens();
+//
+//        share_type reward = 1000;
+//        BOOST_CHECK_NO_THROW(db.reward_research_content(1, 10, reward, reward));
+//
+//        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == 800);
+//        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 50);
+//
+//        auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
+//        BOOST_CHECK(alice_expert_token.amount == 900);
+//
+//        BOOST_CHECK(alice.balance.amount == 20);
+//        BOOST_CHECK(bob.balance.amount == 30);
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
+//
+//BOOST_AUTO_TEST_CASE(fund_review_pool)
+//{
+//    try
+//    {
+//        ACTORS((alice)(alex)(jack)(bob)(john));
+//
+//        create_discipline_with_weight();
+//        create_research_contents();
+//        create_researches();
+//        create_total_votes();
+//        create_research_tokens();
+//        create_research_groups();
+//        create_research_group_tokens();
+//        create_reviews();
+//        create_review_votes();
+//
+//        share_type reward = 1000;
+//
+//        auto& discipline = db.get<discipline_object>(10);
+//        BOOST_CHECK_NO_THROW(db.fund_review_pool(discipline, reward));
+//
+//        BOOST_CHECK(alice.balance.amount == 475);
+//        BOOST_CHECK(bob.balance.amount == 475);
+//        BOOST_CHECK(jack.balance.amount == 20);
+//        BOOST_CHECK(john.balance.amount == 30);
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
+//
+//BOOST_AUTO_TEST_CASE(reward_researches_in_discipline)
+//{
+//    try
+//    {
+//        ACTORS((alice)(alex)(jack)(bob)(john));
+//
+//        create_discipline_with_weight();
+//        create_research_contents();
+//        create_researches();
+//        create_total_votes();
+//        create_research_tokens();
+//        create_research_groups();
+//        create_research_group_tokens();
+//        create_reviews();
+//        create_review_votes();
+//
+//        share_type reward = 1000;
+//
+//        auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight");
+//
+//        BOOST_CHECK_NO_THROW(db.reward_researches_in_discipline(discipline, reward, reward));
+//
+//        auto& reward_pool_1 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(1, discipline.id));
+//        auto& reward_pool_2 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(2, discipline.id));
+//
+//        BOOST_CHECK(reward_pool_1.reward_share + reward_pool_2.reward_share == 1000);
+//        BOOST_CHECK(reward_pool_1.expertise_share + reward_pool_2.expertise_share == 1000);
+//
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
+//
+//BOOST_AUTO_TEST_CASE(distribute_reward)
+//{
+//    try
+//    {
+//        ACTORS((alice)(alex)(jack)(bob)(john));
+//
+//        create_discipline_with_weight();
+//        create_research_contents();
+//        create_reviews();
+//        create_review_votes();
+//        create_researches();
+//        create_total_votes();
+//        create_research_tokens();
+//        create_research_groups();
+//        create_research_group_tokens();
+//
+//        share_type reward = 1000;
+//        auto used_reward = share_type(0);
+//
+//        BOOST_CHECK_NO_THROW(used_reward = db.distribute_reward(reward, reward));
+//
+//        BOOST_CHECK(alice.balance.amount == 24);
+//        BOOST_CHECK(bob.balance.amount == 24);
+//
+//        auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight");
+//
+//        auto& reward_pool_1 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(1, discipline.id));
+//        auto& reward_pool_2 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(2, discipline.id));
+//
+//        BOOST_CHECK(reward_pool_1.reward_share + reward_pool_2.reward_share == 950);
+//        BOOST_CHECK(reward_pool_1.expertise_share + reward_pool_2.expertise_share == 1000);
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
+//
+//BOOST_AUTO_TEST_CASE(grant_researches_in_discipline)
+//{
+//    try
+//    {
+//        ACTORS((alice)(alex)(jack)(bob)(john));
+//
+//        create_research_contents();
+//        create_researches();
+//        create_total_votes();
+//        create_research_groups();
+//        create_research_group_tokens();
+//        create_grant_test_case();
+//
+//        share_type grant = 1000;
+//
+//        auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight");
+//
+//        BOOST_CHECK_NO_THROW(db.grant_researches_in_discipline(discipline.id, grant));
+//
+//        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(1).total_weight, discipline.total_active_weight));
+//        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(2).total_weight, discipline.total_active_weight));
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
 
 BOOST_AUTO_TEST_CASE(process_grants)
 {
@@ -635,13 +661,18 @@ BOOST_AUTO_TEST_CASE(process_grants)
        create_total_votes();
        create_research_groups();
        create_research_group_tokens();
-       create_grant();
+       create_grants();
+
+       int num = db.head_block_num();
 
        BOOST_CHECK_NO_THROW(db.process_grants());
 
        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(100, db.get<total_votes_object>(1).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_weight));
        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(100, db.get<total_votes_object>(2).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_weight));
 
+       generate_block();
+
+       BOOST_CHECK_THROW(db.get<grant_object>(1), std::out_of_range);
    }
    FC_LOG_AND_RETHROW()
 }
@@ -665,7 +696,6 @@ BOOST_AUTO_TEST_CASE(process_content_activity_windows)
        create_research_group_tokens();
        create_reviews();
        create_review_votes();
-      // create_research_content_reward_pools();
 
        BOOST_CHECK_NO_THROW(generate_blocks(db.head_block_time() + DAYS_TO_SECONDS(10), true));
 

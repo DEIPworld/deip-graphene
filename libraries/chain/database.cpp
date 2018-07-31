@@ -1675,7 +1675,6 @@ void database::process_grants()
     {
         auto& grant = *grants_itr;
         auto used_grant = grant_researches_in_discipline(grant.target_discipline, grant.per_block);
-        grant_service.allocate_funds(grant);
 
         if (used_grant == 0 && grant.is_extendable)
             modify(grant, [&](grant_object& g_o) { g_o.end_block++;} );
