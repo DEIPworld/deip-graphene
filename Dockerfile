@@ -1,8 +1,8 @@
 FROM phusion/baseimage:0.9.19
 
-#ARG DEIPD_BLOCKCHAIN=https://example.com/deipd-blockchain.tbz2
-
+ARG build_testnet=OFF
 ENV LANG=en_US.UTF-8
+ENV BUILD_TESTNET=${build_testnet}
 
 RUN \
     apt-get update && \
@@ -40,24 +40,15 @@ RUN \
 
 ADD . /usr/local/src/deip
 
+
 RUN \
-    cd /usr/local/src/deip && \
-    git submodule update --init --recursive && \
-    mkdir build && \
-    cd build && \
-    cmake \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_DEIP_TESTNET=ON \
-        -DLOW_MEMORY_NODE=OFF \
-        -DCLEAR_VOTES=ON \
-        -DSKIP_BY_TX_ID=ON \
-        .. && \
-    make -j$(nproc) deipd && \
+    #
+    # Check reflections & config
+    echo && echo '------ Check reflections & config ------' && \
     cd /usr/local/src/deip && \
     doxygen && \
     programs/build_helpers/check_reflect.py && \
-    programs/build_helpers/get_config_check.sh && \
-    rm -rf /usr/local/src/deip/build
+    programs/build_helpers/get_config_check.sh
 
 RUN \
     cd /usr/local/src/deip && \
@@ -70,7 +61,7 @@ RUN \
         -DLOW_MEMORY_NODE=ON \
         -DCLEAR_VOTES=ON \
         -DSKIP_BY_TX_ID=ON \
-        -DBUILD_DEIP_TESTNET=OFF \
+        -DBUILD_DEIP_TESTNET=$BUILD_TESTNET \
         .. \
     && \
     make -j$(nproc) && \
@@ -92,7 +83,7 @@ RUN \
         -DLOW_MEMORY_NODE=OFF \
         -DCLEAR_VOTES=OFF \
         -DSKIP_BY_TX_ID=ON \
-        -DBUILD_DEIP_TESTNET=OFF \
+        -DBUILD_DEIP_TESTNET=$BUILD_TESTNET \
         .. \
     && \
     make -j$(nproc) && \
@@ -152,9 +143,6 @@ RUN useradd -s /bin/bash -m -d /var/lib/deipd deipd
 RUN mkdir /var/cache/deipd && \
     chown deipd:deipd -R /var/cache/deipd
 
-# add blockchain cache to image
-#ADD $DEIPD_BLOCKCHAIN /var/cache/deipd/blocks.tbz2
-
 ENV HOME /var/lib/deipd
 RUN chown deipd:deipd -R /var/lib/deipd
 
@@ -176,24 +164,8 @@ ADD contrib/fullnode.config.ini /etc/deipd/fullnode.config.ini
 ADD contrib/deipd.run /usr/local/bin/deip-sv-run.sh
 RUN chmod +x /usr/local/bin/deip-sv-run.sh
 
-# add nginx templates
-ADD contrib/deipd.nginx.conf /etc/nginx/deipd.nginx.conf
-ADD contrib/healthcheck.conf.template /etc/nginx/healthcheck.conf.template
-
-# add PaaS startup script and service script
-ADD contrib/startpaasdeipd.sh /usr/local/bin/startpaasdeipd.sh
-ADD contrib/paas-sv-run.sh /usr/local/bin/paas-sv-run.sh
-ADD contrib/sync-sv-run.sh /usr/local/bin/sync-sv-run.sh
-ADD contrib/healthcheck.sh /usr/local/bin/healthcheck.sh
-RUN chmod +x /usr/local/bin/startpaasdeipd.sh
-RUN chmod +x /usr/local/bin/paas-sv-run.sh
-RUN chmod +x /usr/local/bin/sync-sv-run.sh
-RUN chmod +x /usr/local/bin/healthcheck.sh
-
 # new entrypoint for all instances
 # this enables exitting of the container when the writer node dies
-# for PaaS mode (elasticbeanstalk, etc)
-# AWS EB Docker requires a non-daemonized entrypoint
 ADD contrib/deipdentrypoint.sh /usr/local/bin/deipdentrypoint.sh
 RUN chmod +x /usr/local/bin/deipdentrypoint.sh
 CMD /usr/local/bin/deipdentrypoint.sh
