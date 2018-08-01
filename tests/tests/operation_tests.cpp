@@ -683,7 +683,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
 
        account_create_operation op;
 
-       op.fee = asset(100, DEIP_SYMBOL);
+       op.fee = asset(30000, DEIP_SYMBOL);
        op.new_account_name = "alice";
        op.creator = TEST_INIT_DELEGATE_NAME;
        op.owner = authority(1, priv_key.get_public_key(), 1);
@@ -707,7 +707,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        BOOST_REQUIRE(acct.name == "alice");
        BOOST_REQUIRE(acct_auth.owner == authority(1, priv_key.get_public_key(), 1));
        BOOST_REQUIRE(acct_auth.active == authority(2, priv_key.get_public_key(), 2));
-       BOOST_REQUIRE(acct.memo_key == priv_key.get_public_key());
+              BOOST_REQUIRE(acct.memo_key == priv_key.get_public_key());
        BOOST_REQUIRE(acct.proxy == "");
        BOOST_REQUIRE(acct.created == db.head_block_time());
        BOOST_REQUIRE(acct.balance.amount.value == ASSET("0.000 TESTS").amount.value);
@@ -718,7 +718,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        BOOST_REQUIRE(acct.common_tokens_balance == op.fee.amount.value);
        BOOST_REQUIRE(acct.common_tokens_withdraw_rate == 0);
        BOOST_REQUIRE(acct.proxied_vsf_votes_total() == 0);
-       BOOST_REQUIRE((init_starting_balance - ASSET("0.100 TESTS")).amount.value == init.balance.amount.value);
+       BOOST_REQUIRE((init_starting_balance - ASSET("30.000 TESTS")).amount.value == init.balance.amount.value);
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Test failure of duplicate account creation");
@@ -734,7 +734,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        BOOST_REQUIRE(acct.common_tokens_balance == op.fee.amount.value);
        BOOST_REQUIRE(acct.common_tokens_withdraw_rate == 0);
        BOOST_REQUIRE(acct.proxied_vsf_votes_total().value == 0);
-       BOOST_REQUIRE((init_starting_balance - ASSET("0.100 TESTS")).amount.value == init.balance.amount.value);
+       BOOST_REQUIRE((init_starting_balance - ASSET("30.000 TESTS")).amount.value == init.balance.amount.value);
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Test failure when creator cannot cover fee");
@@ -1845,7 +1845,7 @@ BOOST_AUTO_TEST_CASE(account_recovery)
        BOOST_TEST_MESSAGE("Creating account bob with alice");
 
        account_create_operation acc_create;
-       acc_create.fee = ASSET("10.000 TESTS");
+       acc_create.fee = ASSET("30.000 TESTS");
        acc_create.creator = "alice";
        acc_create.new_account_name = "bob";
        acc_create.owner = authority(1, generate_private_key("bob_owner").get_public_key(), 1);
