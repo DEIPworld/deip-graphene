@@ -163,7 +163,7 @@ enum proposal_action_type : uint16_t
     send_funds = 4,
     start_research_token_sale = 5,
     rebalance_research_group_tokens = 6,
-    change_quorum = 7,
+    change_proposal_quorum = 7,
     change_research_review_share_percent = 8,
     offer_research_tokens = 9,
     accept_research_tokens_offer = 10,
@@ -206,7 +206,7 @@ FC_REFLECT_ENUM(deip::protocol::proposal_action_type,   (start_research)
                                                         (send_funds)
                                                         (start_research_token_sale)
                                                         (rebalance_research_group_tokens)
-                                                        (change_quorum)
+                                                        (change_proposal_quorum)
                                                         (change_research_review_share_percent)
                                                         (offer_research_tokens)
                                                         (accept_research_tokens_offer)

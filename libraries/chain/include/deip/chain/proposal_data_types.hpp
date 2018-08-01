@@ -47,7 +47,6 @@ struct change_quorum_proposal_data_type : base_proposal_data_type
 
     void validate() const
     {
-        FC_ASSERT(proposal_type >= First_proposal && proposal_type <= Last_proposal, "Proposal type is invalid");
         FC_ASSERT(quorum_percent >= 5 && quorum_percent <= 100, "Quorum percent should be in 5 to 100 range");
     }
 };
@@ -184,7 +183,7 @@ FC_REFLECT(deip::chain::dropout_member_proposal_data_type, (research_group_id)(n
 
 FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount_in_percent)(cover_letter))
 
-FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
+FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(proposal_type)(quorum_percent))
 
 FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(research_group_id)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines))
 

@@ -23,12 +23,17 @@ class research_group_service_fixture : public clean_database_fixture
 
     void create_research_groups()
     {
+        std::map<proposal_action_type , share_type> proposal_quorums;
+
+        for (int i = 1; i <= 11; i++)
+            proposal_quorums.insert(std::make_pair(static_cast<deip::protocol::proposal_action_type>(i), 1000));
+
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 21;
             d.name = "test21";
             d.permlink = "test21";
             d.description = "test";
-            d.quorum_percent = 40 * DEIP_1_PERCENT;
+            d.proposal_quorums = proposal_quorums;
         });
 
         db.create<research_group_object>([&](research_group_object& d) {
@@ -36,7 +41,7 @@ class research_group_service_fixture : public clean_database_fixture
             d.name = "test22";
             d.permlink = "test22";
             d.description = "test";
-            d.quorum_percent = 60 * DEIP_1_PERCENT;
+            d.proposal_quorums = proposal_quorums;
           });
     }
 
@@ -127,7 +132,7 @@ BOOST_AUTO_TEST_CASE(get_research_group_by_id_test)
         BOOST_CHECK(research_group.name == "test21");
         BOOST_CHECK(research_group.permlink == "test21");
         BOOST_CHECK(research_group.description == "test");
-        BOOST_CHECK(research_group.quorum_percent == 40 * DEIP_1_PERCENT);
+        BOOST_CHECK(research_group.proposal_quorums.size() == 11);
 
     }
     FC_LOG_AND_RETHROW()
@@ -137,12 +142,17 @@ BOOST_AUTO_TEST_CASE(create_research_group_test)
 {
     try
     {
-        auto& research_group = data_service.create_research_group("test", "test", "test", 34 * DEIP_1_PERCENT, false);
+        std::map<proposal_action_type, share_type> personal_research_group_proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            personal_research_group_proposal_quorums.insert(std::make_pair(static_cast<deip::protocol::proposal_action_type>(i), DEIP_100_PERCENT));
+
+        auto& research_group = data_service.create_research_group("test", "test", "test", personal_research_group_proposal_quorums, false);
 
         BOOST_CHECK(research_group.name == "test");
         BOOST_CHECK(research_group.permlink == "test");
         BOOST_CHECK(research_group.description == "test");
-        BOOST_CHECK(research_group.quorum_percent == 34 * DEIP_1_PERCENT);
+        BOOST_CHECK(research_group.proposal_quorums.size() == 11);
         BOOST_CHECK(research_group.balance.amount == 0);
         BOOST_CHECK(research_group.is_personal == false);
 
@@ -155,11 +165,11 @@ BOOST_AUTO_TEST_CASE(change_quorum_test)
     try
     {
         create_research_groups();
-        data_service.change_quorum(24 * DEIP_1_PERCENT, 21);
+        data_service.change_quorum(24 * DEIP_1_PERCENT, 1, 21);
 
         auto& research_group = data_service.get_research_group(21);
 
-        BOOST_CHECK(research_group.quorum_percent == 24 * DEIP_1_PERCENT);
+        BOOST_CHECK(research_group.proposal_quorums.at(start_research) == 24 * DEIP_1_PERCENT);
 
     }
     FC_LOG_AND_RETHROW()

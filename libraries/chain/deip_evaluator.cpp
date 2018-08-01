@@ -744,7 +744,7 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
 
     if (action == deip::protocol::proposal_action_type::invite_member ||
             action == deip::protocol::proposal_action_type::dropout_member ||
-            action == deip::protocol::proposal_action_type::change_quorum ||
+            action == deip::protocol::proposal_action_type::change_proposal_quorum ||
             action == deip::protocol::proposal_action_type::rebalance_research_group_tokens)
         FC_ASSERT(!research_group.is_personal,
                   "You cannot invite or dropout member, change quorum and rebalance tokens in personal research group");

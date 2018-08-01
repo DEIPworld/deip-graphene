@@ -47,9 +47,8 @@ void dbs_research_group::change_quorum(const uint32_t quorum_percent, const uint
 {
     check_research_group_existence(research_group_id);
     const research_group_object& research_group = get_research_group(research_group_id);
-    deip::protocol::proposal_action_type action = static_cast<deip::protocol::proposal_action_type>(proposal_type);
 
-    db_impl().modify(research_group, [&](research_group_object& rg) { rg.proposal_quorums[action] = quorum_percent; });
+    db_impl().modify(research_group, [&](research_group_object& rg) { rg.proposal_quorums[static_cast<deip::protocol::proposal_action_type>(proposal_type)] = quorum_percent; });
 }
 
 void dbs_research_group::check_research_group_existence(const research_group_id_type& research_group_id) const

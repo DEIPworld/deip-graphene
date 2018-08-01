@@ -50,7 +50,7 @@ public:
 
         db.create<proposal_object>([&](proposal_object& d) {
             d.id = 3;
-            d.action = proposal_action_type::change_quorum;
+            d.action = proposal_action_type::change_proposal_quorum;
             d.data = "1123john";
             d.creator = "john";
             d.research_group_id = 123;
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(get_proposal_by_id)
          create_proposals();
          auto proposal = data_service.get_proposal(3);
 
-         BOOST_CHECK(proposal.action == proposal_action_type::change_quorum);
+         BOOST_CHECK(proposal.action == proposal_action_type::change_proposal_quorum);
          BOOST_CHECK(proposal.data == "1123john");
          BOOST_CHECK(proposal.creator == "john");
          BOOST_CHECK(proposal.research_group_id == 123);
