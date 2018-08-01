@@ -142,10 +142,15 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
 
     bool is_personal = true;
 
+    std::map<proposal_action_type, share_type> personal_research_group_proposal_quorums;
+
+    for (int i = First_proposal; i <= Last_proposal; i++)
+        personal_research_group_proposal_quorums.insert(std::make_pair(static_cast<deip::protocol::proposal_action_type>(i), DEIP_100_PERCENT));
+
     auto& personal_research_group = research_group_service.create_research_group(o.new_account_name,
                                                                                  o.new_account_name,
                                                                                  o.new_account_name,
-                                                                                 DEIP_100_PERCENT,
+                                                                                 personal_research_group_proposal_quorums,
                                                                                  is_personal);
     research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
 
@@ -732,9 +737,10 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
              ("min", _lifetime_min)("max", _lifetime_max)("actual", sec_till_expiration));
 
     auto& research_group = research_group_service.get_research_group(op.research_group_id);
-    auto quorum_percent = research_group.quorum_percent;
-    // the range must be checked in create_proposal_operation::validate()
+
     deip::protocol::proposal_action_type action = static_cast<deip::protocol::proposal_action_type>(op.action);
+    auto quorum_percent = research_group.proposal_quorums.at(action);
+    // the range must be checked in create_proposal_operation::validate()
 
     if (action == deip::protocol::proposal_action_type::invite_member ||
             action == deip::protocol::proposal_action_type::dropout_member ||
@@ -778,10 +784,16 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
     bool is_personal = false;
+
+    std::map<proposal_action_type, share_type> proposal_quorums;
+
+    for (auto& pair : op.proposal_quorums)
+        proposal_quorums.insert(std::make_pair(static_cast<deip::protocol::proposal_action_type>(pair.first), share_type(pair.second)));
+
     const research_group_object& research_group = research_group_service.create_research_group(op.name,
                                                                                                op.permlink,
                                                                                                op.description,
-                                                                                               op.quorum_percent,
+                                                                                               proposal_quorums,
                                                                                                is_personal);
     
     research_group_service.create_research_group_token(research_group.id, DEIP_100_PERCENT, op.creator);
@@ -1074,7 +1086,7 @@ void vote_proposal_evaluator::do_apply(const vote_proposal_operation& op)
         total_voted_weight += vote.weight.value;
     }
 
-    if (total_voted_weight  >= research_group.quorum_percent)
+    if (total_voted_weight  >= proposal.quorum_percent)
     {
         proposal_execution_service.execute_proposal(proposal);
         proposal_service.complete(proposal);

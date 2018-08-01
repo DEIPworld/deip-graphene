@@ -15,7 +15,7 @@ dbs_proposal_execution::dbs_proposal_execution(database &db)
     executions.set(proposal_action_type::change_research_review_share_percent,
                    std::bind(&dbs_proposal_execution::change_research_review_share, this, std::placeholders::_1));
     executions.set(proposal_action_type::change_quorum,
-                   std::bind(&dbs_proposal_execution::change_quorum, this, std::placeholders::_1));
+                   std::bind(&dbs_proposal_execution::change_proposal_quorum, this, std::placeholders::_1));
     executions.set(proposal_action_type::start_research,
                    std::bind(&dbs_proposal_execution::start_research, this, std::placeholders::_1));
     executions.set(proposal_action_type::send_funds,
@@ -96,12 +96,12 @@ void dbs_proposal_execution::change_research_review_share(const proposal_object&
     research_service.change_research_review_share_percent(data.research_id, data.review_share_in_percent);
 }
 
-void dbs_proposal_execution::change_quorum(const proposal_object &proposal)
+void dbs_proposal_execution::change_proposal_quorum(const proposal_object &proposal)
 {
     auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
 
     change_quorum_proposal_data_type data = get_data<change_quorum_proposal_data_type>(proposal);
-    research_group_service.change_quorum(data.quorum_percent, data.research_group_id);
+    research_group_service.change_quorum(data.quorum_percent, data.proposal_type, data.research_group_id);
 }
 
 void dbs_proposal_execution::start_research(const proposal_object& proposal)

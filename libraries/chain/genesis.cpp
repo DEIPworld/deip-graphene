@@ -323,8 +323,9 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
         FC_ASSERT(!research_group.name.empty(), "Research group 'name' must be specified");
         FC_ASSERT(!research_group.permlink.empty(), "Research group 'permlink' must be specified");
         FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
-        FC_ASSERT(research_group.quorum_percent >= 5 * DEIP_1_PERCENT && research_group.quorum_percent <= DEIP_100_PERCENT,
-                  "Quorum percent should be in 5% to 100% range");
+        FC_ASSERT(research_group.proposal_quorums.size() == Last_proposal, "You must set quorum percent for all of the proposal types");
+        for(auto& quorum_percent : research_group.proposal_quorums)
+            FC_ASSERT(quorum_percent.second > 5 * DEIP_1_PERCENT && quorum_percent.second <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
 
         create<research_group_object>([&](research_group_object& rg) {
             rg.id = research_group.id;
@@ -332,7 +333,13 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
             fc::from_string(rg.description, research_group.description);
             fc::from_string(rg.permlink, research_group.permlink);
             rg.balance = asset(0, DEIP_SYMBOL);
-            rg.quorum_percent = research_group.quorum_percent;
+
+            std::map<proposal_action_type, share_type> proposal_quorums;
+
+            for (auto& pair : research_group.proposal_quorums)
+                proposal_quorums.insert(std::make_pair(static_cast<deip::protocol::proposal_action_type>(pair.first), share_type(pair.second)));
+
+            rg.proposal_quorums = proposal_quorums;
             rg.is_personal = research_group.is_personal;
         });
 
@@ -358,11 +365,16 @@ void database::init_personal_research_groups(const genesis_state_type& genesis_s
         FC_ASSERT(!account.name.empty(), "Account 'name' should not be empty.");
         FC_ASSERT(is_valid_account_name(account.name), "Account name ${n} is invalid", ("n", account.name));
 
+        std::map<proposal_action_type, share_type> personal_research_group_proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            personal_research_group_proposal_quorums.insert(std::make_pair(static_cast<deip::protocol::proposal_action_type>(i), DEIP_100_PERCENT));
+
         auto& research_group = create<research_group_object>([&](research_group_object& research_group) {
             fc::from_string(research_group.name, account.name);
             fc::from_string(research_group.permlink, account.name);
             fc::from_string(research_group.description, account.name);
-            research_group.quorum_percent = DEIP_100_PERCENT;
+            research_group.proposal_quorums = personal_research_group_proposal_quorums;
             research_group.is_personal = true;
         });
 

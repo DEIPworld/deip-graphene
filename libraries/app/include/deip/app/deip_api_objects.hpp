@@ -547,9 +547,10 @@ struct research_group_api_obj
         ,  name(fc::to_string(rg.name))
         ,  permlink(fc::to_string(rg.permlink))
         ,  description(fc::to_string(rg.description))
-        ,  quorum_percent(rg.quorum_percent.value)
         ,  is_personal(rg.is_personal)
     {
+        for (auto& proposal_quorum : rg.proposal_quorums)
+            proposal_quorums.insert(std::make_pair(static_cast<uint16_t>(proposal_quorum.first), proposal_quorum.second.value));
     }
 
     // because fc::variant require for temporary object
@@ -561,7 +562,7 @@ struct research_group_api_obj
     std::string name;
     std::string permlink;
     std::string description;
-    uint32_t quorum_percent;
+    std::map<uint16_t, uint32_t> proposal_quorums;
     bool is_personal;
 };
 
@@ -975,7 +976,7 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (name)
             (permlink)
             (description)
-            (quorum_percent)
+            (proposal_quorums)
             (is_personal)
 )
 

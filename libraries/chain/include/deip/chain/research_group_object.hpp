@@ -29,7 +29,8 @@ public:
     shared_string description;
     shared_string permlink;
     asset balance = asset(0, DEIP_SYMBOL);
-    share_type quorum_percent;
+    std::map<deip::protocol::proposal_action_type, share_type> proposal_quorums;
+
     bool is_personal;
 };
 
@@ -107,7 +108,7 @@ typedef multi_index_container<research_group_token_object,
 
   
 
-FC_REFLECT(deip::chain::research_group_object, (id)(name)(permlink)(description)(balance)(quorum_percent)(is_personal))
+FC_REFLECT(deip::chain::research_group_object, (id)(name)(permlink)(description)(balance)(proposal_quorums)(is_personal))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_group_object, deip::chain::research_group_index)
 

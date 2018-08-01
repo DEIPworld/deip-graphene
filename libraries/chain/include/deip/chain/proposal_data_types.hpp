@@ -42,10 +42,12 @@ struct invite_member_proposal_data_type : base_proposal_data_type
 struct change_quorum_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
+    uint16_t proposal_type;
     uint16_t quorum_percent;
 
     void validate() const
     {
+        FC_ASSERT(proposal_type >= First_proposal && proposal_type <= Last_proposal, "Proposal type is invalid");
         FC_ASSERT(quorum_percent >= 5 && quorum_percent <= 100, "Quorum percent should be in 5 to 100 range");
     }
 };
