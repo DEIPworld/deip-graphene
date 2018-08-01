@@ -73,10 +73,12 @@ const grant_object& dbs_grant::get_grant(grant_id_type id) const
 }
 
 const grant_object& dbs_grant::create_grant(const account_object& owner,
-                                       const asset& balance,
-                                       const uint32_t& start_block, 
-                                       const uint32_t& end_block,
-                                       const discipline_id_type& target_discipline)
+                                            const asset& balance,
+                                            const uint32_t& start_block,
+                                            const uint32_t& end_block,
+                                            const discipline_id_type& target_discipline,
+                                            const bool is_extendable,
+                                            const std::string& content_hash)
 {
     // clang-format off
     FC_ASSERT(balance.symbol == DEIP_SYMBOL, "invalid asset type (symbol)");
@@ -112,6 +114,8 @@ const grant_object& dbs_grant::create_grant(const account_object& owner,
         grant.end_block = end_block;
         grant.balance = balance;
         grant.per_block = per_block;
+        grant.is_extendable = is_extendable;
+        fc::from_string(grant.content_hash, content_hash);
     });
     return new_grant;
 }
@@ -126,6 +130,32 @@ asset dbs_grant::allocate_funds(const grant_object& grant)
         db_impl().remove(grant);
     }
     return amount;
+}
+
+void dbs_grant::clear_expired_grants()
+{
+    const auto& grant_expiration_index = db_impl().get_index<grant_index>().indices().get<by_end_block>();
+
+    while (!grant_expiration_index.empty() && is_expired(*grant_expiration_index.begin()))
+    {
+        auto& grant = *grant_expiration_index.begin();
+        if(grant.balance.amount > 0)
+        {
+            auto& owner = db_impl().get_account(grant.owner);
+            db_impl().modify(owner, [&](account_object& a) {
+                a.balance += grant.balance;
+            });
+            db_impl().modify(grant, [&](grant_object& g) {
+                g.balance = asset(0, DEIP_SYMBOL);
+            });
+        }
+        db_impl().remove(*grant_expiration_index.begin());
+    }
+}
+
+bool dbs_grant::is_expired(const grant_object& grant)
+{
+    return grant.end_block > db_impl().head_block_num();
 }
 
 uint64_t dbs_grant::_get_grants_count(const account_name_type& owner) const

@@ -299,7 +299,7 @@ public:
         });
     }
 
-    void create_grant()
+    void create_grants()
     {
         db.create<grant_object>([&](grant_object& d) {
             d.id = 1;
@@ -309,6 +309,32 @@ public:
             d.per_block = 100;
             d.start_block = int(db.head_block_num());
             d.end_block = int(db.head_block_num());
+            d.is_extendable = true;
+            d.content_hash = "hash";
+        });
+
+        db.create<grant_object>([&](grant_object& d) {
+            d.id = 2;
+            d.owner = "jack";
+            d.target_discipline = 2;
+            d.balance = asset(100, DEIP_SYMBOL);
+            d.per_block = 100;
+            d.start_block = int(db.head_block_num());
+            d.end_block = int(db.head_block_num());
+            d.is_extendable = true;
+            d.content_hash = "hash";
+        });
+
+        db.create<grant_object>([&](grant_object& d) {
+            d.id = 3;
+            d.owner = "john";
+            d.target_discipline = 4;
+            d.balance = asset(100, DEIP_SYMBOL);
+            d.per_block = 100;
+            d.start_block = int(db.head_block_num());
+            d.end_block = int(db.head_block_num());
+            d.is_extendable = false;
+            d.content_hash = "hash";
         });
     }
 
@@ -635,13 +661,17 @@ BOOST_AUTO_TEST_CASE(process_grants)
        create_total_votes();
        create_research_groups();
        create_research_group_tokens();
-       create_grant();
+       create_grants();
+
+       int num = db.head_block_num();
 
        BOOST_CHECK_NO_THROW(db.process_grants());
 
        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(100, db.get<total_votes_object>(1).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_weight));
        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(100, db.get<total_votes_object>(2).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_weight));
 
+       BOOST_CHECK_THROW(db.get<grant_object>(1), std::out_of_range);
+       BOOST_CHECK(db.get<grant_object>(2).end_block == num + 1);
    }
    FC_LOG_AND_RETHROW()
 }
@@ -665,7 +695,6 @@ BOOST_AUTO_TEST_CASE(process_content_activity_windows)
        create_research_group_tokens();
        create_reviews();
        create_review_votes();
-      // create_research_content_reward_pools();
 
        BOOST_CHECK_NO_THROW(generate_blocks(db.head_block_time() + DAYS_TO_SECONDS(10), true));
 

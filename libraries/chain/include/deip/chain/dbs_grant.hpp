@@ -61,10 +61,12 @@ public:
      * @returns a grant object
      */
     const grant_object& create_grant(const account_object& owner,
-                                       const asset& balance,
-                                       const uint32_t& start_block, 
-                                       const uint32_t& end_block,
-                                       const discipline_id_type& target_discipline);
+                                     const asset& balance,
+                                     const uint32_t& start_block,
+                                     const uint32_t& end_block,
+                                     const discipline_id_type& target_discipline,
+                                     const bool is_extendable,
+                                     const std::string& content_hash);
 
 
     /** Distribute asset from grant.
@@ -73,6 +75,10 @@ public:
      * @param grant the grant that is distributed
      */
     asset allocate_funds(const grant_object& grant);
+
+    void clear_expired_grants();
+
+    bool is_expired(const grant_object& grant);
 
 private:
     uint64_t _get_grants_count(const account_name_type& owner) const;
