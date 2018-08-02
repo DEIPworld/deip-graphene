@@ -721,6 +721,11 @@ public:
      */
     map<uint32_t, applied_operation> get_account_history(const std::string& account, uint32_t from, uint32_t limit);
 
+    std::map<uint32_t, applied_operation>
+    get_account_deip_to_deip_transfers(const std::string& account, uint64_t from, uint32_t limit);
+     std::map<uint32_t, applied_operation>
+    get_account_deip_to_common_tokens_transfers(const std::string& account, uint64_t from, uint32_t limit);
+
     std::map<string, std::function<string(fc::variant, const fc::variants&)>> get_result_formatters() const;
 
     void encrypt_keys();
@@ -891,6 +896,8 @@ FC_API( deip::wallet::wallet_api,
         (get_block)
         (get_ops_in_block)
         (get_account_history)
+        (get_account_deip_to_deip_transfers)
+        (get_account_deip_to_common_tokens_transfers)
         (get_state)
         (get_withdraw_routes)
         (list_my_grants)

@@ -2,6 +2,7 @@ file(GLOB HEADERS "include/deip/account_history/*.hpp")
 
 add_library( deip_account_history
              account_history_plugin.cpp
+             account_history_api.cpp
            )
 
 target_link_libraries( deip_account_history deip_chain deip_protocol deip_app )

@@ -1,7 +1,8 @@
 #pragma once
 
 #include <deip/protocol/operations.hpp>
-#include <deip/chain/deip_object_types.hpp>
+//#include <deip/chain/deip_object_types.hpp>
+#include <deip/chain/operation_object.hpp>
 
 namespace deip {
 namespace app {

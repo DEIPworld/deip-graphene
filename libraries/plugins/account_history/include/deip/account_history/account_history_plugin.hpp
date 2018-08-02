@@ -26,32 +26,14 @@
 #include <deip/app/plugin.hpp>
 #include <deip/chain/database.hpp>
 
-#include <fc/thread/future.hpp>
+#ifndef ACCOUNT_HISTORY_PLUGIN_NAME
+#define ACCOUNT_HISTORY_PLUGIN_NAME "account_history"
+#endif
 
 namespace deip {
 namespace account_history {
 using namespace chain;
 using app::application;
-
-//
-// Plugins should #define their SPACE_ID's so plugins with
-// conflicting SPACE_ID assignments can be compiled into the
-// same binary (by simply re-assigning some of the conflicting #defined
-// SPACE_ID's in a build script).
-//
-// Assignment of SPACE_ID's cannot be done at run-time because
-// various template automagic depends on them being known at compile
-// time.
-//
-#ifndef ACCOUNT_HISTORY_SPACE_ID
-#define ACCOUNT_HISTORY_SPACE_ID 5
-#endif
-
-enum account_history_object_type
-{
-    key_account_object_type = 0,
-    bucket_object_type = 1 ///< used in market_history_plugin
-};
 
 namespace detail {
 class account_history_plugin_impl;

@@ -2,7 +2,7 @@
 
 #include <deip/app/impacted.hpp>
 #include <deip/chain/account_object.hpp>
-#include <deip/chain/history_object.hpp>
+#include <deip/chain/operation_object.hpp>
 
 #include <deip/chain/database.hpp>
 #include <deip/chain/operation_notification.hpp>

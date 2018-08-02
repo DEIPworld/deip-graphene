@@ -828,34 +828,6 @@ set<string> database_api_impl::lookup_grant_owners(const string& lower_bound_nam
 }
 
 /**
- *  This method can be used to fetch replies to an account.
- *
- *  The first call should be (account_to_retrieve replies, "", limit)
- *  Subsequent calls should be (last_author, last_permlink, limit)
- */
-
-map<uint32_t, applied_operation> database_api::get_account_history(string account, uint64_t from, uint32_t limit) const
-{
-    return my->_db.with_read_lock([&]() {
-        FC_ASSERT(limit <= MAX_LIMIT, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
-        //   idump((account)(from)(limit));
-        const auto& idx = my->_db.get_index<account_history_index>().indices().get<by_account>();
-        auto itr = idx.lower_bound(boost::make_tuple(account, from));
-        //   if( itr != idx.end() ) idump((*itr));
-        auto end = idx.upper_bound(boost::make_tuple(account, std::max(int64_t(0), int64_t(itr->sequence) - limit)));
-        //   if( end != idx.end() ) idump((*end));
-
-        map<uint32_t, applied_operation> result;
-        while (itr != end)
-        {
-            result[itr->sequence] = my->_db.get(itr->op);
-            ++itr;
-        }
-        return result;
-    });
-}
-
-/**
  *  This call assumes root already stored as part of state, it will
  *  modify root.replies to contain links to the reply posts and then
  *  add the reply discussions to the state. This method also fetches
@@ -908,25 +880,26 @@ state database_api::get_state(string path) const
                 auto& eacnt = _state.accounts[acnt];
                 if (part[1] == "transfers")
                 {
-                    auto history = get_account_history(acnt, uint64_t(-1), 10000);
-                    for (auto& item : history)
-                    {
-                        switch (item.second.op.which())
-                        {
-                        case operation::tag<withdraw_common_tokens_operation>::value:
-                        case operation::tag<transfer_operation>::value:
-                        case operation::tag<account_witness_vote_operation>::value:
-                        case operation::tag<account_witness_proxy_operation>::value:
-                            //   eacnt.vote_history[item.first] =  item.second;
-                            break;
-                        case operation::tag<account_create_operation>::value:
-                        case operation::tag<account_update_operation>::value:
-                        case operation::tag<witness_update_operation>::value:
-                        case operation::tag<producer_reward_operation>::value:  
-                        default:
-                            eacnt.other_history[item.first] = item.second;
-                        }
-                    }
+                    // TODO: rework this garbage method - split it into sensible parts
+                    // auto history = get_account_history(acnt, uint64_t(-1), 10000);
+                    // for (auto& item : history)
+                    // {
+                    //     switch (item.second.op.which())
+                    //     {
+                    //     case operation::tag<withdraw_common_tokens_operation>::value:
+                    //     case operation::tag<transfer_operation>::value:
+                    //     case operation::tag<account_witness_vote_operation>::value:
+                    //     case operation::tag<account_witness_proxy_operation>::value:
+                    //         //   eacnt.vote_history[item.first] =  item.second;
+                    //         break;
+                    //     case operation::tag<account_create_operation>::value:
+                    //     case operation::tag<account_update_operation>::value:
+                    //     case operation::tag<witness_update_operation>::value:
+                    //     case operation::tag<producer_reward_operation>::value:  
+                    //     default:
+                    //         eacnt.other_history[item.first] = item.second;
+                    //     }
+                    // }
                 }
             }
             /// pull a complete discussion

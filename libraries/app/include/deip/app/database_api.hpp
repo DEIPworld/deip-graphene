@@ -5,7 +5,8 @@
 #include <deip/chain/database.hpp>
 #include <deip/chain/deip_objects.hpp>
 #include <deip/chain/deip_object_types.hpp>
-#include <deip/chain/history_object.hpp>
+//#include <deip/chain/history_object.hpp>
+#include <deip/chain/operation_object.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 
 #include <deip/witness/witness_plugin.hpp>
@@ -288,15 +289,6 @@ public:
      */
     ///@{
 
-    /**
-     *  Account operations have sequence numbers from 0 to N where N is the most recent operation. This method
-     *  returns operations in the range [from-limit, from]
-     *
-     *  @param from - the absolute sequence number, -1 means most recent, limit is the number of operations before from.
-     *  @param limit - the maximum number of items that can be queried (0 to 1000], must be less than from
-     */
-    map<uint32_t, applied_operation> get_account_history(string account, uint64_t from, uint32_t limit) const;
-
     /////////////////
     // Disciplines //
     /////////////////
@@ -475,7 +467,6 @@ FC_API(deip::app::database_api,
    (lookup_accounts)
    (get_account_count)
    (get_all_accounts)
-   (get_account_history)
    (get_owner_history)
    (get_recovery_request)
    (get_withdraw_routes)

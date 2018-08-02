@@ -2,7 +2,8 @@
 #include <deip/chain/account_object.hpp>
 #include <deip/chain/block_summary_object.hpp>
 #include <deip/chain/global_property_object.hpp>
-#include <deip/chain/history_object.hpp>
+//#include <deip/chain/history_object.hpp>
+#include <deip/chain/operation_object.hpp>
 #include <deip/chain/deip_objects.hpp>
 #include <deip/chain/transaction_object.hpp>
 #include <deip/chain/witness_objects.hpp>
