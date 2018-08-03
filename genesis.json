@@ -1,7 +1,7 @@
 {
     "initial_timestamp": "2017-11-29T10:03:00",
 
-    "init_supply": 1224000000000,
+    "init_supply": 1000000000000,
     "accounts": [{
         "name": "initdelegate",
         "recovery_account": "",
@@ -24,25 +24,25 @@
         "name": "mike",
         "recovery_account": "",
         "public_key": "DEIP8bwPxtWUEffTs7C8vRNT98Sv7XGCVDWCXVUeHvtNH5TxvrwVLj",
-        "deip_amount": 100000000000,
+        "deip_amount": 50000000000,
         "sp_amount": 0
     }, {
         "name": "john",
         "recovery_account": "",
         "public_key": "DEIP5mFLmqoifrz3c9iTmFVpxjU29QjyKSGiKZf7GUM2T6cJpm6Gb7",
-        "deip_amount": 100000000000,
+        "deip_amount": 50000000000,
         "sp_amount": 0
     }, {
         "name": "rachel",
         "recovery_account": "",
         "public_key": "DEIP7NAFzGdNUBhR1B3bf9g38yy4qEENJK1TSff2YdSstLQ6ztXrG6",
-        "deip_amount": 100000000000,
+        "deip_amount": 50000000000,
         "sp_amount": 0
     }, {
         "name": "james",
         "recovery_account": "",
         "public_key": "DEIP7gp8xGzRdzVHqyiCbBqQn2FqUV1h94iwFwtS6RuqdaseyYgwEk",
-        "deip_amount": 100000000000,
+        "deip_amount": 50000000000,
         "sp_amount": 0
     }, {
         "name": "rick",
@@ -252,7 +252,7 @@
         "name": "soenkeba",
         "recovery_account": "",
         "public_key": "DEIP79L7Xomcy8EqUC9Jpve4sSn1niJr9dZJ2CdHtZcb9f6J4aLPyf",
-        "deip_amount": 124000000000,
+        "deip_amount": 100000000000,
         "sp_amount": 0
     }],
 
