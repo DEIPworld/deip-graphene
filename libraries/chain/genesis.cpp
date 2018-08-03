@@ -17,6 +17,7 @@
 #include <deip/chain/proposal_vote_object.hpp>
 
 #include <fc/io/json.hpp>
+#include <deip/chain/vesting_contract_object.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
@@ -89,6 +90,7 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_personal_research_groups(genesis_state);
         init_research(genesis_state);
         init_research_content(genesis_state);
+        //init_genesis_vesting_contracts(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
@@ -370,6 +372,33 @@ void database::init_personal_research_groups(const genesis_state_type& genesis_s
             research_group_token.research_group_id = research_group.id;
             research_group_token.amount = DEIP_100_PERCENT;
             research_group_token.owner = account.name;
+        });
+    }
+}
+
+void database::init_genesis_vesting_contracts(const genesis_state_type& genesis_state)
+{
+    const vector<genesis_state_type::vesting_contract_type>& vesting_contracts = genesis_state.vesting_contracts;
+
+    for (auto& vesting_contract : vesting_contracts)
+    {
+
+        FC_ASSERT(vesting_contract.balance > 0, "Deposit balance must be greater than 0");
+        FC_ASSERT(vesting_contract.withdrawal_periods > 0, "You must divide contract at least by 1 part");
+        FC_ASSERT(vesting_contract.contract_duration > 0, "Contract duration must be longer than 0");
+
+        FC_ASSERT(!vesting_contract.sender.empty(), "Account 'name' should not be empty.");
+        FC_ASSERT(is_valid_account_name(vesting_contract.sender), "Account name ${n} is invalid", ("n", vesting_contract.sender));
+        FC_ASSERT(!vesting_contract.receiver.empty(), "Account 'name' should not be empty.");
+        FC_ASSERT(is_valid_account_name(vesting_contract.receiver), "Account name ${n} is invalid", ("n", vesting_contract.receiver));
+
+        auto& research_group = create<vesting_contract_object>([&](vesting_contract_object& v) {
+            v.id = vesting_contract.id;
+            v.sender = vesting_contract.sender;
+            v.receiver = vesting_contract.receiver;
+            v.balance = asset(vesting_contract.balance, DEIP_SYMBOL);
+            v.withdrawal_periods = vesting_contract.withdrawal_periods;
+            v.contract_duration = fc::time_point_sec(vesting_contract.contract_duration);
         });
     }
 }

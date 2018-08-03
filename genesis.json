@@ -3,12 +3,6 @@
 
     "init_supply": 1000000000000,
     "accounts": [{
-        "name": "initdelegate",
-        "recovery_account": "",
-        "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ",
-        "deip_amount": 1000000000,
-        "sp_amount": 0
-    }, {
         "name": "alice",
         "recovery_account": "",
         "public_key": "DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83",
@@ -21,220 +15,250 @@
         "deip_amount": 100000000000,
         "sp_amount": 0
     }, {
-        "name": "lightsom",
+        "name": "mike",
         "recovery_account": "",
         "public_key": "DEIP8bwPxtWUEffTs7C8vRNT98Sv7XGCVDWCXVUeHvtNH5TxvrwVLj",
-        "deip_amount": 100000000000,
+        "deip_amount": 50000000000,
         "sp_amount": 0
     }, {
-        "name": "cicchetti",
+        "name": "john",
         "recovery_account": "",
         "public_key": "DEIP5mFLmqoifrz3c9iTmFVpxjU29QjyKSGiKZf7GUM2T6cJpm6Gb7",
-        "deip_amount": 100000000000,
+        "deip_amount": 50000000000,
         "sp_amount": 0
     }, {
-        "name": "wahle",
+        "name": "rachel",
         "recovery_account": "",
         "public_key": "DEIP7NAFzGdNUBhR1B3bf9g38yy4qEENJK1TSff2YdSstLQ6ztXrG6",
-        "deip_amount": 100000000000,
+        "deip_amount": 50000000000,
         "sp_amount": 0
     }, {
-        "name": "ingopr",
+        "name": "james",
         "recovery_account": "",
         "public_key": "DEIP7gp8xGzRdzVHqyiCbBqQn2FqUV1h94iwFwtS6RuqdaseyYgwEk",
-        "deip_amount": 100000000000,
+        "deip_amount": 50000000000,
         "sp_amount": 0
     }, {
-        "name": "dorette",
+        "name": "rick",
         "recovery_account": "",
         "public_key": "DEIP7uK6Q7aXjdUL6M6b2s8YdnJ9pbf7UHKPhjHqpFdmypFSUDFUTp",
         "deip_amount": 100000000000,
         "sp_amount": 0
     }, {
-        "name": "christa-sonja",
+        "name": "alex",
         "recovery_account": "",
         "public_key": "DEIP5YJaWc5RSQHnqd8pSmaWdqQhNGGEeiesgUZ34hAYM9VDdikabE",
         "deip_amount": 50000000000,
         "sp_amount": 0
     }, {
-        "name": "esmeralda",
+        "name": "anastasia",
         "recovery_account": "",
         "public_key": "DEIP5qm2iZaNGGcWqpJwnWmHjPorXZZBhudRp5jQSGfkrLphoLcQTh",
         "deip_amount": 50000000000,
         "sp_amount": 0
     }, {
-        "name": "ferdinand",
+        "name": "nick",
         "recovery_account": "",
         "public_key": "DEIP7SRfpY6Un2YBTa2y1ec5gju7s4MwqzQx8p8GDqZEFPewAJLVu7",
         "deip_amount": 50000000000,
         "sp_amount": 0
     }, {
+        "name": "carla",
+        "recovery_account": "",
+        "public_key": "DEIP76KbisFA4j9g9h9o7HLKXtn2LcW8ygULkP7paHtuAouZG6hL2F",
+        "deip_amount": 50000000000,
+        "sp_amount": 0
+    }, {
+        "name": "irene",
+        "recovery_account": "",
+        "public_key": "DEIP5K19FrzAJmWJpVrMUQPHQ1vzSY5Y4H517AUp6pTnunaJdBtDYc",
+        "deip_amount": 50000000000,
+        "sp_amount": 0
+    }, {
+        "name": "sherlock",
+        "recovery_account": "",
+        "public_key": "DEIP8Y6vwKDcTLYy5ywFXQEdz9SLVgJNtnM5epwX5F6fwGnjbJfPfX",
+        "deip_amount": 50000000000,
+        "sp_amount": 0
+    }, {
+        "name": "greg",
+        "recovery_account": "",
+        "public_key": "DEIP6pqCE6hhqypsttExd87EXbdiSjUPCq72kz3uH3F5LJyzZUtVL8",
+        "deip_amount": 50000000000,
+        "sp_amount": 0
+    }, {
+        "name": "doroty",
+        "recovery_account": "",
+        "public_key": "DEIP57FNGfhjgz2TuRby5RrV4AgzEtM89zmn1yMdw8RqBD74ZEZZXm",
+        "deip_amount": 50000000000,
+        "sp_amount": 0
+    },{
+        "name": "initdelegate",
+        "recovery_account": "",
+        "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ",
+        "deip_amount": 0,
+        "sp_amount": 0
+    }, {
         "name": "initdelegate1",
         "recovery_account": "",
         "public_key": "DEIP6GGrScrv5S8MDwAiQrg5Tvh4KPndcEV7ZDu8f9zfQ96gfTsNXP",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate2",
         "recovery_account": "",
         "public_key": "DEIP69cfB2TGrQgZRXKspwBn9E94CjLZDMABEFyyq9BeLVo8JhaXgZ",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate3",
         "recovery_account": "",
         "public_key": "DEIP5hekKQBAR3KqWEtWj33FwfvydBJRD6Ljf1dYu9UQ9xqxgMxVuX",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate4",
         "recovery_account": "",
         "public_key": "DEIP6zbXJKP7aSpHeUU7vdCkfR2Cgj6yGLJjn5jw9kPydk2dqnK3Eb",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate5",
         "recovery_account": "",
         "public_key": "DEIP6NBZTeR4g1VoPXr39dvspo4BHExoxwzwXoQtxzofqpSQeFXfZs",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate6",
         "recovery_account": "",
         "public_key": "DEIP5FcF3TpCHmNGAAYLiefsQB67RgPBq69Hmj6sYDJKe3CoiQAZcr",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate7",
         "recovery_account": "",
         "public_key": "DEIP7dqBjfGYCPfffJVBWGvhUasGc6eWqxmNvJw7Es2Zu1yquXgV3Q",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate8",
         "recovery_account": "",
         "public_key": "DEIP5QUc3pPePUaaaK5dEDs3hh2MGdy5M3qdjBpqGCv1fYhckbUwR9",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate9",
         "recovery_account": "",
         "public_key": "DEIP6sxa3PhM3D3KwL2kW2sMyL1tEz493x1gPJ3Sb4HiB8MaAutuDV",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate10",
         "recovery_account": "",
         "public_key": "DEIP5noaUskFp96Z4gGkq9VcvyMnDXiqzmepd2tXW5xobUAJNv8Bi1",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate11",
         "recovery_account": "",
         "public_key": "DEIP7tes2eyeTcRVX3ua6R3egfn6i2CuhDUWhYNk4mmsxk9UaCkGSL",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate12",
         "recovery_account": "",
         "public_key": "DEIP5HQrZAwQXcqWgA1tHnJZsoBLUC74JCFbopUYBtki2UnZqp52PV",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate13",
         "recovery_account": "",
         "public_key": "DEIP7AKTn2qsMSFSNmRKjLR4gJWvfmKfne1wn1te2SALBUTawo2WUp",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate14",
         "recovery_account": "",
         "public_key": "DEIP5HXtXkcdMMCeYQe3U6xp1y9hue4pR4wDa25FtC1tA6KPVg4sPd",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate15",
         "recovery_account": "",
         "public_key": "DEIP5EAv48B9FJSbTKkjYVxpk7uyAxYWwKfRjwdbVxjTaMzqM7H7NT",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate16",
         "recovery_account": "",
         "public_key": "DEIP5EkxX7qJvc2kantTuTfZbip2QDmtf12AHDGYcWe9KN4aUPwzs9",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate17",
         "recovery_account": "",
         "public_key": "DEIP83Gd6H5Ag5h9ch6PKVw3Y42rW6r2tLbe5UBKHB6GNQtm2sXpc4",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate18",
         "recovery_account": "",
         "public_key": "DEIP7JNjyisnHeqxDKPKhiGxtBW2UBhaV1BKWqBKy19Sj2bduLKpcL",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate19",
         "recovery_account": "",
         "public_key": "DEIP89Nm1Z7i14DTCeKczBvakyCwVfmqcpAsTtbQFujbtGsa1vwC1G",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate20",
         "recovery_account": "",
         "public_key": "DEIP8M5LTnXBAZNYwQXjJRWcVKUWypretebzD8ksT1iY3HezDW4Jpg",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate21",
         "recovery_account": "",
         "public_key": "DEIP7zda2KdXD9ceWoxG5WNrLB9jjgVGdbifPFi2bSXGCRF3B1wgDC",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate22",
         "recovery_account": "",
         "public_key": "DEIP6XH2YRxEhsLUEj6GGb65oqZmHgVumg3jDGp5S1F5rBm6dhQ6tK",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate23",
         "recovery_account": "",
         "public_key": "DEIP8Qe6M37dswGCqYPNxheZgiEsXodCgcsQMooPD235VSyZ5jvd26",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate24",
         "recovery_account": "",
         "public_key": "DEIP5vKtZEWwCV6dK7qacMKwd1M4zCP5U4Gf8i61FjZKAvoqENrrB2",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate25",
         "recovery_account": "",
         "public_key": "DEIP6mh7S7KaZK3gh8bGG8TcggK2woCSNmx3SEv6vMTtJQMDvsuQzb",
-        "deip_amount": 1000000000,
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "soenkeba",
         "recovery_account": "",
         "public_key": "DEIP79L7Xomcy8EqUC9Jpve4sSn1niJr9dZJ2CdHtZcb9f6J4aLPyf",
-        "deip_amount": 124000000000,
+        "deip_amount": 100000000000,
         "sp_amount": 0
     }],
 
     "witness_candidates": [{
         "owner_name": "initdelegate",
         "block_signing_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ"
-    }, {
-        "owner_name": "alice",
-        "block_signing_key": "DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83"
-    }, {
-        "owner_name": "bob",
-        "block_signing_key": "DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi"
     }, {
         "owner_name": "initdelegate1",
         "block_signing_key": "DEIP6GGrScrv5S8MDwAiQrg5Tvh4KPndcEV7ZDu8f9zfQ96gfTsNXP"
@@ -1427,128 +1451,128 @@
     
     
     {
-        "account_name": "lightsom",
+        "account_name": "mike",
         "discipline_id": 6,
         "amount": 5000
     }, {
-        "account_name": "lightsom",
+        "account_name": "mike",
         "discipline_id": 113,
         "amount": 5000
     }, 
 
 
     {
-        "account_name": "cicchetti",
+        "account_name": "john",
         "discipline_id": 6,
         "amount": 5000
     }, {
-        "account_name": "cicchetti",
+        "account_name": "john",
         "discipline_id": 113,
         "amount": 5000
     }, 
     
     
     {
-        "account_name": "wahle",
+        "account_name": "rachel",
         "discipline_id": 6,
         "amount": 5000
     }, {
-        "account_name": "wahle",
+        "account_name": "rachel",
         "discipline_id": 113,
         "amount": 5000
     }, 
     
 
     {
-        "account_name": "ingopr",
+        "account_name": "james",
         "discipline_id": 3,
         "amount": 2500
     }, {
-        "account_name": "ingopr",
+        "account_name": "james",
         "discipline_id": 53,
         "amount": 2500
     }, {
-        "account_name": "ingopr",
+        "account_name": "james",
         "discipline_id": 9,
         "amount": 2500
     }, {
-        "account_name": "ingopr",
+        "account_name": "james",
         "discipline_id": 170,
         "amount": 2500
     },
 
 
     {
-        "account_name": "dorette",
+        "account_name": "rick",
         "discipline_id": 3,
         "amount": 2500
     }, {
-        "account_name": "dorette",
+        "account_name": "rick",
         "discipline_id": 53,
         "amount": 2500
     }, {
-        "account_name": "dorette",
+        "account_name": "rick",
         "discipline_id": 9,
         "amount": 2500
     }, {
-        "account_name": "dorette",
+        "account_name": "rick",
         "discipline_id": 170,
         "amount": 2500
     },
 
 
     {
-        "account_name": "christa-sonja",
+        "account_name": "alex",
         "discipline_id": 3,
         "amount": 2500
     }, {
-        "account_name": "christa-sonja",
+        "account_name": "alex",
         "discipline_id": 53,
         "amount": 2500
     }, {
-        "account_name": "christa-sonja",
+        "account_name": "alex",
         "discipline_id": 9,
         "amount": 2500
     }, {
-        "account_name": "christa-sonja",
+        "account_name": "alex",
         "discipline_id": 170,
         "amount": 2500
     },
 
 
     {
-        "account_name": "esmeralda",
+        "account_name": "anastasia",
         "discipline_id": 3,
         "amount": 2500
     }, {
-        "account_name": "esmeralda",
+        "account_name": "anastasia",
         "discipline_id": 53,
         "amount": 2500
     }, {
-        "account_name": "esmeralda",
+        "account_name": "anastasia",
         "discipline_id": 9,
         "amount": 2500
     }, {
-        "account_name": "esmeralda",
+        "account_name": "anastasia",
         "discipline_id": 170,
         "amount": 2500
     },
 
 
     {
-        "account_name": "ferdinand",
+        "account_name": "nick",
         "discipline_id": 3,
         "amount": 2500
     }, {
-        "account_name": "ferdinand",
+        "account_name": "nick",
         "discipline_id": 53,
         "amount": 2500
     }, {
-        "account_name": "ferdinand",
+        "account_name": "nick",
         "discipline_id": 9,
         "amount": 2500
     }, {
-        "account_name": "ferdinand",
+        "account_name": "nick",
         "discipline_id": 170,
         "amount": 2500
     }
@@ -1569,7 +1593,7 @@
         "permlink": "usgs",
         "quorum_percent": 7500,
         "is_personal": false,
-        "members": ["initdelegate", "lightsom", "cicchetti", "wahle"]
+        "members": ["initdelegate", "mike", "john", "rachel"]
     }, {
         "id": 2,
         "name": "Exp-Neuro Microscopy Unit",
@@ -1577,7 +1601,7 @@
         "permlink": "exp-neuro-microscopy-unit",
         "quorum_percent": 600,
         "is_personal": false,
-        "members": ["ingopr", "dorette", "christa-sonja", "esmeralda", "ferdinand"]
+        "members": ["james", "rick", "alex", "anastasia", "nick"]
     }],
 
     "researches": [{
@@ -1626,7 +1650,7 @@
             "title": "Table of Content",
             "permlink": "table-of-content",
             "content": "f867256996d41105e8c107ce97fea2e7",
-            "authors": ["lightsom", "cicchetti", "wahle"],
+            "authors": ["mike", "john", "rachel"],
             "references": []
         },
         
@@ -1636,7 +1660,7 @@
             "title": "Data Categories for Marine Planning",
             "permlink": "data-categories-for-marine-planning",
             "content": "d754b06ef0eb56dd49096df283bcdf99",
-            "authors": ["lightsom", "cicchetti", "wahle"],
+            "authors": ["mike", "john", "rachel"],
             "references": []
         }, {
             "research_id": 1,
@@ -1644,7 +1668,7 @@
             "title": "Purpose of Category Terms",
             "permlink": "purpose-of-category-terms",
             "content": "74144b7b2b2b85261c91387928ed111d",
-            "authors": ["lightsom", "cicchetti", "wahle"],
+            "authors": ["mike", "john", "rachel"],
             "references": []
         }, {
             "research_id": 1,
@@ -1652,7 +1676,7 @@
             "title": "Data Needs for Ocean and Coastal Management",
             "permlink": "data-needs-for-ocean-and-coastal-management",
             "content": "341e9b964a19f6a12a5074c781d74192",
-            "authors": ["lightsom", "cicchetti", "wahle"],
+            "authors": ["mike", "john", "rachel"],
             "references": []
         }, {
             "research_id": 1,
@@ -1660,7 +1684,7 @@
             "title": "Data Category Terms and Definitions",
             "permlink": "data-category-terms-and-definitions",
             "content": "8534d97c33301247f30e086b4bd27ece",
-            "authors": ["lightsom", "cicchetti", "wahle"],
+            "authors": ["mike", "john", "rachel"],
             "references": []
         }, {
             "research_id": 1,
@@ -1668,7 +1692,7 @@
             "title": "Summary",
             "permlink": "summary",
             "content": "61077788d46f6f1331b15270bbca5df6",
-            "authors": ["lightsom", "cicchetti", "wahle"],
+            "authors": ["mike", "john", "rachel"],
             "references": []
         },
 
@@ -1679,7 +1703,7 @@
             "title": "Primary culture from mouse cortex",
             "permlink": "primary-culture-from-mouse-cortex",
             "content": "0ecf9e325910a6ea9b12974ca44709ec",
-            "authors": ["ingopr", "dorette", "christa-sonja", "esmeralda", "ferdinand"],
+            "authors": ["james", "rick", "alex", "anastasia", "nick"],
             "references": []
         },{
             "research_id": 2,
@@ -1687,7 +1711,7 @@
             "title": "Plus BioProbe Article",
             "permlink": "plus-bioProbe-article",
             "content": "2ad2265d764e0403d2edf889b466e0b3",
-            "authors": ["ingopr", "dorette", "christa-sonja", "esmeralda", "ferdinand"],
+            "authors": ["james", "rick", "alex", "anastasia", "nick"],
             "references": []
         },{
             "research_id": 2,
@@ -1695,8 +1719,18 @@
             "title": "Plus User Guide",
             "permlink": "plus-user-guide",
             "content": "17b68bba08d7c816911bb63a528d083f",
-            "authors": ["ingopr", "dorette", "christa-sonja", "esmeralda", "ferdinand"],
+            "authors": ["james", "rick", "alex", "anastasia", "nick"],
             "references": []
+        }
+    ],
+
+    "vesting_contracts": [{
+            "id": 0,
+            "sender": "alice",
+            "receiver": "rachel",
+            "balance": 10000000,
+            "withdrawal_periods": 4,
+            "contract_duration": 864000
         }
     ]
 }
