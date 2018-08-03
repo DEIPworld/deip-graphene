@@ -198,5 +198,6 @@ FC_REFLECT(deip::chain::genesis_state_type,
            (research_groups)
            (researches)
            (research_contents)
-           (initial_chain_id))
+           (initial_chain_id)
+           (vesting_contracts))
 // clang-format on
