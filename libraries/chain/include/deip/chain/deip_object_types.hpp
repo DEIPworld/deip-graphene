@@ -43,7 +43,6 @@ enum object_type
     block_summary_object_type,
     witness_schedule_object_type,
     witness_vote_object_type,
-    operation_object_type,
     hardfork_property_object_type,
     withdraw_common_tokens_route_object_type,
     owner_authority_history_object_type,
@@ -82,7 +81,6 @@ class transaction_object;
 class block_summary_object;
 class witness_schedule_object;
 class witness_vote_object;
-class operation_object;
 class hardfork_property_object;
 class withdraw_common_tokens_route_object;
 
@@ -122,7 +120,6 @@ typedef oid<transaction_object> transaction_object_id_type;
 typedef oid<block_summary_object> block_summary_id_type;
 typedef oid<witness_schedule_object> witness_schedule_id_type;
 typedef oid<witness_vote_object> witness_vote_id_type;
-typedef oid<operation_object> operation_id_type;
 typedef oid<hardfork_property_object> hardfork_property_id_type;
 typedef oid<withdraw_common_tokens_route_object> withdraw_common_tokens_route_id_type;
 typedef oid<owner_authority_history_object> owner_authority_history_id_type;
@@ -194,7 +191,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (block_summary_object_type)
                  (witness_schedule_object_type)
                  (witness_vote_object_type)
-                 (operation_object_type)
                  (hardfork_property_object_type)
                  (withdraw_common_tokens_route_object_type)
                  (owner_authority_history_object_type)

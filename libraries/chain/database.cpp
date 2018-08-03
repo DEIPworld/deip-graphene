@@ -8,7 +8,6 @@
 #include <deip/chain/global_property_object.hpp>
 #include <deip/chain/chain_property_object.hpp>
 //#include <deip/chain/history_object.hpp>
-#include <deip/chain/operation_object.hpp>
 #include <deip/chain/deip_evaluator.hpp>
 #include <deip/chain/deip_objects.hpp>
 #include <deip/chain/transaction_object.hpp>
@@ -626,6 +625,12 @@ bool database::_push_block(const signed_block& new_block)
         return false;
     }
     FC_CAPTURE_AND_RETHROW()
+}
+
+uint32_t database::get_last_irreversible_block_num() const
+{
+    const dynamic_global_property_object& dpo = get_dynamic_global_properties();
+     return dpo.last_irreversible_block_num;
 }
 
 /**
@@ -1782,7 +1787,6 @@ void database::initialize_indexes()
     add_index<block_summary_index>();
     add_index<witness_schedule_index>();
     add_index<witness_vote_index>();
-    add_index<operation_index>();
     add_index<hardfork_property_index>();
     add_index<withdraw_common_tokens_route_index>();
     add_index<owner_authority_history_index>();

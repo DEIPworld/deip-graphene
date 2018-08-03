@@ -1,6 +1,7 @@
-#include <deip/account_history/account_history_plugin.hpp>
-#include <deip/account_history/account_history_api.hpp>
-#include <deip/account_history/account_history_object.hpp>
+#include <deip/blockchain_history/blockchain_history_plugin.hpp>
+#include <deip/blockchain_history/account_history_api.hpp>
+#include <deip/blockchain_history/blockchain_history_api.hpp>
+#include <deip/blockchain_history/account_history_object.hpp>
 
 #include <deip/app/impacted.hpp>
 
@@ -9,7 +10,7 @@
 #include <deip/chain/database.hpp>
 #include <deip/chain/operation_notification.hpp>
 //#include <deip/chain/history_object.hpp>
-#include <deip/chain/operation_object.hpp>
+#include <deip/blockchain_history/operation_objects.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/thread/thread.hpp>
@@ -19,27 +20,32 @@
 #define DEIP_NAMESPACE_PREFIX "deip::protocol::"
 
 namespace deip {
-namespace account_history {
+namespace blockchain_history {
 
 namespace detail {
 
 using namespace deip::protocol;
 
-class account_history_plugin_impl
+class blockchain_history_plugin_impl
 {
 public:
-    account_history_plugin_impl(account_history_plugin& _plugin)
+    blockchain_history_plugin_impl(blockchain_history_plugin& _plugin)
         : _self(_plugin)
     {
         chain::database& db = database();
 
+        db.add_plugin_index<operation_index>();
         db.add_plugin_index<account_operations_full_history_index>();
         db.add_plugin_index<transfers_to_deip_history_index>();
         db.add_plugin_index<transfers_to_common_tokens_history_index>();
+        db.add_plugin_index<filtered_operation_index<applied_operation_type::all>>();
+        db.add_plugin_index<filtered_operation_index<applied_operation_type::not_virt>>();
+        db.add_plugin_index<filtered_operation_index<applied_operation_type::virt>>();
+        db.add_plugin_index<filtered_operation_index<applied_operation_type::market>>();
 
         db.pre_apply_operation.connect([&](const operation_notification& note) { on_operation(note); });
     }
-    virtual ~account_history_plugin_impl()
+    virtual ~blockchain_history_plugin_impl()
     {
     }
 
@@ -48,9 +54,11 @@ public:
         return _self.database();
     }
 
+    const operation_object& create_operation_obj(const operation_notification& note);
+    void update_filtered_operation_index(const operation_object& object, const operation& op);
     void on_operation(const operation_notification& note);
 
-    account_history_plugin& _self;
+    blockchain_history_plugin& _self;
     flat_map<account_name_type, account_name_type> _tracked_accounts;
     bool _filter_content = false;
     bool _blacklist = false;
@@ -60,108 +68,168 @@ public:
 class operation_visitor
 {
     database& _db;
-    const operation_notification& _note;
-    account_name_type item;
+    const operation_object& _obj;
+    account_name_type _item;
 
 public:
-    typedef void result_type;
-    operation_visitor(database& db, const operation_notification& note, const account_name_type& i)
+    using result_type = void;
+    operation_visitor(database& db, const operation_object& obj, const account_name_type& i)
         : _db(db)
-        , _note(note)
-        , item(i)
+        , _obj(obj)
+        , _item(i)
     {
     }
 
     template <typename Op> void operator()(const Op&) const
     {
-        push_history<account_history_object>(create_operation_obj());
+        push_history<account_history_object>(_obj);
     }
 
     void operator()(const transfer_operation&) const
     {
-        const auto& new_obj = create_operation_obj();
-
-        push_history<account_history_object>(new_obj);
-        push_history<transfers_to_deip_history_object>(new_obj);
+        push_history<account_history_object>(_obj);
+        push_history<transfers_to_deip_history_object>(_obj);
     }
 
     void operator()(const transfer_to_common_tokens_operation&) const
     {
-        const auto& new_obj = create_operation_obj();
-         push_history<account_history_object>(new_obj);
-        push_history<transfers_to_common_tokens_history_object>(new_obj);
+        push_history<account_history_object>(_obj);
+        push_history<transfers_to_common_tokens_history_object>(_obj);
     }
 
 private:
-    const operation_object& create_operation_obj() const
-    {
-        return _db.create<operation_object>([&](operation_object& obj) {
-            obj.trx_id = _note.trx_id;
-            obj.block = _note.block;
-            obj.trx_in_block = _note.trx_in_block;
-            obj.op_in_trx = _note.op_in_trx;
-            obj.virtual_op = _note.virtual_op;
-            obj.timestamp = _db.head_block_time();
-            // fc::raw::pack( obj.serialized_op , _note.op);  //call to 'pack' is ambiguous
-            auto size = fc::raw::pack_size(_note.op);
-            obj.serialized_op.resize(size);
-            fc::datastream<char*> ds(obj.serialized_op.data(), size);
-            fc::raw::pack(ds, _note.op);
-        });
-    }
     template <typename history_object_type> void push_history(const operation_object& op) const
     {
         const auto& hist_idx = _db.get_index<history_index<history_object_type>>().indices().get<by_account>();
-        auto hist_itr = hist_idx.lower_bound(boost::make_tuple(item, uint32_t(-1)));
+        auto hist_itr = hist_idx.lower_bound(boost::make_tuple(_item, uint32_t(-1)));
         uint32_t sequence = 0;
-        if (hist_itr != hist_idx.end() && hist_itr->account == item)
+        if (hist_itr != hist_idx.end() && hist_itr->account == _item)
             sequence = hist_itr->sequence + 1;
 
         _db.create<history_object_type>([&](history_object_type& ahist) {
-            ahist.account = item;
+            ahist.account = _item;
             ahist.sequence = sequence;
             ahist.op = op.id;
         });
     }
 };
 
-struct operation_visitor_filter : operation_visitor
+struct operation_visitor_filter
 {
-    operation_visitor_filter(database& db,
-                             const operation_notification& note,
-                             const account_name_type& i,
-                             const flat_set<string>& filter,
-                             bool blacklist)
-        : operation_visitor(db, note, i)
-        , _filter(filter)
+    operation_visitor_filter(const flat_set<std::string>& filter, bool blacklist)
+        : _filter(filter)
         , _blacklist(blacklist)
     {
     }
 
-    const flat_set<string>& _filter;
-    bool _blacklist;
+    using result_type = bool;
 
-    template <typename T> void operator()(const T& op) const
+    template <typename T> bool operator()(const T& op) const
     {
         if (_filter.find(fc::get_typename<T>::name()) != _filter.end())
         {
             if (!_blacklist)
-                operation_visitor::operator()(op);
+                return true;
         }
         else
         {
             if (_blacklist)
-                operation_visitor::operator()(op);
+                return true;
         }
+
+        return false;
     }
+
+private:
+    const flat_set<std::string>& _filter;
+    bool _blacklist;
 };
 
-void account_history_plugin_impl::on_operation(const operation_notification& note)
+struct filtered_operation_obj_creator_visitor
+{
+    filtered_operation_obj_creator_visitor(chain::database& db, const operation_object::id_type& id)
+        : _db(db)
+        , _id(id)
+    {
+    }
+
+    using result_type = void;
+
+    result_type operator()(const applied_operation_all&) const
+    {
+        _db.create<filtered_operation_object<applied_operation_type::all>>(
+            [&](filtered_operation_object<applied_operation_type::all>& obj) { obj.op = _id; });
+    }
+
+    result_type operator()(const applied_operation_not_virt&) const
+    {
+        _db.create<filtered_operation_object<applied_operation_type::not_virt>>(
+            [&](filtered_operation_object<applied_operation_type::not_virt>& obj) { obj.op = _id; });
+    }
+
+    result_type operator()(const applied_operation_virt&) const
+    {
+        _db.create<filtered_operation_object<applied_operation_type::virt>>(
+            [&](filtered_operation_object<applied_operation_type::virt>& obj) { obj.op = _id; });
+    }
+
+    result_type operator()(const applied_operation_market&) const
+    {
+        _db.create<filtered_operation_object<applied_operation_type::market>>(
+            [&](filtered_operation_object<applied_operation_type::market>& obj) { obj.op = _id; });
+    }
+
+private:
+    chain::database& _db;
+    const operation_object::id_type& _id;
+};
+
+const operation_object& blockchain_history_plugin_impl::create_operation_obj(const operation_notification& note)
+{
+    deip::chain::database& db = database();
+    return db.create<operation_object>([&](operation_object& obj) {
+        obj.trx_id = note.trx_id;
+        obj.block = note.block;
+        obj.trx_in_block = note.trx_in_block;
+        obj.op_in_trx = note.op_in_trx;
+        obj.timestamp = db.head_block_time();
+        auto size = fc::raw::pack_size(note.op);
+        obj.serialized_op.resize(size);
+        fc::datastream<char*> ds(obj.serialized_op.data(), size);
+        fc::raw::pack(ds, note.op);
+    });
+}
+void blockchain_history_plugin_impl::update_filtered_operation_index(const operation_object& object,
+                                                                     const operation& op)
+{
+    deip::chain::database& db = database();
+    filtered_operation_obj_creator_visitor create(db, object.id);
+    get_applied_operation_variant(applied_operation_type::all).visit(create);
+    if (is_virtual_operation(op))
+    {
+        get_applied_operation_variant(applied_operation_type::virt).visit(create);
+    }
+    else
+    {
+        get_applied_operation_variant(applied_operation_type::not_virt).visit(create);
+    }
+    if (is_market_operation(op))
+    {
+        get_applied_operation_variant(applied_operation_type::market).visit(create);
+    }
+}
+void blockchain_history_plugin_impl::on_operation(const operation_notification& note)
 {
     flat_set<account_name_type> impacted;
     deip::chain::database& db = database();
 
+    if (_filter_content && !note.op.visit(operation_visitor_filter(_op_list, _blacklist)))
+        return;
+
     app::operation_get_impacted_accounts(note.op, impacted);
+
+    const operation_object& new_obj = create_operation_obj(note);
+    update_filtered_operation_index(new_obj, note.op);
 
     for (const auto& item : impacted)
     {
@@ -194,37 +262,30 @@ void account_history_plugin_impl::on_operation(const operation_notification& not
 
         if (!_tracked_accounts.size() || (itr != _tracked_accounts.end() && itr->first <= item && item <= itr->second))
         {
-            if (_filter_content)
-            {
-                note.op.visit(operation_visitor_filter(db, note, item, _op_list, _blacklist));
-            }
-            else
-            {
-                note.op.visit(operation_visitor(db, note, item));
-            }
+            note.op.visit(operation_visitor(db, new_obj, item));
         }
     }
 }
 
 } // end namespace detail
 
-account_history_plugin::account_history_plugin(application* app)
+blockchain_history_plugin::blockchain_history_plugin(application* app)
     : plugin(app)
-    , my(new detail::account_history_plugin_impl(*this))
+    , my(new detail::blockchain_history_plugin_impl(*this))
 {
     // ilog("Loading account history plugin" );
 }
 
-account_history_plugin::~account_history_plugin()
+blockchain_history_plugin::~blockchain_history_plugin()
 {
 }
 
-std::string account_history_plugin::plugin_name() const
+std::string blockchain_history_plugin::plugin_name() const
 {
-    return ACCOUNT_HISTORY_PLUGIN_NAME;
+    return BLOCKCHAIN_HISTORY_PLUGIN_NAME;
 }
 
-void account_history_plugin::plugin_set_program_options(boost::program_options::options_description& cli,
+void blockchain_history_plugin::plugin_set_program_options(boost::program_options::options_description& cli,
                                                         boost::program_options::options_description& cfg)
 {
     cli.add_options()(
@@ -237,7 +298,7 @@ void account_history_plugin::plugin_set_program_options(boost::program_options::
     cfg.add(cli);
 }
 
-void account_history_plugin::plugin_initialize(const boost::program_options::variables_map& options)
+void blockchain_history_plugin::plugin_initialize(const boost::program_options::variables_map& options)
 {
     ilog("Intializing account history plugin");
 
@@ -283,20 +344,21 @@ void account_history_plugin::plugin_initialize(const boost::program_options::var
     }
 }
 
-void account_history_plugin::plugin_startup()
+void blockchain_history_plugin::plugin_startup()
 {
     ilog("account_history plugin: plugin_startup() begin");
 
     app().register_api_factory<account_history_api>("account_history_api");
+    app().register_api_factory<blockchain_history_api>("blockchain_history_api");
 
     ilog("account_history plugin: plugin_startup() end");
 }
 
-flat_map<account_name_type, account_name_type> account_history_plugin::tracked_accounts() const
+flat_map<account_name_type, account_name_type> blockchain_history_plugin::tracked_accounts() const
 {
     return my->_tracked_accounts;
 }
 }
 }
 
-DEIP_DEFINE_PLUGIN(account_history, deip::account_history::account_history_plugin)
+DEIP_DEFINE_PLUGIN(blockchain_history, deip::blockchain_history::blockchain_history_plugin)

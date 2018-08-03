@@ -1,12 +1,10 @@
 #pragma once
-#include <deip/app/applied_operation.hpp>
 #include <deip/app/state.hpp>
 
 #include <deip/chain/database.hpp>
 #include <deip/chain/deip_objects.hpp>
 #include <deip/chain/deip_object_types.hpp>
 //#include <deip/chain/history_object.hpp>
-#include <deip/chain/operation_object.hpp>
 #include <deip/chain/dbs_proposal.hpp>
 
 #include <deip/witness/witness_plugin.hpp>
@@ -101,12 +99,22 @@ public:
     optional<signed_block_api_obj> get_block(uint32_t block_num) const;
 
     /**
-     *  @brief Get sequence of operations included/generated within a particular block
-     *  @param block_num Height of the block whose generated virtual operations should be returned
-     *  @param only_virtual Whether to only include virtual operations in returned results (default: true)
-     *  @return sequence of operations included/generated within the block
+     * Retrieve the list of block headers in range [from-limit, from]
+     *
+     * @param block_num Height of the block to be returned
+     * @param limit the maximum number of blocks that can be queried (0 to 100], must be less than from
+     * @return the list of block headers
      */
-    vector<applied_operation> get_ops_in_block(uint32_t block_num, bool only_virtual = true) const;
+    std::map<uint32_t, block_header> get_block_headers_history(uint32_t block_num, uint32_t limit) const;
+
+    /**
+     * Retrieve the list of signed block from block log (irreversible blocks) in range [from-limit, from]
+     *
+     * @param block_num Height of the block to be returned
+     * @param limit the maximum number of blocks that can be queried (0 to 100], must be less than from
+     * @return the list of signed blocks
+     */
+    std::map<uint32_t, signed_block_api_obj> get_blocks_history(uint32_t block_num, uint32_t limit) const;
 
     /////////////
     // Globals //
@@ -235,7 +243,6 @@ public:
 
     /// @brief Get a hexdump of the serialized binary form of a transaction
     std::string get_transaction_hex(const signed_transaction& trx) const;
-    annotated_signed_transaction get_transaction(transaction_id_type trx_id) const;
 
     /**
      *  This API will take a partially signed transaction and a set of public keys that the owner has the ability to
@@ -445,7 +452,8 @@ FC_API(deip::app::database_api,
    // Blocks and transactions
    (get_block_header)
    (get_block)
-   (get_ops_in_block)
+   (get_block_headers_history)
+   (get_blocks_history)
    (get_state)
 
    // Globals
@@ -474,7 +482,6 @@ FC_API(deip::app::database_api,
 
    // Authority / validation
    (get_transaction_hex)
-   (get_transaction)
    (get_required_signatures)
    (get_potential_signatures)
    (verify_authority)

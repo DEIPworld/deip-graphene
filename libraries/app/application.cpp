@@ -424,6 +424,7 @@ public:
                 wild_access.allowed_apis.push_back("network_broadcast_api");
                 wild_access.allowed_apis.push_back("tag_api");
                 wild_access.allowed_apis.push_back("account_history_api");
+                wild_access.allowed_apis.push_back("blockchain_history_api");
                 wild_access.allowed_apis.push_back("account_stats_api");
                 wild_access.allowed_apis.push_back("chain_stats_api");
                 _apiaccess.permission_map["*"] = wild_access;
@@ -1054,7 +1055,7 @@ void application::set_program_options(boost::program_options::options_descriptio
 
     std::vector<std::string> default_plugins;
     default_plugins.push_back("witness");
-    default_plugins.push_back("account_history");
+    default_plugins.push_back("blockchain_history");
     default_plugins.push_back("account_by_key");
     default_plugins.push_back("account_stats");
     default_plugins.push_back("chain_stats");

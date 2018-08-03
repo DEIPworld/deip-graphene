@@ -9,6 +9,8 @@ target_link_libraries( deip_account_by_key deip_chain deip_protocol deip_app )
 target_include_directories( deip_account_by_key
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
+add_custom_target( deip_account_by_key_manifest SOURCES plugin.json)
+
 install( TARGETS
    deip_account_by_key
 
