@@ -90,7 +90,7 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_personal_research_groups(genesis_state);
         init_research(genesis_state);
         init_research_content(genesis_state);
-        init_genesis_vesting_contracts(genesis_state);
+        //init_genesis_vesting_contracts(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)

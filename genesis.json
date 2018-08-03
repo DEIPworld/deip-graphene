@@ -3,12 +3,6 @@
 
     "init_supply": 1000000000000,
     "accounts": [{
-        "name": "initdelegate",
-        "recovery_account": "",
-        "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ",
-        "deip_amount": 0,
-        "sp_amount": 0
-    }, {
         "name": "alice",
         "recovery_account": "",
         "public_key": "DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83",
@@ -97,6 +91,12 @@
         "recovery_account": "",
         "public_key": "DEIP57FNGfhjgz2TuRby5RrV4AgzEtM89zmn1yMdw8RqBD74ZEZZXm",
         "deip_amount": 50000000000,
+        "sp_amount": 0
+    },{
+        "name": "initdelegate",
+        "recovery_account": "",
+        "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ",
+        "deip_amount": 0,
         "sp_amount": 0
     }, {
         "name": "initdelegate1",
@@ -331,6 +331,9 @@
     }, {
         "owner_name": "initdelegate24",
         "block_signing_key": "DEIP5vKtZEWwCV6dK7qacMKwd1M4zCP5U4Gf8i61FjZKAvoqENrrB2"
+    }, {
+        "owner_name": "initdelegate25",
+        "block_signing_key": "DEIP6mh7S7KaZK3gh8bGG8TcggK2woCSNmx3SEv6vMTtJQMDvsuQzb"
     }],
 
     "disciplines": [{
