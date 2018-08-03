@@ -38,25 +38,24 @@ RUN \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     pip3 install gcovr
 
-ADD . /usr/local/src/deip
+ADD . /deip-blockchain
 
 
 RUN \
     #
     # Check reflections & config
     echo && echo '------ Check reflections & config ------' && \
-    cd /usr/local/src/deip && \
+    cd /deip-blockchain && \
     doxygen && \
     programs/build_helpers/check_reflect.py && \
     programs/build_helpers/get_config_check.sh
 
 RUN \
-    cd /usr/local/src/deip && \
+    cd /deip-blockchain && \
     git submodule update --init --recursive && \
     mkdir build && \
     cd build && \
     cmake \
-        -DCMAKE_INSTALL_PREFIX=/usr/local/deipd-default \
         -DCMAKE_BUILD_TYPE=Release \
         -DLOW_MEMORY_NODE=ON \
         -DCLEAR_VOTES=ON \
@@ -67,13 +66,6 @@ RUN \
     make -j$(nproc) && \
     make install && \
     cd .. && \
-    ( /usr/local/deipd-default/bin/deipd --version \
-      | grep -o '[0-9]*\.[0-9]*\.[0-9]*' \
-      && echo '_' \
-      && git rev-parse --short HEAD ) \
-      | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g' \
-      > /etc/deipdversion && \
-    cat /etc/deipdversion && \
     rm -rfv build && \
     mkdir build && \
     cd build && \
@@ -88,7 +80,16 @@ RUN \
     && \
     make -j$(nproc) && \
     make install && \
-    rm -rf /usr/local/src/deip
+    rm -rf /deip-blockchain
+
+RUN \
+    (/usr/local/deipd-default/bin/deipd --version \
+      | grep -o '[0-9]*\.[0-9]*\.[0-9]*' \
+      && echo '_' \
+      && git rev-parse --short HEAD ) \
+      | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g' \
+      > /etc/deipdversion && \
+    cat /etc/deipdversion
 
 RUN \
     apt-get remove -y \

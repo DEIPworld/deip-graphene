@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DEIPD="/usr/local/deipd-default/bin/deipd"
+DEIPD="/usr/local/bin/deipd"
 
 VERSION=`cat /etc/deipdversion`
 
