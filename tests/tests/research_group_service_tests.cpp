@@ -23,17 +23,17 @@ class research_group_service_fixture : public clean_database_fixture
 
     void create_research_groups()
     {
-        std::map<proposal_action_type , share_type> proposal_quorums;
+        std::map<uint16_t , share_type> proposal_quorums;
 
         for (int i = 1; i <= 11; i++)
-            proposal_quorums.insert(std::make_pair(static_cast<deip::protocol::proposal_action_type>(i), 1000));
+            proposal_quorums.insert(std::make_pair(i, 1000));
 
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 21;
             d.name = "test21";
             d.permlink = "test21";
             d.description = "test";
-            d.proposal_quorums = proposal_quorums;
+            d.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
         });
 
         db.create<research_group_object>([&](research_group_object& d) {
@@ -41,7 +41,7 @@ class research_group_service_fixture : public clean_database_fixture
             d.name = "test22";
             d.permlink = "test22";
             d.description = "test";
-            d.proposal_quorums = proposal_quorums;
+            d.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
           });
     }
 
@@ -142,10 +142,10 @@ BOOST_AUTO_TEST_CASE(create_research_group_test)
 {
     try
     {
-        std::map<proposal_action_type, share_type> personal_research_group_proposal_quorums;
+        std::map<uint16_t, share_type> personal_research_group_proposal_quorums;
 
         for (int i = First_proposal; i <= Last_proposal; i++)
-            personal_research_group_proposal_quorums.insert(std::make_pair(static_cast<deip::protocol::proposal_action_type>(i), DEIP_100_PERCENT));
+            personal_research_group_proposal_quorums.insert(std::make_pair(i, DEIP_100_PERCENT));
 
         auto& research_group = data_service.create_research_group("test", "test", "test", personal_research_group_proposal_quorums, false);
 

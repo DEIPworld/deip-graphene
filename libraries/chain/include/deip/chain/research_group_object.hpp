@@ -17,7 +17,7 @@ class research_group_object : public object<research_group_object_type, research
 
 public:
     template <typename Constructor, typename Allocator> research_group_object(Constructor&& c, allocator<Allocator> a) 
-        : name(a), description(a), permlink(a)
+        : name(a), description(a), permlink(a), proposal_quorums(a)
     {
         c(*this);
     }
@@ -29,7 +29,7 @@ public:
     shared_string description;
     shared_string permlink;
     asset balance = asset(0, DEIP_SYMBOL);
-    std::map<deip::protocol::proposal_action_type, share_type> proposal_quorums;
+    proposal_share_type_allocator_type_map proposal_quorums;
 
     bool is_personal;
 };

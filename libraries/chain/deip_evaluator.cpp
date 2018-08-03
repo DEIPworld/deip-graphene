@@ -142,10 +142,10 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
 
     bool is_personal = true;
 
-    std::map<proposal_action_type, share_type> personal_research_group_proposal_quorums;
+    std::map<uint16_t , share_type> personal_research_group_proposal_quorums;
 
     for (int i = First_proposal; i <= Last_proposal; i++)
-        personal_research_group_proposal_quorums.insert(std::make_pair(static_cast<deip::protocol::proposal_action_type>(i), DEIP_100_PERCENT));
+        personal_research_group_proposal_quorums.insert(std::make_pair(i, DEIP_100_PERCENT));
 
     auto& personal_research_group = research_group_service.create_research_group(o.new_account_name,
                                                                                  o.new_account_name,
@@ -744,7 +744,7 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
 
     if (action == deip::protocol::proposal_action_type::invite_member ||
             action == deip::protocol::proposal_action_type::dropout_member ||
-            action == deip::protocol::proposal_action_type::change_proposal_quorum ||
+            action == deip::protocol::proposal_action_type::change_quorum ||
             action == deip::protocol::proposal_action_type::rebalance_research_group_tokens)
         FC_ASSERT(!research_group.is_personal,
                   "You cannot invite or dropout member, change quorum and rebalance tokens in personal research group");
@@ -785,10 +785,10 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
 
     bool is_personal = false;
 
-    std::map<proposal_action_type, share_type> proposal_quorums;
+    std::map<uint16_t, share_type> proposal_quorums;
 
     for (auto& pair : op.proposal_quorums)
-        proposal_quorums.insert(std::make_pair(static_cast<deip::protocol::proposal_action_type>(pair.first), share_type(pair.second)));
+        proposal_quorums.insert(std::make_pair(pair.first, pair.second));
 
     const research_group_object& research_group = research_group_service.create_research_group(op.name,
                                                                                                op.permlink,

@@ -109,7 +109,7 @@ struct database_fixture
                                                        const string& permlink,
                                                        const string& desciption,
                                                        const share_type funds,
-                                                       const std::map<deip::protocol::proposal_action_type, share_type>& proposal_quorums,
+                                                       const std::map<uint16_t, share_type>& proposal_quorums,
                                                        const bool is_personal);
                                                        
     const research_group_object& research_group_create_by_operation(const account_name_type& creator,
@@ -128,7 +128,7 @@ struct database_fixture
                                                       const string &permlink,
                                                       const string &desciption,
                                                       const share_type funds,
-                                                      const std::map<proposal_action_type, share_type> proposal_quorums,
+                                                      const std::map<uint16_t, share_type> proposal_quorums,
                                                       const bool is_personal,
                                                       const vector<std::pair<account_name_type, share_type>> &accounts);
 

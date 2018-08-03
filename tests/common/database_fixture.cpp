@@ -400,7 +400,7 @@ database_fixture::research_group_create(const int64_t& id,
                                         const string& permlink,
                                         const string& description,
                                         const share_type funds,
-                                        const std::map<deip::protocol::proposal_action_type, share_type>& proposal_quorums,
+                                        const std::map<uint16_t, share_type>& proposal_quorums,
                                         const bool is_personal)
 {
     const research_group_object& new_research_group
@@ -410,7 +410,7 @@ database_fixture::research_group_create(const int64_t& id,
               fc::from_string(rg.permlink, permlink);
               fc::from_string(rg.description, description);
               rg.balance = funds;
-              rg.proposal_quorums = proposal_quorums;
+              rg.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
               rg.is_personal = is_personal;
           });
 
@@ -468,7 +468,7 @@ const research_group_object& database_fixture::setup_research_group(const int64_
                                                                     const string &permlink,
                                                                     const string &description,
                                                                     const share_type funds,
-                                                                    const std::map<proposal_action_type, share_type> proposal_quorums,
+                                                                    const std::map<uint16_t, share_type> proposal_quorums,
                                                                     const bool is_personal,
                                                                     const vector<std::pair<account_name_type, share_type>> &accounts)
 {

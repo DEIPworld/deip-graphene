@@ -14,7 +14,7 @@ dbs_proposal_execution::dbs_proposal_execution(database &db)
                    std::bind(&dbs_proposal_execution::dropout, this, std::placeholders::_1));
     executions.set(proposal_action_type::change_research_review_share_percent,
                    std::bind(&dbs_proposal_execution::change_research_review_share, this, std::placeholders::_1));
-    executions.set(proposal_action_type::change_proposal_quorum,
+    executions.set(proposal_action_type::change_quorum,
                    std::bind(&dbs_proposal_execution::change_proposal_quorum, this, std::placeholders::_1));
     executions.set(proposal_action_type::start_research,
                    std::bind(&dbs_proposal_execution::start_research, this, std::placeholders::_1));

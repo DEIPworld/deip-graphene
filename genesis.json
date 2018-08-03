@@ -1559,7 +1559,6 @@
         "name": "DEIP official",
         "description": "DEIP team group",
         "permlink": "deip",
-        "quorum_percent": 9500,
         "is_personal": false,
         "members": ["initdelegate", "alice", "bob"]
     }, {
@@ -1567,7 +1566,6 @@
         "name": "U.S. Geological Survey",
         "description": "We provide science about the natural hazards that threaten lives and livelihoods; the water, energy, minerals, and other natural resources we rely on; the health of our ecosystems and environment; and the impacts of climate and land-use change. Our scientists develop new methods and tools to supply timely, relevant, and useful information about the Earth and its processes.",
         "permlink": "usgs",
-        "quorum_percent": 7500,
         "is_personal": false,
         "members": ["initdelegate", "lightsom", "cicchetti", "wahle"]
     }, {
@@ -1575,7 +1573,6 @@
         "name": "Exp-Neuro Microscopy Unit",
         "description": "A group of scientists which explore Neurology and Neuroscience areas",
         "permlink": "exp-neuro-microscopy-unit",
-        "quorum_percent": 600,
         "is_personal": false,
         "members": ["ingopr", "dorette", "christa-sonja", "esmeralda", "ferdinand"]
     }],
