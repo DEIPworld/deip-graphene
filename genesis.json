@@ -1641,25 +1641,42 @@
             "type": 1,
             "title": "DEIP High-Level Roadmap",
             "permlink": "deip-high-level-roadmap",
-            "content": "48640902e8359a6d88d6d0b66874b526",
+            "content": "file:48640902e8359a6d88d6d0b66874b526",
             "authors": ["alice", "bob"],
             "references": []
         }, {
+            "research_id": 0,
+            "type": 1,
+            "title": "Object vision to hand action in macaque parietal, premotor, and motor cortices",
+            "permlink": "kitchensink",
+            "content": "dar:2fa1dbb0bc53c176028e2033e1ec1117",
+            "authors": ["alice", "bob"],
+            "references": []
+        }, {
+            "research_id": 0,
+            "type": 1,
+            "title": "Simultaneous two-photon imaging and two-photon optogenetics of cortical circuits in three dimensions",
+            "permlink": "elife-32671",
+            "content": "dar:cc87452943e5a05b804f9bb30394dbc2",
+            "authors": ["alice", "bob"],
+            "references": []
+        }, 
+        
+        
+        {
             "research_id": 1,
             "type": 1,
             "title": "Table of Content",
             "permlink": "table-of-content",
-            "content": "f867256996d41105e8c107ce97fea2e7",
+            "content": "file:f867256996d41105e8c107ce97fea2e7",
             "authors": ["mike", "john", "rachel"],
             "references": []
-        },
-        
-        {
+        }, {
             "research_id": 1,
             "type": 2,
             "title": "Data Categories for Marine Planning",
             "permlink": "data-categories-for-marine-planning",
-            "content": "d754b06ef0eb56dd49096df283bcdf99",
+            "content": "file:d754b06ef0eb56dd49096df283bcdf99",
             "authors": ["mike", "john", "rachel"],
             "references": []
         }, {
@@ -1667,7 +1684,7 @@
             "type": 2,
             "title": "Purpose of Category Terms",
             "permlink": "purpose-of-category-terms",
-            "content": "74144b7b2b2b85261c91387928ed111d",
+            "content": "file:74144b7b2b2b85261c91387928ed111d",
             "authors": ["mike", "john", "rachel"],
             "references": []
         }, {
@@ -1675,7 +1692,7 @@
             "type": 2,
             "title": "Data Needs for Ocean and Coastal Management",
             "permlink": "data-needs-for-ocean-and-coastal-management",
-            "content": "341e9b964a19f6a12a5074c781d74192",
+            "content": "file:341e9b964a19f6a12a5074c781d74192",
             "authors": ["mike", "john", "rachel"],
             "references": []
         }, {
@@ -1683,7 +1700,7 @@
             "type": 2,
             "title": "Data Category Terms and Definitions",
             "permlink": "data-category-terms-and-definitions",
-            "content": "8534d97c33301247f30e086b4bd27ece",
+            "content": "file:8534d97c33301247f30e086b4bd27ece",
             "authors": ["mike", "john", "rachel"],
             "references": []
         }, {
@@ -1691,7 +1708,7 @@
             "type": 2,
             "title": "Summary",
             "permlink": "summary",
-            "content": "61077788d46f6f1331b15270bbca5df6",
+            "content": "file:61077788d46f6f1331b15270bbca5df6",
             "authors": ["mike", "john", "rachel"],
             "references": []
         },
@@ -1702,23 +1719,23 @@
             "type": 2,
             "title": "Primary culture from mouse cortex",
             "permlink": "primary-culture-from-mouse-cortex",
-            "content": "0ecf9e325910a6ea9b12974ca44709ec",
+            "content": "file:0ecf9e325910a6ea9b12974ca44709ec",
             "authors": ["james", "rick", "alex", "anastasia", "nick"],
             "references": []
-        },{
+        }, {
             "research_id": 2,
             "type": 2,
             "title": "Plus BioProbe Article",
             "permlink": "plus-bioProbe-article",
-            "content": "2ad2265d764e0403d2edf889b466e0b3",
+            "content": "file:2ad2265d764e0403d2edf889b466e0b3",
             "authors": ["james", "rick", "alex", "anastasia", "nick"],
             "references": []
-        },{
+        }, {
             "research_id": 2,
             "type": 2,
             "title": "Plus User Guide",
             "permlink": "plus-user-guide",
-            "content": "17b68bba08d7c816911bb63a528d083f",
+            "content": "file:17b68bba08d7c816911bb63a528d083f",
             "authors": ["james", "rick", "alex", "anastasia", "nick"],
             "references": []
         }

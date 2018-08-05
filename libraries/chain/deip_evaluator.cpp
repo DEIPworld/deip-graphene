@@ -971,16 +971,30 @@ void transfer_research_tokens_to_research_group_evaluator::do_apply(const transf
 
 }
 
-void add_expertise_tokens_evaluator::do_apply(const add_expertise_tokens_operation& op)
+void set_expertise_tokens_evaluator::do_apply(const set_expertise_tokens_operation& op)
 {
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+
     for (auto& discipline_to_add : op.disciplines_to_add)
     {
         FC_ASSERT(discipline_to_add.amount > 0, "Amount must be bigger than 0");
-        _db._temporary_public_impl().create<expert_token_object>([&](expert_token_object& et_o) {
-            et_o.account_name = op.account_name;
-            et_o.discipline_id = discipline_to_add.discipline_id;
-            et_o.amount = discipline_to_add.amount;
-        });
+        const bool exist = expert_token_service.is_expert_token_existence_by_account_and_discipline(op.account_name, discipline_to_add.discipline_id);
+        
+        if (exist)
+        {
+            const expert_token_object& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.account_name, discipline_to_add.discipline_id);
+            _db._temporary_public_impl().modify(expert_token, [&](expert_token_object& et_o) {
+                et_o.amount = discipline_to_add.amount;
+            });
+        } 
+        else 
+        {
+            _db._temporary_public_impl().create<expert_token_object>([&](expert_token_object& et_o) {
+                et_o.account_name = op.account_name;
+                et_o.discipline_id = discipline_to_add.discipline_id;
+                et_o.amount = discipline_to_add.amount;
+            });
+        }
     }
 }
 

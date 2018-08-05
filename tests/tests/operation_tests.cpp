@@ -2598,11 +2598,11 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(add_expertise_tokens_apply)
+BOOST_AUTO_TEST_CASE(set_expertise_tokens_apply)
 {
     try
     {
-        BOOST_TEST_MESSAGE("Testing: add_expertise_tokens_apply");
+        BOOST_TEST_MESSAGE("Testing: set_expertise_tokens_apply");
 
         ACTOR_WITH_EXPERT_TOKENS(alice);
         ACTOR(bob);
@@ -2611,7 +2611,7 @@ BOOST_AUTO_TEST_CASE(add_expertise_tokens_apply)
 
         private_key_type priv_key = generate_private_key("alice");
 
-        add_expertise_tokens_operation op;
+        set_expertise_tokens_operation op;
 
         std::vector<expertise_amount_pair_type> disciplines_to_add;
         disciplines_to_add.push_back(expertise_amount_pair_type(1, 1000));
@@ -2640,7 +2640,7 @@ BOOST_AUTO_TEST_CASE(add_expertise_tokens_apply)
 BOOST_AUTO_TEST_CASE(research_update_apply)
 {
     try {
-        BOOST_TEST_MESSAGE("Testing: add_expertise_tokens_apply");
+        BOOST_TEST_MESSAGE("Testing: set_expertise_tokens_apply");
 
         ACTOR_WITH_EXPERT_TOKENS(alice);
 
