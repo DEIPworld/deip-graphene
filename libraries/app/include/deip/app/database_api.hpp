@@ -434,6 +434,8 @@ public:
 
 private:
     std::shared_ptr<database_api_impl> my;
+    application& _app;
+
 };
 }
 }

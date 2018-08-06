@@ -70,6 +70,11 @@ public:
     void startup_plugins();
     void shutdown_plugins();
 
+    bool is_read_only() const
+    {
+        return _read_only;
+    }
+
     template <typename PluginType> std::shared_ptr<PluginType> register_plugin()
     {
         auto plug = std::make_shared<PluginType>(this);

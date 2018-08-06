@@ -194,7 +194,7 @@ annotated_signed_transaction blockchain_history_api::get_transaction(transaction
     FC_ASSERT(false, "This node's operator has disabled operation indexing by transaction_id");
 #else
 
-    // FC_ASSERT(!_impl->_app.is_read_only(), "get_transaction is not available in read-only mode.");
+    FC_ASSERT(!_impl->_app.is_read_only(), "get_transaction is not available in read-only mode.");
 
     const auto& db = _impl->_app.chain_database();
 
