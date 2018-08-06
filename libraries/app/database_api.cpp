@@ -196,7 +196,7 @@ optional<signed_block_api_obj> database_api_impl::get_block(uint32_t block_num) 
 
 std::map<uint32_t, block_header> database_api::get_block_headers_history(uint32_t block_num, uint32_t limit) const
 {
-    FC_ASSERT(!_app.is_read_only(), "Disabled for read only mode");
+    // FC_ASSERT(!_app.is_read_only(), "Disabled for read only mode");
     return my->_db.with_read_lock([&]() { return my->get_block_headers_history(block_num, limit); });
 }
 
@@ -208,7 +208,7 @@ std::map<uint32_t, block_header> database_api_impl::get_block_headers_history(ui
 }
 std::map<uint32_t, signed_block_api_obj> database_api::get_blocks_history(uint32_t block_num, uint32_t limit) const
 {
-    FC_ASSERT(!_app.is_read_only(), "Disabled for read only mode");
+    // FC_ASSERT(!_app.is_read_only(), "Disabled for read only mode");
     return my->_db.with_read_lock([&]() { return my->get_blocks_history(block_num, limit); });
 }
 std::map<uint32_t, signed_block_api_obj> database_api_impl::get_blocks_history(uint32_t block_num, uint32_t limit) const

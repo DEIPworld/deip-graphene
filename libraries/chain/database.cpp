@@ -8,6 +8,7 @@
 #include <deip/chain/global_property_object.hpp>
 #include <deip/chain/chain_property_object.hpp>
 //#include <deip/chain/history_object.hpp>
+#include <deip/chain/operation_object.hpp>
 #include <deip/chain/deip_evaluator.hpp>
 #include <deip/chain/deip_objects.hpp>
 #include <deip/chain/transaction_object.hpp>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <deip/blockchain_history/schema/blockchain_objects.hpp>
+#include <deip/blockchain_history/blockchain_objects.hpp>
 
 #include <fc/shared_buffer.hpp>
 
@@ -8,8 +8,8 @@
 #include <deip/protocol/operations.hpp>
 #include <deip/protocol/deip_operations.hpp>
 
-#include <deip/chain/schema/deip_object_types.hpp>
-#include <deip/chain/schema/witness_objects.hpp>
+#include <deip/chain/deip_object_types.hpp>
+#include <deip/chain/witness_objects.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 
