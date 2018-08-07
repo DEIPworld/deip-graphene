@@ -323,9 +323,7 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
         FC_ASSERT(!research_group.name.empty(), "Research group 'name' must be specified");
         FC_ASSERT(!research_group.permlink.empty(), "Research group 'permlink' must be specified");
         FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
-        //FC_ASSERT(research_group.proposal_quorums.size() == Last_proposal, "You must set quorum percent for all of the proposal types");
-        //for(auto& quorum_percent : research_group.proposal_quorums)
-            //FC_ASSERT(quorum_percent.second > 5 * DEIP_1_PERCENT && quorum_percent.second <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
+        FC_ASSERT(research_group.quorum_percent >= 5 * DEIP_1_PERCENT && research_group.quorum_percent <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
 
         create<research_group_object>([&](research_group_object& rg) {
             rg.id = research_group.id;
@@ -333,11 +331,12 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
             fc::from_string(rg.description, research_group.description);
             fc::from_string(rg.permlink, research_group.permlink);
             rg.balance = asset(0, DEIP_SYMBOL);
+            rg.quorum_percent = research_group.quorum_percent;
 
             std::map<uint16_t , share_type> proposal_quorums;
 
             for (int i = First_proposal; i <= Last_proposal; i++)
-                proposal_quorums.insert(std::make_pair(i, 50 * DEIP_1_PERCENT));
+                proposal_quorums.insert(std::make_pair(i, research_group.quorum_percent));
 
             rg.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
             rg.is_personal = research_group.is_personal;

@@ -53,6 +53,7 @@ struct genesis_state_type
         std::string name;
         std::string description;
         std::string permlink;
+        uint32_t quorum_percent;
         std::map<uint16_t, uint32_t> proposal_quorums;
         std::vector<std::string> members;
         bool is_personal;
@@ -142,6 +143,7 @@ FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
            (name)
            (description)
            (permlink)
+           (quorum_percent)
            (proposal_quorums)
            (members)
            (is_personal))
