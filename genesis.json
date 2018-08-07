@@ -1594,14 +1594,6 @@
         "quorum_percent": 7500,
         "is_personal": false,
         "members": ["initdelegate", "mike", "john", "rachel"]
-    }, {
-        "id": 2,
-        "name": "Exp-Neuro Microscopy Unit",
-        "description": "A group of scientists which explore Neurology and Neuroscience areas",
-        "permlink": "exp-neuro-microscopy-unit",
-        "quorum_percent": 600,
-        "is_personal": false,
-        "members": ["james", "rick", "alex", "anastasia", "nick"]
     }],
 
     "researches": [{
@@ -1624,16 +1616,6 @@
         "review_share_in_percent": 5000,
         "dropout_compensation_in_percent": 0,
         "disciplines": [6, 113]
-    }, {
-        "id": 2,
-        "research_group_id": 2,
-        "title": "Automated phenotypization neuronal cellcultures",
-        "abstract": "Primary neuronal cell cultures are a basic tool in the characterization of neuronal disorders. In the field of stroke research, the oxygen glucose deprivation is model to simulate ischemia like conditions by cultivating neuronal cells in the absence of glucose and in an nitrogen atmosphere. This model provides a valuable tool to address certain genetic and pharmacologic interventions on a molecular level. Depending on the preparation technique, and the culture conditions, neuronal cell cultures contain different amounts of other cell types like astrocytes or oligodendrocytes. Depending on the amount of the different cell types, the behavour of the whole cell culture may change and by this, potentially adding variance to the underlying experiments. Here, we address the question how the amount of astrocytes contributes to the survival of a neuronal cell culture under ischemic conditions",
-        "permlink": "automated-phenotypization-neuronal-cellcultures",
-        "is_finished": false,
-        "review_share_in_percent": 5000,
-        "dropout_compensation_in_percent": 0,
-        "disciplines": [3, 53, 9, 170]
     }],
 
     "research_contents": [{
@@ -1710,33 +1692,6 @@
             "permlink": "summary",
             "content": "file:61077788d46f6f1331b15270bbca5df6",
             "authors": ["mike", "john", "rachel"],
-            "references": []
-        },
-
-
-        {
-            "research_id": 2,
-            "type": 2,
-            "title": "Primary culture from mouse cortex",
-            "permlink": "primary-culture-from-mouse-cortex",
-            "content": "file:0ecf9e325910a6ea9b12974ca44709ec",
-            "authors": ["james", "rick", "alex", "anastasia", "nick"],
-            "references": []
-        }, {
-            "research_id": 2,
-            "type": 2,
-            "title": "Plus BioProbe Article",
-            "permlink": "plus-bioProbe-article",
-            "content": "file:2ad2265d764e0403d2edf889b466e0b3",
-            "authors": ["james", "rick", "alex", "anastasia", "nick"],
-            "references": []
-        }, {
-            "research_id": 2,
-            "type": 2,
-            "title": "Plus User Guide",
-            "permlink": "plus-user-guide",
-            "content": "file:17b68bba08d7c816911bb63a528d083f",
-            "authors": ["james", "rick", "alex", "anastasia", "nick"],
             "references": []
         }
     ],

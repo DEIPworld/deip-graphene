@@ -176,6 +176,9 @@ typedef bip::map<discipline_id_type, share_type, std::less<discipline_id_type>, 
 typedef allocator<std::pair<const discipline_id_type, std::vector<account_name_type>>> discipline_id_account_name_allocator_type;
 typedef bip::map<discipline_id_type, std::vector<account_name_type>, std::less<discipline_id_type>, discipline_id_account_name_allocator_type> delegated_expertise_type_map;
 
+typedef allocator<std::pair<const uint16_t, share_type>> proposal_share_type_allocator_type;
+typedef bip::map<uint16_t, share_type, std::less<uint16_t>, proposal_share_type_allocator_type> proposal_type_share_type_map;
+
 enum bandwidth_type
 {
     post, ///< Rate limiting posting reward eligibility over time

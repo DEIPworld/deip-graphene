@@ -559,8 +559,13 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
          ///                                            ///
         //////////////////////////////////////////////////
 
-        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000, false);
-        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000, false);
+        std::map<uint16_t, uint32_t> proposal_quorums;
+
+        for (int i = 1; i <= 11; i++)
+            proposal_quorums.insert(std::make_pair(i, 5000));
+
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", DEIP_100_PERCENT, proposal_quorums, false);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", DEIP_100_PERCENT, proposal_quorums, false);
 
         research_group_invite_create(0, "bob", 0, 5000);
         research_group_invite_create(1, "bob", 1, 5000);
@@ -607,7 +612,12 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
 
         generate_block();
 
-        research_group_create(31, "name", "permlink", "description", 200, 50, false);
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 50));
+
+        research_group_create(31, "name", "permlink", "description", 200, proposal_quorums, false);
         research_group_invite_create(1, "bob", 31, 5000);
 
         private_key_type priv_key = generate_private_key("bob");
@@ -641,13 +651,18 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
         private_key_type bob_priv_key = generate_private_key("bob");
         private_key_type alice_priv_key = generate_private_key("alice");
 
+        std::map<uint16_t, uint32_t> proposal_quorums;
+
+        for (int i = 1; i <= 11; i++)
+            proposal_quorums.insert(std::make_pair(i, 5000));
+
            //////////////////////////////////////////////////
           /// Сreate two research groups and invite Bob  ///
          ///                                            ///
         //////////////////////////////////////////////////
 
-        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", 5000, false);
-        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", 5000, false);
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", DEIP_100_PERCENT, proposal_quorums, false);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", DEIP_100_PERCENT, proposal_quorums, false);
 
         research_group_invite_create(0, "bob", 0, 10000);
         research_group_invite_create(1, "bob", 1, 10000);
@@ -2426,13 +2441,19 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
 
        private_key_type priv_key = generate_private_key("alice");
 
+       std::map<uint16_t, uint32_t> proposal_quorums;
+
+       for (int i = 1; i <= 11; i++)
+           proposal_quorums.insert(std::make_pair(i, 1000));
+
        create_research_group_operation op;
 
        op.name = "test";
        op.creator = "alice";
        op.permlink = "group";
        op.description = "group";
-       op.quorum_percent = 1000;
+       op.quorum_percent = DEIP_100_PERCENT;
+       op.proposal_quorums = proposal_quorums;
 
        BOOST_TEST_MESSAGE("--- Test");
        signed_transaction tx;
@@ -2448,7 +2469,8 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
        BOOST_CHECK(research_group.name == "test");
        BOOST_CHECK(research_group.description == "group");
        BOOST_CHECK(research_group.permlink == "group");
-       BOOST_CHECK(research_group.quorum_percent == 1000);
+       BOOST_CHECK(research_group.quorum_percent == DEIP_100_PERCENT);
+       BOOST_CHECK(research_group.proposal_quorums.size() == 11);
 
    }
    FC_LOG_AND_RETHROW()
@@ -2465,13 +2487,19 @@ BOOST_AUTO_TEST_CASE(create_research_group_with_invitees_apply)
 
        private_key_type priv_key = generate_private_key("alice");
 
+       std::map<uint16_t, uint32_t> proposal_quorums;
+
+       for (int i = 1; i <= 11; i++)
+           proposal_quorums.insert(std::make_pair(i, 1000));
+
        create_research_group_operation op;
 
        op.name = "test";
        op.creator = "alice";
        op.permlink = "group";
        op.description = "group";
-       op.quorum_percent = 1000;
+       op.quorum_percent = DEIP_100_PERCENT;
+       op.proposal_quorums = proposal_quorums;
        op.invitees.push_back(invitee_type("bob", 1000, "good"));
        op.invitees.push_back(invitee_type("sam", 1000, "best"));
        op.invitees.push_back(invitee_type("corp", 6000, "bad"));
@@ -2490,7 +2518,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_with_invitees_apply)
        BOOST_CHECK(research_group.name == "test");
        BOOST_CHECK(research_group.description == "group");
        BOOST_CHECK(research_group.permlink == "group");
-       BOOST_CHECK(research_group.quorum_percent == 1000);
+       BOOST_CHECK(research_group.proposal_quorums.size() == 11);
 
        auto& research_group_invite_service = db.obtain_service<dbs_research_group_invite>();
        auto& rg_invite_bob = research_group_invite_service.get_research_group_invite_by_account_name_and_research_group_id("bob", 25);
@@ -2648,8 +2676,13 @@ BOOST_AUTO_TEST_CASE(research_update_apply)
 
         private_key_type priv_key = generate_private_key("alice");
 
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 100));
+
         auto& research = research_create(0, "title", "abstract", "permlink", 31, 10, 10);
-        research_group_create(31, "name", "permlink", "description", 100, 100, false);
+        research_group_create(31, "name", "permlink", "description", 100, proposal_quorums, false);
         research_group_token_create(31, "alice", DEIP_100_PERCENT);
 
         research_update_operation op;
@@ -2763,7 +2796,12 @@ BOOST_AUTO_TEST_CASE(invite_member_execute_test)
     try {
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
         std::vector<std::pair<account_name_type, share_type>> accounts = {std::make_pair("alice", 10000)};
-        setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 0));
+
+        setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
         const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":31,\"research_group_token_amount_in_percent\":5000}";
         create_proposal(1, dbs_proposal::action_t::invite_member, json_str, "alice", 31, fc::time_point_sec(0xffffffff),
                         1);
@@ -2803,7 +2841,13 @@ BOOST_AUTO_TEST_CASE(exclude_member_test)
 
         auto& research_group_service = db.obtain_service<dbs_research_group>();
         vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 9000), std::make_pair("bob", 1000) };
-        setup_research_group(31, "name", "research_group", "research group", 0, 40, false, accounts);
+
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 40));
+
+        setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
 
         const std::string exclude_member_json = "{\"name\":\"bob\",\"research_group_id\": 31}";
         create_proposal(1, dbs_proposal::action_t::dropout_member, exclude_member_json, "alice", 31, time_point_sec(0xffffffff), 1);
@@ -2837,7 +2881,13 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_test)
         ACTORS_WITH_EXPERT_TOKENS((alice));
 
         vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 9000), std::make_pair("bob", 1000) };
-        setup_research_group(31, "name", "research_group", "research group", 0, 40, false, accounts);
+
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 40));
+
+        setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
 
         const auto& new_research = db.create<research_object>([&](research_object& r) {
             r.id = 20;
@@ -2885,7 +2935,13 @@ BOOST_AUTO_TEST_CASE(exclude_member_with_research_token_compensation_test)
 
         auto& research_group_service = db.obtain_service<dbs_research_group>();
         vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 8000), std::make_pair("bob", 2000) };
-        setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
+
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 1));
+
+        setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
         auto& research = research_create(0, "name","abstract", "permlink", 31, 10, DROPOUT_COMPENSATION_IN_PERCENT);
 
         const std::string exclude_member_json = "{\"name\":\"bob\",\"research_group_id\": 31}";
@@ -2924,9 +2980,15 @@ BOOST_AUTO_TEST_CASE(change_quorum_test)
 
         auto& research_group_service = db.obtain_service<dbs_research_group>();
         vector<std::pair<account_name_type,share_type>> accounts = { std::make_pair("alice", 5000), std::make_pair("bob", 5000) };
-        setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
 
-        const std::string change_quorum_json = "{\"quorum_percent\": 80,\"research_group_id\": 31}";
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 50));
+
+        setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
+
+        const std::string change_quorum_json = "{\"quorum_percent\": 80, \"proposal_type\": 2, \"research_group_id\": 31}";
         create_proposal(1, dbs_proposal::action_t::change_quorum, change_quorum_json, "alice", 31, time_point_sec(0xffffffff), 1);
 
         vote_proposal_operation op;
@@ -2946,7 +3008,7 @@ BOOST_AUTO_TEST_CASE(change_quorum_test)
 
         auto& research_group = research_group_service.get_research_group(31);
 
-        BOOST_CHECK(research_group.quorum_percent == 80);
+        BOOST_CHECK(research_group.proposal_quorums.at(invite_member) == 80);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -2957,7 +3019,13 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
         ACTORS_WITH_EXPERT_TOKENS((alice))
 
         std::vector<std::pair<account_name_type, share_type>> accounts = {std::make_pair("alice", 10000)};
-        setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
+
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 1));
+
+        setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
         const std::string json_str = "{\"title\":\"test\","
                 "\"research_group_id\":31,"
                 "\"abstract\":\"abstract\","
@@ -3031,7 +3099,13 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
         fund("bob", 1000);
         std::vector<std::pair<account_name_type, share_type>> accounts = {std::make_pair("alice", 10000)};
-        setup_research_group(31, "name", "research_group", "research group", 750, 1, false, accounts);
+
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 1));
+
+        setup_research_group(31, "name", "research_group", "research group", 750, proposal_quorums, false, accounts);
         const std::string json_str = "{\"research_group_id\":31,"
                 "\"recipient\":\"bob\","
                 "\"funds\": 250}";
@@ -3103,7 +3177,13 @@ BOOST_AUTO_TEST_CASE(rebalance_research_group_tokens_execute_test)
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
         std::vector<std::pair<account_name_type, share_type>> accounts = {std::make_pair("alice", 5000),
                                                                           std::make_pair("bob", 5000)};
-        setup_research_group(31, "name", "research_group", "research group", 750, 1, false, accounts);
+
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 1));
+
+        setup_research_group(31, "name", "research_group", "research group", 750, proposal_quorums, false, accounts);
         const std::string json_str = "{\"research_group_id\":31,"
                 "\"accounts\":[{"
                 "\"account_name\":\"alice\","
@@ -3145,7 +3225,13 @@ BOOST_AUTO_TEST_CASE(research_token_sale_execute_test)
     {
         ACTORS_WITH_EXPERT_TOKENS((alice))
         std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
-        setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
+
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 1));
+
+        setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
         const std::string json_str = "{\"research_id\":0,\"amount_for_sale\":90,\"start_time\":\"2020-02-08T16:00:54\",\"end_time\":\"2020-03-08T15:02:31\",\"soft_cap\":60,\"hard_cap\":90}";
 
         create_proposal(1, dbs_proposal::action_t::start_research_token_sale, json_str, "alice", 31, fc::time_point_sec(0xffffffff), 1);
@@ -3251,7 +3337,13 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_data_validate_test)
         const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 5100,\"research_id\": 0}";
 
         std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
-        setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
+
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 1));
+
+        setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
 
         create_proposal(1, dbs_proposal::action_t::start_research, create_research_proposal_json, "alice", 31, fc::time_point_sec(0xffffffff),
                         1);
@@ -3294,7 +3386,7 @@ BOOST_AUTO_TEST_CASE(change_quorum_data_validate_test)
     try
     {
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
-        const std::string change_quorum_json = "{\"quorum_percent\": 1000,\"research_group_id\": 1}";
+        const std::string change_quorum_json = "{\"quorum_percent\": 1000, \"proposal_type\": 1, \"research_group_id\": 1}";
         create_proposal(1, dbs_proposal::action_t::change_quorum, change_quorum_json, "alice", 1, time_point_sec(0xffffffff), 1);
 
         vote_proposal_operation op;
@@ -3354,7 +3446,13 @@ BOOST_AUTO_TEST_CASE(research_token_sale_data_validate_test)
     {
         ACTORS_WITH_EXPERT_TOKENS((alice))
         std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
-        setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
+
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 1));
+
+        setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
 
         // TODO: Add check for every value
         const std::string json_str = "{\"research_id\":0,\"amount_for_sale\":9999999999,\"start_time\":\"2020-02-08T15:02:31\",\"end_time\":\"2020-01-08T15:02:31\",\"soft_cap\":9999999999,\"hard_cap\":9999994444}";
@@ -3384,7 +3482,12 @@ BOOST_AUTO_TEST_CASE(create_research_material)
 {
     ACTORS_WITH_EXPERT_TOKENS((alice))
     std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
-    setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
+    std::map<uint16_t, share_type> proposal_quorums;
+
+    for (int i = First_proposal; i <= Last_proposal; i++)
+        proposal_quorums.insert(std::make_pair(i, 1));
+
+    setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
 
     db.create<research_object>([&](research_object& r) {
         r.id = 1;
@@ -3504,8 +3607,13 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         generate_block();
 
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 7000));
+
         auto& research = research_create(1, "test_research", "test_abstract", "test_permlink", 30, 10, 1500);
-        research_group_create(30, "group3", "test3", "test3", 100, 7000, false);
+        research_group_create(30, "group3", "test3", "test3", 100, proposal_quorums, false);
         research_group_token_create(30, "john", DEIP_1_PERCENT * 60);
         research_group_token_create(30, "alice", DEIP_1_PERCENT * 40);
 
@@ -3752,7 +3860,12 @@ BOOST_AUTO_TEST_CASE(unique_proposal_hash_test)
     try {
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
         std::vector<std::pair<account_name_type, share_type>> accounts = {std::make_pair("alice", 10000)};
-        setup_research_group(31, "name", "research_group", "research group", 0, 1, false, accounts);
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 1));
+
+        setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
 
         const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":31,\"research_group_token_amount_in_percent\":5000}";
 

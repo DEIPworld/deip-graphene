@@ -42,6 +42,7 @@ struct invite_member_proposal_data_type : base_proposal_data_type
 struct change_quorum_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
+    uint16_t proposal_type;
     uint16_t quorum_percent;
 
     void validate() const
@@ -182,7 +183,7 @@ FC_REFLECT(deip::chain::dropout_member_proposal_data_type, (research_group_id)(n
 
 FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount_in_percent)(cover_letter))
 
-FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
+FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(proposal_type)(quorum_percent))
 
 FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(research_group_id)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines))
 
