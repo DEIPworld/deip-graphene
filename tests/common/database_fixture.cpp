@@ -421,6 +421,7 @@ const research_group_object& database_fixture::research_group_create_by_operatio
                                                                                   const string& name,
                                                                                   const string& permlink,
                                                                                   const string& description,
+                                                                                  const uint32_t& quorum_percent,
                                                                                   const std::map<uint16_t, uint32_t>& proposal_quorums,
                                                                                   const bool is_personal)
 {
@@ -435,6 +436,7 @@ const research_group_object& database_fixture::research_group_create_by_operatio
         op.description = description;
 
         op.creator = creator;
+        op.quorum_percent = quorum_percent;
         op.proposal_quorums = proposal_quorums;
         op.is_personal = is_personal;
 

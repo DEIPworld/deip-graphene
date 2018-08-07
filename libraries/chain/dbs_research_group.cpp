@@ -29,6 +29,7 @@ const research_group_object& dbs_research_group::get_research_group_by_permlink(
 const research_group_object& dbs_research_group::create_research_group(const std::string& name,
                                                                        const string& permlink,
                                                                        const string& description,
+                                                                       const share_type& quorum_percent,
                                                                        const std::map<uint16_t, share_type>& proposal_quorums,
                                                                        const bool is_personal)
 {
@@ -36,6 +37,7 @@ const research_group_object& dbs_research_group::create_research_group(const std
         fc::from_string(research_group.name, name);
         fc::from_string(research_group.permlink, permlink);
         fc::from_string(research_group.description, description);
+        research_group.quorum_percent = quorum_percent;
         research_group.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
         research_group.is_personal = is_personal;
     });

@@ -116,6 +116,7 @@ struct database_fixture
                                                                     const string& name,
                                                                     const string& permlink,
                                                                     const string& description,
+                                                                    const uint32_t& quorum_percent,
                                                                     const std::map<uint16_t, uint32_t>& proposal_quorums,
                                                                     const bool is_personal);
 

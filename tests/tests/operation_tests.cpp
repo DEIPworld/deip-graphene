@@ -564,8 +564,8 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
         for (int i = 1; i <= 11; i++)
             proposal_quorums.insert(std::make_pair(i, 5000));
 
-        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", proposal_quorums, false);
-        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", proposal_quorums, false);
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", DEIP_100_PERCENT, proposal_quorums, false);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", DEIP_100_PERCENT, proposal_quorums, false);
 
         research_group_invite_create(0, "bob", 0, 5000);
         research_group_invite_create(1, "bob", 1, 5000);
@@ -661,8 +661,8 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
          ///                                            ///
         //////////////////////////////////////////////////
 
-        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", proposal_quorums, false);
-        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", proposal_quorums, false);
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", DEIP_100_PERCENT, proposal_quorums, false);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", DEIP_100_PERCENT, proposal_quorums, false);
 
         research_group_invite_create(0, "bob", 0, 10000);
         research_group_invite_create(1, "bob", 1, 10000);
@@ -2452,6 +2452,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
        op.creator = "alice";
        op.permlink = "group";
        op.description = "group";
+       op.quorum_percent = DEIP_100_PERCENT;
        op.proposal_quorums = proposal_quorums;
 
        BOOST_TEST_MESSAGE("--- Test");
@@ -2468,6 +2469,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_apply)
        BOOST_CHECK(research_group.name == "test");
        BOOST_CHECK(research_group.description == "group");
        BOOST_CHECK(research_group.permlink == "group");
+       BOOST_CHECK(research_group.quorum_percent == DEIP_100_PERCENT);
        BOOST_CHECK(research_group.proposal_quorums.size() == 11);
 
    }
@@ -2496,6 +2498,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_with_invitees_apply)
        op.creator = "alice";
        op.permlink = "group";
        op.description = "group";
+       op.quorum_percent = DEIP_100_PERCENT;
        op.proposal_quorums = proposal_quorums;
        op.invitees.push_back(invitee_type("bob", 1000, "good"));
        op.invitees.push_back(invitee_type("sam", 1000, "best"));

@@ -150,6 +150,7 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
     auto& personal_research_group = research_group_service.create_research_group(o.new_account_name,
                                                                                  o.new_account_name,
                                                                                  o.new_account_name,
+                                                                                 DEIP_100_PERCENT,
                                                                                  personal_research_group_proposal_quorums,
                                                                                  is_personal);
     research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
@@ -739,7 +740,10 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     auto& research_group = research_group_service.get_research_group(op.research_group_id);
 
     deip::protocol::proposal_action_type action = static_cast<deip::protocol::proposal_action_type>(op.action);
-    auto quorum_percent = research_group.proposal_quorums.at(action);
+    auto quorum_percent = research_group.quorum_percent;
+    if (research_group.proposal_quorums.count(action) != 0) {
+        quorum_percent  = research_group.proposal_quorums.at(action);
+    }
     // the range must be checked in create_proposal_operation::validate()
 
     if (action == deip::protocol::proposal_action_type::invite_member ||
@@ -793,6 +797,7 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
     const research_group_object& research_group = research_group_service.create_research_group(op.name,
                                                                                                op.permlink,
                                                                                                op.description,
+                                                                                               op.quorum_percent,
                                                                                                proposal_quorums,
                                                                                                is_personal);
     

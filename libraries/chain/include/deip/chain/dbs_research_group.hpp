@@ -40,6 +40,7 @@ public:
     const research_group_object& create_research_group(const std::string& name,
                                                        const string& permlink,
                                                        const string& description,
+                                                       const share_type& quorum_percent,
                                                        const std::map<uint16_t, share_type>& proposal_quorums,
                                                        const bool is_personal);
 
