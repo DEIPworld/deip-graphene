@@ -812,6 +812,8 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
 
 void make_review_evaluator::do_apply(const make_review_operation& op)
 {
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_review& review_service = _db.obtain_service<dbs_review>();
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
     dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
@@ -822,10 +824,15 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
     auto content = research_content_service.get(op.research_content_id);
+    auto& research = research_service.get_research(content.research_id);
+    auto reseach_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
+
+    for (auto& reseach_group_token : reseach_group_tokens)
+        FC_ASSERT(reseach_group_token.get().owner != op.author, "You cannot review your own content");
 
     auto expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
     auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(content.research_id);
-    std::map<discipline_id_type, share_type> review_disciplines_with_weght;
+    std::map<discipline_id_type, share_type> review_disciplines_with_weight;
     std::set<discipline_id_type> review_disciplines;
     std::set<discipline_id_type> research_disciplines_ids;
     for (auto rdr : research_discipline_relations) {
@@ -853,7 +860,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                 t.voting_power = current_power - used_power;
                 t.last_vote_time = _db.head_block_time();
             });
-            review_disciplines_with_weght.insert(std::make_pair(token.discipline_id, abs_used_tokens));
+            review_disciplines_with_weight.insert(std::make_pair(token.discipline_id, abs_used_tokens));
             review_disciplines.insert(token.discipline_id);
         }
     }
@@ -868,7 +875,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
         auto used_expertise = (op.weight * token.amount) / DEIP_100_PERCENT;
 
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
-            r.expertise_amounts_used[token.discipline_id] = review_disciplines_with_weght.at(token.discipline_id);
+            r.expertise_amounts_used[token.discipline_id] = review_disciplines_with_weight.at(token.discipline_id);
             r.weights_per_discipline[token.discipline_id] = 0;
             r.weight_modifiers[token.discipline_id] = 1;
         });
@@ -988,16 +995,30 @@ void transfer_research_tokens_to_research_group_evaluator::do_apply(const transf
 
 }
 
-void add_expertise_tokens_evaluator::do_apply(const add_expertise_tokens_operation& op)
+void set_expertise_tokens_evaluator::do_apply(const set_expertise_tokens_operation& op)
 {
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+
     for (auto& discipline_to_add : op.disciplines_to_add)
     {
         FC_ASSERT(discipline_to_add.amount > 0, "Amount must be bigger than 0");
-        _db._temporary_public_impl().create<expert_token_object>([&](expert_token_object& et_o) {
-            et_o.account_name = op.account_name;
-            et_o.discipline_id = discipline_to_add.discipline_id;
-            et_o.amount = discipline_to_add.amount;
-        });
+        const bool exist = expert_token_service.is_expert_token_existence_by_account_and_discipline(op.account_name, discipline_to_add.discipline_id);
+        
+        if (exist)
+        {
+            const expert_token_object& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.account_name, discipline_to_add.discipline_id);
+            _db._temporary_public_impl().modify(expert_token, [&](expert_token_object& et_o) {
+                et_o.amount = discipline_to_add.amount;
+            });
+        } 
+        else 
+        {
+            _db._temporary_public_impl().create<expert_token_object>([&](expert_token_object& et_o) {
+                et_o.account_name = op.account_name;
+                et_o.discipline_id = discipline_to_add.discipline_id;
+                et_o.amount = discipline_to_add.amount;
+            });
+        }
     }
 }
 

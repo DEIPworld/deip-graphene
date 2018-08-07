@@ -583,7 +583,7 @@ struct transfer_research_tokens_to_research_group_operation : public base_operat
     }
 };
 
-struct add_expertise_tokens_operation : public base_operation
+struct set_expertise_tokens_operation : public base_operation
 {
     account_name_type owner;
     account_name_type account_name;
@@ -740,7 +740,7 @@ FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_g
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
 FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_token_id)(research_id)(owner)(amount))
-FC_REFLECT( deip::protocol::add_expertise_tokens_operation, (owner)(account_name)(disciplines_to_add))
+FC_REFLECT( deip::protocol::set_expertise_tokens_operation, (owner)(account_name)(disciplines_to_add))
 FC_REFLECT( deip::protocol::research_update_operation, (research_id)(title)(abstract)(permlink)(owner))
 FC_REFLECT( deip::protocol::deposit_to_vesting_contract_operation, (sender)(receiver)(balance)(withdrawal_period)(contract_duration))
 FC_REFLECT( deip::protocol::withdraw_from_vesting_contract_operation, (sender)(receiver)(amount))

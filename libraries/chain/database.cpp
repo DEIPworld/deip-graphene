@@ -1759,7 +1759,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
-    _my->_evaluator_registry.register_evaluator<add_expertise_tokens_evaluator>();
+    _my->_evaluator_registry.register_evaluator<set_expertise_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<deposit_to_vesting_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_from_vesting_contract_evaluator>();

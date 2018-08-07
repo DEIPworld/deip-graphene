@@ -2626,11 +2626,11 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(add_expertise_tokens_apply)
+BOOST_AUTO_TEST_CASE(set_expertise_tokens_apply)
 {
     try
     {
-        BOOST_TEST_MESSAGE("Testing: add_expertise_tokens_apply");
+        BOOST_TEST_MESSAGE("Testing: set_expertise_tokens_apply");
 
         ACTOR_WITH_EXPERT_TOKENS(alice);
         ACTOR(bob);
@@ -2639,7 +2639,7 @@ BOOST_AUTO_TEST_CASE(add_expertise_tokens_apply)
 
         private_key_type priv_key = generate_private_key("alice");
 
-        add_expertise_tokens_operation op;
+        set_expertise_tokens_operation op;
 
         std::vector<expertise_amount_pair_type> disciplines_to_add;
         disciplines_to_add.push_back(expertise_amount_pair_type(1, 1000));
@@ -2668,7 +2668,7 @@ BOOST_AUTO_TEST_CASE(add_expertise_tokens_apply)
 BOOST_AUTO_TEST_CASE(research_update_apply)
 {
     try {
-        BOOST_TEST_MESSAGE("Testing: add_expertise_tokens_apply");
+        BOOST_TEST_MESSAGE("Testing: set_expertise_tokens_apply");
 
         ACTOR_WITH_EXPERT_TOKENS(alice);
 
@@ -3603,7 +3603,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
     {
         BOOST_TEST_MESSAGE("Testing: make_review expertise");
 
-        ACTORS_WITH_EXPERT_TOKENS((john)(alice));
+        ACTORS_WITH_EXPERT_TOKENS((john)(alice)(jack));
 
         generate_block();
 
@@ -3636,13 +3636,14 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         private_key_type priv_key = generate_private_key("john");
         private_key_type alice_key = generate_private_key("alice");
+        private_key_type jack_key = generate_private_key("jack");
 
         generate_block();
 
         make_review_operation op;
 
         std::vector<int64_t> references {1};
-        op.author = "alice";
+        op.author = "jack";
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = true;
@@ -3651,7 +3652,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
         tx.operations.push_back(op);
-        tx.sign(alice_key, db.get_chain_id());
+        tx.sign(jack_key, db.get_chain_id());
         tx.validate();
         db.push_transaction(tx, 0);
 

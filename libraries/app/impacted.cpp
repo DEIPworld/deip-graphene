@@ -173,7 +173,7 @@ struct get_impacted_account_visitor
         _impacted.insert(op.owner);
     }
 
-    void operator()(const add_expertise_tokens_operation& op)
+    void operator()(const set_expertise_tokens_operation& op)
     {
         _impacted.insert(op.owner);
     }
