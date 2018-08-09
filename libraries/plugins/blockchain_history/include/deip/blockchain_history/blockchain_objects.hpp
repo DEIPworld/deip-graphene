@@ -28,7 +28,9 @@ enum blockchain_history_object_type
     all_account_operations_history,
     account_deip_to_deip_transfers_history,
     account_deip_to_common_tokens_transfers_history,
-    filtered_operations_history,
+    filtered_not_virt_operations_history,
+    filtered_virt_operations_history,
+    filtered_market_operations_history,
 };
 }
 }
