@@ -61,18 +61,16 @@ public:
 
         static const uint32_t max_history_depth = 100;
 
-        const auto& db = _app.chain_database();
-
         FC_ASSERT(limit > 0, "Limit must be greater than zero");
         FC_ASSERT(limit <= max_history_depth, "Limit of ${l} is greater than maxmimum allowed ${2}",
                   ("l", limit)("2", max_history_depth));
         FC_ASSERT(from_op >= limit, "From must be greater than limit");
 
-        return db->with_read_lock([&]() {
+        return _db->with_read_lock([&]() {
 
             result_type result;
 
-            const auto& idx = db->get_index<IndexType>().indices().get<by_id>();
+            const auto& idx = _db->get_index<IndexType>().indices().get<by_id>();
             if (idx.empty())
                 return result;
 
