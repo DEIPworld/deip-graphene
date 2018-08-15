@@ -192,7 +192,8 @@ void make_review_operation::validate() const
 void contribute_to_token_sale_operation::validate() const
 {
     validate_account_name(owner);
-    FC_ASSERT(amount > 0, "Amount must be greater than 0");
+    FC_ASSERT(amount.amount > 0, "Amount must be greater than 0");
+    FC_ASSERT(amount.symbol == DEIP_SYMBOL, "Incorrect asset symbol");
 }
 
 void approve_research_group_invite_operation::validate() const

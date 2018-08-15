@@ -26,9 +26,9 @@ public:
     const research_token_sale_object& start(const research_id_type &research_id,
                                             const fc::time_point_sec start_time,
                                             const fc::time_point_sec end_time,
-                                            const deip::chain::share_type balance_tokens,
-                                            const deip::chain::share_type soft_cap,
-                                            const deip::chain::share_type hard_cap);
+                                            const share_type& balance_tokens,
+                                            const asset soft_cap,
+                                            const asset hard_cap);
 
     research_token_sale_refs_type get_all() const;
 
@@ -41,7 +41,7 @@ public:
     void check_research_token_sale_existence(const research_token_sale_id_type& id) const;
 
     const research_token_sale_object& increase_tokens_amount(const research_token_sale_id_type &id,
-                                                             const share_type amount);
+                                                             const asset &amount);
 
     const research_token_sale_object& update_status(const research_token_sale_id_type &id,
                                                     const research_token_sale_status& status);
@@ -53,7 +53,7 @@ public:
     const research_token_sale_contribution_object& contribute(const research_token_sale_id_type &research_token_sale_id,
                                                               const account_name_type &owner,
                                                               const fc::time_point_sec contribution_time,
-                                                              const deip::chain::share_type amount);
+                                                              const asset amount);
 
     const research_token_sale_contribution_object& get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type& id) const;
 

@@ -536,7 +536,7 @@ struct contribute_to_token_sale_operation : public base_operation
 {
     int64_t research_token_sale_id;
     account_name_type owner;
-    uint32_t amount;
+    asset amount;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const

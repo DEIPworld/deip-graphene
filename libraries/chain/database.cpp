@@ -1193,12 +1193,11 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
     auto& research_token_sale = research_token_sale_service.get_by_id(research_token_sale_id);
 
     const auto& idx = get_index<research_token_sale_contribution_index>().indicies().get<by_research_token_sale_id>();
-
     auto it = idx.find(research_token_sale_id);
 
     while (it != idx.end())
     {
-        auto transfer_amount = (it->amount * research_token_sale.balance_tokens) / research_token_sale.total_amount;
+        auto transfer_amount = (it->amount.amount * research_token_sale.balance_tokens) / research_token_sale.total_amount.amount;
 
         if (research_token_service.is_research_token_exists_by_account_name_and_research_id(
                 it->owner, research_token_sale.research_id))
@@ -1232,7 +1231,7 @@ void database::refund_research_tokens(const research_token_sale_id_type research
 
     while (it != it_end)
     {
-        account_service.increase_balance(account_service.get_account(it->owner), asset(it->amount, DEIP_SYMBOL));
+        account_service.increase_balance(account_service.get_account(it->owner), it->amount);
         remove(*it);
         it = idx.first;
     }
