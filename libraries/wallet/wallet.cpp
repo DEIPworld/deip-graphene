@@ -2117,7 +2117,7 @@ annotated_signed_transaction wallet_api::make_review(const std::string& author,
 
 annotated_signed_transaction wallet_api::contribute_to_token_sale(const int64_t research_token_sale_id,
                                                                   const std::string& owner,
-                                                                  const uint32_t amount,
+                                                                  const asset& amount,
                                                                   const bool broadcast)
 {
     FC_ASSERT(!is_locked());

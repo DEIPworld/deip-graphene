@@ -795,7 +795,7 @@ public:
 
     annotated_signed_transaction contribute_to_token_sale(const int64_t research_token_sale_id,
                                                           const std::string& owner,
-                                                          const uint32_t amount,
+                                                          const asset& amount,
                                                           const bool broadcast);
 
     annotated_signed_transaction approve_research_group_invite(const int64_t research_group_invite_id,
