@@ -2,6 +2,7 @@
 
 #include <deip/chain/deip_object_types.hpp>
 #include <fc/utf8.hpp>
+#include <deip/protocol/asset.hpp>
 
 using namespace deip::protocol;
 
@@ -151,13 +152,13 @@ struct start_research_token_sale_data_type : base_proposal_data_type
     fc::time_point_sec start_time;
     fc::time_point_sec end_time;
     share_type amount_for_sale;
-    share_type soft_cap;
-    share_type hard_cap;
+    protocol::asset soft_cap;
+    protocol::asset hard_cap;
 
     void validate() const {
         FC_ASSERT(amount_for_sale > 0, "Research tokens for sale amount should be > 0");
-        FC_ASSERT(soft_cap > 0, "Soft cap should be > 0");
-        FC_ASSERT(hard_cap > 0, "Hard cap should be > 0");
+        FC_ASSERT(soft_cap > asset(0, DEIP_SYMBOL), "Soft cap should be > 0");
+        FC_ASSERT(hard_cap > asset(0, DEIP_SYMBOL), "Hard cap should be > 0");
         FC_ASSERT(hard_cap > soft_cap, "Hard cap should be greater than soft cap");
         FC_ASSERT(start_time >= fc::time_point::now(), "Start time cannot be at the past");
         FC_ASSERT(end_time > start_time, "End time should be greater than start time");

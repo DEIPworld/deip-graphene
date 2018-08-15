@@ -1193,7 +1193,6 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
     auto& research_token_sale = research_token_sale_service.get_by_id(research_token_sale_id);
 
     const auto& idx = get_index<research_token_sale_contribution_index>().indicies().get<by_research_token_sale_id>();
-
     auto it = idx.find(research_token_sale_id);
 
     while (it != idx.end())

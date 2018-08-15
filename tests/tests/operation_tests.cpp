@@ -3232,7 +3232,7 @@ BOOST_AUTO_TEST_CASE(research_token_sale_execute_test)
             proposal_quorums.insert(std::make_pair(i, 1));
 
         setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
-        const std::string json_str = "{\"research_id\":0,\"amount_for_sale\":90,\"start_time\":\"2020-02-08T16:00:54\",\"end_time\":\"2020-03-08T15:02:31\",\"soft_cap\":60,\"hard_cap\":90}";
+        const std::string json_str = "{\"research_id\":0,\"amount_for_sale\":90,\"start_time\":\"2020-02-08T16:00:54\",\"end_time\":\"2020-03-08T15:02:31\",\"soft_cap\":\"0.060 TESTS\",\"hard_cap\":\"0.090 TESTS\"}";
 
         create_proposal(1, dbs_proposal::action_t::start_research_token_sale, json_str, "alice", 31, fc::time_point_sec(0xffffffff), 1);
 
