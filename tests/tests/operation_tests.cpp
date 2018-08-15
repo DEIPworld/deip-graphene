@@ -2603,7 +2603,7 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
 
         op.research_token_sale_id = 0;
         op.owner = "alice";
-        op.amount = 600;
+        op.amount = asset(600, DEIP_SYMBOL);
 
         BOOST_TEST_MESSAGE("--- Test");
         signed_transaction tx;
@@ -3258,10 +3258,10 @@ BOOST_AUTO_TEST_CASE(research_token_sale_execute_test)
         BOOST_CHECK(research_token_sale.research_id == 0);
         BOOST_CHECK(research_token_sale.start_time == fc::time_point_sec(1581177654));
         BOOST_CHECK(research_token_sale.end_time == fc::time_point_sec(1583679751));
-        BOOST_CHECK(research_token_sale.total_amount == 0);
+        BOOST_CHECK(research_token_sale.total_amount == asset(0, DEIP_SYMBOL));
         BOOST_CHECK(research_token_sale.balance_tokens == 90);
-        BOOST_CHECK(research_token_sale.soft_cap == 60);
-        BOOST_CHECK(research_token_sale.hard_cap == 90);
+        BOOST_CHECK(research_token_sale.soft_cap == asset(60, DEIP_SYMBOL));
+        BOOST_CHECK(research_token_sale.hard_cap == asset(90, DEIP_SYMBOL));
         BOOST_CHECK(research.owned_tokens == 9910);
     }
     FC_LOG_AND_RETHROW()

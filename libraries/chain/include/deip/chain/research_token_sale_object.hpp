@@ -44,10 +44,10 @@ public:
     research_id_type research_id;
     time_point_sec start_time;
     time_point_sec end_time;
-    share_type total_amount;
+    protocol::asset total_amount;
     share_type balance_tokens;
-    share_type soft_cap;
-    share_type hard_cap;
+    protocol::asset soft_cap;
+    protocol::asset hard_cap;
     research_token_sale_status status;
 };
 
@@ -63,7 +63,7 @@ public:
     research_token_sale_contribution_id_type id;
     research_token_sale_id_type research_token_sale_id;
     account_name_type owner;
-    share_type amount;
+    protocol::asset amount;
     fc::time_point_sec contribution_time;
 };
 
