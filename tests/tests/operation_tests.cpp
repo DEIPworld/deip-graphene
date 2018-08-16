@@ -755,7 +755,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        BOOST_TEST_MESSAGE("--- Test failure when creator cannot cover fee");
        tx.signatures.clear();
        tx.operations.clear();
-       op.fee = asset(db.get_account(TEST_INIT_DELEGATE_NAME).balance.amount + 1, DEIP_SYMBOL);
+       op.fee = asset(0, DEIP_SYMBOL);
        op.new_account_name = "bob";
        tx.operations.push_back(op);
        tx.sign(init_account_priv_key, db.get_chain_id());
@@ -772,7 +772,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        generate_block();
 
        tx.clear();
-       op.fee = ASSET("1.000 TESTS");
+       op.fee = ASSET("0.000 TESTS");
        tx.operations.push_back(op);
        tx.sign(init_account_priv_key, db.get_chain_id());
        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
