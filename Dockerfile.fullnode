@@ -54,33 +54,18 @@ RUN \
     cd build && \
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
-        -DLOW_MEMORY_NODE=ON \
-        -DCLEAR_VOTES=ON \
-        -DSKIP_BY_TX_ID=ON \
-        -DBUILD_DEIP_TESTNET=$BUILD_TESTNET \
-        .. \
-    && \
-    make -j$(nproc) && \
-    make install && \
-    cd .. && \
-    rm -rfv build && \
-    mkdir build && \
-    cd build && \
-    cmake \
-        -DCMAKE_INSTALL_PREFIX=/usr/local/deipd-full \
-        -DCMAKE_BUILD_TYPE=Release \
         -DLOW_MEMORY_NODE=OFF \
         -DCLEAR_VOTES=OFF \
         -DSKIP_BY_TX_ID=ON \
         -DBUILD_DEIP_TESTNET=$BUILD_TESTNET \
         .. \
     && \
-    make -j$(nproc) && \
+    make deipd -j$(nproc) && \
     make install && \
     rm -rf /deip
 
 RUN \
-    (/usr/local/deipd-default/bin/deipd --version \
+    (/usr/local/bin/deipd --version \
       | grep -o '[0-9]*\.[0-9]*\.[0-9]*' \
       && echo '_' \
       && git rev-parse --short HEAD ) \
