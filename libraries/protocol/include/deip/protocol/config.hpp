@@ -131,7 +131,6 @@
 #define DEIP_MIN_PRODUCER_REWARD             DEIP_MINING_REWARD
 #define DEIP_MIN_POW_REWARD                  DEIP_MINING_REWARD
 
-#define DEIP_POST_REWARD_FUND_NAME           ("post")
 #define DEIP_RECENT_RSHARES_DECAY_RATE       (fc::days(15))
 // note, if redefining these constants make sure calculate_claims doesn't overflow
 
