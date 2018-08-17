@@ -6,7 +6,7 @@
 #include <deip/chain/block_summary_object.hpp>
 #include <deip/chain/database.hpp>
 #include <deip/chain/hardfork.hpp>
-#include <deip/chain/history_object.hpp>
+#include <deip/blockchain_history/account_history_object.hpp>
 #include <deip/chain/deip_objects.hpp>
 
 #include <deip/chain/util/reward.hpp>
