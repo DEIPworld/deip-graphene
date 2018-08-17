@@ -3818,7 +3818,9 @@ BOOST_AUTO_TEST_CASE(delegate_expertise_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 1);
+        auto a = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1)).proxied_expertise;
+
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1)).proxied_expertise[0]) == 10000);
 
         BOOST_CHECK_THROW(db.push_transaction(tx, 0), fc::assert_exception);
 
@@ -3835,7 +3837,7 @@ BOOST_AUTO_TEST_CASE(delegate_expertise_apply)
         tx2.validate();
         db.push_transaction(tx2, 0);
 
-        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 2);
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1)).proxied_expertise[0]) == 20000);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -3868,8 +3870,6 @@ BOOST_AUTO_TEST_CASE(withdraw_expertise_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 1);
-
         BOOST_CHECK_THROW(db.push_transaction(tx, 0), fc::assert_exception);
 
         delegate_expertise_operation op2;
@@ -3885,12 +3885,9 @@ BOOST_AUTO_TEST_CASE(withdraw_expertise_apply)
         tx2.validate();
         db.push_transaction(tx2, 0);
 
-        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 2);
-
         revoke_expertise_delegation_operation op3;
 
         op3.sender = "jack";
-        op3.receiver = "alice";
         op3.discipline_id = 1;
 
         signed_transaction tx3;
@@ -3900,13 +3897,12 @@ BOOST_AUTO_TEST_CASE(withdraw_expertise_apply)
         tx3.validate();
         db.push_transaction(tx3, 0);
 
-        auto a = db.get_account("alice").delegated_expertise.at(1);
-        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 1);
+        auto test = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1)).proxied_expertise;
+        BOOST_CHECK(test[0] == 10000);
 
         revoke_expertise_delegation_operation op4;
 
         op4.sender = "mike";
-        op4.receiver = "alice";
         op4.discipline_id = 1;
 
         signed_transaction tx4;
@@ -4022,7 +4018,6 @@ BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
         tx2.validate();
         db.push_transaction(tx2, 0);
 
-        BOOST_CHECK(expertise_allocation_proposal.upvoted_accounts.size() == 1);
         BOOST_CHECK(expertise_allocation_proposal.total_voted_expertise == 10000);
 
         vote_for_expertise_allocation_proposal_operation op2_1;
@@ -4031,9 +4026,7 @@ BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
         op2_1.claimer = "bob";
         op2_1.discipline_id = 1;
         op2_1.voter = "jack";
-        op2_1.voting_power = DEIP_100_PERCENT;
-
-        generate_block();
+        op2_1.voting_power = -DEIP_100_PERCENT;
 
         signed_transaction tx2_1;
         tx2_1.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -4044,76 +4037,7 @@ BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
 
         auto& expertise_allocation_proposal_2 = db.get<expertise_allocation_proposal_object, by_id>(0);
 
-        BOOST_CHECK(expertise_allocation_proposal_2.upvoted_accounts.size() == 0);
-        BOOST_CHECK(expertise_allocation_proposal_2.total_voted_expertise == 0);
-
-        vote_for_expertise_allocation_proposal_operation op3;
-
-        op3.initiator = "alice";
-        op3.claimer = "bob";
-        op3.discipline_id = 1;
-        op3.voter = "jack";
-        op3.voting_power = -DEIP_100_PERCENT;
-
-        generate_block();
-
-        signed_transaction tx4;
-        tx4.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx4.operations.push_back(op3);
-        tx4.sign(jack_priv_key, db.get_chain_id());
-        tx4.validate();
-        db.push_transaction(tx4, 0);
-
-        auto& expertise_allocation_proposal_3 = db.get<expertise_allocation_proposal_object, by_id>(0);
-
-        BOOST_CHECK(expertise_allocation_proposal_3.downvoted_accounts.size() == 1);
-        BOOST_CHECK(expertise_allocation_proposal_3.total_voted_expertise == -10000);
-
-        vote_for_expertise_allocation_proposal_operation op4;
-
-        op4.initiator = "alice";
-        op4.claimer = "bob";
-        op4.discipline_id = 1;
-        op4.voter = "jack";
-        op4.voting_power = DEIP_100_PERCENT;
-
-        generate_block();
-
-        signed_transaction tx5;
-        tx5.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx5.operations.push_back(op4);
-        tx5.sign(jack_priv_key, db.get_chain_id());
-        tx5.validate();
-        db.push_transaction(tx5, 0);
-
-        auto& expertise_allocation_proposal_4 = db.get<expertise_allocation_proposal_object, by_id>(0);
-
-        BOOST_CHECK(expertise_allocation_proposal_4.downvoted_accounts.size() == 0);
-        BOOST_CHECK(expertise_allocation_proposal_4.upvoted_accounts.size() == 1);
-        BOOST_CHECK(expertise_allocation_proposal_4.total_voted_expertise == 10000);
-
-        vote_for_expertise_allocation_proposal_operation op5;
-
-        op5.initiator = "alice";
-        op5.claimer = "bob";
-        op5.discipline_id = 1;
-        op5.voter = "kate";
-        op5.voting_power = DEIP_100_PERCENT;
-
-        generate_block();
-
-        signed_transaction tx6;
-        tx6.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx6.operations.push_back(op5);
-        tx6.sign(kate_priv_key, db.get_chain_id());
-        tx6.validate();
-        db.push_transaction(tx6, 0);
-
-        BOOST_CHECK_THROW((db.get<expertise_allocation_proposal_object, by_id>(0)), std::out_of_range);
-
-        auto& expert_token = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("bob", 1));
-
-        BOOST_CHECK(expert_token.amount == 100);
+        BOOST_CHECK(expertise_allocation_proposal_2.total_voted_expertise == -10000);
 
     }
     FC_LOG_AND_RETHROW()

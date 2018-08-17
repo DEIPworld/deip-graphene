@@ -1131,7 +1131,7 @@ void delegate_expertise_evaluator::do_apply(const delegate_expertise_operation& 
 
     FC_ASSERT(sender_token.proxy != op.receiver, "Proxy must change.");
 
-    auto& proxy_token = expert_token_service.get_expert_token_by_account_and_discipline(op.sender, op.discipline_id);
+    auto& proxy_token = expert_token_service.get_expert_token_by_account_and_discipline(op.receiver, op.discipline_id);
 
     expert_token_service.update_expertise_proxy(sender_token, proxy_token);
 
