@@ -28,7 +28,7 @@ RUN \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     pip3 install gcovr
 
-COPY .. /deip
+COPY . /deip
 
 RUN \
     #
@@ -113,7 +113,6 @@ RUN \
         /usr/local/include
 
 
-
 FROM phusion/baseimage:0.9.19 AS node
 
 COPY --from=build /usr/local/bin/deipd /usr/local/bin/deipd
@@ -135,18 +134,17 @@ EXPOSE 8090
 EXPOSE 2001
 
 # add seednodes from documentation to image
-COPY ../doc/seednodes.txt /etc/deipd/seednodes.txt
+COPY doc/seednodes.txt /etc/deipd/seednodes.txt
 
 # the following adds lots of logging info to stdout
-COPY ../contrib/config-for-docker.ini /etc/deipd/config.ini
-COPY ../contrib/fullnode.config.ini /etc/deipd/fullnode.config.ini
+COPY contrib/config.ini /etc/deipd/config.ini
 
 # add normal startup script that starts via sv
-COPY ../contrib/deipd.run /usr/local/bin/deipd.run
+COPY contrib/deipd.run /usr/local/bin/deipd.run
 RUN chmod +x /usr/local/bin/deipd.run
 
 # new entrypoint for all instances
 # this enables exitting of the container when the writer node dies
-COPY ../contrib/deipdentrypoint.sh /usr/local/bin/deipdentrypoint.sh
+COPY contrib/deipdentrypoint.sh /usr/local/bin/deipdentrypoint.sh
 RUN chmod +x /usr/local/bin/deipdentrypoint.sh
 CMD /usr/local/bin/deipdentrypoint.sh

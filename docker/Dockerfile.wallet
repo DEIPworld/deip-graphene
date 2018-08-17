@@ -28,7 +28,7 @@ RUN \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     pip3 install gcovr
 
-COPY .. /deip
+COPY . /deip
 
 RUN \
     cd /deip && \
@@ -96,7 +96,7 @@ RUN \
 
 
 
-FROM phusion/baseimage:0.9.19 AS wallet
+FROM ubuntu:16.04 AS wallet
 
 COPY --from=build /usr/local/bin/cli_wallet /usr/local/bin/cli_wallet
 

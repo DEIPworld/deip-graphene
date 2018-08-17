@@ -4,10 +4,6 @@ DEIPD="/usr/local/bin/deipd"
 
 VERSION=`cat /etc/deipdversion`
 
-if [[ "$USE_WAY_TOO_MUCH_RAM" = 1 ]]; then
-    DEIPD="/usr/local/deipd-full/bin/deipd"
-fi
-
 chown -R deipd:deipd $HOME
 
 # seed nodes come from doc/seednodes.txt which is
@@ -48,11 +44,7 @@ if [[ ! -z "$TRACK_ACCOUNT" ]]; then
 fi
 
 # overwrite local config with image one
-if [[ "$USE_FULL_WEB_NODE" = 1 ]]; then
-  cp /etc/deipd/fullnode.config.ini $HOME/config.ini
-else
-  cp /etc/deipd/config.ini $HOME/config.ini
-fi
+cp /etc/deipd/config.ini $HOME/config.ini
 
 chown deipd:deipd $HOME/config.ini
 

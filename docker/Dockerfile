@@ -154,7 +154,7 @@ EXPOSE 2001
 COPY ../doc/seednodes.txt /etc/deipd/seednodes.txt
 
 # the following adds lots of logging info to stdout
-COPY ../contrib/config-for-docker.ini /etc/deipd/config.ini
+COPY ../contrib/config.ini /etc/deipd/config.ini
 COPY ../contrib/fullnode.config.ini /etc/deipd/fullnode.config.ini
 
 # add normal startup script that starts via sv
