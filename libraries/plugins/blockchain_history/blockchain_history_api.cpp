@@ -70,7 +70,7 @@ public:
 
             result_type result;
 
-            const auto& idx = _db->get_index<IndexType>().indices().get<by_id>();
+            const auto& idx = _db->get_index<IndexType>().indices().template get<by_id>();
             if (idx.empty())
                 return result;
 

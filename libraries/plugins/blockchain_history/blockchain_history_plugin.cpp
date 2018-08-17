@@ -99,7 +99,7 @@ public:
 private:
     template <typename history_object_type> void push_history(const operation_object& op) const
     {
-        const auto& hist_idx = _db.get_index<history_index<history_object_type>>().indices().get<by_account>();
+        const auto& hist_idx = _db.get_index<history_index<history_object_type>>().indices().template get<by_account>();
         auto hist_itr = hist_idx.lower_bound(boost::make_tuple(_item, uint32_t(-1)));
         uint32_t sequence = 0;
         if (hist_itr != hist_idx.end() && hist_itr->account == _item)
