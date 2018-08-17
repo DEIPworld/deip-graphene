@@ -428,6 +428,7 @@ protected:
     void process_content_activity_windows();
     void process_header_extensions(const signed_block& next_block);
     void clear_expired_invites();
+    void clear_expired_grants();
 
     void init_hardforks(fc::time_point_sec genesis_time);
     void process_hardforks();
@@ -444,6 +445,7 @@ protected:
     void init_research_content(const genesis_state_type& genesis_state);
     void init_research_groups(const genesis_state_type& genesis_state);
     void init_personal_research_groups(const genesis_state_type& genesis_state);
+    void init_genesis_vesting_contracts(const genesis_state_type& genesis_state);
 
 
 private:

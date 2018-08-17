@@ -1195,12 +1195,11 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
     auto& research_token_sale = research_token_sale_service.get_by_id(research_token_sale_id);
 
     const auto& idx = get_index<research_token_sale_contribution_index>().indicies().get<by_research_token_sale_id>();
-
     auto it = idx.find(research_token_sale_id);
 
     while (it != idx.end())
     {
-        auto transfer_amount = (it->amount * research_token_sale.balance_tokens) / research_token_sale.total_amount;
+        auto transfer_amount = (it->amount.amount * research_token_sale.balance_tokens) / research_token_sale.total_amount.amount;
 
         if (research_token_service.is_research_token_exists_by_account_name_and_research_id(
                 it->owner, research_token_sale.research_id))
@@ -1234,7 +1233,7 @@ void database::refund_research_tokens(const research_token_sale_id_type research
 
     while (it != it_end)
     {
-        account_service.increase_balance(account_service.get_account(it->owner), asset(it->amount, DEIP_SYMBOL));
+        account_service.increase_balance(account_service.get_account(it->owner), it->amount);
         remove(*it);
         it = idx.first;
     }
@@ -1698,8 +1697,13 @@ void database::process_grants()
     while (grants_itr != grants_idx.end())
     {
         auto& grant = *grants_itr;
-        grant_researches_in_discipline(grant.target_discipline, grant.per_block);
-        grant_service.allocate_funds(grant);
+        auto used_grant = grant_researches_in_discipline(grant.target_discipline, grant.per_block);
+
+        if (used_grant == 0 && grant.is_extendable)
+            modify(grant, [&](grant_object& g_o) { g_o.end_block++;} );
+        else if (used_grant != 0)
+            grant_service.allocate_funds(grant);
+
         ++grants_itr;
     }
 }
@@ -1778,7 +1782,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
-    _my->_evaluator_registry.register_evaluator<add_expertise_tokens_evaluator>();
+    _my->_evaluator_registry.register_evaluator<set_expertise_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<deposit_to_vesting_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_from_vesting_contract_evaluator>();
@@ -1786,6 +1790,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_expertise_evaluator>();
     _my->_evaluator_registry.register_evaluator<revoke_expertise_delegation_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
     _my->_evaluator_registry.register_evaluator<expertise_allocation_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_expertise_allocation_proposal_evaluator>();
 }
@@ -2043,6 +2048,7 @@ void database::_apply_block(const signed_block& next_block)
         clear_expired_transactions();
         clear_expired_proposals();
         clear_expired_invites();
+        clear_expired_grants();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
@@ -2058,6 +2064,8 @@ void database::_apply_block(const signed_block& next_block)
         process_content_activity_windows();
 
         process_hardforks();
+
+        process_grants();
 
         dynamic_global_properties_service.reset_used_expertise_per_block();
 
@@ -2436,6 +2444,12 @@ void database::clear_expired_invites()
 {
     auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
     research_group_invite_service.clear_expired_invites();
+}
+
+void database::clear_expired_grants()
+{
+    dbs_grant& grant_service = obtain_service<dbs_grant>();
+    grant_service.clear_expired_grants();
 }
 
 void database::adjust_balance(const account_object& a, const asset& delta)

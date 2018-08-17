@@ -143,10 +143,16 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
 
     bool is_personal = true;
 
+    std::map<uint16_t , share_type> personal_research_group_proposal_quorums;
+
+    for (int i = First_proposal; i <= Last_proposal; i++)
+        personal_research_group_proposal_quorums.insert(std::make_pair(i, DEIP_100_PERCENT));
+
     auto& personal_research_group = research_group_service.create_research_group(o.new_account_name,
                                                                                  o.new_account_name,
                                                                                  o.new_account_name,
                                                                                  DEIP_100_PERCENT,
+                                                                                 personal_research_group_proposal_quorums,
                                                                                  is_personal);
     research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
 
@@ -710,7 +716,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
     const auto& owner = account_service.get_account(op.owner);
     discipline_service.check_discipline_existence_by_name(op.target_discipline);
     auto& discipline = discipline_service.get_discipline_by_name(op.target_discipline);
-    grant_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id);
+    grant_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id, op.is_extendable, op.content_hash);
 }
 
 void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
@@ -733,9 +739,13 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
              ("min", _lifetime_min)("max", _lifetime_max)("actual", sec_till_expiration));
 
     auto& research_group = research_group_service.get_research_group(op.research_group_id);
-    auto quorum_percent = research_group.quorum_percent;
-    // the range must be checked in create_proposal_operation::validate()
+
     deip::protocol::proposal_action_type action = static_cast<deip::protocol::proposal_action_type>(op.action);
+    auto quorum_percent = research_group.quorum_percent;
+    if (research_group.proposal_quorums.count(action) != 0) {
+        quorum_percent  = research_group.proposal_quorums.at(action);
+    }
+    // the range must be checked in create_proposal_operation::validate()
 
     if (action == deip::protocol::proposal_action_type::invite_member ||
             action == deip::protocol::proposal_action_type::dropout_member ||
@@ -779,10 +789,17 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
     bool is_personal = false;
+
+    std::map<uint16_t, share_type> proposal_quorums;
+
+    for (auto& pair : op.proposal_quorums)
+        proposal_quorums.insert(std::make_pair(pair.first, pair.second));
+
     const research_group_object& research_group = research_group_service.create_research_group(op.name,
                                                                                                op.permlink,
                                                                                                op.description,
                                                                                                op.quorum_percent,
+                                                                                               proposal_quorums,
                                                                                                is_personal);
     
     research_group_service.create_research_group_token(research_group.id, DEIP_100_PERCENT, op.creator);
@@ -796,6 +813,8 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
 
 void make_review_evaluator::do_apply(const make_review_operation& op)
 {
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_review& review_service = _db.obtain_service<dbs_review>();
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
     dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
@@ -806,10 +825,15 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
     auto content = research_content_service.get(op.research_content_id);
+    auto& research = research_service.get_research(content.research_id);
+    auto reseach_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
+
+    for (auto& reseach_group_token : reseach_group_tokens)
+        FC_ASSERT(reseach_group_token.get().owner != op.author, "You cannot review your own content");
 
     auto expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
     auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(content.research_id);
-    std::map<discipline_id_type, share_type> review_disciplines_with_weght;
+    std::map<discipline_id_type, share_type> review_disciplines_with_weight;
     std::set<discipline_id_type> review_disciplines;
     std::set<discipline_id_type> research_disciplines_ids;
     for (auto rdr : research_discipline_relations) {
@@ -837,7 +861,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                 t.voting_power = current_power - used_power;
                 t.last_vote_time = _db.head_block_time();
             });
-            review_disciplines_with_weght.insert(std::make_pair(token.discipline_id, abs_used_tokens));
+            review_disciplines_with_weight.insert(std::make_pair(token.discipline_id, abs_used_tokens));
             review_disciplines.insert(token.discipline_id);
         }
     }
@@ -852,7 +876,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
         auto used_expertise = (op.weight * token.amount) / DEIP_100_PERCENT;
 
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
-            r.expertise_amounts_used[token.discipline_id] = review_disciplines_with_weght.at(token.discipline_id);
+            r.expertise_amounts_used[token.discipline_id] = review_disciplines_with_weight.at(token.discipline_id);
             r.weights_per_discipline[token.discipline_id] = 0;
             r.weight_modifiers[token.discipline_id] = 1;
         });
@@ -874,20 +898,19 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
     dbs_account &account_service = _db.obtain_service<dbs_account>();
     dbs_research_token_sale &research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
 
+    research_token_sale_service.check_research_token_sale_existence(op.research_token_sale_id);
     account_service.check_account_existence(op.owner);
 
     auto& account = account_service.get_account(op.owner);
-    FC_ASSERT(account.balance.amount >= op.amount, "Not enough funds to contribute");
 
-    research_token_sale_service.check_research_token_sale_existence(op.research_token_sale_id);
-    fc::time_point_sec contribution_time = _db.head_block_time();
+    FC_ASSERT(account.balance >= op.amount, "Not enough funds to contribute");
 
     auto& research_token_sale = research_token_sale_service.get_by_id(op.research_token_sale_id);
     FC_ASSERT(research_token_sale.status == research_token_sale_status::token_sale_active, "You cannot contribute to inactive, finished or expired token sale");
 
     bool is_hard_cap_reached = research_token_sale.total_amount + op.amount >= research_token_sale.hard_cap;
 
-    share_type amount_to_contribute = op.amount;
+    asset amount_to_contribute = op.amount;
     if (is_hard_cap_reached) {
         amount_to_contribute = research_token_sale.hard_cap - research_token_sale.total_amount;
     }
@@ -899,19 +922,17 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
         _db._temporary_public_impl().modify(*research_token_sale_contribution,
                                             [&](research_token_sale_contribution_object &rtsc_o) { rtsc_o.amount += amount_to_contribute; });
     } else {
+        fc::time_point_sec contribution_time = _db.head_block_time();
         research_token_sale_service.contribute(op.research_token_sale_id, op.owner,
                                                contribution_time, amount_to_contribute);
     }
-    
+
+    account_service.decrease_balance(account_service.get_account(op.owner), amount_to_contribute);
+    research_token_sale_service.increase_tokens_amount(op.research_token_sale_id, amount_to_contribute);
+
     if (is_hard_cap_reached) {
-        account_service.decrease_balance(account_service.get_account(op.owner), asset(amount_to_contribute));
-        research_token_sale_service.increase_tokens_amount(op.research_token_sale_id, amount_to_contribute);
         research_token_sale_service.update_status(op.research_token_sale_id, token_sale_finished);
         _db.distribute_research_tokens(op.research_token_sale_id);
-    }
-    else {
-        account_service.decrease_balance(account_service.get_account(op.owner), asset(amount_to_contribute));
-        research_token_sale_service.increase_tokens_amount(op.research_token_sale_id, amount_to_contribute);
     }
 }
 
@@ -972,16 +993,30 @@ void transfer_research_tokens_to_research_group_evaluator::do_apply(const transf
 
 }
 
-void add_expertise_tokens_evaluator::do_apply(const add_expertise_tokens_operation& op)
+void set_expertise_tokens_evaluator::do_apply(const set_expertise_tokens_operation& op)
 {
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+
     for (auto& discipline_to_add : op.disciplines_to_add)
     {
         FC_ASSERT(discipline_to_add.amount > 0, "Amount must be bigger than 0");
-        _db._temporary_public_impl().create<expert_token_object>([&](expert_token_object& et_o) {
-            et_o.account_name = op.account_name;
-            et_o.discipline_id = discipline_to_add.discipline_id;
-            et_o.amount = discipline_to_add.amount;
-        });
+        const bool exist = expert_token_service.is_expert_token_existence_by_account_and_discipline(op.account_name, discipline_to_add.discipline_id);
+        
+        if (exist)
+        {
+            const expert_token_object& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.account_name, discipline_to_add.discipline_id);
+            _db._temporary_public_impl().modify(expert_token, [&](expert_token_object& et_o) {
+                et_o.amount = discipline_to_add.amount;
+            });
+        } 
+        else 
+        {
+            _db._temporary_public_impl().create<expert_token_object>([&](expert_token_object& et_o) {
+                et_o.account_name = op.account_name;
+                et_o.discipline_id = discipline_to_add.discipline_id;
+                et_o.amount = discipline_to_add.amount;
+            });
+        }
     }
 }
 
@@ -1075,7 +1110,7 @@ void vote_proposal_evaluator::do_apply(const vote_proposal_operation& op)
         total_voted_weight += vote.weight.value;
     }
 
-    if (total_voted_weight  >= research_group.quorum_percent)
+    if (total_voted_weight  >= proposal.quorum_percent)
     {
         proposal_execution_service.execute_proposal(proposal);
         proposal_service.complete(proposal);

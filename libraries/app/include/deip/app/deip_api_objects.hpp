@@ -320,6 +320,8 @@ struct grant_api_obj
         , per_block(b.per_block)
         , start_block(b.start_block)
         , end_block(b.end_block)
+        , is_extendable(b.is_extendable)
+        , content_hash(fc::to_string(b.content_hash))
     {
     }
 
@@ -339,6 +341,9 @@ struct grant_api_obj
     share_type per_block;
     uint32_t start_block;
     uint32_t end_block;
+
+    bool is_extendable;
+    string content_hash;
 };
 
 struct discipline_api_obj
@@ -545,6 +550,8 @@ struct research_group_api_obj
         ,  quorum_percent(rg.quorum_percent.value)
         ,  is_personal(rg.is_personal)
     {
+        for (auto& proposal_quorum : rg.proposal_quorums)
+            proposal_quorums.insert(std::make_pair(static_cast<uint16_t>(proposal_quorum.first), proposal_quorum.second.value));
     }
 
     // because fc::variant require for temporary object
@@ -557,6 +564,7 @@ struct research_group_api_obj
     std::string permlink;
     std::string description;
     uint32_t quorum_percent;
+    std::map<uint16_t, uint32_t> proposal_quorums;
     bool is_personal;
 };
 
@@ -583,10 +591,10 @@ struct research_token_sale_api_obj
     int64_t research_id;
     time_point_sec start_time;
     time_point_sec end_time;
-    share_type total_amount;
+    asset total_amount;
     share_type balance_tokens;
-    share_type soft_cap;
-    share_type hard_cap;
+    asset soft_cap;
+    asset hard_cap;
     uint16_t status;
 };
 
@@ -608,7 +616,7 @@ struct research_token_sale_contribution_api_obj
     int64_t id;
     int64_t research_token_sale_id;
     account_name_type owner;
-    share_type amount;
+    asset amount;
     time_point_sec contribution_time;
 };
 
@@ -887,6 +895,8 @@ FC_REFLECT( deip::app::grant_api_obj,
             (per_block)
             (start_block)
             (end_block)
+            (is_extendable)
+            (content_hash)
           )
 
 FC_REFLECT( deip::app::discipline_api_obj,
@@ -969,6 +979,7 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (permlink)
             (description)
             (quorum_percent)
+            (proposal_quorums)
             (is_personal)
 )
 

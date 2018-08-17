@@ -346,8 +346,7 @@ public:
             = fc::get_approximate_relative_time_string(dynamic_props.time, time_point_sec(time_point::now()), " old");
         result["participation"] = (100 * dynamic_props.recent_slots_filled.popcount()) / 128.0;
         result["account_creation_fee"] = _remote_db->get_chain_properties().account_creation_fee;
-        result["post_reward_fund"]
-            = fc::variant(_remote_db->get_reward_fund(DEIP_POST_REWARD_FUND_NAME)).get_object();
+
         return result;
     }
 
@@ -2117,7 +2116,7 @@ annotated_signed_transaction wallet_api::make_review(const std::string& author,
 
 annotated_signed_transaction wallet_api::contribute_to_token_sale(const int64_t research_token_sale_id,
                                                                   const std::string& owner,
-                                                                  const uint32_t amount,
+                                                                  const asset& amount,
                                                                   const bool broadcast)
 {
     FC_ASSERT(!is_locked());

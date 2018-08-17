@@ -143,6 +143,8 @@ void create_grant_operation::validate() const
     validate_account_name(owner);
     FC_ASSERT(is_asset_type(balance, DEIP_SYMBOL), "Balance must be DEIP");
     FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Balance must be positive");
+    FC_ASSERT(content_hash.size() > 0, "Content hash must be specified");
+    FC_ASSERT(fc::is_utf8(content_hash), "Content hash is not valid UTF8 string");
 }
 
 void create_proposal_operation::validate() const
@@ -160,7 +162,9 @@ void create_research_group_operation::validate() const
     FC_ASSERT(name.size() > 0, "Group name must be specified");
     FC_ASSERT(fc::is_utf8(name), "Group name is not valid UTF8 string");
     FC_ASSERT(fc::is_utf8(description), "Description is not valid UTF8 string");
-    FC_ASSERT(quorum_percent > 5 * DEIP_1_PERCENT && quorum_percent <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
+    FC_ASSERT(quorum_percent >= 5 * DEIP_1_PERCENT && quorum_percent <= DEIP_100_PERCENT, "Default proposal quorum must be in 0% to 100% range");
+        for(auto& quorum_percent : proposal_quorums)
+        FC_ASSERT(quorum_percent.second > 5 * DEIP_1_PERCENT && quorum_percent.second <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
 
     auto total_tokens_percents = share_type(0);
     for (auto& invitee : invitees) {
@@ -188,7 +192,8 @@ void make_review_operation::validate() const
 void contribute_to_token_sale_operation::validate() const
 {
     validate_account_name(owner);
-    FC_ASSERT(amount > 0, "Amount must be greater than 0");
+    FC_ASSERT(amount.amount > 0, "Amount must be greater than 0");
+    FC_ASSERT(amount.symbol == DEIP_SYMBOL, "Incorrect asset symbol");
 }
 
 void approve_research_group_invite_operation::validate() const
@@ -207,7 +212,7 @@ void transfer_research_tokens_to_research_group_operation::validate() const
     validate_account_name(owner);
 }    
 
-void add_expertise_tokens_operation::validate() const
+void set_expertise_tokens_operation::validate() const
 {
     validate_account_name(owner);
     validate_account_name(account_name);

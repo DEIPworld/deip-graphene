@@ -12,9 +12,9 @@ dbs_research_token_sale::dbs_research_token_sale(database& db)
 const research_token_sale_object& dbs_research_token_sale::start(const research_id_type &research_id,
                                                                  const fc::time_point_sec start_time,
                                                                  const fc::time_point_sec end_time,
-                                                                 const deip::chain::share_type balance_tokens,
-                                                                 const deip::chain::share_type soft_cap,
-                                                                 const deip::chain::share_type hard_cap)
+                                                                 const share_type& balance_tokens,
+                                                                 const asset soft_cap,
+                                                                 const asset hard_cap)
 {
     FC_ASSERT(start_time >= db_impl().head_block_time(), "Start time must be >= current time");
     FC_ASSERT(end_time > start_time, "End time must be >= start time");
@@ -23,7 +23,7 @@ const research_token_sale_object& dbs_research_token_sale::start(const research_
               research_token_sale.research_id = research_id;
               research_token_sale.start_time = start_time;
               research_token_sale.end_time = end_time;
-              research_token_sale.total_amount = 0;
+              research_token_sale.total_amount = asset(0, DEIP_SYMBOL);
               research_token_sale.balance_tokens = balance_tokens;
               research_token_sale.soft_cap = soft_cap;
               research_token_sale.hard_cap = hard_cap;
@@ -89,7 +89,7 @@ void dbs_research_token_sale::check_research_token_sale_existence(const research
 }
 
 const research_token_sale_object& dbs_research_token_sale::increase_tokens_amount(const research_token_sale_id_type &id,
-                                                                                  const share_type amount)
+                                                                                  const asset &amount)
 {
     const research_token_sale_object& research_token_sale = get_by_id(id);
     db_impl().modify(research_token_sale, [&](research_token_sale_object& rts) { rts.total_amount += amount; });
@@ -108,7 +108,7 @@ const research_token_sale_contribution_object&
     dbs_research_token_sale::contribute(const research_token_sale_id_type &research_token_sale_id,
                                         const account_name_type &owner,
                                         const fc::time_point_sec contribution_time,
-                                        const deip::chain::share_type amount)
+                                        const asset amount)
 {
     const auto& new_research_token_sale_contribution
             = db_impl().create<research_token_sale_contribution_object>([&](research_token_sale_contribution_object& research_token_sale_contribution) {

@@ -21,7 +21,6 @@
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_vote.hpp>
-#include <deip/chain/dbs_proposal_execution.hpp>
 
 #include <deip/chain/dbs_base_impl.hpp>
 #include <deip/chain/proposal_object.hpp>
@@ -74,7 +73,7 @@ protected:
     void invite(const proposal_object& proposal);
     void dropout(const proposal_object& proposal);
     void change_research_review_share(const proposal_object& proposal);
-    void change_quorum(const proposal_object& proposal);
+    void change_proposal_quorum(const proposal_object &proposal);
     void start_research(const proposal_object& proposal);
     void send_funds(const proposal_object& proposal);
     void rebalance_research_group_tokens(const proposal_object& proposal);

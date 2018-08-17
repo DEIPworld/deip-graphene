@@ -29,6 +29,8 @@ public:
         create_grant_op.start_block = 0;
         create_grant_op.end_block = 1;
         create_grant_op.target_discipline = "1";
+        create_grant_op.is_extendable = false;
+        create_grant_op.content_hash = "hash";
     }
 
     create_grant_operation create_grant_op;

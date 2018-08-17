@@ -53,7 +53,8 @@ struct genesis_state_type
         std::string name;
         std::string description;
         std::string permlink;
-        uint16_t quorum_percent;
+        uint32_t quorum_percent;
+        std::map<uint16_t, uint32_t> proposal_quorums;
         std::vector<std::string> members;
         bool is_personal;
     };
@@ -81,6 +82,16 @@ struct genesis_state_type
         std::vector<std::string> authors;
         std::vector<int64_t> references;
     };
+
+    struct vesting_contract_type
+    {
+        dc::vesting_contract_id_type id;
+        std::string sender;
+        std::string receiver;
+        uint16_t balance;
+        uint32_t withdrawal_periods;
+        uint16_t contract_duration;
+    };
     
     genesis_state_type()
         : init_supply(0)
@@ -102,6 +113,7 @@ struct genesis_state_type
     std::vector<research_group_type> research_groups;
     std::vector<research_type> researches;
     std::vector<research_content_type> research_contents;
+    std::vector<vesting_contract_type> vesting_contracts;
 
     sp::chain_id_type initial_chain_id;
 };
@@ -143,6 +155,7 @@ FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
            (description)
            (permlink)
            (quorum_percent)
+           (proposal_quorums)
            (members)
            (is_personal))
 
@@ -168,6 +181,13 @@ FC_REFLECT(deip::chain::genesis_state_type::research_content_type,
            (authors)
            (references))
 
+FC_REFLECT(deip::chain::genesis_state_type::vesting_contract_type,
+           (id)
+           (sender)
+           (receiver)
+           (balance)
+           (withdrawal_periods)
+           (contract_duration))
 
 FC_REFLECT(deip::chain::genesis_state_type,
            (init_supply)
@@ -180,5 +200,6 @@ FC_REFLECT(deip::chain::genesis_state_type,
            (research_groups)
            (researches)
            (research_contents)
-           (initial_chain_id))
+           (initial_chain_id)
+           (vesting_contracts))
 // clang-format on

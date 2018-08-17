@@ -8,7 +8,8 @@ LATEST="latest"
 export IMAGE_NAME="deipdev/testnet:$TAG"
 export LATEST_IMAGE_NAME="deipdev/testnet:$LATEST"
 
-docker build -t=${IMAGE_NAME} -f Dockerfile.testnet .
+docker build -t=${IMAGE_NAME} -f Dockerfile --build-arg build_testnet=ON .
 docker tag ${IMAGE_NAME} ${LATEST_IMAGE_NAME}
 docker login --username=${DOCKER_USER} --password=${DOCKER_PASSWORD}
-docker push deipdev/testnet
+docker push ${IMAGE_NAME}
+docker push ${LATEST_IMAGE_NAME}

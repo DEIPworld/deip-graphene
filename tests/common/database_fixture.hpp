@@ -109,14 +109,15 @@ struct database_fixture
                                                        const string& permlink,
                                                        const string& desciption,
                                                        const share_type funds,
-                                                       const share_type quorum_percent,
+                                                       const std::map<uint16_t, share_type>& proposal_quorums,
                                                        const bool is_personal);
                                                        
     const research_group_object& research_group_create_by_operation(const account_name_type& creator,
                                                                     const string& name,
                                                                     const string& permlink,
                                                                     const string& description,
-                                                                    const uint32_t quorum_percent,
+                                                                    const uint32_t& quorum_percent,
+                                                                    const std::map<uint16_t, uint32_t>& proposal_quorums,
                                                                     const bool is_personal);
 
     const research_group_token_object& research_group_token_create(const research_group_id_type& research_group_id,
@@ -128,7 +129,7 @@ struct database_fixture
                                                       const string &permlink,
                                                       const string &desciption,
                                                       const share_type funds,
-                                                      const share_type quorum_percent,
+                                                      const std::map<uint16_t, share_type> proposal_quorums,
                                                       const bool is_personal,
                                                       const vector<std::pair<account_name_type, share_type>> &accounts);
 

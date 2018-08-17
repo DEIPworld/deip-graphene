@@ -17,6 +17,7 @@
 #include <deip/chain/proposal_vote_object.hpp>
 
 #include <fc/io/json.hpp>
+#include <deip/chain/vesting_contract_object.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
@@ -89,6 +90,7 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_personal_research_groups(genesis_state);
         init_research(genesis_state);
         init_research_content(genesis_state);
+        //init_genesis_vesting_contracts(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
@@ -323,8 +325,7 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
         FC_ASSERT(!research_group.name.empty(), "Research group 'name' must be specified");
         FC_ASSERT(!research_group.permlink.empty(), "Research group 'permlink' must be specified");
         FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
-        FC_ASSERT(research_group.quorum_percent >= 5 * DEIP_1_PERCENT && research_group.quorum_percent <= DEIP_100_PERCENT,
-                  "Quorum percent should be in 5% to 100% range");
+        FC_ASSERT(research_group.quorum_percent >= 5 * DEIP_1_PERCENT && research_group.quorum_percent <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
 
         create<research_group_object>([&](research_group_object& rg) {
             rg.id = research_group.id;
@@ -333,6 +334,13 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
             fc::from_string(rg.permlink, research_group.permlink);
             rg.balance = asset(0, DEIP_SYMBOL);
             rg.quorum_percent = research_group.quorum_percent;
+
+            std::map<uint16_t , share_type> proposal_quorums;
+
+            for (int i = First_proposal; i <= Last_proposal; i++)
+                proposal_quorums.insert(std::make_pair(i, research_group.quorum_percent));
+
+            rg.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
             rg.is_personal = research_group.is_personal;
         });
 
@@ -358,11 +366,16 @@ void database::init_personal_research_groups(const genesis_state_type& genesis_s
         FC_ASSERT(!account.name.empty(), "Account 'name' should not be empty.");
         FC_ASSERT(is_valid_account_name(account.name), "Account name ${n} is invalid", ("n", account.name));
 
+        std::map<uint16_t, share_type> personal_research_group_proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            personal_research_group_proposal_quorums.insert(std::make_pair(i, DEIP_100_PERCENT));
+
         auto& research_group = create<research_group_object>([&](research_group_object& research_group) {
             fc::from_string(research_group.name, account.name);
             fc::from_string(research_group.permlink, account.name);
             fc::from_string(research_group.description, account.name);
-            research_group.quorum_percent = DEIP_100_PERCENT;
+            research_group.proposal_quorums.insert(personal_research_group_proposal_quorums.begin(), personal_research_group_proposal_quorums.end());
             research_group.is_personal = true;
         });
 
@@ -370,6 +383,33 @@ void database::init_personal_research_groups(const genesis_state_type& genesis_s
             research_group_token.research_group_id = research_group.id;
             research_group_token.amount = DEIP_100_PERCENT;
             research_group_token.owner = account.name;
+        });
+    }
+}
+
+void database::init_genesis_vesting_contracts(const genesis_state_type& genesis_state)
+{
+    const vector<genesis_state_type::vesting_contract_type>& vesting_contracts = genesis_state.vesting_contracts;
+
+    for (auto& vesting_contract : vesting_contracts)
+    {
+
+        FC_ASSERT(vesting_contract.balance > 0, "Deposit balance must be greater than 0");
+        FC_ASSERT(vesting_contract.withdrawal_periods > 0, "You must divide contract at least by 1 part");
+        FC_ASSERT(vesting_contract.contract_duration > 0, "Contract duration must be longer than 0");
+
+        FC_ASSERT(!vesting_contract.sender.empty(), "Account 'name' should not be empty.");
+        FC_ASSERT(is_valid_account_name(vesting_contract.sender), "Account name ${n} is invalid", ("n", vesting_contract.sender));
+        FC_ASSERT(!vesting_contract.receiver.empty(), "Account 'name' should not be empty.");
+        FC_ASSERT(is_valid_account_name(vesting_contract.receiver), "Account name ${n} is invalid", ("n", vesting_contract.receiver));
+
+        auto& research_group = create<vesting_contract_object>([&](vesting_contract_object& v) {
+            v.id = vesting_contract.id;
+            v.sender = vesting_contract.sender;
+            v.receiver = vesting_contract.receiver;
+            v.balance = asset(vesting_contract.balance, DEIP_SYMBOL);
+            v.withdrawal_periods = vesting_contract.withdrawal_periods;
+            v.contract_duration = fc::time_point_sec(vesting_contract.contract_duration);
         });
     }
 }

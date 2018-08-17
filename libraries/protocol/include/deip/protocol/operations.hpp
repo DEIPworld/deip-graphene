@@ -40,7 +40,7 @@ namespace deip {
                 approve_research_group_invite_operation,
                 reject_research_group_invite_operation,
                 transfer_research_tokens_to_research_group_operation,
-                add_expertise_tokens_operation,
+                set_expertise_tokens_operation,
                 research_update_operation,
                 deposit_to_vesting_contract_operation,
                 withdraw_from_vesting_contract_operation,

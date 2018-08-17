@@ -83,7 +83,7 @@ public:
     void pre_operation(const operation_notification& note);
     void on_block(const signed_block& b);
 
-    void update_account_bandwidth(const account_object& a, uint32_t trx_size, const bandwidth_type type);
+    void update_account_bandwidth(const account_object& account, uint32_t trx_size, const bandwidth_type type);
 
     witness_plugin& _self;
 };
@@ -283,7 +283,7 @@ void witness_plugin_impl::on_block(const signed_block& b)
     }
 }
 
-void witness_plugin_impl::update_account_bandwidth(const account_object& a,
+void witness_plugin_impl::update_account_bandwidth(const account_object& account,
                                                    uint32_t trx_size,
                                                    const bandwidth_type type)
 {
@@ -294,12 +294,12 @@ void witness_plugin_impl::update_account_bandwidth(const account_object& a,
 
     if ((props.total_common_tokens_amount.value + props.total_expert_tokens_amount.value) > 0)
     {
-        auto band = _db.find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(a.name, type));
+        auto band = _db.find<account_bandwidth_object, by_account_bandwidth_type>(boost::make_tuple(account.name, type));
 
         if (band == nullptr)
         {
             band = &_db.create<account_bandwidth_object>([&](account_bandwidth_object& b) {
-                b.account = a.name;
+                b.account = account.name;
                 b.type = type;
             });
         }
@@ -324,23 +324,29 @@ void witness_plugin_impl::update_account_bandwidth(const account_object& a,
             b.last_bandwidth_update = _db.head_block_time();
         });
         
-        fc::uint128 total_account_common_tokens_amount(a.common_tokens_balance.value);
-        fc::uint128 total_account_expert_tokens_amount(a.expertise_tokens_balance.value);
-        fc::uint128 total_common_tokens_amount(props.total_common_tokens_amount.value);   
-        fc::uint128 total_expert_tokens_amount(props.total_expert_tokens_amount.value);
+        fc::uint128 common_tokens_balance(account.common_tokens_balance.value);
+        fc::uint128 expertise_tokens_balance(account.expertise_tokens_balance.value);
+        fc::uint128 total_common_tokens_amount(props.total_common_tokens_amount.value);
+        fc::uint128 total_expertise_tokens_amount(props.total_expert_tokens_amount.value);
 
         fc::uint128 account_average_bandwidth(band->average_bandwidth.value);
         fc::uint128 max_virtual_bandwidth(_db.get(reserve_ratio_id_type()).max_virtual_bandwidth);
 
-        has_bandwidth = ((((total_account_common_tokens_amount * 10 * DEIP_1_PERCENT / DEIP_100_PERCENT) + (total_account_expert_tokens_amount * 90 * DEIP_1_PERCENT/DEIP_100_PERCENT)) * max_virtual_bandwidth) > (account_average_bandwidth * (total_common_tokens_amount + total_expert_tokens_amount)));
+        fc::uint128 common_tokens_bandwidth = (max_virtual_bandwidth * 20 * DEIP_1_PERCENT) / DEIP_100_PERCENT;
+        fc::uint128 expertise_tokens_bandwidth = (max_virtual_bandwidth * 80 * DEIP_1_PERCENT) / DEIP_100_PERCENT;
+
+        auto account_common_tokens_bandwidth = (common_tokens_bandwidth * common_tokens_balance) / total_common_tokens_amount;
+        auto account_expertise_tokens_bandwidth = (expertise_tokens_bandwidth * expertise_tokens_balance) / total_expertise_tokens_amount;
+
+        has_bandwidth = account_common_tokens_bandwidth + account_expertise_tokens_bandwidth > account_average_bandwidth;
 
         if (_db.is_producing())
             DEIP_ASSERT(has_bandwidth, chain::plugin_exception,
                         "Account: ${account} bandwidth limit exceeded. Please wait to transact or power up DEIP.",
-                        ("account", a.name)("total_account_common_tokens_amount", total_account_common_tokens_amount)(
-                            "total_account_expert_tokens_amount",
-                            total_account_expert_tokens_amount)("account_average_bandwidth", account_average_bandwidth)(
-                            "max_virtual_bandwidth", max_virtual_bandwidth)("total_common_tokens_amount", total_common_tokens_amount)("total_expert_tokens_amount", total_expert_tokens_amount));
+                        ("account", account.name)("common_tokens_balance", common_tokens_balance)(
+                            "expertise_tokens_balance",
+                            expertise_tokens_balance)("account_average_bandwidth", account_average_bandwidth)(
+                            "max_virtual_bandwidth", max_virtual_bandwidth)("total_common_tokens_amount", total_common_tokens_amount)("total_expertise_tokens_amount", total_expertise_tokens_amount));
     }
 }
 }
