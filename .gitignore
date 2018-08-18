@@ -46,7 +46,6 @@ build
 wallet.json
 witness_node_data_dir
 
-*.wallet
 
 #Mergetool
 *.orig

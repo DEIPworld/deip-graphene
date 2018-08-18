@@ -1,2 +1,5 @@
 build
 cmake-build-*
+logs
+.vscode
+doxygen
