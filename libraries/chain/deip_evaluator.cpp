@@ -927,8 +927,6 @@ void vote_proposal_evaluator::do_apply(const vote_proposal_operation& op)
 
     proposal_service.vote_for(op.proposal_id, op.voter);
 
-    const research_group_object& research_group = research_group_service.get_research_group(proposal.research_group_id);
-
     float total_voted_weight = 0;
     auto& votes = proposal_service.get_votes_for(proposal.id);
     for (const proposal_vote_object& vote : votes) {
