@@ -3480,7 +3480,7 @@ BOOST_AUTO_TEST_CASE(research_token_sale_data_validate_test)
 
 BOOST_AUTO_TEST_CASE(create_research_material)
 {
-    ACTORS_WITH_EXPERT_TOKENS((alice))
+    ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(john))
     std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
     std::map<uint16_t, share_type> proposal_quorums;
 
@@ -3543,20 +3543,59 @@ BOOST_AUTO_TEST_CASE(create_research_material)
                 && content.references.size() == 1;
         }));
 
-    db.create<total_votes_object>([&](total_votes_object& r) {
-        r.id = 10,
-        r.research_id = 1;
+    db.create<review_object>([&](review_object& r) {
+        bip::map<discipline_id_type, share_type> weights_per_discipline;
+        weights_per_discipline[1] = 100;
+        weights_per_discipline[2] = 200;
+        r.id = 0;
         r.research_content_id = 0;
-        r.discipline_id = 1;
-        r.total_weight = 2000;
+        r.weights_per_discipline.insert(weights_per_discipline.begin(), weights_per_discipline.end());
+        r.author = "john";
+        r.is_positive = true;
     });
 
-    db.create<total_votes_object>([&](total_votes_object& r) {
-        r.id = 20,
-        r.research_id = 1;
+    db.create<review_object>([&](review_object& r) {
+        bip::map<discipline_id_type, share_type> weights_per_discipline;
+        weights_per_discipline[1] = 150;
+        weights_per_discipline[2] = 250;
+        r.id = 1;
         r.research_content_id = 0;
-        r.discipline_id = 2;
-        r.total_weight = 1000;
+        r.weights_per_discipline.insert(weights_per_discipline.begin(), weights_per_discipline.end());
+        r.author = "bob";
+        r.is_positive = true;
+    });
+
+    db.create<research_content_object>([&](research_content_object& rc) {
+        rc.id = 1; // id of the first element in index is 0
+        rc.research_id = 1;
+        rc.type = research_content_type::milestone;
+        rc.title = "title for milestone for Research #1123";
+        rc.content = "milestone2 for Research #1123";
+        rc.permlink = "milestone2-research-one";
+        rc.authors = {"alice"};
+        rc.created_at = db.head_block_time();
+    });
+
+    db.create<review_object>([&](review_object& r) {
+        bip::map<discipline_id_type, share_type> weights_per_discipline;
+        weights_per_discipline[1] = 50;
+        weights_per_discipline[2] = 100;
+        r.id = 2;
+        r.research_content_id = 1;
+        r.weights_per_discipline.insert(weights_per_discipline.begin(), weights_per_discipline.end());
+        r.author = "john";
+        r.is_positive = false;
+    });
+
+    db.create<review_object>([&](review_object& r) {
+        bip::map<discipline_id_type, share_type> weights_per_discipline;
+        weights_per_discipline[1] = 250;
+        weights_per_discipline[2] = 50;
+        r.id = 3;
+        r.research_content_id = 1;
+        r.weights_per_discipline.insert(weights_per_discipline.begin(), weights_per_discipline.end());
+        r.author = "bob";
+        r.is_positive = true;
     });
 
     const std::string json_str2 = "{\"research_id\": 1,"
@@ -3581,20 +3620,17 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     tx2.validate();
     db.push_transaction(tx2, 0);
 
-    auto& proposal_create_material = proposal_service.get_proposal(3);
-    BOOST_CHECK(proposal_create_material.is_completed == true);
+    auto& total_vote = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(2, 1));
+    auto& total_vote2 = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(2, 2));
 
-    auto& total_vote = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(1, 1));
-    auto& total_vote2 = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(1, 2));
-
-    BOOST_CHECK(total_vote.total_weight == 2000);
-    BOOST_CHECK(total_vote2.total_weight == 1000);
+    BOOST_CHECK(total_vote.total_weight == 300);
+    BOOST_CHECK(total_vote2.total_weight == 350);
 
     auto& discipline = db.get<discipline_object, by_id>(1);
     auto& discipline2 = db.get<discipline_object, by_id>(2);
 
-    BOOST_CHECK(discipline.total_active_weight == 2000);
-    BOOST_CHECK(discipline2.total_active_weight == 1000);
+    BOOST_CHECK(discipline.total_active_weight == 300);
+    BOOST_CHECK(discipline2.total_active_weight == 350);
 }
 
 BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
