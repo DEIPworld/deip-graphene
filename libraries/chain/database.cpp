@@ -1199,11 +1199,9 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
     {
         auto transfer_amount = (it->amount.amount * research_token_sale.balance_tokens) / research_token_sale.total_amount.amount;
 
-        if (research_token_service.is_research_token_exists_by_account_name_and_research_id(
-                it->owner, research_token_sale.research_id))
+        if (research_token_service.exists_by_owner_and_research(it->owner, research_token_sale.research_id))
         {
-            auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id(
-                it->owner, research_token_sale.research_id);
+            auto& research_token = research_token_service.get_by_owner_and_research(it->owner, research_token_sale.research_id);
             research_token_service.increase_research_token_amount(research_token, transfer_amount);
         }
         else

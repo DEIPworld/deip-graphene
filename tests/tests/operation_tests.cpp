@@ -2566,7 +2566,6 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_to_research_group_apply)
         op.research_id = 1;
         op.amount = 50 * DEIP_1_PERCENT;
         op.owner = "alice";
-        op.research_token_id = 1;
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -2963,7 +2962,7 @@ BOOST_AUTO_TEST_CASE(exclude_member_with_research_token_compensation_test)
         db.push_transaction(tx, 0);
 
         auto& research_token_service = db.obtain_service<dbs_research_token>();
-        auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", research.id);
+        auto& research_token = research_token_service.get_by_owner_and_research("bob", research.id);
 
         BOOST_CHECK_THROW(research_group_service.get_token_by_account_and_research_group("bob", 1), fc::exception);
         BOOST_CHECK(research_token.account_name == "bob");
@@ -3820,7 +3819,6 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_apply)
         op.amount = 40 * DEIP_1_PERCENT;
         op.sender = "alice";
         op.receiver = "bob";
-        op.research_token_id = 0;
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -3840,7 +3838,6 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_apply)
         op2.amount = 10 * DEIP_1_PERCENT;
         op2.sender = "alice";
         op2.receiver = "bob";
-        op2.research_token_id = 0;
 
         signed_transaction tx2;
         tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);

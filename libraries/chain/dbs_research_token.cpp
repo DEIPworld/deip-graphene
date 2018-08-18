@@ -36,7 +36,7 @@ void dbs_research_token::decrease_research_token_amount(const research_token_obj
     db_impl().modify(research_token, [&](research_token_object& rt_o) { rt_o.amount -= delta; });
 }
 
-const research_token_object& dbs_research_token::get_research_token(const research_token_id_type &id) const
+const research_token_object& dbs_research_token::get(const research_token_id_type &id) const
 {
     try {
         return db_impl().get<research_token_object>(id);
@@ -44,11 +44,11 @@ const research_token_object& dbs_research_token::get_research_token(const resear
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-dbs_research_token::research_token_refs_type dbs_research_token::get_research_tokens_by_account_name(const account_name_type &account_name) const
+dbs_research_token::research_token_refs_type dbs_research_token::get_by_owner(const account_name_type &owner) const
 {
     research_token_refs_type ret;
 
-    auto it_pair = db_impl().get_index<research_token_index>().indicies().get<by_account_name>().equal_range(account_name);
+    auto it_pair = db_impl().get_index<research_token_index>().indicies().get<by_account_name>().equal_range(owner);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end){
@@ -59,7 +59,7 @@ dbs_research_token::research_token_refs_type dbs_research_token::get_research_to
     return ret;
 }
 
-dbs_research_token::research_token_refs_type dbs_research_token::get_research_tokens_by_research_id(const research_id_type &research_id) const
+dbs_research_token::research_token_refs_type dbs_research_token::get_by_research(const research_id_type &research_id) const
 {
     research_token_refs_type ret;
 
@@ -74,31 +74,31 @@ dbs_research_token::research_token_refs_type dbs_research_token::get_research_to
     return ret;
 }
 
-const research_token_object& dbs_research_token::get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
+const research_token_object& dbs_research_token::get_by_owner_and_research(const account_name_type &owner,
                                                                                          const research_id_type &research_id) const
 {
     try {
         return db_impl().get<research_token_object, by_account_name_and_research_id>(
-                boost::make_tuple(account_name, research_id));
+                boost::make_tuple(owner, research_id));
     }
-    FC_CAPTURE_AND_RETHROW((account_name)(research_id))
+    FC_CAPTURE_AND_RETHROW((owner)(research_id))
 }
 
-void dbs_research_token::check_research_token_existence_by_account_name_and_research_id(const account_name_type& account_name,
+void dbs_research_token::check_existence_by_owner_and_research(const account_name_type& owner,
                                                                                         const research_id_type& research_id)
 {
     const auto& idx = db_impl().get_index<research_token_index>().indices().get<by_account_name_and_research_id>();
     
-    FC_ASSERT(idx.find(boost::make_tuple(account_name, research_id)) != idx.cend(), "Research token doesnt exist");
+    FC_ASSERT(idx.find(boost::make_tuple(owner, research_id)) != idx.cend(), "Research token doesnt exist");
 
 }
 
-bool dbs_research_token::is_research_token_exists_by_account_name_and_research_id(const account_name_type& account_name,
+bool dbs_research_token::exists_by_owner_and_research(const account_name_type& owner,
                                                                                   const research_id_type& research_id)
 {
     const auto& idx = db_impl().get_index<research_token_index>().indices().get<by_account_name_and_research_id>();
 
-    return idx.find(boost::make_tuple(account_name, research_id)) != idx.cend();
+    return idx.find(boost::make_tuple(owner, research_id)) != idx.cend();
 }
 
 } //namespace chain

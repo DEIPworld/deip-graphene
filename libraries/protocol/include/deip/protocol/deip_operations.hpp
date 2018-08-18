@@ -571,7 +571,6 @@ struct reject_research_group_invite_operation : public base_operation
 
 struct transfer_research_tokens_to_research_group_operation : public base_operation
 {
-    int64_t research_token_id;
     int64_t research_id;
     account_name_type owner;
     uint32_t amount;
@@ -644,7 +643,6 @@ struct withdraw_from_vesting_contract_operation : public base_operation
 
 struct transfer_research_tokens_operation : public base_operation
 {
-    int64_t research_token_id;
     int64_t research_id;
     account_name_type sender;
     account_name_type receiver;
@@ -739,12 +737,12 @@ FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_token_
 FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
-FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_token_id)(research_id)(owner)(amount))
+FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_id)(owner)(amount))
 FC_REFLECT( deip::protocol::set_expertise_tokens_operation, (owner)(account_name)(disciplines_to_add))
 FC_REFLECT( deip::protocol::research_update_operation, (research_id)(title)(abstract)(permlink)(owner))
 FC_REFLECT( deip::protocol::deposit_to_vesting_contract_operation, (sender)(receiver)(balance)(withdrawal_period)(contract_duration))
 FC_REFLECT( deip::protocol::withdraw_from_vesting_contract_operation, (sender)(receiver)(amount))
-FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_token_id)(research_id)(sender)(receiver)(amount))
+FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_id)(sender)(receiver)(amount))
 FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(discipline_id))
 FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(receiver)(discipline_id))
 

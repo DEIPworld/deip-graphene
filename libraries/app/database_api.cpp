@@ -1721,7 +1721,7 @@ research_token_api_obj database_api::get_research_token_by_id(const research_tok
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_token& research_token_service
             = my->_db.obtain_service<chain::dbs_research_token>();
-        return research_token_service.get_research_token(research_token_id);
+        return research_token_service.get(research_token_id);
     });
 }
 
@@ -1732,7 +1732,7 @@ vector<research_token_api_obj> database_api::get_research_tokens_by_account_name
         chain::dbs_research_token& research_token_service
                 = my->_db.obtain_service<chain::dbs_research_token>();
 
-        auto research_tokens = research_token_service.get_research_tokens_by_account_name(account_name);
+        auto research_tokens = research_token_service.get_by_owner(account_name);
 
         for (const chain::research_token_object& research_token : research_tokens)
             results.push_back(research_token);
@@ -1748,7 +1748,7 @@ vector<research_token_api_obj> database_api::get_research_tokens_by_research_id(
         chain::dbs_research_token& research_token_service
                 = my->_db.obtain_service<chain::dbs_research_token>();
 
-        auto research_tokens = research_token_service.get_research_tokens_by_research_id(research_id);
+        auto research_tokens = research_token_service.get_by_research(research_id);
 
         for (const chain::research_token_object& research_token : research_tokens)
             results.push_back(research_token);
@@ -1763,7 +1763,7 @@ research_token_api_obj database_api::get_research_token_by_account_name_and_rese
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_token& research_token_service
                 = my->_db.obtain_service<chain::dbs_research_token>();
-        return research_token_service.get_research_token_by_account_name_and_research_id(account_name, research_id);
+        return research_token_service.get_by_owner_and_research(account_name, research_id);
     });
 }
 
