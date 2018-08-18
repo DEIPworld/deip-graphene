@@ -1858,12 +1858,11 @@ annotated_signed_transaction wallet_api::set_withdraw_common_tokens_route(
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction
-wallet_api::transfer_research_tokens(const int64_t research_token_id, const int64_t research_id, const std::string& from, const std::string& to, const uint32_t amount, bool broadcast)
+annotated_signed_transaction wallet_api::transfer_research_tokens(const int64_t research_id, const std::string& from,
+                                                                  const std::string& to, const uint32_t amount, bool broadcast)
 {
     FC_ASSERT(!is_locked());
     transfer_research_tokens_operation op;
-    op.research_token_id = research_token_id;
     op.research_id = research_id;
     op.sender = from;
     op.receiver = to;
@@ -2171,8 +2170,7 @@ annotated_signed_transaction wallet_api::reject_research_group_invite(const int6
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_group(const int64_t research_token_id,
-                                                                                    const int64_t research_id,
+annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_group(const int64_t research_id,
                                                                                     const std::string& owner,
                                                                                     const uint32_t amount,
                                                                                     const bool broadcast)
@@ -2181,7 +2179,6 @@ annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_gr
 
     transfer_research_tokens_to_research_group_operation op;
 
-    op.research_token_id = research_token_id;
     op.research_id = research_id;
     op.owner = owner;
     op.amount = amount;

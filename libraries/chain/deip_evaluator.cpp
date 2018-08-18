@@ -796,10 +796,10 @@ void transfer_research_tokens_to_research_group_evaluator::do_apply(const transf
     dbs_research_token &research_token_service = _db.obtain_service<dbs_research_token>();
     dbs_research &research_service = _db.obtain_service<dbs_research>();
 
-    research_token_service.check_research_token_existence_by_account_name_and_research_id(op.owner, op.research_id);
+    research_token_service.check_existence_by_owner_and_research(op.owner, op.research_id);
     research_service.check_research_existence(op.research_id);
 
-    auto& research_token = research_token_service.get_research_token(op.research_token_id);
+    auto& research_token = research_token_service.get_by_owner_and_research(op.owner, op.research_id);
     auto& research = research_service.get_research(op.research_id);
 
     FC_ASSERT(op.amount > 0 && share_type(op.amount) <= research_token.amount, "Amount cannot be negative or greater than research token amount");
@@ -808,12 +808,13 @@ void transfer_research_tokens_to_research_group_evaluator::do_apply(const transf
         r_o.owned_tokens += op.amount;
     });
 
-    if (op.amount == research_token.amount)
+    if (op.amount == research_token.amount) {
         _db._temporary_public_impl().remove(research_token);
-    else
-        _db._temporary_public_impl().modify(research_token, [&](research_token_object& rt_o) {
+    } else {
+        _db._temporary_public_impl().modify(research_token, [&](research_token_object &rt_o) {
             rt_o.amount -= op.amount;
         });
+    }
 
 }
 
@@ -948,18 +949,16 @@ void transfer_research_tokens_evaluator::do_apply(const transfer_research_tokens
     dbs_research &research_service = _db.obtain_service<dbs_research>();
 
     research_service.check_research_existence(op.research_id);
-    research_token_service.check_research_token_existence_by_account_name_and_research_id(op.sender, op.research_id);
+    research_token_service.check_existence_by_owner_and_research(op.sender, op.research_id);
 
-    auto &research_token_to_transfer = research_token_service.get_research_token(op.research_token_id);
+    auto &research_token_to_transfer = research_token_service.get_by_owner_and_research(op.sender, op.research_id);
 
     FC_ASSERT(op.amount > 0 && share_type(op.amount) <= research_token_to_transfer.amount,
               "Amount cannot be negative or greater than total research token amount");
 
-    if (research_token_service.is_research_token_exists_by_account_name_and_research_id(op.receiver,
-                                                                                        op.research_id)) {
-        auto &research_token_receiver = research_token_service.get_research_token_by_account_name_and_research_id(op.receiver,
-                                                                                                                  op.research_id);
-        _db._temporary_public_impl().modify(research_token_receiver, [&](research_token_object &r_o) {
+    if (research_token_service.exists_by_owner_and_research(op.receiver, op.research_id)) {
+        auto &receiver_token = research_token_service.get_by_owner_and_research(op.receiver, op.research_id);
+        _db._temporary_public_impl().modify(receiver_token, [&](research_token_object &r_o) {
             r_o.amount += op.amount;
         });
     } else {

@@ -65,9 +65,9 @@ void dbs_proposal_execution::dropout(const proposal_object& proposal)
 
         research_service.decrease_owned_tokens(research, tokens_amount_after_dropout_compensation);
 
-        if (research_token_service.is_research_token_exists_by_account_name_and_research_id(data.name, research.id))
+        if (research_token_service.exists_by_owner_and_research(data.name, research.id))
         {
-            auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id(data.name, research.id);
+            auto& research_token = research_token_service.get_by_owner_and_research(data.name, research.id);
             research_token_service.increase_research_token_amount(research_token, tokens_amount_after_dropout_compensation);
         }
         else
@@ -162,7 +162,6 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
     auto& research_service = db_impl().obtain_service<dbs_research>();
     auto& research_content_service = db_impl().obtain_service<dbs_research_content>();
     auto& vote_service = db_impl().obtain_service<dbs_vote>();
-    auto& discipline_service = db_impl().obtain_service<dbs_discipline>();
 
     create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
 
