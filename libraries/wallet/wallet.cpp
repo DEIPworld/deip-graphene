@@ -1250,6 +1250,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys(const std::str
                                                                   const public_key_type& active,
                                                                   const public_key_type& posting,
                                                                   const public_key_type& memo,
+                                                                  const asset& fee,
                                                                   bool broadcast) const
 {
     try
@@ -1263,8 +1264,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys(const std::str
         op.posting = authority(1, posting, 1);
         op.memo_key = memo;
         op.json_metadata = json_meta;
-        op.fee = my->_remote_db->get_chain_properties().account_creation_fee
-            * asset(DEIP_CREATE_ACCOUNT_WITH_DEIP_MODIFIER, DEIP_SYMBOL);
+        op.fee = fee;
 
         signed_transaction tx;
         tx.operations.push_back(op);
@@ -1617,6 +1617,7 @@ wallet_api::update_account_memo_key(const std::string& account_name, const publi
 annotated_signed_transaction wallet_api::create_account(const std::string& creator,
                                                         const std::string& newname,
                                                         const std::string& json_meta,
+                                                        const asset& fee,
                                                         bool broadcast)
 {
     try
@@ -1631,7 +1632,7 @@ annotated_signed_transaction wallet_api::create_account(const std::string& creat
         import_key(posting.wif_priv_key);
         import_key(memo.wif_priv_key);
         return create_account_with_keys(creator, newname, json_meta, owner.pub_key, active.pub_key, posting.pub_key,
-                                        memo.pub_key, broadcast);
+                                        memo.pub_key, fee, broadcast);
     }
     FC_CAPTURE_AND_RETHROW((creator)(newname)(json_meta))
 }

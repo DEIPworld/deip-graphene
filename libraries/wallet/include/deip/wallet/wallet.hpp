@@ -354,6 +354,7 @@ public:
     annotated_signed_transaction create_account(const std::string& creator,
                                                 const std::string& newname,
                                                 const std::string& json_meta,
+                                                const asset& fee,
                                                 bool broadcast);
 
     /**
@@ -378,6 +379,7 @@ public:
                                                           const public_key_type& active,
                                                           const public_key_type& posting,
                                                           const public_key_type& memo,
+                                                          const asset& fee,
                                                           bool broadcast) const;
 
     /**
