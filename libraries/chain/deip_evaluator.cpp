@@ -113,19 +113,13 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
     const auto& creator = account_service.get_account(o.creator);
 
     // check creator balance
-
     FC_ASSERT(creator.balance >= o.fee, "Insufficient balance to create account.",
               ("creator.balance", creator.balance)("required", o.fee));
 
     // check fee
-
-    const witness_schedule_object& wso = _db.get_witness_schedule_object();
-    FC_ASSERT(o.fee >= asset(wso.median_props.account_creation_fee.amount * DEIP_CREATE_ACCOUNT_WITH_DEIP_MODIFIER,
-                             DEIP_SYMBOL),
+    FC_ASSERT(o.fee >= asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL),
               "Insufficient Fee: ${f} required, ${p} provided.",
-              ("f",
-               wso.median_props.account_creation_fee
-                   * asset(DEIP_CREATE_ACCOUNT_WITH_DEIP_MODIFIER, DEIP_SYMBOL))("p", o.fee));
+              ("f", asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL))("p", o.fee));
 
     // check accounts existence
 
