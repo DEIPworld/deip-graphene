@@ -349,11 +349,13 @@ public:
      *  @param creator The account creating the new account
      *  @param newname The name of the new account
      *  @param json_meta JSON Metadata associated with the new account
+     *  @param fee The fee to be paid for account creation. It is converted to Common tokens for new account
      *  @param broadcast true if you wish to broadcast the transaction
      */
     annotated_signed_transaction create_account(const std::string& creator,
                                                 const std::string& newname,
                                                 const std::string& json_meta,
+                                                const asset& fee,
                                                 bool broadcast);
 
     /**
@@ -369,6 +371,7 @@ public:
      * @param active public active key of the new account
      * @param posting public posting key of the new account
      * @param memo public memo key of the new account
+     * @param fee The fee to paid for account creation. It is converted to Common tokens for new account
      * @param broadcast true if you wish to broadcast the transaction
      */
     annotated_signed_transaction create_account_with_keys(const std::string& creator,
@@ -378,6 +381,7 @@ public:
                                                           const public_key_type& active,
                                                           const public_key_type& posting,
                                                           const public_key_type& memo,
+                                                          const asset& fee,
                                                           bool broadcast) const;
 
     /**
@@ -608,14 +612,13 @@ public:
     /**
      * Transfers research tokens from one acount to another
      *
-     * @param research_token_id Id of the research token to transfer
-     * @param research_id Id of research
+     * @param research_id Id of research which tokens to transfer
      * @param from The account who transfers research tokens
      * @param to The account receiving research tokens
      * @param amount The account of research tokens to transfer
+     * @param broadcast
      */
-    annotated_signed_transaction transfer_research_tokens(const int64_t research_token_id,
-                                                           const int64_t research_id,
+    annotated_signed_transaction transfer_research_tokens(const int64_t research_id,
                                                            const std::string& from,
                                                            const std::string& to,
                                                            const uint32_t amount,
@@ -866,13 +869,11 @@ public:
      * Transfer research tokens back to research group
      *
      * @param owner The account who transfers research tokens
-     * @param research_token_id Id of research token
-     * @param research_id Id of research
+     * @param research_id Id of research which tokens to transfer
      * @param amount Amount of research tokens to transfer
      * @param broadcast
      */
-    annotated_signed_transaction transfer_research_tokens_to_research_group(const int64_t research_token_id,
-                                                                            const int64_t research_id,
+    annotated_signed_transaction transfer_research_tokens_to_research_group(const int64_t research_id,
                                                                             const std::string& owner,
                                                                             const uint32_t amount,
                                                                             const bool broadcast);

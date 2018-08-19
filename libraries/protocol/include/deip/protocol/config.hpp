@@ -19,7 +19,7 @@
 #define DEIP_CASHOUT_WINDOW_SECONDS          (60*60) /// 1 hr
 #define DEIP_UPVOTE_LOCKOUT                  (fc::minutes(5))
 
-#define DEIP_MIN_ACCOUNT_CREATION_FEE        1000
+#define DEIP_MIN_ACCOUNT_CREATION_FEE        1
 
 #define DEIP_OWNER_AUTH_RECOVERY_PERIOD                  fc::seconds(60)
 #define DEIP_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::seconds(12)

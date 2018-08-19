@@ -403,7 +403,7 @@ void database::init_genesis_vesting_contracts(const genesis_state_type& genesis_
         FC_ASSERT(!vesting_contract.receiver.empty(), "Account 'name' should not be empty.");
         FC_ASSERT(is_valid_account_name(vesting_contract.receiver), "Account name ${n} is invalid", ("n", vesting_contract.receiver));
 
-        auto& research_group = create<vesting_contract_object>([&](vesting_contract_object& v) {
+        create<vesting_contract_object>([&](vesting_contract_object& v) {
             v.id = vesting_contract.id;
             v.sender = vesting_contract.sender;
             v.receiver = vesting_contract.receiver;

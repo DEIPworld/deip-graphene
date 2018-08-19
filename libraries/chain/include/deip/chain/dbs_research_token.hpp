@@ -33,28 +33,28 @@ namespace deip {
             /* Get research token by id
              * @returns research token object by its id
             */
-            const research_token_object& get_research_token(const research_token_id_type &id) const;
+            const research_token_object& get(const research_token_id_type &id) const;
 
             /* Get research tokens by account name
             * @returns a list of all research token objects for specific account
             */
-            research_token_refs_type get_research_tokens_by_account_name(const account_name_type &account_name) const;
+            research_token_refs_type get_by_owner(const account_name_type &owner) const;
 
             /* Get research tokens by research id
              * @returns a list of all research token objects for specific discipline
             */
-            research_token_refs_type get_research_tokens_by_research_id(const research_id_type &research_id) const;
+            research_token_refs_type get_by_research(const research_id_type &research_id) const;
 
             /* Get research tokens by research_id and account_name
                @returns a list of all research token objects for */
 
-            const research_token_object& get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
+            const research_token_object& get_by_owner_and_research(const account_name_type &owner,
                                                                                          const research_id_type &research_id) const;
 
-            void check_research_token_existence_by_account_name_and_research_id(const account_name_type& account_name,
+            void check_existence_by_owner_and_research(const account_name_type& owner,
                                                                                 const research_id_type& research_id);
 
-            bool is_research_token_exists_by_account_name_and_research_id(const account_name_type& account_name,
+            bool exists_by_owner_and_research(const account_name_type& owner,
                                                                           const research_id_type& research_id);
         };
     } // namespace chain
