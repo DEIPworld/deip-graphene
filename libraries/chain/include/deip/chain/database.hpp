@@ -134,17 +134,17 @@ public:
         FC_ASSERT(block_num >= limit, "From must be greater than limit");
         try
         {
-            uint32_t last_irreversible_block_num = get_last_irreversible_block_num();
-            if (block_num > last_irreversible_block_num)
+            uint32_t head_block_number = head_block_num();
+            if (block_num > head_block_number)
             {
-                block_num = last_irreversible_block_num;
+                block_num = head_block_number;
             }
-            uint32_t from_block_num = block_num - limit;
+            uint32_t from_block_num = (block_num > limit) ? block_num - limit : 0;
             result.clear();
             optional<signed_block> b;
             while (from_block_num != block_num)
             {
-                b = _block_log.read_block_by_num(block_num);
+                b = fetch_block_by_number(block_num);
                 if (b.valid())
                     result[block_num] = *b; // conver from signed_block to type T
                 --block_num;
@@ -200,7 +200,6 @@ public:
                                  const account_name_type& witness_owner,
                                  const fc::ecc::private_key& block_signing_private_key);
     
-    uint32_t get_last_irreversible_block_num() const;
     void pop_block();
     void clear_pending();
 
