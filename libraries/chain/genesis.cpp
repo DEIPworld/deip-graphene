@@ -90,7 +90,7 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_personal_research_groups(genesis_state);
         init_research(genesis_state);
         init_research_content(genesis_state);
-        //init_genesis_vesting_contracts(genesis_state);
+        init_genesis_vesting_contracts(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
@@ -169,38 +169,6 @@ void database::init_genesis_global_property_object(const genesis_state_type& gen
         gpo.total_reward_fund_deip = asset(0, DEIP_SYMBOL);
     });
 }
-
-/*void database::init_genesis_rewards(const genesis_state_type& genesis_state)
-{
-    const auto& gpo = get_dynamic_global_properties();
-
-    auto post_rf = create<reward_fund_object>([&](reward_fund_object& rfo) {
-        rfo.name = DEIP_POST_REWARD_FUND_NAME;
-        rfo.last_update = head_block_time();
-        rfo.percent_curation_rewards = DEIP_1_PERCENT * 25;
-        rfo.percent_content_rewards = DEIP_100_PERCENT;
-        rfo.reward_balance = gpo.total_reward_fund_deip;
-        rfo.author_reward_curve = curve_id::linear;
-        rfo.curation_reward_curve = curve_id::square_root;
-    });
-
-    // As a shortcut in payout processing, we use the id as an array index.
-    // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
-    FC_ASSERT(post_rf.id._id == 0);
-
-    // We share initial fund between raward_pool and fund grant
-    dbs_reward& reward_service = obtain_service<dbs_reward>();
-    dbs_grant& grant_service = obtain_service<dbs_grant>();
-
-    asset initial_reward_pool_supply(genesis_state.init_rewards_supply.amount
-                                         * DEIP_GUARANTED_REWARD_SUPPLY_PERIOD_IN_DAYS
-                                         / DEIP_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS,
-                                     genesis_state.init_rewards_supply.symbol);
-    fc::time_point deadline = get_genesis_time() + fc::days(DEIP_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS);
-
-    reward_service.create_pool(initial_reward_pool_supply);
-    grant_service.create_fund_grant(genesis_state.init_rewards_supply - initial_reward_pool_supply, deadline);
-}*/
 
 void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
 {
@@ -410,6 +378,8 @@ void database::init_genesis_vesting_contracts(const genesis_state_type& genesis_
             v.balance = asset(vesting_contract.balance, DEIP_SYMBOL);
             v.withdrawal_periods = vesting_contract.withdrawal_periods;
             v.contract_duration = fc::time_point_sec(vesting_contract.contract_duration);
+            v.start_date = get_genesis_time() + DEIP_VESTING_LOCKOUT_PERIOD;
+            v.expiration_date = v.start_date + vesting_contract.contract_duration;
         });
     }
 }
