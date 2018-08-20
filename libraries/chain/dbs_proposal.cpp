@@ -72,7 +72,7 @@ void dbs_proposal::check_proposal_existence(const proposal_id_type& proposal_id)
 
 bool dbs_proposal::is_expired(const proposal_object& proposal)
 {
-    return _get_now() > proposal.expiration_time;
+    return db_impl().head_block_time() > proposal.expiration_time && !proposal.is_completed;
 }
 
 void dbs_proposal::complete(const proposal_object &proposal) {
@@ -131,6 +131,7 @@ const proposal_vote_object& dbs_proposal::create_vote(const account_name_type& v
         proposal_vote.weight = weight;
         proposal_vote.proposal_id = proposal_id;
         proposal_vote.research_group_id = research_group_id;
+        proposal_vote.voting_time = db_impl().head_block_time();;
     });
 
     return new_proposal_vote;
