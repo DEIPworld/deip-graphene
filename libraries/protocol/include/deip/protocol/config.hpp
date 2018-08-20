@@ -194,6 +194,8 @@
 
 #define VIRTUAL_SCHEDULE_LAP_LENGTH ( fc::uint128::max_value() )
 
+#define DEIP_VESTING_LOCKOUT_PERIOD         (365*24*60*60) // 365 days
+
 /**
  *  Reserved Account IDs with special meaning
  */
@@ -201,8 +203,6 @@
 
 /// Represents the canonical account for specifying you will vote for directly (as opposed to a proxy)
 #define DEIP_PROXY_TO_SELF_ACCOUNT           ""
-/// Represents the canonical root post parent account
-#define DEIP_ROOT_POST_PARENT                (account_name_type())
 
 ///@}
 
