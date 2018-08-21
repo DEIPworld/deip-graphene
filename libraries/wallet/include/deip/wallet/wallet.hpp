@@ -903,12 +903,12 @@ public:
     /**
      * Withdraw from vesting contract. Only withdraws the amount available for withdrawal
      *
-     * @param creator The account who created vesting contract
+     * @param vesting_contract_id The account who created vesting contract
      * @param owner The account who owns tokens from contract
      * @param amount Amount to withdraw (i.e. "1.000 DEIP")
      * @param broadcast
      */
-    annotated_signed_transaction withdraw_vesting_contract(const std::string &creator,
+    annotated_signed_transaction withdraw_vesting_contract(const int64_t &vesting_contract_id,
                                                            const std::string &owner,
                                                            const asset &amount,
                                                            const bool broadcast);

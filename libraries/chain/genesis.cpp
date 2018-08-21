@@ -368,17 +368,14 @@ void database::init_genesis_vesting_contracts(const genesis_state_type& genesis_
                 "Vesting duration should be longer than vesting cliff");
         FC_ASSERT(vesting_contract.vesting_cliff_seconds > 0, "Vesting cliff must be longer than 0");
         FC_ASSERT(vesting_contract.period_duration_seconds > 0, "Withdraw period duration must be longer than 0");
-        FC_ASSERT(vesting_contract.vesting_duration_seconds % vesting_contract.period_duration_seconds,
+        FC_ASSERT(vesting_contract.vesting_duration_seconds % vesting_contract.period_duration_seconds == 0,
                 "Vesting duration should contain integer number of withdraw period");
 
-        FC_ASSERT(!vesting_contract.creator.empty(), "Account 'name' should not be empty.");
-        FC_ASSERT(is_valid_account_name(vesting_contract.creator), "Account name ${n} is invalid", ("n", vesting_contract.creator));
         FC_ASSERT(!vesting_contract.owner.empty(), "Account 'name' should not be empty.");
         FC_ASSERT(is_valid_account_name(vesting_contract.owner), "Account name ${n} is invalid", ("n", vesting_contract.owner));
 
         create<vesting_contract_object>([&](vesting_contract_object& v) {
             v.id = vesting_contract.id;
-            v.creator = vesting_contract.creator;
             v.owner = vesting_contract.owner;
             v.balance = asset(vesting_contract.balance, DEIP_SYMBOL);
             v.withdrawn = asset(0, DEIP_SYMBOL);

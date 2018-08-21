@@ -2736,9 +2736,8 @@ BOOST_AUTO_TEST_CASE(deposit_to_vesting_contract_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        auto& vesting_contract = db.get<vesting_contract_object, by_creator_and_owner>(std::make_tuple("alice", "bob"));
+        auto& vesting_contract = db.get<vesting_contract_object, by_id>(0);
 
-        BOOST_CHECK(vesting_contract.creator == "alice");
         BOOST_CHECK(vesting_contract.owner == "bob");
         BOOST_CHECK(vesting_contract.balance.amount == 1000);
         BOOST_CHECK(vesting_contract.vesting_duration_seconds == DAYS_TO_SECONDS(365));
@@ -2761,7 +2760,6 @@ BOOST_AUTO_TEST_CASE(withdraw_from_vesting_contract_apply)
 
         auto& contract = db.create<vesting_contract_object>([&](vesting_contract_object& v) {
             v.id = 1;
-            v.creator = "alice";
             v.owner = "bob";
             v.balance = asset(1000, DEIP_SYMBOL);
             v.start_timestamp = fc::time_point_sec(db.head_block_time() - DAYS_TO_SECONDS(155));
@@ -2772,7 +2770,7 @@ BOOST_AUTO_TEST_CASE(withdraw_from_vesting_contract_apply)
 
         withdraw_vesting_contract_operation op;
 
-        op.creator = "alice";
+        op.vesting_contract_id = 1;
         op.owner = "bob";
         op.amount = asset(500, DEIP_SYMBOL);
 
@@ -2783,7 +2781,6 @@ BOOST_AUTO_TEST_CASE(withdraw_from_vesting_contract_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        BOOST_CHECK(contract.creator == "alice");
         BOOST_CHECK(contract.owner == "bob");
         BOOST_CHECK(contract.balance.amount == 500);
 

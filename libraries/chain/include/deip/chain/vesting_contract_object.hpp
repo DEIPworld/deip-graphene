@@ -24,7 +24,6 @@ public:
     }
 
     vesting_contract_id_type id;
-    account_name_type creator;
     account_name_type owner;
     asset balance = asset(0, DEIP_SYMBOL);
     asset withdrawn = asset(0, DEIP_SYMBOL);
@@ -34,22 +33,13 @@ public:
     time_point_sec start_timestamp;
 };
 
-struct by_creator_and_owner;
 struct by_owner;
 
 typedef multi_index_container<vesting_contract_object,
                 indexed_by<ordered_unique<tag<by_id>,
                             member<vesting_contract_object,
                                     vesting_contract_id_type,
-                                    &vesting_contract_object::id>>,
-                        ordered_unique<tag<by_creator_and_owner>,
-                             composite_key<vesting_contract_object,
-                             member<vesting_contract_object,
-                                    account_name_type,
-                                    &vesting_contract_object::creator>,
-                             member<vesting_contract_object,
-                                     account_name_type,
-                                    &vesting_contract_object::owner>>>,
+                                    &vesting_contract_object::id>>,                        
                         ordered_non_unique<tag<by_owner>,
                                         member<vesting_contract_object,
                                                 account_name_type,
@@ -61,7 +51,7 @@ typedef multi_index_container<vesting_contract_object,
 }
 
 FC_REFLECT(deip::chain::vesting_contract_object,
-                        (id)(creator)(owner)(balance)(vesting_cliff_seconds)(vesting_duration_seconds)
+                        (id)(owner)(balance)(vesting_cliff_seconds)(vesting_duration_seconds)
                         (start_timestamp)(period_duration_seconds)(withdrawn)
             )
 

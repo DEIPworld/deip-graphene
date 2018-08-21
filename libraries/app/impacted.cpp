@@ -191,7 +191,6 @@ struct get_impacted_account_visitor
 
     void operator()(const withdraw_vesting_contract_operation& op)
     {
-        _impacted.insert(op.creator);
         _impacted.insert(op.owner);
     }
 

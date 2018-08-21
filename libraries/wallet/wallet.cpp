@@ -2237,7 +2237,7 @@ wallet_api::create_vesting_contract(const std::string &creator, const std::strin
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::withdraw_vesting_contract(const std::string &creator,
+annotated_signed_transaction wallet_api::withdraw_vesting_contract(const int64_t &vesting_contract_id,
                                                                    const std::string &owner,
                                                                    const asset &amount,
                                                                    const bool broadcast)
@@ -2246,7 +2246,7 @@ annotated_signed_transaction wallet_api::withdraw_vesting_contract(const std::st
 
     withdraw_vesting_contract_operation op;
 
-    op.creator = creator;
+    op.vesting_contract_id = vesting_contract_id;
     op.owner = owner;
     op.amount = amount;
 

@@ -86,7 +86,6 @@ struct genesis_state_type
     struct vesting_contract_type
     {
         dc::vesting_contract_id_type id;
-        std::string creator;
         std::string owner;
         uint32_t balance;
         uint32_t vesting_duration_seconds;
@@ -184,7 +183,6 @@ FC_REFLECT(deip::chain::genesis_state_type::research_content_type,
 
 FC_REFLECT(deip::chain::genesis_state_type::vesting_contract_type,
            (id)
-           (creator)
            (owner)
            (balance)
            (vesting_duration_seconds)

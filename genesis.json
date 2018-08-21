@@ -1698,8 +1698,7 @@
 
     "vesting_contracts": [{
             "id": 0,
-            "sender": "alice",
-            "receiver": "rachel",
+            "owner": "alice",
             "balance": 10000000,
             "vesting_duration_seconds": 157680000,
             "vesting_cliff_seconds": 31536000,

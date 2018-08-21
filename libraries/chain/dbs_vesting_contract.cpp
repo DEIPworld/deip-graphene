@@ -9,13 +9,12 @@ dbs_vesting_contract::dbs_vesting_contract(database &db)
 {
 }
 
-const vesting_contract_object & dbs_vesting_contract::create(const account_name_type &creator, const account_name_type &owner, const asset &balance,
+const vesting_contract_object & dbs_vesting_contract::create(const account_name_type &owner, const asset &balance,
                                                              const uint32_t &vesting_duration_seconds,
                                                              const uint32_t& period_duration_seconds,
                                                              const uint32_t &vesting_cliff_seconds)
 {
     return db_impl().create<vesting_contract_object>([&](vesting_contract_object& vesting_contract) {
-        vesting_contract.creator = creator;
         vesting_contract.owner = owner;
         vesting_contract.balance = balance;
         vesting_contract.start_timestamp = db_impl().head_block_time();
@@ -31,15 +30,6 @@ const vesting_contract_object& dbs_vesting_contract::get(const vesting_contract_
         return db_impl().get<vesting_contract_object, by_id>(id);
     }
     FC_CAPTURE_AND_RETHROW((id))
-}
-
-const vesting_contract_object& dbs_vesting_contract::get_by_creator_and_owner(const account_name_type &creator,
-                                                                              const account_name_type &owner)
-{
-    try {
-        return db_impl().get<vesting_contract_object, by_creator_and_owner>(boost::make_tuple(creator, owner));
-    }
-    FC_CAPTURE_AND_RETHROW((creator)(owner))
 }
 
 dbs_vesting_contract::vesting_contract_refs_type dbs_vesting_contract::get_by_owner(const account_name_type &owner)
@@ -58,21 +48,19 @@ dbs_vesting_contract::vesting_contract_refs_type dbs_vesting_contract::get_by_ow
     return ret;
 }
 
-void dbs_vesting_contract::withdraw(const vesting_contract_id_type &id,
-                                    const asset &amount)
+void dbs_vesting_contract::withdraw(const vesting_contract_id_type &id, const asset &amount)
 {
     auto& vesting = db_impl().get<vesting_contract_object, by_id>(id);
     FC_ASSERT(vesting.balance >= amount);
     db_impl().modify(vesting, [&](vesting_contract_object& v) { v.balance -= amount; });
 }
 
-void dbs_vesting_contract::check_existence_by_creator_and_owner(const account_name_type &creator,
-                                                                const account_name_type &owner)
+void dbs_vesting_contract::check_existence(const vesting_contract_id_type& id)
 {
-    const auto& idx = db_impl().get_index<vesting_contract_index>().indices().get<by_creator_and_owner>();
+    const auto& idx = db_impl().get_index<vesting_contract_index>().indices().get<by_id>();
 
-    FC_ASSERT(idx.find(boost::make_tuple(creator, owner)) != idx.cend(), "Vesting contract with \"${1}\" creator and \"${2}\" owner doenst exists.",
-              ("1", creator)("2", owner));
+    FC_ASSERT(idx.find(id) != idx.cend(), "Vesting contract \"${1}\" doesn't exist.",
+              ("1", id));
 }
 
 } //namespace chain

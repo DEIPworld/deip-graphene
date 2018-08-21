@@ -875,8 +875,7 @@ void create_vesting_contract_evaluator::do_apply(const create_vesting_contract_o
     FC_ASSERT(creator.balance >= op.balance, "Not enough funds to create vesting contract");
 
     account_service.adjust_balance(creator, -op.balance);
-    vesting_contract_service.create(op.creator, op.owner, op.balance,
-                                    op.vesting_duration_seconds, op.period_duration_seconds, op.vesting_cliff_seconds);
+    vesting_contract_service.create(op.owner, op.balance, op.vesting_duration_seconds, op.period_duration_seconds, op.vesting_cliff_seconds);
 
 }
 
@@ -885,11 +884,10 @@ void withdraw_vesting_contract_evaluator::do_apply(const withdraw_vesting_contra
     dbs_vesting_contract& vesting_contract_service = _db.obtain_service<dbs_vesting_contract>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
-    account_service.check_account_existence(op.creator);
     account_service.check_account_existence(op.owner);
-    vesting_contract_service.check_existence_by_creator_and_owner(op.creator, op.owner);
+    vesting_contract_service.check_existence(op.vesting_contract_id);
 
-    const auto& vco = vesting_contract_service.get_by_creator_and_owner(op.creator, op.owner);
+    const auto& vco = vesting_contract_service.get(op.vesting_contract_id);
     const auto now = _db.head_block_time();
     share_type allowed_withdraw = 0;
 

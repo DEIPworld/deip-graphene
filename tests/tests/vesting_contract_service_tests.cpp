@@ -21,7 +21,6 @@ public:
     void create_vesting_contracts() {
         db.create<vesting_contract_object>([&](vesting_contract_object& v) {
             v.id = 1;
-            v.creator = "alice";
             v.owner = "bob";
             v.balance = asset(100, DEIP_SYMBOL);
             v.vesting_duration_seconds = DAYS_TO_SECONDS(365);
@@ -31,7 +30,6 @@ public:
 
         db.create<vesting_contract_object>([&](vesting_contract_object& v) {
             v.id = 2;
-            v.creator = "jack";
             v.owner = "bob";
             v.balance = asset(1000, DEIP_SYMBOL);
             v.vesting_duration_seconds = DAYS_TO_SECONDS(730);
@@ -41,7 +39,6 @@ public:
 
         db.create<vesting_contract_object>([&](vesting_contract_object& v) {
             v.id = 3;
-            v.creator = "john";
             v.owner = "alice";
             v.balance = asset(10000, DEIP_SYMBOL);
             v.vesting_duration_seconds = DAYS_TO_SECONDS(900);
@@ -59,9 +56,8 @@ BOOST_AUTO_TEST_CASE(create_vesting_contract)
 {
     try
     {
-        auto& vesting_contract = data_service.create("alice", "bob", asset(1000, DEIP_SYMBOL), DAYS_TO_SECONDS(365), DAYS_TO_SECONDS(5), 0);
+        auto& vesting_contract = data_service.create("bob", asset(1000, DEIP_SYMBOL), DAYS_TO_SECONDS(365), DAYS_TO_SECONDS(5), 0);
 
-        BOOST_CHECK(vesting_contract.creator == "alice");
         BOOST_CHECK(vesting_contract.owner == "bob");
         BOOST_CHECK(vesting_contract.balance.amount == 1000);
         BOOST_CHECK(vesting_contract.start_timestamp == db.head_block_time());
@@ -78,25 +74,9 @@ BOOST_AUTO_TEST_CASE(get_vesting_contract)
         create_vesting_contracts();
         auto& vesting_contract = data_service.get(1);
 
-        BOOST_CHECK(vesting_contract.creator == "alice");
         BOOST_CHECK(vesting_contract.owner == "bob");
         BOOST_CHECK(vesting_contract.balance.amount == 100);
         BOOST_CHECK(vesting_contract.vesting_duration_seconds == DAYS_TO_SECONDS(365));
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(get_vesting_contract_get_by_sender_and_reviever)
-{
-    try
-    {
-        create_vesting_contracts();
-        auto& vesting_contract = data_service.get_by_creator_and_owner("jack", "bob");
-
-        BOOST_CHECK(vesting_contract.creator == "jack");
-        BOOST_CHECK(vesting_contract.owner == "bob");
-        BOOST_CHECK(vesting_contract.balance.amount == 1000);
-        BOOST_CHECK(vesting_contract.vesting_duration_seconds == DAYS_TO_SECONDS(730));
     }
     FC_LOG_AND_RETHROW()
 }
@@ -112,7 +92,6 @@ BOOST_AUTO_TEST_CASE(get_vesting_contract_get_by_receiver)
         BOOST_CHECK(std::any_of(vesting_contracts.begin(), vesting_contracts.end(), [](std::reference_wrapper<const vesting_contract_object> wrapper){
             const vesting_contract_object &vesting_contract = wrapper.get();
             return  vesting_contract.id == 1 &&
-                    vesting_contract.creator == "alice" &&
                     vesting_contract.owner == "bob" &&
                     vesting_contract.balance.amount == 100 &&
                     vesting_contract.vesting_duration_seconds == DAYS_TO_SECONDS(365);
@@ -121,7 +100,6 @@ BOOST_AUTO_TEST_CASE(get_vesting_contract_get_by_receiver)
         BOOST_CHECK(std::any_of(vesting_contracts.begin(), vesting_contracts.end(), [](std::reference_wrapper<const vesting_contract_object> wrapper){
             const vesting_contract_object &vesting_contract = wrapper.get();
             return  vesting_contract.id == 2 &&
-                    vesting_contract.creator == "jack" &&
                     vesting_contract.owner == "bob" &&
                     vesting_contract.balance.amount == 1000 &&
                     vesting_contract.vesting_duration_seconds == DAYS_TO_SECONDS(730);

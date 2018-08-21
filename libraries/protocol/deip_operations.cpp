@@ -244,7 +244,6 @@ void create_vesting_contract_operation::validate() const
 void withdraw_vesting_contract_operation::validate() const
 {
     FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Withdraw amount must be greater than 0");
-    validate_account_name(creator);
     validate_account_name(owner);
 }
 
