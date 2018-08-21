@@ -21,7 +21,7 @@
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_research_token.hpp>
 #include <deip/chain/dbs_review.hpp>
-#include <deip/chain/dbs_vesting_contract.hpp>
+#include <deip/chain/dbs_vesting_balance.hpp>
 #include <deip/chain/dbs_proposal_execution.hpp>
 
 #ifndef IS_LOW_MEM
@@ -863,9 +863,9 @@ void research_update_evaluator::do_apply(const research_update_operation& op)
     });
 }
 
-void create_vesting_contract_evaluator::do_apply(const create_vesting_contract_operation& op)
+void create_vesting_balance_evaluator::do_apply(const create_vesting_balance_operation& op)
 {
-    dbs_vesting_contract& vesting_contract_service = _db.obtain_service<dbs_vesting_contract>();
+    dbs_vesting_balance& vesting_balance_service = _db.obtain_service<dbs_vesting_balance>();
     dbs_account &account_service = _db.obtain_service<dbs_account>();
 
     account_service.check_account_existence(op.creator);
@@ -875,19 +875,19 @@ void create_vesting_contract_evaluator::do_apply(const create_vesting_contract_o
     FC_ASSERT(creator.balance >= op.balance, "Not enough funds to create vesting contract");
 
     account_service.adjust_balance(creator, -op.balance);
-    vesting_contract_service.create(op.owner, op.balance, op.vesting_duration_seconds, op.period_duration_seconds, op.vesting_cliff_seconds);
+    vesting_balance_service.create(op.owner, op.balance, op.vesting_duration_seconds, op.period_duration_seconds, op.vesting_cliff_seconds);
 
 }
 
-void withdraw_vesting_contract_evaluator::do_apply(const withdraw_vesting_contract_operation& op)
+void withdraw_vesting_balance_evaluator::do_apply(const withdraw_vesting_balance_operation& op)
 {
-    dbs_vesting_contract& vesting_contract_service = _db.obtain_service<dbs_vesting_contract>();
+    dbs_vesting_balance& vesting_balance_service = _db.obtain_service<dbs_vesting_balance>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
     account_service.check_account_existence(op.owner);
-    vesting_contract_service.check_existence(op.vesting_contract_id);
+    vesting_balance_service.check_existence(op.vesting_balance_id);
 
-    const auto& vco = vesting_contract_service.get(op.vesting_contract_id);
+    const auto& vco = vesting_balance_service.get(op.vesting_balance_id);
     const auto now = _db.head_block_time();
     share_type allowed_withdraw = 0;
 
@@ -912,7 +912,7 @@ void withdraw_vesting_contract_evaluator::do_apply(const withdraw_vesting_contra
                     "You cannot withdraw requested amount. Allowed withdraw: ${a}, requested amount: ${r}.",
                     ("a", asset(allowed_withdraw, DEIP_SYMBOL))("r", op.amount));
 
-            vesting_contract_service.withdraw(vco.id, op.amount);
+            vesting_balance_service.withdraw(vco.id, op.amount);
             account_service.adjust_balance(_db.get_account(op.owner), op.amount);
         }
     }

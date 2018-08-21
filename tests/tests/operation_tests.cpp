@@ -24,7 +24,7 @@
 
 #include <deip/chain/dbs_research_token.hpp>
 #include <deip/chain/review_object.hpp>
-#include <deip/chain/vesting_contract_object.hpp>
+#include <deip/chain/vesting_balance_object.hpp>
 #include <deip/chain/dbs_research_discipline_relation.hpp>
 #include <deip/chain/grant_objects.hpp>
 
@@ -2706,10 +2706,10 @@ BOOST_AUTO_TEST_CASE(research_update_apply)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(deposit_to_vesting_contract_apply)
+BOOST_AUTO_TEST_CASE(deposit_to_vesting_balance_apply)
 {
     try {
-        BOOST_TEST_MESSAGE("Testing: deposit_to_vesting_contract_apply");
+        BOOST_TEST_MESSAGE("Testing: deposit_to_vesting_balance_apply");
 
         ACTORS((alice)(bob));
 
@@ -2719,7 +2719,7 @@ BOOST_AUTO_TEST_CASE(deposit_to_vesting_contract_apply)
 
         private_key_type priv_key = generate_private_key("alice");
 
-        create_vesting_contract_operation op;
+        create_vesting_balance_operation op;
 
         op.creator = "alice";
         op.owner = "bob";
@@ -2736,21 +2736,21 @@ BOOST_AUTO_TEST_CASE(deposit_to_vesting_contract_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        auto& vesting_contract = db.get<vesting_contract_object, by_id>(0);
+        auto& vesting_balance = db.get<vesting_balance_object, by_id>(0);
 
-        BOOST_CHECK(vesting_contract.owner == "bob");
-        BOOST_CHECK(vesting_contract.balance.amount == 1000);
-        BOOST_CHECK(vesting_contract.vesting_duration_seconds == DAYS_TO_SECONDS(365));
-        BOOST_CHECK(vesting_contract.start_timestamp == db.head_block_time());
-        BOOST_CHECK(vesting_contract.period_duration_seconds == DAYS_TO_SECONDS(5));
+        BOOST_CHECK(vesting_balance.owner == "bob");
+        BOOST_CHECK(vesting_balance.balance.amount == 1000);
+        BOOST_CHECK(vesting_balance.vesting_duration_seconds == DAYS_TO_SECONDS(365));
+        BOOST_CHECK(vesting_balance.start_timestamp == db.head_block_time());
+        BOOST_CHECK(vesting_balance.period_duration_seconds == DAYS_TO_SECONDS(5));
     }
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(withdraw_from_vesting_contract_apply)
+BOOST_AUTO_TEST_CASE(withdraw_from_vesting_balance_apply)
 {
     try {
-        BOOST_TEST_MESSAGE("Testing: withdraw_from_vesting_contract_apply");
+        BOOST_TEST_MESSAGE("Testing: withdraw_from_vesting_balance_apply");
 
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
 
@@ -2758,7 +2758,7 @@ BOOST_AUTO_TEST_CASE(withdraw_from_vesting_contract_apply)
 
         private_key_type priv_key = generate_private_key("bob");
 
-        auto& contract = db.create<vesting_contract_object>([&](vesting_contract_object& v) {
+        auto& contract = db.create<vesting_balance_object>([&](vesting_balance_object& v) {
             v.id = 1;
             v.owner = "bob";
             v.balance = asset(1000, DEIP_SYMBOL);
@@ -2768,9 +2768,9 @@ BOOST_AUTO_TEST_CASE(withdraw_from_vesting_contract_apply)
             v.vesting_cliff_seconds = 0;
         });
 
-        withdraw_vesting_contract_operation op;
+        withdraw_vesting_balance_operation op;
 
-        op.vesting_contract_id = 1;
+        op.vesting_balance_id = 1;
         op.owner = "bob";
         op.amount = asset(500, DEIP_SYMBOL);
 

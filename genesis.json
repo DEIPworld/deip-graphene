@@ -1696,7 +1696,7 @@
         }
     ],
 
-    "vesting_contracts": [{
+    "vesting_balances": [{
             "id": 0,
             "owner": "alice",
             "balance": 10000000,

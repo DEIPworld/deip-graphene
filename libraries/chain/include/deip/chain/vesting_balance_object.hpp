@@ -10,20 +10,20 @@ namespace chain{
 
 using deip::protocol::asset;
 
-class vesting_contract_object : public object<vesting_contract_object_type, vesting_contract_object>
+class vesting_balance_object : public object<vesting_balance_object_type, vesting_balance_object>
 {
 
-    vesting_contract_object() = delete;
+    vesting_balance_object() = delete;
 
 public:
 
     template <typename Constructor, typename Allocator>
-    vesting_contract_object(Constructor &&c, allocator<Allocator> a)
+    vesting_balance_object(Constructor &&c, allocator<Allocator> a)
     {
         c(*this);
     }
 
-    vesting_contract_id_type id;
+    vesting_balance_id_type id;
     account_name_type owner;
     asset balance = asset(0, DEIP_SYMBOL);
     asset withdrawn = asset(0, DEIP_SYMBOL);
@@ -35,24 +35,24 @@ public:
 
 struct by_owner;
 
-typedef multi_index_container<vesting_contract_object,
+typedef multi_index_container<vesting_balance_object,
                 indexed_by<ordered_unique<tag<by_id>,
-                            member<vesting_contract_object,
-                                    vesting_contract_id_type,
-                                    &vesting_contract_object::id>>,                        
+                            member<vesting_balance_object,
+                                    vesting_balance_id_type,
+                                    &vesting_balance_object::id>>,                        
                         ordered_non_unique<tag<by_owner>,
-                                        member<vesting_contract_object,
+                                        member<vesting_balance_object,
                                                 account_name_type,
-                                                &vesting_contract_object::owner>>>,
+                                                &vesting_balance_object::owner>>>,
 
-                        allocator<vesting_contract_object>>
-                        vesting_contract_index;
+                        allocator<vesting_balance_object>>
+                        vesting_balance_index;
 }
 }
 
-FC_REFLECT(deip::chain::vesting_contract_object,
+FC_REFLECT(deip::chain::vesting_balance_object,
                         (id)(owner)(balance)(vesting_cliff_seconds)(vesting_duration_seconds)
                         (start_timestamp)(period_duration_seconds)(withdrawn)
             )
 
-CHAINBASE_SET_INDEX_TYPE(deip::chain::vesting_contract_object, deip::chain::vesting_contract_index)
+CHAINBASE_SET_INDEX_TYPE(deip::chain::vesting_balance_object, deip::chain::vesting_balance_index)

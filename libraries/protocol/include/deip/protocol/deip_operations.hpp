@@ -611,7 +611,7 @@ struct research_update_operation : public base_operation
     }
 };
 
-struct create_vesting_contract_operation : public base_operation
+struct create_vesting_balance_operation : public base_operation
 {
     account_name_type creator;  
     account_name_type owner;
@@ -629,9 +629,9 @@ struct create_vesting_contract_operation : public base_operation
     }
 };
 
-struct withdraw_vesting_contract_operation : public base_operation
+struct withdraw_vesting_balance_operation : public base_operation
 {
-    int64_t vesting_contract_id;
+    int64_t vesting_balance_id;
     account_name_type owner;
     asset amount;
 
@@ -742,8 +742,8 @@ FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discip
 FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_id)(owner)(amount))
 FC_REFLECT( deip::protocol::set_expertise_tokens_operation, (owner)(account_name)(disciplines_to_add))
 FC_REFLECT( deip::protocol::research_update_operation, (research_id)(title)(abstract)(permlink)(owner))
-FC_REFLECT( deip::protocol::create_vesting_contract_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds))
-FC_REFLECT( deip::protocol::withdraw_vesting_contract_operation, (vesting_contract_id)(owner)(amount))
+FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds))
+FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance_id)(owner)(amount))
 FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_id)(sender)(receiver)(amount))
 FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(discipline_id))
 FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(receiver)(discipline_id))

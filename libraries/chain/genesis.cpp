@@ -17,7 +17,7 @@
 #include <deip/chain/proposal_vote_object.hpp>
 
 #include <fc/io/json.hpp>
-#include <deip/chain/vesting_contract_object.hpp>
+#include <deip/chain/vesting_balance_object.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
@@ -90,7 +90,7 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_personal_research_groups(genesis_state);
         init_research(genesis_state);
         init_research_content(genesis_state);
-        init_genesis_vesting_contracts(genesis_state);
+        init_genesis_vesting_balances(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
@@ -355,33 +355,33 @@ void database::init_personal_research_groups(const genesis_state_type& genesis_s
     }
 }
 
-void database::init_genesis_vesting_contracts(const genesis_state_type& genesis_state)
+void database::init_genesis_vesting_balances(const genesis_state_type& genesis_state)
 {
-    const vector<genesis_state_type::vesting_contract_type>& vesting_contracts = genesis_state.vesting_contracts;
+    const vector<genesis_state_type::vesting_balance_type>& vesting_balances = genesis_state.vesting_balances;
 
-    for (auto& vesting_contract : vesting_contracts)
+    for (auto& vesting_balance : vesting_balances)
     {
 
-        FC_ASSERT(vesting_contract.balance > 0, "Deposit balance must be greater than 0");
-        FC_ASSERT(vesting_contract.vesting_duration_seconds > 0, "Vesting duration must be longer than 0");
-        FC_ASSERT(vesting_contract.vesting_duration_seconds > vesting_contract.vesting_cliff_seconds,
+        FC_ASSERT(vesting_balance.balance > 0, "Deposit balance must be greater than 0");
+        FC_ASSERT(vesting_balance.vesting_duration_seconds > 0, "Vesting duration must be longer than 0");
+        FC_ASSERT(vesting_balance.vesting_duration_seconds > vesting_balance.vesting_cliff_seconds,
                 "Vesting duration should be longer than vesting cliff");
-        FC_ASSERT(vesting_contract.vesting_cliff_seconds > 0, "Vesting cliff must be longer than 0");
-        FC_ASSERT(vesting_contract.period_duration_seconds > 0, "Withdraw period duration must be longer than 0");
-        FC_ASSERT(vesting_contract.vesting_duration_seconds % vesting_contract.period_duration_seconds == 0,
+        FC_ASSERT(vesting_balance.vesting_cliff_seconds > 0, "Vesting cliff must be longer than 0");
+        FC_ASSERT(vesting_balance.period_duration_seconds > 0, "Withdraw period duration must be longer than 0");
+        FC_ASSERT(vesting_balance.vesting_duration_seconds % vesting_balance.period_duration_seconds == 0,
                 "Vesting duration should contain integer number of withdraw period");
 
-        FC_ASSERT(!vesting_contract.owner.empty(), "Account 'name' should not be empty.");
-        FC_ASSERT(is_valid_account_name(vesting_contract.owner), "Account name ${n} is invalid", ("n", vesting_contract.owner));
+        FC_ASSERT(!vesting_balance.owner.empty(), "Account 'name' should not be empty.");
+        FC_ASSERT(is_valid_account_name(vesting_balance.owner), "Account name ${n} is invalid", ("n", vesting_balance.owner));
 
-        create<vesting_contract_object>([&](vesting_contract_object& v) {
-            v.id = vesting_contract.id;
-            v.owner = vesting_contract.owner;
-            v.balance = asset(vesting_contract.balance, DEIP_SYMBOL);
+        create<vesting_balance_object>([&](vesting_balance_object& v) {
+            v.id = vesting_balance.id;
+            v.owner = vesting_balance.owner;
+            v.balance = asset(vesting_balance.balance, DEIP_SYMBOL);
             v.withdrawn = asset(0, DEIP_SYMBOL);
-            v.vesting_duration_seconds = vesting_contract.vesting_duration_seconds;
-            v.vesting_cliff_seconds = vesting_contract.vesting_duration_seconds;
-            v.period_duration_seconds = vesting_contract.period_duration_seconds;
+            v.vesting_duration_seconds = vesting_balance.vesting_duration_seconds;
+            v.vesting_cliff_seconds = vesting_balance.vesting_duration_seconds;
+            v.period_duration_seconds = vesting_balance.period_duration_seconds;
             v.start_timestamp = get_genesis_time();
         });
     }

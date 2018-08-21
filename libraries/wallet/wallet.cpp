@@ -2215,13 +2215,13 @@ annotated_signed_transaction wallet_api::research_update(const int64_t research_
 }
 
 annotated_signed_transaction
-wallet_api::create_vesting_contract(const std::string &creator, const std::string &owner, const asset &balance,
+wallet_api::create_vesting_balance(const std::string &creator, const std::string &owner, const asset &balance,
                                     const uint32_t &vesting_duration_seconds, const uint32_t &vesting_cliff_seconds,
                                     const uint32_t &period_duration_seconds, const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
-    create_vesting_contract_operation op;
+    create_vesting_balance_operation op;
 
     op.creator = creator;
     op.owner = owner;
@@ -2237,16 +2237,16 @@ wallet_api::create_vesting_contract(const std::string &creator, const std::strin
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::withdraw_vesting_contract(const int64_t &vesting_contract_id,
+annotated_signed_transaction wallet_api::withdraw_vesting_balance(const int64_t &vesting_balance_id,
                                                                    const std::string &owner,
                                                                    const asset &amount,
                                                                    const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
-    withdraw_vesting_contract_operation op;
+    withdraw_vesting_balance_operation op;
 
-    op.vesting_contract_id = vesting_contract_id;
+    op.vesting_balance_id = vesting_balance_id;
     op.owner = owner;
     op.amount = amount;
 

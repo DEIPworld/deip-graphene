@@ -227,7 +227,7 @@ void research_update_operation::validate() const
     validate_account_name(owner);
 }
 
-void create_vesting_contract_operation::validate() const
+void create_vesting_balance_operation::validate() const
 {
     FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Deposit balance must be greater than 0");
     FC_ASSERT(withdrawal_period > 0, "You must divide contract at least by 1 part");
@@ -241,7 +241,7 @@ void create_vesting_contract_operation::validate() const
     validate_account_name(owner);
 }
 
-void withdraw_vesting_contract_operation::validate() const
+void withdraw_vesting_balance_operation::validate() const
 {
     FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Withdraw amount must be greater than 0");
     validate_account_name(owner);
