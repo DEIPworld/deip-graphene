@@ -86,11 +86,12 @@ struct genesis_state_type
     struct vesting_contract_type
     {
         dc::vesting_contract_id_type id;
-        std::string sender;
-        std::string receiver;
-        uint16_t balance;
-        uint32_t withdrawal_periods;
-        uint16_t contract_duration;
+        std::string creator;
+        std::string owner;
+        uint32_t balance;
+        uint32_t vesting_duration_seconds;
+        uint32_t vesting_cliff_seconds;
+        uint32_t period_duration_seconds;
     };
     
     genesis_state_type()
@@ -183,11 +184,12 @@ FC_REFLECT(deip::chain::genesis_state_type::research_content_type,
 
 FC_REFLECT(deip::chain::genesis_state_type::vesting_contract_type,
            (id)
-           (sender)
-           (receiver)
+           (creator)
+           (owner)
            (balance)
-           (withdrawal_periods)
-           (contract_duration))
+           (vesting_duration_seconds)
+           (vesting_cliff_seconds)
+           (period_duration_seconds))
 
 FC_REFLECT(deip::chain::genesis_state_type,
            (init_supply)

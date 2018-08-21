@@ -1229,7 +1229,7 @@ void database::refund_research_tokens(const research_token_sale_id_type research
 
     while (it != it_end)
     {
-        account_service.increase_balance(account_service.get_account(it->owner), it->amount);
+        account_service.adjust_balance(account_service.get_account(it->owner), it->amount);
         remove(*it);
         it = idx.first;
     }
@@ -1378,7 +1378,7 @@ share_type database::reward_research_token_holders(const research_object& resear
     {
         auto reward_amount = (it->amount * reward) / DEIP_100_PERCENT;
         auto& account = account_service.get_account(it->account_name);
-        account_service.increase_balance(account, asset(reward_amount, DEIP_SYMBOL));
+        account_service.adjust_balance(account, asset(reward_amount, DEIP_SYMBOL));
         used_reward += reward_amount;
         ++it;
     }
@@ -1467,7 +1467,7 @@ share_type database::reward_review_voters(const review_object &review,
         auto vote = vote_ref.get();
         auto& voter = account_service.get_account(vote.voter);
         auto reward_amount = util::calculate_share(reward, vote.weight, total_weight);
-        account_service.increase_balance(voter, asset(reward_amount, DEIP_SYMBOL));
+        account_service.adjust_balance(voter, asset(reward_amount, DEIP_SYMBOL));
         used_reward += reward_amount;
     }
 
@@ -1591,7 +1591,7 @@ share_type database::allocate_rewards_to_reviews(const std::vector<review_object
 
         // Reward author
         auto& author = account_service.get_account(author_name);
-        account_service.increase_balance(author, asset(author_reward, DEIP_SYMBOL));
+        account_service.adjust_balance(author, asset(author_reward, DEIP_SYMBOL));
         used_reward += author_reward;
 
         used_reward += reward_review_voters(review, discipline_id, review_curators_reward_share);
@@ -1758,8 +1758,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<set_expertise_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
-    _my->_evaluator_registry.register_evaluator<deposit_to_vesting_contract_evaluator>();
-    _my->_evaluator_registry.register_evaluator<withdraw_from_vesting_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_vesting_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<withdraw_vesting_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_expertise_evaluator>();

@@ -194,8 +194,6 @@
 
 #define VIRTUAL_SCHEDULE_LAP_LENGTH ( fc::uint128::max_value() )
 
-#define DEIP_VESTING_LOCKOUT_PERIOD         (365*24*60*60) // 365 days
-
 /**
  *  Reserved Account IDs with special meaning
  */

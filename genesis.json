@@ -1701,8 +1701,9 @@
             "sender": "alice",
             "receiver": "rachel",
             "balance": 10000000,
-            "withdrawal_periods": 4,
-            "contract_duration": 864000
+            "vesting_duration_seconds": 157680000,
+            "vesting_cliff_seconds": 31536000,
+            "period_duration_seconds": 7884000
         }
     ]
 }

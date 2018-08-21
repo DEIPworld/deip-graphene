@@ -37,8 +37,8 @@ public:
         , bob(account_service.create_account_by_faucets(
               "bob", "initdelegate", public_key, "", authority(), authority(), authority(), asset(0, DEIP_SYMBOL)))
     {
-        account_service.increase_balance(alice, asset(ALICE_ACCOUNT_GRANT, DEIP_SYMBOL));
-        account_service.increase_balance(bob, asset(BOB_ACCOUNT_GRANT, DEIP_SYMBOL));
+        account_service.adjust_balance(alice, asset(ALICE_ACCOUNT_GRANT, DEIP_SYMBOL));
+        account_service.adjust_balance(bob, asset(BOB_ACCOUNT_GRANT, DEIP_SYMBOL));
     }
 
     dbs_grant& grant_service;

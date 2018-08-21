@@ -8,6 +8,8 @@
 namespace deip{
 namespace chain{
 
+using deip::protocol::asset;
+
 class vesting_contract_object : public object<vesting_contract_object_type, vesting_contract_object>
 {
 
@@ -22,36 +24,36 @@ public:
     }
 
     vesting_contract_id_type id;
-    account_name_type sender;
-    account_name_type receiver;
-    deip::protocol::asset balance = deip::protocol::asset(0, DEIP_SYMBOL);
-    share_type withdrawn = 0;
-    uint32_t withdrawal_periods;
-    time_point_sec start_date;
-    time_point_sec expiration_date;
-    time_point_sec contract_duration;
+    account_name_type creator;
+    account_name_type owner;
+    asset balance = asset(0, DEIP_SYMBOL);
+    asset withdrawn = asset(0, DEIP_SYMBOL);
+    uint32_t vesting_cliff_seconds = 0;
+    uint32_t vesting_duration_seconds = 0;
+    uint32_t period_duration_seconds = 0;
+    time_point_sec start_timestamp;
 };
 
-struct by_sender_and_receiver;
-struct by_receiver;
+struct by_creator_and_owner;
+struct by_owner;
 
 typedef multi_index_container<vesting_contract_object,
                 indexed_by<ordered_unique<tag<by_id>,
                             member<vesting_contract_object,
                                     vesting_contract_id_type,
                                     &vesting_contract_object::id>>,
-                        ordered_unique<tag<by_sender_and_receiver>,
+                        ordered_unique<tag<by_creator_and_owner>,
                              composite_key<vesting_contract_object,
                              member<vesting_contract_object,
                                     account_name_type,
-                                    &vesting_contract_object::sender>,
+                                    &vesting_contract_object::creator>,
                              member<vesting_contract_object,
                                      account_name_type,
-                                    &vesting_contract_object::receiver>>>,
-                        ordered_non_unique<tag<by_receiver>,
+                                    &vesting_contract_object::owner>>>,
+                        ordered_non_unique<tag<by_owner>,
                                         member<vesting_contract_object,
                                                 account_name_type,
-                                                &vesting_contract_object::receiver>>>,
+                                                &vesting_contract_object::owner>>>,
 
                         allocator<vesting_contract_object>>
                         vesting_contract_index;
@@ -59,7 +61,8 @@ typedef multi_index_container<vesting_contract_object,
 }
 
 FC_REFLECT(deip::chain::vesting_contract_object,
-                        (id)(sender)(receiver)(balance)(withdrawn)(withdrawal_periods)(start_date)(expiration_date)(contract_duration)
+                        (id)(creator)(owner)(balance)(vesting_cliff_seconds)(vesting_duration_seconds)
+                        (start_timestamp)(period_duration_seconds)(withdrawn)
             )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::vesting_contract_object, deip::chain::vesting_contract_index)

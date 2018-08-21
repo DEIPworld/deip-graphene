@@ -9,24 +9,20 @@ dbs_vesting_contract::dbs_vesting_contract(database &db)
 {
 }
 
-const vesting_contract_object& dbs_vesting_contract::create(const account_name_type &sender,
-                                                            const account_name_type &receiver,
-                                                            const asset& balance,
-                                                            const uint32_t withdrawal_periods,
-                                                            const uint32_t contract_duration)
+const vesting_contract_object & dbs_vesting_contract::create(const account_name_type &creator, const account_name_type &owner, const asset &balance,
+                                                             const uint32_t &vesting_duration_seconds,
+                                                             const uint32_t& period_duration_seconds,
+                                                             const uint32_t &vesting_cliff_seconds)
 {
-    const vesting_contract_object& new_vesting_contract = db_impl().create<vesting_contract_object>([&](vesting_contract_object& vesting_contract) {
-        vesting_contract.sender = sender;
-        vesting_contract.receiver = receiver;
+    return db_impl().create<vesting_contract_object>([&](vesting_contract_object& vesting_contract) {
+        vesting_contract.creator = creator;
+        vesting_contract.owner = owner;
         vesting_contract.balance = balance;
-        vesting_contract.withdrawn = 0;
-        vesting_contract.withdrawal_periods = withdrawal_periods;
-        vesting_contract.start_date = db_impl().head_block_time();
-        vesting_contract.expiration_date = db_impl().head_block_time() + contract_duration;
-        vesting_contract.contract_duration = fc::time_point_sec(contract_duration);
+        vesting_contract.start_timestamp = db_impl().head_block_time();
+        vesting_contract.vesting_duration_seconds = vesting_duration_seconds;
+        vesting_contract.period_duration_seconds = period_duration_seconds;
+        vesting_contract.vesting_cliff_seconds = vesting_cliff_seconds;
     });
-
-    return new_vesting_contract;
 }
 
 const vesting_contract_object& dbs_vesting_contract::get(const vesting_contract_id_type& id)
@@ -37,20 +33,20 @@ const vesting_contract_object& dbs_vesting_contract::get(const vesting_contract_
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-const vesting_contract_object& dbs_vesting_contract::get_by_sender_and_reviever(const account_name_type& sender,
-                                                                                const account_name_type& receiver)
+const vesting_contract_object& dbs_vesting_contract::get_by_creator_and_owner(const account_name_type &creator,
+                                                                              const account_name_type &owner)
 {
     try {
-        return db_impl().get<vesting_contract_object, by_sender_and_receiver>(boost::make_tuple(sender, receiver));
+        return db_impl().get<vesting_contract_object, by_creator_and_owner>(boost::make_tuple(creator, owner));
     }
-    FC_CAPTURE_AND_RETHROW((sender)(receiver))
+    FC_CAPTURE_AND_RETHROW((creator)(owner))
 }
 
-dbs_vesting_contract::vesting_contract_refs_type dbs_vesting_contract::get_by_receiver(const account_name_type& receiver)
+dbs_vesting_contract::vesting_contract_refs_type dbs_vesting_contract::get_by_owner(const account_name_type &owner)
 {
     vesting_contract_refs_type ret;
 
-    auto it_pair = db_impl().get_index<vesting_contract_index>().indicies().get<by_receiver>().equal_range(receiver);
+    auto it_pair = db_impl().get_index<vesting_contract_index>().indicies().get<by_owner>().equal_range(owner);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
@@ -62,27 +58,21 @@ dbs_vesting_contract::vesting_contract_refs_type dbs_vesting_contract::get_by_re
     return ret;
 }
 
-void dbs_vesting_contract::withdraw(const vesting_contract_id_type& id,
-                                                              const asset& to_withdraw)
+void dbs_vesting_contract::withdraw(const vesting_contract_id_type &id,
+                                    const asset &amount)
 {
-    auto& vesting_contract = db_impl().get<vesting_contract_object, by_id>(id);
-
-    FC_ASSERT(to_withdraw.amount <= vesting_contract.balance.amount, "You cant withdraw more than contract balance");
-
-    if (to_withdraw.amount == vesting_contract.balance.amount)
-        db_impl().remove(vesting_contract);
-    else
-        db_impl().modify(vesting_contract, [&](vesting_contract_object& v) { v.withdrawn += to_withdraw.amount;
-                                                                             v.balance -= to_withdraw; });
+    auto& vesting = db_impl().get<vesting_contract_object, by_id>(id);
+    FC_ASSERT(vesting.balance >= amount);
+    db_impl().modify(vesting, [&](vesting_contract_object& v) { v.balance -= amount; });
 }
 
-void dbs_vesting_contract::check_vesting_contract_existence_by_sender_and_receiver(const account_name_type& sender,
-                                                                                   const account_name_type& receiver)
+void dbs_vesting_contract::check_existence_by_creator_and_owner(const account_name_type &creator,
+                                                                const account_name_type &owner)
 {
-    const auto& idx = db_impl().get_index<vesting_contract_index>().indices().get<by_sender_and_receiver>();
+    const auto& idx = db_impl().get_index<vesting_contract_index>().indices().get<by_creator_and_owner>();
 
-    FC_ASSERT(idx.find(boost::make_tuple(sender, receiver)) != idx.cend(), "Vesting contract with \"${1}\" sender and \"${2}\" receiver doenst exists.",
-              ("1", sender)("2", receiver));
+    FC_ASSERT(idx.find(boost::make_tuple(creator, owner)) != idx.cend(), "Vesting contract with \"${1}\" creator and \"${2}\" owner doenst exists.",
+              ("1", creator)("2", owner));
 }
 
 } //namespace chain

@@ -363,23 +363,29 @@ void database::init_genesis_vesting_contracts(const genesis_state_type& genesis_
     {
 
         FC_ASSERT(vesting_contract.balance > 0, "Deposit balance must be greater than 0");
-        FC_ASSERT(vesting_contract.withdrawal_periods > 0, "You must divide contract at least by 1 part");
-        FC_ASSERT(vesting_contract.contract_duration > 0, "Contract duration must be longer than 0");
+        FC_ASSERT(vesting_contract.vesting_duration_seconds > 0, "Vesting duration must be longer than 0");
+        FC_ASSERT(vesting_contract.vesting_duration_seconds > vesting_contract.vesting_cliff_seconds,
+                "Vesting duration should be longer than vesting cliff");
+        FC_ASSERT(vesting_contract.vesting_cliff_seconds > 0, "Vesting cliff must be longer than 0");
+        FC_ASSERT(vesting_contract.period_duration_seconds > 0, "Withdraw period duration must be longer than 0");
+        FC_ASSERT(vesting_contract.vesting_duration_seconds % vesting_contract.period_duration_seconds,
+                "Vesting duration should contain integer number of withdraw period");
 
-        FC_ASSERT(!vesting_contract.sender.empty(), "Account 'name' should not be empty.");
-        FC_ASSERT(is_valid_account_name(vesting_contract.sender), "Account name ${n} is invalid", ("n", vesting_contract.sender));
-        FC_ASSERT(!vesting_contract.receiver.empty(), "Account 'name' should not be empty.");
-        FC_ASSERT(is_valid_account_name(vesting_contract.receiver), "Account name ${n} is invalid", ("n", vesting_contract.receiver));
+        FC_ASSERT(!vesting_contract.creator.empty(), "Account 'name' should not be empty.");
+        FC_ASSERT(is_valid_account_name(vesting_contract.creator), "Account name ${n} is invalid", ("n", vesting_contract.creator));
+        FC_ASSERT(!vesting_contract.owner.empty(), "Account 'name' should not be empty.");
+        FC_ASSERT(is_valid_account_name(vesting_contract.owner), "Account name ${n} is invalid", ("n", vesting_contract.owner));
 
         create<vesting_contract_object>([&](vesting_contract_object& v) {
             v.id = vesting_contract.id;
-            v.sender = vesting_contract.sender;
-            v.receiver = vesting_contract.receiver;
+            v.creator = vesting_contract.creator;
+            v.owner = vesting_contract.owner;
             v.balance = asset(vesting_contract.balance, DEIP_SYMBOL);
-            v.withdrawal_periods = vesting_contract.withdrawal_periods;
-            v.contract_duration = fc::time_point_sec(vesting_contract.contract_duration);
-            v.start_date = get_genesis_time() + DEIP_VESTING_LOCKOUT_PERIOD;
-            v.expiration_date = v.start_date + vesting_contract.contract_duration;
+            v.withdrawn = asset(0, DEIP_SYMBOL);
+            v.vesting_duration_seconds = vesting_contract.vesting_duration_seconds;
+            v.vesting_cliff_seconds = vesting_contract.vesting_duration_seconds;
+            v.period_duration_seconds = vesting_contract.period_duration_seconds;
+            v.start_timestamp = get_genesis_time();
         });
     }
 }

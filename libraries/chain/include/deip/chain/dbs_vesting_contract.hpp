@@ -22,23 +22,21 @@ public:
 
     using vesting_contract_refs_type = std::vector<std::reference_wrapper<const vesting_contract_object>>;
 
-    const vesting_contract_object& create(const account_name_type &sender,
-                                          const account_name_type &receiver,
-                                          const asset& balance,
-                                          const uint32_t withdrawal_periods,
-                                          const uint32_t contract_duration);
+    const vesting_contract_object& create(const account_name_type &creator, const account_name_type &owner, const asset &balance,
+                                              const uint32_t &vesting_duration_seconds, const uint32_t& period_duration_seconds,
+                                              const uint32_t &vesting_cliff_seconds);
 
     const vesting_contract_object& get(const vesting_contract_id_type& id);
 
-    const vesting_contract_object& get_by_sender_and_reviever(const account_name_type& sender,
-                                                              const account_name_type& receiver);
+    const vesting_contract_object& get_by_creator_and_owner(const account_name_type &creator,
+                                                            const account_name_type &owner);
 
-    vesting_contract_refs_type get_by_receiver(const account_name_type& receiver);
+    vesting_contract_refs_type get_by_owner(const account_name_type &owner);
 
-    void withdraw(const vesting_contract_id_type& id, const asset& to_withdraw);
+    void withdraw(const vesting_contract_id_type &id, const asset &amount);
 
-    void check_vesting_contract_existence_by_sender_and_receiver(const account_name_type& sender,
-                                                                 const account_name_type& receiver);
+    void check_existence_by_creator_and_owner(const account_name_type &creator,
+                                              const account_name_type &owner);
 };
 
 } // namespace chain
