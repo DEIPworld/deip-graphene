@@ -201,7 +201,7 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
                     {
                         auto negative_weight = negative_weights.find(std::make_pair(review.author, weight_discipline.first));
                         if (negative_weight != negative_weights.end())
-                            negative_weight->second = std::min(negative_weight->second.value, weight_discipline.second.value);
+                            negative_weight->second = std::max(negative_weight->second.value, weight_discipline.second.value);
                         else
                             negative_weights[std::make_pair(review.author, weight_discipline.first)] = weight_discipline.second.value;
                     }
@@ -209,8 +209,9 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
             }
         }
 
-        for (auto it = negative_weights.begin(); it != negative_weights.end(); ++it)
+        for (auto it = negative_weights.begin(); it != negative_weights.end(); ++it) {
             weights[it->first] -= it->second;
+        }
         
         std::map<discipline_id_type, share_type> discipline_total_weights;
         for (auto it = weights.begin(); it != weights.end(); ++it)
@@ -219,7 +220,7 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
         for (auto& tw : discipline_total_weights)
         {
             auto discipline_id = tw.first;
-            auto weight = tw.second;
+            auto weight = std::max(int64_t(0), tw.second.value);
             auto& total_vote_for_final_result =  vote_service.create_total_votes(discipline_id, research_content.research_id, research_content.id);
             db_impl().modify(total_vote_for_final_result, [&](total_votes_object& tv_o)
             {
