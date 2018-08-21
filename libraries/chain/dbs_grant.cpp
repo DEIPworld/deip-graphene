@@ -98,7 +98,7 @@ const grant_object& dbs_grant::create_grant(const account_object& owner,
     FC_ASSERT(start < end_block, "grant start block should be before end block");
     //Withdraw fund from account
     dbs_account& account_service = db().obtain_service<dbs_account>();
-    account_service.decrease_balance(owner, balance);
+    account_service.adjust_balance(owner, -balance);
     
     share_type per_block(balance.amount);
     per_block /= (end_block - start);

@@ -83,14 +83,14 @@ struct genesis_state_type
         std::vector<int64_t> references;
     };
 
-    struct vesting_contract_type
+    struct vesting_balance_type
     {
-        dc::vesting_contract_id_type id;
-        std::string sender;
-        std::string receiver;
-        uint16_t balance;
-        uint32_t withdrawal_periods;
-        uint16_t contract_duration;
+        dc::vesting_balance_id_type id;
+        std::string owner;
+        uint32_t balance;
+        uint32_t vesting_duration_seconds;
+        uint32_t vesting_cliff_seconds;
+        uint32_t period_duration_seconds;
     };
     
     genesis_state_type()
@@ -113,7 +113,7 @@ struct genesis_state_type
     std::vector<research_group_type> research_groups;
     std::vector<research_type> researches;
     std::vector<research_content_type> research_contents;
-    std::vector<vesting_contract_type> vesting_contracts;
+    std::vector<vesting_balance_type> vesting_balances;
 
     sp::chain_id_type initial_chain_id;
 };
@@ -181,13 +181,13 @@ FC_REFLECT(deip::chain::genesis_state_type::research_content_type,
            (authors)
            (references))
 
-FC_REFLECT(deip::chain::genesis_state_type::vesting_contract_type,
+FC_REFLECT(deip::chain::genesis_state_type::vesting_balance_type,
            (id)
-           (sender)
-           (receiver)
+           (owner)
            (balance)
-           (withdrawal_periods)
-           (contract_duration))
+           (vesting_duration_seconds)
+           (vesting_cliff_seconds)
+           (period_duration_seconds))
 
 FC_REFLECT(deip::chain::genesis_state_type,
            (init_supply)
@@ -201,5 +201,5 @@ FC_REFLECT(deip::chain::genesis_state_type,
            (researches)
            (research_contents)
            (initial_chain_id)
-           (vesting_contracts))
+           (vesting_balances))
 // clang-format on

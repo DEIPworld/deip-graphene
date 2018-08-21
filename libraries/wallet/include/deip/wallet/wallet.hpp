@@ -888,32 +888,30 @@ public:
     /**
      * Create new vesting contract
      *
-     * @param sender The account who creates vesting contract
-     * @param receiver The account who receives tokens from contract
-     * @param balance Amount to vest
-     * @param withdrawal_period Number of withdrawal periods
-     * @param contract_duration Duration of contract in seconds
+     * @param creator The account who creates vesting contract
+     * @param owner The account who owns tokens from contract
+     * @param balance Amount to vest (i.e. "1.000 DEIP")
+     * @param vesting_duration_seconds Duration of vesting in seconds
+     * @param vesting_cliff_seconds Duration of vesting cliff in seconds
+     * @param period_duration_seconds Duration of withdraw period in seconds (funds will be available every period, i.e. every 3 months)
      * @param broadcast
      */
-    annotated_signed_transaction deposit_to_vesting_contract(const std::string& sender,
-                                                             const std::string& receiver,
-                                                             const uint32_t balance,
-                                                             const uint32_t withdrawal_period,
-                                                             const uint32_t contract_duration,
-                                                             const bool broadcast);
+    annotated_signed_transaction create_vesting_balance(const std::string &creator, const std::string &owner, const asset &balance,
+                                                             const uint32_t &vesting_duration_seconds, const uint32_t &vesting_cliff_seconds,
+                                                             const uint32_t &period_duration_seconds, const bool broadcast);
 
     /**
      * Withdraw from vesting contract. Only withdraws the amount available for withdrawal
      *
-     * @param sender The account who creates vesting contract
-     * @param receiver The account who receives tokens from contract
-     * @param amount Amount to withdraw
+     * @param vesting_balance_id The account who created vesting contract
+     * @param owner The account who owns tokens from contract
+     * @param amount Amount to withdraw (i.e. "1.000 DEIP")
      * @param broadcast
      */
-    annotated_signed_transaction withdraw_from_vesting_contract(const std::string& sender,
-                                                                const std::string& receiver,
-                                                                const uint32_t amount,
-                                                                const bool broadcast);
+    annotated_signed_transaction withdraw_vesting_balance(const int64_t &vesting_balance_id,
+                                                           const std::string &owner,
+                                                           const asset &amount,
+                                                           const bool broadcast);
 
     /**
      * Vote for proposal
@@ -1023,8 +1021,8 @@ FC_API( deip::wallet::wallet_api,
         (reject_research_group_invite)
         (transfer_research_tokens_to_research_group)
         (research_update)
-        (deposit_to_vesting_contract)
-        (withdraw_from_vesting_contract)
+        (create_vesting_balance)
+        (withdraw_vesting_balance)
         (vote_proposal)
 
         /// helper api

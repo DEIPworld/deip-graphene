@@ -2214,22 +2214,21 @@ annotated_signed_transaction wallet_api::research_update(const int64_t research_
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::deposit_to_vesting_contract(const std::string& sender,
-                                                                     const std::string& receiver,
-                                                                     const uint32_t balance,
-                                                                     const uint32_t withdrawal_period,
-                                                                     const uint32_t contract_duration,
-                                                                     const bool broadcast)
+annotated_signed_transaction
+wallet_api::create_vesting_balance(const std::string &creator, const std::string &owner, const asset &balance,
+                                    const uint32_t &vesting_duration_seconds, const uint32_t &vesting_cliff_seconds,
+                                    const uint32_t &period_duration_seconds, const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
-    deposit_to_vesting_contract_operation op;
+    create_vesting_balance_operation op;
 
-    op.sender = sender;
-    op.receiver = receiver;
+    op.creator = creator;
+    op.owner = owner;
     op.balance = balance;
-    op.withdrawal_period = withdrawal_period;
-    op.contract_duration = contract_duration;
+    op.vesting_duration_seconds = vesting_duration_seconds;
+    op.vesting_cliff_seconds = vesting_cliff_seconds;
+    op.period_duration_seconds = period_duration_seconds;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2238,17 +2237,17 @@ annotated_signed_transaction wallet_api::deposit_to_vesting_contract(const std::
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::withdraw_from_vesting_contract(const std::string& sender,
-                                                                        const std::string& receiver,
-                                                                        const uint32_t amount,
-                                                                        const bool broadcast)
+annotated_signed_transaction wallet_api::withdraw_vesting_balance(const int64_t &vesting_balance_id,
+                                                                   const std::string &owner,
+                                                                   const asset &amount,
+                                                                   const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
-    withdraw_from_vesting_contract_operation op;
+    withdraw_vesting_balance_operation op;
 
-    op.sender = sender;
-    op.receiver = receiver;
+    op.vesting_balance_id = vesting_balance_id;
+    op.owner = owner;
     op.amount = amount;
 
     signed_transaction tx;

@@ -21,7 +21,7 @@
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_research_token.hpp>
 #include <deip/chain/dbs_review.hpp>
-#include <deip/chain/dbs_vesting_contract.hpp>
+#include <deip/chain/dbs_vesting_balance.hpp>
 #include <deip/chain/dbs_proposal_execution.hpp>
 
 #ifndef IS_LOW_MEM
@@ -198,8 +198,8 @@ void transfer_evaluator::do_apply(const transfer_operation& o)
 
     FC_ASSERT(_db.get_balance(from_account, o.amount.symbol) >= o.amount,
               "Account does not have sufficient funds for transfer.");
-    account_service.decrease_balance(from_account, o.amount);
-    account_service.increase_balance(to_account, o.amount);
+    account_service.adjust_balance(from_account, -o.amount);
+    account_service.adjust_balance(to_account, o.amount);
 }
 
 void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_tokens_operation& o)
@@ -211,8 +211,8 @@ void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_toke
 
     FC_ASSERT(_db.get_balance(from_account, DEIP_SYMBOL) >= o.amount,
               "Account does not have sufficient DEIP for transfer.");
-    account_service.decrease_balance(from_account, o.amount);
 
+    account_service.adjust_balance(from_account, -o.amount);
     account_service.increase_common_tokens(to_account, o.amount.amount);
 }
 
@@ -751,7 +751,7 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
                                                contribution_time, amount_to_contribute);
     }
 
-    account_service.decrease_balance(account_service.get_account(op.owner), amount_to_contribute);
+    account_service.adjust_balance(account_service.get_account(op.owner), -amount_to_contribute);
     research_token_sale_service.increase_tokens_amount(op.research_token_sale_id, amount_to_contribute);
 
     if (is_hard_cap_reached) {
@@ -863,48 +863,59 @@ void research_update_evaluator::do_apply(const research_update_operation& op)
     });
 }
 
-void deposit_to_vesting_contract_evaluator::do_apply(const deposit_to_vesting_contract_operation& op)
+void create_vesting_balance_evaluator::do_apply(const create_vesting_balance_operation& op)
 {
-    dbs_vesting_contract& vesting_contract_service = _db.obtain_service<dbs_vesting_contract>();
+    dbs_vesting_balance& vesting_balance_service = _db.obtain_service<dbs_vesting_balance>();
     dbs_account &account_service = _db.obtain_service<dbs_account>();
 
-    account_service.check_account_existence(op.sender);
-    account_service.check_account_existence(op.receiver);
+    account_service.check_account_existence(op.creator);
+    account_service.check_account_existence(op.owner);
 
-    vesting_contract_service.create(op.sender, op.receiver, asset(op.balance, DEIP_SYMBOL), op.withdrawal_period, op.contract_duration);
+    auto& creator = account_service.get_account(op.creator);
+    FC_ASSERT(creator.balance >= op.balance, "Not enough funds to create vesting contract");
+
+    account_service.adjust_balance(creator, -op.balance);
+    vesting_balance_service.create(op.owner, op.balance, op.vesting_duration_seconds, op.period_duration_seconds, op.vesting_cliff_seconds);
 
 }
 
-void withdraw_from_vesting_contract_evaluator::do_apply(const withdraw_from_vesting_contract_operation& op)
+void withdraw_vesting_balance_evaluator::do_apply(const withdraw_vesting_balance_operation& op)
 {
-    dbs_vesting_contract& vesting_contract_service = _db.obtain_service<dbs_vesting_contract>();
+    dbs_vesting_balance& vesting_balance_service = _db.obtain_service<dbs_vesting_balance>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
-    account_service.check_account_existence(op.sender);
-    account_service.check_account_existence(op.receiver);
-    vesting_contract_service.check_vesting_contract_existence_by_sender_and_receiver(op.sender, op.receiver);
+    account_service.check_account_existence(op.owner);
+    vesting_balance_service.check_existence(op.vesting_balance_id);
 
-    auto& vesting_contract = vesting_contract_service.get_by_sender_and_reviever(op.sender, op.receiver);
-    auto now = _db.head_block_time();
+    const auto& vco = vesting_balance_service.get(op.vesting_balance_id);
+    const auto now = _db.head_block_time();
+    share_type allowed_withdraw = 0;
 
-    share_type time_since_contract_start = now.sec_since_epoch() - vesting_contract.start_date.sec_since_epoch();
-    share_type max_amount_to_withdraw = 0;
+    if (now >= vco.start_timestamp) {
+        const auto elapsed_seconds = (now - vco.start_timestamp).to_seconds();
 
-    if (now >= vesting_contract.expiration_date) {
-        max_amount_to_withdraw = vesting_contract.balance.amount;
-    } else {
-        share_type current_period = (time_since_contract_start * vesting_contract.withdrawal_periods) / vesting_contract.contract_duration.sec_since_epoch();
-        max_amount_to_withdraw = (vesting_contract.balance.amount * current_period) / vesting_contract.withdrawal_periods;
+        if (elapsed_seconds >= vco.vesting_cliff_seconds) {
+            share_type total_vested = 0;
+
+            if (elapsed_seconds < vco.vesting_duration_seconds) {
+                const uint32_t withdraw_period = elapsed_seconds / vco.period_duration_seconds;
+                const uint32_t total_periods = vco.vesting_duration_seconds / vco.period_duration_seconds;
+                total_vested = (vco.balance.amount * withdraw_period) / total_periods;
+            } else {
+                total_vested = vco.balance.amount;
+            }
+            FC_ASSERT(total_vested >= 0);
+
+            allowed_withdraw = total_vested - vco.withdrawn.amount;
+            FC_ASSERT(allowed_withdraw >= 0);
+            FC_ASSERT(allowed_withdraw >= op.amount.amount,
+                    "You cannot withdraw requested amount. Allowed withdraw: ${a}, requested amount: ${r}.",
+                    ("a", asset(allowed_withdraw, DEIP_SYMBOL))("r", op.amount));
+
+            vesting_balance_service.withdraw(vco.id, op.amount);
+            account_service.adjust_balance(_db.get_account(op.owner), op.amount);
+        }
     }
-
-    share_type to_withdraw = max_amount_to_withdraw - vesting_contract.withdrawn;
-
-    if (to_withdraw > 0)
-    {
-        account_service.increase_balance(_db.get_account(op.receiver), to_withdraw);
-        vesting_contract_service.withdraw(vesting_contract.id, to_withdraw);
-    }
-
 }
 
 void vote_proposal_evaluator::do_apply(const vote_proposal_operation& op)

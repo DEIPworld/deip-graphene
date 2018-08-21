@@ -152,15 +152,10 @@ void dbs_account::update_owner_authority(const account_object& account,
                      });
 }
 
-void dbs_account::increase_balance(const account_object& account, const asset& deips)
+void dbs_account::adjust_balance(const account_object& account, const asset& delta)
 {
-    FC_ASSERT(deips.symbol == DEIP_SYMBOL, "invalid asset type (symbol)");
-    db_impl().modify(account, [&](account_object& acnt) { acnt.balance += deips; });
-}
-
-void dbs_account::decrease_balance(const account_object& account, const asset& deips)
-{
-    increase_balance(account, -deips);
+    FC_ASSERT(delta.symbol == DEIP_SYMBOL, "Invalid asset type (symbol)");
+    db_impl().modify(account, [&](account_object& acc) { acc.balance += delta; });
 }
 
 void dbs_account::update_withdraw(const account_object& account,
