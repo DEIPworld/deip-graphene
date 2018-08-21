@@ -500,6 +500,7 @@ const proposal_object& database_fixture::create_proposal(const int64_t id, const
         proposal.creation_time = fc::time_point_sec();
         proposal.expiration_time = expiration_time;
         proposal.quorum_percent = quorum_percent;
+        proposal.object_hash = id;
     });
 
     return new_proposal;

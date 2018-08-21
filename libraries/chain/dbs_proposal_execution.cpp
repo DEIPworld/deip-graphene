@@ -1,6 +1,7 @@
 #include <deip/chain/dbs_proposal_execution.hpp>
 #include <deip/chain/database.hpp>
 #include <deip/chain/dbs_research_group_invite.hpp>
+#include <deip/chain/dbs_review.hpp>
 
 namespace deip {
 namespace chain {
@@ -162,28 +163,55 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
     auto& research_service = db_impl().obtain_service<dbs_research>();
     auto& research_content_service = db_impl().obtain_service<dbs_research_content>();
     auto& vote_service = db_impl().obtain_service<dbs_vote>();
+    auto& discipline_service = db_impl().obtain_service<dbs_discipline>();
+    auto& review_service = db_impl().obtain_service<dbs_review>();
 
     create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
 
     research_service.check_research_existence(data.research_id);
     FC_ASSERT((!research_service.get_research(data.research_id).is_finished), "You can't add content to finished research");
 
+    auto research_contents = research_content_service.get_by_research_id(data.research_id);
     auto& research_content = research_content_service.create(data.research_id, data.type, data.title, data.content, data.permlink, data.authors, data.references, data.external_references);
 
     std::map<discipline_id_type, share_type> research_votes_per_discipline;
     if (data.type == research_content_type::final_result)
     {
-        auto total_votes = vote_service.get_total_votes_by_research(research_content.research_id);
-        for (auto& tv : total_votes)
+        std::map<std::pair<account_name_type, discipline_id_type>, share_type> positive_weights;
+        std::map<std::pair<account_name_type, discipline_id_type>, share_type> negative_weights;
+
+        for (auto& cnt : research_contents)
         {
-            auto& total_vote = tv.get();
-            research_votes_per_discipline[total_vote.discipline_id] += total_vote.total_weight;
+            auto& content = cnt.get();
+            auto reviews = review_service.get_research_content_reviews(content.id);
+            for (auto& rw : reviews)
+            {
+                auto& review = rw.get();
+                auto& weights = review.is_positive ? positive_weights : negative_weights;
+                for (auto& weight_discipline : review.weights_per_discipline)
+                {
+                    auto current_weight = weights.find(std::make_pair(review.author, weight_discipline.first));
+                    if (current_weight != weights.end())
+                        current_weight->second = std::max(current_weight->second.value, weight_discipline.second.value);
+                    else
+                        weights[std::make_pair(review.author, weight_discipline.first)] = weight_discipline.second.value;
+                }
+            }
         }
 
-        for (auto& tv : research_votes_per_discipline)
+        std::map<std::pair<account_name_type, discipline_id_type>, share_type> total_weights = positive_weights;
+        for (auto it = negative_weights.begin(); it != negative_weights.end(); ++it) {
+            total_weights[it->first] -= it->second;
+        }
+        
+        std::map<discipline_id_type, share_type> discipline_total_weights;
+        for (auto it = total_weights.begin(); it != total_weights.end(); ++it)
+            discipline_total_weights[it->first.second] += it->second;
+
+        for (auto& tw : discipline_total_weights)
         {
-            auto discipline_id = tv.first;
-            auto weight = tv.second;
+            auto discipline_id = tw.first;
+            auto weight = std::max(int64_t(0), tw.second.value);
             auto& total_vote_for_final_result =  vote_service.create_total_votes(discipline_id, research_content.research_id, research_content.id);
             db_impl().modify(total_vote_for_final_result, [&](total_votes_object& tv_o)
             {
