@@ -90,7 +90,7 @@
         "name": "doroty",
         "recovery_account": "",
         "public_key": "DEIP57FNGfhjgz2TuRby5RrV4AgzEtM89zmn1yMdw8RqBD74ZEZZXm",
-        "deip_amount": 50000000000,
+        "deip_amount": 25000000000,
         "sp_amount": 0
     },{
         "name": "initdelegate",
@@ -253,6 +253,12 @@
         "recovery_account": "",
         "public_key": "DEIP79L7Xomcy8EqUC9Jpve4sSn1niJr9dZJ2CdHtZcb9f6J4aLPyf",
         "deip_amount": 100000000000,
+        "sp_amount": 0
+    }, {
+        "name": "ernestodiringuer",
+        "recovery_account": "",
+        "public_key": "DEIP5RnGBMpTVZa78DysTfz3Feovt4zHgAafPk2jT481xLiNXFiCJ2",
+        "deip_amount": 25000000000,
         "sp_amount": 0
     }],
 
