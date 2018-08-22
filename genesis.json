@@ -255,9 +255,9 @@
         "deip_amount": 100000000000,
         "sp_amount": 0
     }, {
-        "name": "ernestodiringuer",
+        "name": "mycb1",
         "recovery_account": "",
-        "public_key": "DEIP5RnGBMpTVZa78DysTfz3Feovt4zHgAafPk2jT481xLiNXFiCJ2",
+        "public_key": "DEIP8ieFHp1KHns4Y47RUxQW56dk17kJ5snqxNnzikQtPn4URmWWky",
         "deip_amount": 25000000000,
         "sp_amount": 0
     }],
@@ -1600,6 +1600,14 @@
         "quorum_percent": 7500,
         "is_personal": false,
         "members": ["initdelegate", "mike", "john", "rachel"]
+    }, {
+        "id": 2,
+        "name": "DAO-CHM",
+        "description": "Decentralized Autonomous Organization researching Cannabinoids Human Metabolites",
+        "permlink": "daochm",
+        "quorum_percent": 7500,
+        "is_personal": false,
+        "members": ["mycb1"]
     }],
 
     "researches": [{
