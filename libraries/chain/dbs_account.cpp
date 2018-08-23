@@ -73,7 +73,6 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         acc.name = new_account_name;
         acc.memo_key = memo_key;
         acc.created = props.time;
-        acc.last_vote_time = props.time;
         acc.mined = false;
 
         acc.recovery_account = creator_name;
@@ -153,15 +152,10 @@ void dbs_account::update_owner_authority(const account_object& account,
                      });
 }
 
-void dbs_account::increase_balance(const account_object& account, const asset& deips)
+void dbs_account::adjust_balance(const account_object& account, const asset& delta)
 {
-    FC_ASSERT(deips.symbol == DEIP_SYMBOL, "invalid asset type (symbol)");
-    db_impl().modify(account, [&](account_object& acnt) { acnt.balance += deips; });
-}
-
-void dbs_account::decrease_balance(const account_object& account, const asset& deips)
-{
-    increase_balance(account, -deips);
+    FC_ASSERT(delta.symbol == DEIP_SYMBOL, "Invalid asset type (symbol)");
+    db_impl().modify(account, [&](account_object& acc) { acc.balance += delta; });
 }
 
 void dbs_account::update_withdraw(const account_object& account,
@@ -196,33 +190,6 @@ void dbs_account::increase_witnesses_voted_for(const account_object& account)
 void dbs_account::decrease_witnesses_voted_for(const account_object& account)
 {
     db_impl().modify(account, [&](account_object& a) { a.witnesses_voted_for--; });
-}
-
-void dbs_account::add_post(const account_object& author_account,
-                           const optional<account_name_type>& parent_author_name,
-                           const optional<time_point_sec>& now)
-{
-    _time t = _get_now(now);
-
-    db_impl().modify(author_account, [&](account_object& a) {
-        if (!parent_author_name.valid())
-        {
-            a.last_root_post = t;
-        }
-        a.last_post = t;
-        a.post_count++;
-    });
-}
-
-void dbs_account::update_voting_power(const account_object& account,
-                                      uint16_t voting_power,
-                                      const optional<time_point_sec>& now)
-{
-    _time t = _get_now(now);
-    db_impl().modify(account, [&](account_object& a) {
-        a.voting_power = voting_power;
-        a.last_vote_time = t;
-    });
 }
 
 void dbs_account::create_account_recovery(const account_name_type& account_to_recover,

@@ -19,7 +19,7 @@
 #define DEIP_CASHOUT_WINDOW_SECONDS          (60*60) /// 1 hr
 #define DEIP_UPVOTE_LOCKOUT                  (fc::minutes(5))
 
-#define DEIP_MIN_ACCOUNT_CREATION_FEE        1000
+#define DEIP_MIN_ACCOUNT_CREATION_FEE        1
 
 #define DEIP_OWNER_AUTH_RECOVERY_PERIOD                  fc::seconds(60)
 #define DEIP_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::seconds(12)
@@ -131,7 +131,6 @@
 #define DEIP_MIN_PRODUCER_REWARD             DEIP_MINING_REWARD
 #define DEIP_MIN_POW_REWARD                  DEIP_MINING_REWARD
 
-#define DEIP_POST_REWARD_FUND_NAME           ("post")
 #define DEIP_RECENT_RSHARES_DECAY_RATE       (fc::days(15))
 // note, if redefining these constants make sure calculate_claims doesn't overflow
 
@@ -202,8 +201,6 @@
 
 /// Represents the canonical account for specifying you will vote for directly (as opposed to a proxy)
 #define DEIP_PROXY_TO_SELF_ACCOUNT           ""
-/// Represents the canonical root post parent account
-#define DEIP_ROOT_POST_PARENT                (account_name_type())
 
 ///@}
 

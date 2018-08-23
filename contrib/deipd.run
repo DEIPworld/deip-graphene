@@ -1,12 +1,8 @@
 #!/bin/bash
 
-DEIPD="/usr/local/deipd-default/bin/deipd"
+DEIPD="/usr/local/bin/deipd"
 
 VERSION=`cat /etc/deipdversion`
-
-if [[ "$USE_WAY_TOO_MUCH_RAM" ]]; then
-    DEIPD="/usr/local/deipd-full/bin/deipd"
-fi
 
 chown -R deipd:deipd $HOME
 
@@ -47,17 +43,8 @@ if [[ ! -z "$TRACK_ACCOUNT" ]]; then
     ARGS+=" --track-account-range=[\"$TRACK_ACCOUNT\",\"$TRACK_ACCOUNT\"]"
 fi
 
-# NOW=`date +%s`
-# DEIPD_FEED_START_TIME=`expr $NOW - 1209600`
-
-# ARGS+=" --follow-start-feeds=$DEIPD_FEED_START_TIME"
-
 # overwrite local config with image one
-if [[ "$USE_FULL_WEB_NODE" ]]; then
-  cp /etc/deipd/fullnode.config.ini $HOME/config.ini
-else
-  cp /etc/deipd/config.ini $HOME/config.ini
-fi
+cp /etc/deipd/config.ini $HOME/config.ini
 
 chown deipd:deipd $HOME/config.ini
 
@@ -76,84 +63,14 @@ fi
 # who knows what else it dumps into current dir
 cd $HOME
 
-if [[ "$USE_PUBLIC_SHARED_MEMORY" ]]; then
-  echo deipd: Downloading and uncompressing blockchain-$VERSION-latest.tar.bz2 - this may take awhile.
-  wget -qO- https://s3.amazonaws.com/deip-dev-blockchainstate/blockchain-$VERSION-latest.tar.bz2 | pbzip2 -m2000dc | tar x
-fi
-
 # slow down restart loop if flapping
 sleep 1
 
-mv /etc/nginx/nginx.conf /etc/nginx/nginx.original.conf
-cp /etc/nginx/deipd.nginx.conf /etc/nginx/nginx.conf
-
-#start multiple read-only instances based on the number of cores
-#attach to the local interface since a proxy will be used to loadbalance
-if [[ "$USE_MULTICORE_READONLY" ]]; then
-    exec chpst -udeipd \
-        $DEIPD \
-            --rpc-endpoint=127.0.0.1:8091 \
-            --p2p-endpoint=0.0.0.0:2001 \
-            --data-dir=$HOME \
-            $ARGS \
-            $DEIPD_EXTRA_OPTS \
-            2>&1 &
-    # sleep for a moment to allow the writer node to be ready to accept connections from the readers
-    sleep 30
-    PORT_NUM=8092
-    cp /etc/nginx/healthcheck.conf.template /etc/nginx/healthcheck.conf
-    CORES=$(nproc)
-    PROCESSES=$((CORES * 4))
-    for (( i=2; i<=$PROCESSES; i++ ))
-      do
-        echo server 127.0.0.1:$PORT_NUM\; >> /etc/nginx/healthcheck.conf
-        ((PORT_NUM++))
-    done
-    echo } >> /etc/nginx/healthcheck.conf
-    PORT_NUM=8092
-    for (( i=2; i<=$PROCESSES; i++ ))
-      do
-        exec chpst -udeipd \
-        $DEIPD \
-          --rpc-endpoint=127.0.0.1:$PORT_NUM \
-          --data-dir=$HOME \
-          --read-forward-rpc=127.0.0.1:8091 \
-          --read-only \
-          2>&1 &
-          ((PORT_NUM++))
-          sleep 1
-    done
-    # start nginx now that the config file is complete with all endpoints
-    # all of the read-only processes will connect to the write node onport 8091
-    # nginx will balance all incoming traffic on port 8090
-    rm /etc/nginx/sites-enabled/default
-    cp /etc/nginx/healthcheck.conf /etc/nginx/sites-enabled/default
-    /etc/init.d/fcgiwrap restart
-    echo daemon off\; >> /etc/nginx/nginx.conf
-    service nginx restart
-elif [[ "$USE_NGINX_FRONTEND" ]]; then
-    cp /etc/nginx/healthcheck.conf.template /etc/nginx/healthcheck.conf
-    echo server 127.0.0.1:8091\; >> /etc/nginx/healthcheck.conf
-    echo } >> /etc/nginx/healthcheck.conf
-    rm /etc/nginx/sites-enabled/default
-    cp /etc/nginx/healthcheck.conf /etc/nginx/sites-enabled/default
-    /etc/init.d/fcgiwrap restart
-    service nginx restart
-    exec chpst -udeipd \
-        $DEIPD \
-            --rpc-endpoint=0.0.0.0:8091 \
-            --p2p-endpoint=0.0.0.0:2001 \
-            --data-dir=$HOME \
-            $ARGS \
-            $DEIPD_EXTRA_OPTS \
-            2>&1
-else
-    exec chpst -udeipd \
-        $DEIPD \
-            --rpc-endpoint=0.0.0.0:8090 \
-            --p2p-endpoint=0.0.0.0:2001 \
-            --data-dir=$HOME \
-            $ARGS \
-            $DEIPD_EXTRA_OPTS \
-            2>&1
-fi
+exec chpst -udeipd \
+    $DEIPD \
+        --rpc-endpoint=0.0.0.0:8090 \
+        --p2p-endpoint=0.0.0.0:2001 \
+        --data-dir=$HOME \
+        $ARGS \
+        $DEIPD_EXTRA_OPTS \
+        2>&1

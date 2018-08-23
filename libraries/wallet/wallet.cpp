@@ -348,8 +348,7 @@ public:
             = fc::get_approximate_relative_time_string(dynamic_props.time, time_point_sec(time_point::now()), " old");
         result["participation"] = (100 * dynamic_props.recent_slots_filled.popcount()) / 128.0;
         result["account_creation_fee"] = _remote_db->get_chain_properties().account_creation_fee;
-        result["post_reward_fund"]
-            = fc::variant(_remote_db->get_reward_fund(DEIP_POST_REWARD_FUND_NAME)).get_object();
+
         return result;
     }
 
@@ -1306,6 +1305,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys(const std::str
                                                                   const public_key_type& active,
                                                                   const public_key_type& posting,
                                                                   const public_key_type& memo,
+                                                                  const asset& fee,
                                                                   bool broadcast) const
 {
     try
@@ -1319,8 +1319,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys(const std::str
         op.posting = authority(1, posting, 1);
         op.memo_key = memo;
         op.json_metadata = json_meta;
-        op.fee = my->_remote_db->get_chain_properties().account_creation_fee
-            * asset(DEIP_CREATE_ACCOUNT_WITH_DEIP_MODIFIER, DEIP_SYMBOL);
+        op.fee = fee;
 
         signed_transaction tx;
         tx.operations.push_back(op);
@@ -1673,6 +1672,7 @@ wallet_api::update_account_memo_key(const std::string& account_name, const publi
 annotated_signed_transaction wallet_api::create_account(const std::string& creator,
                                                         const std::string& newname,
                                                         const std::string& json_meta,
+                                                        const asset& fee,
                                                         bool broadcast)
 {
     try
@@ -1687,7 +1687,7 @@ annotated_signed_transaction wallet_api::create_account(const std::string& creat
         import_key(posting.wif_priv_key);
         import_key(memo.wif_priv_key);
         return create_account_with_keys(creator, newname, json_meta, owner.pub_key, active.pub_key, posting.pub_key,
-                                        memo.pub_key, broadcast);
+                                        memo.pub_key, fee, broadcast);
     }
     FC_CAPTURE_AND_RETHROW((creator)(newname)(json_meta))
 }
@@ -1914,12 +1914,11 @@ annotated_signed_transaction wallet_api::set_withdraw_common_tokens_route(
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction
-wallet_api::transfer_research_tokens(const int64_t research_token_id, const int64_t research_id, const std::string& from, const std::string& to, const uint32_t amount, bool broadcast)
+annotated_signed_transaction wallet_api::transfer_research_tokens(const int64_t research_id, const std::string& from,
+                                                                  const std::string& to, const uint32_t amount, bool broadcast)
 {
     FC_ASSERT(!is_locked());
     transfer_research_tokens_operation op;
-    op.research_token_id = research_token_id;
     op.research_id = research_id;
     op.sender = from;
     op.receiver = to;
@@ -2224,7 +2223,7 @@ annotated_signed_transaction wallet_api::make_review(const std::string& author,
 
 annotated_signed_transaction wallet_api::contribute_to_token_sale(const int64_t research_token_sale_id,
                                                                   const std::string& owner,
-                                                                  const uint32_t amount,
+                                                                  const asset& amount,
                                                                   const bool broadcast)
 {
     FC_ASSERT(!is_locked());
@@ -2278,8 +2277,7 @@ annotated_signed_transaction wallet_api::reject_research_group_invite(const int6
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_group(const int64_t research_token_id,
-                                                                                    const int64_t research_id,
+annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_group(const int64_t research_id,
                                                                                     const std::string& owner,
                                                                                     const uint32_t amount,
                                                                                     const bool broadcast)
@@ -2288,7 +2286,6 @@ annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_gr
 
     transfer_research_tokens_to_research_group_operation op;
 
-    op.research_token_id = research_token_id;
     op.research_id = research_id;
     op.owner = owner;
     op.amount = amount;
@@ -2324,22 +2321,21 @@ annotated_signed_transaction wallet_api::research_update(const int64_t research_
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::deposit_to_vesting_contract(const std::string& sender,
-                                                                     const std::string& receiver,
-                                                                     const uint32_t balance,
-                                                                     const uint32_t withdrawal_period,
-                                                                     const uint32_t contract_duration,
-                                                                     const bool broadcast)
+annotated_signed_transaction
+wallet_api::create_vesting_balance(const std::string &creator, const std::string &owner, const asset &balance,
+                                    const uint32_t &vesting_duration_seconds, const uint32_t &vesting_cliff_seconds,
+                                    const uint32_t &period_duration_seconds, const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
-    deposit_to_vesting_contract_operation op;
+    create_vesting_balance_operation op;
 
-    op.sender = sender;
-    op.receiver = receiver;
+    op.creator = creator;
+    op.owner = owner;
     op.balance = balance;
-    op.withdrawal_period = withdrawal_period;
-    op.contract_duration = contract_duration;
+    op.vesting_duration_seconds = vesting_duration_seconds;
+    op.vesting_cliff_seconds = vesting_cliff_seconds;
+    op.period_duration_seconds = period_duration_seconds;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2348,17 +2344,17 @@ annotated_signed_transaction wallet_api::deposit_to_vesting_contract(const std::
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::withdraw_from_vesting_contract(const std::string& sender,
-                                                                        const std::string& receiver,
-                                                                        const uint32_t amount,
-                                                                        const bool broadcast)
+annotated_signed_transaction wallet_api::withdraw_vesting_balance(const int64_t &vesting_balance_id,
+                                                                   const std::string &owner,
+                                                                   const asset &amount,
+                                                                   const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
-    withdraw_from_vesting_contract_operation op;
+    withdraw_vesting_balance_operation op;
 
-    op.sender = sender;
-    op.receiver = receiver;
+    op.vesting_balance_id = vesting_balance_id;
+    op.owner = owner;
     op.amount = amount;
 
     signed_transaction tx;

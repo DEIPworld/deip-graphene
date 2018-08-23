@@ -45,11 +45,8 @@ public:
     account_name_type recovery_account;
     time_point_sec last_account_recovery;
     uint32_t lifetime_vote_count = 0;
-    uint32_t post_count = 0;
 
     bool can_vote = true;
-    uint16_t voting_power = DEIP_100_PERCENT; ///< current voting power of this account, it falls after every vote
-    time_point_sec last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
 
     asset balance = asset(0, DEIP_SYMBOL); ///< total liquid shares held by this account
     share_type expertise_tokens_balance = 0; ///< total expertise tokens held by this account
@@ -68,10 +65,6 @@ public:
     // this account
 
     uint16_t witnesses_voted_for = 0;
-
-    time_point_sec last_post;
-    time_point_sec last_root_post = fc::time_point_sec::min();
-    uint32_t post_bandwidth = 0;
 
     delegated_expertise_type_map delegated_expertise;
     /// This function should be used only when the account votes for a witness directly
@@ -170,11 +163,9 @@ public:
 
 struct by_name;
 struct by_proxy;
-struct by_last_post;
 struct by_next_common_tokens_withdrawal;
 struct by_deip_balance;
 struct by_ct_balance;
-struct by_post_count;
 struct by_vote_count;
 
 /**
@@ -207,16 +198,6 @@ typedef multi_index_container<account_object,
                                                                              &account_object::id>> /// composite key
                                                         /// by_next_common_tokens_withdrawal
                                                         >,
-                                         ordered_unique<tag<by_last_post>,
-                                                        composite_key<account_object,
-                                                                      member<account_object,
-                                                                             time_point_sec,
-                                                                             &account_object::last_post>,
-                                                                      member<account_object,
-                                                                             account_id_type,
-                                                                             &account_object::id>>,
-                                                        composite_key_compare<std::greater<time_point_sec>,
-                                                                              std::less<account_id_type>>>,
                                          ordered_unique<tag<by_deip_balance>,
                                                         composite_key<account_object,
                                                                       member<account_object,
@@ -236,16 +217,6 @@ typedef multi_index_container<account_object,
                                                                              account_id_type,
                                                                              &account_object::id>>,
                                                         composite_key_compare<std::greater<asset>,
-                                                                              std::less<account_id_type>>>,
-                                         ordered_unique<tag<by_post_count>,
-                                                        composite_key<account_object,
-                                                                      member<account_object,
-                                                                             uint32_t,
-                                                                             &account_object::post_count>,
-                                                                      member<account_object,
-                                                                             account_id_type,
-                                                                             &account_object::id>>,
-                                                        composite_key_compare<std::greater<uint32_t>,
                                                                               std::less<account_id_type>>>,
                                          ordered_unique<tag<by_vote_count>,
                                                         composite_key<account_object,
@@ -395,13 +366,12 @@ FC_REFLECT( deip::chain::account_object,
              (id)(name)(memo_key)(json_metadata)(proxy)(last_account_update)
              (created)(mined)
              (recovery_account)(last_account_recovery)
-             (lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
+             (lifetime_vote_count)(can_vote)
              (balance)(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)
              (withdrawn)(to_withdraw)(withdraw_routes)
              (expertise_tokens_balance)
              (common_tokens_balance)
-             (proxied_vsf_votes)(witnesses_voted_for)
-             (last_post)(last_root_post)(post_bandwidth)(delegated_expertise)
+             (proxied_vsf_votes)(witnesses_voted_for)(delegated_expertise)
           )
 CHAINBASE_SET_INDEX_TYPE( deip::chain::account_object, deip::chain::account_index )
 

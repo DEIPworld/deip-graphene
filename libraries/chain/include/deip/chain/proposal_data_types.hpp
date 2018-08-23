@@ -2,6 +2,7 @@
 
 #include <deip/chain/deip_object_types.hpp>
 #include <fc/utf8.hpp>
+#include <deip/protocol/asset.hpp>
 
 using namespace deip::protocol;
 
@@ -42,6 +43,7 @@ struct invite_member_proposal_data_type : base_proposal_data_type
 struct change_quorum_proposal_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
+    uint16_t proposal_type;
     uint16_t quorum_percent;
 
     void validate() const
@@ -150,13 +152,13 @@ struct start_research_token_sale_data_type : base_proposal_data_type
     fc::time_point_sec start_time;
     fc::time_point_sec end_time;
     share_type amount_for_sale;
-    share_type soft_cap;
-    share_type hard_cap;
+    protocol::asset soft_cap;
+    protocol::asset hard_cap;
 
     void validate() const {
         FC_ASSERT(amount_for_sale > 0, "Research tokens for sale amount should be > 0");
-        FC_ASSERT(soft_cap > 0, "Soft cap should be > 0");
-        FC_ASSERT(hard_cap > 0, "Hard cap should be > 0");
+        FC_ASSERT(soft_cap > asset(0, DEIP_SYMBOL), "Soft cap should be > 0");
+        FC_ASSERT(hard_cap > asset(0, DEIP_SYMBOL), "Hard cap should be > 0");
         FC_ASSERT(hard_cap > soft_cap, "Hard cap should be greater than soft cap");
         FC_ASSERT(start_time >= fc::time_point::now(), "Start time cannot be at the past");
         FC_ASSERT(end_time > start_time, "End time should be greater than start time");
@@ -182,7 +184,7 @@ FC_REFLECT(deip::chain::dropout_member_proposal_data_type, (research_group_id)(n
 
 FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount_in_percent)(cover_letter))
 
-FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(quorum_percent))
+FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(proposal_type)(quorum_percent))
 
 FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(research_group_id)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines))
 

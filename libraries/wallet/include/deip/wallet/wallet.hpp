@@ -387,11 +387,13 @@ public:
      *  @param creator The account creating the new account
      *  @param newname The name of the new account
      *  @param json_meta JSON Metadata associated with the new account
+     *  @param fee The fee to be paid for account creation. It is converted to Common tokens for new account
      *  @param broadcast true if you wish to broadcast the transaction
      */
     annotated_signed_transaction create_account(const std::string& creator,
                                                 const std::string& newname,
                                                 const std::string& json_meta,
+                                                const asset& fee,
                                                 bool broadcast);
 
     /**
@@ -407,6 +409,7 @@ public:
      * @param active public active key of the new account
      * @param posting public posting key of the new account
      * @param memo public memo key of the new account
+     * @param fee The fee to paid for account creation. It is converted to Common tokens for new account
      * @param broadcast true if you wish to broadcast the transaction
      */
     annotated_signed_transaction create_account_with_keys(const std::string& creator,
@@ -416,6 +419,7 @@ public:
                                                           const public_key_type& active,
                                                           const public_key_type& posting,
                                                           const public_key_type& memo,
+                                                          const asset& fee,
                                                           bool broadcast) const;
 
     /**
@@ -644,10 +648,15 @@ public:
         const std::string& from, const std::string& to, uint16_t percent, bool auto_common_token, bool broadcast = false);
 
     /**
-     * TODO: Add description
+     * Transfers research tokens from one acount to another
+     *
+     * @param research_id Id of research which tokens to transfer
+     * @param from The account who transfers research tokens
+     * @param to The account receiving research tokens
+     * @param amount The account of research tokens to transfer
+     * @param broadcast
      */
-    annotated_signed_transaction transfer_research_tokens(const int64_t research_token_id,
-                                                           const int64_t research_id,
+    annotated_signed_transaction transfer_research_tokens(const int64_t research_id,
                                                            const std::string& from,
                                                            const std::string& to,
                                                            const uint32_t amount,
@@ -816,17 +825,16 @@ public:
     vector<grant_api_obj> get_grants(const std::string& account_name);
 
     /**
-     *  This method will create new grant linked to owner account. The current account creation fee can be found with
-     * the 'info' wallet command.
+     *  This method will create new grant linked to owner account.
      *
      *  @warning The owner account must have sufficient balance for grant
      *
-     *  @param grant_owner the future owner of creating grant
-     *  @param balance
+     *  @param grant_owner The future owner of creating grant
+     *  @param balance The balance of grant
      *  @param broadcast
-     *  @param start_block
-     *  @param end_block
-     *  @param target_discipline
+     *  @param start_block Block number starting which grant will be distributed
+     *  @param end_block Block number grant distribution ends
+     *  @param target_discipline The target discipline name grant will be distributed to
      */
     annotated_signed_transaction create_grant(const std::string& grant_owner,
                                                const asset& balance,
@@ -835,39 +843,97 @@ public:
                                                const discipline_name_type& target_discipline,
                                                const bool broadcast);
 
+    /**
+     * Vote for review
+     *
+     * @param voter The account who votes for review
+     * @param review_id Id of review
+     * @param discipline_id Id of dscipline vote will be giver for review in
+     * @param weight Weight of vote from 0 to 10000
+     * @param broadcast
+     */
     annotated_signed_transaction vote_for_review(const std::string& voter,
                                                  const int64_t review_id,
                                                  const int64_t discipline_id,
                                                  const int16_t weight,
                                                  const bool broadcast);
 
+    /**
+     * Create proposal
+     *
+     * @param creator The account who creates a proposal
+     * @param research_group_id Id of research group to create proposal for
+     * @param data Proposal data
+     * @param action Proposal action type
+     * @param expiration_time Expiration time of proposal
+     * @param broadcast
+     */
     annotated_signed_transaction create_proposal(const std::string& creator,
                                                  const int64_t research_group_id,
-                                                 const std::string& data, const uint16_t action,
+                                                 const std::string& data, 
+                                                 const uint16_t action,
                                                  const time_point_sec expiration_time,
                                                  const bool broadcast);
 
+    /**
+     * Make review for specified research content
+     *
+     * @param author The account who makes a review
+     * @param research_content_id Id of research content to make review for
+     * @param is_positive Boolean indicating whether review is positive or negative
+     * @param content Review text
+     * @param broadcast
+     */
     annotated_signed_transaction make_review(const std::string& author,
                                              const int64_t research_content_id,
                                              const bool is_positive,
                                              const std::string& content,
                                              const bool broadcast);
 
+    /**
+     * Participate in token sale and make your contribution
+     *
+     * @param owner The account who is participating in token sale
+     * @param research_token_sale_id Id of research token sale
+     * @param amount Amount of DEIP tokens to contribute to token sale (ex. "1.000 DEIP")
+     * @param broadcast
+     */
     annotated_signed_transaction contribute_to_token_sale(const int64_t research_token_sale_id,
                                                           const std::string& owner,
-                                                          const uint32_t amount,
+                                                          const asset& amount,
                                                           const bool broadcast);
 
+    /**
+     * Approve research group invite
+     *
+     * @param owner The account who approves invite
+     * @param research_group_invite_id Id of invite
+     * @param broadcast
+     */
     annotated_signed_transaction approve_research_group_invite(const int64_t research_group_invite_id,
                                                                const std::string& owner,
                                                                const bool broadcast);
 
+    /**
+     * Reject research group invite
+     *
+     * @param owner The account who rejects invite
+     * @param research_group_invite_id Id of invite
+     * @param broadcast
+     */
     annotated_signed_transaction reject_research_group_invite(const int64_t research_group_invite_id,
                                                               const std::string& owner,
                                                               const bool broadcast);
 
-    annotated_signed_transaction transfer_research_tokens_to_research_group(const int64_t research_token_id,
-                                                                            const int64_t research_id,
+    /**
+     * Transfer research tokens back to research group
+     *
+     * @param owner The account who transfers research tokens
+     * @param research_id Id of research which tokens to transfer
+     * @param amount Amount of research tokens to transfer
+     * @param broadcast
+     */
+    annotated_signed_transaction transfer_research_tokens_to_research_group(const int64_t research_id,
                                                                             const std::string& owner,
                                                                             const uint32_t amount,
                                                                             const bool broadcast);
@@ -879,18 +945,42 @@ public:
                                                  const std::string& owner,
                                                  const bool broadcast);
 
-    annotated_signed_transaction deposit_to_vesting_contract(const std::string& sender,
-                                                             const std::string& receiver,
-                                                             const uint32_t balance,
-                                                             const uint32_t withdrawal_period,
-                                                             const uint32_t contract_duration,
-                                                             const bool broadcast);
+    /**
+     * Create new vesting contract
+     *
+     * @param creator The account who creates vesting contract
+     * @param owner The account who owns tokens from contract
+     * @param balance Amount to vest (i.e. "1.000 DEIP")
+     * @param vesting_duration_seconds Duration of vesting in seconds
+     * @param vesting_cliff_seconds Duration of vesting cliff in seconds
+     * @param period_duration_seconds Duration of withdraw period in seconds (funds will be available every period, i.e. every 3 months)
+     * @param broadcast
+     */
+    annotated_signed_transaction create_vesting_balance(const std::string &creator, const std::string &owner, const asset &balance,
+                                                             const uint32_t &vesting_duration_seconds, const uint32_t &vesting_cliff_seconds,
+                                                             const uint32_t &period_duration_seconds, const bool broadcast);
 
-    annotated_signed_transaction withdraw_from_vesting_contract(const std::string& sender,
-                                                                const std::string& receiver,
-                                                                const uint32_t amount,
-                                                                const bool broadcast);
+    /**
+     * Withdraw from vesting contract. Only withdraws the amount available for withdrawal
+     *
+     * @param vesting_balance_id The account who created vesting contract
+     * @param owner The account who owns tokens from contract
+     * @param amount Amount to withdraw (i.e. "1.000 DEIP")
+     * @param broadcast
+     */
+    annotated_signed_transaction withdraw_vesting_balance(const int64_t &vesting_balance_id,
+                                                           const std::string &owner,
+                                                           const asset &amount,
+                                                           const bool broadcast);
 
+    /**
+     * Vote for proposal
+     *
+     * @param voter The account who votes
+     * @param proposal_id Id of proposal to vote for
+     * @param research_group_id Id of research group which owns the proposal
+     * @param broadcast
+     */
     annotated_signed_transaction vote_proposal(const std::string& voter,
                                                const int64_t proposal_id,
                                                const int64_t research_group_id,
@@ -997,8 +1087,8 @@ FC_API( deip::wallet::wallet_api,
         (reject_research_group_invite)
         (transfer_research_tokens_to_research_group)
         (research_update)
-        (deposit_to_vesting_contract)
-        (withdraw_from_vesting_contract)
+        (create_vesting_balance)
+        (withdraw_vesting_balance)
         (vote_proposal)
 
         /// helper api

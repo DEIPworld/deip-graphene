@@ -29,7 +29,7 @@
 #include <deip/chain/total_votes_object.hpp>
 #include <deip/chain/research_group_invite_object.hpp>
 #include <deip/chain/review_object.hpp>
-#include <deip/chain/vesting_contract_object.hpp>
+#include <deip/chain/vesting_balance_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -64,7 +64,7 @@
 #include <deip/chain/dbs_research_group_invite.hpp>
 #include <deip/chain/dbs_grant.hpp>
 #include <deip/chain/dbs_review.hpp>
-#include <deip/chain/dbs_vesting_contract.hpp>
+#include <deip/chain/dbs_vesting_balance.hpp>
 #include <deip/chain/dbs_proposal_execution.hpp>
 #include <deip/chain/dbs_research_content_reward_pool.hpp>
 #include <boost/range/adaptor/transformed.hpp>
@@ -1194,18 +1194,15 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
     auto& research_token_sale = research_token_sale_service.get_by_id(research_token_sale_id);
 
     const auto& idx = get_index<research_token_sale_contribution_index>().indicies().get<by_research_token_sale_id>();
-
     auto it = idx.find(research_token_sale_id);
 
     while (it != idx.end())
     {
-        auto transfer_amount = (it->amount * research_token_sale.balance_tokens) / research_token_sale.total_amount;
+        auto transfer_amount = (it->amount.amount * research_token_sale.balance_tokens) / research_token_sale.total_amount.amount;
 
-        if (research_token_service.is_research_token_exists_by_account_name_and_research_id(
-                it->owner, research_token_sale.research_id))
+        if (research_token_service.exists_by_owner_and_research(it->owner, research_token_sale.research_id))
         {
-            auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id(
-                it->owner, research_token_sale.research_id);
+            auto& research_token = research_token_service.get_by_owner_and_research(it->owner, research_token_sale.research_id);
             research_token_service.increase_research_token_amount(research_token, transfer_amount);
         }
         else
@@ -1233,7 +1230,7 @@ void database::refund_research_tokens(const research_token_sale_id_type research
 
     while (it != it_end)
     {
-        account_service.increase_balance(account_service.get_account(it->owner), asset(it->amount, DEIP_SYMBOL));
+        account_service.adjust_balance(account_service.get_account(it->owner), it->amount);
         remove(*it);
         it = idx.first;
     }
@@ -1382,7 +1379,7 @@ share_type database::reward_research_token_holders(const research_object& resear
     {
         auto reward_amount = (it->amount * reward) / DEIP_100_PERCENT;
         auto& account = account_service.get_account(it->account_name);
-        account_service.increase_balance(account, asset(reward_amount, DEIP_SYMBOL));
+        account_service.adjust_balance(account, asset(reward_amount, DEIP_SYMBOL));
         used_reward += reward_amount;
         ++it;
     }
@@ -1471,7 +1468,7 @@ share_type database::reward_review_voters(const review_object &review,
         auto vote = vote_ref.get();
         auto& voter = account_service.get_account(vote.voter);
         auto reward_amount = util::calculate_share(reward, vote.weight, total_weight);
-        account_service.increase_balance(voter, asset(reward_amount, DEIP_SYMBOL));
+        account_service.adjust_balance(voter, asset(reward_amount, DEIP_SYMBOL));
         used_reward += reward_amount;
     }
 
@@ -1595,7 +1592,7 @@ share_type database::allocate_rewards_to_reviews(const std::vector<review_object
 
         // Reward author
         auto& author = account_service.get_account(author_name);
-        account_service.increase_balance(author, asset(author_reward, DEIP_SYMBOL));
+        account_service.adjust_balance(author, asset(author_reward, DEIP_SYMBOL));
         used_reward += author_reward;
 
         used_reward += reward_review_voters(review, discipline_id, review_curators_reward_share);
@@ -1760,10 +1757,10 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
-    _my->_evaluator_registry.register_evaluator<add_expertise_tokens_evaluator>();
+    _my->_evaluator_registry.register_evaluator<set_expertise_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
-    _my->_evaluator_registry.register_evaluator<deposit_to_vesting_contract_evaluator>();
-    _my->_evaluator_registry.register_evaluator<withdraw_from_vesting_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_vesting_balance_evaluator>();
+    _my->_evaluator_registry.register_evaluator<withdraw_vesting_balance_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_expertise_evaluator>();
@@ -1806,7 +1803,7 @@ void database::initialize_indexes()
     add_index<research_group_invite_index>();
     add_index<review_index>();
     add_index<review_vote_index>();
-    add_index<vesting_contract_index>();
+    add_index<vesting_balance_index>();
     add_index<research_content_reward_pool_index>();
 
     _plugin_index_signal();

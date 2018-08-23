@@ -17,6 +17,7 @@
 #include <deip/chain/proposal_vote_object.hpp>
 
 #include <fc/io/json.hpp>
+#include <deip/chain/vesting_balance_object.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
@@ -89,6 +90,7 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_personal_research_groups(genesis_state);
         init_research(genesis_state);
         init_research_content(genesis_state);
+        init_genesis_vesting_balances(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
@@ -167,38 +169,6 @@ void database::init_genesis_global_property_object(const genesis_state_type& gen
         gpo.total_reward_fund_deip = asset(0, DEIP_SYMBOL);
     });
 }
-
-/*void database::init_genesis_rewards(const genesis_state_type& genesis_state)
-{
-    const auto& gpo = get_dynamic_global_properties();
-
-    auto post_rf = create<reward_fund_object>([&](reward_fund_object& rfo) {
-        rfo.name = DEIP_POST_REWARD_FUND_NAME;
-        rfo.last_update = head_block_time();
-        rfo.percent_curation_rewards = DEIP_1_PERCENT * 25;
-        rfo.percent_content_rewards = DEIP_100_PERCENT;
-        rfo.reward_balance = gpo.total_reward_fund_deip;
-        rfo.author_reward_curve = curve_id::linear;
-        rfo.curation_reward_curve = curve_id::square_root;
-    });
-
-    // As a shortcut in payout processing, we use the id as an array index.
-    // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
-    FC_ASSERT(post_rf.id._id == 0);
-
-    // We share initial fund between raward_pool and fund grant
-    dbs_reward& reward_service = obtain_service<dbs_reward>();
-    dbs_grant& grant_service = obtain_service<dbs_grant>();
-
-    asset initial_reward_pool_supply(genesis_state.init_rewards_supply.amount
-                                         * DEIP_GUARANTED_REWARD_SUPPLY_PERIOD_IN_DAYS
-                                         / DEIP_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS,
-                                     genesis_state.init_rewards_supply.symbol);
-    fc::time_point deadline = get_genesis_time() + fc::days(DEIP_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS);
-
-    reward_service.create_pool(initial_reward_pool_supply);
-    grant_service.create_fund_grant(genesis_state.init_rewards_supply - initial_reward_pool_supply, deadline);
-}*/
 
 void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
 {
@@ -323,8 +293,7 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
         FC_ASSERT(!research_group.name.empty(), "Research group 'name' must be specified");
         FC_ASSERT(!research_group.permlink.empty(), "Research group 'permlink' must be specified");
         FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
-        FC_ASSERT(research_group.quorum_percent >= 5 * DEIP_1_PERCENT && research_group.quorum_percent <= DEIP_100_PERCENT,
-                  "Quorum percent should be in 5% to 100% range");
+        FC_ASSERT(research_group.quorum_percent >= 5 * DEIP_1_PERCENT && research_group.quorum_percent <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
 
         create<research_group_object>([&](research_group_object& rg) {
             rg.id = research_group.id;
@@ -333,6 +302,13 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
             fc::from_string(rg.permlink, research_group.permlink);
             rg.balance = asset(0, DEIP_SYMBOL);
             rg.quorum_percent = research_group.quorum_percent;
+
+            std::map<uint16_t , share_type> proposal_quorums;
+
+            for (int i = First_proposal; i <= Last_proposal; i++)
+                proposal_quorums.insert(std::make_pair(i, research_group.quorum_percent));
+
+            rg.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
             rg.is_personal = research_group.is_personal;
         });
 
@@ -358,11 +334,16 @@ void database::init_personal_research_groups(const genesis_state_type& genesis_s
         FC_ASSERT(!account.name.empty(), "Account 'name' should not be empty.");
         FC_ASSERT(is_valid_account_name(account.name), "Account name ${n} is invalid", ("n", account.name));
 
+        std::map<uint16_t, share_type> personal_research_group_proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            personal_research_group_proposal_quorums.insert(std::make_pair(i, DEIP_100_PERCENT));
+
         auto& research_group = create<research_group_object>([&](research_group_object& research_group) {
             fc::from_string(research_group.name, account.name);
             fc::from_string(research_group.permlink, account.name);
             fc::from_string(research_group.description, account.name);
-            research_group.quorum_percent = DEIP_100_PERCENT;
+            research_group.proposal_quorums.insert(personal_research_group_proposal_quorums.begin(), personal_research_group_proposal_quorums.end());
             research_group.is_personal = true;
         });
 
@@ -370,6 +351,38 @@ void database::init_personal_research_groups(const genesis_state_type& genesis_s
             research_group_token.research_group_id = research_group.id;
             research_group_token.amount = DEIP_100_PERCENT;
             research_group_token.owner = account.name;
+        });
+    }
+}
+
+void database::init_genesis_vesting_balances(const genesis_state_type& genesis_state)
+{
+    const vector<genesis_state_type::vesting_balance_type>& vesting_balances = genesis_state.vesting_balances;
+
+    for (auto& vesting_balance : vesting_balances)
+    {
+
+        FC_ASSERT(vesting_balance.balance > 0, "Deposit balance must be greater than 0");
+        FC_ASSERT(vesting_balance.vesting_duration_seconds > 0, "Vesting duration must be longer than 0");
+        FC_ASSERT(vesting_balance.vesting_duration_seconds > vesting_balance.vesting_cliff_seconds,
+                "Vesting duration should be longer than vesting cliff");
+        FC_ASSERT(vesting_balance.vesting_cliff_seconds > 0, "Vesting cliff must be longer than 0");
+        FC_ASSERT(vesting_balance.period_duration_seconds > 0, "Withdraw period duration must be longer than 0");
+        FC_ASSERT(vesting_balance.vesting_duration_seconds % vesting_balance.period_duration_seconds == 0,
+                "Vesting duration should contain integer number of withdraw period");
+
+        FC_ASSERT(!vesting_balance.owner.empty(), "Account 'name' should not be empty.");
+        FC_ASSERT(is_valid_account_name(vesting_balance.owner), "Account name ${n} is invalid", ("n", vesting_balance.owner));
+
+        create<vesting_balance_object>([&](vesting_balance_object& v) {
+            v.id = vesting_balance.id;
+            v.owner = vesting_balance.owner;
+            v.balance = asset(vesting_balance.balance, DEIP_SYMBOL);
+            v.withdrawn = asset(0, DEIP_SYMBOL);
+            v.vesting_duration_seconds = vesting_balance.vesting_duration_seconds;
+            v.vesting_cliff_seconds = vesting_balance.vesting_duration_seconds;
+            v.period_duration_seconds = vesting_balance.period_duration_seconds;
+            v.start_timestamp = get_genesis_time();
         });
     }
 }

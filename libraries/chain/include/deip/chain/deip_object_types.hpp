@@ -69,7 +69,7 @@ enum object_type
     research_group_invite_object_type,
     review_object_type,
     review_vote_object_type,
-    vesting_contract_object_type,
+    vesting_balance_object_type,
     research_content_reward_pool_object_type
 };
 
@@ -109,7 +109,7 @@ class research_token_sale_contribution_object;
 class research_group_invite_object;
 class review_object;
 class review_vote_object;
-class vesting_contract_object;
+class vesting_balance_object;
 class research_content_reward_pool_object;
 
 
@@ -148,7 +148,7 @@ typedef oid<research_token_sale_contribution_object> research_token_sale_contrib
 typedef oid<research_group_invite_object> research_group_invite_id_type;
 typedef oid<review_object> review_id_type;
 typedef oid<review_vote_object> review_vote_id_type;
-typedef oid<vesting_contract_object> vesting_contract_id_type;
+typedef oid<vesting_balance_object> vesting_balance_id_type;
 typedef oid<research_content_reward_pool_object> research_content_reward_pool_id_type;
 
 
@@ -172,6 +172,9 @@ typedef bip::map<discipline_id_type, share_type, std::less<discipline_id_type>, 
 
 typedef allocator<std::pair<const discipline_id_type, std::vector<account_name_type>>> discipline_id_account_name_allocator_type;
 typedef bip::map<discipline_id_type, std::vector<account_name_type>, std::less<discipline_id_type>, discipline_id_account_name_allocator_type> delegated_expertise_type_map;
+
+typedef allocator<std::pair<const uint16_t, share_type>> proposal_share_type_allocator_type;
+typedef bip::map<uint16_t, share_type, std::less<uint16_t>, proposal_share_type_allocator_type> proposal_type_share_type_map;
 
 enum bandwidth_type
 {
@@ -220,7 +223,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (research_group_invite_object_type)
                  (review_object_type)
                  (review_vote_object_type)
-                 (vesting_contract_object_type)
+                 (vesting_balance_object_type)
                  (research_content_reward_pool_object_type)
 
                  )

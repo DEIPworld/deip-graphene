@@ -162,7 +162,9 @@ void create_research_group_operation::validate() const
     FC_ASSERT(name.size() > 0, "Group name must be specified");
     FC_ASSERT(fc::is_utf8(name), "Group name is not valid UTF8 string");
     FC_ASSERT(fc::is_utf8(description), "Description is not valid UTF8 string");
-    FC_ASSERT(quorum_percent > 5 * DEIP_1_PERCENT && quorum_percent <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
+    FC_ASSERT(quorum_percent >= 5 * DEIP_1_PERCENT && quorum_percent <= DEIP_100_PERCENT, "Default proposal quorum must be in 0% to 100% range");
+        for(auto& quorum_percent : proposal_quorums)
+        FC_ASSERT(quorum_percent.second > 5 * DEIP_1_PERCENT && quorum_percent.second <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
 
     auto total_tokens_percents = share_type(0);
     for (auto& invitee : invitees) {
@@ -190,7 +192,8 @@ void make_review_operation::validate() const
 void contribute_to_token_sale_operation::validate() const
 {
     validate_account_name(owner);
-    FC_ASSERT(amount > 0, "Amount must be greater than 0");
+    FC_ASSERT(amount.amount > 0, "Amount must be greater than 0");
+    FC_ASSERT(amount.symbol == DEIP_SYMBOL, "Incorrect asset symbol");
 }
 
 void approve_research_group_invite_operation::validate() const
@@ -209,7 +212,7 @@ void transfer_research_tokens_to_research_group_operation::validate() const
     validate_account_name(owner);
 }    
 
-void add_expertise_tokens_operation::validate() const
+void set_expertise_tokens_operation::validate() const
 {
     validate_account_name(owner);
     validate_account_name(account_name);
@@ -224,20 +227,24 @@ void research_update_operation::validate() const
     validate_account_name(owner);
 }
 
-void deposit_to_vesting_contract_operation::validate() const
+void create_vesting_balance_operation::validate() const
 {
-    FC_ASSERT(balance > 0, "Deposit balance must be greater than 0");
+    FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Deposit balance must be greater than 0");
     FC_ASSERT(withdrawal_period > 0, "You must divide contract at least by 1 part");
-    FC_ASSERT(contract_duration > 0, "Contract duration must be longer than 0");
-    validate_account_name(sender);
-    validate_account_name(receiver);
+    FC_ASSERT(vesting_duration_seconds > 0 && vesting_duration_seconds > vesting_cliff_seconds,
+            "Vesting  duration must be longer than 0 & longer than cliff period");
+    FC_ASSERT(vesting_cliff_seconds >= 0, "Vesting cliff period should be equal or greater than 0");
+    FC_ASSERT(period_duration_seconds > 0, "Vesting withdraw periods duration should be greater than 0");
+    FC_ASSERT(vesting_duration_seconds % period_duration_seconds == 0,
+            "Vesting duration should contain an integer number of withdraw periods");
+    validate_account_name(creator);
+    validate_account_name(owner);
 }
 
-void withdraw_from_vesting_contract_operation::validate() const
+void withdraw_vesting_balance_operation::validate() const
 {
-    FC_ASSERT(amount > 0, "Withdraw amount must be greater than 0");
-    validate_account_name(sender);
-    validate_account_name(receiver);
+    FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Withdraw amount must be greater than 0");
+    validate_account_name(owner);
 }
 
 void transfer_research_tokens_operation::validate() const

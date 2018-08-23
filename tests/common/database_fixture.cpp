@@ -400,7 +400,7 @@ database_fixture::research_group_create(const int64_t& id,
                                         const string& permlink,
                                         const string& description,
                                         const share_type funds,
-                                        const share_type quorum_percent,
+                                        const std::map<uint16_t, share_type>& proposal_quorums,
                                         const bool is_personal)
 {
     const research_group_object& new_research_group
@@ -410,7 +410,7 @@ database_fixture::research_group_create(const int64_t& id,
               fc::from_string(rg.permlink, permlink);
               fc::from_string(rg.description, description);
               rg.balance = funds;
-              rg.quorum_percent = quorum_percent;
+              rg.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
               rg.is_personal = is_personal;
           });
 
@@ -421,7 +421,8 @@ const research_group_object& database_fixture::research_group_create_by_operatio
                                                                                   const string& name,
                                                                                   const string& permlink,
                                                                                   const string& description,
-                                                                                  const uint32_t quorum_percent,
+                                                                                  const uint32_t& quorum_percent,
+                                                                                  const std::map<uint16_t, uint32_t>& proposal_quorums,
                                                                                   const bool is_personal)
 {
     try
@@ -436,6 +437,7 @@ const research_group_object& database_fixture::research_group_create_by_operatio
 
         op.creator = creator;
         op.quorum_percent = quorum_percent;
+        op.proposal_quorums = proposal_quorums;
         op.is_personal = is_personal;
 
         trx.operations.push_back(op);
@@ -468,11 +470,11 @@ const research_group_object& database_fixture::setup_research_group(const int64_
                                                                     const string &permlink,
                                                                     const string &description,
                                                                     const share_type funds,
-                                                                    const share_type quorum_percent,
+                                                                    const std::map<uint16_t, share_type> proposal_quorums,
                                                                     const bool is_personal,
                                                                     const vector<std::pair<account_name_type, share_type>> &accounts)
 {
-    const auto& research_group = research_group_create(id, name, permlink, description, funds, quorum_percent, is_personal);
+    const auto& research_group = research_group_create(id, name, permlink, description, funds, proposal_quorums, is_personal);
 
     for (const auto& account : accounts)
     {
@@ -498,6 +500,7 @@ const proposal_object& database_fixture::create_proposal(const int64_t id, const
         proposal.creation_time = fc::time_point_sec();
         proposal.expiration_time = expiration_time;
         proposal.quorum_percent = quorum_percent;
+        proposal.object_hash = id;
     });
 
     return new_proposal;

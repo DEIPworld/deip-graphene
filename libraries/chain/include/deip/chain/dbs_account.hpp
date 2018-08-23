@@ -45,8 +45,7 @@ public:
                        const optional<authority>& posting,
                        const optional<time_point_sec>& now = optional<time_point_sec>());
 
-    void increase_balance(const account_object& account, const asset& deips);
-    void decrease_balance(const account_object& account, const asset& deips);
+    void adjust_balance(const account_object& account, const asset& delta);
 
     void update_withdraw(const account_object& account,
                          const share_type& common_tokens_withdraw_rate,
@@ -59,14 +58,6 @@ public:
 
     void increase_witnesses_voted_for(const account_object& account);
     void decrease_witnesses_voted_for(const account_object& account);
-
-    void add_post(const account_object& author_account,
-                  const optional<account_name_type>& parent_author_name,
-                  const optional<time_point_sec>& now = optional<time_point_sec>());
-
-    void update_voting_power(const account_object& account,
-                             uint16_t voting_power,
-                             const optional<time_point_sec>& now = optional<time_point_sec>());
 
     void update_owner_authority(const account_object& account,
                                 const authority& owner_authority,

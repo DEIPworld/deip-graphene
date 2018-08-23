@@ -477,6 +477,7 @@ struct create_research_group_operation : public base_operation
     std::string permlink;
     std::string description;
     uint32_t quorum_percent;
+    std::map<uint16_t, uint32_t> proposal_quorums;
     bool is_personal;
     vector<invitee_type> invitees;
 
@@ -535,7 +536,7 @@ struct contribute_to_token_sale_operation : public base_operation
 {
     int64_t research_token_sale_id;
     account_name_type owner;
-    uint32_t amount;
+    asset amount;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -570,7 +571,6 @@ struct reject_research_group_invite_operation : public base_operation
 
 struct transfer_research_tokens_to_research_group_operation : public base_operation
 {
-    int64_t research_token_id;
     int64_t research_id;
     account_name_type owner;
     uint32_t amount;
@@ -582,7 +582,7 @@ struct transfer_research_tokens_to_research_group_operation : public base_operat
     }
 };
 
-struct add_expertise_tokens_operation : public base_operation
+struct set_expertise_tokens_operation : public base_operation
 {
     account_name_type owner;
     account_name_type account_name;
@@ -611,39 +611,40 @@ struct research_update_operation : public base_operation
     }
 };
 
-struct deposit_to_vesting_contract_operation : public base_operation
+struct create_vesting_balance_operation : public base_operation
 {
-    account_name_type sender;
-    account_name_type receiver;
-    uint32_t balance;
+    account_name_type creator;  
+    account_name_type owner;
+    asset balance;
     uint32_t withdrawal_period;
-    uint32_t contract_duration;
+    uint32_t vesting_duration_seconds;
+    uint32_t vesting_cliff_seconds;
+    uint32_t period_duration_seconds;
 
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(sender);
+        a.insert(creator);
     }
 };
 
-struct withdraw_from_vesting_contract_operation : public base_operation
+struct withdraw_vesting_balance_operation : public base_operation
 {
-    account_name_type sender;
-    account_name_type receiver;
-    uint32_t amount;
+    int64_t vesting_balance_id;
+    account_name_type owner;
+    asset amount;
 
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(sender);
+        a.insert(owner);
     }
 };
 
 struct transfer_research_tokens_operation : public base_operation
 {
-    int64_t research_token_id;
     int64_t research_id;
     account_name_type sender;
     account_name_type receiver;
@@ -729,7 +730,7 @@ FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recov
 FC_REFLECT( deip::protocol::invitee_type, (account)(research_group_tokens_in_percent)(cover_letter))
 FC_REFLECT( deip::protocol::expertise_amount_pair_type, (discipline_id)(amount) )
 FC_REFLECT( deip::protocol::create_grant_operation, (owner)(balance)(target_discipline)(start_block)(end_block)(is_extendable)(content_hash) )
-FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent)(is_personal)(invitees))
+FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent)(proposal_quorums)(is_personal)(invitees))
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
 FC_REFLECT( deip::protocol::make_review_operation, (author)(research_content_id)(content)(is_positive)(weight))
@@ -738,12 +739,12 @@ FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_token_
 FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
-FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_token_id)(research_id)(owner)(amount))
-FC_REFLECT( deip::protocol::add_expertise_tokens_operation, (owner)(account_name)(disciplines_to_add))
+FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_id)(owner)(amount))
+FC_REFLECT( deip::protocol::set_expertise_tokens_operation, (owner)(account_name)(disciplines_to_add))
 FC_REFLECT( deip::protocol::research_update_operation, (research_id)(title)(abstract)(permlink)(owner))
-FC_REFLECT( deip::protocol::deposit_to_vesting_contract_operation, (sender)(receiver)(balance)(withdrawal_period)(contract_duration))
-FC_REFLECT( deip::protocol::withdraw_from_vesting_contract_operation, (sender)(receiver)(amount))
-FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_token_id)(research_id)(sender)(receiver)(amount))
+FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds))
+FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance_id)(owner)(amount))
+FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_id)(sender)(receiver)(amount))
 FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(discipline_id))
 FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(receiver)(discipline_id))
 
