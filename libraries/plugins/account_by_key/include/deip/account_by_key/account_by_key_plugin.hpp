@@ -2,8 +2,6 @@
 #include <deip/app/plugin.hpp>
 #include <deip/chain/database.hpp>
 
-#include <deip/account_by_key/account_by_key_api.hpp>
-
 namespace deip {
 namespace account_by_key {
 

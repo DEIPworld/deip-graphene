@@ -24,38 +24,41 @@
 #pragma once
 
 #include <deip/app/plugin.hpp>
-#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/database.hpp>
+
+#ifndef ACCOUNT_HISTORY_PLUGIN_NAME
+#define ACCOUNT_HISTORY_PLUGIN_NAME "account_history"
+#endif
 
 namespace deip {
-namespace delayed_node {
-namespace detail {
-struct delayed_node_plugin_impl;
-}
-
+namespace account_history {
+using namespace chain;
 using app::application;
 
-class delayed_node_plugin : public deip::app::plugin
+namespace detail {
+class account_history_plugin_impl;
+}
+
+/**
+ *  This plugin is designed to track a range of operations by account so that one node
+ *  doesn't need to hold the full operation history in memory.
+ */
+class account_history_plugin : public deip::app::plugin
 {
-    std::unique_ptr<detail::delayed_node_plugin_impl> my;
-
 public:
-    delayed_node_plugin(application* app);
-    virtual ~delayed_node_plugin();
+    account_history_plugin(application* app);
+    virtual ~account_history_plugin();
 
-    std::string plugin_name() const override
-    {
-        return "delayed_node";
-    }
-    virtual void plugin_set_program_options(boost::program_options::options_description&,
-                                            boost::program_options::options_description& cfg) override;
+    std::string plugin_name() const override;
+    virtual void plugin_set_program_options(
+        boost::program_options::options_description& cli, boost::program_options::options_description& cfg) override;
     virtual void plugin_initialize(const boost::program_options::variables_map& options) override;
     virtual void plugin_startup() override;
-    void mainloop();
 
-protected:
-    void connection_failed();
-    void connect();
-    void sync_with_trusted_node();
+    flat_map<account_name_type, account_name_type> tracked_accounts() const; /// map start_range to end_range
+
+    friend class detail::account_history_plugin_impl;
+    std::unique_ptr<detail::account_history_plugin_impl> my;
 };
 }
-} // deip::delayed_node
+} // deip::account_history

@@ -14,7 +14,7 @@ target_link_libraries(deipd PRIVATE
     deip_mf_plugins
     deip_app
     deip_witness
-    deip_account_history
+    deip_blockchain_history
     deip_chain
     deip_protocol
     deip_egenesis_full

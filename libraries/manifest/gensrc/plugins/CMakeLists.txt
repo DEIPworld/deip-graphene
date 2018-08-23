@@ -7,7 +7,7 @@ target_link_libraries( deip_plugins
 
    deip_account_by_key
 
-   deip_account_history
+   deip_blockchain_history
 
    deip_account_statistics
 

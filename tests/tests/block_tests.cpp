@@ -28,10 +28,10 @@
 
 #include <deip/chain/database.hpp>
 #include <deip/chain/deip_objects.hpp>
-#include <deip/chain/history_object.hpp>
+#include <deip/blockchain_history/account_history_object.hpp>
 #include <deip/chain/genesis_state.hpp>
 
-#include <deip/account_history/account_history_plugin.hpp>
+#include <deip/blockchain_history/blockchain_history_plugin.hpp>
 
 #include <graphene/utilities/tempdir.hpp>
 

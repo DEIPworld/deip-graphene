@@ -9,3 +9,5 @@ add_library( deip_auth_util
 target_link_libraries( deip_auth_util deip_app deip_chain deip_protocol fc )
 target_include_directories( deip_auth_util
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" )
+
+add_custom_target( deip_auth_util_manifest SOURCES plugin.json)
