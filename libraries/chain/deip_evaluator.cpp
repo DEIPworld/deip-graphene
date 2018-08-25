@@ -565,6 +565,7 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     auto& research_group = research_group_service.get_research_group(op.research_group_id);
 
     deip::protocol::proposal_action_type action = static_cast<deip::protocol::proposal_action_type>(op.action);
+
     auto quorum_percent = research_group.quorum_percent;
     if (research_group.proposal_quorums.count(action) != 0) {
         quorum_percent  = research_group.proposal_quorums.at(action);
