@@ -1,5 +1,6 @@
 #include <deip/chain/dbs_proposal.hpp>
 #include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/dbs_proposal_execution.hpp>
 #include <deip/chain/database.hpp>
 
 #include <tuple>
@@ -54,6 +55,37 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
         proposal.expiration_time = expiration_time;
         proposal.quorum_percent = quorum_percent;
         proposal.object_hash = object_hash;
+
+        switch (action)
+        {
+            case invite_member :
+                fc::json::from_string(json_data).as<invite_member_proposal_data_type>().validate();
+                break;
+            case dropout_member :
+                fc::json::from_string(json_data).as<dropout_member_proposal_data_type>().validate();
+                break;
+            case change_research_review_share_percent :
+                fc::json::from_string(json_data).as<change_research_review_share_percent_data_type>().validate();
+                break;
+            case change_quorum:
+                fc::json::from_string(json_data).as<change_quorum_proposal_data_type>().validate();
+                break;
+            case start_research:
+                fc::json::from_string(json_data).as<start_research_proposal_data_type>().validate();
+                break;
+            case send_funds:
+                fc::json::from_string(json_data).as<send_funds_data_type>().validate();
+                break;
+            case rebalance_research_group_tokens:
+                fc::json::from_string(json_data).as<rebalance_research_group_tokens_data_type>().validate();
+                break;
+            case create_research_material:
+                fc::json::from_string(json_data).as<create_research_content_data_type>().validate();
+                break;
+            case start_research_token_sale:
+                fc::json::from_string(json_data).as<start_research_token_sale_data_type>().validate();
+                break;
+        }
     });
 
     return new_proposal;
