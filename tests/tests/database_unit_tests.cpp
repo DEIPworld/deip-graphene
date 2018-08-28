@@ -1,12 +1,12 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/database.hpp>
-#include <deip/chain/research_token_object.hpp>
+#include <deip/chain/database/database.hpp>
+#include <deip/chain/schema/research_token_object.hpp>
 #include <deip/chain/util/reward.hpp>
-#include <deip/chain/grant_objects.hpp>
-#include <deip/chain/review_object.hpp>
-#include <deip/chain/research_content_reward_pool_object.hpp>
+#include <deip/chain/schema/grant_objects.hpp>
+#include <deip/chain/schema/review_object.hpp>
+#include <deip/chain/schema/research_content_reward_pool_object.hpp>
 
 #include "database_fixture.hpp"
 

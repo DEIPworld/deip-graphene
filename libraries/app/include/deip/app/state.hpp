@@ -1,9 +1,9 @@
 #pragma once
 #include <deip/app/deip_api_objects.hpp>
 
-#include <deip/chain/global_property_object.hpp>
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/schema/global_property_object.hpp>
+#include <deip/chain/schema/account_object.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
 
 namespace deip {
 namespace app {

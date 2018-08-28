@@ -7,7 +7,7 @@
 
 #include <deip/protocol/config.hpp>
 
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 #include <deip/chain/operation_notification.hpp>
 //#include <deip/chain/history_object.hpp>
 #include <deip/blockchain_history/operation_objects.hpp>

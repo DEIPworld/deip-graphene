@@ -1,23 +1,23 @@
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 #include <deip/chain/genesis_state.hpp>
-#include <deip/chain/dbs_grant.hpp>
+#include <deip/chain/services/dbs_grant.hpp>
 
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/block_summary_object.hpp>
-#include <deip/chain/chain_property_object.hpp>
-#include <deip/chain/deip_objects.hpp>
-#include <deip/chain/discipline_object.hpp>
-#include <deip/chain/expert_token_object.hpp>
-#include <deip/chain/research_group_object.hpp>
-#include <deip/chain/research_object.hpp>
-#include <deip/chain/research_content_object.hpp>
-#include <deip/chain/research_discipline_relation_object.hpp>
-#include <deip/chain/dbs_expert_token.hpp>
-#include <deip/chain/proposal_object.hpp>
-#include <deip/chain/proposal_vote_object.hpp>
+#include <deip/chain/schema/account_object.hpp>
+#include <deip/chain/schema/block_summary_object.hpp>
+#include <deip/chain/schema/chain_property_object.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
+#include <deip/chain/schema/discipline_object.hpp>
+#include <deip/chain/schema/expert_token_object.hpp>
+#include <deip/chain/schema/research_group_object.hpp>
+#include <deip/chain/schema/research_object.hpp>
+#include <deip/chain/schema/research_content_object.hpp>
+#include <deip/chain/schema/research_discipline_relation_object.hpp>
+#include <deip/chain/services/dbs_expert_token.hpp>
+#include <deip/chain/schema/proposal_object.hpp>
+#include <deip/chain/schema/proposal_vote_object.hpp>
 
 #include <fc/io/json.hpp>
-#include <deip/chain/vesting_balance_object.hpp>
+#include <deip/chain/schema/vesting_balance_object.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);

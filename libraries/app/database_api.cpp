@@ -18,19 +18,19 @@
 #include <cfenv>
 #include <iostream>
 
-#include <deip/chain/dbs_grant.hpp>
-#include <deip/chain/dbs_discipline.hpp>
-#include <deip/chain/dbs_research.hpp>
-#include <deip/chain/dbs_research_content.hpp>
-#include <deip/chain/dbs_expert_token.hpp>
-#include <deip/chain/dbs_research_token_sale.hpp>
-#include <deip/chain/dbs_research_group.hpp>
-#include <deip/chain/dbs_research_discipline_relation.hpp>
-#include <deip/chain/dbs_research_group_invite.hpp>
-#include <deip/chain/dbs_vote.hpp>
-#include <deip/chain/dbs_account.hpp>
-#include <deip/chain/dbs_review.hpp>
-#include <deip/chain/dbs_research_token.hpp>
+#include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_discipline.hpp>
+#include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_research_content.hpp>
+#include <deip/chain/services/dbs_expert_token.hpp>
+#include <deip/chain/services/dbs_research_token_sale.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_research_discipline_relation.hpp>
+#include <deip/chain/services/dbs_research_group_invite.hpp>
+#include <deip/chain/services/dbs_vote.hpp>
+#include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_review.hpp>
+#include <deip/chain/services/dbs_research_token.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 #define MAX_LIMIT 1000

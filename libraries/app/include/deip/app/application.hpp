@@ -25,7 +25,7 @@
 
 #include <deip/app/api_access.hpp>
 #include <deip/app/api_context.hpp>
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 
 #include <graphene/net/node.hpp>
 

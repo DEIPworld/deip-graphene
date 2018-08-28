@@ -1,8 +1,8 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/dbs_account.hpp>
+#include <deip/chain/schema/account_object.hpp>
+#include <deip/chain/services/dbs_account.hpp>
 
 #include "database_fixture.hpp"
 

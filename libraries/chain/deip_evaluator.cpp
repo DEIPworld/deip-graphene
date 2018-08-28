@@ -1,28 +1,28 @@
 #include <deip/chain/deip_evaluator.hpp>
-#include <deip/chain/deip_objects.hpp>
-#include <deip/chain/witness_objects.hpp>
-#include <deip/chain/block_summary_object.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
+#include <deip/chain/schema/witness_objects.hpp>
+#include <deip/chain/schema/block_summary_object.hpp>
 
 #include <deip/chain/util/reward.hpp>
 
-#include <deip/chain/database.hpp> //replace to dbservice after _temporary_public_impl remove
-#include <deip/chain/dbs_account.hpp>
-#include <deip/chain/dbs_witness.hpp>
-#include <deip/chain/dbs_grant.hpp>
-#include <deip/chain/dbs_discipline.hpp>
-#include <deip/chain/dbs_research.hpp>
-#include <deip/chain/dbs_research_content.hpp>
-#include <deip/chain/dbs_research_discipline_relation.hpp>
-#include <deip/chain/dbs_proposal.hpp>
-#include <deip/chain/dbs_research_group.hpp>
-#include <deip/chain/dbs_research_token_sale.hpp>
-#include <deip/chain/dbs_vote.hpp>
-#include <deip/chain/dbs_expert_token.hpp>
-#include <deip/chain/dbs_research_group_invite.hpp>
-#include <deip/chain/dbs_research_token.hpp>
-#include <deip/chain/dbs_review.hpp>
-#include <deip/chain/dbs_vesting_balance.hpp>
-#include <deip/chain/dbs_proposal_execution.hpp>
+#include <deip/chain/database/database.hpp> //replace to dbservice after _temporary_public_impl remove
+#include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_witness.hpp>
+#include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_discipline.hpp>
+#include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_research_content.hpp>
+#include <deip/chain/services/dbs_research_discipline_relation.hpp>
+#include <deip/chain/services/dbs_proposal.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_research_token_sale.hpp>
+#include <deip/chain/services/dbs_vote.hpp>
+#include <deip/chain/services/dbs_expert_token.hpp>
+#include <deip/chain/services/dbs_research_group_invite.hpp>
+#include <deip/chain/services/dbs_research_token.hpp>
+#include <deip/chain/services/dbs_review.hpp>
+#include <deip/chain/services/dbs_vesting_balance.hpp>
+#include <deip/chain/services/dbs_proposal_execution.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>

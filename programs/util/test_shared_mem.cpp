@@ -13,7 +13,7 @@
 #include <deip/protocol/types.hpp>
 #include <deip/protocol/authority.hpp>
 
-#include <deip/chain/shared_authority.hpp>
+#include <deip/chain/schema/shared_authority.hpp>
 
 #include <boost/interprocess/managed_mapped_file.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>

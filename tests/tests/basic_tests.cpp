@@ -24,7 +24,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 #include <deip/protocol/protocol.hpp>
 
 #include <deip/protocol/deip_operations.hpp>

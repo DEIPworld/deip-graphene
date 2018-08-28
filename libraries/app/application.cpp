@@ -26,9 +26,9 @@
 #include <deip/app/application.hpp>
 #include <deip/app/plugin.hpp>
 
-#include <deip/chain/deip_objects.hpp>
-#include <deip/chain/deip_object_types.hpp>
-#include <deip/chain/database_exceptions.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
+#include <deip/chain/schema/deip_object_types.hpp>
+#include <deip/chain/database/database_exceptions.hpp>
 #include <deip/chain/genesis_state.hpp>
 #include <deip/egenesis/egenesis.hpp>
 

@@ -1,6 +1,6 @@
 #pragma once
 #include <deip/app/plugin.hpp>
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 
 namespace deip {
 namespace account_by_key {

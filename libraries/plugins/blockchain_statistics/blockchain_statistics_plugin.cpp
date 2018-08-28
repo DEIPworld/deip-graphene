@@ -1,9 +1,9 @@
 #include <deip/blockchain_statistics/blockchain_statistics_api.hpp>
 
 #include <deip/app/impacted.hpp>
-#include <deip/chain/account_object.hpp>
+#include <deip/chain/schema/account_object.hpp>
 
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 #include <deip/chain/operation_notification.hpp>
 
 namespace deip {

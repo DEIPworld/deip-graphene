@@ -1,4 +1,4 @@
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 #include <deip/protocol/block.hpp>
 #include <fc/io/raw.hpp>
 

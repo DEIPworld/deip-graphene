@@ -2,7 +2,7 @@
 
 #include <fc/shared_string.hpp>
 
-#include <deip/chain/dbs_base_impl.hpp>
+#include <deip/chain/services/dbs_base_impl.hpp>
 
 namespace chainbase {
 class database; // for _temporary_public_imp only

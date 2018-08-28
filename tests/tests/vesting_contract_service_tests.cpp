@@ -1,8 +1,8 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/vesting_balance_object.hpp>
-#include <deip/chain/dbs_vesting_balance.hpp>
+#include <deip/chain/schema/vesting_balance_object.hpp>
+#include <deip/chain/services/dbs_vesting_balance.hpp>
 
 #include "database_fixture.hpp"
 

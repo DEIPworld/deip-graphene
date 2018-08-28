@@ -1,11 +1,11 @@
 #pragma once
 #include <deip/app/state.hpp>
 
-#include <deip/chain/database.hpp>
-#include <deip/chain/deip_objects.hpp>
-#include <deip/chain/deip_object_types.hpp>
+#include <deip/chain/database/database.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
+#include <deip/chain/schema/deip_object_types.hpp>
 //#include <deip/chain/history_object.hpp>
-#include <deip/chain/dbs_proposal.hpp>
+#include <deip/chain/services/dbs_proposal.hpp>
 
 #include <deip/witness/witness_plugin.hpp>
 

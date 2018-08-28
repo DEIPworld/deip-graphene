@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 #include <deip/protocol/protocol.hpp>
-#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
 #include <fc/smart_ref_impl.hpp>
 #include <iostream>
 
