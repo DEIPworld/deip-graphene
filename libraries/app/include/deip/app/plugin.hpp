@@ -26,7 +26,7 @@
 #include <deip/app/application.hpp>
 
 #include <deip/chain/evaluator.hpp>
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 
 #include <boost/program_options.hpp>
 

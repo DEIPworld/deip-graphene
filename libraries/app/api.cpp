@@ -30,9 +30,9 @@
 
 #include <deip/protocol/get_config.hpp>
 
-#include <deip/chain/database.hpp>
-#include <deip/chain/deip_objects.hpp>
-#include <deip/chain/transaction_object.hpp>
+#include <deip/chain/database/database.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
+#include <deip/chain/schema/transaction_object.hpp>
 #include <fc/time.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>

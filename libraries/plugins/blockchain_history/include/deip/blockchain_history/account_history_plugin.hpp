@@ -24,7 +24,7 @@
 #pragma once
 
 #include <deip/app/plugin.hpp>
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 
 #ifndef ACCOUNT_HISTORY_PLUGIN_NAME
 #define ACCOUNT_HISTORY_PLUGIN_NAME "account_history"

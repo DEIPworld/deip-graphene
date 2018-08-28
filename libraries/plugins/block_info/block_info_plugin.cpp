@@ -1,6 +1,6 @@
 
-#include <deip/chain/database.hpp>
-#include <deip/chain/global_property_object.hpp>
+#include <deip/chain/database/database.hpp>
+#include <deip/chain/schema/global_property_object.hpp>
 
 #include <deip/plugins/block_info/block_info.hpp>
 #include <deip/plugins/block_info/block_info_api.hpp>

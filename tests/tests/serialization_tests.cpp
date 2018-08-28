@@ -24,8 +24,8 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/deip_objects.hpp>
-#include <deip/chain/database.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
+#include <deip/chain/database/database.hpp>
 
 #include <fc/crypto/digest.hpp>
 #include <fc/crypto/elliptic.hpp>

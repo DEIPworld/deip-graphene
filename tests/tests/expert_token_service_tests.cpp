@@ -1,8 +1,8 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/expert_token_object.hpp>
-#include <deip/chain/dbs_expert_token.hpp>
+#include <deip/chain/schema/expert_token_object.hpp>
+#include <deip/chain/services/dbs_expert_token.hpp>
 
 #include "database_fixture.hpp"
 

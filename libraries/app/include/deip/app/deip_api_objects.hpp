@@ -1,32 +1,32 @@
 #pragma once
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/block_summary_object.hpp>
-#include <deip/chain/global_property_object.hpp>
+#include <deip/chain/schema/account_object.hpp>
+#include <deip/chain/schema/block_summary_object.hpp>
+#include <deip/chain/schema/global_property_object.hpp>
 //#include <deip/chain/history_object.hpp>
-#include <deip/chain/deip_objects.hpp>
-#include <deip/chain/transaction_object.hpp>
-#include <deip/chain/witness_objects.hpp>
-#include <deip/chain/grant_objects.hpp>
-#include <deip/chain/proposal_object.hpp>
-#include <deip/chain/proposal_vote_object.hpp>
-#include <deip/chain/discipline_object.hpp>
-#include <deip/chain/research_object.hpp>
-#include <deip/chain/research_content_object.hpp>
-#include <deip/chain/expert_token_object.hpp>
-#include <deip/chain/research_token_sale_object.hpp>
-#include <deip/chain/research_group_object.hpp>
-#include <deip/chain/research_discipline_relation_object.hpp>
-#include <deip/chain/research_group_invite_object.hpp>
-#include <deip/chain/research_object.hpp>
-#include <deip/chain/total_votes_object.hpp>
-#include <deip/chain/review_object.hpp>
-#include <deip/chain/research_token_object.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
+#include <deip/chain/schema/transaction_object.hpp>
+#include <deip/chain/schema/witness_objects.hpp>
+#include <deip/chain/schema/grant_objects.hpp>
+#include <deip/chain/schema/proposal_object.hpp>
+#include <deip/chain/schema/proposal_vote_object.hpp>
+#include <deip/chain/schema/discipline_object.hpp>
+#include <deip/chain/schema/research_object.hpp>
+#include <deip/chain/schema/research_content_object.hpp>
+#include <deip/chain/schema/expert_token_object.hpp>
+#include <deip/chain/schema/research_token_sale_object.hpp>
+#include <deip/chain/schema/research_group_object.hpp>
+#include <deip/chain/schema/research_discipline_relation_object.hpp>
+#include <deip/chain/schema/research_group_invite_object.hpp>
+#include <deip/chain/schema/research_object.hpp>
+#include <deip/chain/schema/total_votes_object.hpp>
+#include <deip/chain/schema/review_object.hpp>
+#include <deip/chain/schema/research_token_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
-#include <deip/chain/database.hpp>
-#include <deip/chain/vote_object.hpp>
-#include <deip/chain/review_vote_object.hpp>
+#include <deip/chain/database/database.hpp>
+#include <deip/chain/schema/vote_object.hpp>
+#include <deip/chain/schema/review_vote_object.hpp>
 
 namespace deip {
 namespace app {

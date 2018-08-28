@@ -24,7 +24,7 @@
 #pragma once
 
 #include <deip/app/plugin.hpp>
-#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
 
 namespace deip {
 namespace delayed_node {

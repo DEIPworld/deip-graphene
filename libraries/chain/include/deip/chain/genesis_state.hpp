@@ -5,7 +5,7 @@
 
 #include <deip/protocol/types.hpp>
 #include <deip/protocol/asset.hpp>
-#include <deip/chain/deip_object_types.hpp>
+#include <deip/chain/schema/deip_object_types.hpp>
 
 #include <fc/reflect/reflect.hpp>
 

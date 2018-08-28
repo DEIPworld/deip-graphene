@@ -1,10 +1,10 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
 
-#include <deip/chain/dbs_account.hpp>
-#include <deip/chain/dbs_grant.hpp>
+#include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_grant.hpp>
 
 #include "database_fixture.hpp"
 

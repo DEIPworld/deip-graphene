@@ -3,7 +3,7 @@
 
 #include <graphene/utilities/tempdir.hpp>
 
-#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
 #include <deip/blockchain_history/account_history_object.hpp>
 #include <deip/blockchain_history/blockchain_history_plugin.hpp>
 #include <deip/witness/witness_plugin.hpp>
@@ -16,8 +16,8 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include <deip/chain/research_group_invite_object.hpp>
-#include <deip/chain/research_token_object.hpp>
+#include <deip/chain/schema/research_group_invite_object.hpp>
+#include <deip/chain/schema/research_token_object.hpp>
 
 #include "database_fixture.hpp"
 

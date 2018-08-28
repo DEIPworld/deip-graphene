@@ -1,8 +1,8 @@
 #include <deip/account_statistics/account_statistics_api.hpp>
 
-#include <deip/chain/account_object.hpp>
+#include <deip/chain/schema/account_object.hpp>
 
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 
 namespace deip {
 namespace account_statistics {

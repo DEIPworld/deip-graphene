@@ -9,9 +9,9 @@
 #include <deip/protocol/block.hpp>
 
 #include <deip/chain/block_log.hpp>
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/database.hpp>
-#include <deip/chain/witness_objects.hpp>
+#include <deip/chain/schema/account_object.hpp>
+#include <deip/chain/database/database.hpp>
+#include <deip/chain/schema/witness_objects.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
 

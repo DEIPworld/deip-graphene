@@ -1,8 +1,8 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/vote_object.hpp>
-#include <deip/chain/dbs_vote.hpp>
+#include <deip/chain/schema/vote_object.hpp>
+#include <deip/chain/services/dbs_vote.hpp>
 
 #include "database_fixture.hpp"
 

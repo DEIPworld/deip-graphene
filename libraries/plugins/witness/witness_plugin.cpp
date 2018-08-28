@@ -24,10 +24,10 @@
 #include <deip/witness/witness_objects.hpp>
 #include <deip/witness/witness_plugin.hpp>
 
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/database.hpp>
-#include <deip/chain/database_exceptions.hpp>
-#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/schema/account_object.hpp>
+#include <deip/chain/database/database.hpp>
+#include <deip/chain/database/database_exceptions.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
 
 #include <fc/time.hpp>
 

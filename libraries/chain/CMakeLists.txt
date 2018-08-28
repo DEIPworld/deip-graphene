@@ -18,35 +18,35 @@ set_source_files_properties( "${CMAKE_CURRENT_BINARY_DIR}/include/deip/chain/har
 add_library( deip_chain
 
              # As database takes the longest to compile, start it first
-             database.cpp
-             fork_database.cpp
-             database_witness_schedule.cpp
+        database/database.cpp
+        database/fork_database.cpp
+        database/database_witness_schedule.cpp
 
-             dbs_base_impl.cpp
+        services/dbs_base_impl.cpp
              dbservice.cpp
-             dbs_account.cpp
-             dbs_witness.cpp
-             dbs_grant.cpp
-             dbs_proposal.cpp
-             dbs_research_group.cpp
-             dbs_discipline.cpp
-             dbs_vote.cpp
-             dbs_research.cpp
-             dbs_research_discipline_relation.cpp
-             dbs_research_content.cpp
-             dbs_expert_token.cpp
-             dbs_research_token.cpp
-             dbs_research_token_sale.cpp
-             dbs_research_group_invite.cpp
-             dbs_dynamic_global_properties.cpp
-             dbs_review.cpp
-             dbs_vesting_balance.cpp
-             dbs_proposal_execution.cpp
-             dbs_research_content_reward_pool.cpp
+        services/dbs_account.cpp
+        services/dbs_witness.cpp
+        services/dbs_grant.cpp
+        services/dbs_proposal.cpp
+        services/dbs_research_group.cpp
+        services/dbs_discipline.cpp
+        services/dbs_vote.cpp
+        services/dbs_research.cpp
+        services/dbs_research_discipline_relation.cpp
+        services/dbs_research_content.cpp
+        services/dbs_expert_token.cpp
+        services/dbs_research_token.cpp
+        services/dbs_research_token_sale.cpp
+        services/dbs_research_group_invite.cpp
+        services/dbs_dynamic_global_properties.cpp
+        services/dbs_review.cpp
+        services/dbs_vesting_balance.cpp
+        services/dbs_proposal_execution.cpp
+        services/dbs_research_content_reward_pool.cpp
 
              deip_evaluator.cpp
-             deip_objects.cpp
-             shared_authority.cpp
+        schema/deip_objects.cpp
+        schema/shared_authority.cpp
              block_log.cpp
 
              genesis.cpp
@@ -64,7 +64,7 @@ target_include_directories( deip_chain
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include" )
 
 if(MSVC)
-  set_source_files_properties( database.cpp PROPERTIES COMPILE_FLAGS "/bigobj" )
+  set_source_files_properties(database/database.cpp PROPERTIES COMPILE_FLAGS "/bigobj" )
 endif(MSVC)
 
 if(UNIX)

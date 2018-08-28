@@ -1,10 +1,10 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/proposal_object.hpp>
-#include <deip/chain/proposal_vote_object.hpp>
-#include <deip/chain/dbs_proposal.hpp>
-#include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/schema/proposal_object.hpp>
+#include <deip/chain/schema/proposal_vote_object.hpp>
+#include <deip/chain/services/dbs_proposal.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
 
 
 #include "database_fixture.hpp"

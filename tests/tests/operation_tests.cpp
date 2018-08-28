@@ -3,10 +3,10 @@
 
 #include <deip/protocol/exceptions.hpp>
 
-#include <deip/chain/database.hpp>
-#include <deip/chain/database_exceptions.hpp>
+#include <deip/chain/database/database.hpp>
+#include <deip/chain/database/database_exceptions.hpp>
 #include <deip/chain/hardfork.hpp>
-#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
 
 #include <deip/chain/util/reward.hpp>
 
@@ -19,14 +19,14 @@
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
-#include <deip/chain/research_discipline_relation_object.hpp>
-#include <deip/chain/expert_token_object.hpp>
+#include <deip/chain/schema/research_discipline_relation_object.hpp>
+#include <deip/chain/schema/expert_token_object.hpp>
 
-#include <deip/chain/dbs_research_token.hpp>
-#include <deip/chain/review_object.hpp>
-#include <deip/chain/vesting_balance_object.hpp>
-#include <deip/chain/dbs_research_discipline_relation.hpp>
-#include <deip/chain/grant_objects.hpp>
+#include <deip/chain/services/dbs_research_token.hpp>
+#include <deip/chain/schema/review_object.hpp>
+#include <deip/chain/schema/vesting_balance_object.hpp>
+#include <deip/chain/services/dbs_research_discipline_relation.hpp>
+#include <deip/chain/schema/grant_objects.hpp>
 
 #define DROPOUT_COMPENSATION_IN_PERCENT 1500
 

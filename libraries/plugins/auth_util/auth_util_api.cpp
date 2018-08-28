@@ -5,8 +5,8 @@
 #include <deip/protocol/authority.hpp>
 #include <deip/protocol/sign_state.hpp>
 
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/database.hpp>
+#include <deip/chain/schema/account_object.hpp>
+#include <deip/chain/database/database.hpp>
 
 #include <deip/plugins/auth_util/auth_util_api.hpp>
 #include <deip/plugins/auth_util/auth_util_plugin.hpp>

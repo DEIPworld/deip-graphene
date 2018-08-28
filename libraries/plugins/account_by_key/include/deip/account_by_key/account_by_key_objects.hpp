@@ -1,5 +1,5 @@
 #pragma once
-#include <deip/chain/deip_object_types.hpp>
+#include <deip/chain/schema/deip_object_types.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 
