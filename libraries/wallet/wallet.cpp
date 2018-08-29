@@ -2081,9 +2081,7 @@ wallet_api::challenge(const std::string& challenger, const std::string& challeng
 
 annotated_signed_transaction wallet_api::get_transaction(transaction_id_type id) const
 {
-    my->use_remote_blockchain_history_api();
-
-    return (*my->_remote_blockchain_history_api)->get_transaction(id);
+    return my->_remote_db->get_transaction(id);
 }
 
 vector<grant_api_obj> wallet_api::list_my_grants()

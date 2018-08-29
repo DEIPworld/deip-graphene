@@ -32,6 +32,8 @@
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
 
+#include <deip/chain/schema/operation_object.hpp>
+
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 #define MAX_LIMIT 1000
 
@@ -921,6 +923,29 @@ state database_api::get_state(string path) const
         }
         return _state;
     });
+}
+
+annotated_signed_transaction database_api::get_transaction(transaction_id_type id) const
+{
+#ifdef SKIP_BY_TX_ID
+    FC_ASSERT(false, "This node's operator has disabled operation indexing by transaction_id");
+#else
+    return my->_db.with_read_lock([&]() {
+        const auto& idx = my->_db.get_index<operation_index>().indices().get<by_transaction_id>();
+        auto itr = idx.lower_bound(id);
+        if (itr != idx.end() && itr->trx_id == id)
+        {
+            auto blk = my->_db.fetch_block_by_number(itr->block);
+            FC_ASSERT(blk.valid());
+            FC_ASSERT(blk->transactions.size() > itr->trx_in_block);
+            annotated_signed_transaction result = blk->transactions[itr->trx_in_block];
+            result.block_num = itr->block;
+            result.transaction_num = itr->trx_in_block;
+            return result;
+        }
+        FC_ASSERT(false, "Unknown Transaction ${t}", ("t", id));
+    });
+#endif
 }
 
 vector<discipline_api_obj> database_api::get_all_disciplines() const
