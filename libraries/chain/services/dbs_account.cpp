@@ -424,7 +424,7 @@ void dbs_account::increase_common_tokens(const account_object &account, const sh
     db_impl().modify(account, [&](account_object& a) { a.common_tokens_balance += amount; });
     db_impl().modify(props, [&](dynamic_global_property_object& gpo) {
         gpo.total_common_tokens_amount += amount;
-        gpo.total_common_tokens_fund_deip += asset(amount, DEIP_SYMBOL);
+        gpo.common_tokens_fund += asset(amount, DEIP_SYMBOL);
     });
 }
 
@@ -435,7 +435,7 @@ void dbs_account::decrease_common_tokens(const account_object &account, const sh
     db_impl().modify(account, [&](account_object& a) { a.common_tokens_balance -= amount; });
     db_impl().modify(props, [&](dynamic_global_property_object& gpo) {
         gpo.total_common_tokens_amount -= amount;
-        gpo.total_common_tokens_fund_deip -= asset(amount, DEIP_SYMBOL);
+        gpo.common_tokens_fund -= asset(amount, DEIP_SYMBOL);
     });
 }
 

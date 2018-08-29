@@ -1452,8 +1452,8 @@ BOOST_AUTO_TEST_CASE(withdraw_common_tokens_apply)
 
                db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object& gpo) {
                    gpo.current_supply
-                           += wso.median_props.account_creation_fee - ASSET("0.001 TESTS") - gpo.total_common_tokens_fund_deip;
-                   gpo.total_common_tokens_fund_deip = wso.median_props.account_creation_fee - ASSET("0.001 TESTS");
+                           += wso.median_props.account_creation_fee - ASSET("0.001 TESTS") - gpo.common_tokens_fund;
+                   gpo.common_tokens_fund = wso.median_props.account_creation_fee - ASSET("0.001 TESTS");
 
                });
            },

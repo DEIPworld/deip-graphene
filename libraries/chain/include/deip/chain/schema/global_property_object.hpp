@@ -42,14 +42,11 @@ public:
     account_name_type current_witness;
 
     asset current_supply = asset(0, DEIP_SYMBOL);
-    asset confidential_supply = asset(0, DEIP_SYMBOL); ///< total asset held in confidential balances
 
-    asset total_common_tokens_fund_deip = asset(0, DEIP_SYMBOL);
+    asset common_tokens_fund = asset(0, DEIP_SYMBOL);
 
     share_type total_expert_tokens_amount = 0;
     share_type total_common_tokens_amount = 0;
-
-    asset total_reward_fund_deip = asset(0, DEIP_SYMBOL);
 
     /**
      *  Maximum block size is decided by the set of active witnesses which change every round.
@@ -98,6 +95,6 @@ typedef multi_index_container<dynamic_global_property_object,
 } // deip::chain
 
 FC_REFLECT(deip::chain::dynamic_global_property_object,
-           (id)(head_block_number)(head_block_id)(time)(current_witness)(current_supply)(confidential_supply)(total_reward_fund_deip)(maximum_block_size)(current_aslot)(total_common_tokens_fund_deip)(total_expert_tokens_amount)(total_common_tokens_amount)(
+           (id)(head_block_number)(head_block_id)(time)(current_witness)(current_supply)(maximum_block_size)(current_aslot)(common_tokens_fund)(total_expert_tokens_amount)(total_common_tokens_amount)(
                recent_slots_filled)(participation_count)(last_irreversible_block_num)(vote_power_reserve_rate)(used_expertise_per_block)(total_used_expertise))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::dynamic_global_property_object, deip::chain::dynamic_global_property_index)
