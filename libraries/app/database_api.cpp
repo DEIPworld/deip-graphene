@@ -1613,6 +1613,36 @@ database_api::get_total_votes_by_research_and_discipline(const research_id_type&
     });
 }
 
+vector<total_votes_api_obj>
+database_api::get_total_votes_by_content(const research_content_id_type& research_content_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<total_votes_api_obj> results;
+        chain::dbs_vote& vote_service
+                = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto total_votes_r = vote_service.get_total_votes_by_content(research_content_id);
+
+        for (const chain::total_votes_object& total_votes : total_votes_r)
+        {
+            results.push_back(total_votes);
+        }
+
+        return results;
+    });
+}
+
+total_votes_api_obj database_api::get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id,
+                                                         const discipline_id_type& discipline_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_vote& vote_service = my->_db.obtain_service<chain::dbs_vote>();
+        auto total_votes_r = vote_service.get_total_votes_by_content_and_discipline(research_content_id, discipline_id);
+        return total_votes_r;
+    });
+}
+
+
 vector<review_api_obj> database_api::get_reviews_by_research(const research_id_type& research_id) const
 {
     return my->_db.with_read_lock([&]() {
