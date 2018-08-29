@@ -166,35 +166,5 @@ std::map<uint32_t, applied_operation> blockchain_history_api::get_ops_in_block(u
         return result;
     });
 }
-
-annotated_signed_transaction blockchain_history_api::get_transaction(transaction_id_type id) const
-{
-    using namespace deip::chain;
-
-#ifdef SKIP_BY_TX_ID
-    FC_ASSERT(false, "This node's operator has disabled operation indexing by transaction_id");
-#else
-
-    FC_ASSERT(!_impl->_app.is_read_only(), "get_transaction is not available in read-only mode.");
-
-    const auto& db = _impl->_app.chain_database();
-
-    return db->with_read_lock([&]() {
-        const auto& idx = db->get_index<operation_index>().indices().get<by_transaction_id>();
-        auto itr = idx.lower_bound(id);
-        if (itr != idx.end() && itr->trx_id == id)
-        {
-            auto blk = db->fetch_block_by_number(itr->block);
-            FC_ASSERT(blk.valid());
-            FC_ASSERT(blk->transactions.size() > itr->trx_in_block);
-            annotated_signed_transaction result = blk->transactions[itr->trx_in_block];
-            result.block_num = itr->block;
-            result.transaction_num = itr->trx_in_block;
-            return result;
-        }
-        FC_ASSERT(false, "Unknown Transaction ${t}", ("t", id));
-    });
-#endif
-}
 }
 }
