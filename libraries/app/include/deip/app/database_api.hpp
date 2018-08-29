@@ -394,6 +394,9 @@ public:
     vector<total_votes_api_obj> get_total_votes_by_research(const research_id_type& research_id) const;
     vector<total_votes_api_obj> get_total_votes_by_research_and_discipline(const research_id_type& research_id,
                                                                    const discipline_id_type& discipline_id) const;
+    vector<total_votes_api_obj> get_total_votes_by_content(const research_content_id_type& research_content_id) const;
+    total_votes_api_obj get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id,
+            const discipline_id_type& discipline_id) const;
 
     ///////////////////////////////
     // Reviews                   //
@@ -567,6 +570,8 @@ FC_API(deip::app::database_api,
    // Total votes
    (get_total_votes_by_research)
    (get_total_votes_by_research_and_discipline)
+   (get_total_votes_by_content)
+   (get_total_votes_by_content_and_discipline)
 
    // Reviews
    (get_reviews_by_research)
