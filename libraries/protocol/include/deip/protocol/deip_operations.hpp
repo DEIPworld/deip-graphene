@@ -616,7 +616,6 @@ struct create_vesting_balance_operation : public base_operation
     account_name_type creator;  
     account_name_type owner;
     asset balance;
-    uint32_t withdrawal_period;
     uint32_t vesting_duration_seconds;
     uint32_t vesting_cliff_seconds;
     uint32_t period_duration_seconds;

@@ -230,7 +230,6 @@ void research_update_operation::validate() const
 void create_vesting_balance_operation::validate() const
 {
     FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Deposit balance must be greater than 0");
-    FC_ASSERT(withdrawal_period > 0, "You must divide contract at least by 1 part");
     FC_ASSERT(vesting_duration_seconds > 0 && vesting_duration_seconds > vesting_cliff_seconds,
             "Vesting  duration must be longer than 0 & longer than cliff period");
     FC_ASSERT(vesting_cliff_seconds >= 0, "Vesting cliff period should be equal or greater than 0");

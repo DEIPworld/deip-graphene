@@ -2724,7 +2724,6 @@ BOOST_AUTO_TEST_CASE(deposit_to_vesting_balance_apply)
         op.creator = "alice";
         op.owner = "bob";
         op.balance = asset(1000, DEIP_SYMBOL);
-        op.withdrawal_period = 4;
         op.vesting_duration_seconds = DAYS_TO_SECONDS(365);
         op.vesting_cliff_seconds = 0;
         op.period_duration_seconds = DAYS_TO_SECONDS(5);

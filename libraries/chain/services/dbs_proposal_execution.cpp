@@ -163,7 +163,6 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
     auto& research_service = db_impl().obtain_service<dbs_research>();
     auto& research_content_service = db_impl().obtain_service<dbs_research_content>();
     auto& vote_service = db_impl().obtain_service<dbs_vote>();
-    auto& discipline_service = db_impl().obtain_service<dbs_discipline>();
     auto& review_service = db_impl().obtain_service<dbs_review>();
 
     create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
