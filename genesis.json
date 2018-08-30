@@ -258,7 +258,13 @@
         "name": "mycb1",
         "recovery_account": "",
         "public_key": "DEIP8ieFHp1KHns4Y47RUxQW56dk17kJ5snqxNnzikQtPn4URmWWky",
-        "deip_amount": 25000000000,
+        "deip_amount": 5000000000,
+        "sp_amount": 0
+    }, {
+        "name": "regacc",
+        "recovery_account": "",
+        "public_key": "DEIP8UQBgn8AwEMgNbF6J3sqUXws11rWm6NvpTbXNicXACLFtmeTa8",
+        "deip_amount": 20000000000,
         "sp_amount": 0
     }],
 
