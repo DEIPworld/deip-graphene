@@ -1039,7 +1039,7 @@ void database::process_common_tokens_withdrawals()
                     modify(to_account, [&](account_object& a) { a.balance += converted_deip; });
 
                     modify(cprops, [&](dynamic_global_property_object& o) {
-                        o.total_common_tokens_fund_deip -= converted_deip;
+                        o.common_tokens_fund -= converted_deip;
                         o.total_common_tokens_amount -= to_deposit;
                     });
 
@@ -1071,7 +1071,7 @@ void database::process_common_tokens_withdrawals()
         });
 
         modify(cprops, [&](dynamic_global_property_object& o) {
-            o.total_common_tokens_fund_deip -= converted_deip;
+            o.common_tokens_fund -= converted_deip;
             o.total_common_tokens_amount -= to_convert;
         });
 
@@ -2448,7 +2448,7 @@ void database::adjust_supply(const asset& delta, bool adjust_common_token)
             // TODO: remove unusable value
             asset new_common_token((adjust_common_token && delta.amount > 0) ? delta.amount * 9 : 0, DEIP_SYMBOL);
             props.current_supply += delta + new_common_token;
-            props.total_common_tokens_fund_deip += new_common_token;
+            props.common_tokens_fund += new_common_token;
             assert(props.current_supply.amount.value >= 0);
             break;
         }
@@ -2612,7 +2612,7 @@ void database::validate_invariants() const
             total_supply += itr->reward_share;
         }
 
-        total_supply +=  gpo.total_common_tokens_fund_deip + gpo.total_reward_fund_deip;
+        total_supply +=  gpo.common_tokens_fund;
 
         FC_ASSERT(gpo.current_supply == total_supply, "",
                   ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));
