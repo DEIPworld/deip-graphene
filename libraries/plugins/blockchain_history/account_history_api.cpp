@@ -21,8 +21,8 @@ public:
     {
     }
 
-    template <typename history_object_type>
-    std::map<uint32_t, applied_operation> get_history(const std::string& account, uint64_t from, uint32_t limit) const
+    template <typename history_object_type, typename fill_result_functor>
+    void get_history(const std::string& account, uint64_t from, uint32_t limit, fill_result_functor& funct) const
     {
         static const uint32_t max_history_depth = 100;
 
@@ -35,20 +35,34 @@ public:
 
         std::map<uint32_t, applied_operation> result;
 
-        const auto& idx = db->get_index<history_index<history_object_type>>().indices().template get<by_account>();
+        const auto& idx = db->get_index<history_index<history_object_type>>().indices().get<by_account>();
         auto itr = idx.lower_bound(boost::make_tuple(account, from));
-
         if (itr != idx.end())
         {
-            auto end
-                = idx.lower_bound(boost::make_tuple(account, std::max(int64_t(0), int64_t(itr->sequence) - limit)));
+            auto end = idx.upper_bound(boost::make_tuple(account, int64_t(0)));
+            int64_t pos = int64_t(itr->sequence) - limit;
+            if (pos > 0)
+            {
+                end = idx.lower_bound(boost::make_tuple(account, pos));
+            }
             while (itr != end)
             {
-                result[itr->sequence] = db->get(itr->op);
+                funct(*itr);
                 ++itr;
             }
         }
-        return result;
+    }
+
+    template <typename history_object_type>
+    std::map<uint32_t, applied_operation> get_history(const std::string& account, uint64_t from, uint32_t limit) const
+    {
+        std::map<uint32_t, applied_operation> result;
+
+         const auto db = _app.chain_database();
+         
+         auto fill_funct = [&](const history_object_type& hobj) { result[hobj.sequence] = db->get(hobj.op); };
+        this->template get_history<history_object_type>(account, from, limit, fill_funct);
+         return result;
     }
 };
 } // namespace detail
@@ -68,22 +82,24 @@ void account_history_api::on_api_startup()
 std::map<uint32_t, applied_operation>
 account_history_api::get_account_deip_to_deip_transfers(const std::string& account, uint64_t from, uint32_t limit) const
 {
-    return _impl->_app.chain_database()->with_read_lock(
+    const auto db = _impl->_app.chain_database();
+    return db->with_read_lock(
         [&]() { return _impl->get_history<transfers_to_deip_history_object>(account, from, limit); });
 }
 
 std::map<uint32_t, applied_operation>
 account_history_api::get_account_deip_to_common_tokens_transfers(const std::string& account, uint64_t from, uint32_t limit) const
 {
-    return _impl->_app.chain_database()->with_read_lock(
+    const auto db = _impl->_app.chain_database();
+    return db->with_read_lock(
         [&]() { return _impl->get_history<transfers_to_common_tokens_history_object>(account, from, limit); });
 }
 
 std::map<uint32_t, applied_operation>
 account_history_api::get_account_history(const std::string& account, uint64_t from, uint32_t limit) const
 {
-    return _impl->_app.chain_database()->with_read_lock(
-        [&]() { return _impl->get_history<account_history_object>(account, from, limit); });
+    const auto db = _impl->_app.chain_database();
+    return db->with_read_lock([&]() { return _impl->get_history<account_history_object>(account, from, limit); });
 }
 
 } // namespace blockchain_history
