@@ -35,7 +35,7 @@ public:
 
         std::map<uint32_t, applied_operation> result;
 
-        const auto& idx = db->get_index<history_index<history_object_type>>().indices().get<by_account>();
+        const auto& idx = db->get_index<history_index<history_object_type>>().indices().template get<by_account>();
         auto itr = idx.lower_bound(boost::make_tuple(account, from));
         if (itr != idx.end())
         {
