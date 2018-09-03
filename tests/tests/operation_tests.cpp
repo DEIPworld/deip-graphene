@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = true;
-        op.weight =  50 * DEIP_1_PERCENT;
+        op.weight =  DEIP_100_PERCENT;
 
         fc::uint128 total_expert_tokens_amount; // With Common Token
         auto it_pair = db.get_index<expert_token_index>().indicies().get<by_account_name>().equal_range("alice");
@@ -166,9 +166,9 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         BOOST_CHECK(review.author == "alice");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.content == "test");
-        BOOST_CHECK(review.expertise_amounts_used.at(1) == (DEIP_REVIEW_REQUIRED_POWER * DEIP_1_PERCENT * op.weight * token.amount) / (DEIP_100_PERCENT * DEIP_100_PERCENT));
+        BOOST_CHECK(review.expertise_amounts_used.at(1) == (old_voting_power * op.weight * token.amount) / (DEIP_100_PERCENT * DEIP_100_PERCENT));
         BOOST_CHECK(disciplines.size() == 1 && disciplines[0] == 1);
-        BOOST_CHECK(old_voting_power - new_voting_power == (DEIP_REVIEW_REQUIRED_POWER * DEIP_1_PERCENT * op.weight) / DEIP_100_PERCENT);
+        BOOST_CHECK(old_voting_power - new_voting_power == (DEIP_REVIEW_REQUIRED_POWER_PERCENT * op.weight) / DEIP_100_PERCENT);
 
         validate_database();
 

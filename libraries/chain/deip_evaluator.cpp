@@ -676,7 +676,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             const int64_t current_power = std::min(int64_t(token.voting_power + regenerated_power), int64_t(DEIP_100_PERCENT));
             FC_ASSERT(current_power > 0, "Account currently does not have voting power.");
 
-            const int64_t used_power = (DEIP_REVIEW_REQUIRED_POWER * DEIP_1_PERCENT * op.weight) / DEIP_100_PERCENT;
+            const int64_t used_power = (DEIP_REVIEW_REQUIRED_POWER_PERCENT * op.weight) / DEIP_100_PERCENT;
 
             FC_ASSERT(used_power <= current_power, "Account does not have enough power to vote.");
 
