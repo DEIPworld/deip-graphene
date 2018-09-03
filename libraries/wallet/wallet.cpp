@@ -2164,7 +2164,7 @@ annotated_signed_transaction wallet_api::vote_for_review(const std::string& vote
     op.voter = voter;
     op.review_id = review_id;
     op.discipline_id = discipline_id;
-    op.weight = weight * DEIP_1_PERCENT;
+    op.weight = weight;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2211,6 +2211,7 @@ annotated_signed_transaction wallet_api::make_review(const std::string& author,
     op.research_content_id = research_content_id;
     op.is_positive = is_positive;
     op.content = content;
+    op.weight = DEIP_100_PERCENT;
 
     signed_transaction tx;
     tx.operations.push_back(op);

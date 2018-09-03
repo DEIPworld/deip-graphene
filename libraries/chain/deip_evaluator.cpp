@@ -680,7 +680,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
             FC_ASSERT(used_power <= current_power, "Account does not have enough power to vote.");
 
-            const uint64_t abs_used_tokens = ((uint128_t(token.amount.value) * used_power) / (DEIP_100_PERCENT)).to_uint64();
+            const uint64_t abs_used_tokens = ((uint128_t(token.amount.value) * current_power) / (DEIP_100_PERCENT)).to_uint64();
 
             _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
                 t.voting_power = current_power - used_power;
@@ -702,7 +702,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
             r.expertise_amounts_used[token.discipline_id] = review_disciplines_with_weight.at(token.discipline_id);
-            r.weights_per_discipline[token.discipline_id] = 0;
+            r.weights_per_discipline[token.discipline_id] = used_expertise;
             r.weight_modifiers[token.discipline_id] = 1;
         });
 
@@ -710,7 +710,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             tv.discipline_id = token.discipline_id;
             tv.research_content_id = content.id;
             tv.research_id = content.research_id;
-            tv.total_weight = 0;
+            tv.total_weight = used_expertise;
             tv.content_type = content.type;
         });
 
