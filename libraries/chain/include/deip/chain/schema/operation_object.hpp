@@ -2,9 +2,9 @@
 
 #include <fc/shared_buffer.hpp>
 
-#include "../../../../../protocol/include/deip/protocol/authority.hpp"
-#include "../../../../../protocol/include/deip/protocol/operations.hpp"
-#include "../../../../../protocol/include/deip/protocol/deip_operations.hpp"
+#include <deip/protocol/authority.hpp>
+#include <deip/protocol/operations.hpp>
+#include <deip/protocol/deip_operations.hpp>
 
 #include "deip_object_types.hpp"
 #include "witness_objects.hpp"

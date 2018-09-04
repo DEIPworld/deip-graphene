@@ -5,7 +5,7 @@
 #include <set>
 #include <functional>
 
-#include "../schema/review_object.hpp"
+#include <deip/chain/schema/review_object.hpp>
 
 namespace deip {
 namespace chain {

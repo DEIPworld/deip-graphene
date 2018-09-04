@@ -3,16 +3,16 @@
  */
 #pragma once
 
-#include "../schema/global_property_object.hpp"
-#include "../../../../../../build/libraries/chain/include/deip/chain/hardfork.hpp"
-#include "../schema/node_property_object.hpp"
-#include "fork_database.hpp"
-#include "../block_log.hpp"
-#include "../operation_notification.hpp"
+#include <deip/chain/schema/global_property_object.hpp>
+#include <deip/chain/hardfork.hpp>
+#include <deip/chain/schema/node_property_object.hpp>
+#include <deip/chain/database/fork_database.hpp>
+#include <deip/chain/block_log.hpp>
+#include <deip/chain/operation_notification.hpp>
 
-#include "../../../../../protocol/include/deip/protocol/protocol.hpp"
+#include <deip/protocol/protocol.hpp>
 
-#include "../dbservice.hpp"
+#include <deip/chain/dbservice.hpp>
 
 #include <fc/signals.hpp>
 #include <fc/shared_string.hpp>

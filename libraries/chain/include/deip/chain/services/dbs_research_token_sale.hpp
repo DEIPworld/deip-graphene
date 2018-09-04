@@ -6,8 +6,8 @@
 #include <set>
 #include <functional>
 
-#include "../schema/deip_object_types.hpp"
-#include "../schema/research_token_sale_object.hpp"
+#include <deip/chain/schema/deip_object_types.hpp>
+#include <deip/chain/schema/research_token_sale_object.hpp>
 
 namespace deip {
 namespace chain {

@@ -3,7 +3,7 @@
 
 #include "deip_object_types.hpp"
 
-#include "../../../../../protocol/include/deip/protocol/asset.hpp"
+#include <deip/protocol/asset.hpp>
 
 namespace deip {
 namespace chain {

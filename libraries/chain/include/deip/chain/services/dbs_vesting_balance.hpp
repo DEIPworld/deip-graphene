@@ -2,8 +2,8 @@
 
 #include "dbs_base_impl.hpp"
 
-#include "../schema/deip_object_types.hpp"
-#include "../schema/vesting_balance_object.hpp"
+#include <deip/chain/schema/deip_object_types.hpp>
+#include <deip/chain/schema/vesting_balance_object.hpp>
 
 
 namespace deip {

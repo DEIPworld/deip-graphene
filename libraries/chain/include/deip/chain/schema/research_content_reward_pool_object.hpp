@@ -1,5 +1,5 @@
 #pragma once
-#include "../../../../../protocol/include/deip/protocol/authority.hpp"
+#include <deip/protocol/authority.hpp>
 
 #include "deip_object_types.hpp"
 

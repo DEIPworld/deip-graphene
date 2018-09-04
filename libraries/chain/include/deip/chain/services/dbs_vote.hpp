@@ -5,9 +5,9 @@
 #include <set>
 #include <functional>
 
-#include "../schema/vote_object.hpp"
-#include "../schema/total_votes_object.hpp"
-#include "../schema/review_vote_object.hpp"
+#include <deip/chain/schema/vote_object.hpp>
+#include <deip/chain/schema/total_votes_object.hpp>
+#include <deip/chain/schema/review_vote_object.hpp>
 
 namespace deip {
 namespace chain {

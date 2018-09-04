@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../../../../protocol/include/deip/protocol/types.hpp"
+#include <deip/protocol/types.hpp>
 #include "deip_object_types.hpp"
 #include <boost/multi_index/composite_key.hpp>
 #include <fc/shared_string.hpp>

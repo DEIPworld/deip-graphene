@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dbs_base_impl.hpp"
-#include "../schema/research_object.hpp"
+#include <deip/chain/schema/research_object.hpp>
 
 #include <vector>
 

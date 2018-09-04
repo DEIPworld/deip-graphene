@@ -5,7 +5,7 @@
 #include <set>
 #include <functional>
 
-#include "../schema/research_token_object.hpp"
+#include <deip/chain/schema/research_token_object.hpp>
 
 namespace deip {
     namespace chain {

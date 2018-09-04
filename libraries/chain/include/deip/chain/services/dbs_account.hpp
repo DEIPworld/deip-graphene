@@ -2,7 +2,7 @@
 
 #include "dbs_base_impl.hpp"
 
-#include "../schema/account_object.hpp"
+#include <deip/chain/schema/account_object.hpp>
 
 namespace deip {
 namespace chain {

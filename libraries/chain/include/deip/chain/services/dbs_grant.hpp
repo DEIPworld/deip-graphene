@@ -5,7 +5,7 @@
 #include <set>
 #include <functional>
 
-#include "../schema/grant_objects.hpp"
+#include <deip/chain/schema/grant_objects.hpp>
 
 namespace deip {
 namespace chain {

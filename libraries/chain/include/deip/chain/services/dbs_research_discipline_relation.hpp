@@ -5,7 +5,7 @@
 #include <set>
 #include <functional>
 
-#include "../schema/research_discipline_relation_object.hpp"
+#include <deip/chain/schema/research_discipline_relation_object.hpp>
 
 namespace deip {
 namespace chain {
