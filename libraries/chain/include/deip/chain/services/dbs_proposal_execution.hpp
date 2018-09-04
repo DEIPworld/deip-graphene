@@ -2,12 +2,12 @@
 
 #include <functional>
 
-#include "../../../../../protocol/include/deip/protocol/deip_operations.hpp"
+#include <deip/protocol/deip_operations.hpp>
 
-#include "../schema/global_property_object.hpp"
+#include <deip/chain/schema/global_property_object.hpp>
 
-#include "../evaluator.hpp"
-#include "../dbservice.hpp"
+#include <deip/chain/evaluator.hpp>
+#include <deip/chain/dbservice.hpp>
 
 #include "dbs_account.hpp"
 #include "dbs_proposal.hpp"
@@ -23,8 +23,8 @@
 #include "dbs_vote.hpp"
 
 #include "dbs_base_impl.hpp"
-#include "../schema/proposal_object.hpp"
-#include "../schema/proposal_data_types.hpp"
+#include <deip/chain/schema/proposal_object.hpp>
+#include <deip/chain/schema/proposal_data_types.hpp>
 
 namespace deip {
 namespace chain {

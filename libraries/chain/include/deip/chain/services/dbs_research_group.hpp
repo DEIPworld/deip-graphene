@@ -6,8 +6,8 @@
 #include <set>
 #include <functional>
 
-#include "../schema/deip_object_types.hpp"
-#include "../schema/research_group_object.hpp"
+#include <deip/chain/schema/deip_object_types.hpp>
+#include <deip/chain/schema/research_group_object.hpp>
 
 #include <fc/shared_string.hpp>
 #include <fc/fixed_string.hpp>

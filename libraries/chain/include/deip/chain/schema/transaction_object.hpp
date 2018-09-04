@@ -1,5 +1,5 @@
 #pragma once
-#include "../../../../../protocol/include/deip/protocol/transaction.hpp"
+#include <deip/protocol/transaction.hpp>
 
 #include "deip_object_types.hpp"
 

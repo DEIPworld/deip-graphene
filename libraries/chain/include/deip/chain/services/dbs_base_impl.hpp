@@ -8,7 +8,7 @@
 #include <boost/config.hpp>
 #include <boost/type_index.hpp>
 
-#include "../dbservice_common.hpp"
+#include <deip/chain/dbservice_common.hpp>
 
 namespace deip {
 namespace chain {

@@ -2,7 +2,7 @@
 #include <fc/fixed_string.hpp>
 #include <fc/shared_string.hpp>
 
-#include "../../../../../protocol/include/deip/protocol/authority.hpp"
+#include <deip/protocol/authority.hpp>
 
 #include "deip_object_types.hpp"
 #include "shared_authority.hpp"

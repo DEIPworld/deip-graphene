@@ -2,7 +2,7 @@
 
 #include "deip_object_types.hpp"
 #include <fc/utf8.hpp>
-#include "../../../../../protocol/include/deip/protocol/asset.hpp"
+#include <deip/protocol/asset.hpp>
 
 using namespace deip::protocol;
 

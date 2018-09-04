@@ -5,8 +5,8 @@
 #include <set>
 #include <functional>
 
-#include "../schema/expert_token_object.hpp"
-#include "../schema/account_object.hpp"
+#include <deip/chain/schema/expert_token_object.hpp>
+#include <deip/chain/schema/account_object.hpp>
 
 namespace deip {
     namespace chain {

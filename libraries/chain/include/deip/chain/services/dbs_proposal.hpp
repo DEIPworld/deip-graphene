@@ -6,9 +6,9 @@
 #include <set>
 #include <functional>
 
-#include "../schema/proposal_object.hpp"
-#include "../schema/account_object.hpp"
-#include "../schema/proposal_vote_object.hpp"
+#include <deip/chain/schema/proposal_object.hpp>
+#include <deip/chain/schema/account_object.hpp>
+#include <deip/chain/schema/proposal_vote_object.hpp>
 
 namespace deip {
 namespace chain {
