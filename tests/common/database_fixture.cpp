@@ -660,6 +660,7 @@ const research_group_invite_object& database_fixture::research_group_invite_crea
         rgi_o.account_name = account_name;
         rgi_o.research_group_id = research_group_id;
         rgi_o.research_group_token_amount = research_group_token_amount;
+        rgi_o.expiration_time = db.head_block_time() + 60 * 60;
     });
     return research_group_invite;
 }
