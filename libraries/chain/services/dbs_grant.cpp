@@ -155,7 +155,7 @@ void dbs_grant::clear_expired_grants()
 
 bool dbs_grant::is_expired(const grant_object& grant)
 {
-    return grant.end_block > db_impl().head_block_num();
+    return grant.end_block < db_impl().head_block_num();
 }
 
 uint64_t dbs_grant::_get_grants_count(const account_name_type& owner) const
