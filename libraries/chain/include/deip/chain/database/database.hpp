@@ -164,6 +164,7 @@ public:
     const account_object* find_account(const account_name_type& name) const;
 
     const dynamic_global_property_object& get_dynamic_global_properties() const override;
+    const expertise_stats_object& get_expertise_stats() const;
     const node_property_object& get_node_properties() const;
     const witness_schedule_object& get_witness_schedule_object() const override;
     const hardfork_property_object& get_hardfork_property_object() const;

@@ -7,7 +7,6 @@
 #include <deip/chain/evaluator_registry.hpp>
 #include <deip/chain/schema/global_property_object.hpp>
 #include <deip/chain/schema/chain_property_object.hpp>
-//#include <deip/chain/history_object.hpp>
 #include <deip/chain/schema/operation_object.hpp>
 #include <deip/chain/deip_evaluator.hpp>
 #include <deip/chain/schema/deip_objects.hpp>
@@ -30,6 +29,7 @@
 #include <deip/chain/schema/research_group_invite_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
+#include <deip/chain/schema/expertise_stats_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -67,6 +67,7 @@
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_research_content_reward_pool.hpp>
+#include <deip/chain/services/dbs_expertise_stats.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
 namespace deip {
@@ -434,6 +435,15 @@ const dynamic_global_property_object& database::get_dynamic_global_properties() 
     try
     {
         return get<dynamic_global_property_object>();
+    }
+    FC_CAPTURE_AND_RETHROW()
+}
+
+const expertise_stats_object& database::get_expertise_stats() const
+{
+    try
+    {
+        return get<expertise_stats_object>();
     }
     FC_CAPTURE_AND_RETHROW()
 }
@@ -1806,6 +1816,7 @@ void database::initialize_indexes()
     add_index<review_vote_index>();
     add_index<vesting_balance_index>();
     add_index<research_content_reward_pool_index>();
+    add_index<expertise_stats_index>();
 
     _plugin_index_signal();
 }
@@ -1972,7 +1983,7 @@ void database::_apply_block(const signed_block& next_block)
                     throw e;
             }
         }
-        auto& dynamic_global_properties_service = obtain_service<dbs_dynamic_global_properties>();
+        auto& expertise_stats_service = obtain_service<dbs_expertise_stats>();
 
         const witness_object& signing_witness = validate_block_header(skip, next_block);
 
@@ -2022,22 +2033,17 @@ void database::_apply_block(const signed_block& next_block)
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
-
         process_research_token_sales();
-
         process_funds();
-
         process_common_tokens_withdrawals();
-
         account_recovery_processing();
-
         process_content_activity_windows();
-
         process_hardforks();
-
         process_grants();
 
-        dynamic_global_properties_service.reset_used_expertise_per_block();
+        /// modify expertise stats to correctly calculate emission
+        expertise_stats_service.calculate_used_expertise_for_week();
+        expertise_stats_service.reset_used_expertise_per_block();
 
         // notify observers that the block has been applied
         notify_applied_block(next_block);

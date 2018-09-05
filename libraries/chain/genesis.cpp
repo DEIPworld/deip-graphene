@@ -18,6 +18,7 @@
 
 #include <fc/io/json.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
+#include <deip/chain/schema/expertise_stats_object.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
@@ -79,6 +80,11 @@ void database::init_genesis(const genesis_state_type& genesis_state)
 
         _const_genesis_time = genesis_state.initial_timestamp;
         create<chain_property_object>([&](chain_property_object& cp) { cp.chain_id = genesis_state.initial_chain_id; });
+
+        create<expertise_stats_object>([&](expertise_stats_object& es) {
+           es.total_used_expertise = 0;
+           es.used_expertise_per_block = 0;
+        });
 
         init_genesis_accounts(genesis_state);
         init_genesis_witnesses(genesis_state);

@@ -70,7 +70,8 @@ enum object_type
     review_object_type,
     review_vote_object_type,
     vesting_balance_object_type,
-    research_content_reward_pool_object_type
+    research_content_reward_pool_object_type,
+    expertise_stats_object_type
 };
 
 class dynamic_global_property_object;
@@ -111,6 +112,7 @@ class review_object;
 class review_vote_object;
 class vesting_balance_object;
 class research_content_reward_pool_object;
+class expertise_stats_object;
 
 
 typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
@@ -150,6 +152,7 @@ typedef oid<review_object> review_id_type;
 typedef oid<review_vote_object> review_vote_id_type;
 typedef oid<vesting_balance_object> vesting_balance_id_type;
 typedef oid<research_content_reward_pool_object> research_content_reward_pool_id_type;
+typedef oid<expertise_stats_object> expertise_stats_id_type;
 
 
 typedef allocator<account_name_type> account_name_allocator_type;
@@ -175,6 +178,10 @@ typedef bip::map<discipline_id_type, std::vector<account_name_type>, std::less<d
 
 typedef allocator<std::pair<const uint16_t, share_type>> proposal_share_type_allocator_type;
 typedef bip::map<uint16_t, share_type, std::less<uint16_t>, proposal_share_type_allocator_type> proposal_type_share_type_map;
+
+typedef allocator<share_type> share_type_allocator_type;
+typedef bip::deque<share_type, share_type_allocator_type> share_type_deque;
+
 
 enum bandwidth_type
 {
@@ -225,7 +232,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (review_vote_object_type)
                  (vesting_balance_object_type)
                  (research_content_reward_pool_object_type)
-
+                 (expertise_stats_object_type)
                  )
 
 FC_REFLECT_ENUM( deip::chain::bandwidth_type, (post)(forum)(market) )

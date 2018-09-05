@@ -23,6 +23,7 @@
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_proposal_execution.hpp>
+#include <deip/chain/services/dbs_expertise_stats.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -392,7 +393,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
     dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     dbs_review& review_service = _db.obtain_service<dbs_review>();
-    dbs_dynamic_global_properties& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
+    dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
     dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
 
     try
@@ -487,7 +488,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
             d.total_active_weight += weight_delta;
         });
 
-        dgp_service.update_used_expertise(abs_used_tokens);
+        expertise_stats_service.update_used_expertise(abs_used_tokens);
     }
     FC_CAPTURE_AND_RETHROW((o))
 }
@@ -645,7 +646,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
-    dbs_dynamic_global_properties& dynamic_global_properties_service = _db.obtain_service<dbs_dynamic_global_properties>();
+    dbs_expertise_stats& expertise_stats_servie = _db.obtain_service<dbs_expertise_stats>();
 
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
@@ -714,7 +715,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             tv.content_type = content.type;
         });
 
-        dynamic_global_properties_service.update_used_expertise(used_expertise);
+        expertise_stats_servie.update_used_expertise(used_expertise);
     }
 }
 

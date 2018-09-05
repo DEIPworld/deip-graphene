@@ -43,6 +43,7 @@ add_library( deip_chain
         services/dbs_vesting_balance.cpp
         services/dbs_proposal_execution.cpp
         services/dbs_research_content_reward_pool.cpp
+        services/dbs_expertise_stats.cpp
 
              deip_evaluator.cpp
         schema/deip_objects.cpp
