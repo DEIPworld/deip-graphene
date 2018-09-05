@@ -3742,7 +3742,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         generate_block();
 
-        //BOOST_CHECK(stats.get_expertise_used_last_week().value == 10000);
+        BOOST_CHECK(stats.get_expertise_used_last_week().value == 10000);
         BOOST_CHECK(stats.total_used_expertise.value == 10000);
         BOOST_CHECK(stats.used_expertise_per_block.value == 0);
 
@@ -3771,42 +3771,10 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         BOOST_CHECK(stats.used_expertise_per_block == 5000);
 
         generate_block();
-        //BOOST_CHECK(stats.get_expertise_used_last_week().value == 15000);
+
+        BOOST_CHECK(stats.get_expertise_used_last_week().value == 15000);
         BOOST_CHECK(stats.total_used_expertise == 15000);
         BOOST_CHECK(stats.used_expertise_per_block == 0);
-
-        //generate_blocks(DEIP_BLOCKS_PER_WEEK);
-
-        BOOST_CHECK(stats.used_expertise_per_block == 0);
-        //BOOST_CHECK(stats.get_expertise_used_last_week().value == 0);
-        BOOST_CHECK(stats.total_used_expertise == 15000);
-
-//        generate_block();
-//
-//        BOOST_TEST_MESSAGE("Vote for content expertise");
-//
-//        BOOST_CHECK(dgpo.used_expertise_per_block == 0);
-//
-//        vote_operation op3;
-//
-//        tx.operations.clear();
-//        tx.signatures.clear();
-//
-//        op3.research_id = research.id._id;
-//        op3.research_content_id = content.id._id;
-//        op3.discipline_id = 1;
-//        op3.weight = 50 * DEIP_1_PERCENT;
-//        op3.voter = "john";
-//
-//        tx.operations.clear();
-//        tx.signatures.clear();
-//        tx.operations.push_back(op3);
-//        tx.sign(priv_key, db.get_chain_id());
-//
-//        db.push_transaction(tx, 0);
-//
-//        BOOST_CHECK(dgpo.used_expertise_per_block == 4750);
-//        BOOST_CHECK(dgpo.total_used_expertise == 29750);
     }
     FC_LOG_AND_RETHROW()
 }

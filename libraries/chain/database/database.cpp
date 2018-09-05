@@ -1999,15 +1999,6 @@ void database::_apply_block(const signed_block& next_block)
         /// this is mostly for POW operations which must pay the current_witness
         modify(gprops, [&](dynamic_global_property_object& dgp) { dgp.current_witness = next_block.witness; });
 
-        /// modify expertise stats to correctly calculate emission
-        auto& stats = get_expertise_stats();
-        modify(stats, [&](expertise_stats_object& s) {
-            s.used_expertise_last_week.push_front(s.used_expertise_per_block);
-            if (s.used_expertise_last_week.size() > DEIP_BLOCKS_PER_WEEK) {
-                s.used_expertise_last_week.pop_back();
-            }
-        });
-
         /// parse witness version reporting
         process_header_extensions(next_block);
 
@@ -2050,6 +2041,8 @@ void database::_apply_block(const signed_block& next_block)
         process_hardforks();
         process_grants();
 
+        /// modify expertise stats to correctly calculate emission
+        expertise_stats_service.calculate_used_expertise_for_week();
         expertise_stats_service.reset_used_expertise_per_block();
 
         // notify observers that the block has been applied

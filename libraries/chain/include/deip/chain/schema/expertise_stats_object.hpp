@@ -20,15 +20,11 @@ public:
     share_type_deque used_expertise_last_week;
     share_type used_expertise_per_block = 0;
     share_type total_used_expertise = 0;
+    share_type total_used_expertise_last_week = 0;
 
     share_type get_expertise_used_last_week() const
     {
-        auto size = used_expertise_last_week.size();
-        for (auto i : used_expertise_last_week) {
-            ilog("${e}", ("e", i));
-        }
-        auto exp = std::accumulate(used_expertise_last_week.begin(), used_expertise_last_week.end(), share_type(0));
-        return exp;
+        return total_used_expertise_last_week;
     }
 };
 
@@ -43,6 +39,6 @@ typedef multi_index_container<expertise_stats_object,
 } // deip::chain
 
 FC_REFLECT(deip::chain::expertise_stats_object,
-           (id)(used_expertise_last_week)(used_expertise_per_block)(total_used_expertise))
+           (id)(used_expertise_last_week)(used_expertise_per_block)(total_used_expertise)(total_used_expertise_last_week))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::expertise_stats_object, deip::chain::expertise_stats_index)
 
