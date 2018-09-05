@@ -487,7 +487,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
             d.total_active_weight += weight_delta;
         });
 
-        dgp_service.update_used_expertise(abs_used_tokens);
+        //dgp_service.update_used_expertise(abs_used_tokens);
     }
     FC_CAPTURE_AND_RETHROW((o))
 }
@@ -714,7 +714,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             tv.content_type = content.type;
         });
 
-        dynamic_global_properties_service.update_used_expertise(used_expertise);
+        //dynamic_global_properties_service.update_used_expertise(used_expertise);
     }
 }
 

@@ -79,9 +79,6 @@ public:
      * their votes reduced.
      */
     uint32_t vote_power_reserve_rate = 40;
-    
-    share_type used_expertise_per_block = 0;
-    share_type total_used_expertise = 0;
 };
 
 typedef multi_index_container<dynamic_global_property_object,
@@ -96,5 +93,5 @@ typedef multi_index_container<dynamic_global_property_object,
 
 FC_REFLECT(deip::chain::dynamic_global_property_object,
            (id)(head_block_number)(head_block_id)(time)(current_witness)(current_supply)(maximum_block_size)(current_aslot)(common_tokens_fund)(total_expert_tokens_amount)(total_common_tokens_amount)(
-               recent_slots_filled)(participation_count)(last_irreversible_block_num)(vote_power_reserve_rate)(used_expertise_per_block)(total_used_expertise))
+               recent_slots_filled)(participation_count)(last_irreversible_block_num)(vote_power_reserve_rate))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::dynamic_global_property_object, deip::chain::dynamic_global_property_index)

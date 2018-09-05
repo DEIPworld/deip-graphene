@@ -7,7 +7,6 @@
 #include <deip/chain/evaluator_registry.hpp>
 #include <deip/chain/schema/global_property_object.hpp>
 #include <deip/chain/schema/chain_property_object.hpp>
-//#include <deip/chain/history_object.hpp>
 #include <deip/chain/schema/operation_object.hpp>
 #include <deip/chain/deip_evaluator.hpp>
 #include <deip/chain/schema/deip_objects.hpp>
@@ -30,6 +29,7 @@
 #include <deip/chain/schema/research_group_invite_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
+#include <deip/chain/schema/expertise_stats_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -434,6 +434,15 @@ const dynamic_global_property_object& database::get_dynamic_global_properties() 
     try
     {
         return get<dynamic_global_property_object>();
+    }
+    FC_CAPTURE_AND_RETHROW()
+}
+
+const expertise_stats_object& database::get_expertise_stats() const
+{
+    try
+    {
+        return get<expertise_stats_object>();
     }
     FC_CAPTURE_AND_RETHROW()
 }
@@ -1806,6 +1815,7 @@ void database::initialize_indexes()
     add_index<review_vote_index>();
     add_index<vesting_balance_index>();
     add_index<research_content_reward_pool_index>();
+    add_index<expertise_stats_index>();
 
     _plugin_index_signal();
 }
@@ -2036,8 +2046,6 @@ void database::_apply_block(const signed_block& next_block)
         process_hardforks();
 
         process_grants();
-
-        dynamic_global_properties_service.reset_used_expertise_per_block();
 
         // notify observers that the block has been applied
         notify_applied_block(next_block);
