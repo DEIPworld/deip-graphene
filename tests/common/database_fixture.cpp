@@ -274,7 +274,7 @@ void database_fixture::open_database()
     {
         data_dir = fc::temp_directory(graphene::utilities::temp_directory_path());
         db._log_hardforks = false;
-        db.open(data_dir->path(), data_dir->path(), TEST_SHARED_MEM_SIZE_8MB, chainbase::database::read_write,
+        db.open(data_dir->path(), data_dir->path(), TEST_SHARED_MEM_SIZE_128MB, chainbase::database::read_write,
                 genesis_state);
     }
 }

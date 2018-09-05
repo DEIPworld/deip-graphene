@@ -27,6 +27,7 @@
 #include <deip/chain/schema/vesting_balance_object.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/schema/grant_objects.hpp>
+#include <deip/chain/schema/expertise_stats_object.hpp>
 
 #define DROPOUT_COMPENSATION_IN_PERCENT 1500
 
@@ -3735,14 +3736,15 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        auto& dgpo = db.get_dynamic_global_properties();
+        auto& stats = db.get_expertise_stats();
 
-//        BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == 10000);
-//        BOOST_CHECK(fc::uint128(dgpo.total_used_expertise.value) == 10000);
+        BOOST_CHECK(stats.used_expertise_per_block.value == 10000);
 
-        generate_blocks(DEIP_BLOCKS_PER_HOUR / 2);
+        generate_block();
 
-//        BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == 0);
+        //BOOST_CHECK(stats.get_expertise_used_last_week().value == 10000);
+        BOOST_CHECK(stats.total_used_expertise.value == 10000);
+        BOOST_CHECK(stats.used_expertise_per_block.value == 0);
 
         BOOST_TEST_MESSAGE("Testing: vote for review expertise");
 
@@ -3766,8 +3768,18 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         db.push_transaction(tx, 0);
 
-//        BOOST_CHECK(dgpo.used_expertise_per_block == 5000);
-//        BOOST_CHECK(dgpo.total_used_expertise == 15000);
+        BOOST_CHECK(stats.used_expertise_per_block == 5000);
+
+        generate_block();
+        //BOOST_CHECK(stats.get_expertise_used_last_week().value == 15000);
+        BOOST_CHECK(stats.total_used_expertise == 15000);
+        BOOST_CHECK(stats.used_expertise_per_block == 0);
+
+        //generate_blocks(DEIP_BLOCKS_PER_WEEK);
+
+        BOOST_CHECK(stats.used_expertise_per_block == 0);
+        //BOOST_CHECK(stats.get_expertise_used_last_week().value == 0);
+        BOOST_CHECK(stats.total_used_expertise == 15000);
 
 //        generate_block();
 //

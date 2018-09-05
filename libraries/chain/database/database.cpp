@@ -67,6 +67,7 @@
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_research_content_reward_pool.hpp>
+#include <deip/chain/services/dbs_expertise_stats.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
 namespace deip {
@@ -1982,7 +1983,7 @@ void database::_apply_block(const signed_block& next_block)
                     throw e;
             }
         }
-        auto& dynamic_global_properties_service = obtain_service<dbs_dynamic_global_properties>();
+        auto& expertise_stats_service = obtain_service<dbs_expertise_stats>();
 
         const witness_object& signing_witness = validate_block_header(skip, next_block);
 
@@ -1997,6 +1998,15 @@ void database::_apply_block(const signed_block& next_block)
         /// modify current witness so transaction evaluators can know who included the transaction,
         /// this is mostly for POW operations which must pay the current_witness
         modify(gprops, [&](dynamic_global_property_object& dgp) { dgp.current_witness = next_block.witness; });
+
+        /// modify expertise stats to correctly calculate emission
+        auto& stats = get_expertise_stats();
+        modify(stats, [&](expertise_stats_object& s) {
+            s.used_expertise_last_week.push_front(s.used_expertise_per_block);
+            if (s.used_expertise_last_week.size() > DEIP_BLOCKS_PER_WEEK) {
+                s.used_expertise_last_week.pop_back();
+            }
+        });
 
         /// parse witness version reporting
         process_header_extensions(next_block);
@@ -2032,20 +2042,15 @@ void database::_apply_block(const signed_block& next_block)
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
-
         process_research_token_sales();
-
         process_funds();
-
         process_common_tokens_withdrawals();
-
         account_recovery_processing();
-
         process_content_activity_windows();
-
         process_hardforks();
-
         process_grants();
+
+        expertise_stats_service.reset_used_expertise_per_block();
 
         // notify observers that the block has been applied
         notify_applied_block(next_block);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "deip_object_types.hpp"
+#include <numeric>
 
 namespace deip {
 namespace chain {
@@ -19,6 +20,16 @@ public:
     share_type_deque used_expertise_last_week;
     share_type used_expertise_per_block = 0;
     share_type total_used_expertise = 0;
+
+    share_type get_expertise_used_last_week() const
+    {
+        auto size = used_expertise_last_week.size();
+        for (auto i : used_expertise_last_week) {
+            ilog("${e}", ("e", i));
+        }
+        auto exp = std::accumulate(used_expertise_last_week.begin(), used_expertise_last_week.end(), share_type(0));
+        return exp;
+    }
 };
 
 typedef multi_index_container<expertise_stats_object,
