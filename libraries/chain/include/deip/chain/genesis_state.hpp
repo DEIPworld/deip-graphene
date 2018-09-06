@@ -106,6 +106,7 @@ struct genesis_state_type
     sp::share_type init_supply;
     sp::asset init_rewards_supply;
     time_point_sec initial_timestamp;
+    account_type registrar_account;
     std::vector<account_type> accounts;
     std::vector<witness_type> witness_candidates;
     std::vector<discipline_type> disciplines;
@@ -193,6 +194,7 @@ FC_REFLECT(deip::chain::genesis_state_type,
            (init_supply)
            (init_rewards_supply)
            (initial_timestamp)
+           (registrar_account)
            (accounts)
            (witness_candidates)
            (expert_tokens)
