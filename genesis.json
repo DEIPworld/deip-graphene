@@ -1,5 +1,5 @@
 {
-    "initial_timestamp": "2017-11-29T10:03:00",
+    "initial_timestamp": "2018-09-06T17:00:00",
 
     "init_supply": 1000000000000,
     "registrar_account": {
@@ -289,7 +289,25 @@
         "name": "shkor",
         "recovery_account": "",
         "public_key": "DEIP8AZ7d8neLMVT57FZepuhJkyG9pdPErcU4mC8eJakwwuMXT79Po",
-        "deip_amount": 50000000000,
+        "deip_amount": 10000000000,
+        "sp_amount": 0
+    }, {
+        "name": "yahortsaryk",
+        "recovery_account": "",
+        "public_key": "DEIP6GBnNdExebmrFSZNem1ZckKNpA2V61btTe1J8Q4eu2nursVvwK",
+        "deip_amount": 20000000000,
+        "sp_amount": 0
+    }, {
+        "name": "egormarushko",
+        "recovery_account": "",
+        "public_key": "DEIP8PuWLpWZbsEcGNNCBxt4haGHD1KfiyYRZZQvXMhW6fgSLEQGEa",
+        "deip_amount": 15000000000,
+        "sp_amount": 0
+    }, {
+        "name": "nikolay",
+        "recovery_account": "",
+        "public_key": "DEIP57ciPZBrQN2YBBX2CBDcsWvrNqaACAbn3eDkW7f4QobRyU2KJZ",
+        "deip_amount": 5000000000,
         "sp_amount": 0
     }],
 
@@ -383,6 +401,12 @@
     }, {
         "owner_name": "akulik",
         "block_signing_key": "DEIP6eKckGvWTqCX8KD1amz1zdLZitZbLWpjZCJBDweKkRPizEdYUm"
+    }, {
+        "owner_name": "yahortsaryk",
+        "block_signing_key": "DEIP6GBnNdExebmrFSZNem1ZckKNpA2V61btTe1J8Q4eu2nursVvwK"
+    }, {
+        "owner_name": "egormarushko",
+        "block_signing_key": "DEIP8PuWLpWZbsEcGNNCBxt4haGHD1KfiyYRZZQvXMhW6fgSLEQGEa"
     }],
 
     "disciplines": [{
@@ -1624,6 +1648,14 @@
         "discipline_id": 152,
         "amount": 10000
     }, {
+        "account_name": "akulik",
+        "discipline_id": 142,
+        "amount": 10000
+    }, {
+        "account_name": "akulik",
+        "discipline_id": 144,
+        "amount": 10000
+    }, {
         "account_name": "shkor",
         "discipline_id": 8,
         "amount": 10000
@@ -1631,6 +1663,80 @@
         "account_name": "shkor",
         "discipline_id": 152,
         "amount": 10000
+    }, {
+        "account_name": "shkor",
+        "discipline_id": 142,
+        "amount": 10000
+    }, {
+        "account_name": "shkor",
+        "discipline_id": 144,
+        "amount": 10000
+    }, {
+        "account_name": "yahortsaryk",
+        "discipline_id": 8,
+        "amount": 10000
+    }, {
+        "account_name": "yahortsaryk",
+        "discipline_id": 152,
+        "amount": 10000
+    },{
+        "account_name": "yahortsaryk",
+        "discipline_id": 142,
+        "amount": 10000
+    }, {
+        "account_name": "yahortsaryk",
+        "discipline_id": 144,
+        "amount": 10000
+    }, {
+        "account_name": "nikolay",
+        "discipline_id": 8,
+        "amount": 5000
+    }, {
+        "account_name": "nikolay",
+        "discipline_id": 142,
+        "amount": 5000
+    }, {
+        "account_name": "nikolay",
+        "discipline_id": 144,
+        "amount": 5000
+    }, {
+        "account_name": "egormarushko",
+        "discipline_id": 8,
+        "amount": 5000
+    }, {
+        "account_name": "egormarushko",
+        "discipline_id": 152,
+        "amount": 5000
+    },{
+        "account_name": "egormarushko",
+        "discipline_id": 142,
+        "amount": 5000
+    }, {
+        "account_name": "egormarushko",
+        "discipline_id": 144,
+        "amount": 5000
+    },
+
+    {
+        "account_name": "arty",
+        "discipline_id": 10,
+        "amount": 10000
+    }, {
+        "account_name": "arty",
+        "discipline_id": 197,
+        "amount": 10000
+    }, {
+        "account_name": "maksim",
+        "discipline_id": 8,
+        "amount": 10000
+    }, {
+        "account_name": "maksim",
+        "discipline_id": 134,
+        "amount": 5000
+    }, {
+        "account_name": "maksim",
+        "discipline_id": 135,
+        "amount": 5000
     }
 ],
 
