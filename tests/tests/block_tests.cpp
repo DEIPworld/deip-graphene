@@ -53,6 +53,11 @@ void db_setup_and_open(database& db, const fc::path& path)
     genesis.init_rewards_supply = TEST_REWARD_INITIAL_SUPPLY;
     genesis.initial_chain_id = TEST_CHAIN_ID;
     genesis.initial_timestamp = fc::time_point_sec(TEST_GENESIS_TIMESTAMP);
+    auto registrar = genesis_state_type::account_type();
+    registrar.name = "registrar";
+    registrar.deip_amount = 0;
+    registrar.public_key = public_key_type();
+    genesis.registrar_account = registrar;
 
     create_disciplines_for_genesis_state(genesis);
     create_initdelegate_for_genesis_state(genesis);

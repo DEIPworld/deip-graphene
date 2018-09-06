@@ -2598,24 +2598,27 @@ void database::validate_invariants() const
         }
 
         const auto& reward_idx = get_index<reward_fund_index, by_id>();
-
         for (auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr)
         {
             total_supply += itr->reward_balance;
         }
 
         const auto& research_group_idx = get_index<research_group_index, by_id>();
-
         for (auto itr = research_group_idx.begin(); itr != research_group_idx.end(); ++itr)
         {
             total_supply += itr->balance;
         }
 
         const auto& research_content_reward_pool_idx = get_index<research_content_reward_pool_index, by_id>();
-
         for (auto itr = research_content_reward_pool_idx.begin(); itr != research_content_reward_pool_idx.end(); ++itr)
         {
             total_supply += itr->reward_share;
+        }
+
+        const auto& vesting_balance_idx = get_index<vesting_balance_index, by_id>();
+        for (auto itr = vesting_balance_idx.begin(); itr != vesting_balance_idx.end(); ++itr)
+        {
+            total_supply += itr->balance.amount;
         }
 
         total_supply +=  gpo.common_tokens_fund;

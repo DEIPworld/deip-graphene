@@ -97,7 +97,7 @@
         "name": "doroty",
         "recovery_account": "",
         "public_key": "DEIP57FNGfhjgz2TuRby5RrV4AgzEtM89zmn1yMdw8RqBD74ZEZZXm",
-        "deip_amount": 25000000000,
+        "deip_amount": 24990000000,
         "sp_amount": 0
     },{
         "name": "initdelegate",
@@ -1613,6 +1613,24 @@
         "account_name": "nick",
         "discipline_id": 170,
         "amount": 2500
+    },
+
+    {
+        "account_name": "akulik",
+        "discipline_id": 8,
+        "amount": 10000
+    }, {
+        "account_name": "akulik",
+        "discipline_id": 152,
+        "amount": 10000
+    }, {
+        "account_name": "shkor",
+        "discipline_id": 8,
+        "amount": 10000
+    }, {
+        "account_name": "shkor",
+        "discipline_id": 152,
+        "amount": 10000
     }
 ],
 

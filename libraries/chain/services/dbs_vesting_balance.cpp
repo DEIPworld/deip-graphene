@@ -52,7 +52,10 @@ void dbs_vesting_balance::withdraw(const vesting_balance_id_type &id, const asse
 {
     auto& vesting = db_impl().get<vesting_balance_object, by_id>(id);
     FC_ASSERT(vesting.balance >= amount);
-    db_impl().modify(vesting, [&](vesting_balance_object& v) { v.balance -= amount; });
+    db_impl().modify(vesting, [&](vesting_balance_object& v) {
+        v.balance -= amount;
+        v.withdrawn += amount;
+    });
 }
 
 void dbs_vesting_balance::check_existence(const vesting_balance_id_type& id)

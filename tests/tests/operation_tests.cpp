@@ -2783,6 +2783,7 @@ BOOST_AUTO_TEST_CASE(withdraw_from_vesting_balance_apply)
 
         BOOST_CHECK(contract.owner == "bob");
         BOOST_CHECK(contract.balance.amount == 500);
+        BOOST_CHECK(contract.withdrawn.amount == 500);
 
         auto bob_acc = db.get_account("bob");
 
