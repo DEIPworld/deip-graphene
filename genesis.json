@@ -258,13 +258,31 @@
         "name": "mycb1",
         "recovery_account": "",
         "public_key": "DEIP8ieFHp1KHns4Y47RUxQW56dk17kJ5snqxNnzikQtPn4URmWWky",
-        "deip_amount": 5000000000,
+        "deip_amount": 1000000000,
         "sp_amount": 0
     }, {
         "name": "regacc",
         "recovery_account": "",
         "public_key": "DEIP8UQBgn8AwEMgNbF6J3sqUXws11rWm6NvpTbXNicXACLFtmeTa8",
         "deip_amount": 20000000000,
+        "sp_amount": 0
+    }, {
+        "name": "arty",
+        "recovery_account": "",
+        "public_key": "DEIP4xizrhvnDfiJQqv2zG4AG95t8wEnemYCoMVoMeqNz5Qxj4FPBp",
+        "deip_amount": 2000000000,
+        "sp_amount": 0
+    }, {
+        "name": "maksim",
+        "recovery_account": "",
+        "public_key": "DEIP81gTL7m7bGcMC5PL1DGA8WgFFZ1TRGPc6mh1QSFxGiWkNS3DDu",
+        "deip_amount": 0,
+        "sp_amount": 0
+    }, {
+        "name": "akulik",
+        "recovery_account": "",
+        "public_key": "DEIP6eKckGvWTqCX8KD1amz1zdLZitZbLWpjZCJBDweKkRPizEdYUm",
+        "deip_amount": 2000000000,
         "sp_amount": 0
     }],
 
@@ -346,6 +364,12 @@
     }, {
         "owner_name": "initdelegate25",
         "block_signing_key": "DEIP6mh7S7KaZK3gh8bGG8TcggK2woCSNmx3SEv6vMTtJQMDvsuQzb"
+    }, {
+        "owner_name": "arty",
+        "block_signing_key": "DEIP4xizrhvnDfiJQqv2zG4AG95t8wEnemYCoMVoMeqNz5Qxj4FPBp"
+    }, {
+        "owner_name": "maksim",
+        "block_signing_key": "DEIP81gTL7m7bGcMC5PL1DGA8WgFFZ1TRGPc6mh1QSFxGiWkNS3DDu"
     }],
 
     "disciplines": [{
@@ -1406,52 +1430,41 @@
     }],
 
     "expert_tokens": [{
-        "account_name": "initdelegate",
+        "account_name": "alice",
         "discipline_id": 17,
         "amount": 1000
     }, {
-        "account_name": "initdelegate",
+        "account_name": "alice",
         "discipline_id": 2,
         "amount": 2000
     }, {
-        "account_name": "initdelegate",
+        "account_name": "alice",
         "discipline_id": 3,
         "amount": 1000
     }, {
-        "account_name": "initdelegate",
+        "account_name": "alice",
         "discipline_id": 4,
         "amount": 1000
     }, {
-        "account_name": "initdelegate",
+        "account_name": "alice",
         "discipline_id": 5,
         "amount": 1000
     }, {
-        "account_name": "initdelegate",
+        "account_name": "alice",
         "discipline_id": 6,
         "amount": 1000
     }, {
-        "account_name": "initdelegate",
+        "account_name": "alice",
         "discipline_id": 7,
         "amount": 1000
     }, {
-        "account_name": "initdelegate",
+        "account_name": "alice",
         "discipline_id": 8,
         "amount": 1000
     }, {
-        "account_name": "initdelegate",
+        "account_name": "alice",
         "discipline_id": 9,
         "amount": 1000
-    },
-    
-    
-    {
-        "account_name": "alice",
-        "discipline_id": 17,
-        "amount": 5000
-    }, {
-        "account_name": "alice",
-        "discipline_id": 6,
-        "amount": 5000
     },
 
 
@@ -1597,7 +1610,7 @@
         "permlink": "deip",
         "quorum_percent": 9500,
         "is_personal": false,
-        "members": ["initdelegate", "alice", "bob"]
+        "members": ["alice", "bob", "nick"]
     }, {
         "id": 1,
         "name": "U.S. Geological Survey",
@@ -1605,7 +1618,7 @@
         "permlink": "usgs",
         "quorum_percent": 7500,
         "is_personal": false,
-        "members": ["initdelegate", "mike", "john", "rachel"]
+        "members": ["mike", "john", "rachel"]
     }, {
         "id": 2,
         "name": "DAO-CHM",
