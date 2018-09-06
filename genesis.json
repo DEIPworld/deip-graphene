@@ -2,6 +2,13 @@
     "initial_timestamp": "2017-11-29T10:03:00",
 
     "init_supply": 1000000000000,
+    "registrar_account": {
+        "name": "regacc",
+        "recovery_account": "",
+        "public_key": "DEIP8UQBgn8AwEMgNbF6J3sqUXws11rWm6NvpTbXNicXACLFtmeTa8",
+        "deip_amount": 20000000000,
+        "sp_amount": 0
+    },
     "accounts": [{
         "name": "alice",
         "recovery_account": "",
@@ -252,19 +259,13 @@
         "name": "soenkeba",
         "recovery_account": "",
         "public_key": "DEIP79L7Xomcy8EqUC9Jpve4sSn1niJr9dZJ2CdHtZcb9f6J4aLPyf",
-        "deip_amount": 100000000000,
+        "deip_amount": 50000000000,
         "sp_amount": 0
     }, {
         "name": "mycb1",
         "recovery_account": "",
         "public_key": "DEIP8ieFHp1KHns4Y47RUxQW56dk17kJ5snqxNnzikQtPn4URmWWky",
         "deip_amount": 1000000000,
-        "sp_amount": 0
-    }, {
-        "name": "regacc",
-        "recovery_account": "",
-        "public_key": "DEIP8UQBgn8AwEMgNbF6J3sqUXws11rWm6NvpTbXNicXACLFtmeTa8",
-        "deip_amount": 20000000000,
         "sp_amount": 0
     }, {
         "name": "arty",
@@ -283,6 +284,12 @@
         "recovery_account": "",
         "public_key": "DEIP6eKckGvWTqCX8KD1amz1zdLZitZbLWpjZCJBDweKkRPizEdYUm",
         "deip_amount": 2000000000,
+        "sp_amount": 0
+    }, {
+        "name": "shkor",
+        "recovery_account": "",
+        "public_key": "DEIP8AZ7d8neLMVT57FZepuhJkyG9pdPErcU4mC8eJakwwuMXT79Po",
+        "deip_amount": 50000000000,
         "sp_amount": 0
     }],
 
@@ -370,6 +377,12 @@
     }, {
         "owner_name": "maksim",
         "block_signing_key": "DEIP81gTL7m7bGcMC5PL1DGA8WgFFZ1TRGPc6mh1QSFxGiWkNS3DDu"
+    }, {
+        "owner_name": "shkor",
+        "block_signing_key": "DEIP8AZ7d8neLMVT57FZepuhJkyG9pdPErcU4mC8eJakwwuMXT79Po"
+    }, {
+        "owner_name": "akulik",
+        "block_signing_key": "DEIP6eKckGvWTqCX8KD1amz1zdLZitZbLWpjZCJBDweKkRPizEdYUm"
     }],
 
     "disciplines": [{

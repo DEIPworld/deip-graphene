@@ -15,6 +15,7 @@
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/schema/proposal_object.hpp>
 #include <deip/chain/schema/proposal_vote_object.hpp>
+#include <deip/chain/services/dbs_account.hpp>
 
 #include <fc/io/json.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
@@ -86,10 +87,10 @@ void database::init_genesis(const genesis_state_type& genesis_state)
            es.used_expertise_per_block = 0;
         });
 
+        init_genesis_global_property_object(genesis_state);
         init_genesis_accounts(genesis_state);
         init_genesis_witnesses(genesis_state);
         init_genesis_witness_schedule(genesis_state);
-        init_genesis_global_property_object(genesis_state);
         init_genesis_disciplines(genesis_state);
         init_expert_tokens(genesis_state);
         init_research_groups(genesis_state);
@@ -110,28 +111,49 @@ void database::init_genesis(const genesis_state_type& genesis_state)
 
 void database::init_genesis_accounts(const genesis_state_type& genesis_state)
 {
+    auto& account_service = obtain_service<dbs_account>();
+
+    const genesis_state_type::account_type& registrar = genesis_state.registrar_account;
     const vector<genesis_state_type::account_type>& accounts = genesis_state.accounts;
+
+    FC_ASSERT(!registrar.name.empty(), "Registrar account 'name' should not be empty.");
+    FC_ASSERT(is_valid_account_name(registrar.name), "Registrar account name ${n} is invalid", ("n", registrar.name));
+
+    create<account_object>([&](account_object& a) {
+        a.name = registrar.name;
+        a.memo_key = registrar.public_key;
+        a.balance = asset(registrar.deip_amount, DEIP_SYMBOL);
+        a.json_metadata = "{created_at: 'GENESIS'}";
+        a.recovery_account = registrar.recovery_account;
+    });
+
+    create<account_authority_object>([&](account_authority_object& auth) {
+        auth.account = registrar.name;
+        auth.owner.add_authority(registrar.public_key, 1);
+        auth.owner.weight_threshold = 1;
+        auth.active = auth.owner;
+        auth.posting = auth.active;
+    });
 
     for (auto& account : accounts)
     {
         FC_ASSERT(!account.name.empty(), "Account 'name' should not be empty.");
         FC_ASSERT(is_valid_account_name(account.name), "Account name ${n} is invalid", ("n", account.name));
 
-        create<account_object>([&](account_object& a) {
-            a.name = account.name;
-            a.memo_key = account.public_key;
-            a.balance = asset(account.deip_amount, DEIP_SYMBOL);
-            a.json_metadata = "{created_at: 'GENESIS'}";
-            a.recovery_account = account.recovery_account;
-        });
+        auto owner_authority = authority();
+        owner_authority.add_authority(account.public_key, 1);
+        owner_authority.weight_threshold = 1;
 
-        create<account_authority_object>([&](account_authority_object& auth) {
-            auth.account = account.name;
-            auth.owner.add_authority(account.public_key, 1);
-            auth.owner.weight_threshold = 1;
-            auth.active = auth.owner;
-            auth.posting = auth.active;
-        });
+        auto& new_account = account_service.create_account_by_faucets(account.name,
+                registrar.name,
+                account.public_key,
+                "{created at: 'GENESIS'}",
+                owner_authority,
+                owner_authority,
+                owner_authority,
+                asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL));
+
+        account_service.adjust_balance(new_account, account.deip_amount);
     }
 }
 
