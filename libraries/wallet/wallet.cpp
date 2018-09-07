@@ -2132,6 +2132,8 @@ annotated_signed_transaction wallet_api::create_grant(const std::string& grant_o
                                                const uint32_t& start_block,
                                                const uint32_t& end_block,
                                                const discipline_name_type& target_discipline,
+                                               const std::string& content_hash,
+                                               const bool is_extendable,
                                                const bool broadcast)
 {
     FC_ASSERT(!is_locked());
@@ -2143,6 +2145,8 @@ annotated_signed_transaction wallet_api::create_grant(const std::string& grant_o
     op.balance = balance;
     op.start_block = start_block;
     op.end_block = end_block;
+    op.content_hash = content_hash;
+    op.is_extendable = is_extendable;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2177,10 +2181,12 @@ annotated_signed_transaction wallet_api::create_proposal(const std::string& crea
                                                          const int64_t research_group_id,
                                                          const std::string& data,
                                                          const uint16_t action,
-                                                         const time_point_sec expiration_time,
+                                                         const int64_t expiration,
                                                          const bool broadcast)
 {
     FC_ASSERT(!is_locked());
+
+    auto props = my->_remote_db->get_dynamic_global_properties();
 
     create_proposal_operation op;
 
@@ -2188,7 +2194,7 @@ annotated_signed_transaction wallet_api::create_proposal(const std::string& crea
     op.research_group_id = research_group_id;
     op.data = data;
     op.action = action;
-    op.expiration_time = expiration_time;
+    op.expiration_time = props.time + expiration;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2232,6 +2238,30 @@ annotated_signed_transaction wallet_api::contribute_to_token_sale(const int64_t 
     op.research_token_sale_id = research_token_sale_id;
     op.owner = owner;
     op.amount = amount;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::create_research_group(const std::string& creator,
+                                                               const std::string& name,
+                                                               const std::string& permlink,
+                                                               const std::string& description,
+                                                               const int64_t quorum_percent,
+                                                               const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    create_research_group_operation op;
+
+    op.creator = creator;
+    op.name = name;
+    op.permlink = permlink;
+    op.description = description;
+    op.quorum_percent = quorum_percent;    
 
     signed_transaction tx;
     tx.operations.push_back(op);

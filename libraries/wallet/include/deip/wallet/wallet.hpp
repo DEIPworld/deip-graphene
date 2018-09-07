@@ -831,16 +831,20 @@ public:
      *
      *  @param grant_owner The future owner of creating grant
      *  @param balance The balance of grant
-     *  @param broadcast
      *  @param start_block Block number starting which grant will be distributed
      *  @param end_block Block number grant distribution ends
      *  @param target_discipline The target discipline name grant will be distributed to
+     *  @param content_hash Hash of description of grant
+     *  @param is_extendable Set to 'true' if you want your grant to extend if not distributed in specified period
+     *  @param broadcast
      */
     annotated_signed_transaction create_grant(const std::string& grant_owner,
                                                const asset& balance,
                                                const uint32_t& start_block,
                                                const uint32_t& end_block,
                                                const discipline_name_type& target_discipline,
+                                               const std::string& content_hash,
+                                               const bool is_extendable,
                                                const bool broadcast);
 
     /**
@@ -865,14 +869,14 @@ public:
      * @param research_group_id Id of research group to create proposal for
      * @param data Proposal data
      * @param action Proposal action type
-     * @param expiration_time Expiration time of proposal
+     * @param expiration Seconds till expiration of proposal since creation
      * @param broadcast
      */
     annotated_signed_transaction create_proposal(const std::string& creator,
                                                  const int64_t research_group_id,
                                                  const std::string& data, 
                                                  const uint16_t action,
-                                                 const time_point_sec expiration_time,
+                                                 const int64_t expiration,
                                                  const bool broadcast);
 
     /**
@@ -902,6 +906,23 @@ public:
                                                           const std::string& owner,
                                                           const asset& amount,
                                                           const bool broadcast);
+
+    /**
+     * Create research group
+     *
+     * @param creator The account who creates research group
+     * @param name Name of the research group
+     * @param permlink Permlink to the research group
+     * @param description Description of the research group
+     * @param quorum_percent Quorum percent of the research group (500 to 10000). This quorum percent will be set for all proposal types
+     * @param broadcast
+     */
+    annotated_signed_transaction create_research_group(const std::string& creator,
+                                                               const std::string& name,
+                                                               const std::string& permlink,
+                                                               const std::string& description,
+                                                               const int64_t quorum_percent,
+                                                               const bool broadcast);
 
     /**
      * Approve research group invite
@@ -1083,6 +1104,7 @@ FC_API( deip::wallet::wallet_api,
         (create_proposal)
         (make_review)
         (contribute_to_token_sale)
+        (create_research_group)
         (approve_research_group_invite)
         (reject_research_group_invite)
         (transfer_research_tokens_to_research_group)
