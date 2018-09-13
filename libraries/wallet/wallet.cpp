@@ -12,6 +12,8 @@
 #include <deip/blockchain_history/account_history_api.hpp>
 #include <deip/blockchain_history/blockchain_history_api.hpp>
 
+#include <deip/chain/schema/proposal_data_types.hpp>
+
 #include <algorithm>
 #include <cctype>
 #include <iomanip>
@@ -59,6 +61,7 @@
 #endif
 
 #define BRAIN_KEY_WORD_COUNT 16
+#define PROPOSAL_EXPIRATION_TIME 1209600 // Two weeks  
 
 namespace deip {
 namespace wallet {
@@ -2145,6 +2148,30 @@ vector<vesting_balance_api_obj> wallet_api::get_vesting_balance(const std::strin
     return result;
 }
 
+research_group_api_obj wallet_api::get_research_group_by_permlink(const std::string& permlink)
+{
+    return my->_remote_db->get_research_group_by_permlink({ permlink });
+}
+
+proposal_api_obj wallet_api::get_proposal_by_id(const int64_t proposals_id)
+{
+    return my->_remote_db->get_proposal({ proposals_id });
+}
+
+vector<proposal_api_obj> wallet_api::get_proposals_by_research_group_id(const int64_t research_group_id)
+{
+    vector<proposal_api_obj> result;
+
+    result = my->_remote_db->get_proposals_by_research_group_id({ research_group_id });
+
+    return result;
+}
+
+vector<research_token_sale_api_obj> wallet_api::list_research_token_sale(const uint32_t& from = 0, uint32_t limit = 100)
+{
+    return my->_remote_db->get_research_token_sale(from, limit);
+}
+
 annotated_signed_transaction wallet_api::create_grant(const std::string& grant_owner,
                                                const asset& balance,
                                                const uint32_t& start_block,
@@ -2221,17 +2248,63 @@ annotated_signed_transaction wallet_api::create_proposal(const std::string& crea
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::invite_member(const std::string& creator,
+annotated_signed_transaction wallet_api::propose_invite_member(const std::string& creator,
                                                          const std::string& member,
                                                          const int64_t research_group_id,
                                                          const int64_t research_group_token_amount_in_percent,
-                                                         const int64_t expiration,
+                                                         const std::string& cover_letter,
                                                          const bool broadcast)
-{
-    // std:string data = "{\"name\":\"bob\",\"research_group_id\":31,\"research_group_token_amount_in_percent\":5000}";
+{    
+    invite_member_proposal_data_type data;
 
-    std::string data = "{\"name\":\"" + member + "\",\"research_group_id\":"+ std::to_string(research_group_id) +",\"research_group_token_amount_in_percent\":"+ std::to_string(research_group_token_amount_in_percent) +"}";
-    return create_proposal(creator, research_group_id, data, dbs_proposal::action_t::invite_member, expiration, broadcast);
+    data.research_group_id = research_group_id;
+    data.name = member;
+    data.research_group_token_amount_in_percent = research_group_token_amount_in_percent;
+    data.cover_letter = cover_letter;
+
+    int64_t expiration = PROPOSAL_EXPIRATION_TIME;  
+
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::invite_member, expiration, broadcast);
+}
+
+annotated_signed_transaction wallet_api::propose_exclude_member(const std::string& creator,
+                                                         const std::string& member,
+                                                         const int64_t research_group_id,
+                                                         const bool broadcast)
+{    
+    dropout_member_proposal_data_type data;
+
+    data.name = member;
+    data.research_group_id = research_group_id;
+
+    int64_t expiration = PROPOSAL_EXPIRATION_TIME;
+
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::dropout_member, expiration, broadcast);
+}
+
+annotated_signed_transaction wallet_api::propose_create_research(const std::string& creator,
+                                                         const std::string& title,
+                                                         const std::string& abstract,
+                                                         const std::string& permlink,
+                                                         const int64_t research_group_id,
+                                                         const uint16_t review_share_in_percent,
+                                                         const uint16_t dropout_compensation_in_percent,
+                                                         const std::vector<int64_t> disciplines,
+                                                         const bool broadcast)
+{    
+    start_research_proposal_data_type data;
+
+    data.title = title;
+    data.abstract = abstract;
+    data.permlink = permlink;
+    data.research_group_id = research_group_id;
+    data.review_share_in_percent = review_share_in_percent;
+    data.dropout_compensation_in_percent = dropout_compensation_in_percent;
+    data.disciplines = disciplines;
+
+    int64_t expiration = 1209600; // Two weeks  
+
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::start_research, expiration, broadcast);
 }
 
 annotated_signed_transaction wallet_api::make_review(const std::string& author,

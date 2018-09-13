@@ -835,6 +835,26 @@ public:
     vector<vesting_balance_api_obj> get_vesting_balance(const std::string& account_name);
 
     /**
+     *  Gets research group details
+     */
+    research_group_api_obj get_research_group_by_permlink(const std::string& permlink);
+
+    /**
+     *  Gets proposal details
+     */
+    proposal_api_obj get_proposal_by_id(const int64_t proposals_id);
+
+    /**
+     *  Gets the list of all proposals for research group
+     */
+    vector<proposal_api_obj> get_proposals_by_research_group_id(const int64_t research_group_id);
+
+    /**
+     *  Gets the list of research token sale
+     */
+    vector<research_token_sale_api_obj> list_research_token_sale(const uint32_t& from, uint32_t limit);
+
+    /**
      *  This method will create new grant linked to owner account.
      *
      *  @warning The owner account must have sufficient balance for grant
@@ -890,21 +910,58 @@ public:
                                                  const bool broadcast);
 
     /**
-     * Invite member
+     * Propose invite member
      *
      * @param creator The account who creates invite
      * @param member The account who receives invite
      * @param research_group_id Id of research group to create invite for
      * @param research_group_token_amount_in_percent ADD DESCRIPTION
-     * @param expiration Seconds till expiration of proposal since creation
+     * @param cover_letter Messsage for member
      * @param broadcast
      */
-    annotated_signed_transaction invite_member(const std::string& creator,
+    annotated_signed_transaction propose_invite_member(const std::string& creator,
                                                const std::string& member,
                                                const int64_t research_group_id,
                                                const int64_t research_group_token_amount_in_percent,
-                                               const int64_t expiration,
+                                               const std::string& cover_letter,
                                                const bool broadcast);
+
+    /**
+     * Propose exclude member
+     *
+     * @param creator The account who initiate exclude
+     * @param member The account who will be excluded
+     * @param research_group_id Id of research group
+     * @param broadcast
+     */
+    annotated_signed_transaction propose_exclude_member(const std::string& creator,
+                                                         const std::string& member,
+                                                         const int64_t research_group_id,
+                                                         const bool broadcast);
+
+
+    /**
+     * Propose create research
+     *
+     * @param creator The account who makes a review
+     * @param title ADD DESCRIPTION
+     * @param abstract ADD DESCRIPTION
+     * @param permlink ADD DESCRIPTION
+     * @param research_group_id Id of research group
+     * @param review_share_in_percent ADD DESCRIPTION
+     * @param dropout_compensation_in_percent ADD DESCRIPTION
+     * @param disciplines ADD DESCRIPTION
+     * @param broadcast
+     */
+    annotated_signed_transaction propose_create_research(const std::string& creator,
+                                                         const std::string& title,
+                                                         const std::string& abstract,
+                                                         const std::string& permlink,
+                                                         const int64_t research_group_id,
+                                                         const uint16_t review_share_in_percent,
+                                                         const uint16_t dropout_compensation_in_percent,
+                                                         const std::vector<int64_t> disciplines,
+                                                         const bool broadcast);
 
     /**
      * Make review for specified research content
@@ -1102,6 +1159,10 @@ FC_API( deip::wallet::wallet_api,
         (get_grants)
         (get_research_group_invites)
         (get_vesting_balance)
+        (get_research_group_by_permlink)
+        (get_proposal_by_id)
+        (get_proposals_by_research_group_id)
+        (list_research_token_sale)
 
         /// transaction api
         (create_account)
@@ -1131,7 +1192,9 @@ FC_API( deip::wallet::wallet_api,
         (create_grant)
         (vote_for_review)
         (create_proposal)
-        (invite_member)
+        (propose_invite_member)
+        (propose_exclude_member)
+        (propose_create_research)
         (make_review)
         (contribute_to_token_sale)
         (create_research_group)
