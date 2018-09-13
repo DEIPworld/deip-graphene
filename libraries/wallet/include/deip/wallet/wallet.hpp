@@ -825,6 +825,16 @@ public:
     vector<grant_api_obj> get_grants(const std::string& account_name);
 
     /**
+     *  Gets the list of all research group invites for account
+     */
+    vector<research_group_invite_api_obj> get_research_group_invites(const std::string& account_name);
+
+    /**
+     *  Gets the list of all vesting balance for account
+     */
+    vector<vesting_balance_api_obj> get_vesting_balance(const std::string& account_name);
+
+    /**
      *  This method will create new grant linked to owner account.
      *
      *  @warning The owner account must have sufficient balance for grant
@@ -878,6 +888,23 @@ public:
                                                  const uint16_t action,
                                                  const int64_t expiration,
                                                  const bool broadcast);
+
+    /**
+     * Invite member
+     *
+     * @param creator The account who creates invite
+     * @param member The account who receives invite
+     * @param research_group_id Id of research group to create invite for
+     * @param research_group_token_amount_in_percent ADD DESCRIPTION
+     * @param expiration Seconds till expiration of proposal since creation
+     * @param broadcast
+     */
+    annotated_signed_transaction invite_member(const std::string& creator,
+                                               const std::string& member,
+                                               const int64_t research_group_id,
+                                               const int64_t research_group_token_amount_in_percent,
+                                               const int64_t expiration,
+                                               const bool broadcast);
 
     /**
      * Make review for specified research content
@@ -1073,6 +1100,8 @@ FC_API( deip::wallet::wallet_api,
         (list_my_grants)
         (list_grant_owners)
         (get_grants)
+        (get_research_group_invites)
+        (get_vesting_balance)
 
         /// transaction api
         (create_account)
@@ -1102,6 +1131,7 @@ FC_API( deip::wallet::wallet_api,
         (create_grant)
         (vote_for_review)
         (create_proposal)
+        (invite_member)
         (make_review)
         (contribute_to_token_sale)
         (create_research_group)

@@ -431,6 +431,13 @@ public:
     vector<review_vote_api_obj> get_review_votes_by_voter(const account_name_type &voter) const;
     vector<review_vote_api_obj> get_review_votes_by_review_id(const review_id_type &review_id) const;
 
+    ///////////////////////
+    // Vesting balance ///
+    //////////////////////
+
+    vesting_balance_api_obj get_vesting_balance_by_id(const vesting_balance_id_type& vesting_balance_id) const;
+    vector<vesting_balance_api_obj> get_vesting_balance_by_owner(const account_name_type& owner) const;
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -593,6 +600,11 @@ FC_API(deip::app::database_api,
    // Review votes
    (get_review_votes_by_voter)
    (get_review_votes_by_review_id)
+
+   // Vesting balance
+
+   (get_vesting_balance_by_id)
+   (get_vesting_balance_by_owner)
 )
 
 // clang-format on

@@ -2127,6 +2127,24 @@ vector<grant_api_obj> wallet_api::get_grants(const std::string& account_name)
     return result;
 }
 
+vector<research_group_invite_api_obj> wallet_api::get_research_group_invites(const std::string& account_name)
+{
+    vector<research_group_invite_api_obj> result;
+
+    result = my->_remote_db->get_research_group_invites_by_account_name({ account_name });
+
+    return result;
+}
+
+vector<vesting_balance_api_obj> wallet_api::get_vesting_balance(const std::string& account_name)
+{
+    vector<vesting_balance_api_obj> result;
+
+    result = my->_remote_db->get_vesting_balance_by_owner({ account_name });
+
+    return result;
+}
+
 annotated_signed_transaction wallet_api::create_grant(const std::string& grant_owner,
                                                const asset& balance,
                                                const uint32_t& start_block,
@@ -2201,6 +2219,19 @@ annotated_signed_transaction wallet_api::create_proposal(const std::string& crea
     tx.validate();
 
     return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::invite_member(const std::string& creator,
+                                                         const std::string& member,
+                                                         const int64_t research_group_id,
+                                                         const int64_t research_group_token_amount_in_percent,
+                                                         const int64_t expiration,
+                                                         const bool broadcast)
+{
+    // std:string data = "{\"name\":\"bob\",\"research_group_id\":31,\"research_group_token_amount_in_percent\":5000}";
+
+    std::string data = "{\"name\":\"" + member + "\",\"research_group_id\":"+ std::to_string(research_group_id) +",\"research_group_token_amount_in_percent\":"+ std::to_string(research_group_token_amount_in_percent) +"}";
+    return create_proposal(creator, research_group_id, data, dbs_proposal::action_t::invite_member, expiration, broadcast);
 }
 
 annotated_signed_transaction wallet_api::make_review(const std::string& author,
