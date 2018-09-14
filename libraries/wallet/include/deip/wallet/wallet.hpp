@@ -874,7 +874,34 @@ public:
     /**
      *  Gets the list of research contents by type
      */
-    vector<research_content_api_obj> get_research_content_by_type(const int64_t research_id, const uint16_t type);
+    vector<research_content_api_obj> get_research_contents_by_type(const int64_t research_id, const uint16_t type);
+
+    /**
+     *  Gets the research by id
+     */
+    research_api_obj get_research_by_id(const int64_t research_id);
+
+    /**
+     *  Gets the research by permlink
+     */
+    research_api_obj get_research_by_permlink(const int64_t research_group_id, const string& permlink);
+
+    /**
+     *  Gets the research by absolute permlink
+     */
+    research_api_obj get_research_by_absolute_permlink(const string& research_group_permlink,
+                                                       const string& research_permlink);
+
+    /**
+     *  Gets the list of researches by discipline id
+     */
+    vector<research_api_obj>
+    get_researches_by_discipline_id(const uint64_t from, const uint32_t limit, const int64_t discipline_id);
+
+    /**
+     *  Gets the list of researches by id research group
+     */
+    vector<research_api_obj> get_researches_by_research_group_id(const int64_t research_group_id);
 
     /**
      *  This method will create new grant linked to owner account.
@@ -1000,7 +1027,7 @@ public:
      * @param external_references ADD DESCRIPTION
      * @param broadcast
      */
-    annotated_signed_transaction propose_research_content(const std::string& creator,
+    annotated_signed_transaction propose_create_research_content(const std::string& creator,
                                                                   const int64_t research_group_id,
                                                                   const int64_t research_id,
                                                                   const uint16_t type,
@@ -1215,7 +1242,12 @@ FC_API( deip::wallet::wallet_api,
         (get_research_content_by_id)
         (get_research_content_by_permlink)
         (get_research_content_by_absolute_permlink)
-        (get_research_content_by_type)
+        (get_research_contents_by_type)
+        (get_research_by_id)
+        (get_research_by_permlink)
+        (get_research_by_absolute_permlink)
+        (get_researches_by_discipline_id)
+        (get_researches_by_research_group_id)
 
         /// transaction api
         (create_account)
@@ -1248,7 +1280,7 @@ FC_API( deip::wallet::wallet_api,
         (propose_invite_member)
         (propose_exclude_member)
         (propose_create_research)
-        (propose_research_content)
+        (propose_create_research_content)
         (make_review)
         (contribute_to_token_sale)
         (create_research_group)

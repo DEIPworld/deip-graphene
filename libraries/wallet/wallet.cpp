@@ -61,7 +61,7 @@
 #endif
 
 #define BRAIN_KEY_WORD_COUNT 16
-#define PROPOSAL_EXPIRATION_TIME 1209600 // Two weeks  
+#define PROPOSAL_EXPIRATION_TIME 864000 // Max expiration time
 
 namespace deip {
 namespace wallet {
@@ -2187,9 +2187,36 @@ research_content_api_obj wallet_api::get_research_content_by_absolute_permlink(c
     return my->_remote_db->get_research_content_by_absolute_permlink(research_group_permlink, research_permlink, research_content_permlink);
 }
 
-vector<research_content_api_obj> wallet_api::get_research_content_by_type(const int64_t research_id, const uint16_t type)
+vector<research_content_api_obj> wallet_api::get_research_contents_by_type(const int64_t research_id, const uint16_t type)
 {
     return my->_remote_db->get_research_content_by_type(research_id, (research_content_type)type);
+}
+
+research_api_obj wallet_api::get_research_by_id(const int64_t research_id)
+{
+    return my->_remote_db->get_research_by_id(research_id);
+}
+
+research_api_obj wallet_api::get_research_by_permlink(const int64_t research_group_id, const string& permlink)
+{
+    return my->_remote_db->get_research_by_permlink(research_group_id, permlink);
+}
+
+research_api_obj wallet_api::get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink)
+{
+    return my->_remote_db->get_research_by_absolute_permlink(research_group_permlink, research_permlink);
+}
+
+vector<research_api_obj> wallet_api::get_researches_by_discipline_id(const uint64_t from,
+                                                                     const uint32_t limit,
+                                                                     const int64_t discipline_id)
+{
+    return my->_remote_db->get_researches_by_discipline_id(from, limit, discipline_id);
+}
+
+vector<research_api_obj> wallet_api::get_researches_by_research_group_id(const int64_t research_group_id)
+{
+    return my->_remote_db->get_researches_by_research_group_id(research_group_id);
 }
 
 annotated_signed_transaction wallet_api::create_grant(const std::string& grant_owner,
@@ -2321,7 +2348,7 @@ annotated_signed_transaction wallet_api::propose_create_research(const std::stri
     return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::start_research, PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
-annotated_signed_transaction wallet_api::propose_research_content(const std::string& creator,
+annotated_signed_transaction wallet_api::propose_create_research_content(const std::string& creator,
                                                                   const int64_t research_group_id,
                                                                   const int64_t research_id,
                                                                   const uint16_t type,
