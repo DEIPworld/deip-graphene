@@ -855,6 +855,28 @@ public:
     vector<research_token_sale_api_obj> list_research_token_sales(const uint32_t& from, uint32_t limit);
 
     /**
+     *  Gets research content by id
+     */
+    research_content_api_obj get_research_content_by_id(const int64_t id);
+
+    /**
+     *  Gets research content by permlink
+     */
+    research_content_api_obj get_research_content_by_permlink(const int64_t research_id, const string& permlink);
+
+    /**
+     *  Gets research content by absolute permlink
+     */
+    research_content_api_obj get_research_content_by_absolute_permlink(const string& research_group_permlink,
+                                                                       const string& research_permlink,
+                                                                       const string& research_content_permlink);
+
+    /**
+     *  Gets the list of research contents by type
+     */
+    vector<research_content_api_obj> get_research_content_by_type(const int64_t research_id, const uint16_t type);
+
+    /**
      *  This method will create new grant linked to owner account.
      *
      *  @warning The owner account must have sufficient balance for grant
@@ -962,6 +984,33 @@ public:
                                                          const uint16_t dropout_compensation_in_percent,
                                                          const std::vector<int64_t> disciplines,
                                                          const bool broadcast);
+
+    /**
+     * Propose create research content
+     *
+     * @param creator The account who create a content
+     * @param research_group_id Id of research group
+     * @param research_id Research id
+     * @param type Type of content: announcement = 1, milestone = 2, final_result = 3
+     * @param title ADD DESCRIPTION
+     * @param content ADD DESCRIPTION
+     * @param permlink ADD DESCRIPTION
+     * @param authors Account names content authors
+     * @param references ADD DESCRIPTION
+     * @param external_references ADD DESCRIPTION
+     * @param broadcast
+     */
+    annotated_signed_transaction propose_research_content(const std::string& creator,
+                                                                  const int64_t research_group_id,
+                                                                  const int64_t research_id,
+                                                                  const uint16_t type,
+                                                                  const std::string& title,
+                                                                  const std::string& content,
+                                                                  const std::string& permlink,
+                                                                  const std::vector<string> authors,
+                                                                  const std::vector<int64_t> references,
+                                                                  const std::vector<string>& external_references,
+                                                                  const bool broadcast);
 
     /**
      * Make review for specified research content
@@ -1163,6 +1212,10 @@ FC_API( deip::wallet::wallet_api,
         (get_proposal_by_id)
         (get_proposals_by_research_group_id)
         (list_research_token_sales)
+        (get_research_content_by_id)
+        (get_research_content_by_permlink)
+        (get_research_content_by_absolute_permlink)
+        (get_research_content_by_type)
 
         /// transaction api
         (create_account)
@@ -1195,6 +1248,7 @@ FC_API( deip::wallet::wallet_api,
         (propose_invite_member)
         (propose_exclude_member)
         (propose_create_research)
+        (propose_research_content)
         (make_review)
         (contribute_to_token_sale)
         (create_research_group)

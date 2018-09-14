@@ -2172,6 +2172,26 @@ vector<research_token_sale_api_obj> wallet_api::list_research_token_sales(const 
     return my->_remote_db->get_research_token_sale(from, limit);
 }
 
+research_content_api_obj wallet_api::get_research_content_by_id(const int64_t id)
+{
+    return my->_remote_db->get_research_content_by_id(id);
+}
+
+research_content_api_obj wallet_api::get_research_content_by_permlink(const int64_t research_id, const string& permlink)
+{
+    return my->_remote_db->get_research_content_by_permlink(research_id, permlink);
+}
+
+research_content_api_obj wallet_api::get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink)
+{
+    return my->_remote_db->get_research_content_by_absolute_permlink(research_group_permlink, research_permlink, research_content_permlink);
+}
+
+vector<research_content_api_obj> wallet_api::get_research_content_by_type(const int64_t research_id, const uint16_t type)
+{
+    return my->_remote_db->get_research_content_by_type(research_id, (research_content_type)type);
+}
+
 annotated_signed_transaction wallet_api::create_grant(const std::string& grant_owner,
                                                const asset& balance,
                                                const uint32_t& start_block,
@@ -2299,6 +2319,47 @@ annotated_signed_transaction wallet_api::propose_create_research(const std::stri
     data.disciplines = disciplines;
 
     return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::start_research, PROPOSAL_EXPIRATION_TIME, broadcast);
+}
+
+annotated_signed_transaction wallet_api::propose_research_content(const std::string& creator,
+                                                                  const int64_t research_group_id,
+                                                                  const int64_t research_id,
+                                                                  const uint16_t type,
+                                                                  const std::string& title,
+                                                                  const std::string& content,
+                                                                  const std::string& permlink,
+                                                                  const std::vector<string> authors,
+                                                                  const std::vector<int64_t> references,
+                                                                  const std::vector<string>& external_references,
+                                                                  const bool broadcast)
+{    
+    std::vector<fc::fixed_string_16> authors_fc;
+    for (size_t i = 0; i < authors.size(); i++)
+    {
+        const std::string& s = authors[i];
+        fc::fixed_string_16 fc(s);
+        authors_fc.push_back(fc);
+    }
+
+    std::vector<research_content_id_type> references_v;
+    for (size_t i = 0; i < references.size(); i++)
+    {
+        research_content_id_type r = (research_content_id_type)references[i];
+        references_v.push_back(r);
+    }
+
+    create_research_content_data_type data;
+
+    data.research_id = research_id;
+    data.type = (research_content_type)type;
+    data.title = title;
+    data.content = content;
+    data.permlink = permlink;
+    data.authors = authors_fc;
+    data.references = references_v;
+    data.external_references = external_references;
+
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::create_research_material, PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
 annotated_signed_transaction wallet_api::make_review(const std::string& author,
