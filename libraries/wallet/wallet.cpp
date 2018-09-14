@@ -2262,9 +2262,7 @@ annotated_signed_transaction wallet_api::propose_invite_member(const std::string
     data.research_group_token_amount_in_percent = research_group_token_amount_in_percent;
     data.cover_letter = cover_letter;
 
-    int64_t expiration = PROPOSAL_EXPIRATION_TIME;  
-
-    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::invite_member, expiration, broadcast);
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::invite_member, PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
 annotated_signed_transaction wallet_api::propose_exclude_member(const std::string& creator,
@@ -2277,9 +2275,7 @@ annotated_signed_transaction wallet_api::propose_exclude_member(const std::strin
     data.name = member;
     data.research_group_id = research_group_id;
 
-    int64_t expiration = PROPOSAL_EXPIRATION_TIME;
-
-    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::dropout_member, expiration, broadcast);
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::dropout_member, PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
 annotated_signed_transaction wallet_api::propose_create_research(const std::string& creator,
@@ -2302,9 +2298,7 @@ annotated_signed_transaction wallet_api::propose_create_research(const std::stri
     data.dropout_compensation_in_percent = dropout_compensation_in_percent;
     data.disciplines = disciplines;
 
-    int64_t expiration = 1209600; // Two weeks  
-
-    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::start_research, expiration, broadcast);
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::start_research, PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
 annotated_signed_transaction wallet_api::make_review(const std::string& author,
