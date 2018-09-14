@@ -2167,7 +2167,7 @@ vector<proposal_api_obj> wallet_api::get_proposals_by_research_group_id(const in
     return result;
 }
 
-vector<research_token_sale_api_obj> wallet_api::list_research_token_sale(const uint32_t& from = 0, uint32_t limit = 100)
+vector<research_token_sale_api_obj> wallet_api::list_research_token_sales(const uint32_t& from = 0, uint32_t limit = 100)
 {
     return my->_remote_db->get_research_token_sale(from, limit);
 }

@@ -852,7 +852,7 @@ public:
     /**
      *  Gets the list of research token sale
      */
-    vector<research_token_sale_api_obj> list_research_token_sale(const uint32_t& from, uint32_t limit);
+    vector<research_token_sale_api_obj> list_research_token_sales(const uint32_t& from, uint32_t limit);
 
     /**
      *  This method will create new grant linked to owner account.
@@ -1162,7 +1162,7 @@ FC_API( deip::wallet::wallet_api,
         (get_research_group_by_permlink)
         (get_proposal_by_id)
         (get_proposals_by_research_group_id)
-        (list_research_token_sale)
+        (list_research_token_sales)
 
         /// transaction api
         (create_account)
