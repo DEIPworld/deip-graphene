@@ -2130,7 +2130,7 @@ vector<grant_api_obj> wallet_api::get_grants(const std::string& account_name)
     return result;
 }
 
-vector<research_group_invite_api_obj> wallet_api::get_research_group_invites(const std::string& account_name)
+vector<research_group_invite_api_obj> wallet_api::list_my_research_group_invites(const std::string& account_name)
 {
     vector<research_group_invite_api_obj> result;
 
@@ -2139,7 +2139,7 @@ vector<research_group_invite_api_obj> wallet_api::get_research_group_invites(con
     return result;
 }
 
-vector<vesting_balance_api_obj> wallet_api::get_vesting_balance(const std::string& account_name)
+vector<vesting_balance_api_obj> wallet_api::get_vesting_balances(const std::string& account_name)
 {
     vector<vesting_balance_api_obj> result;
 
@@ -2153,12 +2153,12 @@ research_group_api_obj wallet_api::get_research_group_by_permlink(const std::str
     return my->_remote_db->get_research_group_by_permlink({ permlink });
 }
 
-proposal_api_obj wallet_api::get_proposal_by_id(const int64_t proposals_id)
+proposal_api_obj wallet_api::get_proposal(const int64_t proposals_id)
 {
     return my->_remote_db->get_proposal({ proposals_id });
 }
 
-vector<proposal_api_obj> wallet_api::get_proposals_by_research_group_id(const int64_t research_group_id)
+vector<proposal_api_obj> wallet_api::list_research_group_proposals(const int64_t research_group_id)
 {
     vector<proposal_api_obj> result;
 
@@ -2172,7 +2172,7 @@ vector<research_token_sale_api_obj> wallet_api::list_research_token_sales(const 
     return my->_remote_db->get_research_token_sale(from, limit);
 }
 
-research_content_api_obj wallet_api::get_research_content_by_id(const int64_t id)
+research_content_api_obj wallet_api::get_research_content(const int64_t id)
 {
     return my->_remote_db->get_research_content_by_id(id);
 }
@@ -2192,7 +2192,7 @@ vector<research_content_api_obj> wallet_api::get_research_contents_by_type(const
     return my->_remote_db->get_research_content_by_type(research_id, (research_content_type)type);
 }
 
-research_api_obj wallet_api::get_research_by_id(const int64_t research_id)
+research_api_obj wallet_api::get_research(const int64_t research_id)
 {
     return my->_remote_db->get_research_by_id(research_id);
 }
@@ -2207,16 +2207,64 @@ research_api_obj wallet_api::get_research_by_absolute_permlink(const string& res
     return my->_remote_db->get_research_by_absolute_permlink(research_group_permlink, research_permlink);
 }
 
-vector<research_api_obj> wallet_api::get_researches_by_discipline_id(const uint64_t from,
+vector<research_api_obj> wallet_api::get_researches_by_discipline(const uint64_t from,
                                                                      const uint32_t limit,
                                                                      const int64_t discipline_id)
 {
     return my->_remote_db->get_researches_by_discipline_id(from, limit, discipline_id);
 }
 
-vector<research_api_obj> wallet_api::get_researches_by_research_group_id(const int64_t research_group_id)
+vector<research_api_obj> wallet_api::get_researches_by_research_group(const int64_t research_group_id)
 {
     return my->_remote_db->get_researches_by_research_group_id(research_group_id);
+}
+
+vector<research_group_api_obj> wallet_api::list_my_research_groups()
+{
+    FC_ASSERT(!is_locked());
+
+    try
+    {
+        my->use_remote_account_by_key_api();
+    }
+    catch (fc::exception& e)
+    {
+        elog("Connected node needs to enable account_by_key_api");
+        return {};
+    }
+
+    vector<public_key_type> pub_keys;
+    pub_keys.reserve(my->_keys.size());
+
+    for (const auto& item : my->_keys)
+        pub_keys.push_back(item.first);
+
+    vector<research_group_api_obj> research_groups;
+
+    auto refs = (*my->_remote_account_by_key_api)->get_key_references(pub_keys);
+    for (const auto& item : refs)
+        for (const auto& name : item)
+        {
+            vector<research_group_token_api_obj> token_objects
+                = my->_remote_db->get_research_group_tokens_by_account(name);
+            for (const auto& token_object : token_objects)
+                research_groups.push_back(my->_remote_db->get_research_group_by_id(token_object.research_group_id));
+        }
+
+    return research_groups;
+}
+
+vector<research_api_obj> wallet_api::list_my_researches()
+{
+    vector<research_api_obj> researches;
+    vector<research_group_api_obj> research_groups = list_my_research_groups();
+    for (const auto& research_group : research_groups)
+    {
+        vector<research_api_obj> r = my->_remote_db->get_researches_by_research_group_id(research_group.id);
+        researches.insert(researches.end(), r.begin(), r.end());
+    }
+
+    return researches;
 }
 
 annotated_signed_transaction wallet_api::create_grant(const std::string& grant_owner,

@@ -827,12 +827,12 @@ public:
     /**
      *  Gets the list of all research group invites for account
      */
-    vector<research_group_invite_api_obj> get_research_group_invites(const std::string& account_name);
+    vector<research_group_invite_api_obj> list_my_research_group_invites(const std::string& account_name);
 
     /**
      *  Gets the list of all vesting balance for account
      */
-    vector<vesting_balance_api_obj> get_vesting_balance(const std::string& account_name);
+    vector<vesting_balance_api_obj> get_vesting_balances(const std::string& account_name);
 
     /**
      *  Gets research group details
@@ -842,12 +842,12 @@ public:
     /**
      *  Gets proposal details
      */
-    proposal_api_obj get_proposal_by_id(const int64_t proposals_id);
+    proposal_api_obj get_proposal(const int64_t proposals_id);
 
     /**
      *  Gets the list of all proposals for research group
      */
-    vector<proposal_api_obj> get_proposals_by_research_group_id(const int64_t research_group_id);
+    vector<proposal_api_obj> list_research_group_proposals(const int64_t research_group_id);
 
     /**
      *  Gets the list of research token sale
@@ -857,7 +857,7 @@ public:
     /**
      *  Gets research content by id
      */
-    research_content_api_obj get_research_content_by_id(const int64_t id);
+    research_content_api_obj get_research_content(const int64_t id);
 
     /**
      *  Gets research content by permlink
@@ -879,7 +879,7 @@ public:
     /**
      *  Gets the research by id
      */
-    research_api_obj get_research_by_id(const int64_t research_id);
+    research_api_obj get_research(const int64_t research_id);
 
     /**
      *  Gets the research by permlink
@@ -896,12 +896,16 @@ public:
      *  Gets the list of researches by discipline id
      */
     vector<research_api_obj>
-    get_researches_by_discipline_id(const uint64_t from, const uint32_t limit, const int64_t discipline_id);
+    get_researches_by_discipline(const uint64_t from, const uint32_t limit, const int64_t discipline_id);
 
     /**
      *  Gets the list of researches by id research group
      */
-    vector<research_api_obj> get_researches_by_research_group_id(const int64_t research_group_id);
+    vector<research_api_obj> get_researches_by_research_group(const int64_t research_group_id);
+
+    vector<research_group_api_obj> list_my_research_groups();
+
+    vector<research_api_obj> list_my_researches();
 
     /**
      *  This method will create new grant linked to owner account.
@@ -1233,21 +1237,23 @@ FC_API( deip::wallet::wallet_api,
         (list_my_grants)
         (list_grant_owners)
         (get_grants)
-        (get_research_group_invites)
-        (get_vesting_balance)
+        (list_my_research_group_invites)
+        (get_vesting_balances)
         (get_research_group_by_permlink)
-        (get_proposal_by_id)
-        (get_proposals_by_research_group_id)
+        (get_proposal)
+        (list_research_group_proposals)
         (list_research_token_sales)
-        (get_research_content_by_id)
+        (get_research_content)
         (get_research_content_by_permlink)
         (get_research_content_by_absolute_permlink)
         (get_research_contents_by_type)
-        (get_research_by_id)
+        (get_research)
         (get_research_by_permlink)
         (get_research_by_absolute_permlink)
-        (get_researches_by_discipline_id)
-        (get_researches_by_research_group_id)
+        (get_researches_by_discipline)
+        (get_researches_by_research_group)
+        (list_my_research_groups)
+        (list_my_researches)
 
         /// transaction api
         (create_account)
