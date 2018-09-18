@@ -2132,9 +2132,16 @@ vector<grant_api_obj> wallet_api::get_grants(const std::string& account_name)
 
 vector<research_group_invite_api_obj> wallet_api::list_my_research_group_invites(const std::string& account_name)
 {
+    vector<account_api_obj> accounts = list_my_accounts();
+
     vector<research_group_invite_api_obj> result;
 
-    result = my->_remote_db->get_research_group_invites_by_account_name({ account_name });
+    for (const auto& account : accounts)
+    {
+        vector<research_group_invite_api_obj> invites
+            = my->_remote_db->get_research_group_invites_by_account_name(account.name);
+        result.insert(result.end(), invites.begin(), invites.end());
+    }
 
     return result;
 }
@@ -2221,35 +2228,16 @@ vector<research_api_obj> wallet_api::get_researches_by_research_group(const int6
 
 vector<research_group_api_obj> wallet_api::list_my_research_groups()
 {
-    FC_ASSERT(!is_locked());
-
-    try
-    {
-        my->use_remote_account_by_key_api();
-    }
-    catch (fc::exception& e)
-    {
-        elog("Connected node needs to enable account_by_key_api");
-        return {};
-    }
-
-    vector<public_key_type> pub_keys;
-    pub_keys.reserve(my->_keys.size());
-
-    for (const auto& item : my->_keys)
-        pub_keys.push_back(item.first);
+    vector<account_api_obj> accounts = list_my_accounts();
 
     vector<research_group_api_obj> research_groups;
 
-    auto refs = (*my->_remote_account_by_key_api)->get_key_references(pub_keys);
-    for (const auto& item : refs)
-        for (const auto& name : item)
-        {
-            vector<research_group_token_api_obj> token_objects
-                = my->_remote_db->get_research_group_tokens_by_account(name);
-            for (const auto& token_object : token_objects)
-                research_groups.push_back(my->_remote_db->get_research_group_by_id(token_object.research_group_id));
-        }
+    for (const auto& account : accounts)
+    {
+        vector<research_group_token_api_obj> token_objects = my->_remote_db->get_research_group_tokens_by_account(account.name);
+        for (const auto& token_object : token_objects)
+            research_groups.push_back(my->_remote_db->get_research_group_by_id(token_object.research_group_id));
+    }
 
     return research_groups;
 }
