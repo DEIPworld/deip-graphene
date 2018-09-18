@@ -2130,7 +2130,7 @@ vector<grant_api_obj> wallet_api::get_grants(const std::string& account_name)
     return result;
 }
 
-vector<research_group_invite_api_obj> wallet_api::list_my_research_group_invites(const std::string& account_name)
+vector<research_group_invite_api_obj> wallet_api::list_my_research_group_invites()
 {
     vector<account_api_obj> accounts = list_my_accounts();
 

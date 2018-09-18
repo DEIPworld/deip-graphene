@@ -827,7 +827,7 @@ public:
     /**
      *  Gets the list of all research group invites for account
      */
-    vector<research_group_invite_api_obj> list_my_research_group_invites(const std::string& account_name);
+    vector<research_group_invite_api_obj> list_my_research_group_invites();
 
     /**
      *  Gets the list of all vesting balance for account
