@@ -903,8 +903,14 @@ public:
      */
     vector<research_api_obj> get_researches_by_research_group(const int64_t research_group_id);
 
+    /**
+     * Gets list of my research groups
+     */
     vector<research_group_api_obj> list_my_research_groups();
 
+    /**
+     * Gets list of my researches 
+     */
     vector<research_api_obj> list_my_researches();
 
     /**
@@ -968,7 +974,7 @@ public:
      * @param creator The account who creates invite
      * @param member The account who receives invite
      * @param research_group_id Id of research group to create invite for
-     * @param research_group_token_amount_in_percent ADD DESCRIPTION
+     * @param research_group_token_amount_in_percent Percent of research group tokens to give to invited member (1 to 10000)
      * @param cover_letter Messsage for member
      * @param broadcast
      */
@@ -996,14 +1002,14 @@ public:
     /**
      * Propose create research
      *
-     * @param creator The account who makes a review
-     * @param title ADD DESCRIPTION
-     * @param abstract ADD DESCRIPTION
-     * @param permlink ADD DESCRIPTION
+     * @param creator The account who proposes to start a research
+     * @param title Title of research
+     * @param abstract Abstract of research
+     * @param permlink Permlink of research
      * @param research_group_id Id of research group
-     * @param review_share_in_percent ADD DESCRIPTION
-     * @param dropout_compensation_in_percent ADD DESCRIPTION
-     * @param disciplines ADD DESCRIPTION
+     * @param review_share_in_percent Percent of reward to share with reviewers
+     * @param dropout_compensation_in_percent Percent of research tokens to leave to dropped author
+     * @param disciplines List of disciplines ids (i.e. [8, 152])
      * @param broadcast
      */
     annotated_signed_transaction propose_create_research(const std::string& creator,
@@ -1023,12 +1029,12 @@ public:
      * @param research_group_id Id of research group
      * @param research_id Research id
      * @param type Type of content: announcement = 1, milestone = 2, final_result = 3
-     * @param title ADD DESCRIPTION
-     * @param content ADD DESCRIPTION
-     * @param permlink ADD DESCRIPTION
+     * @param title Title of research content
+     * @param content Hash of research content (hash of file)
+     * @param permlink Permlink to research content
      * @param authors Account names content authors
-     * @param references ADD DESCRIPTION
-     * @param external_references ADD DESCRIPTION
+     * @param references List of ids of research contents referenced (i.e [1, 100])
+     * @param external_references List of external references as list of URLs (i.e. ["google.com", "bing.com"])
      * @param broadcast
      */
     annotated_signed_transaction propose_create_research_content(const std::string& creator,
