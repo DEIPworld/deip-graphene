@@ -2425,6 +2425,28 @@ annotated_signed_transaction wallet_api::propose_create_research_content(const s
     return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::create_research_material, PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
+annotated_signed_transaction wallet_api::propose_start_token_sale(const std::string& creator,
+                                                                  const int64_t research_group_id,
+                                                                  const int64_t research_id,
+                                                                  const uint32_t start_time,
+                                                                  const uint32_t end_time,
+                                                                  const int64_t amount_for_sale,
+                                                                  const asset& soft_cap,
+                                                                  const asset& hard_cap,
+                                                                  const bool broadcast)
+{    
+    start_research_token_sale_data_type data;
+
+    data.research_id = research_id;
+    data.start_time = fc::time_point_sec(start_time);
+    data.end_time = fc::time_point_sec(end_time);
+    data.amount_for_sale = amount_for_sale;
+    data.soft_cap = soft_cap;
+    data.hard_cap = hard_cap;
+
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::start_research_token_sale, PROPOSAL_EXPIRATION_TIME, broadcast);
+}
+
 annotated_signed_transaction wallet_api::make_review(const std::string& author,
                                                      const int64_t research_content_id,
                                                      const bool is_positive,

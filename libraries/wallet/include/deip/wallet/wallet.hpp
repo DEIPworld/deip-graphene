@@ -1049,6 +1049,30 @@ public:
                                                                   const std::vector<string>& external_references,
                                                                   const bool broadcast);
 
+
+    /**
+     * Propose start token sale
+     *
+     * @param creator The account who create a content
+     * @param research_group_id Id of research group
+     * @param research_id Research id
+     * @param start_time token sale start time
+     * @param end_time token sale end time
+     * @param amount_for_sale tokens amount for sale
+     * @param soft_cap minimum value at which token sale will be success
+     * @param hard_cap maximum number of tokens that can be sold
+     * @param broadcast
+     */
+    annotated_signed_transaction propose_start_token_sale(const std::string& creator,
+                                                                  const int64_t research_group_id,
+                                                                  const int64_t research_id,
+                                                                  const uint32_t start_time,
+                                                                  const uint32_t end_time,
+                                                                  const int64_t amount_for_sale,
+                                                                  const asset& soft_cap,
+                                                                  const asset& hard_cap,
+                                                                  const bool broadcast);
+
     /**
      * Make review for specified research content
      *
@@ -1293,6 +1317,7 @@ FC_API( deip::wallet::wallet_api,
         (propose_exclude_member)
         (propose_create_research)
         (propose_create_research_content)
+        (propose_start_token_sale)
         (make_review)
         (contribute_to_token_sale)
         (create_research_group)
