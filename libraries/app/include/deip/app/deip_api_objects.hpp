@@ -537,6 +537,7 @@ struct research_group_api_obj
         ,  name(fc::to_string(rg.name))
         ,  permlink(fc::to_string(rg.permlink))
         ,  description(fc::to_string(rg.description))
+        ,  balance(rg.balance)
         ,  quorum_percent(rg.quorum_percent.value)
         ,  is_personal(rg.is_personal)
     {
@@ -553,6 +554,7 @@ struct research_group_api_obj
     std::string name;
     std::string permlink;
     std::string description;
+    asset balance;
     uint32_t quorum_percent;
     std::map<uint16_t, uint32_t> proposal_quorums;
     bool is_personal;
@@ -995,6 +997,7 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (name)
             (permlink)
             (description)
+            (balance)
             (quorum_percent)
             (proposal_quorums)
             (is_personal)
