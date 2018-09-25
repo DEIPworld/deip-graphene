@@ -825,9 +825,14 @@ public:
     vector<grant_api_obj> get_grants(const std::string& account_name);
 
     /**
-     *  Gets the list of all research group invites for account
+     *  Gets the list of all research group invites for all accounts
      */
     vector<research_group_invite_api_obj> list_my_research_group_invites();
+
+    /**
+     *  Gets the list of all research tokens for all accounts
+     */
+    vector<research_token_api_obj> list_my_research_tokens();
 
     /**
      *  Gets the list of all vesting balance for account
@@ -1268,6 +1273,7 @@ FC_API( deip::wallet::wallet_api,
         (list_grant_owners)
         (get_grants)
         (list_my_research_group_invites)
+        (list_my_research_tokens)
         (get_vesting_balances)
         (get_research_group_by_permlink)
         (get_proposal)
