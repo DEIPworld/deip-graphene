@@ -2271,6 +2271,15 @@ vector<research_api_obj> wallet_api::list_my_researches()
     return researches;
 }
 
+vector<discipline_api_obj> wallet_api::list_all_disciplines()
+{
+    vector<discipline_api_obj> result;
+
+    result = my->_remote_db->get_all_disciplines();
+
+    return result;
+}
+
 annotated_signed_transaction wallet_api::create_grant(const std::string& grant_owner,
                                                const asset& balance,
                                                const uint32_t& start_block,

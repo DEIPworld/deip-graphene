@@ -919,6 +919,11 @@ public:
     vector<research_api_obj> list_my_researches();
 
     /**
+     * Gets list of all disciplines
+     */
+    vector<discipline_api_obj> list_all_disciplines();
+
+    /**
      *  This method will create new grant linked to owner account.
      *
      *  @warning The owner account must have sufficient balance for grant
@@ -1290,6 +1295,7 @@ FC_API( deip::wallet::wallet_api,
         (get_researches_by_research_group)
         (list_my_research_groups)
         (list_my_researches)
+        (list_all_disciplines)
 
         /// transaction api
         (create_account)
