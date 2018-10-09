@@ -692,6 +692,8 @@ struct expertise_allocation_proposal_operation : public base_operation
 
     share_type amount;
 
+    string description;
+
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -778,7 +780,7 @@ FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance
 FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_id)(sender)(receiver)(amount))
 FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(discipline_id))
 FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(discipline_id))
-FC_REFLECT( deip::protocol::expertise_allocation_proposal_operation, (initiator)(claimer)(discipline_id)(amount))
+FC_REFLECT( deip::protocol::expertise_allocation_proposal_operation, (initiator)(claimer)(discipline_id)(amount)(description))
 FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (initiator)(claimer)(discipline_id)(voter)(voting_power))
 
 
