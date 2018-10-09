@@ -9,6 +9,8 @@ target_link_libraries( deip_blockchain_statistics deip_chain deip_protocol deip_
 target_include_directories( deip_blockchain_statistics
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
+add_custom_target( deip_blockchain_statistics_manifest SOURCES plugin.json)
+
 install( TARGETS
    deip_blockchain_statistics
 

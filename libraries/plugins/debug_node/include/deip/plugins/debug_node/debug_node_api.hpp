@@ -10,7 +10,7 @@
 
 #include <deip/protocol/block.hpp>
 
-#include <deip/chain/witness_objects.hpp>
+#include <deip/chain/schema/witness_objects.hpp>
 
 namespace deip {
 namespace app {

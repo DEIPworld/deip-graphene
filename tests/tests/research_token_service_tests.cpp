@@ -1,8 +1,8 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/research_token_object.hpp>
-#include <deip/chain/dbs_research_token.hpp>
+#include <deip/chain/schema/research_token_object.hpp>
+#include <deip/chain/services/dbs_research_token.hpp>
 
 #include "database_fixture.hpp"
 
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(get_research_token_by_id)
      try
      {
          create_research_tokens();
-         auto research_token = data_service.get_research_token(1);
+         auto research_token = data_service.get(1);
 
          BOOST_CHECK(research_token.account_name == "alice");
          BOOST_CHECK(research_token.research_id == 2);
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(get_research_tokens_by_account_name)
      try
      {
          create_research_tokens();
-         auto research_tokens = data_service.get_research_tokens_by_account_name("alice");
+         auto research_tokens = data_service.get_by_owner("alice");
 
          BOOST_CHECK(research_tokens.size() == 3);
 
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(get_research_tokens_by_research_id)
      try
      {
          create_research_tokens();
-         auto research_tokens = data_service.get_research_tokens_by_research_id(4);
+         auto research_tokens = data_service.get_by_research(4);
 
          BOOST_CHECK(research_tokens.size() == 2);
 
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(get_research_tokens_by_account_name_and_research_id)
      try
      {
          create_research_tokens();
-         const research_token_object& research_token = data_service.get_research_token_by_account_name_and_research_id("alice", 4);
+         const research_token_object& research_token = data_service.get_by_owner_and_research("alice", 4);
 
          BOOST_CHECK(research_token.account_name == "alice");
          BOOST_CHECK(research_token.amount == 300);
@@ -137,9 +137,9 @@ BOOST_AUTO_TEST_CASE(check_research_token_existence_by_account_name_and_research
     {
         create_research_tokens();
 
-        BOOST_CHECK_NO_THROW(data_service.check_research_token_existence_by_account_name_and_research_id("alice", 2));
-        BOOST_CHECK_NO_THROW(data_service.check_research_token_existence_by_account_name_and_research_id("bob", 3));
-        BOOST_CHECK(data_service.is_research_token_exists_by_account_name_and_research_id("john", 2) == false);
+        BOOST_CHECK_NO_THROW(data_service.check_existence_by_owner_and_research("alice", 2));
+        BOOST_CHECK_NO_THROW(data_service.check_existence_by_owner_and_research("bob", 3));
+        BOOST_CHECK(data_service.exists_by_owner_and_research("john", 2) == false);
 
     }
     FC_LOG_AND_RETHROW()

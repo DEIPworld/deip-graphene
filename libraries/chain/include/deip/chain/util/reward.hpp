@@ -1,7 +1,7 @@
 #pragma once
 
 #include <deip/chain/util/asset.hpp>
-#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
 
 #include <deip/protocol/asset.hpp>
 #include <deip/protocol/config.hpp>

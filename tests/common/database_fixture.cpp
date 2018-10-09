@@ -3,9 +3,9 @@
 
 #include <graphene/utilities/tempdir.hpp>
 
-#include <deip/chain/deip_objects.hpp>
-#include <deip/chain/history_object.hpp>
-#include <deip/account_history/account_history_plugin.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
+#include <deip/blockchain_history/account_history_object.hpp>
+#include <deip/blockchain_history/blockchain_history_plugin.hpp>
 #include <deip/witness/witness_plugin.hpp>
 #include <deip/chain/genesis_state.hpp>
 
@@ -16,8 +16,8 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include <deip/chain/research_group_invite_object.hpp>
-#include <deip/chain/research_token_object.hpp>
+#include <deip/chain/schema/research_group_invite_object.hpp>
+#include <deip/chain/schema/research_token_object.hpp>
 
 #include "database_fixture.hpp"
 
@@ -65,6 +65,11 @@ database_fixture::database_fixture()
     genesis_state.init_rewards_supply = TEST_REWARD_INITIAL_SUPPLY;
     genesis_state.initial_chain_id = TEST_CHAIN_ID;
     genesis_state.initial_timestamp = fc::time_point_sec(TEST_GENESIS_TIMESTAMP);
+    auto registrar = genesis_state_type::account_type();
+    registrar.name = "registrar";
+    registrar.deip_amount = 0;
+    registrar.public_key = public_key_type();
+    genesis_state.registrar_account = registrar;
 
     create_disciplines_for_genesis_state(genesis_state);
     create_initdelegate_for_genesis_state(genesis_state);
@@ -89,14 +94,14 @@ clean_database_fixture::clean_database_fixture()
             if (arg == "--show-test-names")
                 std::cout << "running test " << boost::unit_test::framework::current_test_case().p_name << std::endl;
         }
-        auto ahplugin = app.register_plugin<deip::account_history::account_history_plugin>();
+        auto bhplugin = app.register_plugin<deip::blockchain_history::blockchain_history_plugin>();
         db_plugin = app.register_plugin<deip::plugin::debug_node::debug_node_plugin>();
         auto wit_plugin = app.register_plugin<deip::witness::witness_plugin>();
 
         boost::program_options::variables_map options;
 
         db_plugin->logging = false;
-        ahplugin->plugin_initialize(options);
+        bhplugin->plugin_initialize(options);
         db_plugin->plugin_initialize(options);
         wit_plugin->plugin_initialize(options);
 
@@ -106,7 +111,7 @@ clean_database_fixture::clean_database_fixture()
         db.set_hardfork(DEIP_NUM_HARDFORKS);
         generate_block();
 
-        // ahplugin->plugin_startup();
+        // bhplugin->plugin_startup();
         db_plugin->plugin_startup();
 
         // Fill up the rest of the required miners
@@ -209,7 +214,7 @@ live_database_fixture::live_database_fixture()
         _chain_dir = fc::current_path() / "test_blockchain";
         FC_ASSERT(fc::exists(_chain_dir), "Requires blockchain to test on in ./test_blockchain");
 
-        auto ahplugin = app.register_plugin<deip::account_history::account_history_plugin>();
+        auto ahplugin = app.register_plugin<deip::blockchain_history::blockchain_history_plugin>();
         ahplugin->plugin_initialize(boost::program_options::variables_map());
 
         db.open(_chain_dir, _chain_dir, 0, 0, genesis_state);
@@ -274,7 +279,7 @@ void database_fixture::open_database()
     {
         data_dir = fc::temp_directory(graphene::utilities::temp_directory_path());
         db._log_hardforks = false;
-        db.open(data_dir->path(), data_dir->path(), TEST_SHARED_MEM_SIZE_8MB, chainbase::database::read_write,
+        db.open(data_dir->path(), data_dir->path(), TEST_SHARED_MEM_SIZE_128MB, chainbase::database::read_write,
                 genesis_state);
     }
 }
@@ -500,6 +505,7 @@ const proposal_object& database_fixture::create_proposal(const int64_t id, const
         proposal.creation_time = fc::time_point_sec();
         proposal.expiration_time = expiration_time;
         proposal.quorum_percent = quorum_percent;
+        proposal.object_hash = id;
     });
 
     return new_proposal;
@@ -659,6 +665,7 @@ const research_group_invite_object& database_fixture::research_group_invite_crea
         rgi_o.account_name = account_name;
         rgi_o.research_group_id = research_group_id;
         rgi_o.research_group_token_amount = research_group_token_amount;
+        rgi_o.expiration_time = db.head_block_time() + 60 * 60;
     });
     return research_group_invite;
 }
@@ -812,8 +819,10 @@ void database_fixture::sign(signed_transaction& trx, const fc::ecc::private_key&
 
 vector<operation> database_fixture::get_last_operations(uint32_t num_ops)
 {
+    using deip::blockchain_history::account_operations_full_history_index;
+
     vector<operation> ops;
-    const auto& acc_hist_idx = db.get_index<account_history_index>().indices().get<by_id>();
+    const auto& acc_hist_idx = db.get_index<account_operations_full_history_index>().indices().get<by_id>();
     auto itr = acc_hist_idx.end();
 
     while (itr != acc_hist_idx.begin() && ops.size() < num_ops)

@@ -227,20 +227,23 @@ void research_update_operation::validate() const
     validate_account_name(owner);
 }
 
-void deposit_to_vesting_contract_operation::validate() const
+void create_vesting_balance_operation::validate() const
 {
-    FC_ASSERT(balance > 0, "Deposit balance must be greater than 0");
-    FC_ASSERT(withdrawal_period > 0, "You must divide contract at least by 1 part");
-    FC_ASSERT(contract_duration > 0, "Contract duration must be longer than 0");
-    validate_account_name(sender);
-    validate_account_name(receiver);
+    FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Deposit balance must be greater than 0");
+    FC_ASSERT(vesting_duration_seconds > 0 && vesting_duration_seconds > vesting_cliff_seconds,
+            "Vesting  duration must be longer than 0 & longer than cliff period");
+    FC_ASSERT(vesting_cliff_seconds >= 0, "Vesting cliff period should be equal or greater than 0");
+    FC_ASSERT(period_duration_seconds > 0, "Vesting withdraw periods duration should be greater than 0");
+    FC_ASSERT(vesting_duration_seconds % period_duration_seconds == 0,
+            "Vesting duration should contain an integer number of withdraw periods");
+    validate_account_name(creator);
+    validate_account_name(owner);
 }
 
-void withdraw_from_vesting_contract_operation::validate() const
+void withdraw_vesting_balance_operation::validate() const
 {
-    FC_ASSERT(amount > 0, "Withdraw amount must be greater than 0");
-    validate_account_name(sender);
-    validate_account_name(receiver);
+    FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Withdraw amount must be greater than 0");
+    validate_account_name(owner);
 }
 
 void transfer_research_tokens_operation::validate() const

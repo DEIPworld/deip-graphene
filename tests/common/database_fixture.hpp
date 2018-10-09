@@ -2,20 +2,20 @@
 #pragma once
 
 #include <deip/app/application.hpp>
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 #include <deip/chain/genesis_state.hpp>
-#include <deip/chain/dbs_proposal.hpp>
-#include <deip/chain/dbs_research_group.hpp>
-#include <deip/chain/dbs_account.hpp>
-#include <deip/chain/dbs_research.hpp>
-#include <deip/chain/dbs_discipline.hpp>
-#include <deip/chain/dbs_research.hpp>
-#include <deip/chain/dbs_research_content.hpp>
-#include <deip/chain/dbs_vote.hpp>
-#include <deip/chain/dbs_expert_token.hpp>
-#include <deip/chain/dbs_research_group_invite.hpp>
-#include <deip/chain/dbs_research_token_sale.hpp>
-#include <deip/chain/dbs_research_token.hpp>
+#include <deip/chain/services/dbs_proposal.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_discipline.hpp>
+#include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_research_content.hpp>
+#include <deip/chain/services/dbs_vote.hpp>
+#include <deip/chain/services/dbs_expert_token.hpp>
+#include <deip/chain/services/dbs_research_group_invite.hpp>
+#include <deip/chain/services/dbs_research_token_sale.hpp>
+#include <deip/chain/services/dbs_research_token.hpp>
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>
 

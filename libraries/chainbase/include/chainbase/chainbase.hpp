@@ -67,6 +67,7 @@ template <typename T> struct get_index_type
     }
 
 #define CHAINBASE_DEFAULT_CONSTRUCTOR(OBJECT_TYPE)                                                                     \
+    OBJECT_TYPE() = delete;                                                                                            \
     template <typename Constructor, typename Allocator> OBJECT_TYPE(Constructor&& c, Allocator&&)                      \
     {                                                                                                                  \
         c(*this);                                                                                                      \

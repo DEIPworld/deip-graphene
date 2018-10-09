@@ -9,6 +9,8 @@
 #include <deip/wallet/reflect_util.hpp>
 
 #include <deip/account_by_key/account_by_key_api.hpp>
+#include <deip/blockchain_history/account_history_api.hpp>
+#include <deip/blockchain_history/blockchain_history_api.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -804,7 +806,7 @@ public:
                     << std::to_string(total_expert_tokens_amount.value) << "\n";
             return out.str();
         };
-        m["get_account_history"] = [](variant result, const fc::variants& a) {
+        auto account_history_formatter = [this](variant result, const fc::variants& a) {
             std::stringstream ss;
             ss << std::left << std::setw(5) << "#"
                << " ";
@@ -830,6 +832,11 @@ public:
             }
             return ss.str();
         };
+
+        m["get_account_history"] = account_history_formatter;
+        m["get_account_deip_to_deip_transfers"] = account_history_formatter;
+        m["get_account_deip_to_common_tokens_transfers"] = account_history_formatter;
+
         m["get_withdraw_routes"] = [](variant result, const fc::variants& a) {
             auto routes = result.as<vector<withdraw_route>>();
             std::stringstream ss;
@@ -865,7 +872,7 @@ public:
         }
         catch (const fc::exception& e)
         {
-            elog("Couldn't get network node API");
+            elog("Couldn't get network_node_api");
             throw(e);
         }
     }
@@ -882,7 +889,38 @@ public:
         }
         catch (const fc::exception& e)
         {
-            elog("Couldn't get account_by_key API");
+            elog("Couldn't get account_by_key_api");
+            throw(e);
+        }
+    }
+
+    void use_remote_account_history_api()
+    {
+        if (_remote_account_history_api.valid())
+            return;
+        try
+        {
+            _remote_account_history_api
+                = _remote_api->get_api_by_name("account_history_api")->as<blockchain_history::account_history_api>();
+        }
+        catch (const fc::exception& e)
+        {
+            elog("Couldn't get account_history_api");
+            throw(e);
+        }
+    }
+    void use_remote_blockchain_history_api()
+    {
+        if (_remote_blockchain_history_api.valid())
+            return;
+        try
+        {
+            _remote_blockchain_history_api = _remote_api->get_api_by_name("blockchain_history_api")
+                                                 ->as<blockchain_history::blockchain_history_api>();
+        }
+        catch (const fc::exception& e)
+        {
+            elog("Couldn't get blockchain_history_api");
             throw(e);
         }
     }
@@ -932,6 +970,9 @@ public:
     fc::api<network_broadcast_api> _remote_net_broadcast;
     optional<fc::api<network_node_api>> _remote_net_node;
     optional<fc::api<account_by_key::account_by_key_api>> _remote_account_by_key_api;
+    optional<fc::api<blockchain_history::account_history_api>> _remote_account_history_api;
+    optional<fc::api<blockchain_history::blockchain_history_api>> _remote_blockchain_history_api;
+
     uint32_t _tx_expiration_seconds = 30;
 
     flat_map<string, operation> _prototype_ops;
@@ -960,14 +1001,37 @@ bool wallet_api::copy_wallet_file(const string& destination_filename)
     return my->copy_wallet_file(destination_filename);
 }
 
-optional<signed_block_api_obj> wallet_api::get_block(uint32_t num)
+optional<block_header> wallet_api::get_block_header(uint32_t num) const
+{
+    return my->_remote_db->get_block_header(num);
+}
+
+optional<signed_block_api_obj> wallet_api::get_block(uint32_t num) const
 {
     return my->_remote_db->get_block(num);
 }
 
-vector<applied_operation> wallet_api::get_ops_in_block(uint32_t block_num, bool only_virtual)
+std::map<uint32_t, block_header> wallet_api::get_block_headers_history(uint32_t num, uint32_t limit) const
 {
-    return my->_remote_db->get_ops_in_block(block_num, only_virtual);
+    return my->_remote_db->get_block_headers_history(num, limit);
+}
+
+std::map<uint32_t, signed_block_api_obj> wallet_api::get_blocks_history(uint32_t num, uint32_t limit) const
+{
+    return my->_remote_db->get_blocks_history(num, limit);
+}
+
+std::map<uint32_t, applied_operation> wallet_api::get_ops_in_block(uint32_t block_num, applied_operation_type opt) const
+{
+    my->use_remote_blockchain_history_api();
+    return (*my->_remote_blockchain_history_api)->get_ops_in_block(block_num, opt);
+}
+
+std::map<uint32_t, applied_operation>
+wallet_api::get_ops_history(uint32_t from_op, uint32_t limit, applied_operation_type opt) const
+{
+    my->use_remote_blockchain_history_api();
+    return (*my->_remote_blockchain_history_api)->get_ops_history(from_op, limit, opt);
 }
 
 vector<account_api_obj> wallet_api::list_my_accounts()
@@ -975,15 +1039,7 @@ vector<account_api_obj> wallet_api::list_my_accounts()
     FC_ASSERT(!is_locked(), "Wallet must be unlocked to list accounts");
     vector<account_api_obj> result;
 
-    try
-    {
-        my->use_remote_account_by_key_api();
-    }
-    catch (fc::exception& e)
-    {
-        elog("Connected node needs to enable account_by_key_api");
-        return result;
-    }
+    my->use_remote_account_by_key_api();
 
     vector<public_key_type> pub_keys;
     pub_keys.reserve(my->_keys.size());
@@ -1249,6 +1305,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys(const std::str
                                                                   const public_key_type& active,
                                                                   const public_key_type& posting,
                                                                   const public_key_type& memo,
+                                                                  const asset& fee,
                                                                   bool broadcast) const
 {
     try
@@ -1262,8 +1319,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys(const std::str
         op.posting = authority(1, posting, 1);
         op.memo_key = memo;
         op.json_metadata = json_meta;
-        op.fee = my->_remote_db->get_chain_properties().account_creation_fee
-            * asset(DEIP_CREATE_ACCOUNT_WITH_DEIP_MODIFIER, DEIP_SYMBOL);
+        op.fee = fee;
 
         signed_transaction tx;
         tx.operations.push_back(op);
@@ -1616,6 +1672,7 @@ wallet_api::update_account_memo_key(const std::string& account_name, const publi
 annotated_signed_transaction wallet_api::create_account(const std::string& creator,
                                                         const std::string& newname,
                                                         const std::string& json_meta,
+                                                        const asset& fee,
                                                         bool broadcast)
 {
     try
@@ -1630,7 +1687,7 @@ annotated_signed_transaction wallet_api::create_account(const std::string& creat
         import_key(posting.wif_priv_key);
         import_key(memo.wif_priv_key);
         return create_account_with_keys(creator, newname, json_meta, owner.pub_key, active.pub_key, posting.pub_key,
-                                        memo.pub_key, broadcast);
+                                        memo.pub_key, fee, broadcast);
     }
     FC_CAPTURE_AND_RETHROW((creator)(newname)(json_meta))
 }
@@ -1857,12 +1914,11 @@ annotated_signed_transaction wallet_api::set_withdraw_common_tokens_route(
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction
-wallet_api::transfer_research_tokens(const int64_t research_token_id, const int64_t research_id, const std::string& from, const std::string& to, const uint32_t amount, bool broadcast)
+annotated_signed_transaction wallet_api::transfer_research_tokens(const int64_t research_id, const std::string& from,
+                                                                  const std::string& to, const uint32_t amount, bool broadcast)
 {
     FC_ASSERT(!is_locked());
     transfer_research_tokens_operation op;
-    op.research_token_id = research_token_id;
     op.research_id = research_id;
     op.sender = from;
     op.receiver = to;
@@ -1921,23 +1977,72 @@ string wallet_api::decrypt_memo(const std::string& encrypted_memo)
 }
 
 map<uint32_t, applied_operation>
-wallet_api::get_account_history(const std::string& account, uint32_t from, uint32_t limit)
+wallet_api::get_account_history(const std::string& account, uint64_t from, uint32_t limit)
 {
-    auto result = my->_remote_db->get_account_history(account, from, limit);
-    if (!is_locked())
+    FC_ASSERT(!is_locked(), "Wallet must be unlocked to get account history");
+
+    std::map<uint32_t, applied_operation> result;
+
+    my->use_remote_account_history_api();
+
+    result = (*my->_remote_account_history_api)->get_account_history(account, from, limit);
+
+    for (auto& item : result)
     {
-        for (auto& item : result)
+        if (item.second.op.which() == operation::tag<transfer_operation>::value)
         {
-            if (item.second.op.which() == operation::tag<transfer_operation>::value)
-            {
-                auto& top = item.second.op.get<transfer_operation>();
-                top.memo = decrypt_memo(top.memo);
-            }
+            auto& top = item.second.op.get<transfer_operation>();
+            top.memo = decrypt_memo(top.memo);
         }
     }
+
+    return result;
+}
+std::map<uint32_t, applied_operation>
+wallet_api::get_account_deip_to_deip_transfers(const std::string& account, uint64_t from, uint32_t limit)
+{
+    FC_ASSERT(!is_locked(), "Wallet must be unlocked to get account history");
+
+    std::map<uint32_t, applied_operation> result;
+
+    my->use_remote_account_history_api();
+
+    result = (*my->_remote_account_history_api)->get_account_deip_to_deip_transfers(account, from, limit);
+
+    for (auto& item : result)
+    {
+        if (item.second.op.which() == operation::tag<transfer_operation>::value)
+        {
+            auto& top = item.second.op.get<transfer_operation>();
+            top.memo = decrypt_memo(top.memo);
+        }
+    }
+
     return result;
 }
 
+std::map<uint32_t, applied_operation>
+wallet_api::get_account_deip_to_common_tokens_transfers(const std::string& account, uint64_t from, uint32_t limit)
+{
+    FC_ASSERT(!is_locked(), "Wallet must be unlocked to get account history");
+
+    std::map<uint32_t, applied_operation> result;
+
+    my->use_remote_account_history_api();
+
+    result = (*my->_remote_account_history_api)->get_account_deip_to_common_tokens_transfers(account, from, limit);
+
+    for (auto& item : result)
+    {
+        if (item.second.op.which() == operation::tag<transfer_operation>::value)
+        {
+            auto& top = item.second.op.get<transfer_operation>();
+            top.memo = decrypt_memo(top.memo);
+        }
+    }
+
+    return result;
+}
 app::state wallet_api::get_state(const std::string& url)
 {
     return my->_remote_db->get_state(url);
@@ -2059,7 +2164,7 @@ annotated_signed_transaction wallet_api::vote_for_review(const std::string& vote
     op.voter = voter;
     op.review_id = review_id;
     op.discipline_id = discipline_id;
-    op.weight = weight * DEIP_1_PERCENT;
+    op.weight = weight;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2106,6 +2211,7 @@ annotated_signed_transaction wallet_api::make_review(const std::string& author,
     op.research_content_id = research_content_id;
     op.is_positive = is_positive;
     op.content = content;
+    op.weight = DEIP_100_PERCENT;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2170,8 +2276,7 @@ annotated_signed_transaction wallet_api::reject_research_group_invite(const int6
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_group(const int64_t research_token_id,
-                                                                                    const int64_t research_id,
+annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_group(const int64_t research_id,
                                                                                     const std::string& owner,
                                                                                     const uint32_t amount,
                                                                                     const bool broadcast)
@@ -2180,7 +2285,6 @@ annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_gr
 
     transfer_research_tokens_to_research_group_operation op;
 
-    op.research_token_id = research_token_id;
     op.research_id = research_id;
     op.owner = owner;
     op.amount = amount;
@@ -2216,22 +2320,21 @@ annotated_signed_transaction wallet_api::research_update(const int64_t research_
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::deposit_to_vesting_contract(const std::string& sender,
-                                                                     const std::string& receiver,
-                                                                     const uint32_t balance,
-                                                                     const uint32_t withdrawal_period,
-                                                                     const uint32_t contract_duration,
-                                                                     const bool broadcast)
+annotated_signed_transaction
+wallet_api::create_vesting_balance(const std::string &creator, const std::string &owner, const asset &balance,
+                                    const uint32_t &vesting_duration_seconds, const uint32_t &vesting_cliff_seconds,
+                                    const uint32_t &period_duration_seconds, const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
-    deposit_to_vesting_contract_operation op;
+    create_vesting_balance_operation op;
 
-    op.sender = sender;
-    op.receiver = receiver;
+    op.creator = creator;
+    op.owner = owner;
     op.balance = balance;
-    op.withdrawal_period = withdrawal_period;
-    op.contract_duration = contract_duration;
+    op.vesting_duration_seconds = vesting_duration_seconds;
+    op.vesting_cliff_seconds = vesting_cliff_seconds;
+    op.period_duration_seconds = period_duration_seconds;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2240,17 +2343,17 @@ annotated_signed_transaction wallet_api::deposit_to_vesting_contract(const std::
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::withdraw_from_vesting_contract(const std::string& sender,
-                                                                        const std::string& receiver,
-                                                                        const uint32_t amount,
-                                                                        const bool broadcast)
+annotated_signed_transaction wallet_api::withdraw_vesting_balance(const int64_t &vesting_balance_id,
+                                                                   const std::string &owner,
+                                                                   const asset &amount,
+                                                                   const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
-    withdraw_from_vesting_contract_operation op;
+    withdraw_vesting_balance_operation op;
 
-    op.sender = sender;
-    op.receiver = receiver;
+    op.vesting_balance_id = vesting_balance_id;
+    op.owner = owner;
     op.amount = amount;
 
     signed_transaction tx;

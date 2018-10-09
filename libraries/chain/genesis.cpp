@@ -1,23 +1,25 @@
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 #include <deip/chain/genesis_state.hpp>
-#include <deip/chain/dbs_grant.hpp>
+#include <deip/chain/services/dbs_grant.hpp>
 
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/block_summary_object.hpp>
-#include <deip/chain/chain_property_object.hpp>
-#include <deip/chain/deip_objects.hpp>
-#include <deip/chain/discipline_object.hpp>
-#include <deip/chain/expert_token_object.hpp>
-#include <deip/chain/research_group_object.hpp>
-#include <deip/chain/research_object.hpp>
-#include <deip/chain/research_content_object.hpp>
-#include <deip/chain/research_discipline_relation_object.hpp>
-#include <deip/chain/dbs_expert_token.hpp>
-#include <deip/chain/proposal_object.hpp>
-#include <deip/chain/proposal_vote_object.hpp>
+#include <deip/chain/schema/account_object.hpp>
+#include <deip/chain/schema/block_summary_object.hpp>
+#include <deip/chain/schema/chain_property_object.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
+#include <deip/chain/schema/discipline_object.hpp>
+#include <deip/chain/schema/expert_token_object.hpp>
+#include <deip/chain/schema/research_group_object.hpp>
+#include <deip/chain/schema/research_object.hpp>
+#include <deip/chain/schema/research_content_object.hpp>
+#include <deip/chain/schema/research_discipline_relation_object.hpp>
+#include <deip/chain/services/dbs_expert_token.hpp>
+#include <deip/chain/schema/proposal_object.hpp>
+#include <deip/chain/schema/proposal_vote_object.hpp>
+#include <deip/chain/services/dbs_account.hpp>
 
 #include <fc/io/json.hpp>
-#include <deip/chain/vesting_contract_object.hpp>
+#include <deip/chain/schema/vesting_balance_object.hpp>
+#include <deip/chain/schema/expertise_stats_object.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
@@ -80,17 +82,22 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         _const_genesis_time = genesis_state.initial_timestamp;
         create<chain_property_object>([&](chain_property_object& cp) { cp.chain_id = genesis_state.initial_chain_id; });
 
+        create<expertise_stats_object>([&](expertise_stats_object& es) {
+           es.total_used_expertise = 0;
+           es.used_expertise_per_block = 0;
+        });
+
+        init_genesis_global_property_object(genesis_state);
         init_genesis_accounts(genesis_state);
         init_genesis_witnesses(genesis_state);
         init_genesis_witness_schedule(genesis_state);
-        init_genesis_global_property_object(genesis_state);
         init_genesis_disciplines(genesis_state);
         init_expert_tokens(genesis_state);
         init_research_groups(genesis_state);
         init_personal_research_groups(genesis_state);
         init_research(genesis_state);
         init_research_content(genesis_state);
-        //init_genesis_vesting_contracts(genesis_state);
+        init_genesis_vesting_balances(genesis_state);
 
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
@@ -104,28 +111,49 @@ void database::init_genesis(const genesis_state_type& genesis_state)
 
 void database::init_genesis_accounts(const genesis_state_type& genesis_state)
 {
+    auto& account_service = obtain_service<dbs_account>();
+
+    const genesis_state_type::account_type& registrar = genesis_state.registrar_account;
     const vector<genesis_state_type::account_type>& accounts = genesis_state.accounts;
+
+    FC_ASSERT(!registrar.name.empty(), "Registrar account 'name' should not be empty.");
+    FC_ASSERT(is_valid_account_name(registrar.name), "Registrar account name ${n} is invalid", ("n", registrar.name));
+
+    create<account_object>([&](account_object& a) {
+        a.name = registrar.name;
+        a.memo_key = registrar.public_key;
+        a.balance = asset(registrar.deip_amount, DEIP_SYMBOL);
+        a.json_metadata = "{created_at: 'GENESIS'}";
+        a.recovery_account = registrar.recovery_account;
+    });
+
+    create<account_authority_object>([&](account_authority_object& auth) {
+        auth.account = registrar.name;
+        auth.owner.add_authority(registrar.public_key, 1);
+        auth.owner.weight_threshold = 1;
+        auth.active = auth.owner;
+        auth.posting = auth.active;
+    });
 
     for (auto& account : accounts)
     {
         FC_ASSERT(!account.name.empty(), "Account 'name' should not be empty.");
         FC_ASSERT(is_valid_account_name(account.name), "Account name ${n} is invalid", ("n", account.name));
 
-        create<account_object>([&](account_object& a) {
-            a.name = account.name;
-            a.memo_key = account.public_key;
-            a.balance = asset(account.deip_amount, DEIP_SYMBOL);
-            a.json_metadata = "{created_at: 'GENESIS'}";
-            a.recovery_account = account.recovery_account;
-        });
+        auto owner_authority = authority();
+        owner_authority.add_authority(account.public_key, 1);
+        owner_authority.weight_threshold = 1;
 
-        create<account_authority_object>([&](account_authority_object& auth) {
-            auth.account = account.name;
-            auth.owner.add_authority(account.public_key, 1);
-            auth.owner.weight_threshold = 1;
-            auth.active = auth.owner;
-            auth.posting = auth.active;
-        });
+        auto& new_account = account_service.create_account_by_faucets(account.name,
+                registrar.name,
+                account.public_key,
+                "{created at: 'GENESIS'}",
+                owner_authority,
+                owner_authority,
+                owner_authority,
+                asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL));
+
+        account_service.adjust_balance(new_account, account.deip_amount);
     }
 }
 
@@ -166,41 +194,8 @@ void database::init_genesis_global_property_object(const genesis_state_type& gen
         gpo.participation_count = 128;
         gpo.current_supply = asset(genesis_state.init_supply, DEIP_SYMBOL);
         gpo.maximum_block_size = DEIP_MAX_BLOCK_SIZE;
-        gpo.total_reward_fund_deip = asset(0, DEIP_SYMBOL);
     });
 }
-
-/*void database::init_genesis_rewards(const genesis_state_type& genesis_state)
-{
-    const auto& gpo = get_dynamic_global_properties();
-
-    auto post_rf = create<reward_fund_object>([&](reward_fund_object& rfo) {
-        rfo.name = DEIP_POST_REWARD_FUND_NAME;
-        rfo.last_update = head_block_time();
-        rfo.percent_curation_rewards = DEIP_1_PERCENT * 25;
-        rfo.percent_content_rewards = DEIP_100_PERCENT;
-        rfo.reward_balance = gpo.total_reward_fund_deip;
-        rfo.author_reward_curve = curve_id::linear;
-        rfo.curation_reward_curve = curve_id::square_root;
-    });
-
-    // As a shortcut in payout processing, we use the id as an array index.
-    // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
-    FC_ASSERT(post_rf.id._id == 0);
-
-    // We share initial fund between raward_pool and fund grant
-    dbs_reward& reward_service = obtain_service<dbs_reward>();
-    dbs_grant& grant_service = obtain_service<dbs_grant>();
-
-    asset initial_reward_pool_supply(genesis_state.init_rewards_supply.amount
-                                         * DEIP_GUARANTED_REWARD_SUPPLY_PERIOD_IN_DAYS
-                                         / DEIP_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS,
-                                     genesis_state.init_rewards_supply.symbol);
-    fc::time_point deadline = get_genesis_time() + fc::days(DEIP_REWARDS_INITIAL_SUPPLY_PERIOD_IN_DAYS);
-
-    reward_service.create_pool(initial_reward_pool_supply);
-    grant_service.create_fund_grant(genesis_state.init_rewards_supply - initial_reward_pool_supply, deadline);
-}*/
 
 void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
 {
@@ -387,29 +382,34 @@ void database::init_personal_research_groups(const genesis_state_type& genesis_s
     }
 }
 
-void database::init_genesis_vesting_contracts(const genesis_state_type& genesis_state)
+void database::init_genesis_vesting_balances(const genesis_state_type& genesis_state)
 {
-    const vector<genesis_state_type::vesting_contract_type>& vesting_contracts = genesis_state.vesting_contracts;
+    const vector<genesis_state_type::vesting_balance_type>& vesting_balances = genesis_state.vesting_balances;
 
-    for (auto& vesting_contract : vesting_contracts)
+    for (auto& vesting_balance : vesting_balances)
     {
 
-        FC_ASSERT(vesting_contract.balance > 0, "Deposit balance must be greater than 0");
-        FC_ASSERT(vesting_contract.withdrawal_periods > 0, "You must divide contract at least by 1 part");
-        FC_ASSERT(vesting_contract.contract_duration > 0, "Contract duration must be longer than 0");
+        FC_ASSERT(vesting_balance.balance > 0, "Deposit balance must be greater than 0");
+        FC_ASSERT(vesting_balance.vesting_duration_seconds > 0, "Vesting duration must be longer than 0");
+        FC_ASSERT(vesting_balance.vesting_duration_seconds > vesting_balance.vesting_cliff_seconds,
+                "Vesting duration should be longer than vesting cliff");
+        FC_ASSERT(vesting_balance.vesting_cliff_seconds > 0, "Vesting cliff must be longer than 0");
+        FC_ASSERT(vesting_balance.period_duration_seconds > 0, "Withdraw period duration must be longer than 0");
+        FC_ASSERT(vesting_balance.vesting_duration_seconds % vesting_balance.period_duration_seconds == 0,
+                "Vesting duration should contain integer number of withdraw period");
 
-        FC_ASSERT(!vesting_contract.sender.empty(), "Account 'name' should not be empty.");
-        FC_ASSERT(is_valid_account_name(vesting_contract.sender), "Account name ${n} is invalid", ("n", vesting_contract.sender));
-        FC_ASSERT(!vesting_contract.receiver.empty(), "Account 'name' should not be empty.");
-        FC_ASSERT(is_valid_account_name(vesting_contract.receiver), "Account name ${n} is invalid", ("n", vesting_contract.receiver));
+        FC_ASSERT(!vesting_balance.owner.empty(), "Account 'name' should not be empty.");
+        FC_ASSERT(is_valid_account_name(vesting_balance.owner), "Account name ${n} is invalid", ("n", vesting_balance.owner));
 
-        auto& research_group = create<vesting_contract_object>([&](vesting_contract_object& v) {
-            v.id = vesting_contract.id;
-            v.sender = vesting_contract.sender;
-            v.receiver = vesting_contract.receiver;
-            v.balance = asset(vesting_contract.balance, DEIP_SYMBOL);
-            v.withdrawal_periods = vesting_contract.withdrawal_periods;
-            v.contract_duration = fc::time_point_sec(vesting_contract.contract_duration);
+        create<vesting_balance_object>([&](vesting_balance_object& v) {
+            v.id = vesting_balance.id;
+            v.owner = vesting_balance.owner;
+            v.balance = asset(vesting_balance.balance, DEIP_SYMBOL);
+            v.withdrawn = asset(0, DEIP_SYMBOL);
+            v.vesting_duration_seconds = vesting_balance.vesting_duration_seconds;
+            v.vesting_cliff_seconds = vesting_balance.vesting_duration_seconds;
+            v.period_duration_seconds = vesting_balance.period_duration_seconds;
+            v.start_timestamp = get_genesis_time();
         });
     }
 }

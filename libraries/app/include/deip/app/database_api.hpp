@@ -1,12 +1,11 @@
 #pragma once
-#include <deip/app/applied_operation.hpp>
 #include <deip/app/state.hpp>
 
-#include <deip/chain/database.hpp>
-#include <deip/chain/deip_objects.hpp>
-#include <deip/chain/deip_object_types.hpp>
-#include <deip/chain/history_object.hpp>
-#include <deip/chain/dbs_proposal.hpp>
+#include <deip/chain/database/database.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
+#include <deip/chain/schema/deip_object_types.hpp>
+//#include <deip/chain/history_object.hpp>
+#include <deip/chain/services/dbs_proposal.hpp>
 
 #include <deip/witness/witness_plugin.hpp>
 
@@ -100,12 +99,22 @@ public:
     optional<signed_block_api_obj> get_block(uint32_t block_num) const;
 
     /**
-     *  @brief Get sequence of operations included/generated within a particular block
-     *  @param block_num Height of the block whose generated virtual operations should be returned
-     *  @param only_virtual Whether to only include virtual operations in returned results (default: true)
-     *  @return sequence of operations included/generated within the block
+     * Retrieve the list of block headers in range [from-limit, from]
+     *
+     * @param block_num Height of the block to be returned
+     * @param limit the maximum number of blocks that can be queried (0 to 100], must be less than from
+     * @return the list of block headers
      */
-    vector<applied_operation> get_ops_in_block(uint32_t block_num, bool only_virtual = true) const;
+    std::map<uint32_t, block_header> get_block_headers_history(uint32_t block_num, uint32_t limit) const;
+
+    /**
+     * Retrieve the list of signed block from block log (irreversible blocks) in range [from-limit, from]
+     *
+     * @param block_num Height of the block to be returned
+     * @param limit the maximum number of blocks that can be queried (0 to 100], must be less than from
+     * @return the list of signed blocks
+     */
+    std::map<uint32_t, signed_block_api_obj> get_blocks_history(uint32_t block_num, uint32_t limit) const;
 
     /////////////
     // Globals //
@@ -288,15 +297,6 @@ public:
      */
     ///@{
 
-    /**
-     *  Account operations have sequence numbers from 0 to N where N is the most recent operation. This method
-     *  returns operations in the range [from-limit, from]
-     *
-     *  @param from - the absolute sequence number, -1 means most recent, limit is the number of operations before from.
-     *  @param limit - the maximum number of items that can be queried (0 to 1000], must be less than from
-     */
-    map<uint32_t, applied_operation> get_account_history(string account, uint64_t from, uint32_t limit) const;
-
     /////////////////
     // Disciplines //
     /////////////////
@@ -395,6 +395,9 @@ public:
     vector<total_votes_api_obj> get_total_votes_by_research(const research_id_type& research_id) const;
     vector<total_votes_api_obj> get_total_votes_by_research_and_discipline(const research_id_type& research_id,
                                                                    const discipline_id_type& discipline_id) const;
+    vector<total_votes_api_obj> get_total_votes_by_content(const research_content_id_type& research_content_id) const;
+    total_votes_api_obj get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id,
+            const discipline_id_type& discipline_id) const;
 
     ///////////////////////////////
     // Reviews                   //
@@ -435,6 +438,8 @@ public:
 
 private:
     std::shared_ptr<database_api_impl> my;
+    application& _app;
+
 };
 }
 }
@@ -453,7 +458,8 @@ FC_API(deip::app::database_api,
    // Blocks and transactions
    (get_block_header)
    (get_block)
-   (get_ops_in_block)
+   (get_block_headers_history)
+   (get_blocks_history)
    (get_state)
 
    // Globals
@@ -475,7 +481,6 @@ FC_API(deip::app::database_api,
    (lookup_accounts)
    (get_account_count)
    (get_all_accounts)
-   (get_account_history)
    (get_owner_history)
    (get_recovery_request)
    (get_withdraw_routes)
@@ -567,6 +572,8 @@ FC_API(deip::app::database_api,
    // Total votes
    (get_total_votes_by_research)
    (get_total_votes_by_research_and_discipline)
+   (get_total_votes_by_content)
+   (get_total_votes_by_content_and_discipline)
 
    // Reviews
    (get_reviews_by_research)

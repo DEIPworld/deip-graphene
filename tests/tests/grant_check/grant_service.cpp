@@ -1,8 +1,8 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/dbs_account.hpp>
-#include <deip/chain/dbs_grant.hpp>
+#include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_grant.hpp>
 
 #include "database_fixture.hpp"
 
@@ -24,7 +24,7 @@ public:
         : grant_service(db.obtain_service<dbs_grant>())
         , account_service(db.obtain_service<dbs_account>())
         , public_key(database_fixture::generate_private_key("user private key").get_public_key())
-        , fake(account_service.create_account_by_faucets(DEIP_ROOT_POST_PARENT,
+        , fake(account_service.create_account_by_faucets("",
                                                          "initdelegate",
                                                          public_key,
                                                          "",
@@ -37,8 +37,8 @@ public:
         , bob(account_service.create_account_by_faucets(
               "bob", "initdelegate", public_key, "", authority(), authority(), authority(), asset(0, DEIP_SYMBOL)))
     {
-        account_service.increase_balance(alice, asset(ALICE_ACCOUNT_GRANT, DEIP_SYMBOL));
-        account_service.increase_balance(bob, asset(BOB_ACCOUNT_GRANT, DEIP_SYMBOL));
+        account_service.adjust_balance(alice, asset(ALICE_ACCOUNT_GRANT, DEIP_SYMBOL));
+        account_service.adjust_balance(bob, asset(BOB_ACCOUNT_GRANT, DEIP_SYMBOL));
     }
 
     dbs_grant& grant_service;
@@ -199,7 +199,7 @@ DEIP_TEST_CASE(lookup_grant_owners)
                       fc::assert_exception);
 
     {
-        auto owners = grant_service.lookup_grant_owners(DEIP_ROOT_POST_PARENT, DEIP_LIMIT_GRANTS_LIST_SIZE);
+        auto owners = grant_service.lookup_grant_owners("", DEIP_LIMIT_GRANTS_LIST_SIZE);
         BOOST_REQUIRE(owners.size() == 2);
     }
 
@@ -214,7 +214,7 @@ DEIP_TEST_CASE(lookup_grant_owners)
     }
 
     {
-        auto owners = grant_service.lookup_grant_owners(DEIP_ROOT_POST_PARENT, 2);
+        auto owners = grant_service.lookup_grant_owners("", 2);
         BOOST_REQUIRE(owners.size() == 2);
     }
 }

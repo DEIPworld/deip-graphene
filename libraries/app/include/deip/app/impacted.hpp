@@ -26,7 +26,7 @@
 #include <fc/container/flat.hpp>
 #include <deip/protocol/operations.hpp>
 #include <deip/protocol/transaction.hpp>
-#include <deip/chain/deip_object_types.hpp>
+#include <deip/chain/schema/deip_object_types.hpp>
 
 #include <fc/string.hpp>
 

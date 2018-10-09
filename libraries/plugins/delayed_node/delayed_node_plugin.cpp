@@ -26,7 +26,7 @@
 
 #include <deip/protocol/types.hpp>
 
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 #include <deip/app/api.hpp>
 #include <deip/app/database_api.hpp>
 

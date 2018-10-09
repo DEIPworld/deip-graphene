@@ -1,10 +1,10 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/proposal_object.hpp>
-#include <deip/chain/proposal_vote_object.hpp>
-#include <deip/chain/dbs_proposal.hpp>
-#include <deip/chain/dbs_research_group.hpp>
+#include <deip/chain/schema/proposal_object.hpp>
+#include <deip/chain/schema/proposal_vote_object.hpp>
+#include <deip/chain/services/dbs_proposal.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
 
 
 #include "database_fixture.hpp"
@@ -110,11 +110,12 @@ BOOST_AUTO_TEST_CASE(create_proposal)
 {
     try
     {
-        const proposal_object& proposal = data_service.create_proposal(proposal_action_type::dropout_member, "1", "alice",
+        const proposal_object& proposal = data_service.create_proposal(proposal_action_type::invite_member,
+                "{\"name\":\"bob\",\"research_group_id\":31,\"research_group_token_amount_in_percent\":5000}", "alice",
                                                                        1, fc::time_point_sec(0xffffffff), 40, 123);
 
-        BOOST_CHECK(proposal.action == proposal_action_type::dropout_member);
-        BOOST_CHECK(proposal.data == "1");
+        BOOST_CHECK(proposal.action == proposal_action_type::invite_member);
+        BOOST_CHECK(proposal.data == "{\"name\":\"bob\",\"research_group_id\":31,\"research_group_token_amount_in_percent\":5000}");
         BOOST_CHECK(proposal.creator == "alice");
         BOOST_CHECK(proposal.research_group_id == 1);
         BOOST_CHECK(proposal.expiration_time == fc::time_point_sec(0xffffffff));

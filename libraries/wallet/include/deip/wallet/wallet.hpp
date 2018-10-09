@@ -8,6 +8,8 @@
 #include <fc/real128.hpp>
 #include <fc/crypto/base58.hpp>
 
+#include <deip/blockchain_history/applied_operation.hpp>
+
 using namespace deip::app;
 using namespace deip::chain;
 using namespace graphene::utilities;
@@ -16,7 +18,9 @@ using namespace std;
 namespace deip {
 namespace wallet {
 
-typedef uint16_t transaction_handle_type;
+using deip::blockchain_history::applied_operation;
+using deip::blockchain_history::applied_operation_type;
+using transaction_handle_type = uint16_t;
 
 struct memo_data
 {
@@ -118,20 +122,54 @@ public:
      */
     variant_object about() const;
 
+    /** Returns the information about a block header
+     *
+     * @param num Block num
+     *
+     * @returns Header block data on the blockchain
+     */
+    optional<block_header> get_block_header(uint32_t num) const;
+
     /** Returns the information about a block
      *
      * @param num Block num
      *
      * @returns Public block data on the blockchain
      */
-    optional<signed_block_api_obj> get_block(uint32_t num);
+    optional<signed_block_api_obj> get_block(uint32_t num) const;
+
+    /** Returns information about the block headers in range [from-limit, from]
+     *
+     * @param num Block num, -1 means most recent, limit is the number of blocks before from.
+     * @param limit the maximum number of items that can be queried (0 to 500], must be less than from
+     *
+     */
+    std::map<uint32_t, block_header> get_block_headers_history(uint32_t num, uint32_t limit) const;
+
+    /** Returns information about the blocks in range [from-limit, from]
+     *
+     * @param num Block num, -1 means most recent, limit is the number of blocks before from.
+     * @param limit the maximum number of items that can be queried (0 to 500], must be less than from
+     *
+     */
+    std::map<uint32_t, signed_block_api_obj> get_blocks_history(uint32_t num, uint32_t limit) const;
 
     /** Returns sequence of operations included/generated in a specified block
      *
      * @param block_num Block height of specified block
-     * @param only_virtual Whether to only return virtual operations
+     * @param opt Operations type (all = 0, not_virt = 1, virt = 2, market = 3)
      */
-    vector<applied_operation> get_ops_in_block(uint32_t block_num, bool only_virtual = true);
+    std::map<uint32_t, applied_operation> get_ops_in_block(uint32_t block_num, applied_operation_type opt) const;
+
+     /**
+     *  This method returns all operations in ids range [from-limit, from]
+     *
+     *  @param from_op - the operation number, -1 means most recent, limit is the number of operations before from.
+     *  @param limit - the maximum number of items that can be queried (0 to 100], must be less than from
+     *  @param opt Operations type (all = 0, not_virt = 1, virt = 2, market = 3)
+     */
+    std::map<uint32_t, applied_operation>
+    get_ops_history(uint32_t from_op, uint32_t limit, applied_operation_type opt) const;
 
     /**
      * Returns the list of witnesses producing blocks in the current round (21 Blocks)
@@ -349,11 +387,13 @@ public:
      *  @param creator The account creating the new account
      *  @param newname The name of the new account
      *  @param json_meta JSON Metadata associated with the new account
+     *  @param fee The fee to be paid for account creation. It is converted to Common tokens for new account
      *  @param broadcast true if you wish to broadcast the transaction
      */
     annotated_signed_transaction create_account(const std::string& creator,
                                                 const std::string& newname,
                                                 const std::string& json_meta,
+                                                const asset& fee,
                                                 bool broadcast);
 
     /**
@@ -369,6 +409,7 @@ public:
      * @param active public active key of the new account
      * @param posting public posting key of the new account
      * @param memo public memo key of the new account
+     * @param fee The fee to paid for account creation. It is converted to Common tokens for new account
      * @param broadcast true if you wish to broadcast the transaction
      */
     annotated_signed_transaction create_account_with_keys(const std::string& creator,
@@ -378,6 +419,7 @@ public:
                                                           const public_key_type& active,
                                                           const public_key_type& posting,
                                                           const public_key_type& memo,
+                                                          const asset& fee,
                                                           bool broadcast) const;
 
     /**
@@ -608,14 +650,13 @@ public:
     /**
      * Transfers research tokens from one acount to another
      *
-     * @param research_token_id Id of the research token to transfer
-     * @param research_id Id of research
+     * @param research_id Id of research which tokens to transfer
      * @param from The account who transfers research tokens
      * @param to The account receiving research tokens
      * @param amount The account of research tokens to transfer
+     * @param broadcast
      */
-    annotated_signed_transaction transfer_research_tokens(const int64_t research_token_id,
-                                                           const int64_t research_id,
+    annotated_signed_transaction transfer_research_tokens(const int64_t research_id,
                                                            const std::string& from,
                                                            const std::string& to,
                                                            const uint32_t amount,
@@ -723,9 +764,31 @@ public:
      *
      *  @param account - account whose history will be returned
      *  @param from - the absolute sequence number, -1 means most recent, limit is the number of operations before from.
-     *  @param limit - the maximum number of items that can be queried (0 to 1000], must be less than from
+     *  @param limit - the maximum number of items that can be queried (0 to 100], must be less than from
      */
-    map<uint32_t, applied_operation> get_account_history(const std::string& account, uint32_t from, uint32_t limit);
+    std::map<uint32_t, applied_operation>
+    get_account_history(const std::string& account, uint64_t from, uint32_t limit);
+    /**
+     *  Account operations have sequence numbers from 0 to N where N is the most recent operation. This method
+     *  returns operations in the range [from-limit, from]
+     *
+     *  @param account - account whose history will be returned
+     *  @param from - the absolute sequence number, -1 means most recent, limit is the number of operations before from.
+     *  @param limit - the maximum number of items that can be queried (0 to 100], must be less than from
+     */
+    std::map<uint32_t, applied_operation>
+    get_account_deip_to_deip_transfers(const std::string& account, uint64_t from, uint32_t limit);
+
+    /**
+     *  Account operations have sequence numbers from 0 to N where N is the most recent operation. This method
+     *  returns operations in the range [from-limit, from]
+     *
+     *  @param account - account whose history will be returned
+     *  @param from - the absolute sequence number, -1 means most recent, limit is the number of operations before from.
+     *  @param limit - the maximum number of items that can be queried (0 to 100], must be less than from
+     */
+    std::map<uint32_t, applied_operation>
+    get_account_deip_to_common_tokens_transfers(const std::string& account, uint64_t from, uint32_t limit);
 
     std::map<string, std::function<string(fc::variant, const fc::variants&)>> get_result_formatters() const;
 
@@ -866,13 +929,11 @@ public:
      * Transfer research tokens back to research group
      *
      * @param owner The account who transfers research tokens
-     * @param research_token_id Id of research token
-     * @param research_id Id of research
+     * @param research_id Id of research which tokens to transfer
      * @param amount Amount of research tokens to transfer
      * @param broadcast
      */
-    annotated_signed_transaction transfer_research_tokens_to_research_group(const int64_t research_token_id,
-                                                                            const int64_t research_id,
+    annotated_signed_transaction transfer_research_tokens_to_research_group(const int64_t research_id,
                                                                             const std::string& owner,
                                                                             const uint32_t amount,
                                                                             const bool broadcast);
@@ -887,32 +948,30 @@ public:
     /**
      * Create new vesting contract
      *
-     * @param sender The account who creates vesting contract
-     * @param receiver The account who receives tokens from contract
-     * @param balance Amount to vest
-     * @param withdrawal_period Number of withdrawal periods
-     * @param contract_duration Duration of contract in seconds
+     * @param creator The account who creates vesting contract
+     * @param owner The account who owns tokens from contract
+     * @param balance Amount to vest (i.e. "1.000 DEIP")
+     * @param vesting_duration_seconds Duration of vesting in seconds
+     * @param vesting_cliff_seconds Duration of vesting cliff in seconds
+     * @param period_duration_seconds Duration of withdraw period in seconds (funds will be available every period, i.e. every 3 months)
      * @param broadcast
      */
-    annotated_signed_transaction deposit_to_vesting_contract(const std::string& sender,
-                                                             const std::string& receiver,
-                                                             const uint32_t balance,
-                                                             const uint32_t withdrawal_period,
-                                                             const uint32_t contract_duration,
-                                                             const bool broadcast);
+    annotated_signed_transaction create_vesting_balance(const std::string &creator, const std::string &owner, const asset &balance,
+                                                             const uint32_t &vesting_duration_seconds, const uint32_t &vesting_cliff_seconds,
+                                                             const uint32_t &period_duration_seconds, const bool broadcast);
 
     /**
      * Withdraw from vesting contract. Only withdraws the amount available for withdrawal
      *
-     * @param sender The account who creates vesting contract
-     * @param receiver The account who receives tokens from contract
-     * @param amount Amount to withdraw
+     * @param vesting_balance_id The account who created vesting contract
+     * @param owner The account who owns tokens from contract
+     * @param amount Amount to withdraw (i.e. "1.000 DEIP")
      * @param broadcast
      */
-    annotated_signed_transaction withdraw_from_vesting_contract(const std::string& sender,
-                                                                const std::string& receiver,
-                                                                const uint32_t amount,
-                                                                const bool broadcast);
+    annotated_signed_transaction withdraw_vesting_balance(const int64_t &vesting_balance_id,
+                                                           const std::string &owner,
+                                                           const asset &amount,
+                                                           const bool broadcast);
 
     /**
      * Vote for proposal
@@ -979,9 +1038,15 @@ FC_API( deip::wallet::wallet_api,
         (list_witnesses)
         (get_witness)
         (get_account)
+        (get_block_header)
         (get_block)
+        (get_block_headers_history)
+        (get_blocks_history)
         (get_ops_in_block)
+        (get_ops_history)
         (get_account_history)
+        (get_account_deip_to_deip_transfers)
+        (get_account_deip_to_common_tokens_transfers)
         (get_state)
         (get_withdraw_routes)
         (list_my_grants)
@@ -1022,8 +1087,8 @@ FC_API( deip::wallet::wallet_api,
         (reject_research_group_invite)
         (transfer_research_tokens_to_research_group)
         (research_update)
-        (deposit_to_vesting_contract)
-        (withdraw_from_vesting_contract)
+        (create_vesting_balance)
+        (withdraw_vesting_balance)
         (vote_proposal)
 
         /// helper api

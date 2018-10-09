@@ -3,10 +3,10 @@
 
 #include <deip/protocol/exceptions.hpp>
 
-#include <deip/chain/database.hpp>
-#include <deip/chain/database_exceptions.hpp>
+#include <deip/chain/database/database.hpp>
+#include <deip/chain/database/database_exceptions.hpp>
 #include <deip/chain/hardfork.hpp>
-#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
 
 #include <deip/chain/util/reward.hpp>
 
@@ -19,15 +19,17 @@
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
-#include <deip/chain/research_discipline_relation_object.hpp>
-#include <deip/chain/expert_token_object.hpp>
+#include <deip/chain/schema/research_discipline_relation_object.hpp>
+#include <deip/chain/schema/expert_token_object.hpp>
+#include <deip/chain/schema/review_object.hpp>
+#include <deip/chain/schema/vesting_balance_object.hpp>
+#include <deip/chain/schema/grant_objects.hpp>
+#include <deip/chain/schema/expertise_stats_object.hpp>
+#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 
-#include <deip/chain/dbs_research_token.hpp>
-#include <deip/chain/review_object.hpp>
-#include <deip/chain/vesting_contract_object.hpp>
-#include <deip/chain/dbs_research_discipline_relation.hpp>
-#include <deip/chain/grant_objects.hpp>
-#include <deip/chain/expertise_allocation_proposal_object.hpp>
+#include <deip/chain/services/dbs_research_token.hpp>
+#include <deip/chain/services/dbs_research_discipline_relation.hpp>
+
 
 #define DROPOUT_COMPENSATION_IN_PERCENT 1500
 
@@ -133,7 +135,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = true;
-        op.weight =  50 * DEIP_1_PERCENT;
+        op.weight =  DEIP_100_PERCENT;
 
         fc::uint128 total_expert_tokens_amount; // With Common Token
         auto it_pair = db.get_index<expert_token_index>().indicies().get<by_account_name>().equal_range("alice");
@@ -167,9 +169,9 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         BOOST_CHECK(review.author == "alice");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.content == "test");
-        BOOST_CHECK(review.expertise_amounts_used.at(1) == (DEIP_REVIEW_REQUIRED_POWER * DEIP_1_PERCENT * op.weight * token.amount) / (DEIP_100_PERCENT * DEIP_100_PERCENT));
+        BOOST_CHECK(review.expertise_amounts_used.at(1) == (old_voting_power * op.weight * token.amount) / (DEIP_100_PERCENT * DEIP_100_PERCENT));
         BOOST_CHECK(disciplines.size() == 1 && disciplines[0] == 1);
-        BOOST_CHECK(old_voting_power - new_voting_power == (DEIP_REVIEW_REQUIRED_POWER * DEIP_1_PERCENT * op.weight) / DEIP_100_PERCENT);
+        BOOST_CHECK(old_voting_power - new_voting_power == (DEIP_REVIEW_REQUIRED_POWER_PERCENT * op.weight) / DEIP_100_PERCENT);
 
         validate_database();
 
@@ -756,7 +758,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        BOOST_TEST_MESSAGE("--- Test failure when creator cannot cover fee");
        tx.signatures.clear();
        tx.operations.clear();
-       op.fee = asset(db.get_account(TEST_INIT_DELEGATE_NAME).balance.amount + 1, DEIP_SYMBOL);
+       op.fee = asset(0, DEIP_SYMBOL);
        op.new_account_name = "bob";
        tx.operations.push_back(op);
        tx.sign(init_account_priv_key, db.get_chain_id());
@@ -773,7 +775,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        generate_block();
 
        tx.clear();
-       op.fee = ASSET("1.000 TESTS");
+       op.fee = ASSET("0.000 TESTS");
        tx.operations.push_back(op);
        tx.sign(init_account_priv_key, db.get_chain_id());
        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
@@ -1453,8 +1455,8 @@ BOOST_AUTO_TEST_CASE(withdraw_common_tokens_apply)
 
                db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object& gpo) {
                    gpo.current_supply
-                           += wso.median_props.account_creation_fee - ASSET("0.001 TESTS") - gpo.total_common_tokens_fund_deip;
-                   gpo.total_common_tokens_fund_deip = wso.median_props.account_creation_fee - ASSET("0.001 TESTS");
+                           += wso.median_props.account_creation_fee - ASSET("0.001 TESTS") - gpo.common_tokens_fund;
+                   gpo.common_tokens_fund = wso.median_props.account_creation_fee - ASSET("0.001 TESTS");
 
                });
            },
@@ -2567,7 +2569,6 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_to_research_group_apply)
         op.research_id = 1;
         op.amount = 50 * DEIP_1_PERCENT;
         op.owner = "alice";
-        op.research_token_id = 1;
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -2708,24 +2709,27 @@ BOOST_AUTO_TEST_CASE(research_update_apply)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(deposit_to_vesting_contract_apply)
+BOOST_AUTO_TEST_CASE(deposit_to_vesting_balance_apply)
 {
     try {
-        BOOST_TEST_MESSAGE("Testing: deposit_to_vesting_contract_apply");
+        BOOST_TEST_MESSAGE("Testing: deposit_to_vesting_balance_apply");
 
-        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        ACTORS((alice)(bob));
 
         generate_block();
 
+        fund("alice", asset(10000, DEIP_SYMBOL));
+
         private_key_type priv_key = generate_private_key("alice");
 
-        deposit_to_vesting_contract_operation op;
+        create_vesting_balance_operation op;
 
-        op.sender = "alice";
-        op.receiver = "bob";
-        op.balance = 1000;
-        op.withdrawal_period = 4;
-        op.contract_duration = DAYS_TO_SECONDS(365);
+        op.creator = "alice";
+        op.owner = "bob";
+        op.balance = asset(1000, DEIP_SYMBOL);
+        op.vesting_duration_seconds = DAYS_TO_SECONDS(365);
+        op.vesting_cliff_seconds = 0;
+        op.period_duration_seconds = DAYS_TO_SECONDS(5);
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -2734,45 +2738,43 @@ BOOST_AUTO_TEST_CASE(deposit_to_vesting_contract_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        auto& vesting_contract = db.get<vesting_contract_object, by_sender_and_receiver>(std::make_tuple("alice", "bob"));
+        auto& vesting_balance = db.get<vesting_balance_object, by_id>(0);
 
-        BOOST_CHECK(vesting_contract.sender == "alice");
-        BOOST_CHECK(vesting_contract.receiver == "bob");
-        BOOST_CHECK(vesting_contract.balance.amount == 1000);
-        BOOST_CHECK(vesting_contract.contract_duration == fc::time_point_sec(DAYS_TO_SECONDS(365)));
-        BOOST_CHECK(vesting_contract.start_date == db.head_block_time());
-        BOOST_CHECK(vesting_contract.expiration_date.sec_since_epoch() == db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(365));
+        BOOST_CHECK(vesting_balance.owner == "bob");
+        BOOST_CHECK(vesting_balance.balance.amount == 1000);
+        BOOST_CHECK(vesting_balance.vesting_duration_seconds == DAYS_TO_SECONDS(365));
+        BOOST_CHECK(vesting_balance.start_timestamp == db.head_block_time());
+        BOOST_CHECK(vesting_balance.period_duration_seconds == DAYS_TO_SECONDS(5));
     }
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(withdraw_from_vesting_contract_apply)
+BOOST_AUTO_TEST_CASE(withdraw_from_vesting_balance_apply)
 {
     try {
-        BOOST_TEST_MESSAGE("Testing: withdraw_from_vesting_contract_apply");
+        BOOST_TEST_MESSAGE("Testing: withdraw_from_vesting_balance_apply");
 
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
 
         generate_block();
 
-        private_key_type priv_key = generate_private_key("alice");
+        private_key_type priv_key = generate_private_key("bob");
 
-        auto& contract = db.create<vesting_contract_object>([&](vesting_contract_object& v) {
+        auto& contract = db.create<vesting_balance_object>([&](vesting_balance_object& v) {
             v.id = 1;
-            v.sender = "alice";
-            v.receiver = "bob";
+            v.owner = "bob";
             v.balance = asset(1000, DEIP_SYMBOL);
-            v.start_date = fc::time_point_sec(db.head_block_time().sec_since_epoch() - DAYS_TO_SECONDS(366));
-            v.contract_duration = fc::time_point_sec(DAYS_TO_SECONDS(730));
-            v.expiration_date = fc::time_point_sec(db.head_block_time().sec_since_epoch() + DAYS_TO_SECONDS(364));
-            v.withdrawal_periods = 4;
+            v.start_timestamp = fc::time_point_sec(db.head_block_time() - DAYS_TO_SECONDS(155));
+            v.vesting_duration_seconds = DAYS_TO_SECONDS(300);
+            v.period_duration_seconds = DAYS_TO_SECONDS(10);
+            v.vesting_cliff_seconds = 0;
         });
 
-        withdraw_from_vesting_contract_operation op;
+        withdraw_vesting_balance_operation op;
 
-        op.sender = "alice";
-        op.receiver = "bob";
-        op.amount = 500;
+        op.vesting_balance_id = 1;
+        op.owner = "bob";
+        op.amount = asset(500, DEIP_SYMBOL);
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -2781,9 +2783,9 @@ BOOST_AUTO_TEST_CASE(withdraw_from_vesting_contract_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        BOOST_CHECK(contract.sender == "alice");
-        BOOST_CHECK(contract.receiver == "bob");
+        BOOST_CHECK(contract.owner == "bob");
         BOOST_CHECK(contract.balance.amount == 500);
+        BOOST_CHECK(contract.withdrawn.amount == 500);
 
         auto bob_acc = db.get_account("bob");
 
@@ -2964,7 +2966,7 @@ BOOST_AUTO_TEST_CASE(exclude_member_with_research_token_compensation_test)
         db.push_transaction(tx, 0);
 
         auto& research_token_service = db.obtain_service<dbs_research_token>();
-        auto& research_token = research_token_service.get_research_token_by_account_name_and_research_id("bob", research.id);
+        auto& research_token = research_token_service.get_by_owner_and_research("bob", research.id);
 
         BOOST_CHECK_THROW(research_group_service.get_token_by_account_and_research_group("bob", 1), fc::exception);
         BOOST_CHECK(research_token.account_name == "bob");
@@ -3481,7 +3483,7 @@ BOOST_AUTO_TEST_CASE(research_token_sale_data_validate_test)
 
 BOOST_AUTO_TEST_CASE(create_research_material)
 {
-    ACTORS_WITH_EXPERT_TOKENS((alice))
+    ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(john)(greg))
     std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
     std::map<uint16_t, share_type> proposal_quorums;
 
@@ -3544,20 +3546,103 @@ BOOST_AUTO_TEST_CASE(create_research_material)
                 && content.references.size() == 1;
         }));
 
-    db.create<total_votes_object>([&](total_votes_object& r) {
-        r.id = 10,
-        r.research_id = 1;
+    db.create<review_object>([&](review_object& r) {
+        bip::map<discipline_id_type, share_type> weights_per_discipline;
+        weights_per_discipline[1] = 100;
+        weights_per_discipline[2] = 200;
+        r.id = 0;
         r.research_content_id = 0;
-        r.discipline_id = 1;
-        r.total_weight = 2000;
+        r.weights_per_discipline.insert(weights_per_discipline.begin(), weights_per_discipline.end());
+        r.author = "john";
+        r.is_positive = true;
     });
 
-    db.create<total_votes_object>([&](total_votes_object& r) {
-        r.id = 20,
-        r.research_id = 1;
+    db.create<review_object>([&](review_object& r) {
+        bip::map<discipline_id_type, share_type> weights_per_discipline;
+        weights_per_discipline[1] = 150;
+        weights_per_discipline[2] = 250;
+        r.id = 1;
         r.research_content_id = 0;
-        r.discipline_id = 2;
-        r.total_weight = 1000;
+        r.weights_per_discipline.insert(weights_per_discipline.begin(), weights_per_discipline.end());
+        r.author = "bob";
+        r.is_positive = true;
+    });
+
+    db.create<research_content_object>([&](research_content_object& rc) {
+        rc.id = 1; // id of the first element in index is 0
+        rc.research_id = 1;
+        rc.type = research_content_type::milestone;
+        rc.title = "title for milestone for Research #1123";
+        rc.content = "milestone2 for Research #1123";
+        rc.permlink = "milestone2-research-one";
+        rc.authors = {"alice"};
+        rc.created_at = db.head_block_time();
+    });
+
+    db.create<review_object>([&](review_object& r) {
+        bip::map<discipline_id_type, share_type> weights_per_discipline;
+        weights_per_discipline[1] = 50;
+        weights_per_discipline[2] = 100;
+        r.id = 2;
+        r.research_content_id = 1;
+        r.weights_per_discipline.insert(weights_per_discipline.begin(), weights_per_discipline.end());
+        r.author = "john";
+        r.is_positive = false;
+    });
+
+    db.create<review_object>([&](review_object& r) {
+        bip::map<discipline_id_type, share_type> weights_per_discipline;
+        weights_per_discipline[1] = 250;
+        weights_per_discipline[2] = 50;
+        r.id = 3;
+        r.research_content_id = 1;
+        r.weights_per_discipline.insert(weights_per_discipline.begin(), weights_per_discipline.end());
+        r.author = "bob";
+        r.is_positive = true;
+    });
+
+    db.create<research_content_object>([&](research_content_object& rc) {
+        rc.id = 2;
+        rc.research_id = 1;
+        rc.type = research_content_type::milestone;
+        rc.title = "title for milestone 3 for Research #1123";
+        rc.content = "milestone3 for Research #1123";
+        rc.permlink = "milestone3-research-one";
+        rc.authors = {"alice"};
+        rc.created_at = db.head_block_time();
+    });
+
+    db.create<review_object>([&](review_object& r) {
+        bip::map<discipline_id_type, share_type> weights_per_discipline;
+        weights_per_discipline[1] = 150;
+        weights_per_discipline[2] = 75;
+        r.id = 4;
+        r.research_content_id = 2;
+        r.weights_per_discipline.insert(weights_per_discipline.begin(), weights_per_discipline.end());
+        r.author = "john";
+        r.is_positive = true;
+    });
+
+    db.create<review_object>([&](review_object& r) {
+        bip::map<discipline_id_type, share_type> weights_per_discipline;
+        weights_per_discipline[1] = 250;
+        weights_per_discipline[2] = 250;
+        r.id = 5;
+        r.research_content_id = 2;
+        r.weights_per_discipline.insert(weights_per_discipline.begin(), weights_per_discipline.end());
+        r.author = "bob";
+        r.is_positive = true;
+    });
+
+    db.create<review_object>([&](review_object& r) {
+        bip::map<discipline_id_type, share_type> weights_per_discipline;
+        weights_per_discipline[1] = 100;
+        weights_per_discipline[2] = 100;
+        r.id = 6;
+        r.research_content_id = 2;
+        r.weights_per_discipline.insert(weights_per_discipline.begin(), weights_per_discipline.end());
+        r.author = "greg";
+        r.is_positive = true;
     });
 
     const std::string json_str2 = "{\"research_id\": 1,"
@@ -3582,20 +3667,17 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     tx2.validate();
     db.push_transaction(tx2, 0);
 
-    auto& proposal_create_material = proposal_service.get_proposal(3);
-    BOOST_CHECK(proposal_create_material.is_completed == true);
+    auto& total_vote = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(3, 1));
+    auto& total_vote2 = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(3, 2));
 
-    auto& total_vote = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(1, 1));
-    auto& total_vote2 = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(1, 2));
-
-    BOOST_CHECK(total_vote.total_weight == 2000);
-    BOOST_CHECK(total_vote2.total_weight == 1000);
+    BOOST_CHECK(total_vote.total_weight == 450);
+    BOOST_CHECK(total_vote2.total_weight == 450);
 
     auto& discipline = db.get<discipline_object, by_id>(1);
     auto& discipline2 = db.get<discipline_object, by_id>(2);
 
-    BOOST_CHECK(discipline.total_active_weight == 2000);
-    BOOST_CHECK(discipline2.total_active_weight == 1000);
+    BOOST_CHECK(discipline.total_active_weight == 450);
+    BOOST_CHECK(discipline2.total_active_weight == 450);
 }
 
 BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
@@ -3657,14 +3739,15 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        auto& dgpo = db.get_dynamic_global_properties();
+        auto& stats = db.get_expertise_stats();
 
-        BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == 10000);
-        BOOST_CHECK(fc::uint128(dgpo.total_used_expertise.value) == 10000);
+        BOOST_CHECK(stats.used_expertise_per_block.value == 10000);
 
-        generate_blocks(DEIP_BLOCKS_PER_HOUR / 2);
+        generate_block();
 
-        BOOST_CHECK(fc::uint128(dgpo.used_expertise_per_block.value) == 0);
+        BOOST_CHECK(stats.get_expertise_used_last_week().value == 10000);
+        BOOST_CHECK(stats.total_used_expertise.value == 10000);
+        BOOST_CHECK(stats.used_expertise_per_block.value == 0);
 
         BOOST_TEST_MESSAGE("Testing: vote for review expertise");
 
@@ -3688,35 +3771,13 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
 
         db.push_transaction(tx, 0);
 
-        BOOST_CHECK(dgpo.used_expertise_per_block == 5000);
-        BOOST_CHECK(dgpo.total_used_expertise == 15000);
+        BOOST_CHECK(stats.used_expertise_per_block == 5000);
 
-//        generate_block();
-//
-//        BOOST_TEST_MESSAGE("Vote for content expertise");
-//
-//        BOOST_CHECK(dgpo.used_expertise_per_block == 0);
-//
-//        vote_operation op3;
-//
-//        tx.operations.clear();
-//        tx.signatures.clear();
-//
-//        op3.research_id = research.id._id;
-//        op3.research_content_id = content.id._id;
-//        op3.discipline_id = 1;
-//        op3.weight = 50 * DEIP_1_PERCENT;
-//        op3.voter = "john";
-//
-//        tx.operations.clear();
-//        tx.signatures.clear();
-//        tx.operations.push_back(op3);
-//        tx.sign(priv_key, db.get_chain_id());
-//
-//        db.push_transaction(tx, 0);
-//
-//        BOOST_CHECK(dgpo.used_expertise_per_block == 4750);
-//        BOOST_CHECK(dgpo.total_used_expertise == 29750);
+        generate_block();
+
+        BOOST_CHECK(stats.get_expertise_used_last_week().value == 15000);
+        BOOST_CHECK(stats.total_used_expertise == 15000);
+        BOOST_CHECK(stats.used_expertise_per_block == 0);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -3821,7 +3882,6 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_apply)
         op.amount = 40 * DEIP_1_PERCENT;
         op.sender = "alice";
         op.receiver = "bob";
-        op.research_token_id = 0;
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -3841,7 +3901,6 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_apply)
         op2.amount = 10 * DEIP_1_PERCENT;
         op2.sender = "alice";
         op2.receiver = "bob";
-        op2.research_token_id = 0;
 
         signed_transaction tx2;
         tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);

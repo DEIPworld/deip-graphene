@@ -19,7 +19,7 @@
 #define DEIP_CASHOUT_WINDOW_SECONDS          (60*60) /// 1 hr
 #define DEIP_UPVOTE_LOCKOUT                  (fc::minutes(5))
 
-#define DEIP_MIN_ACCOUNT_CREATION_FEE        1000
+#define DEIP_MIN_ACCOUNT_CREATION_FEE        1
 
 #define DEIP_OWNER_AUTH_RECOVERY_PERIOD                  fc::seconds(60)
 #define DEIP_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::seconds(12)
@@ -68,6 +68,7 @@
 #define DEIP_BLOCK_INTERVAL                  3
 #define DEIP_BLOCKS_PER_YEAR                 (365*24*60*60/DEIP_BLOCK_INTERVAL)
 #define DEIP_BLOCKS_PER_DAY                  (24*60*60/DEIP_BLOCK_INTERVAL)
+#define DEIP_BLOCKS_PER_WEEK                 (DEIP_BLOCKS_PER_DAY * 7)
 #define DEIP_BLOCKS_PER_HOUR                 (60*60/DEIP_BLOCK_INTERVAL)
 #define DEIP_START_VESTING_BLOCK             (DEIP_BLOCKS_PER_DAY * 7)
 #define DEIP_START_MINER_VOTING_BLOCK        (DEIP_BLOCKS_PER_DAY * 30)
@@ -103,7 +104,7 @@
 #define DEIP_1_PERCENT                       (DEIP_100_PERCENT/100)
 #define DEIP_1_TENTH_PERCENT                 (DEIP_100_PERCENT/1000)
 
-#define DEIP_REVIEW_REQUIRED_POWER 20
+#define DEIP_REVIEW_REQUIRED_POWER_PERCENT (20*DEIP_1_PERCENT)
 
 #define DEIP_INFLATION_RATE_START_PERCENT    (978) // Fixes block 7,000,000 to 9.5%
 #define DEIP_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
@@ -201,8 +202,6 @@
 
 /// Represents the canonical account for specifying you will vote for directly (as opposed to a proxy)
 #define DEIP_PROXY_TO_SELF_ACCOUNT           ""
-/// Represents the canonical root post parent account
-#define DEIP_ROOT_POST_PARENT                (account_name_type())
 
 #define DEIP_PROXY_TO_SELF_EXPERT_TOKEN      ""
 

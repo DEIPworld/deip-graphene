@@ -18,19 +18,21 @@
 #include <cfenv>
 #include <iostream>
 
-#include <deip/chain/dbs_grant.hpp>
-#include <deip/chain/dbs_discipline.hpp>
-#include <deip/chain/dbs_research.hpp>
-#include <deip/chain/dbs_research_content.hpp>
-#include <deip/chain/dbs_expert_token.hpp>
-#include <deip/chain/dbs_research_token_sale.hpp>
-#include <deip/chain/dbs_research_group.hpp>
-#include <deip/chain/dbs_research_discipline_relation.hpp>
-#include <deip/chain/dbs_research_group_invite.hpp>
-#include <deip/chain/dbs_vote.hpp>
-#include <deip/chain/dbs_account.hpp>
-#include <deip/chain/dbs_review.hpp>
-#include <deip/chain/dbs_research_token.hpp>
+#include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_discipline.hpp>
+#include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_research_content.hpp>
+#include <deip/chain/services/dbs_expert_token.hpp>
+#include <deip/chain/services/dbs_research_token_sale.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_research_discipline_relation.hpp>
+#include <deip/chain/services/dbs_research_group_invite.hpp>
+#include <deip/chain/services/dbs_vote.hpp>
+#include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_review.hpp>
+#include <deip/chain/services/dbs_research_token.hpp>
+
+#include <deip/chain/schema/operation_object.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 #define MAX_LIMIT 1000
@@ -52,7 +54,8 @@ public:
     // Blocks and transactions
     optional<block_header> get_block_header(uint32_t block_num) const;
     optional<signed_block_api_obj> get_block(uint32_t block_num) const;
-    vector<applied_operation> get_ops_in_block(uint32_t block_num, bool only_virtual) const;
+    std::map<uint32_t, block_header> get_block_headers_history(uint32_t block_num, uint32_t limit) const;
+    std::map<uint32_t, signed_block_api_obj> get_blocks_history(uint32_t block_num, uint32_t limit) const;
 
     // Globals
     fc::variant_object get_config() const;
@@ -99,22 +102,6 @@ public:
     bool _disable_get_block = false;
 };
 
-applied_operation::applied_operation()
-{
-}
-
-applied_operation::applied_operation(const operation_object& op_obj)
-    : trx_id(op_obj.trx_id)
-    , block(op_obj.block)
-    , trx_in_block(op_obj.trx_in_block)
-    , op_in_trx(op_obj.op_in_trx)
-    , virtual_op(op_obj.virtual_op)
-    , timestamp(op_obj.timestamp)
-{
-    // fc::raw::unpack( op_obj.serialized_op, op );     // g++ refuses to compile this as ambiguous
-    op = fc::raw::unpack<operation>(op_obj.serialized_op);
-}
-
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
 // Subscriptions                                                    //
@@ -152,6 +139,7 @@ void database_api_impl::set_block_applied_callback(std::function<void(const vari
 
 database_api::database_api(const deip::app::api_context& ctx)
     : my(new database_api_impl(ctx))
+    , _app(ctx.app)
 {
 }
 
@@ -209,25 +197,28 @@ optional<signed_block_api_obj> database_api_impl::get_block(uint32_t block_num) 
     return _db.fetch_block_by_number(block_num);
 }
 
-vector<applied_operation> database_api::get_ops_in_block(uint32_t block_num, bool only_virtual) const
+std::map<uint32_t, block_header> database_api::get_block_headers_history(uint32_t block_num, uint32_t limit) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_ops_in_block(block_num, only_virtual); });
+    FC_ASSERT(!_app.is_read_only(), "Disabled for read only mode");
+    return my->_db.with_read_lock([&]() { return my->get_block_headers_history(block_num, limit); });
 }
 
-vector<applied_operation> database_api_impl::get_ops_in_block(uint32_t block_num, bool only_virtual) const
+std::map<uint32_t, block_header> database_api_impl::get_block_headers_history(uint32_t block_num, uint32_t limit) const
 {
-    const auto& idx = _db.get_index<operation_index>().indices().get<by_location>();
-    auto itr = idx.lower_bound(block_num);
-    vector<applied_operation> result;
-    applied_operation temp;
-    while (itr != idx.end() && itr->block == block_num)
-    {
-        temp = *itr;
-        if (!only_virtual || is_virtual_operation(temp.op))
-            result.push_back(temp);
-        ++itr;
-    }
-    return result;
+    std::map<uint32_t, block_header> ret;
+    _db.get_blocks_history_by_number<block_header>(ret, block_num, limit);
+    return ret;
+}
+std::map<uint32_t, signed_block_api_obj> database_api::get_blocks_history(uint32_t block_num, uint32_t limit) const
+{
+    FC_ASSERT(!_app.is_read_only(), "Disabled for read only mode");
+    return my->_db.with_read_lock([&]() { return my->get_blocks_history(block_num, limit); });
+}
+std::map<uint32_t, signed_block_api_obj> database_api_impl::get_blocks_history(uint32_t block_num, uint32_t limit) const
+{
+    std::map<uint32_t, signed_block_api_obj> ret;
+    _db.get_blocks_history_by_number<signed_block_api_obj>(ret, block_num, limit);
+    return ret;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -828,34 +819,6 @@ set<string> database_api_impl::lookup_grant_owners(const string& lower_bound_nam
 }
 
 /**
- *  This method can be used to fetch replies to an account.
- *
- *  The first call should be (account_to_retrieve replies, "", limit)
- *  Subsequent calls should be (last_author, last_permlink, limit)
- */
-
-map<uint32_t, applied_operation> database_api::get_account_history(string account, uint64_t from, uint32_t limit) const
-{
-    return my->_db.with_read_lock([&]() {
-        FC_ASSERT(limit <= MAX_LIMIT, "Limit of ${l} is greater than maxmimum allowed", ("l", limit));
-        //   idump((account)(from)(limit));
-        const auto& idx = my->_db.get_index<account_history_index>().indices().get<by_account>();
-        auto itr = idx.lower_bound(boost::make_tuple(account, from));
-        //   if( itr != idx.end() ) idump((*itr));
-        auto end = idx.upper_bound(boost::make_tuple(account, std::max(int64_t(0), int64_t(itr->sequence) - limit)));
-        //   if( end != idx.end() ) idump((*end));
-
-        map<uint32_t, applied_operation> result;
-        while (itr != end)
-        {
-            result[itr->sequence] = my->_db.get(itr->op);
-            ++itr;
-        }
-        return result;
-    });
-}
-
-/**
  *  This call assumes root already stored as part of state, it will
  *  modify root.replies to contain links to the reply posts and then
  *  add the reply discussions to the state. This method also fetches
@@ -908,25 +871,26 @@ state database_api::get_state(string path) const
                 auto& eacnt = _state.accounts[acnt];
                 if (part[1] == "transfers")
                 {
-                    auto history = get_account_history(acnt, uint64_t(-1), 10000);
-                    for (auto& item : history)
-                    {
-                        switch (item.second.op.which())
-                        {
-                        case operation::tag<withdraw_common_tokens_operation>::value:
-                        case operation::tag<transfer_operation>::value:
-                        case operation::tag<account_witness_vote_operation>::value:
-                        case operation::tag<account_witness_proxy_operation>::value:
-                            //   eacnt.vote_history[item.first] =  item.second;
-                            break;
-                        case operation::tag<account_create_operation>::value:
-                        case operation::tag<account_update_operation>::value:
-                        case operation::tag<witness_update_operation>::value:
-                        case operation::tag<producer_reward_operation>::value:  
-                        default:
-                            eacnt.other_history[item.first] = item.second;
-                        }
-                    }
+                    // TODO: rework this garbage method - split it into sensible parts
+                    // auto history = get_account_history(acnt, uint64_t(-1), 10000);
+                    // for (auto& item : history)
+                    // {
+                    //     switch (item.second.op.which())
+                    //     {
+                    //     case operation::tag<withdraw_common_tokens_operation>::value:
+                    //     case operation::tag<transfer_operation>::value:
+                    //     case operation::tag<account_witness_vote_operation>::value:
+                    //     case operation::tag<account_witness_proxy_operation>::value:
+                    //         //   eacnt.vote_history[item.first] =  item.second;
+                    //         break;
+                    //     case operation::tag<account_create_operation>::value:
+                    //     case operation::tag<account_update_operation>::value:
+                    //     case operation::tag<witness_update_operation>::value:
+                    //     case operation::tag<producer_reward_operation>::value:  
+                    //     default:
+                    //         eacnt.other_history[item.first] = item.second;
+                    //     }
+                    // }
                 }
             }
             /// pull a complete discussion
@@ -1674,6 +1638,36 @@ database_api::get_total_votes_by_research_and_discipline(const research_id_type&
     });
 }
 
+vector<total_votes_api_obj>
+database_api::get_total_votes_by_content(const research_content_id_type& research_content_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<total_votes_api_obj> results;
+        chain::dbs_vote& vote_service
+                = my->_db.obtain_service<chain::dbs_vote>();
+
+        auto total_votes_r = vote_service.get_total_votes_by_content(research_content_id);
+
+        for (const chain::total_votes_object& total_votes : total_votes_r)
+        {
+            results.push_back(total_votes);
+        }
+
+        return results;
+    });
+}
+
+total_votes_api_obj database_api::get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id,
+                                                         const discipline_id_type& discipline_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_vote& vote_service = my->_db.obtain_service<chain::dbs_vote>();
+        auto total_votes_r = vote_service.get_total_votes_by_content_and_discipline(research_content_id, discipline_id);
+        return total_votes_r;
+    });
+}
+
+
 vector<review_api_obj> database_api::get_reviews_by_research(const research_id_type& research_id) const
 {
     return my->_db.with_read_lock([&]() {
@@ -1721,7 +1715,7 @@ research_token_api_obj database_api::get_research_token_by_id(const research_tok
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_token& research_token_service
             = my->_db.obtain_service<chain::dbs_research_token>();
-        return research_token_service.get_research_token(research_token_id);
+        return research_token_service.get(research_token_id);
     });
 }
 
@@ -1732,7 +1726,7 @@ vector<research_token_api_obj> database_api::get_research_tokens_by_account_name
         chain::dbs_research_token& research_token_service
                 = my->_db.obtain_service<chain::dbs_research_token>();
 
-        auto research_tokens = research_token_service.get_research_tokens_by_account_name(account_name);
+        auto research_tokens = research_token_service.get_by_owner(account_name);
 
         for (const chain::research_token_object& research_token : research_tokens)
             results.push_back(research_token);
@@ -1748,7 +1742,7 @@ vector<research_token_api_obj> database_api::get_research_tokens_by_research_id(
         chain::dbs_research_token& research_token_service
                 = my->_db.obtain_service<chain::dbs_research_token>();
 
-        auto research_tokens = research_token_service.get_research_tokens_by_research_id(research_id);
+        auto research_tokens = research_token_service.get_by_research(research_id);
 
         for (const chain::research_token_object& research_token : research_tokens)
             results.push_back(research_token);
@@ -1763,7 +1757,7 @@ research_token_api_obj database_api::get_research_token_by_account_name_and_rese
     return my->_db.with_read_lock([&]() {
         chain::dbs_research_token& research_token_service
                 = my->_db.obtain_service<chain::dbs_research_token>();
-        return research_token_service.get_research_token_by_account_name_and_research_id(account_name, research_id);
+        return research_token_service.get_by_owner_and_research(account_name, research_id);
     });
 }
 

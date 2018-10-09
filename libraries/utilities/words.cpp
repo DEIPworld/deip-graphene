@@ -3741,7 +3741,7 @@ const const_char_ptr word_list[]
         "semi",    "semiape", "semiarc", "semibay", "semic",   "semicup", "semidry", "semiegg", "semifib", "semifit",
         "semify",  "semigod", "semihot", "seminal", "seminar", "semiorb", "semiped", "semipro", "semiraw", "semis",
         "semita",  "semitae", "semital", "semiurn", "semmet",  "semmit",  "semola",  "semsem",  "sen",     "senaite",
-        "senam",   "senary",  "senate",  "senator", "sence",   "sencion", "send",    "sendal",  "sendee",  "sender",
+        "senam",   "senary",  "senate",  "senator", "sence",   "sencion", "send",    "sendal",  "sendee",  "creator",
         "sending", "senega",  "senegin", "senesce", "senile",  "senior",  "senna",   "sennet",  "sennit",  "sennite",
         "sensa",   "sensal",  "sensate", "sense",   "sensed",  "sensify", "sensile", "sension", "sensism", "sensist",
         "sensive", "sensize", "senso",   "sensor",  "sensory", "sensual", "sensum",  "sensyne", "sent",    "sentry",

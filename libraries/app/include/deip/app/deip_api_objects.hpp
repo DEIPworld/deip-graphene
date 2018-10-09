@@ -1,32 +1,32 @@
 #pragma once
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/block_summary_object.hpp>
-#include <deip/chain/global_property_object.hpp>
-#include <deip/chain/history_object.hpp>
-#include <deip/chain/deip_objects.hpp>
-#include <deip/chain/transaction_object.hpp>
-#include <deip/chain/witness_objects.hpp>
-#include <deip/chain/grant_objects.hpp>
-#include <deip/chain/proposal_object.hpp>
-#include <deip/chain/proposal_vote_object.hpp>
-#include <deip/chain/discipline_object.hpp>
-#include <deip/chain/research_object.hpp>
-#include <deip/chain/research_content_object.hpp>
-#include <deip/chain/expert_token_object.hpp>
-#include <deip/chain/research_token_sale_object.hpp>
-#include <deip/chain/research_group_object.hpp>
-#include <deip/chain/research_discipline_relation_object.hpp>
-#include <deip/chain/research_group_invite_object.hpp>
-#include <deip/chain/research_object.hpp>
-#include <deip/chain/total_votes_object.hpp>
-#include <deip/chain/review_object.hpp>
-#include <deip/chain/research_token_object.hpp>
+#include <deip/chain/schema/account_object.hpp>
+#include <deip/chain/schema/block_summary_object.hpp>
+#include <deip/chain/schema/global_property_object.hpp>
+//#include <deip/chain/history_object.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
+#include <deip/chain/schema/transaction_object.hpp>
+#include <deip/chain/schema/witness_objects.hpp>
+#include <deip/chain/schema/grant_objects.hpp>
+#include <deip/chain/schema/proposal_object.hpp>
+#include <deip/chain/schema/proposal_vote_object.hpp>
+#include <deip/chain/schema/discipline_object.hpp>
+#include <deip/chain/schema/research_object.hpp>
+#include <deip/chain/schema/research_content_object.hpp>
+#include <deip/chain/schema/expert_token_object.hpp>
+#include <deip/chain/schema/research_token_sale_object.hpp>
+#include <deip/chain/schema/research_group_object.hpp>
+#include <deip/chain/schema/research_discipline_relation_object.hpp>
+#include <deip/chain/schema/research_group_invite_object.hpp>
+#include <deip/chain/schema/research_object.hpp>
+#include <deip/chain/schema/total_votes_object.hpp>
+#include <deip/chain/schema/review_object.hpp>
+#include <deip/chain/schema/research_token_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
-#include <deip/chain/database.hpp>
-#include <deip/chain/vote_object.hpp>
-#include <deip/chain/review_vote_object.hpp>
+#include <deip/chain/database/database.hpp>
+#include <deip/chain/schema/vote_object.hpp>
+#include <deip/chain/schema/review_vote_object.hpp>
 
 namespace deip {
 namespace app {
@@ -56,10 +56,7 @@ struct account_api_obj
         , recovery_account(a.recovery_account)
         , last_account_recovery(a.last_account_recovery)
         , lifetime_vote_count(a.lifetime_vote_count)
-        , post_count(a.post_count)
         , can_vote(a.can_vote)
-        , voting_power(a.voting_power)
-        , last_vote_time(a.last_vote_time)
         , balance(a.balance)
         , common_tokens_balance(a.common_tokens_balance)
         , expert_tokens_balance(a.expertise_tokens_balance)
@@ -69,8 +66,6 @@ struct account_api_obj
         , to_withdraw(a.to_withdraw)
         , withdraw_routes(a.withdraw_routes)
         , witnesses_voted_for(a.witnesses_voted_for)
-        , last_post(a.last_post)
-        , last_root_post(a.last_root_post)
     {
         size_t n = a.proxied_vsf_votes.size();
         proxied_vsf_votes.reserve(n);
@@ -129,11 +124,8 @@ struct account_api_obj
     account_name_type recovery_account;
     time_point_sec last_account_recovery;
     uint32_t lifetime_vote_count = 0;
-    uint32_t post_count = 0;
 
     bool can_vote = false;
-    uint16_t voting_power = 0;
-    time_point_sec last_vote_time;
 
     asset balance;
     share_type common_tokens_balance;
@@ -157,9 +149,6 @@ struct account_api_obj
     share_type average_market_bandwidth = 0;
     share_type lifetime_market_bandwidth = 0;
     time_point_sec last_market_bandwidth_update;
-
-    time_point_sec last_post;
-    time_point_sec last_root_post;
 };
 
 struct owner_authority_history_api_obj
@@ -838,13 +827,12 @@ FC_REFLECT( deip::app::account_api_obj,
              (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(last_owner_update)(last_account_update)
              (created)(mined)
              (recovery_account)(last_account_recovery)
-             (lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
+             (lifetime_vote_count)(can_vote)
              (balance)
              (common_tokens_balance)(expert_tokens_balance)(received_common_tokens)(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (proxied_vsf_votes)(witnesses_voted_for)
              (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
              (average_market_bandwidth)(lifetime_market_bandwidth)(last_market_bandwidth_update)
-             (last_post)(last_root_post)
           )
 
 FC_REFLECT( deip::app::owner_authority_history_api_obj,

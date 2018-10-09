@@ -1,8 +1,9 @@
 #include <deip/account_by_key/account_by_key_plugin.hpp>
 #include <deip/account_by_key/account_by_key_objects.hpp>
+#include <deip/account_by_key/account_by_key_api.hpp>
 
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/database.hpp>
+#include <deip/chain/schema/account_object.hpp>
+#include <deip/chain/database/database.hpp>
 #include <deip/chain/operation_notification.hpp>
 
 #include <graphene/schema/schema.hpp>

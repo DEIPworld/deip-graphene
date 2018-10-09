@@ -1,8 +1,8 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/expertise_allocation_proposal_object.hpp>
-#include <deip/chain/dbs_expertise_allocation_proposal.hpp>
+#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
+#include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 
 #include "database_fixture.hpp"
 

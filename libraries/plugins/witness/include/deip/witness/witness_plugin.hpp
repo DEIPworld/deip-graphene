@@ -24,7 +24,7 @@
 #pragma once
 
 #include <deip/app/plugin.hpp>
-#include <deip/chain/database.hpp>
+#include <deip/chain/database/database.hpp>
 
 #include <fc/thread/future.hpp>
 

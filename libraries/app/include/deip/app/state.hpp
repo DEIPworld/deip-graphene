@@ -1,10 +1,9 @@
 #pragma once
-#include <deip/app/applied_operation.hpp>
 #include <deip/app/deip_api_objects.hpp>
 
-#include <deip/chain/global_property_object.hpp>
-#include <deip/chain/account_object.hpp>
-#include <deip/chain/deip_objects.hpp>
+#include <deip/chain/schema/global_property_object.hpp>
+#include <deip/chain/schema/account_object.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
 
 namespace deip {
 namespace app {
@@ -50,10 +49,10 @@ struct extended_account : public account_api_obj
     {
     }
 
-    map<uint64_t, applied_operation> transfer_history; /// transfer to/from common tokens
-    map<uint64_t, applied_operation> post_history;
-    map<uint64_t, applied_operation> vote_history;
-    map<uint64_t, applied_operation> other_history;
+    // map<uint64_t, applied_operation> transfer_history; /// transfer to/from common tokens
+    // map<uint64_t, applied_operation> post_history;
+    // map<uint64_t, applied_operation> vote_history;
+    // map<uint64_t, applied_operation> other_history;
     set<string> witness_votes;
 
     optional<vector<string>> recent_replies; /// blog posts for this user
@@ -92,7 +91,7 @@ struct state
 
 FC_REFLECT_DERIVED( deip::app::extended_account,
                    (deip::app::account_api_obj),
-                   (transfer_history)(post_history)(vote_history)(other_history)(witness_votes)(recent_replies) )
+                   (witness_votes)(recent_replies) )
 
 
 FC_REFLECT( deip::app::vote_state, (voter)(weight)(rshares)(percent)(time) )

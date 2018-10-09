@@ -1,12 +1,12 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <deip/chain/database.hpp>
-#include <deip/chain/research_token_object.hpp>
+#include <deip/chain/database/database.hpp>
+#include <deip/chain/schema/research_token_object.hpp>
 #include <deip/chain/util/reward.hpp>
-#include <deip/chain/grant_objects.hpp>
-#include <deip/chain/review_object.hpp>
-#include <deip/chain/research_content_reward_pool_object.hpp>
+#include <deip/chain/schema/grant_objects.hpp>
+#include <deip/chain/schema/review_object.hpp>
+#include <deip/chain/schema/research_content_reward_pool_object.hpp>
 
 #include "database_fixture.hpp"
 
@@ -732,6 +732,71 @@ BOOST_AUTO_TEST_CASE(process_content_activity_windows)
 
    }
    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(clear_expired_proposals)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: clear_expired_proposals");
+
+        ACTORS((alice)(alex)(jack)(bob)(john));
+
+        generate_block();
+
+        db.create<proposal_object>([&](proposal_object& p) {
+           p.id = 0;
+           p.is_completed = false;
+           p.expiration_time = db.head_block_time() + 60;
+        });
+
+        generate_blocks(DEIP_BLOCKS_PER_HOUR * 2);
+
+        BOOST_CHECK_THROW(db.get<proposal_object>(0), std::out_of_range);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(clear_expired_group_invite)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: clear_expired_group_invites");
+
+        ACTORS((alice)(alex)(jack)(bob)(john));
+
+        generate_block();
+
+        research_group_invite_create(0, "alice", 0, 0);
+
+        generate_blocks(DEIP_BLOCKS_PER_HOUR * 2);
+
+        BOOST_CHECK_THROW(db.get<research_group_invite_object>(0), std::out_of_range);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(clear_expired_grants)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: clear_expired_proposals");
+
+        ACTORS((alice)(alex)(jack)(bob)(john));
+
+        generate_block();
+
+        db.create<grant_object>([&](grant_object& g) {
+            g.id = 0;
+            g.balance = asset(0, DEIP_SYMBOL);
+            g.end_block = db.head_block_num() + 1;
+        });
+
+        generate_blocks(DEIP_BLOCKS_PER_HOUR);
+
+        BOOST_CHECK_THROW(db.get<grant_object>(0), std::out_of_range);
+    }
+    FC_LOG_AND_RETHROW()
 }
 
 BOOST_AUTO_TEST_SUITE_END()

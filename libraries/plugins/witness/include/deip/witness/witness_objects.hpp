@@ -1,6 +1,6 @@
 #pragma once
 
-#include <deip/chain/deip_object_types.hpp>
+#include <deip/chain/schema/deip_object_types.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 
@@ -17,7 +17,7 @@ using namespace deip::chain;
 enum witness_plugin_object_type
 {
     account_bandwidth_object_type = (WITNESS_SPACE_ID << 8),
-    reserve_ratio_object_type = (WITNESS_SPACE_ID << 8) + 1
+    reserve_ratio_object_type
 };
 
 enum bandwidth_type

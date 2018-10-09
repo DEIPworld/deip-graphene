@@ -183,16 +183,15 @@ struct get_impacted_account_visitor
         _impacted.insert(op.owner);
     }
 
-    void operator()(const deposit_to_vesting_contract_operation& op)
+    void operator()(const create_vesting_balance_operation& op)
     {
-        _impacted.insert(op.sender);
-        _impacted.insert(op.receiver);
+        _impacted.insert(op.creator);
+        _impacted.insert(op.owner);
     }
 
-    void operator()(const withdraw_from_vesting_contract_operation& op)
+    void operator()(const withdraw_vesting_balance_operation& op)
     {
-        _impacted.insert(op.sender);
-        _impacted.insert(op.receiver);
+        _impacted.insert(op.owner);
     }
 
     void operator()(const transfer_research_tokens_operation& op)
