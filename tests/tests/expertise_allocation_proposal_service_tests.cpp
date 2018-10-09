@@ -130,6 +130,22 @@ BOOST_AUTO_TEST_CASE(get_by_discipline_and_claimer)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(get_by_discipline_initiator_and_claimer)
+{
+    ACTORS((alice)(bob)(john))
+
+    try
+    {
+        expertise_allocation_proposals();
+        auto expertise_allocation_proposal = data_service.get_by_discipline_initiator_and_claimer(1, "alice", "bob");
+
+        BOOST_CHECK(expertise_allocation_proposal.initiator == "alice");
+        BOOST_CHECK(expertise_allocation_proposal.claimer == "bob");
+        BOOST_CHECK(expertise_allocation_proposal.discipline_id == 1);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(get_by_discipline_id)
 {
     ACTORS((alice)(bob)(john))
