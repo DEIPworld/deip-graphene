@@ -15,7 +15,8 @@ dbs_expertise_allocation_proposal::dbs_expertise_allocation_proposal(database &d
 const expertise_allocation_proposal_object& dbs_expertise_allocation_proposal::create(const account_name_type& initiator,
                                                                                       const account_name_type& claimer,
                                                                                       const discipline_id_type& discipline_id,
-                                                                                      const share_type amount)
+                                                                                      const share_type amount,
+                                                                                      const string& description)
 {
     auto& expertise_allocation_proposal = db_impl().create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
         eap_o.initiator = initiator;
@@ -25,6 +26,7 @@ const expertise_allocation_proposal_object& dbs_expertise_allocation_proposal::c
         eap_o.quorum_percent = 15 * DEIP_1_PERCENT;
         eap_o.creation_time = db_impl().head_block_time();
         eap_o.expiration_time = db_impl().head_block_time() + DAYS_TO_SECONDS(14);
+        fc::from_string(eap_o.description, description);
     });
 
     return expertise_allocation_proposal;

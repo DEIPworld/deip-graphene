@@ -25,6 +25,7 @@ public:
             eap_o.claimer = "bob";
             eap_o.discipline_id = 1;
             eap_o.total_voted_expertise = 0;
+            eap_o.description = "test1";
         });
         db.create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
             eap_o.id = 1;
@@ -32,6 +33,7 @@ public:
             eap_o.claimer = "bob";
             eap_o.discipline_id = 2;
             eap_o.total_voted_expertise = 0;
+            eap_o.description = "test2";
         });
         db.create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
             eap_o.id = 2;
@@ -39,6 +41,7 @@ public:
             eap_o.claimer = "bob";
             eap_o.discipline_id = 2;
             eap_o.total_voted_expertise = 0;
+            eap_o.description = "test3";
         });
     }
 
@@ -52,7 +55,7 @@ BOOST_AUTO_TEST_CASE(create)
     ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
     try
     {
-        auto expertise_allocation_proposal = data_service.create("alice", "bob", 1, 100);
+        auto expertise_allocation_proposal = data_service.create("alice", "bob", 1, 100, "test");
 
         BOOST_CHECK(expertise_allocation_proposal.id == 0);
         BOOST_CHECK(expertise_allocation_proposal.initiator == "alice");

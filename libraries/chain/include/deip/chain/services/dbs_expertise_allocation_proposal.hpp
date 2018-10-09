@@ -27,7 +27,8 @@ public:
     const expertise_allocation_proposal_object& create(const account_name_type& initiator,
                                                        const account_name_type& claimer,
                                                        const discipline_id_type& discipline_id,
-                                                       const share_type amount);
+                                                       const share_type amount,
+                                                       const string& description);
 
     const expertise_allocation_proposal_object& get(const expertise_allocation_proposal_id_type& id) const;
 

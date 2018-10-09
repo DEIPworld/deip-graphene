@@ -1038,7 +1038,7 @@ void expertise_allocation_proposal_evaluator::do_apply(const expertise_allocatio
     FC_ASSERT(expertise_allocation_proposal_service.is_exists_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer) == false,
               "You have created expertise allocation proposal already");
 
-    expertise_allocation_proposal_service.create(op.initiator, op.claimer, op.discipline_id, op.amount);
+    expertise_allocation_proposal_service.create(op.initiator, op.claimer, op.discipline_id, op.amount, op.description);
 }
 
 void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_expertise_allocation_proposal_operation& op)

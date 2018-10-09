@@ -22,7 +22,7 @@ class expertise_allocation_proposal_object : public object<expertise_allocation_
 public:
 
     template <typename Constructor, typename Allocator>
-    expertise_allocation_proposal_object(Constructor&& c, allocator<Allocator> a)
+    expertise_allocation_proposal_object(Constructor&& c, allocator<Allocator> a) : description(a)
     {
         c(*this);
     }
@@ -40,6 +40,8 @@ public:
 
     time_point_sec creation_time;
     time_point_sec expiration_time;
+
+    fc::shared_string description;
 };
 
 struct by_initiator;
@@ -91,7 +93,7 @@ typedef multi_index_container<expertise_allocation_proposal_object,
 
 FC_REFLECT( deip::chain::expertise_allocation_proposal_object,
             (id)(initiator)(claimer)(discipline_id)(amount)(total_voted_expertise)
-                    (quorum_percent)(creation_time)(expiration_time)
+                    (quorum_percent)(creation_time)(expiration_time)(description)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::expertise_allocation_proposal_object, deip::chain::expertise_allocation_proposal_index )
