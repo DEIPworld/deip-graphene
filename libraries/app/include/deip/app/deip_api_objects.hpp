@@ -341,6 +341,8 @@ struct discipline_api_obj
         : id(d.id._id)
         ,  parent_id(d.parent_id._id)
         ,  name(d.name)
+        ,  total_active_weight(d.total_active_weight)
+        ,  total_expertise_amount(d.total_expertise_amount)
     {}
 
     // because fc::variant require for temporary object
@@ -350,7 +352,9 @@ struct discipline_api_obj
 
     int64_t id;
     int64_t parent_id;
-    string name;
+    std::string name;
+    share_type total_active_weight;
+    share_type total_expertise_amount;
 };
 
 struct research_api_obj
@@ -891,6 +895,8 @@ FC_REFLECT( deip::app::discipline_api_obj,
             (id)
             (parent_id)
             (name)
+            (total_active_weight)
+            (total_expertise_amount)
           )
 
 
