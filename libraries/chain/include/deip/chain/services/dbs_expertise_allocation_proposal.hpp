@@ -32,6 +32,8 @@ public:
 
     const expertise_allocation_proposal_object& get(const expertise_allocation_proposal_id_type& id) const;
 
+    expertise_allocation_proposal_refs_type get_by_initiator(const account_name_type& initiator) const;
+
     expertise_allocation_proposal_refs_type get_by_discipline_and_claimer(const discipline_id_type& discipline_id,
                                                                           const account_name_type& claimer) const;
 

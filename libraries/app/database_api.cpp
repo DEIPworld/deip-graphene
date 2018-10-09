@@ -31,6 +31,7 @@
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
+#include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 
 #include <deip/chain/schema/operation_object.hpp>
 
@@ -1841,6 +1842,58 @@ vector<review_vote_api_obj> database_api::get_review_votes_by_review_id(const re
     });
 }
 
+expertise_allocation_proposal_api_obj database_api::get_expertise_allocation_proposal_by_id(const expertise_allocation_proposal_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+        return expertise_allocation_proposal_service.get(id);
+    });
+}
+
+vector<expertise_allocation_proposal_api_obj> database_api::get_expertise_allocation_proposals_by_initiator(const account_name_type &initiator) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<expertise_allocation_proposal_api_obj> results;
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+
+        auto proposals = expertise_allocation_proposal_service.get_by_initiator(initiator);
+
+        for (const chain::expertise_allocation_proposal_object& proposal : proposals)
+            results.push_back(proposal);
+
+        return results;
+    });
+}
+
+vector<expertise_allocation_proposal_api_obj> database_api::get_expertise_allocation_proposals_by_discipline_and_claimer(const discipline_id_type& discipline_id,
+                                                                                                                         const account_name_type& claimer) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<expertise_allocation_proposal_api_obj> results;
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+
+        auto proposals = expertise_allocation_proposal_service.get_by_discipline_and_claimer(discipline_id, claimer);
+
+        for (const chain::expertise_allocation_proposal_object& proposal : proposals)
+            results.push_back(proposal);
+
+        return results;
+    });
+}
+
+expertise_allocation_proposal_api_obj database_api::get_expertise_allocation_proposal_by_discipline_initiator_and_claimer(const discipline_id_type& discipline_id,
+                                                                                                                          const account_name_type& initiator,
+                                                                                                                          const account_name_type& claimer) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+        return expertise_allocation_proposal_service.get_by_discipline_initiator_and_claimer(discipline_id, initiator, claimer);
+    });
+}
 
 } // namespace app
 } // namespace deip

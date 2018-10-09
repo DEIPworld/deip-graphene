@@ -82,6 +82,30 @@ BOOST_AUTO_TEST_CASE(get)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(get_by_initiator)
+{
+    ACTORS((alice)(bob)(john))
+
+    try
+    {
+        expertise_allocation_proposals();
+        auto expertise_allocation_proposals = data_service.get_by_initiator("alice");
+
+        BOOST_CHECK(expertise_allocation_proposals.size() == 2);
+        BOOST_CHECK(std::any_of(expertise_allocation_proposals.begin(), expertise_allocation_proposals.end(),
+                                [](std::reference_wrapper<const expertise_allocation_proposal_object> wrapper){
+            const expertise_allocation_proposal_object &eap_o = wrapper.get();
+            return eap_o.initiator == "alice" && eap_o.claimer == "bob" && eap_o.discipline_id == 1;
+        }));
+        BOOST_CHECK(std::any_of(expertise_allocation_proposals.begin(), expertise_allocation_proposals.end(),
+                                [](std::reference_wrapper<const expertise_allocation_proposal_object> wrapper){
+                                    const expertise_allocation_proposal_object &eap_o = wrapper.get();
+                                    return eap_o.initiator == "alice" && eap_o.claimer == "bob" && eap_o.discipline_id == 2;
+                                }));
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(get_by_discipline_and_claimer)
 {
     ACTORS((alice)(bob)(john))

@@ -40,6 +40,22 @@ const expertise_allocation_proposal_object& dbs_expertise_allocation_proposal::g
     FC_CAPTURE_AND_RETHROW((id))
 }
 
+dbs_expertise_allocation_proposal::expertise_allocation_proposal_refs_type dbs_expertise_allocation_proposal::get_by_initiator(const account_name_type& initiator) const
+{
+    expertise_allocation_proposal_refs_type ret;
+
+    auto it_pair = db_impl().get_index<expertise_allocation_proposal_index>().indicies().get<by_initiator>().equal_range(initiator);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
 dbs_expertise_allocation_proposal::expertise_allocation_proposal_refs_type
 dbs_expertise_allocation_proposal::get_by_discipline_and_claimer(const discipline_id_type& discipline_id,
                                                                  const account_name_type& claimer) const

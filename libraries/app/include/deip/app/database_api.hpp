@@ -431,6 +431,18 @@ public:
     vector<review_vote_api_obj> get_review_votes_by_voter(const account_name_type &voter) const;
     vector<review_vote_api_obj> get_review_votes_by_review_id(const review_id_type &review_id) const;
 
+    //////////////////////////////////////////
+    // Expertise allocation proposal object///
+    /////////////////////////////////////////
+
+    expertise_allocation_proposal_api_obj get_expertise_allocation_proposal_by_id(const expertise_allocation_proposal_id_type& id) const;
+    vector<expertise_allocation_proposal_api_obj> get_expertise_allocation_proposals_by_initiator(const account_name_type& initiator) const;
+    vector<expertise_allocation_proposal_api_obj> get_expertise_allocation_proposals_by_discipline_and_claimer(const discipline_id_type& discipline_id,
+                                                                                                               const account_name_type& claimer) const;
+    expertise_allocation_proposal_api_obj get_expertise_allocation_proposal_by_discipline_initiator_and_claimer(const discipline_id_type& discipline_id,
+                                                                                                                const account_name_type& initiator,
+                                                                                                                const account_name_type& claimer) const;
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -562,12 +574,12 @@ FC_API(deip::app::database_api,
    (get_disciplines_by_research)
 
    // Research group invite
-    (get_research_group_invites_by_account_name) 
-    (get_research_group_invites_by_research_group_id)
+   (get_research_group_invites_by_account_name)
+   (get_research_group_invites_by_research_group_id)
 
    // Research listing
-    (get_research_listing)
-    (get_all_researches_listing)
+   (get_research_listing)
+   (get_all_researches_listing)
 
    // Total votes
    (get_total_votes_by_research)
@@ -593,6 +605,12 @@ FC_API(deip::app::database_api,
    // Review votes
    (get_review_votes_by_voter)
    (get_review_votes_by_review_id)
+
+   // Expertise allocation proposal
+   (get_expertise_allocation_proposal_by_id)
+   (get_expertise_allocation_proposals_by_initiator)
+   (get_expertise_allocation_proposals_by_discipline_and_claimer)
+   (get_expertise_allocation_proposal_by_discipline_initiator_and_claimer)
 )
 
 // clang-format on
