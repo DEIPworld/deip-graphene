@@ -444,6 +444,19 @@ public:
                                                                                                                 const account_name_type& claimer) const;
     vector<expertise_allocation_proposal_api_obj> get_expertise_allocation_proposals_by_discipline(const discipline_id_type& discipline_id) const;
 
+    ////////////////////////////////////////////////
+    // Expertise allocation proposal vote object///
+    ///////////////////////////////////////////////
+
+    expertise_allocation_proposal_vote_api_obj get_expertise_allocation_proposal_vote_by_id(const expertise_allocation_proposal_vote_id_type& id) const;
+    vector<expertise_allocation_proposal_vote_api_obj> get_expertise_allocation_proposal_votes_by_expertise_allocation_proposal_id
+                                                                                          (const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const;
+    expertise_allocation_proposal_vote_api_obj get_expertise_allocation_proposal_vote_by_voter_and_expertise_allocation_proposal_id(const account_name_type& voter,
+                                                                                                                                    const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const;
+    vector<expertise_allocation_proposal_vote_api_obj> get_expertise_allocation_proposal_votes_by_voter_and_discipline_id(const account_name_type& voter,
+                                                                                                                         const discipline_id_type& discipline_id) const;
+    vector<expertise_allocation_proposal_vote_api_obj> get_expertise_allocation_proposal_votes_by_voter(const account_name_type& voter) const;
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -613,6 +626,14 @@ FC_API(deip::app::database_api,
    (get_expertise_allocation_proposals_by_discipline_and_claimer)
    (get_expertise_allocation_proposal_by_discipline_initiator_and_claimer)
    (get_expertise_allocation_proposals_by_discipline)
+
+   // Expertise allocation proposal vote
+   (get_expertise_allocation_proposal_vote_by_id)
+   (get_expertise_allocation_proposal_votes_by_expertise_allocation_proposal_id)
+   (get_expertise_allocation_proposal_vote_by_voter_and_expertise_allocation_proposal_id)
+   (get_expertise_allocation_proposal_votes_by_voter_and_discipline_id)
+   (get_expertise_allocation_proposal_votes_by_voter)
+
 )
 
 // clang-format on

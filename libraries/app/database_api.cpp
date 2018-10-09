@@ -1911,5 +1911,74 @@ vector<expertise_allocation_proposal_api_obj> database_api::get_expertise_alloca
     });
 }
 
+expertise_allocation_proposal_vote_api_obj database_api::get_expertise_allocation_proposal_vote_by_id(const expertise_allocation_proposal_vote_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_vote_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+        return expertise_allocation_proposal_vote_service.get_vote(id);
+    });
+}
+
+vector<expertise_allocation_proposal_vote_api_obj> database_api::get_expertise_allocation_proposal_votes_by_expertise_allocation_proposal_id
+                                                                                        (const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<expertise_allocation_proposal_vote_api_obj> results;
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_vote_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+
+        auto proposal_votes = expertise_allocation_proposal_vote_service.get_votes_by_expertise_allocation_proposal_id(expertise_allocation_proposal_id);
+
+        for (const chain::expertise_allocation_proposal_vote_object& proposal_vote : proposal_votes)
+            results.push_back(proposal_vote);
+
+        return results;
+    });
+}
+
+expertise_allocation_proposal_vote_api_obj database_api::get_expertise_allocation_proposal_vote_by_voter_and_expertise_allocation_proposal_id(const account_name_type& voter,
+                                                                                                                                              const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_vote_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+        return expertise_allocation_proposal_vote_service.get_vote_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal_id);
+    });
+}
+
+vector<expertise_allocation_proposal_vote_api_obj> database_api::get_expertise_allocation_proposal_votes_by_voter_and_discipline_id(const account_name_type& voter,
+                                                                                                                                   const discipline_id_type& discipline_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<expertise_allocation_proposal_vote_api_obj> results;
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_vote_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+
+        auto proposal_votes = expertise_allocation_proposal_vote_service.get_votes_by_voter_and_discipline_id(voter, discipline_id);
+
+        for (const chain::expertise_allocation_proposal_vote_object& proposal_vote : proposal_votes)
+            results.push_back(proposal_vote);
+
+        return results;
+    });
+}
+
+vector<expertise_allocation_proposal_vote_api_obj> database_api::get_expertise_allocation_proposal_votes_by_voter(const account_name_type& voter) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<expertise_allocation_proposal_vote_api_obj> results;
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_vote_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+
+        auto proposal_votes = expertise_allocation_proposal_vote_service.get_votes_by_voter(voter);
+
+        for (const chain::expertise_allocation_proposal_vote_object& proposal_vote : proposal_votes)
+            results.push_back(proposal_vote);
+
+        return results;
+    });
+}
+
 } // namespace app
 } // namespace deip

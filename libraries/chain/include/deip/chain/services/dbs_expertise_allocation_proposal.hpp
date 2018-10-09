@@ -72,11 +72,17 @@ public:
                                                                  const discipline_id_type& discipline_id,
                                                                  const account_name_type &voter,
                                                                  const share_type weight);
+    const expertise_allocation_proposal_vote_object& get_vote(const expertise_allocation_proposal_vote_id_type& id) const;
 
     const expertise_allocation_proposal_vote_object& get_vote_by_voter_and_expertise_allocation_proposal_id(const account_name_type &voter,
                                                                                                             const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id);
 
     expertise_allocation_proposal_vote_refs_type get_votes_by_expertise_allocation_proposal_id(const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id);
+
+    expertise_allocation_proposal_vote_refs_type get_votes_by_voter_and_discipline_id(const account_name_type& voter,
+                                                                                         const discipline_id_type& discipline_id) const;
+
+    expertise_allocation_proposal_vote_refs_type get_votes_by_voter(const account_name_type& voter) const;
 
     bool is_vote_exists_by_voter_and_expertise_allocation_proposal_id(const account_name_type &voter,
                                                                       const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id);

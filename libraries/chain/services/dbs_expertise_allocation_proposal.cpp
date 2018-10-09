@@ -230,6 +230,14 @@ const expertise_allocation_proposal_vote_object& dbs_expertise_allocation_propos
     return expertise_allocation_proposal_vote;
 }
 
+const expertise_allocation_proposal_vote_object& dbs_expertise_allocation_proposal::get_vote(const expertise_allocation_proposal_vote_id_type& id) const
+{
+    try {
+        return db_impl().get<expertise_allocation_proposal_vote_object>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
+}
+
 const expertise_allocation_proposal_vote_object&
 dbs_expertise_allocation_proposal::get_vote_by_voter_and_expertise_allocation_proposal_id(const account_name_type &voter,
                                                                                           const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id)
@@ -247,6 +255,41 @@ dbs_expertise_allocation_proposal::get_votes_by_expertise_allocation_proposal_id
     expertise_allocation_proposal_vote_refs_type ret;
 
     auto it_pair = db_impl().get_index<expertise_allocation_proposal_vote_index>().indicies().get<by_expertise_allocation_proposal_id>().equal_range(expertise_allocation_proposal_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_expertise_allocation_proposal::
+expertise_allocation_proposal_vote_refs_type dbs_expertise_allocation_proposal::get_votes_by_voter_and_discipline_id(const account_name_type& voter,
+                                                                                                                     const discipline_id_type& discipline_id) const
+{
+    expertise_allocation_proposal_vote_refs_type ret;
+
+    auto it_pair = db_impl().get_index<expertise_allocation_proposal_vote_index>().indicies().get<by_voter_and_discipline_id>().equal_range(std::make_tuple(voter, discipline_id));
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_expertise_allocation_proposal::expertise_allocation_proposal_vote_refs_type
+dbs_expertise_allocation_proposal::get_votes_by_voter(const account_name_type& voter) const
+{
+    expertise_allocation_proposal_vote_refs_type ret;
+
+    auto it_pair = db_impl().get_index<expertise_allocation_proposal_vote_index>().indicies().get<by_voter>().equal_range(voter);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
