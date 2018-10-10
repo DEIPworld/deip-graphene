@@ -63,10 +63,24 @@ public:
         });
         db.create<expertise_allocation_proposal_vote_object>([&](expertise_allocation_proposal_vote_object& eapv_o) {
             eapv_o.id = 2;
+            eapv_o.expertise_allocation_proposal_id = 1;
+            eapv_o.discipline_id = 2;
+            eapv_o.voter = "alice";
+            eapv_o.weight = DEIP_1_PERCENT * 30;
+        });
+        db.create<expertise_allocation_proposal_vote_object>([&](expertise_allocation_proposal_vote_object& eapv_o) {
+            eapv_o.id = 3;
             eapv_o.expertise_allocation_proposal_id = 2;
             eapv_o.discipline_id = 2;
             eapv_o.voter = "cyntia";
             eapv_o.weight = DEIP_1_PERCENT * 50;
+        });
+        db.create<expertise_allocation_proposal_vote_object>([&](expertise_allocation_proposal_vote_object& eapv_o) {
+            eapv_o.id = 4;
+            eapv_o.expertise_allocation_proposal_id = 2;
+            eapv_o.discipline_id = 3;
+            eapv_o.voter = "mike";
+            eapv_o.weight = DEIP_1_PERCENT * 10;
         });
     }
     dbs_expertise_allocation_proposal& data_service;
@@ -281,6 +295,117 @@ BOOST_AUTO_TEST_CASE(create_vote)
         BOOST_CHECK(expertise_allocation_proposal_vote.discipline_id == 1);
         BOOST_CHECK(expertise_allocation_proposal_vote.voter == "alice");
         BOOST_CHECK(expertise_allocation_proposal_vote.weight == 5000);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_vote)
+{
+    ACTORS((alice)(bob)(john))
+
+    try
+    {
+        expertise_allocation_proposal_votes();
+        auto expertise_allocation_proposal_vote = data_service.get_vote(0);
+
+        BOOST_CHECK(expertise_allocation_proposal_vote.id == 0);
+        BOOST_CHECK(expertise_allocation_proposal_vote.expertise_allocation_proposal_id == 0);
+        BOOST_CHECK(expertise_allocation_proposal_vote.discipline_id == 1);
+        BOOST_CHECK(expertise_allocation_proposal_vote.voter == "john");
+        BOOST_CHECK(expertise_allocation_proposal_vote.weight == 50 * DEIP_1_PERCENT);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_vote_by_voter_and_expertise_allocation_proposal_id)
+{
+    ACTORS((alice)(bob)(john))
+
+    try
+    {
+        expertise_allocation_proposal_votes();
+        auto expertise_allocation_proposal_vote = data_service.get_vote_by_voter_and_expertise_allocation_proposal_id("john", 0);
+
+        BOOST_CHECK(expertise_allocation_proposal_vote.id == 0);
+        BOOST_CHECK(expertise_allocation_proposal_vote.expertise_allocation_proposal_id == 0);
+        BOOST_CHECK(expertise_allocation_proposal_vote.discipline_id == 1);
+        BOOST_CHECK(expertise_allocation_proposal_vote.voter == "john");
+        BOOST_CHECK(expertise_allocation_proposal_vote.weight == 50 * DEIP_1_PERCENT);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_votes_by_expertise_allocation_proposal_id)
+{
+    ACTORS((alice)(bob)(john))
+
+    try
+    {
+        expertise_allocation_proposal_votes();
+        auto expertise_allocation_proposal_votes = data_service.get_votes_by_expertise_allocation_proposal_id(1);
+
+        BOOST_CHECK(expertise_allocation_proposal_votes.size() == 2);
+        BOOST_CHECK(std::any_of(expertise_allocation_proposal_votes.begin(), expertise_allocation_proposal_votes.end(),
+                                [](std::reference_wrapper<const expertise_allocation_proposal_vote_object> wrapper){
+                                    const expertise_allocation_proposal_vote_object &eapv_o = wrapper.get();
+                                    return eapv_o.expertise_allocation_proposal_id == 1
+                                    && eapv_o.discipline_id == 2
+                                    && eapv_o.voter == "mike";
+                                }));
+        BOOST_CHECK(std::any_of(expertise_allocation_proposal_votes.begin(), expertise_allocation_proposal_votes.end(),
+                                [](std::reference_wrapper<const expertise_allocation_proposal_vote_object> wrapper){
+                                    const expertise_allocation_proposal_vote_object &eapv_o = wrapper.get();
+                                    return eapv_o.expertise_allocation_proposal_id == 1
+                                           && eapv_o.discipline_id == 2
+                                           && eapv_o.voter == "alice";
+                                }));
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_votes_by_voter_and_discipline_id)
+{
+    ACTORS((alice)(bob)(john))
+
+    try {
+        expertise_allocation_proposal_votes();
+        auto expertise_allocation_proposal_votes = data_service.get_votes_by_voter_and_discipline_id("mike", 2);
+
+        BOOST_CHECK(expertise_allocation_proposal_votes.size() == 1);
+        BOOST_CHECK(std::any_of(expertise_allocation_proposal_votes.begin(), expertise_allocation_proposal_votes.end(),
+                                [](std::reference_wrapper<const expertise_allocation_proposal_vote_object> wrapper) {
+                                    const expertise_allocation_proposal_vote_object &eapv_o = wrapper.get();
+                                    return eapv_o.expertise_allocation_proposal_id == 1
+                                           && eapv_o.discipline_id == 2
+                                           && eapv_o.voter == "mike";
+                                }));
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_votes_by_voter)
+{
+    ACTORS((alice)(bob)(john))
+
+    try {
+        expertise_allocation_proposal_votes();
+        auto expertise_allocation_proposal_votes = data_service.get_votes_by_voter("mike");
+
+        BOOST_CHECK(expertise_allocation_proposal_votes.size() == 2);
+        BOOST_CHECK(std::any_of(expertise_allocation_proposal_votes.begin(), expertise_allocation_proposal_votes.end(),
+                                [](std::reference_wrapper<const expertise_allocation_proposal_vote_object> wrapper) {
+                                    const expertise_allocation_proposal_vote_object &eapv_o = wrapper.get();
+                                    return eapv_o.expertise_allocation_proposal_id == 1
+                                           && eapv_o.discipline_id == 2
+                                           && eapv_o.voter == "mike";
+                                }));
+        BOOST_CHECK(std::any_of(expertise_allocation_proposal_votes.begin(), expertise_allocation_proposal_votes.end(),
+                                [](std::reference_wrapper<const expertise_allocation_proposal_vote_object> wrapper) {
+                                    const expertise_allocation_proposal_vote_object &eapv_o = wrapper.get();
+                                    return eapv_o.expertise_allocation_proposal_id == 2
+                                           && eapv_o.discipline_id == 3
+                                           && eapv_o.voter == "mike";
+                                }));
     }
     FC_LOG_AND_RETHROW()
 }
