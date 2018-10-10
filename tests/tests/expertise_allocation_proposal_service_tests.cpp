@@ -45,6 +45,30 @@ public:
         });
     }
 
+    void expertise_allocation_proposal_votes()
+    {
+        db.create<expertise_allocation_proposal_vote_object>([&](expertise_allocation_proposal_vote_object& eapv_o) {
+            eapv_o.id = 0;
+            eapv_o.expertise_allocation_proposal_id = 0;
+            eapv_o.discipline_id = 1;
+            eapv_o.voter = "john";
+            eapv_o.weight = DEIP_1_PERCENT * 50;
+        });
+        db.create<expertise_allocation_proposal_vote_object>([&](expertise_allocation_proposal_vote_object& eapv_o) {
+            eapv_o.id = 1;
+            eapv_o.expertise_allocation_proposal_id = 1;
+            eapv_o.discipline_id = 2;
+            eapv_o.voter = "mike";
+            eapv_o.weight = DEIP_1_PERCENT * 50;
+        });
+        db.create<expertise_allocation_proposal_vote_object>([&](expertise_allocation_proposal_vote_object& eapv_o) {
+            eapv_o.id = 2;
+            eapv_o.expertise_allocation_proposal_id = 2;
+            eapv_o.discipline_id = 2;
+            eapv_o.voter = "cyntia";
+            eapv_o.weight = DEIP_1_PERCENT * 50;
+        });
+    }
     dbs_expertise_allocation_proposal& data_service;
 };
 
@@ -228,6 +252,38 @@ BOOST_AUTO_TEST_CASE(decrease_total_voted_expertise)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(delete_by_discipline_and_claimer)
+{
+    ACTORS((alice)(bob)(john)(mike))
+
+    try {
+        expertise_allocation_proposals();
+
+        data_service.delete_by_discipline_and_claimer(2, "bob");
+
+        BOOST_CHECK(db.get_index<expertise_allocation_proposal_index>().indices().size() == 1);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+
+// Expertise allocation proposal votes
+
+BOOST_AUTO_TEST_CASE(create_vote)
+{
+    ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
+    try
+    {
+        auto expertise_allocation_proposal_vote = data_service.create_vote(0, 1, "alice", 5000);
+
+        BOOST_CHECK(expertise_allocation_proposal_vote.id == 0);
+        BOOST_CHECK(expertise_allocation_proposal_vote.expertise_allocation_proposal_id == 0);
+        BOOST_CHECK(expertise_allocation_proposal_vote.discipline_id == 1);
+        BOOST_CHECK(expertise_allocation_proposal_vote.voter == "alice");
+        BOOST_CHECK(expertise_allocation_proposal_vote.weight == 5000);
+    }
+    FC_LOG_AND_RETHROW()
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
