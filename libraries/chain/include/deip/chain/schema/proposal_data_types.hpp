@@ -160,7 +160,6 @@ struct start_research_token_sale_data_type : base_proposal_data_type
         FC_ASSERT(soft_cap > asset(0, DEIP_SYMBOL), "Soft cap should be > 0");
         FC_ASSERT(hard_cap > asset(0, DEIP_SYMBOL), "Hard cap should be > 0");
         FC_ASSERT(hard_cap > soft_cap, "Hard cap should be greater than soft cap");
-        FC_ASSERT(start_time >= fc::time_point::now(), "Start time cannot be at the past");
         FC_ASSERT(end_time > start_time, "End time should be greater than start time");
     }
 };

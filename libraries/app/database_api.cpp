@@ -31,6 +31,7 @@
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
+#include <deip/chain/services/dbs_vesting_balance.hpp>
 
 #include <deip/chain/schema/operation_object.hpp>
 
@@ -1431,6 +1432,23 @@ database_api::get_research_token_sale_contribution_by_account_name_and_research_
     });
 }
 
+vector<research_token_sale_api_obj> database_api::get_research_token_sale(const uint32_t& from = 0, uint32_t limit = 100) const
+{
+    return my->_db.with_read_lock([&]() {
+    FC_ASSERT(limit <= MAX_LIMIT);
+    const auto& research_token_sale_by_id = my->_db.get_index<research_token_sale_index>().indices().get<by_id>();
+    vector<research_token_sale_api_obj> result;
+    result.reserve(limit);
+
+    for (auto itr = research_token_sale_by_id.lower_bound(from); limit-- && itr != research_token_sale_by_id.end(); ++itr)
+    {
+        result.push_back(research_token_sale_api_obj(*itr));
+    }
+
+    return result;
+    });
+}
+
 vector<discipline_api_obj>
 database_api::get_disciplines_by_research(const research_id_type& research_id) const
 {
@@ -1836,6 +1854,33 @@ vector<review_vote_api_obj> database_api::get_review_votes_by_review_id(const re
 
         for (const chain::review_vote_object& review_vote : review_votes)
             results.push_back(review_vote);
+
+        return results;
+    });
+}
+
+vesting_balance_api_obj database_api::get_vesting_balance_by_id(const vesting_balance_id_type& vesting_balance_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_vesting_balance& vesting_balance_service = my->_db.obtain_service<chain::dbs_vesting_balance>();
+        return vesting_balance_service.get(vesting_balance_id);
+    });
+}
+
+vector<vesting_balance_api_obj>
+database_api::get_vesting_balance_by_owner(const account_name_type &owner) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<vesting_balance_api_obj> results;
+        chain::dbs_vesting_balance& vesting_balance_service
+            = my->_db.obtain_service<chain::dbs_vesting_balance>();
+
+        auto total_vesting_balance = vesting_balance_service.get_by_owner(owner);
+
+        for (const chain::vesting_balance_object& vesting_balance : total_vesting_balance)
+        {
+            results.push_back(vesting_balance);
+        }
 
         return results;
     });

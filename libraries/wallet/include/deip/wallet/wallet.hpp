@@ -825,22 +825,125 @@ public:
     vector<grant_api_obj> get_grants(const std::string& account_name);
 
     /**
+     *  Gets the list of all research group invites for all accounts
+     */
+    vector<research_group_invite_api_obj> list_my_research_group_invites();
+
+    /**
+     *  Gets the list of all research tokens for all accounts
+     */
+    vector<research_token_api_obj> list_my_research_tokens();
+
+    /**
+     *  Gets the list of all vesting balance for account
+     */
+    vector<vesting_balance_api_obj> get_vesting_balances(const std::string& account_name);
+
+    /**
+     *  Gets research group details
+     */
+    research_group_api_obj get_research_group_by_permlink(const std::string& permlink);
+
+    /**
+     *  Gets proposal details
+     */
+    proposal_api_obj get_proposal(const int64_t proposals_id);
+
+    /**
+     *  Gets the list of all proposals for research group
+     */
+    vector<proposal_api_obj> list_research_group_proposals(const int64_t research_group_id);
+
+    /**
+     *  Gets the list of research token sale
+     */
+    vector<research_token_sale_api_obj> list_research_token_sales(const uint32_t& from, uint32_t limit);
+
+    /**
+     *  Gets research content by id
+     */
+    research_content_api_obj get_research_content(const int64_t id);
+
+    /**
+     *  Gets research content by permlink
+     */
+    research_content_api_obj get_research_content_by_permlink(const int64_t research_id, const string& permlink);
+
+    /**
+     *  Gets research content by absolute permlink
+     */
+    research_content_api_obj get_research_content_by_absolute_permlink(const string& research_group_permlink,
+                                                                       const string& research_permlink,
+                                                                       const string& research_content_permlink);
+
+    /**
+     *  Gets the list of research contents by type
+     */
+    vector<research_content_api_obj> get_research_contents_by_type(const int64_t research_id, const uint16_t type);
+
+    /**
+     *  Gets the research by id
+     */
+    research_api_obj get_research(const int64_t research_id);
+
+    /**
+     *  Gets the research by permlink
+     */
+    research_api_obj get_research_by_permlink(const int64_t research_group_id, const string& permlink);
+
+    /**
+     *  Gets the research by absolute permlink
+     */
+    research_api_obj get_research_by_absolute_permlink(const string& research_group_permlink,
+                                                       const string& research_permlink);
+
+    /**
+     *  Gets the list of researches by discipline id
+     */
+    vector<research_api_obj>
+    get_researches_by_discipline(const uint64_t from, const uint32_t limit, const int64_t discipline_id);
+
+    /**
+     *  Gets the list of researches by id research group
+     */
+    vector<research_api_obj> get_researches_by_research_group(const int64_t research_group_id);
+
+    /**
+     * Gets list of my research groups
+     */
+    vector<research_group_api_obj> list_my_research_groups();
+
+    /**
+     * Gets list of my researches 
+     */
+    vector<research_api_obj> list_my_researches();
+
+    /**
+     * Gets list of all disciplines
+     */
+    vector<discipline_api_obj> list_all_disciplines();
+
+    /**
      *  This method will create new grant linked to owner account.
      *
      *  @warning The owner account must have sufficient balance for grant
      *
      *  @param grant_owner The future owner of creating grant
      *  @param balance The balance of grant
-     *  @param broadcast
      *  @param start_block Block number starting which grant will be distributed
      *  @param end_block Block number grant distribution ends
      *  @param target_discipline The target discipline name grant will be distributed to
+     *  @param content_hash Hash of description of grant
+     *  @param is_extendable Set to 'true' if you want your grant to extend if not distributed in specified period
+     *  @param broadcast
      */
     annotated_signed_transaction create_grant(const std::string& grant_owner,
                                                const asset& balance,
                                                const uint32_t& start_block,
                                                const uint32_t& end_block,
                                                const discipline_name_type& target_discipline,
+                                               const std::string& content_hash,
+                                               const bool is_extendable,
                                                const bool broadcast);
 
     /**
@@ -865,15 +968,120 @@ public:
      * @param research_group_id Id of research group to create proposal for
      * @param data Proposal data
      * @param action Proposal action type
-     * @param expiration_time Expiration time of proposal
+     * @param expiration Seconds till expiration of proposal since creation
      * @param broadcast
      */
     annotated_signed_transaction create_proposal(const std::string& creator,
                                                  const int64_t research_group_id,
                                                  const std::string& data, 
                                                  const uint16_t action,
-                                                 const time_point_sec expiration_time,
+                                                 const int64_t expiration,
                                                  const bool broadcast);
+
+    /**
+     * Propose invite member
+     *
+     * @param creator The account who creates invite
+     * @param member The account who receives invite
+     * @param research_group_id Id of research group to create invite for
+     * @param research_group_token_amount_in_percent Percent of research group tokens to give to invited member (1 to 10000)
+     * @param cover_letter Messsage for member
+     * @param broadcast
+     */
+    annotated_signed_transaction propose_invite_member(const std::string& creator,
+                                               const std::string& member,
+                                               const int64_t research_group_id,
+                                               const int64_t research_group_token_amount_in_percent,
+                                               const std::string& cover_letter,
+                                               const bool broadcast);
+
+    /**
+     * Propose exclude member
+     *
+     * @param creator The account who initiate exclude
+     * @param member The account who will be excluded
+     * @param research_group_id Id of research group
+     * @param broadcast
+     */
+    annotated_signed_transaction propose_exclude_member(const std::string& creator,
+                                                         const std::string& member,
+                                                         const int64_t research_group_id,
+                                                         const bool broadcast);
+
+
+    /**
+     * Propose create research
+     *
+     * @param creator The account who proposes to start a research
+     * @param title Title of research
+     * @param abstract Abstract of research
+     * @param permlink Permlink of research
+     * @param research_group_id Id of research group
+     * @param review_share_in_percent Percent of reward to share with reviewers
+     * @param dropout_compensation_in_percent Percent of research tokens to leave to dropped author
+     * @param disciplines List of disciplines ids (i.e. [8, 152])
+     * @param broadcast
+     */
+    annotated_signed_transaction propose_create_research(const std::string& creator,
+                                                         const std::string& title,
+                                                         const std::string& abstract,
+                                                         const std::string& permlink,
+                                                         const int64_t research_group_id,
+                                                         const uint16_t review_share_in_percent,
+                                                         const uint16_t dropout_compensation_in_percent,
+                                                         const std::vector<int64_t> disciplines,
+                                                         const bool broadcast);
+
+    /**
+     * Propose create research content
+     *
+     * @param creator The account who create a content
+     * @param research_group_id Id of research group
+     * @param research_id Research id
+     * @param type Type of content: announcement = 1, milestone = 2, final_result = 3
+     * @param title Title of research content
+     * @param content Hash of research content (hash of file)
+     * @param permlink Permlink to research content
+     * @param authors Account names content authors
+     * @param references List of ids of research contents referenced (i.e [1, 100])
+     * @param external_references List of external references as list of URLs (i.e. ["google.com", "bing.com"])
+     * @param broadcast
+     */
+    annotated_signed_transaction propose_create_research_content(const std::string& creator,
+                                                                  const int64_t research_group_id,
+                                                                  const int64_t research_id,
+                                                                  const uint16_t type,
+                                                                  const std::string& title,
+                                                                  const std::string& content,
+                                                                  const std::string& permlink,
+                                                                  const std::vector<string> authors,
+                                                                  const std::vector<int64_t> references,
+                                                                  const std::vector<string>& external_references,
+                                                                  const bool broadcast);
+
+
+    /**
+     * Propose start token sale
+     *
+     * @param creator The account who create a content
+     * @param research_group_id Id of research group
+     * @param research_id Research id
+     * @param start_time token sale start time
+     * @param end_time token sale end time
+     * @param amount_for_sale tokens amount for sale
+     * @param soft_cap minimum value at which token sale will be success
+     * @param hard_cap maximum number of tokens that can be sold
+     * @param broadcast
+     */
+    annotated_signed_transaction propose_start_token_sale(const std::string& creator,
+                                                                  const int64_t research_group_id,
+                                                                  const int64_t research_id,
+                                                                  const uint32_t start_time,
+                                                                  const uint32_t end_time,
+                                                                  const int64_t amount_for_sale,
+                                                                  const asset& soft_cap,
+                                                                  const asset& hard_cap,
+                                                                  const bool broadcast);
 
     /**
      * Make review for specified research content
@@ -902,6 +1110,23 @@ public:
                                                           const std::string& owner,
                                                           const asset& amount,
                                                           const bool broadcast);
+
+    /**
+     * Create research group
+     *
+     * @param creator The account who creates research group
+     * @param name Name of the research group
+     * @param permlink Permlink to the research group
+     * @param description Description of the research group
+     * @param quorum_percent Quorum percent of the research group (500 to 10000). This quorum percent will be set for all proposal types
+     * @param broadcast
+     */
+    annotated_signed_transaction create_research_group(const std::string& creator,
+                                                               const std::string& name,
+                                                               const std::string& permlink,
+                                                               const std::string& description,
+                                                               const int64_t quorum_percent,
+                                                               const bool broadcast);
 
     /**
      * Approve research group invite
@@ -1052,6 +1277,25 @@ FC_API( deip::wallet::wallet_api,
         (list_my_grants)
         (list_grant_owners)
         (get_grants)
+        (list_my_research_group_invites)
+        (list_my_research_tokens)
+        (get_vesting_balances)
+        (get_research_group_by_permlink)
+        (get_proposal)
+        (list_research_group_proposals)
+        (list_research_token_sales)
+        (get_research_content)
+        (get_research_content_by_permlink)
+        (get_research_content_by_absolute_permlink)
+        (get_research_contents_by_type)
+        (get_research)
+        (get_research_by_permlink)
+        (get_research_by_absolute_permlink)
+        (get_researches_by_discipline)
+        (get_researches_by_research_group)
+        (list_my_research_groups)
+        (list_my_researches)
+        (list_all_disciplines)
 
         /// transaction api
         (create_account)
@@ -1081,8 +1325,14 @@ FC_API( deip::wallet::wallet_api,
         (create_grant)
         (vote_for_review)
         (create_proposal)
+        (propose_invite_member)
+        (propose_exclude_member)
+        (propose_create_research)
+        (propose_create_research_content)
+        (propose_start_token_sale)
         (make_review)
         (contribute_to_token_sale)
+        (create_research_group)
         (approve_research_group_invite)
         (reject_research_group_invite)
         (transfer_research_tokens_to_research_group)

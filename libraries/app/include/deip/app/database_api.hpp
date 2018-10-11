@@ -366,6 +366,7 @@ public:
     vector<research_token_sale_contribution_api_obj> get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type research_token_sale_id) const;
     research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_account_name_and_research_token_sale_id(const account_name_type owner,
                                                                                                                              const research_token_sale_id_type research_token_sale_id) const;
+    vector<research_token_sale_api_obj> get_research_token_sale(const uint32_t& from, uint32_t limit) const;
 
     ///////////////////////////////////
     // Research discipline relation  //
@@ -430,6 +431,13 @@ public:
 
     vector<review_vote_api_obj> get_review_votes_by_voter(const account_name_type &voter) const;
     vector<review_vote_api_obj> get_review_votes_by_review_id(const review_id_type &review_id) const;
+
+    ///////////////////////
+    // Vesting balance ///
+    //////////////////////
+
+    vesting_balance_api_obj get_vesting_balance_by_id(const vesting_balance_id_type& vesting_balance_id) const;
+    vector<vesting_balance_api_obj> get_vesting_balance_by_owner(const account_name_type& owner) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -557,6 +565,7 @@ FC_API(deip::app::database_api,
    (get_research_token_sale_contributions_by_research_token_sale_id)
    (get_research_token_sale_contribution_by_account_name_and_research_token_sale_id)
    (check_research_token_sale_existence_by_research_id)
+   (get_research_token_sale)
 
    // Research discipline relation
    (get_disciplines_by_research)
@@ -593,6 +602,11 @@ FC_API(deip::app::database_api,
    // Review votes
    (get_review_votes_by_voter)
    (get_review_votes_by_review_id)
+
+   // Vesting balance
+
+   (get_vesting_balance_by_id)
+   (get_vesting_balance_by_owner)
 )
 
 // clang-format on
