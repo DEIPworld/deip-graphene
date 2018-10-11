@@ -48,6 +48,11 @@ cp /etc/deipd/config.ini $HOME/config.ini
 
 chown deipd:deipd $HOME/config.ini
 
+if [[ ! -z "$RESYNC_BLOCKCHAIN" ]]; then
+    ARGS+=" --resync-blockchain"
+fi
+
+
 if [[ ! -d $HOME/blockchain ]]; then
     if [[ -e /var/cache/deipd/blocks.tbz2 ]]; then
         # init with blockchain cached in image
