@@ -24,6 +24,7 @@
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_expertise_stats.hpp>
+#include <deip/chain/services/dbs_offer_research_tokens.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1029,21 +1030,39 @@ void revoke_expertise_delegation_evaluator::do_apply(const revoke_expertise_dele
 void accept_research_token_offer_evaluator::do_apply(const accept_research_token_offer_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_offer_research_tokens& offer_service = _db.obtain_service<dbs_offer_research_tokens>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_token& research_token_service = _db.obtain_service<dbs_research_token>();
 
     account_service.check_account_existence(op.account);
-    //account_service.check_account_existence(op.receiver);
+    offer_service.check_offer_existence(op.offer_research_tokens_id);
 
-    auto& receiver = _db.get_account(op.account);
+    auto& buyer = account_service.get_account(op.account);
+    auto& offer = offer_service.get(op.offer_research_tokens_id);
+    auto& research = research_service.get_research(offer.research_id);
+
+    FC_ASSERT(research.owned_tokens >= offer.amount, "Research group doesn't have enough tokens");
+    FC_ASSERT(buyer.balance.amount >= offer.price.amount, "Buyer doesn't have enough funds.");
+
+    research_service.decrease_owned_tokens(research, offer.amount);
+    account_service.adjust_balance(buyer, -offer.price);
+
+    research_token_service.create_research_token(op.account, offer.amount, offer.research_id);
+
+    _db._temporary_public_impl().remove(offer);
 }
 
 void reject_research_token_offer_evaluator::do_apply(const reject_research_token_offer_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_offer_research_tokens& offer_service = _db.obtain_service<dbs_offer_research_tokens>();
 
     account_service.check_account_existence(op.account);
-    //account_service.check_account_existence(op.receiver);
+    offer_service.check_offer_existence(op.offer_research_tokens_id);
 
-    auto& receiver = _db.get_account(op.account);
+    auto& offer = offer_service.get(op.offer_research_tokens_id);
+
+    _db._temporary_public_impl().remove(offer);
 }
 
 } // namespace chain
