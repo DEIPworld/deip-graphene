@@ -244,5 +244,22 @@ void dbs_proposal_execution::start_research_token_sale(const proposal_object& pr
                                       data.amount_for_sale, data.soft_cap, data.hard_cap);
 }
 
+void dbs_proposal_execution::offer_research_tokens(const deip::chain::proposal_object &proposal)
+{
+    auto& research_service = db_impl().obtain_service<dbs_research>();
+    auto& research_token_service = db_impl().obtain_service<dbs_research_token>();
+
+    offer_research_tokens_data_type data = get_data<offer_research_tokens_data_type>(proposal);
+
+    research_service.check_research_existence(data.research_id);
+    FC_ASSERT(research_token_service.exists_by_owner_and_research(data.receiver, data.research_id)), "You cannot offer research tokens to your groupmate");
+
+    auto &research = research_service.get_research(data.research_id);
+
+    FC_ASSERT(research.owned_tokens >= data.amount, "Research group doesn't have enough owned tokens");
+
+    //create offer
+}
+
 } //namespace chain
 } //namespace deip

@@ -166,8 +166,7 @@ enum proposal_action_type : uint16_t
     change_quorum = 7,
     change_research_review_share_percent = 8,
     offer_research_tokens = 9,
-    accept_research_tokens_offer = 10,
-    create_research_material = 11,
+    create_research_material = 10,
 
     First_proposal = start_research,
     Last_proposal = create_research_material

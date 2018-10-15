@@ -267,5 +267,13 @@ void revoke_expertise_delegation_operation::validate() const
     validate_account_name(receiver);
 }
 
+void accept_research_token_offer_operation::validate() const
+{
+    validate_account_name(sender);
+    validate_account_name(receiver);
+    FC_ASSERT(amount > 0, "Amount must be greater than 0.");
+    FC_ASSERT(price.amount > 0, "Price must be greater than 0.");
+}
+
 }
 } // deip::protocol
