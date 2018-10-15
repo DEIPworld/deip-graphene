@@ -687,35 +687,27 @@ struct revoke_expertise_delegation_operation : public base_operation
 
 struct accept_research_token_offer_operation : public base_operation
 {
-    account_name_type sender;
-    account_name_type receiver;
-    int64_t research_id;
-
-    uint32_t amount;
-    asset price;
+    int64_t offer_research_tokens_id;
+    account_name_type account;
 
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(sender);
+        a.insert(account);
     }
 };
 
 struct reject_research_token_offer_operation : public base_operation
 {
-    account_name_type sender;
-    account_name_type receiver;
-    int64_t research_id;
-
-    uint32_t amount;
-    asset price;
+    int64_t offer_research_tokens_id;
+    account_name_type account;
 
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(sender);
+        a.insert(account);
     }
 };
 
@@ -780,8 +772,8 @@ FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance
 FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_id)(sender)(receiver)(amount))
 FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(discipline_id))
 FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(receiver)(discipline_id))
-FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (sender)(receiver)(research_id)(amount)(price))
-FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (sender)(receiver)(research_id)(amount)(price))
+FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (offer_research_tokens_id)(account))
+FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (offer_research_tokens_id)(account))
 
 
 // clang-format on

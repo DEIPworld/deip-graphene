@@ -1030,20 +1030,20 @@ void accept_research_token_offer_evaluator::do_apply(const accept_research_token
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
-    account_service.check_account_existence(op.sender);
-    account_service.check_account_existence(op.receiver);
+    account_service.check_account_existence(op.account);
+    //account_service.check_account_existence(op.receiver);
 
-    auto& receiver = _db.get_account(op.receiver);
+    auto& receiver = _db.get_account(op.account);
 }
 
 void reject_research_token_offer_evaluator::do_apply(const reject_research_token_offer_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
-    account_service.check_account_existence(op.sender);
-    account_service.check_account_existence(op.receiver);
+    account_service.check_account_existence(op.account);
+    //account_service.check_account_existence(op.receiver);
 
-    auto& receiver = _db.get_account(op.receiver);
+    auto& receiver = _db.get_account(op.account);
 }
 
 } // namespace chain
