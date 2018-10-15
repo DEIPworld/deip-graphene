@@ -30,6 +30,7 @@
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
 #include <deip/chain/schema/expertise_stats_object.hpp>
+#include <deip/chain/schema/offer_research_tokens_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1819,6 +1820,7 @@ void database::initialize_indexes()
     add_index<vesting_balance_index>();
     add_index<research_content_reward_pool_index>();
     add_index<expertise_stats_index>();
+    add_index<offer_research_tokens_index>();
 
     _plugin_index_signal();
 }
