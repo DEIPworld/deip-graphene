@@ -28,6 +28,7 @@
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/schema/grant_objects.hpp>
 #include <deip/chain/schema/expertise_stats_object.hpp>
+#include <deip/chain/services/dbs_offer_research_tokens.hpp>
 
 #define DROPOUT_COMPENSATION_IN_PERCENT 1500
 
@@ -4119,6 +4120,70 @@ BOOST_AUTO_TEST_CASE(withdraw_expertise_apply)
         tx4.sign(mike_priv_key, db.get_chain_id());
         tx4.validate();
         BOOST_CHECK_THROW(db.push_transaction(tx4, 0), fc::assert_exception);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(offer_research_tokens_proposal)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: offer_research_tokens_proposal");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(jack)(mike));
+
+        generate_block();
+
+        db.create<research_object>([&](research_object& r) {
+            r.id = 100;
+            r.research_group_id = 1;
+            r.title = "title";
+            r.abstract = "abstract";
+            r.permlink = "permlink";
+            r.owned_tokens = 50 * DEIP_1_PERCENT;
+        });
+
+        std::vector<std::pair<account_name_type, share_type>> accounts = {std::make_pair("alice", 10000)};
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 0));
+
+        setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
+        const std::string json_str = "{\"sender\":\"alice\","
+                                     "\"receiver\":\"bob\","
+                                     "\"research_id\":100,"
+                                     "\"amount\":1000},"
+                                     "\"price\":\"1.000 TESTS\"}";
+
+        create_proposal(1, dbs_proposal::action_t::offer_research_tokens, json_str, "alice", 31, fc::time_point_sec(0xffffffff),
+                        1);
+
+
+        auto &offer_service = db.obtain_service<dbs_offer_research_tokens>();
+
+        vote_proposal_operation op;
+        op.research_group_id = 31;
+        op.proposal_id = 1;
+        op.voter = "alice";
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& offer = offer_service.get(0);
+
+        BOOST_CHECK(offer.sender == "alice");
+        BOOST_CHECK(offer.receiver == "bob");
+        BOOST_CHECK(offer.research_id == 100);
+        BOOST_CHECK(offer.amount == 1000);
+        BOOST_CHECK(offer.price == asset(1, DEIP_SYMBOL));
 
     }
     FC_LOG_AND_RETHROW()
