@@ -6,7 +6,7 @@ if( MSVC )
       COMMAND cat-parts "${CMAKE_CURRENT_SOURCE_DIR}/hardfork.d" ${hardfork_hpp_file} )
    add_dependencies( build_hardfork_hpp cat-parts )
 else( MSVC )
-   set( hardfork_hpp_file "${CMAKE_CURRENT_BINARY_DIR}/include/deip/chain/hardfork.hpp" include/deip/chain/schema/offer_research_tokens_object.h)
+   set( hardfork_hpp_file "${CMAKE_CURRENT_BINARY_DIR}/include/deip/chain/hardfork.hpp" include/deip/chain/schema/offer_research_tokens_object.hpp include/deip/chain/services/dbs_offer_research_tokens.hpp services/dbs_offer_research_tokens.cpp)
    add_custom_target( build_hardfork_hpp
       COMMAND "${CMAKE_SOURCE_DIR}/programs/build_helpers/cat_parts.py" "${CMAKE_CURRENT_SOURCE_DIR}/hardfork.d" ${hardfork_hpp_file} )
 endif( MSVC )
