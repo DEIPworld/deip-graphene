@@ -2,6 +2,7 @@
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/services/dbs_research_group_invite.hpp>
 #include <deip/chain/services/dbs_review.hpp>
+#include <deip/chain/services/dbs_offer_research_tokens.hpp>
 
 namespace deip {
 namespace chain {
@@ -27,6 +28,8 @@ dbs_proposal_execution::dbs_proposal_execution(database &db)
                    std::bind(&dbs_proposal_execution::create_research_material, this, std::placeholders::_1));
     executions.set(proposal_action_type::start_research_token_sale,
                    std::bind(&dbs_proposal_execution::start_research_token_sale, this, std::placeholders::_1));
+    executions.set(proposal_action_type::offer_research_tokens,
+                   std::bind(&dbs_proposal_execution::offer_research_tokens, this, std::placeholders::_1));
 }
 
 void dbs_proposal_execution::invite(const proposal_object &proposal)
@@ -248,17 +251,22 @@ void dbs_proposal_execution::offer_research_tokens(const deip::chain::proposal_o
 {
     auto& research_service = db_impl().obtain_service<dbs_research>();
     auto& research_token_service = db_impl().obtain_service<dbs_research_token>();
+    auto& offer_research_tokens_service = db_impl().obtain_service<dbs_offer_research_tokens>();
 
     offer_research_tokens_data_type data = get_data<offer_research_tokens_data_type>(proposal);
 
     research_service.check_research_existence(data.research_id);
-    FC_ASSERT(research_token_service.exists_by_owner_and_research(data.receiver, data.research_id), "You cannot offer research tokens to your groupmate");
+    FC_ASSERT(research_token_service.exists_by_owner_and_research(data.receiver, data.research_id) == false, "You cannot offer research tokens to your groupmate");
 
     auto &research = research_service.get_research(data.research_id);
 
     FC_ASSERT(research.owned_tokens >= data.amount, "Research group doesn't have enough owned tokens");
 
-    //create offer
+    offer_research_tokens_service.create(data.sender,
+                                         data.receiver,
+                                         data.research_id,
+                                         data.amount,
+                                         data.price);
 }
 
 } //namespace chain

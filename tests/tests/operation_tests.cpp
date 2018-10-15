@@ -4151,11 +4151,7 @@ BOOST_AUTO_TEST_CASE(offer_research_tokens_proposal)
             proposal_quorums.insert(std::make_pair(i, 0));
 
         setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
-        const std::string json_str = "{\"sender\":\"alice\","
-                                     "\"receiver\":\"bob\","
-                                     "\"research_id\":100,"
-                                     "\"amount\":1000},"
-                                     "\"price\":\"1.000 TESTS\"}";
+        const std::string json_str = "{\"sender\":\"alice\",\"receiver\":\"mike\",\"research_id\": 100,\"amount\":1000,\"price\":\"1.000 TESTS\"}";
 
         create_proposal(1, dbs_proposal::action_t::offer_research_tokens, json_str, "alice", 31, fc::time_point_sec(0xffffffff),
                         1);
@@ -4180,10 +4176,10 @@ BOOST_AUTO_TEST_CASE(offer_research_tokens_proposal)
         auto& offer = offer_service.get(0);
 
         BOOST_CHECK(offer.sender == "alice");
-        BOOST_CHECK(offer.receiver == "bob");
+        BOOST_CHECK(offer.receiver == "mike");
         BOOST_CHECK(offer.research_id == 100);
         BOOST_CHECK(offer.amount == 1000);
-        BOOST_CHECK(offer.price == asset(1, DEIP_SYMBOL));
+        BOOST_CHECK(offer.price.amount == 10);
 
     }
     FC_LOG_AND_RETHROW()

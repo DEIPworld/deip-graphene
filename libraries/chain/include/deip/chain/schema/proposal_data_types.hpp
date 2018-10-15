@@ -189,7 +189,7 @@ struct offer_research_tokens_data_type : base_proposal_data_type
         FC_ASSERT(is_valid_account_name(sender), "Account name ${n} is invalid", ("n", sender));
         FC_ASSERT(is_valid_account_name(receiver), "Account name ${n} is invalid", ("n", receiver));
         FC_ASSERT(amount > 0, "Amount must be > 0");
-        FC_ASSERT(price > asset(0, DEIP_SYMBOL), "Price must be > 0");
+        FC_ASSERT(price.amount > 0, "Price must be > 0");
     }
 };
 
