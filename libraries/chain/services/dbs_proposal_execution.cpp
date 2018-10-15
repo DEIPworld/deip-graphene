@@ -252,7 +252,7 @@ void dbs_proposal_execution::offer_research_tokens(const deip::chain::proposal_o
     offer_research_tokens_data_type data = get_data<offer_research_tokens_data_type>(proposal);
 
     research_service.check_research_existence(data.research_id);
-    FC_ASSERT(research_token_service.exists_by_owner_and_research(data.receiver, data.research_id)), "You cannot offer research tokens to your groupmate");
+    FC_ASSERT(research_token_service.exists_by_owner_and_research(data.receiver, data.research_id), "You cannot offer research tokens to your groupmate");
 
     auto &research = research_service.get_research(data.research_id);
 
