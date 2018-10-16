@@ -2162,6 +2162,11 @@ vector<research_token_api_obj> wallet_api::list_my_research_tokens()
     return result;
 }
 
+vector<research_token_api_obj> wallet_api::list_account_research_tokens(const std::string& account_name)
+{
+    return my->_remote_db->get_research_tokens_by_account_name(account_name);
+}
+
 vector<vesting_balance_api_obj> wallet_api::get_vesting_balances(const std::string& account_name)
 {
     vector<vesting_balance_api_obj> result;
