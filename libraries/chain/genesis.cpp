@@ -16,6 +16,7 @@
 #include <deip/chain/schema/proposal_object.hpp>
 #include <deip/chain/schema/proposal_vote_object.hpp>
 #include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/schema/offer_research_tokens_object.hpp>
 
 #include <fc/io/json.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
@@ -102,6 +103,39 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         // Nothing to do
         for (int i = 0; i < 0x10000; i++)
             create<block_summary_object>([&](block_summary_object&) {});
+
+        create<offer_research_tokens_object>([&](offer_research_tokens_object& o) {
+            o.id = 1;
+            o.sender = "alice";
+            o.receiver = "bob";
+            o.research_id = 1;
+            o.amount = 10 * DEIP_1_PERCENT;
+            o.price = asset(100, DEIP_SYMBOL);
+        });
+        create<offer_research_tokens_object>([&](offer_research_tokens_object& o) {
+            o.id = 2;
+            o.sender = "alice";
+            o.receiver = "john";
+            o.research_id = 1;
+            o.amount = 5 * DEIP_1_PERCENT;
+            o.price = asset(50, DEIP_SYMBOL);
+        });
+        create<offer_research_tokens_object>([&](offer_research_tokens_object& o) {
+            o.id = 3;
+            o.sender = "bob";
+            o.receiver = "john";
+            o.research_id = 2;
+            o.amount = 7 * DEIP_1_PERCENT;
+            o.price = asset(100, DEIP_SYMBOL);
+        });
+        create<offer_research_tokens_object>([&](offer_research_tokens_object& o) {
+            o.id = 4;
+            o.sender = "alice";
+            o.receiver = "mike";
+            o.research_id = 1;
+            o.amount = 11 * DEIP_1_PERCENT;
+            o.price = asset(110, DEIP_SYMBOL);
+        });
 
         create<hardfork_property_object>(
             [&](hardfork_property_object& hpo) { hpo.processed_hardforks.push_back(get_genesis_time()); });

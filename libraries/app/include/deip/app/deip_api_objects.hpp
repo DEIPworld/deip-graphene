@@ -856,6 +856,7 @@ struct offer_research_tokens_api_obj
         ,  sender(orto.sender)
         ,  receiver(orto.receiver)
         ,  research_id(orto.research_id._id)
+        ,  amount(orto.amount.value)
         ,  price(orto.price)
     {}
 
