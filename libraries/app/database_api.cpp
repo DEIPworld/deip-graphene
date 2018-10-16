@@ -32,6 +32,7 @@
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
+#include <deip/chain/services/dbs_offer_research_tokens.hpp>
 
 #include <deip/chain/schema/operation_object.hpp>
 
@@ -1886,6 +1887,58 @@ database_api::get_vesting_balance_by_owner(const account_name_type &owner) const
     });
 }
 
+offer_research_tokens_api_obj database_api::get_offer(const offer_research_tokens_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_offer_research_tokens& offer_service = my->_db.obtain_service<chain::dbs_offer_research_tokens>();
+        return offer_service.get(id);
+    });
+}
+
+vector<offer_research_tokens_api_obj> database_api::get_offers_by_receiver(const account_name_type& receiver) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<offer_research_tokens_api_obj> results;
+        chain::dbs_offer_research_tokens& offer_service
+                = my->_db.obtain_service<chain::dbs_offer_research_tokens>();
+
+        auto offers = offer_service.get_offers_by_receiver(receiver);
+
+        for (const chain::offer_research_tokens_object& offer : offers)
+        {
+            results.push_back(offer);
+        }
+
+        return results;
+    });
+}
+
+offer_research_tokens_api_obj database_api::get_offer_by_receiver_and_research_id(const account_name_type& receiver,
+                                                                                  const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_offer_research_tokens& offer_service = my->_db.obtain_service<chain::dbs_offer_research_tokens>();
+        return offer_service.get_offer_by_receiver_and_research_id(receiver, research_id);
+    });
+}
+
+vector<offer_research_tokens_api_obj> database_api::get_offers_by_research_id(const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<offer_research_tokens_api_obj> results;
+        chain::dbs_offer_research_tokens& offer_service
+                = my->_db.obtain_service<chain::dbs_offer_research_tokens>();
+
+        auto offers = offer_service.get_offers_by_research_id(research_id);
+
+        for (const chain::offer_research_tokens_object& offer : offers)
+        {
+            results.push_back(offer);
+        }
+
+        return results;
+    });
+}
 
 } // namespace app
 } // namespace deip
