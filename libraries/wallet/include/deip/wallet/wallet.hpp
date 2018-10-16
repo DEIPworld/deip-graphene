@@ -835,6 +835,11 @@ public:
     vector<research_token_api_obj> list_my_research_tokens();
 
     /**
+     *  Gets the list of all research tokens for specified account
+     */
+    vector<research_token_api_obj> list_account_research_tokens(const std::string& account_name);
+
+    /**
      *  Gets the list of all vesting balance for account
      */
     vector<vesting_balance_api_obj> get_vesting_balances(const std::string& account_name);
@@ -1101,13 +1106,14 @@ public:
     /**
      * Participate in token sale and make your contribution
      *
-     * @param owner The account who is participating in token sale
+
+     * @param contributor The account who is participating in token sale
      * @param research_token_sale_id Id of research token sale
      * @param amount Amount of DEIP tokens to contribute to token sale (ex. "1.000 DEIP")
      * @param broadcast
      */
-    annotated_signed_transaction contribute_to_token_sale(const int64_t research_token_sale_id,
-                                                          const std::string& owner,
+    annotated_signed_transaction contribute_to_token_sale(const std::string& contributor,
+                                                          const int64_t research_token_sale_id,
                                                           const asset& amount,
                                                           const bool broadcast);
 
@@ -1279,6 +1285,7 @@ FC_API( deip::wallet::wallet_api,
         (get_grants)
         (list_my_research_group_invites)
         (list_my_research_tokens)
+        (list_account_research_tokens)
         (get_vesting_balances)
         (get_research_group_by_permlink)
         (get_proposal)

@@ -2162,6 +2162,11 @@ vector<research_token_api_obj> wallet_api::list_my_research_tokens()
     return result;
 }
 
+vector<research_token_api_obj> wallet_api::list_account_research_tokens(const std::string& account_name)
+{
+    return my->_remote_db->get_research_tokens_by_account_name(account_name);
+}
+
 vector<vesting_balance_api_obj> wallet_api::get_vesting_balances(const std::string& account_name)
 {
     vector<vesting_balance_api_obj> result;
@@ -2495,8 +2500,8 @@ annotated_signed_transaction wallet_api::make_review(const std::string& author,
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::contribute_to_token_sale(const int64_t research_token_sale_id,
-                                                                  const std::string& owner,
+annotated_signed_transaction wallet_api::contribute_to_token_sale(const std::string& contributor,
+                                                                  const int64_t research_token_sale_id,
                                                                   const asset& amount,
                                                                   const bool broadcast)
 {
@@ -2505,7 +2510,7 @@ annotated_signed_transaction wallet_api::contribute_to_token_sale(const int64_t 
     contribute_to_token_sale_operation op;
 
     op.research_token_sale_id = research_token_sale_id;
-    op.owner = owner;
+    op.owner = contributor;
     op.amount = amount;
 
     signed_transaction tx;
