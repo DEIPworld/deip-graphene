@@ -990,6 +990,7 @@ public:
     annotated_signed_transaction create_expertise_allocation_proposal(
                                                const std::string& initiator,
                                                const std::string& claimer,
+                                               const std::string& description,
                                                const int64_t discipline_id,
                                                const int64_t amount,
                                                const bool broadcast);

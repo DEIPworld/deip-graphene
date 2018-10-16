@@ -2386,6 +2386,7 @@ annotated_signed_transaction wallet_api::vote_proposal(const std::string& voter,
 annotated_signed_transaction wallet_api::create_expertise_allocation_proposal(
                                                const std::string& initiator,
                                                const std::string& claimer,
+                                               const std::string& description,
                                                const int64_t discipline_id,
                                                const int64_t amount,
                                                const bool broadcast)
@@ -2398,6 +2399,7 @@ annotated_signed_transaction wallet_api::create_expertise_allocation_proposal(
     op.claimer = claimer;
     op.discipline_id = discipline_id;
     op.amount = amount;
+    op.description = description;
 
     signed_transaction tx;
     tx.operations.push_back(op);
