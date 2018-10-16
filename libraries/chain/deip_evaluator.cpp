@@ -1034,10 +1034,10 @@ void accept_research_token_offer_evaluator::do_apply(const accept_research_token
     dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_research_token& research_token_service = _db.obtain_service<dbs_research_token>();
 
-    account_service.check_account_existence(op.account);
+    account_service.check_account_existence(op.buyer);
     offer_service.check_offer_existence(op.offer_research_tokens_id);
 
-    auto& buyer = account_service.get_account(op.account);
+    auto& buyer = account_service.get_account(op.buyer);
     auto& offer = offer_service.get(op.offer_research_tokens_id);
     auto& research = research_service.get_research(offer.research_id);
 
@@ -1047,7 +1047,7 @@ void accept_research_token_offer_evaluator::do_apply(const accept_research_token
     research_service.decrease_owned_tokens(research, offer.amount);
     account_service.adjust_balance(buyer, -offer.price);
 
-    research_token_service.create_research_token(op.account, offer.amount, offer.research_id);
+    research_token_service.create_research_token(op.buyer, offer.amount, offer.research_id);
 
     _db._temporary_public_impl().remove(offer);
 }

@@ -4179,7 +4179,67 @@ BOOST_AUTO_TEST_CASE(offer_research_tokens_proposal)
         BOOST_CHECK(offer.receiver == "mike");
         BOOST_CHECK(offer.research_id == 100);
         BOOST_CHECK(offer.amount == 1000);
-        BOOST_CHECK(offer.price.amount == 10);
+        BOOST_CHECK(offer.price.amount == 1000);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(accept_offer_research_tokens_proposal)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: accept_offer_research_tokens_proposal");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(jack)(mike));
+
+        generate_block();
+
+        fund("bob", 500000);
+
+        db.create<research_object>([&](research_object& r) {
+            r.id = 100;
+            r.research_group_id = 1;
+            r.title = "title";
+            r.abstract = "abstract";
+            r.permlink = "permlink";
+            r.owned_tokens = 50 * DEIP_1_PERCENT;
+        });
+
+        dbs_offer_research_tokens& offer_service = db.obtain_service<dbs_offer_research_tokens>();
+        dbs_research& research_service = db.obtain_service<dbs_research>();
+        dbs_research_token& research_token_service = db.obtain_service<dbs_research_token>();
+
+        offer_service.create("alice", "bob", 100, 10 * DEIP_1_PERCENT, asset(1, DEIP_SYMBOL));
+
+        accept_research_token_offer_operation op;
+        op.offer_research_tokens_id = 0;
+        op.buyer = "bob";
+
+        private_key_type priv_key = generate_private_key("bob");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK_THROW(offer_service.check_offer_existence(op.offer_research_tokens_id), fc::assert_exception);
+
+        auto& buyer = db.get_account(op.buyer);
+        auto& research = research_service.get_research(100);
+
+        BOOST_CHECK(buyer.name == "bob");
+        BOOST_CHECK(buyer.balance.amount == 499999);
+
+        BOOST_CHECK(research.owned_tokens == 40 * DEIP_1_PERCENT);
+
+        auto& token = research_token_service.get_by_owner_and_research("bob", 100);
+
+        BOOST_CHECK(token.account_name == "bob");
+        BOOST_CHECK(token.research_id == 100);
+        BOOST_CHECK(token.amount == 10 * DEIP_1_PERCENT);
 
     }
     FC_LOG_AND_RETHROW()

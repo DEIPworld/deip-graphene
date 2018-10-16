@@ -269,7 +269,7 @@ void revoke_expertise_delegation_operation::validate() const
 
 void accept_research_token_offer_operation::validate() const
 {
-    validate_account_name(account);
+    validate_account_name(buyer);
 }
 
 
