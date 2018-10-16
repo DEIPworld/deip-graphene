@@ -1057,7 +1057,7 @@ void reject_research_token_offer_evaluator::do_apply(const reject_research_token
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_offer_research_tokens& offer_service = _db.obtain_service<dbs_offer_research_tokens>();
 
-    account_service.check_account_existence(op.account);
+    account_service.check_account_existence(op.buyer);
     offer_service.check_offer_existence(op.offer_research_tokens_id);
 
     auto& offer = offer_service.get(op.offer_research_tokens_id);
