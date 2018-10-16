@@ -1101,13 +1101,14 @@ public:
     /**
      * Participate in token sale and make your contribution
      *
-     * @param owner The account who is participating in token sale
+
+     * @param contributor The account who is participating in token sale
      * @param research_token_sale_id Id of research token sale
      * @param amount Amount of DEIP tokens to contribute to token sale (ex. "1.000 DEIP")
      * @param broadcast
      */
-    annotated_signed_transaction contribute_to_token_sale(const int64_t research_token_sale_id,
-                                                          const std::string& owner,
+    annotated_signed_transaction contribute_to_token_sale(const std::string& contributor,
+                                                          const int64_t research_token_sale_id,
                                                           const asset& amount,
                                                           const bool broadcast);
 
