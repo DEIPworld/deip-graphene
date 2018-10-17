@@ -2689,7 +2689,9 @@ annotated_signed_transaction wallet_api::propose_offer_research_tokens(const std
                                                                        const uint32_t amount,
                                                                        const asset& price,
                                                                        const bool broadcast)
-{    
+{
+    FC_ASSERT(!is_locked());
+
     offer_research_tokens_data_type data;
 
     data.sender = sender;
@@ -2699,6 +2701,42 @@ annotated_signed_transaction wallet_api::propose_offer_research_tokens(const std
     data.price = price;
 
     return create_proposal(sender, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::offer_research_tokens, PROPOSAL_EXPIRATION_TIME, broadcast);
+}
+
+annotated_signed_transaction wallet_api::accept_offer_research_tokens(const int64_t offer_research_tokens_id,
+                                                                      const std::string& buyer,
+                                                                      const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    accept_research_token_offer_operation op;
+
+    op.offer_research_tokens_id = offer_research_tokens_id;
+    op.buyer = buyer;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::reject_offer_research_tokens(const int64_t offer_research_tokens_id,
+                                                                      const std::string& buyer,
+                                                                      const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    reject_research_token_offer_operation op;
+
+    op.offer_research_tokens_id = offer_research_tokens_id;
+    op.buyer = buyer;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
 }
 
 namespace utils {

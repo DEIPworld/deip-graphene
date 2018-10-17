@@ -1230,6 +1230,14 @@ public:
                                                                const asset& price,
                                                                const bool broadcast);
 
+    annotated_signed_transaction accept_offer_research_tokens(const int64_t offer_research_tokens_id,
+                                                              const std::string& buyer,
+                                                              const bool broadcast);
+
+    annotated_signed_transaction reject_offer_research_tokens(const int64_t offer_research_tokens_id,
+                                                              const std::string& buyer,
+                                                              const bool broadcast);
+
 
 public:
     fc::signal<void(bool)> lock_changed;
@@ -1360,6 +1368,8 @@ FC_API( deip::wallet::wallet_api,
         (withdraw_vesting_balance)
         (vote_proposal)
         (propose_offer_research_tokens)
+        (accept_offer_research_tokens)
+        (reject_offer_research_tokens)
 
         /// helper api
         (get_prototype_operation)
