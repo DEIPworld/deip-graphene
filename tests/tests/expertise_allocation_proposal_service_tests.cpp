@@ -144,14 +144,14 @@ BOOST_AUTO_TEST_CASE(get_by_initiator)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_by_discipline_and_claimer)
+BOOST_AUTO_TEST_CASE(get_by_claimer_and_discipline)
 {
     ACTORS((alice)(bob)(john))
 
     try
     {
         expertise_allocation_proposals();
-        auto expertise_allocation_proposals = data_service.get_by_discipline_and_claimer(2, "bob");
+        auto expertise_allocation_proposals = data_service.get_by_claimer_and_discipline("bob", 2);
 
         BOOST_CHECK(expertise_allocation_proposals.size() == 2);
         BOOST_CHECK(std::any_of(expertise_allocation_proposals.begin(), expertise_allocation_proposals.end(),
@@ -266,14 +266,14 @@ BOOST_AUTO_TEST_CASE(decrease_total_voted_expertise)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(delete_by_discipline_and_claimer)
+BOOST_AUTO_TEST_CASE(delete_by_claimer_and_discipline)
 {
     ACTORS((alice)(bob)(john)(mike))
 
     try {
         expertise_allocation_proposals();
 
-        data_service.delete_by_discipline_and_claimer(2, "bob");
+        data_service.delete_by_claimer_and_discipline("bob", 2);
 
         BOOST_CHECK(db.get_index<expertise_allocation_proposal_index>().indices().size() == 1);
     }

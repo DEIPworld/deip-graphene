@@ -57,12 +57,12 @@ dbs_expertise_allocation_proposal::expertise_allocation_proposal_refs_type dbs_e
 }
 
 dbs_expertise_allocation_proposal::expertise_allocation_proposal_refs_type
-dbs_expertise_allocation_proposal::get_by_discipline_and_claimer(const discipline_id_type& discipline_id,
-                                                                 const account_name_type& claimer) const
+dbs_expertise_allocation_proposal::get_by_claimer_and_discipline(const account_name_type& claimer, 
+                                                                 const discipline_id_type& discipline_id) const
 {
     expertise_allocation_proposal_refs_type ret;
 
-    auto it_pair = db_impl().get_index<expertise_allocation_proposal_index>().indicies().get<by_discipline_and_claimer>().equal_range(std::make_tuple(discipline_id, claimer));
+    auto it_pair = db_impl().get_index<expertise_allocation_proposal_index>().indicies().get<by_claimer_and_discipline>().equal_range(std::make_tuple(claimer, discipline_id));
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
@@ -183,17 +183,18 @@ bool dbs_expertise_allocation_proposal::is_quorum(const expertise_allocation_pro
     return expertise_allocation_proposal.total_voted_expertise >= quorum_amount.value;
 }
 
-void dbs_expertise_allocation_proposal::delete_by_discipline_and_claimer(const discipline_id_type& discipline_id,
-                                                                         const account_name_type &claimer)
+void dbs_expertise_allocation_proposal::delete_by_claimer_and_discipline(const account_name_type &claimer, 
+                                                                         const discipline_id_type& discipline_id)
 {
-    const auto& idx
-            = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_discipline_and_claimer>();
+    const auto& idx = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_claimer_and_discipline>();
+    auto it_pair = idx.equal_range(boost::make_tuple(claimer, discipline_id));
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
 
-    auto itr = idx.find(boost::make_tuple(discipline_id, claimer));
-    while(itr != idx.end())
+    while (it != it_end)
     {
-        const auto& current_proposal = *itr;
-        ++itr;
+        const auto& current_proposal = *it;
+        ++it;
         db_impl().remove(current_proposal);
     }
 }

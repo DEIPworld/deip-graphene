@@ -437,8 +437,8 @@ public:
 
     expertise_allocation_proposal_api_obj get_expertise_allocation_proposal_by_id(const expertise_allocation_proposal_id_type& id) const;
     vector<expertise_allocation_proposal_api_obj> get_expertise_allocation_proposals_by_initiator(const account_name_type& initiator) const;
-    vector<expertise_allocation_proposal_api_obj> get_expertise_allocation_proposals_by_discipline_and_claimer(const discipline_id_type& discipline_id,
-                                                                                                               const account_name_type& claimer) const;
+    vector<expertise_allocation_proposal_api_obj> get_expertise_allocation_proposals_by_claimer_and_discipline(const account_name_type& claimer, 
+                                                                                                               const discipline_id_type& discipline_id) const;
     expertise_allocation_proposal_api_obj get_expertise_allocation_proposal_by_discipline_initiator_and_claimer(const discipline_id_type& discipline_id,
                                                                                                                 const account_name_type& initiator,
                                                                                                                 const account_name_type& claimer) const;
@@ -623,7 +623,7 @@ FC_API(deip::app::database_api,
    // Expertise allocation proposal
    (get_expertise_allocation_proposal_by_id)
    (get_expertise_allocation_proposals_by_initiator)
-   (get_expertise_allocation_proposals_by_discipline_and_claimer)
+   (get_expertise_allocation_proposals_by_claimer_and_discipline)
    (get_expertise_allocation_proposal_by_discipline_initiator_and_claimer)
    (get_expertise_allocation_proposals_by_discipline)
 

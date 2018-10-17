@@ -1266,7 +1266,7 @@ void database::process_expertise_allocation_proposals()
         if (expertise_allocation_proposal_service.is_quorum(proposal))
         {
             expert_token_service.create(proposal.claimer, proposal.discipline_id, proposal.amount);
-            expertise_allocation_proposal_service.delete_by_discipline_and_claimer(proposal.discipline_id, proposal.claimer);
+            expertise_allocation_proposal_service.delete_by_claimer_and_discipline(proposal.claimer, proposal.discipline_id);
         }
         ++current;
     }

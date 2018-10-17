@@ -1867,15 +1867,15 @@ vector<expertise_allocation_proposal_api_obj> database_api::get_expertise_alloca
     });
 }
 
-vector<expertise_allocation_proposal_api_obj> database_api::get_expertise_allocation_proposals_by_discipline_and_claimer(const discipline_id_type& discipline_id,
-                                                                                                                         const account_name_type& claimer) const
+vector<expertise_allocation_proposal_api_obj> database_api::get_expertise_allocation_proposals_by_claimer_and_discipline(const account_name_type& claimer, 
+                                                                                                                        const discipline_id_type& discipline_id) const
 {
     return my->_db.with_read_lock([&]() {
         vector<expertise_allocation_proposal_api_obj> results;
         chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_service
                 = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
 
-        auto proposals = expertise_allocation_proposal_service.get_by_discipline_and_claimer(discipline_id, claimer);
+        auto proposals = expertise_allocation_proposal_service.get_by_claimer_and_discipline(claimer, discipline_id);
 
         for (const chain::expertise_allocation_proposal_object& proposal : proposals)
             results.push_back(proposal);

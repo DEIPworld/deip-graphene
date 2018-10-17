@@ -46,7 +46,7 @@ public:
 
 struct by_initiator;
 struct by_expiration_time;
-struct by_discipline_and_claimer;
+struct by_claimer_and_discipline;
 struct by_discipline_initiator_and_claimer;
 struct by_discipline_id;
 
@@ -63,14 +63,14 @@ typedef multi_index_container<expertise_allocation_proposal_object,
                     member<expertise_allocation_proposal_object,
                            time_point_sec,
                            &expertise_allocation_proposal_object::expiration_time>>,
-            ordered_non_unique<tag<by_discipline_and_claimer>,
-                    composite_key<expertise_allocation_proposal_object,
+            ordered_non_unique<tag<by_claimer_and_discipline>,
+                    composite_key<expertise_allocation_proposal_object,                                   
+                            member<expertise_allocation_proposal_object,
+                                   account_name_type,
+                                   &expertise_allocation_proposal_object::claimer>,
                             member<expertise_allocation_proposal_object,
                                    discipline_id_type,
-                                   &expertise_allocation_proposal_object::discipline_id>,
-                            member<expertise_allocation_proposal_object,
-                                    account_name_type,
-                                   &expertise_allocation_proposal_object::claimer>>>,
+                                   &expertise_allocation_proposal_object::discipline_id>>>,
             ordered_unique<tag<by_discipline_initiator_and_claimer>,
                     composite_key<expertise_allocation_proposal_object,
                             member<expertise_allocation_proposal_object,
