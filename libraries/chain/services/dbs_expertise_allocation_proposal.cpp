@@ -110,7 +110,7 @@ void dbs_expertise_allocation_proposal::check_existence_by_discipline_initiator_
               "Expertise allocation proposal for discipline \"${1}\" , initiator \"${2}\" and clainer \"${3}\" does not exist", ("1", discipline_id)("2", initiator)("3", claimer));
 }
 
-bool dbs_expertise_allocation_proposal::is_exists_by_discipline_initiator_and_claimer(const discipline_id_type &discipline_id,
+bool dbs_expertise_allocation_proposal::exists_by_discipline_initiator_and_claimer(const discipline_id_type &discipline_id,
                                                                                       const account_name_type &initiator,
                                                                                       const account_name_type &claimer)
 {
@@ -122,27 +122,21 @@ void dbs_expertise_allocation_proposal::upvote(const expertise_allocation_propos
                                                const account_name_type &voter,
                                                const share_type weight)
 {
-    FC_ASSERT(weight >= 0, "Weight cannot be <= 0");
+    FC_ASSERT(weight > 0, "Weight must be greater than zero");
 
-    if(vote_exists_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id))
+    if (vote_exists_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id))
     {
         auto& vote = get_vote_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id);
-        if (vote.weight > 0)
-        {
-            db_impl().modify(expertise_allocation_proposal, [&](expertise_allocation_proposal_object& eap_o) {
-                eap_o.total_voted_expertise -= weight.value;
-            });
-            db_impl().remove(expertise_allocation_proposal);
-        }
-        else if (vote.weight < 0)
-        {
-            db_impl().modify(expertise_allocation_proposal, [&](expertise_allocation_proposal_object& eap_o) {
-                eap_o.total_voted_expertise += 2 * weight.value;
-            });
-            db_impl().modify(vote, [&](expertise_allocation_proposal_vote_object& eapv_o) {
-                eapv_o.weight = weight.value;
-            });
-        }
+        const bool& is_negative_vote = vote.weight < 0;
+
+        FC_ASSERT(is_negative_vote, "You have already voted positively for this proposal");
+
+        db_impl().modify(expertise_allocation_proposal, [&](expertise_allocation_proposal_object& eap_o) {
+            eap_o.total_voted_expertise += (std::abs(vote.weight.value) + weight.value);
+        });
+        db_impl().modify(vote, [&](expertise_allocation_proposal_vote_object& eapv_o) {
+            eapv_o.weight = weight.value;
+        });
     }
     else
     {
@@ -157,27 +151,21 @@ void dbs_expertise_allocation_proposal::downvote(const expertise_allocation_prop
                                                  const account_name_type &voter,
                                                  const share_type weight)
 {
-    FC_ASSERT(weight >= 0, "Weight cannot be <= 0");
+    FC_ASSERT(weight > 0, "Weight must be greater than zero");
 
-    if(vote_exists_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id))
+    if (vote_exists_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id))
     {
         auto& vote = get_vote_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id);
-        if (vote.weight < 0)
-        {
-            db_impl().modify(expertise_allocation_proposal, [&](expertise_allocation_proposal_object& eap_o) {
-                eap_o.total_voted_expertise += weight.value;
-            });
-            db_impl().remove(expertise_allocation_proposal);
-        }
-        else if (vote.weight > 0)
-        {
-            db_impl().modify(expertise_allocation_proposal, [&](expertise_allocation_proposal_object& eap_o) {
-                eap_o.total_voted_expertise -= 2 * weight.value;
-            });
-            db_impl().modify(vote, [&](expertise_allocation_proposal_vote_object& eapv_o) {
-                eapv_o.weight = -weight.value;
-            });
-        }
+        const bool& is_positive_vote = vote.weight > 0;
+
+        FC_ASSERT(is_positive_vote, "You have already voted negatively for this proposal");
+
+        db_impl().modify(expertise_allocation_proposal, [&](expertise_allocation_proposal_object& eap_o) {
+            eap_o.total_voted_expertise -= (std::abs(vote.weight.value) + weight.value);
+        });
+        db_impl().modify(vote, [&](expertise_allocation_proposal_vote_object& eapv_o) {
+            eapv_o.weight = -weight.value;
+        });
     }
     else
     {
@@ -191,11 +179,8 @@ void dbs_expertise_allocation_proposal::downvote(const expertise_allocation_prop
 bool dbs_expertise_allocation_proposal::is_quorum(const expertise_allocation_proposal_object &expertise_allocation_proposal)
 {
     auto& discipline = db_impl().get<discipline_object, by_id>(expertise_allocation_proposal.discipline_id);
-
     auto quorum_amount = (expertise_allocation_proposal.quorum_percent * discipline.total_expertise_amount) / DEIP_100_PERCENT;
-
     return expertise_allocation_proposal.total_voted_expertise >= quorum_amount.value;
-
 }
 
 void dbs_expertise_allocation_proposal::delete_by_discipline_and_claimer(const discipline_id_type& discipline_id,
@@ -205,7 +190,6 @@ void dbs_expertise_allocation_proposal::delete_by_discipline_and_claimer(const d
             = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_discipline_and_claimer>();
 
     auto itr = idx.find(boost::make_tuple(discipline_id, claimer));
-
     while(itr != idx.end())
     {
         const auto& current_proposal = *itr;

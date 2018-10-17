@@ -1035,7 +1035,7 @@ void create_expertise_allocation_proposal_evaluator::do_apply(const create_exper
 
     expert_token_service.check_expert_token_existence_by_account_and_discipline(op.initiator, op.discipline_id);
 
-    FC_ASSERT(expertise_allocation_proposal_service.is_exists_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer) == false,
+    FC_ASSERT(!expertise_allocation_proposal_service.exists_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer),
               "You have created expertise allocation proposal already");
 
     expertise_allocation_proposal_service.create(op.initiator, op.claimer, op.discipline_id, op.amount, op.description);

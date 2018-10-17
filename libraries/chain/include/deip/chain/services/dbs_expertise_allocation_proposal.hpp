@@ -47,7 +47,7 @@ public:
                                                              const account_name_type &initiator,
                                                              const account_name_type &claimer);
 
-    bool is_exists_by_discipline_initiator_and_claimer(const discipline_id_type &discipline_id,
+    bool exists_by_discipline_initiator_and_claimer(const discipline_id_type &discipline_id,
                                                        const account_name_type &initiator,
                                                        const account_name_type &claimer);
 

@@ -220,8 +220,8 @@ BOOST_AUTO_TEST_CASE(is_exists_y_discipline_initiator_and_claimer)
 {
     expertise_allocation_proposals();
 
-    BOOST_CHECK(data_service.is_exists_by_discipline_initiator_and_claimer(1, "alice", "bob") == true);
-    BOOST_CHECK(data_service.is_exists_by_discipline_initiator_and_claimer(3, "jack", "alice") == false);
+    BOOST_CHECK(data_service.exists_by_discipline_initiator_and_claimer(1, "alice", "bob") == true);
+    BOOST_CHECK(data_service.exists_by_discipline_initiator_and_claimer(3, "jack", "alice") == false);
 }
 
 BOOST_AUTO_TEST_CASE(increase_total_voted_expertise)
