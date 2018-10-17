@@ -1256,12 +1256,10 @@ void database::process_expertise_allocation_proposals()
     dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = obtain_service<dbs_expertise_allocation_proposal>();
     dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
 
-    const auto& idx = get_index<expertise_allocation_proposal_index>().indices().get<by_expiration_time>();
-    while ((!idx.empty()) && (head_block_time() > idx.begin()->expiration_time))
-        remove(*idx.begin());
+    expertise_allocation_proposal_service.clear_expired_expertise_allocation_proposals();
 
+    const auto& idx = get_index<expertise_allocation_proposal_index>().indices().get<by_id>();
     auto current = idx.begin();
-
     while (current != idx.end())
     {
         auto& proposal = expertise_allocation_proposal_service.get(current->id);
@@ -1270,6 +1268,7 @@ void database::process_expertise_allocation_proposals()
             expert_token_service.create(proposal.claimer, proposal.discipline_id, proposal.amount);
             expertise_allocation_proposal_service.delete_by_discipline_and_claimer(proposal.discipline_id, proposal.claimer);
         }
+        ++current;
     }
 }
 
@@ -1800,7 +1799,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<delegate_expertise_evaluator>();
     _my->_evaluator_registry.register_evaluator<revoke_expertise_delegation_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
-    _my->_evaluator_registry.register_evaluator<expertise_allocation_proposal_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_expertise_allocation_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_expertise_allocation_proposal_evaluator>();
 }
 

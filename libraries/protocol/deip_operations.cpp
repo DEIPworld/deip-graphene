@@ -266,7 +266,7 @@ void revoke_expertise_delegation_operation::validate() const
     FC_ASSERT(discipline_id > 0, "Cannot use root discipline (id = 0)");
 }
 
-void expertise_allocation_proposal_operation::validate() const
+void create_expertise_allocation_proposal_operation::validate() const
 {
     validate_account_name(initiator);
     validate_account_name(claimer);

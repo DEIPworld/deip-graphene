@@ -2393,7 +2393,7 @@ annotated_signed_transaction wallet_api::create_expertise_allocation_proposal(
 {
     FC_ASSERT(!is_locked());
 
-    expertise_allocation_proposal_operation op;
+    create_expertise_allocation_proposal_operation op;
 
     op.initiator = initiator;
     op.claimer = claimer;

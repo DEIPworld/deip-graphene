@@ -4134,7 +4134,7 @@ BOOST_AUTO_TEST_CASE(expertise_allocation_proposal_apply)
 
         private_key_type alice_priv_key = generate_private_key("alice");
 
-        expertise_allocation_proposal_operation op;
+        create_expertise_allocation_proposal_operation op;
 
         op.initiator = "alice";
         op.claimer = "bob";
@@ -4155,7 +4155,7 @@ BOOST_AUTO_TEST_CASE(expertise_allocation_proposal_apply)
         BOOST_CHECK(expertise_allocation_proposal.claimer == "bob");
         BOOST_CHECK(expertise_allocation_proposal.discipline_id == 1);
 
-        expertise_allocation_proposal_operation op2;
+        create_expertise_allocation_proposal_operation op2;
 
         op2.initiator = "alice";
         op2.claimer = "bob";
@@ -4191,7 +4191,7 @@ BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
             d.total_expertise_amount = 70000;
         });
 
-        expertise_allocation_proposal_operation op;
+        create_expertise_allocation_proposal_operation op;
 
         op.initiator = "alice";
         op.claimer = "bob";

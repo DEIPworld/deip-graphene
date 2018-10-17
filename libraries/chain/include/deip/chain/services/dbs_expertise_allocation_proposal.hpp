@@ -59,10 +59,14 @@ public:
                   const account_name_type &voter,
                   const share_type weight);
 
+    bool is_expired(const expertise_allocation_proposal_object& expertise_allocation_proposal);
+
     bool is_quorum(const expertise_allocation_proposal_object &expertise_allocation_proposal);
 
     void delete_by_discipline_and_claimer(const discipline_id_type& discipline_id,
                                           const account_name_type &claimer);
+
+    void clear_expired_expertise_allocation_proposals();
 
     /* Expertise allocation proposal vote */
 
@@ -92,7 +96,6 @@ public:
     /* Adjusting */
 
     void adjust_expert_token_vote(const expert_token_object& expert_token, share_type delta);
-
 };
 
 } // namespace chain

@@ -343,5 +343,17 @@ void dbs_expertise_allocation_proposal::adjust_expert_token_vote(const expert_to
     }
 }
 
+bool dbs_expertise_allocation_proposal::is_expired(const expertise_allocation_proposal_object& eap_o)
+{
+    return eap_o.expiration_time < _get_now();
+}
+
+void dbs_expertise_allocation_proposal::clear_expired_expertise_allocation_proposals()
+{
+    const auto& expiration_index = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_expiration_time>();
+    while (!expiration_index.empty() && is_expired(*expiration_index.begin()))
+        db_impl().remove(*expiration_index.begin());
+}
+
 } //namespace chain
 } //namespace deip

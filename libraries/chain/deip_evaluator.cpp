@@ -1024,7 +1024,7 @@ void revoke_expertise_delegation_evaluator::do_apply(const revoke_expertise_dele
     expert_token_service.update_expertise_proxy(sender_token, proxy);
 }
 
-void expertise_allocation_proposal_evaluator::do_apply(const expertise_allocation_proposal_operation& op)
+void create_expertise_allocation_proposal_evaluator::do_apply(const create_expertise_allocation_proposal_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
