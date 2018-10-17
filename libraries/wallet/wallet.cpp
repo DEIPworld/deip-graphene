@@ -2682,7 +2682,27 @@ annotated_signed_transaction wallet_api::vote_proposal(const std::string& voter,
     return my->sign_transaction(tx, broadcast);
 }
 
+annotated_signed_transaction wallet_api::propose_offer_research_tokens(const std::string& sender,
+                                                                       const std::string& receiver,
+                                                                       const int64_t research_group_id,
+                                                                       const int64_t research_id,
+                                                                       const uint32_t amount,
+                                                                       const asset& price,
+                                                                       const bool broadcast)
+{    
+    offer_research_tokens_data_type data;
+
+    data.sender = sender;
+    data.receiver = receiver;
+    data.research_id = research_id;
+    data.amount = amount;
+    data.price = price;
+
+    return create_proposal(sender, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::offer_research_tokens, PROPOSAL_EXPIRATION_TIME, broadcast);
+}
+
 namespace utils {
+
 
 fc::ecc::private_key derive_private_key(const std::string& prefix_string, int sequence_number)
 {
