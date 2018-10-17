@@ -91,8 +91,6 @@ public:
     bool vote_exists_by_voter_and_expertise_allocation_proposal_id(const account_name_type &voter,
                                                                       const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id);
 
-    void delete_votes_by_expertise_allocation_proposal_id(const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id);
-
     /* Adjusting */
 
     void adjust_expert_token_vote(const expert_token_object& expert_token, share_type delta);

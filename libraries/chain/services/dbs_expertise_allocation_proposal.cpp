@@ -293,22 +293,6 @@ bool dbs_expertise_allocation_proposal::vote_exists_by_voter_and_expertise_alloc
     return idx.find(boost::make_tuple(voter, expertise_allocation_proposal_id)) != idx.cend();
 }
 
-void dbs_expertise_allocation_proposal::delete_votes_by_expertise_allocation_proposal_id(const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id)
-{
-    const auto& idx
-            = db_impl().get_index<expertise_allocation_proposal_vote_index>().indices().get<by_expertise_allocation_proposal_id>();
-
-    auto itr = idx.find(expertise_allocation_proposal_id);
-
-    while(itr != idx.end())
-    {
-        const auto& current_vote = *itr;
-        ++itr;
-        db_impl().remove(current_vote);
-    }
-}
-
-
 void dbs_expertise_allocation_proposal::adjust_expert_token_vote(const expert_token_object& expert_token, share_type delta)
 {
     const auto& idx = db_impl().get_index<expertise_allocation_proposal_vote_index>().indices().get<by_voter_and_discipline_id>();
