@@ -88,7 +88,7 @@ public:
 
     expertise_allocation_proposal_vote_refs_type get_votes_by_voter(const account_name_type& voter) const;
 
-    bool is_vote_exists_by_voter_and_expertise_allocation_proposal_id(const account_name_type &voter,
+    bool vote_exists_by_voter_and_expertise_allocation_proposal_id(const account_name_type &voter,
                                                                       const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id);
 
     void delete_votes_by_expertise_allocation_proposal_id(const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id);

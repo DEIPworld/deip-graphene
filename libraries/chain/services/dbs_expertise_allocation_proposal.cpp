@@ -124,7 +124,7 @@ void dbs_expertise_allocation_proposal::upvote(const expertise_allocation_propos
 {
     FC_ASSERT(weight >= 0, "Weight cannot be <= 0");
 
-    if(is_vote_exists_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id))
+    if(vote_exists_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id))
     {
         auto& vote = get_vote_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id);
         if (vote.weight > 0)
@@ -159,7 +159,7 @@ void dbs_expertise_allocation_proposal::downvote(const expertise_allocation_prop
 {
     FC_ASSERT(weight >= 0, "Weight cannot be <= 0");
 
-    if(is_vote_exists_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id))
+    if(vote_exists_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id))
     {
         auto& vote = get_vote_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id);
         if (vote.weight < 0)
@@ -301,7 +301,7 @@ dbs_expertise_allocation_proposal::get_votes_by_voter(const account_name_type& v
     return ret;
 }
 
-bool dbs_expertise_allocation_proposal::is_vote_exists_by_voter_and_expertise_allocation_proposal_id(const account_name_type &voter,
+bool dbs_expertise_allocation_proposal::vote_exists_by_voter_and_expertise_allocation_proposal_id(const account_name_type &voter,
                                                                                                      const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id)
 {
     const auto& idx = db_impl().get_index<expertise_allocation_proposal_vote_index>().indices().get<by_voter_and_expertise_allocation_proposal_id>();
