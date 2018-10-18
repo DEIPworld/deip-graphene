@@ -1182,6 +1182,7 @@ FC_REFLECT( deip::app::expertise_allocation_proposal_vote_api_obj,
             (voter)
             (weight)
             (voting_time)
+)
 
 FC_REFLECT( deip::app::vesting_balance_api_obj,
             (id)

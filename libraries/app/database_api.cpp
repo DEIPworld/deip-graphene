@@ -1354,6 +1354,23 @@ database_api::get_research_token_sale_by_id(const research_token_sale_id_type re
     });
 }
 
+vector<research_token_sale_api_obj> database_api::get_research_token_sale(const uint32_t& from = 0, uint32_t limit = 100) const
+{
+    return my->_db.with_read_lock([&]() {
+    FC_ASSERT(limit <= MAX_LIMIT);
+    const auto& research_token_sale_by_id = my->_db.get_index<research_token_sale_index>().indices().get<by_id>();
+    vector<research_token_sale_api_obj> result;
+    result.reserve(limit);
+
+    for (auto itr = research_token_sale_by_id.lower_bound(from); limit-- && itr != research_token_sale_by_id.end(); ++itr)
+    {
+        result.push_back(research_token_sale_api_obj(*itr));
+    }
+
+    return result;
+    });
+}
+
 bool database_api::check_research_token_sale_existence_by_research_id(const research_id_type& research_id) const
 {
     const auto& idx = my->_db.get_index<research_token_sale_index>().indices().get<by_research_id>();
