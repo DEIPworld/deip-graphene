@@ -28,7 +28,7 @@ class research_object : public object<research_object_type, research_object>
 public:
 
     template <typename Constructor, typename Allocator>
-    research_object(Constructor &&c, allocator<Allocator> a) : title(a), abstract(a), permlink(a)
+    research_object(Constructor &&c, allocator<Allocator> a) : title(a), abstract(a), permlink(a), eci_by_disciplines(a)
     {
         c(*this);
     }
@@ -46,6 +46,8 @@ public:
     share_type owned_tokens;
     uint16_t review_share_in_percent;
     uint16_t dropout_compensation_in_percent;
+
+    discipline_id_share_type_map eci_by_disciplines;
 };
 
 struct by_permlink;
@@ -86,7 +88,7 @@ typedef multi_index_container<research_object,
 
 FC_REFLECT(deip::chain::research_object,
                         (id)(title)(research_group_id)(permlink)(abstract)(created_at)(review_share_in_percent_last_update)
-                        (last_update_time)(is_finished)(owned_tokens)(review_share_in_percent)(dropout_compensation_in_percent)
+                        (last_update_time)(is_finished)(owned_tokens)(review_share_in_percent)(dropout_compensation_in_percent)(eci_by_disciplines)
             )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_object, deip::chain::research_index)

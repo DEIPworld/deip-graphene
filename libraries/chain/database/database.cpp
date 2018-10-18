@@ -1580,6 +1580,7 @@ share_type database::allocate_rewards_to_reviews(const std::vector<review_object
                                                  const share_type &reward, const share_type &expertise_reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
+    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
 
     share_type total_reviews_weight = share_type(0);
 
@@ -1592,8 +1593,14 @@ share_type database::allocate_rewards_to_reviews(const std::vector<review_object
     share_type used_reward = 0;
 
     for (auto& review : reviews) {
-        auto review_reward_share = util::calculate_share(reward, review.weights_per_discipline.at(discipline_id),
-                                                         total_reviews_weight);
+        auto weight_per_discipline = review.weights_per_discipline.at(discipline_id);
+
+        auto review_reward_share = util::calculate_share(reward, weight_per_discipline, total_reviews_weight);
+
+        auto& research = get<research_object>(research_content_service.get(review.research_content_id).research_id);
+
+        modify(research, [&](research_object& r_o) { r_o.eci_by_disciplines[discipline_id] += weight_per_discipline ;} );
+
         auto author_name = review.author;
         auto review_curators_reward_share = util::calculate_share(review_reward_share,
                                                                       DEIP_CURATORS_REWARD_SHARE_PERCENT);
@@ -1609,8 +1616,7 @@ share_type database::allocate_rewards_to_reviews(const std::vector<review_object
 
         // reward expertise
         if (expertise_reward != 0) {
-            auto author_expertise = util::calculate_share(expertise_reward, review.weights_per_discipline.at(discipline_id),
-                                                          total_reviews_weight);
+            auto author_expertise = util::calculate_share(expertise_reward, weight_per_discipline, total_reviews_weight);
             reward_account_with_expertise(author_name, discipline_id, author_expertise);
         }
     }
