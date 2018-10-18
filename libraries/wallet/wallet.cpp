@@ -12,6 +12,8 @@
 #include <deip/blockchain_history/account_history_api.hpp>
 #include <deip/blockchain_history/blockchain_history_api.hpp>
 
+#include <deip/chain/schema/proposal_data_types.hpp>
+
 #include <algorithm>
 #include <cctype>
 #include <iomanip>
@@ -59,6 +61,7 @@
 #endif
 
 #define BRAIN_KEY_WORD_COUNT 16
+#define PROPOSAL_EXPIRATION_TIME 864000 // Max expiration time
 
 namespace deip {
 namespace wallet {
@@ -2127,11 +2130,168 @@ vector<grant_api_obj> wallet_api::get_grants(const std::string& account_name)
     return result;
 }
 
+vector<research_group_invite_api_obj> wallet_api::list_my_research_group_invites()
+{
+    vector<account_api_obj> accounts = list_my_accounts();
+
+    vector<research_group_invite_api_obj> result;
+
+    for (const auto& account : accounts)
+    {
+        vector<research_group_invite_api_obj> invites
+            = my->_remote_db->get_research_group_invites_by_account_name(account.name);
+        result.insert(result.end(), invites.begin(), invites.end());
+    }
+
+    return result;
+}
+
+vector<research_token_api_obj> wallet_api::list_my_research_tokens()
+{
+    vector<account_api_obj> accounts = list_my_accounts();
+
+    vector<research_token_api_obj> result;
+
+    for (const auto& account : accounts)
+    {
+        vector<research_token_api_obj> research_tokens
+            = my->_remote_db->get_research_tokens_by_account_name(account.name);
+        result.insert(result.end(), research_tokens.begin(), research_tokens.end());
+    }
+
+    return result;
+}
+
+vector<research_token_api_obj> wallet_api::list_account_research_tokens(const std::string& account_name)
+{
+    return my->_remote_db->get_research_tokens_by_account_name(account_name);
+}
+
+vector<vesting_balance_api_obj> wallet_api::get_vesting_balances(const std::string& account_name)
+{
+    vector<vesting_balance_api_obj> result;
+
+    result = my->_remote_db->get_vesting_balance_by_owner({ account_name });
+
+    return result;
+}
+
+research_group_api_obj wallet_api::get_research_group_by_permlink(const std::string& permlink)
+{
+    return my->_remote_db->get_research_group_by_permlink({ permlink });
+}
+
+proposal_api_obj wallet_api::get_proposal(const int64_t proposals_id)
+{
+    return my->_remote_db->get_proposal({ proposals_id });
+}
+
+vector<proposal_api_obj> wallet_api::list_research_group_proposals(const int64_t research_group_id)
+{
+    vector<proposal_api_obj> result;
+
+    result = my->_remote_db->get_proposals_by_research_group_id({ research_group_id });
+
+    return result;
+}
+
+vector<research_token_sale_api_obj> wallet_api::list_research_token_sales(const uint32_t& from = 0, uint32_t limit = 100)
+{
+    return my->_remote_db->get_research_token_sale(from, limit);
+}
+
+research_content_api_obj wallet_api::get_research_content(const int64_t id)
+{
+    return my->_remote_db->get_research_content_by_id(id);
+}
+
+research_content_api_obj wallet_api::get_research_content_by_permlink(const int64_t research_id, const string& permlink)
+{
+    return my->_remote_db->get_research_content_by_permlink(research_id, permlink);
+}
+
+research_content_api_obj wallet_api::get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink)
+{
+    return my->_remote_db->get_research_content_by_absolute_permlink(research_group_permlink, research_permlink, research_content_permlink);
+}
+
+vector<research_content_api_obj> wallet_api::get_research_contents_by_type(const int64_t research_id, const uint16_t type)
+{
+    return my->_remote_db->get_research_content_by_type(research_id, (research_content_type)type);
+}
+
+research_api_obj wallet_api::get_research(const int64_t research_id)
+{
+    return my->_remote_db->get_research_by_id(research_id);
+}
+
+research_api_obj wallet_api::get_research_by_permlink(const int64_t research_group_id, const string& permlink)
+{
+    return my->_remote_db->get_research_by_permlink(research_group_id, permlink);
+}
+
+research_api_obj wallet_api::get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink)
+{
+    return my->_remote_db->get_research_by_absolute_permlink(research_group_permlink, research_permlink);
+}
+
+vector<research_api_obj> wallet_api::get_researches_by_discipline(const uint64_t from,
+                                                                     const uint32_t limit,
+                                                                     const int64_t discipline_id)
+{
+    return my->_remote_db->get_researches_by_discipline_id(from, limit, discipline_id);
+}
+
+vector<research_api_obj> wallet_api::get_researches_by_research_group(const int64_t research_group_id)
+{
+    return my->_remote_db->get_researches_by_research_group_id(research_group_id);
+}
+
+vector<research_group_api_obj> wallet_api::list_my_research_groups()
+{
+    vector<account_api_obj> accounts = list_my_accounts();
+
+    vector<research_group_api_obj> research_groups;
+
+    for (const auto& account : accounts)
+    {
+        vector<research_group_token_api_obj> token_objects = my->_remote_db->get_research_group_tokens_by_account(account.name);
+        for (const auto& token_object : token_objects)
+            research_groups.push_back(my->_remote_db->get_research_group_by_id(token_object.research_group_id));
+    }
+
+    return research_groups;
+}
+
+vector<research_api_obj> wallet_api::list_my_researches()
+{
+    vector<research_api_obj> researches;
+    vector<research_group_api_obj> research_groups = list_my_research_groups();
+    for (const auto& research_group : research_groups)
+    {
+        vector<research_api_obj> r = my->_remote_db->get_researches_by_research_group_id(research_group.id);
+        researches.insert(researches.end(), r.begin(), r.end());
+    }
+
+    return researches;
+}
+
+vector<discipline_api_obj> wallet_api::list_all_disciplines()
+{
+    vector<discipline_api_obj> result;
+
+    result = my->_remote_db->get_all_disciplines();
+
+    return result;
+}
+
 annotated_signed_transaction wallet_api::create_grant(const std::string& grant_owner,
                                                const asset& balance,
                                                const uint32_t& start_block,
                                                const uint32_t& end_block,
                                                const discipline_name_type& target_discipline,
+                                               const std::string& content_hash,
+                                               const bool is_extendable,
                                                const bool broadcast)
 {
     FC_ASSERT(!is_locked());
@@ -2143,6 +2303,8 @@ annotated_signed_transaction wallet_api::create_grant(const std::string& grant_o
     op.balance = balance;
     op.start_block = start_block;
     op.end_block = end_block;
+    op.content_hash = content_hash;
+    op.is_extendable = is_extendable;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2177,10 +2339,12 @@ annotated_signed_transaction wallet_api::create_proposal(const std::string& crea
                                                          const int64_t research_group_id,
                                                          const std::string& data,
                                                          const uint16_t action,
-                                                         const time_point_sec expiration_time,
+                                                         const int64_t expiration,
                                                          const bool broadcast)
 {
     FC_ASSERT(!is_locked());
+
+    auto props = my->_remote_db->get_dynamic_global_properties();
 
     create_proposal_operation op;
 
@@ -2188,13 +2352,129 @@ annotated_signed_transaction wallet_api::create_proposal(const std::string& crea
     op.research_group_id = research_group_id;
     op.data = data;
     op.action = action;
-    op.expiration_time = expiration_time;
+    op.expiration_time = props.time + expiration;
 
     signed_transaction tx;
     tx.operations.push_back(op);
     tx.validate();
 
     return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::propose_invite_member(const std::string& creator,
+                                                         const std::string& member,
+                                                         const int64_t research_group_id,
+                                                         const int64_t research_group_token_amount_in_percent,
+                                                         const std::string& cover_letter,
+                                                         const bool broadcast)
+{    
+    invite_member_proposal_data_type data;
+
+    data.research_group_id = research_group_id;
+    data.name = member;
+    data.research_group_token_amount_in_percent = research_group_token_amount_in_percent;
+    data.cover_letter = cover_letter;
+
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::invite_member, PROPOSAL_EXPIRATION_TIME, broadcast);
+}
+
+annotated_signed_transaction wallet_api::propose_exclude_member(const std::string& creator,
+                                                         const std::string& member,
+                                                         const int64_t research_group_id,
+                                                         const bool broadcast)
+{    
+    dropout_member_proposal_data_type data;
+
+    data.name = member;
+    data.research_group_id = research_group_id;
+
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::dropout_member, PROPOSAL_EXPIRATION_TIME, broadcast);
+}
+
+annotated_signed_transaction wallet_api::propose_create_research(const std::string& creator,
+                                                         const std::string& title,
+                                                         const std::string& abstract,
+                                                         const std::string& permlink,
+                                                         const int64_t research_group_id,
+                                                         const uint16_t review_share_in_percent,
+                                                         const uint16_t dropout_compensation_in_percent,
+                                                         const std::vector<int64_t> disciplines,
+                                                         const bool broadcast)
+{    
+    start_research_proposal_data_type data;
+
+    data.title = title;
+    data.abstract = abstract;
+    data.permlink = permlink;
+    data.research_group_id = research_group_id;
+    data.review_share_in_percent = review_share_in_percent;
+    data.dropout_compensation_in_percent = dropout_compensation_in_percent;
+    data.disciplines = disciplines;
+
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::start_research, PROPOSAL_EXPIRATION_TIME, broadcast);
+}
+
+annotated_signed_transaction wallet_api::propose_create_research_content(const std::string& creator,
+                                                                  const int64_t research_group_id,
+                                                                  const int64_t research_id,
+                                                                  const uint16_t type,
+                                                                  const std::string& title,
+                                                                  const std::string& content,
+                                                                  const std::string& permlink,
+                                                                  const std::vector<string> authors,
+                                                                  const std::vector<int64_t> references,
+                                                                  const std::vector<string>& external_references,
+                                                                  const bool broadcast)
+{    
+    std::vector<fc::fixed_string_16> authors_fc;
+    for (size_t i = 0; i < authors.size(); i++)
+    {
+        const std::string& s = authors[i];
+        fc::fixed_string_16 fc(s);
+        authors_fc.push_back(fc);
+    }
+
+    std::vector<research_content_id_type> references_v;
+    for (size_t i = 0; i < references.size(); i++)
+    {
+        research_content_id_type r = (research_content_id_type)references[i];
+        references_v.push_back(r);
+    }
+
+    create_research_content_data_type data;
+
+    data.research_id = research_id;
+    data.type = (research_content_type)type;
+    data.title = title;
+    data.content = content;
+    data.permlink = permlink;
+    data.authors = authors_fc;
+    data.references = references_v;
+    data.external_references = external_references;
+
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::create_research_material, PROPOSAL_EXPIRATION_TIME, broadcast);
+}
+
+annotated_signed_transaction wallet_api::propose_start_token_sale(const std::string& creator,
+                                                                  const int64_t research_group_id,
+                                                                  const int64_t research_id,
+                                                                  const uint32_t start_time,
+                                                                  const uint32_t end_time,
+                                                                  const int64_t amount_for_sale,
+                                                                  const asset& soft_cap,
+                                                                  const asset& hard_cap,
+                                                                  const bool broadcast)
+{    
+    start_research_token_sale_data_type data;
+
+    data.research_id = research_id;
+    data.start_time = fc::time_point_sec(start_time);
+    data.end_time = fc::time_point_sec(end_time);
+    data.amount_for_sale = amount_for_sale;
+    data.soft_cap = soft_cap;
+    data.hard_cap = hard_cap;
+
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::start_research_token_sale, PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
 annotated_signed_transaction wallet_api::make_review(const std::string& author,
@@ -2220,8 +2500,8 @@ annotated_signed_transaction wallet_api::make_review(const std::string& author,
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::contribute_to_token_sale(const int64_t research_token_sale_id,
-                                                                  const std::string& owner,
+annotated_signed_transaction wallet_api::contribute_to_token_sale(const std::string& contributor,
+                                                                  const int64_t research_token_sale_id,
                                                                   const asset& amount,
                                                                   const bool broadcast)
 {
@@ -2230,8 +2510,32 @@ annotated_signed_transaction wallet_api::contribute_to_token_sale(const int64_t 
     contribute_to_token_sale_operation op;
 
     op.research_token_sale_id = research_token_sale_id;
-    op.owner = owner;
+    op.owner = contributor;
     op.amount = amount;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::create_research_group(const std::string& creator,
+                                                               const std::string& name,
+                                                               const std::string& permlink,
+                                                               const std::string& description,
+                                                               const int64_t quorum_percent,
+                                                               const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    create_research_group_operation op;
+
+    op.creator = creator;
+    op.name = name;
+    op.permlink = permlink;
+    op.description = description;
+    op.quorum_percent = quorum_percent;    
 
     signed_transaction tx;
     tx.operations.push_back(op);
