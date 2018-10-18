@@ -1,5 +1,8 @@
+
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_discipline.hpp>
+#include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/database/database.hpp>
 
 #include <tuple>
@@ -17,6 +20,7 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
                                                     const share_type& amount)
 {
     auto& account_service = db_impl().obtain_service<dbs_account>();
+    auto& disciplines_service = db_impl().obtain_service<dbs_discipline>();
 
     const auto& props = db_impl().get_dynamic_global_properties();
     const auto& to_account = account_service.get_account(account);
@@ -33,6 +37,7 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
         token.last_vote_time = props.time;
     });
 
+    disciplines_service.increase_total_expertise_amount(discipline_id, amount);
     return token;
 }
 
@@ -89,12 +94,11 @@ void dbs_expert_token::check_expert_token_existence_by_account_and_discipline(co
                                                                               const discipline_id_type &discipline_id)
 {
     const auto& idx = db_impl().get_index<expert_token_index>().indices().get<by_account_and_discipline>();
-
     FC_ASSERT(idx.find(std::make_tuple(account, discipline_id)) != idx.cend(), "Expert token for account \"${1}\" and discipline \"${2}\" does not exist", ("1", account)("2", discipline_id));
 }
 
-bool dbs_expert_token::is_expert_token_existence_by_account_and_discipline(const account_name_type &account,
-                                                                              const discipline_id_type &discipline_id)
+bool dbs_expert_token::expert_token_exists_by_account_and_discipline(const account_name_type &account,
+                                                                     const discipline_id_type &discipline_id)
 {
     const auto& idx = db_impl().get_index<expert_token_index>().indices().get<by_account_and_discipline>();
     return idx.find(boost::make_tuple(account, discipline_id)) != idx.cend();
@@ -106,12 +110,104 @@ void dbs_expert_token::increase_expertise_tokens(const account_object &account,
     FC_ASSERT(amount >= 0, "Amount cannot be < 0");
 
     dbs_account& account_service = db_impl().obtain_service<dbs_account>();
+    auto& disciplines_service = db_impl().obtain_service<dbs_discipline>();
 
     auto& token = get_expert_token_by_account_and_discipline(account.name, discipline_id);
     db_impl().modify(token, [&](expert_token_object et) {
         et.amount += amount;
     });
+
+    disciplines_service.increase_total_expertise_amount(discipline_id, amount);
     account_service.increase_expertise_tokens(account, amount);
+    adjust_proxied_expertise(token, amount);
+}
+
+void dbs_expert_token::update_expertise_proxy(const expert_token_object& expert_token, const optional<expert_token_object>& proxy_expert_token)
+{
+    /// remove all current votes
+    std::array<share_type, DEIP_MAX_PROXY_RECURSION_DEPTH + 1> delta;
+
+    delta[0] = -expert_token.amount;
+
+    for (int i = 0; i < DEIP_MAX_PROXY_RECURSION_DEPTH; ++i)
+        delta[i + 1] = -expert_token.proxied_expertise[i];
+
+    adjust_proxied_expertise(expert_token, delta);
+
+    if (proxy_expert_token.valid())
+    {
+        flat_set<expert_token_id_type> proxy_chain({expert_token.id, (*proxy_expert_token).id});
+
+        proxy_chain.reserve(DEIP_MAX_PROXY_RECURSION_DEPTH + 1);
+
+        /// check for proxy loops and fail to update the proxy if it would create a loop
+        auto cprox = &(*proxy_expert_token);
+        while (cprox->proxy.size() != 0) {
+            const auto next_proxy = get_expert_token_by_account_and_discipline(cprox->proxy, cprox->discipline_id);
+            FC_ASSERT(proxy_chain.insert(next_proxy.id).second, "This proxy would create a proxy loop.");
+            cprox = &next_proxy;
+            FC_ASSERT(proxy_chain.size() <= DEIP_MAX_PROXY_RECURSION_DEPTH, "Proxy chain is too long.");
+        }
+
+        db_impl().modify(expert_token, [&](expert_token_object &e) { e.proxy = (*proxy_expert_token).account_name; });
+
+        for (int i = 0; i <= DEIP_MAX_PROXY_RECURSION_DEPTH; ++i)
+            delta[i] = -delta[i];
+        adjust_proxied_expertise(expert_token, delta);
+    }
+
+    else
+    { /// we are clearing the proxy which means we simply update the expert token
+        db_impl().modify(expert_token,
+                         [&](expert_token_object& e) { e.proxy = account_name_type(DEIP_PROXY_TO_SELF_ACCOUNT); });
+    }
+}
+
+void dbs_expert_token::adjust_proxied_expertise(const expert_token_object& expert_token,
+                                                const std::array<share_type, DEIP_MAX_PROXY_RECURSION_DEPTH + 1>& delta,
+                                                int depth)
+{
+    if (expert_token.proxy != DEIP_PROXY_TO_SELF_EXPERT_TOKEN)
+    {
+        /// nested proxies are not supported, vote will not propagate
+        if (depth >= DEIP_MAX_PROXY_RECURSION_DEPTH)
+            return;
+
+        const auto& proxy = get_expert_token_by_account_and_discipline(expert_token.proxy, expert_token.discipline_id);
+
+        db_impl().modify(proxy, [&](expert_token_object& e) {
+            for (int i = DEIP_MAX_PROXY_RECURSION_DEPTH - depth - 1; i >= 0; --i)
+            {
+                e.proxied_expertise[i + depth] += delta[i];
+            }
+        });
+
+        adjust_proxied_expertise(proxy, delta, depth + 1);
+    }
+}
+
+void dbs_expert_token::adjust_proxied_expertise(const expert_token_object& expert_token,
+                                                share_type delta,
+                                                int depth)
+{
+    dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = db_impl().obtain_service<dbs_expertise_allocation_proposal>();
+
+    if (expert_token.proxy != DEIP_PROXY_TO_SELF_EXPERT_TOKEN)
+    {
+        /// nested proxies are not supported, vote will not propagate
+        if (depth >= DEIP_MAX_PROXY_RECURSION_DEPTH)
+            return;
+
+        const auto& proxy = get_expert_token_by_account_and_discipline(expert_token.proxy, expert_token.discipline_id);
+
+        db_impl().modify(proxy, [&](expert_token_object& e) { e.proxied_expertise[depth] += delta; });
+
+        adjust_proxied_expertise(proxy, delta, depth + 1);
+    }
+    else
+    {
+        expertise_allocation_proposal_service.adjust_expert_token_vote(expert_token, delta);
+    }
 }
 
 } //namespace chain

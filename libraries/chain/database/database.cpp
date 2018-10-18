@@ -30,6 +30,7 @@
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
 #include <deip/chain/schema/expertise_stats_object.hpp>
+#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -68,6 +69,7 @@
 #include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_research_content_reward_pool.hpp>
 #include <deip/chain/services/dbs_expertise_stats.hpp>
+#include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
 namespace deip {
@@ -1249,6 +1251,27 @@ void database::refund_research_tokens(const research_token_sale_id_type research
     modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
 }
 
+void database::process_expertise_allocation_proposals()
+{
+    dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = obtain_service<dbs_expertise_allocation_proposal>();
+    dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
+
+    expertise_allocation_proposal_service.clear_expired_expertise_allocation_proposals();
+
+    const auto& idx = get_index<expertise_allocation_proposal_index>().indices().get<by_id>();
+    auto current = idx.begin();
+    while (current != idx.end())
+    {
+        auto& proposal = expertise_allocation_proposal_service.get(current->id);
+        if (expertise_allocation_proposal_service.is_quorum(proposal))
+        {
+            expert_token_service.create(proposal.claimer, proposal.discipline_id, proposal.amount);
+            expertise_allocation_proposal_service.delete_by_claimer_and_discipline(proposal.claimer, proposal.discipline_id);
+        }
+        ++current;
+    }
+}
+
 share_type database::distribute_reward(const share_type &reward, const share_type &expertise)
 {
     auto& discipline_service = obtain_service<dbs_discipline>();
@@ -1776,6 +1799,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<delegate_expertise_evaluator>();
     _my->_evaluator_registry.register_evaluator<revoke_expertise_delegation_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_expertise_allocation_proposal_evaluator>();
+    _my->_evaluator_registry.register_evaluator<vote_for_expertise_allocation_proposal_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -1816,6 +1841,8 @@ void database::initialize_indexes()
     add_index<review_vote_index>();
     add_index<vesting_balance_index>();
     add_index<research_content_reward_pool_index>();
+    add_index<expertise_allocation_proposal_index>();
+    add_index<expertise_allocation_proposal_vote_index>();
     add_index<expertise_stats_index>();
 
     _plugin_index_signal();
@@ -2044,6 +2071,8 @@ void database::_apply_block(const signed_block& next_block)
         /// modify expertise stats to correctly calculate emission
         expertise_stats_service.calculate_used_expertise_for_week();
         expertise_stats_service.reset_used_expertise_per_block();
+
+        process_expertise_allocation_proposals();
 
         // notify observers that the block has been applied
         notify_applied_block(next_block);

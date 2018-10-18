@@ -23,7 +23,7 @@ add_library( deip_chain
         database/database_witness_schedule.cpp
 
         services/dbs_base_impl.cpp
-             dbservice.cpp
+        dbservice.cpp
         services/dbs_account.cpp
         services/dbs_witness.cpp
         services/dbs_grant.cpp
@@ -44,20 +44,21 @@ add_library( deip_chain
         services/dbs_proposal_execution.cpp
         services/dbs_research_content_reward_pool.cpp
         services/dbs_expertise_stats.cpp
+        services/dbs_expertise_allocation_proposal.cpp
 
-             deip_evaluator.cpp
+        deip_evaluator.cpp
         schema/deip_objects.cpp
         schema/shared_authority.cpp
-             block_log.cpp
+        block_log.cpp
 
-             genesis.cpp
+        genesis.cpp
 
-             util/reward.cpp
+        util/reward.cpp
              
-             ${HEADERS}
-             ${hardfork_hpp_file}
-             "${CMAKE_CURRENT_BINARY_DIR}/include/deip/chain/hardfork.hpp"
-           )
+        ${HEADERS}
+        ${hardfork_hpp_file}
+        "${CMAKE_CURRENT_BINARY_DIR}/include/deip/chain/hardfork.hpp"
+        )
 
 add_dependencies( deip_chain deip_protocol build_hardfork_hpp )
 target_link_libraries( deip_chain deip_protocol fc chainbase graphene_schema ${PATCH_MERGE_LIB} )

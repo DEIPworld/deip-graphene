@@ -47,6 +47,8 @@ namespace deip {
                 transfer_research_tokens_operation,
                 delegate_expertise_operation,
                 revoke_expertise_delegation_operation,
+                create_expertise_allocation_proposal_operation,
+                vote_for_expertise_allocation_proposal_operation,
 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,
