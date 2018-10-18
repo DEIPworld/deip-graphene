@@ -52,8 +52,8 @@ public:
     void check_expert_token_existence_by_account_and_discipline(const account_name_type& account,
                                                                 const discipline_id_type& discipline_id);
 
-    bool is_expert_token_existence_by_account_and_discipline(const account_name_type& account,
-                                                                const discipline_id_type& discipline_id);
+    bool expert_token_exists_by_account_and_discipline(const account_name_type& account,
+                                                       const discipline_id_type& discipline_id);
 
     void increase_expertise_tokens(const account_object &account,
                                    const discipline_id_type &discipline_id,

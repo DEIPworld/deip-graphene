@@ -828,7 +828,7 @@ void set_expertise_tokens_evaluator::do_apply(const set_expertise_tokens_operati
     for (auto& discipline_to_add : op.disciplines_to_add)
     {
         FC_ASSERT(discipline_to_add.amount > 0, "Amount must be bigger than 0");
-        const bool exist = expert_token_service.is_expert_token_existence_by_account_and_discipline(op.account_name, discipline_to_add.discipline_id);
+        const bool exist = expert_token_service.expert_token_exists_by_account_and_discipline(op.account_name, discipline_to_add.discipline_id);
         
         if (exist)
         {
@@ -1032,8 +1032,10 @@ void create_expertise_allocation_proposal_evaluator::do_apply(const create_exper
 
     account_service.check_account_existence(op.initiator);
     account_service.check_account_existence(op.claimer);
-
     expert_token_service.check_expert_token_existence_by_account_and_discipline(op.initiator, op.discipline_id);
+
+    FC_ASSERT(!expert_token_service.expert_token_exists_by_account_and_discipline(op.claimer, op.discipline_id),
+              "Expert token for account \"${1}\" and discipline \"${2}\" already exists", ("1", op.claimer)("2", op.discipline_id));
 
     FC_ASSERT(!expertise_allocation_proposal_service.exists_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer),
               "You have created expertise allocation proposal already");
