@@ -231,10 +231,6 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
         auto& discipline = get<discipline_object, by_id>(expert_token.discipline_id); // verify that discipline existst
         FC_ASSERT(discipline.id._id == expert_token.discipline_id); // verify that discipline exists
 
-        modify(discipline, [&](discipline_object& d_o) {
-            d_o.total_expertise_amount += expert_token.amount;
-        });
-
         dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
         expert_token_service.create(expert_token.account_name, expert_token.discipline_id, expert_token.amount);
     }

@@ -35,6 +35,14 @@ const discipline_object& dbs_discipline::get_discipline(const discipline_id_type
     FC_CAPTURE_AND_RETHROW((id))
 }
 
+void dbs_discipline::increase_total_expertise_amount(const discipline_id_type& id, const share_type& amount)
+{
+    const discipline_object& discipline = get_discipline(id);
+    db_impl().modify(discipline, [&](discipline_object& d) {
+        d.total_expertise_amount += amount; 
+    });
+}
+
 const discipline_object& dbs_discipline::get_discipline_by_name(const discipline_name_type& name) const
 {
     try {

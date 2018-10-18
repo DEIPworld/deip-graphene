@@ -20,6 +20,7 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
                                                     const share_type& amount)
 {
     auto& account_service = db_impl().obtain_service<dbs_account>();
+    auto& disciplines_service = db_impl().obtain_service<dbs_discipline>();
 
     const auto& props = db_impl().get_dynamic_global_properties();
     const auto& to_account = account_service.get_account(account);
@@ -36,12 +37,7 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
         token.last_vote_time = props.time;
     });
 
-    auto& discipline = db_impl().get<discipline_object, by_id>(discipline_id);
-
-    db_impl().modify(discipline, [&](discipline_object d) {
-        d.total_expertise_amount += amount;
-    });
-
+    disciplines_service.increase_total_expertise_amount(discipline_id, amount);
     return token;
 }
 
@@ -115,18 +111,14 @@ void dbs_expert_token::increase_expertise_tokens(const account_object &account,
     FC_ASSERT(amount >= 0, "Amount cannot be < 0");
 
     dbs_account& account_service = db_impl().obtain_service<dbs_account>();
+    auto& disciplines_service = db_impl().obtain_service<dbs_discipline>();
 
     auto& token = get_expert_token_by_account_and_discipline(account.name, discipline_id);
     db_impl().modify(token, [&](expert_token_object et) {
         et.amount += amount;
     });
 
-    auto& discipline = db_impl().get<discipline_object, by_id>(discipline_id);
-
-    db_impl().modify(discipline, [&](discipline_object d) {
-        d.total_expertise_amount += amount;
-    });
-
+    disciplines_service.increase_total_expertise_amount(discipline_id, amount);
     account_service.increase_expertise_tokens(account, amount);
     adjust_proxied_expertise(token, amount);
 }
