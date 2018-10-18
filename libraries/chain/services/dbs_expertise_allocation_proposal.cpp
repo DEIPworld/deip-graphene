@@ -128,8 +128,8 @@ void dbs_expertise_allocation_proposal::upvote(const expertise_allocation_propos
     {
         auto& vote = get_vote_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id);
         const bool& is_negative_vote = vote.weight < 0;
-
-        FC_ASSERT(is_negative_vote, "You have voted positively for this proposal already");
+        
+        FC_ASSERT(is_negative_vote, "User \"${1}\" has voted positively for proposal \"${2}\" already", ("1", voter)("2", expertise_allocation_proposal.id));
 
         db_impl().modify(expertise_allocation_proposal, [&](expertise_allocation_proposal_object& eap_o) {
             eap_o.total_voted_expertise += (std::abs(vote.weight.value) + weight.value);
@@ -158,7 +158,7 @@ void dbs_expertise_allocation_proposal::downvote(const expertise_allocation_prop
         auto& vote = get_vote_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal.id);
         const bool& is_positive_vote = vote.weight > 0;
 
-        FC_ASSERT(is_positive_vote, "You have voted negatively for this proposal already");
+        FC_ASSERT(is_positive_vote, "User \"${1}\" has voted negatively for proposal \"${2}\" already", ("1", voter)("2", expertise_allocation_proposal.id));
 
         db_impl().modify(expertise_allocation_proposal, [&](expertise_allocation_proposal_object& eap_o) {
             eap_o.total_voted_expertise -= (std::abs(vote.weight.value) + weight.value);

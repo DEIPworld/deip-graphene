@@ -847,8 +847,8 @@ struct expertise_allocation_proposal_api_obj
     account_name_type claimer;
     int64_t discipline_id;
 
-    int16_t total_voted_expertise;
-    uint32_t quorum_percent;
+    int64_t total_voted_expertise;
+    uint16_t quorum_percent;
 
     time_point_sec creation_time;
     time_point_sec expiration_time;
@@ -878,7 +878,7 @@ struct expertise_allocation_proposal_vote_api_obj
     int64_t discipline_id;
 
     account_name_type voter;
-    uint32_t weight;
+    int64_t weight;
 
     time_point_sec voting_time;
 };
