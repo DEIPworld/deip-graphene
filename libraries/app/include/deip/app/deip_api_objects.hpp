@@ -21,6 +21,7 @@
 #include <deip/chain/schema/total_votes_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
+#include <deip/chain/schema/vesting_balance_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -883,6 +884,35 @@ struct expertise_allocation_proposal_vote_api_obj
     time_point_sec voting_time;
 };
 
+struct vesting_balance_api_obj
+{
+    vesting_balance_api_obj(const chain::vesting_balance_object& vbo)
+        : id(vbo.id._id)
+        ,  owner(vbo.owner)
+        ,  balance(vbo.balance)
+        ,  withdrawn(vbo.withdrawn)
+        ,  vesting_cliff_seconds(vbo.vesting_cliff_seconds) 
+        ,  vesting_duration_seconds(vbo.vesting_duration_seconds)
+        ,  period_duration_seconds(vbo.period_duration_seconds)
+        ,  start_timestamp(vbo.start_timestamp)
+    {}
+
+    // because fc::variant require for temporary object
+    vesting_balance_api_obj()
+    {
+    }
+
+    int64_t id;
+    account_name_type owner;
+    asset balance;
+    asset withdrawn;
+    uint32_t vesting_cliff_seconds;
+    uint32_t vesting_duration_seconds;
+    uint32_t period_duration_seconds;
+    time_point_sec start_timestamp;
+};
+
+
 } // namespace app
 } // namespace deip
 
@@ -1153,6 +1183,15 @@ FC_REFLECT( deip::app::expertise_allocation_proposal_vote_api_obj,
             (weight)
             (voting_time)
 
+FC_REFLECT( deip::app::vesting_balance_api_obj,
+            (id)
+            (owner)
+            (balance)
+            (withdrawn)
+            (vesting_cliff_seconds)
+            (vesting_duration_seconds)
+            (period_duration_seconds)
+            (start_timestamp)
 )
 
 // clang-format on

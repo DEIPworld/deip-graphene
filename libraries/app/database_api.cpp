@@ -32,6 +32,7 @@
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
+#include <deip/chain/services/dbs_vesting_balance.hpp>
 
 #include <deip/chain/schema/operation_object.hpp>
 
@@ -1979,6 +1980,34 @@ vector<expertise_allocation_proposal_vote_api_obj> database_api::get_expertise_a
         return results;
     });
 }
+
+vesting_balance_api_obj database_api::get_vesting_balance_by_id(const vesting_balance_id_type& vesting_balance_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_vesting_balance& vesting_balance_service = my->_db.obtain_service<chain::dbs_vesting_balance>();
+        return vesting_balance_service.get(vesting_balance_id);
+    });
+}
+
+vector<vesting_balance_api_obj>
+database_api::get_vesting_balance_by_owner(const account_name_type &owner) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<vesting_balance_api_obj> results;
+        chain::dbs_vesting_balance& vesting_balance_service
+            = my->_db.obtain_service<chain::dbs_vesting_balance>();
+
+        auto total_vesting_balance = vesting_balance_service.get_by_owner(owner);
+
+        for (const chain::vesting_balance_object& vesting_balance : total_vesting_balance)
+        {
+            results.push_back(vesting_balance);
+        }
+
+        return results;
+    });
+}
+
 
 } // namespace app
 } // namespace deip
