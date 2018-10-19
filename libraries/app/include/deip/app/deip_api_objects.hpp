@@ -369,7 +369,13 @@ struct research_api_obj
         ,  dropout_compensation_in_percent(r.dropout_compensation_in_percent)
         ,  disciplines(disciplines.begin(), disciplines.end())
         ,  group_permlink(group_permlink)
-    {}
+    {
+        for (const auto& kvp : r.eci_per_discipline) {
+            discipline_id_type discipline_id = kvp.first;
+            share_type weight = kvp.second;
+            eci_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
+        }
+    }
 
     // because fc::variant require for temporary object
     research_api_obj()
@@ -388,6 +394,8 @@ struct research_api_obj
     int16_t dropout_compensation_in_percent;
     vector<discipline_api_obj> disciplines;
     string group_permlink;
+
+    map<int64_t, int64_t> eci_per_discipline;
 };
 
 struct research_content_api_obj
@@ -409,6 +417,12 @@ struct research_content_api_obj
             rc.external_references.begin(), 
             rc.external_references.end()
         );
+
+        for (const auto& kvp : rc.eci_per_discipline) {
+            discipline_id_type discipline_id = kvp.first;
+            share_type weight = kvp.second;
+            eci_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
+        }
     }
 
     // because fc::variant require for temporary object
@@ -426,7 +440,9 @@ struct research_content_api_obj
     fc::time_point_sec created_at;
 
     std::set<string> external_references;
-    std::set<int64_t> references; 
+    std::set<int64_t> references;
+
+    map<int64_t, int64_t> eci_per_discipline;
 };
 
 struct expert_token_api_obj
@@ -938,6 +954,7 @@ FC_REFLECT( deip::app::research_api_obj,
             (dropout_compensation_in_percent)
             (disciplines)
             (group_permlink)
+            (eci_per_discipline)
           )
 
 FC_REFLECT( deip::app::research_content_api_obj,
@@ -951,6 +968,7 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (created_at)
             (references)
             (external_references)
+            (eci_per_discipline)
           )
 
 FC_REFLECT( deip::app::expert_token_api_obj,

@@ -1597,9 +1597,11 @@ share_type database::allocate_rewards_to_reviews(const std::vector<review_object
 
         auto review_reward_share = util::calculate_share(reward, weight_per_discipline, total_reviews_weight);
 
-        auto& research = get<research_object>(research_content_service.get(review.research_content_id).research_id);
+        auto& content = get<research_content_object>(review.research_content_id);
+        modify(content, [&](research_content_object& rc_o) { rc_o.eci_per_discipline[discipline_id] += weight_per_discipline ;} );
 
-        modify(research, [&](research_object& r_o) { r_o.eci_by_disciplines[discipline_id] += weight_per_discipline ;} );
+        auto& research = get<research_object>(content.research_id);
+        modify(research, [&](research_object& r_o) { r_o.eci_per_discipline[discipline_id] += weight_per_discipline ;} );
 
         auto author_name = review.author;
         auto review_curators_reward_share = util::calculate_share(review_reward_share,

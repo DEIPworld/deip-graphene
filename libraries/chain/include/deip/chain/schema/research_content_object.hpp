@@ -44,7 +44,7 @@ public:
 
     template <typename Constructor, typename Allocator>
     research_content_object(Constructor &&c, allocator<Allocator> a) 
-        : title(a), content(a), permlink(a), authors(a), references(a), external_references(a)
+        : title(a), content(a), permlink(a), authors(a), references(a), external_references(a), eci_per_discipline(a)
     {
         c(*this);
     }
@@ -68,6 +68,8 @@ public:
     research_content_activity_state activity_state;
     time_point_sec activity_window_start;
     time_point_sec activity_window_end;
+
+    discipline_id_share_type_map eci_per_discipline;
 };
 
 struct by_research_id;
@@ -129,5 +131,5 @@ typedef multi_index_container<research_content_object,
 
 FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result))
 FC_REFLECT_ENUM(deip::chain::research_content_activity_state, (active)(pending)(closed) )
-FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(title)(content)(permlink)(authors)(created_at)(references)(external_references)(activity_round)(activity_state)(activity_window_start)(activity_window_end))
+FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(title)(content)(permlink)(authors)(created_at)(references)(external_references)(activity_round)(activity_state)(activity_window_start)(activity_window_end)(eci_per_discipline))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_content_object, deip::chain::research_content_index)
