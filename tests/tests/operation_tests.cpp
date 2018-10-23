@@ -4126,9 +4126,10 @@ BOOST_AUTO_TEST_CASE(expertise_allocation_proposal_apply)
 {
     try
     {
-        BOOST_TEST_MESSAGE("Testing: delegate expertise and withdraw then");
+        BOOST_TEST_MESSAGE("Testing: create expertise allocation proposal");
 
-        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        ACTORS_WITH_EXPERT_TOKENS((alice));
+        ACTORS((bob))
 
         generate_block();
 
