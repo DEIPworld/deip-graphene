@@ -15,6 +15,13 @@
 namespace deip {
 namespace chain {
 
+enum expertise_allocation_proposal_status : uint16_t
+{
+    eap_active = 1,
+    eap_accepted = 2,
+    eap_rejected = 3
+};
+
 class expertise_allocation_proposal_object : public object<expertise_allocation_proposal_object_type, expertise_allocation_proposal_object>
 {
     expertise_allocation_proposal_object() = delete;
@@ -42,6 +49,7 @@ public:
     time_point_sec expiration_time;
 
     fc::shared_string description;
+    expertise_allocation_proposal_status status;
 };
 
 struct by_initiator;

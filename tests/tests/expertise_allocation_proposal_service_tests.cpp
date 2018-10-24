@@ -26,6 +26,8 @@ public:
             eap_o.discipline_id = 1;
             eap_o.total_voted_expertise = 0;
             eap_o.description = "test1";
+            eap_o.status = eap_active;
+            eap_o.expiration_time = time_point_sec(132);
         });
         db.create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
             eap_o.id = 1;
@@ -34,6 +36,8 @@ public:
             eap_o.discipline_id = 2;
             eap_o.total_voted_expertise = 0;
             eap_o.description = "test2";
+            eap_o.status = eap_active;
+            eap_o.expiration_time = time_point_sec(0xffffffff);
         });
         db.create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
             eap_o.id = 2;
@@ -42,6 +46,8 @@ public:
             eap_o.discipline_id = 2;
             eap_o.total_voted_expertise = 0;
             eap_o.description = "test3";
+            eap_o.status = eap_accepted;
+            eap_o.expiration_time = time_point_sec(0xffffffff);
         });
     }
 
@@ -276,6 +282,37 @@ BOOST_AUTO_TEST_CASE(delete_by_claimer_and_discipline)
         data_service.delete_by_claimer_and_discipline("bob", 2);
 
         BOOST_CHECK(db.get_index<expertise_allocation_proposal_index>().indices().size() == 1);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(set_rejected_status_to_expired_proposals)
+{
+    ACTORS((alice)(bob)(john)(mike))
+
+    try {
+        expertise_allocation_proposals();
+
+        data_service.set_rejected_status_to_expired_proposals();
+
+        BOOST_CHECK(db.get<expertise_allocation_proposal_object>(0).status == eap_rejected);
+        BOOST_CHECK(db.get<expertise_allocation_proposal_object>(1).status == eap_active);
+        BOOST_CHECK(db.get<expertise_allocation_proposal_object>(2).status == eap_accepted);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(set_rejected_status_by_claimer_and_discipline)
+{
+    ACTORS((alice)(bob)(john)(mike))
+
+    try {
+        expertise_allocation_proposals();
+
+        data_service.set_rejected_status_by_claimer_and_discipline("bob", 2);
+
+        BOOST_CHECK(db.get<expertise_allocation_proposal_object>(1).status == eap_rejected);
+        BOOST_CHECK(db.get<expertise_allocation_proposal_object>(2).status == eap_accepted);
     }
     FC_LOG_AND_RETHROW()
 }

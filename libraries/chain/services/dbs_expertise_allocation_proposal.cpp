@@ -27,6 +27,7 @@ const expertise_allocation_proposal_object& dbs_expertise_allocation_proposal::c
         eap_o.creation_time = db_impl().head_block_time();
         eap_o.expiration_time = db_impl().head_block_time() + DAYS_TO_SECONDS(14);
         fc::from_string(eap_o.description, description);
+        eap_o.status = eap_active;
     });
 
     return expertise_allocation_proposal;
@@ -199,6 +200,49 @@ void dbs_expertise_allocation_proposal::delete_by_claimer_and_discipline(const a
     }
 }
 
+
+void dbs_expertise_allocation_proposal::clear_expired_expertise_allocation_proposals()
+{
+    const auto& expiration_index = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_expiration_time>();
+    while (!expiration_index.empty() && is_expired(*expiration_index.begin()))
+        db_impl().remove(*expiration_index.begin());
+}
+
+void dbs_expertise_allocation_proposal::set_rejected_status_to_expired_proposals()
+{
+    const auto& expiration_index = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_expiration_time>();
+    auto it = expiration_index.begin();
+    while (!expiration_index.empty() && is_expired(*it))
+    {
+        const auto& current_proposal = *it;
+        db_impl().modify(current_proposal, [&](expertise_allocation_proposal_object& eap_o) {
+            eap_o.status = eap_rejected;
+        });
+
+        ++it;
+    }
+}
+
+void dbs_expertise_allocation_proposal::set_rejected_status_by_claimer_and_discipline(const account_name_type &claimer,
+                                                                                      const discipline_id_type& discipline_id)
+{
+    const auto& idx = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_claimer_and_discipline>();
+    auto it_pair = idx.equal_range(boost::make_tuple(claimer, discipline_id));
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+
+    while (it != it_end)
+    {
+        const auto& current_proposal = *it;
+        if (current_proposal.status == eap_active)
+            db_impl().modify(current_proposal, [&](expertise_allocation_proposal_object& eap_o) {
+                eap_o.status = eap_rejected;
+            });
+        ++it;
+    }
+}
+
+
 const expertise_allocation_proposal_vote_object& dbs_expertise_allocation_proposal::create_vote(const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id,
                                                                                                 const discipline_id_type& discipline_id,
                                                                                                 const account_name_type &voter,
@@ -315,13 +359,6 @@ void dbs_expertise_allocation_proposal::adjust_expert_token_vote(const expert_to
 bool dbs_expertise_allocation_proposal::is_expired(const expertise_allocation_proposal_object& eap_o)
 {
     return eap_o.expiration_time < _get_now();
-}
-
-void dbs_expertise_allocation_proposal::clear_expired_expertise_allocation_proposals()
-{
-    const auto& expiration_index = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_expiration_time>();
-    while (!expiration_index.empty() && is_expired(*expiration_index.begin()))
-        db_impl().remove(*expiration_index.begin());
 }
 
 } //namespace chain

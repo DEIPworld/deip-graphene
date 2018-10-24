@@ -1256,7 +1256,11 @@ void database::process_expertise_allocation_proposals()
     dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = obtain_service<dbs_expertise_allocation_proposal>();
     dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
 
+#ifdef IS_LOW_MEM
     expertise_allocation_proposal_service.clear_expired_expertise_allocation_proposals();
+#else
+    expertise_allocation_proposal_service.set_rejected_status_to_expired_proposals();
+#endif
 
     const auto& idx = get_index<expertise_allocation_proposal_index>().indices().get<by_id>();
     auto current = idx.begin();
@@ -1266,7 +1270,14 @@ void database::process_expertise_allocation_proposals()
         if (expertise_allocation_proposal_service.is_quorum(proposal))
         {
             expert_token_service.create(proposal.claimer, proposal.discipline_id, proposal.amount);
+
+#ifdef IS_LOW_MEM
             expertise_allocation_proposal_service.delete_by_claimer_and_discipline(proposal.claimer, proposal.discipline_id);
+#else
+            modify(proposal, [&](expertise_allocation_proposal_object& eap_o)
+                { eap_o.status = eap_accepted; });
+            expertise_allocation_proposal_service.set_rejected_status_by_claimer_and_discipline(proposal.claimer, proposal.discipline_id);
+#endif
         }
         ++current;
     }
