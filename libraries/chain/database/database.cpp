@@ -1267,7 +1267,7 @@ void database::process_expertise_allocation_proposals()
     while (current != idx.end())
     {
         auto& proposal = expertise_allocation_proposal_service.get(current->id);
-        if (expertise_allocation_proposal_service.is_quorum(proposal))
+        if (expertise_allocation_proposal_service.is_quorum(proposal) && proposal.status == eap_active)
         {
             expert_token_service.create(proposal.claimer, proposal.discipline_id, proposal.amount);
 

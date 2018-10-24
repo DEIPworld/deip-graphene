@@ -41,7 +41,7 @@ public:
 
     share_type amount;
 
-    int16_t total_voted_expertise = 0;
+    int64_t total_voted_expertise = 0;
 
     share_type quorum_percent;
 
