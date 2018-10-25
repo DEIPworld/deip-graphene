@@ -836,6 +836,7 @@ struct expertise_allocation_proposal_api_obj
             , creation_time(eapo.creation_time)
             , expiration_time(eapo.expiration_time)
             , description(fc::to_string(eapo.description))
+            , status(eapo.status)
     {}
 
     // because fc::variant require for temporary object
@@ -855,6 +856,8 @@ struct expertise_allocation_proposal_api_obj
     time_point_sec expiration_time;
 
     string description;
+
+    expertise_allocation_proposal_status status;
 };
 
 struct expertise_allocation_proposal_vote_api_obj
@@ -1173,6 +1176,7 @@ FC_REFLECT( deip::app::expertise_allocation_proposal_api_obj,
             (creation_time)
             (expiration_time)
             (description)
+            (status)
 )
 
 FC_REFLECT( deip::app::expertise_allocation_proposal_vote_api_obj,

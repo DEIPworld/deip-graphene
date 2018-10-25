@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(set_rejected_status_to_expired_proposals)
     try {
         expertise_allocation_proposals();
 
-        data_service.set_rejected_status_to_expired_proposals();
+        data_service.reject_expired_expertise_allocation_proposals();
 
         BOOST_CHECK(db.get<expertise_allocation_proposal_object>(0).status == eap_rejected);
         BOOST_CHECK(db.get<expertise_allocation_proposal_object>(1).status == eap_active);
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE(set_rejected_status_by_claimer_and_discipline)
     try {
         expertise_allocation_proposals();
 
-        data_service.set_rejected_status_by_claimer_and_discipline("bob", 2);
+        data_service.reject_by_claimer_and_discipline("bob", 2);
 
         BOOST_CHECK(db.get<expertise_allocation_proposal_object>(1).status == eap_rejected);
         BOOST_CHECK(db.get<expertise_allocation_proposal_object>(2).status == eap_accepted);

@@ -1259,7 +1259,7 @@ void database::process_expertise_allocation_proposals()
 #ifdef IS_LOW_MEM
     expertise_allocation_proposal_service.clear_expired_expertise_allocation_proposals();
 #else
-    expertise_allocation_proposal_service.set_rejected_status_to_expired_proposals();
+    expertise_allocation_proposal_service.reject_expired_expertise_allocation_proposals();
 #endif
 
     const auto& idx = get_index<expertise_allocation_proposal_index>().indices().get<by_id>();
@@ -1267,7 +1267,7 @@ void database::process_expertise_allocation_proposals()
     while (current != idx.end())
     {
         auto& proposal = expertise_allocation_proposal_service.get(current->id);
-        if (expertise_allocation_proposal_service.is_quorum(proposal) && proposal.status == eap_active)
+        if (proposal.status == expertise_allocation_proposal_status::eap_active && expertise_allocation_proposal_service.is_quorum(proposal))
         {
             expert_token_service.create(proposal.claimer, proposal.discipline_id, proposal.amount);
 
@@ -1275,8 +1275,9 @@ void database::process_expertise_allocation_proposals()
             expertise_allocation_proposal_service.delete_by_claimer_and_discipline(proposal.claimer, proposal.discipline_id);
 #else
             modify(proposal, [&](expertise_allocation_proposal_object& eap_o)
-                { eap_o.status = eap_accepted; });
-            expertise_allocation_proposal_service.set_rejected_status_by_claimer_and_discipline(proposal.claimer, proposal.discipline_id);
+                { eap_o.status = expertise_allocation_proposal_status::eap_accepted; });
+            expertise_allocation_proposal_service.reject_by_claimer_and_discipline(proposal.claimer,
+                                                                                   proposal.discipline_id);
 #endif
         }
         ++current;

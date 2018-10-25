@@ -68,10 +68,10 @@ public:
 
     void clear_expired_expertise_allocation_proposals();
 
-    void set_rejected_status_to_expired_proposals();
+    void reject_expired_expertise_allocation_proposals();
 
-    void set_rejected_status_by_claimer_and_discipline(const account_name_type &claimer,
-                                                       const discipline_id_type& discipline_id);
+    void reject_by_claimer_and_discipline(const account_name_type &claimer,
+                                          const discipline_id_type &discipline_id);
 
     /* Expertise allocation proposal vote */
 

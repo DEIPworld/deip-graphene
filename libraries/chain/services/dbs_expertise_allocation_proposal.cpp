@@ -27,7 +27,7 @@ const expertise_allocation_proposal_object& dbs_expertise_allocation_proposal::c
         eap_o.creation_time = db_impl().head_block_time();
         eap_o.expiration_time = db_impl().head_block_time() + DAYS_TO_SECONDS(14);
         fc::from_string(eap_o.description, description);
-        eap_o.status = eap_active;
+        eap_o.status = expertise_allocation_proposal_status::eap_active;
     });
 
     return expertise_allocation_proposal;
@@ -208,7 +208,7 @@ void dbs_expertise_allocation_proposal::clear_expired_expertise_allocation_propo
         db_impl().remove(*expiration_index.begin());
 }
 
-void dbs_expertise_allocation_proposal::set_rejected_status_to_expired_proposals()
+void dbs_expertise_allocation_proposal::reject_expired_expertise_allocation_proposals()
 {
     const auto& expiration_index = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_expiration_time>();
     auto it = expiration_index.begin();
@@ -216,15 +216,15 @@ void dbs_expertise_allocation_proposal::set_rejected_status_to_expired_proposals
     {
         const auto& current_proposal = *it;
         db_impl().modify(current_proposal, [&](expertise_allocation_proposal_object& eap_o) {
-            eap_o.status = eap_rejected;
+            eap_o.status = expertise_allocation_proposal_status::eap_rejected;
         });
 
         ++it;
     }
 }
 
-void dbs_expertise_allocation_proposal::set_rejected_status_by_claimer_and_discipline(const account_name_type &claimer,
-                                                                                      const discipline_id_type& discipline_id)
+void dbs_expertise_allocation_proposal::reject_by_claimer_and_discipline(const account_name_type &claimer,
+                                                                         const discipline_id_type &discipline_id)
 {
     const auto& idx = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_claimer_and_discipline>();
     auto it_pair = idx.equal_range(boost::make_tuple(claimer, discipline_id));
@@ -234,9 +234,9 @@ void dbs_expertise_allocation_proposal::set_rejected_status_by_claimer_and_disci
     while (it != it_end)
     {
         const auto& current_proposal = *it;
-        if (current_proposal.status == eap_active)
+        if (current_proposal.status == expertise_allocation_proposal_status::eap_active)
             db_impl().modify(current_proposal, [&](expertise_allocation_proposal_object& eap_o) {
-                eap_o.status = eap_rejected;
+                eap_o.status = expertise_allocation_proposal_status::eap_rejected;
             });
         ++it;
     }
