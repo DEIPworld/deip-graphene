@@ -831,6 +831,7 @@ struct expertise_allocation_proposal_api_obj
             , initiator(eapo.initiator)
             , claimer(eapo.claimer)
             , discipline_id(eapo.discipline_id._id)
+            , amount(eapo.amount)
             , total_voted_expertise(eapo.total_voted_expertise)
             , quorum_percent(eapo.quorum_percent.value)
             , creation_time(eapo.creation_time)
@@ -847,6 +848,8 @@ struct expertise_allocation_proposal_api_obj
     account_name_type initiator;
     account_name_type claimer;
     int64_t discipline_id;
+
+    share_type amount;
 
     int64_t total_voted_expertise;
     uint16_t quorum_percent;
@@ -1168,6 +1171,7 @@ FC_REFLECT( deip::app::expertise_allocation_proposal_api_obj,
             (initiator)
             (claimer)
             (discipline_id)
+            (amount)
             (total_voted_expertise)
             (quorum_percent)
             (creation_time)
