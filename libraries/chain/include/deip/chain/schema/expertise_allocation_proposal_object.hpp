@@ -15,6 +15,13 @@
 namespace deip {
 namespace chain {
 
+enum expertise_allocation_proposal_status : uint16_t
+{
+    eap_active = 1,
+    eap_accepted = 2,
+    eap_rejected = 3
+};
+
 class expertise_allocation_proposal_object : public object<expertise_allocation_proposal_object_type, expertise_allocation_proposal_object>
 {
     expertise_allocation_proposal_object() = delete;
@@ -34,7 +41,7 @@ public:
 
     share_type amount;
 
-    int16_t total_voted_expertise = 0;
+    int64_t total_voted_expertise = 0;
 
     share_type quorum_percent;
 
@@ -42,6 +49,7 @@ public:
     time_point_sec expiration_time;
 
     fc::shared_string description;
+    expertise_allocation_proposal_status status;
 };
 
 struct by_initiator;
@@ -91,6 +99,7 @@ typedef multi_index_container<expertise_allocation_proposal_object,
     }
 }
 
+FC_REFLECT_ENUM(deip::chain::expertise_allocation_proposal_status, (eap_active)(eap_accepted)(eap_rejected))
 FC_REFLECT( deip::chain::expertise_allocation_proposal_object,
             (id)(initiator)(claimer)(discipline_id)(amount)(total_voted_expertise)
                     (quorum_percent)(creation_time)(expiration_time)(description)

@@ -68,6 +68,11 @@ public:
 
     void clear_expired_expertise_allocation_proposals();
 
+    void reject_expired_expertise_allocation_proposals();
+
+    void reject_by_claimer_and_discipline(const account_name_type &claimer,
+                                          const discipline_id_type &discipline_id);
+
     /* Expertise allocation proposal vote */
 
     using expertise_allocation_proposal_vote_refs_type = std::vector<std::reference_wrapper<const expertise_allocation_proposal_vote_object>>;
