@@ -24,8 +24,25 @@ using fc::shared_string;
 enum research_content_type : uint16_t
 {
     announcement = 1,
-    milestone = 2,
-    final_result = 3
+    final_result = 2,
+    milestone_article = 3,
+    milestone_book = 4,
+    milestone_chapter = 5,
+    milestone_code = 6,
+    milestone_conference_paper = 7,
+    milestone_cover_page = 8,
+    milestone_data = 9,
+    milestone_experiment_findings = 10,
+    milestone_method = 11,
+    milestone_negative_results = 12,
+    milestone_patent = 13,
+    milestone_poster = 14,
+    milestone_preprint = 15,
+    milestone_presentation = 16,
+    milestone_raw_data = 17,
+    milestone_research_proposal = 18,
+    milestone_technical_report = 19,
+    milestone_thesis = 20
 };
 
 enum research_content_activity_state : uint16_t
