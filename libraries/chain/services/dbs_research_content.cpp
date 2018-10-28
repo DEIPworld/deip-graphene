@@ -37,7 +37,7 @@ const research_content_object& dbs_research_content::create(const research_id_ty
         rc.activity_state = research_content_activity_state::active;
 
         if (type == research_content_type::announcement || 
-            type == research_content_type::milestone) {
+            type >= research_content_type::first_milestone) {
 
             // the 1st activity period for intermediate result starts immediately 
             // after publishing and continues for 2 weeks
@@ -120,6 +120,24 @@ void dbs_research_content::check_research_content_existence(const research_conte
 {
     auto research_content = db_impl().find<research_content_object, by_id>(research_content_id);
     FC_ASSERT(research_content != nullptr, "Research content with id \"${1}\" must exist.", ("1", research_content_id));
+}
+
+dbs_research_content::research_content_refs_type dbs_research_content::get_all_milestones_by_research_id(const research_id_type& research_id) const
+{
+    research_content_refs_type ret;
+
+    const auto& idx = db_impl().get_index<research_content_index>().indicies().get<by_research_id_and_content_type>();
+    auto itr = idx.lower_bound(std::make_tuple(research_id, research_content_type::first_milestone));
+
+    auto i = idx.
+    while (itr != idx.end())
+    {
+        auto& a = *itr;
+        ret.push_back(std::cref(*itr));
+        ++itr;
+    }
+
+    return ret;
 }
 
 }

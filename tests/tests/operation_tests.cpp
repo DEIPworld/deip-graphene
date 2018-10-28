@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
             c.content = "content";
             c.references = {};
             c.external_references = { "http://google.com" };
-            c.type = research_content_type::milestone;
+            c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
         });
 
@@ -443,7 +443,7 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
         rc.id = 1;
         rc.research_id = research.id;
         rc.content = "content";
-        rc.type = research_content_type::milestone;
+        rc.type = research_content_type::milestone_data;
     });
 
     dbs_discipline& discipline_service = db.obtain_service<dbs_discipline>();
@@ -3506,7 +3506,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     });
 
     const std::string json_str = "{\"research_id\": 1,"
-            "\"type\": 2,"
+            "\"type\": 9,"
             "\"title\":\"milestone for Research #2\","
             "\"content\":\"milestone for Research #2\","
             "\"permlink\":\"milestone-research-two\","
@@ -3540,7 +3540,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     BOOST_CHECK(std::any_of(
         contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper) {
             const research_content_object& content = wrapper.get();
-            return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone
+            return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone_data
                 && content.content == "milestone for Research #2" && content.permlink == "milestone-research-two"
                 && content.authors.size() == 1 && content.authors.find("alice") != content.authors.end()
                 && content.references.size() == 1;
@@ -3571,7 +3571,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     db.create<research_content_object>([&](research_content_object& rc) {
         rc.id = 1; // id of the first element in index is 0
         rc.research_id = 1;
-        rc.type = research_content_type::milestone;
+        rc.type = research_content_type::milestone_data;
         rc.title = "title for milestone for Research #1123";
         rc.content = "milestone2 for Research #1123";
         rc.permlink = "milestone2-research-one";
@@ -3604,7 +3604,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     db.create<research_content_object>([&](research_content_object& rc) {
         rc.id = 2;
         rc.research_id = 1;
-        rc.type = research_content_type::milestone;
+        rc.type = research_content_type::milestone_data;
         rc.title = "title for milestone 3 for Research #1123";
         rc.content = "milestone3 for Research #1123";
         rc.permlink = "milestone3-research-one";
@@ -3646,7 +3646,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     });
 
     const std::string json_str2 = "{\"research_id\": 1,"
-                                  "\"type\": 3,"
+                                  "\"type\": 2,"
                                   "\"title\":\"final result for Research #2\","
                                   "\"content\":\"final result for Research #2\","
                                   "\"permlink\":\"final-result-research-two\","
@@ -3708,7 +3708,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
             c.content = "content";
             c.references = {};
             c.external_references = { "http://google.com" };
-            c.type = research_content_type::milestone;
+            c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
         });
 
@@ -3801,7 +3801,7 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
             c.content = "content";
             c.references = {};
             c.external_references = {"http://google.com"};
-            c.type = research_content_type::milestone;
+            c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
         });
 

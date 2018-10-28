@@ -323,6 +323,7 @@ public:
     research_content_api_obj get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
     vector<research_content_api_obj> get_all_research_content(const research_id_type& research_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
+    vector<research_content_api_obj> get_all_milestones_by_research_id(const research_id_type& research_id) const;
 
     ///////////////////
     // Expert Tokens //

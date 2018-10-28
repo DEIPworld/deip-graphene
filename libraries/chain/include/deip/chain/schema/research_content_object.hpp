@@ -42,7 +42,9 @@ enum research_content_type : uint16_t
     milestone_raw_data = 17,
     milestone_research_proposal = 18,
     milestone_technical_report = 19,
-    milestone_thesis = 20
+    milestone_thesis = 20,
+
+    first_milestone = milestone_article
 };
 
 enum research_content_activity_state : uint16_t
@@ -85,6 +87,10 @@ public:
     research_content_activity_state activity_state;
     time_point_sec activity_window_start;
     time_point_sec activity_window_end;
+
+    const bool is_milestone(){
+        return type >= research_content_type::first_milestone;
+    }
 };
 
 struct by_research_id;
@@ -144,7 +150,9 @@ typedef multi_index_container<research_content_object,
 }
 }
 
-FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result))
+FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(final_result)(milestone_article)(milestone_book)(milestone_chapter)(milestone_code)(milestone_conference_paper)
+        (milestone_cover_page)(milestone_data)(milestone_experiment_findings)(milestone_method)(milestone_negative_results)(milestone_patent)(milestone_poster)(milestone_preprint)
+        (milestone_presentation)(milestone_raw_data)(milestone_research_proposal)(milestone_technical_report)(milestone_thesis))
 FC_REFLECT_ENUM(deip::chain::research_content_activity_state, (active)(pending)(closed) )
 FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(title)(content)(permlink)(authors)(created_at)(references)(external_references)(activity_round)(activity_state)(activity_window_start)(activity_window_end))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_content_object, deip::chain::research_content_index)
