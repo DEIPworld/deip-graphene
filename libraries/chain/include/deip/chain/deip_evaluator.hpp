@@ -38,6 +38,8 @@ DEFINE_EVALUATOR(vote_proposal)
 DEFINE_EVALUATOR(transfer_research_tokens)
 DEFINE_EVALUATOR(delegate_expertise)
 DEFINE_EVALUATOR(revoke_expertise_delegation)
+DEFINE_EVALUATOR(create_expertise_allocation_proposal)
+DEFINE_EVALUATOR(vote_for_expertise_allocation_proposal)
 
 }
 } // deip::chain

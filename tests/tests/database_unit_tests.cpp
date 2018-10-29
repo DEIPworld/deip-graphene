@@ -7,6 +7,7 @@
 #include <deip/chain/schema/grant_objects.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/research_content_reward_pool_object.hpp>
+#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 
 #include "database_fixture.hpp"
 
@@ -363,6 +364,43 @@ public:
             d.type = final_result;
             d.authors = {"jack"};
             d.references.insert(1);
+        });
+    }
+
+    void create_expertise_allocation_proposals()
+    {
+        db.create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
+            eap_o.id = 0;
+            eap_o.initiator = "alice";
+            eap_o.claimer = "bob";
+            eap_o.discipline_id = 2;
+            eap_o.total_voted_expertise = 0;
+            eap_o.description = "test1";
+            eap_o.status = eap_active;
+            eap_o.expiration_time = time_point_sec(132);
+            eap_o.quorum_percent = 15 * DEIP_1_PERCENT;
+        });
+        db.create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
+            eap_o.id = 1;
+            eap_o.initiator = "alice";
+            eap_o.claimer = "mike";
+            eap_o.discipline_id = 2;
+            eap_o.total_voted_expertise = 0;
+            eap_o.description = "test2";
+            eap_o.status = eap_active;
+            eap_o.expiration_time = time_point_sec(0xffffffff);
+            eap_o.quorum_percent = 15 * DEIP_1_PERCENT;
+        });
+        db.create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
+            eap_o.id = 2;
+            eap_o.initiator = "jack";
+            eap_o.claimer = "bob";
+            eap_o.discipline_id = 2;
+            eap_o.total_voted_expertise = 100000;
+            eap_o.description = "test3";
+            eap_o.status = eap_active;
+            eap_o.expiration_time = time_point_sec(0xffffffff);
+            eap_o.quorum_percent = 15 * DEIP_1_PERCENT;
         });
     }
 
@@ -795,6 +833,36 @@ BOOST_AUTO_TEST_CASE(clear_expired_grants)
         generate_blocks(DEIP_BLOCKS_PER_HOUR);
 
         BOOST_CHECK_THROW(db.get<grant_object>(0), std::out_of_range);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(process_expertise_allocation_proposals)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: process_expertise_allocation_proposals");
+
+        ACTORS((alice)(alex)(jack)(bob)(john)(mike));
+
+        generate_block();
+
+        create_expertise_allocation_proposals();
+
+        auto& discipline = db.get<discipline_object>(2);
+
+        db.modify(discipline, [&](discipline_object& d)
+            { d.total_expertise_amount = 1000; });
+
+        db.process_expertise_allocation_proposals();
+
+        auto p1 = db.get<expertise_allocation_proposal_object>(0);
+        auto p2 = db.get<expertise_allocation_proposal_object>(1);
+        auto p3 = db.get<expertise_allocation_proposal_object>(2);
+
+        BOOST_CHECK(db.get<expertise_allocation_proposal_object>(0).status == eap_rejected);
+        BOOST_CHECK(db.get<expertise_allocation_proposal_object>(1).status == eap_active);
+        BOOST_CHECK(db.get<expertise_allocation_proposal_object>(2).status == eap_accepted);
     }
     FC_LOG_AND_RETHROW()
 }

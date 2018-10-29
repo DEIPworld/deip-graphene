@@ -71,6 +71,8 @@ enum object_type
     review_vote_object_type,
     vesting_balance_object_type,
     research_content_reward_pool_object_type,
+    expertise_allocation_proposal_object_type,
+    expertise_allocation_proposal_vote_object_type,
     expertise_stats_object_type
 };
 
@@ -112,6 +114,8 @@ class review_object;
 class review_vote_object;
 class vesting_balance_object;
 class research_content_reward_pool_object;
+class expertise_allocation_proposal_object;
+class expertise_allocation_proposal_vote_object;
 class expertise_stats_object;
 
 
@@ -152,6 +156,8 @@ typedef oid<review_object> review_id_type;
 typedef oid<review_vote_object> review_vote_id_type;
 typedef oid<vesting_balance_object> vesting_balance_id_type;
 typedef oid<research_content_reward_pool_object> research_content_reward_pool_id_type;
+typedef oid<expertise_allocation_proposal_object> expertise_allocation_proposal_id_type;
+typedef oid<expertise_allocation_proposal_vote_object> expertise_allocation_proposal_vote_id_type;
 typedef oid<expertise_stats_object> expertise_stats_id_type;
 
 
@@ -232,6 +238,8 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (review_vote_object_type)
                  (vesting_balance_object_type)
                  (research_content_reward_pool_object_type)
+                 (expertise_allocation_proposal_object_type)
+                 (expertise_allocation_proposal_vote_object_type)
                  (expertise_stats_object_type)
                  )
 

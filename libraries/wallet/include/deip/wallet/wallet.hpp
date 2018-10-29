@@ -1216,7 +1216,24 @@ public:
                                                const int64_t proposal_id,
                                                const int64_t research_group_id,
                                                const bool broadcast);
+    
+    
+    annotated_signed_transaction create_expertise_allocation_proposal(
+                                               const std::string& initiator,
+                                               const std::string& claimer,
+                                               const std::string& description,
+                                               const int64_t discipline_id,
+                                               const int64_t amount,
+                                               const bool broadcast);
 
+    
+    annotated_signed_transaction vote_for_expertise_allocation_proposal(
+                                               const std::string& initiator,
+                                               const std::string& claimer,
+                                               const int64_t discipline_id,
+                                               const std::string& voter,
+                                               const int64_t voting_power,
+                                               const bool broadcast);
 
 public:
     fc::signal<void(bool)> lock_changed;
@@ -1347,6 +1364,8 @@ FC_API( deip::wallet::wallet_api,
         (create_vesting_balance)
         (withdraw_vesting_balance)
         (vote_proposal)
+        (create_expertise_allocation_proposal)
+        (vote_for_expertise_allocation_proposal)
 
         /// helper api
         (get_prototype_operation)

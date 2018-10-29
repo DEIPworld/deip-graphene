@@ -44,6 +44,7 @@ public:
     */
     discipline_ref_type get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
 
+    void increase_total_expertise_amount(const discipline_id_type& id, const share_type& amount);
 };
 } // namespace chain
 } // namespace deip

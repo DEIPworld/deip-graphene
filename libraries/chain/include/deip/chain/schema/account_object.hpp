@@ -26,7 +26,7 @@ class account_object : public object<account_object_type, account_object>
 public:
     template <typename Constructor, typename Allocator>
     account_object(Constructor&& c, allocator<Allocator> a)
-        : json_metadata(a), delegated_expertise(a)
+        : json_metadata(a)
     {
         c(*this);
     };
@@ -65,8 +65,6 @@ public:
     // this account
 
     uint16_t witnesses_voted_for = 0;
-
-    delegated_expertise_type_map delegated_expertise;
     /// This function should be used only when the account votes for a witness directly
     share_type witness_vote_weight() const
     {
@@ -371,7 +369,7 @@ FC_REFLECT( deip::chain::account_object,
              (withdrawn)(to_withdraw)(withdraw_routes)
              (expertise_tokens_balance)
              (common_tokens_balance)
-             (proxied_vsf_votes)(witnesses_voted_for)(delegated_expertise)
+             (proxied_vsf_votes)(witnesses_voted_for)
           )
 CHAINBASE_SET_INDEX_TYPE( deip::chain::account_object, deip::chain::account_index )
 

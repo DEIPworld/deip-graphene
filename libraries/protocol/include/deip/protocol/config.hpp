@@ -203,6 +203,8 @@
 /// Represents the canonical account for specifying you will vote for directly (as opposed to a proxy)
 #define DEIP_PROXY_TO_SELF_ACCOUNT           ""
 
+#define DEIP_PROXY_TO_SELF_EXPERT_TOKEN      ""
+
 ///@}
 
 // clang-format on

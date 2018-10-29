@@ -21,13 +21,15 @@
 #include <deip/chain/schema/total_votes_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
+#include <deip/chain/schema/vesting_balance_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/schema/vote_object.hpp>
 #include <deip/chain/schema/review_vote_object.hpp>
-#include <deip/chain/schema/vesting_balance_object.hpp>
+#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
+#include <deip/chain/schema/expertise_allocation_proposal_vote_object.hpp>
 
 namespace deip {
 namespace app {
@@ -342,6 +344,8 @@ struct discipline_api_obj
         : id(d.id._id)
         ,  parent_id(d.parent_id._id)
         ,  name(d.name)
+        ,  total_active_weight(d.total_active_weight)
+        ,  total_expertise_amount(d.total_expertise_amount)
     {}
 
     // because fc::variant require for temporary object
@@ -351,7 +355,9 @@ struct discipline_api_obj
 
     int64_t id;
     int64_t parent_id;
-    string name;
+    std::string name;
+    share_type total_active_weight;
+    share_type total_expertise_amount;
 };
 
 struct research_api_obj
@@ -553,7 +559,6 @@ struct research_group_api_obj
         ,  name(fc::to_string(rg.name))
         ,  permlink(fc::to_string(rg.permlink))
         ,  description(fc::to_string(rg.description))
-        ,  balance(rg.balance)
         ,  quorum_percent(rg.quorum_percent.value)
         ,  is_personal(rg.is_personal)
     {
@@ -570,7 +575,6 @@ struct research_group_api_obj
     std::string name;
     std::string permlink;
     std::string description;
-    asset balance;
     uint32_t quorum_percent;
     std::map<uint16_t, uint32_t> proposal_quorums;
     bool is_personal;
@@ -836,6 +840,72 @@ struct review_vote_api_obj
 
 };
 
+struct expertise_allocation_proposal_api_obj
+{
+    expertise_allocation_proposal_api_obj(const chain::expertise_allocation_proposal_object& eapo)
+            : id(eapo.id._id)
+            , initiator(eapo.initiator)
+            , claimer(eapo.claimer)
+            , discipline_id(eapo.discipline_id._id)
+            , amount(eapo.amount)
+            , total_voted_expertise(eapo.total_voted_expertise)
+            , quorum_percent(eapo.quorum_percent.value)
+            , creation_time(eapo.creation_time)
+            , expiration_time(eapo.expiration_time)
+            , description(fc::to_string(eapo.description))
+            , status(eapo.status)
+    {}
+
+    // because fc::variant require for temporary object
+    expertise_allocation_proposal_api_obj()
+    {
+    }
+
+    int64_t id;
+    account_name_type initiator;
+    account_name_type claimer;
+    int64_t discipline_id;
+
+    share_type amount;
+
+    int64_t total_voted_expertise;
+    uint16_t quorum_percent;
+
+    time_point_sec creation_time;
+    time_point_sec expiration_time;
+
+    string description;
+
+    expertise_allocation_proposal_status status;
+};
+
+struct expertise_allocation_proposal_vote_api_obj
+{
+    expertise_allocation_proposal_vote_api_obj(const chain::expertise_allocation_proposal_vote_object& eapvo)
+            : id(eapvo.id._id)
+            , expertise_allocation_proposal_id(eapvo.expertise_allocation_proposal_id._id)
+            , discipline_id(eapvo.discipline_id._id)
+            , voter(eapvo.voter)
+            , weight(eapvo.weight.value)
+            , voting_time(eapvo.voting_time)
+
+    {}
+
+    // because fc::variant require for temporary object
+    expertise_allocation_proposal_vote_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t expertise_allocation_proposal_id;
+    int64_t discipline_id;
+
+    account_name_type voter;
+    int64_t weight;
+
+    time_point_sec voting_time;
+};
+
 struct vesting_balance_api_obj
 {
     vesting_balance_api_obj(const chain::vesting_balance_object& vbo)
@@ -938,6 +1008,8 @@ FC_REFLECT( deip::app::discipline_api_obj,
             (id)
             (parent_id)
             (name)
+            (total_active_weight)
+            (total_expertise_amount)
           )
 
 
@@ -1015,7 +1087,6 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (name)
             (permlink)
             (description)
-            (balance)
             (quorum_percent)
             (proposal_quorums)
             (is_personal)
@@ -1116,6 +1187,29 @@ FC_REFLECT( deip::app::review_vote_api_obj,
 
 )
 
+FC_REFLECT( deip::app::expertise_allocation_proposal_api_obj,
+            (id)
+            (initiator)
+            (claimer)
+            (discipline_id)
+            (amount)
+            (total_voted_expertise)
+            (quorum_percent)
+            (creation_time)
+            (expiration_time)
+            (description)
+            (status)
+)
+
+FC_REFLECT( deip::app::expertise_allocation_proposal_vote_api_obj,
+            (id)
+            (expertise_allocation_proposal_id)
+            (discipline_id)
+            (voter)
+            (weight)
+            (voting_time)
+)
+
 FC_REFLECT( deip::app::vesting_balance_api_obj,
             (id)
             (owner)
@@ -1125,7 +1219,6 @@ FC_REFLECT( deip::app::vesting_balance_api_obj,
             (vesting_duration_seconds)
             (period_duration_seconds)
             (start_timestamp)
-
 )
 
 // clang-format on

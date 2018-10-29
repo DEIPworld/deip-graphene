@@ -674,7 +674,6 @@ struct delegate_expertise_operation : public base_operation
 struct revoke_expertise_delegation_operation : public base_operation
 {
     account_name_type sender;
-    account_name_type receiver;
     int64_t discipline_id;
 
     void validate() const;
@@ -682,6 +681,41 @@ struct revoke_expertise_delegation_operation : public base_operation
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
         a.insert(sender);
+    }
+};
+
+struct create_expertise_allocation_proposal_operation : public base_operation
+{
+    account_name_type initiator;
+    account_name_type claimer;
+    int64_t discipline_id;
+
+    share_type amount;
+
+    string description;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(initiator);
+    }
+};
+
+struct vote_for_expertise_allocation_proposal_operation : public base_operation
+{
+    account_name_type initiator;
+    account_name_type claimer;
+    int64_t discipline_id;
+
+    account_name_type voter;
+    share_type voting_power;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(voter);
     }
 };
 
@@ -745,6 +779,9 @@ FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(b
 FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance_id)(owner)(amount))
 FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_id)(sender)(receiver)(amount))
 FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(discipline_id))
-FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(receiver)(discipline_id))
+FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(discipline_id))
+FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (initiator)(claimer)(discipline_id)(amount)(description))
+FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (initiator)(claimer)(discipline_id)(voter)(voting_power))
+
 
 // clang-format on
