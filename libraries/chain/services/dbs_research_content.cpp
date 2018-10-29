@@ -126,15 +126,15 @@ dbs_research_content::research_content_refs_type dbs_research_content::get_all_m
 {
     research_content_refs_type ret;
 
-    const auto& idx = db_impl().get_index<research_content_index>().indicies().get<by_research_id_and_content_type>();
-    auto itr = idx.lower_bound(std::make_tuple(research_id, research_content_type::first_milestone));
+    auto it_pair = db_impl().get_index<research_content_index>().indicies().get<by_research_id>().equal_range(research_id);
 
-    auto i = idx.
-    while (itr != idx.end())
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
     {
-        auto& a = *itr;
-        ret.push_back(std::cref(*itr));
-        ++itr;
+        if (it->is_milestone())
+            ret.push_back(std::cref(*it));
+        ++it;
     }
 
     return ret;

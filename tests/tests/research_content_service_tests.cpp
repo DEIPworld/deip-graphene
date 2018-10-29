@@ -390,12 +390,12 @@ BOOST_AUTO_TEST_CASE(get_all_milestones_by_research_id)
             for (auto author : content.authors)
                 authors.push_back(author);
 
-            return content.id == 0 && content.research_id == 1 &&
+            return content.id == 1 && content.research_id == 1 &&
                    content.type == research_content_type::milestone_book &&
-                   content.title == "title for announcement for Research #2" &&
+                   content.title =="title for milestone for Research #1" &&
                    content.content == "milestone for Research #1" &&
                    content.authors.size() == 1 &&
-                   authors[0] == "john" &&
+                   authors[0] == "alice" &&
                    content.references.size() == 1 &&
                    content.external_references.size() == 2;
         }));

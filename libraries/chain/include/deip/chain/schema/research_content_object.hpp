@@ -88,7 +88,7 @@ public:
     time_point_sec activity_window_start;
     time_point_sec activity_window_end;
 
-    const bool is_milestone(){
+    bool is_milestone() const{
         return type >= research_content_type::first_milestone;
     }
 };
