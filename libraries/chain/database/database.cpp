@@ -1145,6 +1145,7 @@ void database::process_funds()
 
     witness_reward /= wso.witness_pay_normalization_factor;
 
+    reset_eci();
     contribution_reward = distribute_reward(contribution_reward, new_expertise);
 
     new_deip = contribution_reward + witness_reward;
@@ -1247,6 +1248,27 @@ void database::refund_research_tokens(const research_token_sale_id_type research
 
     auto& research = research_service.get_research(research_token_sale.research_id);
     modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
+}
+
+void database::reset_eci()
+{
+    dbs_research& research_service = obtain_service<dbs_research>();
+    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
+
+    auto reseaches = research_service.get_researches();
+
+    for (auto& research_ref : reseaches)
+    {
+        auto& research = research_ref.get();
+        modify(research, [&](research_object& r_o) { r_o.eci_per_discipline.clear(); });
+        auto research_contents = research_content_service.get_by_research_id(research.id);
+
+        for (auto& research_content_ref : research_contents)
+        {
+            auto& research_content = research_content_ref.get();
+            modify(research_content, [&](research_content_object& rc_o) { rc_o.eci_per_discipline.clear(); });
+        }
+    }
 }
 
 share_type database::distribute_reward(const share_type &reward, const share_type &expertise)
