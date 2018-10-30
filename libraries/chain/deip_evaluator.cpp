@@ -475,10 +475,10 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
 
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
             r.weight_modifiers[token.discipline_id] = weight_modifier;
+            r.expertise_amounts_used[token.discipline_id] += o.weight;
         });
 
-        auto& updated_review = review_service.get(o.review_id);
-        auto new_weight = updated_review.get_weight(discipline.id);
+        auto new_weight = review.get_weight(discipline.id);
         auto weight_delta = new_weight - current_weight;
 
         auto& total_vote = vote_service.get_total_votes_by_content_and_discipline(review.research_content_id, discipline.id);
