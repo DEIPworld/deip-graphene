@@ -2731,7 +2731,7 @@ void database::process_content_activity_windows()
         modify(research_content_service.get(itr_by_end->id), [&](research_content_object& rc) {
 
             if (rc.type == research_content_type::announcement ||
-                rc.type == research_content_type::milestone) {
+                rc.is_milestone()) {
 
                 switch (rc.activity_round) {
                     case 1: {

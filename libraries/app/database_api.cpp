@@ -1162,6 +1162,19 @@ vector<research_content_api_obj> database_api::get_research_content_by_type(cons
     });
 }
 
+vector<research_content_api_obj> database_api::get_all_milestones_by_research_id(const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_content_api_obj> results;
+        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+        auto contents = research_content_service.get_all_milestones_by_research_id(research_id);
+
+        for (const chain::research_content_object &content : contents) {
+            results.push_back(research_content_api_obj(content));
+        }
+        return results;
+    });
+}
 
 expert_token_api_obj database_api::get_expert_token(const expert_token_id_type id) const
 {

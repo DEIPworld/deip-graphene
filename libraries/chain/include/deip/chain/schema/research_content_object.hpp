@@ -24,8 +24,28 @@ using fc::shared_string;
 enum research_content_type : uint16_t
 {
     announcement = 1,
-    milestone = 2,
-    final_result = 3
+    final_result = 2,
+    milestone_article = 3,
+    milestone_book = 4,
+    milestone_chapter = 5,
+    milestone_code = 6,
+    milestone_conference_paper = 7,
+    milestone_cover_page = 8,
+    milestone_data = 9,
+    milestone_experiment_findings = 10,
+    milestone_method = 11,
+    milestone_negative_results = 12,
+    milestone_patent = 13,
+    milestone_poster = 14,
+    milestone_preprint = 15,
+    milestone_presentation = 16,
+    milestone_raw_data = 17,
+    milestone_research_proposal = 18,
+    milestone_technical_report = 19,
+    milestone_thesis = 20,
+
+    start_milestone_type = milestone_article,
+    last_milestone_type = milestone_thesis
 };
 
 enum research_content_activity_state : uint16_t
@@ -68,6 +88,10 @@ public:
     research_content_activity_state activity_state;
     time_point_sec activity_window_start;
     time_point_sec activity_window_end;
+
+    bool is_milestone() const{
+        return type >= research_content_type::start_milestone_type && type <= research_content_type::last_milestone_type;
+    }
 };
 
 struct by_research_id;
@@ -127,7 +151,9 @@ typedef multi_index_container<research_content_object,
 }
 }
 
-FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(milestone)(final_result))
+FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(final_result)(milestone_article)(milestone_book)(milestone_chapter)(milestone_code)(milestone_conference_paper)
+        (milestone_cover_page)(milestone_data)(milestone_experiment_findings)(milestone_method)(milestone_negative_results)(milestone_patent)(milestone_poster)(milestone_preprint)
+        (milestone_presentation)(milestone_raw_data)(milestone_research_proposal)(milestone_technical_report)(milestone_thesis))
 FC_REFLECT_ENUM(deip::chain::research_content_activity_state, (active)(pending)(closed) )
 FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(title)(content)(permlink)(authors)(created_at)(references)(external_references)(activity_round)(activity_state)(activity_window_start)(activity_window_end))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_content_object, deip::chain::research_content_index)
