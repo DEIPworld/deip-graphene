@@ -396,6 +396,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
     dbs_review& review_service = _db.obtain_service<dbs_review>();
     dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
     dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
 
     try
     {
@@ -489,6 +490,12 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
             d.total_active_weight += weight_delta;
         });
 
+        auto& content = _db._temporary_public_impl().get<research_content_object>(review.research_content_id);
+        _db._temporary_public_impl().modify(content, [&](research_content_object& rc_o) {
+            rc_o.eci_per_discipline[o.discipline_id] += weight_delta;
+        });
+
+        research_service.calculate_eci(content.research_id);
         expertise_stats_service.update_used_expertise(abs_used_tokens);
     }
     FC_CAPTURE_AND_RETHROW((o))
@@ -651,7 +658,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
-    auto content = research_content_service.get(op.research_content_id);
+    auto& content = research_content_service.get(op.research_content_id);
     auto& research = research_service.get_research(content.research_id);
     auto reseach_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
 
@@ -716,6 +723,9 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             tv.content_type = content.type;
         });
 
+        _db._temporary_public_impl().modify(content, [&](research_content_object& rc_o) { rc_o.eci_per_discipline[review_discipline] += used_expertise; });
+
+        research_service.calculate_eci(content.research_id);
         expertise_stats_servie.update_used_expertise(used_expertise);
     }
 }

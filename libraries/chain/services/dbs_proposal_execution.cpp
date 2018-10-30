@@ -170,44 +170,14 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
     research_service.check_research_existence(data.research_id);
     FC_ASSERT((!research_service.get_research(data.research_id).is_finished), "You can't add content to finished research");
 
-    auto research_contents = research_content_service.get_by_research_id(data.research_id);
+    auto& research = research_service.get_research(data.research_id);
     auto& research_content = research_content_service.create(data.research_id, data.type, data.title, data.content, data.permlink, data.authors, data.references, data.external_references);
 
     std::map<discipline_id_type, share_type> research_votes_per_discipline;
     if (data.type == research_content_type::final_result)
     {
-        std::map<std::pair<account_name_type, discipline_id_type>, share_type> positive_weights;
-        std::map<std::pair<account_name_type, discipline_id_type>, share_type> negative_weights;
-
-        for (auto& cnt : research_contents)
-        {
-            auto& content = cnt.get();
-            auto reviews = review_service.get_research_content_reviews(content.id);
-            for (auto& rw : reviews)
-            {
-                auto& review = rw.get();
-                auto& weights = review.is_positive ? positive_weights : negative_weights;
-                for (auto& weight_discipline : review.weights_per_discipline)
-                {
-                    auto current_weight = weights.find(std::make_pair(review.author, weight_discipline.first));
-                    if (current_weight != weights.end())
-                        current_weight->second = std::max(current_weight->second.value, weight_discipline.second.value);
-                    else
-                        weights[std::make_pair(review.author, weight_discipline.first)] = weight_discipline.second.value;
-                }
-            }
-        }
-
-        std::map<std::pair<account_name_type, discipline_id_type>, share_type> total_weights = positive_weights;
-        for (auto it = negative_weights.begin(); it != negative_weights.end(); ++it) {
-            total_weights[it->first] -= it->second;
-        }
-        
-        std::map<discipline_id_type, share_type> discipline_total_weights;
-        for (auto it = total_weights.begin(); it != total_weights.end(); ++it)
-            discipline_total_weights[it->first.second] += it->second;
-
-        for (auto& tw : discipline_total_weights)
+        research_service.calculate_eci(research.id);
+        for (auto& tw : research.eci_per_discipline)
         {
             auto discipline_id = tw.first;
             auto weight = std::max(int64_t(0), tw.second.value);
@@ -222,7 +192,6 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
                 d_o.total_active_weight += weight;
             });
         }
-
     }
 }
 

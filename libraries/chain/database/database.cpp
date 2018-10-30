@@ -1147,7 +1147,6 @@ void database::process_funds()
 
     witness_reward /= wso.witness_pay_normalization_factor;
 
-    reset_eci();
     contribution_reward = distribute_reward(contribution_reward, new_expertise);
 
     new_deip = contribution_reward + witness_reward;
@@ -1282,27 +1281,6 @@ void database::process_expertise_allocation_proposals()
 #endif
         }
         ++current;
-    }
-}
-
-void database::reset_eci()
-{
-    dbs_research& research_service = obtain_service<dbs_research>();
-    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
-
-    auto reseaches = research_service.get_researches();
-
-    for (auto& research_ref : reseaches)
-    {
-        auto& research = research_ref.get();
-        modify(research, [&](research_object& r_o) { r_o.eci_per_discipline.clear(); });
-        auto research_contents = research_content_service.get_by_research_id(research.id);
-
-        for (auto& research_content_ref : research_contents)
-        {
-            auto& research_content = research_content_ref.get();
-            modify(research_content, [&](research_content_object& rc_o) { rc_o.eci_per_discipline.clear(); });
-        }
     }
 }
 
@@ -1637,7 +1615,6 @@ share_type database::allocate_rewards_to_reviews(const std::vector<review_object
                                                  const share_type &reward, const share_type &expertise_reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
-    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
 
     share_type total_reviews_weight = share_type(0);
 

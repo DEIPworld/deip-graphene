@@ -333,9 +333,6 @@ public:
     /**
      * Rewards distribution
      */
-
-    void reset_eci();
-
     share_type distribute_reward(const share_type &reward, const share_type &expertise);
     share_type reward_researches_in_discipline(const discipline_object &discipline, const share_type &reward,
                                                    const share_type &expertise);
