@@ -1826,7 +1826,6 @@ void database::initialize_indexes()
     add_index<block_summary_index>();
     add_index<witness_schedule_index>();
     add_index<witness_vote_index>();
-    add_index<operation_index>();
     add_index<hardfork_property_index>();
     add_index<withdraw_common_tokens_route_index>();
     add_index<owner_authority_history_index>();
