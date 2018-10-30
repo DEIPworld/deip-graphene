@@ -38,4 +38,4 @@ private:
 };
 } // namespace blockchain_history
 } // namespace deip
-FC_API(deip::blockchain_history::blockchain_history_api, (get_ops_history)(get_ops_in_block))
+FC_API(deip::blockchain_history::blockchain_history_api, (get_ops_history)(get_ops_in_block)(get_transaction))
