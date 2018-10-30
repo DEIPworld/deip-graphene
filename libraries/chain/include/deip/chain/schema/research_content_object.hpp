@@ -44,7 +44,8 @@ enum research_content_type : uint16_t
     milestone_technical_report = 19,
     milestone_thesis = 20,
 
-    first_milestone = milestone_article
+    start_milestone_type = milestone_article,
+    last_milestone_type = milestone_thesis
 };
 
 enum research_content_activity_state : uint16_t
@@ -89,7 +90,7 @@ public:
     time_point_sec activity_window_end;
 
     bool is_milestone() const{
-        return type >= research_content_type::first_milestone;
+        return type >= research_content_type::start_milestone_type && type <= research_content_type::last_milestone_type;
     }
 };
 
