@@ -34,8 +34,6 @@ public:
                                 bool is_positive,
                                 const account_name_type& author,
                                 const std::set<discipline_id_type>& disciplines);
-
-    review_refs_type get_all_reviews() const;
 };
 } // namespace chain
 } // namespace deip

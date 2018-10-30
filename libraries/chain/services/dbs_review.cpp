@@ -62,7 +62,6 @@ const review_object& dbs_review::create(const research_content_id_type &research
     });
 
     return new_review;
-
 }
 
 const review_object& dbs_review::get(const review_id_type &id)
@@ -72,22 +71,6 @@ const review_object& dbs_review::get(const review_id_type &id)
         return db_impl().get<review_object, by_id>(id);
     }
     FC_CAPTURE_AND_RETHROW((id))
-}
-
-dbs_review::review_refs_type dbs_review::get_all_reviews() const
-{
-    review_refs_type ret;
-
-    const auto& idx = db_impl().get_index<review_index>().indicies().get<by_id>();
-    auto it = idx.lower_bound(0);
-    const auto it_end = idx.cend();
-    while (it != it_end)
-    {
-        ret.push_back(std::cref(*it));
-        ++it;
-    }
-
-    return ret;
 }
 
 } //namespace chain
