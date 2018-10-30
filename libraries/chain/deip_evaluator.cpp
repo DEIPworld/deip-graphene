@@ -649,6 +649,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
     dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
     dbs_vote& votes_service = _db.obtain_service<dbs_vote>();
+    dbs_discipline& disciplines_service = _db.obtain_service<dbs_discipline>();
 
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
@@ -725,6 +726,11 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                 tv.content_type = content.type;
             });
         }
+
+        auto& discipline = disciplines_service.get_discipline(token.discipline_id);
+        _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
+            d.total_active_weight += used_expertise;
+        });
 
         expertise_stats_service.update_used_expertise(used_expertise);
     }
