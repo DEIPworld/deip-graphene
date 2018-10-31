@@ -34,8 +34,6 @@
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 
-#include <deip/chain/schema/operation_object.hpp>
-
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 #define MAX_LIMIT 1000
 
@@ -927,29 +925,6 @@ state database_api::get_state(string path) const
     });
 }
 
-annotated_signed_transaction database_api::get_transaction(transaction_id_type id) const
-{
-#ifdef SKIP_BY_TX_ID
-    FC_ASSERT(false, "This node's operator has disabled operation indexing by transaction_id");
-#else
-    return my->_db.with_read_lock([&]() {
-        const auto& idx = my->_db.get_index<operation_index>().indices().get<by_transaction_id>();
-        auto itr = idx.lower_bound(id);
-        if (itr != idx.end() && itr->trx_id == id)
-        {
-            auto blk = my->_db.fetch_block_by_number(itr->block);
-            FC_ASSERT(blk.valid());
-            FC_ASSERT(blk->transactions.size() > itr->trx_in_block);
-            annotated_signed_transaction result = blk->transactions[itr->trx_in_block];
-            result.block_num = itr->block;
-            result.transaction_num = itr->trx_in_block;
-            return result;
-        }
-        FC_ASSERT(false, "Unknown Transaction ${t}", ("t", id));
-    });
-#endif
-}
-
 vector<discipline_api_obj> database_api::get_all_disciplines() const
 {
     return my->_db.with_read_lock([&]() {
@@ -1162,6 +1137,19 @@ vector<research_content_api_obj> database_api::get_research_content_by_type(cons
     });
 }
 
+vector<research_content_api_obj> database_api::get_all_milestones_by_research_id(const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_content_api_obj> results;
+        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+        auto contents = research_content_service.get_all_milestones_by_research_id(research_id);
+
+        for (const chain::research_content_object &content : contents) {
+            results.push_back(research_content_api_obj(content));
+        }
+        return results;
+    });
+}
 
 expert_token_api_obj database_api::get_expert_token(const expert_token_id_type id) const
 {

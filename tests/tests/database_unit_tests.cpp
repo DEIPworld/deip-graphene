@@ -114,7 +114,7 @@ public:
             d.id = 1;
             d.research_id = 1;
             d.permlink = "milestone_research_1";
-            d.type = milestone;
+            d.type = milestone_article;
             d.authors = {"alice"};
             d.references.insert(2);
             d.activity_state = research_content_activity_state::active;
@@ -124,7 +124,7 @@ public:
             d.id = 2;
             d.research_id = 2;
             d.permlink = "milestone_research_2";
-            d.type = milestone;
+            d.type = milestone_data;
             d.authors = {"alex"};
             d.references.insert(1);
             d.activity_state = research_content_activity_state::active;
@@ -137,7 +137,7 @@ public:
             d.id = 1;
             d.research_id = 1;
             d.permlink = "milestone_research_1";
-            d.type = milestone;
+            d.type = milestone_data;
             d.authors = {"alice"};
             d.references.insert(2);
             d.activity_state = research_content_activity_state::active;

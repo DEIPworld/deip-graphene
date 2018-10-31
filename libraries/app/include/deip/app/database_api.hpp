@@ -243,7 +243,6 @@ public:
 
     /// @brief Get a hexdump of the serialized binary form of a transaction
     std::string get_transaction_hex(const signed_transaction& trx) const;
-    annotated_signed_transaction get_transaction(transaction_id_type trx_id) const;
 
     /**
      *  This API will take a partially signed transaction and a set of public keys that the owner has the ability to
@@ -323,6 +322,7 @@ public:
     research_content_api_obj get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
     vector<research_content_api_obj> get_all_research_content(const research_id_type& research_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
+    vector<research_content_api_obj> get_all_milestones_by_research_id(const research_id_type& research_id) const;
 
     ///////////////////
     // Expert Tokens //
@@ -522,7 +522,6 @@ FC_API(deip::app::database_api,
 
    // Authority / validation
    (get_transaction_hex)
-   (get_transaction)
    (get_required_signatures)
    (get_potential_signatures)
    (verify_authority)

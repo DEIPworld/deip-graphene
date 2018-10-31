@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
     {
         BOOST_TEST_MESSAGE("Testing: make_review_research_apply");
 
-        ACTORS_WITH_EXPERT_TOKENS((alice));
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(john)(rachel));
 
         generate_block();
 
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
             c.content = "content";
             c.references = {};
             c.external_references = { "http://google.com" };
-            c.type = research_content_type::milestone;
+            c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
         });
 
@@ -126,19 +126,19 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
             rdr.research_id = 1;
         });
 
-        private_key_type priv_key = generate_private_key("alice");
+        private_key_type priv_key = generate_private_key("john");
 
         make_review_operation op;
 
         std::vector<int64_t> references {1};
-        op.author = "alice";
+        op.author = "john";
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = true;
         op.weight =  DEIP_100_PERCENT;
 
         fc::uint128 total_expert_tokens_amount; // With Common Token
-        auto it_pair = db.get_index<expert_token_index>().indicies().get<by_account_name>().equal_range("alice");
+        auto it_pair = db.get_index<expert_token_index>().indicies().get<by_account_name>().equal_range("john");
         auto it = it_pair.first;
         const auto it_end = it_pair.second;
         while (it != it_end)
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
             ++it;
         }
 
-        auto& token = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1));
+        auto& token = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("john", 1));
         auto old_voting_power = token.voting_power;
 
         signed_transaction tx;
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
             disciplines.push_back(discipline);
 
         BOOST_CHECK(review.research_content_id == 1);
-        BOOST_CHECK(review.author == "alice");
+        BOOST_CHECK(review.author == "john");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.content == "test");
         BOOST_CHECK(review.expertise_amounts_used.at(1) == (old_voting_power * op.weight * token.amount) / (DEIP_100_PERCENT * DEIP_100_PERCENT));
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
             rdr.research_id = 2;
         });
 
-        op.author = "alice";
+        op.author = "john";
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = true;
@@ -443,7 +443,7 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
         rc.id = 1;
         rc.research_id = research.id;
         rc.content = "content";
-        rc.type = research_content_type::milestone;
+        rc.type = research_content_type::milestone_data;
     });
 
     dbs_discipline& discipline_service = db.obtain_service<dbs_discipline>();
@@ -3506,7 +3506,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     });
 
     const std::string json_str = "{\"research_id\": 1,"
-            "\"type\": 2,"
+            "\"type\": 9,"
             "\"title\":\"milestone for Research #2\","
             "\"content\":\"milestone for Research #2\","
             "\"permlink\":\"milestone-research-two\","
@@ -3540,7 +3540,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     BOOST_CHECK(std::any_of(
         contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper) {
             const research_content_object& content = wrapper.get();
-            return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone
+            return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone_data
                 && content.content == "milestone for Research #2" && content.permlink == "milestone-research-two"
                 && content.authors.size() == 1 && content.authors.find("alice") != content.authors.end()
                 && content.references.size() == 1;
@@ -3571,7 +3571,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     db.create<research_content_object>([&](research_content_object& rc) {
         rc.id = 1; // id of the first element in index is 0
         rc.research_id = 1;
-        rc.type = research_content_type::milestone;
+        rc.type = research_content_type::milestone_data;
         rc.title = "title for milestone for Research #1123";
         rc.content = "milestone2 for Research #1123";
         rc.permlink = "milestone2-research-one";
@@ -3604,7 +3604,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     db.create<research_content_object>([&](research_content_object& rc) {
         rc.id = 2;
         rc.research_id = 1;
-        rc.type = research_content_type::milestone;
+        rc.type = research_content_type::milestone_data;
         rc.title = "title for milestone 3 for Research #1123";
         rc.content = "milestone3 for Research #1123";
         rc.permlink = "milestone3-research-one";
@@ -3646,7 +3646,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     });
 
     const std::string json_str2 = "{\"research_id\": 1,"
-                                  "\"type\": 3,"
+                                  "\"type\": 2,"
                                   "\"title\":\"final result for Research #2\","
                                   "\"content\":\"final result for Research #2\","
                                   "\"permlink\":\"final-result-research-two\","
@@ -3708,7 +3708,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
             c.content = "content";
             c.references = {};
             c.external_references = { "http://google.com" };
-            c.type = research_content_type::milestone;
+            c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
         });
 
@@ -3801,7 +3801,7 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
             c.content = "content";
             c.references = {};
             c.external_references = {"http://google.com"};
-            c.type = research_content_type::milestone;
+            c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
         });
 

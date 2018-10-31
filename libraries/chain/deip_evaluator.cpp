@@ -653,7 +653,9 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
-    dbs_expertise_stats& expertise_stats_servie = _db.obtain_service<dbs_expertise_stats>();
+    dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
+    dbs_vote& votes_service = _db.obtain_service<dbs_vote>();
+    dbs_discipline& disciplines_service = _db.obtain_service<dbs_discipline>();
 
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
@@ -714,18 +716,32 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             r.weight_modifiers[token.discipline_id] = 1;
         });
 
-        _db._temporary_public_impl().create<total_votes_object>([&](total_votes_object& tv) {
-            tv.discipline_id = token.discipline_id;
-            tv.research_content_id = content.id;
-            tv.research_id = content.research_id;
-            tv.total_weight = used_expertise;
-            tv.content_type = content.type;
+        if (votes_service.is_exists_by_content_and_discipline(content.id, token.discipline_id)) {
+            auto& total_votes = votes_service.get_total_votes_by_content_and_discipline(content.id, token.discipline_id);
+
+            _db._temporary_public_impl().modify(total_votes, [&](total_votes_object& tv) {
+               tv.total_weight += used_expertise;
+            });
+
+        } else {
+            _db._temporary_public_impl().create<total_votes_object>([&](total_votes_object& tv) {
+                tv.discipline_id = token.discipline_id;
+                tv.research_content_id = content.id;
+                tv.research_id = content.research_id;
+                tv.total_weight = used_expertise;
+                tv.content_type = content.type;
+            });
+        }
+
+        auto& discipline = disciplines_service.get_discipline(token.discipline_id);
+        _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
+            d.total_active_weight += used_expertise;
         });
 
         _db._temporary_public_impl().modify(content, [&](research_content_object& rc_o) { rc_o.eci_per_discipline[review_discipline] += used_expertise; });
 
         research_service.calculate_eci(content.research_id);
-        expertise_stats_servie.update_used_expertise(used_expertise);
+        expertise_stats_service.update_used_expertise(used_expertise);
     }
 }
 

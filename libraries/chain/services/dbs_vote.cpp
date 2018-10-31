@@ -307,8 +307,8 @@ dbs_vote::review_vote_refs_type dbs_vote::get_review_votes_by_discipline(const d
     return ret;
 }
 
-bool dbs_vote::is_exists_by_research_and_discipline(const research_content_id_type &research_content_id,
-                                                    const discipline_id_type &discipline_id)
+bool dbs_vote::is_exists_by_content_and_discipline(const research_content_id_type &research_content_id,
+                                                   const discipline_id_type &discipline_id)
 {
     const auto& idx = db_impl().get_index<total_votes_index>().indices().get<by_content_and_discipline>();
 
