@@ -465,7 +465,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
             v.weight = w.to_uint64();
         });
 
-        auto current_weight = review.get_weight(discipline.id);
+        auto current_weight = review.get_evaluation(discipline.id);
 
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
             r.weights_per_discipline[o.discipline_id] += vote.weight;
@@ -477,7 +477,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
             r.weight_modifiers[token.discipline_id] = weight_modifier;
         });
 
-        auto new_weight = review.get_weight(discipline.id);
+        auto new_weight = review.get_evaluation(discipline.id);
         auto weight_delta = new_weight - current_weight;
 
         auto& total_vote = vote_service.get_total_votes_by_content_and_discipline(review.research_content_id, discipline.id);
