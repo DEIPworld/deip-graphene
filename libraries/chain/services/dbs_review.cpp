@@ -62,7 +62,6 @@ const review_object& dbs_review::create(const research_content_id_type &research
     });
 
     return new_review;
-
 }
 
 const review_object& dbs_review::get(const review_id_type &id)

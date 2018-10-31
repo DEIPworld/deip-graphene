@@ -1,6 +1,7 @@
 #include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_research_content.hpp>
+#include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/database/database.hpp>
-
 
 namespace deip{
 namespace chain{
@@ -108,5 +109,49 @@ void dbs_research::change_research_review_share_percent(const research_id_type& 
         r.review_share_in_percent_last_update = db_impl().head_block_time();
     });
 }
+
+void dbs_research::calculate_eci(const research_id_type& research_id)
+{
+    check_research_existence(research_id);
+
+    dbs_research_content& research_content_service = db_impl().obtain_service<dbs_research_content>();
+    dbs_review& review_service = db_impl().obtain_service<dbs_review>();
+    auto research_contents = research_content_service.get_by_research_id(research_id);
+
+    std::map<std::pair<account_name_type, discipline_id_type>, share_type> positive_weights;
+    std::map<std::pair<account_name_type, discipline_id_type>, share_type> negative_weights;
+
+    for (auto& cnt : research_contents)
+    {
+        auto& content = cnt.get();
+        auto reviews = review_service.get_research_content_reviews(content.id);
+        for (auto& rw : reviews)
+        {
+            auto& review = rw.get();
+            auto& weights = review.is_positive ? positive_weights : negative_weights;
+            for (auto& weight_discipline : review.weights_per_discipline)
+            {
+                auto current_weight = weights.find(std::make_pair(review.author, weight_discipline.first));
+                if (current_weight != weights.end())
+                    current_weight->second = std::max(current_weight->second.value, weight_discipline.second.value);
+                else
+                    weights[std::make_pair(review.author, weight_discipline.first)] = weight_discipline.second.value;
+            }
+        }
+    }
+
+    std::map<std::pair<account_name_type, discipline_id_type>, share_type> total_weights = positive_weights;
+    for (auto it = negative_weights.begin(); it != negative_weights.end(); ++it) {
+        total_weights[it->first] -= it->second;
+    }
+
+    auto& research = db_impl().get<research_object>(research_id);
+
+    std::map<discipline_id_type, share_type> discipline_total_weights;
+    for (auto it = total_weights.begin(); it != total_weights.end(); ++it)
+        db_impl().modify(research, [&](research_object& r_o) {r_o.eci_per_discipline[it->first.second] += it->second;} );
+
+}
+
 }
 }

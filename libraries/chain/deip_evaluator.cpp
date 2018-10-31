@@ -396,6 +396,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
     dbs_review& review_service = _db.obtain_service<dbs_review>();
     dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
     dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
 
     try
     {
@@ -464,7 +465,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
             v.weight = w.to_uint64();
         });
 
-        auto current_weight = review.get_weight(discipline.id);
+        auto current_weight = review.get_evaluation(discipline.id);
 
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
             r.weights_per_discipline[o.discipline_id] += vote.weight;
@@ -476,8 +477,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
             r.weight_modifiers[token.discipline_id] = weight_modifier;
         });
 
-        auto& updated_review = review_service.get(o.review_id);
-        auto new_weight = updated_review.get_weight(discipline.id);
+        auto new_weight = review.get_evaluation(discipline.id);
         auto weight_delta = new_weight - current_weight;
 
         auto& total_vote = vote_service.get_total_votes_by_content_and_discipline(review.research_content_id, discipline.id);
@@ -489,6 +489,12 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
             d.total_active_weight += weight_delta;
         });
 
+        auto& content = _db._temporary_public_impl().get<research_content_object>(review.research_content_id);
+        _db._temporary_public_impl().modify(content, [&](research_content_object& rc_o) {
+            rc_o.eci_per_discipline[o.discipline_id] += weight_delta;
+        });
+
+        research_service.calculate_eci(content.research_id);
         expertise_stats_service.update_used_expertise(abs_used_tokens);
     }
     FC_CAPTURE_AND_RETHROW((o))
@@ -653,7 +659,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
-    auto content = research_content_service.get(op.research_content_id);
+    auto& content = research_content_service.get(op.research_content_id);
     auto& research = research_service.get_research(content.research_id);
     auto reseach_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
 
@@ -702,10 +708,10 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     for (auto& review_discipline : review_disciplines) {
         auto &token = expertise_token_service.get_expert_token_by_account_and_discipline(op.author, review_discipline);
 
-        auto used_expertise = (op.weight * token.amount) / DEIP_100_PERCENT;
+        auto used_expertise = review_disciplines_with_weight.at(token.discipline_id);
 
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
-            r.expertise_amounts_used[token.discipline_id] = review_disciplines_with_weight.at(token.discipline_id);
+            r.expertise_amounts_used[token.discipline_id] = used_expertise;
             r.weights_per_discipline[token.discipline_id] = used_expertise;
             r.weight_modifiers[token.discipline_id] = 1;
         });
@@ -732,6 +738,9 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             d.total_active_weight += used_expertise;
         });
 
+        _db._temporary_public_impl().modify(content, [&](research_content_object& rc_o) { rc_o.eci_per_discipline[review_discipline] += used_expertise; });
+
+        research_service.calculate_eci(content.research_id);
         expertise_stats_service.update_used_expertise(used_expertise);
     }
 }

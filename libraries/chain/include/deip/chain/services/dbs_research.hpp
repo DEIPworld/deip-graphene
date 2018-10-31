@@ -41,6 +41,8 @@ public:
     void increase_owned_tokens(const research_object& research, const share_type delta);
     
     void change_research_review_share_percent(const research_id_type& research_id, const uint16_t review_share_in_percent);
+
+    void calculate_eci(const research_id_type& research_id);
 };
 }
 }

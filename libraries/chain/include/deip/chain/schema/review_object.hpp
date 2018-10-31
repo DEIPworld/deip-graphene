@@ -50,7 +50,7 @@ public:
     discipline_id_share_type_map weight_modifiers;
     discipline_id_share_type_map expertise_amounts_used;
 
-    share_type get_weight(const discipline_id_type& discipline_id) const {
+    share_type get_evaluation(const discipline_id_type &discipline_id) const {
         if (weight_modifiers.count(discipline_id) == 0)
             return 0;
         FC_ASSERT(expertise_amounts_used.count(discipline_id) != 0,

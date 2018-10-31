@@ -64,7 +64,7 @@ public:
 
     template <typename Constructor, typename Allocator>
     research_content_object(Constructor &&c, allocator<Allocator> a) 
-        : title(a), content(a), permlink(a), authors(a), references(a), external_references(a)
+        : title(a), content(a), permlink(a), authors(a), references(a), external_references(a), eci_per_discipline(a)
     {
         c(*this);
     }
@@ -88,6 +88,8 @@ public:
     research_content_activity_state activity_state;
     time_point_sec activity_window_start;
     time_point_sec activity_window_end;
+
+    discipline_id_share_type_map eci_per_discipline;
 
     bool is_milestone() const{
         return type >= research_content_type::start_milestone_type && type <= research_content_type::last_milestone_type;
@@ -155,5 +157,5 @@ FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(final_result)
         (milestone_cover_page)(milestone_data)(milestone_experiment_findings)(milestone_method)(milestone_negative_results)(milestone_patent)(milestone_poster)(milestone_preprint)
         (milestone_presentation)(milestone_raw_data)(milestone_research_proposal)(milestone_technical_report)(milestone_thesis))
 FC_REFLECT_ENUM(deip::chain::research_content_activity_state, (active)(pending)(closed) )
-FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(title)(content)(permlink)(authors)(created_at)(references)(external_references)(activity_round)(activity_state)(activity_window_start)(activity_window_end))
+FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(title)(content)(permlink)(authors)(created_at)(references)(external_references)(activity_round)(activity_state)(activity_window_start)(activity_window_end)(eci_per_discipline))
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_content_object, deip::chain::research_content_index)
