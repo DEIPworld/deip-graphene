@@ -31,10 +31,9 @@
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
+#include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
-
-#include <deip/chain/schema/operation_object.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 #define MAX_LIMIT 1000
@@ -927,29 +926,6 @@ state database_api::get_state(string path) const
     });
 }
 
-annotated_signed_transaction database_api::get_transaction(transaction_id_type id) const
-{
-#ifdef SKIP_BY_TX_ID
-    FC_ASSERT(false, "This node's operator has disabled operation indexing by transaction_id");
-#else
-    return my->_db.with_read_lock([&]() {
-        const auto& idx = my->_db.get_index<operation_index>().indices().get<by_transaction_id>();
-        auto itr = idx.lower_bound(id);
-        if (itr != idx.end() && itr->trx_id == id)
-        {
-            auto blk = my->_db.fetch_block_by_number(itr->block);
-            FC_ASSERT(blk.valid());
-            FC_ASSERT(blk->transactions.size() > itr->trx_in_block);
-            annotated_signed_transaction result = blk->transactions[itr->trx_in_block];
-            result.block_num = itr->block;
-            result.transaction_num = itr->trx_in_block;
-            return result;
-        }
-        FC_ASSERT(false, "Unknown Transaction ${t}", ("t", id));
-    });
-#endif
-}
-
 vector<discipline_api_obj> database_api::get_all_disciplines() const
 {
     return my->_db.with_read_lock([&]() {
@@ -1162,6 +1138,19 @@ vector<research_content_api_obj> database_api::get_research_content_by_type(cons
     });
 }
 
+vector<research_content_api_obj> database_api::get_all_milestones_by_research_id(const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_content_api_obj> results;
+        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+        auto contents = research_content_service.get_all_milestones_by_research_id(research_id);
+
+        for (const chain::research_content_object &content : contents) {
+            results.push_back(research_content_api_obj(content));
+        }
+        return results;
+    });
+}
 
 expert_token_api_obj database_api::get_expert_token(const expert_token_id_type id) const
 {
@@ -1354,6 +1343,23 @@ database_api::get_research_token_sale_by_id(const research_token_sale_id_type re
     });
 }
 
+vector<research_token_sale_api_obj> database_api::get_research_token_sale(const uint32_t& from = 0, uint32_t limit = 100) const
+{
+    return my->_db.with_read_lock([&]() {
+    FC_ASSERT(limit <= MAX_LIMIT);
+    const auto& research_token_sale_by_id = my->_db.get_index<research_token_sale_index>().indices().get<by_id>();
+    vector<research_token_sale_api_obj> result;
+    result.reserve(limit);
+
+    for (auto itr = research_token_sale_by_id.lower_bound(from); limit-- && itr != research_token_sale_by_id.end(); ++itr)
+    {
+        result.push_back(research_token_sale_api_obj(*itr));
+    }
+
+    return result;
+    });
+}
+
 bool database_api::check_research_token_sale_existence_by_research_id(const research_id_type& research_id) const
 {
     const auto& idx = my->_db.get_index<research_token_sale_index>().indices().get<by_research_id>();
@@ -1430,23 +1436,6 @@ database_api::get_research_token_sale_contribution_by_account_name_and_research_
         chain::dbs_research_token_sale& research_token_sale_service
             = my->_db.obtain_service<chain::dbs_research_token_sale>();
         return research_token_sale_service.get_research_token_sale_contribution_by_account_name_and_research_token_sale_id(owner, research_token_sale_id);
-    });
-}
-
-vector<research_token_sale_api_obj> database_api::get_research_token_sale(const uint32_t& from = 0, uint32_t limit = 100) const
-{
-    return my->_db.with_read_lock([&]() {
-    FC_ASSERT(limit <= MAX_LIMIT);
-    const auto& research_token_sale_by_id = my->_db.get_index<research_token_sale_index>().indices().get<by_id>();
-    vector<research_token_sale_api_obj> result;
-    result.reserve(limit);
-
-    for (auto itr = research_token_sale_by_id.lower_bound(from); limit-- && itr != research_token_sale_by_id.end(); ++itr)
-    {
-        result.push_back(research_token_sale_api_obj(*itr));
-    }
-
-    return result;
     });
 }
 
@@ -1855,6 +1844,144 @@ vector<review_vote_api_obj> database_api::get_review_votes_by_review_id(const re
 
         for (const chain::review_vote_object& review_vote : review_votes)
             results.push_back(review_vote);
+
+        return results;
+    });
+}
+
+expertise_allocation_proposal_api_obj database_api::get_expertise_allocation_proposal_by_id(const expertise_allocation_proposal_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+        return expertise_allocation_proposal_service.get(id);
+    });
+}
+
+vector<expertise_allocation_proposal_api_obj> database_api::get_expertise_allocation_proposals_by_initiator(const account_name_type &initiator) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<expertise_allocation_proposal_api_obj> results;
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+
+        auto proposals = expertise_allocation_proposal_service.get_by_initiator(initiator);
+
+        for (const chain::expertise_allocation_proposal_object& proposal : proposals)
+            results.push_back(proposal);
+
+        return results;
+    });
+}
+
+vector<expertise_allocation_proposal_api_obj> database_api::get_expertise_allocation_proposals_by_claimer_and_discipline(const account_name_type& claimer, 
+                                                                                                                        const discipline_id_type& discipline_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<expertise_allocation_proposal_api_obj> results;
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+
+        auto proposals = expertise_allocation_proposal_service.get_by_claimer_and_discipline(claimer, discipline_id);
+
+        for (const chain::expertise_allocation_proposal_object& proposal : proposals)
+            results.push_back(proposal);
+
+        return results;
+    });
+}
+
+expertise_allocation_proposal_api_obj database_api::get_expertise_allocation_proposal_by_discipline_initiator_and_claimer(const discipline_id_type& discipline_id,
+                                                                                                                          const account_name_type& initiator,
+                                                                                                                          const account_name_type& claimer) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+        return expertise_allocation_proposal_service.get_by_discipline_initiator_and_claimer(discipline_id, initiator, claimer);
+    });
+}
+
+vector<expertise_allocation_proposal_api_obj> database_api::get_expertise_allocation_proposals_by_discipline(const discipline_id_type& discipline_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<expertise_allocation_proposal_api_obj> results;
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+
+        auto proposals = expertise_allocation_proposal_service.get_by_discipline_id(discipline_id);
+
+        for (const chain::expertise_allocation_proposal_object& proposal : proposals)
+            results.push_back(proposal);
+
+        return results;
+    });
+}
+
+expertise_allocation_proposal_vote_api_obj database_api::get_expertise_allocation_proposal_vote_by_id(const expertise_allocation_proposal_vote_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_vote_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+        return expertise_allocation_proposal_vote_service.get_vote(id);
+    });
+}
+
+vector<expertise_allocation_proposal_vote_api_obj> database_api::get_expertise_allocation_proposal_votes_by_expertise_allocation_proposal_id
+                                                                                        (const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<expertise_allocation_proposal_vote_api_obj> results;
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_vote_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+
+        auto proposal_votes = expertise_allocation_proposal_vote_service.get_votes_by_expertise_allocation_proposal_id(expertise_allocation_proposal_id);
+
+        for (const chain::expertise_allocation_proposal_vote_object& proposal_vote : proposal_votes)
+            results.push_back(proposal_vote);
+
+        return results;
+    });
+}
+
+expertise_allocation_proposal_vote_api_obj database_api::get_expertise_allocation_proposal_vote_by_voter_and_expertise_allocation_proposal_id(const account_name_type& voter,
+                                                                                                                                              const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_vote_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+        return expertise_allocation_proposal_vote_service.get_vote_by_voter_and_expertise_allocation_proposal_id(voter, expertise_allocation_proposal_id);
+    });
+}
+
+vector<expertise_allocation_proposal_vote_api_obj> database_api::get_expertise_allocation_proposal_votes_by_voter_and_discipline_id(const account_name_type& voter,
+                                                                                                                                   const discipline_id_type& discipline_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<expertise_allocation_proposal_vote_api_obj> results;
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_vote_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+
+        auto proposal_votes = expertise_allocation_proposal_vote_service.get_votes_by_voter_and_discipline_id(voter, discipline_id);
+
+        for (const chain::expertise_allocation_proposal_vote_object& proposal_vote : proposal_votes)
+            results.push_back(proposal_vote);
+
+        return results;
+    });
+}
+
+vector<expertise_allocation_proposal_vote_api_obj> database_api::get_expertise_allocation_proposal_votes_by_voter(const account_name_type& voter) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<expertise_allocation_proposal_vote_api_obj> results;
+        chain::dbs_expertise_allocation_proposal& expertise_allocation_proposal_vote_service
+                = my->_db.obtain_service<chain::dbs_expertise_allocation_proposal>();
+
+        auto proposal_votes = expertise_allocation_proposal_vote_service.get_votes_by_voter(voter);
+
+        for (const chain::expertise_allocation_proposal_vote_object& proposal_vote : proposal_votes)
+            results.push_back(proposal_vote);
 
         return results;
     });

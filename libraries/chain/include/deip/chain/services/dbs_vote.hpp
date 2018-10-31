@@ -64,7 +64,8 @@ public:
 
     total_votes_refs_type get_total_votes_by_research(const research_id_type& research_id) const;
 
-    bool is_exists_by_research_and_discipline(const research_content_id_type& research_content_id, const discipline_id_type& discipline_id);
+    bool is_exists_by_content_and_discipline(const research_content_id_type &research_content_id,
+                                             const discipline_id_type &discipline_id);
 
     // review_votes_object
     using review_vote_refs_type = std::vector<std::reference_wrapper<const review_vote_object>>;

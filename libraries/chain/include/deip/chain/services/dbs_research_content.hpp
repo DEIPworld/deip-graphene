@@ -42,6 +42,8 @@ public:
                                                         const research_content_type &type) const;
 
     void check_research_content_existence(const research_content_id_type& research_content_id);
+
+    research_content_refs_type get_all_milestones_by_research_id(const research_id_type& research_id) const;
 };
 }
 }

@@ -24,6 +24,7 @@
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_expertise_stats.hpp>
+#include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
 
 #ifndef IS_LOW_MEM
@@ -647,7 +648,9 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
-    dbs_expertise_stats& expertise_stats_servie = _db.obtain_service<dbs_expertise_stats>();
+    dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
+    dbs_vote& votes_service = _db.obtain_service<dbs_vote>();
+    dbs_discipline& disciplines_service = _db.obtain_service<dbs_discipline>();
 
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
@@ -708,15 +711,29 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             r.weight_modifiers[token.discipline_id] = 1;
         });
 
-        _db._temporary_public_impl().create<total_votes_object>([&](total_votes_object& tv) {
-            tv.discipline_id = token.discipline_id;
-            tv.research_content_id = content.id;
-            tv.research_id = content.research_id;
-            tv.total_weight = used_expertise;
-            tv.content_type = content.type;
+        if (votes_service.is_exists_by_content_and_discipline(content.id, token.discipline_id)) {
+            auto& total_votes = votes_service.get_total_votes_by_content_and_discipline(content.id, token.discipline_id);
+
+            _db._temporary_public_impl().modify(total_votes, [&](total_votes_object& tv) {
+               tv.total_weight += used_expertise;
+            });
+
+        } else {
+            _db._temporary_public_impl().create<total_votes_object>([&](total_votes_object& tv) {
+                tv.discipline_id = token.discipline_id;
+                tv.research_content_id = content.id;
+                tv.research_id = content.research_id;
+                tv.total_weight = used_expertise;
+                tv.content_type = content.type;
+            });
+        }
+
+        auto& discipline = disciplines_service.get_discipline(token.discipline_id);
+        _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
+            d.total_active_weight += used_expertise;
         });
 
-        expertise_stats_servie.update_used_expertise(used_expertise);
+        expertise_stats_service.update_used_expertise(used_expertise);
     }
 }
 
@@ -828,7 +845,7 @@ void set_expertise_tokens_evaluator::do_apply(const set_expertise_tokens_operati
     for (auto& discipline_to_add : op.disciplines_to_add)
     {
         FC_ASSERT(discipline_to_add.amount > 0, "Amount must be bigger than 0");
-        const bool exist = expert_token_service.is_expert_token_existence_by_account_and_discipline(op.account_name, discipline_to_add.discipline_id);
+        const bool exist = expert_token_service.expert_token_exists_by_account_and_discipline(op.account_name, discipline_to_add.discipline_id);
         
         if (exist)
         {
@@ -997,34 +1014,80 @@ void delegate_expertise_evaluator::do_apply(const delegate_expertise_operation& 
     expert_token_service.check_expert_token_existence_by_account_and_discipline(op.sender, op.discipline_id);
     expert_token_service.check_expert_token_existence_by_account_and_discipline(op.receiver, op.discipline_id);
 
-    auto& receiver = _db.get_account(op.receiver);
+    auto& sender_token = expert_token_service.get_expert_token_by_account_and_discipline(op.sender, op.discipline_id);
 
-    auto it = receiver.delegated_expertise.find(op.discipline_id);
-    if (it != receiver.delegated_expertise.end()) {
-        auto accounts = receiver.delegated_expertise.at(op.discipline_id);
-        FC_ASSERT(std::find(accounts.begin(), accounts.end(), op.sender) == accounts.end(), "This account have already delegate his expertise in this discipline");
-    }
+    FC_ASSERT(sender_token.proxy != op.receiver, "Proxy must change.");
 
-    account_service.delegate_expertise(op.sender, op.receiver, op.discipline_id);
+    auto& proxy_token = expert_token_service.get_expert_token_by_account_and_discipline(op.receiver, op.discipline_id);
+
+    expert_token_service.update_expertise_proxy(sender_token, proxy_token);
+
 }
 
 void revoke_expertise_delegation_evaluator::do_apply(const revoke_expertise_delegation_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
 
     account_service.check_account_existence(op.sender);
-    account_service.check_account_existence(op.receiver);
+    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.sender, op.discipline_id);
 
-    auto& receiver = _db.get_account(op.receiver);
+    auto& sender_token = expert_token_service.get_expert_token_by_account_and_discipline(op.sender, op.discipline_id);
 
-    auto it = receiver.delegated_expertise.find(op.discipline_id);
+    FC_ASSERT(sender_token.proxy.size() != 0, "You have no proxy");
 
-    FC_ASSERT(it != receiver.delegated_expertise.end(), "Account doesn't have delegated expertise in this discipline");
+    optional<expert_token_object> proxy;
 
-    auto accounts = receiver.delegated_expertise.at(op.discipline_id);
-    FC_ASSERT(std::find(accounts.begin(), accounts.end(), op.sender) != accounts.end(), "Account doesn't have delegated expertise");
+    expert_token_service.update_expertise_proxy(sender_token, proxy);
+}
 
-    account_service.revoke_expertise_delegation(op.sender, op.receiver, op.discipline_id);
+void create_expertise_allocation_proposal_evaluator::do_apply(const create_expertise_allocation_proposal_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+    dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = _db.obtain_service<dbs_expertise_allocation_proposal>();
+
+    account_service.check_account_existence(op.initiator);
+    account_service.check_account_existence(op.claimer);
+    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.initiator, op.discipline_id);
+
+    FC_ASSERT(!expert_token_service.expert_token_exists_by_account_and_discipline(op.claimer, op.discipline_id),
+              "Expert token for account \"${1}\" and discipline \"${2}\" already exists", ("1", op.claimer)("2", op.discipline_id));
+
+    FC_ASSERT(!expertise_allocation_proposal_service.exists_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer),
+              "You have created expertise allocation proposal already");
+
+    expertise_allocation_proposal_service.create(op.initiator, op.claimer, op.discipline_id, op.amount, op.description);
+}
+
+void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_expertise_allocation_proposal_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
+    dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = _db.obtain_service<dbs_expertise_allocation_proposal>();
+
+    account_service.check_account_existence(op.initiator);
+    account_service.check_account_existence(op.claimer);
+    account_service.check_account_existence(op.voter);
+
+    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.initiator, op.discipline_id);
+    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.voter, op.discipline_id);
+
+    expertise_allocation_proposal_service.check_existence_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer);
+
+    auto& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.voter, op.discipline_id);
+
+    FC_ASSERT(expert_token.proxy.size() == 0, "A proxy is currently set, please clear the proxy before voting.");
+
+    auto& expertise_allocation_proposal = expertise_allocation_proposal_service.get_by_discipline_initiator_and_claimer(op.discipline_id, op.initiator, op.claimer);
+
+    if (op.voting_power == DEIP_100_PERCENT)
+        expertise_allocation_proposal_service.upvote(expertise_allocation_proposal, op.voter,
+                                                     expert_token.amount + expert_token.proxied_expertise_total());
+    else if (op.voting_power == -DEIP_100_PERCENT)
+        expertise_allocation_proposal_service.downvote(expertise_allocation_proposal, op.voter,
+                                                       expert_token.amount + expert_token.proxied_expertise_total());
+
 }
 
 void accept_research_token_offer_evaluator::do_apply(const accept_research_token_offer_operation& op)

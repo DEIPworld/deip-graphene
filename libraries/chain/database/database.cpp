@@ -30,6 +30,7 @@
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
 #include <deip/chain/schema/expertise_stats_object.hpp>
+#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 #include <deip/chain/schema/offer_research_tokens_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
@@ -69,6 +70,7 @@
 #include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_research_content_reward_pool.hpp>
 #include <deip/chain/services/dbs_expertise_stats.hpp>
+#include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
 namespace deip {
@@ -1250,6 +1252,39 @@ void database::refund_research_tokens(const research_token_sale_id_type research
     modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
 }
 
+void database::process_expertise_allocation_proposals()
+{
+    dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = obtain_service<dbs_expertise_allocation_proposal>();
+    dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
+
+#ifdef IS_LOW_MEM
+    expertise_allocation_proposal_service.clear_expired_expertise_allocation_proposals();
+#else
+    expertise_allocation_proposal_service.reject_expired_expertise_allocation_proposals();
+#endif
+
+    const auto& idx = get_index<expertise_allocation_proposal_index>().indices().get<by_id>();
+    auto current = idx.begin();
+    while (current != idx.end())
+    {
+        auto& proposal = expertise_allocation_proposal_service.get(current->id);
+        if (proposal.status == expertise_allocation_proposal_status::eap_active && expertise_allocation_proposal_service.is_quorum(proposal))
+        {
+            expert_token_service.create(proposal.claimer, proposal.discipline_id, proposal.amount);
+
+#ifdef IS_LOW_MEM
+            expertise_allocation_proposal_service.delete_by_claimer_and_discipline(proposal.claimer, proposal.discipline_id);
+#else
+            modify(proposal, [&](expertise_allocation_proposal_object& eap_o)
+                { eap_o.status = expertise_allocation_proposal_status::eap_accepted; });
+            expertise_allocation_proposal_service.reject_by_claimer_and_discipline(proposal.claimer,
+                                                                                   proposal.discipline_id);
+#endif
+        }
+        ++current;
+    }
+}
+
 share_type database::distribute_reward(const share_type &reward, const share_type &expertise)
 {
     auto& discipline_service = obtain_service<dbs_discipline>();
@@ -1777,6 +1812,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<delegate_expertise_evaluator>();
     _my->_evaluator_registry.register_evaluator<revoke_expertise_delegation_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_expertise_allocation_proposal_evaluator>();
+    _my->_evaluator_registry.register_evaluator<vote_for_expertise_allocation_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<accept_research_token_offer_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_research_token_offer_evaluator>();
 }
@@ -1792,7 +1829,6 @@ void database::initialize_indexes()
     add_index<block_summary_index>();
     add_index<witness_schedule_index>();
     add_index<witness_vote_index>();
-    add_index<operation_index>();
     add_index<hardfork_property_index>();
     add_index<withdraw_common_tokens_route_index>();
     add_index<owner_authority_history_index>();
@@ -1819,6 +1855,8 @@ void database::initialize_indexes()
     add_index<review_vote_index>();
     add_index<vesting_balance_index>();
     add_index<research_content_reward_pool_index>();
+    add_index<expertise_allocation_proposal_index>();
+    add_index<expertise_allocation_proposal_vote_index>();
     add_index<expertise_stats_index>();
     add_index<offer_research_tokens_index>();
 
@@ -2048,6 +2086,8 @@ void database::_apply_block(const signed_block& next_block)
         /// modify expertise stats to correctly calculate emission
         expertise_stats_service.calculate_used_expertise_for_week();
         expertise_stats_service.reset_used_expertise_per_block();
+
+        process_expertise_allocation_proposals();
 
         // notify observers that the block has been applied
         notify_applied_block(next_block);
@@ -2694,7 +2734,7 @@ void database::process_content_activity_windows()
         modify(research_content_service.get(itr_by_end->id), [&](research_content_object& rc) {
 
             if (rc.type == research_content_type::announcement ||
-                rc.type == research_content_type::milestone) {
+                rc.is_milestone()) {
 
                 switch (rc.activity_round) {
                     case 1: {

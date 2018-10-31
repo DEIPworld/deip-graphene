@@ -21,14 +21,16 @@
 #include <stdexcept>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/expert_token_object.hpp>
-
-#include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
-#include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/schema/grant_objects.hpp>
 #include <deip/chain/schema/expertise_stats_object.hpp>
+#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
+
+#include <deip/chain/services/dbs_research_token.hpp>
+#include <deip/chain/services/dbs_research_discipline_relation.hpp>
+
 
 #define DROPOUT_COMPENSATION_IN_PERCENT 1500
 
@@ -102,7 +104,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
     {
         BOOST_TEST_MESSAGE("Testing: make_review_research_apply");
 
-        ACTORS_WITH_EXPERT_TOKENS((alice));
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(john)(rachel));
 
         generate_block();
 
@@ -116,7 +118,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
             c.content = "content";
             c.references = {};
             c.external_references = { "http://google.com" };
-            c.type = research_content_type::milestone;
+            c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
         });
 
@@ -125,19 +127,19 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
             rdr.research_id = 1;
         });
 
-        private_key_type priv_key = generate_private_key("alice");
+        private_key_type priv_key = generate_private_key("john");
 
         make_review_operation op;
 
         std::vector<int64_t> references {1};
-        op.author = "alice";
+        op.author = "john";
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = true;
         op.weight =  DEIP_100_PERCENT;
 
         fc::uint128 total_expert_tokens_amount; // With Common Token
-        auto it_pair = db.get_index<expert_token_index>().indicies().get<by_account_name>().equal_range("alice");
+        auto it_pair = db.get_index<expert_token_index>().indicies().get<by_account_name>().equal_range("john");
         auto it = it_pair.first;
         const auto it_end = it_pair.second;
         while (it != it_end)
@@ -147,7 +149,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
             ++it;
         }
 
-        auto& token = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1));
+        auto& token = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("john", 1));
         auto old_voting_power = token.voting_power;
 
         signed_transaction tx;
@@ -165,7 +167,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
             disciplines.push_back(discipline);
 
         BOOST_CHECK(review.research_content_id == 1);
-        BOOST_CHECK(review.author == "alice");
+        BOOST_CHECK(review.author == "john");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.content == "test");
         BOOST_CHECK(review.expertise_amounts_used.at(1) == (old_voting_power * op.weight * token.amount) / (DEIP_100_PERCENT * DEIP_100_PERCENT));
@@ -183,7 +185,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
             rdr.research_id = 2;
         });
 
-        op.author = "alice";
+        op.author = "john";
         op.research_content_id = 1;
         op.content = "test";
         op.is_positive = true;
@@ -442,7 +444,7 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
         rc.id = 1;
         rc.research_id = research.id;
         rc.content = "content";
-        rc.type = research_content_type::milestone;
+        rc.type = research_content_type::milestone_data;
     });
 
     dbs_discipline& discipline_service = db.obtain_service<dbs_discipline>();
@@ -3505,7 +3507,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     });
 
     const std::string json_str = "{\"research_id\": 1,"
-            "\"type\": 2,"
+            "\"type\": 9,"
             "\"title\":\"milestone for Research #2\","
             "\"content\":\"milestone for Research #2\","
             "\"permlink\":\"milestone-research-two\","
@@ -3539,7 +3541,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     BOOST_CHECK(std::any_of(
         contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper) {
             const research_content_object& content = wrapper.get();
-            return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone
+            return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone_data
                 && content.content == "milestone for Research #2" && content.permlink == "milestone-research-two"
                 && content.authors.size() == 1 && content.authors.find("alice") != content.authors.end()
                 && content.references.size() == 1;
@@ -3570,7 +3572,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     db.create<research_content_object>([&](research_content_object& rc) {
         rc.id = 1; // id of the first element in index is 0
         rc.research_id = 1;
-        rc.type = research_content_type::milestone;
+        rc.type = research_content_type::milestone_data;
         rc.title = "title for milestone for Research #1123";
         rc.content = "milestone2 for Research #1123";
         rc.permlink = "milestone2-research-one";
@@ -3603,7 +3605,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     db.create<research_content_object>([&](research_content_object& rc) {
         rc.id = 2;
         rc.research_id = 1;
-        rc.type = research_content_type::milestone;
+        rc.type = research_content_type::milestone_data;
         rc.title = "title for milestone 3 for Research #1123";
         rc.content = "milestone3 for Research #1123";
         rc.permlink = "milestone3-research-one";
@@ -3645,7 +3647,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     });
 
     const std::string json_str2 = "{\"research_id\": 1,"
-                                  "\"type\": 3,"
+                                  "\"type\": 2,"
                                   "\"title\":\"final result for Research #2\","
                                   "\"content\":\"final result for Research #2\","
                                   "\"permlink\":\"final-result-research-two\","
@@ -3707,7 +3709,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
             c.content = "content";
             c.references = {};
             c.external_references = { "http://google.com" };
-            c.type = research_content_type::milestone;
+            c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
         });
 
@@ -3800,7 +3802,7 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
             c.content = "content";
             c.references = {};
             c.external_references = {"http://google.com"};
-            c.type = research_content_type::milestone;
+            c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
         });
 
@@ -4023,7 +4025,9 @@ BOOST_AUTO_TEST_CASE(delegate_expertise_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 1);
+        auto a = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1)).proxied_expertise;
+
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1)).proxied_expertise[0]) == 10000);
 
         BOOST_CHECK_THROW(db.push_transaction(tx, 0), fc::assert_exception);
 
@@ -4040,7 +4044,7 @@ BOOST_AUTO_TEST_CASE(delegate_expertise_apply)
         tx2.validate();
         db.push_transaction(tx2, 0);
 
-        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 2);
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1)).proxied_expertise[0]) == 20000);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -4073,8 +4077,6 @@ BOOST_AUTO_TEST_CASE(withdraw_expertise_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 1);
-
         BOOST_CHECK_THROW(db.push_transaction(tx, 0), fc::assert_exception);
 
         delegate_expertise_operation op2;
@@ -4090,12 +4092,9 @@ BOOST_AUTO_TEST_CASE(withdraw_expertise_apply)
         tx2.validate();
         db.push_transaction(tx2, 0);
 
-        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 2);
-
         revoke_expertise_delegation_operation op3;
 
         op3.sender = "jack";
-        op3.receiver = "alice";
         op3.discipline_id = 1;
 
         signed_transaction tx3;
@@ -4105,13 +4104,12 @@ BOOST_AUTO_TEST_CASE(withdraw_expertise_apply)
         tx3.validate();
         db.push_transaction(tx3, 0);
 
-        auto a = db.get_account("alice").delegated_expertise.at(1);
-        BOOST_CHECK(db.get_account("alice").delegated_expertise.at(1).size() == 1);
+        auto test = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1)).proxied_expertise;
+        BOOST_CHECK(test[0] == 10000);
 
         revoke_expertise_delegation_operation op4;
 
         op4.sender = "mike";
-        op4.receiver = "alice";
         op4.discipline_id = 1;
 
         signed_transaction tx4;
@@ -4124,6 +4122,138 @@ BOOST_AUTO_TEST_CASE(withdraw_expertise_apply)
     }
     FC_LOG_AND_RETHROW()
 }
+
+BOOST_AUTO_TEST_CASE(expertise_allocation_proposal_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: create expertise allocation proposal");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice));
+        ACTORS((bob))
+
+        generate_block();
+
+        private_key_type alice_priv_key = generate_private_key("alice");
+
+        create_expertise_allocation_proposal_operation op;
+
+        op.initiator = "alice";
+        op.claimer = "bob";
+        op.discipline_id = 1;
+        op.amount = 100;
+        op.description = "test";
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(alice_priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& expertise_allocation_proposal = db.get<expertise_allocation_proposal_object, by_id>(0);
+
+        BOOST_CHECK(expertise_allocation_proposal.initiator == "alice");
+        BOOST_CHECK(expertise_allocation_proposal.claimer == "bob");
+        BOOST_CHECK(expertise_allocation_proposal.discipline_id == 1);
+
+        create_expertise_allocation_proposal_operation op2;
+
+        op2.initiator = "alice";
+        op2.claimer = "bob";
+        op2.discipline_id = 1;
+        op2.amount = 100;
+        op2.description = "test";
+
+        signed_transaction tx2;
+        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2.operations.push_back(op2);
+        tx2.sign(alice_priv_key, db.get_chain_id());
+        tx2.validate();
+        BOOST_CHECK_THROW(db.push_transaction(tx2, 0), fc::assert_exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
+{
+    try
+    {
+        ACTORS_WITH_EXPERT_TOKENS((alice)(john)(jack)(mike)(peter)(miles)(kate));
+        ACTOR(bob);
+
+        generate_block();
+
+        private_key_type alice_priv_key = generate_private_key("alice");
+        private_key_type jack_priv_key = generate_private_key("jack");
+        private_key_type john_priv_key = generate_private_key("john");
+        private_key_type kate_priv_key = generate_private_key("kate");
+
+        db.modify(db.get<discipline_object>(1), [&](discipline_object& d) {
+            d.total_expertise_amount = 70000;
+        });
+
+        create_expertise_allocation_proposal_operation op;
+
+        op.initiator = "alice";
+        op.claimer = "bob";
+        op.discipline_id = 1;
+        op.amount = 100;
+        op.description = "test";
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(alice_priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& expertise_allocation_proposal = db.get<expertise_allocation_proposal_object, by_id>(0);
+
+        BOOST_CHECK(expertise_allocation_proposal.initiator == "alice");
+        BOOST_CHECK(expertise_allocation_proposal.claimer == "bob");
+        BOOST_CHECK(expertise_allocation_proposal.discipline_id == 1);
+
+        vote_for_expertise_allocation_proposal_operation op2;
+
+        op2.initiator = "alice";
+        op2.claimer = "bob";
+        op2.discipline_id = 1;
+        op2.voter = "jack";
+        op2.voting_power = DEIP_100_PERCENT;
+
+        signed_transaction tx2;
+        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2.operations.push_back(op2);
+        tx2.sign(jack_priv_key, db.get_chain_id());
+        tx2.validate();
+        db.push_transaction(tx2, 0);
+
+        BOOST_CHECK(expertise_allocation_proposal.total_voted_expertise == 10000);
+
+        vote_for_expertise_allocation_proposal_operation op2_1;
+
+        op2_1.initiator = "alice";
+        op2_1.claimer = "bob";
+        op2_1.discipline_id = 1;
+        op2_1.voter = "jack";
+        op2_1.voting_power = -DEIP_100_PERCENT;
+
+        signed_transaction tx2_1;
+        tx2_1.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2_1.operations.push_back(op2_1);
+        tx2_1.sign(jack_priv_key, db.get_chain_id());
+        tx2_1.validate();
+        db.push_transaction(tx2_1, 0);
+
+        auto& expertise_allocation_proposal_2 = db.get<expertise_allocation_proposal_object, by_id>(0);
+
+        BOOST_CHECK(expertise_allocation_proposal_2.total_voted_expertise == -10000);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 
 BOOST_AUTO_TEST_CASE(offer_research_tokens_proposal)
 {

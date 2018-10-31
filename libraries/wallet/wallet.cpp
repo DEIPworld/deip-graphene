@@ -2084,7 +2084,9 @@ wallet_api::challenge(const std::string& challenger, const std::string& challeng
 
 annotated_signed_transaction wallet_api::get_transaction(transaction_id_type id) const
 {
-    return my->_remote_db->get_transaction(id);
+    my->use_remote_blockchain_history_api();
+
+    return (*my->_remote_blockchain_history_api)->get_transaction(id);
 }
 
 vector<grant_api_obj> wallet_api::list_my_grants()
@@ -2160,6 +2162,11 @@ vector<research_token_api_obj> wallet_api::list_my_research_tokens()
     }
 
     return result;
+}
+
+vector<research_token_api_obj> wallet_api::list_account_research_tokens(const std::string& account_name)
+{
+    return my->_remote_db->get_research_tokens_by_account_name(account_name);
 }
 
 vector<vesting_balance_api_obj> wallet_api::get_vesting_balances(const std::string& account_name)
@@ -2495,8 +2502,8 @@ annotated_signed_transaction wallet_api::make_review(const std::string& author,
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::contribute_to_token_sale(const int64_t research_token_sale_id,
-                                                                  const std::string& owner,
+annotated_signed_transaction wallet_api::contribute_to_token_sale(const std::string& contributor,
+                                                                  const int64_t research_token_sale_id,
                                                                   const asset& amount,
                                                                   const bool broadcast)
 {
@@ -2505,7 +2512,7 @@ annotated_signed_transaction wallet_api::contribute_to_token_sale(const int64_t 
     contribute_to_token_sale_operation op;
 
     op.research_token_sale_id = research_token_sale_id;
-    op.owner = owner;
+    op.owner = contributor;
     op.amount = amount;
 
     signed_transaction tx;
@@ -2674,6 +2681,56 @@ annotated_signed_transaction wallet_api::vote_proposal(const std::string& voter,
     op.voter = voter;
     op.proposal_id = proposal_id;
     op.research_group_id = research_group_id;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::create_expertise_allocation_proposal(
+                                               const std::string& initiator,
+                                               const std::string& claimer,
+                                               const std::string& description,
+                                               const int64_t discipline_id,
+                                               const int64_t amount,
+                                               const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    create_expertise_allocation_proposal_operation op;
+
+    op.initiator = initiator;
+    op.claimer = claimer;
+    op.discipline_id = discipline_id;
+    op.amount = amount;
+    op.description = description;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::vote_for_expertise_allocation_proposal(
+                                               const std::string& initiator,
+                                               const std::string& claimer,
+                                               const int64_t discipline_id,
+                                               const std::string& voter,
+                                               const int64_t voting_power,
+                                               const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    vote_for_expertise_allocation_proposal_operation op;
+
+    op.initiator = initiator;
+    op.claimer = claimer;
+    op.discipline_id = discipline_id;
+    op.voter = voter;
+    op.voting_power = voting_power;
 
     signed_transaction tx;
     tx.operations.push_back(op);

@@ -243,7 +243,6 @@ public:
 
     /// @brief Get a hexdump of the serialized binary form of a transaction
     std::string get_transaction_hex(const signed_transaction& trx) const;
-    annotated_signed_transaction get_transaction(transaction_id_type trx_id) const;
 
     /**
      *  This API will take a partially signed transaction and a set of public keys that the owner has the ability to
@@ -323,6 +322,7 @@ public:
     research_content_api_obj get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
     vector<research_content_api_obj> get_all_research_content(const research_id_type& research_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
+    vector<research_content_api_obj> get_all_milestones_by_research_id(const research_id_type& research_id) const;
 
     ///////////////////
     // Expert Tokens //
@@ -432,6 +432,32 @@ public:
     vector<review_vote_api_obj> get_review_votes_by_voter(const account_name_type &voter) const;
     vector<review_vote_api_obj> get_review_votes_by_review_id(const review_id_type &review_id) const;
 
+    //////////////////////////////////////////
+    // Expertise allocation proposal object///
+    /////////////////////////////////////////
+
+    expertise_allocation_proposal_api_obj get_expertise_allocation_proposal_by_id(const expertise_allocation_proposal_id_type& id) const;
+    vector<expertise_allocation_proposal_api_obj> get_expertise_allocation_proposals_by_initiator(const account_name_type& initiator) const;
+    vector<expertise_allocation_proposal_api_obj> get_expertise_allocation_proposals_by_claimer_and_discipline(const account_name_type& claimer, 
+                                                                                                               const discipline_id_type& discipline_id) const;
+    expertise_allocation_proposal_api_obj get_expertise_allocation_proposal_by_discipline_initiator_and_claimer(const discipline_id_type& discipline_id,
+                                                                                                                const account_name_type& initiator,
+                                                                                                                const account_name_type& claimer) const;
+    vector<expertise_allocation_proposal_api_obj> get_expertise_allocation_proposals_by_discipline(const discipline_id_type& discipline_id) const;
+
+    ////////////////////////////////////////////////
+    // Expertise allocation proposal vote object///
+    ///////////////////////////////////////////////
+
+    expertise_allocation_proposal_vote_api_obj get_expertise_allocation_proposal_vote_by_id(const expertise_allocation_proposal_vote_id_type& id) const;
+    vector<expertise_allocation_proposal_vote_api_obj> get_expertise_allocation_proposal_votes_by_expertise_allocation_proposal_id
+                                                                                          (const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const;
+    expertise_allocation_proposal_vote_api_obj get_expertise_allocation_proposal_vote_by_voter_and_expertise_allocation_proposal_id(const account_name_type& voter,
+                                                                                                                                    const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const;
+    vector<expertise_allocation_proposal_vote_api_obj> get_expertise_allocation_proposal_votes_by_voter_and_discipline_id(const account_name_type& voter,
+                                                                                                                         const discipline_id_type& discipline_id) const;
+    vector<expertise_allocation_proposal_vote_api_obj> get_expertise_allocation_proposal_votes_by_voter(const account_name_type& voter) const;
+
     ///////////////////////
     // Vesting balance ///
     //////////////////////
@@ -506,7 +532,6 @@ FC_API(deip::app::database_api,
 
    // Authority / validation
    (get_transaction_hex)
-   (get_transaction)
    (get_required_signatures)
    (get_potential_signatures)
    (verify_authority)
@@ -613,8 +638,21 @@ FC_API(deip::app::database_api,
    (get_review_votes_by_voter)
    (get_review_votes_by_review_id)
 
-   // Vesting balance
+   // Expertise allocation proposal
+   (get_expertise_allocation_proposal_by_id)
+   (get_expertise_allocation_proposals_by_initiator)
+   (get_expertise_allocation_proposals_by_claimer_and_discipline)
+   (get_expertise_allocation_proposal_by_discipline_initiator_and_claimer)
+   (get_expertise_allocation_proposals_by_discipline)
 
+   // Expertise allocation proposal vote
+   (get_expertise_allocation_proposal_vote_by_id)
+   (get_expertise_allocation_proposal_votes_by_expertise_allocation_proposal_id)
+   (get_expertise_allocation_proposal_vote_by_voter_and_expertise_allocation_proposal_id)
+   (get_expertise_allocation_proposal_votes_by_voter_and_discipline_id)
+   (get_expertise_allocation_proposal_votes_by_voter)
+
+   // Vesting balance
    (get_vesting_balance_by_id)
    (get_vesting_balance_by_owner)
 
