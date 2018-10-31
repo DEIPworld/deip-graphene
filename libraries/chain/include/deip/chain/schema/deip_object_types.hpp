@@ -73,7 +73,7 @@ enum object_type
     research_content_reward_pool_object_type,
     expertise_allocation_proposal_object_type,
     expertise_allocation_proposal_vote_object_type,
-    expertise_stats_object_type
+    expertise_stats_object_type,
     offer_research_tokens_object_type
 };
 
