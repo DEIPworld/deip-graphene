@@ -406,6 +406,9 @@ struct research_content_api_obj
         ,  title(fc::to_string(rc.title))        
         ,  content(fc::to_string(rc.content))
         ,  permlink(fc::to_string(rc.permlink))
+        ,  activity_state(rc.activity_state)
+        ,  activity_window_start(rc.activity_window_start)
+        ,  activity_window_end(rc.activity_window_end)
         ,  created_at(rc.created_at)
     {
         for (auto reference : rc.references)
@@ -429,10 +432,13 @@ struct research_content_api_obj
     std::string title;
     std::string content;
     std::string permlink;
+    research_content_activity_state activity_state;
+    fc::time_point_sec activity_window_start;
+    fc::time_point_sec activity_window_end;
     fc::time_point_sec created_at;
 
     std::set<string> external_references;
-    std::set<int64_t> references; 
+    std::set<int64_t> references;
 };
 
 struct expert_token_api_obj
@@ -1020,6 +1026,9 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (content)
             (permlink)
             (authors)
+            (activity_state)
+            (activity_window_start)
+            (activity_window_end)
             (created_at)
             (references)
             (external_references)
