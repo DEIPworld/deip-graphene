@@ -64,7 +64,7 @@ typedef multi_index_container<offer_research_tokens_object,
                     member<offer_research_tokens_object,
                            research_id_type,
                            &offer_research_tokens_object::research_id>>>,
-        allocator<expert_token_object>>
+        allocator<offer_research_tokens_object>>
         offer_research_tokens_index;
     }
 }
