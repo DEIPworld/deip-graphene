@@ -708,10 +708,10 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     for (auto& review_discipline : review_disciplines) {
         auto &token = expertise_token_service.get_expert_token_by_account_and_discipline(op.author, review_discipline);
 
-        auto used_expertise = (op.weight * token.amount) / DEIP_100_PERCENT;
+        auto used_expertise = review_disciplines_with_weight.at(token.discipline_id);
 
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
-            r.expertise_amounts_used[token.discipline_id] = review_disciplines_with_weight.at(token.discipline_id);
+            r.expertise_amounts_used[token.discipline_id] = used_expertise;
             r.weights_per_discipline[token.discipline_id] = used_expertise;
             r.weight_modifiers[token.discipline_id] = 1;
         });

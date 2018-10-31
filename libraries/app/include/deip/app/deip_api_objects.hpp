@@ -749,6 +749,7 @@ struct review_api_obj
             discipline_id_type discipline_id = kvp.first;
             share_type weight = kvp.second;
             this->weight_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
+            this->marks_per_discipline.emplace(std::make_pair(discipline_id._id, r.get_weight(discipline_id).value));
         }
     }
 
@@ -766,6 +767,7 @@ struct review_api_obj
     vector<discipline_api_obj> disciplines;
 
     map<int64_t, int64_t> weight_per_discipline;
+    map<int64_t, int64_t> marks_per_discipline;
 };
 
 struct research_token_api_obj
@@ -1164,6 +1166,7 @@ FC_REFLECT( deip::app::review_api_obj,
             (created_at)
             (disciplines)
             (weight_per_discipline)
+            (marks_per_discipline)
 )
 
 FC_REFLECT( deip::app::research_token_api_obj,
