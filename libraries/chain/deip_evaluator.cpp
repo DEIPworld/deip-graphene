@@ -475,7 +475,6 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& o)
 
         _db._temporary_public_impl().modify(review, [&](review_object& r) {
             r.weight_modifiers[token.discipline_id] = weight_modifier;
-            r.expertise_amounts_used[token.discipline_id] += o.weight;
         });
 
         auto new_weight = review.get_weight(discipline.id);
