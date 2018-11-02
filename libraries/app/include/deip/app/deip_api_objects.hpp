@@ -692,7 +692,14 @@ struct research_listing_api_obj
         disciplines(r.disciplines.begin(), r.disciplines.end()),
         votes_count(votes_count),
         group_id(rg.id),
-        group_permlink(rg.permlink) {}
+        group_permlink(rg.permlink)
+        {
+            for (const auto& kvp : r.eci_per_discipline) {
+                discipline_id_type discipline_id = kvp.first;
+                share_type weight = kvp.second;
+                eci_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
+            }
+        }
 
     // because fc::variant require for temporary object
     research_listing_api_obj()
@@ -708,6 +715,7 @@ struct research_listing_api_obj
     int64_t votes_count;
     int64_t group_id;
     string group_permlink;
+    map<int64_t, int64_t> eci_per_discipline;
 };
 
 struct total_votes_api_obj
@@ -1147,6 +1155,7 @@ FC_REFLECT( deip::app::research_listing_api_obj,
            (votes_count)
            (group_id)
            (group_permlink)
+           (eci_per_discipline)
 )
 
 FC_REFLECT( deip::app::total_votes_api_obj,
