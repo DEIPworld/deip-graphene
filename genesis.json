@@ -1798,7 +1798,7 @@
             "references": []
         }, {
             "research_id": 0,
-            "type": 1,
+            "type": 3,
             "title": "Object vision to hand action in macaque parietal, premotor, and motor cortices",
             "permlink": "kitchensink",
             "content": "dar:2fa1dbb0bc53c176028e2033e1ec1117",
@@ -1806,7 +1806,7 @@
             "references": []
         }, {
             "research_id": 0,
-            "type": 1,
+            "type": 4,
             "title": "Simultaneous two-photon imaging and two-photon optogenetics of cortical circuits in three dimensions",
             "permlink": "elife-32671",
             "content": "dar:cc87452943e5a05b804f9bb30394dbc2",
@@ -1825,7 +1825,7 @@
             "references": []
         }, {
             "research_id": 1,
-            "type": 2,
+            "type": 5,
             "title": "Data Categories for Marine Planning",
             "permlink": "data-categories-for-marine-planning",
             "content": "file:d754b06ef0eb56dd49096df283bcdf99",
@@ -1833,7 +1833,7 @@
             "references": []
         }, {
             "research_id": 1,
-            "type": 2,
+            "type": 5,
             "title": "Purpose of Category Terms",
             "permlink": "purpose-of-category-terms",
             "content": "file:74144b7b2b2b85261c91387928ed111d",
@@ -1841,7 +1841,7 @@
             "references": []
         }, {
             "research_id": 1,
-            "type": 2,
+            "type": 5,
             "title": "Data Needs for Ocean and Coastal Management",
             "permlink": "data-needs-for-ocean-and-coastal-management",
             "content": "file:341e9b964a19f6a12a5074c781d74192",
@@ -1849,7 +1849,7 @@
             "references": []
         }, {
             "research_id": 1,
-            "type": 2,
+            "type": 5,
             "title": "Data Category Terms and Definitions",
             "permlink": "data-category-terms-and-definitions",
             "content": "file:8534d97c33301247f30e086b4bd27ece",
