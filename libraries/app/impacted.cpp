@@ -68,6 +68,12 @@ struct get_impacted_account_visitor
         _impacted.insert(op.voter);
     }
 
+    void operator()(const transfer_operation& op)
+    {
+        _impacted.insert(op.from);
+        _impacted.insert(op.to);
+    }
+
     void operator()(const transfer_to_common_tokens_operation& op)
     {
         _impacted.insert(op.from);
@@ -87,12 +93,6 @@ struct get_impacted_account_visitor
     {
         _impacted.insert(op.from_account);
         _impacted.insert(op.to_account);
-    }
-
-    void operator()(const transfer_operation& op)
-    {
-        _impacted.insert(op.from);
-        _impacted.insert(op.to);
     }
 
     void operator()(const witness_update_operation& op)
@@ -199,7 +199,40 @@ struct get_impacted_account_visitor
         _impacted.insert(op.sender);
         _impacted.insert(op.receiver);
     }
+    
+    void operator()(const delegate_expertise_operation& op)
+    {
+        _impacted.insert(op.sender);
+        _impacted.insert(op.receiver);
+    }
 
+    void operator()(const revoke_expertise_delegation_operation& op)
+    {
+        _impacted.insert(op.sender);
+    }
+    
+    void operator()(const create_expertise_allocation_proposal_operation& op)
+    {
+        _impacted.insert(op.initiator);
+        _impacted.insert(op.claimer);
+    }
+    
+    void operator()(const vote_for_expertise_allocation_proposal_operation& op)
+    {
+        _impacted.insert(op.initiator);
+        _impacted.insert(op.claimer);
+    }
+    
+    void operator()(const accept_research_token_offer_operation& op)
+    {
+        _impacted.insert(op.buyer);
+    }
+    
+    void operator()(const reject_research_token_offer_operation& op)
+    {
+        _impacted.insert(op.buyer);
+    }
+    
     // virtual operations
 
     void operator()(const fill_common_tokens_withdraw_operation& op)
