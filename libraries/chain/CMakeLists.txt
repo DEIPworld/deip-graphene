@@ -45,6 +45,7 @@ add_library( deip_chain
         services/dbs_research_content_reward_pool.cpp
         services/dbs_expertise_stats.cpp
         services/dbs_expertise_allocation_proposal.cpp
+        services/dbs_offer_research_tokens.cpp
 
         deip_evaluator.cpp
         schema/deip_objects.cpp

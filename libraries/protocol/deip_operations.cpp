@@ -285,5 +285,16 @@ void vote_for_expertise_allocation_proposal_operation::validate() const
     FC_ASSERT(voting_power == DEIP_100_PERCENT || voting_power == -DEIP_100_PERCENT, "Voting power must be -100% or +100%");
 }
 
+void accept_research_token_offer_operation::validate() const
+{
+    validate_account_name(buyer);
+}
+
+
+void reject_research_token_offer_operation::validate() const
+{
+    validate_account_name(buyer);
+}
+
 }
 } // deip::protocol

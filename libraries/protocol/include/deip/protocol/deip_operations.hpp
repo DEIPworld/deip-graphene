@@ -719,6 +719,32 @@ struct vote_for_expertise_allocation_proposal_operation : public base_operation
     }
 };
 
+struct accept_research_token_offer_operation : public base_operation
+{
+    int64_t offer_research_tokens_id;
+    account_name_type buyer;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(buyer);
+    }
+};
+
+struct reject_research_token_offer_operation : public base_operation
+{
+    int64_t offer_research_tokens_id;
+    account_name_type buyer;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(buyer);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -782,6 +808,8 @@ FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(dis
 FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(discipline_id))
 FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (initiator)(claimer)(discipline_id)(amount)(description))
 FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (initiator)(claimer)(discipline_id)(voter)(voting_power))
+FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (offer_research_tokens_id)(buyer))
+FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 
 
 // clang-format on

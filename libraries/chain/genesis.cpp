@@ -16,6 +16,7 @@
 #include <deip/chain/schema/proposal_object.hpp>
 #include <deip/chain/schema/proposal_vote_object.hpp>
 #include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/schema/offer_research_tokens_object.hpp>
 
 #include <fc/io/json.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>

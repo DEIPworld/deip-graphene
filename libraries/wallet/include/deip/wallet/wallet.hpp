@@ -1234,6 +1234,33 @@ public:
                                                const std::string& voter,
                                                const int64_t voting_power,
                                                const bool broadcast);
+    /**
+     * Propose offer research tokens
+     *
+     * @param sender The account who create a content
+     * @param receiver The account who can buy RT
+     * @param research_group_id Id of research group
+     * @param research_id Research id
+     * @param amount tokens amount for sale
+     * @param price
+     * @param broadcast
+     */
+    annotated_signed_transaction propose_offer_research_tokens(const std::string& sender,
+                                                               const std::string& receiver,
+                                                               const int64_t research_group_id,
+                                                               const int64_t research_id,
+                                                               const uint32_t amount,
+                                                               const asset& price,
+                                                               const bool broadcast);
+
+    annotated_signed_transaction accept_offer_research_tokens(const int64_t offer_research_tokens_id,
+                                                              const std::string& buyer,
+                                                              const bool broadcast);
+
+    annotated_signed_transaction reject_offer_research_tokens(const int64_t offer_research_tokens_id,
+                                                              const std::string& buyer,
+                                                              const bool broadcast);
+
 
 public:
     fc::signal<void(bool)> lock_changed;
@@ -1366,6 +1393,9 @@ FC_API( deip::wallet::wallet_api,
         (vote_proposal)
         (create_expertise_allocation_proposal)
         (vote_for_expertise_allocation_proposal)
+        (propose_offer_research_tokens)
+        (accept_offer_research_tokens)
+        (reject_offer_research_tokens)
 
         /// helper api
         (get_prototype_operation)

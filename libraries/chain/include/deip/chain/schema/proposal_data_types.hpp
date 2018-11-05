@@ -176,7 +176,24 @@ struct change_research_review_share_percent_data_type : base_proposal_data_type
     }
 };
 
-}
+struct offer_research_tokens_data_type : base_proposal_data_type
+{
+    account_name_type sender;
+    account_name_type receiver;
+    research_id_type research_id;
+
+    uint32_t amount;
+    protocol::asset price;
+
+    void validate() const {
+        FC_ASSERT(is_valid_account_name(sender), "Account name ${n} is invalid", ("n", sender));
+        FC_ASSERT(is_valid_account_name(receiver), "Account name ${n} is invalid", ("n", receiver));
+        FC_ASSERT(amount > 0, "Amount must be > 0");
+        FC_ASSERT(price.amount > 0, "Price must be > 0");
+    }
+};
+
+};
 }
 
 FC_REFLECT(deip::chain::dropout_member_proposal_data_type, (research_group_id)(name))
@@ -198,3 +215,5 @@ FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(t
 FC_REFLECT(deip::chain::start_research_token_sale_data_type, (research_id)(start_time)(end_time)(amount_for_sale)(soft_cap)(hard_cap))
 
 FC_REFLECT(deip::chain::change_research_review_share_percent_data_type, (research_id)(review_share_in_percent))
+
+FC_REFLECT(deip::chain::offer_research_tokens_data_type, (sender)(receiver)(research_id)(amount)(price))

@@ -25,6 +25,7 @@
 #include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_expertise_stats.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
+#include <deip/chain/services/dbs_offer_research_tokens.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1096,6 +1097,44 @@ void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_e
         expertise_allocation_proposal_service.downvote(expertise_allocation_proposal, op.voter,
                                                        expert_token.amount + expert_token.proxied_expertise_total());
 
+}
+
+void accept_research_token_offer_evaluator::do_apply(const accept_research_token_offer_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_offer_research_tokens& offer_service = _db.obtain_service<dbs_offer_research_tokens>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_token& research_token_service = _db.obtain_service<dbs_research_token>();
+
+    account_service.check_account_existence(op.buyer);
+    offer_service.check_offer_existence(op.offer_research_tokens_id);
+
+    auto& buyer = account_service.get_account(op.buyer);
+    auto& offer = offer_service.get(op.offer_research_tokens_id);
+    auto& research = research_service.get_research(offer.research_id);
+
+    FC_ASSERT(research.owned_tokens >= offer.amount, "Research group doesn't have enough tokens");
+    FC_ASSERT(buyer.balance.amount >= offer.price.amount, "Buyer doesn't have enough funds.");
+
+    research_service.decrease_owned_tokens(research, offer.amount);
+    account_service.adjust_balance(buyer, -offer.price);
+
+    research_token_service.create_research_token(op.buyer, offer.amount, offer.research_id);
+
+    _db._temporary_public_impl().remove(offer);
+}
+
+void reject_research_token_offer_evaluator::do_apply(const reject_research_token_offer_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_offer_research_tokens& offer_service = _db.obtain_service<dbs_offer_research_tokens>();
+
+    account_service.check_account_existence(op.buyer);
+    offer_service.check_offer_existence(op.offer_research_tokens_id);
+
+    auto& offer = offer_service.get(op.offer_research_tokens_id);
+
+    _db._temporary_public_impl().remove(offer);
 }
 
 } // namespace chain

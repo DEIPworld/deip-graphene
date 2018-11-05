@@ -31,6 +31,7 @@
 #include <deip/chain/schema/vesting_balance_object.hpp>
 #include <deip/chain/schema/expertise_stats_object.hpp>
 #include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
+#include <deip/chain/schema/offer_research_tokens_object.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1814,6 +1815,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_expertise_allocation_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_expertise_allocation_proposal_evaluator>();
+    _my->_evaluator_registry.register_evaluator<accept_research_token_offer_evaluator>();
+    _my->_evaluator_registry.register_evaluator<reject_research_token_offer_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -1856,6 +1859,7 @@ void database::initialize_indexes()
     add_index<expertise_allocation_proposal_index>();
     add_index<expertise_allocation_proposal_vote_index>();
     add_index<expertise_stats_index>();
+    add_index<offer_research_tokens_index>();
 
     _plugin_index_signal();
 }

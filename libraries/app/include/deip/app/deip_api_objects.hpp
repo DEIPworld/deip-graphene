@@ -22,6 +22,7 @@
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
+#include <deip/chain/schema/offer_research_tokens_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -950,6 +951,32 @@ struct vesting_balance_api_obj
     time_point_sec start_timestamp;
 };
 
+struct offer_research_tokens_api_obj
+{
+    offer_research_tokens_api_obj(const chain::offer_research_tokens_object& orto)
+        :  id(orto.id._id)
+        ,  sender(orto.sender)
+        ,  receiver(orto.receiver)
+        ,  research_id(orto.research_id._id)
+        ,  amount(orto.amount.value)
+        ,  price(orto.price)
+    {}
+
+    // because fc::variant require for temporary object
+    offer_research_tokens_api_obj()
+    {
+    }
+
+    int64_t id;
+    account_name_type sender;
+    account_name_type receiver;
+
+    int64_t research_id;
+    uint32_t amount;
+    asset price;
+};
+
+
 
 } // namespace app
 } // namespace deip
@@ -1240,6 +1267,16 @@ FC_REFLECT( deip::app::vesting_balance_api_obj,
             (vesting_duration_seconds)
             (period_duration_seconds)
             (start_timestamp)
+)
+
+FC_REFLECT( deip::app::offer_research_tokens_api_obj,
+            (id)
+            (sender)
+            (receiver)
+            (research_id)
+            (amount)
+            (price)
+
 )
 
 // clang-format on

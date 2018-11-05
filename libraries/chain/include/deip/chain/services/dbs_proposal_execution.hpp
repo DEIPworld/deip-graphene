@@ -79,6 +79,7 @@ protected:
     void rebalance_research_group_tokens(const proposal_object& proposal);
     void create_research_material(const proposal_object& proposal);
     void start_research_token_sale(const proposal_object& proposal);
+    void offer_research_tokens(const proposal_object& proposal);
 
 private:
     proposal_evaluators_register executions;

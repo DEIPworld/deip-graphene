@@ -465,6 +465,16 @@ public:
     vesting_balance_api_obj get_vesting_balance_by_id(const vesting_balance_id_type& vesting_balance_id) const;
     vector<vesting_balance_api_obj> get_vesting_balance_by_owner(const account_name_type& owner) const;
 
+    ///////////////////////////
+    // Offer research tokens///
+    ///////////////////////////
+
+    offer_research_tokens_api_obj get_offer(const offer_research_tokens_id_type& id) const;
+    vector<offer_research_tokens_api_obj> get_offers_by_receiver(const account_name_type& receiver) const;
+    offer_research_tokens_api_obj get_offer_by_receiver_and_research_id(const account_name_type& receiver,
+                                                                        const research_id_type& research_id) const;
+    vector<offer_research_tokens_api_obj> get_offers_by_research_id(const research_id_type& research_id) const;
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -645,6 +655,13 @@ FC_API(deip::app::database_api,
    // Vesting balance
    (get_vesting_balance_by_id)
    (get_vesting_balance_by_owner)
+
+   // Offer research tokens
+   (get_offer)
+   (get_offers_by_receiver)
+   (get_offer_by_receiver_and_research_id)
+   (get_offers_by_research_id)
+
 )
 
 // clang-format on
