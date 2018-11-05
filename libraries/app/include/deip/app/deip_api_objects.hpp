@@ -689,6 +689,9 @@ struct research_listing_api_obj
         title(r.title),
         abstract(r.abstract),
         permlink(r.permlink),
+        owned_tokens(r.owned_tokens),
+        review_share_in_percent(r.review_share_in_percent),
+        created_at(r.created_at),
         authors(authors.begin(), authors.end()),
         disciplines(r.disciplines.begin(), r.disciplines.end()),
         votes_count(votes_count),
@@ -711,6 +714,9 @@ struct research_listing_api_obj
     string title;
     string abstract;
     string permlink;
+    share_type owned_tokens;
+    uint16_t review_share_in_percent;
+    time_point_sec created_at;
     vector<account_name_type> authors;
     vector<discipline_api_obj> disciplines;
     int64_t votes_count;
@@ -1177,6 +1183,9 @@ FC_REFLECT( deip::app::research_listing_api_obj,
            (title)
            (abstract)
            (permlink)
+           (owned_tokens)
+           (review_share_in_percent)
+           (created_at)
            (authors)
            (disciplines)
            (votes_count)
