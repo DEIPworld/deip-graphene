@@ -262,12 +262,6 @@
         "deip_amount": 50000000000,
         "sp_amount": 0
     }, {
-        "name": "mycb1",
-        "recovery_account": "",
-        "public_key": "DEIP8ieFHp1KHns4Y47RUxQW56dk17kJ5snqxNnzikQtPn4URmWWky",
-        "deip_amount": 1000000000,
-        "sp_amount": 0
-    }, {
         "name": "arty",
         "recovery_account": "",
         "public_key": "DEIP4xizrhvnDfiJQqv2zG4AG95t8wEnemYCoMVoMeqNz5Qxj4FPBp",
@@ -308,6 +302,12 @@
         "recovery_account": "",
         "public_key": "DEIP57ciPZBrQN2YBBX2CBDcsWvrNqaACAbn3eDkW7f4QobRyU2KJZ",
         "deip_amount": 5000000000,
+        "sp_amount": 0
+    }, {
+        "name": "dzeranov",
+        "recovery_account": "",
+        "public_key": "DEIP7iLoUGiPXkRQnWY6HZGt3ShEAUzgXbMmVcdcRsBcgoXohCbrGi",
+        "deip_amount": 1000000000,
         "sp_amount": 0
     }],
 
@@ -1715,6 +1715,18 @@
         "account_name": "egormarushko",
         "discipline_id": 144,
         "amount": 5000
+    }, {
+        "account_name": "dzeranov",
+        "discipline_id": 8,
+        "amount": 5000
+    }, {
+        "account_name": "dzeranov",
+        "discipline_id": 152,
+        "amount": 3000
+    },{
+        "account_name": "dzeranov",
+        "discipline_id": 142,
+        "amount": 5000
     },
 
     {
@@ -1756,14 +1768,6 @@
         "quorum_percent": 7500,
         "is_personal": false,
         "members": ["mike", "john", "rachel"]
-    }, {
-        "id": 2,
-        "name": "DAO-CHM",
-        "description": "Decentralized Autonomous Organization researching Cannabinoids Human Metabolites",
-        "permlink": "daochm",
-        "quorum_percent": 7500,
-        "is_personal": false,
-        "members": ["mycb1"]
     }],
 
     "researches": [{
@@ -1788,33 +1792,7 @@
         "disciplines": [6, 113]
     }],
 
-    "research_contents": [{
-            "research_id": 0,
-            "type": 1,
-            "title": "DEIP High-Level Roadmap",
-            "permlink": "deip-high-level-roadmap",
-            "content": "file:48640902e8359a6d88d6d0b66874b526",
-            "authors": ["alice", "bob"],
-            "references": []
-        }, {
-            "research_id": 0,
-            "type": 3,
-            "title": "Object vision to hand action in macaque parietal, premotor, and motor cortices",
-            "permlink": "kitchensink",
-            "content": "dar:2fa1dbb0bc53c176028e2033e1ec1117",
-            "authors": ["alice", "bob"],
-            "references": []
-        }, {
-            "research_id": 0,
-            "type": 4,
-            "title": "Simultaneous two-photon imaging and two-photon optogenetics of cortical circuits in three dimensions",
-            "permlink": "elife-32671",
-            "content": "dar:cc87452943e5a05b804f9bb30394dbc2",
-            "authors": ["alice", "bob"],
-            "references": []
-        }, 
-        
-        
+    "research_contents": [
         {
             "research_id": 1,
             "type": 1,
