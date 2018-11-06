@@ -102,7 +102,7 @@ typedef multi_index_container<expertise_allocation_proposal_object,
 FC_REFLECT_ENUM(deip::chain::expertise_allocation_proposal_status, (eap_active)(eap_accepted)(eap_rejected))
 FC_REFLECT( deip::chain::expertise_allocation_proposal_object,
             (id)(initiator)(claimer)(discipline_id)(amount)(total_voted_expertise)
-                    (quorum_percent)(creation_time)(expiration_time)(description)
+                    (quorum_percent)(creation_time)(expiration_time)(description)(status)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::expertise_allocation_proposal_object, deip::chain::expertise_allocation_proposal_index )
