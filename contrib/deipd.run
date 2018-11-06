@@ -52,6 +52,10 @@ if [[ ! -z "$RESYNC_BLOCKCHAIN" ]]; then
     ARGS+=" --resync-blockchain"
 fi
 
+if [[ ! -z "$REPLAY_BLOCKCHAIN" ]]; then
+    ARGS+=" --replay-blockchain"
+fi
+
 
 if [[ ! -d $HOME/blockchain ]]; then
     if [[ -e /var/cache/deipd/blocks.tbz2 ]]; then
