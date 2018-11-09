@@ -3493,7 +3493,7 @@ BOOST_AUTO_TEST_CASE(create_research_material)
 
     setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
 
-    db.create<research_object>([&](research_object& r) {
+    auto& research = db.create<research_object>([&](research_object& r) {
         r.id = 1;
         r.title = "Research #1";
         r.permlink = "Research #1 permlink";
@@ -3646,6 +3646,8 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         r.is_positive = true;
     });
 
+    BOOST_CHECK(research.is_finished == false);
+
     const std::string json_str2 = "{\"research_id\": 1,"
                                   "\"type\": 2,"
                                   "\"title\":\"final result for Research #2\","
@@ -3679,6 +3681,8 @@ BOOST_AUTO_TEST_CASE(create_research_material)
 
     BOOST_CHECK(discipline.total_active_weight == 450);
     BOOST_CHECK(discipline2.total_active_weight == 450);
+
+    BOOST_CHECK(research.is_finished == true);
 }
 
 BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
