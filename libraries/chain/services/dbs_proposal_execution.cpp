@@ -194,6 +194,10 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
                 d_o.total_active_weight += weight;
             });
         }
+        
+        db_impl().modify(research, [&](research_object& r_o) {
+            r_o.is_finished = true;
+        });
     }
 }
 
