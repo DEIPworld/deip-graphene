@@ -2067,5 +2067,49 @@ vector<offer_research_tokens_api_obj> database_api::get_offers_by_research_id(co
     });
 }
 
+eci_and_expertise_stats_api_obj database_api::get_eci_and_expertise_stats_by_discipline_id(const discipline_id_type& discipline_id)
+{
+    return my->_db.with_read_lock([&]() {
+        eci_and_expertise_stats_api_obj results;
+        chain::dbs_expert_token& expert_token_service = my->_db.obtain_service<chain::dbs_expert_token>();
+        chain::dbs_research& research_service = my->_db.obtain_service<chain::dbs_research>();
+        chain::dbs_research_discipline_relation& research_discipline_relation_service = my->_db.obtain_service<chain::dbs_research_discipline_relation>();
+        chain::dbs_research_content& research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+
+        auto expert_tokens = expert_token_service.get_expert_tokens_by_discipline_id(discipline_id);
+        auto rdrs = research_discipline_relation_service.get_research_discipline_relations_by_discipline(discipline_id);
+
+        vector<research_object> researches;
+        for (auto& rdr : rdrs)
+            researches.push_back(research_service.get_research(rdr.get().research_id));
+
+        int64_t total_research_esi = 0;
+        int64_t contents_count = 0;
+        int64_t total_content_eci = 0;
+        for (auto& research : researches)
+        {
+            total_research_esi += research.eci_per_discipline.at(discipline_id).value;
+            auto contents = research_content_service.get_by_research_id(research.id);
+
+            for (auto& content : contents)
+            {
+                total_content_eci += content.get().eci_per_discipline.at(discipline_id).value;
+                contents_count++;
+            }
+        }
+
+        int64_t total_expert_tokens_amount = 0;
+        for (auto& expert_token : expert_tokens)
+            total_expert_tokens_amount += expert_token.get().amount.value;
+
+        results.average_expertise_in_discipline = total_expert_tokens_amount / expert_tokens.size();
+        results.average_content_eci_in_discipline = total_content_eci / contents_count;
+        results.average_research_eci_in_discipline = total_research_esi / researches.size();
+
+        return results;
+    });
+
+}
+
 } // namespace app
 } // namespace deip

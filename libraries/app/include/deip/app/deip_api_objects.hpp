@@ -983,8 +983,17 @@ struct offer_research_tokens_api_obj
 };
 
 
+struct eci_and_expertise_stats_api_obj
+{
+    eci_and_expertise_stats_api_obj()
+    {}
 
-} // namespace app
+    uint32_t average_research_eci_in_discipline;
+    uint32_t average_content_eci_in_discipline;
+    uint32_t average_expertise_in_discipline;
+};
+
+}; // namespace app
 } // namespace deip
 
 // clang-format off
@@ -1285,6 +1294,13 @@ FC_REFLECT( deip::app::offer_research_tokens_api_obj,
             (research_id)
             (amount)
             (price)
+
+)
+
+FC_REFLECT( deip::app::eci_and_expertise_stats_api_obj,
+            (average_research_eci_in_discipline)
+            (average_content_eci_in_discipline)
+            (average_expertise_in_discipline)
 
 )
 
