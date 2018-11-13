@@ -302,13 +302,14 @@ BOOST_AUTO_TEST_CASE(check_research_group_token_existence_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(decrease_research_group_tokens_amount)
+BOOST_AUTO_TEST_CASE(decrease_research_group_tokens_amount_source_all)
 {
     try
     {
         create_research_group_tokens_for_decrease();
 
-        BOOST_CHECK(data_service.decrease_research_group_tokens_amount(21, 1000) == 990);
+        auto total_deducted = data_service.decrease_research_group_tokens_amount(21, 1000, account_name_type());
+        BOOST_CHECK(total_deducted == 990);
         auto& alice_token = db.get<research_group_token_object>(21);
         auto& bob_token = db.get<research_group_token_object>(22);
         auto& john_token = db.get<research_group_token_object>(23);
@@ -318,6 +319,28 @@ BOOST_AUTO_TEST_CASE(decrease_research_group_tokens_amount)
         BOOST_CHECK(bob_token.amount == 3600);
         BOOST_CHECK(john_token.amount == 100);
         BOOST_CHECK(alex_token.amount == 810);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(decrease_research_group_tokens_amount_source_creator)
+{
+    try
+    {
+        create_research_group_tokens_for_decrease();
+
+        auto total_deducted = data_service.decrease_research_group_tokens_amount(21, 1000, "alice");
+        BOOST_CHECK(total_deducted == 1000);
+        auto& alice_token = db.get<research_group_token_object>(21);
+        auto& bob_token = db.get<research_group_token_object>(22);
+        auto& john_token = db.get<research_group_token_object>(23);
+        auto& alex_token = db.get<research_group_token_object>(24);
+
+        BOOST_CHECK(alice_token.amount == 4000);
+        BOOST_CHECK(bob_token.amount == 4000);
+        BOOST_CHECK(john_token.amount == 100);
+        BOOST_CHECK(alex_token.amount == 900);
 
     }
     FC_LOG_AND_RETHROW()

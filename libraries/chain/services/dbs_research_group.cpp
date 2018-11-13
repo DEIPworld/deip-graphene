@@ -162,33 +162,44 @@ const research_group_object& dbs_research_group::decrease_balance(const research
 }
 
 
-const share_type dbs_research_group::decrease_research_group_tokens_amount(const research_group_id_type& research_group_id,
-                                                                     const share_type delta)
+const share_type dbs_research_group::decrease_research_group_tokens_amount(const research_group_id_type &research_group_id,
+                                                                           const share_type delta,
+                                                                           const account_name_type &token_source)
 {
     FC_ASSERT(delta > 0, "Delta must be greater than 0");
 
+    dbs_research_group& research_group_service = db_impl().obtain_service<dbs_research_group>();
+
     share_type total_deducted_amount = 0;
 
-    auto it_pair = db_impl().get_index<research_group_token_index>().indicies().get<by_research_group>().equal_range(research_group_id);
-    auto it = it_pair.first;
-    const auto it_end = it_pair.second;
-    while (it != it_end)
-    {
-        db_impl().modify(*it, [&](research_group_token_object& rgt)
-        {
-            auto amount_to_deduct = (delta * rgt.amount) / DEIP_100_PERCENT;
-            if (rgt.amount - amount_to_deduct < DEIP_1_PERCENT)
-            {
-                total_deducted_amount += rgt.amount - DEIP_1_PERCENT;
-                rgt.amount = DEIP_1_PERCENT;
-            }
-            else
-            {
-                total_deducted_amount += amount_to_deduct;
-                rgt.amount -= amount_to_deduct;
-            }
+    if (token_source != account_name_type()) {
+        auto& research_group_token = research_group_service.get_token_by_account_and_research_group(token_source, research_group_id);
+
+        db_impl().modify(research_group_token, [&](research_group_token_object& rgt) {
+            rgt.amount -= delta;
+            total_deducted_amount += delta;
         });
-        ++it;
+
+    } else {
+        const auto& tokens = research_group_service.get_research_group_tokens(research_group_id);
+
+        for (auto& token_wrapper : tokens) {
+            const research_group_token_object& token = token_wrapper.get();
+            db_impl().modify(token, [&](research_group_token_object& rgt)
+            {
+                auto amount_to_deduct = (delta * rgt.amount) / DEIP_100_PERCENT;
+                if (rgt.amount - amount_to_deduct < DEIP_1_PERCENT)
+                {
+                    total_deducted_amount += rgt.amount - DEIP_1_PERCENT;
+                    rgt.amount = DEIP_1_PERCENT;
+                }
+                else
+                {
+                    total_deducted_amount += amount_to_deduct;
+                    rgt.amount -= amount_to_deduct;
+                }
+            });
+        }
     }
 
     return total_deducted_amount;
