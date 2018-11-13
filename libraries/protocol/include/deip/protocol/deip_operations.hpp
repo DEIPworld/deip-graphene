@@ -686,11 +686,8 @@ struct revoke_expertise_delegation_operation : public base_operation
 
 struct create_expertise_allocation_proposal_operation : public base_operation
 {
-    account_name_type initiator;
     account_name_type claimer;
     int64_t discipline_id;
-
-    share_type amount;
 
     string description;
 
@@ -698,13 +695,12 @@ struct create_expertise_allocation_proposal_operation : public base_operation
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(initiator);
+        a.insert(claimer);
     }
 };
 
 struct vote_for_expertise_allocation_proposal_operation : public base_operation
 {
-    account_name_type initiator;
     account_name_type claimer;
     int64_t discipline_id;
 
@@ -806,8 +802,8 @@ FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance
 FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_id)(sender)(receiver)(amount))
 FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(discipline_id))
 FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(discipline_id))
-FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (initiator)(claimer)(discipline_id)(amount)(description))
-FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (initiator)(claimer)(discipline_id)(voter)(voting_power))
+FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (claimer)(discipline_id)(description))
+FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (claimer)(discipline_id)(voter)(voting_power))
 FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 

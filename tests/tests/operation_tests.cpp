@@ -721,8 +721,6 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        const account_object& acct = db.get_account("alice");
        const account_authority_object& acct_auth = db.get<account_authority_object, by_account>("alice");
 
-       auto vest_shares = gpo.total_common_tokens_amount;
-
        BOOST_REQUIRE(acct.name == "alice");
        BOOST_REQUIRE(acct_auth.owner == authority(1, priv_key.get_public_key(), 1));
        BOOST_REQUIRE(acct_auth.active == authority(2, priv_key.get_public_key(), 2));
@@ -4029,8 +4027,6 @@ BOOST_AUTO_TEST_CASE(delegate_expertise_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        auto a = db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1)).proxied_expertise;
-
         BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1)).proxied_expertise[0]) == 10000);
 
         BOOST_CHECK_THROW(db.push_transaction(tx, 0), fc::assert_exception);
@@ -4138,41 +4134,36 @@ BOOST_AUTO_TEST_CASE(expertise_allocation_proposal_apply)
 
         generate_block();
 
-        private_key_type alice_priv_key = generate_private_key("alice");
+        private_key_type bob_priv_key = generate_private_key("bob");
 
         create_expertise_allocation_proposal_operation op;
 
-        op.initiator = "alice";
         op.claimer = "bob";
         op.discipline_id = 1;
-        op.amount = 100;
         op.description = "test";
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
         tx.operations.push_back(op);
-        tx.sign(alice_priv_key, db.get_chain_id());
+        tx.sign(bob_priv_key, db.get_chain_id());
         tx.validate();
         db.push_transaction(tx, 0);
 
         auto& expertise_allocation_proposal = db.get<expertise_allocation_proposal_object, by_id>(0);
 
-        BOOST_CHECK(expertise_allocation_proposal.initiator == "alice");
         BOOST_CHECK(expertise_allocation_proposal.claimer == "bob");
         BOOST_CHECK(expertise_allocation_proposal.discipline_id == 1);
 
         create_expertise_allocation_proposal_operation op2;
 
-        op2.initiator = "alice";
         op2.claimer = "bob";
         op2.discipline_id = 1;
-        op2.amount = 100;
         op2.description = "test";
 
         signed_transaction tx2;
         tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
         tx2.operations.push_back(op2);
-        tx2.sign(alice_priv_key, db.get_chain_id());
+        tx2.sign(bob_priv_key, db.get_chain_id());
         tx2.validate();
         BOOST_CHECK_THROW(db.push_transaction(tx2, 0), fc::assert_exception);
     }
@@ -4188,7 +4179,7 @@ BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
 
         generate_block();
 
-        private_key_type alice_priv_key = generate_private_key("alice");
+        private_key_type bob_priv_key = generate_private_key("bob");
         private_key_type jack_priv_key = generate_private_key("jack");
         private_key_type john_priv_key = generate_private_key("john");
         private_key_type kate_priv_key = generate_private_key("kate");
@@ -4199,28 +4190,24 @@ BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
 
         create_expertise_allocation_proposal_operation op;
 
-        op.initiator = "alice";
         op.claimer = "bob";
         op.discipline_id = 1;
-        op.amount = 100;
         op.description = "test";
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
         tx.operations.push_back(op);
-        tx.sign(alice_priv_key, db.get_chain_id());
+        tx.sign(bob_priv_key, db.get_chain_id());
         tx.validate();
         db.push_transaction(tx, 0);
 
         auto& expertise_allocation_proposal = db.get<expertise_allocation_proposal_object, by_id>(0);
 
-        BOOST_CHECK(expertise_allocation_proposal.initiator == "alice");
         BOOST_CHECK(expertise_allocation_proposal.claimer == "bob");
         BOOST_CHECK(expertise_allocation_proposal.discipline_id == 1);
 
         vote_for_expertise_allocation_proposal_operation op2;
 
-        op2.initiator = "alice";
         op2.claimer = "bob";
         op2.discipline_id = 1;
         op2.voter = "jack";
@@ -4237,7 +4224,6 @@ BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
 
         vote_for_expertise_allocation_proposal_operation op2_1;
 
-        op2_1.initiator = "alice";
         op2_1.claimer = "bob";
         op2_1.discipline_id = 1;
         op2_1.voter = "jack";

@@ -24,32 +24,25 @@ public:
 
     using expertise_allocation_proposal_refs_type = std::vector<std::reference_wrapper<const expertise_allocation_proposal_object>>;
 
-    const expertise_allocation_proposal_object& create(const account_name_type& initiator,
-                                                       const account_name_type& claimer,
+    const expertise_allocation_proposal_object& create(const account_name_type& claimer,
                                                        const discipline_id_type& discipline_id,
-                                                       const share_type amount,
                                                        const string& description);
 
     const expertise_allocation_proposal_object& get(const expertise_allocation_proposal_id_type& id) const;
 
-    expertise_allocation_proposal_refs_type get_by_initiator(const account_name_type& initiator) const;
+    expertise_allocation_proposal_refs_type get_by_claimer(const account_name_type& claimer) const;
 
-    expertise_allocation_proposal_refs_type get_by_claimer_and_discipline(const account_name_type& claimer, 
-                                                                          const discipline_id_type& discipline_id) const;
+    const expertise_allocation_proposal_object& get_by_claimer_and_discipline(const account_name_type& claimer,
+                                                                              const discipline_id_type& discipline_id) const;
 
-    const expertise_allocation_proposal_object& get_by_discipline_initiator_and_claimer(const discipline_id_type& disicpline_id,
-                                                                                        const account_name_type& initiator,
-                                                                                        const account_name_type& claimer) const;
 
     expertise_allocation_proposal_refs_type get_by_discipline_id(const discipline_id_type& discipline_id) const;
 
-    void check_existence_by_discipline_initiator_and_claimer(const discipline_id_type &discipline_id,
-                                                             const account_name_type &initiator,
-                                                             const account_name_type &claimer);
+    void check_existence_by_claimer_and_discipline(const account_name_type &claimer,
+                                                   const discipline_id_type &discipline_id);
 
-    bool exists_by_discipline_initiator_and_claimer(const discipline_id_type &discipline_id,
-                                                       const account_name_type &initiator,
-                                                       const account_name_type &claimer);
+    bool exists_by_claimer_and_discipline(const account_name_type &claimer,
+                                          const discipline_id_type &discipline_id);
 
     void upvote(const expertise_allocation_proposal_object &expertise_allocation_proposal,
                 const account_name_type &voter,
@@ -67,11 +60,6 @@ public:
                                           const discipline_id_type& discipline_id);
 
     void clear_expired_expertise_allocation_proposals();
-
-    void reject_expired_expertise_allocation_proposals();
-
-    void reject_by_claimer_and_discipline(const account_name_type &claimer,
-                                          const discipline_id_type &discipline_id);
 
     /* Expertise allocation proposal vote */
 

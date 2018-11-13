@@ -268,17 +268,14 @@ void revoke_expertise_delegation_operation::validate() const
 
 void create_expertise_allocation_proposal_operation::validate() const
 {
-    validate_account_name(initiator);
     validate_account_name(claimer);
     FC_ASSERT(discipline_id > 0, "Cannot use root discipline (id = 0)");
-    FC_ASSERT(amount > 0, "Amount must be greater than zero");
     FC_ASSERT(description.size() > 0, "Description must be specified");
     FC_ASSERT(fc::is_utf8(description), "Description is not valid UTF8 string");
 }
 
 void vote_for_expertise_allocation_proposal_operation::validate() const
 {
-    validate_account_name(initiator);
     validate_account_name(claimer);
     FC_ASSERT(discipline_id > 0, "Cannot use root discipline (id = 0)");
     validate_account_name(voter);

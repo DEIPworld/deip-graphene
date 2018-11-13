@@ -867,16 +867,14 @@ struct expertise_allocation_proposal_api_obj
 {
     expertise_allocation_proposal_api_obj(const chain::expertise_allocation_proposal_object& eapo)
             : id(eapo.id._id)
-            , initiator(eapo.initiator)
             , claimer(eapo.claimer)
             , discipline_id(eapo.discipline_id._id)
-            , amount(eapo.amount)
+            , amount(DEIP_EXPERTISE_CLAIM_AMOUNT)
             , total_voted_expertise(eapo.total_voted_expertise)
             , quorum_percent(eapo.quorum_percent.value)
             , creation_time(eapo.creation_time)
             , expiration_time(eapo.expiration_time)
             , description(fc::to_string(eapo.description))
-            , status(eapo.status)
     {}
 
     // because fc::variant require for temporary object
@@ -885,7 +883,6 @@ struct expertise_allocation_proposal_api_obj
     }
 
     int64_t id;
-    account_name_type initiator;
     account_name_type claimer;
     int64_t discipline_id;
 
@@ -899,7 +896,6 @@ struct expertise_allocation_proposal_api_obj
 
     string description;
 
-    expertise_allocation_proposal_status status;
 };
 
 struct expertise_allocation_proposal_vote_api_obj
@@ -1246,7 +1242,6 @@ FC_REFLECT( deip::app::review_vote_api_obj,
 
 FC_REFLECT( deip::app::expertise_allocation_proposal_api_obj,
             (id)
-            (initiator)
             (claimer)
             (discipline_id)
             (amount)
@@ -1255,7 +1250,6 @@ FC_REFLECT( deip::app::expertise_allocation_proposal_api_obj,
             (creation_time)
             (expiration_time)
             (description)
-            (status)
 )
 
 FC_REFLECT( deip::app::expertise_allocation_proposal_vote_api_obj,
