@@ -70,8 +70,9 @@ public:
 
     const research_group_object& decrease_balance(const research_group_id_type &research_group_id, const asset &deips);
 
-    const share_type decrease_research_group_tokens_amount(const research_group_id_type& research_group_id,
-                                                     const share_type delta);
+    const share_type decrease_research_group_tokens_amount(const research_group_id_type &research_group_id,
+                                                               const share_type delta,
+                                                               const account_name_type &token_source);
     void increase_research_group_tokens_amount(const research_group_id_type& research_group_id,
                                                      const share_type delta);
 

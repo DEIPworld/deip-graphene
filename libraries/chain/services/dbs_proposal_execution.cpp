@@ -37,7 +37,7 @@ void dbs_proposal_execution::invite(const proposal_object &proposal)
     auto& research_group_invite_service = db_impl().obtain_service<dbs_research_group_invite>();
 
     invite_member_proposal_data_type data = get_data<invite_member_proposal_data_type>(proposal);
-    research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount_in_percent, data.cover_letter);
+    research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount_in_percent, data.cover_letter, account_name_type());
 }
 
 void dbs_proposal_execution::dropout(const proposal_object& proposal)

@@ -11,7 +11,8 @@ dbs_research_group_invite::dbs_research_group_invite(database &db) : _base_type(
 const research_group_invite_object& dbs_research_group_invite::create(const account_name_type& account_name,
                                                                       const research_group_id_type& research_group_id,
                                                                       const share_type research_group_token_amount,
-                                                                      const std::string& cover_letter)
+                                                                      const std::string& cover_letter,
+                                                                      const account_name_type& token_source)
 {
     const auto& new_research_group_invite = db_impl().create<research_group_invite_object>([&](research_group_invite_object& rgi_o) {
         rgi_o.account_name = account_name;
@@ -19,6 +20,7 @@ const research_group_invite_object& dbs_research_group_invite::create(const acco
         rgi_o.research_group_token_amount = research_group_token_amount;
         rgi_o.expiration_time = _get_now() + DAYS_TO_SECONDS(14);
         fc::from_string(rgi_o.cover_letter, cover_letter);
+        rgi_o.token_source = token_source;
     });
 
     return new_research_group_invite;

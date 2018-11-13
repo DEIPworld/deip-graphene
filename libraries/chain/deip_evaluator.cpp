@@ -641,7 +641,7 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
     for (const auto& invitee : op.invitees)
     {
         account_service.check_account_existence(invitee.account);
-        research_group_invite_service.create(invitee.account, research_group.id, invitee.research_group_tokens_in_percent, invitee.cover_letter);
+        research_group_invite_service.create(invitee.account, research_group.id, invitee.research_group_tokens_in_percent, invitee.cover_letter, op.creator);
     }
 }
 
@@ -800,7 +800,9 @@ void approve_research_group_invite_evaluator::do_apply(const approve_research_gr
     account_service.check_account_existence(research_group_invite.account_name);
     research_group_service.check_research_group_existence(research_group_invite.research_group_id);
 
-    auto amount = research_group_service.decrease_research_group_tokens_amount(research_group_invite.research_group_id, research_group_invite.research_group_token_amount);
+    auto amount = research_group_service.decrease_research_group_tokens_amount(research_group_invite.research_group_id,
+                                                                               research_group_invite.research_group_token_amount,
+                                                                               research_group_invite.token_source);
     research_group_service.create_research_group_token(research_group_invite.research_group_id,
                                                        amount,
                                                        research_group_invite.account_name);
