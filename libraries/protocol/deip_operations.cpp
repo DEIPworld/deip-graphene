@@ -276,8 +276,6 @@ void create_expertise_allocation_proposal_operation::validate() const
 
 void vote_for_expertise_allocation_proposal_operation::validate() const
 {
-    validate_account_name(claimer);
-    FC_ASSERT(discipline_id > 0, "Cannot use root discipline (id = 0)");
     validate_account_name(voter);
     FC_ASSERT(voting_power == DEIP_100_PERCENT || voting_power == -DEIP_100_PERCENT, "Voting power must be -100% or +100%");
 }

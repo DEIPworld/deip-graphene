@@ -1073,25 +1073,20 @@ void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_e
     dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
     dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = _db.obtain_service<dbs_expertise_allocation_proposal>();
 
-    account_service.check_account_existence(op.claimer);
+    auto& proposal = expertise_allocation_proposal_service.get(op.proposal_id);
+
     account_service.check_account_existence(op.voter);
 
-    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.voter, op.discipline_id);
-
-    expertise_allocation_proposal_service.check_existence_by_claimer_and_discipline(op.claimer, op.discipline_id);
-
-    auto& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.voter, op.discipline_id);
+    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.voter, proposal.discipline_id);
+    auto& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.voter, proposal.discipline_id);
 
     FC_ASSERT(expert_token.proxy.size() == 0, "A proxy is currently set, please clear the proxy before voting.");
 
-    auto& expertise_allocation_proposal = expertise_allocation_proposal_service.get_by_claimer_and_discipline(op.claimer, op.discipline_id);
 
     if (op.voting_power == DEIP_100_PERCENT)
-        expertise_allocation_proposal_service.upvote(expertise_allocation_proposal, op.voter,
-                                                     expert_token.amount + expert_token.proxied_expertise_total());
+        expertise_allocation_proposal_service.upvote(proposal, op.voter, expert_token.amount + expert_token.proxied_expertise_total());
     else if (op.voting_power == -DEIP_100_PERCENT)
-        expertise_allocation_proposal_service.downvote(expertise_allocation_proposal, op.voter,
-                                                       expert_token.amount + expert_token.proxied_expertise_total());
+        expertise_allocation_proposal_service.downvote(proposal, op.voter, expert_token.amount + expert_token.proxied_expertise_total());
 
 }
 

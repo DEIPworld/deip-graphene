@@ -4208,8 +4208,7 @@ BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
 
         vote_for_expertise_allocation_proposal_operation op2;
 
-        op2.claimer = "bob";
-        op2.discipline_id = 1;
+        op2.proposal_id = 0;
         op2.voter = "jack";
         op2.voting_power = DEIP_100_PERCENT;
 
@@ -4224,8 +4223,7 @@ BOOST_AUTO_TEST_CASE(vote_for_expertise_allocation_proposal_apply)
 
         vote_for_expertise_allocation_proposal_operation op2_1;
 
-        op2_1.claimer = "bob";
-        op2_1.discipline_id = 1;
+        op2_1.proposal_id = 0;
         op2_1.voter = "jack";
         op2_1.voting_power = -DEIP_100_PERCENT;
 

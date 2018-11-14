@@ -701,9 +701,8 @@ struct create_expertise_allocation_proposal_operation : public base_operation
 
 struct vote_for_expertise_allocation_proposal_operation : public base_operation
 {
-    account_name_type claimer;
-    int64_t discipline_id;
 
+    int64_t proposal_id;
     account_name_type voter;
     share_type voting_power;
 
@@ -803,7 +802,7 @@ FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_id)(se
 FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(discipline_id))
 FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(discipline_id))
 FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (claimer)(discipline_id)(description))
-FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (claimer)(discipline_id)(voter)(voting_power))
+FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (proposal_id)(voter)(voting_power))
 FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 
