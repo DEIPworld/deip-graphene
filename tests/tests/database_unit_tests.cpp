@@ -371,34 +371,28 @@ public:
     {
         db.create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
             eap_o.id = 0;
-            eap_o.initiator = "alice";
             eap_o.claimer = "bob";
             eap_o.discipline_id = 2;
             eap_o.total_voted_expertise = 0;
             eap_o.description = "test1";
-            eap_o.status = eap_active;
             eap_o.expiration_time = time_point_sec(132);
             eap_o.quorum_percent = 15 * DEIP_1_PERCENT;
         });
         db.create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
             eap_o.id = 1;
-            eap_o.initiator = "alice";
             eap_o.claimer = "mike";
             eap_o.discipline_id = 2;
             eap_o.total_voted_expertise = 0;
             eap_o.description = "test2";
-            eap_o.status = eap_active;
             eap_o.expiration_time = time_point_sec(0xffffffff);
             eap_o.quorum_percent = 15 * DEIP_1_PERCENT;
         });
         db.create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
             eap_o.id = 2;
-            eap_o.initiator = "jack";
-            eap_o.claimer = "bob";
+            eap_o.claimer = "alice";
             eap_o.discipline_id = 2;
             eap_o.total_voted_expertise = 100000;
             eap_o.description = "test3";
-            eap_o.status = eap_active;
             eap_o.expiration_time = time_point_sec(0xffffffff);
             eap_o.quorum_percent = 15 * DEIP_1_PERCENT;
         });
@@ -856,13 +850,12 @@ BOOST_AUTO_TEST_CASE(process_expertise_allocation_proposals)
 
         db.process_expertise_allocation_proposals();
 
-        auto p1 = db.get<expertise_allocation_proposal_object>(0);
-        auto p2 = db.get<expertise_allocation_proposal_object>(1);
-        auto p3 = db.get<expertise_allocation_proposal_object>(2);
+        BOOST_CHECK_THROW(db.get<expertise_allocation_proposal_object>(0), std::out_of_range);
+        BOOST_CHECK_NO_THROW(db.get<expertise_allocation_proposal_object>(1));
+        BOOST_CHECK_THROW(db.get<expertise_allocation_proposal_object>(2), std::out_of_range);
 
-        BOOST_CHECK(db.get<expertise_allocation_proposal_object>(0).status == eap_rejected);
-        BOOST_CHECK(db.get<expertise_allocation_proposal_object>(1).status == eap_active);
-        BOOST_CHECK(db.get<expertise_allocation_proposal_object>(2).status == eap_accepted);
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 2))).amount == DEIP_EXPERTISE_CLAIM_AMOUNT);
+
     }
     FC_LOG_AND_RETHROW()
 }

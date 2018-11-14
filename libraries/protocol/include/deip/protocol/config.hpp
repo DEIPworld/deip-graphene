@@ -189,6 +189,8 @@
 #define DEIP_MIN_UNDO_HISTORY                10
 #define DEIP_MAX_UNDO_HISTORY                10000
 
+#define DEIP_EXPERTISE_CLAIM_AMOUNT          5000
+
 #define DEIP_MIN_TRANSACTION_EXPIRATION_LIMIT (DEIP_BLOCK_INTERVAL * 5) // 5 transactions per block
 
 #define DEIP_IRREVERSIBLE_THRESHOLD          (75 * DEIP_1_PERCENT)

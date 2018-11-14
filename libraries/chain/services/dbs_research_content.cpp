@@ -67,7 +67,7 @@ const research_content_object& dbs_research_content::get(const research_content_
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-const research_content_object& dbs_research_content::get_by_permlink(const research_id_type &research_id,
+const research_content_object& dbs_research_content:: get_by_permlink(const research_id_type &research_id,
                                                                      const string &permlink) const
 {
     const auto& idx = db_impl().get_index<research_content_index>().indices().get<by_permlink>();

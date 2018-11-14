@@ -12,22 +12,17 @@ dbs_expertise_allocation_proposal::dbs_expertise_allocation_proposal(database &d
 {
 }
 
-const expertise_allocation_proposal_object& dbs_expertise_allocation_proposal::create(const account_name_type& initiator,
-                                                                                      const account_name_type& claimer,
+const expertise_allocation_proposal_object& dbs_expertise_allocation_proposal::create(const account_name_type& claimer,
                                                                                       const discipline_id_type& discipline_id,
-                                                                                      const share_type amount,
                                                                                       const string& description)
 {
     auto& expertise_allocation_proposal = db_impl().create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
-        eap_o.initiator = initiator;
         eap_o.claimer = claimer;
         eap_o.discipline_id = discipline_id;
-        eap_o.amount = amount;
         eap_o.quorum_percent = 15 * DEIP_1_PERCENT;
         eap_o.creation_time = db_impl().head_block_time();
         eap_o.expiration_time = db_impl().head_block_time() + DAYS_TO_SECONDS(14);
         fc::from_string(eap_o.description, description);
-        eap_o.status = expertise_allocation_proposal_status::eap_active;
     });
 
     return expertise_allocation_proposal;
@@ -41,11 +36,12 @@ const expertise_allocation_proposal_object& dbs_expertise_allocation_proposal::g
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-dbs_expertise_allocation_proposal::expertise_allocation_proposal_refs_type dbs_expertise_allocation_proposal::get_by_initiator(const account_name_type& initiator) const
+dbs_expertise_allocation_proposal::expertise_allocation_proposal_refs_type
+dbs_expertise_allocation_proposal::get_by_claimer(const account_name_type& claimer) const
 {
     expertise_allocation_proposal_refs_type ret;
 
-    auto it_pair = db_impl().get_index<expertise_allocation_proposal_index>().indicies().get<by_initiator>().equal_range(initiator);
+    auto it_pair = db_impl().get_index<expertise_allocation_proposal_index>().indicies().get<by_claimer>().equal_range(claimer);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
@@ -57,32 +53,14 @@ dbs_expertise_allocation_proposal::expertise_allocation_proposal_refs_type dbs_e
     return ret;
 }
 
-dbs_expertise_allocation_proposal::expertise_allocation_proposal_refs_type
-dbs_expertise_allocation_proposal::get_by_claimer_and_discipline(const account_name_type& claimer, 
+const expertise_allocation_proposal_object&
+dbs_expertise_allocation_proposal::get_by_claimer_and_discipline(const account_name_type& claimer,
                                                                  const discipline_id_type& discipline_id) const
 {
-    expertise_allocation_proposal_refs_type ret;
+    const auto& idx = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_claimer_and_discipline>();
+    auto itr = idx.find(std::make_tuple(claimer, discipline_id));
 
-    auto it_pair = db_impl().get_index<expertise_allocation_proposal_index>().indicies().get<by_claimer_and_discipline>().equal_range(std::make_tuple(claimer, discipline_id));
-    auto it = it_pair.first;
-    const auto it_end = it_pair.second;
-    while (it != it_end)
-    {
-        ret.push_back(std::cref(*it));
-        ++it;
-    }
-
-    return ret;
-}
-
-const expertise_allocation_proposal_object& dbs_expertise_allocation_proposal::get_by_discipline_initiator_and_claimer(const discipline_id_type& disicpline_id,
-                                                                                                                       const account_name_type& initiator,
-                                                                                                                       const account_name_type& claimer) const
-{
-    try {
-        return db_impl().get<expertise_allocation_proposal_object, by_discipline_initiator_and_claimer>(boost::make_tuple(disicpline_id, initiator, claimer));
-    }
-    FC_CAPTURE_AND_RETHROW((disicpline_id)(initiator)(claimer))
+    return *itr;
 }
 
 dbs_expertise_allocation_proposal::expertise_allocation_proposal_refs_type dbs_expertise_allocation_proposal::get_by_discipline_id(const discipline_id_type& discipline_id) const
@@ -101,22 +79,20 @@ dbs_expertise_allocation_proposal::expertise_allocation_proposal_refs_type dbs_e
     return ret;
 }
 
-void dbs_expertise_allocation_proposal::check_existence_by_discipline_initiator_and_claimer(const discipline_id_type &discipline_id,
-                                                                                            const account_name_type &initiator,
-                                                                                            const account_name_type &claimer)
+void dbs_expertise_allocation_proposal::check_existence_by_claimer_and_discipline(const account_name_type &claimer,
+                                                                                  const discipline_id_type &discipline_id)
 {
-    const auto& idx = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_discipline_initiator_and_claimer>();
+    const auto& idx = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_claimer_and_discipline>();
 
-    FC_ASSERT(idx.find(std::make_tuple(discipline_id, initiator, claimer)) != idx.cend(),
-              "Expertise allocation proposal for discipline \"${1}\" , initiator \"${2}\" and clainer \"${3}\" does not exist", ("1", discipline_id)("2", initiator)("3", claimer));
+    FC_ASSERT(idx.find(std::make_tuple(claimer, discipline_id)) != idx.cend(),
+              "Expertise allocation proposal for clainer \"${1}\"  and discipline \"${2}\" does not exist", ("1", claimer)("2", discipline_id));
 }
 
-bool dbs_expertise_allocation_proposal::exists_by_discipline_initiator_and_claimer(const discipline_id_type &discipline_id,
-                                                                                      const account_name_type &initiator,
-                                                                                      const account_name_type &claimer)
+bool dbs_expertise_allocation_proposal::exists_by_claimer_and_discipline(const account_name_type &claimer,
+                                                                         const discipline_id_type& discipline_id)
 {
-    const auto& idx = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_discipline_initiator_and_claimer>();
-    return idx.find(boost::make_tuple(discipline_id, initiator, claimer)) != idx.cend();
+    const auto& idx = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_claimer_and_discipline>();
+    return idx.find(boost::make_tuple(claimer, discipline_id)) != idx.cend();
 }
 
 void dbs_expertise_allocation_proposal::upvote(const expertise_allocation_proposal_object& expertise_allocation_proposal,
@@ -207,41 +183,6 @@ void dbs_expertise_allocation_proposal::clear_expired_expertise_allocation_propo
     while (!expiration_index.empty() && is_expired(*expiration_index.begin()))
         db_impl().remove(*expiration_index.begin());
 }
-
-void dbs_expertise_allocation_proposal::reject_expired_expertise_allocation_proposals()
-{
-    const auto& expiration_index = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_expiration_time>();
-    auto it = expiration_index.begin();
-    while (!expiration_index.empty() && is_expired(*it))
-    {
-        const auto& current_proposal = *it;
-        db_impl().modify(current_proposal, [&](expertise_allocation_proposal_object& eap_o) {
-            eap_o.status = expertise_allocation_proposal_status::eap_rejected;
-        });
-
-        ++it;
-    }
-}
-
-void dbs_expertise_allocation_proposal::reject_by_claimer_and_discipline(const account_name_type &claimer,
-                                                                         const discipline_id_type &discipline_id)
-{
-    const auto& idx = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_claimer_and_discipline>();
-    auto it_pair = idx.equal_range(boost::make_tuple(claimer, discipline_id));
-    auto it = it_pair.first;
-    const auto it_end = it_pair.second;
-
-    while (it != it_end)
-    {
-        const auto& current_proposal = *it;
-        if (current_proposal.status == expertise_allocation_proposal_status::eap_active)
-            db_impl().modify(current_proposal, [&](expertise_allocation_proposal_object& eap_o) {
-                eap_o.status = expertise_allocation_proposal_status::eap_rejected;
-            });
-        ++it;
-    }
-}
-
 
 const expertise_allocation_proposal_vote_object& dbs_expertise_allocation_proposal::create_vote(const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id,
                                                                                                 const discipline_id_type& discipline_id,

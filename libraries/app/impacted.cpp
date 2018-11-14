@@ -213,14 +213,12 @@ struct get_impacted_account_visitor
     
     void operator()(const create_expertise_allocation_proposal_operation& op)
     {
-        _impacted.insert(op.initiator);
         _impacted.insert(op.claimer);
     }
     
     void operator()(const vote_for_expertise_allocation_proposal_operation& op)
     {
-        _impacted.insert(op.initiator);
-        _impacted.insert(op.claimer);
+        _impacted.insert(op.voter);
     }
     
     void operator()(const accept_research_token_offer_operation& op)
