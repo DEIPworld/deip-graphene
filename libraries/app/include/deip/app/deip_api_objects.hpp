@@ -508,6 +508,7 @@ struct proposal_api_obj
 {
     proposal_api_obj(const chain::proposal_object& p, const vector<proposal_vote_api_obj>& _votes)
         : id(p.id._id)
+        ,  research_group_id(p.research_group_id._id)
         ,  action(p.action)
         ,  creation_time(p.creation_time)
         ,  expiration_time(p.expiration_time)
@@ -526,6 +527,7 @@ struct proposal_api_obj
     }
 
     int64_t id;
+    int64_t research_group_id;
     int8_t action;
     fc::time_point_sec creation_time;
     fc::time_point_sec expiration_time;
@@ -1106,6 +1108,7 @@ FC_REFLECT( deip::app::expert_token_api_obj,
 
 FC_REFLECT( deip::app::proposal_api_obj,
             (id)
+            (research_group_id)
             (action)
             (creation_time)
             (expiration_time)
