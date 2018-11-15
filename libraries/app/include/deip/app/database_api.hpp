@@ -403,6 +403,7 @@ public:
     ///////////////////////////////
     // Reviews                   //
     ///////////////////////////////
+    review_api_obj get_review_by_id(const review_id_type& review_id) const;
     vector<review_api_obj> get_reviews_by_research(const research_id_type& research_id) const;
     vector<review_api_obj> get_reviews_by_content(const research_content_id_type& research_content_id) const;
 
@@ -603,8 +604,10 @@ FC_API(deip::app::database_api,
    (get_disciplines_by_research)
 
    // Research group invite
+   (get_research_group_invite_by_id)
    (get_research_group_invites_by_account_name)
    (get_research_group_invites_by_research_group_id)
+   (get_research_group_invite_by_account_name_and_research_group_id)
 
    // Research listing
    (get_research_listing)
@@ -617,6 +620,7 @@ FC_API(deip::app::database_api,
    (get_total_votes_by_content_and_discipline)
 
    // Reviews
+   (get_review_by_id)
    (get_reviews_by_research)
    (get_reviews_by_content)
 

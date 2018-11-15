@@ -1675,6 +1675,25 @@ total_votes_api_obj database_api::get_total_votes_by_content_and_discipline(cons
     });
 }
 
+review_api_obj database_api::get_review_by_id(const review_id_type& review_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_review& review_service
+            = my->_db.obtain_service<chain::dbs_review>();
+
+            auto review = review_service.get(review_id);
+            vector<discipline_api_obj> disciplines;
+
+            for (const auto discipline_id : review.disciplines) {
+                auto discipline_ao = get_discipline(discipline_id);
+                disciplines.push_back(discipline_ao);
+            }
+
+            review_api_obj api_obj = review_api_obj(review, disciplines);
+
+        return api_obj;
+    });
+}
 
 vector<review_api_obj> database_api::get_reviews_by_research(const research_id_type& research_id) const
 {
