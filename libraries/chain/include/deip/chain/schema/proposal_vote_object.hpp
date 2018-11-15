@@ -24,7 +24,6 @@ namespace chain{
         research_group_id_type research_group_id;
         fc::time_point_sec voting_time;
         account_t voter;
-        share_type weight;
     };
 
     struct by_voter;
@@ -56,6 +55,6 @@ namespace chain{
 } // namespace chain
 } // namespace deip
 
-FC_REFLECT(deip::chain::proposal_vote_object, (id)(proposal_id)(research_group_id)(voting_time)(voter)(weight))
+FC_REFLECT(deip::chain::proposal_vote_object, (id)(proposal_id)(research_group_id)(voting_time)(voter))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::proposal_vote_object, deip::chain::proposal_vote_index)

@@ -75,7 +75,6 @@ private:
      * @param id - id of proposal
      * */
     const proposal_vote_object& create_vote(const account_name_type& voter,
-                                            const share_type weight,
                                             const proposal_id_type& proposal_id,
                                             const research_group_id_type& research_group_id);
 };

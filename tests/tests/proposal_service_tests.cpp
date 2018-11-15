@@ -80,7 +80,6 @@ public:
         db.create<proposal_vote_object>([&](proposal_vote_object& d) {
             d.id = 1;
             d.voter = "alice";
-            d.weight = 50;
             d.proposal_id = 1;
             d.research_group_id = 3;
         });
@@ -88,7 +87,6 @@ public:
         db.create<proposal_vote_object>([&](proposal_vote_object& d) {
             d.id = 2;
             d.voter = "alice";
-            d.weight = 50;
             d.proposal_id = 2;
             d.research_group_id = 3;
         });
@@ -96,7 +94,6 @@ public:
         db.create<proposal_vote_object>([&](proposal_vote_object& d) {
             d.id = 3;
             d.voter = "bob";
-            d.weight = 60;
             d.proposal_id = 1;
             d.research_group_id = 2;
         });
@@ -264,7 +261,6 @@ BOOST_AUTO_TEST_CASE(vote_for_proposal)
          const proposal_vote_object& proposal_vote = data_service.vote_for(1, "alice");         
 
          BOOST_CHECK(proposal_vote.voter == "alice");
-         BOOST_CHECK(proposal_vote.weight == weight);
          BOOST_CHECK(proposal_vote.proposal_id == 1);
          BOOST_CHECK(proposal_vote.research_group_id == 1);
 
@@ -287,16 +283,14 @@ BOOST_AUTO_TEST_CASE(get_votes_for)
              const proposal_vote_object &vote = wrapper.get();
              return  vote.id == 1 && vote.research_group_id == 3 &&
                      vote.voter == "alice" &&
-                     vote.proposal_id == 1 &&
-                     vote.weight == 50;
+                     vote.proposal_id == 1;
          }));
 
          BOOST_CHECK(std::any_of(votes.begin(), votes.end(), [](std::reference_wrapper<const proposal_vote_object> wrapper){
              const proposal_vote_object &vote = wrapper.get();
              return  vote.id == 3 && vote.research_group_id == 2 &&
                      vote.voter == "bob" &&
-                     vote.proposal_id == 1 &&
-                     vote.weight == 60;
+                     vote.proposal_id == 1;
          }));
      }
      FC_LOG_AND_RETHROW()

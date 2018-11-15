@@ -488,7 +488,6 @@ struct proposal_vote_api_obj
         ,  research_group_id(pv.research_group_id._id)
         ,  voting_time(pv.voting_time)
         ,  voter(pv.voter)
-        ,  weight(pv.weight)
     {}
 
     // because fc::variant require for temporary object
@@ -501,7 +500,6 @@ struct proposal_vote_api_obj
     int64_t research_group_id;
     fc::time_point_sec voting_time;
     account_name_type voter;
-    share_type weight;
 };
 
 struct proposal_api_obj
@@ -1123,7 +1121,6 @@ FC_REFLECT( deip::app::proposal_vote_api_obj,
             (research_group_id)
             (voting_time)
             (voter)
-            (weight)
 )
 
 FC_REFLECT( deip::app::research_group_token_api_obj,
