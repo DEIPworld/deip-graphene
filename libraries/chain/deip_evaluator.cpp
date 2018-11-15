@@ -966,6 +966,7 @@ void vote_proposal_evaluator::do_apply(const vote_proposal_operation& op)
               "Account \"${account}\" already voted", ("account", op.voter));
 
     FC_ASSERT(!proposal_service.is_expired(proposal), "Proposal '${id}' is expired.", ("id", op.proposal_id));
+    FC_ASSERT(!proposal.is_completed, "Proposal '${id}' is approved already.", ("id", op.proposal_id));
 
     proposal_service.vote_for(op.proposal_id, op.voter);
 
