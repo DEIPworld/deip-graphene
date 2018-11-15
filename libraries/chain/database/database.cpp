@@ -2901,12 +2901,17 @@ share_type database::calculate_review_weight_modifier(const review_id_type& revi
         total_weight += votes_weight;
     }
 
-    if (content_reviews.size() == 0 || total_weight == 0) return 0;
+    if (content_reviews.size() == 0)
+        return 0;
 
     share_type avg_expertise = total_expertise / content_reviews.size();
     auto review_weight = weights_per_review[review.id];
     auto review_used_expertise = review.expertise_amounts_used.at(discipline_id);
-    return 1 * (review_used_expertise / avg_expertise) + 10 * (1 - 1 / content_reviews.size()) * (review_weight / total_weight);
+    share_type coeff = 0;
+    if (total_weight != 0)
+        coeff = 10 * (1 - 1 / content_reviews.size()) * (review_weight / total_weight);
+
+    return 1 * (review_used_expertise / avg_expertise) + coeff;
 }
 
 
