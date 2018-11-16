@@ -1318,17 +1318,19 @@ share_type database::reward_researches_in_discipline(const discipline_object &di
     dbs_research_content_reward_pool& research_reward_pool_service = obtain_service<dbs_research_content_reward_pool>();
 
     const auto& total_votes_idx = get_index<total_votes_index>().indices().get<by_discipline_id>();
-    auto total_votes_itr = total_votes_idx.find(discipline.id);
+    auto total_votes_itr_pair = total_votes_idx.equal_range(discipline.id);
+    auto it = total_votes_itr_pair.first;
+    const auto it_end = total_votes_itr_pair.second;
 
     share_type used_reward = 0;
 
-    while (total_votes_itr != total_votes_idx.end())
+    while (it != it_end)
     {
-        auto content_id = total_votes_itr->research_content_id;
+        auto content_id = it->research_content_id;
         auto& content = content_service.get(content_id);
         if (content.activity_state == research_content_activity_state::active)
         {
-            auto weight = std::max(int64_t(0), total_votes_itr->total_weight.value);
+            auto weight = std::max(int64_t(0), it->total_weight.value);
             auto reward_share = util::calculate_share(reward, weight, discipline.total_active_weight);
             auto expertise_share = util::calculate_share(expertise, weight,discipline.total_active_weight);
 
@@ -1346,7 +1348,7 @@ share_type database::reward_researches_in_discipline(const discipline_object &di
                 research_reward_pool_service.create(content_id, discipline.id, reward_share, expertise_share);
             }
         }
-        ++total_votes_itr;
+        ++it;
     }
 
     FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
