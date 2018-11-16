@@ -147,8 +147,15 @@ void dbs_proposal::remove_proposal_votes(const account_name_type& account,
     while(proposal_vote_itr != proposal_votes_idx.end())
     {
         const auto& current_proposal_vote = *proposal_vote_itr;
+        auto& proposal = get_proposal(current_proposal_vote.proposal_id);
+
+        db_impl().modify(proposal, [&](proposal_object& p) {
+            p.voted_accounts.erase(current_proposal_vote.voter);
+        });
+
         ++proposal_vote_itr;
         db_impl().remove(current_proposal_vote);
+
     }
 }
 
