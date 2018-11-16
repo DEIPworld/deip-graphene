@@ -2083,12 +2083,12 @@ eci_and_expertise_stats_api_obj database_api::get_eci_and_expertise_stats_by_dis
         for (auto& rdr : rdrs)
             researches.push_back(research_service.get_research(rdr.get().research_id));
 
-        int64_t total_research_esi = 0;
+        int64_t total_research_eci = 0;
         int64_t contents_count = 0;
         int64_t total_content_eci = 0;
         for (auto& research : researches)
         {
-            total_research_esi += research.eci_per_discipline.at(discipline_id).value;
+            total_research_eci += research.eci_per_discipline.at(discipline_id).value;
             auto contents = research_content_service.get_by_research_id(research.id);
 
             for (auto& content : contents)
@@ -2102,9 +2102,20 @@ eci_and_expertise_stats_api_obj database_api::get_eci_and_expertise_stats_by_dis
         for (auto& expert_token : expert_tokens)
             total_expert_tokens_amount += expert_token.get().amount.value;
 
-        results.average_expertise_in_discipline = total_expert_tokens_amount / expert_tokens.size();
-        results.average_content_eci_in_discipline = total_content_eci / contents_count;
-        results.average_research_eci_in_discipline = total_research_esi / researches.size();
+        if (expert_tokens.size() == 0)
+            results.average_expertise_in_discipline = 0;
+        else
+            results.average_expertise_in_discipline = total_expert_tokens_amount / expert_tokens.size();
+
+        if (contents_count == 0)
+            results.average_content_eci_in_discipline = 0;
+        else
+            results.average_content_eci_in_discipline = total_content_eci / contents_count;
+
+        if (researches.size() == 0)
+            results.average_research_eci_in_discipline = 0;
+        else
+            results.average_research_eci_in_discipline = total_research_eci / researches.size();
 
         return results;
     });
