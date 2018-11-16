@@ -2689,22 +2689,15 @@ annotated_signed_transaction wallet_api::vote_proposal(const std::string& voter,
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::create_expertise_allocation_proposal(
-                                               const std::string& initiator,
-                                               const std::string& claimer,
-                                               const std::string& description,
-                                               const int64_t discipline_id,
-                                               const int64_t amount,
-                                               const bool broadcast)
+annotated_signed_transaction wallet_api::create_expertise_allocation_proposal(const std::string &claimer, const std::string &description,
+                                                                              const int64_t discipline_id, const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
     create_expertise_allocation_proposal_operation op;
 
-    op.initiator = initiator;
     op.claimer = claimer;
     op.discipline_id = discipline_id;
-    op.amount = amount;
     op.description = description;
 
     signed_transaction tx;
@@ -2714,21 +2707,14 @@ annotated_signed_transaction wallet_api::create_expertise_allocation_proposal(
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::vote_for_expertise_allocation_proposal(
-                                               const std::string& initiator,
-                                               const std::string& claimer,
-                                               const int64_t discipline_id,
-                                               const std::string& voter,
-                                               const int64_t voting_power,
-                                               const bool broadcast)
+annotated_signed_transaction wallet_api::vote_for_expertise_allocation_proposal(const int64_t proposal_id, const std::string &voter,
+                                                                                const int64_t voting_power, const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
     vote_for_expertise_allocation_proposal_operation op;
 
-    op.initiator = initiator;
-    op.claimer = claimer;
-    op.discipline_id = discipline_id;
+    op.proposal_id = proposal_id;
     op.voter = voter;
     op.voting_power = voting_power;
 

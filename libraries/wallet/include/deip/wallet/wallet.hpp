@@ -1218,22 +1218,12 @@ public:
                                                const bool broadcast);
     
     
-    annotated_signed_transaction create_expertise_allocation_proposal(
-                                               const std::string& initiator,
-                                               const std::string& claimer,
-                                               const std::string& description,
-                                               const int64_t discipline_id,
-                                               const int64_t amount,
-                                               const bool broadcast);
+    annotated_signed_transaction create_expertise_allocation_proposal(const std::string &claimer, const std::string &description,
+                                                                          const int64_t discipline_id, const bool broadcast);
 
     
-    annotated_signed_transaction vote_for_expertise_allocation_proposal(
-                                               const std::string& initiator,
-                                               const std::string& claimer,
-                                               const int64_t discipline_id,
-                                               const std::string& voter,
-                                               const int64_t voting_power,
-                                               const bool broadcast);
+    annotated_signed_transaction vote_for_expertise_allocation_proposal(const int64_t proposal_id, const std::string &voter,
+                                                                            const int64_t voting_power, const bool broadcast);
     /**
      * Propose offer research tokens
      *
