@@ -129,13 +129,13 @@ void dbs_research::calculate_eci(const research_id_type& research_id)
         {
             auto& review = rw.get();
             auto& weights = review.is_positive ? positive_weights : negative_weights;
-            for (auto& weight_discipline : review.weights_per_discipline)
+            for (auto& review_discipline : review.disciplines)
             {
-                auto current_weight = weights.find(std::make_pair(review.author, weight_discipline.first));
+                auto current_weight = weights.find(std::make_pair(review.author, review_discipline));
                 if (current_weight != weights.end())
-                    current_weight->second = std::max(current_weight->second.value, weight_discipline.second.value);
+                    current_weight->second = std::max(abs(current_weight->second.value), abs(review.get_evaluation(review_discipline).value));
                 else
-                    weights[std::make_pair(review.author, weight_discipline.first)] = weight_discipline.second.value;
+                    weights[std::make_pair(review.author,review_discipline)] = abs(review.get_evaluation(review_discipline).value);
             }
         }
     }
@@ -148,8 +148,11 @@ void dbs_research::calculate_eci(const research_id_type& research_id)
     auto& research = db_impl().get<research_object>(research_id);
 
     std::map<discipline_id_type, share_type> discipline_total_weights;
-    for (auto it = total_weights.begin(); it != total_weights.end(); ++it)
-        db_impl().modify(research, [&](research_object& r_o) {r_o.eci_per_discipline[it->first.second] += it->second;} );
+    for (auto it = total_weights.begin(); it != total_weights.end(); ++it) {
+        db_impl().modify(research,
+                         [&](research_object &r_o) { r_o.eci_per_discipline[it->first.second] = it->second.value; });
+    }
+
 
 }
 
