@@ -473,6 +473,12 @@ public:
                                                                         const research_id_type& research_id) const;
     vector<offer_research_tokens_api_obj> get_offers_by_research_id(const research_id_type& research_id) const;
 
+    ///////////////////////////
+    // Eci and expertise stats///
+    ///////////////////////////
+
+    eci_and_expertise_stats_api_obj get_eci_and_expertise_stats_by_discipline_id(const discipline_id_type& discipline_id);
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -661,6 +667,10 @@ FC_API(deip::app::database_api,
    (get_offers_by_receiver)
    (get_offer_by_receiver_and_research_id)
    (get_offers_by_research_id)
+
+   //Eci and expertise stats
+   (get_eci_and_expertise_stats_by_discipline_id)
+
 
 )
 
