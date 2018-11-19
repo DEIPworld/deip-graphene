@@ -1258,6 +1258,7 @@ void database::process_expertise_allocation_proposals()
     dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
 
     expertise_allocation_proposal_service.clear_expired_expertise_allocation_proposals();
+    vector<expertise_allocation_proposal_id_type> approved_proposals_ids;
 
     const auto& idx = get_index<expertise_allocation_proposal_index>().indices().get<by_id>();
     auto current = idx.begin();
@@ -1267,9 +1268,14 @@ void database::process_expertise_allocation_proposals()
         if (expertise_allocation_proposal_service.is_quorum(proposal))
         {
             expert_token_service.create(proposal.claimer, proposal.discipline_id, DEIP_EXPERTISE_CLAIM_AMOUNT);
-            expertise_allocation_proposal_service.delete_by_claimer_and_discipline(proposal.claimer, proposal.discipline_id);
+            approved_proposals_ids.push_back(proposal.id);
         }
         ++current;
+    }
+
+    for (auto &id : approved_proposals_ids) 
+    {
+        expertise_allocation_proposal_service.remove(id);
     }
 }
 

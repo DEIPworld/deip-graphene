@@ -30,6 +30,8 @@ public:
 
     const expertise_allocation_proposal_object& get(const expertise_allocation_proposal_id_type& id) const;
 
+    void remove(const expertise_allocation_proposal_id_type& id);
+
     expertise_allocation_proposal_refs_type get_by_claimer(const account_name_type& claimer) const;
 
     const expertise_allocation_proposal_object& get_by_claimer_and_discipline(const account_name_type& claimer,
