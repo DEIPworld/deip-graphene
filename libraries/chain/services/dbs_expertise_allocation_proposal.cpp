@@ -156,6 +156,9 @@ void dbs_expertise_allocation_proposal::downvote(const expertise_allocation_prop
 bool dbs_expertise_allocation_proposal::is_quorum(const expertise_allocation_proposal_object &expertise_allocation_proposal)
 {
     auto& discipline = db_impl().get<discipline_object, by_id>(expertise_allocation_proposal.discipline_id);
+    if (discipline.total_expertise_amount == 0) // for now let's wait for someone who has expertise
+        return false;
+    
     auto quorum_amount = (expertise_allocation_proposal.quorum_percent * discipline.total_expertise_amount) / DEIP_100_PERCENT;
     return expertise_allocation_proposal.total_voted_expertise >= quorum_amount.value;
 }
@@ -300,6 +303,12 @@ void dbs_expertise_allocation_proposal::adjust_expert_token_vote(const expert_to
 bool dbs_expertise_allocation_proposal::is_expired(const expertise_allocation_proposal_object& eap_o)
 {
     return eap_o.expiration_time < _get_now();
+}
+
+void dbs_expertise_allocation_proposal::remove(const expertise_allocation_proposal_id_type& id)
+{
+    const expertise_allocation_proposal_object& proposal = get(id);
+    db_impl().remove(proposal);
 }
 
 } //namespace chain
