@@ -973,7 +973,8 @@ void vote_proposal_evaluator::do_apply(const vote_proposal_operation& op)
     float total_voted_weight = 0;
     auto& votes = proposal_service.get_votes_for(proposal.id);
     for (const proposal_vote_object& vote : votes) {
-        total_voted_weight += vote.weight.value;
+        auto& rg_token = research_group_service.get_token_by_account_and_research_group(vote.voter, vote.research_group_id);
+        total_voted_weight += rg_token.amount.value;
     }
 
     if (total_voted_weight  >= proposal.quorum_percent)

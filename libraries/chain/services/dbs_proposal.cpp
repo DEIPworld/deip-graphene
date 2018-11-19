@@ -130,14 +130,11 @@ const proposal_vote_object& dbs_proposal::vote_for(const proposal_id_type &propo
     auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
     auto& proposal = get_proposal(proposal_id);
 
-    auto& token = research_group_service.get_token_by_account_and_research_group(voter, proposal.research_group_id);
-    auto wight = token.amount;
-
     db_impl().modify(proposal, [&](proposal_object& p) {
         p.voted_accounts.insert(voter);
     });
 
-    return create_vote(voter, wight, proposal_id, proposal.research_group_id);
+    return create_vote(voter, proposal_id, proposal.research_group_id);
 }
 
 void dbs_proposal::remove_proposal_votes(const account_name_type& account,
@@ -150,19 +147,24 @@ void dbs_proposal::remove_proposal_votes(const account_name_type& account,
     while(proposal_vote_itr != proposal_votes_idx.end())
     {
         const auto& current_proposal_vote = *proposal_vote_itr;
+        auto& proposal = get_proposal(current_proposal_vote.proposal_id);
+
+        db_impl().modify(proposal, [&](proposal_object& p) {
+            p.voted_accounts.erase(current_proposal_vote.voter);
+        });
+
         ++proposal_vote_itr;
         db_impl().remove(current_proposal_vote);
+
     }
 }
 
 const proposal_vote_object& dbs_proposal::create_vote(const account_name_type& voter,
-                                                      const deip::chain::share_type weight,
                                                       const proposal_id_type& proposal_id,
                                                       const research_group_id_type& research_group_id)
 {
     const proposal_vote_object& new_proposal_vote = db_impl().create<proposal_vote_object>([&](proposal_vote_object& proposal_vote) {
         proposal_vote.voter = voter;
-        proposal_vote.weight = weight;
         proposal_vote.proposal_id = proposal_id;
         proposal_vote.research_group_id = research_group_id;
         proposal_vote.voting_time = db_impl().head_block_time();;
