@@ -117,7 +117,10 @@ void dbs_proposal::clear_expired_proposals()
 {
     const auto& proposal_expiration_index = db_impl().get_index<proposal_index>().indices().get<by_expiration_time>();
 
-    while (!proposal_expiration_index.empty()
+    auto block_time = db_impl().head_block_time();
+    auto proposal_itr = proposal_expiration_index.upper_bound(block_time);
+
+    while (proposal_expiration_index.begin() != proposal_itr
            && (db_impl().head_block_time() > proposal_expiration_index.begin()->expiration_time))
     {
         if (!proposal_expiration_index.begin()->is_completed)
