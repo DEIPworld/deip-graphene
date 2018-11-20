@@ -1225,8 +1225,8 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
         {
             research_token_service.create_research_token(it->owner, transfer_amount, research_token_sale.research_id);
         }
-        remove(*it);
-        ++it;
+        auto current = it++;
+        remove(*current);
     }
 }
 
@@ -1247,8 +1247,9 @@ void database::refund_research_tokens(const research_token_sale_id_type research
     while (it != it_end)
     {
         account_service.adjust_balance(account_service.get_account(it->owner), it->amount);
-        remove(*it);
-        it++;
+
+        auto current = it++;
+        remove(*current);
     }
 
     auto& research = research_service.get_research(research_token_sale.research_id);
