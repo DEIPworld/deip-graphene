@@ -136,7 +136,10 @@ void dbs_grant::clear_expired_grants()
 {
     const auto& grant_expiration_index = db_impl().get_index<grant_index>().indices().get<by_end_block>();
 
-    while (!grant_expiration_index.empty() && is_expired(*grant_expiration_index.begin()))
+    auto block_num = db_impl().head_block_num();
+    auto grants_itr = grant_expiration_index.upper_bound(block_num);
+
+    while (grant_expiration_index.begin() != grants_itr && is_expired(*grant_expiration_index.begin()))
     {
         auto& grant = *grant_expiration_index.begin();
         if(grant.balance.amount > 0)

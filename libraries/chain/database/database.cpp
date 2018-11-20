@@ -1710,19 +1710,18 @@ void database::process_grants()
     dbs_grant& grant_service = obtain_service<dbs_grant>();
 
     const auto& grants_idx = get_index<grant_index>().indices().get<by_start_block>();
-    auto grants_itr = grants_idx.lower_bound(block_num);
 
-    while (grants_itr != grants_idx.end())
+    auto grants_itr = grants_idx.upper_bound(block_num);
+
+    for (auto itr = grants_idx.begin(); itr != grants_itr; ++itr)
     {
-        auto& grant = *grants_itr;
+        auto& grant = *itr;
         auto used_grant = grant_researches_in_discipline(grant.target_discipline, grant.per_block);
 
         if (used_grant == 0 && grant.is_extendable)
             modify(grant, [&](grant_object& g_o) { g_o.end_block++;} );
         else if (used_grant != 0)
             grant_service.allocate_funds(grant);
-
-        ++grants_itr;
     }
 }
 
