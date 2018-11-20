@@ -118,10 +118,10 @@ void dbs_proposal::clear_expired_proposals()
     const auto& proposal_expiration_index = db_impl().get_index<proposal_index>().indices().get<by_expiration_time>();
 
     while (!proposal_expiration_index.empty()
-           && (db_impl().head_block_time() > proposal_expiration_index.begin()->expiration_time)
-           && (!proposal_expiration_index.begin()->is_completed))
+           && (db_impl().head_block_time() > proposal_expiration_index.begin()->expiration_time))
     {
-        db_impl().remove(*proposal_expiration_index.begin());
+        if (!proposal_expiration_index.begin()->is_completed)
+            db_impl().remove(*proposal_expiration_index.begin());
     }
 }
 
