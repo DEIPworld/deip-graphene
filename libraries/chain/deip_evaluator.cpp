@@ -865,16 +865,8 @@ void set_expertise_tokens_evaluator::do_apply(const set_expertise_tokens_operati
                 et_o.amount = discipline_to_add.amount;
             });
         } 
-        else 
-        {
-            expert_token_service.create(op.account_name, discipline_to_add.discipline_id, discipline_to_add.amount);
-            auto& discipline = _db._temporary_public_impl().get<discipline_object>(discipline_to_add.discipline_id);
-            if (discipline.parent_id != 0)
-            {
-                if(!expert_token_service.expert_token_exists_by_account_and_discipline(op.account_name, discipline_to_add.discipline_id))
-                    expert_token_service.create(op.account_name, discipline.parent_id, discipline_to_add.amount);
-            }
-        }
+        else
+            expert_token_service.create_with_parent_discipline(op.account_name, discipline_to_add.discipline_id, discipline_to_add.amount);
     }
 }
 
