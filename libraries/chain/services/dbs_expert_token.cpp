@@ -15,9 +15,8 @@ dbs_expert_token::dbs_expert_token(database &db)
 {
 }
 
-const expert_token_object& dbs_expert_token::create(const account_name_type &account,
-                                                    const discipline_id_type &discipline_id,
-                                                    const share_type& amount)
+const expert_token_object & dbs_expert_token::create(const account_name_type &account, const discipline_id_type &discipline_id,
+                                                     const share_type &amount, const bool &create_parent)
 {
     auto& account_service = db_impl().obtain_service<dbs_account>();
     auto& disciplines_service = db_impl().obtain_service<dbs_discipline>();
@@ -39,22 +38,16 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
     account_service.adjust_proxied_witness_votes(to_account, amount);
 
     disciplines_service.increase_total_expertise_amount(discipline_id, amount);
-    return token;
-}
 
-const expert_token_object& dbs_expert_token::create_with_parent_discipline(const account_name_type& account,
-                                                                           const discipline_id_type& discipline_id,
-                                                                           const share_type& amount)
-{
-    auto& expert_token = create(account, discipline_id, amount);
-
-    auto& discipline = db_impl().get<discipline_object>(discipline_id);
-    if (discipline.parent_id != 0) {
-        if (!expert_token_exists_by_account_and_discipline(account, discipline.parent_id))
-            create(account, discipline.parent_id, amount);
+    if (create_parent) {
+        auto& discipline = db_impl().get<discipline_object>(discipline_id);
+        if (discipline.parent_id != 0) {
+            if (!expert_token_exists_by_account_and_discipline(account, discipline.parent_id))
+                create(account, discipline.parent_id, amount, true);
+        }
     }
 
-    return expert_token;
+    return token;
 }
 
 const expert_token_object& dbs_expert_token::get_expert_token(const expert_token_id_type& id) const

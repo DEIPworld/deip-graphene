@@ -19,10 +19,10 @@ public:
 
     void create_expert_tokens()
     {
-        data_service.create("alice", 1, 100);
-        data_service.create("bob", 2, 200);
-        data_service.create("alice", 3, 300);
-        data_service.create("john", 1, 150);        
+        data_service.create("alice", 1, 100, false);
+        data_service.create("bob", 2, 200, false);
+        data_service.create("alice", 3, 300, false);
+        data_service.create("john", 1, 150, false);
     }
 
     dbs_expert_token& data_service;
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(create)
 
     try
     {
-        auto token = data_service.create("alice", 2, 6651);
+        auto token = data_service.create("alice", 2, 6651, false);
 
         BOOST_CHECK(token.account_name == "alice");
         BOOST_CHECK(token.discipline_id == 2);
