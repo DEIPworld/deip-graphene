@@ -865,14 +865,8 @@ void set_expertise_tokens_evaluator::do_apply(const set_expertise_tokens_operati
                 et_o.amount = discipline_to_add.amount;
             });
         } 
-        else 
-        {
-            _db._temporary_public_impl().create<expert_token_object>([&](expert_token_object& et_o) {
-                et_o.account_name = op.account_name;
-                et_o.discipline_id = discipline_to_add.discipline_id;
-                et_o.amount = discipline_to_add.amount;
-            });
-        }
+        else
+            expert_token_service.create(op.account_name, discipline_to_add.discipline_id, discipline_to_add.amount, true);
     }
 }
 

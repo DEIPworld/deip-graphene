@@ -15,9 +15,8 @@ dbs_expert_token::dbs_expert_token(database &db)
 {
 }
 
-const expert_token_object& dbs_expert_token::create(const account_name_type &account,
-                                                    const discipline_id_type &discipline_id,
-                                                    const share_type& amount)
+const expert_token_object & dbs_expert_token::create(const account_name_type &account, const discipline_id_type &discipline_id,
+                                                     const share_type &amount, const bool &create_parent)
 {
     auto& account_service = db_impl().obtain_service<dbs_account>();
     auto& disciplines_service = db_impl().obtain_service<dbs_discipline>();
@@ -26,9 +25,7 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
     const auto& to_account = account_service.get_account(account);
 
     FC_ASSERT(discipline_id != 0, "You cannot create expert token with discipline 0");
-
-    account_service.increase_expertise_tokens(to_account, amount);
-    account_service.adjust_proxied_witness_votes(to_account, amount);
+    FC_ASSERT(expert_token_exists_by_account_and_discipline(account, discipline_id) == false, "Expert token already exists.");
 
     auto& token = db_impl().create<expert_token_object>([&](expert_token_object& token) {
         token.account_name = account;
@@ -37,7 +34,19 @@ const expert_token_object& dbs_expert_token::create(const account_name_type &acc
         token.last_vote_time = props.time;
     });
 
+    account_service.increase_expertise_tokens(to_account, amount);
+    account_service.adjust_proxied_witness_votes(to_account, amount);
+
     disciplines_service.increase_total_expertise_amount(discipline_id, amount);
+
+    if (create_parent) {
+        auto& discipline = db_impl().get<discipline_object>(discipline_id);
+        if (discipline.parent_id != 0) {
+            if (!expert_token_exists_by_account_and_discipline(account, discipline.parent_id))
+                create(account, discipline.parent_id, amount, true);
+        }
+    }
+
     return token;
 }
 

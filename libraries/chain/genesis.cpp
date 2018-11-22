@@ -229,11 +229,11 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
         auto account = get<account_object, by_name>(expert_token.account_name);
         FC_ASSERT(account.name == expert_token.account_name); // verify that account exists
 
-        auto& discipline = get<discipline_object, by_id>(expert_token.discipline_id); // verify that discipline existst
+        auto& discipline = get<discipline_object, by_id>(expert_token.discipline_id); // verify that discipline exists
         FC_ASSERT(discipline.id._id == expert_token.discipline_id); // verify that discipline exists
 
         dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
-        expert_token_service.create(expert_token.account_name, expert_token.discipline_id, expert_token.amount);
+        expert_token_service.create(expert_token.account_name, expert_token.discipline_id, expert_token.amount, true);
     }
 }
 

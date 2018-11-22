@@ -390,7 +390,7 @@ public:
         db.create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
             eap_o.id = 2;
             eap_o.claimer = "alice";
-            eap_o.discipline_id = 2;
+            eap_o.discipline_id = 21;
             eap_o.total_voted_expertise = 100000;
             eap_o.description = "test3";
             eap_o.expiration_time = time_point_sec(0xffffffff);
@@ -848,14 +848,21 @@ BOOST_AUTO_TEST_CASE(process_expertise_allocation_proposals)
         db.modify(discipline, [&](discipline_object& d)
             { d.total_expertise_amount = 1000; });
 
+        db.create<discipline_object>([&](discipline_object& d) {
+            d.id = 21;
+            d.parent_id = 1;
+            d.name = "test";
+            d.total_expertise_amount = 1000;
+        });
+
         db.process_expertise_allocation_proposals();
 
         BOOST_CHECK_THROW(db.get<expertise_allocation_proposal_object>(0), std::out_of_range);
         BOOST_CHECK_NO_THROW(db.get<expertise_allocation_proposal_object>(1));
         BOOST_CHECK_THROW(db.get<expertise_allocation_proposal_object>(2), std::out_of_range);
 
-        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 2))).amount == DEIP_EXPERTISE_CLAIM_AMOUNT);
-
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 21))).amount == DEIP_EXPERTISE_CLAIM_AMOUNT);
+        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1))).amount == DEIP_EXPERTISE_CLAIM_AMOUNT);
     }
     FC_LOG_AND_RETHROW()
 }
