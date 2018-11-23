@@ -89,7 +89,10 @@ void dbs_research_group_invite::clear_expired_invites()
 {
     const auto& invite_expiration_index = db_impl().get_index<research_group_invite_index>().indices().get<by_expiration_time>();
 
-    while (!invite_expiration_index.empty() && is_expired(*invite_expiration_index.begin()))
+    auto block_time = db_impl().head_block_time();
+    auto invite_itr = invite_expiration_index.upper_bound(block_time);
+
+    while (invite_expiration_index.begin() != invite_itr && is_expired(*invite_expiration_index.begin()))
     {
         db_impl().remove(*invite_expiration_index.begin());
     }

@@ -818,14 +818,13 @@ BOOST_AUTO_TEST_CASE(clear_expired_grants)
 
         generate_block();
 
-        db.create<grant_object>([&](grant_object& g) {
+        auto& grant = db.create<grant_object>([&](grant_object& g) {
             g.id = 0;
             g.balance = asset(0, DEIP_SYMBOL);
-            g.end_block = db.head_block_num() + 1;
+            g.end_block = db.head_block_num() - 1;
         });
 
-        generate_blocks(DEIP_BLOCKS_PER_HOUR);
-
+        generate_block();
         BOOST_CHECK_THROW(db.get<grant_object>(0), std::out_of_range);
     }
     FC_LOG_AND_RETHROW()
