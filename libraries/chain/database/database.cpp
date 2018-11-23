@@ -1260,6 +1260,7 @@ void database::process_expertise_allocation_proposals()
 {
     dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = obtain_service<dbs_expertise_allocation_proposal>();
     dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
+    dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
 
     expertise_allocation_proposal_service.clear_expired_expertise_allocation_proposals();
     vector<expertise_allocation_proposal_id_type> approved_proposals_ids;
@@ -1271,7 +1272,7 @@ void database::process_expertise_allocation_proposals()
         auto& proposal = expertise_allocation_proposal_service.get(current->id);
         if (expertise_allocation_proposal_service.is_quorum(proposal))
         {
-            expert_token_service.create(proposal.claimer, proposal.discipline_id, DEIP_EXPERTISE_CLAIM_AMOUNT);
+            expert_token_service.create(proposal.claimer, proposal.discipline_id, DEIP_EXPERTISE_CLAIM_AMOUNT, true);
             approved_proposals_ids.push_back(proposal.id);
         }
         ++current;
@@ -1531,7 +1532,8 @@ void database::reward_account_with_expertise(const account_name_type &account, c
                 t.amount += reward;
             });
         } else {
-            expertise_token_service.create(account, discipline_id, reward);
+            dbs_expert_token &expert_token_service = obtain_service<dbs_expert_token>();
+            expert_token_service.create(account, discipline_id, reward, false);
         }
     }
 }

@@ -865,14 +865,8 @@ void set_expertise_tokens_evaluator::do_apply(const set_expertise_tokens_operati
                 et_o.amount = discipline_to_add.amount;
             });
         } 
-        else 
-        {
-            _db._temporary_public_impl().create<expert_token_object>([&](expert_token_object& et_o) {
-                et_o.account_name = op.account_name;
-                et_o.discipline_id = discipline_to_add.discipline_id;
-                et_o.amount = discipline_to_add.amount;
-            });
-        }
+        else
+            expert_token_service.create(op.account_name, discipline_to_add.discipline_id, discipline_to_add.amount, true);
     }
 }
 
@@ -970,7 +964,7 @@ void vote_proposal_evaluator::do_apply(const vote_proposal_operation& op)
 
     proposal_service.vote_for(op.proposal_id, op.voter);
 
-    float total_voted_weight = 0;
+    share_type total_voted_weight = 0;
     auto& votes = proposal_service.get_votes_for(proposal.id);
     for (const proposal_vote_object& vote : votes) {
         auto& rg_token = research_group_service.get_token_by_account_and_research_group(vote.voter, vote.research_group_id);
