@@ -42,7 +42,7 @@ add_library( deip_chain
         services/dbs_review.cpp
         services/dbs_vesting_balance.cpp
         services/dbs_proposal_execution.cpp
-        services/dbs_research_content_reward_pool.cpp
+        services/dbs_reward_pool.cpp
         services/dbs_expertise_stats.cpp
         services/dbs_expertise_allocation_proposal.cpp
         services/dbs_offer_research_tokens.cpp
