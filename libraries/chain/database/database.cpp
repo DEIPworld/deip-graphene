@@ -1832,7 +1832,6 @@ void database::initialize_indexes()
     add_index<owner_authority_history_index>();
     add_index<account_recovery_request_index>();
     add_index<change_recovery_account_request_index>();
-    add_index<reward_fund_index>();
     add_index<grant_index>();
     add_index<proposal_index>();
     add_index<proposal_vote_index>();
@@ -2637,12 +2636,6 @@ void database::validate_invariants() const
                                     : (DEIP_MAX_PROXY_RECURSION_DEPTH > 0
                                            ? itr->proxied_vsf_votes[DEIP_MAX_PROXY_RECURSION_DEPTH - 1]
                                            : itr->expertise_tokens_balance));
-        }
-
-        const auto& reward_idx = get_index<reward_fund_index, by_id>();
-        for (auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr)
-        {
-            total_supply += itr->reward_balance;
         }
 
         const auto& research_group_idx = get_index<research_group_index, by_id>();
