@@ -23,8 +23,8 @@ public:
 
     const reward_pool_object& create(const research_content_id_type& research_content_id,
                                                       const discipline_id_type& discipline_id,
-                                                      const share_type reward_share,
-                                                      const share_type expertise_share);
+                                                      const asset& balance,
+                                                      const share_type& expertise);
 
     const reward_pool_object& get(const reward_pool_id_type& id) const;
 
@@ -36,9 +36,9 @@ public:
     bool is_research_reward_pool_exists_by_research_content_id_and_discipline_id(const research_content_id_type& research_content_id,
                                                                                  const discipline_id_type& discipline_id);
 
-    void increase_reward_pool(const reward_pool_object& research_reward_pool, const share_type delta);
+    void increase_reward_pool(const reward_pool_object& research_reward_pool, const asset& delta);
 
-    void increase_expertise_pool(const reward_pool_object& research_reward_pool, const share_type delta);
+    void increase_expertise_pool(const reward_pool_object& research_reward_pool, const share_type& delta);
 
 
 };

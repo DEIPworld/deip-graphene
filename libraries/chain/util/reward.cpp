@@ -60,6 +60,19 @@ uint128_t evaluate_reward_curve(const uint128_t& rshares, const curve_id& curve)
     return result;
 }
 
+asset calculate_share(const asset &amount, const share_type& share_percent)
+{
+    share_type value = (amount.amount * share_percent) / DEIP_100_PERCENT;
+    return asset(value, amount.symbol);
+}
+
+asset calculate_share(const asset &amount, const share_type &weight, const share_type &total_weight)
+{
+    FC_ASSERT(total_weight != 0, "Dividing by zero is restricted");
+    share_type value = (amount.amount * weight) / total_weight;
+    return asset(value, amount.symbol);
+}
+
 share_type calculate_share(const share_type &amount, const share_type& share_percent)
 {
     return (amount * share_percent) / DEIP_100_PERCENT;

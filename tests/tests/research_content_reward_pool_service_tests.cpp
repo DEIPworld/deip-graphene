@@ -24,24 +24,24 @@ public:
             r.id = 1;
             r.discipline_id = 1;
             r.research_content_id = 1;
-            r.reward_share = 100;
-            r.expertise_share = 100;
+            r.balance = asset(100, DEIP_SYMBOL);
+            r.expertise = 100;
         });
 
         db.create<reward_pool_object>([&](reward_pool_object& r) {
             r.id = 2;
             r.discipline_id = 2;
             r.research_content_id = 1;
-            r.reward_share = 200;
-            r.expertise_share = 200;
+            r.balance = asset(200, DEIP_SYMBOL);
+            r.expertise = 200;
         });
 
         db.create<reward_pool_object>([&](reward_pool_object& r) {
             r.id = 3;
             r.discipline_id = 1;
             r.research_content_id = 2;
-            r.reward_share = 1500;
-            r.expertise_share = 1500;
+            r.balance = asset(1500, DEIP_SYMBOL);
+            r.expertise = 1500;
         });
     }
 
@@ -55,13 +55,13 @@ BOOST_AUTO_TEST_CASE(create)
     try
     {
         const reward_pool_object& reward_pool =
-                data_service.create(1, 1, 100, 200);
+                data_service.create(1, 1, asset(100, DEIP_SYMBOL), 200);
 
         BOOST_CHECK(reward_pool.id == 0);
         BOOST_CHECK(reward_pool.research_content_id == 1);
         BOOST_CHECK(reward_pool.discipline_id == 1);
-        BOOST_CHECK(reward_pool.reward_share == 100);
-        BOOST_CHECK(reward_pool.expertise_share == 200);
+        BOOST_CHECK(reward_pool.balance == asset(100, DEIP_SYMBOL));
+        BOOST_CHECK(reward_pool.expertise == 200);
 
     }
     FC_LOG_AND_RETHROW()
@@ -79,8 +79,8 @@ BOOST_AUTO_TEST_CASE(get)
         BOOST_CHECK(reward_pool.id == 1);
         BOOST_CHECK(reward_pool.research_content_id == 1);
         BOOST_CHECK(reward_pool.discipline_id == 1);
-        BOOST_CHECK(reward_pool.reward_share == 100);
-        BOOST_CHECK(reward_pool.expertise_share == 100);
+        BOOST_CHECK(reward_pool.balance == asset(100, DEIP_SYMBOL));
+        BOOST_CHECK(reward_pool.expertise == 100);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -97,8 +97,8 @@ BOOST_AUTO_TEST_CASE(get_by_research_content_id_and_discipline_id)
         BOOST_CHECK(reward_pool.id == 2);
         BOOST_CHECK(reward_pool.research_content_id == 1);
         BOOST_CHECK(reward_pool.discipline_id == 2);
-        BOOST_CHECK(reward_pool.reward_share == 200);
-        BOOST_CHECK(reward_pool.expertise_share == 200);
+        BOOST_CHECK(reward_pool.balance == asset(200, DEIP_SYMBOL));
+        BOOST_CHECK(reward_pool.expertise == 200);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -119,8 +119,8 @@ BOOST_AUTO_TEST_CASE(get_reward_pools_by_content_id)
             return  reward_pool.id == 1 &&
                     reward_pool.research_content_id == 1 &&
                     reward_pool.discipline_id == 1 &&
-                    reward_pool.reward_share == 100 &&
-                    reward_pool.expertise_share == 100;
+                    reward_pool.balance == asset(100, DEIP_SYMBOL) &&
+                    reward_pool.expertise == 100;
         }));
          BOOST_CHECK(std::any_of(reward_pools.begin(), reward_pools.end(),
                                 [](std::reference_wrapper<const reward_pool_object> wrapper){
@@ -129,8 +129,8 @@ BOOST_AUTO_TEST_CASE(get_reward_pools_by_content_id)
             return  reward_pool.id == 2 &&
                     reward_pool.research_content_id == 1 &&
                     reward_pool.discipline_id == 2 &&
-                    reward_pool.reward_share == 200 &&
-                    reward_pool.expertise_share == 200;
+                    reward_pool.balance == asset(200, DEIP_SYMBOL) &&
+                    reward_pool.expertise == 200;
         }));
     }
     FC_LOG_AND_RETHROW()
@@ -157,9 +157,9 @@ BOOST_AUTO_TEST_CASE(increase_reward_pool)
         create_reward_pools();
         const auto& reward_pool = db.get<reward_pool_object, by_id>(1);
 
-        data_service.increase_reward_pool(reward_pool, 100);
+        data_service.increase_reward_pool(reward_pool, asset(100, DEIP_SYMBOL));
 
-        BOOST_CHECK(reward_pool.reward_share == 200);
+        BOOST_CHECK(reward_pool.balance == asset(200, DEIP_SYMBOL));
     }
     FC_LOG_AND_RETHROW()
 }
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE(increase_expertise_pool)
 
         data_service.increase_expertise_pool(reward_pool, 100);
 
-        BOOST_CHECK(reward_pool.expertise_share == 200);
+        BOOST_CHECK(reward_pool.expertise == 200);
     }
     FC_LOG_AND_RETHROW()
 }

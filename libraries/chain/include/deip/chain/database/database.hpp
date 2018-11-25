@@ -333,22 +333,22 @@ public:
     /**
      * Rewards distribution
      */
-    share_type distribute_reward(const share_type &reward, const share_type &expertise);
-    share_type reward_researches_in_discipline(const discipline_object &discipline, const share_type &reward,
+    asset distribute_reward(const asset &reward, const share_type &expertise);
+    asset reward_researches_in_discipline(const discipline_object &discipline, const asset &reward,
                                                    const share_type &expertise);
-    share_type reward_research_content(const research_content_id_type &research_content_id,
-                                           const discipline_id_type &discipline_id, const share_type &reward,
-                                           const share_type &expertise);
-    share_type reward_research_token_holders(const research_object& research,
-                                       const discipline_id_type& discipline_id,
-                                       const share_type& reward);
-    share_type reward_references(const research_content_id_type &research_content_id,
-                                     const discipline_id_type &discipline_id, const share_type &reward);
-    share_type reward_reviews(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id,
-                                  const share_type &reward, const share_type &expertise_reward);
-    share_type reward_review_voters(const review_object &review,
+    asset reward_research_content(const research_content_id_type &research_content_id,
+                                  const discipline_id_type &discipline_id, const asset &reward,
+                                  const share_type &expertise);
+    asset reward_research_token_holders(const research_object &research,
+                                        const discipline_id_type &discipline_id,
+                                        const asset &reward);
+    asset reward_references(const research_content_id_type &research_content_id,
+                                     const discipline_id_type &discipline_id, const asset &reward);
+    asset reward_reviews(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id,
+                                  const asset &reward, const share_type &expertise_reward);
+    asset reward_review_voters(const review_object &review,
                                     const discipline_id_type &discipline_id,
-                                    const share_type &reward);
+                                    const asset &reward);
     void reward_account_with_expertise(const account_name_type &account,
                                        const discipline_id_type &discipline_id,
                                        const share_type &reward);
@@ -357,7 +357,7 @@ public:
                                                     const discipline_id_type &discipline_id,
                                                     const share_type &expertise_reward);
 
-    share_type fund_review_pool(const discipline_object& discipline, const share_type &amount);
+    asset fund_review_pool(const discipline_object& discipline, const asset &amount);
 
     share_type calculate_review_weight_modifier(const review_id_type& review_id, const discipline_id_type& discipline_id) override;
 
@@ -424,8 +424,8 @@ private:
 
     void _update_median_witness_props();
 
-    share_type allocate_rewards_to_reviews(const std::vector<review_object> &reviews, const discipline_id_type &discipline_id,
-                                               const share_type &reward, const share_type &expertise_reward);
+    asset allocate_rewards_to_reviews(const std::vector<review_object> &reviews, const discipline_id_type &discipline_id,
+                                               const asset &reward, const share_type &expertise_reward);
 
 protected:
     // Mark pop_undo() as protected -- we do not want outside calling pop_undo(); it should call pop_block() instead

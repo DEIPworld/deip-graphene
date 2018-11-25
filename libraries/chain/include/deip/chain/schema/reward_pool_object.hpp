@@ -1,7 +1,8 @@
 #pragma once
-#include <deip/protocol/authority.hpp>
+#include <deip/protocol/asset.hpp>
 
 #include "deip_object_types.hpp"
+#include "shared_authority.hpp"
 
 #include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index/hashed_index.hpp>
@@ -10,6 +11,8 @@
 
 namespace deip{
 namespace chain{
+
+using deip::protocol::asset;
 
 class reward_pool_object : public object<reward_pool_object_type, reward_pool_object>
 {
@@ -28,8 +31,8 @@ public:
     research_content_id_type research_content_id;
     discipline_id_type discipline_id;
 
-    share_type reward_share;
-    share_type expertise_share;
+    asset balance = asset(0, DEIP_SYMBOL);
+    share_type expertise;
 };
 
 struct by_research_content;
@@ -58,7 +61,7 @@ typedef multi_index_container<reward_pool_object,
 }
 
 FC_REFLECT(deip::chain::reward_pool_object,
-                        (id)(research_content_id)(discipline_id)(reward_share)(expertise_share)
+                        (id)(research_content_id)(discipline_id)(balance)(expertise)
             )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::reward_pool_object, deip::chain::reward_pool_index)

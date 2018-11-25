@@ -1129,12 +1129,14 @@ void database::process_funds()
     // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
     int64_t current_inflation_rate = std::max(start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor);
 
-    auto new_deip = (props.current_supply.amount * current_inflation_rate) / (int64_t(DEIP_100_PERCENT) * int64_t(DEIP_BLOCKS_PER_YEAR));
-    // TODO: Expertise adaptive emission model
-    auto new_expertise = new_deip;
+    share_type to_emit = (props.current_supply.amount * current_inflation_rate) / (int64_t(DEIP_100_PERCENT) * int64_t(DEIP_BLOCKS_PER_YEAR));
 
-    auto contribution_reward = util::calculate_share(new_deip, DEIP_CONTRIBUTION_REWARD_PERCENT); /// 97% to contribution rewards
-    auto witness_reward = new_deip - contribution_reward; /// Remaining 3% to witness pay
+    asset new_deip = asset(to_emit, DEIP_SYMBOL);
+    // TODO: Expertise adaptive emission model
+    share_type new_expertise = to_emit;
+
+    asset contribution_reward = util::calculate_share(new_deip, DEIP_CONTRIBUTION_REWARD_PERCENT); /// 97% to contribution rewards
+    share_type witness_reward = new_deip.amount - contribution_reward.amount; /// Remaining 3% to witness pay
 
     const auto& cwit = get_witness(props.current_witness);
     witness_reward *= DEIP_MAX_WITNESSES;
@@ -1150,10 +1152,10 @@ void database::process_funds()
 
     contribution_reward = distribute_reward(contribution_reward, new_expertise);
 
-    new_deip = contribution_reward + witness_reward;
+    new_deip = asset(contribution_reward.amount + witness_reward, DEIP_SYMBOL);
 
     modify(props, [&](dynamic_global_property_object& p) {
-        p.current_supply += asset(new_deip, DEIP_SYMBOL);
+        p.current_supply += new_deip;
     });
 
     account_service.increase_common_tokens(get_account(cwit.owner), witness_reward);
@@ -1284,7 +1286,7 @@ void database::process_expertise_allocation_proposals()
     }
 }
 
-share_type database::distribute_reward(const share_type &reward, const share_type &expertise)
+asset database::distribute_reward(const asset &reward, const share_type &expertise)
 {
     auto& discipline_service = obtain_service<dbs_discipline>();
     auto disciplines = discipline_service.get_disciplines();
@@ -1297,15 +1299,15 @@ share_type database::distribute_reward(const share_type &reward, const share_typ
     }
 
     // Distribute among all disciplines pools
-    share_type used_reward = 0;
+    asset used_reward = asset(0, DEIP_SYMBOL);
 
     for (auto& discipline_ref : disciplines) {
         const auto& discipline = discipline_ref.get();
         if (discipline.total_active_weight != 0)
         {
             // Distribute among disciplines in all disciplines pool
-            auto discipline_reward_share = util::calculate_share(reward, discipline.total_active_weight, total_disciplines_weight);
-            auto discipline_expertise_share = util::calculate_share(expertise, discipline.total_active_weight, total_disciplines_weight);
+            asset discipline_reward_share = util::calculate_share(reward, discipline.total_active_weight, total_disciplines_weight);
+            share_type discipline_expertise_share = util::calculate_share(expertise, discipline.total_active_weight, total_disciplines_weight);
             // TODO: Adjustable review reward pool share
             auto discipline_review_reward_pool_share = util::calculate_share(discipline_reward_share, DEIP_REVIEW_REWARD_POOL_SHARE_PERCENT);
             discipline_reward_share -= discipline_review_reward_pool_share;
@@ -1319,8 +1321,8 @@ share_type database::distribute_reward(const share_type &reward, const share_typ
     return used_reward;
 }
 
-share_type database::reward_researches_in_discipline(const discipline_object &discipline,
-                                                     const share_type &reward,
+asset database::reward_researches_in_discipline(const discipline_object &discipline,
+                                                     const asset &reward,
                                                      const share_type &expertise)
 {
     FC_ASSERT(discipline.total_active_weight != 0, "Attempt to reward research in inactive discipline");
@@ -1333,7 +1335,7 @@ share_type database::reward_researches_in_discipline(const discipline_object &di
     auto it = total_votes_itr_pair.first;
     const auto it_end = total_votes_itr_pair.second;
 
-    share_type used_reward = 0;
+    asset used_reward = asset(0, DEIP_SYMBOL);
 
     while (it != it_end)
     {
@@ -1367,10 +1369,10 @@ share_type database::reward_researches_in_discipline(const discipline_object &di
     return used_reward;
 }
 
-share_type database::reward_research_content(const research_content_id_type &research_content_id,
-                                             const discipline_id_type &discipline_id,
-                                             const share_type &reward,
-                                             const share_type &expertise)
+asset database::reward_research_content(const research_content_id_type &research_content_id,
+                                        const discipline_id_type &discipline_id,
+                                        const asset &reward,
+                                        const share_type &expertise)
 {
     auto& research_content_service = obtain_service<dbs_research_content>();
     auto& research_service = obtain_service<dbs_research>();
@@ -1388,7 +1390,7 @@ share_type database::reward_research_content(const research_content_id_type &res
     FC_ASSERT(token_holders_share + review_share + references_share <= reward,
               "Attempt to allocate funds amount that is greater than reward amount");
 
-    share_type used_reward = 0;
+    asset used_reward = asset(0, DEIP_SYMBOL);
 
     reward_research_authors_with_expertise(research, research_content, discipline_id, authors_expertise_share);
 
@@ -1401,19 +1403,19 @@ share_type database::reward_research_content(const research_content_id_type &res
     return used_reward;
 }
 
-share_type database::reward_research_token_holders(const research_object& research,
-                                            const discipline_id_type& discipline_id,
-                                            const share_type& reward)
+asset database::reward_research_token_holders(const research_object &research,
+                                              const discipline_id_type &discipline_id,
+                                              const asset &reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
 
-    auto research_group_reward = (research.owned_tokens * reward) / DEIP_100_PERCENT;
-    share_type used_reward = 0;
+    auto research_group_reward = util::calculate_share(reward, research.owned_tokens);
+    asset used_reward = asset(0, DEIP_SYMBOL);
 
-    if(research_group_reward > 0)
+    if(research_group_reward > asset(0, DEIP_SYMBOL))
     {
         dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
-        research_group_service.increase_balance(research.research_group_id, asset(research_group_reward, DEIP_SYMBOL));
+        research_group_service.increase_balance(research.research_group_id, research_group_reward);
         used_reward += research_group_reward;
     }
 
@@ -1424,9 +1426,9 @@ share_type database::reward_research_token_holders(const research_object& resear
 
     while (it != it_end)
     {
-        auto reward_amount = (it->amount * reward) / DEIP_100_PERCENT;
+        auto reward_amount = util::calculate_share(reward, it->amount);
         auto& account = account_service.get_account(it->account_name);
-        account_service.adjust_balance(account, asset(reward_amount, DEIP_SYMBOL));
+        account_service.adjust_balance(account, reward_amount);
         used_reward += reward_amount;
         ++it;
     }
@@ -1436,8 +1438,8 @@ share_type database::reward_research_token_holders(const research_object& resear
     return used_reward;
 }
 
-share_type database::reward_references(const research_content_id_type &research_content_id,
-                                       const discipline_id_type &discipline_id, const share_type &reward)
+asset database::reward_references(const research_content_id_type &research_content_id,
+                                       const discipline_id_type &discipline_id, const asset &reward)
 {
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
@@ -1445,7 +1447,7 @@ share_type database::reward_references(const research_content_id_type &research_
 
     auto& research_content = research_content_service.get(research_content_id);
 
-    share_type used_reward = 0;
+    asset used_reward = asset(0, DEIP_SYMBOL);
     share_type total_votes_amount = 0;
 
     for (auto content_id : research_content.references)
@@ -1468,14 +1470,14 @@ share_type database::reward_references(const research_content_id_type &research_
     return used_reward;
 }
 
-share_type database::reward_reviews(const research_content_id_type &research_content_id,
+asset database::reward_reviews(const research_content_id_type &research_content_id,
                                     const discipline_id_type &discipline_id,
-                                    const share_type &reward,
+                                    const asset &reward,
                                     const share_type &expertise_reward)
 {
     std::vector<review_object> reviews;
 
-    share_type used_reward = 0;
+    asset used_reward = asset(0, DEIP_SYMBOL);
 
     auto it_pair = get_index<review_index>().indicies().get<by_research_content>().equal_range(research_content_id);
     auto it = it_pair.first;
@@ -1493,25 +1495,25 @@ share_type database::reward_reviews(const research_content_id_type &research_con
     return used_reward;
 }
 
-share_type database::reward_review_voters(const review_object &review,
+asset database::reward_review_voters(const review_object &review,
                                           const discipline_id_type &discipline_id,
-                                          const share_type &reward)
+                                          const asset &reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
     dbs_vote& vote_service = obtain_service<dbs_vote>();
 
     auto votes_wrapper = vote_service.get_review_votes_by_review_and_discipline(review.id, discipline_id);
 
-    share_type used_reward = 0;
+    asset used_reward = asset(0, DEIP_SYMBOL);
     share_type total_weight = review.weights_per_discipline.at(discipline_id);
 
-    if (total_weight == 0) return 0;
+    if (total_weight == 0) return asset(0, DEIP_SYMBOL);
 
     for (auto& vote_ref : votes_wrapper) {
         auto vote = vote_ref.get();
         auto& voter = account_service.get_account(vote.voter);
         auto reward_amount = util::calculate_share(reward, vote.weight, total_weight);
-        account_service.adjust_balance(voter, asset(reward_amount, DEIP_SYMBOL));
+        account_service.adjust_balance(voter, reward_amount);
         used_reward += reward_amount;
     }
 
@@ -1578,14 +1580,14 @@ void database::reward_research_authors_with_expertise(const research_object &res
 }
 
 
-share_type database::fund_review_pool(const discipline_object& discipline, const share_type& amount)
+asset database::fund_review_pool(const discipline_object& discipline, const asset& amount)
 {
     auto& review_service = obtain_service<dbs_review>();
 
     flat_set<review_id_type> reviews_ids;
     std::vector<review_object> reviews;
 
-    share_type used_reward = 0;
+    asset used_reward = asset(0, DEIP_SYMBOL);
 
     auto it_pair = get_index<review_vote_index>().indicies().get<by_discipline_id>().equal_range(discipline.id);
     auto it = it_pair.first;
@@ -1608,8 +1610,8 @@ share_type database::fund_review_pool(const discipline_object& discipline, const
     return used_reward;
 }
 
-share_type database::allocate_rewards_to_reviews(const std::vector<review_object> &reviews, const discipline_id_type &discipline_id,
-                                                 const share_type &reward, const share_type &expertise_reward)
+asset database::allocate_rewards_to_reviews(const std::vector<review_object> &reviews, const discipline_id_type &discipline_id,
+                                                 const asset &reward, const share_type &expertise_reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
 
@@ -1619,24 +1621,23 @@ share_type database::allocate_rewards_to_reviews(const std::vector<review_object
         total_reviews_weight += reviews.at(i).weights_per_discipline.at(discipline_id);
     }
 
-    if (total_reviews_weight == 0) return 0;
+    if (total_reviews_weight == 0) return asset(0, DEIP_SYMBOL);
 
-    share_type used_reward = 0;
+    asset used_reward = asset(0, DEIP_SYMBOL);
 
     for (auto& review : reviews) {
         auto weight_per_discipline = review.weights_per_discipline.at(discipline_id);
 
-        auto review_reward_share = util::calculate_share(reward, weight_per_discipline, total_reviews_weight);
+        asset review_reward_share = util::calculate_share(reward, weight_per_discipline, total_reviews_weight);
 
         auto author_name = review.author;
-        auto review_curators_reward_share = util::calculate_share(review_reward_share,
-                                                                      DEIP_CURATORS_REWARD_SHARE_PERCENT);
 
-        auto author_reward = review_reward_share - review_curators_reward_share;
+        asset review_curators_reward_share = util::calculate_share(review_reward_share, DEIP_CURATORS_REWARD_SHARE_PERCENT);
+        asset author_reward = review_reward_share - review_curators_reward_share;
 
         // Reward author
         auto& author = account_service.get_account(author_name);
-        account_service.adjust_balance(author, asset(author_reward, DEIP_SYMBOL));
+        account_service.adjust_balance(author, author_reward);
         used_reward += author_reward;
 
         used_reward += reward_review_voters(review, discipline_id, review_curators_reward_share);
@@ -2647,13 +2648,13 @@ void database::validate_invariants() const
         const auto& reward_pool_idx = get_index<reward_pool_index, by_id>();
         for (auto itr = reward_pool_idx.begin(); itr != reward_pool_idx.end(); ++itr)
         {
-            total_supply += itr->reward_share;
+            total_supply += itr->balance;
         }
 
         const auto& vesting_balance_idx = get_index<vesting_balance_index, by_id>();
         for (auto itr = vesting_balance_idx.begin(); itr != vesting_balance_idx.end(); ++itr)
         {
-            total_supply += itr->balance.amount;
+            total_supply += itr->balance;
         }
 
         total_supply +=  gpo.common_tokens_fund;
@@ -2801,12 +2802,12 @@ void database::process_content_activity_windows()
         {
             auto used_reward = reward_research_content(itr_by_end->id,
                                                        reward_pool.discipline_id,
-                                                       reward_pool.reward_share,
-                                                       reward_pool.expertise_share);
+                                                       reward_pool.balance,
+                                                       reward_pool.expertise);
 
             modify(reward_pool, [&](reward_pool_object& rcrp) {
-                rcrp.reward_share -= used_reward;
-                rcrp.expertise_share = 0;
+                rcrp.balance -= used_reward;
+                rcrp.expertise = 0;
             });
 
         }
