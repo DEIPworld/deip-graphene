@@ -1360,23 +1360,41 @@ vector<research_token_sale_api_obj> database_api::get_research_token_sale(const 
     });
 }
 
-bool database_api::check_research_token_sale_existence_by_research_id(const research_id_type& research_id) const
-{
-    const auto& idx = my->_db.get_index<research_token_sale_index>().indices().get<by_research_id>();
-    auto itr = idx.find(research_id);
-    if (itr != idx.end())
-        return true;
-    else
-        return false;
-}
-
-research_token_sale_api_obj
-database_api::get_research_token_sale_by_research_id(const research_id_type& research_id) const
+vector<research_token_sale_api_obj>
+database_api::get_research_token_sales_by_research_id(const research_id_type& research_id) const
 {
     return my->_db.with_read_lock([&]() {
+        vector<research_token_sale_api_obj> results;
         chain::dbs_research_token_sale& research_token_sale_service
-            = my->_db.obtain_service<chain::dbs_research_token_sale>();
-        return research_token_sale_service.get_by_research_id(research_id);
+                = my->_db.obtain_service<chain::dbs_research_token_sale>();
+
+        auto research_token_sales = research_token_sale_service.get_by_research_id(research_id);
+
+        for (const chain::research_token_sale_object& research_token_sale : research_token_sales)
+        {
+            results.push_back(research_token_sale);
+        }
+
+        return results;
+    });
+}
+
+vector<research_token_sale_api_obj>
+database_api::get_research_token_sales_by_research_id_and_status(const research_id_type& research_id, const research_token_sale_status status)
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_token_sale_api_obj> results;
+        chain::dbs_research_token_sale& research_token_sale_service
+                = my->_db.obtain_service<chain::dbs_research_token_sale>();
+
+        auto research_token_sales = research_token_sale_service.get_by_research_id_and_status(research_id, status);
+
+        for (const chain::research_token_sale_object& research_token_sale : research_token_sales)
+        {
+            results.push_back(research_token_sale);
+        }
+
+        return results;
     });
 }
 
