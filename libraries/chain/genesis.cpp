@@ -221,6 +221,7 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
 {
     const vector<genesis_state_type::expert_token_type>& expert_tokens = genesis_state.expert_tokens;
 
+    dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
     for (auto& expert_token : expert_tokens)
     {
         FC_ASSERT(!expert_token.account_name.empty(), "Expertise token 'account_name' must not be empty.");
@@ -232,8 +233,17 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
         auto& discipline = get<discipline_object, by_id>(expert_token.discipline_id); // verify that discipline exists
         FC_ASSERT(discipline.id._id == expert_token.discipline_id); // verify that discipline exists
 
-        dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
         expert_token_service.create(expert_token.account_name, expert_token.discipline_id, expert_token.amount, true);
+    }
+
+    // Init 'hermes' user with tokens in every discipline
+    const vector<genesis_state_type::discipline_type>& disciplines = genesis_state.disciplines;
+
+    for (auto& discipline : disciplines)
+    {
+        if (discipline.id != 0) {
+            expert_token_service.create("hermes", discipline.id, 10000, true);
+        }
     }
 }
 
