@@ -124,7 +124,7 @@ void dbs_proposal::clear_expired_proposals()
     while (it != proposal_itr)
     {
         auto current = it++;
-        if (!it->is_completed)
+        if (!current->is_completed)
             db_impl().remove(*current);
     }
 }
