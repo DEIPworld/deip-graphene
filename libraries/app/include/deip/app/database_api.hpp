@@ -358,14 +358,14 @@ public:
     // Research token sale //
     /////////////////////////
     research_token_sale_api_obj get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const;
-    bool check_research_token_sale_existence_by_research_id(const research_id_type& research_id) const;
-    research_token_sale_api_obj get_research_token_sale_by_research_id(const research_id_type& research_id) const;
+    vector<research_token_sale_api_obj> get_research_token_sales_by_research_id(const research_id_type& research_id) const;
     vector<research_token_sale_api_obj> get_research_token_sale_by_end_time(const time_point_sec end_time) const;
     research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type research_token_sale_contribution_id) const;
     vector<research_token_sale_contribution_api_obj> get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type research_token_sale_id) const;
     research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_account_name_and_research_token_sale_id(const account_name_type owner,
                                                                                                                              const research_token_sale_id_type research_token_sale_id) const;
     vector<research_token_sale_api_obj> get_research_token_sale(const uint32_t& from, uint32_t limit) const;
+    vector<research_token_sale_api_obj> get_research_token_sales_by_research_id_and_status(const research_id_type& research_id, const research_token_sale_status status);
 
     ///////////////////////////////////
     // Research discipline relation  //
@@ -596,13 +596,13 @@ FC_API(deip::app::database_api,
 
    // Research Token Sale
    (get_research_token_sale_by_id)
-   (get_research_token_sale_by_research_id)
+   (get_research_token_sales_by_research_id)
    (get_research_token_sale_by_end_time)
    (get_research_token_sale_contribution_by_id)
    (get_research_token_sale_contributions_by_research_token_sale_id)
    (get_research_token_sale_contribution_by_account_name_and_research_token_sale_id)
-   (check_research_token_sale_existence_by_research_id)
    (get_research_token_sale)
+   (get_research_token_sales_by_research_id_and_status)
 
    // Research discipline relation
    (get_disciplines_by_research)

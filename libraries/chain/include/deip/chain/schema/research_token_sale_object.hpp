@@ -69,20 +69,29 @@ public:
 
 struct by_research_id;
 struct by_end_time;
+struct by_research_id_and_status;
 
 typedef multi_index_container<research_token_sale_object,
         indexed_by<ordered_unique<tag<by_id>,
                 member<research_token_sale_object,
                         research_token_sale_id_type,
                         &research_token_sale_object::id>>,
-                ordered_unique<tag<by_research_id>,
+                ordered_non_unique<tag<by_research_id>,
                         member<research_token_sale_object,
                                 research_id_type,
                                 &research_token_sale_object::research_id>>,
                 ordered_non_unique<tag<by_end_time>,
                         member<research_token_sale_object,
                                 fc::time_point_sec,
-                                &research_token_sale_object::end_time>>>,
+                                &research_token_sale_object::end_time>>,
+                ordered_non_unique<tag<by_research_id_and_status>,
+                composite_key<research_token_sale_object,
+                        member<research_token_sale_object,
+                               research_id_type,
+                               &research_token_sale_object::research_id>,
+                        member<research_token_sale_object,
+                               research_token_sale_status,
+                               &research_token_sale_object::status>>>>,
         allocator<research_token_sale_object>>
         research_token_sale_index;
 

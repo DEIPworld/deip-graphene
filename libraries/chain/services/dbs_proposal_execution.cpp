@@ -211,6 +211,9 @@ void dbs_proposal_execution::start_research_token_sale(const proposal_object& pr
     research_service.check_research_existence(data.research_id);
     auto &research = research_service.get_research(data.research_id);
 
+    auto research_token_sales = research_token_sale_service.get_by_research_id_and_status(data.research_id, research_token_sale_status::token_sale_active);
+
+    FC_ASSERT(research_token_sales.size() == 0, "Another token sale in progress.");
     FC_ASSERT(data.start_time >= db_impl().head_block_time());
     FC_ASSERT((research.owned_tokens - data.amount_for_sale >= 0), "Tokens for sale is more than research balance");
 

@@ -57,12 +57,21 @@ const research_token_sale_object& dbs_research_token_sale::get_by_id(const resea
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-const research_token_sale_object& dbs_research_token_sale::get_by_research_id(const research_id_type &research_id) const
+dbs_research_token_sale::research_token_sale_refs_type
+dbs_research_token_sale::get_by_research_id(const research_id_type &research_id) const
 {
-    try {
-        return db_impl().get<research_token_sale_object, by_research_id>(research_id);
+    research_token_sale_refs_type ret;
+
+    auto it_pair = db_impl().get_index<research_token_sale_index>().indicies().get<by_research_id>().equal_range(research_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
     }
-    FC_CAPTURE_AND_RETHROW((research_id))
+
+    return ret;
 }
 
 dbs_research_token_sale::research_token_sale_refs_type
@@ -102,6 +111,27 @@ const research_token_sale_object& dbs_research_token_sale::update_status(const r
     const research_token_sale_object& research_token_sale = get_by_id(id);
     db_impl().modify(research_token_sale, [&](research_token_sale_object& rts) { rts.status = status; });
     return research_token_sale;
+}
+
+dbs_research_token_sale::research_token_sale_refs_type
+dbs_research_token_sale::get_by_research_id_and_status(const research_id_type& research_id,
+                                                       const research_token_sale_status status) const
+{
+    research_token_sale_refs_type ret;
+
+    auto it_pair = db_impl().get_index<research_token_sale_index>().indicies()
+                            .get<by_research_id_and_status>()
+                            .equal_range(boost::make_tuple(research_id, status));
+
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
 }
 
 const research_token_sale_contribution_object&
