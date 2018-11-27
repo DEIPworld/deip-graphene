@@ -236,15 +236,20 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
         expert_token_service.create(expert_token.account_name, expert_token.discipline_id, expert_token.amount, true);
     }
 
-    // Init 'hermes' user with tokens in every discipline
-    const vector<genesis_state_type::discipline_type>& disciplines = genesis_state.disciplines;
 
-    for (auto& discipline : disciplines)
-    {
-        if (discipline.id != 0) {
-            expert_token_service.create("hermes", discipline.id, 10000, true);
+#ifdef IS_TEST_NET
+    if (find<account_object, by_name>("hermes") != nullptr) {
+        // Init 'hermes' user with tokens in every discipline
+        const vector<genesis_state_type::discipline_type>& disciplines = genesis_state.disciplines;
+
+        for (auto& discipline : disciplines)
+        {
+            if (discipline.id != 0) {
+                expert_token_service.create("hermes", discipline.id, 10000, true);
+            }
         }
     }
+#endif
 }
 
 
