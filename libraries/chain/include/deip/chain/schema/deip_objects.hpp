@@ -49,30 +49,6 @@ enum curve_id
     power1dot5
 };
 
-class reward_fund_object : public object<reward_fund_object_type, reward_fund_object>
-{
-public:
-    template <typename Constructor, typename Allocator> reward_fund_object(Constructor&& c, allocator<Allocator> a)
-    {
-        c(*this);
-    }
-
-    reward_fund_object()
-    {
-    }
-
-    id_type id;
-
-    reward_fund_name_type name;
-    asset reward_balance = asset(0, DEIP_SYMBOL);
-    fc::uint128_t recent_claims = 0;
-    time_point_sec last_update;
-    uint16_t percent_curation_rewards = 0;
-    uint16_t percent_content_rewards = 0;
-    curve_id author_reward_curve;
-    curve_id curation_reward_curve;
-};
-
 // clang-format off
 struct by_withdraw_route;
 struct by_destination;
@@ -104,18 +80,6 @@ typedef multi_index_container<withdraw_common_tokens_route_object,
                                                                              &withdraw_common_tokens_route_object::id>>>>,
                               allocator<withdraw_common_tokens_route_object>>
     withdraw_common_tokens_route_index;
-struct by_name;
-typedef multi_index_container<reward_fund_object,
-                              indexed_by<ordered_unique<tag<by_id>,
-                                                        member<reward_fund_object,
-                                                               reward_fund_id_type,
-                                                               &reward_fund_object::id>>,
-                                         ordered_unique<tag<by_name>,
-                                                        member<reward_fund_object,
-                                                               reward_fund_name_type,
-                                                               &reward_fund_object::name>>>,
-                              allocator<reward_fund_object>>
-    reward_fund_index;
 
 // clang-format on
 
@@ -132,18 +96,5 @@ FC_REFLECT_ENUM( deip::chain::curve_id,
 FC_REFLECT( deip::chain::withdraw_common_tokens_route_object,
              (id)(from_account)(to_account)(percent)(auto_common_token) )
 CHAINBASE_SET_INDEX_TYPE( deip::chain::withdraw_common_tokens_route_object, deip::chain::withdraw_common_tokens_route_index )
-
-FC_REFLECT( deip::chain::reward_fund_object,
-            (id)
-            (name)
-            (reward_balance)
-            (recent_claims)
-            (last_update)
-            (percent_curation_rewards)
-            (percent_content_rewards)
-            (author_reward_curve)
-            (curation_reward_curve)
-         )
-CHAINBASE_SET_INDEX_TYPE( deip::chain::reward_fund_object, deip::chain::reward_fund_index )
 
 // clang-format on

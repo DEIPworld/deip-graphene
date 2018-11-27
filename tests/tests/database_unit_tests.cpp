@@ -6,7 +6,7 @@
 #include <deip/chain/util/reward.hpp>
 #include <deip/chain/schema/grant_objects.hpp>
 #include <deip/chain/schema/review_object.hpp>
-#include <deip/chain/schema/research_content_reward_pool_object.hpp>
+#include <deip/chain/schema/reward_pool_object.hpp>
 #include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 
 #include "database_fixture.hpp"
@@ -158,21 +158,21 @@ public:
         });
     }
 
-    void create_research_content_reward_pools()
+    void create_reward_pools()
     {
-        db.create<research_content_reward_pool_object>([&](research_content_reward_pool_object& d) {
+        db.create<reward_pool_object>([&](reward_pool_object& d) {
             d.id = 1;
             d.discipline_id = 10;
-            d.reward_share = 500;
-            d.expertise_share = 500;
+            d.balance = asset(500, DEIP_SYMBOL);
+            d.expertise = 500;
             d.research_content_id = 1;
         });
 
-        db.create<research_content_reward_pool_object>([&](research_content_reward_pool_object& d) {
+        db.create<reward_pool_object>([&](reward_pool_object& d) {
             d.id = 2;
             d.discipline_id = 10;
-            d.reward_share = 500;
-            d.expertise_share = 500;
+            d.balance = asset(500, DEIP_SYMBOL);
+            d.expertise = 500;
             d.research_content_id = 2;
         });
     }
@@ -606,11 +606,11 @@ BOOST_AUTO_TEST_CASE(reward_researches_in_discipline)
 
         BOOST_CHECK_NO_THROW(db.reward_researches_in_discipline(discipline, reward, reward));
 
-        auto& reward_pool_1 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(1, discipline.id));
-        auto& reward_pool_2 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(2, discipline.id));
+        auto& reward_pool_1 = db.get<reward_pool_object, by_content_and_discipline>(std::make_tuple(1, discipline.id));
+        auto& reward_pool_2 = db.get<reward_pool_object, by_content_and_discipline>(std::make_tuple(2, discipline.id));
 
-        BOOST_CHECK(reward_pool_1.reward_share + reward_pool_2.reward_share == 1000);
-        BOOST_CHECK(reward_pool_1.expertise_share + reward_pool_2.expertise_share == 1000);
+        BOOST_CHECK(reward_pool_1.balance + reward_pool_2.balance == asset(1000, DEIP_SYMBOL));
+        BOOST_CHECK(reward_pool_1.expertise + reward_pool_2.expertise == 1000);
 
     }
     FC_LOG_AND_RETHROW()
@@ -632,21 +632,21 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
         create_research_groups();
         create_research_group_tokens();
 
-        share_type reward = 1000;
-        auto used_reward = share_type(0);
+        asset reward = asset(1000, DEIP_SYMBOL);
+        asset used_reward = asset(0, DEIP_SYMBOL);
 
-        BOOST_CHECK_NO_THROW(used_reward = db.distribute_reward(reward, reward));
+        BOOST_CHECK_NO_THROW(used_reward = db.distribute_reward(reward, reward.amount));
 
-        BOOST_CHECK(alice.balance.amount == 24);
-        BOOST_CHECK(bob.balance.amount == 24);
+        BOOST_CHECK(alice.balance == asset(24, DEIP_SYMBOL));
+        BOOST_CHECK(bob.balance == asset(24, DEIP_SYMBOL));
 
         auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight");
 
-        auto& reward_pool_1 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(1, discipline.id));
-        auto& reward_pool_2 = db.get<research_content_reward_pool_object, by_content_and_discipline>(std::make_tuple(2, discipline.id));
+        auto& reward_pool_1 = db.get<reward_pool_object, by_content_and_discipline>(std::make_tuple(1, discipline.id));
+        auto& reward_pool_2 = db.get<reward_pool_object, by_content_and_discipline>(std::make_tuple(2, discipline.id));
 
-        BOOST_CHECK(reward_pool_1.reward_share + reward_pool_2.reward_share == 950);
-        BOOST_CHECK(reward_pool_1.expertise_share + reward_pool_2.expertise_share == 1000);
+        BOOST_CHECK(reward_pool_1.balance + reward_pool_2.balance == asset(950, DEIP_SYMBOL));
+        BOOST_CHECK(reward_pool_1.expertise + reward_pool_2.expertise == 1000);
     }
     FC_LOG_AND_RETHROW()
 }

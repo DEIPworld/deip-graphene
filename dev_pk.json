@@ -9,6 +9,11 @@
         "public_key": "DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi"
     }],
 
+    "hermes": [{
+        "private_key": "5J7xMbqRbaP4wnP3NnzPERR8msN6yrcXrZBbKenFiQpDjNcdvfc",
+        "public_key": "DEIP59qXbaUicSZvKQEZAVE6BnDcn5FuUrgoiLNUMBc35ay5KPK9Qv"
+    }],
+
     "initdelegate": [{
         "private_key": "5JidFW79ttL9YP3W2Joc5Zer49opYU3fKNeBx9B6cpEH1GiDm5p",
         "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ"

@@ -301,13 +301,19 @@
         "name": "nikolay",
         "recovery_account": "",
         "public_key": "DEIP57ciPZBrQN2YBBX2CBDcsWvrNqaACAbn3eDkW7f4QobRyU2KJZ",
-        "deip_amount": 5000000000,
+        "deip_amount": 1000000000,
         "sp_amount": 0
     }, {
         "name": "dzeranov",
         "recovery_account": "",
         "public_key": "DEIP7iLoUGiPXkRQnWY6HZGt3ShEAUzgXbMmVcdcRsBcgoXohCbrGi",
         "deip_amount": 1000000000,
+        "sp_amount": 0
+    }, {
+        "name": "hermes",
+        "recovery_account": "",
+        "public_key": "DEIP59qXbaUicSZvKQEZAVE6BnDcn5FuUrgoiLNUMBc35ay5KPK9Qv",
+        "deip_amount": 4010000000,
         "sp_amount": 0
     }],
 
@@ -1502,6 +1508,18 @@
         "account_name": "alice",
         "discipline_id": 9,
         "amount": 1000
+    }, {
+        "account_name": "alice",
+        "discipline_id": 135,
+        "amount": 1000
+    }, {
+        "account_name": "alice",
+        "discipline_id": 152,
+        "amount": 1000
+    }, {
+        "account_name": "alice",
+        "discipline_id": 139,
+        "amount": 1000
     },
 
 
@@ -1509,7 +1527,19 @@
         "account_name": "bob",
         "discipline_id": 8,
         "amount": 10000
-    }, 
+    }, {
+        "account_name": "bob",
+        "discipline_id": 135,
+        "amount": 1000
+    }, {
+        "account_name": "bob",
+        "discipline_id": 152,
+        "amount": 1000
+    }, {
+        "account_name": "bob",
+        "discipline_id": 139,
+        "amount": 1000
+    },
     
     
     {
@@ -1656,6 +1686,10 @@
         "discipline_id": 144,
         "amount": 10000
     }, {
+        "account_name": "akulik",
+        "discipline_id": 139,
+        "amount": 10000
+    }, {
         "account_name": "shkor",
         "discipline_id": 8,
         "amount": 10000
@@ -1670,6 +1704,10 @@
     }, {
         "account_name": "shkor",
         "discipline_id": 144,
+        "amount": 10000
+    }, {
+        "account_name": "shkor",
+        "discipline_id": 139,
         "amount": 10000
     }, {
         "account_name": "yahortsaryk",
@@ -1686,6 +1724,10 @@
     }, {
         "account_name": "yahortsaryk",
         "discipline_id": 144,
+        "amount": 10000
+    }, {
+        "account_name": "yahortsaryk",
+        "discipline_id": 139,
         "amount": 10000
     }, {
         "account_name": "nikolay",
@@ -1749,8 +1791,7 @@
         "account_name": "maksim",
         "discipline_id": 135,
         "amount": 5000
-    }
-],
+    }],
 
     "research_groups": [{
         "id": 0,
@@ -1844,13 +1885,5 @@
         }
     ],
 
-    "vesting_balances": [{
-            "id": 0,
-            "owner": "alice",
-            "balance": 10000000,
-            "vesting_duration_seconds": 157680000,
-            "vesting_cliff_seconds": 31536000,
-            "period_duration_seconds": 7884000
-        }
-    ]
+    "vesting_balances": []
 }

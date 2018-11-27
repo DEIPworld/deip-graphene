@@ -23,6 +23,8 @@ using fc::uint128_t;
 
 
 uint128_t evaluate_reward_curve(const uint128_t& rshares, const curve_id& curve = quadratic);
+asset calculate_share(const asset &amount, const share_type &share_percent);
+asset calculate_share(const asset &amount, const share_type &weight, const share_type &total_weight);
 share_type calculate_share(const share_type &amount, const share_type &share_percent);
 share_type calculate_share(const share_type &amount, const share_type &weight, const share_type &total_weight);
 
