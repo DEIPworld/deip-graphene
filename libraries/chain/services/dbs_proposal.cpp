@@ -119,11 +119,13 @@ void dbs_proposal::clear_expired_proposals()
 
     auto block_time = db_impl().head_block_time();
     auto proposal_itr = proposal_expiration_index.upper_bound(block_time);
+    auto it = proposal_expiration_index.begin();
 
-    while (proposal_expiration_index.begin() != proposal_itr)
+    while (it != proposal_itr)
     {
-        if (!proposal_expiration_index.begin()->is_completed)
-            db_impl().remove(*proposal_expiration_index.begin());
+        auto current = it++;
+        if (!it->is_completed)
+            db_impl().remove(*current);
     }
 }
 
