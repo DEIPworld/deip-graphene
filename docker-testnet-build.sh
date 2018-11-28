@@ -33,4 +33,9 @@ docker image prune --filter label=stage=intermediate
 
 echo "Push all images"
 docker login --username=${DOCKER_USER} --password=${DOCKER_PASSWORD}
-docker push "deipdev/testnet"
+docker push "deipdev/testnet:$NODE_PREFIX$TAG"
+docker push "deipdev/testnet:$NODE_PREFIX$LATEST"
+docker push "deipdev/testnet:$FULL_NODE_PREFIX$TAG"
+docker push "deipdev/testnet:$FULL_NODE_PREFIX$LATEST"
+docker push "deipdev/testnet:$WALLET_PREFIX$TAG"
+docker push "deipdev/testnet:$WALLET_PREFIX$LATEST"

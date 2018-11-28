@@ -1842,16 +1842,7 @@
             "content": "dar:55fee44ab37b0f7a17b8baed4ecbd780",
             "authors": ["alice", "bob"],
             "references": []
-        }, {
-            "research_id": 0,
-            "type": 3,
-            "title": "Object vision to hand action in macaque parietal, premotor, and motor cortices",
-            "permlink": "kitchensink",
-            "content": "dar:fa5fe9a85fdc3f95cf47ce7ddccb8e93",
-            "authors": ["alice", "bob"],
-            "references": []
-        },
-        {
+        },{
             "research_id": 1,
             "type": 1,
             "title": "Table of Content",
