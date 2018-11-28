@@ -145,15 +145,22 @@ void dbs_research::calculate_eci(const research_id_type& research_id)
         total_weights[it->first] -= it->second;
     }
 
-    auto& research = db_impl().get<research_object>(research_id);
+        auto& research = db_impl().get<research_object>(research_id);
 
     std::map<discipline_id_type, share_type> discipline_total_weights;
-    for (auto it = total_weights.begin(); it != total_weights.end(); ++it) {
-        db_impl().modify(research,
-                         [&](research_object &r_o) { r_o.eci_per_discipline[it->first.second] = it->second.value; });
+    for (auto it = total_weights.begin(); it != total_weights.end(); ++it)
+    {
+        auto& discipline_id = it->first.second;
+        auto& weight = it->second;
+        discipline_total_weights[discipline_id] += weight;
     }
 
-
+    for (auto it = discipline_total_weights.begin(); it != discipline_total_weights.end(); ++it) {
+        auto discipline_id = it->first;
+        auto weight = it->second;
+        db_impl().modify(research,
+                         [&](research_object &r_o) { r_o.eci_per_discipline[discipline_id].value = weight.value; });
+    }
 }
 
 }
