@@ -48,7 +48,7 @@ struct change_quorum_proposal_data_type : base_proposal_data_type
 
     void validate() const
     {
-        FC_ASSERT(quorum_percent >= 5 && quorum_percent <= 100, "Quorum percent should be in 5 to 100 range");
+        FC_ASSERT(quorum_percent >= 5 * DEIP_1_PERCENT && quorum_percent <= DEIP_100_PERCENT, "Quorum percent should be in 500 to 10000 range");
     }
 };
 
@@ -83,12 +83,12 @@ struct send_funds_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
     account_name_type recipient;
-    share_type funds;
+    asset funds;
 
     void validate() const
     {
         FC_ASSERT(is_valid_account_name(recipient), "Account name ${n} is invalid", ("n", recipient));
-        FC_ASSERT(funds >= 0, "Amount cant be negative");
+        FC_ASSERT(funds >= asset(0, DEIP_SYMBOL), "Amount cant be negative");
     }
 };
 struct rebalance_info

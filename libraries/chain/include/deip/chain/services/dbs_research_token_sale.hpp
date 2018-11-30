@@ -27,8 +27,8 @@ public:
                                             const fc::time_point_sec start_time,
                                             const fc::time_point_sec end_time,
                                             const share_type& balance_tokens,
-                                            const asset soft_cap,
-                                            const asset hard_cap);
+                                            const asset& soft_cap,
+                                            const asset& hard_cap);
 
     research_token_sale_refs_type get_all() const;
 
