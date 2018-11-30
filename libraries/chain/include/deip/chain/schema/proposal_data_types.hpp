@@ -83,12 +83,12 @@ struct send_funds_data_type : base_proposal_data_type
 {
     research_group_id_type research_group_id;
     account_name_type recipient;
-    share_type funds;
+    asset funds;
 
     void validate() const
     {
         FC_ASSERT(is_valid_account_name(recipient), "Account name ${n} is invalid", ("n", recipient));
-        FC_ASSERT(funds >= 0, "Amount cant be negative");
+        FC_ASSERT(funds >= asset(0, DEIP_SYMBOL), "Amount cant be negative");
     }
 };
 struct rebalance_info

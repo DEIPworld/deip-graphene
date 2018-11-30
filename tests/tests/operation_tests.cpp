@@ -3110,7 +3110,7 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
         setup_research_group(31, "name", "research_group", "research group", 750, proposal_quorums, false, accounts);
         const std::string json_str = "{\"research_group_id\":31,"
                 "\"recipient\":\"bob\","
-                "\"funds\": 250}";
+                "\"funds\": \"0.250 TESTS\"}";
 
         create_proposal(1, dbs_proposal::action_t::send_funds, json_str, "alice", 31, fc::time_point_sec(0xffffffff),
                         1);
