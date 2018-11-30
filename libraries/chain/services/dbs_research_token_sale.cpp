@@ -13,8 +13,8 @@ const research_token_sale_object& dbs_research_token_sale::start(const research_
                                                                  const fc::time_point_sec start_time,
                                                                  const fc::time_point_sec end_time,
                                                                  const share_type& balance_tokens,
-                                                                 const asset soft_cap,
-                                                                 const asset hard_cap)
+                                                                 const asset& soft_cap,
+                                                                 const asset& hard_cap)
 {
     FC_ASSERT(start_time >= db_impl().head_block_time(), "Start time must be >= current time");
     FC_ASSERT(end_time > start_time, "End time must be >= start time");

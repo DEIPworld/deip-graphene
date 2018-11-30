@@ -2990,7 +2990,7 @@ BOOST_AUTO_TEST_CASE(change_quorum_test)
 
         setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
 
-        const std::string change_quorum_json = "{\"quorum_percent\": 80, \"proposal_type\": 2, \"research_group_id\": 31}";
+        const std::string change_quorum_json = "{\"quorum_percent\": 8000, \"proposal_type\": 2, \"research_group_id\": 31}";
         create_proposal(1, dbs_proposal::action_t::change_quorum, change_quorum_json, "alice", 31, time_point_sec(0xffffffff), 1);
 
         vote_proposal_operation op;
@@ -3010,7 +3010,7 @@ BOOST_AUTO_TEST_CASE(change_quorum_test)
 
         auto& research_group = research_group_service.get_research_group(31);
 
-        BOOST_CHECK(research_group.proposal_quorums.at(invite_member) == 80);
+        BOOST_CHECK(research_group.proposal_quorums.at(invite_member) == 8000);
     }
     FC_LOG_AND_RETHROW()
 }

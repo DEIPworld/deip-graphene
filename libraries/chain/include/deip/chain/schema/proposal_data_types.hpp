@@ -48,7 +48,7 @@ struct change_quorum_proposal_data_type : base_proposal_data_type
 
     void validate() const
     {
-        FC_ASSERT(quorum_percent >= 5 && quorum_percent <= 100, "Quorum percent should be in 5 to 100 range");
+        FC_ASSERT(quorum_percent >= 5 * DEIP_1_PERCENT && quorum_percent <= DEIP_100_PERCENT, "Quorum percent should be in 500 to 10000 range");
     }
 };
 
