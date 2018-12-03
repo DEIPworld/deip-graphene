@@ -568,6 +568,7 @@ struct research_group_api_obj
         ,  description(fc::to_string(rg.description))
         ,  quorum_percent(rg.quorum_percent.value)
         ,  is_personal(rg.is_personal)
+        ,  balance(rg.balance)
     {
         for (auto& proposal_quorum : rg.proposal_quorums)
             proposal_quorums.insert(std::make_pair(static_cast<uint16_t>(proposal_quorum.first), proposal_quorum.second.value));
@@ -585,6 +586,7 @@ struct research_group_api_obj
     uint32_t quorum_percent;
     std::map<uint16_t, uint32_t> proposal_quorums;
     bool is_personal;
+    asset balance;
 };
 
 struct research_token_sale_api_obj
@@ -1147,6 +1149,7 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (quorum_percent)
             (proposal_quorums)
             (is_personal)
+            (balance)
 )
 
 FC_REFLECT( deip::app::research_token_sale_api_obj,
