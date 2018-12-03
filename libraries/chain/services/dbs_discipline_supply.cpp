@@ -1,4 +1,4 @@
-#include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/schema/account_object.hpp>
@@ -10,12 +10,12 @@
 namespace deip {
 namespace chain {
 
-dbs_grant::dbs_grant(database& db)
+dbs_discipline_supply::dbs_discipline_supply(database& db)
     : _base_type(db)
 {
 }
 
-dbs_grant::grant_refs_type dbs_grant::get_grants() const
+dbs_discipline_supply::grant_refs_type dbs_discipline_supply::get_grants() const
 {
     grant_refs_type ret;
 
@@ -31,7 +31,7 @@ dbs_grant::grant_refs_type dbs_grant::get_grants() const
     return ret;
 }
 
-std::set<string> dbs_grant::lookup_grant_owners(const string& lower_bound_owner_name, uint32_t limit) const
+std::set<string> dbs_discipline_supply::lookup_grant_owners(const string& lower_bound_owner_name, uint32_t limit) const
 {
     FC_ASSERT(limit <= DEIP_LIMIT_GRANTS_LIST_SIZE,
               "limit must be less or equal than ${1}, actual limit value == ${2}",
@@ -48,7 +48,7 @@ std::set<string> dbs_grant::lookup_grant_owners(const string& lower_bound_owner_
     return result;
 }
 
-dbs_grant::grant_refs_type dbs_grant::get_grants(const account_name_type& owner) const
+dbs_discipline_supply::grant_refs_type dbs_discipline_supply::get_grants(const account_name_type& owner) const
 {
     grant_refs_type ret;
 
@@ -64,7 +64,7 @@ dbs_grant::grant_refs_type dbs_grant::get_grants(const account_name_type& owner)
     return ret;
 }
 
-const grant_object& dbs_grant::get_grant(grant_id_type id) const
+const grant_object& dbs_discipline_supply::get_grant(grant_id_type id) const
 {
     try {
         return db_impl().get<grant_object>(id);
@@ -72,7 +72,7 @@ const grant_object& dbs_grant::get_grant(grant_id_type id) const
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-const grant_object& dbs_grant::create_grant(const account_object& owner,
+const grant_object& dbs_discipline_supply::create_grant(const account_object& owner,
                                             const asset& balance,
                                             const uint32_t& start_block,
                                             const uint32_t& end_block,
@@ -120,7 +120,7 @@ const grant_object& dbs_grant::create_grant(const account_object& owner,
     return new_grant;
 }
 
-asset dbs_grant::allocate_funds(const grant_object& grant)
+asset dbs_discipline_supply::allocate_funds(const grant_object& grant)
 {
     auto amount = asset(std::min(grant.per_block, grant.balance.amount), DEIP_SYMBOL);
     db_impl().modify(grant, [&](grant_object& b) {
@@ -132,7 +132,7 @@ asset dbs_grant::allocate_funds(const grant_object& grant)
     return amount;
 }
 
-void dbs_grant::clear_expired_grants()
+void dbs_discipline_supply::clear_expired_grants()
 {
     const auto& grant_expiration_index = db_impl().get_index<grant_index>().indices().get<by_end_block>();
 
@@ -156,12 +156,12 @@ void dbs_grant::clear_expired_grants()
     }
 }
 
-bool dbs_grant::is_expired(const grant_object& grant)
+bool dbs_discipline_supply::is_expired(const grant_object& grant)
 {
     return grant.end_block < db_impl().head_block_num();
 }
 
-uint64_t dbs_grant::_get_grants_count(const account_name_type& owner) const
+uint64_t dbs_discipline_supply::_get_grants_count(const account_name_type& owner) const
 {
     return db_impl().get_index<grant_index>().indicies().get<by_owner_name>().count(owner);
 }

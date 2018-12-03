@@ -13,7 +13,7 @@
 #include <deip/chain/schema/transaction_object.hpp>
 #include <deip/chain/shared_db_merkle.hpp>
 #include <deip/chain/operation_notification.hpp>
-#include <deip/chain/schema/grant_objects.hpp>
+#include <deip/chain/schema/discipline_supply_object.hpp>
 #include <deip/chain/schema/proposal_object.hpp>
 #include <deip/chain/genesis_state.hpp>
 #include <deip/chain/schema/research_group_object.hpp>
@@ -64,7 +64,7 @@
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_research_group_invite.hpp>
-#include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_proposal_execution.hpp>
@@ -1710,7 +1710,7 @@ void database::process_grants()
 {
     uint32_t block_num = head_block_num();
 
-    dbs_grant& grant_service = obtain_service<dbs_grant>();
+    dbs_discipline_supply& grant_service = obtain_service<dbs_discipline_supply>();
 
     const auto& grants_idx = get_index<grant_index>().indices().get<by_start_block>();
 
@@ -2464,7 +2464,7 @@ void database::clear_expired_invites()
 
 void database::clear_expired_grants()
 {
-    dbs_grant& grant_service = obtain_service<dbs_grant>();
+    dbs_discipline_supply& grant_service = obtain_service<dbs_discipline_supply>();
     grant_service.clear_expired_grants();
 }
 

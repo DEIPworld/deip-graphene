@@ -18,7 +18,7 @@
 #include <cfenv>
 #include <iostream>
 
-#include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
@@ -775,7 +775,7 @@ vector<grant_api_obj> database_api_impl::get_grants(const set<string>& names) co
 
     vector<grant_api_obj> results;
 
-    chain::dbs_grant& grant_service = _db.obtain_service<chain::dbs_grant>();
+    chain::dbs_discipline_supply& grant_service = _db.obtain_service<chain::dbs_discipline_supply>();
 
     for (const auto& name : names)
     {
@@ -804,7 +804,7 @@ set<string> database_api_impl::lookup_grant_owners(const string& lower_bound_nam
     FC_ASSERT(limit <= DEIP_LIMIT_API_GRANTS_LIST_SIZE, "limit must be less or equal than ${1}",
               ("1", DEIP_LIMIT_API_GRANTS_LIST_SIZE));
 
-    chain::dbs_grant& grant_service = _db.obtain_service<chain::dbs_grant>();
+    chain::dbs_discipline_supply& grant_service = _db.obtain_service<chain::dbs_discipline_supply>();
 
     return grant_service.lookup_grant_owners(lower_bound_name, limit);
 }

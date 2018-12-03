@@ -4,7 +4,7 @@
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
 #include <deip/chain/util/reward.hpp>
-#include <deip/chain/schema/grant_objects.hpp>
+#include <deip/chain/schema/discipline_supply_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/reward_pool_object.hpp>
 #include <deip/chain/schema/expertise_allocation_proposal_object.hpp>

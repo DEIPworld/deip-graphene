@@ -5,7 +5,7 @@
 #include <set>
 #include <functional>
 
-#include <deip/chain/schema/grant_objects.hpp>
+#include <deip/chain/schema/discipline_supply_object.hpp>
 
 namespace deip {
 namespace chain {
@@ -13,14 +13,14 @@ namespace chain {
 /** DB service for operations with grant_object
  *  --------------------------------------------
  */
-class dbs_grant : public dbs_base
+class dbs_discipline_supply : public dbs_base
 {
     friend class dbservice_dbs_factory;
 
-    dbs_grant() = delete;
+    dbs_discipline_supply() = delete;
 
 protected:
-    explicit dbs_grant(database& db);
+    explicit dbs_discipline_supply(database& db);
 
 public:
     using grant_refs_type = std::vector<std::reference_wrapper<const grant_object>>;

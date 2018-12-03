@@ -23,7 +23,7 @@
 #include <deip/chain/schema/expert_token_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
-#include <deip/chain/schema/grant_objects.hpp>
+#include <deip/chain/schema/discipline_supply_object.hpp>
 #include <deip/chain/schema/expertise_stats_object.hpp>
 #include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>

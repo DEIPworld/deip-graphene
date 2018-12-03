@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <deip/chain/services/dbs_account.hpp>
-#include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_discipline_supply.hpp>
 
 #include "database_fixture.hpp"
 
@@ -21,7 +21,7 @@ class grant_service_check_fixture : public timed_blocks_database_fixture
 {
 public:
     grant_service_check_fixture()
-        : grant_service(db.obtain_service<dbs_grant>())
+        : grant_service(db.obtain_service<dbs_discipline_supply>())
         , account_service(db.obtain_service<dbs_account>())
         , public_key(database_fixture::generate_private_key("user private key").get_public_key())
         , fake(account_service.create_account_by_faucets("",
@@ -41,7 +41,7 @@ public:
         account_service.adjust_balance(bob, asset(BOB_ACCOUNT_GRANT, DEIP_SYMBOL));
     }
 
-    dbs_grant& grant_service;
+    dbs_discipline_supply& grant_service;
     dbs_account& account_service;
     const public_key_type public_key;
     const account_object& fake;

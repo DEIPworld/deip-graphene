@@ -6,7 +6,7 @@
 #include <deip/chain/schema/deip_objects.hpp>
 #include <deip/chain/schema/transaction_object.hpp>
 #include <deip/chain/schema/witness_objects.hpp>
-#include <deip/chain/schema/grant_objects.hpp>
+#include <deip/chain/schema/discipline_supply_object.hpp>
 #include <deip/chain/schema/proposal_object.hpp>
 #include <deip/chain/schema/proposal_vote_object.hpp>
 #include <deip/chain/schema/discipline_object.hpp>

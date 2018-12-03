@@ -4,7 +4,7 @@
 #include <deip/chain/schema/deip_objects.hpp>
 
 #include <deip/chain/services/dbs_account.hpp>
-#include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_discipline_supply.hpp>
 
 #include "database_fixture.hpp"
 
@@ -81,12 +81,12 @@ class grant_transaction_check_fixture : public grant_operation_check_fixture
 {
 public:
     grant_transaction_check_fixture()
-        : grant_service(db.obtain_service<dbs_grant>())
+        : grant_service(db.obtain_service<dbs_discipline_supply>())
         , account_service(db.obtain_service<dbs_account>())
     {
     }
 
-    dbs_grant& grant_service;
+    dbs_discipline_supply& grant_service;
     dbs_account& account_service;
 
     private_key_type alice_create_grant(const asset& balance);

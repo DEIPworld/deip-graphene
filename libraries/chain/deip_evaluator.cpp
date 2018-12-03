@@ -8,7 +8,7 @@
 #include <deip/chain/database/database.hpp> //replace to dbservice after _temporary_public_impl remove
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_witness.hpp>
-#include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
@@ -542,7 +542,7 @@ void change_recovery_account_evaluator::do_apply(const change_recovery_account_o
 
 void create_grant_evaluator::do_apply(const create_grant_operation& op)
 {
-    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
+    dbs_discipline_supply& grant_service = _db.obtain_service<dbs_discipline_supply>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     account_service.check_account_existence(op.owner);
