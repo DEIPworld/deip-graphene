@@ -361,8 +361,8 @@ public:
 
     share_type calculate_review_weight_modifier(const review_id_type& review_id, const discipline_id_type& discipline_id) override;
 
-    share_type grant_researches_in_discipline(const discipline_id_type& discipline_id, const share_type &amount);
-    void process_grants();
+    share_type supply_researches_in_discipline(const discipline_id_type &discipline_id, const share_type &amount);
+    void process_discipline_supplies();
 
     time_point_sec head_block_time() const override;
     uint32_t head_block_num() const;
@@ -457,7 +457,7 @@ protected:
     void process_content_activity_windows();
     void process_header_extensions(const signed_block& next_block);
     void clear_expired_invites();
-    void clear_expired_grants();
+    void clear_expired_discipline_supplies();
 
     void init_hardforks(fc::time_point_sec genesis_time);
     void process_hardforks();

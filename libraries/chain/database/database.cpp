@@ -1652,7 +1652,7 @@ asset database::allocate_rewards_to_reviews(const std::vector<review_object> &re
     return used_reward;
 }
 
-share_type database::grant_researches_in_discipline(const discipline_id_type& discipline_id, const share_type &grant)
+share_type database::supply_researches_in_discipline(const discipline_id_type &discipline_id, const share_type &grant)
 {
     dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
@@ -1668,7 +1668,7 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
 
     std::map<research_group_id_type, share_type> grant_shares_per_research;
 
-    // Exclude final results from share calculation and grant distribution
+    // Exclude final results from share calculation and discipline_supply distribution
     const auto& final_results_idx = get_index<total_votes_index>().indices().get<by_discipline_and_content_type>();
     auto final_results_itr_pair = final_results_idx.equal_range(std::make_tuple(discipline.id, research_content_type::final_result));
     auto& final_results_itr = final_results_itr_pair.first;
@@ -1701,30 +1701,30 @@ share_type database::grant_researches_in_discipline(const discipline_id_type& di
             }
     }
 
-    FC_ASSERT(used_grant <= grant, "Attempt to allocate grant amount that is greater than grant");
+    FC_ASSERT(used_grant <= grant, "Attempt to allocate discipline_supply amount that is greater than discipline_supply");
 
     return used_grant;
 }
 
-void database::process_grants()
+void database::process_discipline_supplies()
 {
     uint32_t block_num = head_block_num();
 
-    dbs_discipline_supply& grant_service = obtain_service<dbs_discipline_supply>();
+    dbs_discipline_supply& discipline_supply_service = obtain_service<dbs_discipline_supply>();
 
-    const auto& grants_idx = get_index<grant_index>().indices().get<by_start_block>();
+    const auto& discipline_supplies_idx = get_index<discipline_supply_index>().indices().get<by_start_block>();
 
-    auto grants_itr = grants_idx.upper_bound(block_num);
+    auto discipline_supplies_itr = discipline_supplies_idx.upper_bound(block_num);
 
-    for (auto itr = grants_idx.begin(); itr != grants_itr; ++itr)
+    for (auto itr = discipline_supplies_idx.begin(); itr != discipline_supplies_itr; ++itr)
     {
-        auto& grant = *itr;
-        auto used_grant = grant_researches_in_discipline(grant.target_discipline, grant.per_block);
+        auto& discipline_supply = *itr;
+        auto used_discipline_supply = supply_researches_in_discipline(discipline_supply.target_discipline, discipline_supply.per_block);
 
-        if (used_grant == 0 && grant.is_extendable)
-            modify(grant, [&](grant_object& g_o) { g_o.end_block++;} );
-        else if (used_grant != 0)
-            grant_service.allocate_funds(grant);
+        if (used_discipline_supply == 0 && discipline_supply.is_extendable)
+            modify(discipline_supply, [&](discipline_supply_object& g_o) { g_o.end_block++;} );
+        else if (used_discipline_supply != 0)
+            discipline_supply_service.allocate_funds(discipline_supply);
     }
 }
 
@@ -1810,7 +1810,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_expertise_evaluator>();
     _my->_evaluator_registry.register_evaluator<revoke_expertise_delegation_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_discipline_supply_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_expertise_allocation_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_expertise_allocation_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<accept_research_token_offer_evaluator>();
@@ -1833,7 +1833,7 @@ void database::initialize_indexes()
     add_index<owner_authority_history_index>();
     add_index<account_recovery_request_index>();
     add_index<change_recovery_account_request_index>();
-    add_index<grant_index>();
+    add_index<discipline_supply_index>();
     add_index<proposal_index>();
     add_index<proposal_vote_index>();
     add_index<research_group_index>();
@@ -2069,7 +2069,7 @@ void database::_apply_block(const signed_block& next_block)
         clear_expired_transactions();
         clear_expired_proposals();
         clear_expired_invites();
-        clear_expired_grants();
+        clear_expired_discipline_supplies();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
@@ -2079,7 +2079,7 @@ void database::_apply_block(const signed_block& next_block)
         account_recovery_processing();
         process_content_activity_windows();
         process_hardforks();
-        process_grants();
+        process_discipline_supplies();
 
         /// modify expertise stats to correctly calculate emission
         expertise_stats_service.calculate_used_expertise_for_week();
@@ -2462,10 +2462,10 @@ void database::clear_expired_invites()
     research_group_invite_service.clear_expired_invites();
 }
 
-void database::clear_expired_grants()
+void database::clear_expired_discipline_supplies()
 {
-    dbs_discipline_supply& grant_service = obtain_service<dbs_discipline_supply>();
-    grant_service.clear_expired_grants();
+    dbs_discipline_supply& discipline_supply_service = obtain_service<dbs_discipline_supply>();
+    discipline_supply_service.clear_expired_discipline_supplies();
 }
 
 void database::adjust_balance(const account_object& a, const asset& delta)

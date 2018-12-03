@@ -302,9 +302,9 @@ struct dynamic_global_property_api_obj : public dynamic_global_property_object
     uint128_t max_virtual_bandwidth = 0;
 };
 
-struct grant_api_obj
+struct discipline_supply_api_obj
 {
-    grant_api_obj(const chain::grant_object& b)
+    discipline_supply_api_obj(const chain::discipline_supply_object& b)
         : id(b.id._id)
         , owner(b.owner)
         , target_discipline(b.target_discipline._id)
@@ -319,7 +319,7 @@ struct grant_api_obj
     }
 
     // because fc::variant require for temporary object
-    grant_api_obj()
+    discipline_supply_api_obj()
     {
     }
 
@@ -1045,7 +1045,7 @@ FC_REFLECT_DERIVED( deip::app::dynamic_global_property_api_obj, (deip::chain::dy
                      (max_virtual_bandwidth)
                   )
 
-FC_REFLECT( deip::app::grant_api_obj,
+FC_REFLECT( deip::app::discipline_supply_api_obj,
              (id)
             (owner)
             (target_discipline)

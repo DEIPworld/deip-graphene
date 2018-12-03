@@ -300,9 +300,9 @@ public:
         });
     }
 
-    void create_grants()
+    void create_discipline_supplies()
     {
-        db.create<grant_object>([&](grant_object& d) {
+        db.create<discipline_supply_object>([&](discipline_supply_object& d) {
             d.id = 1;
             d.owner = "bob";
             d.target_discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").id;
@@ -314,7 +314,7 @@ public:
             d.content_hash = "hash";
         });
 
-        db.create<grant_object>([&](grant_object& d) {
+        db.create<discipline_supply_object>([&](discipline_supply_object& d) {
             d.id = 2;
             d.owner = "jack";
             d.target_discipline = 2;
@@ -326,7 +326,7 @@ public:
             d.content_hash = "hash";
         });
 
-        db.create<grant_object>([&](grant_object& d) {
+        db.create<discipline_supply_object>([&](discipline_supply_object& d) {
             d.id = 3;
             d.owner = "john";
             d.target_discipline = 4;
@@ -668,7 +668,7 @@ BOOST_AUTO_TEST_CASE(grant_researches_in_discipline)
 
         auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight");
 
-        BOOST_CHECK_NO_THROW(db.grant_researches_in_discipline(discipline.id, grant));
+        BOOST_CHECK_NO_THROW(db.supply_researches_in_discipline(discipline.id, grant));
 
         BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(1).total_weight, discipline.total_active_weight));
         BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(2).total_weight, discipline.total_active_weight));
@@ -676,11 +676,11 @@ BOOST_AUTO_TEST_CASE(grant_researches_in_discipline)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(process_grants)
+BOOST_AUTO_TEST_CASE(process_discipline_supplies)
 {
    try
    {
-       BOOST_TEST_MESSAGE("Testing: process_grants");
+       BOOST_TEST_MESSAGE("Testing: process_discipline_supplies");
 
        ACTORS((alice)(alex)(jack)(bob)(john));
 
@@ -693,17 +693,17 @@ BOOST_AUTO_TEST_CASE(process_grants)
        create_total_votes();
        create_research_groups();
        create_research_group_tokens();
-       create_grants();
+       create_discipline_supplies();
 
        int num = db.head_block_num();
 
-       BOOST_CHECK_NO_THROW(db.process_grants());
+       BOOST_CHECK_NO_THROW(db.process_discipline_supplies());
 
        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(100, db.get<total_votes_object>(1).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_weight));
        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(100, db.get<total_votes_object>(2).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_weight));
 
-       BOOST_CHECK_THROW(db.get<grant_object>(1), std::out_of_range);
-       BOOST_CHECK(db.get<grant_object>(2).end_block == num + 1);
+       BOOST_CHECK_THROW(db.get<discipline_supply_object>(1), std::out_of_range);
+       BOOST_CHECK(db.get<discipline_supply_object>(2).end_block == num + 1);
    }
    FC_LOG_AND_RETHROW()
 }
@@ -808,7 +808,7 @@ BOOST_AUTO_TEST_CASE(clear_expired_group_invite)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(clear_expired_grants)
+BOOST_AUTO_TEST_CASE(clear_expired_discipline_supplies)
 {
     try
     {
@@ -818,14 +818,14 @@ BOOST_AUTO_TEST_CASE(clear_expired_grants)
 
         generate_block();
 
-        auto& grant = db.create<grant_object>([&](grant_object& g) {
+        auto& grant = db.create<discipline_supply_object>([&](discipline_supply_object& g) {
             g.id = 0;
             g.balance = asset(0, DEIP_SYMBOL);
             g.end_block = db.head_block_num() - 1;
         });
 
         generate_block();
-        BOOST_CHECK_THROW(db.get<grant_object>(0), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<discipline_supply_object>(0), std::out_of_range);
     }
     FC_LOG_AND_RETHROW()
 }

@@ -73,9 +73,9 @@ public:
     set<string> lookup_accounts(const string& lower_bound_name, uint32_t limit) const;
     uint64_t get_account_count() const;
 
-    // Grants
-    vector<grant_api_obj> get_grants(const set<string>& names) const;
-    set<string> lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const;
+    // discipline_supplies
+    vector<discipline_supply_api_obj> get_discipline_supplies(const set<string>& names) const;
+    set<string> lookup_discipline_supply_owners(const string& lower_bound_name, uint32_t limit) const;
 
     // Witnesses
     vector<optional<witness_api_obj>> get_witnesses(const vector<witness_id_type>& witness_ids) const;
@@ -760,53 +760,53 @@ u256 to256(const fc::uint128& t)
 
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
-// Grants                                                          //
+// discipline_supplies                                                          //
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
-vector<grant_api_obj> database_api::get_grants(const set<string>& names) const
+vector<discipline_supply_api_obj> database_api::get_discipline_supplies(const set<string>& names) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_grants(names); });
+    return my->_db.with_read_lock([&]() { return my->get_discipline_supplies(names); });
 }
 
-vector<grant_api_obj> database_api_impl::get_grants(const set<string>& names) const
+vector<discipline_supply_api_obj> database_api_impl::get_discipline_supplies(const set<string>& names) const
 {
-    FC_ASSERT(names.size() <= DEIP_LIMIT_API_GRANTS_LIST_SIZE, "names size must be less or equal than ${1}",
-              ("1", DEIP_LIMIT_API_GRANTS_LIST_SIZE));
+    FC_ASSERT(names.size() <= DEIP_LIMIT_API_DISCIPLINE_SUPPLIES_LIST_SIZE, "names size must be less or equal than ${1}",
+              ("1", DEIP_LIMIT_API_DISCIPLINE_SUPPLIES_LIST_SIZE));
 
-    vector<grant_api_obj> results;
+    vector<discipline_supply_api_obj> results;
 
-    chain::dbs_discipline_supply& grant_service = _db.obtain_service<chain::dbs_discipline_supply>();
+    chain::dbs_discipline_supply& discipline_supply_service = _db.obtain_service<chain::dbs_discipline_supply>();
 
     for (const auto& name : names)
     {
-        auto grants = grant_service.get_grants(name);
-        if (results.size() + grants.size() > DEIP_LIMIT_API_GRANTS_LIST_SIZE)
+        auto discipline_supplies = discipline_supply_service.get_discipline_supplies_by_owner(name);
+        if (results.size() + discipline_supplies.size() > DEIP_LIMIT_API_DISCIPLINE_SUPPLIES_LIST_SIZE)
         {
             break;
         }
 
-        for (const chain::grant_object& grant : grants)
+        for (const chain::discipline_supply_object& discipline_supply : discipline_supplies)
         {
-            results.push_back(grant_api_obj(grant));
+            results.push_back(discipline_supply_api_obj(discipline_supply));
         }
     }
 
     return results;
 }
 
-set<string> database_api::lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const
+set<string> database_api::lookup_discipline_supply_owners(const string& lower_bound_name, uint32_t limit) const
 {
-    return my->_db.with_read_lock([&]() { return my->lookup_grant_owners(lower_bound_name, limit); });
+    return my->_db.with_read_lock([&]() { return my->lookup_discipline_supply_owners(lower_bound_name, limit); });
 }
 
-set<string> database_api_impl::lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const
+set<string> database_api_impl::lookup_discipline_supply_owners(const string& lower_bound_name, uint32_t limit) const
 {
-    FC_ASSERT(limit <= DEIP_LIMIT_API_GRANTS_LIST_SIZE, "limit must be less or equal than ${1}",
-              ("1", DEIP_LIMIT_API_GRANTS_LIST_SIZE));
+    FC_ASSERT(limit <= DEIP_LIMIT_API_DISCIPLINE_SUPPLIES_LIST_SIZE, "limit must be less or equal than ${1}",
+              ("1", DEIP_LIMIT_API_DISCIPLINE_SUPPLIES_LIST_SIZE));
 
-    chain::dbs_discipline_supply& grant_service = _db.obtain_service<chain::dbs_discipline_supply>();
+    chain::dbs_discipline_supply& discipline_supply_service = _db.obtain_service<chain::dbs_discipline_supply>();
 
-    return grant_service.lookup_grant_owners(lower_bound_name, limit);
+    return discipline_supply_service.lookup_discipline_supply_owners(lower_bound_name, limit);
 }
 
 /**

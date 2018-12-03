@@ -810,9 +810,9 @@ public:
     string decrypt_memo(const std::string& memo);
 
     /**
-     *  Gets the grant information for all my grants (list_my_accounts)
+     *  Gets the grant information for all my discipline_supplies (list_my_accounts)
      */
-    vector<grant_api_obj> list_my_grants();
+    vector<discipline_supply_api_obj> list_my_discipline_supplies();
 
     /**
      *  Gets the list of all grant owners (look list_accounts to understand input parameters)
@@ -822,7 +822,7 @@ public:
     /**
      *  Gets the grant information for certain account
      */
-    vector<grant_api_obj> get_grants(const std::string& account_name);
+    vector<discipline_supply_api_obj> get_discipline_supplies(const std::string& account_name);
 
     /**
      *  Gets the list of all research group invites for all accounts
@@ -1314,9 +1314,9 @@ FC_API( deip::wallet::wallet_api,
         (get_account_deip_to_common_tokens_transfers)
         (get_state)
         (get_withdraw_routes)
-        (list_my_grants)
+        (list_my_discipline_supplies)
         (list_grant_owners)
-        (get_grants)
+        (get_discipline_supplies)
         (list_my_research_group_invites)
         (list_my_research_tokens)
         (list_account_research_tokens)

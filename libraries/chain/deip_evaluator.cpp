@@ -540,16 +540,17 @@ void change_recovery_account_evaluator::do_apply(const change_recovery_account_o
     account_service.change_recovery_account(account_to_recover, o.new_recovery_account);
 }
 
-void create_grant_evaluator::do_apply(const create_grant_operation& op)
+void create_discipline_supply_evaluator::do_apply(const create_discipline_supply_operation& op)
 {
-    dbs_discipline_supply& grant_service = _db.obtain_service<dbs_discipline_supply>();
+    dbs_discipline_supply& discipline_supply_service = _db.obtain_service<dbs_discipline_supply>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     account_service.check_account_existence(op.owner);
     const auto& owner = account_service.get_account(op.owner);
     discipline_service.check_discipline_existence_by_name(op.target_discipline);
     auto& discipline = discipline_service.get_discipline_by_name(op.target_discipline);
-    grant_service.create_grant(owner, op.balance, op.start_block, op.end_block, discipline.id, op.is_extendable, op.content_hash);
+    discipline_supply_service.create_discipline_supply(owner, op.balance, op.start_block, op.end_block, discipline.id,
+                                           op.is_extendable, op.content_hash);
 }
 
 void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
