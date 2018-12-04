@@ -1262,7 +1262,6 @@ void database::process_expertise_allocation_proposals()
 {
     dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = obtain_service<dbs_expertise_allocation_proposal>();
     dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
-    dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
 
     expertise_allocation_proposal_service.clear_expired_expertise_allocation_proposals();
     vector<expertise_allocation_proposal_id_type> approved_proposals_ids;

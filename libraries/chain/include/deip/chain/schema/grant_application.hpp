@@ -19,9 +19,9 @@ public:
 
     grant_application_id_type id;
     int64_t grant_id;
-    reseach_id_type research_id;
+    research_id_type research_id;
     fc::shared_string application_hash;
-    
+
     fc::time_point_sec created_at;
 };
 
@@ -39,8 +39,8 @@ typedef multi_index_container<grant_application_object,
                                                                &grant_application_object::grant_id>>,
                                          ordered_non_unique<tag<by_research_id>,
                                                         member<grant_application_object,
-                                                                reseach_id_type,
-                                                               &grant_application_object::owner>>>,
+                                                                research_id_type,
+                                                               &grant_application_object::research_id>>>,
                               allocator<grant_application_object>>
     grant_application_index;
 
