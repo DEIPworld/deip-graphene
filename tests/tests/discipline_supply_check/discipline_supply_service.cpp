@@ -112,7 +112,7 @@ DEIP_TEST_CASE(second_owned_discipline_supply_creation)
 
     BOOST_CHECK_NO_THROW(
             discipline_supply_service.create_discipline_supply(alice, DISCIPLINE_SUPPLY_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE,
-                                                   false, "hash"))DISCIPLINE_SUPPLY_BALANCE;
+                                                   false, "hash"));
 
     reqired_alice_balance -= DISCIPLINE_SUPPLY_BALANCE_DEFAULT;
 
@@ -135,7 +135,7 @@ DEIP_TEST_CASE(owned_discipline_supply_creation_asserts)
 
     BOOST_CHECK_THROW(
             discipline_supply_service.create_discipline_supply(fake, DISCIPLINE_SUPPLY_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE,
-                                                   false, "hash"), fc::assert_exception)DISCIPLINE_SUPPLY_BALANCE;
+                                                   false, "hash"), fc::assert_exception);
 
     // asset wrong_currency_balance(DISCIPLINE_SUPPLY_BALANCE_DEFAULT, VESTS_SYMBOL);
 
@@ -185,10 +185,10 @@ DEIP_TEST_CASE(get_all_discipline_supplies)
 
     BOOST_CHECK_NO_THROW(
             discipline_supply_service.create_discipline_supply(alice, DISCIPLINE_SUPPLY_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE,
-                                                   false, "hash"))DISCIPLINE_SUPPLY_BALANCE;
+                                                   false, "hash"));
     BOOST_CHECK_NO_THROW(
             discipline_supply_service.create_discipline_supply(bob, DISCIPLINE_SUPPLY_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false,
-                                                   "hash"))DISCIPLINE_SUPPLY_BALANCE;
+                                                   "hash"));
 
     auto discipline_supplies = discipline_supply_service.get_discipline_supplies();
     BOOST_REQUIRE(discipline_supplies.size() == 2);
@@ -200,10 +200,10 @@ DEIP_TEST_CASE(get_all_discipline_supply_count)
 
     BOOST_CHECK_NO_THROW(
             discipline_supply_service.create_discipline_supply(alice, DISCIPLINE_SUPPLY_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE,
-                                                   false, "hash"))DISCIPLINE_SUPPLY_BALANCE;
+                                                   false, "hash"));
     BOOST_CHECK_NO_THROW(
             discipline_supply_service.create_discipline_supply(bob, DISCIPLINE_SUPPLY_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false,
-                                                   "hash"))DISCIPLINE_SUPPLY_BALANCE;
+                                                   "hash"));
 
     BOOST_REQUIRE(discipline_supply_service.get_discipline_supplies().size() == 2);
 }
@@ -214,13 +214,13 @@ DEIP_TEST_CASE(lookup_discipline_supply_owners)
 
     BOOST_CHECK_NO_THROW(
             discipline_supply_service.create_discipline_supply(alice, DISCIPLINE_SUPPLY_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE,
-                                                   false, "hash"))DISCIPLINE_SUPPLY_BALANCE;
+                                                   false, "hash"));
     BOOST_CHECK_NO_THROW(
             discipline_supply_service.create_discipline_supply(bob, DISCIPLINE_SUPPLY_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false,
-                                                   "hash"))DISCIPLINE_SUPPLY_BALANCE;
+                                                   "hash"));
     BOOST_CHECK_NO_THROW(
             discipline_supply_service.create_discipline_supply(bob, DISCIPLINE_SUPPLY_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false,
-                                                   "hash"))DISCIPLINE_SUPPLY_BALANCE;
+                                                   "hash"));
 
     BOOST_REQUIRE(discipline_supply_service.get_discipline_supplies().size() == 3);
 
@@ -256,7 +256,7 @@ DEIP_TEST_CASE(check_get_discipline_supplies)
 
     BOOST_CHECK_NO_THROW(
             discipline_supply_service.create_discipline_supply(alice, DISCIPLINE_SUPPLY_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE,
-                                                   false, "hash"))DISCIPLINE_SUPPLY_BALANCE;
+                                                   false, "hash"));
 
     BOOST_REQUIRE_EQUAL(discipline_supply_service.get_discipline_supplies_by_owner("alice").size(), 1u);
 
