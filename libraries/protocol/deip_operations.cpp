@@ -298,7 +298,7 @@ void create_grant_operation::validate() const
     FC_ASSERT(min_number_of_positive_reviews >= 0, "Number must be equal or greater than 0");
     FC_ASSERT(researches_to_grant > 0, "Number of researches mustbe greater than 0");
     FC_ASSERT(end_time > start_time, "End time must be greater than a start time");
-    validate_account_name(creator);
+    validate_account_name(owner);
 }
 
 void create_grant_application_operation::validate() const

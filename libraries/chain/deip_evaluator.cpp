@@ -26,6 +26,7 @@
 #include <deip/chain/services/dbs_expertise_stats.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
+#include <deip/chain/services/dbs_grant.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1129,6 +1130,11 @@ void reject_research_token_offer_evaluator::do_apply(const reject_research_token
 
 void create_grant_evaluator::do_apply(const create_grant_operation& op)
 {
+    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    account_service.check_account_existence(op.owner);
+
 
 }
 

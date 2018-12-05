@@ -1,7 +1,7 @@
 #pragma once
 
 #include "dbs_base_impl.hpp"
-#include <deip/chain/schema/grant_object.hpp.hpp>
+#include <deip/chain/schema/grant_object.hpp>
 
 namespace deip {
 namespace chain {
@@ -24,7 +24,7 @@ public:
                                fc::time_point_sec start_time,
                                fc::time_point_sec end_time);
 
-    const grant_object& get(const grant_id_type& id);
+    const grant_object& get(const grant_id_type& id) const;
 
 };
 } // namespace chain

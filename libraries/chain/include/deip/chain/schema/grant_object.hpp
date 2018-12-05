@@ -12,7 +12,7 @@ class grant_object : public object<grant_object_type, grant_object>
 public:
 
     template <typename Constructor, typename Allocator>
-    grant_object(Constructor&& c, allocator<Allocator> a) :
+    grant_object(Constructor&& c, allocator<Allocator> a)
     {
         c(*this);
     }
@@ -21,6 +21,8 @@ public:
     discipline_id_type target_discipline;
 
     asset amount = asset(0, DEIP_SYMBOL);
+
+    account_name_type owner;
 
     int16_t min_number_of_positive_reviews;
     int16_t researches_to_grant;
@@ -59,7 +61,7 @@ typedef multi_index_container<grant_object,
 }
 
 FC_REFLECT( deip::chain::grant_object,
-             (id)(target_discipline)(amount)(min_number_of_positive_reviews)(researches_to_grant)(created_at)(start_time)(end_time)
+             (id)(target_discipline)(amount)(owner)(min_number_of_positive_reviews)(researches_to_grant)(created_at)(start_time)(end_time)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::grant_object, deip::chain::grant_index )
