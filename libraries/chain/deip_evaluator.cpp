@@ -1135,7 +1135,14 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
 
     account_service.check_account_existence(op.owner);
 
+    FC_ASSERT(op.start_time >= _db.head_block_time(), "Start time must be greater than now");
 
+    grant_service.create(op.target_discipline,
+                         op.amount,
+                         op.min_number_of_positive_reviews,
+                         op.researches_to_grant,
+                         op.start_time,
+                         op.end_time);
 }
 
 void create_grant_application_evaluator::do_apply(const create_grant_application_operation& op)
