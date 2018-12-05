@@ -810,19 +810,19 @@ public:
     string decrypt_memo(const std::string& memo);
 
     /**
-     *  Gets the grant information for all my grants (list_my_accounts)
+     *  Gets the discipline_supply information for all my discipline_supplies (list_my_accounts)
      */
-    vector<grant_api_obj> list_my_grants();
+    vector<discipline_supply_api_obj> list_my_discipline_supplies();
 
     /**
-     *  Gets the list of all grant owners (look list_accounts to understand input parameters)
+     *  Gets the list of all discipline_supply owners (look list_accounts to understand input parameters)
      */
-    set<string> list_grant_owners(const std::string& lowerbound, uint32_t limit);
+    set<string> list_discipline_supply_owners(const std::string& lowerbound, uint32_t limit);
 
     /**
-     *  Gets the grant information for certain account
+     *  Gets the discipline_supply information for certain account
      */
-    vector<grant_api_obj> get_grants(const std::string& account_name);
+    vector<discipline_supply_api_obj> get_discipline_supplies(const std::string& account_name);
 
     /**
      *  Gets the list of all research group invites for all accounts
@@ -929,27 +929,27 @@ public:
     vector<discipline_api_obj> list_all_disciplines();
 
     /**
-     *  This method will create new grant linked to owner account.
+     *  This method will create new discipline_supply linked to owner account.
      *
-     *  @warning The owner account must have sufficient balance for grant
+     *  @warning The owner account must have sufficient balance for discipline_supply
      *
-     *  @param grant_owner The future owner of creating grant
-     *  @param balance The balance of grant
-     *  @param start_block Block number starting which grant will be distributed
-     *  @param end_block Block number grant distribution ends
-     *  @param target_discipline The target discipline name grant will be distributed to
-     *  @param content_hash Hash of description of grant
-     *  @param is_extendable Set to 'true' if you want your grant to extend if not distributed in specified period
+     *  @param discipline_supply_owner The future owner of creating discipline_supply
+     *  @param balance The balance of discipline_supply
+     *  @param start_block Block number starting which discipline_supply will be distributed
+     *  @param end_block Block number discipline_supply distribution ends
+     *  @param target_discipline The target discipline name discipline_supply will be distributed to
+     *  @param content_hash Hash of description of discipline_supply
+     *  @param is_extendable Set to 'true' if you want your discipline_supply to extend if not distributed in specified period
      *  @param broadcast
      */
-    annotated_signed_transaction create_grant(const std::string& grant_owner,
-                                               const asset& balance,
-                                               const uint32_t& start_block,
-                                               const uint32_t& end_block,
-                                               const discipline_name_type& target_discipline,
-                                               const std::string& content_hash,
-                                               const bool is_extendable,
-                                               const bool broadcast);
+    annotated_signed_transaction create_discipline_supply(const std::string& discipline_supply_owner,
+                                                          const asset& balance,
+                                                          const uint32_t& start_block,
+                                                          const uint32_t& end_block,
+                                                          const discipline_name_type& target_discipline,
+                                                          const std::string& content_hash,
+                                                          const bool is_extendable,
+                                                          const bool broadcast);
 
     /**
      * Vote for review
@@ -1314,9 +1314,9 @@ FC_API( deip::wallet::wallet_api,
         (get_account_deip_to_common_tokens_transfers)
         (get_state)
         (get_withdraw_routes)
-        (list_my_grants)
-        (list_grant_owners)
-        (get_grants)
+        (list_my_discipline_supplies)
+        (list_discipline_supply_owners)
+        (get_discipline_supplies)
         (list_my_research_group_invites)
         (list_my_research_tokens)
         (list_account_research_tokens)
@@ -1363,7 +1363,7 @@ FC_API( deip::wallet::wallet_api,
         (get_owner_history)
         (get_encrypted_memo)
         (decrypt_memo)
-        (create_grant)
+        (create_discipline_supply)
         (vote_for_review)
         (create_proposal)
         (propose_invite_member)

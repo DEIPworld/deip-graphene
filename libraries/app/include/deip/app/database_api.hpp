@@ -180,9 +180,9 @@ public:
 
     vector<account_api_obj> get_all_accounts() const;
 
-    vector<grant_api_obj> get_grants(const set<string>& account_names) const;
+    vector<discipline_supply_api_obj> get_discipline_supplies(const set<string>& account_names) const;
 
-    set<string> lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const;
+    set<string> lookup_discipline_supply_owners(const string& lower_bound_name, uint32_t limit) const;
 
     vector<owner_authority_history_api_obj> get_owner_history(string account) const;
 
@@ -547,9 +547,9 @@ FC_API(deip::app::database_api,
    (get_witness_count)
    (get_active_witnesses)
 
-    // Grant
-   (get_grants)
-   (lookup_grant_owners)
+    // Discipline supply
+   (get_discipline_supplies)
+   (lookup_discipline_supply_owners)
 
    // Disciplines
    (get_all_disciplines)

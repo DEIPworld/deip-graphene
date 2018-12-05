@@ -2089,7 +2089,7 @@ annotated_signed_transaction wallet_api::get_transaction(transaction_id_type id)
     return (*my->_remote_blockchain_history_api)->get_transaction(id);
 }
 
-vector<grant_api_obj> wallet_api::list_my_grants()
+vector<discipline_supply_api_obj> wallet_api::list_my_discipline_supplies()
 {
     FC_ASSERT(!is_locked());
 
@@ -2115,19 +2115,19 @@ vector<grant_api_obj> wallet_api::list_my_grants()
         for (const auto& name : item)
             names.insert(name);
 
-    return my->_remote_db->get_grants(names);
+    return my->_remote_db->get_discipline_supplies(names);
 }
 
-set<string> wallet_api::list_grant_owners(const string& lowerbound, uint32_t limit)
+set<string> wallet_api::list_discipline_supply_owners(const string& lowerbound, uint32_t limit)
 {
-    return my->_remote_db->lookup_grant_owners(lowerbound, limit);
+    return my->_remote_db->lookup_discipline_supply_owners(lowerbound, limit);
 }
 
-vector<grant_api_obj> wallet_api::get_grants(const std::string& account_name)
+vector<discipline_supply_api_obj> wallet_api::get_discipline_supplies(const std::string& account_name)
 {
-    vector<grant_api_obj> result;
+    vector<discipline_supply_api_obj> result;
 
-    result = my->_remote_db->get_grants({ account_name });
+    result = my->_remote_db->get_discipline_supplies({ account_name });
 
     return result;
 }
@@ -2287,20 +2287,20 @@ vector<discipline_api_obj> wallet_api::list_all_disciplines()
     return result;
 }
 
-annotated_signed_transaction wallet_api::create_grant(const std::string& grant_owner,
-                                               const asset& balance,
-                                               const uint32_t& start_block,
-                                               const uint32_t& end_block,
-                                               const discipline_name_type& target_discipline,
-                                               const std::string& content_hash,
-                                               const bool is_extendable,
-                                               const bool broadcast)
+annotated_signed_transaction wallet_api::create_discipline_supply(const std::string& discipline_supply_owner,
+                                                                  const asset& balance,
+                                                                  const uint32_t& start_block,
+                                                                  const uint32_t& end_block,
+                                                                  const discipline_name_type& target_discipline,
+                                                                  const std::string& content_hash,
+                                                                  const bool is_extendable,
+                                                                  const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
-    create_grant_operation op;
+    create_discipline_supply_operation op;
 
-    op.owner = grant_owner;
+    op.owner = discipline_supply_owner;
     op.target_discipline = target_discipline;
     op.balance = balance;
     op.start_block = start_block;
