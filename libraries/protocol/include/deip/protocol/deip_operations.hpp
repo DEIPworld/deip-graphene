@@ -740,6 +740,22 @@ struct reject_research_token_offer_operation : public base_operation
     }
 };
 
+struct create_grant_application_operation : public base_operation
+{
+    int64_t grant_id;
+    int64_t research_id;
+    account_name_type creator;
+
+    string application_hash;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(creator);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -805,6 +821,6 @@ FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (cla
 FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (proposal_id)(voter)(voting_power))
 FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (offer_research_tokens_id)(buyer))
-
+FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
 
 // clang-format on

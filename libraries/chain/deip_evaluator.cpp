@@ -1127,5 +1127,10 @@ void reject_research_token_offer_evaluator::do_apply(const reject_research_token
     _db._temporary_public_impl().remove(offer);
 }
 
+void create_grant_application_evaluator::do_apply(const create_grant_application_operation& op)
+{
+
+}
+
 } // namespace chain
 } // namespace deip 

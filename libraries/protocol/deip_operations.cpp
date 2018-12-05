@@ -291,5 +291,12 @@ void reject_research_token_offer_operation::validate() const
     validate_account_name(buyer);
 }
 
+void create_grant_application_operation::validate() const
+{
+    validate_account_name(creator);
+    FC_ASSERT(application_hash.size() > 0, "Application hash must be specified");
+    FC_ASSERT(fc::is_utf8(application_hash), "Application hash is not valid UTF8 string");
+}
+
 }
 } // deip::protocol

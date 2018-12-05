@@ -2,7 +2,7 @@
 
 #include "dbs_base_impl.hpp"
 #include <deip/chain/schema/research_content_object.hpp>
-#include <deip/chain/schema/grant_application.hpp>
+#include <deip/chain/schema/grant_application_object.hpp>
 
 #include <vector>
 
