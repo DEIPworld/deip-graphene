@@ -26,7 +26,7 @@ add_library( deip_chain
         dbservice.cpp
         services/dbs_account.cpp
         services/dbs_witness.cpp
-        services/dbs_grant.cpp
+        services/dbs_discipline_supply.cpp
         services/dbs_proposal.cpp
         services/dbs_research_group.cpp
         services/dbs_discipline.cpp

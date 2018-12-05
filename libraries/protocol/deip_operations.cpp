@@ -138,7 +138,7 @@ void change_recovery_account_operation::validate() const
     validate_account_name(new_recovery_account);
 }
 
-void create_grant_operation::validate() const
+void create_discipline_supply_operation::validate() const
 {
     validate_account_name(owner);
     FC_ASSERT(is_asset_type(balance, DEIP_SYMBOL), "Balance must be DEIP");

@@ -51,7 +51,7 @@ enum object_type
     change_recovery_account_request_object_type,
     block_stats_object_type,
     reward_fund_object_type,
-    grant_object_type,
+    discipline_supply_object_type,
     discipline_object_type,
     vote_object_type,
     total_votes_object_type,
@@ -95,7 +95,7 @@ class account_recovery_request_object;
 class change_recovery_account_request_object;
 class block_stats_object;
 class reward_fund_object;
-class grant_object;
+class discipline_supply_object;
 class proposal_object;
 class research_group_object;
 class research_group_token_object;
@@ -137,7 +137,7 @@ typedef oid<account_recovery_request_object> account_recovery_request_id_type;
 typedef oid<change_recovery_account_request_object> change_recovery_account_request_id_type;
 typedef oid<block_stats_object> block_stats_id_type;
 typedef oid<reward_fund_object> reward_fund_id_type;
-typedef oid<grant_object> grant_id_type;
+typedef oid<discipline_supply_object> discipline_supply_id_type;
 typedef oid<proposal_object> proposal_id_type;
 typedef oid<research_group_object> research_group_id_type;
 typedef oid<research_group_token_object> research_group_token_id_type;
@@ -220,7 +220,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (change_recovery_account_request_object_type)
                  (block_stats_object_type)
                  (reward_fund_object_type)
-                 (grant_object_type)
+                 (discipline_supply_object_type)
                  (proposal_object_type)
                  (research_group_object_type)
                  (research_group_token_object_type)

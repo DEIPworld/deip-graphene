@@ -1,6 +1,6 @@
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/genesis_state.hpp>
-#include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_discipline_supply.hpp>
 
 #include <deip/chain/schema/account_object.hpp>
 #include <deip/chain/schema/block_summary_object.hpp>

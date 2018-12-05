@@ -31,7 +31,7 @@ namespace deip {
                 change_recovery_account_operation,
 
                 // DEIP native operations
-                create_grant_operation,
+                create_discipline_supply_operation,
                 create_research_group_operation,
                 create_proposal_operation,
                 vote_proposal_operation,

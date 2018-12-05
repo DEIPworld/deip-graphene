@@ -23,7 +23,7 @@
 #include <deip/chain/schema/expert_token_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
-#include <deip/chain/schema/grant_objects.hpp>
+#include <deip/chain/schema/discipline_supply_object.hpp>
 #include <deip/chain/schema/expertise_stats_object.hpp>
 #include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
@@ -3141,13 +3141,13 @@ BOOST_AUTO_TEST_CASE(send_funds_execute_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(create_grant_execute_test)
+BOOST_AUTO_TEST_CASE(create_discipline_supply_execute_test)
 {
     try {
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
         fund("alice", 1000);
 
-        create_grant_operation op;
+        create_discipline_supply_operation op;
         op.owner = "alice";
         op.balance = asset(100, DEIP_SYMBOL);
         op.target_discipline = "Mathematics";
@@ -3165,10 +3165,10 @@ BOOST_AUTO_TEST_CASE(create_grant_execute_test)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        auto& grant = db.get<grant_object, by_owner_name>("alice");
-        BOOST_CHECK(grant.target_discipline == 1);
-        BOOST_CHECK(grant.start_block == 1000);
-        BOOST_CHECK(grant.end_block == 1010);
+        auto& discipline_supply = db.get<discipline_supply_object, by_owner_name>("alice");
+        BOOST_CHECK(discipline_supply.target_discipline == 1);
+        BOOST_CHECK(discipline_supply.start_block == 1000);
+        BOOST_CHECK(discipline_supply.end_block == 1010);
     }
     FC_LOG_AND_RETHROW()
 }
