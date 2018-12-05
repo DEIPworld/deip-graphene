@@ -50,7 +50,7 @@ public:
 
     using grant_applications_refs_type = std::vector<std::reference_wrapper<const grant_application_object>>;
 
-    const grant_application_object create_grant_application(const int64_t& grant_id,
+    const grant_application_object create_grant_application(const grant_id_type& grant_id,
                                                             const research_id_type& research_id,
                                                             const std::string& application_hash);
 

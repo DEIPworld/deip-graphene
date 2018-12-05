@@ -291,6 +291,16 @@ void reject_research_token_offer_operation::validate() const
     validate_account_name(buyer);
 }
 
+void create_grant_operation::validate() const
+{
+    FC_ASSERT(target_discipline > 0, "Cannot use root discipline (id = 0)");
+    FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Grant amount must be greater than 0");
+    FC_ASSERT(min_number_of_positive_reviews >= 0, "Number must be equal or greater than 0");
+    FC_ASSERT(researches_to_grant > 0, "Number of researches mustbe greater than 0");
+    FC_ASSERT(end_time > start_time, "End time must be greater than a start time");
+    validate_account_name(creator);
+}
+
 void create_grant_application_operation::validate() const
 {
     validate_account_name(creator);

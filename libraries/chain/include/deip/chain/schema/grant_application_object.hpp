@@ -18,7 +18,7 @@ public:
     }
 
     grant_application_id_type id;
-    int64_t grant_id;
+    grant_id_type grant_id;
     research_id_type research_id;
     fc::shared_string application_hash;
 
@@ -35,7 +35,7 @@ typedef multi_index_container<grant_application_object,
                                                                &grant_application_object::id>>,
                                          ordered_non_unique<tag<by_grant_id>,
                                                         member<grant_application_object,
-                                                                int64_t,
+                                                                grant_id_type,
                                                                &grant_application_object::grant_id>>,
                                          ordered_non_unique<tag<by_research_id>,
                                                         member<grant_application_object,

@@ -142,7 +142,7 @@ dbs_research_content::research_content_refs_type dbs_research_content::get_all_m
 
 // Grant applications
 
-const grant_application_object dbs_research_content::create_grant_application(const int64_t& grant_id,
+const grant_application_object dbs_research_content::create_grant_application(const grant_id_type& grant_id,
                                                                               const research_id_type& research_id,
                                                                               const std::string& application_hash)
 {
