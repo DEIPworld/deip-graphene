@@ -22,11 +22,14 @@ public:
                                const int16_t& min_number_of_positive_reviews,
                                const int16_t& researches_to_grant,
                                fc::time_point_sec start_time,
-                               fc::time_point_sec end_time);
+                               fc::time_point_sec end_time,
+                               const account_name_type& owner);
 
     const grant_object& get(const grant_id_type& id) const;
 
     void check_grant_existence(const grant_id_type& id) const;
+
+    grant_refs_type get_by_target_discipline(const discipline_id_type& discipline_id);
 
 };
 } // namespace chain
