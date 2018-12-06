@@ -41,5 +41,11 @@ const grant_object& dbs_grant::get(const grant_id_type& id) const
     FC_CAPTURE_AND_RETHROW((id))
 }
 
+void dbs_grant::check_grant_existence(const grant_id_type& id) const
+{
+    const auto& grant = db_impl().find<grant_object, by_id>(id);
+    FC_ASSERT(grant != nullptr, "Grant with id \"${1}\" must exist.", ("1", id));
+}
+
 } //namespace chain
 } //namespace deip

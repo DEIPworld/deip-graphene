@@ -144,7 +144,8 @@ dbs_research_content::research_content_refs_type dbs_research_content::get_all_m
 
 const grant_application_object dbs_research_content::create_grant_application(const grant_id_type& grant_id,
                                                                               const research_id_type& research_id,
-                                                                              const std::string& application_hash)
+                                                                              const std::string& application_hash,
+                                                                              const account_name_type& creator)
 {
     const auto& new_grant_application = db_impl().create<grant_application_object>([&](grant_application_object& ga) {
 
@@ -153,6 +154,7 @@ const grant_application_object dbs_research_content::create_grant_application(co
         ga.grant_id = grant_id;
         ga.research_id = research_id;
         fc::from_string(ga.application_hash, application_hash);
+        ga.creator = creator;
         ga.created_at = now;
     });
 

@@ -83,5 +83,15 @@ const research_discipline_relation_object& dbs_research_discipline_relation::get
     FC_CAPTURE_AND_RETHROW((research_id)(discipline_id))
 }
 
+bool dbs_research_discipline_relation::is_exists_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id)
+{
+    const auto& idx = db_impl().get_index<research_discipline_relation_index>().indices().get<by_research_and_discipline>();
+
+    if (idx.find(boost::make_tuple(research_id, discipline_id)) != idx.cend())
+        return true;
+    else
+        return false;
+}
+
 } //namespace chain
 } //namespace deip

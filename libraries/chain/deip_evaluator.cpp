@@ -1147,7 +1147,21 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
 
 void create_grant_application_evaluator::do_apply(const create_grant_application_operation& op)
 {
+    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+    dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
 
+    account_service.check_account_existence(op.creator);
+    grant_service.check_grant_existence(op.grant_id);
+
+    auto& grant = grant_service.get(op.grant_id);
+
+    auto now = _db.head_block_time();
+    FC_ASSERT((now >= grant.start_time) && (now <= grant.end_time), "Grant is inactive now");
+    FC_ASSERT(research_discipline_relation_service.is_exists_by_research_and_discipline(op.research_id, grant.target_discipline), "Research and grant discipline doesn't match");
+
+    research_content_service.create_grant_application(op.grant_id, op.research_id, op.application_hash, op.creator);
 }
 
 } // namespace chain

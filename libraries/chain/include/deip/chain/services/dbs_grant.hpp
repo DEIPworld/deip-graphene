@@ -26,6 +26,8 @@ public:
 
     const grant_object& get(const grant_id_type& id) const;
 
+    void check_grant_existence(const grant_id_type& id) const;
+
 };
 } // namespace chain
 } // namespace deip

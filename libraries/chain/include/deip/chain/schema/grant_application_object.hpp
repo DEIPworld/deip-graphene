@@ -22,6 +22,8 @@ public:
     research_id_type research_id;
     fc::shared_string application_hash;
 
+    account_name_type creator;
+
     fc::time_point_sec created_at;
 };
 
@@ -48,7 +50,7 @@ typedef multi_index_container<grant_application_object,
 }
 
 FC_REFLECT( deip::chain::grant_application_object,
-             (id)(grant_id)(research_id)(application_hash)(created_at)
+             (id)(grant_id)(research_id)(application_hash)(creator)(created_at)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::grant_application_object, deip::chain::grant_application_index )

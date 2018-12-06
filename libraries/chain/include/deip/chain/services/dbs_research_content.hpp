@@ -52,7 +52,8 @@ public:
 
     const grant_application_object create_grant_application(const grant_id_type& grant_id,
                                                             const research_id_type& research_id,
-                                                            const std::string& application_hash);
+                                                            const std::string& application_hash,
+                                                            const account_name_type& creator);
 
     const grant_application_object get_grant_application(const grant_application_id_type& id);
 
