@@ -23,6 +23,8 @@
 #include <deip/chain/schema/research_token_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
 #include <deip/chain/schema/offer_research_tokens_object.hpp>
+#include <deip/chain/schema/grant_object.hpp>
+#include <deip/chain/schema/grant_application_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -991,6 +993,67 @@ struct eci_and_expertise_stats_api_obj
     uint32_t average_expertise_in_discipline;
 };
 
+struct grant_api_obj
+{
+    grant_api_obj(const chain::grant_object& g_o)
+        :  id(g_o.id._id)
+        ,  target_discipline(g_o.target_discipline._id)
+        ,  amount(g_o.amount)
+        ,  owner(g_o.owner)
+        ,  min_number_of_positive_reviews(g_o.min_number_of_positive_reviews)
+        ,  researches_to_grant(g_o.researches_to_grant)
+        ,  created_at(g_o.created_at)
+        ,  start_time(g_o.start_time)
+        ,  end_time(g_o.end_time)
+
+    {}
+
+    // because fc::variant require for temporary object
+    grant_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t target_discipline;
+    asset amount;
+
+    account_name_type owner;
+
+    int16_t min_number_of_positive_reviews;
+    int16_t researches_to_grant;
+
+    fc::time_point_sec created_at;
+    fc::time_point_sec start_time;
+    fc::time_point_sec end_time;
+};
+
+struct grant_application_api_obj
+{
+    grant_application_api_obj(const chain::grant_application_object& ga_o)
+        :  id(ga_o.id._id)
+        ,  grant_id(ga_o.grant_id._id)
+        ,  research_id(ga_o.research_id._id)
+        ,  application_hash(fc::to_string(ga_o.application_hash))
+        ,  creator(ga_o.creator)
+        ,  created_at(ga_o.created_at)
+
+    {}
+
+    // because fc::variant require for temporary object
+    grant_application_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t grant_id;
+    int64_t research_id;
+    std::string application_hash;
+
+    account_name_type creator;
+
+    fc::time_point_sec created_at;
+};
+
 }; // namespace app
 } // namespace deip
 
@@ -1298,6 +1361,29 @@ FC_REFLECT( deip::app::eci_and_expertise_stats_api_obj,
             (average_research_eci_in_discipline)
             (average_content_eci_in_discipline)
             (average_expertise_in_discipline)
+
+)
+
+FC_REFLECT( deip::app::grant_api_obj,
+            (id)
+            (target_discipline)
+            (amount)
+            (owner)
+            (min_number_of_positive_reviews)
+            (researches_to_grant)
+            (created_at)
+            (start_time)
+            (end_time)
+
+)
+
+FC_REFLECT( deip::app::grant_application_api_obj,
+            (id)
+            (grant_id)
+            (research_id)
+            (application_hash)
+            (creator)
+            (created_at)
 
 )
 
