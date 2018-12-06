@@ -161,8 +161,8 @@ BOOST_AUTO_TEST_CASE(is_exists_by_research_and_discipline)
     {
         create_research_discipline_relations();
 
-        BOOST_CHECK(data_service.is_exists_by_research_and_discipline(1, 10) == true);
-        BOOST_CHECK(data_service.is_exists_by_research_and_discipline(3, 10) == false);
+        BOOST_CHECK_NO_THROW(data_service.check_existence_by_research_and_discipline(1, 10));
+        BOOST_CHECK_THROW(data_service.check_existence_by_research_and_discipline(3, 10), fc::assert_exception);
     }
     FC_LOG_AND_RETHROW()
 }

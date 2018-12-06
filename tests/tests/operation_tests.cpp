@@ -4539,6 +4539,80 @@ BOOST_AUTO_TEST_CASE(create_grant_test)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(create_grant_application_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: create_grant_application");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(jack)(mike));
+        generate_block();
+
+        fund("bob", 500000);
+
+        db.create<grant_object>([&](grant_object& ga) {
+            ga.id = 0;
+            ga.target_discipline = 1;
+            ga.researches_to_grant = 5;
+            ga.min_number_of_positive_reviews = 5;
+            ga.amount = asset(1000, DEIP_SYMBOL);
+            ga.start_time = db.head_block_time();
+            ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
+            ga.owner = "bob";
+        });
+
+        db.create<research_object>([&](research_object& r) {
+            r.id = 1;
+            r.title = "title";
+            r.permlink = "permlink";
+            r.research_group_id = 1;
+            r.review_share_in_percent = 1000;
+            r.dropout_compensation_in_percent = 500;
+            r.is_finished = false;
+            r.created_at = db.head_block_time();
+            r.abstract = "abstract";
+            r.owned_tokens = DEIP_100_PERCENT;
+        });
+
+        db.create<research_token_object>([&](research_token_object& d) {
+            d.id = 1;
+            d.account_name = "alice";
+            d.research_id = 1;
+            d.amount = 200;
+        });
+
+        db.create<research_discipline_relation_object>([&](research_discipline_relation_object& rdr) {
+            rdr.id = 0;
+            rdr.discipline_id = 1;
+            rdr.research_id = 1;
+        });
+
+        create_grant_application_operation op;
+        op.grant_id = 0;
+        op.research_id = 1;
+        op.creator = "alice";
+        op.application_hash = "test";
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& grant_application = db.get<grant_application_object, by_id>(0);
+
+        BOOST_CHECK(grant_application.grant_id == 0);
+        BOOST_CHECK(grant_application.research_id == 1);
+        BOOST_CHECK(grant_application.creator == "alice");
+        BOOST_CHECK(grant_application.application_hash == "test");
+        BOOST_CHECK(grant_application.created_at == db.head_block_time());
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 #endif
