@@ -561,7 +561,7 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
 
     account_service.check_account_existence(op.creator);
     research_group_service.check_research_group_token_existence(op.creator, op.research_group_id);
-    const uint32_t _lifetime_min = DAYS_TO_SECONDS(1);
+    const uint32_t _lifetime_min = 1;
     const uint32_t _lifetime_max = DAYS_TO_SECONDS(10);
 
     const auto& props = _db.get_dynamic_global_properties();
