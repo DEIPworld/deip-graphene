@@ -169,7 +169,7 @@ const grant_application_object dbs_research_content::get_grant_application(const
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-dbs_research_content::grant_applications_refs_type dbs_research_content::get_applications_by_grant(const int64_t& grant_id)
+dbs_research_content::grant_applications_refs_type dbs_research_content::get_applications_by_grant(const grant_id_type& grant_id)
 {
     grant_applications_refs_type ret;
 
