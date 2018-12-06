@@ -155,6 +155,18 @@ BOOST_AUTO_TEST_CASE(update_votes_count_negative_delta_expect_error)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(is_exists_by_research_and_discipline)
+{
+    try
+    {
+        create_research_discipline_relations();
+
+        BOOST_CHECK(data_service.is_exists_by_research_and_discipline(1, 10) == true);
+        BOOST_CHECK(data_service.is_exists_by_research_and_discipline(3, 10) == false);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace chain
