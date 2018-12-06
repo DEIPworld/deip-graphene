@@ -6,7 +6,6 @@
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/database/database_exceptions.hpp>
 #include <deip/chain/hardfork.hpp>
-#include <deip/chain/schema/deip_objects.hpp>
 
 #include <deip/chain/util/reward.hpp>
 
@@ -19,17 +18,21 @@
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
-#include <deip/chain/schema/research_discipline_relation_object.hpp>
+
+#include <deip/chain/schema/deip_objects.hpp>
+#include <deip/chain/schema/discipline_supply_object.hpp>
 #include <deip/chain/schema/expert_token_object.hpp>
+#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
+#include <deip/chain/schema/expertise_stats_object.hpp>
+#include <deip/chain/schema/grant_object.hpp>
+#include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
-#include <deip/chain/schema/discipline_supply_object.hpp>
-#include <deip/chain/schema/expertise_stats_object.hpp>
-#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
-#include <deip/chain/services/dbs_offer_research_tokens.hpp>
 
-#include <deip/chain/services/dbs_research_token.hpp>
+#include <deip/chain/services/dbs_offer_research_tokens.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
+#include <deip/chain/services/dbs_research_token.hpp>
+
 
 
 #define DROPOUT_COMPENSATION_IN_PERCENT 1500
@@ -4488,6 +4491,50 @@ BOOST_AUTO_TEST_CASE(calculate_eci_test_case)
 
         BOOST_CHECK(eci4 == 2000);
 
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(create_grant_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: create_grant");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(jack)(mike));
+        generate_block();
+
+        fund("bob", 500000);
+
+        create_grant_operation op;
+        op.target_discipline = 1;
+        op.amount = asset(1000, DEIP_SYMBOL);
+        op.owner = "bob";
+        op.min_number_of_positive_reviews = 4;
+        op.researches_to_grant = 10;
+        op.start_time = db.head_block_time() + DAYS_TO_SECONDS(10);
+        op.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
+
+        private_key_type priv_key = generate_private_key("bob");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& grant = db.get<grant_object>(0);
+        auto& bob_acc = db.get_account(op.owner);
+
+        BOOST_CHECK(bob_acc.balance.amount == 499000);
+        BOOST_CHECK(grant.target_discipline == 1);
+        BOOST_CHECK(grant.owner == "bob");
+        BOOST_CHECK(grant.min_number_of_positive_reviews == 4);
+        BOOST_CHECK(grant.researches_to_grant == 10);
+        BOOST_CHECK(grant.created_at == db.head_block_time());
+        BOOST_CHECK(grant.start_time == db.head_block_time() + DAYS_TO_SECONDS(10));
+        BOOST_CHECK(grant.end_time == db.head_block_time() + DAYS_TO_SECONDS(30));
     }
     FC_LOG_AND_RETHROW()
 }

@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(get_by_target_discipline)
         auto grants = data_service.get_by_target_discipline(1);
 
         BOOST_CHECK(grants.size() == 2);
-        BOOST_CHECK(std::any_of(grants.begin(), grants.end(), [](std::reference_wrapper<const grant_object> wrapper){
+        BOOST_CHECK(std::any_of(grants.begin(), grants.end(), [this](std::reference_wrapper<const grant_object> wrapper){
             const grant_object &grant = wrapper.get();
 
             return grant.id == 0 && grant.target_discipline == 1 &&
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(get_by_target_discipline)
                     grant.owner == "bob";
         }));
 
-        BOOST_CHECK(std::any_of(grants.begin(), grants.end(), [](std::reference_wrapper<const grant_object> wrapper){
+        BOOST_CHECK(std::any_of(grants.begin(), grants.end(), [this](std::reference_wrapper<const grant_object> wrapper){
             const grant_object &grant = wrapper.get();
 
             return grant.id == 1 && grant.target_discipline == 1 &&
