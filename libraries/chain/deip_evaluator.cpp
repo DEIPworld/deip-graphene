@@ -1136,7 +1136,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
     account_service.check_account_existence(op.owner);
     auto& owner = account_service.get_account(op.owner);
 
-    FC_ASSERT(owner.balance >= op.amount, "Creator has no money to create grant");
+    FC_ASSERT(owner.balance >= op.amount, "You do not have enough funds to grant");
     FC_ASSERT(op.start_time >= _db.head_block_time(), "Start time must be greater than now");
 
     account_service.adjust_balance(owner, -op.amount);
