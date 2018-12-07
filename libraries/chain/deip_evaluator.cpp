@@ -26,6 +26,7 @@
 #include <deip/chain/services/dbs_expertise_stats.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
+#include <deip/chain/services/dbs_grant.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1125,6 +1126,50 @@ void reject_research_token_offer_evaluator::do_apply(const reject_research_token
     auto& offer = offer_service.get(op.offer_research_tokens_id);
 
     _db._temporary_public_impl().remove(offer);
+}
+
+void create_grant_evaluator::do_apply(const create_grant_operation& op)
+{
+    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    account_service.check_account_existence(op.owner);
+    auto& owner = account_service.get_account(op.owner);
+
+    FC_ASSERT(owner.balance >= op.amount, "You do not have enough funds to grant");
+    FC_ASSERT(op.start_time >= _db.head_block_time(), "Start time must be greater than now");
+
+    account_service.adjust_balance(owner, -op.amount);
+    grant_service.create(op.target_discipline,
+                         op.amount,
+                         op.min_number_of_positive_reviews,
+                         op.researches_to_grant,
+                         op.start_time,
+                         op.end_time,
+                         op.owner);
+}
+
+void create_grant_application_evaluator::do_apply(const create_grant_application_operation& op)
+{
+    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_token& research_token_service = _db.obtain_service<dbs_research_token>();
+    dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
+
+    account_service.check_account_existence(op.creator);
+    grant_service.check_grant_existence(op.grant_id);
+    research_service.check_research_existence(op.research_id);
+    research_token_service.check_existence_by_owner_and_research(op.creator, op.research_id);
+
+    auto& grant = grant_service.get(op.grant_id);
+    research_discipline_relation_service.check_existence_by_research_and_discipline(op.research_id, grant.target_discipline);
+
+    auto now = _db.head_block_time();
+    FC_ASSERT((now >= grant.start_time) && (now <= grant.end_time), "Grant is inactive now");
+
+    research_content_service.create_grant_application(op.grant_id, op.research_id, op.application_hash, op.creator);
 }
 
 } // namespace chain

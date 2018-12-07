@@ -68,7 +68,7 @@ const research_content_object& dbs_research_content::get(const research_content_
 }
 
 const research_content_object& dbs_research_content:: get_by_permlink(const research_id_type &research_id,
-                                                                     const string &permlink) const
+                                                                      const string &permlink) const
 {
     const auto& idx = db_impl().get_index<research_content_index>().indices().get<by_permlink>();
     auto itr = idx.find(std::make_tuple(research_id, permlink));
@@ -134,6 +134,67 @@ dbs_research_content::research_content_refs_type dbs_research_content::get_all_m
     {
         if (it->is_milestone())
             ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+// Grant applications
+
+const grant_application_object dbs_research_content::create_grant_application(const grant_id_type& grant_id,
+                                                                              const research_id_type& research_id,
+                                                                              const std::string& application_hash,
+                                                                              const account_name_type& creator)
+{
+    const auto& new_grant_application = db_impl().create<grant_application_object>([&](grant_application_object& ga) {
+
+        auto now = db_impl().head_block_time();
+
+        ga.grant_id = grant_id;
+        ga.research_id = research_id;
+        fc::from_string(ga.application_hash, application_hash);
+        ga.creator = creator;
+        ga.created_at = now;
+    });
+
+    return new_grant_application;
+}
+
+const grant_application_object dbs_research_content::get_grant_application(const grant_application_id_type& id)
+{
+    try {
+        return db_impl().get<grant_application_object, by_id>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
+}
+
+dbs_research_content::grant_applications_refs_type dbs_research_content::get_applications_by_grant(const grant_id_type& grant_id)
+{
+    grant_applications_refs_type ret;
+
+    auto it_pair = db_impl().get_index<grant_application_index>().indicies().get<by_grant_id>().equal_range(grant_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_research_content::grant_applications_refs_type dbs_research_content::get_applications_by_research_id(const research_id_type& research_id)
+{
+    grant_applications_refs_type ret;
+
+    auto it_pair = db_impl().get_index<grant_application_index>().indicies().get<by_research_id>().equal_range(research_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
         ++it;
     }
 

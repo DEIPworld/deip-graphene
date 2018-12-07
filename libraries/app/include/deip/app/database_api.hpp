@@ -478,6 +478,21 @@ public:
 
     eci_and_expertise_stats_api_obj get_eci_and_expertise_stats_by_discipline_id(const discipline_id_type& discipline_id);
 
+    /////////////
+    // Grants///
+    ////////////
+
+    grant_api_obj get_grant(const grant_id_type& id) const;
+    vector<grant_api_obj> get_grants_by_target_discipline(const discipline_id_type& discipline_id) const;
+
+    /////////////////////////
+    // Grant applications///
+    ////////////////////////
+
+    grant_application_api_obj get_grant_application(const grant_application_id_type& id) const;
+    vector<grant_application_api_obj> get_applications_by_grant(const grant_id_type& grant_id) const;
+    vector<grant_application_api_obj> get_applications_by_research_id(const research_id_type& research_id) const;
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////

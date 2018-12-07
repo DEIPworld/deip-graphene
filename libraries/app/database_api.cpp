@@ -34,6 +34,7 @@
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
+#include <deip/chain/services/dbs_grant.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 #define MAX_LIMIT 1000
@@ -2129,6 +2130,73 @@ eci_and_expertise_stats_api_obj database_api::get_eci_and_expertise_stats_by_dis
         return results;
     });
 
+}
+
+grant_api_obj database_api::get_grant(const grant_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_grant& grant_service = my->_db.obtain_service<chain::dbs_grant>();
+        return grant_service.get(id);
+    });
+}
+
+vector<grant_api_obj>
+database_api::get_grants_by_target_discipline(const discipline_id_type& discipline_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<grant_api_obj> results;
+        chain::dbs_grant& grant_service
+            = my->_db.obtain_service<chain::dbs_grant>();
+
+        auto grants = grant_service.get_by_target_discipline(discipline_id);
+
+        for (const chain::grant_object& grant : grants)
+            results.push_back(grant);
+
+        return results;
+    });
+}
+
+grant_application_api_obj database_api::get_grant_application(const grant_application_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_content& research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+        return research_content_service.get_grant_application(id);
+    });
+}
+
+vector<grant_application_api_obj>
+database_api::get_applications_by_grant(const grant_id_type& grant_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<grant_application_api_obj> results;
+        chain::dbs_research_content& research_content_service
+            = my->_db.obtain_service<chain::dbs_research_content>();
+
+        auto grant_applications = research_content_service.get_applications_by_grant(grant_id);
+
+        for (const chain::grant_application_object& grant_application : grant_applications)
+            results.push_back(grant_application);
+
+        return results;
+    });
+}
+
+vector<grant_application_api_obj>
+database_api::get_applications_by_research_id(const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<grant_application_api_obj> results;
+        chain::dbs_research_content& research_content_service
+                = my->_db.obtain_service<chain::dbs_research_content>();
+
+        auto grant_applications = research_content_service.get_applications_by_research_id(research_id);
+
+        for (const chain::grant_application_object& grant_application : grant_applications)
+            results.push_back(grant_application);
+
+        return results;
+    });
 }
 
 } // namespace app

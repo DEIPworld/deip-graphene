@@ -131,7 +131,6 @@ void dbs_proposal::clear_expired_proposals()
 
 const proposal_vote_object& dbs_proposal::vote_for(const proposal_id_type &proposal_id, const account_name_type &voter)
 {
-    auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
     auto& proposal = get_proposal(proposal_id);
 
     db_impl().modify(proposal, [&](proposal_object& p) {

@@ -1,37 +1,46 @@
 #include <deip/protocol/deip_operations.hpp>
 
-#include <deip/chain/schema/block_summary_object.hpp>
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/database/database_exceptions.hpp>
 #include <deip/chain/database/db_with.hpp>
-#include <deip/chain/evaluator_registry.hpp>
-#include <deip/chain/schema/global_property_object.hpp>
-#include <deip/chain/schema/chain_property_object.hpp>
-#include <deip/chain/schema/operation_object.hpp>
+
 #include <deip/chain/deip_evaluator.hpp>
-#include <deip/chain/schema/deip_objects.hpp>
-#include <deip/chain/schema/transaction_object.hpp>
-#include <deip/chain/shared_db_merkle.hpp>
-#include <deip/chain/operation_notification.hpp>
-#include <deip/chain/schema/discipline_supply_object.hpp>
-#include <deip/chain/schema/proposal_object.hpp>
+#include <deip/chain/evaluator_registry.hpp>
 #include <deip/chain/genesis_state.hpp>
-#include <deip/chain/schema/research_group_object.hpp>
-#include <deip/chain/schema/discipline_object.hpp>
+#include <deip/chain/operation_notification.hpp>
+#include <deip/chain/shared_db_merkle.hpp>
+
+#include <deip/chain/schema/block_summary_object.hpp>
+#include <deip/chain/schema/chain_property_object.hpp>
+#include <deip/chain/schema/deip_objects.hpp>
+#include <deip/chain/schema/global_property_object.hpp>
+#include <deip/chain/schema/grant_object.hpp>
+#include <deip/chain/schema/offer_research_tokens_object.hpp>
+#include <deip/chain/schema/operation_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
-#include <deip/chain/schema/research_content_object.hpp>
-#include <deip/chain/schema/research_token_sale_object.hpp>
-#include <deip/chain/schema/expert_token_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
-#include <deip/chain/schema/vote_object.hpp>
 #include <deip/chain/schema/total_votes_object.hpp>
-#include <deip/chain/schema/research_group_invite_object.hpp>
-#include <deip/chain/schema/review_object.hpp>
-#include <deip/chain/schema/vesting_balance_object.hpp>
-#include <deip/chain/schema/expertise_stats_object.hpp>
-#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
-#include <deip/chain/schema/offer_research_tokens_object.hpp>
+#include <deip/chain/schema/transaction_object.hpp>
+
+#include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_discipline.hpp>
+#include <deip/chain/services/dbs_discipline_supply.hpp>
+#include <deip/chain/services/dbs_dynamic_global_properties.hpp>
+#include <deip/chain/services/dbs_expert_token.hpp>
+#include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
+#include <deip/chain/services/dbs_expertise_stats.hpp>
+#include <deip/chain/services/dbs_proposal.hpp>
+#include <deip/chain/services/dbs_proposal_execution.hpp>
+#include <deip/chain/services/dbs_research_content.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_research_group_invite.hpp>
+#include <deip/chain/services/dbs_research_token_sale.hpp>
+#include <deip/chain/services/dbs_review.hpp>
+#include <deip/chain/services/dbs_reward_pool.hpp>
+#include <deip/chain/services/dbs_vesting_balance.hpp>
+#include <deip/chain/services/dbs_vote.hpp>
+#include <deip/chain/services/dbs_witness.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -53,24 +62,6 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/adaptor/uniqued.hpp>
 
-#include <deip/chain/services/dbs_account.hpp>
-#include <deip/chain/services/dbs_witness.hpp>
-#include <deip/chain/services/dbs_proposal.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
-#include <deip/chain/services/dbs_research_token_sale.hpp>
-#include <deip/chain/services/dbs_research_content.hpp>
-#include <deip/chain/services/dbs_dynamic_global_properties.hpp>
-#include <deip/chain/services/dbs_vote.hpp>
-#include <deip/chain/services/dbs_discipline.hpp>
-#include <deip/chain/services/dbs_expert_token.hpp>
-#include <deip/chain/services/dbs_research_group_invite.hpp>
-#include <deip/chain/services/dbs_discipline_supply.hpp>
-#include <deip/chain/services/dbs_review.hpp>
-#include <deip/chain/services/dbs_vesting_balance.hpp>
-#include <deip/chain/services/dbs_proposal_execution.hpp>
-#include <deip/chain/services/dbs_reward_pool.hpp>
-#include <deip/chain/services/dbs_expertise_stats.hpp>
-#include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
 namespace deip {
@@ -1262,7 +1253,6 @@ void database::process_expertise_allocation_proposals()
 {
     dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = obtain_service<dbs_expertise_allocation_proposal>();
     dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
-    dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
 
     expertise_allocation_proposal_service.clear_expired_expertise_allocation_proposals();
     vector<expertise_allocation_proposal_id_type> approved_proposals_ids;
@@ -1815,6 +1805,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<vote_for_expertise_allocation_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<accept_research_token_offer_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_research_token_offer_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_grant_application_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -1857,6 +1849,8 @@ void database::initialize_indexes()
     add_index<expertise_allocation_proposal_vote_index>();
     add_index<expertise_stats_index>();
     add_index<offer_research_tokens_index>();
+    add_index<grant_index>();
+    add_index<grant_application_index>();
 
     _plugin_index_signal();
 }

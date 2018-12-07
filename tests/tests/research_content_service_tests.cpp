@@ -168,6 +168,33 @@ public:
         });
     }
 
+    void create_grant_applications()
+    {
+        db.create<grant_application_object>([&](grant_application_object& ga_o) {
+            ga_o.id = 0;
+            ga_o.grant_id = 1;
+            ga_o.research_id = 1;
+            ga_o.creator = "alice";
+            ga_o.application_hash = "test1";
+        });
+
+        db.create<grant_application_object>([&](grant_application_object& ga_o) {
+            ga_o.id = 1;
+            ga_o.grant_id = 1;
+            ga_o.research_id = 2;
+            ga_o.creator = "bob";
+            ga_o.application_hash = "test2";
+        });
+
+        db.create<grant_application_object>([&](grant_application_object& ga_o) {
+            ga_o.id = 2;
+            ga_o.grant_id = 2;
+            ga_o.research_id = 2;
+            ga_o.creator = "john";
+            ga_o.application_hash = "test3";
+        });
+    }
+
     dbs_research_content& data_service;
 };
 
@@ -398,6 +425,97 @@ BOOST_AUTO_TEST_CASE(get_all_milestones_by_research_id)
                    authors[0] == "alice" &&
                    content.references.size() == 1 &&
                    content.external_references.size() == 2;
+        }));
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(create_grant_application)
+{
+    try
+    {
+        auto& grant_application = data_service.create_grant_application(1, 1, "test", "alice");
+        BOOST_CHECK(grant_application.grant_id == 1);
+        BOOST_CHECK(grant_application.research_id == 1);
+        BOOST_CHECK(grant_application.creator == "alice");
+        BOOST_CHECK(grant_application.application_hash == "test");
+        BOOST_CHECK(grant_application.created_at == db.head_block_time());
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_grant_application)
+{
+    try
+    {
+        create_grant_applications();
+
+        auto& grant_application = data_service.get_grant_application(1);
+
+        BOOST_CHECK(grant_application.grant_id == 1);
+        BOOST_CHECK(grant_application.research_id == 2);
+        BOOST_CHECK(grant_application.creator == "bob");
+        BOOST_CHECK(grant_application.application_hash == "test2");
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_applications_by_grant)
+{
+    try
+    {
+        create_grant_applications();
+        auto applications = data_service.get_applications_by_grant(1);
+
+        BOOST_CHECK(applications.size() == 2);
+        BOOST_CHECK(std::any_of(applications.begin(), applications.end(), [](std::reference_wrapper<const grant_application_object> wrapper){
+            const grant_application_object &application = wrapper.get();
+
+            return application.id == 0 && application.research_id == 1 &&
+                    application.grant_id == 1 &&
+                    application.creator == "alice" &&
+                    application.application_hash == "test1";
+        }));
+
+        BOOST_CHECK(std::any_of(applications.begin(), applications.end(), [](std::reference_wrapper<const grant_application_object> wrapper){
+            const grant_application_object &application = wrapper.get();
+
+            return application.id == 1 && application.research_id == 2 &&
+                   application.grant_id == 1 &&
+                   application.creator == "bob" &&
+                   application.application_hash == "test2";
+        }));
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_applications_by_research_id)
+{
+    try
+    {
+        create_grant_applications();
+        auto applications = data_service.get_applications_by_research_id(2);
+
+        BOOST_CHECK(applications.size() == 2);
+
+        BOOST_CHECK(std::any_of(applications.begin(), applications.end(), [](std::reference_wrapper<const grant_application_object> wrapper){
+            const grant_application_object &application = wrapper.get();
+
+            return application.id == 1 && application.research_id == 2 &&
+                   application.grant_id == 1 &&
+                   application.creator == "bob" &&
+                   application.application_hash == "test2";
+        }));
+
+        BOOST_CHECK(std::any_of(applications.begin(), applications.end(), [](std::reference_wrapper<const grant_application_object> wrapper){
+            const grant_application_object &application = wrapper.get();
+
+            return application.id == 2 && application.research_id == 2 &&
+                   application.grant_id == 2 &&
+                   application.creator == "john" &&
+                   application.application_hash == "test3";
         }));
 
     }
