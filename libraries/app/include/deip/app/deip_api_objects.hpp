@@ -1020,6 +1020,7 @@ struct grant_api_obj
     account_name_type owner;
 
     int16_t min_number_of_positive_reviews;
+    int16_t min_number_of_applications;
     int16_t researches_to_grant;
 
     fc::time_point_sec created_at;
@@ -1370,6 +1371,7 @@ FC_REFLECT( deip::app::grant_api_obj,
             (amount)
             (owner)
             (min_number_of_positive_reviews)
+            (min_number_of_applications)
             (researches_to_grant)
             (created_at)
             (start_time)

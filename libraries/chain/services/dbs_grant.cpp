@@ -12,6 +12,7 @@ dbs_grant::dbs_grant(database &db)
 const grant_object& dbs_grant::create(const discipline_id_type& target_discipline,
                                       const asset& amount,
                                       const int16_t& min_number_of_positive_reviews,
+                                      const int16_t& min_number_of_applications,
                                       const int16_t& researches_to_grant,
                                       fc::time_point_sec start_time,
                                       fc::time_point_sec end_time,
@@ -25,6 +26,7 @@ const grant_object& dbs_grant::create(const discipline_id_type& target_disciplin
         grant.target_discipline = target_discipline;
         grant.amount = amount;
         grant.min_number_of_positive_reviews = min_number_of_positive_reviews;
+        grant.min_number_of_applications = min_number_of_applications;
         grant.researches_to_grant = researches_to_grant;
         grant.start_time = start_time;
         grant.end_time = end_time;

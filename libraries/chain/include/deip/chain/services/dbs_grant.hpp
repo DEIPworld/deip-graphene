@@ -20,6 +20,7 @@ public:
     const grant_object& create(const discipline_id_type& target_discipline,
                                const asset& amount,
                                const int16_t& min_number_of_positive_reviews,
+                               const int16_t& min_number_of_applications,
                                const int16_t& researches_to_grant,
                                fc::time_point_sec start_time,
                                fc::time_point_sec end_time,

@@ -1143,6 +1143,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
     grant_service.create(op.target_discipline,
                          op.amount,
                          op.min_number_of_positive_reviews,
+                         op.min_number_of_applications,
                          op.researches_to_grant,
                          op.start_time,
                          op.end_time,
