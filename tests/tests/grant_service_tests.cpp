@@ -22,6 +22,7 @@ public:
             ga.target_discipline = 1;
             ga.researches_to_grant = 5;
             ga.min_number_of_positive_reviews = 5;
+            ga.min_number_of_applications = 10;
             ga.amount = asset(1000, DEIP_SYMBOL);
             ga.start_time = db.head_block_time();
             ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
@@ -33,6 +34,7 @@ public:
             ga.target_discipline = 1;
             ga.researches_to_grant = 6;
             ga.min_number_of_positive_reviews = 4;
+            ga.min_number_of_applications = 10;
             ga.amount = asset(1000, DEIP_SYMBOL);
             ga.start_time = db.head_block_time();
             ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
@@ -44,6 +46,7 @@ public:
             ga.target_discipline = 2;
             ga.researches_to_grant = 4;
             ga.min_number_of_positive_reviews = 10;
+            ga.min_number_of_applications = 15;
             ga.amount = asset(1000, DEIP_SYMBOL);
             ga.start_time = db.head_block_time();
             ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
@@ -60,11 +63,12 @@ BOOST_AUTO_TEST_CASE(create_grant)
 {
     try
     {
-        auto& grant = data_service.create(1, asset(100, DEIP_SYMBOL), 5, 10, db.head_block_time(), db.head_block_time() + DAYS_TO_SECONDS(10), "alice");
+        auto& grant = data_service.create(1, asset(100, DEIP_SYMBOL), 5, 10, 10, db.head_block_time(), db.head_block_time() + DAYS_TO_SECONDS(10), "alice");
 
         BOOST_CHECK(grant.target_discipline == 1);
         BOOST_CHECK(grant.amount ==  asset(100, DEIP_SYMBOL));
         BOOST_CHECK(grant.min_number_of_positive_reviews == 5);
+        BOOST_CHECK(grant.min_number_of_applications == 10);
         BOOST_CHECK(grant.researches_to_grant == 10);
         BOOST_CHECK(grant.created_at == db.head_block_time());
         BOOST_CHECK(grant.start_time == db.head_block_time());
@@ -86,6 +90,7 @@ BOOST_AUTO_TEST_CASE(get_grant)
         BOOST_CHECK(grant.target_discipline == 1);
         BOOST_CHECK(grant.amount ==  asset(1000, DEIP_SYMBOL));
         BOOST_CHECK(grant.min_number_of_positive_reviews == 4);
+        BOOST_CHECK(grant.min_number_of_applications == 10);
         BOOST_CHECK(grant.researches_to_grant == 6);
         BOOST_CHECK(grant.start_time == db.head_block_time());
         BOOST_CHECK(grant.end_time == db.head_block_time() + DAYS_TO_SECONDS(30));
@@ -120,6 +125,7 @@ BOOST_AUTO_TEST_CASE(get_by_target_discipline)
             return grant.id == 0 && grant.target_discipline == 1 &&
                     grant.researches_to_grant == 5 &&
                     grant.min_number_of_positive_reviews == 5 &&
+                    grant.min_number_of_applications == 10 &&
                     grant.amount == asset(1000, DEIP_SYMBOL) &&
                     grant.start_time == db.head_block_time() &&
                     grant.end_time == db.head_block_time() + DAYS_TO_SECONDS(30) &&
@@ -132,6 +138,7 @@ BOOST_AUTO_TEST_CASE(get_by_target_discipline)
             return grant.id == 1 && grant.target_discipline == 1 &&
                    grant.researches_to_grant == 6 &&
                    grant.min_number_of_positive_reviews == 4 &&
+                    grant.min_number_of_applications == 10 &&
                    grant.amount == asset(1000, DEIP_SYMBOL) &&
                    grant.start_time == db.head_block_time() &&
                    grant.end_time == db.head_block_time() + DAYS_TO_SECONDS(30) &&

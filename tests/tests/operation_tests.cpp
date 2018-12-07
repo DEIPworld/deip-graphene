@@ -4511,6 +4511,7 @@ BOOST_AUTO_TEST_CASE(create_grant_test)
         op.amount = asset(1000, DEIP_SYMBOL);
         op.owner = "bob";
         op.min_number_of_positive_reviews = 4;
+        op.min_number_of_applications = 10;
         op.researches_to_grant = 10;
         op.start_time = db.head_block_time() + DAYS_TO_SECONDS(10);
         op.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
@@ -4531,6 +4532,7 @@ BOOST_AUTO_TEST_CASE(create_grant_test)
         BOOST_CHECK(grant.target_discipline == 1);
         BOOST_CHECK(grant.owner == "bob");
         BOOST_CHECK(grant.min_number_of_positive_reviews == 4);
+        BOOST_CHECK(grant.min_number_of_applications == 10);
         BOOST_CHECK(grant.researches_to_grant == 10);
         BOOST_CHECK(grant.created_at == db.head_block_time());
         BOOST_CHECK(grant.start_time == db.head_block_time() + DAYS_TO_SECONDS(10));
