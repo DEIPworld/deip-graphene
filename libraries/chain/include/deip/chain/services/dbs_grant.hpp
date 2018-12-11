@@ -32,6 +32,8 @@ public:
 
     grant_refs_type get_by_target_discipline(const discipline_id_type& discipline_id);
 
+    void delete_grant(const grant_object& grant);
+
 };
 } // namespace chain
 } // namespace deip

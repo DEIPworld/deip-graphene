@@ -14,7 +14,6 @@
 #include <deip/chain/schema/chain_property_object.hpp>
 #include <deip/chain/schema/deip_objects.hpp>
 #include <deip/chain/schema/global_property_object.hpp>
-#include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/operation_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
@@ -30,6 +29,7 @@
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_expertise_stats.hpp>
+#include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_proposal.hpp>
 #include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
@@ -1274,6 +1274,32 @@ void database::process_expertise_allocation_proposals()
     {
         expertise_allocation_proposal_service.remove(id);
     }
+}
+
+void database::process_grants()
+{
+    dbs_grant& grant_service = obtain_service<dbs_grant>();
+    dbs_research& research_service = obtain_service<dbs_research>();
+    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
+    dbs_research_discipline_relation& rdr_service = obtain_service<dbs_research_discipline_relation>();
+
+    const auto& grants_idx = get_index<grant_index>().indices().get<by_end_time>();
+    auto itr = grants_idx.begin();
+    auto _head_block_time = head_block_time();
+
+    while (itr->end_time <= _head_block_time)
+    {
+        auto& grant = *itr;
+        auto applications = research_content_service.get_applications_by_grant(grant.id);
+        if (applications.size() < grant.min_number_of_applications) {
+            auto current = itr++;
+            grant_service.delete_grant(*current);
+            continue;
+        }
+
+    }
+}
+
 }
 
 asset database::distribute_reward(const asset &reward, const share_type &expertise)

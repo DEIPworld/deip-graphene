@@ -329,6 +329,7 @@ public:
     void distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id) override;
     void refund_research_tokens(const research_token_sale_id_type research_token_sale_id);
     void process_expertise_allocation_proposals();
+    void process_grants();
 
     /**
      * Rewards distribution

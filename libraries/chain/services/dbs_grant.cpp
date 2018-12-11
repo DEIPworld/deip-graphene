@@ -1,3 +1,4 @@
+#include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/database/database.hpp>
 
@@ -67,6 +68,14 @@ dbs_grant::grant_refs_type dbs_grant::get_by_target_discipline(const discipline_
     return ret;
 }
 
+void dbs_grant::delete_grant(const grant_object& grant)
+{
+    dbs_account& account_service = db_impl().obtain_service<dbs_account>();
+    auto& owner = db_impl().get_account(grant.owner);
+    account_service.adjust_balance(owner, grant.amount);
+
+    db_impl().remove(grant);
+}
 
 } //namespace chain
 } //namespace deip
