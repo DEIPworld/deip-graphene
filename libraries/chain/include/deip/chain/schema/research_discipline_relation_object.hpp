@@ -34,6 +34,7 @@ public:
     research_id_type research_id;
     discipline_id_type discipline_id;
     uint16_t votes_count;
+    share_type resrearch_eci = 0;
 };
 
 struct by_research_id;
@@ -67,7 +68,7 @@ typedef multi_index_container<research_discipline_relation_object,
 }
 
 FC_REFLECT(deip::chain::research_discipline_relation_object,
-           (id)(research_id)(discipline_id)(votes_count)
+           (id)(research_id)(discipline_id)(votes_count)(resrearch_eci)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_discipline_relation_object, deip::chain::research_discipline_relation_index)
