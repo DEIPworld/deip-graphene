@@ -2,6 +2,8 @@
 #include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/database/database.hpp>
 
+#include <deip/chain/schema/grant_application_object.hpp>
+
 namespace deip {
 namespace chain {
 
@@ -73,6 +75,15 @@ void dbs_grant::delete_grant(const grant_object& grant)
     dbs_account& account_service = db_impl().obtain_service<dbs_account>();
     auto& owner = db_impl().get_account(grant.owner);
     account_service.adjust_balance(owner, grant.amount);
+
+    auto it_pair = db_impl().get_index<grant_application_index>().indicies().get<by_grant_id>().equal_range(grant.id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        auto current = it++;
+        db_impl().remove(*current);
+    }
 
     db_impl().remove(grant);
 }
