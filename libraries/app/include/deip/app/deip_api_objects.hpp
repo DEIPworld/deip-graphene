@@ -378,6 +378,8 @@ struct research_api_obj
         ,  dropout_compensation_in_percent(r.dropout_compensation_in_percent)
         ,  disciplines(disciplines.begin(), disciplines.end())
         ,  group_permlink(group_permlink)
+        ,  number_of_positive_reviews(r.number_of_positive_reviews)
+        ,  number_of_negative_reviews(r.number_of_negative_reviews)
     {
         for (const auto& kvp : r.eci_per_discipline) {
             discipline_id_type discipline_id = kvp.first;
@@ -405,6 +407,9 @@ struct research_api_obj
     string group_permlink;
 
     map<int64_t, int64_t> eci_per_discipline;
+
+    uint16_t number_of_positive_reviews;
+    uint16_t number_of_negative_reviews;
 };
 
 struct research_content_api_obj
