@@ -1023,7 +1023,7 @@ struct grant_api_obj
 
     int16_t min_number_of_positive_reviews;
     int16_t min_number_of_applications;
-    int16_t researches_to_grant;
+    int16_t max_researches_to_grant;
 
     fc::time_point_sec created_at;
     fc::time_point_sec start_time;
@@ -1375,7 +1375,7 @@ FC_REFLECT( deip::app::grant_api_obj,
             (owner)
             (min_number_of_positive_reviews)
             (min_number_of_applications)
-            (researches_to_grant)
+            (max_researches_to_grantgit )
             (created_at)
             (start_time)
             (end_time)
