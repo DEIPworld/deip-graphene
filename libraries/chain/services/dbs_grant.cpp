@@ -28,7 +28,7 @@ const grant_object& dbs_grant::create(const discipline_id_type& target_disciplin
         grant.amount = amount;
         grant.min_number_of_positive_reviews = min_number_of_positive_reviews;
         grant.min_number_of_applications = min_number_of_applications;
-        grant.researches_to_grant = researches_to_grant;
+        grant.max_researches_to_grant = researches_to_grant;
         grant.start_time = start_time;
         grant.end_time = end_time;
         grant.created_at = now;

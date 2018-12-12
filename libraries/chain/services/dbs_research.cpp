@@ -165,7 +165,7 @@ void dbs_research::calculate_eci(const research_id_type& research_id)
                          [&](research_object &r_o) { r_o.eci_per_discipline[discipline_id].value = weight.value; });
         auto& rd_relation = rd_relation_service.get_research_discipline_relations_by_research_and_discipline(research_id, discipline_id);
         db_impl().modify(rd_relation,
-                         [&](research_discipline_relation_object &rdr_o) { rdr_o.resrearch_eci = research.eci_per_discipline.at(discipline_id); });
+                         [&](research_discipline_relation_object &rdr_o) { rdr_o.research_eci = research.eci_per_discipline.at(discipline_id); });
     }
 }
 

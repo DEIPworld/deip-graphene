@@ -650,6 +650,7 @@ struct research_discipline_relation_api_obj
             ,  research_id(re.research_id._id)
             ,  discipline_id(re.discipline_id._id)
             ,  votes_count(re.votes_count)
+            ,  research_eci(re.research_eci)
     {}
     // because fc::variant require for temporary object
     research_discipline_relation_api_obj()
@@ -660,6 +661,7 @@ struct research_discipline_relation_api_obj
     int64_t research_id;
     int64_t discipline_id;
     uint16_t votes_count;
+    share_type research_eci;
 };
 
 struct research_group_invite_api_obj
@@ -1001,7 +1003,7 @@ struct grant_api_obj
         ,  amount(g_o.amount)
         ,  owner(g_o.owner)
         ,  min_number_of_positive_reviews(g_o.min_number_of_positive_reviews)
-        ,  researches_to_grant(g_o.researches_to_grant)
+        ,  researches_to_grant(g_o.max_researches_to_grant)
         ,  created_at(g_o.created_at)
         ,  start_time(g_o.start_time)
         ,  end_time(g_o.end_time)
@@ -1241,6 +1243,7 @@ FC_REFLECT( deip::app::research_discipline_relation_api_obj,
             (research_id)
             (discipline_id)
             (votes_count)
+            (research_eci)
 )
 
 FC_REFLECT( deip::app::research_group_invite_api_obj,

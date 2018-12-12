@@ -1281,7 +1281,6 @@ void database::process_grants()
     dbs_grant& grant_service = obtain_service<dbs_grant>();
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
-    dbs_research_discipline_relation& rdr_service = obtain_service<dbs_research_discipline_relation>();
 
     const auto& grants_idx = get_index<grant_index>().indices().get<by_end_time>();
     auto itr = grants_idx.begin();
@@ -1289,17 +1288,69 @@ void database::process_grants()
 
     while (itr->end_time <= _head_block_time)
     {
-        auto& grant = *itr;
+        auto current_grant = itr++;
+        auto& grant = *current_grant;
         auto applications = research_content_service.get_applications_by_grant(grant.id);
         if (applications.size() < grant.min_number_of_applications) {
-            auto current = itr++;
-            grant_service.delete_grant(*current);
+            grant_service.delete_grant(*current_grant);
             continue;
         }
 
+        std::vector<grant_application_id_type> applications_to_delete;
+        for (auto& application_ref : applications) {
+            const auto& application = application_ref.get();
+            const auto& research = research_service.get_research(application.research_id);
+            if (research.number_of_positive_reviews < grant.min_number_of_positive_reviews)
+                applications_to_delete.push_back(application.id);
+        }
+
+        for (auto& application_id : applications_to_delete)
+            research_content_service.delete_appication_by_id(application_id);
+
+        distribute_grant(grant);
     }
 }
 
+void database::distribute_grant(const grant_object& grant)
+{
+    dbs_grant& grant_service = obtain_service<dbs_grant>();
+    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
+    dbs_research_discipline_relation& rdr_service = obtain_service<dbs_research_discipline_relation>();
+    dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
+
+    asset used_grant = asset(0, DEIP_SYMBOL);
+
+    auto applications = research_content_service.get_applications_by_grant(grant.id);
+    std::multimap<share_type, research_id_type, std::greater<share_type>> researches_eci;
+
+    for (auto& application_ref : applications) {
+        const auto &application = application_ref.get();
+        const auto& rd_relation = rdr_service.get_research_discipline_relations_by_research_and_discipline(application.research_id, grant.target_discipline);
+        researches_eci.insert(std::make_pair(rd_relation.research_eci, rd_relation.research_id));
+    }
+
+    std::vector<std::pair<share_type, research_id_type>> researches_to_grant(grant.max_researches_to_grant);
+    std::copy(researches_eci.begin(), researches_eci.end(), researches_to_grant.begin());
+
+    share_type total_eci = 0;
+    for (auto& research_eci : researches_to_grant)
+        total_eci += research_eci.first;
+
+    for (auto& research_eci : researches_to_grant)
+    {
+        asset research_reward = util::calculate_share(grant.amount, research_eci.first, total_eci);
+        auto& research = get<research_object>(research_eci.second);
+        research_group_service.increase_balance(research.research_group_id, research_reward);
+        used_grant += research_reward;
+    }
+
+    FC_ASSERT(used_grant <= grant.amount, "Attempt to distribute amount that is greater than grant amount");
+
+    modify(grant, [&](grant_object& g) {
+        g.amount -= used_grant;
+    });
+
+    grant_service.delete_grant(grant);
 }
 
 asset database::distribute_reward(const asset &reward, const share_type &expertise)

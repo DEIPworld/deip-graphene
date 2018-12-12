@@ -34,7 +34,7 @@ public:
     research_id_type research_id;
     discipline_id_type discipline_id;
     uint16_t votes_count;
-    share_type resrearch_eci = 0;
+    share_type research_eci = 0;
 };
 
 struct by_research_id;
@@ -58,7 +58,7 @@ typedef multi_index_container<research_discipline_relation_object,
                 ordered_non_unique<tag<by_research_eci>,
                         member<research_discipline_relation_object,
                                 share_type,
-                                &research_discipline_relation_object::resrearch_eci>>,
+                                &research_discipline_relation_object::research_eci>>,
                 ordered_unique<tag<by_research_and_discipline>,
                         composite_key<research_discipline_relation_object,
                                 member<research_discipline_relation_object,
@@ -73,7 +73,7 @@ typedef multi_index_container<research_discipline_relation_object,
 }
 
 FC_REFLECT(deip::chain::research_discipline_relation_object,
-           (id)(research_id)(discipline_id)(votes_count)(resrearch_eci)
+           (id)(research_id)(discipline_id)(votes_count)(research_eci)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_discipline_relation_object, deip::chain::research_discipline_relation_index)

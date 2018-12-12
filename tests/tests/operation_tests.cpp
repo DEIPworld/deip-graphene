@@ -4533,7 +4533,7 @@ BOOST_AUTO_TEST_CASE(create_grant_test)
         BOOST_CHECK(grant.owner == "bob");
         BOOST_CHECK(grant.min_number_of_positive_reviews == 4);
         BOOST_CHECK(grant.min_number_of_applications == 10);
-        BOOST_CHECK(grant.researches_to_grant == 10);
+        BOOST_CHECK(grant.max_researches_to_grant == 10);
         BOOST_CHECK(grant.created_at == db.head_block_time());
         BOOST_CHECK(grant.start_time == db.head_block_time() + DAYS_TO_SECONDS(10));
         BOOST_CHECK(grant.end_time == db.head_block_time() + DAYS_TO_SECONDS(30));
@@ -4555,7 +4555,7 @@ BOOST_AUTO_TEST_CASE(create_grant_application_test)
         db.create<grant_object>([&](grant_object& ga) {
             ga.id = 0;
             ga.target_discipline = 1;
-            ga.researches_to_grant = 5;
+            ga.max_researches_to_grant = 5;
             ga.min_number_of_positive_reviews = 5;
             ga.amount = asset(1000, DEIP_SYMBOL);
             ga.start_time = db.head_block_time();
