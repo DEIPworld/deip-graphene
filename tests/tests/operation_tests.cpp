@@ -177,6 +177,8 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         BOOST_CHECK(disciplines.size() == 1 && disciplines[0] == 1);
         BOOST_CHECK(old_voting_power - new_voting_power == (DEIP_REVIEW_REQUIRED_POWER_PERCENT * op.weight) / DEIP_100_PERCENT);
 
+        BOOST_CHECK(research.number_of_positive_reviews == 1);
+
         validate_database();
 
         BOOST_TEST_MESSAGE("--- Test failing review creation");

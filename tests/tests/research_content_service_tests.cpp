@@ -522,6 +522,18 @@ BOOST_AUTO_TEST_CASE(get_applications_by_research_id)
     FC_LOG_AND_RETHROW()
 }
 
+
+BOOST_AUTO_TEST_CASE(delete_appication_by_id)
+{
+    try
+    {
+        create_grant_applications();
+        BOOST_CHECK_NO_THROW(data_service.delete_appication_by_id(1));
+        BOOST_CHECK_THROW(db.get<grant_application_object>(1), std::out_of_range);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace chain
