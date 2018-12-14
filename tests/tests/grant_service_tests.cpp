@@ -138,12 +138,26 @@ BOOST_AUTO_TEST_CASE(get_by_target_discipline)
             return grant.id == 1 && grant.target_discipline == 1 &&
                    grant.max_researches_to_grant == 6 &&
                    grant.min_number_of_positive_reviews == 4 &&
-                    grant.min_number_of_applications == 10 &&
+                   grant.min_number_of_applications == 10 &&
                    grant.amount == asset(1000, DEIP_SYMBOL) &&
                    grant.start_time == db.head_block_time() &&
                    grant.end_time == db.head_block_time() + DAYS_TO_SECONDS(30) &&
                    grant.owner == "jack";
         }));
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(delete_grant)
+{
+    try
+    {
+        ACTORS((jack))
+        create_grants();
+
+        auto& grant = db.get<grant_object>(1);
+        BOOST_CHECK_NO_THROW(data_service.delete_grant(grant));
+        BOOST_CHECK_THROW(db.get<grant_object>(1), std::out_of_range);
     }
     FC_LOG_AND_RETHROW()
 }
