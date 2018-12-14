@@ -412,8 +412,8 @@ public:
             ga.min_number_of_positive_reviews = 1;
             ga.min_number_of_applications = 2;
             ga.amount = asset(1000, DEIP_SYMBOL);
-            ga.start_time = db.head_block_time();
-            ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
+            ga.start_time = db.head_block_time() - DAYS_TO_SECONDS(30);
+            ga.end_time = db.head_block_time() - DAYS_TO_SECONDS(1);
             ga.owner = "bob";
         });
 
@@ -424,8 +424,8 @@ public:
             ga.min_number_of_positive_reviews = 1;
             ga.min_number_of_applications = 2;
             ga.amount = asset(1000, DEIP_SYMBOL);
-            ga.start_time = db.head_block_time();
-            ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
+            ga.start_time = db.head_block_time() - DAYS_TO_SECONDS(30);
+            ga.end_time = db.head_block_time() - DAYS_TO_SECONDS(1);
             ga.owner = "jack";
         });
     }
@@ -491,6 +491,7 @@ public:
             d.permlink = "permlink1";
             d.owned_tokens = 100 * DEIP_1_PERCENT;
             d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.number_of_positive_reviews = 10;
         });
 
         db.create<research_object>([&](research_object& d) {
@@ -501,6 +502,7 @@ public:
             d.permlink = "permlink2";
             d.owned_tokens = 100 * DEIP_1_PERCENT;
             d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.number_of_positive_reviews = 10;
         });
 
         db.create<research_object>([&](research_object& d) {
@@ -511,6 +513,7 @@ public:
             d.permlink = "permlink3";
             d.owned_tokens = 100 * DEIP_1_PERCENT;
             d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.number_of_positive_reviews = 10;
         });
     }
 
@@ -1078,6 +1081,42 @@ BOOST_AUTO_TEST_CASE(distribute_grant)
     }
     FC_LOG_AND_RETHROW()
 }
+
+BOOST_AUTO_TEST_CASE(process_grants)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: process_grants");
+
+        ACTORS((alice)(alex)(jack)(bob)(john)(mike));
+
+        generate_block();
+
+        create_grants();
+        create_grant_applications();
+        create_research_groups_for_grants();
+        create_researches_for_grants();
+        create_rd_relations_for_grants();
+
+        db.process_grants();
+
+        BOOST_CHECK_THROW(db.get<grant_object>(1), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_object>(2), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(1), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(2), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(3), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(4), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(5), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(6), std::out_of_range);
+
+        BOOST_CHECK(db.get<research_group_object>(31).balance == asset(1000, DEIP_SYMBOL));
+        BOOST_CHECK(db.get<research_group_object>(32).balance == asset(600, DEIP_SYMBOL));
+        BOOST_CHECK(db.get<research_group_object>(33).balance == asset(400, DEIP_SYMBOL));
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -1286,13 +1286,13 @@ void database::process_grants()
     auto itr = grants_idx.begin();
     auto _head_block_time = head_block_time();
 
-    while (itr->end_time <= _head_block_time)
+    while (itr != grants_idx.end() && itr->end_time <= _head_block_time)
     {
         auto current_grant = itr++;
         auto& grant = *current_grant;
         auto applications = research_content_service.get_applications_by_grant(grant.id);
         if (applications.size() < grant.min_number_of_applications) {
-            grant_service.delete_grant(*current_grant);
+            grant_service.delete_grant(grant);
             continue;
         }
 
@@ -1306,6 +1306,12 @@ void database::process_grants()
 
         for (auto& application_id : applications_to_delete)
             research_content_service.delete_appication_by_id(application_id);
+
+        if (research_content_service.get_applications_by_grant(grant.id).size() == 0)
+        {
+            grant_service.delete_grant(grant);
+            continue;
+        }
 
         distribute_grant(grant);
     }
