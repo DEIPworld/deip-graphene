@@ -35,6 +35,7 @@ public:
 
 struct by_grant_id;
 struct by_target_discipline;
+struct by_owner;
 struct by_start_time;
 struct by_end_time;
 
@@ -47,6 +48,10 @@ typedef multi_index_container<grant_object,
                                                         member<grant_object,
                                                                 discipline_id_type,
                                                                &grant_object::target_discipline>>,
+                                         ordered_non_unique<tag<by_owner>,
+                                                        member<grant_object,
+                                                                account_name_type,
+                                                               &grant_object::owner>>,
                                          ordered_non_unique<tag<by_start_time>,
                                                         member<grant_object,
                                                                 fc::time_point_sec,

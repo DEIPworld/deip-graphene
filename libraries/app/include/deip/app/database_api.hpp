@@ -484,6 +484,8 @@ public:
 
     grant_api_obj get_grant(const grant_id_type& id) const;
     vector<grant_api_obj> get_grants_by_target_discipline(const discipline_id_type& discipline_id) const;
+    vector<grant_api_obj> get_grants(const set<string>& account_names) const;
+    set<string> lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const;
 
     /////////////////////////
     // Grant applications///
@@ -683,6 +685,17 @@ FC_API(deip::app::database_api,
 
    //Eci and expertise stats
    (get_eci_and_expertise_stats_by_discipline_id)
+
+   //Grants
+   (get_grant)
+   (get_grants_by_target_discipline)
+   (get_grants)
+   (lookup_grant_owners)
+
+   // Grant applications
+   (get_grant_application)
+   (get_applications_by_grant)
+   (get_applications_by_research_id)
 
 
 )

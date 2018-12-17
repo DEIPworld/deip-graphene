@@ -78,6 +78,11 @@ public:
     vector<discipline_supply_api_obj> get_discipline_supplies(const set<string>& names) const;
     set<string> lookup_discipline_supply_owners(const string& lower_bound_name, uint32_t limit) const;
 
+    // Grants
+
+    vector<grant_api_obj> get_grants(const set<string>& names) const;
+    set<string> lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const;
+
     // Witnesses
     vector<optional<witness_api_obj>> get_witnesses(const vector<witness_id_type>& witness_ids) const;
     fc::optional<witness_api_obj> get_witness_by_account(const string& account_name) const;
@@ -2155,6 +2160,49 @@ database_api::get_grants_by_target_discipline(const discipline_id_type& discipli
 
         return results;
     });
+}
+
+vector<grant_api_obj> database_api::get_grants(const set<string>& names) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_grants(names); });
+}
+
+vector<grant_api_obj> database_api_impl::get_grants(const set<string>& names) const
+{
+    vector<grant_api_obj> results;
+
+    chain::dbs_grant& grant_service = _db.obtain_service<chain::dbs_grant>();
+
+    for (const auto& name : names)
+    {
+        auto grants = grant_service.get_by_owner(name);
+        if (results.size() + grants.size() > DEIP_LIMIT_API_DISCIPLINE_SUPPLIES_LIST_SIZE)
+        {
+            break;
+        }
+
+        for (const chain::grant_object& grant: grants)
+        {
+            results.push_back(grant_api_obj(grant));
+        }
+    }
+
+    return results;
+}
+
+set<string> database_api::lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const
+{
+    return my->_db.with_read_lock([&]() { return my->lookup_grant_owners(lower_bound_name, limit); });
+}
+
+set<string> database_api_impl::lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const
+{
+    FC_ASSERT(limit <= DEIP_LIMIT_API_DISCIPLINE_SUPPLIES_LIST_SIZE, "limit must be less or equal than ${1}",
+              ("1", DEIP_LIMIT_API_DISCIPLINE_SUPPLIES_LIST_SIZE));
+
+    chain::dbs_grant& grant_service = _db.obtain_service<chain::dbs_grant>();
+
+    return grant_service.lookup_grant_owners(lower_bound_name, limit);
 }
 
 grant_application_api_obj database_api::get_grant_application(const grant_application_id_type& id) const

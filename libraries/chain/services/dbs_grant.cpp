@@ -70,6 +70,40 @@ dbs_grant::grant_refs_type dbs_grant::get_by_target_discipline(const discipline_
     return ret;
 }
 
+dbs_grant::grant_refs_type dbs_grant::get_by_owner(const account_name_type& owner)
+{
+    grant_refs_type ret;
+
+    auto it_pair = db_impl().get_index<grant_index>().indicies().get<by_owner>().equal_range(owner);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+std::set<string> dbs_grant::lookup_grant_owners(const string &lower_bound_owner_name,
+                                                                        uint32_t limit) const
+{
+    FC_ASSERT(limit <= DEIP_LIMIT_DISCIPLINE_SUPPLIES_LIST_SIZE,
+              "limit must be less or equal than ${1}, actual limit value == ${2}",
+              ("1", DEIP_LIMIT_DISCIPLINE_SUPPLIES_LIST_SIZE)("2", limit));
+    const auto& grants_by_owner_name = db_impl().get_index<grant_index>().indices().get<by_owner>();
+    set<string> result;
+
+    for (auto itr = grants_by_owner_name.lower_bound(lower_bound_owner_name);
+         limit-- && itr != grants_by_owner_name.end(); ++itr)
+    {
+        result.insert(itr->owner);
+    }
+
+    return result;
+}
+
 void dbs_grant::delete_grant(const grant_object& grant)
 {
     dbs_account& account_service = db_impl().obtain_service<dbs_account>();
