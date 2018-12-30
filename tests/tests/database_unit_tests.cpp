@@ -2,12 +2,16 @@
 #include <boost/test/unit_test.hpp>
 
 #include <deip/chain/database/database.hpp>
-#include <deip/chain/schema/research_token_object.hpp>
 #include <deip/chain/util/reward.hpp>
+
 #include <deip/chain/schema/discipline_supply_object.hpp>
+#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
+#include <deip/chain/schema/grant_object.hpp>
+#include <deip/chain/schema/grant_application_object.hpp>
+#include <deip/chain/schema/research_discipline_relation_object.hpp>
+#include <deip/chain/schema/research_token_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/reward_pool_object.hpp>
-#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 
 #include "database_fixture.hpp"
 
@@ -20,7 +24,8 @@ public:
     database_unit_service_fixture()
             : account_service(db.obtain_service<dbs_account>()),
               vote_service(db.obtain_service<dbs_vote>()),
-              research_content_service(db.obtain_service<dbs_research_content>())
+              research_content_service(db.obtain_service<dbs_research_content>()),
+              grant_service(db.obtain_service<dbs_grant>())
     {
     }
 
@@ -398,9 +403,187 @@ public:
         });
     }
 
+    void create_grants()
+    {
+        db.create<grant_object>([&](grant_object& ga) {
+            ga.id = 1;
+            ga.target_discipline = 1;
+            ga.max_researches_to_grant = 3;
+            ga.min_number_of_positive_reviews = 1;
+            ga.min_number_of_applications = 2;
+            ga.amount = asset(1000, DEIP_SYMBOL);
+            ga.start_time = db.head_block_time() - DAYS_TO_SECONDS(30);
+            ga.end_time = db.head_block_time() - DAYS_TO_SECONDS(1);
+            ga.owner = "bob";
+        });
+
+        db.create<grant_object>([&](grant_object& ga) {
+            ga.id = 2;
+            ga.target_discipline = 2;
+            ga.max_researches_to_grant = 3;
+            ga.min_number_of_positive_reviews = 1;
+            ga.min_number_of_applications = 2;
+            ga.amount = asset(1000, DEIP_SYMBOL);
+            ga.start_time = db.head_block_time() - DAYS_TO_SECONDS(30);
+            ga.end_time = db.head_block_time() - DAYS_TO_SECONDS(1);
+            ga.owner = "jack";
+        });
+    }
+
+    void create_grant_applications()
+    {
+        db.create<grant_application_object>([&](grant_application_object& ga_o) {
+            ga_o.id = 1;
+            ga_o.grant_id = 1;
+            ga_o.research_id = 1;
+            ga_o.creator = "alice";
+            ga_o.application_hash = "test1";
+        });
+
+        db.create<grant_application_object>([&](grant_application_object& ga_o) {
+            ga_o.id = 2;
+            ga_o.grant_id = 1;
+            ga_o.research_id = 2;
+            ga_o.creator = "mike";
+            ga_o.application_hash = "test2";
+        });
+
+        db.create<grant_application_object>([&](grant_application_object& ga_o) {
+            ga_o.id = 3;
+            ga_o.grant_id = 1;
+            ga_o.research_id = 3;
+            ga_o.creator = "john";
+            ga_o.application_hash = "test3";
+        });
+
+        db.create<grant_application_object>([&](grant_application_object& ga_o) {
+            ga_o.id = 4;
+            ga_o.grant_id = 2;
+            ga_o.research_id = 1;
+            ga_o.creator = "alice";
+            ga_o.application_hash = "test4";
+        });
+
+        db.create<grant_application_object>([&](grant_application_object& ga_o) {
+            ga_o.id = 5;
+            ga_o.grant_id = 2;
+            ga_o.research_id = 2;
+            ga_o.creator = "mike";
+            ga_o.application_hash = "test5";
+        });
+
+        db.create<grant_application_object>([&](grant_application_object& ga_o) {
+            ga_o.id = 6;
+            ga_o.grant_id = 2;
+            ga_o.research_id = 3;
+            ga_o.creator = "john";
+            ga_o.application_hash = "test6";
+        });
+    }
+
+    void create_researches_for_grants()
+    {
+        db.create<research_object>([&](research_object& d) {
+            d.id = 1;
+            d.research_group_id = 31;
+            d.title = "name1";
+            d.abstract = "abstract1";
+            d.permlink = "permlink1";
+            d.owned_tokens = 100 * DEIP_1_PERCENT;
+            d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.number_of_positive_reviews = 10;
+        });
+
+        db.create<research_object>([&](research_object& d) {
+            d.id = 2;
+            d.research_group_id = 32;
+            d.title = "name2";
+            d.abstract = "abstract2";
+            d.permlink = "permlink2";
+            d.owned_tokens = 100 * DEIP_1_PERCENT;
+            d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.number_of_positive_reviews = 10;
+        });
+
+        db.create<research_object>([&](research_object& d) {
+            d.id = 3;
+            d.research_group_id = 33;
+            d.title = "name3";
+            d.abstract = "abstract3";
+            d.permlink = "permlink3";
+            d.owned_tokens = 100 * DEIP_1_PERCENT;
+            d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.number_of_positive_reviews = 10;
+        });
+    }
+
+    void create_research_groups_for_grants()
+    {
+        db.create<research_group_object>([&](research_group_object& d) {
+            d.id = 31;
+            d.permlink = "permlink1";
+        });
+
+        db.create<research_group_object>([&](research_group_object& d) {
+            d.id = 32;
+            d.permlink = "permlink2";
+        });
+
+        db.create<research_group_object>([&](research_group_object& d) {
+            d.id = 33;
+            d.permlink = "permlink3";
+        });
+    }
+
+    void create_rd_relations_for_grants()
+    {
+        db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+            r.id = 0,
+            r.research_id = 1,
+            r.discipline_id = 1;
+            r.research_eci = 5000;
+        });
+
+        db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+            r.id = 1,
+            r.research_id = 1,
+            r.discipline_id = 2;
+            r.research_eci = 5000;
+        });
+
+        db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+            r.id = 2,
+            r.research_id = 2,
+            r.discipline_id = 1;
+            r.research_eci = 3000;
+        });
+
+        db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+            r.id = 3,
+            r.research_id = 2,
+            r.discipline_id = 2;
+            r.research_eci = 3000;
+        });
+
+        db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+            r.id = 4,
+            r.research_id = 3,
+            r.discipline_id = 1;
+            r.research_eci = 2000;
+        });
+
+        db.create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
+            r.id = 5,
+            r.research_id = 3,
+            r.discipline_id = 2;
+            r.research_eci = 2000;
+        });
+    }
+
     dbs_account& account_service;
     dbs_vote& vote_service;
     dbs_research_content& research_content_service;
+    dbs_grant& grant_service;
 };
 
 BOOST_FIXTURE_TEST_SUITE(database_unit_service, database_unit_service_fixture)
@@ -865,6 +1048,75 @@ BOOST_AUTO_TEST_CASE(process_expertise_allocation_proposals)
     }
     FC_LOG_AND_RETHROW()
 }
+
+BOOST_AUTO_TEST_CASE(distribute_grant)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: distribute_grant");
+
+        ACTORS((alice)(alex)(jack)(bob)(john)(mike));
+
+        generate_block();
+
+        create_grants();
+        create_grant_applications();
+        create_research_groups_for_grants();
+        create_researches_for_grants();
+        create_rd_relations_for_grants();
+
+        auto& grant = db.get<grant_object>(1);
+
+        db.distribute_grant(grant);
+
+        BOOST_CHECK_THROW(db.get<grant_object>(1), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(1), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(2), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(3), std::out_of_range);
+
+        BOOST_CHECK(db.get<research_group_object>(31).balance == asset(500, DEIP_SYMBOL));
+        BOOST_CHECK(db.get<research_group_object>(32).balance == asset(300, DEIP_SYMBOL));
+        BOOST_CHECK(db.get<research_group_object>(33).balance == asset(200, DEIP_SYMBOL));
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(process_grants)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: process_grants");
+
+        ACTORS((alice)(alex)(jack)(bob)(john)(mike));
+
+        generate_block();
+
+        create_grants();
+        create_grant_applications();
+        create_research_groups_for_grants();
+        create_researches_for_grants();
+        create_rd_relations_for_grants();
+
+        db.process_grants();
+
+        BOOST_CHECK_THROW(db.get<grant_object>(1), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_object>(2), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(1), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(2), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(3), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(4), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(5), std::out_of_range);
+        BOOST_CHECK_THROW(db.get<grant_application_object>(6), std::out_of_range);
+
+        BOOST_CHECK(db.get<research_group_object>(31).balance == asset(1000, DEIP_SYMBOL));
+        BOOST_CHECK(db.get<research_group_object>(32).balance == asset(600, DEIP_SYMBOL));
+        BOOST_CHECK(db.get<research_group_object>(33).balance == asset(400, DEIP_SYMBOL));
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 

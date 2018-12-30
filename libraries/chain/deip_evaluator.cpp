@@ -741,7 +741,16 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             d.total_active_weight += used_expertise;
         });
 
-        _db._temporary_public_impl().modify(content, [&](research_content_object& rc_o) { rc_o.eci_per_discipline[review_discipline] += review.get_evaluation(token.discipline_id); });
+        _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
+            if (review.is_positive)
+                r_o.number_of_positive_reviews++;
+            else
+                r_o.number_of_negative_reviews++;
+        });
+
+        _db._temporary_public_impl().modify(content, [&](research_content_object& rc_o) {
+            rc_o.eci_per_discipline[review_discipline] += review.get_evaluation(token.discipline_id);
+        });
 
         research_service.calculate_eci(content.research_id);
         expertise_stats_service.update_used_expertise(used_expertise);
@@ -1143,6 +1152,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
     grant_service.create(op.target_discipline,
                          op.amount,
                          op.min_number_of_positive_reviews,
+                         op.min_number_of_applications,
                          op.researches_to_grant,
                          op.start_time,
                          op.end_time,

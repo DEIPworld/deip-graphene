@@ -825,6 +825,21 @@ public:
     vector<discipline_supply_api_obj> get_discipline_supplies(const std::string& account_name);
 
     /**
+     *  Gets the grant information for all my grant (list_my_accounts)
+     */
+    vector<grant_api_obj> list_my_grants();
+
+    /**
+     *  Gets the list of all grant owners (look list_accounts to understand input parameters)
+     */
+    set<string> list_grant_owners(const std::string& lowerbound, uint32_t limit);
+
+    /**
+     *  Gets the grant information for certain account
+     */
+    vector<grant_api_obj> get_grants(const std::string& account_name);
+
+    /**
      *  Gets the list of all research group invites for all accounts
      */
     vector<research_group_invite_api_obj> list_my_research_group_invites();
@@ -978,7 +993,7 @@ public:
      */
     annotated_signed_transaction create_proposal(const std::string& creator,
                                                  const int64_t research_group_id,
-                                                 const std::string& data, 
+                                                 const std::string& data,
                                                  const uint16_t action,
                                                  const int64_t expiration,
                                                  const bool broadcast);
@@ -1216,12 +1231,12 @@ public:
                                                const int64_t proposal_id,
                                                const int64_t research_group_id,
                                                const bool broadcast);
-    
-    
+
+
     annotated_signed_transaction create_expertise_allocation_proposal(const std::string &claimer, const std::string &description,
                                                                           const int64_t discipline_id, const bool broadcast);
 
-    
+
     annotated_signed_transaction vote_for_expertise_allocation_proposal(const int64_t proposal_id, const std::string &voter,
                                                                             const int64_t voting_power, const bool broadcast);
     /**
@@ -1317,6 +1332,9 @@ FC_API( deip::wallet::wallet_api,
         (list_my_discipline_supplies)
         (list_discipline_supply_owners)
         (get_discipline_supplies)
+        (list_my_grants)
+        (list_grant_owners)
+        (get_grants)
         (list_my_research_group_invites)
         (list_my_research_tokens)
         (list_account_research_tokens)

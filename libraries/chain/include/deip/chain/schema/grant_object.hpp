@@ -25,7 +25,8 @@ public:
     account_name_type owner;
 
     int16_t min_number_of_positive_reviews;
-    int16_t researches_to_grant;
+    int16_t min_number_of_applications;
+    int16_t max_researches_to_grant;
 
     fc::time_point_sec created_at;
     fc::time_point_sec start_time;
@@ -34,6 +35,7 @@ public:
 
 struct by_grant_id;
 struct by_target_discipline;
+struct by_owner;
 struct by_start_time;
 struct by_end_time;
 
@@ -46,6 +48,10 @@ typedef multi_index_container<grant_object,
                                                         member<grant_object,
                                                                 discipline_id_type,
                                                                &grant_object::target_discipline>>,
+                                         ordered_non_unique<tag<by_owner>,
+                                                        member<grant_object,
+                                                                account_name_type,
+                                                               &grant_object::owner>>,
                                          ordered_non_unique<tag<by_start_time>,
                                                         member<grant_object,
                                                                 fc::time_point_sec,
@@ -61,7 +67,7 @@ typedef multi_index_container<grant_object,
 }
 
 FC_REFLECT( deip::chain::grant_object,
-             (id)(target_discipline)(amount)(owner)(min_number_of_positive_reviews)(researches_to_grant)(created_at)(start_time)(end_time)
+             (id)(target_discipline)(amount)(owner)(min_number_of_positive_reviews)(min_number_of_applications)(max_researches_to_grant)(created_at)(start_time)(end_time)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::grant_object, deip::chain::grant_index )

@@ -1,5 +1,6 @@
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
+#include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/database/database.hpp>
 
@@ -155,11 +156,16 @@ void dbs_research::calculate_eci(const research_id_type& research_id)
         discipline_total_weights[discipline_id] += weight;
     }
 
+    auto& rd_relation_service = db_impl().obtain_service<dbs_research_discipline_relation>();
+
     for (auto it = discipline_total_weights.begin(); it != discipline_total_weights.end(); ++it) {
         auto discipline_id = it->first;
         auto weight = it->second;
         db_impl().modify(research,
                          [&](research_object &r_o) { r_o.eci_per_discipline[discipline_id].value = weight.value; });
+        auto& rd_relation = rd_relation_service.get_research_discipline_relations_by_research_and_discipline(research_id, discipline_id);
+        db_impl().modify(rd_relation,
+                         [&](research_discipline_relation_object &rdr_o) { rdr_o.research_eci = research.eci_per_discipline.at(discipline_id); });
     }
 }
 

@@ -60,6 +60,8 @@ public:
     grant_applications_refs_type get_applications_by_grant(const grant_id_type& grant_id);
 
     grant_applications_refs_type get_applications_by_research_id(const research_id_type& research_id);
+
+    void delete_appication_by_id(const grant_application_id_type& grant_application_id);
 };
 }
 }

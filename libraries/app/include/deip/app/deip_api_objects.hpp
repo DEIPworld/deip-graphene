@@ -378,6 +378,8 @@ struct research_api_obj
         ,  dropout_compensation_in_percent(r.dropout_compensation_in_percent)
         ,  disciplines(disciplines.begin(), disciplines.end())
         ,  group_permlink(group_permlink)
+        ,  number_of_positive_reviews(r.number_of_positive_reviews)
+        ,  number_of_negative_reviews(r.number_of_negative_reviews)
     {
         for (const auto& kvp : r.eci_per_discipline) {
             discipline_id_type discipline_id = kvp.first;
@@ -405,6 +407,9 @@ struct research_api_obj
     string group_permlink;
 
     map<int64_t, int64_t> eci_per_discipline;
+
+    uint16_t number_of_positive_reviews;
+    uint16_t number_of_negative_reviews;
 };
 
 struct research_content_api_obj
@@ -650,6 +655,7 @@ struct research_discipline_relation_api_obj
             ,  research_id(re.research_id._id)
             ,  discipline_id(re.discipline_id._id)
             ,  votes_count(re.votes_count)
+            ,  research_eci(re.research_eci)
     {}
     // because fc::variant require for temporary object
     research_discipline_relation_api_obj()
@@ -660,6 +666,7 @@ struct research_discipline_relation_api_obj
     int64_t research_id;
     int64_t discipline_id;
     uint16_t votes_count;
+    share_type research_eci;
 };
 
 struct research_group_invite_api_obj
@@ -1001,7 +1008,7 @@ struct grant_api_obj
         ,  amount(g_o.amount)
         ,  owner(g_o.owner)
         ,  min_number_of_positive_reviews(g_o.min_number_of_positive_reviews)
-        ,  researches_to_grant(g_o.researches_to_grant)
+        ,  max_researches_to_grant(g_o.max_researches_to_grant)
         ,  created_at(g_o.created_at)
         ,  start_time(g_o.start_time)
         ,  end_time(g_o.end_time)
@@ -1020,7 +1027,8 @@ struct grant_api_obj
     account_name_type owner;
 
     int16_t min_number_of_positive_reviews;
-    int16_t researches_to_grant;
+    int16_t min_number_of_applications;
+    int16_t max_researches_to_grant;
 
     fc::time_point_sec created_at;
     fc::time_point_sec start_time;
@@ -1240,6 +1248,7 @@ FC_REFLECT( deip::app::research_discipline_relation_api_obj,
             (research_id)
             (discipline_id)
             (votes_count)
+            (research_eci)
 )
 
 FC_REFLECT( deip::app::research_group_invite_api_obj,
@@ -1370,7 +1379,8 @@ FC_REFLECT( deip::app::grant_api_obj,
             (amount)
             (owner)
             (min_number_of_positive_reviews)
-            (researches_to_grant)
+            (min_number_of_applications)
+            (max_researches_to_grant)
             (created_at)
             (start_time)
             (end_time)

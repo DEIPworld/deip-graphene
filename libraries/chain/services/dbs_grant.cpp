@@ -1,5 +1,8 @@
+#include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/database/database.hpp>
+
+#include <deip/chain/schema/grant_application_object.hpp>
 
 namespace deip {
 namespace chain {
@@ -12,6 +15,7 @@ dbs_grant::dbs_grant(database &db)
 const grant_object& dbs_grant::create(const discipline_id_type& target_discipline,
                                       const asset& amount,
                                       const int16_t& min_number_of_positive_reviews,
+                                      const int16_t& min_number_of_applications,
                                       const int16_t& researches_to_grant,
                                       fc::time_point_sec start_time,
                                       fc::time_point_sec end_time,
@@ -25,7 +29,8 @@ const grant_object& dbs_grant::create(const discipline_id_type& target_disciplin
         grant.target_discipline = target_discipline;
         grant.amount = amount;
         grant.min_number_of_positive_reviews = min_number_of_positive_reviews;
-        grant.researches_to_grant = researches_to_grant;
+        grant.min_number_of_applications = min_number_of_applications;
+        grant.max_researches_to_grant = researches_to_grant;
         grant.start_time = start_time;
         grant.end_time = end_time;
         grant.created_at = now;
@@ -65,6 +70,57 @@ dbs_grant::grant_refs_type dbs_grant::get_by_target_discipline(const discipline_
     return ret;
 }
 
+dbs_grant::grant_refs_type dbs_grant::get_by_owner(const account_name_type& owner)
+{
+    grant_refs_type ret;
+
+    auto it_pair = db_impl().get_index<grant_index>().indicies().get<by_owner>().equal_range(owner);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+std::set<string> dbs_grant::lookup_grant_owners(const string &lower_bound_owner_name,
+                                                                        uint32_t limit) const
+{
+    FC_ASSERT(limit <= DEIP_LIMIT_DISCIPLINE_SUPPLIES_LIST_SIZE,
+              "limit must be less or equal than ${1}, actual limit value == ${2}",
+              ("1", DEIP_LIMIT_DISCIPLINE_SUPPLIES_LIST_SIZE)("2", limit));
+    const auto& grants_by_owner_name = db_impl().get_index<grant_index>().indices().get<by_owner>();
+    set<string> result;
+
+    for (auto itr = grants_by_owner_name.lower_bound(lower_bound_owner_name);
+         limit-- && itr != grants_by_owner_name.end(); ++itr)
+    {
+        result.insert(itr->owner);
+    }
+
+    return result;
+}
+
+void dbs_grant::delete_grant(const grant_object& grant)
+{
+    dbs_account& account_service = db_impl().obtain_service<dbs_account>();
+    auto& owner = db_impl().get_account(grant.owner);
+    account_service.adjust_balance(owner, grant.amount);
+
+    auto it_pair = db_impl().get_index<grant_application_index>().indicies().get<by_grant_id>().equal_range(grant.id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        auto current = it++;
+        db_impl().remove(*current);
+    }
+
+    db_impl().remove(grant);
+}
 
 } //namespace chain
 } //namespace deip

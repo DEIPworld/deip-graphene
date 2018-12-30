@@ -201,5 +201,11 @@ dbs_research_content::grant_applications_refs_type dbs_research_content::get_app
     return ret;
 }
 
+void dbs_research_content::delete_appication_by_id(const grant_application_id_type& grant_application_id)
+{
+    auto& grant_application = db_impl().get<grant_application_object, by_id>(grant_application_id);
+    db_impl().remove(grant_application);
+}
+
 }
 }

@@ -2132,6 +2132,49 @@ vector<discipline_supply_api_obj> wallet_api::get_discipline_supplies(const std:
     return result;
 }
 
+vector<grant_api_obj> wallet_api::list_my_grants()
+{
+    FC_ASSERT(!is_locked());
+
+    try
+    {
+        my->use_remote_account_by_key_api();
+    }
+    catch (fc::exception& e)
+    {
+        elog("Connected node needs to enable account_by_key_api");
+        return {};
+    }
+
+    vector<public_key_type> pub_keys;
+    pub_keys.reserve(my->_keys.size());
+
+    for (const auto& item : my->_keys)
+        pub_keys.push_back(item.first);
+
+    auto refs = (*my->_remote_account_by_key_api)->get_key_references(pub_keys);
+    set<string> names;
+    for (const auto& item : refs)
+        for (const auto& name : item)
+            names.insert(name);
+
+    return my->_remote_db->get_grants(names);
+}
+
+set<string> wallet_api::list_grant_owners(const string& lowerbound, uint32_t limit)
+{
+    return my->_remote_db->lookup_grant_owners(lowerbound, limit);
+}
+
+vector<grant_api_obj> wallet_api::get_grants(const std::string& account_name)
+{
+    vector<grant_api_obj> result;
+
+    result = my->_remote_db->get_grants({ account_name });
+
+    return result;
+}
+
 vector<research_group_invite_api_obj> wallet_api::list_my_research_group_invites()
 {
     vector<account_api_obj> accounts = list_my_accounts();
