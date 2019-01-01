@@ -52,6 +52,8 @@ public:
                        const optional<authority>& owner,
                        const optional<authority>& active,
                        const optional<authority>& posting,
+                       const vector<deip::protocol::account_trait>& traits = {},
+                       const bool& is_user_account = true,
                        const optional<time_point_sec>& now = optional<time_point_sec>());
 
     void update_withdraw(const account_object& account,

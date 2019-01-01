@@ -59,7 +59,7 @@ struct get_impacted_account_visitor
         _impacted.insert(op.creator);
     }
 
-    void operator()(const account_update_operation& op)
+    void operator()(const update_account_operation& op)
     {
         _impacted.insert(op.account);
     }

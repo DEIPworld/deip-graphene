@@ -463,8 +463,7 @@ const research_object& database_fixture::research_create(const int64_t id,
                                                          const string& abstract,
                                                          const string& permlink,
                                                          const research_group_id_type& research_group_id,
-                                                         const percent& review_share,
-                                                         const percent& compensation_share)
+                                                         const percent& review_share)
 {
     const auto& new_research = db.create<research_object>([&](research_object& r) {
         r.id = id;
@@ -473,7 +472,6 @@ const research_object& database_fixture::research_create(const int64_t id,
         fc::from_string(r.permlink, permlink);
         r.research_group_id = research_group_id;
         r.review_share = review_share;
-        r.compensation_share = compensation_share;
         r.is_finished = false;
         r.owned_tokens = percent(DEIP_100_PERCENT);
         r.created_at = db.head_block_time();

@@ -22,20 +22,33 @@ void create_research_operation::validate() const
 
     FC_ASSERT(fc::is_utf8(permlink), "Research permlink should be valid UTF8 string.");
     FC_ASSERT(permlink.size() < DEIP_MAX_PERMLINK_LENGTH,
-              "Research permlink is too long. Provided permlink: ${1}.",
-              ("1", permlink));
+      "Research permlink is too long. Provided permlink: ${1}.",
+      ("1", permlink));
 
     const auto& min_review_share = percent(0);
     const auto& max_review_share = percent(DEIP_1_PERCENT * 50);
     FC_ASSERT(review_share >= min_review_share && review_share <= max_review_share,
-              "Percent for review should be in ${1} to ${2} range. Provided value: ${3}",
-              ("1", review_share)("3", review_share));
+      "Percent for review should be in ${1} to ${2} range. Provided value: ${3}",
+      ("1", min_review_share)("2", max_review_share)("3", review_share));
 
-    const auto& min_compensation_share = percent(0);
-    const auto& max_compensation_share = percent(DEIP_1_PERCENT * 50);
-    FC_ASSERT(compensation_share >= min_compensation_share && compensation_share <= max_compensation_share,
-              "Percent for dropout compensation should be in 0 to 100 range. Provided value: ${1}.",
-              ("1", compensation_share));
+    if (compensation_share.valid())
+    {
+        const auto& share = *compensation_share;
+        const auto& min_compensation_share = percent(0);
+        const auto& max_compensation_share = percent(DEIP_1_PERCENT * 50);
+        FC_ASSERT(share >= min_compensation_share && share <= max_compensation_share,
+          "Percent for dropout compensation should be in ${1} to ${2} range. Provided value: ${3}.",
+          ("1", min_compensation_share)("2", max_compensation_share)("3", share));
+    }
+
+    if (members.valid())
+    {
+        const auto& list = *members;
+        for (auto& member : list)
+        {
+            validate_account_name(member);
+        }
+    }
 }
 
 } /* deip::protocol */

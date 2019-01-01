@@ -153,6 +153,21 @@ const research_group_object& dbs_research_group::create_research_group(
     return research_group;
 }
 
+const research_group_object& dbs_research_group::update_research_group(
+  const research_group_object& research_group,
+  const string& name,
+  const string& permlink,
+  const string& description) 
+{
+    db_impl().modify(research_group, [&](research_group_object& rg_o) {
+        fc::from_string(rg_o.name, name);
+        fc::from_string(rg_o.permlink, permlink);
+        fc::from_string(rg_o.description, description);
+    });
+
+    return research_group;
+}
+
 void dbs_research_group::check_research_group_existence(const research_group_id_type& research_group_id) const
 {
   const auto& idx = db_impl().get_index<research_group_index>().indices().get<by_id>();

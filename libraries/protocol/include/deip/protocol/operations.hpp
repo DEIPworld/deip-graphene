@@ -21,7 +21,7 @@ namespace protocol {
                 withdraw_common_tokens_operation,
 
                 create_account_operation,
-                account_update_operation,
+                update_account_operation,
 
                 witness_update_operation,
                 account_witness_vote_operation,
@@ -40,12 +40,12 @@ namespace protocol {
                 update_proposal_operation,
                 make_review_operation,
                 contribute_to_token_sale_operation,
-                placeholder7_operation,
-                placeholder8_operation,
+                placeholder2_operation,
+                placeholder3_operation,
                 transfer_research_tokens_to_research_group_operation,
 
-                placeholder3_operation,
                 placeholder4_operation,
+                placeholder5_operation,
 
                 create_vesting_balance_operation,
                 withdraw_vesting_balance_operation,
@@ -56,8 +56,8 @@ namespace protocol {
                 revoke_expertise_delegation_operation,
                 create_expertise_allocation_proposal_operation,
                 vote_for_expertise_allocation_proposal_operation,
-                placeholder5_operation,
                 placeholder6_operation,
+                placeholder7_operation,
 
                 create_grant_operation,
                 create_grant_application_operation,
@@ -77,12 +77,12 @@ namespace protocol {
                 reject_award_withdrawal_request_operation,
                 pay_award_withdrawal_request_operation,
 
-                join_research_group_operation,
-                left_research_group_operation,
+                join_research_group_membership_operation,
+                left_research_group_membership_operation,
                 create_research_operation,
                 create_research_content_operation,
                 create_research_token_sale_operation,
-                update_research_group_metadata_operation,
+                placeholder8_operation,
                 update_research_operation,
 
                 create_nda_contract_operation,

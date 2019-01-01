@@ -9,6 +9,7 @@ add_library( deip_protocol
              sign_state.cpp
              deip_operations.cpp
              operations/create_account_operation.cpp
+             operations/update_account_operation.cpp
              operations/make_review_operation.cpp
              operations/create_grant_operation.cpp
              operations/create_award_operation.cpp
@@ -25,12 +26,11 @@ add_library( deip_protocol
              operations/close_nda_contract_operation.cpp
              operations/create_request_by_nda_contract_operation.cpp
              operations/fulfill_request_by_nda_contract_operation.cpp
-             operations/join_research_group_operation.cpp
-             operations/left_research_group_operation.cpp
+             operations/join_research_group_membership_operation.cpp
+             operations/left_research_group_membership_operation.cpp
              operations/create_research_operation.cpp
              operations/create_research_content_operation.cpp
              operations/create_research_token_sale_operation.cpp
-             operations/update_research_group_metadata_operation.cpp
              operations/update_research_operation.cpp
              operations/create_proposal_operation.cpp
              operations/update_proposal_operation.cpp

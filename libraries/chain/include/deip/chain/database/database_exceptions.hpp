@@ -99,9 +99,9 @@ DEIP_DECLARE_OP_BASE_EXCEPTIONS(create_account);
 DEIP_DECLARE_OP_EVALUATE_EXCEPTION(max_auth_exceeded, create_account, 1, "Exceeds max authority fan-out")
 DEIP_DECLARE_OP_EVALUATE_EXCEPTION(auth_account_not_found, create_account, 2, "Auth account not found")
 
-DEIP_DECLARE_OP_BASE_EXCEPTIONS(account_update);
-DEIP_DECLARE_OP_EVALUATE_EXCEPTION(max_auth_exceeded, account_update, 1, "Exceeds max authority fan-out")
-DEIP_DECLARE_OP_EVALUATE_EXCEPTION(auth_account_not_found, account_update, 2, "Auth account not found")
+DEIP_DECLARE_OP_BASE_EXCEPTIONS(update_account);
+DEIP_DECLARE_OP_EVALUATE_EXCEPTION(max_auth_exceeded, update_account, 1, "Exceeds max authority fan-out")
+DEIP_DECLARE_OP_EVALUATE_EXCEPTION(auth_account_not_found, update_account, 2, "Auth account not found")
 
 FC_DECLARE_DERIVED_EXCEPTION(internal_exception, deip::chain::chain_exception, 4990000, "internal exception")
 

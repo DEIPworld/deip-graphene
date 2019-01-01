@@ -6,6 +6,7 @@
 #include <deip/protocol/asset.hpp>
 #include <deip/protocol/percent.hpp>
 #include <deip/protocol/operations/create_account_operation.hpp>
+#include <deip/protocol/operations/update_account_operation.hpp>
 #include <deip/protocol/operations/make_review_operation.hpp>
 #include <deip/protocol/operations/create_grant_operation.hpp>
 #include <deip/protocol/operations/create_award_operation.hpp>
@@ -22,12 +23,11 @@
 #include <deip/protocol/operations/close_nda_contract_operation.hpp>
 #include <deip/protocol/operations/create_request_by_nda_contract_operation.hpp>
 #include <deip/protocol/operations/fulfill_request_by_nda_contract_operation.hpp>
-#include <deip/protocol/operations/join_research_group_operation.hpp>
-#include <deip/protocol/operations/left_research_group_operation.hpp>
+#include <deip/protocol/operations/join_research_group_membership_operation.hpp>
+#include <deip/protocol/operations/left_research_group_membership_operation.hpp>
 #include <deip/protocol/operations/create_research_operation.hpp>
 #include <deip/protocol/operations/create_research_content_operation.hpp>
 #include <deip/protocol/operations/create_research_token_sale_operation.hpp>
-#include <deip/protocol/operations/update_research_group_metadata_operation.hpp>
 #include <deip/protocol/operations/update_research_operation.hpp>
 #include <deip/protocol/operations/create_proposal_operation.hpp>
 #include <deip/protocol/operations/update_proposal_operation.hpp>
@@ -108,30 +108,6 @@ inline void validate_128_bits_hexadecimal_string(const string& str)
     FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 128 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 128 bits in length");
 }
-
-struct account_update_operation : public base_operation
-{
-    account_name_type account;
-    optional<authority> owner;
-    optional<authority> active;
-    optional<authority> posting;
-    public_key_type memo_key;
-    string json_metadata;
-
-    void validate() const;
-
-    void get_required_owner_authorities(flat_set<account_name_type>& a) const
-    {
-        if (owner)
-            a.insert(account);
-    }
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        if (!owner)
-            a.insert(account);
-    }
-};
 
 struct beneficiary_route_type
 {
@@ -756,14 +732,6 @@ struct reserve_asset_operation : public base_operation
 // clang-format off
 
 FC_REFLECT( deip::protocol::chain_properties, (account_creation_fee)(maximum_block_size) )
-
-FC_REFLECT( deip::protocol::account_update_operation,
-            (account)
-            (owner)
-            (active)
-            (posting)
-            (memo_key)
-            (json_metadata) )
 
 FC_REFLECT( deip::protocol::transfer_operation, (from)(to)(amount)(memo) )
 FC_REFLECT( deip::protocol::transfer_to_common_tokens_operation, (from)(to)(amount) )

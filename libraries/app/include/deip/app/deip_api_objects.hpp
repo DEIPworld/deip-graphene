@@ -383,7 +383,6 @@ struct research_api_obj
         , owned_tokens(r.owned_tokens.amount)
         , review_share(r.review_share.amount)
         , created_at(r.created_at)
-        , compensation_share(r.compensation_share.amount)
         , disciplines(disciplines.begin(), disciplines.end())
         , group_permlink(group_permlink)
         , number_of_positive_reviews(r.number_of_positive_reviews)
@@ -396,6 +395,11 @@ struct research_api_obj
             discipline_id_type discipline_id = kvp.first;
             share_type weight = kvp.second;
             eci_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
+        }
+
+        if (r.compensation_share.valid())
+        {
+            compensation_share = (*r.compensation_share).amount;
         }
     }
 
@@ -414,7 +418,7 @@ struct research_api_obj
     share_type owned_tokens;
     share_type review_share;
     time_point_sec created_at;
-    share_type compensation_share;
+    optional<share_type> compensation_share;
     vector<discipline_api_obj> disciplines;
     string group_permlink;
 

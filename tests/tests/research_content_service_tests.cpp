@@ -31,7 +31,6 @@ public:
             r.permlink = "Research #1 permlink";
             r.research_group_id = 1;
             r.review_share = percent(RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT);
-            r.compensation_share = percent(COMPENSATION_IN_PERCENT);
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for Research #1";
@@ -87,7 +86,6 @@ public:
             r.permlink = "permlink for Research #2";
             r.research_group_id = 2;
             r.review_share = percent(RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT);
-            r.compensation_share = percent(COMPENSATION_IN_PERCENT);
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for research #2";

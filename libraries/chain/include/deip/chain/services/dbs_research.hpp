@@ -30,13 +30,12 @@ public:
                                            const string& permlink,
                                            const std::set<discipline_id_type>& disciplines,
                                            const percent& review_share,
-                                           const percent& compensation_share,
+                                           const optional<percent>& compensation_share,
                                            const bool& is_private,
                                            const bool& is_finished,
                                            const percent& owned_tokens,
-                                           const time_point_sec& created_at,
-                                           const time_point_sec& last_update_time,
-                                           const time_point_sec& review_share_last_update);
+                                           const flat_set<account_name_type>& members,
+                                           const time_point_sec& created_at);
 
     const research_object& update_research(const research_object& research,
                                            const string& title,
@@ -44,7 +43,8 @@ public:
                                            const string& permlink,
                                            const bool& is_private,
                                            const percent& review_share,
-                                           const percent& compensation_share);
+                                           const optional<percent>& compensation_share,
+                                           const flat_set<account_name_type>& members);
 
     research_refs_type get_researches() const;
 

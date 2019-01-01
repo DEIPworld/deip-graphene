@@ -1411,7 +1411,7 @@ annotated_signed_transaction wallet_api::update_account(const std::string& accou
     {
         FC_ASSERT(!is_locked());
 
-        account_update_operation op;
+        update_account_operation op;
         op.account = account_name;
         op.owner = authority(1, owner, 1);
         op.active = authority(1, active, 1);
@@ -1440,7 +1440,7 @@ annotated_signed_transaction wallet_api::update_account_auth_key(const std::stri
     FC_ASSERT(accounts.size() == 1, "Account does not exist");
     FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
 
-    account_update_operation op;
+    update_account_operation op;
     op.account = account_name;
     op.memo_key = accounts[0].memo_key;
     op.json_metadata = accounts[0].json_metadata;
@@ -1511,7 +1511,7 @@ annotated_signed_transaction wallet_api::update_account_auth_account(const std::
     FC_ASSERT(accounts.size() == 1, "Account does not exist");
     FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
 
-    account_update_operation op;
+    update_account_operation op;
     op.account = account_name;
     op.memo_key = accounts[0].memo_key;
     op.json_metadata = accounts[0].json_metadata;
@@ -1582,7 +1582,7 @@ annotated_signed_transaction wallet_api::update_account_auth_threshold(const std
     FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
     FC_ASSERT(threshold != 0, "Authority is implicitly satisfied");
 
-    account_update_operation op;
+    update_account_operation op;
     op.account = account_name;
     op.memo_key = accounts[0].memo_key;
     op.json_metadata = accounts[0].json_metadata;
@@ -1643,7 +1643,7 @@ wallet_api::update_account_meta(const std::string& account_name, const std::stri
     FC_ASSERT(accounts.size() == 1, "Account does not exist");
     FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
 
-    account_update_operation op;
+    update_account_operation op;
     op.account = account_name;
     op.memo_key = accounts[0].memo_key;
     op.json_metadata = json_meta;
@@ -1664,7 +1664,7 @@ wallet_api::update_account_memo_key(const std::string& account_name, const publi
     FC_ASSERT(accounts.size() == 1, "Account does not exist");
     FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
 
-    account_update_operation op;
+    update_account_operation op;
     op.account = account_name;
     op.memo_key = key;
     op.json_metadata = accounts[0].json_metadata;

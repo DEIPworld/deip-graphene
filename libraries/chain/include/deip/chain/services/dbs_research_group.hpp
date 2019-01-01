@@ -53,6 +53,11 @@ class dbs_research_group : public dbs_base
                                                        const string& permlink,
                                                        const string& description);
 
+    const research_group_object& update_research_group(const research_group_object& research_group,
+                                                       const string& name,
+                                                       const string& permlink,
+                                                       const string& description);
+
     void check_research_group_existence(const research_group_id_type& research_group_id) const; // remove this
 
     const bool research_group_exists(const research_group_id_type& research_group_id) const;

@@ -7,7 +7,7 @@
 namespace deip {
 namespace protocol {
 
-void left_research_group_operation::validate() const
+void left_research_group_membership_operation::validate() const
 {
     validate_account_name(member);
     validate_account_name(research_group);

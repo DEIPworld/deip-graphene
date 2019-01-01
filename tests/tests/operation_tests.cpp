@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         generate_block();
 
         BOOST_TEST_MESSAGE("--- Test normal review creation");
-        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, percent(10), percent(1500));
+        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, percent(10));
         db.create<research_content_object>([&](research_content_object& c) {
             c.id = 1;
             c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
@@ -290,7 +290,7 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
 
     generate_block();
 
-    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, percent(10), percent(1500));
+    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, percent(10));
     auto& content = db.create<research_content_object>([&](research_content_object& rc) {
         rc.id = 1;
         rc.research_id = research.id;
@@ -494,7 +494,7 @@ BOOST_AUTO_TEST_CASE(account_update_validate)
 
        ACTORS((alice))
 
-       account_update_operation op;
+       update_account_operation op;
        op.account = "alice";
        op.posting = authority();
        op.posting->weight_threshold = 1;
@@ -533,7 +533,7 @@ BOOST_AUTO_TEST_CASE(account_update_authorities)
        db.modify(db.get<account_authority_object, by_account>("alice"),
                  [&](account_authority_object& a) { a.active = authority(1, active_key.get_public_key(), 1); });
 
-       account_update_operation op;
+       update_account_operation op;
        op.account = "alice";
        op.json_metadata = "{\"success\":true}";
 
@@ -614,7 +614,7 @@ BOOST_AUTO_TEST_CASE(account_update_apply)
 
        BOOST_TEST_MESSAGE("--- Test normal update");
 
-       account_update_operation op;
+       update_account_operation op;
        op.account = "alice";
        op.owner = authority(1, new_private_key.get_public_key(), 1);
        op.active = authority(2, new_private_key.get_public_key(), 2);
@@ -656,7 +656,7 @@ BOOST_AUTO_TEST_CASE(account_update_apply)
 
        BOOST_TEST_MESSAGE("--- Test failure when account authority does not exist");
        tx.clear();
-       op = account_update_operation();
+       op = update_account_operation();
        op.account = "alice";
        op.posting = authority();
        op.posting->weight_threshold = 1;
@@ -760,7 +760,7 @@ BOOST_AUTO_TEST_CASE(signature_stripping)
        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(sam)(corp))
        fund("corp", 10000);
 
-       account_update_operation update_op;
+       update_account_operation update_op;
        update_op.account = "corp";
        update_op.active = authority(2, "alice", 1, "bob", 1, "sam", 1);
 
@@ -1591,7 +1591,7 @@ BOOST_AUTO_TEST_CASE(account_recovery)
 
        BOOST_TEST_MESSAGE("Changing bob's owner authority");
 
-       account_update_operation acc_update;
+       update_account_operation acc_update;
        acc_update.account = "bob";
        acc_update.owner = authority(1, generate_private_key("bad_key").get_public_key(), 1);
        acc_update.memo_key = acc_create.memo_key;
@@ -1860,7 +1860,7 @@ BOOST_AUTO_TEST_CASE(change_recovery_account)
 
        auto change_owner = [&](const std::string& account, const fc::ecc::private_key& old_private_key,
                                const public_key_type& new_public_key) {
-           account_update_operation op;
+           update_account_operation op;
            op.account = account;
            op.owner = authority(1, new_public_key, 1);
 
@@ -2150,7 +2150,7 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_to_research_group_apply)
         generate_block();
 
         research_token_create(1, "alice", 5000, 1);
-        auto& research = research_create(1, "title", "abstract", "permlink", 1, percent(1), percent(1));
+        auto& research = research_create(1, "title", "abstract", "permlink", 1, percent(1));
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -2203,7 +2203,6 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
             fc::from_string(r.permlink, "permlink");
             r.research_group_id = 31;
             r.review_share = percent(1500);
-            r.compensation_share = percent(1500);
             r.is_finished = false;
             r.owned_tokens = percent(DEIP_100_PERCENT);
             r.created_at = db.head_block_time();
@@ -2370,7 +2369,7 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
         generate_block();
 
         BOOST_TEST_MESSAGE("--- Test normal review creation");
-        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, percent(10), percent(1500));
+        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, percent(10));
         db.create<research_content_object>([&](research_content_object &c) {
             c.id = 1;
             c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
@@ -2445,7 +2444,7 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_apply)
         generate_block();
 
         auto& alice_token = research_token_create(0, "alice", 5000, 1);
-        auto& research = research_create(1, "title", "abstract", "permlink", 1, percent(1), percent(1));
+        auto& research = research_create(1, "title", "abstract", "permlink", 1, percent(1));
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -2741,7 +2740,7 @@ BOOST_AUTO_TEST_CASE(calculate_eci_test_case)
 
         BOOST_TEST_MESSAGE("--- Test normal review creation");
         auto& research
-            = research_create(1, "test_research", "abstract", "permlink", 1, percent(10), percent(1500));
+            = research_create(1, "test_research", "abstract", "permlink", 1, percent(10));
         db.create<research_content_object>([&](research_content_object& c) {
             c.id = 1;
             c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);

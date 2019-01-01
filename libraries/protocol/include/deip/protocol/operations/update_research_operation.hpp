@@ -8,12 +8,13 @@ struct update_research_operation : public base_operation
 {
     account_name_type research_group;
     external_id_type external_id;
-    string title;
-    string abstract;
-    string permlink;
-    bool is_private;
-    percent review_share;
-    percent compensation_share;
+    optional<string> title;
+    optional<string> abstract;
+    optional<string> permlink;
+    optional<bool> is_private;
+    optional<percent> review_share;
+    optional<percent> compensation_share;
+    optional<flat_set<account_name_type>> members; // membership users only
 
     extensions_type extensions;
 
@@ -38,5 +39,6 @@ FC_REFLECT(deip::protocol::update_research_operation,
   (is_private)
   (review_share)
   (compensation_share)
+  (members)
   (extensions)
 )

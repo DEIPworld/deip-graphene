@@ -337,6 +337,7 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
     dbs_research_group& research_groups_service = obtain_service<dbs_research_group>();
 
     const vector<genesis_state_type::research_type>& researches = genesis_state.researches;
+    const vector<genesis_state_type::research_content_type>& research_contents = genesis_state.research_contents;
 
     for (auto& research : researches)
     {
@@ -352,9 +353,22 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
         const time_point_sec genesis_time = get_genesis_time();
         const bool& is_private = false;
         const percent& review_share = percent(DEIP_1_PERCENT * 20);
-        const percent& compensation_share = percent(DEIP_1_PERCENT * 5);
 
+        optional<percent> compensation_share = optional<percent>(percent(DEIP_1_PERCENT * 5));
         const auto& research_group = research_groups_service.get_research_group_by_account(research.account);
+
+        const auto& authors = std::accumulate(
+            research_contents.begin(), research_contents.end(), std::set<account_name_type>(),
+            [&](std::set<account_name_type> acc, const genesis_state_type::research_content_type& research_content) {
+                if (research_content.research_external_id == research.external_id)
+                {
+                    acc.insert(research_content.authors.begin(), research_content.authors.end());
+                }
+                return acc;
+            });
+
+        flat_set<account_name_type> members;
+        members.insert(authors.begin(), authors.end());
 
         research_service.create_research(
           research_group.id, 
@@ -368,8 +382,7 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
           is_private,
           research.is_finished,
           percent(DEIP_100_PERCENT),
-          genesis_time,
-          genesis_time,
+          members,
           genesis_time
         );
     }

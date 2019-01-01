@@ -51,23 +51,6 @@ void placeholder8_operation::validate() const
     FC_ASSERT(false, "The operation is reserved");
 };
 
-void account_update_operation::validate() const
-{
-    validate_account_name(account);
-    /*if( owner )
-       owner->validate();
-    if( active )
-       active->validate();
-    if( posting )
-       posting->validate();*/
-
-    if (json_metadata.size() > 0)
-    {
-        FC_ASSERT(fc::is_utf8(json_metadata), "JSON Metadata not formatted in UTF8");
-        FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
-    }
-}
-
 void vote_for_review_operation::validate() const
 {
     validate_account_name(voter);

@@ -20,13 +20,12 @@ const research_object& dbs_research::create_research(
   const string& permlink,
   const std::set<discipline_id_type>& disciplines,
   const percent& review_share,
-  const percent& compensation_share, 
+  const optional<percent>& compensation_share, 
   const bool& is_private,
   const bool& is_finished,
   const percent& owned_tokens,
-  const time_point_sec& created_at,
-  const time_point_sec& last_update_time,
-  const time_point_sec& review_share_last_update
+  const flat_set<account_name_type>& members,
+  const time_point_sec& created_at
 ) {
     auto& research_disciplines_service = db_impl().obtain_service<dbs_research_discipline_relation>();
 
@@ -41,9 +40,10 @@ const research_object& dbs_research::create_research(
         r_o.is_private = is_private;
         r_o.is_finished = is_finished;
         r_o.owned_tokens = owned_tokens;
+        r_o.members = members;
         r_o.created_at = created_at;
-        r_o.last_update_time = last_update_time;
-        r_o.review_share_last_update = review_share_last_update;
+        r_o.last_update_time = created_at;
+        r_o.review_share_last_update = created_at;
     });
 
     for (auto& discipline_id : disciplines)
@@ -61,9 +61,12 @@ const research_object& dbs_research::update_research(
   const string& permlink,
   const bool& is_private,
   const percent& review_share,
-  const percent& compensation_share
+  const optional<percent>& compensation_share,
+  const flat_set<account_name_type>& members
 ) {
+
     const auto& block_time = db_impl().head_block_time();
+    const auto updated_members = members;
     db_impl().modify(research, [&](research_object& r_o) {
         fc::from_string(r_o.title, title);
         fc::from_string(r_o.abstract, abstract);
@@ -76,6 +79,8 @@ const research_object& dbs_research::update_research(
         r_o.review_share = review_share;
         r_o.compensation_share = compensation_share;
         r_o.last_update_time = block_time;
+        r_o.members.clear();
+        r_o.members.insert(updated_members.begin(), updated_members.end());
     });
 
     return research;
