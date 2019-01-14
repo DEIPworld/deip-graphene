@@ -1,3 +1,5 @@
+#include <deip/chain/services/dbs_account_balance.hpp>
+#include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/services/dbs_research_group_invite.hpp>
@@ -132,6 +134,8 @@ void dbs_proposal_execution::start_research(const proposal_object& proposal)
 
 void dbs_proposal_execution::send_funds(const proposal_object &proposal)
 {
+    auto& asset_service = db_impl().obtain_service<dbs_asset>();
+    auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
     auto& account_service = db_impl().obtain_service<dbs_account>();
     auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
 
@@ -141,9 +145,9 @@ void dbs_proposal_execution::send_funds(const proposal_object &proposal)
 
     auto& account = account_service.get_account(data.recipient);
     auto& research_group = research_group_service.get_research_group(proposal.research_group_id);
-    FC_ASSERT((research_group.balance.amount - data.funds.amount >= 0), "Research balance is less than amount (result amount < 0)");
+    FC_ASSERT((research_group.balance - data.funds >= asset(0, DEIP_SYMBOL)), "Research balance is less than amount (result amount < 0)");
 
-    account_service.adjust_balance(account, data.funds);
+    account_balance_service.adjust_balance(account.name, data.funds);
     research_group_service.decrease_balance(proposal.research_group_id, data.funds);
 }
 
@@ -227,6 +231,7 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
 
 void dbs_proposal_execution::start_research_token_sale(const proposal_object& proposal)
 {
+    auto& asset_service = db_impl().obtain_service<dbs_asset>();
     auto& research_service = db_impl().obtain_service<dbs_research>();
     auto& research_token_sale_service = db_impl().obtain_service<dbs_research_token_sale>();
 
@@ -236,7 +241,7 @@ void dbs_proposal_execution::start_research_token_sale(const proposal_object& pr
     auto &research = research_service.get_research(data.research_id);
 
     auto research_token_sales = research_token_sale_service.get_by_research_id_and_status(data.research_id, research_token_sale_status::token_sale_active);
-
+    
     FC_ASSERT(research_token_sales.size() == 0, "Another token sale in progress.");
     FC_ASSERT(data.start_time >= db_impl().head_block_time());
     FC_ASSERT((research.owned_tokens - data.amount_for_sale >= 0), "Tokens for sale is more than research balance");
@@ -248,6 +253,7 @@ void dbs_proposal_execution::start_research_token_sale(const proposal_object& pr
 
 void dbs_proposal_execution::offer_research_tokens(const deip::chain::proposal_object &proposal)
 {
+    auto& asset_service = db_impl().obtain_service<dbs_asset>();
     auto& research_service = db_impl().obtain_service<dbs_research>();
     auto& research_token_service = db_impl().obtain_service<dbs_research_token>();
     auto& offer_research_tokens_service = db_impl().obtain_service<dbs_offer_research_tokens>();

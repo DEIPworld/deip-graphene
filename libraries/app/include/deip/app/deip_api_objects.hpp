@@ -3,37 +3,39 @@
 #include <deip/chain/schema/block_summary_object.hpp>
 #include <deip/chain/schema/global_property_object.hpp>
 //#include <deip/chain/history_object.hpp>
+#include <deip/chain/schema/account_balance_object.hpp>
+#include <deip/chain/schema/asset_object.hpp>
 #include <deip/chain/schema/deip_objects.hpp>
-#include <deip/chain/schema/transaction_object.hpp>
-#include <deip/chain/schema/witness_objects.hpp>
+#include <deip/chain/schema/discipline_object.hpp>
 #include <deip/chain/schema/discipline_supply_object.hpp>
+#include <deip/chain/schema/expert_token_object.hpp>
+#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
+#include <deip/chain/schema/expertise_allocation_proposal_vote_object.hpp>
+#include <deip/chain/schema/grant_application_object.hpp>
+#include <deip/chain/schema/grant_object.hpp>
+#include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/proposal_object.hpp>
 #include <deip/chain/schema/proposal_vote_object.hpp>
-#include <deip/chain/schema/discipline_object.hpp>
-#include <deip/chain/schema/research_object.hpp>
 #include <deip/chain/schema/research_content_object.hpp>
-#include <deip/chain/schema/expert_token_object.hpp>
-#include <deip/chain/schema/research_token_sale_object.hpp>
-#include <deip/chain/schema/research_group_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/research_group_invite_object.hpp>
+#include <deip/chain/schema/research_group_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
-#include <deip/chain/schema/total_votes_object.hpp>
-#include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
+#include <deip/chain/schema/research_token_sale_object.hpp>
+#include <deip/chain/schema/review_object.hpp>
+#include <deip/chain/schema/review_vote_object.hpp>
+#include <deip/chain/schema/total_votes_object.hpp>
+#include <deip/chain/schema/transaction_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
 #include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/grant_application_object.hpp>
 #include <deip/chain/schema/grant_application_review_object.hpp>
-
-#include <deip/witness/witness_objects.hpp>
-
-#include <deip/chain/database/database.hpp>
 #include <deip/chain/schema/vote_object.hpp>
-#include <deip/chain/schema/review_vote_object.hpp>
-#include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
-#include <deip/chain/schema/expertise_allocation_proposal_vote_object.hpp>
+#include <deip/chain/schema/witness_objects.hpp>
+#include <deip/witness/witness_objects.hpp>
+#include <deip/chain/database/database.hpp>
 
 namespace deip {
 namespace app {
@@ -64,7 +66,6 @@ struct account_api_obj
         , last_account_recovery(a.last_account_recovery)
         , lifetime_vote_count(a.lifetime_vote_count)
         , can_vote(a.can_vote)
-        , balance(a.balance)
         , common_tokens_balance(a.common_tokens_balance)
         , expert_tokens_balance(a.expertise_tokens_balance)
         , common_tokens_withdraw_rate(a.common_tokens_withdraw_rate)
@@ -107,6 +108,16 @@ struct account_api_obj
                 last_market_bandwidth_update = market_bandwidth->last_bandwidth_update;
             }
         }
+
+        auto it_pair = db.get_index<account_balance_index>().indicies().get<by_owner>().equal_range(a.name);
+        auto it = it_pair.first;
+        const auto it_end = it_pair.second;
+        while (it != it_end)
+        {
+            const account_balance_object& account_balance = std::cref(*it).get();
+            balances.push_back(account_balance.to_asset());
+            ++it;
+        }
     }
 
     account_api_obj()
@@ -134,7 +145,6 @@ struct account_api_obj
 
     bool can_vote = false;
 
-    asset balance;
     share_type common_tokens_balance;
     share_type expert_tokens_balance;
 
@@ -156,6 +166,8 @@ struct account_api_obj
     share_type average_market_bandwidth = 0;
     share_type lifetime_market_bandwidth = 0;
     time_point_sec last_market_bandwidth_update;
+
+    vector<asset> balances;
 };
 
 struct owner_authority_history_api_obj
@@ -1123,6 +1135,38 @@ struct grant_application_review_api_obj
     vector<discipline_api_obj> disciplines;
 };
 
+struct asset_api_obj
+{
+    asset_api_obj(const chain::asset_object& a_o)
+        :  id(a_o.id._id)
+        ,  symbol(a_o.symbol)
+        ,  string_symbol(fc::to_string(a_o.string_symbol))
+        ,  precision(a_o.precision)
+        ,  issuer(a_o.issuer)
+        ,  name(fc::to_string(a_o.name))
+        ,  description(fc::to_string(a_o.description))
+        ,  current_supply(a_o.current_supply)
+
+    {}
+
+    // because fc::variant require for temporary object
+    asset_api_obj()
+    {
+    }
+
+    int64_t id;
+
+    asset_symbol_type symbol;
+    std::string string_symbol;
+    uint8_t precision;
+    account_name_type issuer;
+    std::string name;
+    std::string description;
+
+    share_type current_supply;
+};
+
+
 }; // namespace app
 } // namespace deip
 
@@ -1133,11 +1177,10 @@ FC_REFLECT( deip::app::account_api_obj,
              (created)(mined)
              (recovery_account)(last_account_recovery)
              (lifetime_vote_count)(can_vote)
-             (balance)
              (common_tokens_balance)(expert_tokens_balance)(received_common_tokens)(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (proxied_vsf_votes)(witnesses_voted_for)
              (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
-             (average_market_bandwidth)(lifetime_market_bandwidth)(last_market_bandwidth_update)
+             (average_market_bandwidth)(lifetime_market_bandwidth)(last_market_bandwidth_update)(balances)
           )
 
 FC_REFLECT( deip::app::owner_authority_history_api_obj,
@@ -1483,6 +1526,17 @@ FC_REFLECT( deip::app::grant_application_review_api_obj,
             (author)
             (created_at)
             (disciplines)
+)
+
+FC_REFLECT( deip::app::asset_api_obj,
+            (id)
+            (symbol)
+            (string_symbol)
+            (precision)
+            (issuer)
+            (name)
+            (description)
+            (current_supply)
 )
 
 // clang-format on

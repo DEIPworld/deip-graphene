@@ -45,6 +45,7 @@
 #define DEIP_BREAK_BETWEEN_FINAL_ACTIVITY_ROUNDS_DURATION     600
 
 #else // IS LIVE DEIP NETWORK
+
 #define DEIP_SYMBOL (uint64_t(3) | (uint64_t('D') << 8) | (uint64_t('E') << 16) | (uint64_t('I') << 24) | (uint64_t('P') << 32)) ///< DEIP with 3 digits of precision
 
 #define DEIP_CASHOUT_WINDOW_SECONDS          (60*60*24*7)  /// 7 days
@@ -180,7 +181,7 @@
 #define DEIP_PRODUCER_APR_PERCENT             750
 #define DEIP_POW_APR_PERCENT                  750
 
-#define DEIP_MIN_PAYOUT                  (asset(5,DEIP_SYMBOL))
+#define DEIP_MIN_PAYOUT                  (asset(5, DEIP_SYMBOL))
 
 #define DEIP_MIN_ACCOUNT_NAME_LENGTH          3
 #define DEIP_MAX_ACCOUNT_NAME_LENGTH         16
@@ -208,6 +209,8 @@
 #define DEIP_IRREVERSIBLE_THRESHOLD          (75 * DEIP_1_PERCENT)
 
 #define VIRTUAL_SCHEDULE_LAP_LENGTH ( fc::uint128::max_value() )
+
+#define DEIP_REGISTRAR_ACCOUNT_NAME           "regacc"
 
 /**
  *  Reserved Account IDs with special meaning

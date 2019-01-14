@@ -484,6 +484,13 @@ public:
     std::map<discipline_id_type, share_type> calculate_research_content_eci(const research_content_id_type& research_content_id) const;
     std::map<discipline_id_type, share_type> calculate_review_weight(const review_id_type& review_id) const;
 
+    /////////////
+    // Assets///
+    ////////////
+
+    asset_api_obj get_asset(const asset_id_type& id) const;
+    asset_api_obj get_asset_by_string_symbol(const std::string& string_symbol) const;
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -690,6 +697,9 @@ FC_API(deip::app::database_api,
    (get_grant_applications_by_grant)
    (get_grant_applications_by_research_id)
 
+   (get_asset)
+   (get_asset_by_string_symbol)
+   
    (calculate_research_eci)
    (calculate_research_content_eci)
    (calculate_review_weight)

@@ -1,8 +1,10 @@
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/database/database.hpp>
 
-#include <deip/chain/services/dbs_witness.hpp>
+#include <deip/chain/services/dbs_account_balance.hpp>
+#include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
+#include <deip/chain/services/dbs_witness.hpp>
 
 namespace deip {
 namespace chain {
@@ -62,12 +64,15 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
                                                              const authority& posting,
                                                              const asset& fee)
 {
-    FC_ASSERT(fee.symbol == DEIP_SYMBOL, "invalid asset type (symbol)");
+    FC_ASSERT(fee.symbol == DEIP_SYMBOL, "invalid asset type (asset_id)");
+
+    auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
 
     const auto& props = db_impl().get_dynamic_global_properties();
     const auto& creator = get_account(creator_name);
 
-    db_impl().modify(creator, [&](account_object& c) { c.balance -= fee; });
+    auto& account_balance = account_balance_service.get_by_owner_and_asset(creator_name, DEIP_SYMBOL);
+    account_balance_service.adjust_balance(creator_name, -fee);
 
     const auto& new_account = db_impl().create<account_object>([&](account_object& acc) {
         acc.name = new_account_name;
@@ -150,12 +155,6 @@ void dbs_account::update_owner_authority(const account_object& account,
                          auth.owner = owner_authority;
                          auth.last_owner_update = t;
                      });
-}
-
-void dbs_account::adjust_balance(const account_object& account, const asset& delta)
-{
-    FC_ASSERT(delta.symbol == DEIP_SYMBOL, "Invalid asset type (symbol)");
-    db_impl().modify(account, [&](account_object& acc) { acc.balance += delta; });
 }
 
 void dbs_account::update_withdraw(const account_object& account,

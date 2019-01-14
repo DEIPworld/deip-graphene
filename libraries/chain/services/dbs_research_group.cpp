@@ -146,7 +146,7 @@ const research_group_token_object& dbs_research_group::create_research_group_tok
 }
 
 void dbs_research_group::check_research_group_token_existence(const account_name_type& account,
-                                                        const research_group_id_type& research_group_id) const
+                                                              const research_group_id_type& research_group_id) const
 {
     const auto& idx = db_impl().get_index<research_group_token_index>().indices().get<by_owner>();
 

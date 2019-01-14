@@ -48,7 +48,7 @@ public:
 
     bool can_vote = true;
 
-    asset balance = asset(0, DEIP_SYMBOL); ///< total liquid shares held by this account
+    //asset balance = asset(0, DEIP_SYMBOL); ///< total liquid shares held by this account
     share_type expertise_tokens_balance = 0; ///< total expertise tokens held by this account
     share_type common_tokens_balance = 0; ///< total common tokens held by this account
 
@@ -196,16 +196,16 @@ typedef multi_index_container<account_object,
                                                                              &account_object::id>> /// composite key
                                                         /// by_next_common_tokens_withdrawal
                                                         >,
-                                         ordered_unique<tag<by_deip_balance>,
-                                                        composite_key<account_object,
-                                                                      member<account_object,
-                                                                             asset,
-                                                                             &account_object::balance>,
-                                                                      member<account_object,
-                                                                             account_id_type,
-                                                                             &account_object::id>>,
-                                                        composite_key_compare<std::greater<asset>,
-                                                                              std::less<account_id_type>>>,
+//                                         ordered_unique<tag<by_deip_balance>,
+//                                                        composite_key<account_object,
+//                                                                      member<account_object,
+//                                                                             asset,
+//                                                                             &account_object::balance>,
+//                                                                      member<account_object,
+//                                                                             account_id_type,
+//                                                                             &account_object::id>>,
+//                                                        composite_key_compare<std::greater<asset>,
+//                                                                              std::less<account_id_type>>>,
                                         ordered_unique<tag<by_ct_balance>,
                                                         composite_key<account_object,
                                                                       member<account_object,
@@ -365,7 +365,7 @@ FC_REFLECT( deip::chain::account_object,
              (created)(mined)
              (recovery_account)(last_account_recovery)
              (lifetime_vote_count)(can_vote)
-             (balance)(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)
+             /*(balance)*/(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)
              (withdrawn)(to_withdraw)(withdraw_routes)
              (expertise_tokens_balance)
              (common_tokens_balance)

@@ -3,6 +3,7 @@
 
 #include <deip/chain/schema/account_object.hpp>
 #include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_account_balance.hpp>
 
 #include "database_fixture.hpp"
 
@@ -86,11 +87,13 @@ BOOST_AUTO_TEST_CASE(create_without_fee)
 {
     try
     {
-        const asset balance_before_creation = db.get_account("initdelegate").balance;
+        dbs_account_balance& balance_service = db.obtain_service<dbs_account_balance>();
+
+        auto balance_before_creation = balance_service.get_by_owner_and_asset("initdelegate", DEIP_SYMBOL);
 
         create_account();
 
-        BOOST_CHECK(db.get_account("initdelegate").balance == balance_before_creation);
+        BOOST_CHECK(balance_service.get_by_owner_and_asset("initdelegate", DEIP_SYMBOL).amount == balance_before_creation.amount);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -99,14 +102,16 @@ BOOST_AUTO_TEST_CASE(check_fee_after_creation)
 {
     try
     {
-        const asset balance_before_creation = db.get_account("initdelegate").balance;
+        dbs_account_balance& balance_service = db.obtain_service<dbs_account_balance>();
+
+        auto balance_before_creation = balance_service.get_by_owner_and_asset("initdelegate", DEIP_SYMBOL);
 
         const share_type fee = calc_fee();
 
         data_service.create_account_by_faucets("user", "initdelegate", public_key, "", authority(), authority(),
                                                authority(), asset(fee, DEIP_SYMBOL));
 
-        BOOST_CHECK(db.get_account("initdelegate").balance == asset(balance_before_creation.amount - fee));
+        BOOST_CHECK(balance_service.get_by_owner_and_asset("initdelegate", DEIP_SYMBOL).amount == balance_before_creation.amount - fee);
     }
     FC_LOG_AND_RETHROW()
 }

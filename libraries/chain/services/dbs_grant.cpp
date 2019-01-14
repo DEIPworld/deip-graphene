@@ -1,4 +1,4 @@
-#include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_grant_application.hpp>
 #include <deip/chain/database/database.hpp>
@@ -107,9 +107,8 @@ std::set<string> dbs_grant::lookup_grant_owners(const string &lower_bound_owner_
 
 void dbs_grant::delete_grant(const grant_object& grant)
 {
-    dbs_account& account_service = db_impl().obtain_service<dbs_account>();
-    auto& owner = db_impl().get_account(grant.owner);
-    account_service.adjust_balance(owner, grant.amount);
+    auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
+    account_balance_service.adjust_balance(grant.owner, grant.amount);
 
     auto it_pair = db_impl().get_index<grant_application_index>().indicies().get<by_grant_id>().equal_range(grant.id);
     auto it = it_pair.first;

@@ -56,6 +56,9 @@ namespace deip {
                 make_review_for_application_operation,
                 approve_grant_application_operation,
                 reject_grant_application_operation,
+                create_asset_operation,
+                issue_asset_operation,
+                reserve_asset_operation,
 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,

@@ -25,7 +25,6 @@ BOOST_AUTO_TEST_CASE(check_accounts_fields)
 
     BOOST_CHECK(account.name == "user");
     BOOST_CHECK(account.public_key == sp::public_key_type("DEIP1111111111111111111111111111111114T1Anm"));
-    BOOST_CHECK(account.deip_amount == 1000);
     BOOST_CHECK(account.recovery_account == "admin");
 }
 

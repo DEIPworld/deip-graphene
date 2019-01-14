@@ -14,7 +14,6 @@ bool inline is_asset_type(asset asset, asset_symbol_type symbol)
 void account_create_operation::validate() const
 {
     validate_account_name(new_account_name);
-    FC_ASSERT(is_asset_type(fee, DEIP_SYMBOL), "Account creation fee must be DEIP");
     owner.validate();
     active.validate();
 
@@ -23,7 +22,9 @@ void account_create_operation::validate() const
         FC_ASSERT(fc::is_utf8(json_metadata), "JSON Metadata not formatted in UTF8");
         FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
     }
-    FC_ASSERT(fee >= asset(0, DEIP_SYMBOL), "Account creation fee cannot be negative");
+    FC_ASSERT(fee >= asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL),
+              "Insufficient Fee: ${f} required, ${p} provided.",
+              ("f", asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL))("p", fee));
 }
 
 void account_update_operation::validate() const
@@ -56,8 +57,6 @@ void transfer_operation::validate() const
     {
         validate_account_name(from);
         validate_account_name(to);
-
-        FC_ASSERT(amount.symbol == DEIP_SYMBOL, "Only transferring of Deip (DEIP) token is allowed.");
         
         FC_ASSERT(amount.amount > 0, "Cannot transfer a negative amount (aka: stealing)");
         FC_ASSERT(memo.size() < DEIP_MAX_MEMO_SIZE, "Memo is too large");
@@ -69,10 +68,9 @@ void transfer_operation::validate() const
 void transfer_to_common_tokens_operation::validate() const
 {
     validate_account_name(from);
-    FC_ASSERT(is_asset_type(amount, DEIP_SYMBOL), "Amount must be DEIP");
+    FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Amount must be DEIP and > 0");
     if (to != account_name_type())
         validate_account_name(to);
-    FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Must transfer a nonzero amount");
 }
 
 void withdraw_common_tokens_operation::validate() const
@@ -95,7 +93,7 @@ void witness_update_operation::validate() const
     validate_account_name(owner);
     FC_ASSERT(url.size() > 0, "URL size must be greater than 0");
     FC_ASSERT(fc::is_utf8(url), "URL is not valid UTF8");
-    FC_ASSERT(fee >= asset(0, DEIP_SYMBOL), "Fee cannot be negative");
+    FC_ASSERT(fee > asset(0, DEIP_SYMBOL), "Fee must be DEIP and cannot be negative");
     props.validate();
 }
 
@@ -141,8 +139,7 @@ void change_recovery_account_operation::validate() const
 void create_discipline_supply_operation::validate() const
 {
     validate_account_name(owner);
-    FC_ASSERT(is_asset_type(balance, DEIP_SYMBOL), "Balance must be DEIP");
-    FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Balance must be positive");
+    FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Balance must be positive and DEIP");
     FC_ASSERT(content_hash.size() > 0, "Content hash must be specified");
     FC_ASSERT(fc::is_utf8(content_hash), "Content hash is not valid UTF8 string");
 }
@@ -193,8 +190,7 @@ void make_review_operation::validate() const
 void contribute_to_token_sale_operation::validate() const
 {
     validate_account_name(owner);
-    FC_ASSERT(amount.amount > 0, "Amount must be greater than 0");
-    FC_ASSERT(amount.symbol == DEIP_SYMBOL, "Incorrect asset symbol");
+    FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Amount must be DEIP and greater than 0");
 }
 
 void approve_research_group_invite_operation::validate() const
@@ -230,7 +226,7 @@ void research_update_operation::validate() const
 
 void create_vesting_balance_operation::validate() const
 {
-    FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Deposit balance must be greater than 0");
+    FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Deposit balance must be DEIP and greater than 0");
     FC_ASSERT(vesting_duration_seconds > 0 && vesting_duration_seconds > vesting_cliff_seconds,
             "Vesting  duration must be longer than 0 & longer than cliff period");
     FC_ASSERT(vesting_cliff_seconds >= 0, "Vesting cliff period should be equal or greater than 0");
@@ -243,7 +239,7 @@ void create_vesting_balance_operation::validate() const
 
 void withdraw_vesting_balance_operation::validate() const
 {
-    FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Withdraw amount must be greater than 0");
+    FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Withdraw amount must be DEIP and greater than 0");
     validate_account_name(owner);
 }
 
@@ -295,7 +291,7 @@ void reject_research_token_offer_operation::validate() const
 void create_grant_operation::validate() const
 {
     FC_ASSERT(target_discipline > 0, "Cannot use root discipline (id = 0)");
-    FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Grant amount must be greater than 0");
+    FC_ASSERT(amount.amount > 0, "Grant amount must be greater than 0");
     FC_ASSERT(min_number_of_positive_reviews >= 0, "Number of positive reviews must be equal or greater than 0");
     FC_ASSERT(min_number_of_applications > 0, "Number of applications must be greater than 0");
     FC_ASSERT(min_number_of_applications >= max_number_of_researches_to_grant, "Number of applications must be equal or greater than number of researches");
@@ -322,6 +318,25 @@ void make_review_for_application_operation::validate() const
     FC_ASSERT(!content.empty(), "Content cannot be empty");
 }
 
+void create_asset_operation::validate() const
+{
+    validate_account_name(issuer);
+    FC_ASSERT(symbol.size() > 0 && symbol.size() < 7, "Asset symbol must be specified");
+    FC_ASSERT(fc::is_utf8(symbol), "Asset symbol is not valid UTF8 string");
+    FC_ASSERT(precision < 15, "Precision must be less than 15.");
+    FC_ASSERT(name.size() > 0, "Name must be specified");
+    FC_ASSERT(fc::is_utf8(name), "Name is not valid UTF8 string");
+    FC_ASSERT(description.size() > 0, "Description must be specified");
+    FC_ASSERT(fc::is_utf8(description), "Description is not valid UTF8 string");
+}
+
+void issue_asset_operation::validate() const
+{
+    validate_account_name(issuer);
+    FC_ASSERT(!is_asset_type(amount_to_issue, DEIP_SYMBOL), "You cannot issue DEIP tokens manually.");
+    FC_ASSERT(amount_to_issue.amount > 0, "Amount to issue must be greater than 0");
+}
+
 void approve_grant_application_operation::validate() const
 {
     FC_ASSERT(grant_application_id >= 0, "Application id cant be less than a 0");
@@ -332,6 +347,13 @@ void reject_grant_application_operation::validate() const
 {
     FC_ASSERT(grant_application_id >= 0, "Application id cant be less than a 0");
     validate_account_name(rejector);
+}
+
+void reserve_asset_operation::validate() const
+{
+    validate_account_name(balance_owner);
+    FC_ASSERT(!is_asset_type(amount_to_reserve, DEIP_SYMBOL), "You cannot reserve DEIP tokens manually.");
+    FC_ASSERT(amount_to_reserve.amount > 0, "Amount to reserve must be greater than 0");
 }
 
 } // namespace deip::protocol

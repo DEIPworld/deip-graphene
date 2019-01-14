@@ -54,10 +54,12 @@ void db_setup_and_open(database& db, const fc::path& path)
     genesis.initial_chain_id = TEST_CHAIN_ID;
     genesis.initial_timestamp = fc::time_point_sec(TEST_GENESIS_TIMESTAMP);
     auto registrar = genesis_state_type::registrar_account_type();
-    registrar.name = "registrar";
-    registrar.deip_amount = 0;
+    registrar.name = DEIP_REGISTRAR_ACCOUNT_NAME;
     registrar.public_key = public_key_type();
+    registrar.deip_amount = 0;
     genesis.registrar_account = registrar;
+
+    genesis.assets.push_back({ 0, "TESTS", 3});
 
     create_disciplines_for_genesis_state(genesis);
     create_initdelegate_for_genesis_state(genesis);
@@ -371,8 +373,8 @@ BOOST_AUTO_TEST_CASE(duplicate_transactions)
 
         DEIP_CHECK_THROW(PUSH_TX(db1, trx, skip_sigs), fc::exception);
         DEIP_CHECK_THROW(PUSH_TX(db2, trx, skip_sigs), fc::exception);
-        BOOST_CHECK_EQUAL(db1.get_balance("alice", DEIP_SYMBOL).amount.value, 500);
-        BOOST_CHECK_EQUAL(db2.get_balance("alice", DEIP_SYMBOL).amount.value, 500);
+        BOOST_CHECK_EQUAL((db1.get<account_balance_object, by_owner_and_asset>(std::make_tuple("alice", DEIP_SYMBOL)).amount.value), 500);
+        BOOST_CHECK_EQUAL((db2.get<account_balance_object, by_owner_and_asset>(std::make_tuple("alice", DEIP_SYMBOL)).amount.value), 500);
     }
     catch (fc::exception& e)
     {
@@ -453,6 +455,8 @@ BOOST_FIXTURE_TEST_CASE(optional_tapos, clean_database_fixture)
         idump((db.get_account(TEST_INIT_DELEGATE_NAME)));
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
 
+        fund("alice", asset(10000, DEIP_SYMBOL));
+        fund("bob", asset(10000, DEIP_SYMBOL));
         generate_block();
 
         BOOST_TEST_MESSAGE("Create transaction");

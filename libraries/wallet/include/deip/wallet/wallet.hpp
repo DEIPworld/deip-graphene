@@ -393,7 +393,7 @@ public:
     annotated_signed_transaction create_account(const std::string& creator,
                                                 const std::string& newname,
                                                 const std::string& json_meta,
-                                                const asset& fee,
+                                                const share_type& fee,
                                                 bool broadcast);
 
     /**
@@ -419,7 +419,7 @@ public:
                                                           const public_key_type& active,
                                                           const public_key_type& posting,
                                                           const public_key_type& memo,
-                                                          const asset& fee,
+                                                          const share_type& fee,
                                                           bool broadcast) const;
 
     /**
@@ -1132,6 +1132,7 @@ public:
                                                           const asset& amount,
                                                           const bool broadcast);
 
+
     /**
      * Create research group
      *
@@ -1298,6 +1299,21 @@ public:
                                                         const std::string& rejector,
                                                         const bool broadcast);
 
+    annotated_signed_transaction create_asset(const std::string& issuer,
+                                              const std::string& symbol,
+                                              const uint8_t& precision,
+                                              const std::string& name,
+                                              const std::string& description,
+                                              const bool broadcast);
+
+    annotated_signed_transaction issue_asset(const std::string& issuer,
+                                             const asset& amount_to_issue,
+                                             const bool broadcast);
+
+    annotated_signed_transaction reserve_asset(const std::string& balance_owner,
+                                               const asset& amount_to_reserve,
+                                               const bool broadcast);
+
     public : fc::signal<void(bool)> lock_changed;
 
 private:
@@ -1327,7 +1343,7 @@ FC_REFLECT( deip::wallet::plain_keys, (checksum)(keys) )
 
 FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
 
-FC_API( deip::wallet::wallet_api,
+              FC_API( deip::wallet::wallet_api,
         /// wallet api
         (help)(gethelp)
         (about)(is_new)(is_locked)(lock)(unlock)(set_password)
@@ -1439,6 +1455,9 @@ FC_API( deip::wallet::wallet_api,
         (make_review_for_application)
         (approve_grant_application)
         (reject_grant_application)
+        (create_asset)
+        (issue_asset)
+        (reserve_asset)
 
         /// helper api
         (get_prototype_operation)
