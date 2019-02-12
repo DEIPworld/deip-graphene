@@ -2101,9 +2101,16 @@ eci_and_expertise_stats_api_obj database_api::get_eci_and_expertise_stats_by_dis
         int64_t total_research_eci = 0;
         int64_t contents_count = 0;
         int64_t total_content_eci = 0;
+        uint32_t max_research_eci_in_discipline = 0;
+
         for (auto& research : researches)
         {
-            total_research_eci += research.eci_per_discipline.at(discipline_id).value;
+            auto research_eci = research.eci_per_discipline.at(discipline_id).value;
+
+            if (research_eci > max_research_eci_in_discipline)
+                max_research_eci_in_discipline = research_eci;
+
+            total_research_eci += research_eci;
             auto contents = research_content_service.get_by_research_id(research.id);
 
             for (auto& content : contents)
