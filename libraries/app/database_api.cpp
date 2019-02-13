@@ -2139,6 +2139,8 @@ eci_and_expertise_stats_api_obj database_api::get_eci_and_expertise_stats_by_dis
         else
             results.average_research_eci_in_discipline = total_research_eci / researches.size();
 
+        results.max_research_eci_in_discipline = max_research_eci_in_discipline;
+
         return results;
     });
 
