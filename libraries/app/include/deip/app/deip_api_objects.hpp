@@ -995,6 +995,7 @@ struct eci_and_expertise_stats_api_obj
     eci_and_expertise_stats_api_obj()
     {}
 
+    uint32_t max_research_eci_in_discipline;
     uint32_t average_research_eci_in_discipline;
     uint32_t average_content_eci_in_discipline;
     uint32_t average_expertise_in_discipline;
@@ -1367,6 +1368,7 @@ FC_REFLECT( deip::app::offer_research_tokens_api_obj,
 )
 
 FC_REFLECT( deip::app::eci_and_expertise_stats_api_obj,
+            (max_research_eci_in_discipline)
             (average_research_eci_in_discipline)
             (average_content_eci_in_discipline)
             (average_expertise_in_discipline)
