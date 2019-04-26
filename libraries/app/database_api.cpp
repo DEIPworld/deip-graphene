@@ -2105,7 +2105,9 @@ eci_and_expertise_stats_api_obj database_api::get_eci_and_expertise_stats_by_dis
 
         for (auto& research : researches)
         {
-            auto research_eci = research.eci_per_discipline.at(discipline_id).value;
+            auto research_eci = research.eci_per_discipline.find(discipline_id) != research.eci_per_discipline.end() 
+                ? research.eci_per_discipline.at(discipline_id).value 
+                : 0;
 
             if (research_eci > max_research_eci_in_discipline)
                 max_research_eci_in_discipline = research_eci;
@@ -2115,7 +2117,10 @@ eci_and_expertise_stats_api_obj database_api::get_eci_and_expertise_stats_by_dis
 
             for (auto& content : contents)
             {
-                total_content_eci += content.get().eci_per_discipline.at(discipline_id).value;
+                total_content_eci += (content.get().eci_per_discipline.find(discipline_id) != content.get().eci_per_discipline.end() 
+                    ? content.get().eci_per_discipline.at(discipline_id).value
+                    : 0
+                );
                 contents_count++;
             }
         }

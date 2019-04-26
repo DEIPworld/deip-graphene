@@ -776,6 +776,7 @@ struct review_api_obj
 
             this->weight_per_discipline.emplace(std::make_pair(discipline_id, r.weights_per_discipline.at(discipline_id).value));
             this->evaluation_per_discipline.emplace(std::make_pair(discipline_id, r.get_evaluation(discipline_id).value));
+            this->expertise_amounts_used.emplace(std::make_pair(discipline_id, r.expertise_amounts_used.at(discipline_id).value));
         }
     }
 
@@ -794,6 +795,7 @@ struct review_api_obj
 
     map<int64_t, int64_t> weight_per_discipline;
     map<int64_t, int64_t> evaluation_per_discipline;
+    map<int64_t, int64_t> expertise_amounts_used;
 };
 
 struct research_token_api_obj
@@ -1293,6 +1295,7 @@ FC_REFLECT( deip::app::review_api_obj,
             (disciplines)
             (weight_per_discipline)
             (evaluation_per_discipline)
+            (expertise_amounts_used)
 )
 
 FC_REFLECT( deip::app::research_token_api_obj,
