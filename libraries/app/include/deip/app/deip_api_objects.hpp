@@ -1157,6 +1157,8 @@ FC_REFLECT( deip::app::research_api_obj,
             (disciplines)
             (group_permlink)
             (eci_per_discipline)
+            (number_of_positive_reviews)
+            (number_of_negative_reviews)
           )
 
 FC_REFLECT( deip::app::research_content_api_obj,
