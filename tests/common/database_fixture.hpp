@@ -131,7 +131,7 @@ struct database_fixture
                                                       const string &desciption,
                                                       const share_type funds,
                                                       const std::map<uint16_t, share_type> proposal_quorums,
-                                                      const bool is_personal,
+                                                      const bool is_dao,
                                                       const vector<std::pair<account_name_type, share_type>> &accounts);
 
     const proposal_object& create_proposal(const int64_t id,

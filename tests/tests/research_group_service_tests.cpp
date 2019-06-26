@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_test)
         BOOST_CHECK(research_group.proposal_quorums.size() == 10);
         BOOST_CHECK(research_group.quorum_percent == DEIP_100_PERCENT);
         BOOST_CHECK(research_group.balance.amount == 0);
-        BOOST_CHECK(research_group.is_personal == false);
+        BOOST_CHECK(research_group.is_dao == false);
 
     }
     FC_LOG_AND_RETHROW()

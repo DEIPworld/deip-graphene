@@ -39,7 +39,7 @@ const research_group_object& dbs_research_group::create_research_group(const std
         fc::from_string(research_group.description, description);
         research_group.quorum_percent = quorum_percent;
         research_group.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
-        research_group.is_personal = is_personal;
+        research_group.is_dao = is_personal;
     });
 
     return new_research_group;

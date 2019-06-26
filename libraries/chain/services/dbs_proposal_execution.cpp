@@ -1,5 +1,7 @@
-#include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/database/database.hpp>
+
+#include <deip/chain/services/dbs_proposal_execution.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_group_invite.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
@@ -35,9 +37,18 @@ dbs_proposal_execution::dbs_proposal_execution(database &db)
 void dbs_proposal_execution::invite(const proposal_object &proposal)
 {
     auto& research_group_invite_service = db_impl().obtain_service<dbs_research_group_invite>();
+    auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
 
     invite_member_proposal_data_type data = get_data<invite_member_proposal_data_type>(proposal);
-    research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount_in_percent, data.cover_letter, account_name_type());
+    auto& research_group = research_group_service.get_research_group(data.research_group_id);
+
+    if (!research_group.is_dao)
+    {
+        FC_ASSERT(fc::to_string(research_group.name) == proposal.creator, "You cannot invite member");
+        research_group_invite_service.create(data.name, data.research_group_id, 1, data.cover_letter, account_name_type());
+    }
+    else
+        research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount_in_percent, data.cover_letter, account_name_type());
 }
 
 void dbs_proposal_execution::dropout(const proposal_object& proposal)
@@ -49,6 +60,10 @@ void dbs_proposal_execution::dropout(const proposal_object& proposal)
     auto& research_token_service = db_impl().obtain_service<dbs_research_token>();
 
     dropout_member_proposal_data_type data = get_data<dropout_member_proposal_data_type>(proposal);
+
+    auto& research_group = research_group_service.get_research_group(data.research_group_id);
+    if(!research_group.is_dao)
+        FC_ASSERT(fc::to_string(research_group.name) == proposal.creator, "You cannot dropout member");
 
     account_service.check_account_existence(data.name);
     research_group_service.check_research_group_token_existence(data.name, data.research_group_id);

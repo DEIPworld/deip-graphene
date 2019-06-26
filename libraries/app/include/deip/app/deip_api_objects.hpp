@@ -574,7 +574,7 @@ struct research_group_api_obj
         ,  permlink(fc::to_string(rg.permlink))
         ,  description(fc::to_string(rg.description))
         ,  quorum_percent(rg.quorum_percent.value)
-        ,  is_personal(rg.is_personal)
+        ,  is_personal(rg.is_dao)
         ,  balance(rg.balance)
     {
         for (auto& proposal_quorum : rg.proposal_quorums)

@@ -138,7 +138,7 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
     account_service.create_account_by_faucets(o.new_account_name, o.creator, o.memo_key, o.json_metadata, o.owner,
                                               o.active, o.posting, o.fee);
 
-    bool is_personal = true;
+    bool is_dao = false;
 
     std::map<uint16_t , share_type> personal_research_group_proposal_quorums;
 
@@ -150,7 +150,7 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
                                                                                  o.new_account_name,
                                                                                  DEIP_100_PERCENT,
                                                                                  personal_research_group_proposal_quorums,
-                                                                                 is_personal);
+                                                                                 is_dao);
     research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
 
 }
@@ -583,11 +583,13 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     }
     // the range must be checked in create_proposal_operation::validate()
 
-    if (action == deip::protocol::proposal_action_type::invite_member ||
-            action == deip::protocol::proposal_action_type::dropout_member ||
-            action == deip::protocol::proposal_action_type::change_quorum ||
-            action == deip::protocol::proposal_action_type::rebalance_research_group_tokens)
-        FC_ASSERT(!research_group.is_personal,
+    if (action == deip::protocol::proposal_action_type::change_quorum ||
+        action == deip::protocol::proposal_action_type::rebalance_research_group_tokens ||
+        action == deip::protocol::proposal_action_type::offer_research_tokens ||
+        action == deip::protocol::proposal_action_type::change_research_review_share_percent ||
+        action == deip::protocol::proposal_action_type::send_funds ||
+        action == deip::protocol::proposal_action_type::start_research_token_sale)
+        FC_ASSERT(research_group.is_dao,
                   "You cannot invite or dropout member, change quorum and rebalance tokens in personal research group");
 
     std::hash<std::string> hash_string;
@@ -609,7 +611,7 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     }
     auto& proposal = proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent, hash_string(unique_string));
 
-    if (research_group.is_personal)
+    if (!research_group.is_dao)
     {
         auto& proposal_execution_service = _db.obtain_service<dbs_proposal_execution>();
         proposal_execution_service.execute_proposal(proposal);
@@ -624,7 +626,7 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
     dbs_research_group_invite& research_group_invite_service = _db.obtain_service<dbs_research_group_invite>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
-    bool is_personal = false;
+    bool is_dao = true;
 
     std::map<uint16_t, share_type> proposal_quorums;
 
@@ -636,7 +638,7 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
                                                                                                op.description,
                                                                                                op.quorum_percent,
                                                                                                proposal_quorums,
-                                                                                               is_personal);
+                                                                                               is_dao);
     
     research_group_service.create_research_group_token(research_group.id, DEIP_100_PERCENT, op.creator);
 

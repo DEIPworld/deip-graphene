@@ -416,7 +416,7 @@ database_fixture::research_group_create(const int64_t& id,
               fc::from_string(rg.description, description);
               rg.balance = funds;
               rg.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
-              rg.is_personal = is_personal;
+              rg.is_dao = is_personal;
           });
 
     return new_research_group;
@@ -476,10 +476,10 @@ const research_group_object& database_fixture::setup_research_group(const int64_
                                                                     const string &description,
                                                                     const share_type funds,
                                                                     const std::map<uint16_t, share_type> proposal_quorums,
-                                                                    const bool is_personal,
+                                                                    const bool is_dao,
                                                                     const vector<std::pair<account_name_type, share_type>> &accounts)
 {
-    const auto& research_group = research_group_create(id, name, permlink, description, funds, proposal_quorums, is_personal);
+    const auto& research_group = research_group_create(id, name, permlink, description, funds, proposal_quorums, is_dao);
 
     for (const auto& account : accounts)
     {
