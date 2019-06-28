@@ -134,11 +134,7 @@ void dbs_proposal_execution::start_research(const proposal_object& proposal)
     start_research_proposal_data_type data = get_data<start_research_proposal_data_type>(proposal);
     research_group_service.check_research_group_existence(data.research_group_id);
     auto& research = research_service.create(data.title, data.abstract, data.permlink, data.research_group_id, data.review_share_in_percent, data.dropout_compensation_in_percent);
-    for (auto& discipline_id : data.disciplines)
-    {
-        discipline_service.check_discipline_existence(discipline_id);
-        research_discipline_relation_service.create(research.id, discipline_id);
-    }
+    research_discipline_relation_service.create(research.id, 0);
 }
 
 void dbs_proposal_execution::send_funds(const proposal_object &proposal)

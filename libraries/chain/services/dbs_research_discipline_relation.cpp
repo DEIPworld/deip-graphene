@@ -11,8 +11,6 @@ dbs_research_discipline_relation::dbs_research_discipline_relation(database &db)
 
 const research_discipline_relation_object& dbs_research_discipline_relation::create(const research_id_type& research_id, const discipline_id_type& discipline_id)
 {
-    FC_ASSERT(discipline_id != 0, "Research cannot be in root discipline");
-
     const auto& new_relation = db_impl().create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.research_id = research_id;
         r.discipline_id = discipline_id;
