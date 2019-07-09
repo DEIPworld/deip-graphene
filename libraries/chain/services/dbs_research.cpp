@@ -13,7 +13,7 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 
 const research_object& dbs_research::create(const string &title, const string &abstract, const string &permlink,
                                             const research_group_id_type &research_group_id, const uint16_t review_share_in_percent,
-                                            const uint16_t dropout_compensation_in_percent)
+                                            const uint16_t dropout_compensation_in_percent, const std::set<account_name_type>& members)
 {
     const auto& new_research = db_impl().create<research_object>([&](research_object& r) {
         fc::from_string(r.title, title);
@@ -27,6 +27,7 @@ const research_object& dbs_research::create(const string &title, const string &a
         r.created_at = db_impl().head_block_time();
         r.last_update_time = db_impl().head_block_time();
         r.review_share_in_percent_last_update = db_impl().head_block_time();
+        r.members.insert(members.begin(), members.end());
     });
 
     return new_research;
@@ -167,6 +168,26 @@ void dbs_research::calculate_eci(const research_id_type& research_id)
         db_impl().modify(rd_relation,
                          [&](research_discipline_relation_object &rdr_o) { rdr_o.research_eci = research.eci_per_discipline.at(discipline_id); });
     }
+}
+
+void dbs_research::add_member(const research_id_type& research_id,
+                              const account_name_type& account_name)
+{
+    check_research_existence(research_id);
+    const research_object& research = get_research(research_id);
+    db_impl().modify(research, [&](research_object& r) {
+        r.members.insert(account_name);
+    });
+}
+
+void dbs_research::exclude_member(const research_id_type& research_id,
+                                  const account_name_type& account_name)
+{
+    check_research_existence(research_id);
+    const research_object& research = get_research(research_id);
+    db_impl().modify(research, [&](research_object& r) {
+        r.members.erase(account_name);
+    });
 }
 
 }

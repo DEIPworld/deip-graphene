@@ -24,7 +24,7 @@ public:
 
     const research_object& create(const string& title, const string& abstract, const string& permlink,
                                   const research_group_id_type& research_group_id, const uint16_t review_share_in_percent,
-                                  const uint16_t dropout_compensation_in_percent);
+                                  const uint16_t dropout_compensation_in_percent, const std::set<account_name_type>& members);
 
     research_refs_type get_researches() const;
 
@@ -43,6 +43,12 @@ public:
     void change_research_review_share_percent(const research_id_type& research_id, const uint16_t review_share_in_percent);
 
     void calculate_eci(const research_id_type& research_id);
+
+    void add_member(const research_id_type& research_id,
+                    const account_name_type& account_name);
+
+    void exclude_member(const research_id_type& research_id,
+                        const account_name_type& account_name);
 };
 }
 }

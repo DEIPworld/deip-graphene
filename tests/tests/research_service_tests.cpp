@@ -73,7 +73,9 @@ BOOST_AUTO_TEST_CASE(create_research)
 {
     try
     {
-        auto& research = data_service.create(RESEARCH_TITLE, ABSTRACT, RESEARCH_TITLE, RESEARCH_GROUP_ID, REVIEW_SHARE, DROPOUT_COMPENSATION);
+        std::set<account_name_type> members;
+        members.insert("alice"); members.insert("bob");
+        auto& research = data_service.create(RESEARCH_TITLE, ABSTRACT, RESEARCH_TITLE, RESEARCH_GROUP_ID, REVIEW_SHARE, DROPOUT_COMPENSATION, members);
 
         BOOST_CHECK(research.title == RESEARCH_TITLE);
         BOOST_CHECK(research.permlink == RESEARCH_TITLE);
@@ -84,6 +86,7 @@ BOOST_AUTO_TEST_CASE(create_research)
         BOOST_CHECK(research.created_at <= db.head_block_time());
         BOOST_CHECK(research.abstract == ABSTRACT);
         BOOST_CHECK(research.owned_tokens == DEIP_100_PERCENT);
+        BOOST_CHECK(research.members.size() == 2);
 
     }
     FC_LOG_AND_RETHROW()

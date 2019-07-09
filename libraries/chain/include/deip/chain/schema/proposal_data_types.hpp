@@ -61,21 +61,19 @@ struct start_research_proposal_data_type : base_proposal_data_type
     uint16_t review_share_in_percent;
     uint16_t dropout_compensation_in_percent;
     std::vector<int64_t> disciplines;
+    std::set<account_name_type> members;
 
 
     void validate() const
     {
         FC_ASSERT(disciplines.size() != 0, "Research must be related to one or several disciplines");
-        FC_ASSERT(!std::any_of(disciplines.begin(), disciplines.end(), [](int64_t discipline_id){
-            return discipline_id == 0;
-        }), "Research cannot be related to 'common' discipline");
-
         FC_ASSERT(!title.empty(), "Research name cannot be empty");
         FC_ASSERT(!abstract.empty(), "Research abstract cannot be empty");
         FC_ASSERT(permlink.size() < DEIP_MAX_PERMLINK_LENGTH, "Research permlink is too long");
         FC_ASSERT(fc::is_utf8(permlink), "Research permlink should be valid UTF8 string");
         FC_ASSERT(review_share_in_percent >= 0 && review_share_in_percent <= 50 * DEIP_1_PERCENT, "Percent for review should be in 0 to 50 range");
         FC_ASSERT(dropout_compensation_in_percent >= 0 && dropout_compensation_in_percent <= DEIP_100_PERCENT, "Percent for dropout compensation should be in 0 to 100 range");
+        FC_ASSERT(members.size() != 0, "Research must have one or several related members");
     }
 };
 
@@ -202,7 +200,7 @@ FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(na
 
 FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(proposal_type)(quorum_percent))
 
-FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(research_group_id)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines))
+FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(research_group_id)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines)(members))
 
 FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(recipient)(funds))
 
