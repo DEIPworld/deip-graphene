@@ -26,6 +26,9 @@ public:
     }
 
     void create_researches() {
+        std::set<account_name_type> members;
+        members.insert("alice"); members.insert("bob");
+
         db.create<research_object>([&](research_object& r) {
             r.id = 1;
             r.title = RESEARCH_TITLE;
@@ -37,6 +40,7 @@ public:
             r.created_at = db.head_block_time();
             r.abstract = ABSTRACT;
             r.owned_tokens = DEIP_100_PERCENT;
+            r.members.insert(members.begin(), members.end());
         });
 
         db.create<research_object>([&](research_object& r) {
@@ -49,6 +53,7 @@ public:
             r.created_at = db.head_block_time();
             r.abstract = ABSTRACT;
             r.owned_tokens = DEIP_100_PERCENT;
+            r.members.insert(members.begin(), members.end());
         });
 
         db.create<research_object>([&](research_object& r) {
@@ -61,6 +66,7 @@ public:
             r.created_at = db.head_block_time();
             r.abstract = ABSTRACT;
             r.owned_tokens = DEIP_100_PERCENT;
+            r.members.insert(members.begin(), members.end());
         });
     }
 
@@ -263,7 +269,24 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_percent)
 
     }
     FC_LOG_AND_RETHROW()
-}        
+}
+
+BOOST_AUTO_TEST_CASE(add_and_exclude_member)
+{
+    try
+    {
+        create_researches();
+
+        BOOST_CHECK_NO_THROW(data_service.add_member(1, "jack"));
+        auto& research = db.get<research_object, by_id>(1);
+        BOOST_CHECK(research.members.size() ==  3);
+
+        BOOST_CHECK_NO_THROW(data_service.exclude_member(1, "jack"));
+        BOOST_CHECK(research.members.size() ==  2);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
