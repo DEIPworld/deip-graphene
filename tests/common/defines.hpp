@@ -118,6 +118,7 @@
 
 #define ACTORS_IMPL(r, data, elem) ACTOR(elem)
 #define ACTORS_IMPL_WITH_EXPERT_TOKENS(r, data, elem) ACTOR_WITH_EXPERT_TOKENS(elem)
+#define ACTORS_IMPL_WITH_EXPERT_TOKENS(r, data, elem) ACTOR_WITH_EXPERT_TOKENS(elem)
 
 #define ACTORS(names)                                                                                                  \
     BOOST_PP_SEQ_FOR_EACH(ACTORS_IMPL, ~, names)                                                                       \

@@ -310,5 +310,17 @@ void create_grant_application_operation::validate() const
     FC_ASSERT(fc::is_utf8(application_hash), "Application hash is not valid UTF8 string");
 }
 
+void add_member_to_research_operation::validate() const
+{
+    validate_account_name(owner);
+    validate_account_name(invitee);
+}
+
+void exclude_member_from_research_operation::validate() const
+{
+    validate_account_name(owner);
+    validate_account_name(account_to_exclude);
+}
+
 }
 } // deip::protocol

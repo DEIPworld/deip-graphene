@@ -590,7 +590,7 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
         action == deip::protocol::proposal_action_type::send_funds ||
         action == deip::protocol::proposal_action_type::start_research_token_sale)
         FC_ASSERT(research_group.is_dao,
-                  "You cannot invite or dropout member, change quorum and rebalance tokens in personal research group");
+                  "You cannot change quorum, rebalance tokens, offer tokens, change research review share percent, send funds, start research token sale in personal research group");
 
     std::hash<std::string> hash_string;
     std::string unique_string = op.data;
@@ -1182,6 +1182,56 @@ void create_grant_application_evaluator::do_apply(const create_grant_application
     FC_ASSERT((now >= grant.start_time) && (now <= grant.end_time), "Grant is inactive now");
 
     research_content_service.create_grant_application(op.grant_id, op.research_id, op.application_hash, op.creator);
+}
+
+void add_member_to_research_evaluator::do_apply(const add_member_to_research_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    account_service.check_account_existence(op.owner);
+    account_service.check_account_existence(op.invitee);
+    
+    research_service.check_research_existence(op.research_id);
+    auto& research = research_service.get_research(op.research_id);
+
+    research_group_service.check_research_group_existence(research.research_group_id);
+    auto& research_group = research_group_service.get_research_group(research.research_group_id);
+
+    FC_ASSERT(fc::to_string(research_group.name) == op.owner, "You cannot invite member");
+
+    auto amount = research_group_service.decrease_research_group_tokens_amount(research_group.id,
+                                                                               1,
+                                                                               op.owner);
+    
+    research_group_service.create_research_group_token(research_group.id,
+                                                       amount,
+                                                       op.invitee);
+    
+    research_service.add_member(op.research_id, op.invitee);
+    
+}
+
+void exclude_member_from_research_evaluator::do_apply(const exclude_member_from_research_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    account_service.check_account_existence(op.owner);
+    account_service.check_account_existence(op.account_to_exclude);
+
+    research_service.check_research_existence(op.research_id);
+    auto& research = research_service.get_research(op.research_id);
+
+    research_group_service.check_research_group_existence(research.research_group_id);
+    auto& research_group = research_group_service.get_research_group(research.research_group_id);
+
+    FC_ASSERT(fc::to_string(research_group.name) == op.owner, "You cannot exclude member");
+    FC_ASSERT(research.members.find(op.account_to_exclude) != research.members.end(), "Account is not related to this research");
+    
+    research_service.exclude_member(op.research_id, op.account_to_exclude);
 }
 
 } // namespace chain

@@ -53,6 +53,8 @@ namespace deip {
                 reject_research_token_offer_operation,
                 create_grant_operation,
                 create_grant_application_operation,
+                add_member_to_research_operation,
+                exclude_member_from_research_operation,
 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,

@@ -777,6 +777,34 @@ struct create_grant_application_operation : public base_operation
     }
 };
 
+struct add_member_to_research_operation : public base_operation
+{
+    int64_t research_id;
+    account_name_type owner;
+    account_name_type invitee;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
+
+struct exclude_member_from_research_operation : public base_operation
+{
+    int64_t research_id;
+    account_name_type owner;
+    account_name_type account_to_exclude;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(owner);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -844,5 +872,7 @@ FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (offer_resear
 FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 FC_REFLECT( deip::protocol::create_grant_operation, (target_discipline)(amount)(min_number_of_positive_reviews)(min_number_of_applications)(researches_to_grant)(start_time)(end_time)(owner))
 FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
+FC_REFLECT( deip::protocol::add_member_to_research_operation, (research_id)(owner)(invitee))
+FC_REFLECT( deip::protocol::exclude_member_from_research_operation, (research_id)(owner)(account_to_exclude))
 
 // clang-format on

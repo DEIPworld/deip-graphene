@@ -1860,7 +1860,7 @@ void database::initialize_evaluators()
 //    _my->_evaluator_registry.register_evaluator<withdraw_common_tokens_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<set_withdraw_common_tokens_route_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_create_evaluator>();
-//    _my->_evaluator_registry.register_evaluator<account_update_evaluator>();
+    _my->_evaluator_registry.register_evaluator<account_update_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<witness_update_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<account_witness_vote_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<account_witness_proxy_evaluator>();
@@ -1871,15 +1871,15 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_proposal_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<make_review_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
-    _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
-    _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
+//    _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
+//    _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<vote_for_review_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<set_expertise_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<create_vesting_balance_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<withdraw_vesting_balance_evaluator>();
-    _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
+//    _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<transfer_research_tokens_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<delegate_expertise_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<revoke_expertise_delegation_evaluator>();
@@ -1890,6 +1890,8 @@ void database::initialize_evaluators()
 //    _my->_evaluator_registry.register_evaluator<reject_research_token_offer_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
 //    _my->_evaluator_registry.register_evaluator<create_grant_application_evaluator>();
+    _my->_evaluator_registry.register_evaluator<add_member_to_research_evaluator>();
+    _my->_evaluator_registry.register_evaluator<exclude_member_from_research_evaluator>();
 }
 
 void database::initialize_indexes()
