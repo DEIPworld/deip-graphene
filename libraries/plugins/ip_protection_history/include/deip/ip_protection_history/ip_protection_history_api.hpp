@@ -24,7 +24,8 @@ public:
 
     void on_api_startup();
 
-    applied_ip_protection_operation get_content_history(const std::string& content_hash) const;
+    std::vector<applied_ip_protection_operation>
+    get_content_history(const std::string& content_hash) const;
 
 
 private:

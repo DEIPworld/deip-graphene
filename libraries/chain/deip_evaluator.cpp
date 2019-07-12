@@ -617,7 +617,6 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
         proposal_execution_service.execute_proposal(proposal);
         proposal_service.complete(proposal);
     }
-
 }
 
 void create_research_group_evaluator::do_apply(const create_research_group_operation& op)
