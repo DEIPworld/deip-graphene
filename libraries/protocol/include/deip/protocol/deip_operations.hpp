@@ -478,7 +478,7 @@ struct create_research_group_operation : public base_operation
     std::string description;
     uint32_t quorum_percent;
     std::map<uint16_t, uint32_t> proposal_quorums;
-    bool is_personal;
+    bool is_dao;
     vector<invitee_type> invitees;
 
     void validate() const;
@@ -849,7 +849,7 @@ FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recov
 FC_REFLECT( deip::protocol::invitee_type, (account)(research_group_tokens_in_percent)(cover_letter))
 FC_REFLECT( deip::protocol::expertise_amount_pair_type, (discipline_id)(amount) )
 FC_REFLECT( deip::protocol::create_discipline_supply_operation, (owner)(balance)(target_discipline)(start_block)(end_block)(is_extendable)(content_hash) )
-FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent)(proposal_quorums)(is_personal)(invitees))
+FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent)(proposal_quorums)(is_dao)(invitees))
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
 FC_REFLECT( deip::protocol::make_review_operation, (author)(research_content_id)(content)(is_positive)(weight))

@@ -406,7 +406,7 @@ database_fixture::research_group_create(const int64_t& id,
                                         const string& description,
                                         const share_type funds,
                                         const std::map<uint16_t, share_type>& proposal_quorums,
-                                        const bool is_personal)
+                                        const bool is_dao)
 {
     const research_group_object& new_research_group
         = db.create<research_group_object>([&](research_group_object& rg) {
@@ -416,7 +416,7 @@ database_fixture::research_group_create(const int64_t& id,
               fc::from_string(rg.description, description);
               rg.balance = funds;
               rg.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
-              rg.is_dao = is_personal;
+              rg.is_dao = is_dao;
           });
 
     return new_research_group;
@@ -428,7 +428,7 @@ const research_group_object& database_fixture::research_group_create_by_operatio
                                                                                   const string& description,
                                                                                   const uint32_t& quorum_percent,
                                                                                   const std::map<uint16_t, uint32_t>& proposal_quorums,
-                                                                                  const bool is_personal)
+                                                                                  const bool is_dao)
 {
     try
     {
@@ -443,7 +443,7 @@ const research_group_object& database_fixture::research_group_create_by_operatio
         op.creator = creator;
         op.quorum_percent = quorum_percent;
         op.proposal_quorums = proposal_quorums;
-        op.is_personal = is_personal;
+        op.is_dao = is_dao;
 
         trx.operations.push_back(op);
 

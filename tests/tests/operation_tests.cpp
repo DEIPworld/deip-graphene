@@ -573,8 +573,8 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
         for (int i = 1; i <= 11; i++)
             proposal_quorums.insert(std::make_pair(i, 5000));
 
-        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", DEIP_100_PERCENT, proposal_quorums, false);
-        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", DEIP_100_PERCENT, proposal_quorums, false);
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", DEIP_100_PERCENT, proposal_quorums, true);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", DEIP_100_PERCENT, proposal_quorums, true);
 
         research_group_invite_create(0, "bob", 0, 5000);
         research_group_invite_create(1, "bob", 1, 5000);
@@ -626,7 +626,7 @@ BOOST_AUTO_TEST_CASE(reject_research_group_invite_apply)
         for (int i = First_proposal; i <= Last_proposal; i++)
             proposal_quorums.insert(std::make_pair(i, 50));
 
-        research_group_create(31, "name", "permlink", "description", 200, proposal_quorums, false);
+        research_group_create(31, "name", "permlink", "description", 200, proposal_quorums, true);
         research_group_invite_create(1, "bob", 31, 5000);
 
         private_key_type priv_key = generate_private_key("bob");
@@ -670,8 +670,8 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
          ///                                            ///
         //////////////////////////////////////////////////
 
-        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", DEIP_100_PERCENT, proposal_quorums, false);
-        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", DEIP_100_PERCENT, proposal_quorums, false);
+        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", DEIP_100_PERCENT, proposal_quorums, true);
+        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", DEIP_100_PERCENT, proposal_quorums, true);
 
         research_group_invite_create(0, "bob", 0, 10000);
         research_group_invite_create(1, "bob", 1, 10000);
@@ -2688,7 +2688,7 @@ BOOST_AUTO_TEST_CASE(research_update_apply)
             proposal_quorums.insert(std::make_pair(i, 100));
 
         auto& research = research_create(0, "title", "abstract", "permlink", 31, 10, 10);
-        research_group_create(31, "name", "permlink", "description", 100, proposal_quorums, false);
+        research_group_create(31, "name", "permlink", "description", 100, proposal_quorums, true);
         research_group_token_create(31, "alice", DEIP_100_PERCENT);
 
         research_update_operation op;
@@ -3668,7 +3668,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
             proposal_quorums.insert(std::make_pair(i, 7000));
 
         auto& research = research_create(1, "test_research", "test_abstract", "test_permlink", 30, 10, 1500);
-        research_group_create(30, "group3", "test3", "test3", 100, proposal_quorums, false);
+        research_group_create(30, "group3", "test3", "test3", 100, proposal_quorums, true);
         research_group_token_create(30, "john", DEIP_1_PERCENT * 60);
         research_group_token_create(30, "alice", DEIP_1_PERCENT * 40);
 
@@ -4800,6 +4800,58 @@ BOOST_AUTO_TEST_CASE(exclude_member_from_research_test)
     }
     FC_LOG_AND_RETHROW()
 }
+
+BOOST_AUTO_TEST_CASE(start_research_not_dao_group_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: start_research_not_dao_group");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(jack)(mike));
+        generate_block();
+
+        std::set<account_name_type> members;
+
+        members.insert("alice");
+        members.insert("bob");
+
+        auto& research_group_service = db.obtain_service<dbs_research_group>();
+        auto& research_service = db.obtain_service<dbs_research>();
+        auto& alice_rg = research_group_service.get_research_group_by_permlink("alice");
+
+        const std::string json_str = "{\"title\":\"test\","
+                "\"research_group_id\":" + std::to_string(alice_rg.id._id) + ","
+                "\"abstract\":\"abstract\","
+                "\"permlink\":\"permlink\","
+                "\"review_share_in_percent\": 10,"
+                "\"dropout_compensation_in_percent\": 1500,"
+                "\"disciplines\": [1, 2, 3],"
+                "\"members\": [\"alice\", \"mike\"]}";
+
+        create_proposal_operation op;
+        op.creator = "alice";
+        op.research_group_id = alice_rg.id._id;
+        op.data = json_str;
+        op.action = dbs_proposal::action_t::start_research;
+        op.expiration_time = db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION;
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& research = research_service.get_research_by_permlink(alice_rg.id, "permlink");
+
+        BOOST_CHECK(research.research_group_id == alice_rg.id);
+        BOOST_CHECK(research.members.size() == 2);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -11,7 +11,7 @@ endif()
 
 # I don't know why deip_app is required twice in the following line, I just know the linker breaks if it isn't.
 target_link_libraries( cli_wallet
-                       PRIVATE deip_app graphene_net deip_chain deip_egenesis_brief deip_protocol graphene_utilities deip_wallet deip_app deip_blockchain_history fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} )
+                       PRIVATE deip_app graphene_net deip_chain deip_egenesis_brief deip_protocol graphene_utilities deip_wallet deip_app deip_blockchain_history deip_ip_protection_history fc ${CMAKE_DL_LIBS} ${PLATFORM_SPECIFIC_LIBS} )
 
 if(MSVC)
   set_source_files_properties( main.cpp PROPERTIES COMPILE_FLAGS "/bigobj" )

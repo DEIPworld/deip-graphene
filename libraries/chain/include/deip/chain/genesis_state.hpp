@@ -56,7 +56,7 @@ struct genesis_state_type
         uint32_t quorum_percent;
         std::map<uint16_t, uint32_t> proposal_quorums;
         std::vector<std::string> members;
-        bool is_personal;
+        bool is_dao;
     };
 
     struct research_type
@@ -158,7 +158,7 @@ FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
            (quorum_percent)
            (proposal_quorums)
            (members)
-           (is_personal))
+           (is_dao))
 
 
 FC_REFLECT(deip::chain::genesis_state_type::research_type,

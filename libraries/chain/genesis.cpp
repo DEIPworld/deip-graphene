@@ -354,7 +354,7 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
                 proposal_quorums.insert(std::make_pair(i, research_group.quorum_percent));
 
             rg.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
-            rg.is_dao = research_group.is_personal;
+            rg.is_dao = research_group.is_dao;
         });
 
         // TODO: Check that total amount of research group tokens is 10000
