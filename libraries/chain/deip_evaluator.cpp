@@ -625,7 +625,7 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
     dbs_research_group_invite& research_group_invite_service = _db.obtain_service<dbs_research_group_invite>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
-    bool is_dao = true;
+    bool is_dao = false;
 
     std::map<uint16_t, share_type> proposal_quorums;
 
