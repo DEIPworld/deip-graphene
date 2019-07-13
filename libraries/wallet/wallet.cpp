@@ -2444,6 +2444,7 @@ annotated_signed_transaction wallet_api::propose_create_research(const std::stri
                                                          const uint16_t review_share_in_percent,
                                                          const uint16_t dropout_compensation_in_percent,
                                                          const std::vector<int64_t> disciplines,
+                                                         const std::set<account_name_type> members,
                                                          const bool broadcast)
 {    
     start_research_proposal_data_type data;
@@ -2455,6 +2456,7 @@ annotated_signed_transaction wallet_api::propose_create_research(const std::stri
     data.review_share_in_percent = review_share_in_percent;
     data.dropout_compensation_in_percent = dropout_compensation_in_percent;
     data.disciplines = disciplines;
+    data.members = members;
 
     return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::start_research, PROPOSAL_EXPIRATION_TIME, broadcast);
 }

@@ -1050,6 +1050,7 @@ public:
                                                          const uint16_t review_share_in_percent,
                                                          const uint16_t dropout_compensation_in_percent,
                                                          const std::vector<int64_t> disciplines,
+                                                         const std::set<account_name_type> members,
                                                          const bool broadcast);
 
     /**
