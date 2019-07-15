@@ -133,10 +133,6 @@ EXPOSE 8090
 # p2p service:
 EXPOSE 2001
 
-# add seednodes from documentation to image
-COPY doc/seednodes.txt /etc/deipd/seednodes.txt
-
-# the following adds lots of logging info to stdout
 COPY contrib/fullnode.config.ini /etc/deipd/config.ini
 
 # add normal startup script that starts via sv
