@@ -1213,7 +1213,7 @@ void add_member_to_research_evaluator::do_apply(const add_member_to_research_ope
     FC_ASSERT(fc::to_string(research_group.name) == op.owner, "You cannot invite member");
 
     auto amount = research_group_service.decrease_research_group_tokens_amount(research_group.id,
-                                                                               1,
+                                                                               100,
                                                                                op.owner);
     
     research_group_service.create_research_group_token(research_group.id,
