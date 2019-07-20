@@ -138,7 +138,7 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
     account_service.create_account_by_faucets(o.new_account_name, o.creator, o.memo_key, o.json_metadata, o.owner,
                                               o.active, o.posting, o.fee);
 
-    bool is_dao = true;
+    bool is_dao = false;
     bool is_personal = true;
 
     std::map<uint16_t , share_type> personal_research_group_proposal_quorums;
@@ -590,7 +590,7 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
         action == deip::protocol::proposal_action_type::change_quorum ||
         action == deip::protocol::proposal_action_type::rebalance_research_group_tokens)
         FC_ASSERT(!research_group.is_personal,
-                  "You cannot invite or dropout member, change quorum and rebalance tokens in personal research group");
+                  "You cannot invite and dropout members in personal groups");
 
 
     if (action == deip::protocol::proposal_action_type::change_quorum ||

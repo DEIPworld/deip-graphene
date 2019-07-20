@@ -389,7 +389,7 @@ void database::init_personal_research_groups(const genesis_state_type& genesis_s
             fc::from_string(research_group.permlink, account.name);
             fc::from_string(research_group.description, account.name);
             research_group.proposal_quorums.insert(personal_research_group_proposal_quorums.begin(), personal_research_group_proposal_quorums.end());
-            research_group.is_dao = true;
+            research_group.is_dao = false;
             research_group.is_personal = true;
         });
 
