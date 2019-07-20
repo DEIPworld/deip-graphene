@@ -447,7 +447,6 @@ const research_group_object& database_fixture::research_group_create_by_operatio
         op.quorum_percent = quorum_percent;
         op.proposal_quorums = proposal_quorums;
         op.is_dao = is_dao;
-        op.is_personal = is_personal;
 
         trx.operations.push_back(op);
 
