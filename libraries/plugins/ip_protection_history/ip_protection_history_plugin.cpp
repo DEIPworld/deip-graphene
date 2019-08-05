@@ -59,13 +59,15 @@ class ip_protection_operation_visitor
     database& _db;
     const ip_protection_operation_object& _obj;
     const std::string& _content_hash;
+    const research_id_type& _research_id;
 
 public:
     using result_type = void;
-    ip_protection_operation_visitor(database& db, const ip_protection_operation_object& obj, const std::string& _content_hash)
+    ip_protection_operation_visitor(database& db, const ip_protection_operation_object& obj, const std::string& _content_hash, const research_id_type& _research_id)
         : _db(db)
         , _obj(obj)
         , _content_hash(_content_hash)
+        , _research_id(_research_id)
     {
     }
 
@@ -85,6 +87,7 @@ private:
     {
         _db.create<ip_protection_history_object_type>([&](ip_protection_history_object_type& ip_protection_hist) {
             fc::from_string(ip_protection_hist.content_hash, _content_hash);
+            ip_protection_hist.research_id = _research_id;
             ip_protection_hist.op = op.id;
         });
     }
@@ -112,6 +115,7 @@ void ip_protection_history_plugin_impl::on_operation(const operation_notificatio
 
     if (is_ip_protection_operation(note.op)){
         std::string content_hash;
+        research_id_type research_id;
         switch (note.op.which())
         {
             case operation::tag<create_proposal_operation>::value :
@@ -119,11 +123,12 @@ void ip_protection_history_plugin_impl::on_operation(const operation_notificatio
                 create_proposal_operation op = note.op.get<create_proposal_operation>();
                 create_research_content_data_type data = fc::json::from_string(op.data).as<create_research_content_data_type>();
                 content_hash = data.content;
+                research_id = data.research_id;
             }
                 break;
 
         }
-        note.op.visit(ip_protection_operation_visitor(db, new_obj, content_hash));
+        note.op.visit(ip_protection_operation_visitor(db, new_obj, content_hash, research_id));
     }
 }
 
