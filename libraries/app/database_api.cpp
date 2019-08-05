@@ -1148,6 +1148,14 @@ vector<research_content_api_obj> database_api::get_all_milestones_by_research_id
     });
 }
 
+research_content_api_obj database_api::get_research_content_by_research_id_and_hash(const research_id_type& research_id, const string& content_hash) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+        return research_content_service.get_by_content(research_id, content_hash);
+    });
+}
+
 expert_token_api_obj database_api::get_expert_token(const expert_token_id_type id) const
 {
     return my->_db.with_read_lock([&]() {
