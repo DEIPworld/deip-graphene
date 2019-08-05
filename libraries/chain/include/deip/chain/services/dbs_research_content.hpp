@@ -35,6 +35,8 @@ public:
 
     const research_content_object& get(const research_content_id_type& id) const;
 
+    const research_content_object& get_by_content(const research_id_type &research_id, const string &content) const;
+    
     const research_content_object& get_by_permlink(const research_id_type &research_id, const string &permlink) const;
 
     research_content_refs_type get_by_research_id(const research_id_type &research_id) const;
@@ -45,7 +47,7 @@ public:
     void check_research_content_existence(const research_content_id_type& research_content_id);
 
     research_content_refs_type get_all_milestones_by_research_id(const research_id_type& research_id) const;
-
+    
     // Grant applications
 
     using grant_applications_refs_type = std::vector<std::reference_wrapper<const grant_application_object>>;

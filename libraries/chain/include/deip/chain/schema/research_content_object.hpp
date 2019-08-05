@@ -98,6 +98,7 @@ public:
 
 struct by_research_id;
 struct by_research_id_and_content_type;
+struct by_content;
 struct by_activity_state;
 struct by_activity_window_start;
 struct by_activity_window_end;
@@ -122,6 +123,17 @@ typedef multi_index_container<research_content_object,
                                 member<research_content_object,
                                         research_content_type,
                                         &research_content_object::type>>>,
+
+                ordered_unique<tag<by_content>,
+                        composite_key<research_content_object,
+                                member<research_content_object,
+                                        research_id_type,
+                                        &research_content_object::research_id>,
+                                member<research_content_object,
+                                        shared_string,
+                                        &research_content_object::content>>,
+                        composite_key_compare<std::less<research_id_type>,
+                                              fc::strcmp_less>>,
 
                 ordered_unique<tag<by_permlink>,
                         composite_key<research_content_object,

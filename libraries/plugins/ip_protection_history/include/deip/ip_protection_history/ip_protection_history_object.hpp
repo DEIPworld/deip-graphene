@@ -18,6 +18,7 @@ public:
 
     id_type id;
 
+    research_id_type research_id;
     fc::shared_string content_hash;
     ip_protection_operation_object::id_type op;
 };
@@ -32,9 +33,15 @@ using ip_protection_history_index
                                                                     typename ip_protection_history_object_t::id_type,
                                                                     &ip_protection_history_object_t::id>>,
                                               ordered_unique<tag<by_content_hash>,
-                                                             member<ip_protection_history_object_t,
-                                                                    fc::shared_string,
-                                                                    &ip_protection_history_object_t::content_hash>>>>;
+                                              composite_key<ip_protection_history_object_t,
+                                                            member<ip_protection_history_object_t,
+                                                                   research_id_type,
+                                                                   &ip_protection_history_object_t::research_id>,
+                                                            member<ip_protection_history_object_t,
+                                                                   fc::shared_string,
+                                                                   &ip_protection_history_object_t::content_hash>>,
+                                              composite_key_compare<std::less<research_id_type>,
+                                                                              fc::strcmp_less>>>>;
 
 using all_ip_protection_operations_history_object = ip_protection_history_object<all_ip_protection_operations_history>;
 using create_research_material_history_object = ip_protection_history_object<create_research_materials_history>;
@@ -45,8 +52,8 @@ using create_research_material_history_index = ip_protection_history_index<creat
 } // namespace ip_protection_history
 } // namespace deip
 
-FC_REFLECT(deip::ip_protection_history::all_ip_protection_operations_history_object, (id)(content_hash)(op))
-FC_REFLECT(deip::ip_protection_history::create_research_material_history_object, (id)(content_hash)(op))
+FC_REFLECT(deip::ip_protection_history::all_ip_protection_operations_history_object, (id)(research_id)(content_hash)(op))
+FC_REFLECT(deip::ip_protection_history::create_research_material_history_object, (id)(research_id)(content_hash)(op))
 
 CHAINBASE_SET_INDEX_TYPE(deip::ip_protection_history::all_ip_protection_operations_history_object,
                          deip::ip_protection_history::ip_protection_operations_full_history_index)

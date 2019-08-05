@@ -58,7 +58,7 @@ public:
             rc.research_id = 1;
             rc.type = research_content_type::milestone_data;
             rc.title = "title for milestone for Research #1";
-            rc.content = "milestone for Research #1";
+            rc.content = "milestone2 for Research #1";
             rc.permlink = "another-milestone-research-one";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
@@ -131,7 +131,7 @@ public:
             rc.research_id = 1;
             rc.type = research_content_type::milestone_book;
             rc.title = "title for milestone for Research #1";
-            rc.content = "milestone for Research #1";
+            rc.content = "milestone2 for Research #1";
             rc.permlink = "another-milestone-research-one";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
             return content.id == 1 && content.research_id == 1 && 
                     content.type == research_content_type::milestone_data &&
                     content.title == "title for milestone for Research #1" &&
-                    content.content == "milestone for Research #1" &&
+                    content.content == "milestone2 for Research #1" &&
                     content.authors.size() == 1 && 
                     authors[0] == "alice" &&
                     content.references.size() == 1 &&
@@ -385,6 +385,23 @@ BOOST_AUTO_TEST_CASE(check_research_content_existence)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(get_by_content)
+{
+    try
+    {
+        create_contents();
+
+        auto& content = data_service.get_by_content(2, "announcement for Research #2");
+
+        BOOST_CHECK(content.id == 3);
+        BOOST_CHECK(content.type == research_content_type::announcement);
+        BOOST_CHECK(content.title == "title for announcement for Research #2");
+        BOOST_CHECK(content.content == "announcement for Research #2");
+        BOOST_CHECK(content.permlink == "announcement-research-two");
+
+    }
+    FC_LOG_AND_RETHROW()
+}
 
 BOOST_AUTO_TEST_CASE(get_all_milestones_by_research_id)
 {
@@ -420,7 +437,7 @@ BOOST_AUTO_TEST_CASE(get_all_milestones_by_research_id)
             return content.id == 1 && content.research_id == 1 &&
                    content.type == research_content_type::milestone_book &&
                    content.title =="title for milestone for Research #1" &&
-                   content.content == "milestone for Research #1" &&
+                   content.content == "milestone2 for Research #1" &&
                    content.authors.size() == 1 &&
                    authors[0] == "alice" &&
                    content.references.size() == 1 &&

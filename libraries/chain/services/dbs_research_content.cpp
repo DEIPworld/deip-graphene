@@ -67,6 +67,15 @@ const research_content_object& dbs_research_content::get(const research_content_
     FC_CAPTURE_AND_RETHROW((id))
 }
 
+const research_content_object& dbs_research_content::get_by_content(const research_id_type &research_id, 
+                                                                    const string &content) const
+{
+    const auto& idx = db_impl().get_index<research_content_index>().indices().get<by_content>();
+    auto itr = idx.find(std::make_tuple(research_id, content));
+    FC_ASSERT(itr != idx.end(), "Research content by content ${c} is not found", ("c", content));
+    return *itr;
+}
+
 const research_content_object& dbs_research_content:: get_by_permlink(const research_id_type &research_id,
                                                                       const string &permlink) const
 {

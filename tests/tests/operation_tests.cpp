@@ -2798,59 +2798,6 @@ BOOST_AUTO_TEST_CASE(withdraw_from_vesting_balance_apply)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(create_proposal_in_not_dao)
-{
-    try {
-        ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
-        auto &research_group_service = db.obtain_service<dbs_research_group>();
-        auto& rg = research_group_service.get_research_group_by_permlink("alice");
-
-        const std::string json_str = "{\"name\":\"bob\",\"research_group_id\":" + std::to_string(rg.id._id) + ","
-                                     "\"research_group_token_amount_in_percent\":5000}";
-
-        auto &research_group_invite_service = db.obtain_service<dbs_research_group_invite>();
-
-        create_proposal_operation op;
-        op.creator = "alice";
-        op.research_group_id = rg.id._id;
-        op.data = json_str;
-        op.action = dbs_proposal::action_t::invite_member;
-        op.expiration_time = db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION;
-
-        private_key_type priv_key = generate_private_key("alice");
-
-        signed_transaction tx;
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.operations.push_back(op);
-        tx.sign(priv_key, db.get_chain_id());
-        tx.validate();
-        db.push_transaction(tx, 0);
-
-        auto &research_group_invite = research_group_invite_service.get_research_group_invite_by_account_name_and_research_group_id("bob", rg.id._id);
-
-        BOOST_CHECK(research_group_invite.account_name == "bob");
-        BOOST_CHECK(research_group_invite.research_group_id == rg.id._id);
-        BOOST_CHECK(research_group_invite.research_group_token_amount == 1);
-
-        create_proposal_operation op2;
-        op2.creator = "alice";
-        op2.research_group_id = rg.id._id;
-        op2.data = "{\"research_group_id\":" + std::to_string(rg.id._id) + ","
-                  "\"recipient\":\"bob\","
-                  "\"funds\": \"0.250 TESTS\"}";
-        op2.action = dbs_proposal::action_t::send_funds;
-        op2.expiration_time = db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION;
-
-        signed_transaction tx2;
-        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx2.operations.push_back(op2);
-        tx2.sign(priv_key, db.get_chain_id());
-        tx2.validate();
-        BOOST_CHECK_THROW(db.push_transaction(tx2, 0), fc::assert_exception);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_CASE(invite_member_execute_test)
 {
     try {
