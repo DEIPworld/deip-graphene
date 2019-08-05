@@ -25,8 +25,12 @@ public:
     void on_api_startup();
 
     std::vector<applied_ip_protection_operation>
-    get_content_history(const research_id_type& research_id, 
-                        const std::string& content_hash) const;
+    get_content_history_by_hash(const std::string& content_hash) const;
+
+    applied_ip_protection_operation
+    get_content_history_by_research_and_hash(const research_id_type& research_id,
+                                             const std::string& content_hash) const;
+
 
 
 private:
@@ -36,4 +40,4 @@ private:
 } // namespace deip
 
 FC_API(deip::ip_protection_history::ip_protection_history_api,
-       (get_content_history))
+       (get_content_history_by_hash)(get_content_history_by_research_and_hash))

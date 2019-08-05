@@ -24,6 +24,7 @@ public:
 };
 
 struct by_content_hash;
+struct by_research_and_hash;
 
 template <typename ip_protection_history_object_t>
 using ip_protection_history_index
@@ -32,7 +33,13 @@ using ip_protection_history_index
                                                              member<ip_protection_history_object_t,
                                                                     typename ip_protection_history_object_t::id_type,
                                                                     &ip_protection_history_object_t::id>>,
-                                              ordered_unique<tag<by_content_hash>,
+
+                                              ordered_non_unique<tag<by_content_hash>,
+                                                             member<ip_protection_history_object_t,
+                                                                    fc::shared_string,
+                                                                    &ip_protection_history_object_t::content_hash>>,
+
+                                              ordered_unique<tag<by_research_and_hash>,
                                               composite_key<ip_protection_history_object_t,
                                                             member<ip_protection_history_object_t,
                                                                    research_id_type,
