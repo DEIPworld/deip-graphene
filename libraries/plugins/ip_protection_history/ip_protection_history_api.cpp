@@ -28,11 +28,18 @@ public:
 
         const auto db = _app.chain_database();
 
-        const auto& idx = db->get_index<ip_protection_operations_full_history_index>().indices().get<by_content_hash>();
-        auto itr = idx.find(content_hash, fc::strcmp_less());
-        FC_ASSERT(itr != idx.end(), "Content with hash ${n} is not found", ("n", content_hash));
+        auto it_pair = db->get_index<ip_protection_operations_full_history_index>()
+                           .indicies()
+                           .get<by_content_hash>()
+                           .equal_range(content_hash, fc::strcmp_less());
 
-        result.push_back(db->get(itr->op));
+        auto it = it_pair.first;
+        const auto it_end = it_pair.second;
+        while (it != it_end)
+        {
+            result.push_back(db->get(it->op));
+            ++it;
+        }
 
         return result;
     }
