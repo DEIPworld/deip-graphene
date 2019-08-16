@@ -56,6 +56,22 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_creator(const account_nam
     return ret;
 }
 
+dbs_contract::contracts_refs_type dbs_contract::get_by_receiver(const account_name_type& receiver)
+{
+    contracts_refs_type ret;
+
+    auto it_pair = db_impl().get_index<contract_index>().indicies().get<by_receiver>().equal_range(receiver);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
 void dbs_contract::sign_by_receiver(const contract_object& contract,
                                     const public_key_type& receiver_key)
 {

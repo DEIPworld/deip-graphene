@@ -25,6 +25,7 @@
 #include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/grant_application_object.hpp>
+#include <deip/chain/schema/contract_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -1065,6 +1066,38 @@ struct grant_application_api_obj
     fc::time_point_sec created_at;
 };
 
+struct contract_api_obj
+{
+    contract_api_obj(const chain::contract_object& c_o)
+        :  id(c_o.id._id)
+        ,  creator(c_o.creator)
+        ,  receiver(c_o.receiver)
+        ,  creator_key(c_o.creator_key)
+        ,  receiver_key(c_o.receiver_key)
+        ,  contract_hash(fc::to_string(c_o.contract_hash))
+        ,  status(c_o.status)
+        ,  created_at(c_o.created_at)
+
+    {}
+
+    // because fc::variant require for temporary object
+    contract_api_obj()
+    {
+    }
+
+    int64_t id;
+    account_name_type creator;
+    account_name_type receiver;
+
+    public_key_type creator_key;
+    public_key_type receiver_key;
+
+    std::string contract_hash;
+    uint16_t status;
+
+    fc::time_point_sec created_at;
+};
+
 }; // namespace app
 } // namespace deip
 
@@ -1400,6 +1433,18 @@ FC_REFLECT( deip::app::grant_application_api_obj,
             (research_id)
             (application_hash)
             (creator)
+            (created_at)
+
+)
+
+FC_REFLECT( deip::app::contract_api_obj,
+            (id)
+            (creator)
+            (receiver)
+            (creator_key)
+            (receiver_key)
+            (contract_hash)
+            (status)
             (created_at)
 
 )

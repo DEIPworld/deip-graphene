@@ -29,6 +29,8 @@ public:
 
     contracts_refs_type get_by_creator(const account_name_type& creator);
 
+    contracts_refs_type get_by_receiver(const account_name_type& receiver);
+
     void sign_by_receiver(const contract_object& contract,
                           const public_key_type& receiver_key);
 

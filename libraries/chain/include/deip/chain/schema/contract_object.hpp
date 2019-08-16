@@ -39,6 +39,7 @@ public:
 };
 
 struct by_creator;
+struct by_receiver;
 struct by_contract_hash;
 
 typedef multi_index_container<contract_object,
@@ -50,6 +51,10 @@ typedef multi_index_container<contract_object,
                                                         member<contract_object,
                                                                 account_name_type,
                                                                &contract_object::creator>>,
+                                         ordered_non_unique<tag<by_receiver>,
+                                                        member<contract_object,
+                                                                account_name_type,
+                                                               &contract_object::receiver>>,
                                          ordered_unique<tag<by_contract_hash>,
                                                         member<contract_object,
                                                                 fc::shared_string,
