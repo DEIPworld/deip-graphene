@@ -711,7 +711,6 @@ FC_API(deip::app::database_api,
    (get_contracts_by_creator)
    (get_contracts_by_receiver)
 
-
 )
 
 // clang-format on

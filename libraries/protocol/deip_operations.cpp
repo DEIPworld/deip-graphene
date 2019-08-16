@@ -313,19 +313,25 @@ void create_grant_application_operation::validate() const
 void create_contract_operation::validate() const
 {
     validate_account_name(creator);
-    validate_account_name(receiver);
     FC_ASSERT(contract_hash.size() > 0, "Contract hash must be specified");
     FC_ASSERT(fc::is_utf8(contract_hash), "Contract hash is not valid UTF8 string");
+    FC_ASSERT(receiver_email_hash.size() > 0, "Receiver email hash must be specified");
+    FC_ASSERT(fc::is_utf8(receiver_email_hash), "Receiver email hash is not valid UTF8 string");
+    FC_ASSERT(end_date > start_date, "End time must be greater than a start time");
 }
 
-void approve_contract_operation::validate() const
+void sign_contract_operation::validate() const
 {
     validate_account_name(receiver);
+    FC_ASSERT(receiver_email_hash.size() > 0, "Receiver email hash must be specified");
+    FC_ASSERT(fc::is_utf8(receiver_email_hash), "Receiver email hash is not valid UTF8 string");
 }
 
-void reject_contract_operation::validate() const
+void decline_contract_operation::validate() const
 {
     validate_account_name(receiver);
+    FC_ASSERT(receiver_email_hash.size() > 0, "Receiver email hash must be specified");
+    FC_ASSERT(fc::is_utf8(receiver_email_hash), "Receiver email hash is not valid UTF8 string");
 }
 
 }

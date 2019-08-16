@@ -1075,8 +1075,11 @@ struct contract_api_obj
         ,  creator_key(c_o.creator_key)
         ,  receiver_key(c_o.receiver_key)
         ,  contract_hash(fc::to_string(c_o.contract_hash))
+        ,  receiver_email_hash(fc::to_string(c_o.receiver_email_hash))
         ,  status(c_o.status)
         ,  created_at(c_o.created_at)
+        ,  start_date(c_o.start_date)
+        ,  end_date(c_o.end_date)
 
     {}
 
@@ -1093,9 +1096,12 @@ struct contract_api_obj
     public_key_type receiver_key;
 
     std::string contract_hash;
+    std::string receiver_email_hash;
     uint16_t status;
 
     fc::time_point_sec created_at;
+    fc::time_point_sec start_date;
+    fc::time_point_sec end_date;
 };
 
 }; // namespace app
@@ -1444,8 +1450,11 @@ FC_REFLECT( deip::app::contract_api_obj,
             (creator_key)
             (receiver_key)
             (contract_hash)
+            (receiver_email_hash)
             (status)
             (created_at)
+            (start_date)
+            (end_date)
 
 )
 

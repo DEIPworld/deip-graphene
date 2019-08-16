@@ -4631,6 +4631,9 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         op.creator = "alice";
         op.receiver = "bob";
         op.contract_hash = "test contract";
+        op.receiver_email_hash = "email";
+        op.start_date = fc::time_point_sec(12312313);
+        op.end_date = fc::time_point_sec(12312314);
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -4649,8 +4652,12 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         BOOST_CHECK(contract.receiver == "bob");
         BOOST_CHECK(contract.creator_key == alice_acc.memo_key);
         BOOST_CHECK(contract.receiver_key == public_key_type());
-        BOOST_CHECK(contract.status == contract_status::contract_pending);
+        BOOST_CHECK(contract.contract_hash == "test contract");
+        BOOST_CHECK(contract.receiver_email_hash == "email");
+        BOOST_CHECK(contract.status == contract_status::contract_sent);
         BOOST_CHECK(contract.created_at == db.head_block_time());
+        BOOST_CHECK(contract.start_date == fc::time_point_sec(12312313));
+        BOOST_CHECK(contract.end_date == fc::time_point_sec(12312314));
     }
     FC_LOG_AND_RETHROW()
 }
@@ -4673,12 +4680,14 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
             c_o.receiver = "bob";
             c_o.creator_key = alice_acc.memo_key;
             c_o.contract_hash = "test contract";
-            c_o.status = contract_status::contract_pending;
+            c_o.receiver_email_hash = "email";
+            c_o.status = contract_status::contract_sent;
             c_o.created_at = db.head_block_time();
         });
 
-        approve_contract_operation op;
+        sign_contract_operation op;
         op.contract_id = 0;
+        op.receiver_email_hash = "email";
         op.receiver = "bob";
 
         private_key_type priv_key = generate_private_key("bob");
@@ -4695,17 +4704,17 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         BOOST_CHECK(contract.receiver == "bob");
         BOOST_CHECK(contract.creator_key == alice_acc.memo_key);
         BOOST_CHECK(contract.receiver_key == bob_acc.memo_key);
-        BOOST_CHECK(contract.status == contract_status::contract_approved);
+        BOOST_CHECK(contract.status == contract_status::contract_signed);
         BOOST_CHECK(contract.created_at == db.head_block_time());
     }
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(reject_contract_test)
+BOOST_AUTO_TEST_CASE(decline_contract_test)
 {
     try
     {
-        BOOST_TEST_MESSAGE("Testing: reject_contract");
+        BOOST_TEST_MESSAGE("Testing: decline_contract");
 
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
         generate_block();
@@ -4716,12 +4725,14 @@ BOOST_AUTO_TEST_CASE(reject_contract_test)
             c_o.receiver = "bob";
             c_o.creator_key = alice.memo_key;
             c_o.contract_hash = "test contract";
-            c_o.status = contract_status::contract_pending;
+            c_o.receiver_email_hash = "email";
+            c_o.status = contract_status::contract_sent;
             c_o.created_at = db.head_block_time();
         });
 
-        reject_contract_operation op;
+        decline_contract_operation op;
         op.contract_id = 0;
+        op.receiver_email_hash = "email";
         op.receiver = "bob";
 
         private_key_type priv_key = generate_private_key("bob");
@@ -4738,7 +4749,7 @@ BOOST_AUTO_TEST_CASE(reject_contract_test)
         BOOST_CHECK(contract.receiver == "bob");
         BOOST_CHECK(contract.creator_key == alice.memo_key);
         BOOST_CHECK(contract.receiver_key == public_key_type());
-        BOOST_CHECK(contract.status == contract_status::contract_rejected);
+        BOOST_CHECK(contract.status == contract_status::contract_declined);
         BOOST_CHECK(contract.created_at == db.head_block_time());
     }
     FC_LOG_AND_RETHROW()

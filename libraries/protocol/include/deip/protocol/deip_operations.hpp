@@ -783,6 +783,10 @@ struct create_contract_operation : public base_operation
     account_name_type receiver;
 
     string contract_hash;
+    string receiver_email_hash;
+
+    fc::time_point_sec start_date;
+    fc::time_point_sec end_date;
 
     void validate() const;
 
@@ -792,10 +796,11 @@ struct create_contract_operation : public base_operation
     }
 };
 
-struct approve_contract_operation : public base_operation
+struct sign_contract_operation : public base_operation
 {
     int64_t contract_id;
     account_name_type receiver;
+    string receiver_email_hash;
 
     void validate() const;
 
@@ -805,10 +810,11 @@ struct approve_contract_operation : public base_operation
     }
 };
 
-struct reject_contract_operation : public base_operation
+struct decline_contract_operation : public base_operation
 {
     int64_t contract_id;
     account_name_type receiver;
+    string receiver_email_hash;
 
     void validate() const;
 
@@ -885,9 +891,9 @@ FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (offer_resear
 FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 FC_REFLECT( deip::protocol::create_grant_operation, (target_discipline)(amount)(min_number_of_positive_reviews)(min_number_of_applications)(researches_to_grant)(start_time)(end_time)(owner))
 FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
-FC_REFLECT( deip::protocol::create_contract_operation, (creator)(receiver)(contract_hash))
-FC_REFLECT( deip::protocol::approve_contract_operation, (contract_id)(receiver))
-FC_REFLECT( deip::protocol::reject_contract_operation, (contract_id)(receiver))
+FC_REFLECT( deip::protocol::create_contract_operation, (creator)(receiver)(contract_hash)(receiver_email_hash)(start_date)(end_date))
+FC_REFLECT( deip::protocol::sign_contract_operation, (contract_id)(receiver)(receiver_email_hash))
+FC_REFLECT( deip::protocol::decline_contract_operation, (contract_id)(receiver)(receiver_email_hash))
 
 
 // clang-format on

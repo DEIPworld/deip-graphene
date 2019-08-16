@@ -1189,15 +1189,16 @@ void create_contract_evaluator::do_apply(const create_contract_operation& op)
     dbs_contract& contract_service = _db.obtain_service<dbs_contract>();
 
     account_service.check_account_existence(op.creator);
-    account_service.check_account_existence(op.receiver);
+    if (op.receiver.size() != 0)
+        account_service.check_account_existence(op.receiver);
 
     auto& creator = account_service.get_account(op.creator);
     auto now = _db.head_block_time();
 
-    contract_service.create(op.creator, op.receiver, creator.memo_key, op.contract_hash, now);
+    contract_service.create(op.creator, op.receiver, creator.memo_key, op.contract_hash, op.receiver_email_hash, now, op.start_date, op.end_date);
 }
 
-void approve_contract_evaluator::do_apply(const approve_contract_operation& op)
+void sign_contract_evaluator::do_apply(const sign_contract_operation& op)
 {
     dbs_account &account_service = _db.obtain_service<dbs_account>();
     dbs_contract &contract_service = _db.obtain_service<dbs_contract>();
@@ -1208,12 +1209,18 @@ void approve_contract_evaluator::do_apply(const approve_contract_operation& op)
     auto& receiver = account_service.get_account(op.receiver);
     auto& contract = contract_service.get(op.contract_id);
 
-    FC_ASSERT(contract.status == contract_status::contract_pending, "You can approve only pending contract.");
+    FC_ASSERT(fc::to_string(contract.receiver_email_hash) == op.receiver_email_hash, "You cannot sign this contract.");
+    FC_ASSERT(contract.status == contract_status::contract_sent, "You can approve only sent contract.");
 
-    contract_service.sign_by_receiver(contract, receiver.memo_key);
+    if (contract.receiver.size() == 0)
+        _db._temporary_public_impl().modify(contract, [&](contract_object& c_o) {
+            c_o.receiver = op.receiver;
+        });
+
+    contract_service.sign_by_receiver(contract, op.receiver_email_hash, receiver.memo_key);
 }
 
-void reject_contract_evaluator::do_apply(const reject_contract_operation& op)
+void decline_contract_evaluator::do_apply(const decline_contract_operation& op)
 {
     dbs_account &account_service = _db.obtain_service<dbs_account>();
     dbs_contract &contract_service = _db.obtain_service<dbs_contract>();
@@ -1221,12 +1228,12 @@ void reject_contract_evaluator::do_apply(const reject_contract_operation& op)
     account_service.check_account_existence(op.receiver);
     contract_service.check_contract_existence(op.contract_id);
 
-    auto &receiver = account_service.get_account(op.receiver);
     auto& contract = contract_service.get(op.contract_id);
 
-    FC_ASSERT(contract.status == contract_status::contract_pending, "You can reject only pending contract.");
+    FC_ASSERT(fc::to_string(contract.receiver_email_hash) == op.receiver_email_hash, "You cannot decline this contract.");
+    FC_ASSERT(contract.status == contract_status::contract_sent, "You can reject only sent contract.");
 
-    contract_service.set_new_contract_status(contract, contract_status::contract_rejected);
+    contract_service.set_new_contract_status(contract, contract_status::contract_declined);
 }
 
 } // namespace chain

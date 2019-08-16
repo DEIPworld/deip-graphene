@@ -1892,8 +1892,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_application_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_contract_evaluator>();
-    _my->_evaluator_registry.register_evaluator<approve_contract_evaluator>();
-    _my->_evaluator_registry.register_evaluator<reject_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<sign_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<decline_contract_evaluator>();
 
 }
 

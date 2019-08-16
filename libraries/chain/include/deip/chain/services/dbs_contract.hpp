@@ -21,7 +21,10 @@ public:
                                   const account_name_type& receiver,
                                   const public_key_type& creator_key,
                                   const std::string& contract_hash,
-                                  const fc::time_point_sec& created_at);
+                                  const std::string& receiver_email_hash,
+                                  const fc::time_point_sec& created_at,
+                                  const fc::time_point_sec& start_date,
+                                  const fc::time_point_sec& end_date);
 
     const contract_object& get(const contract_id_type& id) const;
 
@@ -32,6 +35,7 @@ public:
     contracts_refs_type get_by_receiver(const account_name_type& receiver);
 
     void sign_by_receiver(const contract_object& contract,
+                          const std::string& receiver_email_hash,
                           const public_key_type& receiver_key);
 
     void set_new_contract_status(const contract_object& contract,
