@@ -23,6 +23,7 @@
 #include <deip/chain/schema/transaction_object.hpp>
 
 #include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_contract.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
@@ -1890,6 +1891,10 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<reject_research_token_offer_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_application_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<approve_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<reject_contract_evaluator>();
+
 }
 
 void database::initialize_indexes()
@@ -1934,6 +1939,7 @@ void database::initialize_indexes()
     add_index<offer_research_tokens_index>();
     add_index<grant_index>();
     add_index<grant_application_index>();
+    add_index<contract_index>();
 
     _plugin_index_signal();
 }

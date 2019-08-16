@@ -44,6 +44,9 @@ DEFINE_EVALUATOR(accept_research_token_offer)
 DEFINE_EVALUATOR(reject_research_token_offer)
 DEFINE_EVALUATOR(create_grant)
 DEFINE_EVALUATOR(create_grant_application)
+DEFINE_EVALUATOR(create_contract)
+DEFINE_EVALUATOR(approve_contract)
+DEFINE_EVALUATOR(reject_contract)
 
 }
 } // deip::chain

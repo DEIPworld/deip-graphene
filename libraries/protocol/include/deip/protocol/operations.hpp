@@ -53,6 +53,9 @@ namespace deip {
                 reject_research_token_offer_operation,
                 create_grant_operation,
                 create_grant_application_operation,
+                create_contract_operation,
+                approve_contract_operation,
+                reject_contract_operation,
 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,

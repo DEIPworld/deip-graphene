@@ -310,5 +310,23 @@ void create_grant_application_operation::validate() const
     FC_ASSERT(fc::is_utf8(application_hash), "Application hash is not valid UTF8 string");
 }
 
+void create_contract_operation::validate() const
+{
+    validate_account_name(creator);
+    validate_account_name(receiver);
+    FC_ASSERT(contract_hash.size() > 0, "Contract hash must be specified");
+    FC_ASSERT(fc::is_utf8(contract_hash), "Contract hash is not valid UTF8 string");
+}
+
+void approve_contract_operation::validate() const
+{
+    validate_account_name(receiver);
+}
+
+void reject_contract_operation::validate() const
+{
+    validate_account_name(receiver);
+}
+
 }
 } // deip::protocol

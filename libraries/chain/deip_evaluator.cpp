@@ -7,6 +7,7 @@
 
 #include <deip/chain/database/database.hpp> //replace to dbservice after _temporary_public_impl remove
 #include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_contract.hpp>
 #include <deip/chain/services/dbs_witness.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
@@ -1180,6 +1181,49 @@ void create_grant_application_evaluator::do_apply(const create_grant_application
     FC_ASSERT((now >= grant.start_time) && (now <= grant.end_time), "Grant is inactive now");
 
     research_content_service.create_grant_application(op.grant_id, op.research_id, op.application_hash, op.creator);
+}
+
+void create_contract_evaluator::do_apply(const create_contract_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_contract& contract_service = _db.obtain_service<dbs_contract>();
+
+    account_service.check_account_existence(op.creator);
+    account_service.check_account_existence(op.receiver);
+
+    auto& creator = account_service.get_account(op.creator);
+    auto now = _db.head_block_time();
+
+    contract_service.create(op.creator, op.receiver, creator.memo_key, op.contract_hash, now);
+}
+
+void approve_contract_evaluator::do_apply(const approve_contract_operation& op)
+{
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_contract &contract_service = _db.obtain_service<dbs_contract>();
+
+    account_service.check_account_existence(op.receiver);
+    contract_service.check_contract_existence(op.contract_id);
+
+    auto& receiver = account_service.get_account(op.receiver);
+    auto& contract = contract_service.get(op.contract_id);
+
+    contract_service.sign_by_receiver(contract, receiver.memo_key);
+    contract_service.set_new_contract_status(contract, contract_status::contract_approved);
+}
+
+void reject_contract_evaluator::do_apply(const reject_contract_operation& op)
+{
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_contract &contract_service = _db.obtain_service<dbs_contract>();
+
+    account_service.check_account_existence(op.receiver);
+    contract_service.check_contract_existence(op.contract_id);
+
+    auto &receiver = account_service.get_account(op.receiver);
+    auto& contract = contract_service.get(op.contract_id);
+
+    contract_service.set_new_contract_status(contract, contract_status::contract_rejected);
 }
 
 } // namespace chain
