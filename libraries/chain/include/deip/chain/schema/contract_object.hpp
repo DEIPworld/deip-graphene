@@ -60,7 +60,7 @@ typedef multi_index_container<contract_object,
 }
 }
 
-FC_REFLECT_ENUM(deip::chain::contract_status, (contract_pending)(contract_approved)(contract_rejected) )
+FC_REFLECT_ENUM(deip::chain::contract_status, (contract_pending)(contract_approved)(contract_rejected))
 
 FC_REFLECT( deip::chain::contract_object,
              (id)(creator)(receiver)(creator_key)(receiver_key)(contract_hash)(status)(created_at)

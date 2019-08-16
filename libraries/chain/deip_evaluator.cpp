@@ -1208,8 +1208,9 @@ void approve_contract_evaluator::do_apply(const approve_contract_operation& op)
     auto& receiver = account_service.get_account(op.receiver);
     auto& contract = contract_service.get(op.contract_id);
 
+    FC_ASSERT(contract.status == contract_status::contract_pending, "You can approve only pending contract.");
+
     contract_service.sign_by_receiver(contract, receiver.memo_key);
-    contract_service.set_new_contract_status(contract, contract_status::contract_approved);
 }
 
 void reject_contract_evaluator::do_apply(const reject_contract_operation& op)
@@ -1222,6 +1223,8 @@ void reject_contract_evaluator::do_apply(const reject_contract_operation& op)
 
     auto &receiver = account_service.get_account(op.receiver);
     auto& contract = contract_service.get(op.contract_id);
+
+    FC_ASSERT(contract.status == contract_status::contract_pending, "You can reject only pending contract.");
 
     contract_service.set_new_contract_status(contract, contract_status::contract_rejected);
 }

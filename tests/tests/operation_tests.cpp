@@ -29,6 +29,7 @@
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
 
+#include <deip/chain/services/dbs_contract.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
@@ -4613,6 +4614,132 @@ BOOST_AUTO_TEST_CASE(create_grant_application_test)
         BOOST_CHECK(grant_application.creator == "alice");
         BOOST_CHECK(grant_application.application_hash == "test");
         BOOST_CHECK(grant_application.created_at == db.head_block_time());
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(create_contract_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: create_contract");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        generate_block();
+
+        create_contract_operation op;
+        op.creator = "alice";
+        op.receiver = "bob";
+        op.contract_hash = "test contract";
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& contract = db.get<contract_object, by_id>(0);
+        auto& alice_acc = db.get_account("alice");
+
+        BOOST_CHECK(contract.id == 0);
+        BOOST_CHECK(contract.creator == "alice");
+        BOOST_CHECK(contract.receiver == "bob");
+        BOOST_CHECK(contract.creator_key == alice_acc.memo_key);
+        BOOST_CHECK(contract.receiver_key == public_key_type());
+        BOOST_CHECK(contract.status == contract_status::contract_pending);
+        BOOST_CHECK(contract.created_at == db.head_block_time());
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(approve_contract_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: approve_contract");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        generate_block();
+
+        auto& alice_acc = db.get_account("alice");
+        auto& bob_acc = db.get_account("bob");
+
+        auto& contract = db.create<contract_object>([&](contract_object& c_o) {
+            c_o.id = 0;
+            c_o.creator = "alice";
+            c_o.receiver = "bob";
+            c_o.creator_key = alice_acc.memo_key;
+            c_o.contract_hash = "test contract";
+            c_o.status = contract_status::contract_pending;
+            c_o.created_at = db.head_block_time();
+        });
+
+        approve_contract_operation op;
+        op.contract_id = 0;
+        op.receiver = "bob";
+
+        private_key_type priv_key = generate_private_key("bob");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK(contract.id == 0);
+        BOOST_CHECK(contract.creator == "alice");
+        BOOST_CHECK(contract.receiver == "bob");
+        BOOST_CHECK(contract.creator_key == alice_acc.memo_key);
+        BOOST_CHECK(contract.receiver_key == bob_acc.memo_key);
+        BOOST_CHECK(contract.status == contract_status::contract_approved);
+        BOOST_CHECK(contract.created_at == db.head_block_time());
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(reject_contract_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: reject_contract");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        generate_block();
+
+        auto& contract = db.create<contract_object>([&](contract_object& c_o) {
+            c_o.id = 0;
+            c_o.creator = "alice";
+            c_o.receiver = "bob";
+            c_o.creator_key = alice.memo_key;
+            c_o.contract_hash = "test contract";
+            c_o.status = contract_status::contract_pending;
+            c_o.created_at = db.head_block_time();
+        });
+
+        reject_contract_operation op;
+        op.contract_id = 0;
+        op.receiver = "bob";
+
+        private_key_type priv_key = generate_private_key("bob");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK(contract.id == 0);
+        BOOST_CHECK(contract.creator == "alice");
+        BOOST_CHECK(contract.receiver == "bob");
+        BOOST_CHECK(contract.creator_key == alice.memo_key);
+        BOOST_CHECK(contract.receiver_key == public_key_type());
+        BOOST_CHECK(contract.status == contract_status::contract_rejected);
+        BOOST_CHECK(contract.created_at == db.head_block_time());
     }
     FC_LOG_AND_RETHROW()
 }

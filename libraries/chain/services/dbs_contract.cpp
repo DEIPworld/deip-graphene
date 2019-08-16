@@ -59,7 +59,11 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_creator(const account_nam
 void dbs_contract::sign_by_receiver(const contract_object& contract,
                                     const public_key_type& receiver_key)
 {
-    db_impl().modify(contract, [&](contract_object& c_o) { c_o.receiver_key = receiver_key; });
+    db_impl().modify(contract, [&](contract_object& c_o)
+    {
+        c_o.receiver_key = receiver_key;
+        c_o.status = contract_status::contract_approved;
+    });
 }
 
 void dbs_contract::set_new_contract_status(const contract_object& contract,
