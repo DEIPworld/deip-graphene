@@ -1267,6 +1267,26 @@ public:
                                                               const bool broadcast);
 
 
+    annotated_signed_transaction create_contract(const std::string& creator,
+                                                 const std::string& receiver,
+                                                 const std::string& contract_hash,
+                                                 const std::string& receiver_email_hash,
+                                                 const uint32_t start_date,
+                                                 const uint32_t end_date,
+                                                 const bool broadcast);
+
+    annotated_signed_transaction sign_contract(const int64_t contract_id,
+                                               const std::string& receiver,
+                                               const std::string& receiver_email_hash,
+                                               const bool broadcast);
+
+    annotated_signed_transaction decline_contract(const int64_t contract_id,
+                                                  const std::string& receiver,
+                                                  const std::string& receiver_email_hash,
+                                                  const bool broadcast);
+
+
+
 public:
     fc::signal<void(bool)> lock_changed;
 
@@ -1404,6 +1424,9 @@ FC_API( deip::wallet::wallet_api,
         (propose_offer_research_tokens)
         (accept_offer_research_tokens)
         (reject_offer_research_tokens)
+        (create_contract)
+        (sign_contract)
+        (decline_contract)
 
         /// helper api
         (get_prototype_operation)
