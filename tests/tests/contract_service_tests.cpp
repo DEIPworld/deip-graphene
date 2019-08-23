@@ -26,7 +26,6 @@ class contract_service_fixture : public clean_database_fixture
             c_o.creator_key = public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83");
             c_o.receiver_key = protocol::public_key_type();
             c_o.contract_hash = "contract 1";
-            c_o.receiver_email_hash = "email 1";
             c_o.status = contract_status::contract_sent;
             c_o.created_at = fc::time_point_sec(123123);
             c_o.start_date = fc::time_point_sec(123124);
@@ -40,7 +39,6 @@ class contract_service_fixture : public clean_database_fixture
             c_o.creator_key = public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83");
             c_o.receiver_key = public_key_type("DEIP8bwPxtWUEffTs7C8vRNT98Sv7XGCVDWCXVUeHvtNH5TxvrwVLj");
             c_o.contract_hash = "contract 2";
-            c_o.receiver_email_hash = "email 2";
             c_o.status = contract_status::contract_signed;
             c_o.created_at = fc::time_point_sec(1231);
             c_o.start_date = fc::time_point_sec(1232);
@@ -54,7 +52,6 @@ class contract_service_fixture : public clean_database_fixture
             c_o.creator_key = public_key_type("DEIP5mFLmqoifrz3c9iTmFVpxjU29QjyKSGiKZf7GUM2T6cJpm6Gb7");
             c_o.receiver_key = protocol::public_key_type();
             c_o.contract_hash = "contract 3";
-            c_o.receiver_email_hash = "email 3";
             c_o.status = contract_status::contract_declined;
             c_o.created_at = fc::time_point_sec(1231231);
             c_o.start_date = fc::time_point_sec(1231232);
@@ -73,14 +70,13 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
     {
         auto& contract = data_service.create("alice", "bob",
                                              public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83"),
-                                             "test", "email", fc::time_point_sec(123), fc::time_point_sec(1234), fc::time_point_sec(1235));
+                                             "test", fc::time_point_sec(123), fc::time_point_sec(1234), fc::time_point_sec(1235));
 
         BOOST_CHECK(contract.creator == "alice");
         BOOST_CHECK(contract.receiver == "bob");
         BOOST_CHECK(contract.creator_key == public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83"));
         BOOST_CHECK(contract.receiver_key == protocol::public_key_type());
         BOOST_CHECK(contract.contract_hash == "test");
-        BOOST_CHECK(contract.receiver_email_hash == "email");
         BOOST_CHECK(contract.status == contract_status::contract_sent);
         BOOST_CHECK(contract.created_at == fc::time_point_sec(123));
 
@@ -100,7 +96,6 @@ BOOST_AUTO_TEST_CASE(get_contract_test)
         BOOST_CHECK(contract.creator_key == public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83"));
         BOOST_CHECK(contract.receiver_key == public_key_type("DEIP8bwPxtWUEffTs7C8vRNT98Sv7XGCVDWCXVUeHvtNH5TxvrwVLj"));
         BOOST_CHECK(contract.contract_hash == "contract 2");
-        BOOST_CHECK(contract.receiver_email_hash == "email 2");
         BOOST_CHECK(contract.status == contract_status::contract_signed);
         BOOST_CHECK(contract.created_at == fc::time_point_sec(1231));;
 
@@ -138,7 +133,6 @@ BOOST_AUTO_TEST_CASE(get_contracts_by_creator)
                     contract.creator_key == public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83") &&
                     contract.receiver_key == protocol::public_key_type() &&
                     contract.contract_hash == "contract 1" &&
-                    contract.receiver_email_hash == "email 1" &&
                     contract.status == contract_status::contract_sent &&
                     contract.created_at == fc::time_point_sec(123123);
 
@@ -151,7 +145,6 @@ BOOST_AUTO_TEST_CASE(get_contracts_by_creator)
                    contract.creator_key == public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83") &&
                    contract.receiver_key == public_key_type("DEIP8bwPxtWUEffTs7C8vRNT98Sv7XGCVDWCXVUeHvtNH5TxvrwVLj") &&
                    contract.contract_hash == "contract 2" &&
-                    contract.receiver_email_hash == "email 2" &&
                    contract.status == contract_status::contract_signed &&
                    contract.created_at == fc::time_point_sec(1231);
 
@@ -167,14 +160,13 @@ BOOST_AUTO_TEST_CASE(sign_by_receiver_test)
         create_contracts();
 
         auto& contract = data_service.get(0);
-        data_service.sign_by_receiver(contract, "email 1", public_key_type("DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi"));
+        data_service.sign_by_receiver(contract, public_key_type("DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi"));
 
         BOOST_CHECK(contract.creator == "alice");
         BOOST_CHECK(contract.receiver == "bob");
         BOOST_CHECK(contract.creator_key == public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83"));
         BOOST_CHECK(contract.receiver_key == public_key_type("DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi"));
         BOOST_CHECK(contract.contract_hash == "contract 1");
-        BOOST_CHECK(contract.receiver_email_hash == "email 1");
         BOOST_CHECK(contract.status == contract_status::contract_signed);
         BOOST_CHECK(contract.created_at == fc::time_point_sec(123123));
 

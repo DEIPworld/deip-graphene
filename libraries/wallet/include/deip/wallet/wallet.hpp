@@ -1270,19 +1270,16 @@ public:
     annotated_signed_transaction create_contract(const std::string& creator,
                                                  const std::string& receiver,
                                                  const std::string& contract_hash,
-                                                 const std::string& receiver_email_hash,
                                                  const uint32_t start_date,
                                                  const uint32_t end_date,
                                                  const bool broadcast);
 
     annotated_signed_transaction sign_contract(const int64_t contract_id,
                                                const std::string& receiver,
-                                               const std::string& receiver_email_hash,
                                                const bool broadcast);
 
     annotated_signed_transaction decline_contract(const int64_t contract_id,
                                                   const std::string& receiver,
-                                                  const std::string& receiver_email_hash,
                                                   const bool broadcast);
 
 

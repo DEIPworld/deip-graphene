@@ -20,7 +20,7 @@ class contract_object : public object<contract_object_type, contract_object>
 public:
 
     template <typename Constructor, typename Allocator>
-    contract_object(Constructor&& c, allocator<Allocator> a) : contract_hash(a), receiver_email_hash(a)
+    contract_object(Constructor&& c, allocator<Allocator> a) : contract_hash(a)
     {
         c(*this);
     }
@@ -34,7 +34,6 @@ public:
     protocol::public_key_type receiver_key = protocol::public_key_type();
 
     fc::shared_string contract_hash;
-    fc::shared_string receiver_email_hash;
     contract_status status = contract_status::contract_sent;
 
     fc::time_point_sec created_at;
@@ -72,7 +71,7 @@ typedef multi_index_container<contract_object,
 FC_REFLECT_ENUM(deip::chain::contract_status, (contract_sent)(contract_signed)(contract_declined)(contract_expired))
 
 FC_REFLECT( deip::chain::contract_object,
-             (id)(creator)(receiver)(creator_key)(receiver_key)(contract_hash)(receiver_email_hash)(status)(created_at)(start_date)(end_date)
+             (id)(creator)(receiver)(creator_key)(receiver_key)(contract_hash)(status)(created_at)(start_date)(end_date)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::contract_object, deip::chain::contract_index )

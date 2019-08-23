@@ -2828,7 +2828,6 @@ annotated_signed_transaction wallet_api::reject_offer_research_tokens(const int6
 annotated_signed_transaction wallet_api::create_contract(const std::string& creator,
                                                          const std::string& receiver,
                                                          const std::string& contract_hash,
-                                                         const std::string& receiver_email_hash,
                                                          const uint32_t start_date,
                                                          const uint32_t end_date,
                                                          const bool broadcast)
@@ -2840,7 +2839,6 @@ annotated_signed_transaction wallet_api::create_contract(const std::string& crea
     op.creator = creator;
     op.receiver = receiver;
     op.contract_hash = contract_hash;
-    op.receiver_email_hash = receiver_email_hash;
     op.start_date = fc::time_point_sec(start_date);
     op.end_date = fc::time_point_sec(end_date);
 
@@ -2853,7 +2851,6 @@ annotated_signed_transaction wallet_api::create_contract(const std::string& crea
 
 annotated_signed_transaction wallet_api::sign_contract(const int64_t contract_id,
                                                        const std::string& receiver,
-                                                       const std::string& receiver_email_hash,
                                                        const bool broadcast)
 {
     FC_ASSERT(!is_locked());
@@ -2862,8 +2859,6 @@ annotated_signed_transaction wallet_api::sign_contract(const int64_t contract_id
 
     op.contract_id = contract_id;
     op.receiver = receiver;
-    op.receiver_email_hash = receiver_email_hash;
-
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2874,7 +2869,6 @@ annotated_signed_transaction wallet_api::sign_contract(const int64_t contract_id
 
 annotated_signed_transaction wallet_api::decline_contract(const int64_t contract_id,
                                                           const std::string& receiver,
-                                                          const std::string& receiver_email_hash,
                                                           const bool broadcast)
 {
     FC_ASSERT(!is_locked());
@@ -2883,8 +2877,6 @@ annotated_signed_transaction wallet_api::decline_contract(const int64_t contract
 
     op.contract_id = contract_id;
     op.receiver = receiver;
-    op.receiver_email_hash = receiver_email_hash;
-
 
     signed_transaction tx;
     tx.operations.push_back(op);

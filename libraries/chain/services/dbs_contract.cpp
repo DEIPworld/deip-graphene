@@ -13,7 +13,6 @@ const contract_object& dbs_contract::create(const account_name_type& creator,
                                             const account_name_type& receiver,
                                             const public_key_type& creator_key,
                                             const std::string& contract_hash,
-                                            const std::string& receiver_email_hash,
                                             const fc::time_point_sec& created_at,
                                             const fc::time_point_sec& start_date,
                                             const fc::time_point_sec& end_date)
@@ -23,7 +22,6 @@ const contract_object& dbs_contract::create(const account_name_type& creator,
         c_o.receiver = receiver;
         c_o.creator_key = creator_key;
         fc::from_string(c_o.contract_hash, contract_hash);
-        fc::from_string(c_o.receiver_email_hash, receiver_email_hash);
         c_o.created_at = created_at;
         c_o.start_date = start_date;
         c_o.end_date = end_date;
@@ -79,7 +77,6 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_receiver(const account_na
 }
 
 void dbs_contract::sign_by_receiver(const contract_object& contract,
-                                    const std::string& receiver_email_hash,
                                     const public_key_type& receiver_key)
 {
     db_impl().modify(contract, [&](contract_object& c_o)
