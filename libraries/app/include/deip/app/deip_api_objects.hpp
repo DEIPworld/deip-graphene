@@ -1071,9 +1071,9 @@ struct contract_api_obj
     contract_api_obj(const chain::contract_object& c_o)
         :  id(c_o.id._id)
         ,  creator(c_o.creator)
-        ,  receiver(c_o.receiver)
+        ,  signee(c_o.signee)
         ,  creator_key(c_o.creator_key)
-        ,  receiver_key(c_o.receiver_key)
+        ,  signee_key(c_o.signee_key)
         ,  contract_hash(fc::to_string(c_o.contract_hash))
         ,  status(c_o.status)
         ,  created_at(c_o.created_at)
@@ -1089,10 +1089,10 @@ struct contract_api_obj
 
     int64_t id;
     account_name_type creator;
-    account_name_type receiver;
+    account_name_type signee;
 
     public_key_type creator_key;
-    public_key_type receiver_key;
+    public_key_type signee_key;
 
     std::string contract_hash;
     uint16_t status;
@@ -1444,9 +1444,9 @@ FC_REFLECT( deip::app::grant_application_api_obj,
 FC_REFLECT( deip::app::contract_api_obj,
             (id)
             (creator)
-            (receiver)
+            (signee)
             (creator_key)
-            (receiver_key)
+            (signee_key)
             (contract_hash)
             (status)
             (created_at)

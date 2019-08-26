@@ -4648,9 +4648,9 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
 
         BOOST_CHECK(contract.id == 0);
         BOOST_CHECK(contract.creator == "alice");
-        BOOST_CHECK(contract.receiver == "bob");
+        BOOST_CHECK(contract.signee == "bob");
         BOOST_CHECK(contract.creator_key == alice_acc.memo_key);
-        BOOST_CHECK(contract.receiver_key == public_key_type());
+        BOOST_CHECK(contract.signee_key == public_key_type());
         BOOST_CHECK(contract.contract_hash == "test contract");
         BOOST_CHECK(contract.status == contract_status::contract_sent);
         BOOST_CHECK(contract.created_at == db.head_block_time());
@@ -4676,7 +4676,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         auto& contract = db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 0;
             c_o.creator = "alice";
-            c_o.receiver = "bob";
+            c_o.signee = "bob";
             c_o.creator_key = alice_acc.memo_key;
             c_o.contract_hash = "test contract";
             c_o.status = contract_status::contract_sent;
@@ -4698,16 +4698,16 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
 
         BOOST_CHECK(contract.id == 0);
         BOOST_CHECK(contract.creator == "alice");
-        BOOST_CHECK(contract.receiver == "bob");
+        BOOST_CHECK(contract.signee == "bob");
         BOOST_CHECK(contract.creator_key == alice_acc.memo_key);
-        BOOST_CHECK(contract.receiver_key == bob_acc.memo_key);
+        BOOST_CHECK(contract.signee_key == bob_acc.memo_key);
         BOOST_CHECK(contract.status == contract_status::contract_signed);
         BOOST_CHECK(contract.created_at == db.head_block_time());
 
         auto& contract2 = db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 1;
             c_o.creator = "alice";
-            c_o.receiver = "bob";
+            c_o.signee = "bob";
             c_o.creator_key = alice_acc.memo_key;
             c_o.contract_hash = "test contract 2";
             c_o.status = contract_status::contract_declined;
@@ -4728,7 +4728,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         auto& contract3 = db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 2;
             c_o.creator = "alice";
-            c_o.receiver = "bob";
+            c_o.signee = "bob";
             c_o.creator_key = alice_acc.memo_key;
             c_o.contract_hash = "test contract 3";
             c_o.status = contract_status::contract_expired;
@@ -4749,7 +4749,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         auto& contract4 = db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 3;
             c_o.creator = "alice";
-            c_o.receiver = "bob";
+            c_o.signee = "bob";
             c_o.creator_key = alice_acc.memo_key;
             c_o.contract_hash = "test contract 4";
             c_o.status = contract_status::contract_signed;
@@ -4770,7 +4770,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         auto& contract5 = db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 4;
             c_o.creator = "alice";
-            c_o.receiver = "bob";
+            c_o.signee = "bob";
             c_o.creator_key = alice_acc.memo_key;
             c_o.contract_hash = "test contract 5";
             c_o.status = contract_status::contract_sent;
@@ -4804,7 +4804,7 @@ BOOST_AUTO_TEST_CASE(decline_contract_test)
         auto& contract = db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 0;
             c_o.creator = "alice";
-            c_o.receiver = "bob";
+            c_o.signee = "bob";
             c_o.creator_key = alice.memo_key;
             c_o.contract_hash = "test contract";
             c_o.status = contract_status::contract_sent;
@@ -4826,9 +4826,9 @@ BOOST_AUTO_TEST_CASE(decline_contract_test)
 
         BOOST_CHECK(contract.id == 0);
         BOOST_CHECK(contract.creator == "alice");
-        BOOST_CHECK(contract.receiver == "bob");
+        BOOST_CHECK(contract.signee == "bob");
         BOOST_CHECK(contract.creator_key == alice.memo_key);
-        BOOST_CHECK(contract.receiver_key == public_key_type());
+        BOOST_CHECK(contract.signee_key == public_key_type());
         BOOST_CHECK(contract.status == contract_status::contract_declined);
         BOOST_CHECK(contract.created_at == db.head_block_time());
     }

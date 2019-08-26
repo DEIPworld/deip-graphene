@@ -31,10 +31,10 @@ public:
 
     contracts_refs_type get_by_creator(const account_name_type& creator);
 
-    contracts_refs_type get_by_receiver(const account_name_type& receiver);
+    contracts_refs_type get_by_signee(const account_name_type &signee);
 
-    void sign_by_receiver(const contract_object& contract,
-                          const public_key_type& receiver_key);
+    void sign(const contract_object &contract,
+              const public_key_type &signee_key);
 
     void set_new_contract_status(const contract_object& contract,
                                  const contract_status& status);

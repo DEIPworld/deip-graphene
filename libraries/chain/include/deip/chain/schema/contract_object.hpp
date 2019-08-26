@@ -28,10 +28,10 @@ public:
     contract_id_type id;
 
     account_name_type creator;
-    account_name_type receiver = account_name_type();
+    account_name_type signee = account_name_type();
 
     protocol::public_key_type creator_key;
-    protocol::public_key_type receiver_key = protocol::public_key_type();
+    protocol::public_key_type signee_key = protocol::public_key_type();
 
     fc::shared_string contract_hash;
     contract_status status = contract_status::contract_sent;
@@ -42,7 +42,7 @@ public:
 };
 
 struct by_creator;
-struct by_receiver;
+struct by_signee;
 struct by_contract_hash;
 struct by_end_date;
 
@@ -55,10 +55,10 @@ typedef multi_index_container<contract_object,
                                                         member<contract_object,
                                                                 account_name_type,
                                                                &contract_object::creator>>,
-                                         ordered_non_unique<tag<by_receiver>,
+                                         ordered_non_unique<tag<by_signee>,
                                                         member<contract_object,
                                                                 account_name_type,
-                                                               &contract_object::receiver>>,
+                                                               &contract_object::signee>>,
                                          ordered_non_unique<tag<by_contract_hash>,
                                                         member<contract_object,
                                                                 fc::shared_string,
@@ -76,7 +76,7 @@ typedef multi_index_container<contract_object,
 FC_REFLECT_ENUM(deip::chain::contract_status, (contract_sent)(contract_signed)(contract_declined)(contract_expired))
 
 FC_REFLECT( deip::chain::contract_object,
-             (id)(creator)(receiver)(creator_key)(receiver_key)(contract_hash)(status)(created_at)(start_date)(end_date)
+             (id)(creator)(signee)(creator_key)(signee_key)(contract_hash)(status)(created_at)(start_date)(end_date)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::contract_object, deip::chain::contract_index )

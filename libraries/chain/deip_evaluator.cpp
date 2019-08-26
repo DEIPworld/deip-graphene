@@ -1208,15 +1208,15 @@ void sign_contract_evaluator::do_apply(const sign_contract_operation& op)
     auto& receiver = account_service.get_account(op.receiver);
     auto& contract = contract_service.get(op.contract_id);
 
-    FC_ASSERT(contract.receiver == op.receiver, "You cannot sign this contract.");
+    FC_ASSERT(contract.signee == op.receiver, "You cannot sign this contract.");
     FC_ASSERT(contract.status == contract_status::contract_sent, "You can approve only sent contract.");
 
-    if (contract.receiver.size() == 0)
+    if (contract.signee.size() == 0)
         _db._temporary_public_impl().modify(contract, [&](contract_object& c_o) {
-            c_o.receiver = op.receiver;
+            c_o.signee = op.receiver;
         });
 
-    contract_service.sign_by_receiver(contract, receiver.memo_key);
+    contract_service.sign(contract, receiver.memo_key);
 }
 
 void decline_contract_evaluator::do_apply(const decline_contract_operation& op)
@@ -1229,7 +1229,7 @@ void decline_contract_evaluator::do_apply(const decline_contract_operation& op)
 
     auto& contract = contract_service.get(op.contract_id);
 
-    FC_ASSERT(contract.receiver == op.receiver, "You cannot decline this contract.");
+    FC_ASSERT(contract.signee == op.receiver, "You cannot decline this contract.");
     FC_ASSERT(contract.status == contract_status::contract_sent, "You can reject only sent contract.");
 
     contract_service.set_new_contract_status(contract, contract_status::contract_declined);

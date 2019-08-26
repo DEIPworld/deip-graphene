@@ -2288,14 +2288,14 @@ database_api::get_contracts_by_creator(const account_name_type& creator) const
 }
 
 vector<contract_api_obj>
-database_api::get_contracts_by_receiver(const account_name_type& receiver) const
+database_api::get_contracts_by_signee(const account_name_type &signee) const
 {
     return my->_db.with_read_lock([&]() {
         vector<contract_api_obj> results;
         chain::dbs_contract& contract_service
             = my->_db.obtain_service<chain::dbs_contract>();
 
-        auto contracts = contract_service.get_by_receiver(receiver);
+        auto contracts = contract_service.get_by_signee(signee);
 
         for (const chain::contract_object& contract : contracts)
             results.push_back(contract);

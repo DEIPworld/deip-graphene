@@ -19,7 +19,7 @@ const contract_object& dbs_contract::create(const account_name_type& creator,
 {
     auto& contract = db_impl().create<contract_object>([&](contract_object& c_o) {
         c_o.creator = creator;
-        c_o.receiver = receiver;
+        c_o.signee = receiver;
         c_o.creator_key = creator_key;
         fc::from_string(c_o.contract_hash, contract_hash);
         c_o.created_at = created_at;
@@ -60,11 +60,11 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_creator(const account_nam
     return ret;
 }
 
-dbs_contract::contracts_refs_type dbs_contract::get_by_receiver(const account_name_type& receiver)
+dbs_contract::contracts_refs_type dbs_contract::get_by_signee(const account_name_type &signee)
 {
     contracts_refs_type ret;
 
-    auto it_pair = db_impl().get_index<contract_index>().indicies().get<by_receiver>().equal_range(receiver);
+    auto it_pair = db_impl().get_index<contract_index>().indicies().get<by_signee>().equal_range(signee);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
@@ -76,12 +76,12 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_receiver(const account_na
     return ret;
 }
 
-void dbs_contract::sign_by_receiver(const contract_object& contract,
-                                    const public_key_type& receiver_key)
+void dbs_contract::sign(const contract_object &contract,
+                        const public_key_type &signee_key)
 {
     db_impl().modify(contract, [&](contract_object& c_o)
     {
-        c_o.receiver_key = receiver_key;
+        c_o.signee_key = signee_key;
         c_o.status = contract_status::contract_signed;
     });
 }

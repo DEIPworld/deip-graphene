@@ -501,7 +501,7 @@ public:
 
     contract_api_obj get_contract(const contract_id_type& id) const;
     vector<contract_api_obj> get_contracts_by_creator(const account_name_type& creator) const;
-    vector<contract_api_obj> get_contracts_by_receiver(const account_name_type& receiver) const;
+    vector<contract_api_obj> get_contracts_by_signee(const account_name_type &signee) const;
 
 
     ////////////////////////////
@@ -709,7 +709,7 @@ FC_API(deip::app::database_api,
    // Contracts
    (get_contract)
    (get_contracts_by_creator)
-   (get_contracts_by_receiver)
+   (get_contracts_by_signee)
 
 )
 
