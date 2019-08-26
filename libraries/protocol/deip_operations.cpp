@@ -321,13 +321,13 @@ void create_contract_operation::validate() const
 
 void sign_contract_operation::validate() const
 {
-    validate_account_name(receiver);
+    validate_account_name(signee);
 
 }
 
 void decline_contract_operation::validate() const
 {
-    validate_account_name(receiver);
+    validate_account_name(signee);
 }
 
 }

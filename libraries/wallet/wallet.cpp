@@ -2858,7 +2858,7 @@ annotated_signed_transaction wallet_api::sign_contract(const int64_t contract_id
     sign_contract_operation op;
 
     op.contract_id = contract_id;
-    op.receiver = receiver;
+    op.signee = receiver;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2876,7 +2876,7 @@ annotated_signed_transaction wallet_api::decline_contract(const int64_t contract
     decline_contract_operation op;
 
     op.contract_id = contract_id;
-    op.receiver = receiver;
+    op.signee = receiver;
 
     signed_transaction tx;
     tx.operations.push_back(op);

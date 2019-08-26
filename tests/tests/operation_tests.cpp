@@ -4200,7 +4200,7 @@ BOOST_AUTO_TEST_CASE(offer_research_tokens_proposal)
             proposal_quorums.insert(std::make_pair(i, 0));
 
         setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
-        const std::string json_str = "{\"sender\":\"alice\",\"receiver\":\"mike\",\"research_id\": 100,\"amount\":1000,\"price\":\"1.000 TESTS\"}";
+        const std::string json_str = "{\"sender\":\"alice\",\"signee\":\"mike\",\"research_id\": 100,\"amount\":1000,\"price\":\"1.000 TESTS\"}";
 
         create_proposal(1, dbs_proposal::action_t::offer_research_tokens, json_str, "alice", 31, fc::time_point_sec(0xffffffff),
                         1);
@@ -4685,7 +4685,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
 
         sign_contract_operation op;
         op.contract_id = 0;
-        op.receiver = "bob";
+        op.signee = "bob";
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -4716,7 +4716,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
 
         sign_contract_operation op2;
         op2.contract_id = 1;
-        op2.receiver = "bob";
+        op2.signee = "bob";
 
         signed_transaction tx2;
         tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -4737,7 +4737,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
 
         sign_contract_operation op3;
         op3.contract_id = 2;
-        op3.receiver = "bob";
+        op3.signee = "bob";
 
         signed_transaction tx3;
         tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -4758,7 +4758,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
 
         sign_contract_operation op4;
         op4.contract_id = 3;
-        op4.receiver = "bob";
+        op4.signee = "bob";
 
         signed_transaction tx4;
         tx4.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -4779,7 +4779,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
 
         sign_contract_operation op5;
         op5.contract_id = 3;
-        op5.receiver = "bob";
+        op5.signee = "bob";
 
         signed_transaction tx5;
         tx5.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -4813,7 +4813,7 @@ BOOST_AUTO_TEST_CASE(decline_contract_test)
 
         decline_contract_operation op;
         op.contract_id = 0;
-        op.receiver = "bob";
+        op.signee = "bob";
 
         private_key_type priv_key = generate_private_key("bob");
 
