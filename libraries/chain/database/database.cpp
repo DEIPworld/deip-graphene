@@ -1829,6 +1829,23 @@ void database::process_research_token_sales()
     }
 }
 
+void database::process_contracts()
+{
+    dbs_contract& contract_service = obtain_service<dbs_contract>();
+    const auto& idx = get_index<contract_index>().indices().get<by_end_date>();
+    auto itr = idx.begin();
+    auto _head_block_time = head_block_time();
+
+    while (itr != idx.end())
+    {
+        if (itr->end_date <= _head_block_time) {
+            auto& contract = *itr;
+            contract_service.set_new_contract_status(contract, contract_status::contract_expired);
+        }
+        itr++;
+    }
+}
+
 time_point_sec database::head_block_time() const
 {
     return get_dynamic_global_properties().time;
@@ -2163,6 +2180,7 @@ void database::_apply_block(const signed_block& next_block)
         process_content_activity_windows();
         process_hardforks();
         process_discipline_supplies();
+        process_contracts();
 
         /// modify expertise stats to correctly calculate emission
         expertise_stats_service.calculate_used_expertise_for_week();

@@ -44,6 +44,7 @@ public:
 struct by_creator;
 struct by_receiver;
 struct by_contract_hash;
+struct by_end_date;
 
 typedef multi_index_container<contract_object,
                               indexed_by<ordered_unique<tag<by_id>,
@@ -61,7 +62,11 @@ typedef multi_index_container<contract_object,
                                          ordered_non_unique<tag<by_contract_hash>,
                                                         member<contract_object,
                                                                 fc::shared_string,
-                                                               &contract_object::contract_hash>>>,
+                                                               &contract_object::contract_hash>>,
+                                         ordered_non_unique<tag<by_end_date>,
+                                                        member<contract_object,
+                                                                fc::time_point_sec,
+                                                                &contract_object::end_date>>>,
                               allocator<contract_object>>
     contract_index;
 
