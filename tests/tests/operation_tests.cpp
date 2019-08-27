@@ -4200,7 +4200,7 @@ BOOST_AUTO_TEST_CASE(offer_research_tokens_proposal)
             proposal_quorums.insert(std::make_pair(i, 0));
 
         setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
-        const std::string json_str = "{\"sender\":\"alice\",\"signee\":\"mike\",\"research_id\": 100,\"amount\":1000,\"price\":\"1.000 TESTS\"}";
+        const std::string json_str = "{\"sender\":\"alice\",\"receiver\":\"mike\",\"research_id\": 100,\"amount\":1000,\"price\":\"1.000 TESTS\"}";
 
         create_proposal(1, dbs_proposal::action_t::offer_research_tokens, json_str, "alice", 31, fc::time_point_sec(0xffffffff),
                         1);
