@@ -805,6 +805,50 @@ struct exclude_member_from_research_operation : public base_operation
     }
 };
 
+struct create_contract_operation : public base_operation
+{
+    account_name_type creator;
+    account_name_type receiver;
+
+    string contract_hash;
+
+    fc::time_point_sec start_date;
+    fc::time_point_sec end_date;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(creator);
+    }
+};
+
+struct sign_contract_operation : public base_operation
+{
+    int64_t contract_id;
+    account_name_type signee;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(signee);
+    }
+};
+
+struct decline_contract_operation : public base_operation
+{
+    int64_t contract_id;
+    account_name_type signee;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(signee);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -874,5 +918,9 @@ FC_REFLECT( deip::protocol::create_grant_operation, (target_discipline)(amount)(
 FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
 FC_REFLECT( deip::protocol::add_member_to_research_operation, (research_id)(owner)(invitee))
 FC_REFLECT( deip::protocol::exclude_member_from_research_operation, (research_id)(owner)(account_to_exclude))
+FC_REFLECT( deip::protocol::create_contract_operation, (creator)(receiver)(contract_hash)(start_date)(end_date))
+FC_REFLECT( deip::protocol::sign_contract_operation, (contract_id)(signee))
+FC_REFLECT( deip::protocol::decline_contract_operation, (contract_id)(signee))
+
 
 // clang-format on

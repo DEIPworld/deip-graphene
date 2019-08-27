@@ -7,6 +7,7 @@
 
 #include <deip/chain/database/database.hpp> //replace to dbservice after _temporary_public_impl remove
 #include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_contract.hpp>
 #include <deip/chain/services/dbs_witness.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
@@ -1243,6 +1244,58 @@ void exclude_member_from_research_evaluator::do_apply(const exclude_member_from_
     FC_ASSERT(research.members.find(op.account_to_exclude) != research.members.end(), "Account is not related to this research");
     
     research_service.exclude_member(op.research_id, op.account_to_exclude);
+}
+
+void create_contract_evaluator::do_apply(const create_contract_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_contract& contract_service = _db.obtain_service<dbs_contract>();
+
+    account_service.check_account_existence(op.creator);
+    account_service.check_account_existence(op.receiver);
+
+    auto& creator = account_service.get_account(op.creator);
+    auto now = _db.head_block_time();
+
+    contract_service.create(op.creator, op.receiver, creator.memo_key, op.contract_hash, now, op.start_date, op.end_date);
+}
+
+void sign_contract_evaluator::do_apply(const sign_contract_operation& op)
+{
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_contract &contract_service = _db.obtain_service<dbs_contract>();
+
+    account_service.check_account_existence(op.signee);
+    contract_service.check_contract_existence(op.contract_id);
+
+    auto& receiver = account_service.get_account(op.signee);
+    auto& contract = contract_service.get(op.contract_id);
+
+    FC_ASSERT(contract.signee == op.signee, "You cannot sign this contract.");
+    FC_ASSERT(contract.status == contract_status::contract_sent, "You can approve only sent contract.");
+
+    if (contract.signee.size() == 0)
+        _db._temporary_public_impl().modify(contract, [&](contract_object& c_o) {
+            c_o.signee = op.signee;
+        });
+
+    contract_service.sign(contract, receiver.memo_key);
+}
+
+void decline_contract_evaluator::do_apply(const decline_contract_operation& op)
+{
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_contract &contract_service = _db.obtain_service<dbs_contract>();
+
+    account_service.check_account_existence(op.signee);
+    contract_service.check_contract_existence(op.contract_id);
+
+    auto& contract = contract_service.get(op.contract_id);
+
+    FC_ASSERT(contract.signee == op.signee, "You cannot decline this contract.");
+    FC_ASSERT(contract.status == contract_status::contract_sent, "You can reject only sent contract.");
+
+    contract_service.set_new_contract_status(contract, contract_status::contract_declined);
 }
 
 } // namespace chain

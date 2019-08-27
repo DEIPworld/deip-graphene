@@ -46,6 +46,9 @@ DEFINE_EVALUATOR(create_grant)
 DEFINE_EVALUATOR(create_grant_application)
 DEFINE_EVALUATOR(add_member_to_research)
 DEFINE_EVALUATOR(exclude_member_from_research)
+DEFINE_EVALUATOR(create_contract)
+DEFINE_EVALUATOR(sign_contract)
+DEFINE_EVALUATOR(decline_contract)
 
 }
 } // deip::chain

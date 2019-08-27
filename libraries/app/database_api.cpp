@@ -18,6 +18,7 @@
 #include <cfenv>
 #include <iostream>
 
+#include <deip/chain/services/dbs_contract.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_research.hpp>
@@ -2264,6 +2265,48 @@ database_api::get_applications_by_research_id(const research_id_type& research_i
 
         for (const chain::grant_application_object& grant_application : grant_applications)
             results.push_back(grant_application);
+
+        return results;
+    });
+}
+
+contract_api_obj database_api::get_contract(const contract_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_contract& contract_service = my->_db.obtain_service<chain::dbs_contract>();
+        return contract_service.get(id);
+    });
+}
+
+vector<contract_api_obj>
+database_api::get_contracts_by_creator(const account_name_type& creator) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<contract_api_obj> results;
+        chain::dbs_contract& contract_service
+            = my->_db.obtain_service<chain::dbs_contract>();
+
+        auto contracts = contract_service.get_by_creator(creator);
+
+        for (const chain::contract_object& contract : contracts)
+            results.push_back(contract);
+
+        return results;
+    });
+}
+
+vector<contract_api_obj>
+database_api::get_contracts_by_signee(const account_name_type &signee) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<contract_api_obj> results;
+        chain::dbs_contract& contract_service
+            = my->_db.obtain_service<chain::dbs_contract>();
+
+        auto contracts = contract_service.get_by_signee(signee);
+
+        for (const chain::contract_object& contract : contracts)
+            results.push_back(contract);
 
         return results;
     });

@@ -496,6 +496,15 @@ public:
     vector<grant_application_api_obj> get_applications_by_grant(const grant_id_type& grant_id) const;
     vector<grant_application_api_obj> get_applications_by_research_id(const research_id_type& research_id) const;
 
+    ////////////////
+    // Contracts///
+    ///////////////
+
+    contract_api_obj get_contract(const contract_id_type& id) const;
+    vector<contract_api_obj> get_contracts_by_creator(const account_name_type& creator) const;
+    vector<contract_api_obj> get_contracts_by_signee(const account_name_type &signee) const;
+
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -698,6 +707,10 @@ FC_API(deip::app::database_api,
    (get_applications_by_grant)
    (get_applications_by_research_id)
 
+   // Contracts
+   (get_contract)
+   (get_contracts_by_creator)
+   (get_contracts_by_signee)
 
 )
 

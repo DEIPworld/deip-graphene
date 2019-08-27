@@ -2827,6 +2827,66 @@ annotated_signed_transaction wallet_api::reject_offer_research_tokens(const int6
     return my->sign_transaction(tx, broadcast);
 }
 
+annotated_signed_transaction wallet_api::create_contract(const std::string& creator,
+                                                         const std::string& receiver,
+                                                         const std::string& contract_hash,
+                                                         const uint32_t start_date,
+                                                         const uint32_t end_date,
+                                                         const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    create_contract_operation op;
+
+    op.creator = creator;
+    op.receiver = receiver;
+    op.contract_hash = contract_hash;
+    op.start_date = fc::time_point_sec(start_date);
+    op.end_date = fc::time_point_sec(end_date);
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::sign_contract(const int64_t contract_id,
+                                                       const std::string& receiver,
+                                                       const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    sign_contract_operation op;
+
+    op.contract_id = contract_id;
+    op.signee = receiver;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::decline_contract(const int64_t contract_id,
+                                                          const std::string& receiver,
+                                                          const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    decline_contract_operation op;
+
+    op.contract_id = contract_id;
+    op.signee = receiver;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
 namespace utils {
 
 

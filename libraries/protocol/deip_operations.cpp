@@ -322,5 +322,25 @@ void exclude_member_from_research_operation::validate() const
     validate_account_name(account_to_exclude);
 }
 
+void create_contract_operation::validate() const
+{
+    validate_account_name(creator);
+    validate_account_name(receiver);
+    FC_ASSERT(contract_hash.size() > 0, "Contract hash must be specified");
+    FC_ASSERT(fc::is_utf8(contract_hash), "Contract hash is not valid UTF8 string");
+    FC_ASSERT(end_date > start_date, "End time must be greater than a start time");
+}
+
+void sign_contract_operation::validate() const
+{
+    validate_account_name(signee);
+
+}
+
+void decline_contract_operation::validate() const
+{
+    validate_account_name(signee);
+}
+
 }
 } // deip::protocol

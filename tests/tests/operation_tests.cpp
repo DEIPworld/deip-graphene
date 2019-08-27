@@ -29,6 +29,7 @@
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
 
+#include <deip/chain/services/dbs_contract.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
@@ -4799,6 +4800,223 @@ BOOST_AUTO_TEST_CASE(start_research_not_dao_group_test)
     FC_LOG_AND_RETHROW()
 }
 
+
+BOOST_AUTO_TEST_CASE(create_contract_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: create_contract");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        generate_block();
+
+        create_contract_operation op;
+        op.creator = "alice";
+        op.receiver = "bob";
+        op.contract_hash = "test contract";
+        op.start_date = fc::time_point_sec(12312313);
+        op.end_date = fc::time_point_sec(12312314);
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& contract = db.get<contract_object, by_id>(0);
+        auto& alice_acc = db.get_account("alice");
+
+        BOOST_CHECK(contract.id == 0);
+        BOOST_CHECK(contract.creator == "alice");
+        BOOST_CHECK(contract.signee == "bob");
+        BOOST_CHECK(contract.creator_key == alice_acc.memo_key);
+        BOOST_CHECK(contract.signee_key == public_key_type());
+        BOOST_CHECK(contract.contract_hash == "test contract");
+        BOOST_CHECK(contract.status == contract_status::contract_sent);
+        BOOST_CHECK(contract.created_at == db.head_block_time());
+        BOOST_CHECK(contract.start_date == fc::time_point_sec(12312313));
+        BOOST_CHECK(contract.end_date == fc::time_point_sec(12312314));
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(approve_contract_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: approve_contract");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        generate_block();
+
+        auto& alice_acc = db.get_account("alice");
+        auto& bob_acc = db.get_account("bob");
+
+        auto& contract = db.create<contract_object>([&](contract_object& c_o) {
+            c_o.id = 0;
+            c_o.creator = "alice";
+            c_o.signee = "bob";
+            c_o.creator_key = alice_acc.memo_key;
+            c_o.contract_hash = "test contract";
+            c_o.status = contract_status::contract_sent;
+            c_o.created_at = db.head_block_time();
+        });
+
+        sign_contract_operation op;
+        op.contract_id = 0;
+        op.signee = "bob";
+
+        private_key_type priv_key = generate_private_key("bob");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK(contract.id == 0);
+        BOOST_CHECK(contract.creator == "alice");
+        BOOST_CHECK(contract.signee == "bob");
+        BOOST_CHECK(contract.creator_key == alice_acc.memo_key);
+        BOOST_CHECK(contract.signee_key == bob_acc.memo_key);
+        BOOST_CHECK(contract.status == contract_status::contract_signed);
+        BOOST_CHECK(contract.created_at == db.head_block_time());
+
+        auto& contract2 = db.create<contract_object>([&](contract_object& c_o) {
+            c_o.id = 1;
+            c_o.creator = "alice";
+            c_o.signee = "bob";
+            c_o.creator_key = alice_acc.memo_key;
+            c_o.contract_hash = "test contract 2";
+            c_o.status = contract_status::contract_declined;
+            c_o.created_at = db.head_block_time();
+        });
+
+        sign_contract_operation op2;
+        op2.contract_id = 1;
+        op2.signee = "bob";
+
+        signed_transaction tx2;
+        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2.operations.push_back(op2);
+        tx2.sign(priv_key, db.get_chain_id());
+        tx2.validate();
+        BOOST_CHECK_THROW(db.push_transaction(tx2, 0), fc::assert_exception);
+
+        auto& contract3 = db.create<contract_object>([&](contract_object& c_o) {
+            c_o.id = 2;
+            c_o.creator = "alice";
+            c_o.signee = "bob";
+            c_o.creator_key = alice_acc.memo_key;
+            c_o.contract_hash = "test contract 3";
+            c_o.status = contract_status::contract_expired;
+            c_o.created_at = db.head_block_time();
+        });
+
+        sign_contract_operation op3;
+        op3.contract_id = 2;
+        op3.signee = "bob";
+
+        signed_transaction tx3;
+        tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx3.operations.push_back(op3);
+        tx3.sign(priv_key, db.get_chain_id());
+        tx3.validate();
+        BOOST_CHECK_THROW(db.push_transaction(tx3, 0), fc::assert_exception);
+
+        auto& contract4 = db.create<contract_object>([&](contract_object& c_o) {
+            c_o.id = 3;
+            c_o.creator = "alice";
+            c_o.signee = "bob";
+            c_o.creator_key = alice_acc.memo_key;
+            c_o.contract_hash = "test contract 4";
+            c_o.status = contract_status::contract_signed;
+            c_o.created_at = db.head_block_time();
+        });
+
+        sign_contract_operation op4;
+        op4.contract_id = 3;
+        op4.signee = "bob";
+
+        signed_transaction tx4;
+        tx4.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx4.operations.push_back(op4);
+        tx4.sign(priv_key, db.get_chain_id());
+        tx4.validate();
+        BOOST_CHECK_THROW(db.push_transaction(tx4, 0), fc::assert_exception);
+
+        auto& contract5 = db.create<contract_object>([&](contract_object& c_o) {
+            c_o.id = 4;
+            c_o.creator = "alice";
+            c_o.signee = "bob";
+            c_o.creator_key = alice_acc.memo_key;
+            c_o.contract_hash = "test contract 5";
+            c_o.status = contract_status::contract_sent;
+            c_o.created_at = db.head_block_time();
+        });
+
+        sign_contract_operation op5;
+        op5.contract_id = 3;
+        op5.signee = "bob";
+
+        signed_transaction tx5;
+        tx5.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx5.operations.push_back(op5);
+        tx5.sign(priv_key, db.get_chain_id());
+        tx5.validate();
+        BOOST_CHECK_THROW(db.push_transaction(tx5, 0), fc::assert_exception);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(decline_contract_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: decline_contract");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        generate_block();
+
+        auto& contract = db.create<contract_object>([&](contract_object& c_o) {
+            c_o.id = 0;
+            c_o.creator = "alice";
+            c_o.signee = "bob";
+            c_o.creator_key = alice.memo_key;
+            c_o.contract_hash = "test contract";
+            c_o.status = contract_status::contract_sent;
+            c_o.created_at = db.head_block_time();
+        });
+
+        decline_contract_operation op;
+        op.contract_id = 0;
+        op.signee = "bob";
+
+        private_key_type priv_key = generate_private_key("bob");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK(contract.id == 0);
+        BOOST_CHECK(contract.creator == "alice");
+        BOOST_CHECK(contract.signee == "bob");
+        BOOST_CHECK(contract.creator_key == alice.memo_key);
+        BOOST_CHECK(contract.signee_key == public_key_type());
+        BOOST_CHECK(contract.status == contract_status::contract_declined);
+        BOOST_CHECK(contract.created_at == db.head_block_time());
+    }
+    FC_LOG_AND_RETHROW()
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
