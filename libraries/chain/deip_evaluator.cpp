@@ -2,6 +2,7 @@
 #include <deip/chain/schema/deip_objects.hpp>
 #include <deip/chain/schema/witness_objects.hpp>
 #include <deip/chain/schema/block_summary_object.hpp>
+#include <deip/chain/schema/contract_file_access_object.hpp>
 
 #include <deip/chain/util/reward.hpp>
 
@@ -1233,6 +1234,42 @@ void decline_contract_evaluator::do_apply(const decline_contract_operation& op)
     FC_ASSERT(contract.status == contract_status::contract_sent, "You can reject only sent contract.");
 
     contract_service.set_new_contract_status(contract, contract_status::contract_declined);
+}
+
+void request_contract_file_key_evaluator::do_apply(const request_contract_file_key_operation& op)
+{
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_contract &contract_service = _db.obtain_service<dbs_contract>();
+
+    account_service.check_account_existence(op.requester);
+    contract_service.check_contract_existence(op.contract_id);
+
+    _db._temporary_public_impl().create<contract_file_access_object>([&](contract_file_access_object& cfa_o) {
+        cfa_o.contract_id = op.contract_id;
+        cfa_o.requester = op.requester;
+        fc::from_string(cfa_o.encrypted_payload_hash, op.encrypted_payload_hash);
+        fc::from_string(cfa_o.initialiazation_vector, op.initialiazation_vector);
+        fc::from_string(cfa_o.file_encryption_key, "");
+    });
+}
+
+void grant_access_to_contract_file_evaluator::do_apply(const grant_access_to_contract_file_operation& op)
+{
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_contract &contract_service = _db.obtain_service<dbs_contract>();
+
+    account_service.check_account_existence(op.granter);
+    contract_service.check_contract_existence(op.contract_id);
+
+    auto& request = _db._temporary_public_impl().get<contract_file_access_object>(op.request_id);
+
+    FC_ASSERT(fc::to_string(request.encrypted_payload_hash) == op.encrypted_payload_hash, "Payload hash is invalid.");
+    FC_ASSERT(fc::to_string(request.initialiazation_vector) == op.initialiazation_vector, "IV is invalid.");
+    FC_ASSERT(request.contract_id == op.contract_id, "Contract id is invalid.");
+
+    _db._temporary_public_impl().modify(request, [&](contract_file_access_object& cfa_o) {
+        fc::from_string(cfa_o.file_encryption_key, op.file_encryption_key);
+    });
 }
 
 } // namespace chain

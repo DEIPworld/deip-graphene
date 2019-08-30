@@ -47,6 +47,8 @@ DEFINE_EVALUATOR(create_grant_application)
 DEFINE_EVALUATOR(create_contract)
 DEFINE_EVALUATOR(sign_contract)
 DEFINE_EVALUATOR(decline_contract)
+DEFINE_EVALUATOR(request_contract_file_key)
+DEFINE_EVALUATOR(grant_access_to_contract_file)
 
 }
 } // deip::chain
