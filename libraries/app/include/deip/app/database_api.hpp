@@ -503,6 +503,8 @@ public:
     vector<contract_api_obj> get_contracts_by_creator(const account_name_type& creator) const;
     vector<contract_api_obj> get_contracts_by_signee(const account_name_type &signee) const;
 
+    contract_file_access_api_obj get_contract_file_access(const contract_file_access_id_type& id) const;
+
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -711,6 +713,7 @@ FC_API(deip::app::database_api,
    (get_contracts_by_creator)
    (get_contracts_by_signee)
 
+   (get_contract_file_access)
 )
 
 // clang-format on

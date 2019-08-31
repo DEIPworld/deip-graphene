@@ -1248,7 +1248,7 @@ void request_contract_file_key_evaluator::do_apply(const request_contract_file_k
         cfa_o.contract_id = op.contract_id;
         cfa_o.requester = op.requester;
         fc::from_string(cfa_o.encrypted_payload_hash, op.encrypted_payload_hash);
-        fc::from_string(cfa_o.initialiazation_vector, op.initialiazation_vector);
+        fc::from_string(cfa_o.initialization_vector, op.initialization_vector);
         fc::from_string(cfa_o.file_encryption_key, "");
     });
 }
@@ -1264,7 +1264,7 @@ void grant_access_to_contract_file_evaluator::do_apply(const grant_access_to_con
     auto& request = _db._temporary_public_impl().get<contract_file_access_object>(op.request_id);
 
     FC_ASSERT(fc::to_string(request.encrypted_payload_hash) == op.encrypted_payload_hash, "Payload hash is invalid.");
-    FC_ASSERT(fc::to_string(request.initialiazation_vector) == op.initialiazation_vector, "IV is invalid.");
+    FC_ASSERT(fc::to_string(request.initialization_vector) == op.initialization_vector, "IV is invalid.");
     FC_ASSERT(request.contract_id == op.contract_id, "Contract id is invalid.");
 
     _db._temporary_public_impl().modify(request, [&](contract_file_access_object& cfa_o) {
