@@ -227,7 +227,7 @@ This will only build `deipd`.
     git submodule update --init --recursive
     mkdir build 
     cd build
-    cmake -DBOOST_ROOT="$BOOST_ROOT" -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEIP_TEST_NET=ON ..
+    cmake -DBOOST_ROOT="$BOOST_ROOT" -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEIP_TESTNET=ON ..
     make -j$(sysctl -n hw.logicalcpu) chain_test
 
 ## Building on Other Platforms
