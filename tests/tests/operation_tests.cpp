@@ -4852,6 +4852,85 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: not_create_active_contract_with_duplicated_hash_test");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        generate_block();
+
+        auto& research_group_service = db.obtain_service<dbs_research_group>();
+        auto& alice_rg = research_group_service.get_research_group_by_permlink("alice");
+        auto& bob_rg = research_group_service.get_research_group_by_permlink("bob");
+        private_key_type alice_priv_key = generate_private_key("alice");
+        private_key_type bob_priv_key = generate_private_key("bob");
+
+        create_contract_operation op;
+        op.creator = "alice";
+        op.creator_research_group_id = alice_rg.id._id;
+        op.receiver = "bob";
+        op.receiver_research_group_id = bob_rg.id._id;
+        op.contract_hash = "duplicated hash";
+        op.start_date = fc::time_point_sec(12312313);
+        op.end_date = fc::time_point_sec(12312314);
+
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(alice_priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        create_contract_operation op2;
+        op2.creator = "alice";
+        op2.creator_research_group_id = alice_rg.id._id;
+        op2.receiver = "bob";
+        op2.receiver_research_group_id = bob_rg.id._id;
+        op2.contract_hash = "duplicated hash";
+        op2.start_date = fc::time_point_sec(12312315);
+        op2.end_date = fc::time_point_sec(12312316);
+
+        signed_transaction tx2;
+        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2.operations.push_back(op2);
+        tx2.sign(alice_priv_key, db.get_chain_id());
+        tx2.validate();
+        BOOST_CHECK_THROW(db.push_transaction(tx2, 0), fc::assert_exception);
+
+        sign_contract_operation op3;
+        op3.contract_id = 0;
+        op3.signee = "bob";
+        op3.signee_research_group_id = bob_rg.id._id;
+
+        signed_transaction tx3;
+        tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx3.operations.push_back(op3);
+        tx3.sign(bob_priv_key, db.get_chain_id());
+        tx3.validate();
+        db.push_transaction(tx3, 0);
+
+        create_contract_operation op4;
+        op4.creator = "alice";
+        op4.creator_research_group_id = alice_rg.id._id;
+        op4.receiver = "bob";
+        op4.receiver_research_group_id = bob_rg.id._id;
+        op4.contract_hash = "duplicated hash";
+        op4.start_date = fc::time_point_sec(12312415);
+        op4.end_date = fc::time_point_sec(12312416);
+
+        signed_transaction tx4;
+        tx4.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx4.operations.push_back(op4);
+        tx4.sign(alice_priv_key, db.get_chain_id());
+        tx4.validate();
+        BOOST_CHECK_THROW(db.push_transaction(tx4, 0), fc::assert_exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(approve_contract_test)
 {
     try
