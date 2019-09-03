@@ -207,6 +207,7 @@
 
 #define DEIP_PROXY_TO_SELF_EXPERT_TOKEN      ""
 
+#define DEIP_IP_PROTECTION_MODULE     1
 ///@}
 
 // clang-format on

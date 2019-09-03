@@ -97,13 +97,13 @@ BOOST_AUTO_TEST_CASE(get_contract_test)
         BOOST_CHECK(contract.signee_key == public_key_type("DEIP8bwPxtWUEffTs7C8vRNT98Sv7XGCVDWCXVUeHvtNH5TxvrwVLj"));
         BOOST_CHECK(contract.contract_hash == "contract 2");
         BOOST_CHECK(contract.status == contract_status::contract_signed);
-        BOOST_CHECK(contract.created_at == fc::time_point_sec(1231));;
+        BOOST_CHECK(contract.created_at == fc::time_point_sec(1231));
 
     }
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(check_research_group_existence_test)
+BOOST_AUTO_TEST_CASE(check_contract_existence_test)
 {
     try
     {

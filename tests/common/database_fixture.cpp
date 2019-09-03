@@ -118,7 +118,9 @@ clean_database_fixture::clean_database_fixture()
         for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
         {
             account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
-            fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1000);
+            if (!DEIP_IP_PROTECTION_MODULE) {
+                fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1000);
+            }
         }
 
         generate_block();
@@ -127,8 +129,10 @@ clean_database_fixture::clean_database_fixture()
         {
             expert_token(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1, 10000);
 
-            witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
-                           init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount.value);
+            if (!DEIP_IP_PROTECTION_MODULE) {
+                witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
+                            init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount.value);
+            }
         }
 
         validate_database();
@@ -187,7 +191,9 @@ void clean_database_fixture::resize_shared_mem(uint64_t size)
     for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
     {
         account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
-        fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), DEIP_MIN_PRODUCER_REWARD.amount.value);
+        if (!DEIP_IP_PROTECTION_MODULE) {
+            fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), DEIP_MIN_PRODUCER_REWARD.amount.value);
+        }
     }
 
     generate_block();
@@ -199,8 +205,10 @@ void clean_database_fixture::resize_shared_mem(uint64_t size)
 
     for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
     {
-        witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
-                       init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount.value);
+        if (!DEIP_IP_PROTECTION_MODULE) {
+            witness_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_priv_key, "foo.bar",
+                            init_account_pub_key, DEIP_MIN_PRODUCER_REWARD.amount.value);
+        }
     }
 
     validate_database();
