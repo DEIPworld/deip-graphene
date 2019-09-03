@@ -4810,9 +4810,15 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
         generate_block();
 
+        auto& research_group_service = db.obtain_service<dbs_research_group>();
+        auto& alice_rg = research_group_service.get_research_group_by_permlink("alice");
+        auto& bob_rg = research_group_service.get_research_group_by_permlink("bob");
+
         create_contract_operation op;
         op.creator = "alice";
+        op.creator_research_group_id = alice_rg.id._id;
         op.receiver = "bob";
+        op.receiver_research_group_id = bob_rg.id._id;
         op.contract_hash = "test contract";
         op.start_date = fc::time_point_sec(12312313);
         op.end_date = fc::time_point_sec(12312314);
@@ -4831,9 +4837,11 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
 
         BOOST_CHECK(contract.id == 0);
         BOOST_CHECK(contract.creator == "alice");
-        BOOST_CHECK(contract.signee == "bob");
         BOOST_CHECK(contract.creator_key == alice_acc.memo_key);
+        BOOST_CHECK(contract.creator_research_group_id == alice_rg.id._id);
+        BOOST_CHECK(contract.signee == "bob");
         BOOST_CHECK(contract.signee_key == public_key_type());
+        BOOST_CHECK(contract.signee_research_group_id == bob_rg.id._id);
         BOOST_CHECK(contract.contract_hash == "test contract");
         BOOST_CHECK(contract.status == contract_status::contract_sent);
         BOOST_CHECK(contract.created_at == db.head_block_time());
@@ -4853,14 +4861,20 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
         generate_block();
 
+        auto& research_group_service = db.obtain_service<dbs_research_group>();
         auto& alice_acc = db.get_account("alice");
         auto& bob_acc = db.get_account("bob");
+
+        auto& alice_rg = research_group_service.get_research_group_by_permlink("alice");
+        auto& bob_rg = research_group_service.get_research_group_by_permlink("bob");
 
         auto& contract = db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 0;
             c_o.creator = "alice";
-            c_o.signee = "bob";
             c_o.creator_key = alice_acc.memo_key;
+            c_o.creator_research_group_id = alice_rg.id._id;
+            c_o.signee = "bob";
+            c_o.signee_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract";
             c_o.status = contract_status::contract_sent;
             c_o.created_at = db.head_block_time();
@@ -4869,6 +4883,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         sign_contract_operation op;
         op.contract_id = 0;
         op.signee = "bob";
+        op.signee_research_group_id = bob_rg.id._id;
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -4881,17 +4896,21 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
 
         BOOST_CHECK(contract.id == 0);
         BOOST_CHECK(contract.creator == "alice");
-        BOOST_CHECK(contract.signee == "bob");
         BOOST_CHECK(contract.creator_key == alice_acc.memo_key);
+        BOOST_CHECK(contract.creator_research_group_id == alice_rg.id._id);
+        BOOST_CHECK(contract.signee == "bob");
         BOOST_CHECK(contract.signee_key == bob_acc.memo_key);
+        BOOST_CHECK(contract.signee_research_group_id == bob_rg.id._id);
         BOOST_CHECK(contract.status == contract_status::contract_signed);
         BOOST_CHECK(contract.created_at == db.head_block_time());
 
         auto& contract2 = db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 1;
             c_o.creator = "alice";
-            c_o.signee = "bob";
             c_o.creator_key = alice_acc.memo_key;
+            c_o.creator_research_group_id = alice_rg.id._id;
+            c_o.signee = "bob";
+            c_o.signee_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract 2";
             c_o.status = contract_status::contract_declined;
             c_o.created_at = db.head_block_time();
@@ -4900,6 +4919,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         sign_contract_operation op2;
         op2.contract_id = 1;
         op2.signee = "bob";
+        op2.signee_research_group_id = bob_rg.id._id;
 
         signed_transaction tx2;
         tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -4911,8 +4931,10 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         auto& contract3 = db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 2;
             c_o.creator = "alice";
-            c_o.signee = "bob";
             c_o.creator_key = alice_acc.memo_key;
+            c_o.creator_research_group_id = alice_rg.id._id;
+            c_o.signee = "bob";
+            c_o.signee_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract 3";
             c_o.status = contract_status::contract_expired;
             c_o.created_at = db.head_block_time();
@@ -4921,6 +4943,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         sign_contract_operation op3;
         op3.contract_id = 2;
         op3.signee = "bob";
+        op3.signee_research_group_id = bob_rg.id._id;
 
         signed_transaction tx3;
         tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -4932,8 +4955,10 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         auto& contract4 = db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 3;
             c_o.creator = "alice";
-            c_o.signee = "bob";
             c_o.creator_key = alice_acc.memo_key;
+            c_o.creator_research_group_id = alice_rg.id._id;
+            c_o.signee = "bob";
+            c_o.signee_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract 4";
             c_o.status = contract_status::contract_signed;
             c_o.created_at = db.head_block_time();
@@ -4942,6 +4967,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         sign_contract_operation op4;
         op4.contract_id = 3;
         op4.signee = "bob";
+        op4.signee_research_group_id = bob_rg.id._id;
 
         signed_transaction tx4;
         tx4.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -4953,8 +4979,10 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         auto& contract5 = db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 4;
             c_o.creator = "alice";
-            c_o.signee = "bob";
             c_o.creator_key = alice_acc.memo_key;
+            c_o.creator_research_group_id = alice_rg.id._id;
+            c_o.signee = "bob";
+            c_o.signee_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract 5";
             c_o.status = contract_status::contract_sent;
             c_o.created_at = db.head_block_time();
@@ -4963,6 +4991,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         sign_contract_operation op5;
         op5.contract_id = 3;
         op5.signee = "bob";
+        op5.signee_research_group_id = bob_rg.id._id;
 
         signed_transaction tx5;
         tx5.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -4984,11 +5013,17 @@ BOOST_AUTO_TEST_CASE(decline_contract_test)
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
         generate_block();
 
+        auto& research_group_service = db.obtain_service<dbs_research_group>();
+        auto& alice_rg = research_group_service.get_research_group_by_permlink("alice");
+        auto& bob_rg = research_group_service.get_research_group_by_permlink("bob");
+
         auto& contract = db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 0;
             c_o.creator = "alice";
-            c_o.signee = "bob";
             c_o.creator_key = alice.memo_key;
+            c_o.creator_research_group_id = alice_rg.id._id;
+            c_o.signee = "bob";
+            c_o.signee_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract";
             c_o.status = contract_status::contract_sent;
             c_o.created_at = db.head_block_time();
@@ -4997,6 +5032,7 @@ BOOST_AUTO_TEST_CASE(decline_contract_test)
         decline_contract_operation op;
         op.contract_id = 0;
         op.signee = "bob";
+        op.signee_research_group_id = bob_rg.id._id;
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -5009,9 +5045,12 @@ BOOST_AUTO_TEST_CASE(decline_contract_test)
 
         BOOST_CHECK(contract.id == 0);
         BOOST_CHECK(contract.creator == "alice");
-        BOOST_CHECK(contract.signee == "bob");
         BOOST_CHECK(contract.creator_key == alice.memo_key);
+        BOOST_CHECK(contract.creator_research_group_id == alice_rg.id._id);
+        BOOST_CHECK(contract.signee == "bob");
         BOOST_CHECK(contract.signee_key == public_key_type());
+        BOOST_CHECK(contract.signee_research_group_id == bob_rg.id._id);
+
         BOOST_CHECK(contract.status == contract_status::contract_declined);
         BOOST_CHECK(contract.created_at == db.head_block_time());
     }

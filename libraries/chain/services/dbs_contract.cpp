@@ -10,8 +10,10 @@ dbs_contract::dbs_contract(database &db)
 }
 
 const contract_object& dbs_contract::create(const account_name_type& creator,
-                                            const account_name_type& receiver,
                                             const public_key_type& creator_key,
+                                            const research_group_id_type& creator_research_group_id,
+                                            const account_name_type& receiver,
+                                            const research_group_id_type& receiver_research_group_id,
                                             const std::string& contract_hash,
                                             const fc::time_point_sec& created_at,
                                             const fc::time_point_sec& start_date,
@@ -19,8 +21,10 @@ const contract_object& dbs_contract::create(const account_name_type& creator,
 {
     auto& contract = db_impl().create<contract_object>([&](contract_object& c_o) {
         c_o.creator = creator;
-        c_o.signee = receiver;
         c_o.creator_key = creator_key;
+        c_o.creator_research_group_id = creator_research_group_id;
+        c_o.signee = receiver;
+        c_o.signee_research_group_id = receiver_research_group_id;
         fc::from_string(c_o.contract_hash, contract_hash);
         c_o.created_at = created_at;
         c_o.start_date = start_date;
@@ -49,6 +53,22 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_creator(const account_nam
     contracts_refs_type ret;
 
     auto it_pair = db_impl().get_index<contract_index>().indicies().get<by_creator>().equal_range(creator);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_contract::contracts_refs_type dbs_contract::get_by_hash(const fc::string& hash)
+{
+    contracts_refs_type ret;
+
+    auto it_pair = db_impl().get_index<contract_index>().indicies().get<by_contract_hash>().equal_range(hash, fc::strcmp_less());
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
