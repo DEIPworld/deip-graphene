@@ -18,7 +18,6 @@ public:
     using contracts_refs_type = std::vector<std::reference_wrapper<const contract_object>>;
 
     const contract_object& create(const account_name_type& creator,
-                                  const public_key_type& creator_key,
                                   const research_group_id_type& creator_research_group_id,
                                   const account_name_type& receiver,
                                   const research_group_id_type& receiver_research_group_id,
@@ -37,8 +36,7 @@ public:
 
     contracts_refs_type get_by_signee(const account_name_type &signee);
 
-    void sign(const contract_object &contract,
-              const public_key_type &signee_key);
+    void sign(const contract_object &contract);
 
     void set_new_contract_status(const contract_object& contract,
                                  const contract_status& status);

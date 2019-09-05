@@ -10,7 +10,6 @@ dbs_contract::dbs_contract(database &db)
 }
 
 const contract_object& dbs_contract::create(const account_name_type& creator,
-                                            const public_key_type& creator_key,
                                             const research_group_id_type& creator_research_group_id,
                                             const account_name_type& receiver,
                                             const research_group_id_type& receiver_research_group_id,
@@ -21,7 +20,6 @@ const contract_object& dbs_contract::create(const account_name_type& creator,
 {
     auto& contract = db_impl().create<contract_object>([&](contract_object& c_o) {
         c_o.creator = creator;
-        c_o.creator_key = creator_key;
         c_o.creator_research_group_id = creator_research_group_id;
         c_o.signee = receiver;
         c_o.signee_research_group_id = receiver_research_group_id;
@@ -96,12 +94,10 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_signee(const account_name
     return ret;
 }
 
-void dbs_contract::sign(const contract_object &contract,
-                        const public_key_type &signee_key)
+void dbs_contract::sign(const contract_object &contract)
 {
     db_impl().modify(contract, [&](contract_object& c_o)
     {
-        c_o.signee_key = signee_key;
         c_o.status = contract_status::contract_signed;
     });
 }

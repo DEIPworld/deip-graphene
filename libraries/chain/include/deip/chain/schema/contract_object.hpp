@@ -30,9 +30,6 @@ public:
     account_name_type creator;
     account_name_type signee = account_name_type();
 
-    protocol::public_key_type creator_key;
-    protocol::public_key_type signee_key = protocol::public_key_type();
-
     research_group_id_type creator_research_group_id;
     research_group_id_type signee_research_group_id;
 
@@ -89,7 +86,7 @@ typedef multi_index_container<contract_object,
 FC_REFLECT_ENUM(deip::chain::contract_status, (contract_sent)(contract_signed)(contract_declined)(contract_expired))
 
 FC_REFLECT( deip::chain::contract_object,
-             (id)(creator)(signee)(creator_key)(signee_key)(creator_research_group_id)(signee_research_group_id)(contract_hash)(status)(created_at)(start_date)(end_date)
+             (id)(creator)(signee)(creator_research_group_id)(signee_research_group_id)(contract_hash)(status)(created_at)(start_date)(end_date)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::contract_object, deip::chain::contract_index )

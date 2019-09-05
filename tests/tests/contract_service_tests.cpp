@@ -22,10 +22,8 @@ class contract_service_fixture : public clean_database_fixture
         db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 0;
             c_o.creator = "alice";
-            c_o.creator_key = public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83");
             c_o.creator_research_group_id = 5;
             c_o.signee = "bob";
-            c_o.signee_key = protocol::public_key_type();
             c_o.signee_research_group_id = 10;
             c_o.contract_hash = "contract 1";
             c_o.status = contract_status::contract_sent;
@@ -37,10 +35,8 @@ class contract_service_fixture : public clean_database_fixture
         db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 1;
             c_o.creator = "alice";
-            c_o.creator_key = public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83");
             c_o.creator_research_group_id = 5;
             c_o.signee = "mike";
-            c_o.signee_key = public_key_type("DEIP8bwPxtWUEffTs7C8vRNT98Sv7XGCVDWCXVUeHvtNH5TxvrwVLj");
             c_o.signee_research_group_id = 15;
             c_o.contract_hash = "contract 2";
             c_o.status = contract_status::contract_signed;
@@ -52,10 +48,8 @@ class contract_service_fixture : public clean_database_fixture
         db.create<contract_object>([&](contract_object& c_o) {
             c_o.id = 2;
             c_o.creator = "john";
-            c_o.creator_key = public_key_type("DEIP5mFLmqoifrz3c9iTmFVpxjU29QjyKSGiKZf7GUM2T6cJpm6Gb7");
             c_o.creator_research_group_id = 20;
             c_o.signee = "bob";
-            c_o.signee_key = protocol::public_key_type();
             c_o.signee_research_group_id = 25;
             c_o.contract_hash = "contract 3";
             c_o.status = contract_status::contract_declined;
@@ -74,29 +68,18 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
 {
     try
     {
-        auto& contract = data_service.create(
-            "alice",
-            public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83"), 
-            100,
-            "bob",
-            150,
-            "test", 
-            fc::time_point_sec(123), 
-            fc::time_point_sec(1234), 
-            fc::time_point_sec(1235));
+        auto& contract = data_service.create("alice", 100, "bob", 150, "test", fc::time_point_sec(123), fc::time_point_sec(1234), fc::time_point_sec(1235));
 
         BOOST_CHECK(contract.creator == "alice");
-        BOOST_CHECK(contract.creator_key == public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83"));
         BOOST_CHECK(contract.creator_research_group_id == 100);
 
         BOOST_CHECK(contract.signee == "bob");
-        BOOST_CHECK(contract.signee_key == protocol::public_key_type());
         BOOST_CHECK(contract.signee_research_group_id == 150);
 
         BOOST_CHECK(contract.contract_hash == "test");
         BOOST_CHECK(contract.status == contract_status::contract_sent);
-        BOOST_CHECK(contract.created_at == fc::time_point_sec(123));
-
+        BOOST_CHECK(contract.start_date == fc::time_point_sec(1234));
+        BOOST_CHECK(contract.end_date == fc::time_point_sec(1235));
     }
     FC_LOG_AND_RETHROW()
 }
@@ -109,11 +92,9 @@ BOOST_AUTO_TEST_CASE(get_contract_test)
         auto& contract = data_service.get(1);
 
         BOOST_CHECK(contract.creator == "alice");
-        BOOST_CHECK(contract.creator_key == public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83"));
         BOOST_CHECK(contract.creator_research_group_id == 5);
 
         BOOST_CHECK(contract.signee == "mike");
-        BOOST_CHECK(contract.signee_key == public_key_type("DEIP8bwPxtWUEffTs7C8vRNT98Sv7XGCVDWCXVUeHvtNH5TxvrwVLj"));
         BOOST_CHECK(contract.signee_research_group_id == 15);
 
         BOOST_CHECK(contract.contract_hash == "contract 2");
@@ -151,10 +132,8 @@ BOOST_AUTO_TEST_CASE(get_contracts_by_creator)
             const contract_object &contract = wrapper.get();
             return contract.id == 0 &&
                     contract.creator == "alice" &&
-                    contract.creator_key == public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83") &&
                     contract.creator_research_group_id == 5 &&
                     contract.signee == "bob" &&
-                    contract.signee_key == protocol::public_key_type() &&
                     contract.signee_research_group_id == 10 &&
                     contract.contract_hash == "contract 1" &&
                     contract.status == contract_status::contract_sent &&
@@ -167,10 +146,8 @@ BOOST_AUTO_TEST_CASE(get_contracts_by_creator)
             const contract_object &contract = wrapper.get();
             return contract.id == 1 &&
                    contract.creator == "alice" &&
-                   contract.creator_key == public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83") &&
                    contract.creator_research_group_id == 5 &&
                    contract.signee == "mike" &&
-                   contract.signee_key == public_key_type("DEIP8bwPxtWUEffTs7C8vRNT98Sv7XGCVDWCXVUeHvtNH5TxvrwVLj") &&
                    contract.signee_research_group_id == 15 &&
                    contract.contract_hash == "contract 2" &&
                    contract.status == contract_status::contract_signed &&
@@ -192,10 +169,8 @@ BOOST_AUTO_TEST_CASE(sign_by_receiver_test)
         data_service.sign(contract, public_key_type("DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi"));
 
         BOOST_CHECK(contract.creator == "alice");
-        BOOST_CHECK(contract.creator_key == public_key_type("DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83"));
         BOOST_CHECK(contract.creator_research_group_id == 5);
         BOOST_CHECK(contract.signee == "bob");
-        BOOST_CHECK(contract.signee_key == public_key_type("DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi"));
         BOOST_CHECK(contract.signee_research_group_id == 10);
         BOOST_CHECK(contract.contract_hash == "contract 1");
         BOOST_CHECK(contract.status == contract_status::contract_signed);

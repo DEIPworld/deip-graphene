@@ -1265,10 +1265,11 @@ void create_contract_evaluator::do_apply(const create_contract_operation& op)
         FC_ASSERT(contract.status != contract_status::contract_signed, "Contract with '${hash}' already exists with status '${status}' ", ("hash", op.contract_hash)("status", contract.status));
     }
 
-    auto& creator = account_service.get_account(op.creator);
     auto now = _db.head_block_time();
 
-    contract_service.create(op.creator, creator.memo_key, op.creator_research_group_id, op.receiver, op.receiver_research_group_id, op.contract_hash, now, op.start_date, op.end_date);
+    contract_service.create(op.creator, op.creator_research_group_id, 
+                            op.receiver, op.receiver_research_group_id, 
+                            op.contract_hash, now, op.start_date, op.end_date);
 }
 
 void sign_contract_evaluator::do_apply(const sign_contract_operation& op)
@@ -1281,18 +1282,12 @@ void sign_contract_evaluator::do_apply(const sign_contract_operation& op)
     contract_service.check_contract_existence(op.contract_id);
     research_group_service.check_research_group_token_existence(op.signee, op.signee_research_group_id);
 
-    auto& receiver = account_service.get_account(op.signee);
     auto& contract = contract_service.get(op.contract_id);
 
     FC_ASSERT(contract.signee == op.signee, "You cannot sign this contract.");
     FC_ASSERT(contract.status == contract_status::contract_sent, "You can approve only sent contract.");
 
-    if (contract.signee.size() == 0)
-        _db._temporary_public_impl().modify(contract, [&](contract_object& c_o) {
-            c_o.signee = op.signee;
-        });
-
-    contract_service.sign(contract, receiver.memo_key);
+    contract_service.sign(contract);
 }
 
 void decline_contract_evaluator::do_apply(const decline_contract_operation& op)
