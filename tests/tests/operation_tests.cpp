@@ -5127,9 +5127,8 @@ BOOST_AUTO_TEST_CASE(request_contract_file_key_test)
             c_o.id = 0;
             c_o.creator = "alice";
             c_o.signee = "bob";
-            c_o.creator_key = alice.memo_key;
             c_o.contract_hash = "test contract";
-            c_o.status = contract_status::contract_sent;
+            c_o.status = contract_status::contract_pending;
             c_o.created_at = db.head_block_time();
         });
 
@@ -5173,9 +5172,8 @@ BOOST_AUTO_TEST_CASE(grant_access_to_contract_file_test)
             c_o.id = 0;
             c_o.creator = "alice";
             c_o.signee = "bob";
-            c_o.creator_key = alice.memo_key;
             c_o.contract_hash = "test contract";
-            c_o.status = contract_status::contract_sent;
+            c_o.status = contract_status::contract_pending;
             c_o.created_at = db.head_block_time();
         });
 
