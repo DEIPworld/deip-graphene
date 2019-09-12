@@ -9,6 +9,7 @@
 #include <deip/chain/database/database.hpp> //replace to dbservice after _temporary_public_impl remove
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_contract.hpp>
+#include <deip/chain/services/dbs_contract_requests.hpp>
 #include <deip/chain/services/dbs_witness.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
@@ -1299,7 +1300,7 @@ void sign_contract_evaluator::do_apply(const sign_contract_operation& op)
         unsigned char ch = static_cast<unsigned char>(buffer.at(i));
         signature.data[i] = ch;
     }
-    fc::ecc::public_key signee_public_key = fc::ecc::public_key(signature, digest);
+    fc::ecc::public_key signer_public_key = fc::ecc::public_key(signature, digest);
 
     const auto &signee_auth = account_service.get_account_authority(signer.name);
     std::set<public_key_type> keys;
@@ -1308,7 +1309,7 @@ void sign_contract_evaluator::do_apply(const sign_contract_operation& op)
     for (const auto &k : authority(signee_auth.active).get_keys())
         keys.insert(k);
 
-    const bool is_signature_valid = keys.find(signee_public_key) != keys.end();
+    const bool is_signature_valid = keys.find(signer_public_key) != keys.end();
     FC_ASSERT(is_signature_valid, "Signature ${signature} does not correspond any of ${signer} authorities", ("signature", signature)("signer", op.contract_signer));
 
     const auto &signed_contract = contract_service.sign(contract, op.contract_signer, op.signature);
@@ -1346,7 +1347,7 @@ void close_contract_evaluator::do_apply(const close_contract_operation& op)
 
     FC_ASSERT(contract.creator == op.creator, "Only ${creator} account can decline the contract",
               ("creator", contract.creator));
-    FC_ASSERT(contract.status == contract_status::contract_pending, "Contract with status ${status} cannot be declined",
+    FC_ASSERT(contract.status == contract_status::contract_pending, "Contract with status ${status} cannot be closed",
               ("status", contract.status));
 
     contract_service.set_new_contract_status(contract, contract_status::contract_closed);
@@ -1356,36 +1357,31 @@ void request_contract_file_key_evaluator::do_apply(const request_contract_file_k
 {
     dbs_account &account_service = _db.obtain_service<dbs_account>();
     dbs_contract &contract_service = _db.obtain_service<dbs_contract>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_contract_requests& contract_requests_service = _db.obtain_service<dbs_contract_requests>();
 
     account_service.check_account_existence(op.requester);
-    contract_service.check_contract_existence(op.contract_id);
+    const auto& contract = contract_service.get(op.contract_id);
+    research_group_service.check_research_group_token_existence(op.requester, contract.signee_research_group_id);
+    FC_ASSERT(contract.status == contract_status::contract_signed, "Files cannot be shared under the terms of a contract with ${status} status", ("status", contract.status));
 
-    _db._temporary_public_impl().create<contract_file_access_object>([&](contract_file_access_object& cfa_o) {
-        cfa_o.contract_id = op.contract_id;
-        cfa_o.requester = op.requester;
-        fc::from_string(cfa_o.encrypted_payload_hash, op.encrypted_payload_hash);
-        fc::from_string(cfa_o.initialization_vector, op.initialization_vector);
-        fc::from_string(cfa_o.file_encryption_key, "");
-    });
+    contract_requests_service.create_file_access_request(op.contract_id, op.requester, op.encrypted_payload_hash, op.encrypted_payload_iv);
 }
 
 void grant_access_to_contract_file_evaluator::do_apply(const grant_access_to_contract_file_operation& op)
 {
     dbs_account &account_service = _db.obtain_service<dbs_account>();
     dbs_contract &contract_service = _db.obtain_service<dbs_contract>();
+    dbs_research_group &research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_contract_requests& contract_requests_service = _db.obtain_service<dbs_contract_requests>();
 
     account_service.check_account_existence(op.granter);
-    contract_service.check_contract_existence(op.contract_id);
+    auto& request = contract_requests_service.get_file_access_request(op.request_id);
+    const auto& contract = contract_service.get(request.contract_id);
+    research_group_service.check_research_group_token_existence(op.granter, contract.creator_research_group_id);
+    FC_ASSERT(contract.status == contract_status::contract_signed, "Files cannot be shared under the terms of a contract with ${status} status", ("status", contract.status));
 
-    auto& request = _db._temporary_public_impl().get<contract_file_access_object>(op.request_id);
-
-    FC_ASSERT(fc::to_string(request.encrypted_payload_hash) == op.encrypted_payload_hash, "Payload hash is invalid.");
-    FC_ASSERT(fc::to_string(request.initialization_vector) == op.initialization_vector, "IV is invalid.");
-    FC_ASSERT(request.contract_id == op.contract_id, "Contract id is invalid.");
-
-    _db._temporary_public_impl().modify(request, [&](contract_file_access_object& cfa_o) {
-        fc::from_string(cfa_o.file_encryption_key, op.file_encryption_key);
-    });
+    contract_requests_service.fulfill_file_access_request(request, op.encrypted_payload_encryption_key, op.proof_of_encrypted_payload_encryption_key);
 }
 
 } // namespace chain

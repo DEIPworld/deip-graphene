@@ -12,7 +12,7 @@ class contract_file_access_object : public object<contract_file_access_object_ty
 public:
 
     template <typename Constructor, typename Allocator>
-    contract_file_access_object(Constructor&& c, allocator<Allocator> a) : encrypted_payload_hash(a), initialization_vector(a), file_encryption_key(a)
+    contract_file_access_object(Constructor&& c, allocator<Allocator> a) : encrypted_payload_hash(a), encrypted_payload_iv(a), encrypted_payload_encryption_key(a), proof_of_encrypted_payload_encryption_key(a)
     {
         c(*this);
     }
@@ -23,9 +23,9 @@ public:
 
     account_name_type requester;
     fc::shared_string encrypted_payload_hash;
-    fc::shared_string initialization_vector;
-
-    fc::shared_string file_encryption_key;
+    fc::shared_string encrypted_payload_iv;
+    fc::shared_string encrypted_payload_encryption_key;
+    fc::shared_string proof_of_encrypted_payload_encryption_key;
 };
 
 struct by_request_and_hash;
@@ -50,8 +50,8 @@ typedef multi_index_container<contract_file_access_object,
 }
 }
 
-FC_REFLECT( deip::chain::contract_file_access_object,
-             (id)(contract_id)(requester)(encrypted_payload_hash)(initialization_vector)(file_encryption_key))
+FC_REFLECT(deip::chain::contract_file_access_object,
+           (id)(contract_id)(requester)(encrypted_payload_hash)(encrypted_payload_iv)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key))
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::contract_file_access_object, deip::chain::contract_file_access_index )
 

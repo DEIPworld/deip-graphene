@@ -19,6 +19,7 @@
 #include <iostream>
 
 #include <deip/chain/services/dbs_contract.hpp>
+#include <deip/chain/services/dbs_contract_requests.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_research.hpp>

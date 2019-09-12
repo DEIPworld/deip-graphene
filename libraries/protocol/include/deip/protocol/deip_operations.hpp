@@ -28,6 +28,13 @@ inline void validate_enum_value_by_range(int val, int first, int last)
                                             ("enum_val", val)("first", first)("last", last));
 }
 
+inline void validate_256_bits_hexadecimal_string(const string& str)
+{
+    FC_ASSERT(((str.size() / 2) == 256 / 8), "Provided value must be a lowercase hexadecimal string 256 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), ::islower), "Provided value must be a lowercase hexadecimal string 256 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 256 bits in length");
+}
+
 struct account_create_operation : public base_operation
 {
     asset fee;
@@ -872,7 +879,7 @@ struct request_contract_file_key_operation : public base_operation
 {
     account_name_type requester;
     std::string encrypted_payload_hash;
-    std::string initialization_vector;
+    std::string encrypted_payload_iv;
 
     int64_t contract_id;
 
@@ -887,11 +894,8 @@ struct request_contract_file_key_operation : public base_operation
 struct grant_access_to_contract_file_operation : public base_operation
 {
     account_name_type granter;
-    std::string encrypted_payload_hash;
-    std::string initialization_vector;
-    std::string file_encryption_key;
-
-    int64_t contract_id;
+    std::string encrypted_payload_encryption_key;
+    std::string proof_of_encrypted_payload_encryption_key;
     int64_t request_id;
 
     void validate() const;
@@ -975,7 +979,7 @@ FC_REFLECT( deip::protocol::create_contract_operation, (creator)(creator_researc
 FC_REFLECT( deip::protocol::sign_contract_operation, (contract_id)(contract_signer)(signature))
 FC_REFLECT( deip::protocol::decline_contract_operation, (contract_id)(signee))
 FC_REFLECT( deip::protocol::close_contract_operation, (contract_id)(creator))
-FC_REFLECT( deip::protocol::request_contract_file_key_operation, (requester)(encrypted_payload_hash)(initialization_vector)(contract_id))
-FC_REFLECT( deip::protocol::grant_access_to_contract_file_operation, (granter)(encrypted_payload_hash)(initialization_vector)(file_encryption_key)(contract_id)(request_id))
+FC_REFLECT( deip::protocol::request_contract_file_key_operation, (requester)(encrypted_payload_hash)(encrypted_payload_iv)(contract_id))
+FC_REFLECT( deip::protocol::grant_access_to_contract_file_operation, (granter)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key)(request_id))
 
 // clang-format on

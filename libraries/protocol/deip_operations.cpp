@@ -327,8 +327,7 @@ void create_contract_operation::validate() const
     validate_account_name(creator);
     validate_account_name(signee);
     FC_ASSERT(title.size() > 0 && title.size() < 200, "Contract title must be specified in length from 1 to 200 characters");
-    FC_ASSERT(((contract_hash.size() / 2) == 256 / 8), "Contract hash must be a hexadecimal string 256 bits in length");
-    FC_ASSERT(std::all_of(contract_hash.begin(), contract_hash.end(), ::isxdigit), "Contract hash must be a hexadecimal string 256 bits in length");
+    validate_256_bits_hexadecimal_string(contract_hash);
     FC_ASSERT(end_date > start_date, "End time must be greater than a start time");
 }
 
@@ -351,19 +350,17 @@ void close_contract_operation::validate() const
 void request_contract_file_key_operation::validate() const
 {
     validate_account_name(requester);
-    FC_ASSERT(encrypted_payload_hash.size() > 0, "Payload hash must be specified");
-    FC_ASSERT(fc::is_utf8(encrypted_payload_hash), "Payload hash is not valid UTF8 string");
-    FC_ASSERT(initialization_vector.size() > 0, "IV must be specified");
-    FC_ASSERT(fc::is_utf8(initialization_vector), "IV is not valid UTF8 string");
+    validate_256_bits_hexadecimal_string(encrypted_payload_hash);
+    validate_256_bits_hexadecimal_string(encrypted_payload_iv);
 }
 
 void grant_access_to_contract_file_operation::validate() const
 {
     validate_account_name(granter);
-    FC_ASSERT(encrypted_payload_hash.size() > 0, "Payload hash must be specified");
-    FC_ASSERT(fc::is_utf8(encrypted_payload_hash), "Payload hash is not valid UTF8 string");
-    FC_ASSERT(initialization_vector.size() > 0, "IV must be specified");
-    FC_ASSERT(fc::is_utf8(initialization_vector), "IV is not valid UTF8 string");
+    FC_ASSERT(encrypted_payload_encryption_key.size() > 0, "Encrypted payload hash must be specified");
+    FC_ASSERT(fc::is_utf8(encrypted_payload_encryption_key), "Encrypted payload hash is not valid UTF8 string");
+    FC_ASSERT(proof_of_encrypted_payload_encryption_key.size() > 0, "Encrypted payload IV must be specified");
+    FC_ASSERT(fc::is_utf8(proof_of_encrypted_payload_encryption_key), "Encrypted payload IV is not valid UTF8 string");
 }
 
 }

@@ -1117,12 +1117,12 @@ struct contract_api_obj
 struct contract_file_access_api_obj
 {
     contract_file_access_api_obj(const chain::contract_file_access_object& cfa_o)
-        :  id(cfa_o.id._id)
-        ,  contract_id(cfa_o.contract_id._id)
-        ,  requester(cfa_o.requester)
-        ,  encrypted_payload_hash(fc::to_string(cfa_o.encrypted_payload_hash))
-        ,  initialization_vector(fc::to_string(cfa_o.initialization_vector))
-        ,  file_encryption_key(fc::to_string(cfa_o.file_encryption_key))
+        : id(cfa_o.id._id)
+        , contract_id(cfa_o.contract_id._id)
+        , requester(cfa_o.requester)
+        , encrypted_payload_hash(fc::to_string(cfa_o.encrypted_payload_hash))
+        , encrypted_payload_iv(fc::to_string(cfa_o.encrypted_payload_iv))
+        , encrypted_payload_encryption_key(fc::to_string(cfa_o.encrypted_payload_encryption_key))
 
     {}
 
@@ -1136,9 +1136,9 @@ struct contract_file_access_api_obj
 
     account_name_type requester;
     std::string encrypted_payload_hash;
-    std::string initialization_vector;
+    std::string encrypted_payload_iv;
 
-    std::string file_encryption_key;
+    std::string encrypted_payload_encryption_key;
 };
 
 }; // namespace app
@@ -1503,8 +1503,8 @@ FC_REFLECT( deip::app::contract_file_access_api_obj,
             (contract_id)
             (requester)
             (encrypted_payload_hash)
-            (initialization_vector)
-            (file_encryption_key)
+            (encrypted_payload_iv)
+            (encrypted_payload_encryption_key)
 
 )
 

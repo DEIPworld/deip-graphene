@@ -25,6 +25,7 @@
 
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_contract.hpp>
+#include <deip/chain/services/dbs_contract_requests.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>

@@ -16,13 +16,13 @@ const contract_object& dbs_contract::create(const account_name_type& creator,
                                             const research_group_id_type& creator_research_group_id,
                                             const account_name_type& signee,
                                             const research_group_id_type& signee_research_group_id,
-                                            const std::string& title,
-                                            const std::string& contract_hash,
+                                            const fc::string& title,
+                                            const fc::string& contract_hash,
                                             const fc::time_point_sec& created_at,
                                             const fc::time_point_sec& start_date,
                                             const fc::time_point_sec& end_date)
 {
-    auto& contract = db_impl().create<contract_object>([&](contract_object& c_o) {
+    const auto& contract = db_impl().create<contract_object>([&](contract_object& c_o) {
         c_o.creator = creator;
         c_o.creator_research_group_id = creator_research_group_id;
         fc::from_string(c_o.creator_signature, "");

@@ -5136,7 +5136,7 @@ BOOST_AUTO_TEST_CASE(request_contract_file_key_test)
         op.contract_id = 0;
         op.requester = "bob";
         op.encrypted_payload_hash = "test";
-        op.initialization_vector = "test";
+        op.encrypted_payload_iv = "test";
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -5153,8 +5153,8 @@ BOOST_AUTO_TEST_CASE(request_contract_file_key_test)
         BOOST_CHECK(request.contract_id == 0);
         BOOST_CHECK(request.requester == "bob");
         BOOST_CHECK(request.encrypted_payload_hash == "test");
-        BOOST_CHECK(request.initialization_vector == "test");
-        BOOST_CHECK(request.file_encryption_key == "");
+        BOOST_CHECK(request.encrypted_payload_iv == "test");
+        BOOST_CHECK(request.encrypted_payload_encryption_key == "");
     }
     FC_LOG_AND_RETHROW()
 }
@@ -5182,17 +5182,14 @@ BOOST_AUTO_TEST_CASE(grant_access_to_contract_file_test)
             cfa_o.contract_id = 0;
             cfa_o.requester = "bob";
             fc::from_string(cfa_o.encrypted_payload_hash, "test");
-            fc::from_string(cfa_o.initialization_vector, "test");
-            fc::from_string(cfa_o.file_encryption_key, "");
+            fc::from_string(cfa_o.encrypted_payload_iv, "test");
+            fc::from_string(cfa_o.encrypted_payload_encryption_key, "");
         });
 
         grant_access_to_contract_file_operation op;
         op.request_id = 0;
-        op.contract_id = 0;
         op.granter = "bob";
-        op.encrypted_payload_hash = "test";
-        op.initialization_vector = "test";
-        op.file_encryption_key = "key";
+        op.encrypted_payload_encryption_key = "key";
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -5207,9 +5204,8 @@ BOOST_AUTO_TEST_CASE(grant_access_to_contract_file_test)
         BOOST_CHECK(request.contract_id == 0);
         BOOST_CHECK(request.requester == "bob");
         BOOST_CHECK(request.encrypted_payload_hash == "test");
-        BOOST_CHECK(request.initialization_vector == "test");
-        BOOST_CHECK(request.file_encryption_key == "key");
-
+        BOOST_CHECK(request.encrypted_payload_iv == "test");
+        BOOST_CHECK(request.encrypted_payload_encryption_key == "key");
     }
     FC_LOG_AND_RETHROW()
 }

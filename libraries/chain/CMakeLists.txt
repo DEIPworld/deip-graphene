@@ -48,6 +48,7 @@ add_library( deip_chain
         services/dbs_offer_research_tokens.cpp
         services/dbs_grant.cpp
         services/dbs_contract.cpp
+        services/dbs_contract_requests.cpp
 
         deip_evaluator.cpp
         schema/deip_objects.cpp
