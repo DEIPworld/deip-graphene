@@ -1272,6 +1272,7 @@ public:
                                                  const int64_t creator_research_group_id,
                                                  const std::string& receiver,
                                                  const int64_t receiver_research_group_id,
+                                                 const std::string& title,
                                                  const std::string& contract_hash,
                                                  const uint32_t start_date,
                                                  const uint32_t end_date,

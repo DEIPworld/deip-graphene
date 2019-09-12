@@ -1261,15 +1261,15 @@ void create_contract_evaluator::do_apply(const create_contract_operation& op)
     for (const auto& wrapper : contracts)
     {
         const auto& contract = wrapper.get();
-        FC_ASSERT(contract.status != contract_status::contract_created, "Contract with '${hash}' already exists with status '${status}' ", ("hash", op.contract_hash)("status", contract.status));
+        FC_ASSERT(contract.status != contract_status::contract_pending, "Contract with '${hash}' already exists with status '${status}' ", ("hash", op.contract_hash)("status", contract.status));
         FC_ASSERT(contract.status != contract_status::contract_signed, "Contract with '${hash}' already exists with status '${status}' ", ("hash", op.contract_hash)("status", contract.status));
     }
 
     auto now = _db.head_block_time();
 
     contract_service.create(op.creator, op.creator_research_group_id, 
-                            op.receiver, op.receiver_research_group_id, 
-                            op.contract_hash, now, op.start_date, op.end_date);
+                            op.receiver, op.receiver_research_group_id,
+                            op.title, op.contract_hash, now, op.start_date, op.end_date);
 }
 
 void sign_contract_evaluator::do_apply(const sign_contract_operation& op)
@@ -1282,7 +1282,7 @@ void sign_contract_evaluator::do_apply(const sign_contract_operation& op)
     const auto &contract = contract_service.get(op.contract_id);
     const bool is_creator_sig = contract.creator == op.contract_signer;
     FC_ASSERT((contract.creator == op.contract_signer) || (contract.signee == op.contract_signer), "Only ${creator} or ${signee} accounts can sign the contract", ("creator", contract.creator)("signee", contract.signee));
-    FC_ASSERT(contract.status == contract_status::contract_created, "Contract with status ${status} cannot be signed", ("status", contract.status));
+    FC_ASSERT(contract.status == contract_status::contract_pending, "Contract with status ${status} cannot be signed", ("status", contract.status));
     research_group_service.check_research_group_token_existence(op.contract_signer, is_creator_sig ? contract.creator_research_group_id : contract.signee_research_group_id);
     std::string stringified_creator_signature = fc::to_string(contract.creator_signature);
     std::string stringified_signee_signature = fc::to_string(contract.signee_signature);
@@ -1328,7 +1328,7 @@ void decline_contract_evaluator::do_apply(const decline_contract_operation& op)
     research_group_service.check_research_group_token_existence(op.signee, contract.signee_research_group_id);
 
     FC_ASSERT(contract.signee == op.signee, "Only ${signee} account can decline the contract", ("signee", contract.signee));
-    FC_ASSERT(contract.status == contract_status::contract_created, "Contract with status ${status} cannot be declined", ("status", contract.status));
+    FC_ASSERT(contract.status == contract_status::contract_pending, "Contract with status ${status} cannot be declined", ("status", contract.status));
 
     contract_service.set_new_contract_status(contract, contract_status::contract_declined);
 }

@@ -4841,7 +4841,7 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         BOOST_CHECK(contract.signee == "bob");
         BOOST_CHECK(contract.signee_research_group_id == bob_rg.id._id);
         BOOST_CHECK(contract.contract_hash == "test contract");
-        BOOST_CHECK(contract.status == contract_status::contract_created);
+        BOOST_CHECK(contract.status == contract_status::contract_pending);
         BOOST_CHECK(contract.created_at == db.head_block_time());
         BOOST_CHECK(contract.start_date == fc::time_point_sec(12312313));
         BOOST_CHECK(contract.end_date == fc::time_point_sec(12312314));
@@ -4948,7 +4948,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
             c_o.signee = "bob";
             c_o.signee_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract";
-            c_o.status = contract_status::contract_created;
+            c_o.status = contract_status::contract_pending;
             c_o.created_at = db.head_block_time();
         });
 
@@ -5046,7 +5046,7 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
             c_o.signee = "bob";
             c_o.signee_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract 5";
-            c_o.status = contract_status::contract_created;
+            c_o.status = contract_status::contract_pending;
             c_o.created_at = db.head_block_time();
         });
 
@@ -5085,7 +5085,7 @@ BOOST_AUTO_TEST_CASE(decline_contract_test)
             c_o.signee = "bob";
             c_o.signee_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract";
-            c_o.status = contract_status::contract_created;
+            c_o.status = contract_status::contract_pending;
             c_o.created_at = db.head_block_time();
         });
 

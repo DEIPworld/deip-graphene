@@ -16,6 +16,7 @@ const contract_object& dbs_contract::create(const account_name_type& creator,
                                             const research_group_id_type& creator_research_group_id,
                                             const account_name_type& receiver,
                                             const research_group_id_type& receiver_research_group_id,
+                                            const std::string& title,
                                             const std::string& contract_hash,
                                             const fc::time_point_sec& created_at,
                                             const fc::time_point_sec& start_date,
@@ -28,6 +29,7 @@ const contract_object& dbs_contract::create(const account_name_type& creator,
         c_o.signee = receiver;
         c_o.signee_research_group_id = receiver_research_group_id;
         fc::from_string(c_o.signee_signature, "");
+        fc::from_string(c_o.title, title);        
         fc::from_string(c_o.contract_hash, contract_hash);        
         c_o.created_at = created_at;
         c_o.start_date = start_date;
@@ -67,6 +69,22 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_creator(const account_nam
     return ret;
 }
 
+dbs_contract::contracts_refs_type dbs_contract::get_by_signee(const account_name_type &signee)
+{
+    contracts_refs_type ret;
+
+    auto it_pair = db_impl().get_index<contract_index>().indicies().get<by_signee>().equal_range(signee);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
 dbs_contract::contracts_refs_type dbs_contract::get_by_hash(const fc::string& hash)
 {
     contracts_refs_type ret;
@@ -83,11 +101,27 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_hash(const fc::string& ha
     return ret;
 }
 
-dbs_contract::contracts_refs_type dbs_contract::get_by_signee(const account_name_type &signee)
+dbs_contract::contracts_refs_type dbs_contract::get_by_creator_research_group(const research_group_id_type& rg)
 {
     contracts_refs_type ret;
 
-    auto it_pair = db_impl().get_index<contract_index>().indicies().get<by_signee>().equal_range(signee);
+    auto it_pair = db_impl().get_index<contract_index>().indicies().get<by_creator_research_group>().equal_range(rg);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_contract::contracts_refs_type dbs_contract::get_by_signee_research_group(const research_group_id_type& rg)
+{
+    contracts_refs_type ret;
+
+    auto it_pair = db_impl().get_index<contract_index>().indicies().get<by_signee_research_group>().equal_range(rg);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)

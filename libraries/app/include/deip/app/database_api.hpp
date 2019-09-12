@@ -503,6 +503,9 @@ public:
     contract_api_obj get_contract(const contract_id_type& id) const;
     vector<contract_api_obj> get_contracts_by_creator(const account_name_type& creator) const;
     vector<contract_api_obj> get_contracts_by_signee(const account_name_type &signee) const;
+    vector<contract_api_obj> get_contracts_by_hash(const string& hash) const;
+    vector<contract_api_obj> get_contracts_by_creator_research_group(const research_group_id_type& research_group_id) const;
+    vector<contract_api_obj> get_contracts_by_signee_research_group(const research_group_id_type& research_group_id) const;
 
 
     ////////////////////////////
@@ -711,6 +714,9 @@ FC_API(deip::app::database_api,
    (get_contract)
    (get_contracts_by_creator)
    (get_contracts_by_signee)
+   (get_contracts_by_hash)
+   (get_contracts_by_creator_research_group)
+   (get_contracts_by_signee_research_group)
 
 )
 

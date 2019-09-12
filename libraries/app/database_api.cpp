@@ -2312,5 +2312,56 @@ database_api::get_contracts_by_signee(const account_name_type &signee) const
     });
 }
 
+vector<contract_api_obj>
+database_api::get_contracts_by_hash(const std::string &hash) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<contract_api_obj> results;
+        chain::dbs_contract& contract_service
+            = my->_db.obtain_service<chain::dbs_contract>();
+
+        auto contracts = contract_service.get_by_hash(hash);
+
+        for (const chain::contract_object& contract : contracts)
+            results.push_back(contract);
+
+        return results;
+    });
+}
+
+vector<contract_api_obj>
+database_api::get_contracts_by_creator_research_group(const research_group_id_type &research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<contract_api_obj> results;
+        chain::dbs_contract& contract_service
+            = my->_db.obtain_service<chain::dbs_contract>();
+
+        auto contracts = contract_service.get_by_creator_research_group(research_group_id);
+
+        for (const chain::contract_object& contract : contracts)
+            results.push_back(contract);
+
+        return results;
+    });
+}
+
+vector<contract_api_obj>
+database_api::get_contracts_by_signee_research_group(const research_group_id_type &research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<contract_api_obj> results;
+        chain::dbs_contract& contract_service
+            = my->_db.obtain_service<chain::dbs_contract>();
+
+        auto contracts = contract_service.get_by_signee_research_group(research_group_id);
+
+        for (const chain::contract_object& contract : contracts)
+            results.push_back(contract);
+
+        return results;
+    });
+}
+
 } // namespace app
 } // namespace deip

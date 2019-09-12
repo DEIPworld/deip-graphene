@@ -26,7 +26,7 @@ class contract_service_fixture : public clean_database_fixture
             c_o.signee = "bob";
             c_o.signee_research_group_id = 10;
             c_o.contract_hash = "contract 1";
-            c_o.status = contract_status::contract_created;
+            c_o.status = contract_status::contract_pending;
             c_o.created_at = fc::time_point_sec(123123);
             c_o.start_date = fc::time_point_sec(123124);
             c_o.end_date = fc::time_point_sec(123125);
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
 {
     try
     {
-        auto& contract = data_service.create("alice", 100, "bob", 150, "test", fc::time_point_sec(123), fc::time_point_sec(1234), fc::time_point_sec(1235));
+        auto& contract = data_service.create("alice", 100, "bob", 150, "title", "test", fc::time_point_sec(123), fc::time_point_sec(1234), fc::time_point_sec(1235));
 
         BOOST_CHECK(contract.creator == "alice");
         BOOST_CHECK(contract.creator_research_group_id == 100);
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         BOOST_CHECK(contract.signee_research_group_id == 150);
 
         BOOST_CHECK(contract.contract_hash == "test");
-        BOOST_CHECK(contract.status == contract_status::contract_created);
+        BOOST_CHECK(contract.status == contract_status::contract_pending);
         BOOST_CHECK(contract.start_date == fc::time_point_sec(1234));
         BOOST_CHECK(contract.end_date == fc::time_point_sec(1235));
     }
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(get_contracts_by_creator)
                     contract.signee == "bob" &&
                     contract.signee_research_group_id == 10 &&
                     contract.contract_hash == "contract 1" &&
-                    contract.status == contract_status::contract_created &&
+                    contract.status == contract_status::contract_pending &&
                     contract.created_at == fc::time_point_sec(123123) &&
                     contract.start_date == fc::time_point_sec(123124) &&
                     contract.end_date == fc::time_point_sec(123125);

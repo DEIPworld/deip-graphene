@@ -7,10 +7,11 @@ namespace chain {
 
 enum contract_status : uint16_t
 {
-    contract_created = 1,
+    contract_pending = 1,
     contract_signed = 2,
-    contract_declined = 3,
-    contract_expired = 4
+    contract_declined = 3, // by signee
+    contract_closed = 4, // by creator
+    contract_expired = 5
 };
 
 class contract_object : public object<contract_object_type, contract_object>
@@ -20,12 +21,13 @@ class contract_object : public object<contract_object_type, contract_object>
 public:
 
     template <typename Constructor, typename Allocator>
-    contract_object(Constructor&& c, allocator<Allocator> a) : creator_signature(a), signee_signature(a), contract_hash(a)
+    contract_object(Constructor&& c, allocator<Allocator> a) : title(a), creator_signature(a), signee_signature(a), contract_hash(a)
     {
         c(*this);
     }
 
     contract_id_type id;
+    fc::shared_string title;
 
     account_name_type creator;
     account_name_type signee;
@@ -37,7 +39,7 @@ public:
     fc::shared_string signee_signature;
 
     fc::shared_string contract_hash;
-    contract_status status = contract_status::contract_created;
+    contract_status status = contract_status::contract_pending;
 
     fc::time_point_sec created_at;
     fc::time_point_sec start_date;
@@ -80,16 +82,17 @@ typedef multi_index_container<contract_object,
                                                         member<contract_object,
                                                                 research_group_id_type,
                                                                 &contract_object::signee_research_group_id>>>,
+
                               allocator<contract_object>>
     contract_index;
 
 }
 }
 
-FC_REFLECT_ENUM(deip::chain::contract_status, (contract_created)(contract_signed)(contract_declined)(contract_expired))
+FC_REFLECT_ENUM(deip::chain::contract_status, (contract_pending)(contract_signed)(contract_declined)(contract_closed)(contract_expired))
 
 FC_REFLECT( deip::chain::contract_object,
-             (id)(creator)(signee)(creator_research_group_id)(signee_research_group_id)(creator_signature)(signee_signature)(contract_hash)(status)(created_at)(start_date)(end_date)
+             (id)(title)(creator)(signee)(creator_research_group_id)(signee_research_group_id)(creator_signature)(signee_signature)(contract_hash)(status)(created_at)(start_date)(end_date)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::contract_object, deip::chain::contract_index )
