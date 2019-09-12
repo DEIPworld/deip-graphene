@@ -49,6 +49,6 @@ DEFINE_EVALUATOR(exclude_member_from_research)
 DEFINE_EVALUATOR(create_contract)
 DEFINE_EVALUATOR(sign_contract)
 DEFINE_EVALUATOR(decline_contract)
-
+DEFINE_EVALUATOR(close_contract)
 }
 } // deip::chain

@@ -1913,6 +1913,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<sign_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<decline_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<close_contract_evaluator>();
 }
 
 void database::initialize_indexes()

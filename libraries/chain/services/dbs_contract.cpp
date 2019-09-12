@@ -14,8 +14,8 @@ dbs_contract::dbs_contract(database &db)
 
 const contract_object& dbs_contract::create(const account_name_type& creator,
                                             const research_group_id_type& creator_research_group_id,
-                                            const account_name_type& receiver,
-                                            const research_group_id_type& receiver_research_group_id,
+                                            const account_name_type& signee,
+                                            const research_group_id_type& signee_research_group_id,
                                             const std::string& title,
                                             const std::string& contract_hash,
                                             const fc::time_point_sec& created_at,
@@ -26,8 +26,8 @@ const contract_object& dbs_contract::create(const account_name_type& creator,
         c_o.creator = creator;
         c_o.creator_research_group_id = creator_research_group_id;
         fc::from_string(c_o.creator_signature, "");
-        c_o.signee = receiver;
-        c_o.signee_research_group_id = receiver_research_group_id;
+        c_o.signee = signee;
+        c_o.signee_research_group_id = signee_research_group_id;
         fc::from_string(c_o.signee_signature, "");
         fc::from_string(c_o.title, title);        
         fc::from_string(c_o.contract_hash, contract_hash);        
@@ -101,11 +101,11 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_hash(const fc::string& ha
     return ret;
 }
 
-dbs_contract::contracts_refs_type dbs_contract::get_by_creator_research_group(const research_group_id_type& rg)
+dbs_contract::contracts_refs_type dbs_contract::get_by_creator_research_group(const research_group_id_type& research_group_id)
 {
     contracts_refs_type ret;
 
-    auto it_pair = db_impl().get_index<contract_index>().indicies().get<by_creator_research_group>().equal_range(rg);
+    auto it_pair = db_impl().get_index<contract_index>().indicies().get<by_creator_research_group>().equal_range(research_group_id);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
@@ -117,11 +117,75 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_creator_research_group(co
     return ret;
 }
 
-dbs_contract::contracts_refs_type dbs_contract::get_by_signee_research_group(const research_group_id_type& rg)
+dbs_contract::contracts_refs_type dbs_contract::get_by_signee_research_group(const research_group_id_type& research_group_id)
 {
     contracts_refs_type ret;
 
-    auto it_pair = db_impl().get_index<contract_index>().indicies().get<by_signee_research_group>().equal_range(rg);
+    auto it_pair = db_impl().get_index<contract_index>().indicies().get<by_signee_research_group>().equal_range(
+        research_group_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_contract::contracts_refs_type dbs_contract::get_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash)
+{
+    contracts_refs_type ret;
+
+    auto it_pair = db_impl()
+                       .get_index<contract_index>()
+                       .indicies()
+                       .get<by_creator_research_group_and_contract_hash>()
+                       .equal_range(boost::make_tuple(research_group_id, hash));
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_contract::contracts_refs_type dbs_contract::get_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash)
+{
+    contracts_refs_type ret;
+
+    auto it_pair = db_impl()
+                       .get_index<contract_index>()
+                       .indicies()
+                       .get<by_signee_research_group_and_contract_hash>()
+                       .equal_range(boost::make_tuple(research_group_id, hash));
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_contract::contracts_refs_type dbs_contract::get_by_creator_research_group_and_signee_research_group_and_contract_hash(
+    const research_group_id_type& creator_research_group_id,
+    const research_group_id_type& signee_research_group_id,
+    const fc::string& hash)
+{
+    contracts_refs_type ret;
+
+    auto it_pair = db_impl()
+                       .get_index<contract_index>()
+                       .indicies()
+                       .get<by_creator_research_group_and_signee_research_group_and_contract_hash>()
+                       .equal_range(boost::make_tuple(creator_research_group_id, signee_research_group_id, hash));
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)

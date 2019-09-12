@@ -4817,8 +4817,8 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         create_contract_operation op;
         op.creator = "alice";
         op.creator_research_group_id = alice_rg.id._id;
-        op.receiver = "bob";
-        op.receiver_research_group_id = bob_rg.id._id;
+        op.signee = "bob";
+        op.signee_research_group_id = bob_rg.id._id;
         op.contract_hash = "test contract";
         op.start_date = fc::time_point_sec(12312313);
         op.end_date = fc::time_point_sec(12312314);
@@ -4868,8 +4868,8 @@ BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
         create_contract_operation op;
         op.creator = "alice";
         op.creator_research_group_id = alice_rg.id._id;
-        op.receiver = "bob";
-        op.receiver_research_group_id = bob_rg.id._id;
+        op.signee = "bob";
+        op.signee_research_group_id = bob_rg.id._id;
         op.contract_hash = "duplicated hash";
         op.start_date = fc::time_point_sec(12312313);
         op.end_date = fc::time_point_sec(12312314);
@@ -4885,8 +4885,8 @@ BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
         create_contract_operation op2;
         op2.creator = "alice";
         op2.creator_research_group_id = alice_rg.id._id;
-        op2.receiver = "bob";
-        op2.receiver_research_group_id = bob_rg.id._id;
+        op2.signee = "bob";
+        op2.signee_research_group_id = bob_rg.id._id;
         op2.contract_hash = "duplicated hash";
         op2.start_date = fc::time_point_sec(12312315);
         op2.end_date = fc::time_point_sec(12312316);
@@ -4912,8 +4912,8 @@ BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
         create_contract_operation op4;
         op4.creator = "alice";
         op4.creator_research_group_id = alice_rg.id._id;
-        op4.receiver = "bob";
-        op4.receiver_research_group_id = bob_rg.id._id;
+        op4.signee = "bob";
+        op4.signee_research_group_id = bob_rg.id._id;
         op4.contract_hash = "duplicated hash";
         op4.start_date = fc::time_point_sec(12312415);
         op4.end_date = fc::time_point_sec(12312416);

@@ -2829,8 +2829,8 @@ annotated_signed_transaction wallet_api::reject_offer_research_tokens(const int6
 
 annotated_signed_transaction wallet_api::create_contract(const std::string& creator,
                                                          const int64_t creator_research_group_id,
-                                                         const std::string& receiver,
-                                                         const int64_t receiver_research_group_id,
+                                                         const std::string& signee,
+                                                         const int64_t signee_research_group_id,
                                                          const std::string& title,
                                                          const std::string& contract_hash,
                                                          const uint32_t start_date,
@@ -2843,8 +2843,8 @@ annotated_signed_transaction wallet_api::create_contract(const std::string& crea
 
     op.creator = creator;
     op.creator_research_group_id = creator_research_group_id;
-    op.receiver = receiver;
-    op.receiver_research_group_id = receiver_research_group_id;
+    op.signee = signee;
+    op.signee_research_group_id = signee_research_group_id;
     op.title = title;
     op.contract_hash = contract_hash;
     op.start_date = fc::time_point_sec(start_date);
@@ -2887,6 +2887,22 @@ annotated_signed_transaction wallet_api::decline_contract(const int64_t contract
 
     op.contract_id = contract_id;
     op.signee = signee;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::close_contract(const int64_t contract_id, const std::string& creator, const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    close_contract_operation op;
+
+    op.contract_id = contract_id;
+    op.creator = creator;
 
     signed_transaction tx;
     tx.operations.push_back(op);

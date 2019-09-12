@@ -325,7 +325,7 @@ void exclude_member_from_research_operation::validate() const
 void create_contract_operation::validate() const
 {
     validate_account_name(creator);
-    validate_account_name(receiver);
+    validate_account_name(signee);
     FC_ASSERT(title.size() > 0 && title.size() < 200, "Contract title must be specified in length from 1 to 200 characters");
     FC_ASSERT(((contract_hash.size() / 2) == 256 / 8), "Contract hash must be a hexadecimal string 256 bits in length");
     FC_ASSERT(std::all_of(contract_hash.begin(), contract_hash.end(), ::isxdigit), "Contract hash must be a hexadecimal string 256 bits in length");
@@ -341,6 +341,11 @@ void sign_contract_operation::validate() const
 void decline_contract_operation::validate() const
 {
     validate_account_name(signee);
+}
+
+void close_contract_operation::validate() const
+{
+    validate_account_name(creator);
 }
 
 }

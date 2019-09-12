@@ -1,6 +1,7 @@
 #pragma once
 
 #include "deip_object_types.hpp"
+#include <boost/multi_index/composite_key.hpp>
 
 namespace deip {
 namespace chain {
@@ -52,6 +53,9 @@ struct by_contract_hash;
 struct by_end_date;
 struct by_creator_research_group;
 struct by_signee_research_group;
+struct by_creator_research_group_and_contract_hash;
+struct by_signee_research_group_and_contract_hash;
+struct by_creator_research_group_and_signee_research_group_and_contract_hash;
 
 typedef multi_index_container<contract_object,
                               indexed_by<ordered_unique<tag<by_id>,
@@ -81,7 +85,42 @@ typedef multi_index_container<contract_object,
                                          ordered_non_unique<tag<by_signee_research_group>,
                                                         member<contract_object,
                                                                 research_group_id_type,
-                                                                &contract_object::signee_research_group_id>>>,
+                                                                &contract_object::signee_research_group_id>>, 
+                                         ordered_non_unique<tag<by_creator_research_group_and_contract_hash>,
+                                                composite_key<contract_object,
+                                                        member<contract_object,
+                                                                research_group_id_type,
+                                                                &contract_object::creator_research_group_id>,
+                                                        member<contract_object,
+                                                                fc::shared_string,
+                                                                &contract_object::contract_hash>>,
+                                                composite_key_compare<std::less<research_group_id_type>,
+                                                        fc::strcmp_less>>,
+                                         ordered_non_unique<tag<by_signee_research_group_and_contract_hash>,
+                                                composite_key<contract_object,
+                                                        member<contract_object,
+                                                                research_group_id_type,
+                                                                &contract_object::signee_research_group_id>,
+                                                        member<contract_object,
+                                                                fc::shared_string,
+                                                                &contract_object::contract_hash>>,
+                                                composite_key_compare<std::less<research_group_id_type>,
+                                                        fc::strcmp_less>>,
+                                         ordered_non_unique<tag<by_creator_research_group_and_signee_research_group_and_contract_hash>,
+                                                composite_key<contract_object,
+                                                        member<contract_object,
+                                                                research_group_id_type,
+                                                                &contract_object::creator_research_group_id>,
+                                                        member<contract_object,
+                                                                research_group_id_type,
+                                                                &contract_object::signee_research_group_id>,
+                                                        member<contract_object,
+                                                                fc::shared_string,
+                                                                &contract_object::contract_hash>>,
+                                                composite_key_compare<
+                                                        std::less<research_group_id_type>,
+                                                        std::less<research_group_id_type>,
+                                                        fc::strcmp_less>>>,
 
                               allocator<contract_object>>
     contract_index;

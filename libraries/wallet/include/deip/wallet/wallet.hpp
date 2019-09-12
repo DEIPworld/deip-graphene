@@ -1267,11 +1267,10 @@ public:
                                                               const std::string& buyer,
                                                               const bool broadcast);
 
-
     annotated_signed_transaction create_contract(const std::string& creator,
                                                  const int64_t creator_research_group_id,
-                                                 const std::string& receiver,
-                                                 const int64_t receiver_research_group_id,
+                                                 const std::string& signee,
+                                                 const int64_t signee_research_group_id,
                                                  const std::string& title,
                                                  const std::string& contract_hash,
                                                  const uint32_t start_date,
@@ -1286,7 +1285,10 @@ public:
     annotated_signed_transaction decline_contract(const int64_t contract_id,
                                                   const std::string& signee,
                                                   const bool broadcast);
-
+    
+    annotated_signed_transaction close_contract(const int64_t contract_id,
+                                                  const std::string& creator,
+                                                  const bool broadcast);
 
 
 public:
@@ -1429,6 +1431,7 @@ FC_API( deip::wallet::wallet_api,
         (create_contract)
         (sign_contract)
         (decline_contract)
+        (close_contract)
 
         /// helper api
         (get_prototype_operation)

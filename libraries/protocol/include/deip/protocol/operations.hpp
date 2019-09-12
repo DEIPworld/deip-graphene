@@ -58,6 +58,7 @@ namespace deip {
                 create_contract_operation,
                 sign_contract_operation,
                 decline_contract_operation,
+                close_contract_operation,
 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,

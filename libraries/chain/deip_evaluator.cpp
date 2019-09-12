@@ -1254,10 +1254,10 @@ void create_contract_evaluator::do_apply(const create_contract_operation& op)
 
     account_service.check_account_existence(op.creator);
     research_group_service.check_research_group_token_existence(op.creator, op.creator_research_group_id);
-    account_service.check_account_existence(op.receiver);
-    research_group_service.check_research_group_token_existence(op.receiver, op.receiver_research_group_id);
+    account_service.check_account_existence(op.signee);
+    research_group_service.check_research_group_token_existence(op.signee, op.signee_research_group_id);
 
-    const auto& contracts = contract_service.get_by_hash(op.contract_hash);
+    const auto& contracts = contract_service.get_by_creator_research_group_and_signee_research_group_and_contract_hash(op.creator_research_group_id, op.signee_research_group_id, op.contract_hash);
     for (const auto& wrapper : contracts)
     {
         const auto& contract = wrapper.get();
@@ -1268,7 +1268,7 @@ void create_contract_evaluator::do_apply(const create_contract_operation& op)
     auto now = _db.head_block_time();
 
     contract_service.create(op.creator, op.creator_research_group_id, 
-                            op.receiver, op.receiver_research_group_id,
+                            op.signee, op.signee_research_group_id,
                             op.title, op.contract_hash, now, op.start_date, op.end_date);
 }
 
@@ -1331,6 +1331,24 @@ void decline_contract_evaluator::do_apply(const decline_contract_operation& op)
     FC_ASSERT(contract.status == contract_status::contract_pending, "Contract with status ${status} cannot be declined", ("status", contract.status));
 
     contract_service.set_new_contract_status(contract, contract_status::contract_declined);
+}
+
+void close_contract_evaluator::do_apply(const close_contract_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_contract& contract_service = _db.obtain_service<dbs_contract>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    account_service.check_account_existence(op.creator);
+    const auto& contract = contract_service.get(op.contract_id);
+    research_group_service.check_research_group_token_existence(op.creator, contract.creator_research_group_id);
+
+    FC_ASSERT(contract.creator == op.creator, "Only ${creator} account can decline the contract",
+              ("creator", contract.creator));
+    FC_ASSERT(contract.status == contract_status::contract_pending, "Contract with status ${status} cannot be declined",
+              ("status", contract.status));
+
+    contract_service.set_new_contract_status(contract, contract_status::contract_closed);
 }
 
 } // namespace chain
