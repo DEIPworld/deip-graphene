@@ -26,7 +26,7 @@ class contract_service_fixture : public clean_database_fixture
             c_o.signee = "bob";
             c_o.signee_research_group_id = 10;
             c_o.contract_hash = "contract 1";
-            c_o.status = contract_status::contract_sent;
+            c_o.status = contract_status::contract_created;
             c_o.created_at = fc::time_point_sec(123123);
             c_o.start_date = fc::time_point_sec(123124);
             c_o.end_date = fc::time_point_sec(123125);
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         BOOST_CHECK(contract.signee_research_group_id == 150);
 
         BOOST_CHECK(contract.contract_hash == "test");
-        BOOST_CHECK(contract.status == contract_status::contract_sent);
+        BOOST_CHECK(contract.status == contract_status::contract_created);
         BOOST_CHECK(contract.start_date == fc::time_point_sec(1234));
         BOOST_CHECK(contract.end_date == fc::time_point_sec(1235));
     }
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(get_contracts_by_creator)
                     contract.signee == "bob" &&
                     contract.signee_research_group_id == 10 &&
                     contract.contract_hash == "contract 1" &&
-                    contract.status == contract_status::contract_sent &&
+                    contract.status == contract_status::contract_created &&
                     contract.created_at == fc::time_point_sec(123123) &&
                     contract.start_date == fc::time_point_sec(123124) &&
                     contract.end_date == fc::time_point_sec(123125);
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(sign_by_receiver_test)
         create_contracts();
 
         auto& contract = data_service.get(0);
-        data_service.sign(contract, public_key_type("DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi"));
+        data_service.sign(contract, "bob", "signature");
 
         BOOST_CHECK(contract.creator == "alice");
         BOOST_CHECK(contract.creator_research_group_id == 5);

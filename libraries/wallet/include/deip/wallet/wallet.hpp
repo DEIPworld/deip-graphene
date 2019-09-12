@@ -1278,13 +1278,12 @@ public:
                                                  const bool broadcast);
 
     annotated_signed_transaction sign_contract(const int64_t contract_id,
-                                               const std::string& receiver,
-                                               const int64_t receiver_research_group_id,
+                                               const std::string& contract_signer,
+                                               const std::string& signature,
                                                const bool broadcast);
 
     annotated_signed_transaction decline_contract(const int64_t contract_id,
-                                                  const std::string& receiver,
-                                                  const int64_t receiver_research_group_id,
+                                                  const std::string& signee,
                                                   const bool broadcast);
 
 

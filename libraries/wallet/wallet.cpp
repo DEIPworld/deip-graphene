@@ -2856,8 +2856,8 @@ annotated_signed_transaction wallet_api::create_contract(const std::string& crea
 }
 
 annotated_signed_transaction wallet_api::sign_contract(const int64_t contract_id,
-                                                       const std::string& receiver,
-                                                       const int64_t receiver_research_group_id,
+                                                       const std::string& contract_signer,
+                                                       const std::string& signature,
                                                        const bool broadcast)
 {
     FC_ASSERT(!is_locked());
@@ -2865,8 +2865,8 @@ annotated_signed_transaction wallet_api::sign_contract(const int64_t contract_id
     sign_contract_operation op;
 
     op.contract_id = contract_id;
-    op.signee = receiver;
-    op.signee_research_group_id = receiver_research_group_id;
+    op.contract_signer = contract_signer;
+    op.signature = signature;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2876,8 +2876,7 @@ annotated_signed_transaction wallet_api::sign_contract(const int64_t contract_id
 }
 
 annotated_signed_transaction wallet_api::decline_contract(const int64_t contract_id,
-                                                          const std::string& receiver,
-                                                          const int64_t receiver_research_group_id,
+                                                          const std::string& signee,
                                                           const bool broadcast)
 {
     FC_ASSERT(!is_locked());
@@ -2885,8 +2884,7 @@ annotated_signed_transaction wallet_api::decline_contract(const int64_t contract
     decline_contract_operation op;
 
     op.contract_id = contract_id;
-    op.signee = receiver;
-    op.signee_research_group_id = receiver_research_group_id;
+    op.signee = signee;
 
     signed_transaction tx;
     tx.operations.push_back(op);

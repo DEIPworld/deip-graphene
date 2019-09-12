@@ -326,15 +326,15 @@ void create_contract_operation::validate() const
 {
     validate_account_name(creator);
     validate_account_name(receiver);
-    FC_ASSERT(contract_hash.size() > 0, "Contract hash must be specified");
-    FC_ASSERT(fc::is_utf8(contract_hash), "Contract hash is not valid UTF8 string");
+    FC_ASSERT(((contract_hash.size() / 2) == 256 / 8), "Contract hash must be a hexadecimal string 256 bits in length");
+    FC_ASSERT(std::all_of(contract_hash.begin(), contract_hash.end(), ::isxdigit), "Contract hash must be a hexadecimal string 256 bits in length");
     FC_ASSERT(end_date > start_date, "End time must be greater than a start time");
 }
 
 void sign_contract_operation::validate() const
 {
-    validate_account_name(signee);
-
+    validate_account_name(contract_signer);
+    FC_ASSERT(signature.size() > 0, "Signature of contract hash from signee is required");
 }
 
 void decline_contract_operation::validate() const

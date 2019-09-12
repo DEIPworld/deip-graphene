@@ -1,5 +1,8 @@
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/services/dbs_contract.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 
 namespace deip {
 namespace chain {
@@ -21,9 +24,11 @@ const contract_object& dbs_contract::create(const account_name_type& creator,
     auto& contract = db_impl().create<contract_object>([&](contract_object& c_o) {
         c_o.creator = creator;
         c_o.creator_research_group_id = creator_research_group_id;
+        fc::from_string(c_o.creator_signature, "");
         c_o.signee = receiver;
         c_o.signee_research_group_id = receiver_research_group_id;
-        fc::from_string(c_o.contract_hash, contract_hash);
+        fc::from_string(c_o.signee_signature, "");
+        fc::from_string(c_o.contract_hash, contract_hash);        
         c_o.created_at = created_at;
         c_o.start_date = start_date;
         c_o.end_date = end_date;
@@ -94,16 +99,28 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_signee(const account_name
     return ret;
 }
 
-void dbs_contract::sign(const contract_object &contract)
+const contract_object& dbs_contract::sign(const contract_object& contract, const account_name_type& contract_signer, const fc::string& sig)
 {
-    db_impl().modify(contract, [&](contract_object& c_o)
-    {
-        c_o.status = contract_status::contract_signed;
+    db_impl().modify(contract, [&](contract_object& c_o) {
+        const bool is_creator_sig = c_o.creator == contract_signer;
+        std::string stringified_signature = is_creator_sig
+          ? fc::to_string(c_o.creator_signature)
+          : fc::to_string(c_o.signee_signature);
+
+        if (stringified_signature.empty()) {
+          fc::from_string(is_creator_sig ? c_o.creator_signature : c_o.signee_signature, sig);
+        } else {
+          std::set<std::string> signature_set;
+          boost::split(signature_set, stringified_signature, boost::is_any_of(","));
+          signature_set.insert(sig);
+          std::string updated_stringified_signature = boost::algorithm::join(signature_set, ",");
+          fc::from_string(is_creator_sig ? c_o.creator_signature : c_o.signee_signature, updated_stringified_signature);
+        }
     });
+    return db_impl().get<contract_object>(contract.id);
 }
 
-void dbs_contract::set_new_contract_status(const contract_object& contract,
-                                           const contract_status& status)
+void dbs_contract::set_new_contract_status(const contract_object& contract, const contract_status& status)
 {
     db_impl().modify(contract, [&](contract_object& c_o) { c_o.status = status; });
 }

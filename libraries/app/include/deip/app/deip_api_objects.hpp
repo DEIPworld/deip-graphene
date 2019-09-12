@@ -1077,6 +1077,8 @@ struct contract_api_obj
         ,  creator_research_group_id(c_o.creator_research_group_id._id)
         ,  signee(c_o.signee)
         ,  signee_research_group_id(c_o.signee_research_group_id._id)
+        ,  creator_signature(fc::to_string(c_o.creator_signature))
+        ,  signee_signature(fc::to_string(c_o.signee_signature))
         ,  contract_hash(fc::to_string(c_o.contract_hash))
         ,  status(c_o.status)
         ,  created_at(c_o.created_at)
@@ -1097,6 +1099,9 @@ struct contract_api_obj
 
     account_name_type signee;
     int64_t signee_research_group_id;
+
+    std::string creator_signature;
+    std::string signee_signature;
 
     std::string contract_hash;
     uint16_t status;
@@ -1450,8 +1455,10 @@ FC_REFLECT( deip::app::contract_api_obj,
             (id)
             (creator)
             (creator_research_group_id)
+            (creator_signature)
             (signee)
             (signee_research_group_id)
+            (signee_signature)
             (contract_hash)
             (status)
             (created_at)

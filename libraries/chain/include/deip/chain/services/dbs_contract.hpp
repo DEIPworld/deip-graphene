@@ -36,10 +36,9 @@ public:
 
     contracts_refs_type get_by_signee(const account_name_type &signee);
 
-    void sign(const contract_object &contract);
+    const contract_object& sign(const contract_object& contract, const account_name_type& contract_signer, const fc::string& sig);
 
-    void set_new_contract_status(const contract_object& contract,
-                                 const contract_status& status);
+    void set_new_contract_status(const contract_object& contract, const contract_status& status);
 
 };
 } // namespace chain
