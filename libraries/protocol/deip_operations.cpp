@@ -322,7 +322,7 @@ void exclude_member_from_research_operation::validate() const
     validate_account_name(account_to_exclude);
 }
 
-void create_contract_operation::validate() const
+void create_nda_contract_operation::validate() const
 {
     validate_account_name(creator);
     validate_account_name(signee);
@@ -331,30 +331,30 @@ void create_contract_operation::validate() const
     FC_ASSERT(end_date > start_date, "End time must be greater than a start time");
 }
 
-void sign_contract_operation::validate() const
+void sign_nda_contract_operation::validate() const
 {
     validate_account_name(contract_signer);
     FC_ASSERT(signature.size() > 0, "Signature of contract hash from signee is required");
 }
 
-void decline_contract_operation::validate() const
+void decline_nda_contract_operation::validate() const
 {
     validate_account_name(signee);
 }
 
-void close_contract_operation::validate() const
+void close_nda_contract_operation::validate() const
 {
     validate_account_name(creator);
 }
 
-void request_contract_file_key_operation::validate() const
+void create_request_by_nda_contract_operation::validate() const
 {
     validate_account_name(requester);
     validate_256_bits_hexadecimal_string(encrypted_payload_hash);
     validate_256_bits_hexadecimal_string(encrypted_payload_iv);
 }
 
-void grant_access_to_contract_file_operation::validate() const
+void fulfil_request_by_nda_contract_operation::validate() const
 {
     validate_account_name(granter);
     FC_ASSERT(encrypted_payload_encryption_key.size() > 0, "Encrypted payload hash must be specified");

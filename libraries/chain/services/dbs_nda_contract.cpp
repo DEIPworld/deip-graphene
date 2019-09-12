@@ -1,5 +1,5 @@
 #include <deip/chain/database/database.hpp>
-#include <deip/chain/services/dbs_contract.hpp>
+#include <deip/chain/services/dbs_nda_contract.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
@@ -7,12 +7,12 @@
 namespace deip {
 namespace chain {
 
-dbs_contract::dbs_contract(database &db)
+dbs_nda_contract::dbs_nda_contract(database& db)
     : _base_type(db)
 {
 }
 
-const contract_object& dbs_contract::create(const account_name_type& creator,
+const nda_contract_object& dbs_nda_contract::create(const account_name_type& creator,
                                             const research_group_id_type& creator_research_group_id,
                                             const account_name_type& signee,
                                             const research_group_id_type& signee_research_group_id,
@@ -22,7 +22,7 @@ const contract_object& dbs_contract::create(const account_name_type& creator,
                                             const fc::time_point_sec& start_date,
                                             const fc::time_point_sec& end_date)
 {
-    const auto& contract = db_impl().create<contract_object>([&](contract_object& c_o) {
+    const auto& contract = db_impl().create<nda_contract_object>([&](nda_contract_object& c_o) {
         c_o.creator = creator;
         c_o.creator_research_group_id = creator_research_group_id;
         fc::from_string(c_o.creator_signature, "");
@@ -39,21 +39,21 @@ const contract_object& dbs_contract::create(const account_name_type& creator,
     return contract;
 }
 
-const contract_object& dbs_contract::get(const contract_id_type& id) const
+const nda_contract_object& dbs_nda_contract::get(const nda_contract_id_type& id) const
 {
     try {
-        return db_impl().get<contract_object>(id);
+        return db_impl().get<nda_contract_object>(id);
     }
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-void dbs_contract::check_contract_existence(const contract_id_type& id) const
+void dbs_nda_contract::check_contract_existence(const nda_contract_id_type& id) const
 {
-    const auto& contract = db_impl().find<contract_object, by_id>(id);
+    const auto& contract = db_impl().find<nda_contract_object, by_id>(id);
     FC_ASSERT(contract != nullptr, "Contract with id \"${1}\" must exist.", ("1", id));
 }
 
-dbs_contract::contracts_refs_type dbs_contract::get_by_creator(const account_name_type& creator)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator(const account_name_type& creator)
 {
     contracts_refs_type ret;
 
@@ -69,7 +69,7 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_creator(const account_nam
     return ret;
 }
 
-dbs_contract::contracts_refs_type dbs_contract::get_by_signee(const account_name_type &signee)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_signee(const account_name_type& signee)
 {
     contracts_refs_type ret;
 
@@ -85,7 +85,7 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_signee(const account_name
     return ret;
 }
 
-dbs_contract::contracts_refs_type dbs_contract::get_by_hash(const fc::string& hash)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_hash(const fc::string& hash)
 {
     contracts_refs_type ret;
 
@@ -101,7 +101,7 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_hash(const fc::string& ha
     return ret;
 }
 
-dbs_contract::contracts_refs_type dbs_contract::get_by_creator_research_group(const research_group_id_type& research_group_id)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator_research_group(const research_group_id_type& research_group_id)
 {
     contracts_refs_type ret;
 
@@ -117,7 +117,7 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_creator_research_group(co
     return ret;
 }
 
-dbs_contract::contracts_refs_type dbs_contract::get_by_signee_research_group(const research_group_id_type& research_group_id)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_signee_research_group(const research_group_id_type& research_group_id)
 {
     contracts_refs_type ret;
 
@@ -134,7 +134,7 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_signee_research_group(con
     return ret;
 }
 
-dbs_contract::contracts_refs_type dbs_contract::get_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash)
 {
     contracts_refs_type ret;
 
@@ -154,7 +154,7 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_creator_research_group_an
     return ret;
 }
 
-dbs_contract::contracts_refs_type dbs_contract::get_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash)
 {
     contracts_refs_type ret;
 
@@ -174,7 +174,7 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_signee_research_group_and
     return ret;
 }
 
-dbs_contract::contracts_refs_type dbs_contract::get_by_creator_research_group_and_signee_research_group_and_contract_hash(
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator_research_group_and_signee_research_group_and_contract_hash(
     const research_group_id_type& creator_research_group_id,
     const research_group_id_type& signee_research_group_id,
     const fc::string& hash)
@@ -197,9 +197,9 @@ dbs_contract::contracts_refs_type dbs_contract::get_by_creator_research_group_an
     return ret;
 }
 
-const contract_object& dbs_contract::sign(const contract_object& contract, const account_name_type& contract_signer, const fc::string& sig)
+const nda_contract_object& dbs_nda_contract::sign(const nda_contract_object& contract, const account_name_type& contract_signer, const fc::string& sig)
 {
-    db_impl().modify(contract, [&](contract_object& c_o) {
+    db_impl().modify(contract, [&](nda_contract_object& c_o) {
         const bool is_creator_sig = c_o.creator == contract_signer;
         std::string stringified_signature = is_creator_sig
           ? fc::to_string(c_o.creator_signature)
@@ -215,12 +215,12 @@ const contract_object& dbs_contract::sign(const contract_object& contract, const
           fc::from_string(is_creator_sig ? c_o.creator_signature : c_o.signee_signature, updated_stringified_signature);
         }
     });
-    return db_impl().get<contract_object>(contract.id);
+    return db_impl().get<nda_contract_object>(contract.id);
 }
 
-void dbs_contract::set_new_contract_status(const contract_object& contract, const contract_status& status)
+void dbs_nda_contract::set_new_contract_status(const nda_contract_object& contract, const nda_contract_status& status)
 {
-    db_impl().modify(contract, [&](contract_object& c_o) { c_o.status = status; });
+    db_impl().modify(contract, [&](nda_contract_object& c_o) { c_o.status = status; });
 }
 
 } //namespace chain

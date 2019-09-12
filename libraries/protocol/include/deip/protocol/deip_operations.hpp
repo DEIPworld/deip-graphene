@@ -31,7 +31,7 @@ inline void validate_enum_value_by_range(int val, int first, int last)
 inline void validate_256_bits_hexadecimal_string(const string& str)
 {
     FC_ASSERT(((str.size() / 2) == 256 / 8), "Provided value must be a lowercase hexadecimal string 256 bits in length");
-    FC_ASSERT(std::all_of(str.begin(), str.end(), ::islower), "Provided value must be a lowercase hexadecimal string 256 bits in length");
+    // FC_ASSERT(std::all_of(str.begin(), str.end(), ::islower), "Provided value must be a lowercase hexadecimal string 256 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 256 bits in length");
 }
 
@@ -812,7 +812,7 @@ struct exclude_member_from_research_operation : public base_operation
     }
 };
 
-struct create_contract_operation : public base_operation
+struct create_nda_contract_operation : public base_operation
 {
     account_name_type creator;
     int64_t creator_research_group_id;
@@ -834,7 +834,7 @@ struct create_contract_operation : public base_operation
     }
 };
 
-struct sign_contract_operation : public base_operation
+struct sign_nda_contract_operation : public base_operation
 {
     int64_t contract_id;
     account_name_type contract_signer;
@@ -848,7 +848,7 @@ struct sign_contract_operation : public base_operation
     }
 };
 
-struct decline_contract_operation : public base_operation
+struct decline_nda_contract_operation : public base_operation
 {
     int64_t contract_id;
     account_name_type signee;
@@ -861,7 +861,7 @@ struct decline_contract_operation : public base_operation
     }
 };
 
-struct close_contract_operation : public base_operation
+struct close_nda_contract_operation : public base_operation
 {
     int64_t contract_id;
     account_name_type creator;
@@ -874,8 +874,7 @@ struct close_contract_operation : public base_operation
     }
 };
 
-
-struct request_contract_file_key_operation : public base_operation
+struct create_request_by_nda_contract_operation : public base_operation
 {
     account_name_type requester;
     std::string encrypted_payload_hash;
@@ -891,7 +890,7 @@ struct request_contract_file_key_operation : public base_operation
     }
 };
 
-struct grant_access_to_contract_file_operation : public base_operation
+struct fulfil_request_by_nda_contract_operation : public base_operation
 {
     account_name_type granter;
     std::string encrypted_payload_encryption_key;
@@ -975,11 +974,11 @@ FC_REFLECT( deip::protocol::create_grant_operation, (target_discipline)(amount)(
 FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
 FC_REFLECT( deip::protocol::add_member_to_research_operation, (research_id)(owner)(invitee))
 FC_REFLECT( deip::protocol::exclude_member_from_research_operation, (research_id)(owner)(account_to_exclude))
-FC_REFLECT( deip::protocol::create_contract_operation, (creator)(creator_research_group_id)(signee)(signee_research_group_id)(title)(contract_hash)(start_date)(end_date))
-FC_REFLECT( deip::protocol::sign_contract_operation, (contract_id)(contract_signer)(signature))
-FC_REFLECT( deip::protocol::decline_contract_operation, (contract_id)(signee))
-FC_REFLECT( deip::protocol::close_contract_operation, (contract_id)(creator))
-FC_REFLECT( deip::protocol::request_contract_file_key_operation, (requester)(encrypted_payload_hash)(encrypted_payload_iv)(contract_id))
-FC_REFLECT( deip::protocol::grant_access_to_contract_file_operation, (granter)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key)(request_id))
+FC_REFLECT( deip::protocol::create_nda_contract_operation, (creator)(creator_research_group_id)(signee)(signee_research_group_id)(title)(contract_hash)(start_date)(end_date))
+FC_REFLECT( deip::protocol::sign_nda_contract_operation, (contract_id)(contract_signer)(signature))
+FC_REFLECT( deip::protocol::decline_nda_contract_operation, (contract_id)(signee))
+FC_REFLECT( deip::protocol::close_nda_contract_operation, (contract_id)(creator))
+FC_REFLECT( deip::protocol::create_request_by_nda_contract_operation, (requester)(encrypted_payload_hash)(encrypted_payload_iv)(contract_id))
+FC_REFLECT( deip::protocol::fulfil_request_by_nda_contract_operation, (granter)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key)(request_id))
 
 // clang-format on

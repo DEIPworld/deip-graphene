@@ -16,7 +16,7 @@
 #include <deip/chain/schema/global_property_object.hpp>
 #include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/operation_object.hpp>
-#include <deip/chain/schema/contract_file_access_object.hpp>
+#include <deip/chain/schema/nda_contract_file_access_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
@@ -24,8 +24,8 @@
 #include <deip/chain/schema/transaction_object.hpp>
 
 #include <deip/chain/services/dbs_account.hpp>
-#include <deip/chain/services/dbs_contract.hpp>
-#include <deip/chain/services/dbs_contract_requests.hpp>
+#include <deip/chain/services/dbs_nda_contract.hpp>
+#include <deip/chain/services/dbs_nda_contract_requests.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
@@ -1833,7 +1833,7 @@ void database::process_research_token_sales()
 
 void database::process_contracts()
 {
-    dbs_contract& contract_service = obtain_service<dbs_contract>();
+    dbs_nda_contract& contract_service = obtain_service<dbs_nda_contract>();
     const auto& idx = get_index<contract_index>().indices().get<by_end_date>();
     auto itr = idx.begin();
     auto _head_block_time = head_block_time();
@@ -1842,7 +1842,7 @@ void database::process_contracts()
     {
         if (itr->end_date <= _head_block_time) {
             auto& contract = *itr;
-            contract_service.set_new_contract_status(contract, contract_status::contract_expired);
+            contract_service.set_new_contract_status(contract, nda_contract_status::nda_contract_expired);
         }
         itr++;
     }
@@ -1912,12 +1912,12 @@ void database::initialize_evaluators()
 //    _my->_evaluator_registry.register_evaluator<create_grant_application_evaluator>();
     _my->_evaluator_registry.register_evaluator<add_member_to_research_evaluator>();
     _my->_evaluator_registry.register_evaluator<exclude_member_from_research_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_contract_evaluator>();
-    _my->_evaluator_registry.register_evaluator<sign_contract_evaluator>();
-    _my->_evaluator_registry.register_evaluator<decline_contract_evaluator>();
-    _my->_evaluator_registry.register_evaluator<close_contract_evaluator>();
-    _my->_evaluator_registry.register_evaluator<request_contract_file_key_evaluator>();
-    _my->_evaluator_registry.register_evaluator<grant_access_to_contract_file_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<sign_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<decline_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<close_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_request_by_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<fulfil_request_by_nda_contract_evaluator>();
 }
 
 void database::initialize_indexes()

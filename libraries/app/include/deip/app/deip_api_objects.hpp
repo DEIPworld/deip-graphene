@@ -26,8 +26,8 @@
 #include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/grant_application_object.hpp>
-#include <deip/chain/schema/contract_object.hpp>
-#include <deip/chain/schema/contract_file_access_object.hpp>
+#include <deip/chain/schema/nda_contract_object.hpp>
+#include <deip/chain/schema/nda_contract_file_access_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -1070,27 +1070,27 @@ struct grant_application_api_obj
     fc::time_point_sec created_at;
 };
 
-struct contract_api_obj
+struct nda_contract_api_obj
 {
-    contract_api_obj(const chain::contract_object& c_o)
-        :  id(c_o.id._id)
-        ,  creator(c_o.creator)
-        ,  creator_research_group_id(c_o.creator_research_group_id._id)
-        ,  signee(c_o.signee)
-        ,  signee_research_group_id(c_o.signee_research_group_id._id)
-        ,  creator_signature(fc::to_string(c_o.creator_signature))
-        ,  signee_signature(fc::to_string(c_o.signee_signature))
-        ,  title(fc::to_string(c_o.title))
-        ,  contract_hash(fc::to_string(c_o.contract_hash))
-        ,  status(c_o.status)
-        ,  created_at(c_o.created_at)
-        ,  start_date(c_o.start_date)
-        ,  end_date(c_o.end_date)
+    nda_contract_api_obj(const chain::nda_contract_object& c_o)
+        : id(c_o.id._id)
+        , creator(c_o.creator)
+        , creator_research_group_id(c_o.creator_research_group_id._id)
+        , signee(c_o.signee)
+        , signee_research_group_id(c_o.signee_research_group_id._id)
+        , creator_signature(fc::to_string(c_o.creator_signature))
+        , signee_signature(fc::to_string(c_o.signee_signature))
+        , title(fc::to_string(c_o.title))
+        , contract_hash(fc::to_string(c_o.contract_hash))
+        , status(c_o.status)
+        , created_at(c_o.created_at)
+        , start_date(c_o.start_date)
+        , end_date(c_o.end_date)
 
     {}
 
     // because fc::variant require for temporary object
-    contract_api_obj()
+    nda_contract_api_obj()
     {
     }
 
@@ -1114,9 +1114,9 @@ struct contract_api_obj
     fc::time_point_sec end_date;
 };
 
-struct contract_file_access_api_obj
+struct nda_contract_file_access_api_obj
 {
-    contract_file_access_api_obj(const chain::contract_file_access_object& cfa_o)
+    nda_contract_file_access_api_obj(const chain::nda_contract_file_access_object& cfa_o)
         : id(cfa_o.id._id)
         , contract_id(cfa_o.contract_id._id)
         , requester(cfa_o.requester)
@@ -1127,7 +1127,7 @@ struct contract_file_access_api_obj
     {}
 
     // because fc::variant require for temporary object
-    contract_file_access_api_obj()
+    nda_contract_file_access_api_obj()
     {
     }
 
@@ -1481,7 +1481,7 @@ FC_REFLECT( deip::app::grant_application_api_obj,
 
 )
 
-FC_REFLECT( deip::app::contract_api_obj,
+FC_REFLECT( deip::app::nda_contract_api_obj,
             (id)
             (creator)
             (creator_research_group_id)
@@ -1498,7 +1498,7 @@ FC_REFLECT( deip::app::contract_api_obj,
 
 )
 
-FC_REFLECT( deip::app::contract_file_access_api_obj,
+FC_REFLECT( deip::app::nda_contract_file_access_api_obj,
             (id)
             (contract_id)
             (requester)

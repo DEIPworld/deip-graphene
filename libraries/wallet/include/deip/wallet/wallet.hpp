@@ -1267,7 +1267,7 @@ public:
                                                               const std::string& buyer,
                                                               const bool broadcast);
 
-    annotated_signed_transaction create_contract(const std::string& creator,
+    annotated_signed_transaction create_nda_contract(const std::string& creator,
                                                  const int64_t creator_research_group_id,
                                                  const std::string& signee,
                                                  const int64_t signee_research_group_id,
@@ -1277,16 +1277,16 @@ public:
                                                  const uint32_t end_date,
                                                  const bool broadcast);
 
-    annotated_signed_transaction sign_contract(const int64_t contract_id,
+    annotated_signed_transaction sign_nda_contract(const int64_t contract_id,
                                                const std::string& contract_signer,
                                                const std::string& signature,
                                                const bool broadcast);
 
-    annotated_signed_transaction decline_contract(const int64_t contract_id,
+    annotated_signed_transaction decline_nda_contract(const int64_t contract_id,
                                                   const std::string& signee,
                                                   const bool broadcast);
     
-    annotated_signed_transaction close_contract(const int64_t contract_id,
+    annotated_signed_transaction close_nda_contract(const int64_t contract_id,
                                                   const std::string& creator,
                                                   const bool broadcast);
 
@@ -1428,10 +1428,10 @@ FC_API( deip::wallet::wallet_api,
         (propose_offer_research_tokens)
         (accept_offer_research_tokens)
         (reject_offer_research_tokens)
-        (create_contract)
-        (sign_contract)
-        (decline_contract)
-        (close_contract)
+        (create_nda_contract)
+        (sign_nda_contract)
+        (decline_nda_contract)
+        (close_nda_contract)
 
         /// helper api
         (get_prototype_operation)
