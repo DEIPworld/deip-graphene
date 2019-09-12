@@ -16,6 +16,7 @@
 #include <deip/chain/schema/global_property_object.hpp>
 #include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/operation_object.hpp>
+#include <deip/chain/schema/contract_file_access_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
@@ -1914,6 +1915,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<sign_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<decline_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<close_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<request_contract_file_key_evaluator>();
+    _my->_evaluator_registry.register_evaluator<grant_access_to_contract_file_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -1959,6 +1962,7 @@ void database::initialize_indexes()
     add_index<grant_index>();
     add_index<grant_application_index>();
     add_index<contract_index>();
+    add_index<contract_file_access_index>();
 
     _plugin_index_signal();
 }

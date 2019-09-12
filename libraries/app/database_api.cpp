@@ -2412,6 +2412,12 @@ database_api::get_by_creator_research_group_and_signee_research_group_and_contra
             results.push_back(contract);
 
         return results;
+}
+
+contract_file_access_api_obj database_api::get_contract_file_access(const contract_file_access_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        return my->_db.get<contract_file_access_object>(id);
     });
 }
 

@@ -348,5 +348,23 @@ void close_contract_operation::validate() const
     validate_account_name(creator);
 }
 
+void request_contract_file_key_operation::validate() const
+{
+    validate_account_name(requester);
+    FC_ASSERT(encrypted_payload_hash.size() > 0, "Payload hash must be specified");
+    FC_ASSERT(fc::is_utf8(encrypted_payload_hash), "Payload hash is not valid UTF8 string");
+    FC_ASSERT(initialization_vector.size() > 0, "IV must be specified");
+    FC_ASSERT(fc::is_utf8(initialization_vector), "IV is not valid UTF8 string");
+}
+
+void grant_access_to_contract_file_operation::validate() const
+{
+    validate_account_name(granter);
+    FC_ASSERT(encrypted_payload_hash.size() > 0, "Payload hash must be specified");
+    FC_ASSERT(fc::is_utf8(encrypted_payload_hash), "Payload hash is not valid UTF8 string");
+    FC_ASSERT(initialization_vector.size() > 0, "IV must be specified");
+    FC_ASSERT(fc::is_utf8(initialization_vector), "IV is not valid UTF8 string");
+}
+
 }
 } // deip::protocol

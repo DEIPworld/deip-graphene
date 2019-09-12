@@ -19,6 +19,7 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <deip/chain/schema/contract_file_access_object.hpp>
 #include <deip/chain/schema/deip_objects.hpp>
 #include <deip/chain/schema/discipline_supply_object.hpp>
 #include <deip/chain/schema/expert_token_object.hpp>
@@ -5109,6 +5110,108 @@ BOOST_AUTO_TEST_CASE(decline_contract_test)
         BOOST_CHECK(contract.signee_research_group_id == bob_rg.id._id);
         BOOST_CHECK(contract.status == contract_status::contract_declined);
         BOOST_CHECK(contract.created_at == db.head_block_time());
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(request_contract_file_key_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: request_contract_file_key");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        generate_block();
+
+        auto& contract = db.create<contract_object>([&](contract_object& c_o) {
+            c_o.id = 0;
+            c_o.creator = "alice";
+            c_o.signee = "bob";
+            c_o.creator_key = alice.memo_key;
+            c_o.contract_hash = "test contract";
+            c_o.status = contract_status::contract_sent;
+            c_o.created_at = db.head_block_time();
+        });
+
+        request_contract_file_key_operation op;
+        op.contract_id = 0;
+        op.requester = "bob";
+        op.encrypted_payload_hash = "test";
+        op.initialization_vector = "test";
+
+        private_key_type priv_key = generate_private_key("bob");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& request = db.get<contract_file_access_object>(0);
+
+        BOOST_CHECK(request.id == 0);
+        BOOST_CHECK(request.contract_id == 0);
+        BOOST_CHECK(request.requester == "bob");
+        BOOST_CHECK(request.encrypted_payload_hash == "test");
+        BOOST_CHECK(request.initialization_vector == "test");
+        BOOST_CHECK(request.file_encryption_key == "");
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(grant_access_to_contract_file_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: grant_access_to_contract_file");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        generate_block();
+
+        auto& contract = db.create<contract_object>([&](contract_object& c_o) {
+            c_o.id = 0;
+            c_o.creator = "alice";
+            c_o.signee = "bob";
+            c_o.creator_key = alice.memo_key;
+            c_o.contract_hash = "test contract";
+            c_o.status = contract_status::contract_sent;
+            c_o.created_at = db.head_block_time();
+        });
+
+        auto& request = db.create<contract_file_access_object>([&](contract_file_access_object& cfa_o) {
+            cfa_o.id = 0;
+            cfa_o.contract_id = 0;
+            cfa_o.requester = "bob";
+            fc::from_string(cfa_o.encrypted_payload_hash, "test");
+            fc::from_string(cfa_o.initialization_vector, "test");
+            fc::from_string(cfa_o.file_encryption_key, "");
+        });
+
+        grant_access_to_contract_file_operation op;
+        op.request_id = 0;
+        op.contract_id = 0;
+        op.granter = "bob";
+        op.encrypted_payload_hash = "test";
+        op.initialization_vector = "test";
+        op.file_encryption_key = "key";
+
+        private_key_type priv_key = generate_private_key("bob");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        BOOST_CHECK(request.id == 0);
+        BOOST_CHECK(request.contract_id == 0);
+        BOOST_CHECK(request.requester == "bob");
+        BOOST_CHECK(request.encrypted_payload_hash == "test");
+        BOOST_CHECK(request.initialization_vector == "test");
+        BOOST_CHECK(request.file_encryption_key == "key");
+
     }
     FC_LOG_AND_RETHROW()
 }

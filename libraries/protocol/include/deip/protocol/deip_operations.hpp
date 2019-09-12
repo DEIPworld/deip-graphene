@@ -867,6 +867,41 @@ struct close_contract_operation : public base_operation
     }
 };
 
+
+struct request_contract_file_key_operation : public base_operation
+{
+    account_name_type requester;
+    std::string encrypted_payload_hash;
+    std::string initialization_vector;
+
+    int64_t contract_id;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(requester);
+    }
+};
+
+struct grant_access_to_contract_file_operation : public base_operation
+{
+    account_name_type granter;
+    std::string encrypted_payload_hash;
+    std::string initialization_vector;
+    std::string file_encryption_key;
+
+    int64_t contract_id;
+    int64_t request_id;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(granter);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -940,4 +975,7 @@ FC_REFLECT( deip::protocol::create_contract_operation, (creator)(creator_researc
 FC_REFLECT( deip::protocol::sign_contract_operation, (contract_id)(contract_signer)(signature))
 FC_REFLECT( deip::protocol::decline_contract_operation, (contract_id)(signee))
 FC_REFLECT( deip::protocol::close_contract_operation, (contract_id)(creator))
+FC_REFLECT( deip::protocol::request_contract_file_key_operation, (requester)(encrypted_payload_hash)(initialization_vector)(contract_id))
+FC_REFLECT( deip::protocol::grant_access_to_contract_file_operation, (granter)(encrypted_payload_hash)(initialization_vector)(file_encryption_key)(contract_id)(request_id))
+
 // clang-format on

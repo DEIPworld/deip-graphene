@@ -497,8 +497,8 @@ public:
     vector<grant_application_api_obj> get_applications_by_research_id(const research_id_type& research_id) const;
 
     ////////////////
-    // Contracts///
-    ///////////////
+    // Contracts////
+    ////////////////
 
     contract_api_obj get_contract(const contract_id_type& id) const;
     vector<contract_api_obj> get_contracts_by_creator(const account_name_type& creator) const;
@@ -509,6 +509,11 @@ public:
     vector<contract_api_obj> get_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const;
     vector<contract_api_obj> get_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const;
     vector<contract_api_obj> get_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& creator_research_group_id, const research_group_id_type& signee_research_group_id, const fc::string& hash) const;
+
+    //////////////////////
+    // Contracts Files ///
+    //////////////////////
+    contract_file_access_api_obj get_contract_file_access(const contract_file_access_id_type& id) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -723,6 +728,7 @@ FC_API(deip::app::database_api,
    (get_by_signee_research_group_and_contract_hash)
    (get_by_creator_research_group_and_signee_research_group_and_contract_hash)
 
+   (get_contract_file_access)
 )
 
 // clang-format on
