@@ -2911,6 +2911,51 @@ annotated_signed_transaction wallet_api::close_nda_contract(const int64_t contra
     return my->sign_transaction(tx, broadcast);
 }
 
+annotated_signed_transaction wallet_api::create_request_by_nda_contract(const std::string& requester,
+                                                                        const int64_t contract_id,
+                                                                        const std::string encrypted_payload_hash,
+                                                                        const std::string encrypted_payload_iv,
+                                                                        const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    create_request_by_nda_contract_operation op;
+
+    op.requester = requester;
+    op.contract_id = contract_id;
+    op.encrypted_payload_hash = encrypted_payload_hash;
+    op.encrypted_payload_iv = encrypted_payload_iv;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+
+annotated_signed_transaction wallet_api::fulfil_request_by_nda_contract(const std::string& granter,
+                                                                        const int64_t request_id,
+                                                                        const std::string& encrypted_payload_encryption_key,
+                                                                        const std::string& proof_of_encrypted_payload_encryption_key,
+                                                                        const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    fulfil_request_by_nda_contract_operation op;
+
+    op.granter = granter;
+    op.request_id = request_id;
+    op.encrypted_payload_encryption_key = encrypted_payload_encryption_key;
+    op.proof_of_encrypted_payload_encryption_key = proof_of_encrypted_payload_encryption_key;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
 namespace utils {
 
 

@@ -1,5 +1,4 @@
 #include <deip/chain/database/database.hpp>
-#include <deip/chain/services/dbs_nda_contract.hpp>
 #include <deip/chain/services/dbs_nda_contract_requests.hpp>
 #include <deip/chain/schema/nda_contract_file_access_object.hpp>
 
@@ -12,10 +11,44 @@ dbs_nda_contract_requests::dbs_nda_contract_requests(database& db)
 }
 
 const nda_contract_file_access_object&
-dbs_nda_contract_requests::get_file_access_request(const nda_contract_file_access_id_type& request_id)
+dbs_nda_contract_requests::get(const nda_contract_file_access_id_type& request_id)
 {
     const auto& request = db_impl().get<nda_contract_file_access_object>(request_id);
     return request;
+}
+
+dbs_nda_contract_requests::nda_contracts_refs_type
+dbs_nda_contract_requests::get_by_contract_id(const nda_contract_id_type& contract_id)
+{
+    nda_contracts_refs_type ret;
+
+    auto it_pair = db_impl().get_index<nda_contract_file_access_index>().indicies().get<by_contract_id>().equal_range(contract_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_nda_contract_requests::nda_contracts_refs_type
+dbs_nda_contract_requests::get_by_requester(const account_name_type& requester)
+{
+    nda_contracts_refs_type ret;
+
+    auto it_pair = db_impl().get_index<nda_contract_file_access_index>().indicies().get<by_requester>().equal_range(requester);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
 }
 
 const nda_contract_file_access_object&

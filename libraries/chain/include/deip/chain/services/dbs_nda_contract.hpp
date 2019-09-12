@@ -46,6 +46,8 @@ public:
 
     contracts_refs_type get_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash);
 
+    contracts_refs_type get_by_creator_research_group_and_signee_research_group(const research_group_id_type& creator_research_group_id, const research_group_id_type& signee_research_group_id);
+
     contracts_refs_type get_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& creator_research_group_id, const research_group_id_type& signee_research_group_id, const fc::string& hash);
 
     const nda_contract_object& sign(const nda_contract_object& contract, const account_name_type& contract_signer, const fc::string& sig);

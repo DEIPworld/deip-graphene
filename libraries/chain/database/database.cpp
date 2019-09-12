@@ -1834,7 +1834,7 @@ void database::process_research_token_sales()
 void database::process_contracts()
 {
     dbs_nda_contract& contract_service = obtain_service<dbs_nda_contract>();
-    const auto& idx = get_index<contract_index>().indices().get<by_end_date>();
+    const auto& idx = get_index<nda_contract_index>().indices().get<by_end_date>();
     auto itr = idx.begin();
     auto _head_block_time = head_block_time();
 
@@ -1962,8 +1962,8 @@ void database::initialize_indexes()
     add_index<offer_research_tokens_index>();
     add_index<grant_index>();
     add_index<grant_application_index>();
-    add_index<contract_index>();
-    add_index<contract_file_access_index>();
+    add_index<nda_contract_index>();
+    add_index<nda_contract_file_access_index>();
 
     _plugin_index_signal();
 }

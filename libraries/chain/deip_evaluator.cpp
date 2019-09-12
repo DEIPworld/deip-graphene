@@ -1358,14 +1358,14 @@ void create_request_by_nda_contract_evaluator::do_apply(const create_request_by_
     dbs_account &account_service = _db.obtain_service<dbs_account>();
     dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
-    dbs_nda_contract_requests& contract_requests_service = _db.obtain_service<dbs_nda_contract_requests>();
+    dbs_nda_contract_requests& nda_contract_requests_service = _db.obtain_service<dbs_nda_contract_requests>();
 
     account_service.check_account_existence(op.requester);
     const auto& contract = nda_contracts_service.get(op.contract_id);
     research_group_service.check_research_group_token_existence(op.requester, contract.signee_research_group_id);
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_signed, "Files cannot be shared under the terms of a contract with ${status} status", ("status", contract.status));
 
-    contract_requests_service.create_file_access_request(op.contract_id, op.requester, op.encrypted_payload_hash, op.encrypted_payload_iv);
+    nda_contract_requests_service.create_file_access_request(op.contract_id, op.requester, op.encrypted_payload_hash, op.encrypted_payload_iv);
 }
 
 void fulfil_request_by_nda_contract_evaluator::do_apply(const fulfil_request_by_nda_contract_operation& op)
@@ -1373,15 +1373,15 @@ void fulfil_request_by_nda_contract_evaluator::do_apply(const fulfil_request_by_
     dbs_account &account_service = _db.obtain_service<dbs_account>();
     dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
     dbs_research_group &research_group_service = _db.obtain_service<dbs_research_group>();
-    dbs_nda_contract_requests& contract_requests_service = _db.obtain_service<dbs_nda_contract_requests>();
+    dbs_nda_contract_requests& nda_contract_requests_service = _db.obtain_service<dbs_nda_contract_requests>();
 
     account_service.check_account_existence(op.granter);
-    auto& request = contract_requests_service.get_file_access_request(op.request_id);
+    const auto& request = nda_contract_requests_service.get(op.request_id);
     const auto& contract = nda_contracts_service.get(request.contract_id);
     research_group_service.check_research_group_token_existence(op.granter, contract.creator_research_group_id);
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_signed, "Files cannot be shared under the terms of a contract with ${status} status", ("status", contract.status));
 
-    contract_requests_service.fulfill_file_access_request(request, op.encrypted_payload_encryption_key, op.proof_of_encrypted_payload_encryption_key);
+    nda_contract_requests_service.fulfill_file_access_request(request, op.encrypted_payload_encryption_key, op.proof_of_encrypted_payload_encryption_key);
 }
 
 } // namespace chain

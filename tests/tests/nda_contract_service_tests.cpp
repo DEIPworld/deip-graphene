@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(check_contract_existence_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_contracts_by_creator)
+BOOST_AUTO_TEST_CASE(get_nda_contracts_by_creator)
 {
     try
     {

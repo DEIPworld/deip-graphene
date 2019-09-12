@@ -1123,6 +1123,7 @@ struct nda_contract_file_access_api_obj
         , encrypted_payload_hash(fc::to_string(cfa_o.encrypted_payload_hash))
         , encrypted_payload_iv(fc::to_string(cfa_o.encrypted_payload_iv))
         , encrypted_payload_encryption_key(fc::to_string(cfa_o.encrypted_payload_encryption_key))
+        , proof_of_encrypted_payload_encryption_key(fc::to_string(cfa_o.proof_of_encrypted_payload_encryption_key))
 
     {}
 
@@ -1137,8 +1138,8 @@ struct nda_contract_file_access_api_obj
     account_name_type requester;
     std::string encrypted_payload_hash;
     std::string encrypted_payload_iv;
-
     std::string encrypted_payload_encryption_key;
+    std::string proof_of_encrypted_payload_encryption_key;
 };
 
 }; // namespace app
@@ -1505,7 +1506,7 @@ FC_REFLECT( deip::app::nda_contract_file_access_api_obj,
             (encrypted_payload_hash)
             (encrypted_payload_iv)
             (encrypted_payload_encryption_key)
-
+            (proof_of_encrypted_payload_encryption_key)
 )
 
 // clang-format on

@@ -496,24 +496,26 @@ public:
     vector<grant_application_api_obj> get_applications_by_grant(const grant_id_type& grant_id) const;
     vector<grant_application_api_obj> get_applications_by_research_id(const research_id_type& research_id) const;
 
-    ////////////////
-    // Contracts////
-    ////////////////
+    ///////////////////
+    // NDA Contracts //
+    ///////////////////
+    nda_contract_api_obj get_nda_contract(const nda_contract_id_type& id) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_creator(const account_name_type& creator) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_signee(const account_name_type &signee) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_hash(const string& hash) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group(const research_group_id_type& research_group_id) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_signee_research_group(const research_group_id_type& research_group_id) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_signee_research_group(const research_group_id_type& creator_research_group_id, const research_group_id_type& signee_research_group_id) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& creator_research_group_id, const research_group_id_type& signee_research_group_id, const fc::string& hash) const;
 
-    nda_contract_api_obj get_contract(const nda_contract_id_type& id) const;
-    vector<nda_contract_api_obj> get_contracts_by_creator(const account_name_type& creator) const;
-    vector<nda_contract_api_obj> get_contracts_by_signee(const account_name_type &signee) const;
-    vector<nda_contract_api_obj> get_contracts_by_hash(const string& hash) const;
-    vector<nda_contract_api_obj> get_contracts_by_creator_research_group(const research_group_id_type& research_group_id) const;
-    vector<nda_contract_api_obj> get_contracts_by_signee_research_group(const research_group_id_type& research_group_id) const;
-    vector<nda_contract_api_obj> get_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const;
-    vector<nda_contract_api_obj> get_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const;
-    vector<nda_contract_api_obj> get_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& creator_research_group_id, const research_group_id_type& signee_research_group_id, const fc::string& hash) const;
-
-    //////////////////////
-    // Contracts Files ///
-    //////////////////////
-    nda_contract_file_access_api_obj get_contract_file_access(const nda_contract_file_access_id_type& id) const;
+    ////////////////////////////
+    // NDA Contracts Requests //
+    ////////////////////////////
+    nda_contract_file_access_api_obj get_nda_contract_request(const nda_contract_file_access_id_type& id) const;
+    vector<nda_contract_file_access_api_obj> get_nda_contract_requests_by_contract_id(const nda_contract_id_type& contract_id) const;
+    vector<nda_contract_file_access_api_obj> get_nda_contract_requests_by_requester(const account_name_type& requester) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -718,17 +720,20 @@ FC_API(deip::app::database_api,
    (get_applications_by_research_id)
 
    // Contracts
-   (get_contract)
-   (get_contracts_by_creator)
-   (get_contracts_by_signee)
-   (get_contracts_by_hash)
-   (get_contracts_by_creator_research_group)
-   (get_contracts_by_signee_research_group)
-   (get_by_creator_research_group_and_contract_hash)
-   (get_by_signee_research_group_and_contract_hash)
-   (get_by_creator_research_group_and_signee_research_group_and_contract_hash)
+   (get_nda_contract)
+   (get_nda_contracts_by_creator)
+   (get_nda_contracts_by_signee)
+   (get_nda_contracts_by_hash)
+   (get_nda_contracts_by_creator_research_group)
+   (get_nda_contracts_by_signee_research_group)
+   (get_nda_contracts_by_creator_research_group_and_contract_hash)
+   (get_nda_contracts_by_signee_research_group_and_contract_hash)
+   (get_nda_contracts_by_creator_research_group_and_signee_research_group)
+   (get_nda_contracts_by_creator_research_group_and_signee_research_group_and_contract_hash)
 
-   (get_contract_file_access)
+   (get_nda_contract_request)
+   (get_nda_contract_requests_by_contract_id)
+   (get_nda_contract_requests_by_requester)
 )
 
 // clang-format on

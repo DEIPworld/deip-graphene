@@ -1290,6 +1290,17 @@ public:
                                                   const std::string& creator,
                                                   const bool broadcast);
 
+    annotated_signed_transaction create_request_by_nda_contract(const std::string& requester,
+                                                                const int64_t contract_id,
+                                                                const std::string encrypted_payload_hash,
+                                                                const std::string encrypted_payload_iv,
+                                                                const bool broadcast);
+
+    annotated_signed_transaction fulfil_request_by_nda_contract(const std::string& granter,
+                                                                const int64_t request_id,
+                                                                const std::string& encrypted_payload_encryption_key,
+                                                                const std::string& proof_of_encrypted_payload_encryption_key,
+                                                                const bool broadcast);
 
 public:
     fc::signal<void(bool)> lock_changed;
@@ -1432,6 +1443,9 @@ FC_API( deip::wallet::wallet_api,
         (sign_nda_contract)
         (decline_nda_contract)
         (close_nda_contract)
+
+        (create_request_by_nda_contract)
+        (fulfil_request_by_nda_contract)
 
         /// helper api
         (get_prototype_operation)

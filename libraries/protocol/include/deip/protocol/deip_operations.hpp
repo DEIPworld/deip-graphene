@@ -31,8 +31,8 @@ inline void validate_enum_value_by_range(int val, int first, int last)
 inline void validate_256_bits_hexadecimal_string(const string& str)
 {
     FC_ASSERT(((str.size() / 2) == 256 / 8), "Provided value must be a lowercase hexadecimal string 256 bits in length");
-    // FC_ASSERT(std::all_of(str.begin(), str.end(), ::islower), "Provided value must be a lowercase hexadecimal string 256 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 256 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 256 bits in length");
 }
 
 struct account_create_operation : public base_operation
@@ -895,6 +895,7 @@ struct fulfil_request_by_nda_contract_operation : public base_operation
     account_name_type granter;
     std::string encrypted_payload_encryption_key;
     std::string proof_of_encrypted_payload_encryption_key;
+
     int64_t request_id;
 
     void validate() const;

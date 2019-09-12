@@ -56,6 +56,7 @@ struct by_signee_research_group;
 struct by_creator_research_group_and_contract_hash;
 struct by_signee_research_group_and_contract_hash;
 struct by_creator_research_group_and_signee_research_group_and_contract_hash;
+struct by_creator_research_group_and_signee_research_group;
 
 typedef multi_index_container<nda_contract_object,
                               indexed_by<ordered_unique<tag<by_id>,
@@ -85,7 +86,18 @@ typedef multi_index_container<nda_contract_object,
                                          ordered_non_unique<tag<by_signee_research_group>,
                                                         member<nda_contract_object,
                                                                 research_group_id_type,
-                                                                &nda_contract_object::signee_research_group_id>>, 
+                                                                &nda_contract_object::signee_research_group_id>>,
+                                         ordered_non_unique<tag<by_creator_research_group_and_signee_research_group>,
+                                                composite_key<nda_contract_object,
+                                                        member<nda_contract_object,
+                                                                research_group_id_type,
+                                                                &nda_contract_object::creator_research_group_id>,
+                                                        member<nda_contract_object,
+                                                                research_group_id_type,
+                                                                &nda_contract_object::signee_research_group_id>>,
+                                                composite_key_compare<
+                                                        std::less<research_group_id_type>,
+                                                        std::less<research_group_id_type>>>,
                                          ordered_non_unique<tag<by_creator_research_group_and_contract_hash>,
                                                 composite_key<nda_contract_object,
                                                         member<nda_contract_object,
@@ -123,7 +135,7 @@ typedef multi_index_container<nda_contract_object,
                                                         fc::strcmp_less>>>,
 
                               allocator<nda_contract_object>>
-    contract_index;
+    nda_contract_index;
 
 }
 }
@@ -134,4 +146,4 @@ FC_REFLECT( deip::chain::nda_contract_object,
              (id)(title)(creator)(signee)(creator_research_group_id)(signee_research_group_id)(creator_signature)(signee_signature)(contract_hash)(status)(created_at)(start_date)(end_date)
 )
 
-CHAINBASE_SET_INDEX_TYPE(deip::chain::nda_contract_object, deip::chain::contract_index)
+CHAINBASE_SET_INDEX_TYPE(deip::chain::nda_contract_object, deip::chain::nda_contract_index)
