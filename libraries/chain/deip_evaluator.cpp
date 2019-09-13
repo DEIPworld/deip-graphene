@@ -1291,7 +1291,7 @@ void sign_nda_contract_evaluator::do_apply(const sign_nda_contract_operation& op
     FC_ASSERT(stringified_creator_signature.find(op.signature) == std::string::npos, "Signature ${signature} is already made from ${party} party", ("signature", op.signature)("party", contract.creator));
     FC_ASSERT(stringified_signee_signature.find(op.signature) == std::string::npos, "Signature ${signature} is already made from ${party} party", ("signature", op.signature)("party", contract.signee));
 
-    fc::sha256 digest = fc::sha256(fc::to_string(contract.contract_hash));
+    fc::sha256 digest = fc::sha256::hash(fc::to_string(contract.contract_hash));
     fc::ecc::compact_signature signature;
     fc::array<char, 65> buffer;
     fc::from_hex(op.signature, buffer.begin(), buffer.size());

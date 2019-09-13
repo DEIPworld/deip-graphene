@@ -351,7 +351,7 @@ void create_request_by_nda_contract_operation::validate() const
 {
     validate_account_name(requester);
     validate_256_bits_hexadecimal_string(encrypted_payload_hash);
-    validate_256_bits_hexadecimal_string(encrypted_payload_iv);
+    validate_128_bits_hexadecimal_string(encrypted_payload_iv);
 }
 
 void fulfil_request_by_nda_contract_operation::validate() const
