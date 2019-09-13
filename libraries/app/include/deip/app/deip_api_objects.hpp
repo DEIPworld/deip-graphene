@@ -1119,6 +1119,7 @@ struct nda_contract_file_access_api_obj
     nda_contract_file_access_api_obj(const chain::nda_contract_file_access_object& cfa_o)
         : id(cfa_o.id._id)
         , contract_id(cfa_o.contract_id._id)
+        , status(cfa_o.status)
         , requester(cfa_o.requester)
         , encrypted_payload_hash(fc::to_string(cfa_o.encrypted_payload_hash))
         , encrypted_payload_iv(fc::to_string(cfa_o.encrypted_payload_iv))
@@ -1134,6 +1135,7 @@ struct nda_contract_file_access_api_obj
 
     int64_t id;
     int64_t contract_id;
+    uint16_t status;
 
     account_name_type requester;
     std::string encrypted_payload_hash;
@@ -1502,6 +1504,7 @@ FC_REFLECT( deip::app::nda_contract_api_obj,
 FC_REFLECT( deip::app::nda_contract_file_access_api_obj,
             (id)
             (contract_id)
+            (status)
             (requester)
             (encrypted_payload_hash)
             (encrypted_payload_iv)

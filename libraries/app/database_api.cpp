@@ -2471,5 +2471,14 @@ database_api::get_nda_contract_requests_by_requester(const account_name_type& re
 }
 
 
+nda_contract_file_access_api_obj
+database_api::get_nda_contract_request_by_contract_id_and_hash(const nda_contract_id_type& contract_id, const fc::string& encrypted_payload_hash) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_nda_contract_requests& contract_requests_service = my->_db.obtain_service<chain::dbs_nda_contract_requests>();
+        return contract_requests_service.get_by_contract_id_and_hash(contract_id, encrypted_payload_hash);
+    });
+}
+
 } // namespace app
 } // namespace deip

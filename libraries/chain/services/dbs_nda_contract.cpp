@@ -34,6 +34,7 @@ const nda_contract_object& dbs_nda_contract::create(const account_name_type& cre
         c_o.created_at = created_at;
         c_o.start_date = start_date;
         c_o.end_date = end_date;
+        c_o.status = nda_contract_status::nda_contract_pending;
     });
 
     return contract;

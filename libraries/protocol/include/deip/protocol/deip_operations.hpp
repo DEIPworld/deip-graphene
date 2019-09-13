@@ -32,14 +32,14 @@ inline void validate_256_bits_hexadecimal_string(const string& str)
 {
     FC_ASSERT(((str.size() / 2) == 256 / 8), "Provided value must be a lowercase hexadecimal string 256 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 256 bits in length");
-    // FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 256 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 256 bits in length");
 }
 
 inline void validate_128_bits_hexadecimal_string(const string& str)
 {
-    FC_ASSERT(((str.size()) == 256 / 8), "Provided value must be a lowercase hexadecimal string 256 bits in length");
-    FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 256 bits in length");
-    // FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 256 bits in length");
+    FC_ASSERT(((str.size()) == 256 / 8), "Provided value must be a lowercase hexadecimal string 128 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 128 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 128 bits in length");
 }
 
 struct account_create_operation : public base_operation

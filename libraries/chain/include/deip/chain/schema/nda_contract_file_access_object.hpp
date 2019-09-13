@@ -1,9 +1,16 @@
 #pragma once
 
 #include "deip_object_types.hpp"
+#include <boost/multi_index/composite_key.hpp>
 
 namespace deip {
 namespace chain {
+
+enum nda_contract_file_access_status : uint16_t
+{
+    nda_contract_file_access_pending = 1,
+    nda_contract_file_access_fulfilled = 2
+};
 
 class nda_contract_file_access_object : public object<nda_contract_file_access_object_type, nda_contract_file_access_object>
 {
@@ -19,6 +26,7 @@ public:
 
     nda_contract_file_access_id_type id;
     nda_contract_id_type contract_id;
+    nda_contract_file_access_status status = nda_contract_file_access_status::nda_contract_file_access_pending;
 
     account_name_type requester;
     fc::shared_string encrypted_payload_hash;
@@ -27,7 +35,7 @@ public:
     fc::shared_string proof_of_encrypted_payload_encryption_key;
 };
 
-struct by_request_and_hash;
+struct by_contract_id_and_hash;
 struct by_contract_id;
 struct by_requester;
 
@@ -45,20 +53,26 @@ typedef multi_index_container<
                                     member<nda_contract_file_access_object,
                                             account_name_type,
                                             &nda_contract_file_access_object::requester>>,
-                ordered_unique<tag<by_request_and_hash>,
-                                composite_key<nda_contract_file_access_object,
-                                                member<nda_contract_file_access_object,
-                                                    nda_contract_id_type,
-                                                    &nda_contract_file_access_object::contract_id>,
-                                                member<nda_contract_file_access_object,
-                                                    fc::shared_string,
-                                                    &nda_contract_file_access_object::encrypted_payload_hash>>>>,
+                ordered_unique<tag<by_contract_id_and_hash>,
+                            composite_key<nda_contract_file_access_object,
+                                    member<nda_contract_file_access_object,
+                                            nda_contract_id_type,
+                                            &nda_contract_file_access_object::contract_id>,
+                                    member<nda_contract_file_access_object,
+                                            fc::shared_string,
+                                            &nda_contract_file_access_object::encrypted_payload_hash>>,
+                            composite_key_compare<
+                                std::less<nda_contract_id_type>,
+                                fc::strcmp_less>>>,
     allocator<nda_contract_file_access_object>>
     nda_contract_file_access_index;
 }
 }
 
+FC_REFLECT_ENUM(deip::chain::nda_contract_file_access_status,
+                (nda_contract_file_access_pending)(nda_contract_file_access_fulfilled))
+
 FC_REFLECT(deip::chain::nda_contract_file_access_object,
-           (id)(contract_id)(requester)(encrypted_payload_hash)(encrypted_payload_iv)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key))
+                (id)(contract_id)(requester)(status)(encrypted_payload_hash)(encrypted_payload_iv)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::nda_contract_file_access_object, deip::chain::nda_contract_file_access_index)

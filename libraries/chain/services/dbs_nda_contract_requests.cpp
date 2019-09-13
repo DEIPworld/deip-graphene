@@ -17,6 +17,16 @@ dbs_nda_contract_requests::get(const nda_contract_file_access_id_type& request_i
     return request;
 }
 
+const nda_contract_file_access_object&
+dbs_nda_contract_requests::get_by_contract_id_and_hash(const nda_contract_id_type& contract_id, const fc::string& encrypted_payload_hash)
+{
+
+    const auto& idx = db_impl().get_index<nda_contract_file_access_index>().indices().get<by_contract_id_and_hash>();
+    auto itr = idx.find(boost::make_tuple(contract_id, encrypted_payload_hash));
+    FC_ASSERT(itr != idx.end(), "File access object with ${hash} hash for contract ${contract} is not found", ("hash", encrypted_payload_hash)("contract", contract_id));
+    return *itr;
+}
+
 dbs_nda_contract_requests::nda_contracts_refs_type
 dbs_nda_contract_requests::get_by_contract_id(const nda_contract_id_type& contract_id)
 {
@@ -64,6 +74,7 @@ dbs_nda_contract_requests::create_file_access_request(const nda_contract_id_type
         fc::from_string(cfa_o.encrypted_payload_iv, encrypted_payload_iv);
         fc::from_string(cfa_o.encrypted_payload_encryption_key, "");
         fc::from_string(cfa_o.proof_of_encrypted_payload_encryption_key, "");
+        cfa_o.status = nda_contract_file_access_status::nda_contract_file_access_pending;
     });
 
     return request;
@@ -76,6 +87,7 @@ void dbs_nda_contract_requests::fulfill_file_access_request(const nda_contract_f
     db_impl().modify(request, [&](nda_contract_file_access_object& cfa_o) {
         fc::from_string(cfa_o.encrypted_payload_encryption_key, encrypted_payload_encryption_key);
         fc::from_string(cfa_o.proof_of_encrypted_payload_encryption_key, proof_of_encrypted_payload_encryption_key);
+        cfa_o.status = nda_contract_file_access_status::nda_contract_file_access_fulfilled;
     });
 }
 

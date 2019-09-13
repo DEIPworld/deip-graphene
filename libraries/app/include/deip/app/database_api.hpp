@@ -514,6 +514,7 @@ public:
     // NDA Contracts Requests //
     ////////////////////////////
     nda_contract_file_access_api_obj get_nda_contract_request(const nda_contract_file_access_id_type& id) const;
+    nda_contract_file_access_api_obj get_nda_contract_request_by_contract_id_and_hash(const nda_contract_id_type& contract_id, const fc::string& encrypted_payload_hash) const;
     vector<nda_contract_file_access_api_obj> get_nda_contract_requests_by_contract_id(const nda_contract_id_type& contract_id) const;
     vector<nda_contract_file_access_api_obj> get_nda_contract_requests_by_requester(const account_name_type& requester) const;
 
@@ -732,6 +733,7 @@ FC_API(deip::app::database_api,
    (get_nda_contracts_by_creator_research_group_and_signee_research_group_and_contract_hash)
 
    (get_nda_contract_request)
+   (get_nda_contract_request_by_contract_id_and_hash)
    (get_nda_contract_requests_by_contract_id)
    (get_nda_contract_requests_by_requester)
 )
