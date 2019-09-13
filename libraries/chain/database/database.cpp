@@ -1917,7 +1917,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<decline_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<close_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_request_by_nda_contract_evaluator>();
-    _my->_evaluator_registry.register_evaluator<fulfil_request_by_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<fulfill_request_by_nda_contract_evaluator>();
 }
 
 void database::initialize_indexes()

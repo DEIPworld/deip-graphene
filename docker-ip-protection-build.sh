@@ -24,7 +24,7 @@ docker rmi ${LATEST_IMAGE_NAME}
 
 
 # Build local image for prod only
-if [$STAGING_TAG == ""]
+if ["${STAGING_TAG}" == ""]
 then
     echo "Building deipworld/ip-protection-platform-local-node image..."
     export IMAGE_NAME="deipworld/ip-protection-platform-local-node:$TAG"

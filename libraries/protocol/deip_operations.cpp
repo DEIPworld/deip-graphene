@@ -354,7 +354,7 @@ void create_request_by_nda_contract_operation::validate() const
     validate_128_bits_hexadecimal_string(encrypted_payload_iv);
 }
 
-void fulfil_request_by_nda_contract_operation::validate() const
+void fulfill_request_by_nda_contract_operation::validate() const
 {
     validate_account_name(granter);
     FC_ASSERT(encrypted_payload_encryption_key.size() > 0, "Encrypted payload hash must be specified");

@@ -60,7 +60,7 @@ namespace deip {
                 decline_nda_contract_operation,
                 close_nda_contract_operation,
                 create_request_by_nda_contract_operation,
-                fulfil_request_by_nda_contract_operation,
+                fulfill_request_by_nda_contract_operation,
                 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,

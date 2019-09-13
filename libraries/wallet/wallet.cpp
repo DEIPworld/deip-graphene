@@ -2934,7 +2934,7 @@ annotated_signed_transaction wallet_api::create_request_by_nda_contract(const st
 }
 
 
-annotated_signed_transaction wallet_api::fulfil_request_by_nda_contract(const std::string& granter,
+annotated_signed_transaction wallet_api::fulfill_request_by_nda_contract(const std::string& granter,
                                                                         const int64_t request_id,
                                                                         const std::string& encrypted_payload_encryption_key,
                                                                         const std::string& proof_of_encrypted_payload_encryption_key,
@@ -2942,7 +2942,7 @@ annotated_signed_transaction wallet_api::fulfil_request_by_nda_contract(const st
 {
     FC_ASSERT(!is_locked());
 
-    fulfil_request_by_nda_contract_operation op;
+    fulfill_request_by_nda_contract_operation op;
 
     op.granter = granter;
     op.request_id = request_id;

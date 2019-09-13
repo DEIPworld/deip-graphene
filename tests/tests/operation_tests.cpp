@@ -5186,7 +5186,7 @@ BOOST_AUTO_TEST_CASE(grant_access_to_contract_file_test)
             fc::from_string(cfa_o.encrypted_payload_encryption_key, "");
         });
 
-        fulfil_request_by_nda_contract_operation op;
+        fulfill_request_by_nda_contract_operation op;
         op.request_id = 0;
         op.granter = "bob";
         op.encrypted_payload_encryption_key = "key";

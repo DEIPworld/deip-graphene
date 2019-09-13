@@ -1296,7 +1296,7 @@ public:
                                                                 const std::string encrypted_payload_iv,
                                                                 const bool broadcast);
 
-    annotated_signed_transaction fulfil_request_by_nda_contract(const std::string& granter,
+    annotated_signed_transaction fulfill_request_by_nda_contract(const std::string& granter,
                                                                 const int64_t request_id,
                                                                 const std::string& encrypted_payload_encryption_key,
                                                                 const std::string& proof_of_encrypted_payload_encryption_key,
@@ -1445,7 +1445,7 @@ FC_API( deip::wallet::wallet_api,
         (close_nda_contract)
 
         (create_request_by_nda_contract)
-        (fulfil_request_by_nda_contract)
+        (fulfill_request_by_nda_contract)
 
         /// helper api
         (get_prototype_operation)

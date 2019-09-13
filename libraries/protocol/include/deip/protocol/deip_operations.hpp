@@ -897,7 +897,7 @@ struct create_request_by_nda_contract_operation : public base_operation
     }
 };
 
-struct fulfil_request_by_nda_contract_operation : public base_operation
+struct fulfill_request_by_nda_contract_operation : public base_operation
 {
     account_name_type granter;
     std::string encrypted_payload_encryption_key;
@@ -987,6 +987,6 @@ FC_REFLECT( deip::protocol::sign_nda_contract_operation, (contract_id)(contract_
 FC_REFLECT( deip::protocol::decline_nda_contract_operation, (contract_id)(signee))
 FC_REFLECT( deip::protocol::close_nda_contract_operation, (contract_id)(creator))
 FC_REFLECT( deip::protocol::create_request_by_nda_contract_operation, (requester)(encrypted_payload_hash)(encrypted_payload_iv)(contract_id))
-FC_REFLECT( deip::protocol::fulfil_request_by_nda_contract_operation, (granter)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key)(request_id))
+FC_REFLECT( deip::protocol::fulfill_request_by_nda_contract_operation, (granter)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key)(request_id))
 
 // clang-format on
