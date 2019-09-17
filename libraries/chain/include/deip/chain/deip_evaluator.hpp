@@ -52,5 +52,6 @@ DEFINE_EVALUATOR(decline_nda_contract)
 DEFINE_EVALUATOR(close_nda_contract)
 DEFINE_EVALUATOR(create_request_by_nda_contract)
 DEFINE_EVALUATOR(fulfill_request_by_nda_contract)
+DEFINE_EVALUATOR(create_subscription)
 }
 } // deip::chain

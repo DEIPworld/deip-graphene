@@ -28,6 +28,7 @@
 #include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
+#include <deip/chain/schema/subscription_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
 
 #include <deip/chain/services/dbs_nda_contract.hpp>
@@ -5206,6 +5207,61 @@ BOOST_AUTO_TEST_CASE(grant_access_to_contract_file_test)
         BOOST_CHECK(request.encrypted_payload_hash == "test");
         BOOST_CHECK(request.encrypted_payload_iv == "test");
         BOOST_CHECK(request.encrypted_payload_encryption_key == "key");
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(create_subscription_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: create_subscription");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        generate_block();
+
+        db.create<research_group_object>([&](research_group_object& d) {
+            d.id = 41;
+            d.name = "41";
+            d.permlink = "41";
+            d.description = "test";
+        });
+
+        db.create<research_group_token_object>([&](research_group_token_object& d) {
+            d.id = 41;
+            d.research_group_id = 22;
+            d.amount = 55 * DEIP_1_PERCENT;
+            d.owner = "alice";
+        });
+
+        create_subscription_operation op;
+        op.owner = "alice";
+        op.research_group_id = 41;
+        op.json_data = "{\"external_plan_id\":3,\"plan_certs\":100,\"plan_sharings\":\"100\",\"plan_contracts\":\"100\",\"period\":\"1\",\"billing_date\":\"2019-10-18T15:02:31\"}";;
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& subscription = db.get<subscription_object>(0);
+
+        BOOST_CHECK(subscription.id == 0);
+        BOOST_CHECK(subscription.research_group_id == 21);
+        BOOST_CHECK(subscription.external_plan_id == 3);
+        BOOST_CHECK(subscription.plan_certs == 100);
+        BOOST_CHECK(subscription.remained_certs == 100);
+        BOOST_CHECK(subscription.plan_sharings == 100);
+        BOOST_CHECK(subscription.remained_sharings == 100);
+        BOOST_CHECK(subscription.plan_contracts == 100);
+        BOOST_CHECK(subscription.remained_contracts == 100);
+
+        BOOST_CHECK(subscription.period == billing_period::month);
+
     }
     FC_LOG_AND_RETHROW()
 }

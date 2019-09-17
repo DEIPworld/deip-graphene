@@ -30,6 +30,7 @@
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
 #include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_subscription.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1383,6 +1384,19 @@ void fulfill_request_by_nda_contract_evaluator::do_apply(const fulfill_request_b
     FC_ASSERT(request.status == nda_contract_file_access_status::nda_contract_file_access_pending, "File access request with ${status} status cannot be fulfilled", ("status", request.status));
 
     nda_contract_requests_service.fulfill_file_access_request(request, op.encrypted_payload_encryption_key, op.proof_of_encrypted_payload_encryption_key);
+}
+
+void create_subscription_evaluator::do_apply(const create_subscription_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
+
+    account_service.check_account_existence(op.owner);
+    research_group_service.check_research_group_token_existence(op.owner, op.research_group_id);
+    auto now = _db.head_block_time();
+
+    subscription_service.create(op.json_data, op.research_group_id);
 }
 
 } // namespace chain

@@ -363,5 +363,11 @@ void fulfill_request_by_nda_contract_operation::validate() const
     FC_ASSERT(fc::is_utf8(proof_of_encrypted_payload_encryption_key), "Encrypted payload IV is not valid UTF8 string");
 }
 
+void create_subscription_operation::validate() const
+{
+    validate_account_name(owner);
+    FC_ASSERT(json_data.size() > 0, "Data must be specified");
+}
+
 }
 } // deip::protocol
