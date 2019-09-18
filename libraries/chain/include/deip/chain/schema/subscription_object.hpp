@@ -63,6 +63,8 @@ public:
 
     subscription_status status = subscription_status::subscription_active;
 
+    fc::time_point_sec first_billing_date;
+    uint16_t month_subscriptions_count = 0;
 };
 
 struct by_research_group;
@@ -98,6 +100,6 @@ FC_REFLECT_ENUM(deip::chain::billing_period, (month)(year))
 FC_REFLECT_ENUM(deip::chain::subscription_status, (subscription_active)(subscription_cancelled)(subscription_expired))
 
 FC_REFLECT( deip::chain::subscription_object, (id)(research_group_id)(remained_certs)(remained_sharings)(remained_contracts)(external_plan_id)
-                                              (plan_certs)(plan_sharings)(plan_contracts)(period)(billing_date)(status))
+                                              (plan_certs)(plan_sharings)(plan_contracts)(period)(billing_date)(status)(first_billing_date)(month_subscriptions_count))
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::subscription_object, deip::chain::subscription_index )

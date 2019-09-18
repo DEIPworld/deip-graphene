@@ -5262,7 +5262,7 @@ BOOST_AUTO_TEST_CASE(create_subscription_test)
         create_subscription_operation op;
         op.owner = "alice";
         op.research_group_id = 41;
-        op.json_data = "{\"external_plan_id\":3,\"plan_certs\":100,\"plan_sharings\":\"100\",\"plan_contracts\":\"100\",\"period\":\"1\",\"billing_date\":\"2019-10-18T15:02:31\"}";;
+        op.json_data = "{\"external_plan_id\":3,\"plan_certs\":100,\"plan_sharings\":\"100\",\"plan_contracts\":\"100\",\"period\":\"1\",\"billing_date\":\"2019-10-18T15:02:31\"}";
 
         private_key_type priv_key = generate_private_key("alice");
 

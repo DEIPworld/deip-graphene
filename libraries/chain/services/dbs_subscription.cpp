@@ -28,6 +28,7 @@ const subscription_object& dbs_subscription::create(const std::string& json_data
 
         s_o.period = static_cast<billing_period>(data.period);
         s_o.billing_date = data.billing_date;
+        s_o.first_billing_date = data.billing_date;
 
     });
 
@@ -44,12 +45,16 @@ const subscription_object& dbs_subscription::get(const subscription_id_type& id)
 
 void dbs_subscription::set_new_billing_date(const subscription_object& subscription)
 {
-    boost::gregorian::date greg_billing_date = boost::gregorian::date_from_iso_string(subscription.billing_date.to_iso_string());
+    using namespace boost::gregorian;
+    using namespace boost::posix_time;
 
-    boost::gregorian::date next_greg_billing_date = greg_billing_date + boost::gregorian::months(1);
+    std::string iso = subscription.first_billing_date.to_iso_string();
+    ptime t = from_time_t(subscription.first_billing_date.sec_since_epoch());
+
     db_impl().modify(subscription, [&](subscription_object &s_o) {
-        s_o.billing_date = fc::time_point_sec::from_iso_string(
-                boost::gregorian::to_iso_string(next_greg_billing_date));
+        s_o.month_subscriptions_count++;
+        t += months(s_o.month_subscriptions_count);
+        s_o.billing_date = fc::time_point_sec(to_time_t(t));
         s_o.remained_certs = s_o.plan_certs;
         s_o.remained_sharings = s_o.plan_sharings;
         s_o.remained_contracts = s_o.plan_contracts;
