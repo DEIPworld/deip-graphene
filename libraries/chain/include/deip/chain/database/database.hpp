@@ -332,6 +332,7 @@ public:
     void process_grants();
     void distribute_grant(const grant_object& grant);
     void process_contracts();
+    void process_subscriptions();
 
     /**
      * Rewards distribution

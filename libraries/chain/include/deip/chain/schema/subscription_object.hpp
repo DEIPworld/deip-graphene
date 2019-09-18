@@ -66,6 +66,7 @@ public:
 };
 
 struct by_research_group;
+struct by_billing_date;
 struct by_status;
 
 typedef multi_index_container<subscription_object,
@@ -77,6 +78,10 @@ typedef multi_index_container<subscription_object,
                             member<subscription_object,
                                     research_group_id_type,
                                    &subscription_object::research_group_id>>,
+                    ordered_non_unique<tag<by_billing_date>,
+                            member<subscription_object,
+                                    fc::time_point_sec,
+                                   &subscription_object::billing_date>>,
                     ordered_non_unique<tag<by_status>,
                             member<subscription_object,
                                     subscription_status,

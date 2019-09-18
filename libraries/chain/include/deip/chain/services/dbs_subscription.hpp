@@ -21,6 +21,8 @@ public:
 
     const subscription_object& get(const subscription_id_type& id) const;
 
+    void set_new_billing_date(const subscription_object& subscription);
+
 private:
 
     subscription_data_type get_data(const std::string& json_data)

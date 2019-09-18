@@ -1394,7 +1394,6 @@ void create_subscription_evaluator::do_apply(const create_subscription_operation
 
     account_service.check_account_existence(op.owner);
     research_group_service.check_research_group_token_existence(op.owner, op.research_group_id);
-    auto now = _db.head_block_time();
 
     subscription_service.create(op.json_data, op.research_group_id);
 }

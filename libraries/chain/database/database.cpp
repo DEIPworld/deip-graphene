@@ -20,7 +20,6 @@
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
-#include <deip/chain/schema/subscription_object.hpp>
 #include <deip/chain/schema/total_votes_object.hpp>
 #include <deip/chain/schema/transaction_object.hpp>
 
@@ -42,6 +41,7 @@
 #include <deip/chain/services/dbs_research_token_sale.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_reward_pool.hpp>
+#include <deip/chain/services/dbs_subscription.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_vote.hpp>
 #include <deip/chain/services/dbs_witness.hpp>
@@ -1844,6 +1844,23 @@ void database::process_contracts()
         if (itr->end_date <= _head_block_time) {
             auto& contract = *itr;
             contract_service.set_new_contract_status(contract, nda_contract_status::nda_contract_expired);
+        }
+        itr++;
+    }
+}
+
+void database::process_subscriptions()
+{
+    dbs_subscription& subscription_service = obtain_service<dbs_subscription>();
+    const auto& idx = get_index<subscription_index>().indices().get<by_billing_date>();
+    auto itr = idx.begin();
+    auto _head_block_time = head_block_time();
+
+    while (itr != idx.end())
+    {
+        if (itr->billing_date <= _head_block_time) {
+            auto& subscription = *itr;
+            subscription_service.set_new_billing_date(subscription);
         }
         itr++;
     }
