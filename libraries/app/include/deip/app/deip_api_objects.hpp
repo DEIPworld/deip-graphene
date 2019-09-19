@@ -28,6 +28,7 @@
 #include <deip/chain/schema/grant_application_object.hpp>
 #include <deip/chain/schema/nda_contract_object.hpp>
 #include <deip/chain/schema/nda_contract_file_access_object.hpp>
+#include <deip/chain/schema/subscription_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -1144,6 +1145,60 @@ struct nda_contract_file_access_api_obj
     std::string proof_of_encrypted_payload_encryption_key;
 };
 
+struct subscription_api_obj
+{
+    subscription_api_obj(const chain::subscription_object& s_o)
+        : id(s_o.id._id)
+        , research_group_id(s_o.research_group_id._id)
+        , remained_certs(s_o.remained_certs)
+        , remained_sharings(s_o.remained_sharings)
+        , remained_contracts(s_o.remained_contracts)
+        , external_plan_id(s_o.external_plan_id)
+        , plan_certs(s_o.plan_certs)
+        , plan_sharings(s_o.plan_sharings)
+        , plan_contracts(s_o.plan_contracts)
+        , additional_certs(s_o.additional_certs)
+        , additional_sharings(s_o.additional_sharings)
+        , additional_contracts(s_o.additional_contracts)
+        , period(s_o.period)
+        , billing_date(s_o.billing_date)
+        , status(s_o.status)
+        , first_billing_date(s_o.first_billing_date)
+        , month_subscriptions_count(s_o.month_subscriptions_count)
+
+    {}
+
+    // because fc::variant require for temporary object
+    subscription_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t research_group_id;
+
+    share_type remained_certs;
+    share_type remained_sharings;
+    share_type remained_contracts;
+    
+    uint16_t external_plan_id;
+
+    share_type plan_certs;
+    share_type plan_sharings;
+    share_type plan_contracts;
+
+    share_type additional_certs;
+    share_type additional_sharings;
+    share_type additional_contracts;
+
+    uint16_t period;
+    fc::time_point_sec billing_date;
+
+    uint16_t status;
+
+    fc::time_point_sec first_billing_date;
+    uint16_t month_subscriptions_count;
+};
+
 }; // namespace app
 } // namespace deip
 
@@ -1510,6 +1565,26 @@ FC_REFLECT( deip::app::nda_contract_file_access_api_obj,
             (encrypted_payload_iv)
             (encrypted_payload_encryption_key)
             (proof_of_encrypted_payload_encryption_key)
+)
+
+FC_REFLECT( deip::app::subscription_api_obj, 
+            (id)
+            (research_group_id)
+            (remained_certs)
+            (remained_sharings)
+            (remained_contracts)
+            (external_plan_id)
+            (plan_certs)
+            (plan_sharings)
+            (plan_contracts)
+            (additional_certs)
+            (additional_sharings)
+            (additional_contracts)
+            (period)
+            (billing_date)
+            (status)
+            (first_billing_date)
+            (month_subscriptions_count)
 )
 
 // clang-format on
