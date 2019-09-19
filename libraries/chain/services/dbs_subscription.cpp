@@ -43,6 +43,14 @@ const subscription_object& dbs_subscription::get(const subscription_id_type& id)
     FC_CAPTURE_AND_RETHROW((id))
 }
 
+const subscription_object& dbs_subscription::get_by_research_group(const research_group_id_type& research_group_id)
+{
+    try {
+        return db_impl().get<subscription_object, by_research_group>(research_group_id);
+    }
+    FC_CAPTURE_AND_RETHROW((research_group_id))
+}
+
 void dbs_subscription::set_new_billing_date(const subscription_object& subscription)
 {
     std::string iso = subscription.first_billing_date.to_iso_string();
@@ -64,10 +72,16 @@ void dbs_subscription::check_subscription_existence(const subscription_id_type& 
     FC_ASSERT(idx.find(subscription_id) != idx.cend(), "Subscription \"${1}\" does not exist.", ("1", subscription_id));
 }
 
+void dbs_subscription::check_subscription_existence_by_research_group(const research_group_id_type& research_group_id)
+{
+    const auto& idx = db_impl().get_index<subscription_index>().indices().get<by_research_group>();
+    FC_ASSERT(idx.find(research_group_id) != idx.cend(), "Subscription with rg \"${1}\" does not exist.", ("1", research_group_id));
+}
+
 void dbs_subscription::adjust_additional_limits(const subscription_object& subscription, const std::string& json_data)
 {
     additional_subscription_limits_data_type data = get_data<additional_subscription_limits_data_type>(json_data);
-    
+
     db_impl().modify(subscription, [&](subscription_object &s_o) {
         s_o.additional_certs += data.additional_certs;
         s_o.additional_sharings += data.additional_sharings;

@@ -159,28 +159,6 @@ BOOST_AUTO_TEST_CASE(get_nda_contracts_by_creator)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(sign_by_receiver_test)
-{
-    try
-    {
-        create_contracts();
-
-        auto& contract = data_service.get(0);
-        data_service.sign(contract, "bob", "signature");
-
-        BOOST_CHECK(contract.creator == "alice");
-        BOOST_CHECK(contract.creator_research_group_id == 5);
-        BOOST_CHECK(contract.signee == "bob");
-        BOOST_CHECK(contract.signee_research_group_id == 10);
-        BOOST_CHECK(contract.contract_hash == "contract 1");
-        BOOST_CHECK(contract.status == nda_contract_status::nda_contract_signed);
-        BOOST_CHECK(contract.created_at == fc::time_point_sec(123123));
-        BOOST_CHECK(contract.start_date == fc::time_point_sec(123124));
-        BOOST_CHECK(contract.end_date == fc::time_point_sec(123125));
-    }
-    FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_CASE(set_new_contract_status_test)
 {
     try

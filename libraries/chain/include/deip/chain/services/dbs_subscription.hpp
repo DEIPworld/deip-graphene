@@ -22,9 +22,13 @@ public:
 
     const subscription_object& get(const subscription_id_type& id) const;
 
+    const subscription_object& get_by_research_group(const research_group_id_type& research_group_id);
+
     void set_new_billing_date(const subscription_object& subscription);
 
     void check_subscription_existence(const subscription_id_type& subscription_id) const;
+
+    void check_subscription_existence_by_research_group(const research_group_id_type& research_group_id);
 
     void adjust_additional_limits(const subscription_object& subscription, const std::string& json_data);
 

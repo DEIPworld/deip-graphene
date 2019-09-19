@@ -1,10 +1,11 @@
 #include <deip/chain/database/database.hpp>
 
+#include <deip/chain/services/dbs_offer_research_tokens.hpp>
 #include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_group_invite.hpp>
 #include <deip/chain/services/dbs_review.hpp>
-#include <deip/chain/services/dbs_offer_research_tokens.hpp>
+#include <deip/chain/services/dbs_subscription.hpp>
 
 namespace deip {
 namespace chain {
@@ -170,6 +171,7 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
 {
     auto& research_service = db_impl().obtain_service<dbs_research>();
     auto& research_content_service = db_impl().obtain_service<dbs_research_content>();
+    auto& subscription_service = db_impl().obtain_service<dbs_subscription>();
     auto& vote_service = db_impl().obtain_service<dbs_vote>();
 
     create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
@@ -178,6 +180,23 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
     FC_ASSERT((!research_service.get_research(data.research_id).is_finished), "You can't add content to finished research");
 
     auto& research = research_service.get_research(data.research_id);
+
+    subscription_service.check_subscription_existence_by_research_group(research.research_group_id);
+    auto& subscription = subscription_service.get_by_research_group(research.research_group_id);
+
+    if (subscription.remained_certs > 0)
+        db_impl().modify(subscription, [&](subscription_object& s_o)
+        {
+            s_o.remained_certs--;
+        });
+    else
+    {
+        FC_ASSERT(subscription.additional_certs > 0, "You have no available certs.");
+        db_impl().modify(subscription, [&](subscription_object& s_o)
+        {
+            s_o.additional_certs--;
+        });
+    }
     auto& research_content = research_content_service.create(data.research_id, data.type, data.title, data.content, data.permlink, data.authors, data.references, data.external_references);
 
     std::map<discipline_id_type, share_type> research_votes_per_discipline;

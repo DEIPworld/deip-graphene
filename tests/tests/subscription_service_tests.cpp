@@ -29,6 +29,9 @@ class subscription_service_fixture : public clean_database_fixture
             s_o.plan_certs = 100;
             s_o.plan_sharings = 100;
             s_o.plan_contracts = 100;
+            s_o.additional_certs = 1;
+            s_o.additional_sharings = 2;
+            s_o.additional_contracts = 3;
             s_o.period = billing_period::month;
             s_o.first_billing_date = fc::time_point_sec(1548864000);
             s_o.billing_date = fc::time_point_sec(1548864000);
@@ -45,6 +48,9 @@ class subscription_service_fixture : public clean_database_fixture
             s_o.plan_certs = 100;
             s_o.plan_sharings = 100;
             s_o.plan_contracts = 100;
+            s_o.additional_certs = 1;
+            s_o.additional_sharings = 2;
+            s_o.additional_contracts = 3;
             s_o.period = billing_period::month;
             s_o.first_billing_date = fc::time_point_sec(1548950400);
             s_o.billing_date = fc::time_point_sec(1561910400);
@@ -133,6 +139,18 @@ BOOST_AUTO_TEST_CASE(check_subscription_existence)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(check_subscription_existence_by_research_group)
+{
+    try
+    {
+        create_subscriptions();
+
+        BOOST_CHECK_NO_THROW(data_service.check_subscription_existence_by_research_group(1));
+        BOOST_CHECK_THROW(data_service.check_subscription_existence_by_research_group(3), fc::assert_exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE(adjust_additional_limits)
 {
     try
@@ -143,16 +161,16 @@ BOOST_AUTO_TEST_CASE(adjust_additional_limits)
         std::string data = "{\"additional_certs\":100,\"additional_sharings\":105,\"additional_contracts\":0}";
         data_service.adjust_additional_limits(subscription, data);
 
-        BOOST_CHECK(subscription.additional_certs == 100);
-        BOOST_CHECK(subscription.additional_sharings == 105);
-        BOOST_CHECK(subscription.additional_contracts == 0);
+        BOOST_CHECK(subscription.additional_certs == 101);
+        BOOST_CHECK(subscription.additional_sharings == 107);
+        BOOST_CHECK(subscription.additional_contracts == 3);
 
         std::string data2 = "{\"additional_certs\":0,\"additional_sharings\":2,\"additional_contracts\":10}";
         data_service.adjust_additional_limits(subscription, data2);
 
-        BOOST_CHECK(subscription.additional_certs == 100);
-        BOOST_CHECK(subscription.additional_sharings == 107);
-        BOOST_CHECK(subscription.additional_contracts == 10);
+        BOOST_CHECK(subscription.additional_certs == 101);
+        BOOST_CHECK(subscription.additional_sharings == 109);
+        BOOST_CHECK(subscription.additional_contracts == 13);
 
     }
     FC_LOG_AND_RETHROW()
