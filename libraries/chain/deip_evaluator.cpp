@@ -1254,11 +1254,27 @@ void create_nda_contract_evaluator::do_apply(const create_nda_contract_operation
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
 
     account_service.check_account_existence(op.creator);
     research_group_service.check_research_group_token_existence(op.creator, op.creator_research_group_id);
     account_service.check_account_existence(op.signee);
     research_group_service.check_research_group_token_existence(op.signee, op.signee_research_group_id);
+    subscription_service.check_subscription_existence_by_research_group(op.creator_research_group_id);
+
+    auto& subscription = subscription_service.get_by_research_group(op.creator_research_group_id);
+
+    if (subscription.remained_contracts > 0)
+        _db._temporary_public_impl().modify(subscription, [&](subscription_object& s_o){
+            s_o.remained_contracts--;
+        });
+    else
+    {
+        FC_ASSERT(subscription.additional_contracts > 0, "You have no available contracts.");
+        _db._temporary_public_impl().modify(subscription, [&](subscription_object& s_o){
+            s_o.additional_contracts--;
+        });
+    }
 
     const auto& contracts = nda_contracts_service.get_by_creator_research_group_and_signee_research_group_and_contract_hash(op.creator_research_group_id, op.signee_research_group_id, op.contract_hash);
     for (const auto& wrapper : contracts)
@@ -1371,15 +1387,32 @@ void create_request_by_nda_contract_evaluator::do_apply(const create_request_by_
 
 void fulfill_request_by_nda_contract_evaluator::do_apply(const fulfill_request_by_nda_contract_operation& op)
 {
-    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
-    dbs_research_group &research_group_service = _db.obtain_service<dbs_research_group>();
     dbs_nda_contract_requests& nda_contract_requests_service = _db.obtain_service<dbs_nda_contract_requests>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
 
     account_service.check_account_existence(op.granter);
     const auto& request = nda_contract_requests_service.get(op.request_id);
     const auto& contract = nda_contracts_service.get(request.contract_id);
     research_group_service.check_research_group_token_existence(op.granter, contract.creator_research_group_id);
+
+    subscription_service.check_subscription_existence_by_research_group(contract.creator_research_group_id);
+    auto& subscription = subscription_service.get_by_research_group(contract.creator_research_group_id);
+
+    if (subscription.remained_sharings > 0)
+        _db._temporary_public_impl().modify(subscription, [&](subscription_object& s_o){
+            s_o.remained_sharings--;
+        });
+    else
+    {
+        FC_ASSERT(subscription.additional_sharings > 0, "You have no available sharings.");
+        _db._temporary_public_impl().modify(subscription, [&](subscription_object& s_o){
+            s_o.additional_sharings--;
+        });
+    }
+
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_signed, "Files cannot be shared under the terms of a contract with ${status} status", ("status", contract.status));
     FC_ASSERT(request.status == nda_contract_file_access_status::nda_contract_file_access_pending, "File access request with ${status} status cannot be fulfilled", ("status", request.status));
 
@@ -1409,7 +1442,7 @@ void adjust_additional_subscription_limits_evaluator::do_apply(const adjust_addi
 
     auto& subscription = subscription_service.get(op.subscription_id);
     research_group_service.check_research_group_token_existence(op.owner, subscription.research_group_id);
-    
+
     subscription_service.adjust_additional_limits(subscription, op.json_data);
 }
 

@@ -85,12 +85,35 @@ BOOST_AUTO_TEST_CASE(create_subscription_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_subscription)
+BOOST_AUTO_TEST_CASE(get)
 {
     try
     {
         create_subscriptions();
         auto& subscription = data_service.get(0);
+
+        BOOST_CHECK(subscription.id == 0);
+        BOOST_CHECK(subscription.research_group_id == 1);
+        BOOST_CHECK(subscription.external_plan_id == 2);
+        BOOST_CHECK(subscription.plan_certs == 100);
+        BOOST_CHECK(subscription.remained_certs == 10);
+        BOOST_CHECK(subscription.plan_sharings == 100);
+        BOOST_CHECK(subscription.remained_sharings == 10);
+        BOOST_CHECK(subscription.plan_contracts == 100);
+        BOOST_CHECK(subscription.remained_contracts == 10);
+
+        BOOST_CHECK(subscription.period == billing_period::month);
+        BOOST_CHECK(subscription.billing_date == fc::time_point_sec(1548864000));
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_by_research_group)
+{
+    try
+    {
+        create_subscriptions();
+        auto& subscription = data_service.get_by_research_group(1);
 
         BOOST_CHECK(subscription.id == 0);
         BOOST_CHECK(subscription.research_group_id == 1);

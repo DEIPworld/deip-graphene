@@ -3623,10 +3623,9 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     BOOST_CHECK(subscription.additional_certs == 1);
     BOOST_CHECK(subscription.additional_sharings == 2);
     BOOST_CHECK(subscription.additional_contracts == 3);
-    BOOST_CHECK(subscription.remained_certs == 7);
+    BOOST_CHECK(subscription.remained_certs == 8);
     BOOST_CHECK(subscription.remained_sharings == 10);
     BOOST_CHECK(subscription.remained_contracts == 10);
-
 
 }
 
@@ -4844,6 +4843,25 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         auto& alice_rg = research_group_service.get_research_group_by_permlink("alice");
         auto& bob_rg = research_group_service.get_research_group_by_permlink("bob");
 
+        auto& subscription = db.create<subscription_object>([&](subscription_object& s_o) {
+            s_o.id = 0;
+            s_o.research_group_id = alice_rg.id._id;
+            s_o.remained_certs = 10;
+            s_o.remained_sharings = 10;
+            s_o.remained_contracts = 0;
+            s_o.external_plan_id = 2;
+            s_o.plan_certs = 100;
+            s_o.plan_sharings = 100;
+            s_o.plan_contracts = 100;
+            s_o.additional_certs = 1;
+            s_o.additional_sharings = 2;
+            s_o.additional_contracts = 3;
+            s_o.period = billing_period::month;
+            s_o.first_billing_date = fc::time_point_sec(1548864000);
+            s_o.billing_date = fc::time_point_sec(1548864000);
+            s_o.month_subscriptions_count = 0;
+        });
+
         create_nda_contract_operation op;
         op.creator = "alice";
         op.creator_research_group_id = alice_rg.id._id;
@@ -4877,6 +4895,9 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         BOOST_CHECK(contract.start_date == fc::time_point_sec(12312313));
         BOOST_CHECK(contract.end_date == fc::time_point_sec(12312314));
 
+        BOOST_CHECK(subscription.remained_contracts == 0);
+        BOOST_CHECK(subscription.additional_contracts == 2);
+
     }
     FC_LOG_AND_RETHROW()
 }
@@ -4888,6 +4909,8 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
 //        BOOST_TEST_MESSAGE("Testing: not_create_active_contract_with_duplicated_hash_test");
 //
 //        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+
+
 //        generate_block();
 //
 //        auto& research_group_service = db.obtain_service<dbs_research_group>();

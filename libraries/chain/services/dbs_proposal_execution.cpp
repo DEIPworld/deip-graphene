@@ -185,15 +185,13 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
     auto& subscription = subscription_service.get_by_research_group(research.research_group_id);
 
     if (subscription.remained_certs > 0)
-        db_impl().modify(subscription, [&](subscription_object& s_o)
-        {
+        db_impl().modify(subscription, [&](subscription_object& s_o){
             s_o.remained_certs--;
         });
     else
     {
         FC_ASSERT(subscription.additional_certs > 0, "You have no available certs.");
-        db_impl().modify(subscription, [&](subscription_object& s_o)
-        {
+        db_impl().modify(subscription, [&](subscription_object& s_o){
             s_o.additional_certs--;
         });
     }
