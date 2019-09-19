@@ -1909,8 +1909,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<make_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
-   _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
-   _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
+    _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
+    _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<set_expertise_tokens_evaluator>();
@@ -1937,6 +1937,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_request_by_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<fulfill_request_by_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_subscription_evaluator>();
+    _my->_evaluator_registry.register_evaluator<adjust_additional_subscription_limits_evaluator>();
 }
 
 void database::initialize_indexes()

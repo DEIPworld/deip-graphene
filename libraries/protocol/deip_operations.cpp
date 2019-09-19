@@ -369,5 +369,11 @@ void create_subscription_operation::validate() const
     FC_ASSERT(json_data.size() > 0, "Data must be specified");
 }
 
+void adjust_additional_subscription_limits_operation::validate() const
+{
+    validate_account_name(owner);
+    FC_ASSERT(json_data.size() > 0, "Data must be specified");
+}
+
 }
 } // deip::protocol

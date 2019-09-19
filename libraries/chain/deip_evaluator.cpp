@@ -1398,5 +1398,20 @@ void create_subscription_evaluator::do_apply(const create_subscription_operation
     subscription_service.create(op.json_data, op.research_group_id);
 }
 
+void adjust_additional_subscription_limits_evaluator::do_apply(const adjust_additional_subscription_limits_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
+
+    account_service.check_account_existence(op.owner);
+    subscription_service.check_subscription_existence(op.subscription_id);
+
+    auto& subscription = subscription_service.get(op.subscription_id);
+    research_group_service.check_research_group_token_existence(op.owner, subscription.research_group_id);
+    
+    subscription_service.adjust_additional_limits(subscription, op.json_data);
+}
+
 } // namespace chain
 } // namespace deip 

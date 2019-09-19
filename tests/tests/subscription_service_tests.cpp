@@ -17,7 +17,7 @@ class subscription_service_fixture : public clean_database_fixture
 
    }
 
-    void create_subscription()
+    void create_subscriptions()
     {
         db.create<subscription_object>([&](subscription_object& s_o) {
             s_o.id = 0;
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(get_subscription)
 {
     try
     {
-        create_subscription();
+        create_subscriptions();
         auto& subscription = data_service.get(0);
 
         BOOST_CHECK(subscription.id == 0);
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(set_new_billing_date)
 {
     try
     {
-        create_subscription();
+        create_subscriptions();
         auto& subscription = data_service.get(0);
         data_service.set_new_billing_date(subscription);
 
@@ -117,6 +117,43 @@ BOOST_AUTO_TEST_CASE(set_new_billing_date)
         data_service.set_new_billing_date(subscription2);
 
         BOOST_CHECK(subscription2.billing_date == fc::time_point_sec(1564588800));
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(check_subscription_existence)
+{
+    try
+    {
+        create_subscriptions();
+
+        BOOST_CHECK_NO_THROW(data_service.check_subscription_existence(0));
+        BOOST_CHECK_THROW(data_service.check_subscription_existence(2), fc::assert_exception);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(adjust_additional_limits)
+{
+    try
+    {
+        create_subscriptions();
+        auto& subscription = data_service.get(0);
+
+        std::string data = "{\"additional_certs\":100,\"additional_sharings\":105,\"additional_contracts\":0}";
+        data_service.adjust_additional_limits(subscription, data);
+
+        BOOST_CHECK(subscription.additional_certs == 100);
+        BOOST_CHECK(subscription.additional_sharings == 105);
+        BOOST_CHECK(subscription.additional_contracts == 0);
+
+        std::string data2 = "{\"additional_certs\":0,\"additional_sharings\":2,\"additional_contracts\":10}";
+        data_service.adjust_additional_limits(subscription, data2);
+
+        BOOST_CHECK(subscription.additional_certs == 100);
+        BOOST_CHECK(subscription.additional_sharings == 107);
+        BOOST_CHECK(subscription.additional_contracts == 10);
+
     }
     FC_LOG_AND_RETHROW()
 }

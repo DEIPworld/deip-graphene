@@ -3,6 +3,7 @@
 #include <fc/io/json.hpp>
 #include "dbs_base_impl.hpp"
 #include <deip/chain/schema/subscription_object.hpp>
+#include <deip/chain/schema/subscription_data_types.hpp>
 
 namespace deip {
 namespace chain {
@@ -23,11 +24,15 @@ public:
 
     void set_new_billing_date(const subscription_object& subscription);
 
+    void check_subscription_existence(const subscription_id_type& subscription_id) const;
+
+    void adjust_additional_limits(const subscription_object& subscription, const std::string& json_data);
+
 private:
 
-    subscription_data_type get_data(const std::string& json_data)
+    template <typename DataType> DataType get_data(const std::string& json_data)
     {
-        subscription_data_type data = fc::json::from_string(json_data).as<subscription_data_type>();
+        auto data = fc::json::from_string(json_data).as<DataType>();
         return data;
     }
 };

@@ -12,7 +12,7 @@ dbs_subscription::dbs_subscription(database& db)
 
 const subscription_object& dbs_subscription::create(const std::string& json_data, const research_group_id_type& research_group_id)
 {
-    subscription_data_type data = get_data(json_data);
+    subscription_data_type data = get_data<subscription_data_type>(json_data);
 
     const subscription_object& subscription = db_impl().create<subscription_object>([&](subscription_object& s_o) {
         s_o.research_group_id = research_group_id;
@@ -45,19 +45,33 @@ const subscription_object& dbs_subscription::get(const subscription_id_type& id)
 
 void dbs_subscription::set_new_billing_date(const subscription_object& subscription)
 {
-    using namespace boost::gregorian;
-    using namespace boost::posix_time;
-
     std::string iso = subscription.first_billing_date.to_iso_string();
-    ptime t = from_time_t(subscription.first_billing_date.sec_since_epoch());
+    boost::posix_time::ptime t = boost::posix_time::from_time_t(subscription.first_billing_date.sec_since_epoch());
 
     db_impl().modify(subscription, [&](subscription_object &s_o) {
         s_o.month_subscriptions_count++;
-        t += months(s_o.month_subscriptions_count);
+        t += boost::gregorian::months(s_o.month_subscriptions_count);
         s_o.billing_date = fc::time_point_sec(to_time_t(t));
         s_o.remained_certs = s_o.plan_certs;
         s_o.remained_sharings = s_o.plan_sharings;
         s_o.remained_contracts = s_o.plan_contracts;
+    });
+}
+
+void dbs_subscription::check_subscription_existence(const subscription_id_type& subscription_id) const
+{
+    const auto& idx = db_impl().get_index<subscription_index>().indices().get<by_id>();
+    FC_ASSERT(idx.find(subscription_id) != idx.cend(), "Subscription \"${1}\" does not exist.", ("1", subscription_id));
+}
+
+void dbs_subscription::adjust_additional_limits(const subscription_object& subscription, const std::string& json_data)
+{
+    additional_subscription_limits_data_type data = get_data<additional_subscription_limits_data_type>(json_data);
+    
+    db_impl().modify(subscription, [&](subscription_object &s_o) {
+        s_o.additional_certs += data.additional_certs;
+        s_o.additional_sharings += data.additional_sharings;
+        s_o.additional_contracts += data.additional_contracts;
     });
 }
 
