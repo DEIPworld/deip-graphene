@@ -1297,10 +1297,20 @@ public:
                                                                 const bool broadcast);
 
     annotated_signed_transaction fulfill_request_by_nda_contract(const std::string& granter,
-                                                                const int64_t request_id,
-                                                                const std::string& encrypted_payload_encryption_key,
-                                                                const std::string& proof_of_encrypted_payload_encryption_key,
-                                                                const bool broadcast);
+                                                                 const int64_t request_id,
+                                                                 const std::string& encrypted_payload_encryption_key,
+                                                                 const std::string& proof_of_encrypted_payload_encryption_key,
+                                                                 const bool broadcast);
+
+    annotated_signed_transaction create_subscription(const std::string& owner,
+                                                     const int64_t research_group_id,
+                                                     const std::string& json_data,
+                                                     const bool broadcast);
+
+    annotated_signed_transaction adjust_additional_subscription_limits(const std::string& owner,
+                                                                       const int64_t subscription_id,
+                                                                       const std::string& json_data,
+                                                                       const bool broadcast);
 
 public:
     fc::signal<void(bool)> lock_changed;
@@ -1446,6 +1456,9 @@ FC_API( deip::wallet::wallet_api,
 
         (create_request_by_nda_contract)
         (fulfill_request_by_nda_contract)
+
+        (create_subscription)
+        (adjust_additional_subscription_limits)
 
         /// helper api
         (get_prototype_operation)

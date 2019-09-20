@@ -2956,6 +2956,46 @@ annotated_signed_transaction wallet_api::fulfill_request_by_nda_contract(const s
     return my->sign_transaction(tx, broadcast);
 }
 
+annotated_signed_transaction wallet_api::create_subscription(const std::string& owner,
+                                                             const int64_t research_group_id,
+                                                             const std::string& json_data,
+                                                             const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    create_subscription_operation op;
+
+    op.owner = owner;
+    op.research_group_id = research_group_id;
+    op.json_data = json_data;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::adjust_additional_subscription_limits(const std::string& owner,
+                                                                               const int64_t subscription_id,
+                                                                               const std::string& json_data,
+                                                                               const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    adjust_additional_subscription_limits_operation op;
+
+    op.owner = owner;
+    op.subscription_id = subscription_id;
+    op.json_data = json_data;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
 namespace utils {
 
 
