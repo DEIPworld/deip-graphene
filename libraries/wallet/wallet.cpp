@@ -2898,14 +2898,14 @@ wallet_api::decline_nda_contract(const int64_t contract_id, const std::string& p
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::close_nda_contract(const int64_t contract_id, const std::string& party_a, const bool broadcast)
+annotated_signed_transaction wallet_api::close_nda_contract(const int64_t contract_id, const std::string& closer, const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
     close_nda_contract_operation op;
 
     op.contract_id = contract_id;
-    op.party_a = party_a;
+    op.closer = closer;
 
     signed_transaction tx;
     tx.operations.push_back(op);

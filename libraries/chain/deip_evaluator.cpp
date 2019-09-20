@@ -1341,12 +1341,14 @@ void close_nda_contract_evaluator::do_apply(const close_nda_contract_operation& 
     dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
-    account_service.check_account_existence(op.party_a);
+    account_service.check_account_existence(op.closer);
     const auto& contract = nda_contracts_service.get(op.contract_id);
-    research_group_service.check_research_group_token_existence(op.party_a, contract.party_a_research_group_id);
-
-    FC_ASSERT(contract.party_a == op.party_a, "Only ${party_a} account can decline the contract",
+    
+    // WARNING: Currently we are not supporting sharing files by both sides within a single NDA contract
+    FC_ASSERT(contract.party_a == op.closer, "Only ${party_a} account can close the contract",
               ("party_a", contract.party_a));
+    research_group_service.check_research_group_token_existence(op.closer, contract.party_a_research_group_id);
+    
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_pending, "Contract with status ${status} cannot be closed",
               ("status", contract.status));
 

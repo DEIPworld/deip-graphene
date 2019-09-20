@@ -1289,7 +1289,7 @@ public:
                                                   const bool broadcast);
     
     annotated_signed_transaction close_nda_contract(const int64_t contract_id,
-                                                  const std::string& party_a,
+                                                  const std::string& closer,
                                                   const bool broadcast);
 
     annotated_signed_transaction create_request_by_nda_contract(const std::string& requester,
