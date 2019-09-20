@@ -2828,14 +2828,14 @@ annotated_signed_transaction wallet_api::reject_offer_research_tokens(const int6
 }
 
 annotated_signed_transaction wallet_api::create_nda_contract(const std::string& party_a,
-                                                         const int64_t party_a_research_group_id,
-                                                         const std::string& signee,
-                                                         const int64_t signee_research_group_id,
-                                                         const std::string& title,
-                                                         const std::string& contract_hash,
-                                                         const uint32_t start_date,
-                                                         const uint32_t end_date,
-                                                         const bool broadcast)
+                                                             const int64_t party_a_research_group_id,
+                                                             const std::string& party_b,
+                                                             const int64_t party_b_research_group_id,
+                                                             const std::string& title,
+                                                             const std::string& contract_hash,
+                                                             const uint32_t start_date,
+                                                             const uint32_t end_date,
+                                                             const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
@@ -2843,8 +2843,8 @@ annotated_signed_transaction wallet_api::create_nda_contract(const std::string& 
 
     op.party_a = party_a;
     op.party_a_research_group_id = party_a_research_group_id;
-    op.signee = signee;
-    op.signee_research_group_id = signee_research_group_id;
+    op.party_b = party_b;
+    op.party_b_research_group_id = party_b_research_group_id;
     op.title = title;
     op.contract_hash = contract_hash;
     op.start_date = fc::time_point_sec(start_date);
@@ -2877,16 +2877,15 @@ annotated_signed_transaction wallet_api::sign_nda_contract(const int64_t contrac
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::decline_nda_contract(const int64_t contract_id,
-                                                          const std::string& signee,
-                                                          const bool broadcast)
+annotated_signed_transaction
+wallet_api::decline_nda_contract(const int64_t contract_id, const std::string& party_b, const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
     decline_nda_contract_operation op;
 
     op.contract_id = contract_id;
-    op.signee = signee;
+    op.party_b = party_b;
 
     signed_transaction tx;
     tx.operations.push_back(op);

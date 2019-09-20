@@ -4818,8 +4818,8 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         create_nda_contract_operation op;
         op.party_a = "alice";
         op.party_a_research_group_id = alice_rg.id._id;
-        op.signee = "bob";
-        op.signee_research_group_id = bob_rg.id._id;
+        op.party_b = "bob";
+        op.party_b_research_group_id = bob_rg.id._id;
         op.contract_hash = "test contract";
         op.start_date = fc::time_point_sec(12312313);
         op.end_date = fc::time_point_sec(12312314);
@@ -4839,8 +4839,8 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         BOOST_CHECK(contract.id == 0);
         BOOST_CHECK(contract.party_a == "alice");
         BOOST_CHECK(contract.party_a_research_group_id == alice_rg.id._id);
-        BOOST_CHECK(contract.signee == "bob");
-        BOOST_CHECK(contract.signee_research_group_id == bob_rg.id._id);
+        BOOST_CHECK(contract.party_b == "bob");
+        BOOST_CHECK(contract.party_b_research_group_id == bob_rg.id._id);
         BOOST_CHECK(contract.contract_hash == "test contract");
         BOOST_CHECK(contract.status == nda_contract_status::nda_contract_pending);
         BOOST_CHECK(contract.created_at == db.head_block_time());
@@ -4869,8 +4869,8 @@ BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
         create_nda_contract_operation op;
         op.party_a = "alice";
         op.party_a_research_group_id = alice_rg.id._id;
-        op.signee = "bob";
-        op.signee_research_group_id = bob_rg.id._id;
+        op.party_b = "bob";
+        op.party_b_research_group_id = bob_rg.id._id;
         op.contract_hash = "duplicated hash";
         op.start_date = fc::time_point_sec(12312313);
         op.end_date = fc::time_point_sec(12312314);
@@ -4886,8 +4886,8 @@ BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
         create_nda_contract_operation op2;
         op2.party_a = "alice";
         op2.party_a_research_group_id = alice_rg.id._id;
-        op2.signee = "bob";
-        op2.signee_research_group_id = bob_rg.id._id;
+        op2.party_b = "bob";
+        op2.party_b_research_group_id = bob_rg.id._id;
         op2.contract_hash = "duplicated hash";
         op2.start_date = fc::time_point_sec(12312315);
         op2.end_date = fc::time_point_sec(12312316);
@@ -4913,8 +4913,8 @@ BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
         create_nda_contract_operation op4;
         op4.party_a = "alice";
         op4.party_a_research_group_id = alice_rg.id._id;
-        op4.signee = "bob";
-        op4.signee_research_group_id = bob_rg.id._id;
+        op4.party_b = "bob";
+        op4.party_b_research_group_id = bob_rg.id._id;
         op4.contract_hash = "duplicated hash";
         op4.start_date = fc::time_point_sec(12312415);
         op4.end_date = fc::time_point_sec(12312416);
@@ -4946,8 +4946,8 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
             c_o.id = 0;
             c_o.party_a = "alice";
             c_o.party_a_research_group_id = alice_rg.id._id;
-            c_o.signee = "bob";
-            c_o.signee_research_group_id = bob_rg.id._id;
+            c_o.party_b = "bob";
+            c_o.party_b_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract";
             c_o.status = nda_contract_status::nda_contract_pending;
             c_o.created_at = db.head_block_time();
@@ -4969,8 +4969,8 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
         BOOST_CHECK(contract.id == 0);
         BOOST_CHECK(contract.party_a == "alice");
         BOOST_CHECK(contract.party_a_research_group_id == alice_rg.id._id);
-        BOOST_CHECK(contract.signee == "bob");
-        BOOST_CHECK(contract.signee_research_group_id == bob_rg.id._id);
+        BOOST_CHECK(contract.party_b == "bob");
+        BOOST_CHECK(contract.party_b_research_group_id == bob_rg.id._id);
         BOOST_CHECK(contract.status == nda_contract_status::nda_contract_signed);
         BOOST_CHECK(contract.created_at == db.head_block_time());
 
@@ -4978,8 +4978,8 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
             c_o.id = 1;
             c_o.party_a = "alice";
             c_o.party_a_research_group_id = alice_rg.id._id;
-            c_o.signee = "bob";
-            c_o.signee_research_group_id = bob_rg.id._id;
+            c_o.party_b = "bob";
+            c_o.party_b_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract 2";
             c_o.status = nda_contract_status::nda_contract_declined;
             c_o.created_at = db.head_block_time();
@@ -5000,8 +5000,8 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
             c_o.id = 2;
             c_o.party_a = "alice";
             c_o.party_a_research_group_id = alice_rg.id._id;
-            c_o.signee = "bob";
-            c_o.signee_research_group_id = bob_rg.id._id;
+            c_o.party_b = "bob";
+            c_o.party_b_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract 3";
             c_o.status = nda_contract_status::nda_contract_expired;
             c_o.created_at = db.head_block_time();
@@ -5022,8 +5022,8 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
             c_o.id = 3;
             c_o.party_a = "alice";
             c_o.party_a_research_group_id = alice_rg.id._id;
-            c_o.signee = "bob";
-            c_o.signee_research_group_id = bob_rg.id._id;
+            c_o.party_b = "bob";
+            c_o.party_b_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract 4";
             c_o.status = nda_contract_status::nda_contract_signed;
             c_o.created_at = db.head_block_time();
@@ -5044,8 +5044,8 @@ BOOST_AUTO_TEST_CASE(approve_contract_test)
             c_o.id = 4;
             c_o.party_a = "alice";
             c_o.party_a_research_group_id = alice_rg.id._id;
-            c_o.signee = "bob";
-            c_o.signee_research_group_id = bob_rg.id._id;
+            c_o.party_b = "bob";
+            c_o.party_b_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract 5";
             c_o.status = nda_contract_status::nda_contract_pending;
             c_o.created_at = db.head_block_time();
@@ -5083,8 +5083,8 @@ BOOST_AUTO_TEST_CASE(decline_contract_test)
             c_o.id = 0;
             c_o.party_a = "alice";
             c_o.party_a_research_group_id = alice_rg.id._id;
-            c_o.signee = "bob";
-            c_o.signee_research_group_id = bob_rg.id._id;
+            c_o.party_b = "bob";
+            c_o.party_b_research_group_id = bob_rg.id._id;
             c_o.contract_hash = "test contract";
             c_o.status = nda_contract_status::nda_contract_pending;
             c_o.created_at = db.head_block_time();
@@ -5092,7 +5092,7 @@ BOOST_AUTO_TEST_CASE(decline_contract_test)
 
         decline_nda_contract_operation op;
         op.contract_id = 0;
-        op.signee = "bob";
+        op.party_b = "bob";
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -5106,8 +5106,8 @@ BOOST_AUTO_TEST_CASE(decline_contract_test)
         BOOST_CHECK(contract.id == 0);
         BOOST_CHECK(contract.party_a == "alice");
         BOOST_CHECK(contract.party_a_research_group_id == alice_rg.id._id);
-        BOOST_CHECK(contract.signee == "bob");
-        BOOST_CHECK(contract.signee_research_group_id == bob_rg.id._id);
+        BOOST_CHECK(contract.party_b == "bob");
+        BOOST_CHECK(contract.party_b_research_group_id == bob_rg.id._id);
         BOOST_CHECK(contract.status == nda_contract_status::nda_contract_declined);
         BOOST_CHECK(contract.created_at == db.head_block_time());
     }
@@ -5126,7 +5126,7 @@ BOOST_AUTO_TEST_CASE(request_contract_file_key_test)
         auto& contract = db.create<nda_contract_object>([&](nda_contract_object& c_o) {
             c_o.id = 0;
             c_o.party_a = "alice";
-            c_o.signee = "bob";
+            c_o.party_b = "bob";
             c_o.contract_hash = "test contract";
             c_o.status = nda_contract_status::nda_contract_pending;
             c_o.created_at = db.head_block_time();
@@ -5171,7 +5171,7 @@ BOOST_AUTO_TEST_CASE(grant_access_to_contract_file_test)
         auto& contract = db.create<nda_contract_object>([&](nda_contract_object& c_o) {
             c_o.id = 0;
             c_o.party_a = "alice";
-            c_o.signee = "bob";
+            c_o.party_b = "bob";
             c_o.contract_hash = "test contract";
             c_o.status = nda_contract_status::nda_contract_pending;
             c_o.created_at = db.head_block_time();

@@ -1269,8 +1269,8 @@ public:
 
     annotated_signed_transaction create_nda_contract(const std::string& party_a,
                                                      const int64_t party_a_research_group_id,
-                                                     const std::string& signee,
-                                                     const int64_t signee_research_group_id,
+                                                     const std::string& party_b,
+                                                     const int64_t party_b_research_group_id,
                                                      const std::string& title,
                                                      const std::string& contract_hash,
                                                      const uint32_t start_date,
@@ -1283,7 +1283,7 @@ public:
                                                const bool broadcast);
 
     annotated_signed_transaction decline_nda_contract(const int64_t contract_id,
-                                                  const std::string& signee,
+                                                  const std::string& party_b,
                                                   const bool broadcast);
     
     annotated_signed_transaction close_nda_contract(const int64_t contract_id,

@@ -1076,10 +1076,10 @@ struct nda_contract_api_obj
         : id(c_o.id._id)
         , party_a(c_o.party_a)
         , party_a_research_group_id(c_o.party_a_research_group_id._id)
-        , signee(c_o.signee)
-        , signee_research_group_id(c_o.signee_research_group_id._id)
+        , party_b(c_o.party_b)
+        , party_b_research_group_id(c_o.party_b_research_group_id._id)
         , party_a_signature(fc::to_string(c_o.party_a_signature))
-        , signee_signature(fc::to_string(c_o.signee_signature))
+        , party_b_signature(fc::to_string(c_o.party_b_signature))
         , title(fc::to_string(c_o.title))
         , contract_hash(fc::to_string(c_o.contract_hash))
         , status(c_o.status)
@@ -1099,11 +1099,11 @@ struct nda_contract_api_obj
     account_name_type party_a;
     int64_t party_a_research_group_id;
 
-    account_name_type signee;
-    int64_t signee_research_group_id;
+    account_name_type party_b;
+    int64_t party_b_research_group_id;
 
     std::string party_a_signature;
-    std::string signee_signature;
+    std::string party_b_signature;
 
     std::string title;
     std::string contract_hash;
@@ -1489,9 +1489,9 @@ FC_REFLECT( deip::app::nda_contract_api_obj,
             (party_a)
             (party_a_research_group_id)
             (party_a_signature)
-            (signee)
-            (signee_research_group_id)
-            (signee_signature)
+            (party_b)
+            (party_b_research_group_id)
+            (party_b_signature)
             (title)
             (contract_hash)
             (status)

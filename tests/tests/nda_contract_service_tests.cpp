@@ -23,8 +23,8 @@ class contract_service_fixture : public clean_database_fixture
             c_o.id = 0;
             c_o.party_a = "alice";
             c_o.party_a_research_group_id = 5;
-            c_o.signee = "bob";
-            c_o.signee_research_group_id = 10;
+            c_o.party_b = "bob";
+            c_o.party_b_research_group_id = 10;
             c_o.contract_hash = "contract 1";
             c_o.status = nda_contract_status::nda_contract_pending;
             c_o.created_at = fc::time_point_sec(123123);
@@ -36,8 +36,8 @@ class contract_service_fixture : public clean_database_fixture
             c_o.id = 1;
             c_o.party_a = "alice";
             c_o.party_a_research_group_id = 5;
-            c_o.signee = "mike";
-            c_o.signee_research_group_id = 15;
+            c_o.party_b = "mike";
+            c_o.party_b_research_group_id = 15;
             c_o.contract_hash = "contract 2";
             c_o.status = nda_contract_status::nda_contract_signed;
             c_o.created_at = fc::time_point_sec(1231);
@@ -49,8 +49,8 @@ class contract_service_fixture : public clean_database_fixture
             c_o.id = 2;
             c_o.party_a = "john";
             c_o.party_a_research_group_id = 20;
-            c_o.signee = "bob";
-            c_o.signee_research_group_id = 25;
+            c_o.party_b = "bob";
+            c_o.party_b_research_group_id = 25;
             c_o.contract_hash = "contract 3";
             c_o.status = nda_contract_status::nda_contract_declined;
             c_o.created_at = fc::time_point_sec(1231231);
@@ -73,8 +73,8 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         BOOST_CHECK(contract.party_a == "alice");
         BOOST_CHECK(contract.party_a_research_group_id == 100);
 
-        BOOST_CHECK(contract.signee == "bob");
-        BOOST_CHECK(contract.signee_research_group_id == 150);
+        BOOST_CHECK(contract.party_b == "bob");
+        BOOST_CHECK(contract.party_b_research_group_id == 150);
 
         BOOST_CHECK(contract.contract_hash == "test");
         BOOST_CHECK(contract.status == nda_contract_status::nda_contract_pending);
@@ -94,8 +94,8 @@ BOOST_AUTO_TEST_CASE(get_contract_test)
         BOOST_CHECK(contract.party_a == "alice");
         BOOST_CHECK(contract.party_a_research_group_id == 5);
 
-        BOOST_CHECK(contract.signee == "mike");
-        BOOST_CHECK(contract.signee_research_group_id == 15);
+        BOOST_CHECK(contract.party_b == "mike");
+        BOOST_CHECK(contract.party_b_research_group_id == 15);
 
         BOOST_CHECK(contract.contract_hash == "contract 2");
         BOOST_CHECK(contract.status == nda_contract_status::nda_contract_signed);
@@ -133,8 +133,8 @@ BOOST_AUTO_TEST_CASE(get_nda_contracts_by_creator)
             return contract.id == 0 &&
                     contract.party_a == "alice" &&
                     contract.party_a_research_group_id == 5 &&
-                    contract.signee == "bob" &&
-                    contract.signee_research_group_id == 10 &&
+                    contract.party_b == "bob" &&
+                    contract.party_b_research_group_id == 10 &&
                     contract.contract_hash == "contract 1" &&
                     contract.status == nda_contract_status::nda_contract_pending &&
                     contract.created_at == fc::time_point_sec(123123) &&
@@ -147,8 +147,8 @@ BOOST_AUTO_TEST_CASE(get_nda_contracts_by_creator)
             return contract.id == 1 &&
                    contract.party_a == "alice" &&
                    contract.party_a_research_group_id == 5 &&
-                   contract.signee == "mike" &&
-                   contract.signee_research_group_id == 15 &&
+                   contract.party_b == "mike" &&
+                   contract.party_b_research_group_id == 15 &&
                    contract.contract_hash == "contract 2" &&
                    contract.status == nda_contract_status::nda_contract_signed &&
                    contract.created_at == fc::time_point_sec(1231) &&
@@ -170,8 +170,8 @@ BOOST_AUTO_TEST_CASE(sign_by_receiver_test)
 
         BOOST_CHECK(contract.party_a == "alice");
         BOOST_CHECK(contract.party_a_research_group_id == 5);
-        BOOST_CHECK(contract.signee == "bob");
-        BOOST_CHECK(contract.signee_research_group_id == 10);
+        BOOST_CHECK(contract.party_b == "bob");
+        BOOST_CHECK(contract.party_b_research_group_id == 10);
         BOOST_CHECK(contract.contract_hash == "contract 1");
         BOOST_CHECK(contract.status == nda_contract_status::nda_contract_signed);
         BOOST_CHECK(contract.created_at == fc::time_point_sec(123123));
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(set_new_contract_status_test)
         data_service.set_new_contract_status(contract, nda_contract_status::nda_contract_signed);
 
         BOOST_CHECK(contract.party_a == "alice");
-        BOOST_CHECK(contract.signee == "bob");
+        BOOST_CHECK(contract.party_b == "bob");
         BOOST_CHECK(contract.status == nda_contract_status::nda_contract_signed);
 
     }

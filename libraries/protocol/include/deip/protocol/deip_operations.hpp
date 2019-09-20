@@ -824,8 +824,8 @@ struct create_nda_contract_operation : public base_operation
     account_name_type party_a;
     int64_t party_a_research_group_id;
 
-    account_name_type signee;
-    int64_t signee_research_group_id;
+    account_name_type party_b;
+    int64_t party_b_research_group_id;
 
     string title;
     string contract_hash;
@@ -858,13 +858,13 @@ struct sign_nda_contract_operation : public base_operation
 struct decline_nda_contract_operation : public base_operation
 {
     int64_t contract_id;
-    account_name_type signee;
+    account_name_type party_b;
 
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(signee);
+        a.insert(party_b);
     }
 };
 
@@ -982,9 +982,9 @@ FC_REFLECT( deip::protocol::create_grant_operation, (target_discipline)(amount)(
 FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
 FC_REFLECT( deip::protocol::add_member_to_research_operation, (research_id)(owner)(invitee))
 FC_REFLECT( deip::protocol::exclude_member_from_research_operation, (research_id)(owner)(account_to_exclude))
-FC_REFLECT( deip::protocol::create_nda_contract_operation, (party_a)(party_a_research_group_id)(signee)(signee_research_group_id)(title)(contract_hash)(start_date)(end_date))
+FC_REFLECT( deip::protocol::create_nda_contract_operation, (party_a)(party_a_research_group_id)(party_b)(party_b_research_group_id)(title)(contract_hash)(start_date)(end_date))
 FC_REFLECT( deip::protocol::sign_nda_contract_operation, (contract_id)(contract_signer)(signature))
-FC_REFLECT( deip::protocol::decline_nda_contract_operation, (contract_id)(signee))
+FC_REFLECT( deip::protocol::decline_nda_contract_operation, (contract_id)(party_b))
 FC_REFLECT( deip::protocol::close_nda_contract_operation, (contract_id)(party_a))
 FC_REFLECT( deip::protocol::create_request_by_nda_contract_operation, (requester)(encrypted_payload_hash)(encrypted_payload_iv)(contract_id))
 FC_REFLECT( deip::protocol::fulfill_request_by_nda_contract_operation, (granter)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key)(request_id))
