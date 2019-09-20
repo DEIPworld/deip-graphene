@@ -22,7 +22,7 @@ class nda_contract_object : public object<nda_contract_object_type, nda_contract
 public:
 
     template <typename Constructor, typename Allocator>
-    nda_contract_object(Constructor&& c, allocator<Allocator> a) : title(a), party_a_signature(a), party_b_signature(a), contract_hash(a)
+    nda_contract_object(Constructor&& c, allocator<Allocator> a) : title(a), disclosing_party(a), party_a_signature(a), party_b_signature(a), contract_hash(a)
     {
         c(*this);
     }
@@ -34,6 +34,8 @@ public:
 
     account_name_type party_a;
     account_name_type party_b;
+
+    account_name_type_set disclosing_party;
 
     research_group_id_type party_a_research_group_id;
     research_group_id_type party_b_research_group_id;
@@ -145,7 +147,7 @@ typedef multi_index_container<nda_contract_object,
 FC_REFLECT_ENUM(deip::chain::nda_contract_status, (nda_contract_pending)(nda_contract_signed)(nda_contract_declined)(nda_contract_closed)(nda_contract_expired))
 
 FC_REFLECT( deip::chain::nda_contract_object,
-             (id)(title)(contract_creator)(party_a)(party_b)(party_a_research_group_id)(party_b_research_group_id)(party_a_signature)(party_b_signature)(contract_hash)(status)(created_at)(start_date)(end_date)
+             (id)(title)(contract_creator)(party_a)(party_b)(disclosing_party)(party_a_research_group_id)(party_b_research_group_id)(party_a_signature)(party_b_signature)(contract_hash)(status)(created_at)(start_date)(end_date)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::nda_contract_object, deip::chain::nda_contract_index)

@@ -1272,6 +1272,7 @@ public:
                                                      const int64_t party_a_research_group_id,
                                                      const std::string& party_b,
                                                      const int64_t party_b_research_group_id,
+                                                     const std::set<account_name_type> disclosing_party,
                                                      const std::string& title,
                                                      const std::string& contract_hash,
                                                      const uint32_t start_date,

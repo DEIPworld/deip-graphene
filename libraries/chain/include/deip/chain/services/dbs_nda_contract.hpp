@@ -23,6 +23,7 @@ public:
                                   const research_group_id_type& party_a_research_group_id,
                                   const account_name_type& party_b,
                                   const research_group_id_type& party_b_research_group_id,
+                                  const std::set<account_name_type>& disclosing_party,
                                   const std::string& title,
                                   const std::string& contract_hash,
                                   const fc::time_point_sec& created_at,

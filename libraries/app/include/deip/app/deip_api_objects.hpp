@@ -1079,6 +1079,7 @@ struct nda_contract_api_obj
         , party_a_research_group_id(c_o.party_a_research_group_id._id)
         , party_b(c_o.party_b)
         , party_b_research_group_id(c_o.party_b_research_group_id._id)
+        , disclosing_party(c_o.disclosing_party.begin(), c_o.disclosing_party.end())
         , party_a_signature(fc::to_string(c_o.party_a_signature))
         , party_b_signature(fc::to_string(c_o.party_b_signature))
         , title(fc::to_string(c_o.title))
@@ -1103,6 +1104,8 @@ struct nda_contract_api_obj
 
     account_name_type party_b;
     int64_t party_b_research_group_id;
+
+    std::set<account_name_type> disclosing_party;
 
     std::string party_a_signature;
     std::string party_b_signature;
@@ -1495,6 +1498,7 @@ FC_REFLECT( deip::app::nda_contract_api_obj,
             (party_b)
             (party_b_research_group_id)
             (party_b_signature)
+            (disclosing_party)
             (title)
             (contract_hash)
             (status)

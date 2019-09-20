@@ -17,6 +17,7 @@ const nda_contract_object& dbs_nda_contract::create(const account_name_type& con
                                                     const research_group_id_type& party_a_research_group_id,
                                                     const account_name_type& party_b,
                                                     const research_group_id_type& party_b_research_group_id,
+                                                    const std::set<account_name_type>& disclosing_party,
                                                     const fc::string& title,
                                                     const fc::string& contract_hash,
                                                     const fc::time_point_sec& created_at,
@@ -31,6 +32,7 @@ const nda_contract_object& dbs_nda_contract::create(const account_name_type& con
         c_o.party_b = party_b;
         c_o.party_b_research_group_id = party_b_research_group_id;
         fc::from_string(c_o.party_b_signature, "");
+        c_o.disclosing_party.insert(disclosing_party.begin(), disclosing_party.end());
         fc::from_string(c_o.title, title);        
         fc::from_string(c_o.contract_hash, contract_hash);        
         c_o.created_at = created_at;

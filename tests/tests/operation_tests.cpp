@@ -4816,11 +4816,16 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         auto& bob_rg = research_group_service.get_research_group_by_permlink("bob");
 
         create_nda_contract_operation op;
+        std::set<account_name_type> disclosing_party;
+        disclosing_party.insert("bob");
+
         op.contract_creator = "alice";
         op.party_a = "alice";
         op.party_a_research_group_id = alice_rg.id._id;
         op.party_b = "bob";
         op.party_b_research_group_id = bob_rg.id._id;
+        op.disclosing_party = disclosing_party;
+        op.title = "contract title";
         op.contract_hash = "test contract";
         op.start_date = fc::time_point_sec(12312313);
         op.end_date = fc::time_point_sec(12312314);
@@ -4868,11 +4873,16 @@ BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
         private_key_type bob_priv_key = generate_private_key("bob");
 
         create_nda_contract_operation op;
+        std::set<account_name_type> disclosing_party;
+        disclosing_party.insert("bob");
+
         op.contract_creator = "alice";
         op.party_a = "alice";
         op.party_a_research_group_id = alice_rg.id._id;
         op.party_b = "bob";
         op.party_b_research_group_id = bob_rg.id._id;
+        op.disclosing_party = disclosing_party;
+        op.title = "contract title";
         op.contract_hash = "duplicated hash";
         op.start_date = fc::time_point_sec(12312313);
         op.end_date = fc::time_point_sec(12312314);
@@ -4886,11 +4896,16 @@ BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
         db.push_transaction(tx, 0);
 
         create_nda_contract_operation op2;
+        std::set<account_name_type> disclosing_party_2;
+        disclosing_party_2.insert("bob");
+
         op.contract_creator = "alice";
         op2.party_a = "alice";
         op2.party_a_research_group_id = alice_rg.id._id;
         op2.party_b = "bob";
         op2.party_b_research_group_id = bob_rg.id._id;
+        op2.disclosing_party = disclosing_party_2;
+        op2.title = "contract title";
         op2.contract_hash = "duplicated hash";
         op2.start_date = fc::time_point_sec(12312315);
         op2.end_date = fc::time_point_sec(12312316);
@@ -4914,11 +4929,16 @@ BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
         db.push_transaction(tx3, 0);
 
         create_nda_contract_operation op4;
+        std::set<account_name_type> disclosing_party_4;
+        disclosing_party_3.insert("bob");
+
         op.contract_creator = "alice";
         op4.party_a = "alice";
         op4.party_a_research_group_id = alice_rg.id._id;
         op4.party_b = "bob";
         op4.party_b_research_group_id = bob_rg.id._id;
+        op4.disclosing_party = disclosing_party_4;
+        op4.title = "contract title";
         op4.contract_hash = "duplicated hash";
         op4.start_date = fc::time_point_sec(12312415);
         op4.end_date = fc::time_point_sec(12312416);
