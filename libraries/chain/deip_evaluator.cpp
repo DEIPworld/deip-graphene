@@ -1325,13 +1325,14 @@ void decline_nda_contract_evaluator::do_apply(const decline_nda_contract_operati
     dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
     dbs_research_group &research_group_service = _db.obtain_service<dbs_research_group>();
 
-    account_service.check_account_existence(op.party_b);
+    account_service.check_account_existence(op.decliner);
     const auto& contract = nda_contracts_service.get(op.contract_id);
-    research_group_service.check_research_group_token_existence(op.party_b, contract.party_b_research_group_id);
 
-    FC_ASSERT(contract.party_b == op.party_b, "Only ${party_b} account can decline the contract", ("party_b", contract.party_b));
+    // WARNING: Currently we are not supporting sharing files by both sides within a single NDA contract
+    FC_ASSERT(contract.party_b == op.decliner, "Only ${party_b} account can decline the contract", ("party_b", contract.party_b));
+    research_group_service.check_research_group_token_existence(op.decliner, contract.party_b_research_group_id);
+
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_pending, "Contract with status ${status} cannot be declined", ("status", contract.status));
-
     nda_contracts_service.set_new_contract_status(contract, nda_contract_status::nda_contract_declined);
 }
 

@@ -5116,7 +5116,7 @@ BOOST_AUTO_TEST_CASE(decline_contract_test)
 
         decline_nda_contract_operation op;
         op.contract_id = 0;
-        op.party_b = "bob";
+        op.decliner = "bob";
 
         private_key_type priv_key = generate_private_key("bob");
 

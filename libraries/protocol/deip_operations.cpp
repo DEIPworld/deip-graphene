@@ -348,7 +348,7 @@ void sign_nda_contract_operation::validate() const
 
 void decline_nda_contract_operation::validate() const
 {
-    validate_account_name(party_b);
+    validate_account_name(decliner);
 }
 
 void close_nda_contract_operation::validate() const

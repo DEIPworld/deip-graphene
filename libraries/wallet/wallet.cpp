@@ -2882,14 +2882,14 @@ annotated_signed_transaction wallet_api::sign_nda_contract(const int64_t contrac
 }
 
 annotated_signed_transaction
-wallet_api::decline_nda_contract(const int64_t contract_id, const std::string& party_b, const bool broadcast)
+wallet_api::decline_nda_contract(const int64_t contract_id, const std::string& decliner, const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
     decline_nda_contract_operation op;
 
     op.contract_id = contract_id;
-    op.party_b = party_b;
+    op.decliner = decliner;
 
     signed_transaction tx;
     tx.operations.push_back(op);

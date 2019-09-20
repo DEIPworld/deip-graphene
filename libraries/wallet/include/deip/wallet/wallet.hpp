@@ -1285,7 +1285,7 @@ public:
                                                const bool broadcast);
 
     annotated_signed_transaction decline_nda_contract(const int64_t contract_id,
-                                                  const std::string& party_b,
+                                                  const std::string& decliner,
                                                   const bool broadcast);
     
     annotated_signed_transaction close_nda_contract(const int64_t contract_id,
