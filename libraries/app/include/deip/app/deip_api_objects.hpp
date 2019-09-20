@@ -1074,6 +1074,7 @@ struct nda_contract_api_obj
 {
     nda_contract_api_obj(const chain::nda_contract_object& c_o)
         : id(c_o.id._id)
+        , contract_creator(c_o.contract_creator)
         , party_a(c_o.party_a)
         , party_a_research_group_id(c_o.party_a_research_group_id._id)
         , party_b(c_o.party_b)
@@ -1095,6 +1096,7 @@ struct nda_contract_api_obj
     }
 
     int64_t id;
+    account_name_type contract_creator;
 
     account_name_type party_a;
     int64_t party_a_research_group_id;
@@ -1486,6 +1488,7 @@ FC_REFLECT( deip::app::grant_application_api_obj,
 
 FC_REFLECT( deip::app::nda_contract_api_obj,
             (id)
+            (contract_creator)
             (party_a)
             (party_a_research_group_id)
             (party_a_signature)

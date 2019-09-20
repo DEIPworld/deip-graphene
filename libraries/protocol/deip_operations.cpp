@@ -326,6 +326,9 @@ void create_nda_contract_operation::validate() const
 {
     validate_account_name(party_a);
     validate_account_name(party_b);
+    validate_account_name(contract_creator);
+    // WARNING: Currently we are not supporting sharing files by both sides within a single NDA contract
+    FC_ASSERT(contract_creator == party_a, "Two-way NDA contracts are not supported currently");
     FC_ASSERT(title.size() > 0 && title.size() < 200, "Contract title must be specified in length from 1 to 200 characters");
     validate_256_bits_hexadecimal_string(contract_hash);
     FC_ASSERT(end_date > start_date, "End time must be greater than a start time");

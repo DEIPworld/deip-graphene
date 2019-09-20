@@ -12,7 +12,8 @@ dbs_nda_contract::dbs_nda_contract(database& db)
 {
 }
 
-const nda_contract_object& dbs_nda_contract::create(const account_name_type& party_a,
+const nda_contract_object& dbs_nda_contract::create(const account_name_type& contract_creator,
+                                                    const account_name_type& party_a,
                                                     const research_group_id_type& party_a_research_group_id,
                                                     const account_name_type& party_b,
                                                     const research_group_id_type& party_b_research_group_id,
@@ -23,6 +24,7 @@ const nda_contract_object& dbs_nda_contract::create(const account_name_type& par
                                                     const fc::time_point_sec& end_date)
 {
     const auto& contract = db_impl().create<nda_contract_object>([&](nda_contract_object& c_o) {
+        c_o.contract_creator = contract_creator;
         c_o.party_a = party_a;
         c_o.party_a_research_group_id = party_a_research_group_id;
         fc::from_string(c_o.party_a_signature, "");

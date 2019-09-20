@@ -18,7 +18,8 @@ protected:
 public:
     using contracts_refs_type = std::vector<std::reference_wrapper<const nda_contract_object>>;
 
-    const nda_contract_object& create(const account_name_type& party_a,
+    const nda_contract_object& create(const account_name_type& contract_creator,
+                                  const account_name_type& party_a,
                                   const research_group_id_type& party_a_research_group_id,
                                   const account_name_type& party_b,
                                   const research_group_id_type& party_b_research_group_id,

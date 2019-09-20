@@ -30,6 +30,8 @@ public:
     nda_contract_id_type id;
     fc::shared_string title;
 
+    account_name_type contract_creator;
+
     account_name_type party_a;
     account_name_type party_b;
 
@@ -143,7 +145,7 @@ typedef multi_index_container<nda_contract_object,
 FC_REFLECT_ENUM(deip::chain::nda_contract_status, (nda_contract_pending)(nda_contract_signed)(nda_contract_declined)(nda_contract_closed)(nda_contract_expired))
 
 FC_REFLECT( deip::chain::nda_contract_object,
-             (id)(title)(party_a)(party_b)(party_a_research_group_id)(party_b_research_group_id)(party_a_signature)(party_b_signature)(contract_hash)(status)(created_at)(start_date)(end_date)
+             (id)(title)(contract_creator)(party_a)(party_b)(party_a_research_group_id)(party_b_research_group_id)(party_a_signature)(party_b_signature)(contract_hash)(status)(created_at)(start_date)(end_date)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::nda_contract_object, deip::chain::nda_contract_index)

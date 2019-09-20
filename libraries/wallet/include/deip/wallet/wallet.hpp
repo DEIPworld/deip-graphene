@@ -1267,7 +1267,8 @@ public:
                                                               const std::string& buyer,
                                                               const bool broadcast);
 
-    annotated_signed_transaction create_nda_contract(const std::string& party_a,
+    annotated_signed_transaction create_nda_contract(const std::string& contract_creator,
+                                                     const std::string& party_a,
                                                      const int64_t party_a_research_group_id,
                                                      const std::string& party_b,
                                                      const int64_t party_b_research_group_id,

@@ -1269,7 +1269,7 @@ void create_nda_contract_evaluator::do_apply(const create_nda_contract_operation
 
     auto now = _db.head_block_time();
 
-    nda_contracts_service.create(op.party_a, op.party_a_research_group_id, 
+    nda_contracts_service.create(op.contract_creator, op.party_a, op.party_a_research_group_id, 
                             op.party_b, op.party_b_research_group_id,
                             op.title, op.contract_hash, now, op.start_date, op.end_date);
 }

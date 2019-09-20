@@ -4816,6 +4816,7 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         auto& bob_rg = research_group_service.get_research_group_by_permlink("bob");
 
         create_nda_contract_operation op;
+        op.contract_creator = "alice";
         op.party_a = "alice";
         op.party_a_research_group_id = alice_rg.id._id;
         op.party_b = "bob";
@@ -4867,6 +4868,7 @@ BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
         private_key_type bob_priv_key = generate_private_key("bob");
 
         create_nda_contract_operation op;
+        op.contract_creator = "alice";
         op.party_a = "alice";
         op.party_a_research_group_id = alice_rg.id._id;
         op.party_b = "bob";
@@ -4884,6 +4886,7 @@ BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
         db.push_transaction(tx, 0);
 
         create_nda_contract_operation op2;
+        op.contract_creator = "alice";
         op2.party_a = "alice";
         op2.party_a_research_group_id = alice_rg.id._id;
         op2.party_b = "bob";
@@ -4911,6 +4914,7 @@ BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
         db.push_transaction(tx3, 0);
 
         create_nda_contract_operation op4;
+        op.contract_creator = "alice";
         op4.party_a = "alice";
         op4.party_a_research_group_id = alice_rg.id._id;
         op4.party_b = "bob";

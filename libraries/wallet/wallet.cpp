@@ -2827,7 +2827,8 @@ annotated_signed_transaction wallet_api::reject_offer_research_tokens(const int6
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::create_nda_contract(const std::string& party_a,
+annotated_signed_transaction wallet_api::create_nda_contract(const std::string& contract_creator,
+                                                             const std::string& party_a,
                                                              const int64_t party_a_research_group_id,
                                                              const std::string& party_b,
                                                              const int64_t party_b_research_group_id,
@@ -2841,6 +2842,7 @@ annotated_signed_transaction wallet_api::create_nda_contract(const std::string& 
 
     create_nda_contract_operation op;
 
+    op.contract_creator = contract_creator;
     op.party_a = party_a;
     op.party_a_research_group_id = party_a_research_group_id;
     op.party_b = party_b;
