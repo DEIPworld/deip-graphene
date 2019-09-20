@@ -324,7 +324,7 @@ void exclude_member_from_research_operation::validate() const
 
 void create_nda_contract_operation::validate() const
 {
-    validate_account_name(creator);
+    validate_account_name(party_a);
     validate_account_name(signee);
     FC_ASSERT(title.size() > 0 && title.size() < 200, "Contract title must be specified in length from 1 to 200 characters");
     validate_256_bits_hexadecimal_string(contract_hash);
@@ -344,7 +344,7 @@ void decline_nda_contract_operation::validate() const
 
 void close_nda_contract_operation::validate() const
 {
-    validate_account_name(creator);
+    validate_account_name(party_a);
 }
 
 void create_request_by_nda_contract_operation::validate() const

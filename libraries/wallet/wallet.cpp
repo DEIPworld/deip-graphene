@@ -2827,8 +2827,8 @@ annotated_signed_transaction wallet_api::reject_offer_research_tokens(const int6
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::create_nda_contract(const std::string& creator,
-                                                         const int64_t creator_research_group_id,
+annotated_signed_transaction wallet_api::create_nda_contract(const std::string& party_a,
+                                                         const int64_t party_a_research_group_id,
                                                          const std::string& signee,
                                                          const int64_t signee_research_group_id,
                                                          const std::string& title,
@@ -2841,8 +2841,8 @@ annotated_signed_transaction wallet_api::create_nda_contract(const std::string& 
 
     create_nda_contract_operation op;
 
-    op.creator = creator;
-    op.creator_research_group_id = creator_research_group_id;
+    op.party_a = party_a;
+    op.party_a_research_group_id = party_a_research_group_id;
     op.signee = signee;
     op.signee_research_group_id = signee_research_group_id;
     op.title = title;
@@ -2895,14 +2895,14 @@ annotated_signed_transaction wallet_api::decline_nda_contract(const int64_t cont
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::close_nda_contract(const int64_t contract_id, const std::string& creator, const bool broadcast)
+annotated_signed_transaction wallet_api::close_nda_contract(const int64_t contract_id, const std::string& party_a, const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
     close_nda_contract_operation op;
 
     op.contract_id = contract_id;
-    op.creator = creator;
+    op.party_a = party_a;
 
     signed_transaction tx;
     tx.operations.push_back(op);

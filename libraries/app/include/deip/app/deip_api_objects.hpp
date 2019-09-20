@@ -1074,11 +1074,11 @@ struct nda_contract_api_obj
 {
     nda_contract_api_obj(const chain::nda_contract_object& c_o)
         : id(c_o.id._id)
-        , creator(c_o.creator)
-        , creator_research_group_id(c_o.creator_research_group_id._id)
+        , party_a(c_o.party_a)
+        , party_a_research_group_id(c_o.party_a_research_group_id._id)
         , signee(c_o.signee)
         , signee_research_group_id(c_o.signee_research_group_id._id)
-        , creator_signature(fc::to_string(c_o.creator_signature))
+        , party_a_signature(fc::to_string(c_o.party_a_signature))
         , signee_signature(fc::to_string(c_o.signee_signature))
         , title(fc::to_string(c_o.title))
         , contract_hash(fc::to_string(c_o.contract_hash))
@@ -1096,13 +1096,13 @@ struct nda_contract_api_obj
 
     int64_t id;
 
-    account_name_type creator;
-    int64_t creator_research_group_id;
+    account_name_type party_a;
+    int64_t party_a_research_group_id;
 
     account_name_type signee;
     int64_t signee_research_group_id;
 
-    std::string creator_signature;
+    std::string party_a_signature;
     std::string signee_signature;
 
     std::string title;
@@ -1486,9 +1486,9 @@ FC_REFLECT( deip::app::grant_application_api_obj,
 
 FC_REFLECT( deip::app::nda_contract_api_obj,
             (id)
-            (creator)
-            (creator_research_group_id)
-            (creator_signature)
+            (party_a)
+            (party_a_research_group_id)
+            (party_a_signature)
             (signee)
             (signee_research_group_id)
             (signee_signature)

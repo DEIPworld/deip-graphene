@@ -21,8 +21,8 @@ class contract_service_fixture : public clean_database_fixture
     {
         db.create<nda_contract_object>([&](nda_contract_object& c_o) {
             c_o.id = 0;
-            c_o.creator = "alice";
-            c_o.creator_research_group_id = 5;
+            c_o.party_a = "alice";
+            c_o.party_a_research_group_id = 5;
             c_o.signee = "bob";
             c_o.signee_research_group_id = 10;
             c_o.contract_hash = "contract 1";
@@ -34,8 +34,8 @@ class contract_service_fixture : public clean_database_fixture
 
         db.create<nda_contract_object>([&](nda_contract_object& c_o) {
             c_o.id = 1;
-            c_o.creator = "alice";
-            c_o.creator_research_group_id = 5;
+            c_o.party_a = "alice";
+            c_o.party_a_research_group_id = 5;
             c_o.signee = "mike";
             c_o.signee_research_group_id = 15;
             c_o.contract_hash = "contract 2";
@@ -47,8 +47,8 @@ class contract_service_fixture : public clean_database_fixture
 
         db.create<nda_contract_object>([&](nda_contract_object& c_o) {
             c_o.id = 2;
-            c_o.creator = "john";
-            c_o.creator_research_group_id = 20;
+            c_o.party_a = "john";
+            c_o.party_a_research_group_id = 20;
             c_o.signee = "bob";
             c_o.signee_research_group_id = 25;
             c_o.contract_hash = "contract 3";
@@ -70,8 +70,8 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
     {
         auto& contract = data_service.create("alice", 100, "bob", 150, "title", "test", fc::time_point_sec(123), fc::time_point_sec(1234), fc::time_point_sec(1235));
 
-        BOOST_CHECK(contract.creator == "alice");
-        BOOST_CHECK(contract.creator_research_group_id == 100);
+        BOOST_CHECK(contract.party_a == "alice");
+        BOOST_CHECK(contract.party_a_research_group_id == 100);
 
         BOOST_CHECK(contract.signee == "bob");
         BOOST_CHECK(contract.signee_research_group_id == 150);
@@ -91,8 +91,8 @@ BOOST_AUTO_TEST_CASE(get_contract_test)
         create_contracts();
         auto& contract = data_service.get(1);
 
-        BOOST_CHECK(contract.creator == "alice");
-        BOOST_CHECK(contract.creator_research_group_id == 5);
+        BOOST_CHECK(contract.party_a == "alice");
+        BOOST_CHECK(contract.party_a_research_group_id == 5);
 
         BOOST_CHECK(contract.signee == "mike");
         BOOST_CHECK(contract.signee_research_group_id == 15);
@@ -131,8 +131,8 @@ BOOST_AUTO_TEST_CASE(get_nda_contracts_by_creator)
         BOOST_CHECK(std::any_of(contracts.begin(), contracts.end(), [](std::reference_wrapper<const nda_contract_object> wrapper){
             const nda_contract_object &contract = wrapper.get();
             return contract.id == 0 &&
-                    contract.creator == "alice" &&
-                    contract.creator_research_group_id == 5 &&
+                    contract.party_a == "alice" &&
+                    contract.party_a_research_group_id == 5 &&
                     contract.signee == "bob" &&
                     contract.signee_research_group_id == 10 &&
                     contract.contract_hash == "contract 1" &&
@@ -145,8 +145,8 @@ BOOST_AUTO_TEST_CASE(get_nda_contracts_by_creator)
         BOOST_CHECK(std::any_of(contracts.begin(), contracts.end(), [](std::reference_wrapper<const nda_contract_object> wrapper){
             const nda_contract_object &contract = wrapper.get();
             return contract.id == 1 &&
-                   contract.creator == "alice" &&
-                   contract.creator_research_group_id == 5 &&
+                   contract.party_a == "alice" &&
+                   contract.party_a_research_group_id == 5 &&
                    contract.signee == "mike" &&
                    contract.signee_research_group_id == 15 &&
                    contract.contract_hash == "contract 2" &&
@@ -168,8 +168,8 @@ BOOST_AUTO_TEST_CASE(sign_by_receiver_test)
         auto& contract = data_service.get(0);
         data_service.sign(contract, "bob", "signature");
 
-        BOOST_CHECK(contract.creator == "alice");
-        BOOST_CHECK(contract.creator_research_group_id == 5);
+        BOOST_CHECK(contract.party_a == "alice");
+        BOOST_CHECK(contract.party_a_research_group_id == 5);
         BOOST_CHECK(contract.signee == "bob");
         BOOST_CHECK(contract.signee_research_group_id == 10);
         BOOST_CHECK(contract.contract_hash == "contract 1");
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(set_new_contract_status_test)
         auto& contract = data_service.get(0);
         data_service.set_new_contract_status(contract, nda_contract_status::nda_contract_signed);
 
-        BOOST_CHECK(contract.creator == "alice");
+        BOOST_CHECK(contract.party_a == "alice");
         BOOST_CHECK(contract.signee == "bob");
         BOOST_CHECK(contract.status == nda_contract_status::nda_contract_signed);
 

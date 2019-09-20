@@ -1254,12 +1254,12 @@ void create_nda_contract_evaluator::do_apply(const create_nda_contract_operation
     dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
-    account_service.check_account_existence(op.creator);
-    research_group_service.check_research_group_token_existence(op.creator, op.creator_research_group_id);
+    account_service.check_account_existence(op.party_a);
+    research_group_service.check_research_group_token_existence(op.party_a, op.party_a_research_group_id);
     account_service.check_account_existence(op.signee);
     research_group_service.check_research_group_token_existence(op.signee, op.signee_research_group_id);
 
-    const auto& contracts = nda_contracts_service.get_by_creator_research_group_and_signee_research_group_and_contract_hash(op.creator_research_group_id, op.signee_research_group_id, op.contract_hash);
+    const auto& contracts = nda_contracts_service.get_by_creator_research_group_and_signee_research_group_and_contract_hash(op.party_a_research_group_id, op.signee_research_group_id, op.contract_hash);
     for (const auto& wrapper : contracts)
     {
         const auto& contract = wrapper.get();
@@ -1269,7 +1269,7 @@ void create_nda_contract_evaluator::do_apply(const create_nda_contract_operation
 
     auto now = _db.head_block_time();
 
-    nda_contracts_service.create(op.creator, op.creator_research_group_id, 
+    nda_contracts_service.create(op.party_a, op.party_a_research_group_id, 
                             op.signee, op.signee_research_group_id,
                             op.title, op.contract_hash, now, op.start_date, op.end_date);
 }
@@ -1282,13 +1282,13 @@ void sign_nda_contract_evaluator::do_apply(const sign_nda_contract_operation& op
 
     const auto &signer = account_service.get_account(op.contract_signer);
     const auto& contract = nda_contracts_service.get(op.contract_id);
-    const bool is_creator_sig = contract.creator == op.contract_signer;
-    FC_ASSERT((contract.creator == op.contract_signer) || (contract.signee == op.contract_signer), "Only ${creator} or ${signee} accounts can sign the contract", ("creator", contract.creator)("signee", contract.signee));
+    const bool is_party_a_sig = contract.party_a == op.contract_signer;
+    FC_ASSERT((contract.party_a == op.contract_signer) || (contract.signee == op.contract_signer), "Only ${party_a} or ${signee} accounts can sign the contract", ("party_a", contract.party_a)("signee", contract.signee));
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_pending, "Contract with status ${status} cannot be signed", ("status", contract.status));
-    research_group_service.check_research_group_token_existence(op.contract_signer, is_creator_sig ? contract.creator_research_group_id : contract.signee_research_group_id);
-    std::string stringified_creator_signature = fc::to_string(contract.creator_signature);
+    research_group_service.check_research_group_token_existence(op.contract_signer, is_party_a_sig ? contract.party_a_research_group_id : contract.signee_research_group_id);
+    std::string stringified_party_a_signature = fc::to_string(contract.party_a_signature);
     std::string stringified_signee_signature = fc::to_string(contract.signee_signature);
-    FC_ASSERT(stringified_creator_signature.find(op.signature) == std::string::npos, "Signature ${signature} is already made from ${party} party", ("signature", op.signature)("party", contract.creator));
+    FC_ASSERT(stringified_party_a_signature.find(op.signature) == std::string::npos, "Signature ${signature} is already made from ${party} party", ("signature", op.signature)("party", contract.party_a));
     FC_ASSERT(stringified_signee_signature.find(op.signature) == std::string::npos, "Signature ${signature} is already made from ${party} party", ("signature", op.signature)("party", contract.signee));
 
     fc::sha256 digest = fc::sha256::hash(fc::to_string(contract.contract_hash));
@@ -1314,7 +1314,7 @@ void sign_nda_contract_evaluator::do_apply(const sign_nda_contract_operation& op
 
     const auto& signed_contract = nda_contracts_service.sign(contract, op.contract_signer, op.signature);
 
-    if (signed_contract.creator_signature.size() && signed_contract.signee_signature.size()) { // todo: add contract status resolver
+    if (signed_contract.party_a_signature.size() && signed_contract.signee_signature.size()) { // todo: add contract status resolver
         nda_contracts_service.set_new_contract_status(signed_contract, nda_contract_status::nda_contract_signed);
     }
 }
@@ -1341,12 +1341,12 @@ void close_nda_contract_evaluator::do_apply(const close_nda_contract_operation& 
     dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
-    account_service.check_account_existence(op.creator);
+    account_service.check_account_existence(op.party_a);
     const auto& contract = nda_contracts_service.get(op.contract_id);
-    research_group_service.check_research_group_token_existence(op.creator, contract.creator_research_group_id);
+    research_group_service.check_research_group_token_existence(op.party_a, contract.party_a_research_group_id);
 
-    FC_ASSERT(contract.creator == op.creator, "Only ${creator} account can decline the contract",
-              ("creator", contract.creator));
+    FC_ASSERT(contract.party_a == op.party_a, "Only ${party_a} account can decline the contract",
+              ("party_a", contract.party_a));
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_pending, "Contract with status ${status} cannot be closed",
               ("status", contract.status));
 
@@ -1378,7 +1378,7 @@ void fulfill_request_by_nda_contract_evaluator::do_apply(const fulfill_request_b
     account_service.check_account_existence(op.granter);
     const auto& request = nda_contract_requests_service.get(op.request_id);
     const auto& contract = nda_contracts_service.get(request.contract_id);
-    research_group_service.check_research_group_token_existence(op.granter, contract.creator_research_group_id);
+    research_group_service.check_research_group_token_existence(op.granter, contract.party_a_research_group_id);
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_signed, "Files cannot be shared under the terms of a contract with ${status} status", ("status", contract.status));
     FC_ASSERT(request.status == nda_contract_file_access_status::nda_contract_file_access_pending, "File access request with ${status} status cannot be fulfilled", ("status", request.status));
 
