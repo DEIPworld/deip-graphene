@@ -1254,6 +1254,11 @@ void create_nda_contract_evaluator::do_apply(const create_nda_contract_operation
     dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
+    fc::time_point_sec now = _db.head_block_time();
+    FC_ASSERT(op.start_date >= now, "NDA start date (${start_date}) can not be in the past", ("start_date", op.start_date));
+    FC_ASSERT(op.end_date > now, "NDA end date (${end_date}) can not be in the past", ("end_date", op.end_date));
+    FC_ASSERT(op.end_date > op.start_date, "NDA start date (${start_date}) can not be less than end date (${end_date})", ("start_date", op.start_date)("end_date", op.end_date));
+
     account_service.check_account_existence(op.party_a);
     research_group_service.check_research_group_token_existence(op.party_a, op.party_a_research_group_id);
     account_service.check_account_existence(op.party_b);
@@ -1266,8 +1271,6 @@ void create_nda_contract_evaluator::do_apply(const create_nda_contract_operation
         FC_ASSERT(contract.status != nda_contract_status::nda_contract_pending, "Contract with '${hash}' already exists with status '${status}' ", ("hash", op.contract_hash)("status", contract.status));
         FC_ASSERT(contract.status != nda_contract_status::nda_contract_signed, "Contract with '${hash}' already exists with status '${status}' ", ("hash", op.contract_hash)("status", contract.status));
     }
-
-    auto now = _db.head_block_time();
 
     nda_contracts_service.create(op.contract_creator, op.party_a, op.party_a_research_group_id, 
                             op.party_b, op.party_b_research_group_id, op.disclosing_party,
