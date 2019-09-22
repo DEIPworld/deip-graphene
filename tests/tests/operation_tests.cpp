@@ -5212,7 +5212,7 @@ BOOST_AUTO_TEST_CASE(grant_access_to_contract_file_test)
 
         fulfill_request_by_nda_contract_operation op;
         op.request_id = 0;
-        op.granter = "bob";
+        op.grantor = "bob";
         op.encrypted_payload_encryption_key = "key";
 
         private_key_type priv_key = generate_private_key("bob");

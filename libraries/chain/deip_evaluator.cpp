@@ -1386,12 +1386,12 @@ void fulfill_request_by_nda_contract_evaluator::do_apply(const fulfill_request_b
     dbs_research_group &research_group_service = _db.obtain_service<dbs_research_group>();
     dbs_nda_contract_requests& nda_contract_requests_service = _db.obtain_service<dbs_nda_contract_requests>();
 
-    account_service.check_account_existence(op.granter);
+    account_service.check_account_existence(op.grantor);
     const auto& request = nda_contract_requests_service.get(op.request_id);
     const auto& contract = nda_contracts_service.get(request.contract_id);
     // Currently we are not supporting sharing files by both sides within a single NDA contract
-    FC_ASSERT(op.granter == contract.party_a, "Two-way NDA contracts are not supported currently. Only ${party_a} can fulfill the request", ("party_a", contract.party_a));
-    research_group_service.check_research_group_token_existence(op.granter, contract.party_a_research_group_id);
+    FC_ASSERT(op.grantor == contract.party_a, "Two-way NDA contracts are not supported currently. Only ${party_a} can fulfill the request", ("party_a", contract.party_a));
+    research_group_service.check_research_group_token_existence(op.grantor, contract.party_a_research_group_id);
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_signed, "Files cannot be shared under the terms of a contract with ${status} status", ("status", contract.status));
     FC_ASSERT(request.status == nda_contract_file_access_status::nda_contract_file_access_pending, "File access request with ${status} status cannot be fulfilled", ("status", request.status));
 

@@ -910,7 +910,7 @@ struct create_request_by_nda_contract_operation : public base_operation
 
 struct fulfill_request_by_nda_contract_operation : public base_operation
 {
-    account_name_type granter;
+    account_name_type grantor;
     std::string encrypted_payload_encryption_key;
     std::string proof_of_encrypted_payload_encryption_key;
 
@@ -920,7 +920,7 @@ struct fulfill_request_by_nda_contract_operation : public base_operation
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(granter);
+        a.insert(grantor);
     }
 };
 
@@ -998,6 +998,6 @@ FC_REFLECT( deip::protocol::sign_nda_contract_operation, (contract_id)(contract_
 FC_REFLECT( deip::protocol::decline_nda_contract_operation, (contract_id)(decliner))
 FC_REFLECT( deip::protocol::close_nda_contract_operation, (contract_id)(closer))
 FC_REFLECT( deip::protocol::create_request_by_nda_contract_operation, (requester)(encrypted_payload_hash)(encrypted_payload_iv)(contract_id))
-FC_REFLECT( deip::protocol::fulfill_request_by_nda_contract_operation, (granter)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key)(request_id))
+FC_REFLECT( deip::protocol::fulfill_request_by_nda_contract_operation, (grantor)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key)(request_id))
 
 // clang-format on

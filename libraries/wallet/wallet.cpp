@@ -2939,7 +2939,7 @@ annotated_signed_transaction wallet_api::create_request_by_nda_contract(const st
 }
 
 
-annotated_signed_transaction wallet_api::fulfill_request_by_nda_contract(const std::string& granter,
+annotated_signed_transaction wallet_api::fulfill_request_by_nda_contract(const std::string& grantor,
                                                                         const int64_t request_id,
                                                                         const std::string& encrypted_payload_encryption_key,
                                                                         const std::string& proof_of_encrypted_payload_encryption_key,
@@ -2949,7 +2949,7 @@ annotated_signed_transaction wallet_api::fulfill_request_by_nda_contract(const s
 
     fulfill_request_by_nda_contract_operation op;
 
-    op.granter = granter;
+    op.grantor = grantor;
     op.request_id = request_id;
     op.encrypted_payload_encryption_key = encrypted_payload_encryption_key;
     op.proof_of_encrypted_payload_encryption_key = proof_of_encrypted_payload_encryption_key;
