@@ -1255,9 +1255,11 @@ void create_nda_contract_evaluator::do_apply(const create_nda_contract_operation
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     fc::time_point_sec now = _db.head_block_time();
-    // FC_ASSERT(op.start_date >= now, "NDA start date (${start_date}) can not be earlier the current moment (${now})", ("start_date", op.start_date)("now", now));
-    FC_ASSERT(op.end_date > now, "NDA end date (${end_date}) can not be earlier the current moment (${now})", ("end_date", op.end_date)("now", now));
-    FC_ASSERT(op.end_date > op.start_date, "NDA start date (${start_date}) can not be less than end date (${end_date})", ("start_date", op.start_date)("end_date", op.end_date));
+    fc::time_point_sec start_date = op.start_date.valid() ? *op.start_date : now;
+
+    FC_ASSERT(start_date >= now, "NDA start date (${start_date}) must be later or equal to the current moment (${now})", ("start_date", start_date)("now", now));
+    FC_ASSERT(op.end_date > now, "NDA end date (${end_date}) must be later the current moment (${now})", ("end_date", op.end_date)("now", now));
+    FC_ASSERT(op.end_date > start_date, "NDA start date (${start_date}) must be less than end date (${end_date})", ("start_date", start_date)("end_date", op.end_date));
 
     account_service.check_account_existence(op.party_a);
     research_group_service.check_research_group_token_existence(op.party_a, op.party_a_research_group_id);
@@ -1268,13 +1270,13 @@ void create_nda_contract_evaluator::do_apply(const create_nda_contract_operation
     for (const auto& wrapper : contracts)
     {
         const auto& contract = wrapper.get();
-        FC_ASSERT(contract.status != nda_contract_status::nda_contract_pending, "Contract with '${hash}' already exists with status '${status}' ", ("hash", op.contract_hash)("status", contract.status));
-        FC_ASSERT(contract.status != nda_contract_status::nda_contract_signed, "Contract with '${hash}' already exists with status '${status}' ", ("hash", op.contract_hash)("status", contract.status));
+        FC_ASSERT(contract.status != nda_contract_status::nda_contract_pending, "NDA contract '${hash}' already exists with status '${status}' ", ("hash", op.contract_hash)("status", contract.status));
+        FC_ASSERT(contract.status != nda_contract_status::nda_contract_signed, "NDA contract '${hash}' already exists with status '${status}' ", ("hash", op.contract_hash)("status", contract.status));
     }
 
     nda_contracts_service.create(op.contract_creator, op.party_a, op.party_a_research_group_id, 
                             op.party_b, op.party_b_research_group_id, op.disclosing_party,
-                            op.title, op.contract_hash, now, op.start_date, op.end_date);
+                            op.title, op.contract_hash, now, start_date, op.end_date);
 }
 
 void sign_nda_contract_evaluator::do_apply(const sign_nda_contract_operation& op)
@@ -1286,8 +1288,8 @@ void sign_nda_contract_evaluator::do_apply(const sign_nda_contract_operation& op
     const auto &signer = account_service.get_account(op.contract_signer);
     const auto& contract = nda_contracts_service.get(op.contract_id);
     const bool is_party_a_sig = contract.party_a == op.contract_signer;
-    FC_ASSERT((contract.party_a == op.contract_signer) || (contract.party_b == op.contract_signer), "Only ${party_a} or ${party_b} accounts can sign the contract", ("party_a", contract.party_a)("party_b", contract.party_b));
-    FC_ASSERT(contract.status == nda_contract_status::nda_contract_pending, "Contract with status ${status} cannot be signed", ("status", contract.status));
+    FC_ASSERT((contract.party_a == op.contract_signer) || (contract.party_b == op.contract_signer), "Only ${party_a} or ${party_b} accounts can sign this NDA contract", ("party_a", contract.party_a)("party_b", contract.party_b));
+    FC_ASSERT(contract.status == nda_contract_status::nda_contract_pending, "NDA contract with status ${status} cannot be signed", ("status", contract.status));
     research_group_service.check_research_group_token_existence(op.contract_signer, is_party_a_sig ? contract.party_a_research_group_id : contract.party_b_research_group_id);
     std::string stringified_party_a_signature = fc::to_string(contract.party_a_signature);
     std::string stringified_party_b_signature = fc::to_string(contract.party_b_signature);
@@ -1331,11 +1333,12 @@ void decline_nda_contract_evaluator::do_apply(const decline_nda_contract_operati
     account_service.check_account_existence(op.decliner);
     const auto& contract = nda_contracts_service.get(op.contract_id);
 
-    // WARNING: Currently we are not supporting sharing files by both sides within a single NDA contract
+    // Currently we are not supporting sharing files by both sides within a single NDA contract
     FC_ASSERT(contract.party_b == op.decliner, "Only ${party_b} account can decline the contract", ("party_b", contract.party_b));
     research_group_service.check_research_group_token_existence(op.decliner, contract.party_b_research_group_id);
 
-    FC_ASSERT(contract.status == nda_contract_status::nda_contract_pending, "Contract with status ${status} cannot be declined", ("status", contract.status));
+    FC_ASSERT(contract.status == nda_contract_status::nda_contract_pending, "NDA contract with status ${status} cannot be declined", ("status", contract.status));
+
     nda_contracts_service.set_new_contract_status(contract, nda_contract_status::nda_contract_declined);
 }
 
@@ -1348,13 +1351,11 @@ void close_nda_contract_evaluator::do_apply(const close_nda_contract_operation& 
     account_service.check_account_existence(op.closer);
     const auto& contract = nda_contracts_service.get(op.contract_id);
     
-    // WARNING: Currently we are not supporting sharing files by both sides within a single NDA contract
-    FC_ASSERT(contract.party_a == op.closer, "Only ${party_a} account can close the contract",
-              ("party_a", contract.party_a));
+    // Currently we are not supporting sharing files by both sides within a single NDA contract
+    FC_ASSERT(contract.party_a == op.closer, "Only ${party_a} account can close the contract", ("party_a", contract.party_a));
     research_group_service.check_research_group_token_existence(op.closer, contract.party_a_research_group_id);
     
-    FC_ASSERT(contract.status == nda_contract_status::nda_contract_pending, "Contract with status ${status} cannot be closed",
-              ("status", contract.status));
+    FC_ASSERT(contract.status == nda_contract_status::nda_contract_pending, "NDA contract with status ${status} cannot be closed", ("status", contract.status));
 
     nda_contracts_service.set_new_contract_status(contract, nda_contract_status::nda_contract_closed);
 }
@@ -1369,9 +1370,11 @@ void create_request_by_nda_contract_evaluator::do_apply(const create_request_by_
 
     account_service.check_account_existence(op.requester);
     const auto& contract = nda_contracts_service.get(op.contract_id);
+    // Currently we are not supporting sharing files by both sides within a single NDA contract
+    FC_ASSERT(op.requester == contract.party_b, "Two-way NDA contracts are not supported currently. Only ${party_b} can create the request", ("party_b", contract.party_b));
     research_group_service.check_research_group_token_existence(op.requester, contract.party_b_research_group_id);
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_signed, "Files cannot be shared under the terms of a contract with ${status} status", ("status", contract.status));
-    FC_ASSERT(contract.start_date <= now, "NDA contract will be operational on ${start_date}", ("start_date", contract.start_date));
+    FC_ASSERT(contract.start_date <= now, "NDA contract is not active yet and will be operational at ${start_date}", ("start_date", contract.start_date));
 
     nda_contract_requests_service.create_file_access_request(op.contract_id, op.requester, op.encrypted_payload_hash, op.encrypted_payload_iv);
 }
@@ -1386,6 +1389,8 @@ void fulfill_request_by_nda_contract_evaluator::do_apply(const fulfill_request_b
     account_service.check_account_existence(op.granter);
     const auto& request = nda_contract_requests_service.get(op.request_id);
     const auto& contract = nda_contracts_service.get(request.contract_id);
+    // Currently we are not supporting sharing files by both sides within a single NDA contract
+    FC_ASSERT(op.granter == contract.party_a, "Two-way NDA contracts are not supported currently. Only ${party_a} can fulfill the request", ("party_a", contract.party_a));
     research_group_service.check_research_group_token_existence(op.granter, contract.party_a_research_group_id);
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_signed, "Files cannot be shared under the terms of a contract with ${status} status", ("status", contract.status));
     FC_ASSERT(request.status == nda_contract_file_access_status::nda_contract_file_access_pending, "File access request with ${status} status cannot be fulfilled", ("status", request.status));

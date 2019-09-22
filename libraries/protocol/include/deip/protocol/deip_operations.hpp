@@ -28,16 +28,23 @@ inline void validate_enum_value_by_range(int val, int first, int last)
                                             ("enum_val", val)("first", first)("last", last));
 }
 
+inline void validate_520_bits_hexadecimal_string(const string& str)
+{
+    FC_ASSERT(((str.size() / 2) == 65), "Provided value must be a lowercase hexadecimal string 520 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 520 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 520 bits in length");
+}
+
 inline void validate_256_bits_hexadecimal_string(const string& str)
 {
-    FC_ASSERT(((str.size() / 2) == 256 / 8), "Provided value must be a lowercase hexadecimal string 256 bits in length");
+    FC_ASSERT(((str.size() / 2) == 32), "Provided value must be a lowercase hexadecimal string 256 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 256 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 256 bits in length");
 }
 
 inline void validate_128_bits_hexadecimal_string(const string& str)
 {
-    FC_ASSERT(((str.size()) == 256 / 8), "Provided value must be a lowercase hexadecimal string 128 bits in length");
+    FC_ASSERT(((str.size() / 2) == 16), "Provided value must be a lowercase hexadecimal string 128 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 128 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 128 bits in length");
 }
@@ -834,7 +841,7 @@ struct create_nda_contract_operation : public base_operation
     string title;
     string contract_hash;
 
-    fc::time_point_sec start_date;
+    optional<fc::time_point_sec> start_date;
     fc::time_point_sec end_date;
 
     void validate() const;

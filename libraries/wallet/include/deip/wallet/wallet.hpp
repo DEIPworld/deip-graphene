@@ -1275,7 +1275,7 @@ public:
                                                      const std::set<account_name_type> disclosing_party,
                                                      const std::string& title,
                                                      const std::string& contract_hash,
-                                                     const uint32_t start_date,
+                                                     const optional<uint32_t> start_date,
                                                      const uint32_t end_date,
                                                      const bool broadcast);
 

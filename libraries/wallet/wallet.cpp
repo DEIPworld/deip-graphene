@@ -2835,7 +2835,7 @@ annotated_signed_transaction wallet_api::create_nda_contract(const std::string& 
                                                              const std::set<account_name_type> disclosing_party,
                                                              const std::string& title,
                                                              const std::string& contract_hash,
-                                                             const uint32_t start_date,
+                                                             const optional<uint32_t> start_date,
                                                              const uint32_t end_date,
                                                              const bool broadcast)
 {
@@ -2851,7 +2851,9 @@ annotated_signed_transaction wallet_api::create_nda_contract(const std::string& 
     op.disclosing_party = disclosing_party;
     op.title = title;
     op.contract_hash = contract_hash;
-    op.start_date = fc::time_point_sec(start_date);
+    if (start_date.valid()) {
+        op.start_date = fc::time_point_sec(*start_date);
+    }
     op.end_date = fc::time_point_sec(end_date);
 
     signed_transaction tx;

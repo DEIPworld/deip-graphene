@@ -338,13 +338,12 @@ void create_nda_contract_operation::validate() const
 
     FC_ASSERT(title.size() > 0 && title.size() < 200, "Contract title must be specified in length from 1 to 200 characters");
     validate_256_bits_hexadecimal_string(contract_hash);
-    FC_ASSERT(end_date > start_date, "End time must be greater than a start time");
 }
 
 void sign_nda_contract_operation::validate() const
 {
     validate_account_name(contract_signer);
-    FC_ASSERT(signature.size() > 0, "Signature of contract hash from party_b is required");
+    validate_520_bits_hexadecimal_string(signature);
 }
 
 void decline_nda_contract_operation::validate() const
