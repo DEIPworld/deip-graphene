@@ -1255,8 +1255,8 @@ void create_nda_contract_evaluator::do_apply(const create_nda_contract_operation
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     fc::time_point_sec now = _db.head_block_time();
-    FC_ASSERT(op.start_date >= now, "NDA start date (${start_date}) can not be earlier the current moment (${now})", ("start_date", op.start_date)("now", now));
-    FC_ASSERT(op.end_date > now, "NDA end date (${end_date}) can not be earlier the current moment (${now})", ("end_date", op.end_date)("now", now));
+    // FC_ASSERT(op.start_date >= now, "NDA start date (${start_date}) can not be earlier the current moment (${now})", ("start_date", op.start_date)("now", now));
+    // FC_ASSERT(op.end_date > now, "NDA end date (${end_date}) can not be earlier the current moment (${now})", ("end_date", op.end_date)("now", now));
     FC_ASSERT(op.end_date > op.start_date, "NDA start date (${start_date}) can not be less than end date (${end_date})", ("start_date", op.start_date)("end_date", op.end_date));
 
     account_service.check_account_existence(op.party_a);
@@ -1371,8 +1371,8 @@ void create_request_by_nda_contract_evaluator::do_apply(const create_request_by_
     const auto& contract = nda_contracts_service.get(op.contract_id);
     research_group_service.check_research_group_token_existence(op.requester, contract.party_b_research_group_id);
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_signed, "Files cannot be shared under the terms of a contract with ${status} status", ("status", contract.status));
-    FC_ASSERT(contract.start_date <= now, "NDA contract will be operational after ${start_date}", ("start_date", contract.start_date));
-    FC_ASSERT(contract.end_date > now, "NDA contract expired at ${end_date}", ("end_date", contract.end_date));
+    // FC_ASSERT(contract.start_date <= now, "NDA contract will be operational after ${start_date}", ("start_date", contract.start_date));
+    // FC_ASSERT(contract.end_date > now, "NDA contract expired at ${end_date}", ("end_date", contract.end_date));
 
     nda_contract_requests_service.create_file_access_request(op.contract_id, op.requester, op.encrypted_payload_hash, op.encrypted_payload_iv);
 }
@@ -1390,8 +1390,8 @@ void fulfill_request_by_nda_contract_evaluator::do_apply(const fulfill_request_b
     const auto& contract = nda_contracts_service.get(request.contract_id);
     research_group_service.check_research_group_token_existence(op.granter, contract.party_a_research_group_id);
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_signed, "Files cannot be shared under the terms of a contract with ${status} status", ("status", contract.status));
-    FC_ASSERT(contract.start_date <= now, "NDA contract will be operational after ${start_date}", ("start_date", contract.start_date));
-    FC_ASSERT(contract.end_date > now, "NDA contract expired at ${end_date}", ("end_date", contract.end_date));
+    // FC_ASSERT(contract.start_date <= now, "NDA contract will be operational after ${start_date}", ("start_date", contract.start_date));
+    // FC_ASSERT(contract.end_date > now, "NDA contract expired at ${end_date}", ("end_date", contract.end_date));
     FC_ASSERT(request.status == nda_contract_file_access_status::nda_contract_file_access_pending, "File access request with ${status} status cannot be fulfilled", ("status", request.status));
 
     nda_contract_requests_service.fulfill_file_access_request(request, op.encrypted_payload_encryption_key, op.proof_of_encrypted_payload_encryption_key);
