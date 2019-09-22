@@ -331,7 +331,7 @@ public:
     void process_expertise_allocation_proposals();
     void process_grants();
     void distribute_grant(const grant_object& grant);
-    void process_contracts();
+    void process_nda_contracts();
 
     /**
      * Rewards distribution
