@@ -501,15 +501,15 @@ public:
     ///////////////////
 
     nda_contract_api_obj get_nda_contract(const nda_contract_id_type& id) const;
-    vector<nda_contract_api_obj> get_nda_contracts_by_creator(const account_name_type& creator) const;
-    vector<nda_contract_api_obj> get_nda_contracts_by_signee(const account_name_type &signee) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_creator(const account_name_type& party_a) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_signee(const account_name_type &party_b) const;
     vector<nda_contract_api_obj> get_nda_contracts_by_hash(const string& hash) const;
     vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group(const research_group_id_type& research_group_id) const;
     vector<nda_contract_api_obj> get_nda_contracts_by_signee_research_group(const research_group_id_type& research_group_id) const;
     vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const;
     vector<nda_contract_api_obj> get_nda_contracts_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const;
-    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_signee_research_group(const research_group_id_type& creator_research_group_id, const research_group_id_type& signee_research_group_id) const;
-    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& creator_research_group_id, const research_group_id_type& signee_research_group_id, const fc::string& hash) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_signee_research_group(const research_group_id_type& party_a_research_group_id, const research_group_id_type& party_b_research_group_id) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& party_a_research_group_id, const research_group_id_type& party_b_research_group_id, const fc::string& hash) const;
 
     ////////////////////////////
     // NDA Contracts Requests //

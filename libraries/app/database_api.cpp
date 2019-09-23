@@ -2281,14 +2281,14 @@ nda_contract_api_obj database_api::get_nda_contract(const nda_contract_id_type& 
 }
 
 vector<nda_contract_api_obj>
-database_api::get_nda_contracts_by_creator(const account_name_type& creator) const
+database_api::get_nda_contracts_by_creator(const account_name_type& party_a) const
 {
     return my->_db.with_read_lock([&]() {
         vector<nda_contract_api_obj> results;
         chain::dbs_nda_contract& contract_service
             = my->_db.obtain_service<chain::dbs_nda_contract>();
 
-        auto contracts = contract_service.get_by_creator(creator);
+        auto contracts = contract_service.get_by_creator(party_a);
 
         for (const chain::nda_contract_object& contract : contracts)
             results.push_back(contract);
@@ -2298,14 +2298,14 @@ database_api::get_nda_contracts_by_creator(const account_name_type& creator) con
 }
 
 vector<nda_contract_api_obj>
-database_api::get_nda_contracts_by_signee(const account_name_type &signee) const
+database_api::get_nda_contracts_by_signee(const account_name_type &party_b) const
 {
     return my->_db.with_read_lock([&]() {
         vector<nda_contract_api_obj> results;
         chain::dbs_nda_contract& contract_service
             = my->_db.obtain_service<chain::dbs_nda_contract>();
 
-        auto contracts = contract_service.get_by_signee(signee);
+        auto contracts = contract_service.get_by_signee(party_b);
 
         for (const chain::nda_contract_object& contract : contracts)
             results.push_back(contract);
@@ -2395,15 +2395,14 @@ database_api::get_nda_contracts_by_signee_research_group_and_contract_hash(const
 }
 
 vector<nda_contract_api_obj>
-database_api::get_nda_contracts_by_creator_research_group_and_signee_research_group(const research_group_id_type& creator_research_group_id, const research_group_id_type& signee_research_group_id) const
+database_api::get_nda_contracts_by_creator_research_group_and_signee_research_group(const research_group_id_type& party_a_research_group_id, const research_group_id_type& party_b_research_group_id) const
 {
     return my->_db.with_read_lock([&]() {
         vector<nda_contract_api_obj> results;
         chain::dbs_nda_contract& contract_service = my->_db.obtain_service<chain::dbs_nda_contract>();
 
         auto contracts = contract_service.get_by_creator_research_group_and_signee_research_group(
-            creator_research_group_id, signee_research_group_id
-        );
+            party_a_research_group_id, party_b_research_group_id);
 
         for (const chain::nda_contract_object& contract : contracts)
             results.push_back(contract);
@@ -2413,8 +2412,8 @@ database_api::get_nda_contracts_by_creator_research_group_and_signee_research_gr
 }
 
 vector<nda_contract_api_obj>
-database_api::get_nda_contracts_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& creator_research_group_id,
-                                                             const research_group_id_type& signee_research_group_id,
+database_api::get_nda_contracts_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& party_a_research_group_id,
+                                                             const research_group_id_type& party_b_research_group_id,
                                                              const fc::string& hash) const
 {
     return my->_db.with_read_lock([&]() {
@@ -2422,8 +2421,7 @@ database_api::get_nda_contracts_by_creator_research_group_and_signee_research_gr
         chain::dbs_nda_contract& contract_service = my->_db.obtain_service<chain::dbs_nda_contract>();
 
         auto contracts = contract_service.get_by_creator_research_group_and_signee_research_group_and_contract_hash(
-            creator_research_group_id, signee_research_group_id, hash
-        );
+            party_a_research_group_id, party_b_research_group_id, hash);
 
         for (const chain::nda_contract_object& contract : contracts)
             results.push_back(contract);

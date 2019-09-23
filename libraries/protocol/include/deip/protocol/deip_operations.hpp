@@ -28,16 +28,23 @@ inline void validate_enum_value_by_range(int val, int first, int last)
                                             ("enum_val", val)("first", first)("last", last));
 }
 
+inline void validate_520_bits_hexadecimal_string(const string& str)
+{
+    FC_ASSERT(((str.size() / 2) == 65), "Provided value must be a lowercase hexadecimal string 520 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 520 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 520 bits in length");
+}
+
 inline void validate_256_bits_hexadecimal_string(const string& str)
 {
-    FC_ASSERT(((str.size() / 2) == 256 / 8), "Provided value must be a lowercase hexadecimal string 256 bits in length");
+    FC_ASSERT(((str.size() / 2) == 32), "Provided value must be a lowercase hexadecimal string 256 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 256 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 256 bits in length");
 }
 
 inline void validate_128_bits_hexadecimal_string(const string& str)
 {
-    FC_ASSERT(((str.size()) == 256 / 8), "Provided value must be a lowercase hexadecimal string 128 bits in length");
+    FC_ASSERT(((str.size() / 2) == 16), "Provided value must be a lowercase hexadecimal string 128 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 128 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 128 bits in length");
 }
@@ -821,23 +828,28 @@ struct exclude_member_from_research_operation : public base_operation
 
 struct create_nda_contract_operation : public base_operation
 {
-    account_name_type creator;
-    int64_t creator_research_group_id;
+    account_name_type contract_creator;
+    int64_t contract_creator_research_group;
+    
+    account_name_type party_a;
+    int64_t party_a_research_group_id;
 
-    account_name_type signee;
-    int64_t signee_research_group_id;
+    account_name_type party_b;
+    int64_t party_b_research_group_id;
+
+    std::set<account_name_type> disclosing_party;
 
     string title;
     string contract_hash;
 
-    fc::time_point_sec start_date;
+    optional<fc::time_point_sec> start_date;
     fc::time_point_sec end_date;
 
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(creator);
+        a.insert(contract_creator);
     }
 };
 
@@ -858,26 +870,26 @@ struct sign_nda_contract_operation : public base_operation
 struct decline_nda_contract_operation : public base_operation
 {
     int64_t contract_id;
-    account_name_type signee;
+    account_name_type decliner;
 
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(signee);
+        a.insert(decliner);
     }
 };
 
 struct close_nda_contract_operation : public base_operation
 {
     int64_t contract_id;
-    account_name_type creator;
+    account_name_type closer;
 
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(creator);
+        a.insert(closer);
     }
 };
 
@@ -899,7 +911,7 @@ struct create_request_by_nda_contract_operation : public base_operation
 
 struct fulfill_request_by_nda_contract_operation : public base_operation
 {
-    account_name_type granter;
+    account_name_type grantor;
     std::string encrypted_payload_encryption_key;
     std::string proof_of_encrypted_payload_encryption_key;
 
@@ -909,7 +921,7 @@ struct fulfill_request_by_nda_contract_operation : public base_operation
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(granter);
+        a.insert(grantor);
     }
 };
 
@@ -1012,12 +1024,12 @@ FC_REFLECT( deip::protocol::create_grant_operation, (target_discipline)(amount)(
 FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
 FC_REFLECT( deip::protocol::add_member_to_research_operation, (research_id)(owner)(invitee))
 FC_REFLECT( deip::protocol::exclude_member_from_research_operation, (research_id)(owner)(account_to_exclude))
-FC_REFLECT( deip::protocol::create_nda_contract_operation, (creator)(creator_research_group_id)(signee)(signee_research_group_id)(title)(contract_hash)(start_date)(end_date))
+FC_REFLECT( deip::protocol::create_nda_contract_operation, (contract_creator)(contract_creator_research_group)(party_a)(party_a_research_group_id)(party_b)(party_b_research_group_id)(disclosing_party)(title)(contract_hash)(start_date)(end_date))
 FC_REFLECT( deip::protocol::sign_nda_contract_operation, (contract_id)(contract_signer)(signature))
-FC_REFLECT( deip::protocol::decline_nda_contract_operation, (contract_id)(signee))
-FC_REFLECT( deip::protocol::close_nda_contract_operation, (contract_id)(creator))
+FC_REFLECT( deip::protocol::decline_nda_contract_operation, (contract_id)(decliner))
+FC_REFLECT( deip::protocol::close_nda_contract_operation, (contract_id)(closer))
 FC_REFLECT( deip::protocol::create_request_by_nda_contract_operation, (requester)(encrypted_payload_hash)(encrypted_payload_iv)(contract_id))
-FC_REFLECT( deip::protocol::fulfill_request_by_nda_contract_operation, (granter)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key)(request_id))
+FC_REFLECT( deip::protocol::fulfill_request_by_nda_contract_operation, (grantor)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key)(request_id))
 FC_REFLECT( deip::protocol::create_subscription_operation, (owner)(research_group_id)(json_data))
 FC_REFLECT( deip::protocol::adjust_additional_subscription_limits_operation, (owner)(subscription_id)(json_data))
 

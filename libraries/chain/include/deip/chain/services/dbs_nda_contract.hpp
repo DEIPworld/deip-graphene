@@ -18,10 +18,12 @@ protected:
 public:
     using contracts_refs_type = std::vector<std::reference_wrapper<const nda_contract_object>>;
 
-    const nda_contract_object& create(const account_name_type& creator,
-                                  const research_group_id_type& creator_research_group_id,
-                                  const account_name_type& signee,
-                                  const research_group_id_type& signee_research_group_id,
+    const nda_contract_object& create(const account_name_type& contract_creator,
+                                  const account_name_type& party_a,
+                                  const research_group_id_type& party_a_research_group_id,
+                                  const account_name_type& party_b,
+                                  const research_group_id_type& party_b_research_group_id,
+                                  const std::set<account_name_type>& disclosing_party,
                                   const std::string& title,
                                   const std::string& contract_hash,
                                   const fc::time_point_sec& created_at,
@@ -34,9 +36,9 @@ public:
 
     contracts_refs_type get_by_hash(const fc::string& hash);
 
-    contracts_refs_type get_by_creator(const account_name_type& creator);
+    contracts_refs_type get_by_creator(const account_name_type& party_a);
 
-    contracts_refs_type get_by_signee(const account_name_type &signee);
+    contracts_refs_type get_by_signee(const account_name_type &party_b);
 
     contracts_refs_type get_by_creator_research_group(const research_group_id_type& research_group_id);
 
@@ -46,9 +48,12 @@ public:
 
     contracts_refs_type get_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash);
 
-    contracts_refs_type get_by_creator_research_group_and_signee_research_group(const research_group_id_type& creator_research_group_id, const research_group_id_type& signee_research_group_id);
+    contracts_refs_type get_by_creator_research_group_and_signee_research_group(const research_group_id_type& party_a_research_group_id, const research_group_id_type& party_b_research_group_id);
 
-    contracts_refs_type get_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& creator_research_group_id, const research_group_id_type& signee_research_group_id, const fc::string& hash);
+    contracts_refs_type get_by_creator_research_group_and_signee_research_group_and_contract_hash(
+        const research_group_id_type& party_a_research_group_id,
+        const research_group_id_type& party_b_research_group_id,
+        const fc::string& hash);
 
     const nda_contract_object& sign(const nda_contract_object& contract, const account_name_type& contract_signer, const fc::string& sig);
 

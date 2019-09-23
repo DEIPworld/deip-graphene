@@ -1832,7 +1832,7 @@ void database::process_research_token_sales()
     }
 }
 
-void database::process_contracts()
+void database::process_nda_contracts()
 {
     dbs_nda_contract& contract_service = obtain_service<dbs_nda_contract>();
     const auto& idx = get_index<nda_contract_index>().indices().get<by_end_date>();
@@ -2208,7 +2208,7 @@ void database::_apply_block(const signed_block& next_block)
         process_content_activity_windows();
         process_hardforks();
         process_discipline_supplies();
-        process_contracts();
+        process_nda_contracts();
 
         /// modify expertise stats to correctly calculate emission
         expertise_stats_service.calculate_used_expertise_for_week();

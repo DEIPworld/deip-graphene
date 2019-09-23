@@ -1267,15 +1267,17 @@ public:
                                                               const std::string& buyer,
                                                               const bool broadcast);
 
-    annotated_signed_transaction create_nda_contract(const std::string& creator,
-                                                 const int64_t creator_research_group_id,
-                                                 const std::string& signee,
-                                                 const int64_t signee_research_group_id,
-                                                 const std::string& title,
-                                                 const std::string& contract_hash,
-                                                 const uint32_t start_date,
-                                                 const uint32_t end_date,
-                                                 const bool broadcast);
+    annotated_signed_transaction create_nda_contract(const std::string& contract_creator,
+                                                     const std::string& party_a,
+                                                     const int64_t party_a_research_group_id,
+                                                     const std::string& party_b,
+                                                     const int64_t party_b_research_group_id,
+                                                     const std::set<account_name_type> disclosing_party,
+                                                     const std::string& title,
+                                                     const std::string& contract_hash,
+                                                     const optional<uint32_t> start_date,
+                                                     const uint32_t end_date,
+                                                     const bool broadcast);
 
     annotated_signed_transaction sign_nda_contract(const int64_t contract_id,
                                                const std::string& contract_signer,
@@ -1283,11 +1285,11 @@ public:
                                                const bool broadcast);
 
     annotated_signed_transaction decline_nda_contract(const int64_t contract_id,
-                                                  const std::string& signee,
+                                                  const std::string& decliner,
                                                   const bool broadcast);
     
     annotated_signed_transaction close_nda_contract(const int64_t contract_id,
-                                                  const std::string& creator,
+                                                  const std::string& closer,
                                                   const bool broadcast);
 
     annotated_signed_transaction create_request_by_nda_contract(const std::string& requester,
@@ -1296,11 +1298,11 @@ public:
                                                                 const std::string encrypted_payload_iv,
                                                                 const bool broadcast);
 
-    annotated_signed_transaction fulfill_request_by_nda_contract(const std::string& granter,
-                                                                 const int64_t request_id,
-                                                                 const std::string& encrypted_payload_encryption_key,
-                                                                 const std::string& proof_of_encrypted_payload_encryption_key,
-                                                                 const bool broadcast);
+    annotated_signed_transaction fulfill_request_by_nda_contract(const std::string& grantor,
+                                                                const int64_t request_id,
+                                                                const std::string& encrypted_payload_encryption_key,
+                                                                const std::string& proof_of_encrypted_payload_encryption_key,
+                                                                const bool broadcast);
 
     annotated_signed_transaction create_subscription(const std::string& owner,
                                                      const int64_t research_group_id,
