@@ -5326,7 +5326,7 @@ BOOST_AUTO_TEST_CASE(create_subscription_test)
     {
         BOOST_TEST_MESSAGE("Testing: create_subscription");
 
-        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(regacc));
         generate_block();
 
         db.create<research_group_object>([&](research_group_object& d) {
@@ -5348,7 +5348,7 @@ BOOST_AUTO_TEST_CASE(create_subscription_test)
         op.research_group_id = 41;
         op.json_data = "{\"external_plan_id\":3,\"plan_certs\":100,\"plan_sharings\":\"100\",\"plan_contracts\":\"100\",\"period\":\"1\",\"billing_date\":\"2019-10-18T15:02:31\"}";
 
-        private_key_type priv_key = generate_private_key("alice");
+        private_key_type priv_key = generate_private_key("regacc");
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -5381,7 +5381,7 @@ BOOST_AUTO_TEST_CASE(adjust_additional_subscription_limits)
     {
         BOOST_TEST_MESSAGE("Testing: adjust_additional_subscription_limits");
 
-        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(regacc));
         generate_block();
 
         db.create<research_group_object>([&](research_group_object& rg_o) {
@@ -5401,6 +5401,7 @@ BOOST_AUTO_TEST_CASE(adjust_additional_subscription_limits)
         db.create<subscription_object>([&](subscription_object& s_o) {
             s_o.id = 0;
             s_o.research_group_id = 41;
+            s_o.owner = "alice";
             s_o.remained_certs = 10;
             s_o.remained_sharings = 10;
             s_o.remained_contracts = 10;
@@ -5422,7 +5423,7 @@ BOOST_AUTO_TEST_CASE(adjust_additional_subscription_limits)
         op.research_group_id = 41;
         op.json_data = "{\"additional_certs\":100,\"additional_sharings\":105,\"additional_contracts\":0}";
 
-        private_key_type priv_key = generate_private_key("alice");
+        private_key_type priv_key = generate_private_key("regacc");
 
         signed_transaction tx;
         tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);

@@ -68,10 +68,11 @@ BOOST_AUTO_TEST_CASE(create_subscription_test)
     try
     {
         std::string data = "{\"external_plan_id\":3,\"plan_certs\":100,\"plan_sharings\":\"100\",\"plan_contracts\":\"100\",\"period\":\"1\",\"billing_date\":\"2019-10-18T15:02:31\"}";
-        auto& subscription = data_service.create(data, 30);
+        auto& subscription = data_service.create(data, 30, "alice");
 
         BOOST_CHECK(subscription.id == 0);
         BOOST_CHECK(subscription.research_group_id == 30);
+        BOOST_CHECK(subscription.owner == "alice");
         BOOST_CHECK(subscription.external_plan_id == 3);
         BOOST_CHECK(subscription.plan_certs == 100);
         BOOST_CHECK(subscription.remained_certs == 100);
