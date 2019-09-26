@@ -1155,6 +1155,7 @@ struct subscription_api_obj
     subscription_api_obj(const chain::subscription_object& s_o)
         : id(s_o.id._id)
         , research_group_id(s_o.research_group_id._id)
+        , owner(s_o.owner)
         , remained_certs(s_o.remained_certs)
         , remained_sharings(s_o.remained_sharings)
         , remained_contracts(s_o.remained_contracts)
@@ -1168,8 +1169,6 @@ struct subscription_api_obj
         , period(s_o.period)
         , billing_date(s_o.billing_date)
         , status(s_o.status)
-        , first_billing_date(s_o.first_billing_date)
-        , month_subscriptions_count(s_o.month_subscriptions_count)
 
     {}
 
@@ -1180,6 +1179,8 @@ struct subscription_api_obj
 
     int64_t id;
     int64_t research_group_id;
+
+    account_name_type owner;
 
     share_type remained_certs;
     share_type remained_sharings;
@@ -1199,9 +1200,6 @@ struct subscription_api_obj
     fc::time_point_sec billing_date;
 
     uint16_t status;
-
-    fc::time_point_sec first_billing_date;
-    uint16_t month_subscriptions_count;
 };
 
 }; // namespace app
@@ -1577,6 +1575,7 @@ FC_REFLECT( deip::app::nda_contract_file_access_api_obj,
 FC_REFLECT( deip::app::subscription_api_obj, 
             (id)
             (research_group_id)
+            (owner)
             (remained_certs)
             (remained_sharings)
             (remained_contracts)
@@ -1590,8 +1589,6 @@ FC_REFLECT( deip::app::subscription_api_obj,
             (period)
             (billing_date)
             (status)
-            (first_billing_date)
-            (month_subscriptions_count)
 )
 
 // clang-format on

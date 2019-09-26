@@ -199,6 +199,31 @@ BOOST_AUTO_TEST_CASE(adjust_additional_limits)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(update_subscription)
+{
+    try
+    {
+        create_subscriptions();
+        auto& subscription = data_service.get(0);
+
+        std::string data = "{\"external_plan_id\":4,\"plan_certs\":1000,\"plan_sharings\":\"1000\",\"plan_contracts\":\"1000\",\"period\":\"1\",\"billing_date\":\"2019-10-29T15:02:31\"}";
+        data_service.update(subscription, data);
+
+        BOOST_CHECK(subscription.additional_certs == 11);
+        BOOST_CHECK(subscription.additional_sharings == 12);
+        BOOST_CHECK(subscription.additional_contracts == 13);
+
+        BOOST_CHECK(subscription.plan_certs == 1000);
+        BOOST_CHECK(subscription.plan_sharings == 1000);
+        BOOST_CHECK(subscription.plan_contracts == 1000);
+
+        BOOST_CHECK(subscription.external_plan_id == 4);
+        BOOST_CHECK(subscription.billing_date == fc::time_point_sec(1572361351));
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace chain

@@ -1310,9 +1310,14 @@ public:
                                                      const bool broadcast);
 
     annotated_signed_transaction adjust_additional_subscription_limits(const std::string& owner,
-                                                                       const int64_t subscription_id,
+                                                                       const int64_t research_group_id,
                                                                        const std::string& json_data,
                                                                        const bool broadcast);
+
+    annotated_signed_transaction update_subscription(const std::string& owner,
+                                                     const int64_t research_group_id,
+                                                     const std::string& json_data,
+                                                     const bool broadcast);
 
 public:
     fc::signal<void(bool)> lock_changed;
@@ -1461,6 +1466,7 @@ FC_API( deip::wallet::wallet_api,
 
         (create_subscription)
         (adjust_additional_subscription_limits)
+        (update_subscription)
 
         /// helper api
         (get_prototype_operation)

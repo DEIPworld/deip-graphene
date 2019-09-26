@@ -63,6 +63,7 @@ namespace deip {
                 fulfill_request_by_nda_contract_operation,
                 create_subscription_operation,
                 adjust_additional_subscription_limits_operation,
+                update_subscription_operation,
                 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,

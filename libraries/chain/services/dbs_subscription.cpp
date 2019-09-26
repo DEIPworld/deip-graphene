@@ -10,12 +10,16 @@ dbs_subscription::dbs_subscription(database& db)
 {
 }
 
-const subscription_object& dbs_subscription::create(const std::string& json_data, const research_group_id_type& research_group_id)
+const subscription_object& dbs_subscription::create(const std::string& json_data, const research_group_id_type& research_group_id, const account_name_type& owner)
 {
     subscription_data_type data = get_data<subscription_data_type>(json_data);
+    auto now = db_impl().head_block_time();
+
+    FC_ASSERT(data.billing_date > now, "Subscription biiling date (${billing_date}) must be later the current moment (${now})", ("billing_date", data.billing_date)("now", now));
 
     const subscription_object& subscription = db_impl().create<subscription_object>([&](subscription_object& s_o) {
         s_o.research_group_id = research_group_id;
+        s_o.owner = owner;
 
         s_o.external_plan_id = data.external_plan_id;
         s_o.remained_certs = data.plan_certs;
@@ -72,10 +76,18 @@ void dbs_subscription::check_subscription_existence(const subscription_id_type& 
     FC_ASSERT(idx.find(subscription_id) != idx.cend(), "Subscription \"${1}\" does not exist.", ("1", subscription_id));
 }
 
-void dbs_subscription::check_subscription_existence_by_research_group(const research_group_id_type& research_group_id)
+void dbs_subscription::check_subscription_existence_by_research_group(const research_group_id_type& research_group_id) const
 {
     const auto& idx = db_impl().get_index<subscription_index>().indices().get<by_research_group>();
     FC_ASSERT(idx.find(research_group_id) != idx.cend(), "Subscription with rg \"${1}\" does not exist.", ("1", research_group_id));
+}
+
+void dbs_subscription::check_subscription_existence_by_research_group_and_owner(const research_group_id_type& research_group_id, const account_name_type& owner) const
+{
+    const auto& idx = db_impl().get_index<subscription_index>().indices().get<by_research_group_and_owner>();
+
+    FC_ASSERT(idx.find(boost::make_tuple(research_group_id, owner)) != idx.cend(), "\"${1}\" subscription does not exist in \"${2}\" group.",
+              ("1", owner)("2", research_group_id));
 }
 
 void dbs_subscription::adjust_additional_limits(const subscription_object& subscription, const std::string& json_data)
@@ -86,6 +98,34 @@ void dbs_subscription::adjust_additional_limits(const subscription_object& subsc
         s_o.additional_certs += data.additional_certs;
         s_o.additional_sharings += data.additional_sharings;
         s_o.additional_contracts += data.additional_contracts;
+    });
+}
+
+void dbs_subscription::update(const subscription_object& subscription, const std::string& json_data)
+{
+    subscription_data_type data = get_data<subscription_data_type>(json_data);
+    auto now = db_impl().head_block_time();
+
+    FC_ASSERT(data.billing_date > now, "Subscription biiling date (${billing_date}) must be later the current moment (${now})", ("billing_date", data.billing_date)("now", now));
+
+    db_impl().modify(subscription, [&](subscription_object &s_o) {
+        s_o.external_plan_id = data.external_plan_id;
+
+        s_o.additional_certs += s_o.remained_certs;
+        s_o.additional_sharings += s_o.remained_sharings;
+        s_o.additional_contracts += s_o.remained_contracts;
+
+        s_o.plan_certs = data.plan_certs;
+        s_o.plan_sharings = data.plan_sharings;
+        s_o.plan_contracts = data.plan_contracts;
+
+        s_o.first_billing_date = data.billing_date;
+        s_o.billing_date = data.billing_date;
+
+        s_o.period = static_cast<billing_period>(data.period);
+
+        s_o.month_subscriptions_count = 0;
+
     });
 }
 

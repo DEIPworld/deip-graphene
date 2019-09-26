@@ -197,6 +197,8 @@
 
 #define VIRTUAL_SCHEDULE_LAP_LENGTH ( fc::uint128::max_value() )
 
+#define DEIP_ADMIN_ACCOUNT                   "regacc"
+
 /**
  *  Reserved Account IDs with special meaning
  */

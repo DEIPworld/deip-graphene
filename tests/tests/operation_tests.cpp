@@ -5419,7 +5419,7 @@ BOOST_AUTO_TEST_CASE(adjust_additional_subscription_limits)
 
         adjust_additional_subscription_limits_operation op;
         op.owner = "alice";
-        op.subscription_id = 0;
+        op.research_group_id = 41;
         op.json_data = "{\"additional_certs\":100,\"additional_sharings\":105,\"additional_contracts\":0}";
 
         private_key_type priv_key = generate_private_key("alice");

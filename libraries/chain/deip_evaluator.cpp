@@ -1443,7 +1443,7 @@ void create_subscription_evaluator::do_apply(const create_subscription_operation
     account_service.check_account_existence(op.owner);
     research_group_service.check_research_group_token_existence(op.owner, op.research_group_id);
 
-    subscription_service.create(op.json_data, op.research_group_id);
+    subscription_service.create(op.json_data, op.research_group_id, op.owner);
 }
 
 void adjust_additional_subscription_limits_evaluator::do_apply(const adjust_additional_subscription_limits_operation& op)
@@ -1453,12 +1453,27 @@ void adjust_additional_subscription_limits_evaluator::do_apply(const adjust_addi
     dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
 
     account_service.check_account_existence(op.owner);
-    subscription_service.check_subscription_existence(op.subscription_id);
+    subscription_service.check_subscription_existence_by_research_group_and_owner(op.research_group_id, op.owner);
 
-    auto& subscription = subscription_service.get(op.subscription_id);
+    auto& subscription = subscription_service.get_by_research_group(op.research_group_id);
     research_group_service.check_research_group_token_existence(op.owner, subscription.research_group_id);
 
     subscription_service.adjust_additional_limits(subscription, op.json_data);
+}
+
+void update_subscription_evaluator::do_apply(const update_subscription_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
+
+    account_service.check_account_existence(op.owner);
+    subscription_service.check_subscription_existence_by_research_group_and_owner(op.research_group_id, op.owner);
+
+    auto& subscription = subscription_service.get_by_research_group(op.research_group_id);
+    research_group_service.check_research_group_token_existence(op.owner, subscription.research_group_id);
+
+    subscription_service.update(subscription, op.json_data);
 }
 
 } // namespace chain

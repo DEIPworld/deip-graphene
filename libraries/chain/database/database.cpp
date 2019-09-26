@@ -2209,6 +2209,7 @@ void database::_apply_block(const signed_block& next_block)
         process_hardforks();
         process_discipline_supplies();
         process_nda_contracts();
+        //process_subscriptions();
 
         /// modify expertise stats to correctly calculate emission
         expertise_stats_service.calculate_used_expertise_for_week();

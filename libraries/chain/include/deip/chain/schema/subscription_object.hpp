@@ -35,6 +35,8 @@ public:
 
     subscription_id_type id;
     research_group_id_type research_group_id;
+    
+    account_name_type owner;
 
     share_type remained_certs = 0;
     share_type remained_sharings = 0;
@@ -60,6 +62,8 @@ public:
 };
 
 struct by_research_group;
+struct by_owner;
+struct by_research_group_and_owner;
 struct by_billing_date;
 struct by_status;
 
@@ -72,6 +76,18 @@ typedef multi_index_container<subscription_object,
                             member<subscription_object,
                                     research_group_id_type,
                                    &subscription_object::research_group_id>>,
+                    ordered_non_unique<tag<by_owner>,
+                            member<subscription_object,
+                                    account_name_type,
+                                   &subscription_object::owner>>,
+                    ordered_unique<tag<by_research_group_and_owner>,
+                            composite_key<subscription_object,
+                                 member<subscription_object,
+                                         research_group_id_type,
+                                        &subscription_object::research_group_id>,
+                                 member<subscription_object,
+                                         account_name_type,
+                                        &subscription_object::owner>>>,               
                     ordered_non_unique<tag<by_billing_date>,
                             member<subscription_object,
                                     fc::time_point_sec,
@@ -89,7 +105,7 @@ FC_REFLECT_ENUM(deip::chain::billing_period, (month)(year))
 
 FC_REFLECT_ENUM(deip::chain::subscription_status, (subscription_active)(subscription_cancelled)(subscription_expired))
 
-FC_REFLECT( deip::chain::subscription_object, (id)(research_group_id)(remained_certs)(remained_sharings)(remained_contracts)(external_plan_id)
+FC_REFLECT( deip::chain::subscription_object, (id)(research_group_id)(owner)(remained_certs)(remained_sharings)(remained_contracts)(external_plan_id)
                                               (plan_certs)(plan_sharings)(plan_contracts)(additional_certs)(additional_sharings)(additional_contracts)
                                               (period)(billing_date)(status)(first_billing_date)(month_subscriptions_count))
 
