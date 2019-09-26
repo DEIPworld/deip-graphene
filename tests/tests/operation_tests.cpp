@@ -5453,6 +5453,84 @@ BOOST_AUTO_TEST_CASE(adjust_additional_subscription_limits)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(update_subscription)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: update_subscription");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(regacc));
+        generate_block();
+
+        db.create<research_group_object>([&](research_group_object& rg_o) {
+            rg_o.id = 41;
+            rg_o.name = "41";
+            rg_o.permlink = "41";
+            rg_o.description = "test";
+        });
+
+        db.create<research_group_token_object>([&](research_group_token_object& rgt_o) {
+            rgt_o.id = 41;
+            rgt_o.research_group_id = 41;
+            rgt_o.amount = 55 * DEIP_1_PERCENT;
+            rgt_o.owner = "alice";
+        });
+
+        db.create<subscription_object>([&](subscription_object& s_o) {
+            s_o.id = 0;
+            s_o.research_group_id = 41;
+            s_o.owner = "alice";
+            s_o.remained_certs = 10;
+            s_o.remained_sharings = 10;
+            s_o.remained_contracts = 10;
+            s_o.external_plan_id = 2;
+            s_o.plan_certs = 100;
+            s_o.plan_sharings = 100;
+            s_o.plan_contracts = 100;
+            s_o.additional_certs = 1;
+            s_o.additional_sharings = 2;
+            s_o.additional_contracts = 3;
+            s_o.period = billing_period::month;
+            s_o.first_billing_date = fc::time_point_sec(1548864000);
+            s_o.billing_date = fc::time_point_sec(1548864000);
+            s_o.month_subscriptions_count = 0;
+        });
+
+        update_subscription_operation op;
+        op.owner = "alice";
+        op.research_group_id = 41;
+        op.json_data = "{\"external_plan_id\":4,\"plan_certs\":1000,\"plan_sharings\":\"1000\",\"plan_contracts\":\"1000\",\"period\":\"1\",\"billing_date\":\"2019-10-29T15:02:31\"}";
+
+        private_key_type priv_key = generate_private_key("regacc");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& subscription = db.get<subscription_object>(0);
+
+        BOOST_CHECK(subscription.id == 0);
+        BOOST_CHECK(subscription.research_group_id == 41);
+        BOOST_CHECK(subscription.external_plan_id == 4);
+        BOOST_CHECK(subscription.plan_certs == 1000);
+        BOOST_CHECK(subscription.remained_certs == 1000);
+        BOOST_CHECK(subscription.plan_sharings == 1000);
+        BOOST_CHECK(subscription.remained_sharings == 1000);
+        BOOST_CHECK(subscription.plan_contracts == 1000);
+        BOOST_CHECK(subscription.remained_contracts == 1000);
+        BOOST_CHECK(subscription.additional_certs == 11);
+        BOOST_CHECK(subscription.additional_sharings == 12);
+        BOOST_CHECK(subscription.additional_contracts == 13);
+
+        BOOST_CHECK(subscription.period == billing_period::month);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 

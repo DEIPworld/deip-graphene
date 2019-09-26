@@ -119,6 +119,10 @@ void dbs_subscription::update(const subscription_object& subscription, const std
         s_o.plan_sharings = data.plan_sharings;
         s_o.plan_contracts = data.plan_contracts;
 
+        s_o.remained_certs = data.plan_certs;
+        s_o.remained_sharings = data.plan_sharings;
+        s_o.remained_contracts = data.plan_contracts;
+
         s_o.first_billing_date = data.billing_date;
         s_o.billing_date = data.billing_date;
 

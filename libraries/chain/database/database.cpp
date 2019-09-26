@@ -1938,6 +1938,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<fulfill_request_by_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_subscription_evaluator>();
     _my->_evaluator_registry.register_evaluator<adjust_additional_subscription_limits_evaluator>();
+    _my->_evaluator_registry.register_evaluator<update_subscription_evaluator>();
 }
 
 void database::initialize_indexes()
