@@ -1269,9 +1269,9 @@ void create_nda_contract_evaluator::do_apply(const create_nda_contract_operation
 
     auto& subscription = subscription_service.get_by_research_group(op.contract_creator_research_group);
 
-    if (subscription.remained_contracts > 0)
+    if (subscription.remaining_contracts > 0)
         _db._temporary_public_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.remained_contracts--;
+            s_o.remaining_contracts--;
         });
     else
     {
@@ -1416,9 +1416,9 @@ void fulfill_request_by_nda_contract_evaluator::do_apply(const fulfill_request_b
     subscription_service.check_subscription_existence_by_research_group(contract.party_a_research_group_id);
     auto& subscription = subscription_service.get_by_research_group(contract.party_a_research_group_id);
 
-    if (subscription.remained_sharings > 0)
+    if (subscription.remaining_sharings > 0)
         _db._temporary_public_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.remained_sharings--;
+            s_o.remaining_sharings--;
         });
     else
     {

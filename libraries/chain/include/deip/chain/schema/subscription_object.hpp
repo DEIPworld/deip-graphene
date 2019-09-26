@@ -38,9 +38,9 @@ public:
     
     account_name_type owner;
 
-    share_type remained_certs = 0;
-    share_type remained_sharings = 0;
-    share_type remained_contracts = 0;
+    share_type remaining_certs = 0;
+    share_type remaining_sharings = 0;
+    share_type remaining_contracts = 0;
 
     uint16_t external_plan_id;
 
@@ -105,7 +105,7 @@ FC_REFLECT_ENUM(deip::chain::billing_period, (month)(year))
 
 FC_REFLECT_ENUM(deip::chain::subscription_status, (subscription_active)(subscription_cancelled)(subscription_expired))
 
-FC_REFLECT( deip::chain::subscription_object, (id)(research_group_id)(owner)(remained_certs)(remained_sharings)(remained_contracts)(external_plan_id)
+FC_REFLECT( deip::chain::subscription_object, (id)(research_group_id)(owner)(remaining_certs)(remaining_sharings)(remaining_contracts)(external_plan_id)
                                               (plan_certs)(plan_sharings)(plan_contracts)(additional_certs)(additional_sharings)(additional_contracts)
                                               (period)(billing_date)(status)(first_billing_date)(month_subscriptions_count))
 

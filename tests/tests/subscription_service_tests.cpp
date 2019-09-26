@@ -22,9 +22,9 @@ class subscription_service_fixture : public clean_database_fixture
         db.create<subscription_object>([&](subscription_object& s_o) {
             s_o.id = 0;
             s_o.research_group_id = 1;
-            s_o.remained_certs = 10;
-            s_o.remained_sharings = 10;
-            s_o.remained_contracts = 10;
+            s_o.remaining_certs = 10;
+            s_o.remaining_sharings = 10;
+            s_o.remaining_contracts = 10;
             s_o.external_plan_id = 2;
             s_o.plan_certs = 100;
             s_o.plan_sharings = 100;
@@ -41,9 +41,9 @@ class subscription_service_fixture : public clean_database_fixture
         db.create<subscription_object>([&](subscription_object& s_o) {
             s_o.id = 1;
             s_o.research_group_id = 2;
-            s_o.remained_certs = 10;
-            s_o.remained_sharings = 10;
-            s_o.remained_contracts = 10;
+            s_o.remaining_certs = 10;
+            s_o.remaining_sharings = 10;
+            s_o.remaining_contracts = 10;
             s_o.external_plan_id = 2;
             s_o.plan_certs = 100;
             s_o.plan_sharings = 100;
@@ -75,11 +75,11 @@ BOOST_AUTO_TEST_CASE(create_subscription_test)
         BOOST_CHECK(subscription.owner == "alice");
         BOOST_CHECK(subscription.external_plan_id == 3);
         BOOST_CHECK(subscription.plan_certs == 100);
-        BOOST_CHECK(subscription.remained_certs == 100);
+        BOOST_CHECK(subscription.remaining_certs == 100);
         BOOST_CHECK(subscription.plan_sharings == 100);
-        BOOST_CHECK(subscription.remained_sharings == 100);
+        BOOST_CHECK(subscription.remaining_sharings == 100);
         BOOST_CHECK(subscription.plan_contracts == 100);
-        BOOST_CHECK(subscription.remained_contracts == 100);
+        BOOST_CHECK(subscription.remaining_contracts == 100);
 
         BOOST_CHECK(subscription.period == billing_period::month);
     }
@@ -97,11 +97,11 @@ BOOST_AUTO_TEST_CASE(get)
         BOOST_CHECK(subscription.research_group_id == 1);
         BOOST_CHECK(subscription.external_plan_id == 2);
         BOOST_CHECK(subscription.plan_certs == 100);
-        BOOST_CHECK(subscription.remained_certs == 10);
+        BOOST_CHECK(subscription.remaining_certs == 10);
         BOOST_CHECK(subscription.plan_sharings == 100);
-        BOOST_CHECK(subscription.remained_sharings == 10);
+        BOOST_CHECK(subscription.remaining_sharings == 10);
         BOOST_CHECK(subscription.plan_contracts == 100);
-        BOOST_CHECK(subscription.remained_contracts == 10);
+        BOOST_CHECK(subscription.remaining_contracts == 10);
 
         BOOST_CHECK(subscription.period == billing_period::month);
         BOOST_CHECK(subscription.billing_date == fc::time_point_sec(1548864000));
@@ -120,11 +120,11 @@ BOOST_AUTO_TEST_CASE(get_by_research_group)
         BOOST_CHECK(subscription.research_group_id == 1);
         BOOST_CHECK(subscription.external_plan_id == 2);
         BOOST_CHECK(subscription.plan_certs == 100);
-        BOOST_CHECK(subscription.remained_certs == 10);
+        BOOST_CHECK(subscription.remaining_certs == 10);
         BOOST_CHECK(subscription.plan_sharings == 100);
-        BOOST_CHECK(subscription.remained_sharings == 10);
+        BOOST_CHECK(subscription.remaining_sharings == 10);
         BOOST_CHECK(subscription.plan_contracts == 100);
-        BOOST_CHECK(subscription.remained_contracts == 10);
+        BOOST_CHECK(subscription.remaining_contracts == 10);
 
         BOOST_CHECK(subscription.period == billing_period::month);
         BOOST_CHECK(subscription.billing_date == fc::time_point_sec(1548864000));

@@ -184,9 +184,9 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
     subscription_service.check_subscription_existence_by_research_group(research.research_group_id);
     auto& subscription = subscription_service.get_by_research_group(research.research_group_id);
 
-    if (subscription.remained_certs > 0)
+    if (subscription.remaining_certs > 0)
         db_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.remained_certs--;
+            s_o.remaining_certs--;
         });
     else
     {

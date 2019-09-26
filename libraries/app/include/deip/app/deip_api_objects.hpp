@@ -1156,9 +1156,9 @@ struct subscription_api_obj
         : id(s_o.id._id)
         , research_group_id(s_o.research_group_id._id)
         , owner(s_o.owner)
-        , remained_certs(s_o.remained_certs)
-        , remained_sharings(s_o.remained_sharings)
-        , remained_contracts(s_o.remained_contracts)
+        , remaining_certs(s_o.remaining_certs)
+        , remaining_sharings(s_o.remaining_sharings)
+        , remaining_contracts(s_o.remaining_contracts)
         , external_plan_id(s_o.external_plan_id)
         , plan_certs(s_o.plan_certs)
         , plan_sharings(s_o.plan_sharings)
@@ -1182,9 +1182,9 @@ struct subscription_api_obj
 
     account_name_type owner;
 
-    share_type remained_certs;
-    share_type remained_sharings;
-    share_type remained_contracts;
+    share_type remaining_certs;
+    share_type remaining_sharings;
+    share_type remaining_contracts;
     
     uint16_t external_plan_id;
 
@@ -1576,9 +1576,9 @@ FC_REFLECT( deip::app::subscription_api_obj,
             (id)
             (research_group_id)
             (owner)
-            (remained_certs)
-            (remained_sharings)
-            (remained_contracts)
+            (remaining_certs)
+            (remaining_sharings)
+            (remaining_contracts)
             (external_plan_id)
             (plan_certs)
             (plan_sharings)

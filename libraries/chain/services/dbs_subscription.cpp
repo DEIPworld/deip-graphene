@@ -22,9 +22,9 @@ const subscription_object& dbs_subscription::create(const std::string& json_data
         s_o.owner = owner;
 
         s_o.external_plan_id = data.external_plan_id;
-        s_o.remained_certs = data.plan_certs;
-        s_o.remained_sharings = data.plan_sharings;
-        s_o.remained_contracts = data.plan_contracts;
+        s_o.remaining_certs = data.plan_certs;
+        s_o.remaining_sharings = data.plan_sharings;
+        s_o.remaining_contracts = data.plan_contracts;
 
         s_o.plan_certs = data.plan_certs;
         s_o.plan_sharings = data.plan_sharings;
@@ -64,9 +64,9 @@ void dbs_subscription::set_new_billing_date(const subscription_object& subscript
         s_o.month_subscriptions_count++;
         t += boost::gregorian::months(s_o.month_subscriptions_count);
         s_o.billing_date = fc::time_point_sec(to_time_t(t));
-        s_o.remained_certs = s_o.plan_certs;
-        s_o.remained_sharings = s_o.plan_sharings;
-        s_o.remained_contracts = s_o.plan_contracts;
+        s_o.remaining_certs = s_o.plan_certs;
+        s_o.remaining_sharings = s_o.plan_sharings;
+        s_o.remaining_contracts = s_o.plan_contracts;
     });
 }
 
@@ -111,17 +111,17 @@ void dbs_subscription::update(const subscription_object& subscription, const std
     db_impl().modify(subscription, [&](subscription_object &s_o) {
         s_o.external_plan_id = data.external_plan_id;
 
-        s_o.additional_certs += s_o.remained_certs;
-        s_o.additional_sharings += s_o.remained_sharings;
-        s_o.additional_contracts += s_o.remained_contracts;
+        s_o.additional_certs += s_o.remaining_certs;
+        s_o.additional_sharings += s_o.remaining_sharings;
+        s_o.additional_contracts += s_o.remaining_contracts;
 
         s_o.plan_certs = data.plan_certs;
         s_o.plan_sharings = data.plan_sharings;
         s_o.plan_contracts = data.plan_contracts;
 
-        s_o.remained_certs = data.plan_certs;
-        s_o.remained_sharings = data.plan_sharings;
-        s_o.remained_contracts = data.plan_contracts;
+        s_o.remaining_certs = data.plan_certs;
+        s_o.remaining_sharings = data.plan_sharings;
+        s_o.remaining_contracts = data.plan_contracts;
 
         s_o.first_billing_date = data.billing_date;
         s_o.billing_date = data.billing_date;
