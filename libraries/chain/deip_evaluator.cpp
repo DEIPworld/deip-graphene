@@ -1269,17 +1269,7 @@ void create_nda_contract_evaluator::do_apply(const create_nda_contract_operation
 
     auto& subscription = subscription_service.get_by_research_group(op.contract_creator_research_group);
 
-    if (subscription.remaining_contracts > 0)
-        _db._temporary_public_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.remaining_contracts--;
-        });
-    else
-    {
-        FC_ASSERT(subscription.additional_contracts > 0, "You have no available contracts.");
-        _db._temporary_public_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.additional_contracts--;
-        });
-    }
+    subscription_service.decrease_remaining_contracts(subscription);
 
     const auto& contracts = nda_contracts_service.get_by_creator_research_group_and_signee_research_group_and_contract_hash(op.contract_creator_research_group, op.party_b_research_group_id, op.contract_hash);
     FC_ASSERT(start_date >= now, "NDA start date (${start_date}) must be later or equal to the current moment (${now})", ("start_date", start_date)("now", now));
@@ -1416,17 +1406,7 @@ void fulfill_request_by_nda_contract_evaluator::do_apply(const fulfill_request_b
     subscription_service.check_subscription_existence_by_research_group(contract.party_a_research_group_id);
     auto& subscription = subscription_service.get_by_research_group(contract.party_a_research_group_id);
 
-    if (subscription.remaining_sharings > 0)
-        _db._temporary_public_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.remaining_sharings--;
-        });
-    else
-    {
-        FC_ASSERT(subscription.additional_sharings > 0, "You have no available sharings.");
-        _db._temporary_public_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.additional_sharings--;
-        });
-    }
+    subscription_service.decrease_remaining_sharings(subscription);
 
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_signed, "Files cannot be shared under the terms of a contract with ${status} status", ("status", contract.status));
     FC_ASSERT(request.status == nda_contract_file_access_status::nda_contract_file_access_pending, "File access request with ${status} status cannot be fulfilled", ("status", request.status));

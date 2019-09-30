@@ -36,6 +36,12 @@ public:
 
     void update(const subscription_object& subscription, const std::string& json_data);
 
+    void decrease_remaining_certificates(const subscription_object& subscription);
+
+    void decrease_remaining_sharings(const subscription_object& subscription);
+
+    void decrease_remaining_contracts(const subscription_object& subscription);
+
 private:
 
     template <typename DataType> DataType get_data(const std::string& json_data)

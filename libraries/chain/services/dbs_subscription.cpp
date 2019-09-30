@@ -133,6 +133,51 @@ void dbs_subscription::update(const subscription_object& subscription, const std
     });
 }
 
+void dbs_subscription::decrease_remaining_certificates(const subscription_object& subscription)
+{
+    if (subscription.remaining_certs > 0)
+        db_impl().modify(subscription, [&](subscription_object& s_o){
+            s_o.remaining_certs--;
+        });
+    else
+    {
+        FC_ASSERT(subscription.additional_certs > 0, "You have no available certs.");
+        db_impl().modify(subscription, [&](subscription_object& s_o){
+            s_o.additional_certs--;
+        });
+    }
+}
+
+void dbs_subscription::decrease_remaining_sharings(const subscription_object& subscription)
+{
+    if (subscription.remaining_sharings > 0)
+        db_impl().modify(subscription, [&](subscription_object& s_o){
+            s_o.remaining_sharings--;
+        });
+    else
+    {
+        FC_ASSERT(subscription.additional_sharings > 0, "You have no available sharings.");
+        db_impl().modify(subscription, [&](subscription_object& s_o){
+            s_o.additional_sharings--;
+        });
+    }
+}
+
+void dbs_subscription::decrease_remaining_contracts(const subscription_object& subscription)
+{
+    if (subscription.remaining_contracts > 0)
+        db_impl().modify(subscription, [&](subscription_object& s_o){
+            s_o.remaining_contracts--;
+        });
+    else
+    {
+        FC_ASSERT(subscription.additional_contracts > 0, "You have no available contracts.");
+        db_impl().modify(subscription, [&](subscription_object& s_o){
+            s_o.additional_contracts--;
+        });
+    }
+}
+
 } // namespace chain
 } // namespace deip
 

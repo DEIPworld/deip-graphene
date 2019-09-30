@@ -183,18 +183,8 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
 
     subscription_service.check_subscription_existence_by_research_group(research.research_group_id);
     auto& subscription = subscription_service.get_by_research_group(research.research_group_id);
+    subscription_service.decrease_remaining_certificates(subscription);
 
-    if (subscription.remaining_certs > 0)
-        db_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.remaining_certs--;
-        });
-    else
-    {
-        FC_ASSERT(subscription.additional_certs > 0, "You have no available certs.");
-        db_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.additional_certs--;
-        });
-    }
     auto& research_content = research_content_service.create(data.research_id, data.type, data.title, data.content, data.permlink, data.authors, data.references, data.external_references);
 
     std::map<discipline_id_type, share_type> research_votes_per_discipline;
