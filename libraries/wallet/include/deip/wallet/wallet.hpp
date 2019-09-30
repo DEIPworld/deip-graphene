@@ -1310,12 +1310,12 @@ public:
                                                      const bool broadcast);
 
     annotated_signed_transaction adjust_additional_subscription_limits(const std::string& owner,
-                                                                       const int64_t research_group_id,
+                                                                       const int64_t subscription_id,
                                                                        const std::string& json_data,
                                                                        const bool broadcast);
 
     annotated_signed_transaction update_subscription(const std::string& owner,
-                                                     const int64_t research_group_id,
+                                                     const int64_t subscription_id,
                                                      const std::string& json_data,
                                                      const bool broadcast);
 

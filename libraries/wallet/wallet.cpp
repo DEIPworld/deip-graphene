@@ -2982,7 +2982,7 @@ annotated_signed_transaction wallet_api::create_subscription(const std::string& 
 }
 
 annotated_signed_transaction wallet_api::adjust_additional_subscription_limits(const std::string& owner,
-                                                                               const int64_t research_group_id,
+                                                                               const int64_t subscription_id,
                                                                                const std::string& json_data,
                                                                                const bool broadcast)
 {
@@ -2991,7 +2991,7 @@ annotated_signed_transaction wallet_api::adjust_additional_subscription_limits(c
     adjust_additional_subscription_limits_operation op;
 
     op.owner = owner;
-    op.research_group_id = research_group_id;
+    op.subscription_id = subscription_id;
     op.json_data = json_data;
 
     signed_transaction tx;
@@ -3002,7 +3002,7 @@ annotated_signed_transaction wallet_api::adjust_additional_subscription_limits(c
 }
 
 annotated_signed_transaction wallet_api::update_subscription(const std::string& owner,
-                                                             const int64_t research_group_id,
+                                                             const int64_t subscription_id,
                                                              const std::string& json_data,
                                                              const bool broadcast)
 {
@@ -3011,7 +3011,7 @@ annotated_signed_transaction wallet_api::update_subscription(const std::string& 
     update_subscription_operation op;
 
     op.owner = owner;
-    op.research_group_id = research_group_id;
+    op.subscription_id = subscription_id;
     op.json_data = json_data;
 
     signed_transaction tx;
