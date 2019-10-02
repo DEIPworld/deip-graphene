@@ -22,6 +22,7 @@ class subscription_service_fixture : public clean_database_fixture
         db.create<subscription_object>([&](subscription_object& s_o) {
             s_o.id = 0;
             s_o.research_group_id = 1;
+            s_o.owner = "alice";
             s_o.remaining_certs = 10;
             s_o.remaining_sharings = 10;
             s_o.remaining_contracts = 10;
@@ -41,6 +42,27 @@ class subscription_service_fixture : public clean_database_fixture
         db.create<subscription_object>([&](subscription_object& s_o) {
             s_o.id = 1;
             s_o.research_group_id = 2;
+            s_o.owner = "alice";
+            s_o.remaining_certs = 10;
+            s_o.remaining_sharings = 10;
+            s_o.remaining_contracts = 10;
+            s_o.external_plan_id = 2;
+            s_o.plan_certs = 100;
+            s_o.plan_sharings = 100;
+            s_o.plan_contracts = 100;
+            s_o.additional_certs = 1;
+            s_o.additional_sharings = 2;
+            s_o.additional_contracts = 3;
+            s_o.period = billing_period::month;
+            s_o.first_billing_date = fc::time_point_sec(1548950400);
+            s_o.billing_date = fc::time_point_sec(1561910400);
+            s_o.month_subscriptions_count = 5;
+        });
+
+        db.create<subscription_object>([&](subscription_object& s_o) {
+            s_o.id = 2;
+            s_o.research_group_id = 3;
+            s_o.owner = "bob";
             s_o.remaining_certs = 10;
             s_o.remaining_sharings = 10;
             s_o.remaining_contracts = 10;
@@ -95,6 +117,7 @@ BOOST_AUTO_TEST_CASE(get)
 
         BOOST_CHECK(subscription.id == 0);
         BOOST_CHECK(subscription.research_group_id == 1);
+        BOOST_CHECK(subscription.owner == "alice");
         BOOST_CHECK(subscription.external_plan_id == 2);
         BOOST_CHECK(subscription.plan_certs == 100);
         BOOST_CHECK(subscription.remaining_certs == 10);
@@ -118,6 +141,7 @@ BOOST_AUTO_TEST_CASE(get_by_research_group)
 
         BOOST_CHECK(subscription.id == 0);
         BOOST_CHECK(subscription.research_group_id == 1);
+        BOOST_CHECK(subscription.owner == "alice");
         BOOST_CHECK(subscription.external_plan_id == 2);
         BOOST_CHECK(subscription.plan_certs == 100);
         BOOST_CHECK(subscription.remaining_certs == 10);
@@ -128,6 +152,60 @@ BOOST_AUTO_TEST_CASE(get_by_research_group)
 
         BOOST_CHECK(subscription.period == billing_period::month);
         BOOST_CHECK(subscription.billing_date == fc::time_point_sec(1548864000));
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(get_by_owner)
+{
+    try
+    {
+        create_subscriptions();
+        auto subscriptions = data_service.get_by_owner("alice");
+
+        BOOST_CHECK(subscriptions.size() == 2);
+
+        BOOST_CHECK(std::any_of(subscriptions.begin(), subscriptions.end(), [](std::reference_wrapper<const subscription_object> wrapper){
+            const subscription_object &subscription = wrapper.get();
+            return subscription.id == 0 &&
+                    subscription.research_group_id == 1 &&
+                    subscription.owner == "alice" &&
+                    subscription.remaining_certs == 10 &&
+                    subscription.remaining_sharings == 10 &&
+                    subscription.remaining_contracts == 10 &&
+                    subscription.external_plan_id == 2 &&
+                    subscription.plan_certs == 100 &&
+                    subscription.plan_sharings == 100 &&
+                    subscription.plan_contracts == 100 &&
+                    subscription.additional_certs == 1 &&
+                    subscription.additional_sharings == 2 &&
+                    subscription.additional_contracts == 3 &&
+                    subscription.period == billing_period::month &&
+                    subscription.billing_date == fc::time_point_sec(1548864000) &&
+                    subscription.first_billing_date == fc::time_point_sec(1548864000) &&
+                    subscription.month_subscriptions_count == 0;
+        }));
+
+        BOOST_CHECK(std::any_of(subscriptions.begin(), subscriptions.end(), [](std::reference_wrapper<const subscription_object> wrapper){
+            const subscription_object &subscription = wrapper.get();
+            return subscription.id == 1 &&
+                    subscription.research_group_id == 2 &&
+                    subscription.owner == "alice" &&
+                    subscription.remaining_certs == 10 &&
+                    subscription.remaining_sharings == 10 &&
+                    subscription.remaining_contracts == 10 &&
+                    subscription.external_plan_id == 2 &&
+                    subscription.plan_certs == 100 &&
+                    subscription.plan_sharings == 100 &&
+                    subscription.plan_contracts == 100 &&
+                    subscription.additional_certs == 1 &&
+                    subscription.additional_sharings == 2 &&
+                    subscription.additional_contracts == 3 &&
+                    subscription.period == billing_period::month &&
+                    subscription.billing_date == fc::time_point_sec(1561910400) &&
+                    subscription.first_billing_date == fc::time_point_sec(1548950400) &&
+                    subscription.month_subscriptions_count == 5;
+        }));
     }
     FC_LOG_AND_RETHROW()
 }
@@ -158,7 +236,7 @@ BOOST_AUTO_TEST_CASE(check_subscription_existence)
         create_subscriptions();
 
         BOOST_CHECK_NO_THROW(data_service.check_subscription_existence(0));
-        BOOST_CHECK_THROW(data_service.check_subscription_existence(2), fc::assert_exception);
+        BOOST_CHECK_THROW(data_service.check_subscription_existence(4), fc::assert_exception);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -170,7 +248,7 @@ BOOST_AUTO_TEST_CASE(check_subscription_existence_by_research_group)
         create_subscriptions();
 
         BOOST_CHECK_NO_THROW(data_service.check_subscription_existence_by_research_group(1));
-        BOOST_CHECK_THROW(data_service.check_subscription_existence_by_research_group(3), fc::assert_exception);
+        BOOST_CHECK_THROW(data_service.check_subscription_existence_by_research_group(4), fc::assert_exception);
     }
     FC_LOG_AND_RETHROW()
 }

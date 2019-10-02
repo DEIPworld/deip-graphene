@@ -2497,5 +2497,21 @@ database_api::get_subscription_by_research_group_id(const research_group_id_type
     });
 }
 
+vector<subscription_api_obj>
+database_api::get_subscriptions_by_owner(const account_name_type& owner) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<subscription_api_obj> results;
+        chain::dbs_subscription& subscription_service = my->_db.obtain_service<chain::dbs_subscription>();
+
+        auto subscriptions = subscription_service.get_by_owner(owner);
+
+        for (const chain::subscription_object& subscription : subscriptions)
+            results.push_back(subscription);
+
+        return results;
+    });
+}
+
 } // namespace app
 } // namespace deip

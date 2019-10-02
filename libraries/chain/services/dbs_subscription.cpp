@@ -55,6 +55,24 @@ const subscription_object& dbs_subscription::get_by_research_group(const researc
     FC_CAPTURE_AND_RETHROW((research_group_id))
 }
 
+dbs_subscription::subscription_refs_type
+dbs_subscription::get_by_owner(const account_name_type& owner) const
+{
+    subscription_refs_type ret;
+
+    auto it_pair = db_impl().get_index<subscription_index>().indicies().get<by_owner>().equal_range(owner);
+
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
 void dbs_subscription::set_new_billing_date(const subscription_object& subscription)
 {
     std::string iso = subscription.first_billing_date.to_iso_string();

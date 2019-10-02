@@ -526,6 +526,8 @@ public:
 
     subscription_api_obj get_subscription(const subscription_id_type& id) const;
     subscription_api_obj get_subscription_by_research_group_id(const research_group_id_type& research_group_id) const;
+    vector<subscription_api_obj> get_subscriptions_by_owner(const account_name_type& owner) const;
+
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -749,6 +751,7 @@ FC_API(deip::app::database_api,
    // Subscriptions
    (get_subscription)
    (get_subscription_by_research_group_id)
+   (get_subscriptions_by_owner)
 )
 
 // clang-format on
