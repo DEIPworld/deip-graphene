@@ -32,25 +32,24 @@ public:
     {
         c(*this);
     }
-
+    
     subscription_id_type id;
     research_group_id_type research_group_id;
-    
     account_name_type owner;
-
-    share_type remaining_certs = 0;
-    share_type remaining_sharings = 0;
-    share_type remaining_contracts = 0;
 
     uint16_t external_plan_id;
 
-    share_type plan_certs = 0;
-    share_type plan_sharings = 0;
-    share_type plan_contracts = 0;
+    share_type file_certificate_quota = 0;
+    share_type nda_contract_quota = 0;
+    share_type nda_protected_file_quota = 0;
 
-    share_type additional_certs = 0;
-    share_type additional_sharings = 0;
-    share_type additional_contracts = 0;
+    share_type current_file_certificate_quota_units = 0;
+    share_type current_nda_contract_quota_units = 0;
+    share_type current_nda_protected_file_quota_units = 0;
+
+    share_type extra_file_certificate_quota_units = 0;
+    share_type extra_nda_contract_quota_units = 0;
+    share_type extra_nda_protected_file_quota_units = 0;
 
     billing_period period;
     fc::time_point_sec billing_date;
@@ -105,8 +104,9 @@ FC_REFLECT_ENUM(deip::chain::billing_period, (month)(year))
 
 FC_REFLECT_ENUM(deip::chain::subscription_status, (subscription_active)(subscription_cancelled)(subscription_expired))
 
-FC_REFLECT( deip::chain::subscription_object, (id)(research_group_id)(owner)(remaining_certs)(remaining_sharings)(remaining_contracts)(external_plan_id)
-                                              (plan_certs)(plan_sharings)(plan_contracts)(additional_certs)(additional_sharings)(additional_contracts)
+FC_REFLECT( deip::chain::subscription_object, (id)(research_group_id)(owner)(external_plan_id)(file_certificate_quota)(nda_contract_quota)(nda_protected_file_quota)
+                                              (current_file_certificate_quota_units)(current_nda_contract_quota_units)(current_nda_protected_file_quota_units)
+                                              (extra_file_certificate_quota_units)(extra_nda_contract_quota_units)(extra_nda_protected_file_quota_units)
                                               (period)(billing_date)(status)(first_billing_date)(month_subscriptions_count))
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::subscription_object, deip::chain::subscription_index )

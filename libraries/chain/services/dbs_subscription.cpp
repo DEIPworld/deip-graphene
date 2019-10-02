@@ -20,15 +20,15 @@ const subscription_object& dbs_subscription::create(const std::string& json_data
     const subscription_object& subscription = db_impl().create<subscription_object>([&](subscription_object& s_o) {
         s_o.research_group_id = research_group_id;
         s_o.owner = owner;
-
         s_o.external_plan_id = data.external_plan_id;
-        s_o.remaining_certs = data.plan_certs;
-        s_o.remaining_sharings = data.plan_sharings;
-        s_o.remaining_contracts = data.plan_contracts;
 
-        s_o.plan_certs = data.plan_certs;
-        s_o.plan_sharings = data.plan_sharings;
-        s_o.plan_contracts = data.plan_contracts;
+        s_o.file_certificate_quota = data.file_certificate_quota;
+        s_o.nda_contract_quota = data.nda_contract_quota;
+        s_o.nda_protected_file_quota = data.nda_protected_file_quota;
+
+        s_o.current_file_certificate_quota_units = data.file_certificate_quota;
+        s_o.current_nda_contract_quota_units = data.nda_contract_quota;
+        s_o.current_nda_protected_file_quota_units = data.nda_protected_file_quota;
 
         s_o.period = static_cast<billing_period>(data.period);
         s_o.billing_date = data.billing_date;
@@ -82,9 +82,9 @@ void dbs_subscription::set_new_billing_date(const subscription_object& subscript
         s_o.month_subscriptions_count++;
         t += boost::gregorian::months(s_o.month_subscriptions_count);
         s_o.billing_date = fc::time_point_sec(to_time_t(t));
-        s_o.remaining_certs = s_o.plan_certs;
-        s_o.remaining_sharings = s_o.plan_sharings;
-        s_o.remaining_contracts = s_o.plan_contracts;
+        s_o.current_file_certificate_quota_units = s_o.file_certificate_quota;
+        s_o.current_nda_contract_quota_units = s_o.nda_contract_quota;
+        s_o.current_nda_protected_file_quota_units = s_o.nda_protected_file_quota;
     });
 }
 
@@ -108,38 +108,38 @@ void dbs_subscription::check_subscription_existence_by_research_group_and_owner(
               ("1", owner)("2", research_group_id));
 }
 
-void dbs_subscription::adjust_additional_limits(const subscription_object& subscription, const std::string& json_data)
+void dbs_subscription::adjust_extra_quota_units(const subscription_object& subscription, const std::string& json_data)
 {
     additional_subscription_limits_data_type data = get_data<additional_subscription_limits_data_type>(json_data);
 
     db_impl().modify(subscription, [&](subscription_object &s_o) {
-        s_o.additional_certs += data.additional_certs;
-        s_o.additional_sharings += data.additional_sharings;
-        s_o.additional_contracts += data.additional_contracts;
+        s_o.extra_file_certificate_quota_units += data.extra_file_certificate_quota_units;
+        s_o.extra_nda_contract_quota_units += data.extra_nda_contract_quota_units;
+        s_o.extra_nda_protected_file_quota_units += data.extra_nda_protected_file_quota_units;
     });
 }
 
 void dbs_subscription::update(const subscription_object& subscription, const std::string& json_data)
 {
     subscription_data_type data = get_data<subscription_data_type>(json_data);
-    auto now = db_impl().head_block_time();
+    const auto now = db_impl().head_block_time();
 
-    FC_ASSERT(data.billing_date > now, "Subscription biiling date (${billing_date}) must be later the current moment (${now})", ("billing_date", data.billing_date)("now", now));
+    FC_ASSERT(data.billing_date > now, "Subscription billing date (${billing_date}) must be later the current moment (${now})", ("billing_date", data.billing_date)("now", now));
 
     db_impl().modify(subscription, [&](subscription_object &s_o) {
         s_o.external_plan_id = data.external_plan_id;
 
-        s_o.additional_certs += s_o.remaining_certs;
-        s_o.additional_sharings += s_o.remaining_sharings;
-        s_o.additional_contracts += s_o.remaining_contracts;
+        s_o.file_certificate_quota = data.file_certificate_quota;
+        s_o.nda_contract_quota = data.nda_contract_quota;
+        s_o.nda_protected_file_quota = data.nda_protected_file_quota;
 
-        s_o.plan_certs = data.plan_certs;
-        s_o.plan_sharings = data.plan_sharings;
-        s_o.plan_contracts = data.plan_contracts;
+        s_o.current_file_certificate_quota_units = data.file_certificate_quota;
+        s_o.current_nda_contract_quota_units = data.nda_contract_quota;
+        s_o.current_nda_protected_file_quota_units = data.nda_protected_file_quota;
 
-        s_o.remaining_certs = data.plan_certs;
-        s_o.remaining_sharings = data.plan_sharings;
-        s_o.remaining_contracts = data.plan_contracts;
+        s_o.extra_file_certificate_quota_units += s_o.current_file_certificate_quota_units;
+        s_o.extra_nda_contract_quota_units += s_o.current_nda_contract_quota_units;
+        s_o.extra_nda_protected_file_quota_units += s_o.current_nda_protected_file_quota_units;
 
         s_o.first_billing_date = data.billing_date;
         s_o.billing_date = data.billing_date;
@@ -156,37 +156,17 @@ void dbs_subscription::consume_file_certificate_quota_unit(const research_group_
     check_subscription_existence_by_research_group(research_group_id);
     const subscription_object& subscription = get_by_research_group(research_group_id);
 
-    if (subscription.remaining_certs > 0) 
+    if (subscription.current_file_certificate_quota_units > 0) 
     {
         db_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.remaining_certs--;
+            s_o.current_file_certificate_quota_units--;
         });
     }
     else
     {
-        FC_ASSERT(subscription.additional_certs > 0, "You have no available certs.");
+        FC_ASSERT(subscription.extra_file_certificate_quota_units > 0, "You have no available certs.");
         db_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.additional_certs--;
-        });
-    }
-}
-
-void dbs_subscription::consume_nda_protected_file_quota_unit(const research_group_id_type& research_group_id)
-{
-    check_subscription_existence_by_research_group(research_group_id);
-    const subscription_object& subscription = get_by_research_group(research_group_id);
-
-    if (subscription.remaining_sharings > 0) 
-    {
-        db_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.remaining_sharings--;
-        });
-    }
-    else
-    {
-        FC_ASSERT(subscription.additional_sharings > 0, "You have no available sharings.");
-        db_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.additional_sharings--;
+            s_o.extra_file_certificate_quota_units--;
         });
     }
 }
@@ -196,17 +176,33 @@ void dbs_subscription::consume_nda_contract_quota_unit(const research_group_id_t
     check_subscription_existence_by_research_group(research_group_id);
     const subscription_object& subscription = get_by_research_group(research_group_id);
 
-    if (subscription.remaining_contracts > 0) 
+    if (subscription.current_nda_contract_quota_units > 0)
+    {
+        db_impl().modify(subscription, [&](subscription_object& s_o) { s_o.current_nda_contract_quota_units--; });
+    }
+    else
+    {
+        FC_ASSERT(subscription.extra_nda_contract_quota_units > 0, "You have no available contracts.");
+        db_impl().modify(subscription, [&](subscription_object& s_o) { s_o.extra_nda_contract_quota_units--; });
+    }
+}
+
+void dbs_subscription::consume_nda_protected_file_quota_unit(const research_group_id_type& research_group_id)
+{
+    check_subscription_existence_by_research_group(research_group_id);
+    const subscription_object& subscription = get_by_research_group(research_group_id);
+
+    if (subscription.current_nda_protected_file_quota_units > 0) 
     {
         db_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.remaining_contracts--;
+            s_o.current_nda_protected_file_quota_units--;
         });
     }
     else
     {
-        FC_ASSERT(subscription.additional_contracts > 0, "You have no available contracts.");
+        FC_ASSERT(subscription.extra_nda_protected_file_quota_units > 0, "You have no available sharings.");
         db_impl().modify(subscription, [&](subscription_object& s_o){
-            s_o.additional_contracts--;
+            s_o.extra_nda_protected_file_quota_units--;
         });
     }
 }

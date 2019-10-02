@@ -1156,16 +1156,16 @@ struct subscription_api_obj
         : id(s_o.id._id)
         , research_group_id(s_o.research_group_id._id)
         , owner(s_o.owner)
-        , remaining_certs(s_o.remaining_certs)
-        , remaining_sharings(s_o.remaining_sharings)
-        , remaining_contracts(s_o.remaining_contracts)
         , external_plan_id(s_o.external_plan_id)
-        , plan_certs(s_o.plan_certs)
-        , plan_sharings(s_o.plan_sharings)
-        , plan_contracts(s_o.plan_contracts)
-        , additional_certs(s_o.additional_certs)
-        , additional_sharings(s_o.additional_sharings)
-        , additional_contracts(s_o.additional_contracts)
+        , file_certificate_quota(s_o.file_certificate_quota)
+        , nda_protected_file_quota(s_o.nda_protected_file_quota)
+        , nda_contract_quota(s_o.nda_contract_quota)
+        , current_file_certificate_quota_units(s_o.current_file_certificate_quota_units)
+        , current_nda_contract_quota_units(s_o.current_nda_contract_quota_units)
+        , current_nda_protected_file_quota_units(s_o.current_nda_protected_file_quota_units)
+        , extra_file_certificate_quota_units(s_o.extra_file_certificate_quota_units)
+        , extra_nda_contract_quota_units(s_o.extra_nda_contract_quota_units)
+        , extra_nda_protected_file_quota_units(s_o.extra_nda_protected_file_quota_units)
         , period(s_o.period)
         , billing_date(s_o.billing_date)
         , status(s_o.status)
@@ -1179,22 +1179,21 @@ struct subscription_api_obj
 
     int64_t id;
     int64_t research_group_id;
-
     account_name_type owner;
 
-    share_type remaining_certs;
-    share_type remaining_sharings;
-    share_type remaining_contracts;
-    
     uint16_t external_plan_id;
 
-    share_type plan_certs;
-    share_type plan_sharings;
-    share_type plan_contracts;
+    share_type file_certificate_quota;
+    share_type nda_contract_quota;
+    share_type nda_protected_file_quota;
 
-    share_type additional_certs;
-    share_type additional_sharings;
-    share_type additional_contracts;
+    share_type current_file_certificate_quota_units;
+    share_type current_nda_contract_quota_units;
+    share_type current_nda_protected_file_quota_units;
+
+    share_type extra_file_certificate_quota_units;
+    share_type extra_nda_contract_quota_units;
+    share_type extra_nda_protected_file_quota_units;
 
     uint16_t period;
     fc::time_point_sec billing_date;
@@ -1576,16 +1575,16 @@ FC_REFLECT( deip::app::subscription_api_obj,
             (id)
             (research_group_id)
             (owner)
-            (remaining_certs)
-            (remaining_sharings)
-            (remaining_contracts)
             (external_plan_id)
-            (plan_certs)
-            (plan_sharings)
-            (plan_contracts)
-            (additional_certs)
-            (additional_sharings)
-            (additional_contracts)
+            (file_certificate_quota)
+            (nda_protected_file_quota)
+            (nda_contract_quota)
+            (current_file_certificate_quota_units)
+            (current_nda_contract_quota_units)
+            (current_nda_protected_file_quota_units)
+            (extra_file_certificate_quota_units)
+            (extra_nda_contract_quota_units)
+            (extra_nda_protected_file_quota_units)
             (period)
             (billing_date)
             (status)

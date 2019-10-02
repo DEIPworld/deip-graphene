@@ -36,15 +36,15 @@ public:
 
     void check_subscription_existence_by_research_group_and_owner(const research_group_id_type& research_group_id, const account_name_type& owner) const;
 
-    void adjust_additional_limits(const subscription_object& subscription, const std::string& json_data);
+    void adjust_extra_quota_units(const subscription_object& subscription, const std::string& json_data);
 
     void update(const subscription_object& subscription, const std::string& json_data);
 
     void consume_file_certificate_quota_unit(const research_group_id_type& research_group_id);
 
-    void consume_nda_protected_file_quota_unit(const research_group_id_type& research_group_id);
-
     void consume_nda_contract_quota_unit(const research_group_id_type& research_group_id);
+
+    void consume_nda_protected_file_quota_unit(const research_group_id_type& research_group_id);
 
 private:
 

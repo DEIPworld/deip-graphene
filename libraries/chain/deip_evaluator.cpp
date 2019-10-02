@@ -1435,7 +1435,7 @@ void adjust_additional_subscription_limits_evaluator::do_apply(const adjust_addi
     auto& subscription = subscription_service.get(op.subscription_id);
     research_group_service.check_research_group_token_existence(op.owner, subscription.research_group_id);
 
-    subscription_service.adjust_additional_limits(subscription, op.json_data);
+    subscription_service.adjust_extra_quota_units(subscription, op.json_data);
 }
 
 void update_subscription_evaluator::do_apply(const update_subscription_operation& op)
