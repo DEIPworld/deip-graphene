@@ -829,7 +829,6 @@ struct exclude_member_from_research_operation : public base_operation
 struct create_nda_contract_operation : public base_operation
 {
     account_name_type contract_creator;
-    int64_t contract_creator_research_group;
     
     account_name_type party_a;
     int64_t party_a_research_group_id;
@@ -1039,7 +1038,7 @@ FC_REFLECT( deip::protocol::create_grant_operation, (target_discipline)(amount)(
 FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
 FC_REFLECT( deip::protocol::add_member_to_research_operation, (research_id)(owner)(invitee))
 FC_REFLECT( deip::protocol::exclude_member_from_research_operation, (research_id)(owner)(account_to_exclude))
-FC_REFLECT( deip::protocol::create_nda_contract_operation, (contract_creator)(contract_creator_research_group)(party_a)(party_a_research_group_id)(party_b)(party_b_research_group_id)(disclosing_party)(title)(contract_hash)(start_date)(end_date))
+FC_REFLECT( deip::protocol::create_nda_contract_operation, (contract_creator)(party_a)(party_a_research_group_id)(party_b)(party_b_research_group_id)(disclosing_party)(title)(contract_hash)(start_date)(end_date))
 FC_REFLECT( deip::protocol::sign_nda_contract_operation, (contract_id)(contract_signer)(signature))
 FC_REFLECT( deip::protocol::decline_nda_contract_operation, (contract_id)(decliner))
 FC_REFLECT( deip::protocol::close_nda_contract_operation, (contract_id)(closer))

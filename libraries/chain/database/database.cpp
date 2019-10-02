@@ -804,24 +804,16 @@ signed_block database::_generate_block(fc::time_point_sec when,
 
     const auto& hfp = get_hardfork_property_object();
 
-    if (hfp.current_hardfork_version
-            < DEIP_BLOCKCHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
-        && (witness.hardfork_version_vote != _hardfork_versions[hfp.last_hardfork + 1]
-            || witness.hardfork_time_vote
-                != _hardfork_times[hfp.last_hardfork + 1])) // Witness vote does not match binary configuration
+    if (hfp.current_hardfork_version < DEIP_BLOCKCHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
+        && (witness.hardfork_version_vote != _hardfork_versions[hfp.last_hardfork + 1] || witness.hardfork_time_vote != _hardfork_times[hfp.last_hardfork + 1])) // Witness vote does not match binary configuration
     {
-        // Make vote match binary configuration
-        pending_block.extensions.insert(block_header_extensions(
-            hardfork_version_vote(_hardfork_versions[hfp.last_hardfork + 1], _hardfork_times[hfp.last_hardfork + 1])));
+        pending_block.extensions.insert(block_header_extensions(hardfork_version_vote(_hardfork_versions[hfp.last_hardfork + 1], _hardfork_times[hfp.last_hardfork + 1])));
     }
-    else if (hfp.current_hardfork_version
-                 == DEIP_BLOCKCHAIN_HARDFORK_VERSION // Binary does not know of a new hardfork
-             && witness.hardfork_version_vote
-                 > DEIP_BLOCKCHAIN_HARDFORK_VERSION) // Voting for hardfork in the future, that we do not know of...
+    else if (hfp.current_hardfork_version == DEIP_BLOCKCHAIN_HARDFORK_VERSION // Binary does not know of a new hardfork
+             && witness.hardfork_version_vote > DEIP_BLOCKCHAIN_HARDFORK_VERSION) // Voting for hardfork in the future, that we do not know of...
     {
         // Make vote match binary configuration. This is vote to not apply the new hardfork.
-        pending_block.extensions.insert(block_header_extensions(
-            hardfork_version_vote(_hardfork_versions[hfp.last_hardfork], _hardfork_times[hfp.last_hardfork])));
+        pending_block.extensions.insert(block_header_extensions(hardfork_version_vote(_hardfork_versions[hfp.last_hardfork], _hardfork_times[hfp.last_hardfork])));
     }
 
     if (!(skip & skip_witness_signature))
@@ -2198,25 +2190,14 @@ void database::_apply_block(const signed_block& next_block)
         clear_expired_transactions();
         clear_expired_proposals();
         clear_expired_invites();
-        clear_expired_discipline_supplies();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
-        process_research_token_sales();
-        process_funds();
-        process_common_tokens_withdrawals();
         account_recovery_processing();
-        process_content_activity_windows();
-        process_hardforks();
-        process_discipline_supplies();
         process_nda_contracts();
         //process_subscriptions();
 
-        /// modify expertise stats to correctly calculate emission
-        expertise_stats_service.calculate_used_expertise_for_week();
-        expertise_stats_service.reset_used_expertise_per_block();
-
-        process_expertise_allocation_proposals();
+        process_hardforks();
 
         // notify observers that the block has been applied
         notify_applied_block(next_block);
@@ -2252,7 +2233,7 @@ void database::process_header_extensions(const signed_block& next_block)
         {
             auto hfv = itr->get<hardfork_version_vote>();
             const auto& signing_witness = get_witness(next_block.witness);
-            // idump( (next_block.witness)(signing_witness.running_version)(hfv) );
+            idump( (next_block.witness)(signing_witness.running_version)(hfv) );
 
             if (hfv.hf_version != signing_witness.hardfork_version_vote
                 || hfv.hf_time != signing_witness.hardfork_time_vote)
@@ -2655,15 +2636,14 @@ void database::init_hardforks(time_point_sec genesis_time)
 
     // DEIP: structure to initialize hardofrks
 
-    // FC_ASSERT( DEIP_HARDFORK_0_1 == 1, "Invalid hardfork configuration" );
-    //_hardfork_times[ DEIP_HARDFORK_0_1 ] = fc::time_point_sec( DEIP_HARDFORK_0_1_TIME );
-    //_hardfork_versions[ DEIP_HARDFORK_0_1 ] = DEIP_HARDFORK_0_1_VERSION;
+    FC_ASSERT( DEIP_HARDFORK_0_1 == 1, "Invalid hardfork configuration" );
+    _hardfork_times[ DEIP_HARDFORK_0_1 ] = fc::time_point_sec( DEIP_HARDFORK_0_1_TIME );
+    _hardfork_versions[ DEIP_HARDFORK_0_1 ] = DEIP_HARDFORK_0_1_VERSION;
 
     const auto& hardforks = get_hardfork_property_object();
-    FC_ASSERT(hardforks.last_hardfork <= DEIP_NUM_HARDFORKS, "Chain knows of more hardforks than configuration",
-              ("hardforks.last_hardfork", hardforks.last_hardfork)("DEIP_NUM_HARDFORKS", DEIP_NUM_HARDFORKS));
-    FC_ASSERT(_hardfork_versions[hardforks.last_hardfork] <= DEIP_BLOCKCHAIN_VERSION,
-              "Blockchain version is older than last applied hardfork");
+    FC_ASSERT(hardforks.last_hardfork <= DEIP_NUM_HARDFORKS, "Chain knows of more hardforks than configuration", ("hardforks.last_hardfork", hardforks.last_hardfork)("DEIP_NUM_HARDFORKS", DEIP_NUM_HARDFORKS));
+    FC_ASSERT(_hardfork_versions[hardforks.last_hardfork] <= DEIP_BLOCKCHAIN_VERSION, "Blockchain version is older than last applied hardfork");
+    FC_ASSERT(DEIP_BLOCKCHAIN_HARDFORK_VERSION >= DEIP_BLOCKCHAIN_VERSION);
     FC_ASSERT(DEIP_BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[DEIP_NUM_HARDFORKS]);
 }
 
@@ -2723,14 +2703,12 @@ void database::apply_hardfork(uint32_t hardfork)
     }
 
     modify(get_hardfork_property_object(), [&](hardfork_property_object& hfp) {
-        FC_ASSERT(hardfork == hfp.last_hardfork + 1, "Hardfork being applied out of order",
-                  ("hardfork", hardfork)("hfp.last_hardfork", hfp.last_hardfork));
+        FC_ASSERT(hardfork == hfp.last_hardfork + 1, "Hardfork being applied out of order", ("hardfork", hardfork)("hfp.last_hardfork", hfp.last_hardfork));
         FC_ASSERT(hfp.processed_hardforks.size() == hardfork, "Hardfork being applied out of order");
         hfp.processed_hardforks.push_back(_hardfork_times[hardfork]);
         hfp.last_hardfork = hardfork;
         hfp.current_hardfork_version = _hardfork_versions[hardfork];
-        FC_ASSERT(hfp.processed_hardforks[hfp.last_hardfork] == _hardfork_times[hfp.last_hardfork],
-                  "Hardfork processing failed sanity check...");
+        FC_ASSERT(hfp.processed_hardforks[hfp.last_hardfork] == _hardfork_times[hfp.last_hardfork], "Hardfork processing failed sanity check...");
     });
 
     push_hf_operation(hardfork_operation(hardfork));

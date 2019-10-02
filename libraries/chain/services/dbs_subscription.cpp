@@ -151,12 +151,17 @@ void dbs_subscription::update(const subscription_object& subscription, const std
     });
 }
 
-void dbs_subscription::decrease_remaining_certificates(const subscription_object& subscription)
+void dbs_subscription::consume_file_certificate_quota_unit(const research_group_id_type& research_group_id)
 {
-    if (subscription.remaining_certs > 0)
+    check_subscription_existence_by_research_group(research_group_id);
+    const subscription_object& subscription = get_by_research_group(research_group_id);
+
+    if (subscription.remaining_certs > 0) 
+    {
         db_impl().modify(subscription, [&](subscription_object& s_o){
             s_o.remaining_certs--;
         });
+    }
     else
     {
         FC_ASSERT(subscription.additional_certs > 0, "You have no available certs.");
@@ -166,12 +171,17 @@ void dbs_subscription::decrease_remaining_certificates(const subscription_object
     }
 }
 
-void dbs_subscription::decrease_remaining_sharings(const subscription_object& subscription)
+void dbs_subscription::consume_nda_protected_file_quota_unit(const research_group_id_type& research_group_id)
 {
-    if (subscription.remaining_sharings > 0)
+    check_subscription_existence_by_research_group(research_group_id);
+    const subscription_object& subscription = get_by_research_group(research_group_id);
+
+    if (subscription.remaining_sharings > 0) 
+    {
         db_impl().modify(subscription, [&](subscription_object& s_o){
             s_o.remaining_sharings--;
         });
+    }
     else
     {
         FC_ASSERT(subscription.additional_sharings > 0, "You have no available sharings.");
@@ -181,12 +191,17 @@ void dbs_subscription::decrease_remaining_sharings(const subscription_object& su
     }
 }
 
-void dbs_subscription::decrease_remaining_contracts(const subscription_object& subscription)
+void dbs_subscription::consume_nda_contract_quota_unit(const research_group_id_type& research_group_id)
 {
-    if (subscription.remaining_contracts > 0)
+    check_subscription_existence_by_research_group(research_group_id);
+    const subscription_object& subscription = get_by_research_group(research_group_id);
+
+    if (subscription.remaining_contracts > 0) 
+    {
         db_impl().modify(subscription, [&](subscription_object& s_o){
             s_o.remaining_contracts--;
         });
+    }
     else
     {
         FC_ASSERT(subscription.additional_contracts > 0, "You have no available contracts.");

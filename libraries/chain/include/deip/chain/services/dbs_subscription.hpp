@@ -40,11 +40,11 @@ public:
 
     void update(const subscription_object& subscription, const std::string& json_data);
 
-    void decrease_remaining_certificates(const subscription_object& subscription);
+    void consume_file_certificate_quota_unit(const research_group_id_type& research_group_id);
 
-    void decrease_remaining_sharings(const subscription_object& subscription);
+    void consume_nda_protected_file_quota_unit(const research_group_id_type& research_group_id);
 
-    void decrease_remaining_contracts(const subscription_object& subscription);
+    void consume_nda_contract_quota_unit(const research_group_id_type& research_group_id);
 
 private:
 

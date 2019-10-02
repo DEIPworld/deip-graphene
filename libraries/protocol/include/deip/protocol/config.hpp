@@ -8,7 +8,7 @@
 
 #define DAYS_TO_SECONDS(X)                     (60*60*24*X)
 
-#define DEIP_BLOCKCHAIN_VERSION              ( version(0, 0, 1) )
+#define DEIP_BLOCKCHAIN_VERSION              ( version(0, 1, 0) )
 #define DEIP_BLOCKCHAIN_HARDFORK_VERSION     ( hardfork_version( DEIP_BLOCKCHAIN_VERSION ) )
 
 #define DEIP_ADDRESS_PREFIX                  "DEIP"
@@ -79,7 +79,7 @@
 #define DEIP_MAX_RUNNER_WITNESSES             1
 #define DEIP_MAX_WITNESSES                    (DEIP_MAX_VOTED_WITNESSES+DEIP_MAX_RUNNER_WITNESSES)
 #define DEIP_WITNESS_MISSED_BLOCKS_THRESHOLD  DEIP_BLOCKS_PER_DAY/2
-#define DEIP_HARDFORK_REQUIRED_WITNESSES      17 // 17 of the 21 dpos witnesses (20 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
+#define DEIP_HARDFORK_REQUIRED_WITNESSES      1 // 1 of the 21 dpos witnesses (20 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 
 #define DEIP_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
 #define DEIP_MAX_MEMO_SIZE                   2048

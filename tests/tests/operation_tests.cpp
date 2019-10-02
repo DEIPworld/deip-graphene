@@ -4866,7 +4866,6 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         disclosing_party.insert("alice");
 
         op.contract_creator = "alice";
-        op.contract_creator_research_group = alice_rg.id._id;
         op.party_a = "alice";
         op.party_a_research_group_id = alice_rg.id._id;
         op.party_b = "bob";
