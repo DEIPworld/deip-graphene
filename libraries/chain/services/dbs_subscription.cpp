@@ -133,13 +133,13 @@ void dbs_subscription::update(const subscription_object& subscription, const std
         s_o.nda_contract_quota = data.nda_contract_quota;
         s_o.nda_protected_file_quota = data.nda_protected_file_quota;
 
-        s_o.current_file_certificate_quota_units = data.file_certificate_quota;
-        s_o.current_nda_contract_quota_units = data.nda_contract_quota;
-        s_o.current_nda_protected_file_quota_units = data.nda_protected_file_quota;
-
         s_o.extra_file_certificate_quota_units += s_o.current_file_certificate_quota_units;
         s_o.extra_nda_contract_quota_units += s_o.current_nda_contract_quota_units;
         s_o.extra_nda_protected_file_quota_units += s_o.current_nda_protected_file_quota_units;
+
+        s_o.current_file_certificate_quota_units = data.file_certificate_quota;
+        s_o.current_nda_contract_quota_units = data.nda_contract_quota;
+        s_o.current_nda_protected_file_quota_units = data.nda_protected_file_quota;
 
         s_o.first_billing_date = data.billing_date;
         s_o.billing_date = data.billing_date;

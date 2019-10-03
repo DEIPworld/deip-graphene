@@ -927,7 +927,7 @@ struct fulfill_request_by_nda_contract_operation : public base_operation
 struct create_subscription_operation : public base_operation
 {
     account_name_type owner;
-    int64_t research_group_id;
+    optional<int64_t> research_group_id;
 
     std::string json_data;
 

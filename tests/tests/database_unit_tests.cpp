@@ -893,64 +893,6 @@ BOOST_AUTO_TEST_CASE(process_discipline_supplies)
    FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(process_content_activity_windows)
-{
-   try
-   {
-       BOOST_TEST_MESSAGE("Testing: process_content_activity_windows");
-
-       ACTORS((alice)(alex)(jack)(bob)(john));
-
-       generate_block();
-
-       create_discipline_with_weight();
-       create_research_contents_for_activity_windows();
-       create_researches();
-       create_total_votes();
-       create_research_tokens();
-       create_research_groups();
-       create_research_group_tokens();
-       create_reviews();
-       create_review_votes();
-
-       BOOST_CHECK_NO_THROW(generate_blocks(db.head_block_time() + DAYS_TO_SECONDS(10), true));
-
-       generate_block();
-
-       auto& content = db.get<research_content_object>(1);
-
-       BOOST_CHECK(content.activity_state == closed);
-
-       BOOST_CHECK_NO_THROW(generate_blocks(db.head_block_time() + DAYS_TO_SECONDS(15), true));
-
-       generate_block();
-
-       auto& content_2 = db.get<research_content_object>(2);
-
-       BOOST_CHECK(content_2.activity_state == closed);
-
-       auto& group_1 = db.get<research_group_object>(31);
-       auto& group_2 = db.get<research_group_object>(32);
-
-       BOOST_CHECK(group_1.balance.amount > 0);
-       BOOST_CHECK(group_2.balance.amount > 0);
-
-       auto& alice_acc = db.get_account("alice");
-       auto& bob_acc = db.get_account("bob");
-
-       BOOST_CHECK(alice_acc.balance.amount > 0);
-       BOOST_CHECK(bob_acc.balance.amount > 0);
-
-       auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
-       auto alex_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alex", 10));
-
-       BOOST_CHECK(alice_expert_token.amount > 0);
-       BOOST_CHECK(alex_expert_token.amount > 0);
-
-   }
-   FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_CASE(clear_expired_proposals)
 {
     try
@@ -989,64 +931,6 @@ BOOST_AUTO_TEST_CASE(clear_expired_group_invite)
         generate_blocks(DEIP_BLOCKS_PER_HOUR * 2);
 
         BOOST_CHECK_THROW(db.get<research_group_invite_object>(0), std::out_of_range);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(clear_expired_discipline_supplies)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: clear_expired_proposals");
-
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        generate_block();
-
-        auto& grant = db.create<discipline_supply_object>([&](discipline_supply_object& g) {
-            g.id = 0;
-            g.balance = asset(0, DEIP_SYMBOL);
-            g.end_block = db.head_block_num() - 1;
-        });
-
-        generate_block();
-        BOOST_CHECK_THROW(db.get<discipline_supply_object>(0), std::out_of_range);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(process_expertise_allocation_proposals)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: process_expertise_allocation_proposals");
-
-        ACTORS((alice)(alex)(jack)(bob)(john)(mike));
-
-        generate_block();
-
-        create_expertise_allocation_proposals();
-
-        auto& discipline = db.get<discipline_object>(2);
-
-        db.modify(discipline, [&](discipline_object& d)
-            { d.total_expertise_amount = 1000; });
-
-        db.create<discipline_object>([&](discipline_object& d) {
-            d.id = 21;
-            d.parent_id = 1;
-            d.name = "test";
-            d.total_expertise_amount = 1000;
-        });
-
-        db.process_expertise_allocation_proposals();
-
-        BOOST_CHECK_THROW(db.get<expertise_allocation_proposal_object>(0), std::out_of_range);
-        BOOST_CHECK_NO_THROW(db.get<expertise_allocation_proposal_object>(1));
-        BOOST_CHECK_THROW(db.get<expertise_allocation_proposal_object>(2), std::out_of_range);
-
-        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 21))).amount == DEIP_EXPERTISE_CLAIM_AMOUNT);
-        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1))).amount == DEIP_EXPERTISE_CLAIM_AMOUNT);
     }
     FC_LOG_AND_RETHROW()
 }

@@ -287,9 +287,9 @@ BOOST_AUTO_TEST_CASE(update_subscription)
         std::string data = "{\"external_plan_id\":4,\"file_certificate_quota\":1000,\"nda_protected_file_quota\":\"1000\",\"nda_contract_quota\":\"1000\",\"period\":\"1\",\"billing_date\":\"2019-10-29T15:02:31\"}";
         data_service.update(subscription, data);
 
-        BOOST_CHECK(subscription.extra_file_certificate_quota_units == 11);
-        BOOST_CHECK(subscription.extra_nda_contract_quota_units == 13);
-        BOOST_CHECK(subscription.extra_nda_protected_file_quota_units == 12);
+        BOOST_CHECK(subscription.extra_file_certificate_quota_units == 1001);
+        BOOST_CHECK(subscription.extra_nda_contract_quota_units == 1003);
+        BOOST_CHECK(subscription.extra_nda_protected_file_quota_units == 1002);
 
         BOOST_CHECK(subscription.file_certificate_quota == 1000);
         BOOST_CHECK(subscription.nda_contract_quota == 1000);

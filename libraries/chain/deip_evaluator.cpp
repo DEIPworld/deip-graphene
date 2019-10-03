@@ -1418,9 +1418,12 @@ void create_subscription_evaluator::do_apply(const create_subscription_operation
     dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
 
     account_service.check_account_existence(op.owner);
-    research_group_service.check_research_group_token_existence(op.owner, op.research_group_id);
 
-    subscription_service.create(op.json_data, op.research_group_id, op.owner);
+    int64_t research_group_id = op.research_group_id.valid() ? *op.research_group_id : research_group_service.get_research_group_by_permlink(op.owner).id._id;
+
+    research_group_service.check_research_group_token_existence(op.owner, research_group_id);
+
+    subscription_service.create(op.json_data, research_group_id, op.owner);
 }
 
 void adjust_additional_subscription_limits_evaluator::do_apply(const adjust_additional_subscription_limits_operation& op)
