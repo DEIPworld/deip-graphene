@@ -3537,10 +3537,10 @@ BOOST_AUTO_TEST_CASE(create_research_material)
 
 
     const std::string json_str = "{\"research_id\": 1,"
-            "\"type\": 9,"
-            "\"title\":\"milestone for Research #2\","
-            "\"content\":\"milestone for Research #2\","
-            "\"permlink\":\"milestone-research-two\","
+            "\"type\": 1,"
+            "\"title\":\"announcement for Research #2\","
+            "\"content\":\"announcement for Research #2\","
+            "\"permlink\":\"announcement-research-two\","
             "\"authors\":[\"alice\"],"
             "\"references\": [3] }";
 
@@ -3572,8 +3572,8 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     BOOST_CHECK(std::any_of(
         contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper) {
             const research_content_object& content = wrapper.get();
-            return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone_data
-                && content.content == "milestone for Research #2" && content.permlink == "milestone-research-two"
+            return content.id == 0 && content.research_id == 1 && content.type == research_content_type::announcement
+                && content.content == "announcement for Research #2" && content.permlink == "announcement-research-two"
                 && content.authors.size() == 1 && content.authors.find("alice") != content.authors.end()
                 && content.references.size() == 1;
         }));
@@ -3596,40 +3596,10 @@ BOOST_AUTO_TEST_CASE(create_research_material)
 
     BOOST_CHECK(research.is_finished == false);
 
-    const std::string json_str2 = "{\"research_id\": 1,"
-                                  "\"type\": 2,"
-                                  "\"title\":\"final result for Research #2\","
-                                  "\"content\":\"final result for Research #2\","
-                                  "\"permlink\":\"final-result-research-two\","
-                                  "\"authors\":[\"alice\"],"
-                                  "\"references\": [3] }";
-
-    create_proposal(3, dbs_proposal::action_t::create_research_material, json_str2, "alice", 31, fc::time_point_sec(0xffff1fff), 1);
-
-    vote_proposal_operation op2;
-    op2.research_group_id = 31;
-    op2.proposal_id = 3;
-    op2.voter = "alice";
-
-    signed_transaction tx2;
-    tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-    tx2.operations.push_back(op2);
-    tx2.sign(priv_key, db.get_chain_id());
-    tx2.validate();
-    db.push_transaction(tx2, 0);
-
-    auto& total_vote = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(0, 1));
-    auto& total_vote2 = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(0, 2));
-
-    BOOST_CHECK(total_vote.total_weight == 10000);
-    BOOST_CHECK(total_vote2.total_weight == 10000);
-
-    BOOST_CHECK(research.is_finished == true);
-
     BOOST_CHECK(subscription.extra_file_certificate_quota_units == 1);
     BOOST_CHECK(subscription.extra_nda_protected_file_quota_units == 2);
     BOOST_CHECK(subscription.extra_nda_contract_quota_units == 3);
-    BOOST_CHECK(subscription.current_file_certificate_quota_units == 8);
+    BOOST_CHECK(subscription.current_file_certificate_quota_units == 9);
     BOOST_CHECK(subscription.current_nda_protected_file_quota_units == 10);
     BOOST_CHECK(subscription.current_nda_contract_quota_units == 10);
 }
@@ -5276,6 +5246,32 @@ BOOST_AUTO_TEST_CASE(create_subscription_test)
 
         BOOST_CHECK(subscription.period == billing_period::month);
 
+        create_subscription_operation op2;
+        op2.owner = "alice";
+        op2.research_group_id = nullptr;
+        op2.json_data = "{\"external_plan_id\":3,\"file_certificate_quota\":100,\"nda_protected_file_quota\":\"100\",\"nda_contract_quota\":\"100\",\"period\":\"1\",\"billing_date\":\"2019-10-18T15:02:31\"}";
+
+        signed_transaction tx2;
+        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2.operations.push_back(op2);
+        tx2.sign(priv_key, db.get_chain_id());
+        tx2.validate();
+        db.push_transaction(tx2, 0);
+
+        auto& alice_subscription = db.get<subscription_object>(1);
+        auto& research_group_service = db.obtain_service<dbs_research_group>();
+
+        auto& alice_rg = research_group_service.get_research_group_by_permlink("alice");
+
+        BOOST_CHECK(alice_subscription.id == 1);
+        BOOST_CHECK(alice_subscription.research_group_id == alice_rg.id);
+        BOOST_CHECK(alice_subscription.external_plan_id == 3);
+        BOOST_CHECK(alice_subscription.file_certificate_quota == 100);
+        BOOST_CHECK(alice_subscription.current_file_certificate_quota_units == 100);
+        BOOST_CHECK(alice_subscription.nda_protected_file_quota == 100);
+        BOOST_CHECK(alice_subscription.current_nda_protected_file_quota_units == 100);
+        BOOST_CHECK(alice_subscription.nda_contract_quota == 100);
+        BOOST_CHECK(alice_subscription.current_nda_contract_quota_units == 100);
     }
     FC_LOG_AND_RETHROW()
 }
