@@ -2983,14 +2983,14 @@ annotated_signed_transaction wallet_api::create_subscription(const std::string& 
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::adjust_additional_subscription_limits(const std::string& owner,
-                                                                               const int64_t subscription_id,
-                                                                               const std::string& json_data,
-                                                                               const bool broadcast)
+annotated_signed_transaction wallet_api::adjust_subscription_extra_quota(const std::string& owner,
+                                                                         const int64_t subscription_id,
+                                                                         const std::string& json_data,
+                                                                            const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
-    adjust_additional_subscription_limits_operation op;
+    adjust_subscription_extra_quota_operation op;
 
     op.owner = owner;
     op.subscription_id = subscription_id;

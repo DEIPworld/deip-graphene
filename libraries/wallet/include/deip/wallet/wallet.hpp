@@ -1309,10 +1309,10 @@ public:
                                                      const std::string& json_data,
                                                      const bool broadcast);
 
-    annotated_signed_transaction adjust_additional_subscription_limits(const std::string& owner,
-                                                                       const int64_t subscription_id,
-                                                                       const std::string& json_data,
-                                                                       const bool broadcast);
+    annotated_signed_transaction adjust_subscription_extra_quota(const std::string& owner,
+                                                                           const int64_t subscription_id,
+                                                                           const std::string& json_data,
+                                                                           const bool broadcast);
 
     annotated_signed_transaction update_subscription(const std::string& owner,
                                                      const int64_t subscription_id,
@@ -1465,7 +1465,7 @@ FC_API( deip::wallet::wallet_api,
         (fulfill_request_by_nda_contract)
 
         (create_subscription)
-        (adjust_additional_subscription_limits)
+        (adjust_subscription_extra_quota)
         (update_subscription)
 
         /// helper api

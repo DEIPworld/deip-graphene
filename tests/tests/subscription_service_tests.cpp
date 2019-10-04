@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(create_subscription_test)
 {
     try
     {
-        std::string data = "{\"external_plan_id\":\"3\",\"file_certificate_quota\":100,\"nda_protected_file_quota\":\"100\",\"nda_contract_quota\":\"100\",\"period\":\"1\",\"billing_date\":\"2019-10-18T15:02:31\"}";
+        std::string data = "{\"external_id\":\"3\",\"external_plan_id\":\"3\",\"file_certificate_quota\":100,\"nda_protected_file_quota\":\"100\",\"nda_contract_quota\":\"100\",\"period\":\"1\",\"billing_date\":\"2019-10-18T15:02:31\"}";
         auto& subscription = data_service.create(data, 30, "alice");
 
         BOOST_CHECK(subscription.id == 0);

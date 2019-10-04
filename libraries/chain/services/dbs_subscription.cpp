@@ -14,16 +14,20 @@ const subscription_object& dbs_subscription::create(const std::string& json_data
 {
     const subscription_data_type data = get_data<subscription_data_type>(json_data);
 
-    FC_ASSERT(data.file_certificate_quota.valid(), "File sertificate quota field is not specified.");
+    FC_ASSERT(data.file_certificate_quota.valid(), "File certificate quota field is not specified.");
     FC_ASSERT(data.nda_contract_quota.valid(), "Nda contract quota field is not specified.");
     FC_ASSERT(data.nda_protected_file_quota.valid(), "Nda protected file quota field is not specified.");
+    FC_ASSERT(data.external_plan_id.valid(), "External plan field is not specified.");
+    FC_ASSERT(data.external_id.valid(), "External id field is not specified.");
+    FC_ASSERT(data.period.valid(), "Period field is not specified.");
+    FC_ASSERT(data.billing_date.valid(), "Billing date field is not specified.");
 
     const subscription_object& subscription = db_impl().create<subscription_object>([&](subscription_object& s_o) {
         s_o.research_group_id = research_group_id;
         s_o.owner = owner;
 
-        fc::from_string(s_o.external_id, data.external_id);
-        fc::from_string(s_o.external_plan_id, data.external_plan_id);
+        fc::from_string(s_o.external_id, *data.external_id);
+        fc::from_string(s_o.external_plan_id, *data.external_plan_id);
 
         s_o.file_certificate_quota = *data.file_certificate_quota;
         s_o.nda_contract_quota = *data.nda_contract_quota;
@@ -34,9 +38,9 @@ const subscription_object& dbs_subscription::create(const std::string& json_data
         s_o.current_nda_protected_file_quota_units = *data.nda_protected_file_quota;
 
         s_o.status = subscription_status::subscription_active;
-        s_o.period = static_cast<billing_period>(data.period);
-        s_o.billing_date = data.billing_date;
-        s_o.first_billing_date = data.billing_date;
+        s_o.period = static_cast<billing_period>(*data.period);
+        s_o.billing_date = *data.billing_date;
+        s_o.first_billing_date = *data.billing_date;
     });
 
     return subscription;
@@ -138,12 +142,11 @@ void dbs_subscription::update(const subscription_object& subscription, const std
     const subscription_data_type data = get_data<subscription_data_type>(json_data);
     db_impl().modify(subscription, [&](subscription_object& s_o) {
         
-        if (data.external_id.size()) {
-            fc::from_string(s_o.external_id, data.external_id);
-        }
-        if (data.external_plan_id.size()) {
-            fc::from_string(s_o.external_plan_id, data.external_plan_id);
-        }
+        if (data.external_id.valid())
+            fc::from_string(s_o.external_id, *data.external_id);
+
+        if (data.external_plan_id.valid())
+            fc::from_string(s_o.external_plan_id, *data.external_plan_id);
 
         if (data.file_certificate_quota.valid())
             s_o.file_certificate_quota = *data.file_certificate_quota;
@@ -172,10 +175,13 @@ void dbs_subscription::update(const subscription_object& subscription, const std
         if (data.extra_nda_protected_file_quota_units.valid())
             s_o.extra_nda_protected_file_quota_units = *data.extra_nda_protected_file_quota_units;
 
-        s_o.first_billing_date = data.billing_date;
-        s_o.billing_date = data.billing_date;
+        if (data.billing_date.valid()) {
+            s_o.first_billing_date = *data.billing_date;
+            s_o.billing_date = *data.billing_date;
+        }
 
-        s_o.period = static_cast<billing_period>(data.period);
+        if (data.period.valid())
+            s_o.period = static_cast<billing_period>(*data.period);
 
     });
 }

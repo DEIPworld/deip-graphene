@@ -15,8 +15,8 @@ struct base_subscription_data_type
 
 struct subscription_data_type : base_subscription_data_type
 {
-    std::string external_id;
-    std::string external_plan_id;
+    optional<std::string> external_id;
+    optional<std::string> external_plan_id;
 
     optional<share_type> file_certificate_quota;
     optional<share_type> nda_contract_quota ;
@@ -30,8 +30,8 @@ struct subscription_data_type : base_subscription_data_type
     optional<share_type> extra_nda_contract_quota_units;
     optional<share_type> extra_nda_protected_file_quota_units;
 
-    uint16_t period;
-    fc::time_point_sec billing_date;
+    optional<uint16_t> period;
+    optional<fc::time_point_sec> billing_date;
 
     void validate() const
     {
