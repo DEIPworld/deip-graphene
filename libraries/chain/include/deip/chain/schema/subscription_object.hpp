@@ -1,7 +1,7 @@
 #pragma once
 
 #include "deip_object_types.hpp"
-
+#include <fc/shared_string.hpp>
 #include <boost/multi_index/composite_key.hpp>
 
 #include <numeric>
@@ -28,7 +28,9 @@ class subscription_object : public object<subscription_object_type, subscription
 
 public:
     template <typename Constructor, typename Allocator>
-    subscription_object(Constructor&& c, allocator<Allocator> a)
+    subscription_object(Constructor&& c, allocator<Allocator> a) 
+        : external_id(a)
+        , external_plan_id(a)
     {
         c(*this);
     }
@@ -37,7 +39,8 @@ public:
     research_group_id_type research_group_id;
     account_name_type owner;
 
-    uint16_t external_plan_id;
+    fc::shared_string external_id;
+    fc::shared_string external_plan_id;
 
     share_type file_certificate_quota = 0;
     share_type nda_contract_quota = 0;
@@ -104,7 +107,7 @@ FC_REFLECT_ENUM(deip::chain::billing_period, (month)(year))
 
 FC_REFLECT_ENUM(deip::chain::subscription_status, (subscription_active)(subscription_cancelled)(subscription_expired))
 
-FC_REFLECT( deip::chain::subscription_object, (id)(research_group_id)(owner)(external_plan_id)(file_certificate_quota)(nda_contract_quota)(nda_protected_file_quota)
+FC_REFLECT( deip::chain::subscription_object, (id)(research_group_id)(owner)(external_id)(external_plan_id)(file_certificate_quota)(nda_contract_quota)(nda_protected_file_quota)
                                               (current_file_certificate_quota_units)(current_nda_contract_quota_units)(current_nda_protected_file_quota_units)
                                               (extra_file_certificate_quota_units)(extra_nda_contract_quota_units)(extra_nda_protected_file_quota_units)
                                               (period)(billing_date)(status)(first_billing_date)(month_subscriptions_count))

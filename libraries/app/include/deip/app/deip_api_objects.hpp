@@ -1156,10 +1156,11 @@ struct subscription_api_obj
         : id(s_o.id._id)
         , research_group_id(s_o.research_group_id._id)
         , owner(s_o.owner)
-        , external_plan_id(s_o.external_plan_id)
+        , external_id(fc::to_string(s_o.external_id))
+        , external_plan_id(fc::to_string(s_o.external_plan_id))
         , file_certificate_quota(s_o.file_certificate_quota)
-        , nda_protected_file_quota(s_o.nda_protected_file_quota)
         , nda_contract_quota(s_o.nda_contract_quota)
+        , nda_protected_file_quota(s_o.nda_protected_file_quota)
         , current_file_certificate_quota_units(s_o.current_file_certificate_quota_units)
         , current_nda_contract_quota_units(s_o.current_nda_contract_quota_units)
         , current_nda_protected_file_quota_units(s_o.current_nda_protected_file_quota_units)
@@ -1181,7 +1182,8 @@ struct subscription_api_obj
     int64_t research_group_id;
     account_name_type owner;
 
-    uint16_t external_plan_id;
+    std::string external_id;
+    std::string external_plan_id;
 
     share_type file_certificate_quota;
     share_type nda_contract_quota;
@@ -1575,6 +1577,7 @@ FC_REFLECT( deip::app::subscription_api_obj,
             (id)
             (research_group_id)
             (owner)
+            (external_id)
             (external_plan_id)
             (file_certificate_quota)
             (nda_protected_file_quota)

@@ -15,7 +15,8 @@ struct base_subscription_data_type
 
 struct subscription_data_type : base_subscription_data_type
 {
-    uint16_t external_plan_id;
+    std::string external_id;
+    std::string external_plan_id;
 
     share_type file_certificate_quota = 0;
     share_type nda_contract_quota = 0;
@@ -49,6 +50,6 @@ struct additional_subscription_limits_data_type : base_subscription_data_type
 };
 }
 
-FC_REFLECT(deip::chain::subscription_data_type, (external_plan_id)(file_certificate_quota)(nda_contract_quota)(nda_protected_file_quota)(period)(billing_date))
+FC_REFLECT(deip::chain::subscription_data_type, (external_id)(external_plan_id)(file_certificate_quota)(nda_contract_quota)(nda_protected_file_quota)(period)(billing_date))
 
 FC_REFLECT(deip::chain::additional_subscription_limits_data_type, (extra_file_certificate_quota_units)(extra_nda_contract_quota_units)(extra_nda_protected_file_quota_units))

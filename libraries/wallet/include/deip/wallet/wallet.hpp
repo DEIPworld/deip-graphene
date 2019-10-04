@@ -1305,7 +1305,7 @@ public:
                                                                 const bool broadcast);
 
     annotated_signed_transaction create_subscription(const std::string& owner,
-                                                     const int64_t research_group_id,
+                                                     const optional<int64_t> research_group_id,
                                                      const std::string& json_data,
                                                      const bool broadcast);
 

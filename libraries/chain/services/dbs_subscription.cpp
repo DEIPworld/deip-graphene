@@ -12,15 +12,17 @@ dbs_subscription::dbs_subscription(database& db)
 
 const subscription_object& dbs_subscription::create(const std::string& json_data, const research_group_id_type& research_group_id, const account_name_type& owner)
 {
-    subscription_data_type data = get_data<subscription_data_type>(json_data);
-    auto now = db_impl().head_block_time();
+    const subscription_data_type data = get_data<subscription_data_type>(json_data);
+    const auto now = db_impl().head_block_time();
 
     FC_ASSERT(data.billing_date > now, "Subscription biiling date (${billing_date}) must be later the current moment (${now})", ("billing_date", data.billing_date)("now", now));
 
     const subscription_object& subscription = db_impl().create<subscription_object>([&](subscription_object& s_o) {
         s_o.research_group_id = research_group_id;
         s_o.owner = owner;
-        s_o.external_plan_id = data.external_plan_id;
+
+        fc::from_string(s_o.external_id, data.external_id);
+        fc::from_string(s_o.external_plan_id, data.external_plan_id);
 
         s_o.file_certificate_quota = data.file_certificate_quota;
         s_o.nda_contract_quota = data.nda_contract_quota;
@@ -30,10 +32,10 @@ const subscription_object& dbs_subscription::create(const std::string& json_data
         s_o.current_nda_contract_quota_units = data.nda_contract_quota;
         s_o.current_nda_protected_file_quota_units = data.nda_protected_file_quota;
 
+        s_o.status = subscription_status::subscription_active;
         s_o.period = static_cast<billing_period>(data.period);
         s_o.billing_date = data.billing_date;
         s_o.first_billing_date = data.billing_date;
-
     });
 
     return subscription;
@@ -121,13 +123,19 @@ void dbs_subscription::adjust_extra_quota_units(const subscription_object& subsc
 
 void dbs_subscription::update(const subscription_object& subscription, const std::string& json_data)
 {
-    subscription_data_type data = get_data<subscription_data_type>(json_data);
+    const subscription_data_type data = get_data<subscription_data_type>(json_data);
     const auto now = db_impl().head_block_time();
 
     FC_ASSERT(data.billing_date > now, "Subscription billing date (${billing_date}) must be later the current moment (${now})", ("billing_date", data.billing_date)("now", now));
 
-    db_impl().modify(subscription, [&](subscription_object &s_o) {
-        s_o.external_plan_id = data.external_plan_id;
+    db_impl().modify(subscription, [&](subscription_object& s_o) {
+        
+        if (data.external_id.size()) {
+            fc::from_string(s_o.external_id, data.external_id);
+        }
+        if (data.external_plan_id.size()) {
+            fc::from_string(s_o.external_plan_id, data.external_plan_id);
+        }
 
         s_o.file_certificate_quota = data.file_certificate_quota;
         s_o.nda_contract_quota = data.nda_contract_quota;
