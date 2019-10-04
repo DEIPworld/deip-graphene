@@ -17,8 +17,6 @@ const subscription_object& dbs_subscription::create(const std::string& json_data
     FC_ASSERT(data.file_certificate_quota.valid(), "File certificate quota field is not specified.");
     FC_ASSERT(data.nda_contract_quota.valid(), "Nda contract quota field is not specified.");
     FC_ASSERT(data.nda_protected_file_quota.valid(), "Nda protected file quota field is not specified.");
-    FC_ASSERT(data.external_plan_id.valid(), "External plan field is not specified.");
-    FC_ASSERT(data.external_id.valid(), "External id field is not specified.");
     FC_ASSERT(data.period.valid(), "Period field is not specified.");
     FC_ASSERT(data.billing_date.valid(), "Billing date field is not specified.");
 
