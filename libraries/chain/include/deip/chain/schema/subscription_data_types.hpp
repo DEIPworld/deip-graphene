@@ -18,18 +18,24 @@ struct subscription_data_type : base_subscription_data_type
     std::string external_id;
     std::string external_plan_id;
 
-    share_type file_certificate_quota = 0;
-    share_type nda_contract_quota = 0;
-    share_type nda_protected_file_quota = 0;
+    optional<share_type> file_certificate_quota;
+    optional<share_type> nda_contract_quota ;
+    optional<share_type> nda_protected_file_quota;
+
+    optional<share_type> current_file_certificate_quota_units;
+    optional<share_type> current_nda_contract_quota_units ;
+    optional<share_type> current_nda_protected_file_quota_units;
+
+    optional<share_type> extra_file_certificate_quota_units;
+    optional<share_type> extra_nda_contract_quota_units;
+    optional<share_type> extra_nda_protected_file_quota_units;
 
     uint16_t period;
     fc::time_point_sec billing_date;
 
     void validate() const
     {
-        FC_ASSERT(file_certificate_quota >= 0, "File certificate quota must be specified");
-        FC_ASSERT(nda_contract_quota >= 0, "NDA contract quota must be specified");
-        FC_ASSERT(nda_protected_file_quota >= 0, "NDA protected file quota must be specified");
+
     }
 };
 
@@ -41,15 +47,18 @@ struct additional_subscription_limits_data_type : base_subscription_data_type
 
     void validate() const
     {
-        FC_ASSERT(extra_file_certificate_quota_units >= 0, "File certificate quota extra units must be specified");
-        FC_ASSERT(extra_nda_contract_quota_units >= 0, "NDA contract quota extra units must be specified");
-        FC_ASSERT(extra_nda_protected_file_quota_units >= 0, "NDA protected file quota extra units must be specified");
+//        FC_ASSERT(extra_file_certificate_quota_units >= 0, "File certificate quota extra units must be specified");
+//        FC_ASSERT(extra_nda_contract_quota_units >= 0, "NDA contract quota extra units must be specified");
+//        FC_ASSERT(extra_nda_protected_file_quota_units >= 0, "NDA protected file quota extra units must be specified");
     }
 };
 
 };
 }
 
-FC_REFLECT(deip::chain::subscription_data_type, (external_id)(external_plan_id)(file_certificate_quota)(nda_contract_quota)(nda_protected_file_quota)(period)(billing_date))
+FC_REFLECT(deip::chain::subscription_data_type, (external_id)(external_plan_id)(file_certificate_quota)(nda_contract_quota)(nda_protected_file_quota)
+                                                (current_file_certificate_quota_units)(current_nda_contract_quota_units)(current_nda_protected_file_quota_units)
+                                                (extra_file_certificate_quota_units)(extra_nda_contract_quota_units)(extra_nda_protected_file_quota_units)
+                                                (period)(billing_date))
 
 FC_REFLECT(deip::chain::additional_subscription_limits_data_type, (extra_file_certificate_quota_units)(extra_nda_contract_quota_units)(extra_nda_protected_file_quota_units))

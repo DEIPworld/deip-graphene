@@ -1426,7 +1426,7 @@ void create_subscription_evaluator::do_apply(const create_subscription_operation
     subscription_service.create(op.json_data, research_group_id, op.owner);
 }
 
-void adjust_additional_subscription_limits_evaluator::do_apply(const adjust_additional_subscription_limits_operation& op)
+void adjust_subscription_extra_quota_evaluator::do_apply(const adjust_subscription_extra_quota_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
