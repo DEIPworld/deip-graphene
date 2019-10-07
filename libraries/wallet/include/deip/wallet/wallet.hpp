@@ -1305,16 +1305,19 @@ public:
                                                                 const bool broadcast);
 
     annotated_signed_transaction create_subscription(const std::string& owner,
+                                                     const std::string& agent,
                                                      const optional<int64_t> research_group_id,
                                                      const std::string& json_data,
                                                      const bool broadcast);
 
     annotated_signed_transaction adjust_subscription_extra_quota(const std::string& owner,
-                                                                           const int64_t subscription_id,
-                                                                           const std::string& json_data,
-                                                                           const bool broadcast);
+                                                                 const std::string& agent,
+                                                                 const int64_t subscription_id,
+                                                                 const std::string& json_data,
+                                                                 const bool broadcast);
 
     annotated_signed_transaction update_subscription(const std::string& owner,
+                                                     const std::string& agent,
                                                      const int64_t subscription_id,
                                                      const std::string& json_data,
                                                      const bool broadcast);

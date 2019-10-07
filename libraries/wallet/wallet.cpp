@@ -2962,6 +2962,7 @@ annotated_signed_transaction wallet_api::fulfill_request_by_nda_contract(const s
 }
 
 annotated_signed_transaction wallet_api::create_subscription(const std::string& owner,
+                                                             const std::string& agent,
                                                              const optional<int64_t> research_group_id,
                                                              const std::string& json_data,
                                                              const bool broadcast)
@@ -2971,6 +2972,7 @@ annotated_signed_transaction wallet_api::create_subscription(const std::string& 
     create_subscription_operation op;
 
     op.owner = owner;
+    op.agent = agent;
     if (research_group_id.valid()) {
         op.research_group_id = *research_group_id;
     }
@@ -2984,15 +2986,17 @@ annotated_signed_transaction wallet_api::create_subscription(const std::string& 
 }
 
 annotated_signed_transaction wallet_api::adjust_subscription_extra_quota(const std::string& owner,
+                                                                         const std::string& agent,
                                                                          const int64_t subscription_id,
                                                                          const std::string& json_data,
-                                                                            const bool broadcast)
+                                                                         const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
     adjust_subscription_extra_quota_operation op;
 
     op.owner = owner;
+    op.agent = agent;
     op.subscription_id = subscription_id;
     op.json_data = json_data;
 
@@ -3004,6 +3008,7 @@ annotated_signed_transaction wallet_api::adjust_subscription_extra_quota(const s
 }
 
 annotated_signed_transaction wallet_api::update_subscription(const std::string& owner,
+                                                             const std::string& agent,
                                                              const int64_t subscription_id,
                                                              const std::string& json_data,
                                                              const bool broadcast)
@@ -3013,6 +3018,7 @@ annotated_signed_transaction wallet_api::update_subscription(const std::string& 
     update_subscription_operation op;
 
     op.owner = owner;
+    op.agent = agent;
     op.subscription_id = subscription_id;
     op.json_data = json_data;
 

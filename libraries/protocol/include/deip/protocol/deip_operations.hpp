@@ -927,6 +927,7 @@ struct fulfill_request_by_nda_contract_operation : public base_operation
 struct create_subscription_operation : public base_operation
 {
     account_name_type owner;
+    account_name_type agent;
     optional<int64_t> research_group_id;
 
     std::string json_data;
@@ -935,13 +936,14 @@ struct create_subscription_operation : public base_operation
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(DEIP_ADMIN_ACCOUNT);
+        a.insert(agent);
     }
 };
 
 struct adjust_subscription_extra_quota_operation : public base_operation
 {
     account_name_type owner;
+    account_name_type agent;
     int64_t subscription_id;
 
     std::string json_data;
@@ -950,13 +952,14 @@ struct adjust_subscription_extra_quota_operation : public base_operation
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(DEIP_ADMIN_ACCOUNT);
+        a.insert(agent);
     }
 };
 
 struct update_subscription_operation : public base_operation
 {
     account_name_type owner;
+    account_name_type agent;
     int64_t subscription_id;
 
     std::string json_data;
@@ -965,7 +968,7 @@ struct update_subscription_operation : public base_operation
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(DEIP_ADMIN_ACCOUNT);
+        a.insert(agent);
     }
 };
 
@@ -1044,8 +1047,8 @@ FC_REFLECT( deip::protocol::decline_nda_contract_operation, (contract_id)(declin
 FC_REFLECT( deip::protocol::close_nda_contract_operation, (contract_id)(closer))
 FC_REFLECT( deip::protocol::create_request_by_nda_contract_operation, (requester)(encrypted_payload_hash)(encrypted_payload_iv)(contract_id))
 FC_REFLECT( deip::protocol::fulfill_request_by_nda_contract_operation, (grantor)(encrypted_payload_encryption_key)(proof_of_encrypted_payload_encryption_key)(request_id))
-FC_REFLECT( deip::protocol::create_subscription_operation, (owner)(research_group_id)(json_data))
-FC_REFLECT( deip::protocol::adjust_subscription_extra_quota_operation, (owner)(subscription_id)(json_data))
-FC_REFLECT( deip::protocol::update_subscription_operation, (owner)(subscription_id)(json_data))
+FC_REFLECT( deip::protocol::create_subscription_operation, (owner)(agent)(research_group_id)(json_data))
+FC_REFLECT( deip::protocol::adjust_subscription_extra_quota_operation, (owner)(agent)(subscription_id)(json_data))
+FC_REFLECT( deip::protocol::update_subscription_operation, (owner)(agent)(subscription_id)(json_data))
 
 // clang-format on

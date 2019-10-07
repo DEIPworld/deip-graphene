@@ -5220,6 +5220,7 @@ BOOST_AUTO_TEST_CASE(create_subscription_test)
 
         create_subscription_operation op;
         op.owner = "alice";
+        op.agent = "regacc";
         op.research_group_id = 41;
         op.json_data = "{\"external_id\":\"3\",\"external_plan_id\":\"3\",\"file_certificate_quota\":100,\"nda_protected_file_quota\":\"100\",\"nda_contract_quota\":\"100\",\"period\":\"1\",\"billing_date\":\"2019-10-18T15:02:31\"}";
 
@@ -5248,6 +5249,7 @@ BOOST_AUTO_TEST_CASE(create_subscription_test)
 
         create_subscription_operation op2;
         op2.owner = "alice";
+        op2.agent = "regacc";
         op2.research_group_id = nullptr;
         op2.json_data = "{\"external_id\":\"3\",\"external_plan_id\":\"3\",\"file_certificate_quota\":100,\"nda_protected_file_quota\":\"100\",\"nda_contract_quota\":\"100\",\"period\":\"1\",\"billing_date\":\"2019-10-18T15:02:31\"}";
 
@@ -5322,6 +5324,7 @@ BOOST_AUTO_TEST_CASE(adjust_subscription_extra_quota)
 
         adjust_subscription_extra_quota_operation op;
         op.owner = "alice";
+        op.agent = "regacc";
         op.subscription_id = 0;
         op.json_data = "{\"extra_file_certificate_quota_units\":100,\"extra_nda_protected_file_quota_units\":-105,\"extra_nda_contract_quota_units\":0}";
 
@@ -5400,6 +5403,7 @@ BOOST_AUTO_TEST_CASE(update_subscription)
 
         update_subscription_operation op;
         op.owner = "alice";
+        op.agent = "regacc";
         op.subscription_id = 0;
         op.json_data = "{\"external_plan_id\":\"4\",\"file_certificate_quota\":1000,\"nda_protected_file_quota\":\"1000\",\"nda_contract_quota\":\"1000\",\"period\":\"1\",\"billing_date\":\"2019-10-29T15:02:31\"}";
 

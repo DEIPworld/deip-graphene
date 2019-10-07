@@ -1418,6 +1418,9 @@ void create_subscription_evaluator::do_apply(const create_subscription_operation
     dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
 
     account_service.check_account_existence(op.owner);
+    account_service.check_account_existence(op.agent);
+    
+    FC_ASSERT(op.agent == "regacc", "This operation allowed only for regacc.");
 
     int64_t research_group_id = op.research_group_id.valid() ? *op.research_group_id : research_group_service.get_research_group_by_permlink(op.owner).id._id;
 
@@ -1433,6 +1436,10 @@ void adjust_subscription_extra_quota_evaluator::do_apply(const adjust_subscripti
     dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
 
     account_service.check_account_existence(op.owner);
+    account_service.check_account_existence(op.agent);
+
+    FC_ASSERT(op.agent == "regacc", "This operation allowed only for regacc.");
+    
     subscription_service.check_subscription_existence(op.subscription_id);
 
     auto& subscription = subscription_service.get(op.subscription_id);
@@ -1448,6 +1455,10 @@ void update_subscription_evaluator::do_apply(const update_subscription_operation
     dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
 
     account_service.check_account_existence(op.owner);
+    account_service.check_account_existence(op.agent);
+
+    FC_ASSERT(op.agent == "regacc", "This operation allowed only for regacc.");
+    
     subscription_service.check_subscription_existence(op.subscription_id);
 
     auto& subscription = subscription_service.get(op.subscription_id);

@@ -375,18 +375,21 @@ void fulfill_request_by_nda_contract_operation::validate() const
 void create_subscription_operation::validate() const
 {
     validate_account_name(owner);
+    validate_account_name(agent);
     FC_ASSERT(json_data.size() > 0, "Data must be specified");
 }
 
 void adjust_subscription_extra_quota_operation::validate() const
 {
     validate_account_name(owner);
+    validate_account_name(agent);
     FC_ASSERT(json_data.size() > 0, "Data must be specified");
 }
 
 void update_subscription_operation::validate() const
 {
     validate_account_name(owner);
+    validate_account_name(agent);
     FC_ASSERT(json_data.size() > 0, "Data must be specified");
 }
 
