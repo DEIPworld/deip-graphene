@@ -68,8 +68,11 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
 {
     try
     {
-        auto& contract = data_service.create("alice", 100, "bob", 150, "title", "test", fc::time_point_sec(123), fc::time_point_sec(1234), fc::time_point_sec(1235));
+        std::set<account_name_type> disclosing_party;
+        disclosing_party.insert("nick");
+        auto& contract = data_service.create("initdelegate", "alice", 100, "bob", 150, disclosing_party, "title", "test", fc::time_point_sec(123), fc::time_point_sec(1234), fc::time_point_sec(1235));
 
+        BOOST_CHECK(contract.contract_creator == "initdelegate");
         BOOST_CHECK(contract.party_a == "alice");
         BOOST_CHECK(contract.party_a_research_group_id == 100);
 
@@ -155,28 +158,6 @@ BOOST_AUTO_TEST_CASE(get_nda_contracts_by_creator)
                    contract.start_date == fc::time_point_sec(1232) &&
                    contract.end_date == fc::time_point_sec(1233);
         }));
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(sign_by_receiver_test)
-{
-    try
-    {
-        create_contracts();
-
-        auto& contract = data_service.get(0);
-        data_service.sign(contract, "bob", "signature");
-
-        BOOST_CHECK(contract.party_a == "alice");
-        BOOST_CHECK(contract.party_a_research_group_id == 5);
-        BOOST_CHECK(contract.party_b == "bob");
-        BOOST_CHECK(contract.party_b_research_group_id == 10);
-        BOOST_CHECK(contract.contract_hash == "contract 1");
-        BOOST_CHECK(contract.status == nda_contract_status::nda_contract_signed);
-        BOOST_CHECK(contract.created_at == fc::time_point_sec(123123));
-        BOOST_CHECK(contract.start_date == fc::time_point_sec(123124));
-        BOOST_CHECK(contract.end_date == fc::time_point_sec(123125));
     }
     FC_LOG_AND_RETHROW()
 }

@@ -37,6 +37,7 @@
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
 #include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_subscription.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 #define MAX_LIMIT 1000
@@ -2475,6 +2476,40 @@ database_api::get_nda_contract_request_by_contract_id_and_hash(const nda_contrac
     return my->_db.with_read_lock([&]() {
         chain::dbs_nda_contract_requests& contract_requests_service = my->_db.obtain_service<chain::dbs_nda_contract_requests>();
         return contract_requests_service.get_by_contract_id_and_hash(contract_id, encrypted_payload_hash);
+    });
+}
+
+subscription_api_obj
+database_api::get_subscription(const subscription_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_subscription& subscription_service = my->_db.obtain_service<chain::dbs_subscription>();
+        return subscription_service.get(id);
+    });
+}
+
+subscription_api_obj
+database_api::get_subscription_by_research_group_id(const research_group_id_type& research_group_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_subscription& subscription_service = my->_db.obtain_service<chain::dbs_subscription>();
+        return subscription_service.get_by_research_group(research_group_id);
+    });
+}
+
+vector<subscription_api_obj>
+database_api::get_subscriptions_by_owner(const account_name_type& owner) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<subscription_api_obj> results;
+        chain::dbs_subscription& subscription_service = my->_db.obtain_service<chain::dbs_subscription>();
+
+        auto subscriptions = subscription_service.get_by_owner(owner);
+
+        for (const chain::subscription_object& subscription : subscriptions)
+            results.push_back(subscription);
+
+        return results;
     });
 }
 

@@ -28,6 +28,7 @@
 #include <deip/chain/schema/grant_application_object.hpp>
 #include <deip/chain/schema/nda_contract_object.hpp>
 #include <deip/chain/schema/nda_contract_file_access_object.hpp>
+#include <deip/chain/schema/subscription_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -1149,6 +1150,59 @@ struct nda_contract_file_access_api_obj
     std::string proof_of_encrypted_payload_encryption_key;
 };
 
+struct subscription_api_obj
+{
+    subscription_api_obj(const chain::subscription_object& s_o)
+        : id(s_o.id._id)
+        , research_group_id(s_o.research_group_id._id)
+        , owner(s_o.owner)
+        , external_id(fc::to_string(s_o.external_id))
+        , external_plan_id(fc::to_string(s_o.external_plan_id))
+        , file_certificate_quota(s_o.file_certificate_quota)
+        , nda_contract_quota(s_o.nda_contract_quota)
+        , nda_protected_file_quota(s_o.nda_protected_file_quota)
+        , current_file_certificate_quota_units(s_o.current_file_certificate_quota_units)
+        , current_nda_contract_quota_units(s_o.current_nda_contract_quota_units)
+        , current_nda_protected_file_quota_units(s_o.current_nda_protected_file_quota_units)
+        , extra_file_certificate_quota_units(s_o.extra_file_certificate_quota_units)
+        , extra_nda_contract_quota_units(s_o.extra_nda_contract_quota_units)
+        , extra_nda_protected_file_quota_units(s_o.extra_nda_protected_file_quota_units)
+        , period(s_o.period)
+        , billing_date(s_o.billing_date)
+        , status(s_o.status)
+
+    {}
+
+    // because fc::variant require for temporary object
+    subscription_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t research_group_id;
+    account_name_type owner;
+
+    std::string external_id;
+    std::string external_plan_id;
+
+    share_type file_certificate_quota;
+    share_type nda_contract_quota;
+    share_type nda_protected_file_quota;
+
+    share_type current_file_certificate_quota_units;
+    share_type current_nda_contract_quota_units;
+    share_type current_nda_protected_file_quota_units;
+
+    share_type extra_file_certificate_quota_units;
+    share_type extra_nda_contract_quota_units;
+    share_type extra_nda_protected_file_quota_units;
+
+    uint16_t period;
+    fc::time_point_sec billing_date;
+
+    uint16_t status;
+};
+
 }; // namespace app
 } // namespace deip
 
@@ -1517,6 +1571,26 @@ FC_REFLECT( deip::app::nda_contract_file_access_api_obj,
             (encrypted_payload_iv)
             (encrypted_payload_encryption_key)
             (proof_of_encrypted_payload_encryption_key)
+)
+
+FC_REFLECT( deip::app::subscription_api_obj, 
+            (id)
+            (research_group_id)
+            (owner)
+            (external_id)
+            (external_plan_id)
+            (file_certificate_quota)
+            (nda_protected_file_quota)
+            (nda_contract_quota)
+            (current_file_certificate_quota_units)
+            (current_nda_contract_quota_units)
+            (current_nda_protected_file_quota_units)
+            (extra_file_certificate_quota_units)
+            (extra_nda_contract_quota_units)
+            (extra_nda_protected_file_quota_units)
+            (period)
+            (billing_date)
+            (status)
 )
 
 // clang-format on

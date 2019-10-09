@@ -30,6 +30,7 @@
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
 #include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_subscription.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1257,21 +1258,27 @@ void create_nda_contract_evaluator::do_apply(const create_nda_contract_operation
     fc::time_point_sec now = _db.head_block_time();
     fc::time_point_sec start_date = op.start_date.valid() ? *op.start_date : now;
 
-    FC_ASSERT(start_date >= now, "NDA start date (${start_date}) must be later or equal to the current moment (${now})", ("start_date", start_date)("now", now));
-    FC_ASSERT(op.end_date > now, "NDA end date (${end_date}) must be later the current moment (${now})", ("end_date", op.end_date)("now", now));
-    FC_ASSERT(op.end_date > start_date, "NDA start date (${start_date}) must be less than end date (${end_date})", ("start_date", start_date)("end_date", op.end_date));
-
+    account_service.check_account_existence(op.contract_creator);
     account_service.check_account_existence(op.party_a);
     research_group_service.check_research_group_token_existence(op.party_a, op.party_a_research_group_id);
     account_service.check_account_existence(op.party_b);
     research_group_service.check_research_group_token_existence(op.party_b, op.party_b_research_group_id);
 
     const auto& contracts = nda_contracts_service.get_by_creator_research_group_and_signee_research_group_and_contract_hash(op.party_a_research_group_id, op.party_b_research_group_id, op.contract_hash);
+    FC_ASSERT(start_date >= now, "NDA start date (${start_date}) must be later or equal to the current moment (${now})", ("start_date", start_date)("now", now));
+    FC_ASSERT(op.end_date > now, "NDA end date (${end_date}) must be later the current moment (${now})", ("end_date", op.end_date)("now", now));
+    FC_ASSERT(op.end_date > start_date, "NDA start date (${start_date}) must be less than end date (${end_date})", ("start_date", start_date)("end_date", op.end_date));
+
     for (const auto& wrapper : contracts)
     {
         const auto& contract = wrapper.get();
         FC_ASSERT(contract.status != nda_contract_status::nda_contract_pending, "NDA contract '${hash}' already exists with status '${status}' ", ("hash", op.contract_hash)("status", contract.status));
         FC_ASSERT(contract.status != nda_contract_status::nda_contract_signed, "NDA contract '${hash}' already exists with status '${status}' ", ("hash", op.contract_hash)("status", contract.status));
+    }
+
+    if (_db.has_hardfork(DEIP_HARDFORK_0_1)) {
+        dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
+        subscription_service.consume_nda_contract_quota_unit(op.party_a_research_group_id);
     }
 
     nda_contracts_service.create(op.contract_creator, op.party_a, op.party_a_research_group_id, 
@@ -1381,10 +1388,10 @@ void create_request_by_nda_contract_evaluator::do_apply(const create_request_by_
 
 void fulfill_request_by_nda_contract_evaluator::do_apply(const fulfill_request_by_nda_contract_operation& op)
 {
-    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
-    dbs_research_group &research_group_service = _db.obtain_service<dbs_research_group>();
     dbs_nda_contract_requests& nda_contract_requests_service = _db.obtain_service<dbs_nda_contract_requests>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     account_service.check_account_existence(op.grantor);
     const auto& request = nda_contract_requests_service.get(op.request_id);
@@ -1392,10 +1399,69 @@ void fulfill_request_by_nda_contract_evaluator::do_apply(const fulfill_request_b
     // Currently we are not supporting sharing files by both sides within a single NDA contract
     FC_ASSERT(op.grantor == contract.party_a, "Two-way NDA contracts are not supported currently. Only ${party_a} can fulfill the request", ("party_a", contract.party_a));
     research_group_service.check_research_group_token_existence(op.grantor, contract.party_a_research_group_id);
+
     FC_ASSERT(contract.status == nda_contract_status::nda_contract_signed, "Files cannot be shared under the terms of a contract with ${status} status", ("status", contract.status));
     FC_ASSERT(request.status == nda_contract_file_access_status::nda_contract_file_access_pending, "File access request with ${status} status cannot be fulfilled", ("status", request.status));
 
+    if (_db.has_hardfork(DEIP_HARDFORK_0_1)) {
+        dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
+        subscription_service.consume_nda_protected_file_quota_unit(contract.party_a_research_group_id);
+    }
+
     nda_contract_requests_service.fulfill_file_access_request(request, op.encrypted_payload_encryption_key, op.proof_of_encrypted_payload_encryption_key);
+}
+
+void create_subscription_evaluator::do_apply(const create_subscription_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
+
+    FC_ASSERT(op.agent == DEIP_ADMIN_ACCOUNT, "${account} is not an agent account", ("account", op.agent));
+
+    account_service.check_account_existence(op.owner);
+    account_service.check_account_existence(op.agent);
+    int64_t research_group_id = op.research_group_id.valid() ? *op.research_group_id : research_group_service.get_research_group_by_permlink(op.owner).id._id;
+
+    research_group_service.check_research_group_token_existence(op.owner, research_group_id);
+
+    subscription_service.create(op.json_data, research_group_id, op.owner);
+}
+
+void adjust_subscription_extra_quota_evaluator::do_apply(const adjust_subscription_extra_quota_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
+
+    FC_ASSERT(op.agent == DEIP_ADMIN_ACCOUNT, "${account} is not an agent account", ("account", op.agent));
+
+    account_service.check_account_existence(op.owner);
+    account_service.check_account_existence(op.agent);
+    subscription_service.check_subscription_existence(op.subscription_id);
+
+    auto& subscription = subscription_service.get(op.subscription_id);
+    research_group_service.check_research_group_token_existence(op.owner, subscription.research_group_id);
+
+    subscription_service.adjust_extra_quota_units(subscription, op.json_data);
+}
+
+void update_subscription_evaluator::do_apply(const update_subscription_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
+    
+    FC_ASSERT(op.agent == DEIP_ADMIN_ACCOUNT, "${account} is not an agent account", ("account", op.agent));
+
+    account_service.check_account_existence(op.owner);
+    account_service.check_account_existence(op.agent);    
+    subscription_service.check_subscription_existence(op.subscription_id);
+
+    auto& subscription = subscription_service.get(op.subscription_id);
+    research_group_service.check_research_group_token_existence(op.owner, subscription.research_group_id);
+
+    subscription_service.update(subscription, op.json_data);
 }
 
 } // namespace chain

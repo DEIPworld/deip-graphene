@@ -78,7 +78,8 @@ enum object_type
     grant_object_type,
     grant_application_object_type,
     nda_contract_object_type,
-    nda_contract_file_access_object_type
+    nda_contract_file_access_object_type,
+    subscription_object_type
 };
 
 class dynamic_global_property_object;
@@ -127,6 +128,8 @@ class grant_object;
 class grant_application_object;
 class nda_contract_object;
 class nda_contract_file_access_object;
+class subscription_object;
+
 
 typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
 typedef oid<chain_property_object> chain_property_id_type;
@@ -173,6 +176,7 @@ typedef oid<grant_object> grant_id_type;
 typedef oid<grant_application_object> grant_application_id_type;
 typedef oid<nda_contract_object> nda_contract_id_type;
 typedef oid<nda_contract_file_access_object> nda_contract_file_access_id_type;
+typedef oid<subscription_object> subscription_id_type;
 
 
 typedef allocator<account_name_type> account_name_allocator_type;
@@ -260,6 +264,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (grant_object_type)
                  (nda_contract_object_type)
                  (nda_contract_file_access_object_type)
+                 (subscription_object_type)
                  )
 
 FC_REFLECT_ENUM( deip::chain::bandwidth_type, (post)(forum)(market) )

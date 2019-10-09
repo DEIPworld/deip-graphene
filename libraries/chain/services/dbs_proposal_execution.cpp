@@ -1,10 +1,11 @@
 #include <deip/chain/database/database.hpp>
 
+#include <deip/chain/services/dbs_offer_research_tokens.hpp>
 #include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_group_invite.hpp>
 #include <deip/chain/services/dbs_review.hpp>
-#include <deip/chain/services/dbs_offer_research_tokens.hpp>
+#include <deip/chain/services/dbs_subscription.hpp>
 
 namespace deip {
 namespace chain {
@@ -173,37 +174,18 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
     auto& vote_service = db_impl().obtain_service<dbs_vote>();
 
     create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
-
+    FC_ASSERT(data.type == research_content_type::announcement, "Only announcement type is currently supported");
+ 
     research_service.check_research_existence(data.research_id);
-    FC_ASSERT((!research_service.get_research(data.research_id).is_finished), "You can't add content to finished research");
+    const auto& research = research_service.get_research(data.research_id);
+    FC_ASSERT(!research.is_finished, "Research ${r} is finished already", ("r", data.research_id));
 
-    auto& research = research_service.get_research(data.research_id);
-    auto& research_content = research_content_service.create(data.research_id, data.type, data.title, data.content, data.permlink, data.authors, data.references, data.external_references);
-
-    std::map<discipline_id_type, share_type> research_votes_per_discipline;
-    if (data.type == research_content_type::final_result)
-    {
-        research_service.calculate_eci(research.id);
-        for (auto& tw : research.eci_per_discipline)
-        {
-            auto discipline_id = tw.first;
-            auto weight = std::max(int64_t(0), tw.second.value);
-            auto& total_vote_for_final_result =  vote_service.create_total_votes(discipline_id, research_content.research_id, research_content.id);
-            db_impl().modify(total_vote_for_final_result, [&](total_votes_object& tv_o)
-            {
-                tv_o.total_weight = weight;
-            });
-
-            auto& discipline = db_impl().get<discipline_object, by_id>(discipline_id);
-            db_impl().modify(discipline, [&](discipline_object& d_o) {
-                d_o.total_active_weight += weight;
-            });
-        }
-        
-        db_impl().modify(research, [&](research_object& r_o) {
-            r_o.is_finished = true;
-        });
+    if (db_impl().has_hardfork(DEIP_HARDFORK_0_1)) {
+        dbs_subscription& subscription_service = db_impl().obtain_service<dbs_subscription>();
+        subscription_service.consume_file_certificate_quota_unit(research.research_group_id);
     }
+
+    const auto& research_content = research_content_service.create(data.research_id, data.type, data.title, data.content, data.permlink, data.authors, data.references, data.external_references);
 }
 
 void dbs_proposal_execution::start_research_token_sale(const proposal_object& proposal)

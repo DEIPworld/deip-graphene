@@ -499,6 +499,7 @@ public:
     ///////////////////
     // NDA Contracts //
     ///////////////////
+
     nda_contract_api_obj get_nda_contract(const nda_contract_id_type& id) const;
     vector<nda_contract_api_obj> get_nda_contracts_by_creator(const account_name_type& party_a) const;
     vector<nda_contract_api_obj> get_nda_contracts_by_signee(const account_name_type &party_b) const;
@@ -513,10 +514,20 @@ public:
     ////////////////////////////
     // NDA Contracts Requests //
     ////////////////////////////
+
     nda_contract_file_access_api_obj get_nda_contract_request(const nda_contract_file_access_id_type& id) const;
     nda_contract_file_access_api_obj get_nda_contract_request_by_contract_id_and_hash(const nda_contract_id_type& contract_id, const fc::string& encrypted_payload_hash) const;
     vector<nda_contract_file_access_api_obj> get_nda_contract_requests_by_contract_id(const nda_contract_id_type& contract_id) const;
     vector<nda_contract_file_access_api_obj> get_nda_contract_requests_by_requester(const account_name_type& requester) const;
+
+    ////////////////////
+    // Subscriptions //
+    //////////////////
+
+    subscription_api_obj get_subscription(const subscription_id_type& id) const;
+    subscription_api_obj get_subscription_by_research_group_id(const research_group_id_type& research_group_id) const;
+    vector<subscription_api_obj> get_subscriptions_by_owner(const account_name_type& owner) const;
+
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -736,6 +747,11 @@ FC_API(deip::app::database_api,
    (get_nda_contract_request_by_contract_id_and_hash)
    (get_nda_contract_requests_by_contract_id)
    (get_nda_contract_requests_by_requester)
+
+   // Subscriptions
+   (get_subscription)
+   (get_subscription_by_research_group_id)
+   (get_subscriptions_by_owner)
 )
 
 // clang-format on

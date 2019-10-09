@@ -332,6 +332,7 @@ public:
     void process_grants();
     void distribute_grant(const grant_object& grant);
     void process_nda_contracts();
+    void process_subscriptions();
 
     /**
      * Rewards distribution
@@ -395,7 +396,7 @@ public:
 
     void retally_witness_votes();
 
-    bool has_hardfork(uint32_t hardfork) const;
+    bool has_hardfork(uint32_t hardfork) const override;
 
     /* For testing and debugging only. Given a hardfork
        with id N, applies all hardforks with id <= N */

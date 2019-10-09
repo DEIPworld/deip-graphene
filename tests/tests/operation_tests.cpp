@@ -28,6 +28,7 @@
 #include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
+#include <deip/chain/schema/subscription_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
 
 #include <deip/chain/services/dbs_nda_contract.hpp>
@@ -3475,8 +3476,14 @@ BOOST_AUTO_TEST_CASE(research_token_sale_data_validate_test)
 
 BOOST_AUTO_TEST_CASE(create_research_material)
 {
+    BOOST_TEST_MESSAGE("Testing: create_research_material");
+
     ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(john)(greg))
-    std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
+    generate_block();
+    db.set_hardfork(DEIP_NUM_HARDFORKS);
+    generate_block();
+
+    std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100) };
     std::map<uint16_t, share_type> proposal_quorums;
 
     for (int i = First_proposal; i <= Last_proposal; i++)
@@ -3509,12 +3516,31 @@ BOOST_AUTO_TEST_CASE(create_research_material)
         rdr.research_id = 1;
     });
 
+    auto& subscription = db.create<subscription_object>([&](subscription_object& s_o) {
+        s_o.id = 0;
+        s_o.research_group_id = 31;
+        s_o.current_file_certificate_quota_units = 10;
+        s_o.current_nda_protected_file_quota_units = 10;
+        s_o.current_nda_contract_quota_units = 10;
+        s_o.external_plan_id = "2";
+        s_o.file_certificate_quota = 100;
+        s_o.nda_protected_file_quota = 100;
+        s_o.nda_contract_quota = 100;
+        s_o.extra_file_certificate_quota_units = 1;
+        s_o.extra_nda_protected_file_quota_units = 2;
+        s_o.extra_nda_contract_quota_units = 3;
+        s_o.period = billing_period::month;
+        s_o.first_billing_date = fc::time_point_sec(1548950400);
+        s_o.billing_date = fc::time_point_sec(1561910400);
+        s_o.month_subscriptions_count = 5;
+    });
+
 
     const std::string json_str = "{\"research_id\": 1,"
-            "\"type\": 9,"
-            "\"title\":\"milestone for Research #2\","
-            "\"content\":\"milestone for Research #2\","
-            "\"permlink\":\"milestone-research-two\","
+            "\"type\": 1,"
+            "\"title\":\"announcement for Research #2\","
+            "\"content\":\"announcement for Research #2\","
+            "\"permlink\":\"announcement-research-two\","
             "\"authors\":[\"alice\"],"
             "\"references\": [3] }";
 
@@ -3546,8 +3572,8 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     BOOST_CHECK(std::any_of(
         contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper) {
             const research_content_object& content = wrapper.get();
-            return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone_data
-                && content.content == "milestone for Research #2" && content.permlink == "milestone-research-two"
+            return content.id == 0 && content.research_id == 1 && content.type == research_content_type::announcement
+                && content.content == "announcement for Research #2" && content.permlink == "announcement-research-two"
                 && content.authors.size() == 1 && content.authors.find("alice") != content.authors.end()
                 && content.references.size() == 1;
         }));
@@ -3570,137 +3596,12 @@ BOOST_AUTO_TEST_CASE(create_research_material)
 
     BOOST_CHECK(research.is_finished == false);
 
-    const std::string json_str2 = "{\"research_id\": 1,"
-                                  "\"type\": 2,"
-                                  "\"title\":\"final result for Research #2\","
-                                  "\"content\":\"final result for Research #2\","
-                                  "\"permlink\":\"final-result-research-two\","
-                                  "\"authors\":[\"alice\"],"
-                                  "\"references\": [3] }";
-
-    create_proposal(3, dbs_proposal::action_t::create_research_material, json_str2, "alice", 31, fc::time_point_sec(0xffff1fff), 1);
-
-    vote_proposal_operation op2;
-    op2.research_group_id = 31;
-    op2.proposal_id = 3;
-    op2.voter = "alice";
-
-    signed_transaction tx2;
-    tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-    tx2.operations.push_back(op2);
-    tx2.sign(priv_key, db.get_chain_id());
-    tx2.validate();
-    db.push_transaction(tx2, 0);
-
-    auto& total_vote = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(0, 1));
-    auto& total_vote2 = db.get<total_votes_object, by_content_and_discipline>(std::make_tuple(0, 2));
-
-    BOOST_CHECK(total_vote.total_weight == 10000);
-    BOOST_CHECK(total_vote2.total_weight == 10000);
-
-    BOOST_CHECK(research.is_finished == true);
-}
-
-BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: make_review expertise");
-
-        ACTORS_WITH_EXPERT_TOKENS((john)(alice)(jack));
-
-        generate_block();
-
-        std::map<uint16_t, share_type> proposal_quorums;
-
-        for (int i = First_proposal; i <= Last_proposal; i++)
-            proposal_quorums.insert(std::make_pair(i, 7000));
-
-        auto& research = research_create(1, "test_research", "test_abstract", "test_permlink", 30, 10, 1500);
-        research_group_create(30, "group3", "test3", "test3", 100, proposal_quorums, true, false);
-        research_group_token_create(30, "john", DEIP_1_PERCENT * 60);
-        research_group_token_create(30, "alice", DEIP_1_PERCENT * 40);
-
-        db.create<research_content_object>([&](research_content_object& c) {
-            c.id = 1;
-            c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
-            c.research_id = research.id;
-            c.authors = {"alice"};
-            c.content = "content";
-            c.references = {};
-            c.external_references = { "http://google.com" };
-            c.type = research_content_type::milestone_data;
-            c.activity_state = research_content_activity_state::active;
-        });
-
-        db.create<research_discipline_relation_object>([&](research_discipline_relation_object& rdr) {
-            rdr.discipline_id = 1;
-            rdr.research_id = 1;
-        });
-
-        private_key_type priv_key = generate_private_key("john");
-        private_key_type alice_key = generate_private_key("alice");
-        private_key_type jack_key = generate_private_key("jack");
-
-        generate_block();
-
-        make_review_operation op;
-
-        std::vector<int64_t> references {1};
-        op.author = "jack";
-        op.research_content_id = 1;
-        op.content = "test";
-        op.is_positive = true;
-        op.weight = DEIP_100_PERCENT;
-
-        signed_transaction tx;
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.operations.push_back(op);
-        tx.sign(jack_key, db.get_chain_id());
-        tx.validate();
-        db.push_transaction(tx, 0);
-
-        auto& stats = db.get_expertise_stats();
-
-        BOOST_CHECK(stats.used_expertise_per_block.value == 10000);
-
-        generate_block();
-
-        BOOST_CHECK(stats.get_expertise_used_last_week().value == 10000);
-        BOOST_CHECK(stats.total_used_expertise.value == 10000);
-        BOOST_CHECK(stats.used_expertise_per_block.value == 0);
-
-        BOOST_TEST_MESSAGE("Testing: vote for review expertise");
-
-        vote_for_review_operation op2;
-
-        tx.operations.clear();
-        tx.signatures.clear();
-
-        dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
-        expert_token_service.get_expert_token_by_account_and_discipline("john", 1);
-
-        op2.review_id = 0;
-        op2.discipline_id = 1;
-        op2.weight = 50 * DEIP_1_PERCENT;
-        op2.voter = "john";
-
-        tx.operations.clear();
-        tx.signatures.clear();
-        tx.operations.push_back(op2);
-        tx.sign(priv_key, db.get_chain_id());
-
-        db.push_transaction(tx, 0);
-
-        BOOST_CHECK(stats.used_expertise_per_block == 5000);
-
-        generate_block();
-
-        BOOST_CHECK(stats.get_expertise_used_last_week().value == 15000);
-        BOOST_CHECK(stats.total_used_expertise == 15000);
-        BOOST_CHECK(stats.used_expertise_per_block == 0);
-    }
-    FC_LOG_AND_RETHROW()
+    BOOST_CHECK(subscription.extra_file_certificate_quota_units == 1);
+    BOOST_CHECK(subscription.extra_nda_protected_file_quota_units == 2);
+    BOOST_CHECK(subscription.extra_nda_contract_quota_units == 3);
+    BOOST_CHECK(subscription.current_file_certificate_quota_units == 9);
+    BOOST_CHECK(subscription.current_nda_protected_file_quota_units == 10);
+    BOOST_CHECK(subscription.current_nda_contract_quota_units == 10);
 }
 
 BOOST_AUTO_TEST_CASE(vote_for_negative_review)
@@ -4650,11 +4551,11 @@ BOOST_AUTO_TEST_CASE(add_member_to_research_test)
 
         auto& rgt = db.get<research_group_token_object, by_owner>(std::make_tuple("alice", alice_rg.id));
 
-        BOOST_CHECK(rgt.amount == 9999);
+        BOOST_CHECK(rgt.amount == 9900);
 
         auto& rgt2 = db.get<research_group_token_object, by_owner>(std::make_tuple("mike", alice_rg.id));
 
-        BOOST_CHECK(rgt2.amount == 1);
+        BOOST_CHECK(rgt2.amount == 100);
 
         auto& research = db.get<research_object>(30);
 
@@ -4801,7 +4702,6 @@ BOOST_AUTO_TEST_CASE(start_research_not_dao_group_test)
     FC_LOG_AND_RETHROW()
 }
 
-
 BOOST_AUTO_TEST_CASE(create_contract_test)
 {
     try
@@ -4810,14 +4710,35 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
 
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
         generate_block();
+        db.set_hardfork(DEIP_NUM_HARDFORKS);
+        generate_block();
 
         auto& research_group_service = db.obtain_service<dbs_research_group>();
         auto& alice_rg = research_group_service.get_research_group_by_permlink("alice");
         auto& bob_rg = research_group_service.get_research_group_by_permlink("bob");
 
+        auto& subscription = db.create<subscription_object>([&](subscription_object& s_o) {
+            s_o.id = 0;
+            s_o.research_group_id = alice_rg.id._id;
+            s_o.current_file_certificate_quota_units = 10;
+            s_o.current_nda_protected_file_quota_units = 10;
+            s_o.current_nda_contract_quota_units = 0;
+            s_o.external_plan_id = "2";
+            s_o.file_certificate_quota = 100;
+            s_o.nda_protected_file_quota = 100;
+            s_o.nda_contract_quota = 100;
+            s_o.extra_file_certificate_quota_units = 1;
+            s_o.extra_nda_protected_file_quota_units = 2;
+            s_o.extra_nda_contract_quota_units = 3;
+            s_o.period = billing_period::month;
+            s_o.first_billing_date = fc::time_point_sec(1548864000);
+            s_o.billing_date = fc::time_point_sec(1548864000);
+            s_o.month_subscriptions_count = 0;
+        });
+
         create_nda_contract_operation op;
         std::set<account_name_type> disclosing_party;
-        disclosing_party.insert("bob");
+        disclosing_party.insert("alice");
 
         op.contract_creator = "alice";
         op.party_a = "alice";
@@ -4826,9 +4747,9 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         op.party_b_research_group_id = bob_rg.id._id;
         op.disclosing_party = disclosing_party;
         op.title = "contract title";
-        op.contract_hash = "test contract";
-        op.start_date = fc::time_point_sec(12312313);
-        op.end_date = fc::time_point_sec(12312314);
+        op.contract_hash = "f6fd3b373dfa10280cee23224d0a34cdb02869ae15ceb6bd306861fc482bcc2e";
+        op.start_date = fc::time_point_sec(1579247354);
+        op.end_date = fc::time_point_sec(1589247354);
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -4847,248 +4768,250 @@ BOOST_AUTO_TEST_CASE(create_contract_test)
         BOOST_CHECK(contract.party_a_research_group_id == alice_rg.id._id);
         BOOST_CHECK(contract.party_b == "bob");
         BOOST_CHECK(contract.party_b_research_group_id == bob_rg.id._id);
-        BOOST_CHECK(contract.contract_hash == "test contract");
+        BOOST_CHECK(contract.contract_hash == "f6fd3b373dfa10280cee23224d0a34cdb02869ae15ceb6bd306861fc482bcc2e");
         BOOST_CHECK(contract.status == nda_contract_status::nda_contract_pending);
         BOOST_CHECK(contract.created_at == db.head_block_time());
-        BOOST_CHECK(contract.start_date == fc::time_point_sec(12312313));
-        BOOST_CHECK(contract.end_date == fc::time_point_sec(12312314));
+        BOOST_CHECK(contract.start_date == fc::time_point_sec(1579247354));
+        BOOST_CHECK(contract.end_date == fc::time_point_sec(1589247354));
 
+        BOOST_CHECK(subscription.current_nda_contract_quota_units == 0);
+        BOOST_CHECK(subscription.extra_nda_contract_quota_units == 2);
     }
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: not_create_active_contract_with_duplicated_hash_test");
-
-        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
-        generate_block();
-
-        auto& research_group_service = db.obtain_service<dbs_research_group>();
-        auto& alice_rg = research_group_service.get_research_group_by_permlink("alice");
-        auto& bob_rg = research_group_service.get_research_group_by_permlink("bob");
-        private_key_type alice_priv_key = generate_private_key("alice");
-        private_key_type bob_priv_key = generate_private_key("bob");
-
-        create_nda_contract_operation op;
-        std::set<account_name_type> disclosing_party;
-        disclosing_party.insert("bob");
-
-        op.contract_creator = "alice";
-        op.party_a = "alice";
-        op.party_a_research_group_id = alice_rg.id._id;
-        op.party_b = "bob";
-        op.party_b_research_group_id = bob_rg.id._id;
-        op.disclosing_party = disclosing_party;
-        op.title = "contract title";
-        op.contract_hash = "duplicated hash";
-        op.start_date = fc::time_point_sec(12312313);
-        op.end_date = fc::time_point_sec(12312314);
-
-
-        signed_transaction tx;
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.operations.push_back(op);
-        tx.sign(alice_priv_key, db.get_chain_id());
-        tx.validate();
-        db.push_transaction(tx, 0);
-
-        create_nda_contract_operation op2;
-        std::set<account_name_type> disclosing_party_2;
-        disclosing_party_2.insert("bob");
-
-        op.contract_creator = "alice";
-        op2.party_a = "alice";
-        op2.party_a_research_group_id = alice_rg.id._id;
-        op2.party_b = "bob";
-        op2.party_b_research_group_id = bob_rg.id._id;
-        op2.disclosing_party = disclosing_party_2;
-        op2.title = "contract title";
-        op2.contract_hash = "duplicated hash";
-        op2.start_date = fc::time_point_sec(12312315);
-        op2.end_date = fc::time_point_sec(12312316);
-
-        signed_transaction tx2;
-        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx2.operations.push_back(op2);
-        tx2.sign(alice_priv_key, db.get_chain_id());
-        tx2.validate();
-        BOOST_CHECK_THROW(db.push_transaction(tx2, 0), fc::assert_exception);
-
-        sign_nda_contract_operation op3;
-        op3.contract_id = 0;
-        op3.contract_signer = "bob";
-
-        signed_transaction tx3;
-        tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx3.operations.push_back(op3);
-        tx3.sign(bob_priv_key, db.get_chain_id());
-        tx3.validate();
-        db.push_transaction(tx3, 0);
-
-        create_nda_contract_operation op4;
-        std::set<account_name_type> disclosing_party_4;
-        disclosing_party_3.insert("bob");
-
-        op.contract_creator = "alice";
-        op4.party_a = "alice";
-        op4.party_a_research_group_id = alice_rg.id._id;
-        op4.party_b = "bob";
-        op4.party_b_research_group_id = bob_rg.id._id;
-        op4.disclosing_party = disclosing_party_4;
-        op4.title = "contract title";
-        op4.contract_hash = "duplicated hash";
-        op4.start_date = fc::time_point_sec(12312415);
-        op4.end_date = fc::time_point_sec(12312416);
-
-        signed_transaction tx4;
-        tx4.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx4.operations.push_back(op4);
-        tx4.sign(alice_priv_key, db.get_chain_id());
-        tx4.validate();
-        BOOST_CHECK_THROW(db.push_transaction(tx4, 0), fc::assert_exception);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(approve_contract_test)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: approve_contract");
-
-        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
-        generate_block();
-
-        auto& research_group_service = db.obtain_service<dbs_research_group>();
-        auto& alice_rg = research_group_service.get_research_group_by_permlink("alice");
-        auto& bob_rg = research_group_service.get_research_group_by_permlink("bob");
-
-        auto& contract = db.create<nda_contract_object>([&](nda_contract_object& c_o) {
-            c_o.id = 0;
-            c_o.party_a = "alice";
-            c_o.party_a_research_group_id = alice_rg.id._id;
-            c_o.party_b = "bob";
-            c_o.party_b_research_group_id = bob_rg.id._id;
-            c_o.contract_hash = "test contract";
-            c_o.status = nda_contract_status::nda_contract_pending;
-            c_o.created_at = db.head_block_time();
-        });
-
-        sign_nda_contract_operation op;
-        op.contract_id = 0;
-        op.contract_signer = "bob";
-
-        private_key_type priv_key = generate_private_key("bob");
-
-        signed_transaction tx;
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.operations.push_back(op);
-        tx.sign(priv_key, db.get_chain_id());
-        tx.validate();
-        db.push_transaction(tx, 0);
-
-        BOOST_CHECK(contract.id == 0);
-        BOOST_CHECK(contract.party_a == "alice");
-        BOOST_CHECK(contract.party_a_research_group_id == alice_rg.id._id);
-        BOOST_CHECK(contract.party_b == "bob");
-        BOOST_CHECK(contract.party_b_research_group_id == bob_rg.id._id);
-        BOOST_CHECK(contract.status == nda_contract_status::nda_contract_signed);
-        BOOST_CHECK(contract.created_at == db.head_block_time());
-
-        auto& contract2 = db.create<nda_contract_object>([&](nda_contract_object& c_o) {
-            c_o.id = 1;
-            c_o.party_a = "alice";
-            c_o.party_a_research_group_id = alice_rg.id._id;
-            c_o.party_b = "bob";
-            c_o.party_b_research_group_id = bob_rg.id._id;
-            c_o.contract_hash = "test contract 2";
-            c_o.status = nda_contract_status::nda_contract_declined;
-            c_o.created_at = db.head_block_time();
-        });
-
-        sign_nda_contract_operation op2;
-        op2.contract_id = 1;
-        op2.contract_signer = "bob";
-
-        signed_transaction tx2;
-        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx2.operations.push_back(op2);
-        tx2.sign(priv_key, db.get_chain_id());
-        tx2.validate();
-        BOOST_CHECK_THROW(db.push_transaction(tx2, 0), fc::assert_exception);
-
-        auto& contract3 = db.create<nda_contract_object>([&](nda_contract_object& c_o) {
-            c_o.id = 2;
-            c_o.party_a = "alice";
-            c_o.party_a_research_group_id = alice_rg.id._id;
-            c_o.party_b = "bob";
-            c_o.party_b_research_group_id = bob_rg.id._id;
-            c_o.contract_hash = "test contract 3";
-            c_o.status = nda_contract_status::nda_contract_expired;
-            c_o.created_at = db.head_block_time();
-        });
-
-        sign_nda_contract_operation op3;
-        op3.contract_id = 2;
-        op3.contract_signer = "bob";
-
-        signed_transaction tx3;
-        tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx3.operations.push_back(op3);
-        tx3.sign(priv_key, db.get_chain_id());
-        tx3.validate();
-        BOOST_CHECK_THROW(db.push_transaction(tx3, 0), fc::assert_exception);
-
-        auto& contract4 = db.create<nda_contract_object>([&](nda_contract_object& c_o) {
-            c_o.id = 3;
-            c_o.party_a = "alice";
-            c_o.party_a_research_group_id = alice_rg.id._id;
-            c_o.party_b = "bob";
-            c_o.party_b_research_group_id = bob_rg.id._id;
-            c_o.contract_hash = "test contract 4";
-            c_o.status = nda_contract_status::nda_contract_signed;
-            c_o.created_at = db.head_block_time();
-        });
-
-        sign_nda_contract_operation op4;
-        op4.contract_id = 3;
-        op4.contract_signer = "bob";
-
-        signed_transaction tx4;
-        tx4.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx4.operations.push_back(op4);
-        tx4.sign(priv_key, db.get_chain_id());
-        tx4.validate();
-        BOOST_CHECK_THROW(db.push_transaction(tx4, 0), fc::assert_exception);
-
-        auto& contract5 = db.create<nda_contract_object>([&](nda_contract_object& c_o) {
-            c_o.id = 4;
-            c_o.party_a = "alice";
-            c_o.party_a_research_group_id = alice_rg.id._id;
-            c_o.party_b = "bob";
-            c_o.party_b_research_group_id = bob_rg.id._id;
-            c_o.contract_hash = "test contract 5";
-            c_o.status = nda_contract_status::nda_contract_pending;
-            c_o.created_at = db.head_block_time();
-        });
-
-        sign_nda_contract_operation op5;
-        op5.contract_id = 3;
-        op5.contract_signer = "bob";
-
-        signed_transaction tx5;
-        tx5.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx5.operations.push_back(op5);
-        tx5.sign(priv_key, db.get_chain_id());
-        tx5.validate();
-        BOOST_CHECK_THROW(db.push_transaction(tx5, 0), fc::assert_exception);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
+//BOOST_AUTO_TEST_CASE(not_create_active_contract_with_duplicated_hash_test)
+//{
+//    try
+//    {
+//        BOOST_TEST_MESSAGE("Testing: not_create_active_contract_with_duplicated_hash_test");
+//
+//        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+//        generate_block();
+//
+//        auto& research_group_service = db.obtain_service<dbs_research_group>();
+//        auto& alice_rg = research_group_service.get_research_group_by_permlink("alice");
+//        auto& bob_rg = research_group_service.get_research_group_by_permlink("bob");
+//        private_key_type alice_priv_key = generate_private_key("alice");
+//        private_key_type bob_priv_key = generate_private_key("bob");
+//
+//        create_nda_contract_operation op;
+//        std::set<account_name_type> disclosing_party;
+//        disclosing_party.insert("bob");
+//
+//        op.contract_creator = "alice";
+//        op.party_a = "alice";
+//        op.party_a_research_group_id = alice_rg.id._id;
+//        op.party_b = "bob";
+//        op.party_b_research_group_id = bob_rg.id._id;
+//        op.disclosing_party = disclosing_party;
+//        op.title = "contract title";
+//        op.contract_hash = "duplicated hash";
+//        op.start_date = fc::time_point_sec(12312313);
+//        op.end_date = fc::time_point_sec(12312314);
+//
+//
+//        signed_transaction tx;
+//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx.operations.push_back(op);
+//        tx.sign(alice_priv_key, db.get_chain_id());
+//        tx.validate();
+//        db.push_transaction(tx, 0);
+//
+//        create_nda_contract_operation op2;
+//        std::set<account_name_type> disclosing_party_2;
+//        disclosing_party_2.insert("bob");
+//
+//        op.contract_creator = "alice";
+//        op2.party_a = "alice";
+//        op2.party_a_research_group_id = alice_rg.id._id;
+//        op2.party_b = "bob";
+//        op2.party_b_research_group_id = bob_rg.id._id;
+//        op2.disclosing_party = disclosing_party_2;
+//        op2.title = "contract title";
+//        op2.contract_hash = "duplicated hash";
+//        op2.start_date = fc::time_point_sec(12312315);
+//        op2.end_date = fc::time_point_sec(12312316);
+//
+//        signed_transaction tx2;
+//        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx2.operations.push_back(op2);
+//        tx2.sign(alice_priv_key, db.get_chain_id());
+//        tx2.validate();
+//        BOOST_CHECK_THROW(db.push_transaction(tx2, 0), fc::assert_exception);
+//
+//        sign_nda_contract_operation op3;
+//        op3.contract_id = 0;
+//        op3.contract_signer = "bob";
+//
+//        signed_transaction tx3;
+//        tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx3.operations.push_back(op3);
+//        tx3.sign(bob_priv_key, db.get_chain_id());
+//        tx3.validate();
+//        db.push_transaction(tx3, 0);
+//
+//        create_nda_contract_operation op4;
+//        std::set<account_name_type> disclosing_party_4;
+//        disclosing_party_3.insert("bob");
+//
+//        op.contract_creator = "alice";
+//        op4.party_a = "alice";
+//        op4.party_a_research_group_id = alice_rg.id._id;
+//        op4.party_b = "bob";
+//        op4.party_b_research_group_id = bob_rg.id._id;
+//        op4.disclosing_party = disclosing_party_4;
+//        op4.title = "contract title";
+//        op4.contract_hash = "duplicated hash";
+//        op4.start_date = fc::time_point_sec(12312415);
+//        op4.end_date = fc::time_point_sec(12312416);
+//
+//        signed_transaction tx4;
+//        tx4.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx4.operations.push_back(op4);
+//        tx4.sign(alice_priv_key, db.get_chain_id());
+//        tx4.validate();
+//        BOOST_CHECK_THROW(db.push_transaction(tx4, 0), fc::assert_exception);
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
+//
+//BOOST_AUTO_TEST_CASE(approve_contract_test)
+//{
+//    try
+//    {
+//        BOOST_TEST_MESSAGE("Testing: approve_contract");
+//
+//        ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+//        generate_block();
+//
+//        auto& research_group_service = db.obtain_service<dbs_research_group>();
+//        auto& alice_rg = research_group_service.get_research_group_by_permlink("alice");
+//        auto& bob_rg = research_group_service.get_research_group_by_permlink("bob");
+//
+//        auto& contract = db.create<nda_contract_object>([&](nda_contract_object& c_o) {
+//            c_o.id = 0;
+//            c_o.party_a = "alice";
+//            c_o.party_a_research_group_id = alice_rg.id._id;
+//            c_o.party_b = "bob";
+//            c_o.party_b_research_group_id = bob_rg.id._id;
+//            c_o.contract_hash = "test contract";
+//            c_o.status = nda_contract_status::nda_contract_pending;
+//            c_o.created_at = db.head_block_time();
+//        });
+//
+//        sign_nda_contract_operation op;
+//        op.contract_id = 0;
+//        op.contract_signer = "bob";
+//
+//        private_key_type priv_key = generate_private_key("bob");
+//
+//        signed_transaction tx;
+//        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx.operations.push_back(op);
+//        tx.sign(priv_key, db.get_chain_id());
+//        tx.validate();
+//        db.push_transaction(tx, 0);
+//
+//        BOOST_CHECK(contract.id == 0);
+//        BOOST_CHECK(contract.party_a == "alice");
+//        BOOST_CHECK(contract.party_a_research_group_id == alice_rg.id._id);
+//        BOOST_CHECK(contract.party_b == "bob");
+//        BOOST_CHECK(contract.party_b_research_group_id == bob_rg.id._id);
+//        BOOST_CHECK(contract.status == nda_contract_status::nda_contract_signed);
+//        BOOST_CHECK(contract.created_at == db.head_block_time());
+//
+//        auto& contract2 = db.create<nda_contract_object>([&](nda_contract_object& c_o) {
+//            c_o.id = 1;
+//            c_o.party_a = "alice";
+//            c_o.party_a_research_group_id = alice_rg.id._id;
+//            c_o.party_b = "bob";
+//            c_o.party_b_research_group_id = bob_rg.id._id;
+//            c_o.contract_hash = "test contract 2";
+//            c_o.status = nda_contract_status::nda_contract_declined;
+//            c_o.created_at = db.head_block_time();
+//        });
+//
+//        sign_nda_contract_operation op2;
+//        op2.contract_id = 1;
+//        op2.contract_signer = "bob";
+//
+//        signed_transaction tx2;
+//        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx2.operations.push_back(op2);
+//        tx2.sign(priv_key, db.get_chain_id());
+//        tx2.validate();
+//        BOOST_CHECK_THROW(db.push_transaction(tx2, 0), fc::assert_exception);
+//
+//        auto& contract3 = db.create<nda_contract_object>([&](nda_contract_object& c_o) {
+//            c_o.id = 2;
+//            c_o.party_a = "alice";
+//            c_o.party_a_research_group_id = alice_rg.id._id;
+//            c_o.party_b = "bob";
+//            c_o.party_b_research_group_id = bob_rg.id._id;
+//            c_o.contract_hash = "test contract 3";
+//            c_o.status = nda_contract_status::nda_contract_expired;
+//            c_o.created_at = db.head_block_time();
+//        });
+//
+//        sign_nda_contract_operation op3;
+//        op3.contract_id = 2;
+//        op3.contract_signer = "bob";
+//
+//        signed_transaction tx3;
+//        tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx3.operations.push_back(op3);
+//        tx3.sign(priv_key, db.get_chain_id());
+//        tx3.validate();
+//        BOOST_CHECK_THROW(db.push_transaction(tx3, 0), fc::assert_exception);
+//
+//        auto& contract4 = db.create<nda_contract_object>([&](nda_contract_object& c_o) {
+//            c_o.id = 3;
+//            c_o.party_a = "alice";
+//            c_o.party_a_research_group_id = alice_rg.id._id;
+//            c_o.party_b = "bob";
+//            c_o.party_b_research_group_id = bob_rg.id._id;
+//            c_o.contract_hash = "test contract 4";
+//            c_o.status = nda_contract_status::nda_contract_signed;
+//            c_o.created_at = db.head_block_time();
+//        });
+//
+//        sign_nda_contract_operation op4;
+//        op4.contract_id = 3;
+//        op4.contract_signer = "bob";
+//
+//        signed_transaction tx4;
+//        tx4.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx4.operations.push_back(op4);
+//        tx4.sign(priv_key, db.get_chain_id());
+//        tx4.validate();
+//        BOOST_CHECK_THROW(db.push_transaction(tx4, 0), fc::assert_exception);
+//
+//        auto& contract5 = db.create<nda_contract_object>([&](nda_contract_object& c_o) {
+//            c_o.id = 4;
+//            c_o.party_a = "alice";
+//            c_o.party_a_research_group_id = alice_rg.id._id;
+//            c_o.party_b = "bob";
+//            c_o.party_b_research_group_id = bob_rg.id._id;
+//            c_o.contract_hash = "test contract 5";
+//            c_o.status = nda_contract_status::nda_contract_pending;
+//            c_o.created_at = db.head_block_time();
+//        });
+//
+//        sign_nda_contract_operation op5;
+//        op5.contract_id = 3;
+//        op5.contract_signer = "bob";
+//
+//        signed_transaction tx5;
+//        tx5.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+//        tx5.operations.push_back(op5);
+//        tx5.sign(priv_key, db.get_chain_id());
+//        tx5.validate();
+//        BOOST_CHECK_THROW(db.push_transaction(tx5, 0), fc::assert_exception);
+//
+//    }
+//    FC_LOG_AND_RETHROW()
+//}
 
 BOOST_AUTO_TEST_CASE(decline_contract_test)
 {
@@ -5151,16 +5074,23 @@ BOOST_AUTO_TEST_CASE(request_contract_file_key_test)
             c_o.id = 0;
             c_o.party_a = "alice";
             c_o.party_b = "bob";
-            c_o.contract_hash = "test contract";
-            c_o.status = nda_contract_status::nda_contract_pending;
+            c_o.contract_hash = "f6fd3b373dfa10280cee23224d0a34cdb02869ae15ceb6bd306861fc482bcc2e";
+            c_o.status = nda_contract_status::nda_contract_signed;
             c_o.created_at = db.head_block_time();
+        });
+
+        auto& rgt = db.create<research_group_token_object>([&](research_group_token_object& rgt_o) {
+            rgt_o.id = 50;
+            rgt_o.research_group_id = 0;
+            rgt_o.amount = 1;
+            rgt_o.owner = "bob";
         });
 
         create_request_by_nda_contract_operation op;
         op.contract_id = 0;
         op.requester = "bob";
-        op.encrypted_payload_hash = "test";
-        op.encrypted_payload_iv = "test";
+        op.encrypted_payload_hash = "f6fd3b373dfa10280cee23224d0a34cdb02869ae15ceb6bd306861fc482bcc2e";
+        op.encrypted_payload_iv = "6eb5eaaed5d54b2f75e475e5b5f6b52e";
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -5176,28 +5106,30 @@ BOOST_AUTO_TEST_CASE(request_contract_file_key_test)
         BOOST_CHECK(request.id == 0);
         BOOST_CHECK(request.contract_id == 0);
         BOOST_CHECK(request.requester == "bob");
-        BOOST_CHECK(request.encrypted_payload_hash == "test");
-        BOOST_CHECK(request.encrypted_payload_iv == "test");
+        BOOST_CHECK(request.encrypted_payload_hash == "f6fd3b373dfa10280cee23224d0a34cdb02869ae15ceb6bd306861fc482bcc2e");
+        BOOST_CHECK(request.encrypted_payload_iv == "6eb5eaaed5d54b2f75e475e5b5f6b52e");
         BOOST_CHECK(request.encrypted_payload_encryption_key == "");
     }
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(grant_access_to_contract_file_test)
+BOOST_AUTO_TEST_CASE(fulfill_request_by_nda_contract)
 {
     try
     {
-        BOOST_TEST_MESSAGE("Testing: grant_access_to_contract_file");
+        BOOST_TEST_MESSAGE("Testing: fulfill_request_by_nda_contract");
 
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob));
+        generate_block();
+        db.set_hardfork(DEIP_NUM_HARDFORKS);
         generate_block();
 
         auto& contract = db.create<nda_contract_object>([&](nda_contract_object& c_o) {
             c_o.id = 0;
-            c_o.party_a = "alice";
-            c_o.party_b = "bob";
+            c_o.party_a = "bob";
+            c_o.party_b = "alice";
             c_o.contract_hash = "test contract";
-            c_o.status = nda_contract_status::nda_contract_pending;
+            c_o.status = nda_contract_status::nda_contract_signed;
             c_o.created_at = db.head_block_time();
         });
 
@@ -5210,10 +5142,37 @@ BOOST_AUTO_TEST_CASE(grant_access_to_contract_file_test)
             fc::from_string(cfa_o.encrypted_payload_encryption_key, "");
         });
 
+        auto& rgt = db.create<research_group_token_object>([&](research_group_token_object& rgt_o) {
+            rgt_o.id = 50;
+            rgt_o.research_group_id = 0;
+            rgt_o.amount = 1;
+            rgt_o.owner = "bob";
+        });
+
+        auto& subscription = db.create<subscription_object>([&](subscription_object& s_o) {
+            s_o.id = 0;
+            s_o.research_group_id = 0;
+            s_o.current_file_certificate_quota_units = 10;
+            s_o.current_nda_protected_file_quota_units = 10;
+            s_o.current_nda_contract_quota_units = 0;
+            s_o.external_plan_id = "2";
+            s_o.file_certificate_quota = 100;
+            s_o.nda_contract_quota = 100;
+            s_o.nda_protected_file_quota = 100;
+            s_o.extra_file_certificate_quota_units = 1;
+            s_o.extra_nda_protected_file_quota_units = 2;
+            s_o.extra_nda_contract_quota_units = 3;
+            s_o.period = billing_period::month;
+            s_o.first_billing_date = fc::time_point_sec(1548864000);
+            s_o.billing_date = fc::time_point_sec(1548864000);
+            s_o.month_subscriptions_count = 0;
+        });
+
         fulfill_request_by_nda_contract_operation op;
         op.request_id = 0;
         op.grantor = "bob";
         op.encrypted_payload_encryption_key = "key";
+        op.proof_of_encrypted_payload_encryption_key = "proof";
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -5230,9 +5189,254 @@ BOOST_AUTO_TEST_CASE(grant_access_to_contract_file_test)
         BOOST_CHECK(request.encrypted_payload_hash == "test");
         BOOST_CHECK(request.encrypted_payload_iv == "test");
         BOOST_CHECK(request.encrypted_payload_encryption_key == "key");
+
+        BOOST_CHECK(subscription.current_nda_protected_file_quota_units == 9);
     }
     FC_LOG_AND_RETHROW()
 }
+
+BOOST_AUTO_TEST_CASE(create_subscription_test)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: create_subscription");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(regacc));
+        generate_block();
+
+        db.create<research_group_object>([&](research_group_object& d) {
+            d.id = 41;
+            d.name = "41";
+            d.permlink = "41";
+            d.description = "test";
+        });
+
+        db.create<research_group_token_object>([&](research_group_token_object& d) {
+            d.id = 41;
+            d.research_group_id = 41;
+            d.amount = 55 * DEIP_1_PERCENT;
+            d.owner = "alice";
+        });
+
+        create_subscription_operation op;
+        op.owner = "alice";
+        op.agent = "regacc";
+        op.research_group_id = 41;
+        op.json_data = "{\"external_id\":\"3\",\"external_plan_id\":\"3\",\"file_certificate_quota\":100,\"nda_protected_file_quota\":\"100\",\"nda_contract_quota\":\"100\",\"period\":\"1\",\"billing_date\":\"2019-10-18T15:02:31\"}";
+
+        private_key_type priv_key = generate_private_key("regacc");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& subscription = db.get<subscription_object>(0);
+
+        BOOST_CHECK(subscription.id == 0);
+        BOOST_CHECK(subscription.research_group_id == 41);
+        BOOST_CHECK(subscription.external_plan_id == "3");
+        BOOST_CHECK(subscription.file_certificate_quota == 100);
+        BOOST_CHECK(subscription.current_file_certificate_quota_units == 100);
+        BOOST_CHECK(subscription.nda_protected_file_quota == 100);
+        BOOST_CHECK(subscription.current_nda_protected_file_quota_units == 100);
+        BOOST_CHECK(subscription.nda_contract_quota == 100);
+        BOOST_CHECK(subscription.current_nda_contract_quota_units == 100);
+
+        BOOST_CHECK(subscription.period == billing_period::month);
+
+        create_subscription_operation op2;
+        op2.owner = "alice";
+        op2.agent = "regacc";
+        op2.research_group_id = nullptr;
+        op2.json_data = "{\"external_id\":\"3\",\"external_plan_id\":\"3\",\"file_certificate_quota\":100,\"nda_protected_file_quota\":\"100\",\"nda_contract_quota\":\"100\",\"period\":\"1\",\"billing_date\":\"2019-10-18T15:02:31\"}";
+
+        signed_transaction tx2;
+        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2.operations.push_back(op2);
+        tx2.sign(priv_key, db.get_chain_id());
+        tx2.validate();
+        db.push_transaction(tx2, 0);
+
+        auto& alice_subscription = db.get<subscription_object>(1);
+        auto& research_group_service = db.obtain_service<dbs_research_group>();
+
+        auto& alice_rg = research_group_service.get_research_group_by_permlink("alice");
+
+        BOOST_CHECK(alice_subscription.id == 1);
+        BOOST_CHECK(alice_subscription.research_group_id == alice_rg.id);
+        BOOST_CHECK(alice_subscription.external_id == "3");
+        BOOST_CHECK(alice_subscription.external_plan_id == "3");
+        BOOST_CHECK(alice_subscription.file_certificate_quota == 100);
+        BOOST_CHECK(alice_subscription.current_file_certificate_quota_units == 100);
+        BOOST_CHECK(alice_subscription.nda_protected_file_quota == 100);
+        BOOST_CHECK(alice_subscription.current_nda_protected_file_quota_units == 100);
+        BOOST_CHECK(alice_subscription.nda_contract_quota == 100);
+        BOOST_CHECK(alice_subscription.current_nda_contract_quota_units == 100);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(adjust_subscription_extra_quota)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: adjust_additional_subscription_limits");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(regacc));
+        generate_block();
+
+        db.create<research_group_object>([&](research_group_object& rg_o) {
+            rg_o.id = 41;
+            rg_o.name = "41";
+            rg_o.permlink = "41";
+            rg_o.description = "test";
+        });
+
+        db.create<research_group_token_object>([&](research_group_token_object& rgt_o) {
+            rgt_o.id = 41;
+            rgt_o.research_group_id = 41;
+            rgt_o.amount = 55 * DEIP_1_PERCENT;
+            rgt_o.owner = "alice";
+        });
+
+        db.create<subscription_object>([&](subscription_object& s_o) {
+            s_o.id = 0;
+            s_o.research_group_id = 41;
+            s_o.owner = "alice";
+            s_o.current_file_certificate_quota_units = 10;
+            s_o.current_nda_protected_file_quota_units = 10;
+            s_o.current_nda_contract_quota_units = 10;
+            s_o.external_plan_id = "2";
+            s_o.file_certificate_quota = 100;
+            s_o.nda_protected_file_quota = 100;
+            s_o.nda_contract_quota = 100;
+            s_o.extra_file_certificate_quota_units = 1;
+            s_o.extra_nda_protected_file_quota_units = 2;
+            s_o.extra_nda_contract_quota_units = 3;
+            s_o.period = billing_period::month;
+            s_o.first_billing_date = fc::time_point_sec(1548864000);
+            s_o.billing_date = fc::time_point_sec(1548864000);
+            s_o.month_subscriptions_count = 0;
+        });
+
+        adjust_subscription_extra_quota_operation op;
+        op.owner = "alice";
+        op.agent = "regacc";
+        op.subscription_id = 0;
+        op.json_data = "{\"extra_file_certificate_quota_units\":100,\"extra_nda_protected_file_quota_units\":-105,\"extra_nda_contract_quota_units\":0}";
+
+        private_key_type priv_key = generate_private_key("regacc");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& subscription = db.get<subscription_object>(0);
+
+        BOOST_CHECK(subscription.id == 0);
+        BOOST_CHECK(subscription.research_group_id == 41);
+        BOOST_CHECK(subscription.external_plan_id == "2");
+        BOOST_CHECK(subscription.file_certificate_quota == 100);
+        BOOST_CHECK(subscription.current_file_certificate_quota_units == 10);
+        BOOST_CHECK(subscription.nda_protected_file_quota == 100);
+        BOOST_CHECK(subscription.current_nda_protected_file_quota_units == 10);
+        BOOST_CHECK(subscription.nda_contract_quota == 100);
+        BOOST_CHECK(subscription.current_nda_contract_quota_units == 10);
+        BOOST_CHECK(subscription.extra_file_certificate_quota_units == 101);
+        BOOST_CHECK(subscription.extra_nda_protected_file_quota_units == 0);
+        BOOST_CHECK(subscription.extra_nda_contract_quota_units == 3);
+
+        BOOST_CHECK(subscription.period == billing_period::month);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(update_subscription)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: update_subscription");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(regacc));
+        generate_block();
+
+        db.create<research_group_object>([&](research_group_object& rg_o) {
+            rg_o.id = 41;
+            rg_o.name = "41";
+            rg_o.permlink = "41";
+            rg_o.description = "test";
+        });
+
+        db.create<research_group_token_object>([&](research_group_token_object& rgt_o) {
+            rgt_o.id = 41;
+            rgt_o.research_group_id = 41;
+            rgt_o.amount = 55 * DEIP_1_PERCENT;
+            rgt_o.owner = "alice";
+        });
+
+        db.create<subscription_object>([&](subscription_object& s_o) {
+            s_o.id = 0;
+            s_o.research_group_id = 41;
+            s_o.owner = "alice";
+            s_o.current_file_certificate_quota_units = 10;
+            s_o.current_nda_protected_file_quota_units = 10;
+            s_o.current_nda_contract_quota_units = 10;
+            s_o.external_plan_id = "2";
+            s_o.file_certificate_quota = 100;
+            s_o.nda_protected_file_quota = 100;
+            s_o.nda_contract_quota = 100;
+            s_o.extra_file_certificate_quota_units = 1;
+            s_o.extra_nda_protected_file_quota_units = 2;
+            s_o.extra_nda_contract_quota_units = 3;
+            s_o.period = billing_period::month;
+            s_o.first_billing_date = fc::time_point_sec(1548864000);
+            s_o.billing_date = fc::time_point_sec(1548864000);
+            s_o.month_subscriptions_count = 0;
+        });
+
+        update_subscription_operation op;
+        op.owner = "alice";
+        op.agent = "regacc";
+        op.subscription_id = 0;
+        op.json_data = "{\"external_plan_id\":\"4\",\"file_certificate_quota\":1000,\"nda_protected_file_quota\":\"1000\",\"nda_contract_quota\":\"1000\",\"period\":\"1\",\"billing_date\":\"2019-10-29T15:02:31\"}";
+
+        private_key_type priv_key = generate_private_key("regacc");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& subscription = db.get<subscription_object>(0);
+
+        BOOST_CHECK(subscription.id == 0);
+        BOOST_CHECK(subscription.research_group_id == 41);
+        BOOST_CHECK(subscription.external_plan_id == "4");
+        BOOST_CHECK(subscription.file_certificate_quota == 1000);
+        BOOST_CHECK(subscription.current_file_certificate_quota_units == 10);
+        BOOST_CHECK(subscription.nda_protected_file_quota == 1000);
+        BOOST_CHECK(subscription.current_nda_protected_file_quota_units == 10);
+        BOOST_CHECK(subscription.nda_contract_quota == 1000);
+        BOOST_CHECK(subscription.current_nda_contract_quota_units == 10);
+        BOOST_CHECK(subscription.extra_file_certificate_quota_units == 1);
+        BOOST_CHECK(subscription.extra_nda_protected_file_quota_units == 2);
+        BOOST_CHECK(subscription.extra_nda_contract_quota_units == 3);
+
+        BOOST_CHECK(subscription.period == billing_period::month);
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -1,6 +1,6 @@
 #ifndef DEIP_HARDFORK_0_1
 #define DEIP_HARDFORK_0_1 1
-// 4/25/2016 17:30:00 GMT
-#define DEIP_HARDFORK_0_1_TIME 1461605400
+
+#define DEIP_HARDFORK_0_1_TIME 1577836800 // GMT: Wednesday, January 1, 2020 12:00:00 AM
 #define DEIP_HARDFORK_0_1_VERSION hardfork_version( 0, 1 )
 #endif

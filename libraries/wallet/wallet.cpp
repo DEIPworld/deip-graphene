@@ -2961,6 +2961,74 @@ annotated_signed_transaction wallet_api::fulfill_request_by_nda_contract(const s
     return my->sign_transaction(tx, broadcast);
 }
 
+annotated_signed_transaction wallet_api::create_subscription(const std::string& owner,
+                                                             const std::string& agent,
+                                                             const optional<int64_t> research_group_id,
+                                                             const std::string& json_data,
+                                                             const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    create_subscription_operation op;
+
+    op.owner = owner;
+    op.agent = agent;
+    if (research_group_id.valid()) {
+        op.research_group_id = *research_group_id;
+    }
+    op.json_data = json_data;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::adjust_subscription_extra_quota(const std::string& owner,
+                                                                         const std::string& agent,
+                                                                         const int64_t subscription_id,
+                                                                         const std::string& json_data,
+                                                                         const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    adjust_subscription_extra_quota_operation op;
+
+    op.owner = owner;
+    op.agent = agent;
+    op.subscription_id = subscription_id;
+    op.json_data = json_data;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::update_subscription(const std::string& owner,
+                                                             const std::string& agent,
+                                                             const int64_t subscription_id,
+                                                             const std::string& json_data,
+                                                             const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    update_subscription_operation op;
+
+    op.owner = owner;
+    op.agent = agent;
+    op.subscription_id = subscription_id;
+    op.json_data = json_data;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
 namespace utils {
 
 
