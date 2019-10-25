@@ -48,4 +48,4 @@ FC_REFLECT( deip::chain::hardfork_property_object,
    (next_hardfork)(next_hardfork_time) )
 CHAINBASE_SET_INDEX_TYPE( deip::chain::hardfork_property_object, deip::chain::hardfork_property_index )
 
-#define DEIP_NUM_HARDFORKS 19
+#define DEIP_NUM_HARDFORKS 1

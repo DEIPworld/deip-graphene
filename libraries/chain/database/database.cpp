@@ -164,7 +164,8 @@ void database::open(const fc::path& data_dir,
                 undo_all();
                 FC_ASSERT(revision() == head_block_num(), "Chainbase revision does not match head block num",
                           ("rev", revision())("head_block", head_block_num()));
-                validate_invariants();
+                // TODO: Fix this !
+                // validate_invariants();
             });
 
             if (head_block_num())
@@ -2109,7 +2110,7 @@ void database::process_header_extensions(const signed_block& next_block)
         {
             auto reported_version = itr->get<version>();
             const auto& signing_witness = get_witness(next_block.witness);
-            // idump( (next_block.witness)(signing_witness.running_version)(reported_version) );
+            idump( (next_block.witness)(signing_witness.running_version)(reported_version) );
 
             if (reported_version != signing_witness.running_version)
             {
@@ -2121,7 +2122,7 @@ void database::process_header_extensions(const signed_block& next_block)
         {
             auto hfv = itr->get<hardfork_version_vote>();
             const auto& signing_witness = get_witness(next_block.witness);
-            // idump( (next_block.witness)(signing_witness.running_version)(hfv) );
+            idump( (next_block.witness)(signing_witness.running_version)(hfv) );
 
             if (hfv.hf_version != signing_witness.hardfork_version_vote
                 || hfv.hf_time != signing_witness.hardfork_time_vote)
@@ -2524,9 +2525,9 @@ void database::init_hardforks(time_point_sec genesis_time)
 
     // DEIP: structure to initialize hardofrks
 
-    // FC_ASSERT( DEIP_HARDFORK_0_1 == 1, "Invalid hardfork configuration" );
-    //_hardfork_times[ DEIP_HARDFORK_0_1 ] = fc::time_point_sec( DEIP_HARDFORK_0_1_TIME );
-    //_hardfork_versions[ DEIP_HARDFORK_0_1 ] = DEIP_HARDFORK_0_1_VERSION;
+    FC_ASSERT( DEIP_HARDFORK_0_1 == 1, "Invalid hardfork configuration" );
+    _hardfork_times[ DEIP_HARDFORK_0_1 ] = fc::time_point_sec( DEIP_HARDFORK_0_1_TIME );
+    _hardfork_versions[ DEIP_HARDFORK_0_1 ] = DEIP_HARDFORK_0_1_VERSION;
 
     const auto& hardforks = get_hardfork_property_object();
     FC_ASSERT(hardforks.last_hardfork <= DEIP_NUM_HARDFORKS, "Chain knows of more hardforks than configuration",
@@ -2585,10 +2586,52 @@ void database::apply_hardfork(uint32_t hardfork)
 
     switch (hardfork)
     {
-    case DEIP_HARDFORK_0_1:
-        break;
-    default:
-        break;
+        case DEIP_HARDFORK_0_1: {
+
+            #ifdef IS_TEST_NET
+                const auto& w_idx = get_index<witness_index>().indices().get<by_name>();
+                auto w_itr = w_idx.begin();
+                while (w_itr != w_idx.end())
+                {
+                    if (w_itr->owner != DEIP_HARDFORK_0_1_ACTIVE_WITNESS)
+                    {
+                        remove(*(w_itr++));
+                    }
+                    else
+                    {
+                        ++w_itr;
+                    }
+                }
+
+                dbs_account& account_service = obtain_service<dbs_account>();
+                const auto& a_idx = get_index<account_index>().indices().get<by_name>();
+                for (auto a_itr = a_idx.begin(); a_itr != a_idx.end(); a_itr++) 
+                {
+                    const account_object& a = *a_itr;
+                    account_service.clear_witness_votes(a);
+                }
+
+                const witness_schedule_object& wso = get_witness_schedule_object();
+                modify(wso, [&](witness_schedule_object& _wso) {
+                    _wso.current_shuffled_witnesses[0] = DEIP_HARDFORK_0_1_ACTIVE_WITNESS;
+                    _wso.num_scheduled_witnesses = 1;
+                    _wso.witness_pay_normalization_factor = _wso.top20_weight * 1 + _wso.timeshare_weight * 0;
+                    _wso.next_shuffle_block_num = head_block_num() + _wso.num_scheduled_witnesses;
+                });
+
+                _reset_virtual_schedule_time();
+                _update_median_witness_props();
+
+                const witness_object& wit = get_witness(DEIP_HARDFORK_0_1_ACTIVE_WITNESS);
+                modify(wit, [&](witness_object& wobj) {
+                    wobj.votes = share_type(0);
+                });
+            #endif
+
+            break;
+        }
+        default:
+            break;
     }
 
     modify(get_hardfork_property_object(), [&](hardfork_property_object& hfp) {

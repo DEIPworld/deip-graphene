@@ -8,7 +8,7 @@
 
 #define DAYS_TO_SECONDS(X)                     (60*60*24*X)
 
-#define DEIP_BLOCKCHAIN_VERSION              ( version(0, 0, 1) )
+#define DEIP_BLOCKCHAIN_VERSION              ( version(0, 1, 0) )
 #define DEIP_BLOCKCHAIN_HARDFORK_VERSION     ( hardfork_version( DEIP_BLOCKCHAIN_VERSION ) )
 
 #define DEIP_ADDRESS_PREFIX                  "DEIP"
@@ -36,6 +36,7 @@
 #define DEIP_LIMIT_GRANTS_PER_OWNER          5
 #define DEIP_LIMIT_GRANTS_LIST_SIZE          DEIP_LIMIT_GRANTS_PER_OWNER
 #define DEIP_LIMIT_API_GRANTS_LIST_SIZE      DEIP_LIMIT_GRANTS_PER_OWNER
+#define DEIP_HARDFORK_REQUIRED_WITNESSES      1
 
 #else // IS LIVE DEIP NETWORK
 #define DEIP_SYMBOL (uint64_t(3) | (uint64_t('D') << 8) | (uint64_t('E') << 16) | (uint64_t('I') << 24) | (uint64_t('P') << 32)) ///< DEIP with 3 digits of precision
@@ -60,6 +61,7 @@
 #define DEIP_LIMIT_GRANTS_PER_OWNER          1000
 #define DEIP_LIMIT_GRANTS_LIST_SIZE          1000
 #define DEIP_LIMIT_API_GRANTS_LIST_SIZE      1000
+#define DEIP_HARDFORK_REQUIRED_WITNESSES      17 // 17 of the 21 dpos witnesses (20 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 
 #endif
 
@@ -79,7 +81,6 @@
 #define DEIP_MAX_RUNNER_WITNESSES             1
 #define DEIP_MAX_WITNESSES                    (DEIP_MAX_VOTED_WITNESSES+DEIP_MAX_RUNNER_WITNESSES)
 #define DEIP_WITNESS_MISSED_BLOCKS_THRESHOLD  DEIP_BLOCKS_PER_DAY/2
-#define DEIP_HARDFORK_REQUIRED_WITNESSES      17 // 17 of the 21 dpos witnesses (20 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 
 #define DEIP_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
 #define DEIP_MAX_MEMO_SIZE                   2048

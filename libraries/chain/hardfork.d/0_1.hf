@@ -1,6 +1,10 @@
 #ifndef DEIP_HARDFORK_0_1
 #define DEIP_HARDFORK_0_1 1
-// 4/25/2016 17:30:00 GMT
-#define DEIP_HARDFORK_0_1_TIME 1461605400
+#define DEIP_HARDFORK_0_1_TIME 1572089400 // 2019-10-26T11:30:00+00:00
 #define DEIP_HARDFORK_0_1_VERSION hardfork_version( 0, 1 )
+
+#ifdef IS_TEST_NET
+#define DEIP_HARDFORK_0_1_ACTIVE_WITNESS "initdelegate"
+#endif
+
 #endif
