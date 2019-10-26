@@ -976,7 +976,7 @@ public:
     optional<fc::api<blockchain_history::account_history_api>> _remote_account_history_api;
     optional<fc::api<blockchain_history::blockchain_history_api>> _remote_blockchain_history_api;
 
-    uint32_t _tx_expiration_seconds = 30;
+    uint32_t _tx_expiration_seconds = 180;
 
     flat_map<string, operation> _prototype_ops;
 

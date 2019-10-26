@@ -40,6 +40,7 @@ public:
 
     virtual time_point_sec head_block_time() const = 0;
 
+    virtual bool has_hardfork(uint32_t hardfork) const = 0;
 
     virtual fc::time_point_sec get_genesis_time() const = 0;
 

@@ -152,7 +152,7 @@ void database::update_witness_schedule()
         auto majority_version = wso.majority_version;
 
         flat_map<version, uint32_t, std::greater<version>> witness_versions;
-        flat_map<std::tuple<hardfork_version, time_point_sec>, uint32_t> hardfork_version_votes;
+        flat_map<std::tuple<hardfork_version, time_point_sec>, uint32_t, std::greater<std::tuple<hardfork_version, time_point_sec>>> hardfork_version_votes;
 
         for (uint32_t i = 0; i < wso.num_scheduled_witnesses; i++)
         {

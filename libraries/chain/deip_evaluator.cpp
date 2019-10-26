@@ -98,6 +98,13 @@ void witness_update_evaluator::do_apply(const witness_update_operation& o)
     }
     else
     {
+        #ifdef IS_TEST_NET
+            if (_db.has_hardfork(DEIP_HARDFORK_0_1))
+            {
+                FC_ASSERT(false, "Adding new witnesses is disabled currently");
+            }
+        #endif
+        
         _db._temporary_public_impl().create<witness_object>([&](witness_object& w) {
             w.owner = o.owner;
             fc::from_string(w.url, o.url);
@@ -348,6 +355,13 @@ void account_witness_proxy_evaluator::do_apply(const account_witness_proxy_opera
 
 void account_witness_vote_evaluator::do_apply(const account_witness_vote_operation& o)
 {
+    #ifdef IS_TEST_NET
+        if (_db.has_hardfork(DEIP_HARDFORK_0_1))
+        {
+            FC_ASSERT(false, "Voting for witnesses is disabled currently");
+        }
+    #endif
+
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_witness& witness_service = _db.obtain_service<dbs_witness>();
 
