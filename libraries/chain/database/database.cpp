@@ -165,7 +165,7 @@ void database::open(const fc::path& data_dir,
                 FC_ASSERT(revision() == head_block_num(), "Chainbase revision does not match head block num",
                           ("rev", revision())("head_block", head_block_num()));
                 // TODO: Fix this !
-                // validate_invariants();
+                validate_invariants();
             });
 
             if (head_block_num())
@@ -1204,6 +1204,8 @@ void database::account_recovery_processing()
 
 void database::distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id)
 {
+    dbs_research& research_service = obtain_service<dbs_research>();
+    dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
     dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
     dbs_research_token& research_token_service = obtain_service<dbs_research_token>();
 
@@ -1231,6 +1233,8 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
         auto current = it++;
         remove(*current);
     }
+
+    research_group_service.increase_balance(research_service.get_research(research_token_sale.research_id).research_group_id, research_token_sale.total_amount);
 }
 
 void database::refund_research_tokens(const research_token_sale_id_type research_token_sale_id)
@@ -1932,13 +1936,13 @@ void database::apply_block(const signed_block& next_block, uint32_t skip)
 
         detail::with_skip_flags(*this, skip, [&]() { _apply_block(next_block); });
 
-        /*try
-        {
-        /// check invariants
-        if( is_producing() || !( skip & skip_validate_invariants ) )
-           validate_invariants();
-        }
-        FC_CAPTURE_AND_RETHROW( (next_block) );*/
+//        try
+//        {
+//        /// check invariants
+//        if( is_producing() || !( skip & skip_validate_invariants ) )
+//           validate_invariants();
+//        }
+//        FC_CAPTURE_AND_RETHROW( (next_block) );
 
         // fc::time_point end_time = fc::time_point::now();
         // fc::microseconds dt = end_time - begin_time;
@@ -2698,6 +2702,12 @@ void database::validate_invariants() const
         for (auto itr = vesting_balance_idx.begin(); itr != vesting_balance_idx.end(); ++itr)
         {
             total_supply += itr->balance;
+        }
+
+        const auto& research_token_sale_contribution_idx = get_index<research_token_sale_contribution_index, by_id>();
+        for (auto itr = research_token_sale_contribution_idx.begin(); itr != research_token_sale_contribution_idx.end(); ++itr)
+        {
+            total_supply += itr->amount;
         }
 
         total_supply +=  gpo.common_tokens_fund;
