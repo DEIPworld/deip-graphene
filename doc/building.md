@@ -219,7 +219,7 @@ e.g.:
 
 This will only build `deipd`.
 
-## To build with TEST_NET
+## To build with TESTNET
 
 
     export OPENSSL_ROOT_DIR=$(brew --prefix)/Cellar/openssl/1.0.2l/
