@@ -219,7 +219,7 @@ e.g.:
 
 This will only build `deipd`.
 
-## To build with TEST_NET
+## To build with TESTNET
 
 
     export OPENSSL_ROOT_DIR=$(brew --prefix)/Cellar/openssl/1.0.2l/
@@ -227,7 +227,7 @@ This will only build `deipd`.
     git submodule update --init --recursive
     mkdir build 
     cd build
-    cmake -DBOOST_ROOT="$BOOST_ROOT" -DCMAKE_BUILD_TYPE=Debug . -DBUILD_DEIP_TEST_NET=ON
+    cmake -DBOOST_ROOT="$BOOST_ROOT" -DCMAKE_BUILD_TYPE=Debug -DBUILD_DEIP_TESTNET=ON ..
     make -j$(sysctl -n hw.logicalcpu) chain_test
 
 ## Building on Other Platforms
