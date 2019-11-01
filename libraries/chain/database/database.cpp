@@ -1938,7 +1938,7 @@ void database::apply_block(const signed_block& next_block, uint32_t skip)
 
 //        try
 //        {
-//        /// check invariants
+////        /// check invariants
 //        if( is_producing() || !( skip & skip_validate_invariants ) )
 //           validate_invariants();
 //        }
@@ -2708,6 +2708,12 @@ void database::validate_invariants() const
         for (auto itr = research_token_sale_contribution_idx.begin(); itr != research_token_sale_contribution_idx.end(); ++itr)
         {
             total_supply += itr->amount;
+        }
+
+        const auto& grant_idx = get_index<grant_index, by_id>();
+        for (auto itr = grant_idx.begin(); itr != grant_idx.end(); ++itr)
+        {
+            total_supply += itr->balance;
         }
 
         total_supply +=  gpo.common_tokens_fund;
