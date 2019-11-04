@@ -178,14 +178,30 @@ dbs_research_token_sale::research_token_sale_contribution_refs_type
 }
 
 const research_token_sale_contribution_object&
-    dbs_research_token_sale::get_research_token_sale_contribution_by_account_name_and_research_token_sale_id(const account_name_type& owner,
+    dbs_research_token_sale::get_research_token_sale_contribution_by_contributor_and_research_token_sale_id(const account_name_type& owner,
                                                                                                              const research_token_sale_id_type& research_token_sale_id) const
 {
     try {
-        return db_impl().get<research_token_sale_contribution_object, by_owner_and_research_token_sale_id>(
-                boost::make_tuple(owner, research_token_sale_id));
+        return db_impl().get<research_token_sale_contribution_object, by_owner_and_research_token_sale_id>(boost::make_tuple(owner, research_token_sale_id));
     }
     FC_CAPTURE_AND_RETHROW((owner)(research_token_sale_id))
+}
+
+dbs_research_token_sale::research_token_sale_contribution_refs_type
+    dbs_research_token_sale::get_research_token_sale_contributions_by_contributor(const account_name_type& owner) const
+{
+    research_token_sale_contribution_refs_type ret;
+
+    auto it_pair = db_impl().get_index<research_token_sale_contribution_index>().indicies().get<by_owner>().equal_range(owner);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
 }
 
 } // namespace chain

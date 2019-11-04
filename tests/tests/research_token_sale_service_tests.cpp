@@ -345,20 +345,20 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_research_token_sale
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_account_name_and_research_token_sale_id)
+BOOST_AUTO_TEST_CASE(get_research_token_sale_contribution_by_contributor_and_research_token_sale_id)
 {
     try
     {
         create_research_token_sale_contributions();
 
-        auto& research_token_sale_contribution = data_service.get_research_token_sale_contribution_by_account_name_and_research_token_sale_id("bob", 1);
+        auto& research_token_sale_contribution = data_service.get_research_token_sale_contribution_by_contributor_and_research_token_sale_id("bob", 1);
 
         BOOST_CHECK(research_token_sale_contribution.owner == "bob");
         BOOST_CHECK(research_token_sale_contribution.amount == asset(200, DEIP_SYMBOL));
         BOOST_CHECK(research_token_sale_contribution.research_token_sale_id == 1);
 
-        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_account_name_and_research_token_sale_id("alex", 1), fc::exception);
-        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_account_name_and_research_token_sale_id("bob", 123), fc::exception);
+        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_contributor_and_research_token_sale_id("alex", 1), fc::exception);
+        BOOST_CHECK_THROW(data_service.get_research_token_sale_contribution_by_contributor_and_research_token_sale_id("bob", 123), fc::exception);
     }
     FC_LOG_AND_RETHROW()
 }

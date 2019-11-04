@@ -97,6 +97,7 @@ typedef multi_index_container<research_token_sale_object,
 
 struct by_research_token_sale_id;
 struct by_owner_and_research_token_sale_id;
+struct by_owner;
 
 typedef multi_index_container<research_token_sale_contribution_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -107,6 +108,10 @@ typedef multi_index_container<research_token_sale_contribution_object,
                         member<research_token_sale_contribution_object,
                                 research_token_sale_id_type,
                                 &research_token_sale_contribution_object::research_token_sale_id>>,
+                ordered_non_unique<tag<by_owner>,
+                        member<research_token_sale_contribution_object,
+                               account_name_type,
+                               &research_token_sale_contribution_object::owner>>,
                 ordered_unique<tag<by_owner_and_research_token_sale_id>,
                 composite_key<research_token_sale_contribution_object,
                         member<research_token_sale_contribution_object,

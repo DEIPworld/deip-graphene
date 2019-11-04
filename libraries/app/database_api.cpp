@@ -1443,13 +1443,27 @@ database_api::get_research_token_sale_contributions_by_research_token_sale_id(co
 }
 
 research_token_sale_contribution_api_obj
-database_api::get_research_token_sale_contribution_by_account_name_and_research_token_sale_id(const account_name_type owner,
-                                                                                              const research_token_sale_id_type research_token_sale_id) const
+database_api::get_research_token_sale_contribution_by_contributor_and_research_token_sale_id(const account_name_type owner, const research_token_sale_id_type research_token_sale_id) const
 {
     return my->_db.with_read_lock([&]() {
-        chain::dbs_research_token_sale& research_token_sale_service
-            = my->_db.obtain_service<chain::dbs_research_token_sale>();
-        return research_token_sale_service.get_research_token_sale_contribution_by_account_name_and_research_token_sale_id(owner, research_token_sale_id);
+        chain::dbs_research_token_sale& research_token_sale_service = my->_db.obtain_service<chain::dbs_research_token_sale>();
+        return research_token_sale_service.get_research_token_sale_contribution_by_contributor_and_research_token_sale_id(owner, research_token_sale_id);
+    });
+}
+
+vector<research_token_sale_contribution_api_obj>
+database_api::get_research_token_sale_contributions_by_contributor(const account_name_type owner) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_token_sale_contribution_api_obj> results;
+        chain::dbs_research_token_sale& research_token_sale_service = my->_db.obtain_service<chain::dbs_research_token_sale>();
+        auto research_token_sale_contributions = research_token_sale_service.get_research_token_sale_contributions_by_contributor(owner);
+
+        for (const chain::research_token_sale_contribution_object& research_token_sale_contribution : research_token_sale_contributions)
+        {
+            results.push_back(research_token_sale_contribution);
+        }
+        return results;
     });
 }
 
