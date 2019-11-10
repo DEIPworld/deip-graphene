@@ -29,7 +29,6 @@
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_expertise_stats.hpp>
-#include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_proposal.hpp>
 #include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
@@ -41,6 +40,9 @@
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_vote.hpp>
 #include <deip/chain/services/dbs_witness.hpp>
+#include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_grant_application.hpp>
+#include <deip/chain/services/dbs_grant_application_review.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1285,7 +1287,7 @@ void database::process_grants()
 {
     dbs_grant& grant_service = obtain_service<dbs_grant>();
     dbs_research& research_service = obtain_service<dbs_research>();
-    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
+    dbs_grant_application& grant_application_service = obtain_service<dbs_grant_application>();
 
     const auto& grants_idx = get_index<grant_index>().indices().get<by_end_time>();
     auto itr = grants_idx.begin();
@@ -1295,7 +1297,7 @@ void database::process_grants()
     {
         auto current_grant = itr++;
         auto& grant = *current_grant;
-        auto applications = research_content_service.get_applications_by_grant(grant.id);
+        auto applications = grant_application_service.get_grant_applications_by_grant(grant.id);
         if (applications.size() < grant.min_number_of_applications) {
             grant_service.delete_grant(grant);
             continue;
@@ -1310,9 +1312,9 @@ void database::process_grants()
         }
 
         for (auto& application_id : applications_to_delete)
-            research_content_service.delete_appication_by_id(application_id);
+            grant_application_service.delete_grant_appication_by_id(application_id);
 
-        if (research_content_service.get_applications_by_grant(grant.id).size() == 0)
+        if (grant_application_service.get_grant_applications_by_grant(grant.id).size() == 0)
         {
             grant_service.delete_grant(grant);
             continue;
@@ -1325,18 +1327,18 @@ void database::process_grants()
 void database::distribute_grant(const grant_object& grant)
 {
     dbs_grant& grant_service = obtain_service<dbs_grant>();
-    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
+    dbs_grant_application& grant_application_service = obtain_service<dbs_grant_application>();
     dbs_research_discipline_relation& rdr_service = obtain_service<dbs_research_discipline_relation>();
     dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
 
     asset used_grant = asset(0, DEIP_SYMBOL);
 
-    auto applications = research_content_service.get_applications_by_grant(grant.id);
+    auto applications = grant_application_service.get_grant_applications_by_grant(grant.id);
     std::multimap<share_type, research_id_type, std::greater<share_type>> researches_eci;
 
     for (auto& application_ref : applications) {
         const auto &application = application_ref.get();
-        const auto& rd_relation = rdr_service.get_research_discipline_relations_by_research_and_discipline(application.research_id, grant.target_discipline);
+        const auto& rd_relation = rdr_service.get_research_discipline_relation_by_research_and_discipline(application.research_id, grant.target_discipline);
         researches_eci.insert(std::make_pair(rd_relation.research_eci, rd_relation.research_id));
     }
 
@@ -1583,7 +1585,7 @@ asset database::reward_review_voters(const review_object &review,
     auto votes_wrapper = vote_service.get_review_votes_by_review_and_discipline(review.id, discipline_id);
 
     asset used_reward = asset(0, DEIP_SYMBOL);
-    share_type total_weight = review.weights_per_discipline.at(discipline_id);
+    share_type total_weight = review.expertise_tokens_amount_by_discipline.at(discipline_id);
 
     if (total_weight == 0) return asset(0, DEIP_SYMBOL);
 
@@ -1696,7 +1698,7 @@ asset database::allocate_rewards_to_reviews(const std::vector<review_object> &re
     share_type total_reviews_weight = share_type(0);
 
     for (uint32_t i = 0; i < reviews.size(); i++) {
-        total_reviews_weight += reviews.at(i).weights_per_discipline.at(discipline_id);
+        total_reviews_weight += reviews.at(i).expertise_tokens_amount_by_discipline.at(discipline_id);
     }
 
     if (total_reviews_weight == 0) return asset(0, DEIP_SYMBOL);
@@ -1704,7 +1706,7 @@ asset database::allocate_rewards_to_reviews(const std::vector<review_object> &re
     asset used_reward = asset(0, DEIP_SYMBOL);
 
     for (auto& review : reviews) {
-        auto weight_per_discipline = review.weights_per_discipline.at(discipline_id);
+        auto weight_per_discipline = review.expertise_tokens_amount_by_discipline.at(discipline_id);
 
         asset review_reward_share = util::calculate_share(reward, weight_per_discipline, total_reviews_weight);
 
@@ -1942,7 +1944,8 @@ void database::initialize_indexes()
     add_index<offer_research_tokens_index>();
     add_index<grant_index>();
     add_index<grant_application_index>();
-
+    add_index<grant_application_review_index>();
+    
     _plugin_index_signal();
 }
 
@@ -3009,47 +3012,6 @@ void database::process_content_activity_windows()
         });
     }
 }
-
-share_type database::calculate_review_weight_modifier(const review_id_type& review_id, const discipline_id_type& discipline_id)
-{
-    dbs_review& review_service = obtain_service<dbs_review>();
-    dbs_vote& vote_service = obtain_service<dbs_vote>();
-
-    auto& review = review_service.get(review_id);
-    auto content_reviews = review_service.get_research_content_reviews(review.research_content_id);
-
-    share_type total_expertise = 0;
-    share_type total_weight = 0;
-    std::map<review_id_type, share_type> weights_per_review;
-    for (auto review_wrapper : content_reviews) {
-        auto& content_review = review_wrapper.get();
-        total_expertise += content_review.expertise_amounts_used.at(discipline_id);
-
-        auto votes = vote_service.get_review_votes_by_review_and_discipline(content_review.id, discipline_id);
-        share_type votes_weight = share_type(0);
-
-        for (uint32_t i = 0; i < votes.size(); i++) {
-            auto& vote = votes.at(i).get();
-            votes_weight += vote.weight;
-        }
-
-        weights_per_review[content_review.id] = votes_weight;
-        total_weight += votes_weight;
-    }
-
-    if (content_reviews.size() == 0)
-        return 0;
-
-    share_type avg_expertise = total_expertise / content_reviews.size();
-    auto review_weight = weights_per_review[review.id];
-    auto review_used_expertise = review.expertise_amounts_used.at(discipline_id);
-    share_type coeff = 0;
-    if (total_weight != 0)
-        coeff = 10 * (1 - 1 / content_reviews.size()) * (review_weight / total_weight);
-
-    return 1 * (review_used_expertise / avg_expertise) + coeff;
-}
-
 
 } // namespace chain
 } // namespace deip

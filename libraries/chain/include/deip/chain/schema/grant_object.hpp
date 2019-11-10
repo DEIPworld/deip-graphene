@@ -5,6 +5,8 @@
 namespace deip {
 namespace chain {
 
+using deip::protocol::asset;
+
 class grant_object : public object<grant_object_type, grant_object>
 {
     grant_object() = delete;

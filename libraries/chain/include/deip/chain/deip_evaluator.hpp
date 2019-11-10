@@ -47,5 +47,6 @@ DEFINE_EVALUATOR(create_grant_application)
 DEFINE_EVALUATOR(make_review_for_application)
 DEFINE_EVALUATOR(approve_grant_application)
 DEFINE_EVALUATOR(reject_grant_application)
+
 }
 } // deip::chain

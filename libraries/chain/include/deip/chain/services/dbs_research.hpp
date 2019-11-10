@@ -42,7 +42,9 @@ public:
     
     void change_research_review_share_percent(const research_id_type& research_id, const uint16_t review_share_in_percent);
 
-    void calculate_eci(const research_id_type& research_id);
+    const std::map<discipline_id_type, share_type> get_eci_evaluation(const research_id_type& research_id) const;
+
+    const research_object& update_eci_evaluation(const research_id_type& research_id);
 };
 }
 }

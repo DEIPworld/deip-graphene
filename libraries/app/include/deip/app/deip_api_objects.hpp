@@ -25,6 +25,7 @@
 #include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/grant_application_object.hpp>
+#include <deip/chain/schema/grant_application_review_object.hpp>
 
 #include <deip/witness/witness_objects.hpp>
 
@@ -786,10 +787,8 @@ struct review_api_obj
     review_api_obj(const chain::review_object& r, const vector<discipline_api_obj>& disciplines)
             : id(r.id._id)
             , research_content_id(r.research_content_id._id)
-            , grant_application_id(r.grant_application_id._id)
             , content(fc::to_string(r.content))
             , is_positive(r.is_positive)
-            , is_grant_application(r.is_grant_application)
             , author(r.author)
             , created_at(r.created_at)
     {
@@ -798,9 +797,7 @@ struct review_api_obj
         for (const auto& d : disciplines) {
             auto& discipline_id = d.id;
 
-            this->weight_per_discipline.emplace(std::make_pair(discipline_id, r.weights_per_discipline.at(discipline_id).value));
-            this->evaluation_per_discipline.emplace(std::make_pair(discipline_id, r.get_evaluation(discipline_id).value));
-            this->expertise_amounts_used.emplace(std::make_pair(discipline_id, r.expertise_amounts_used.at(discipline_id).value));
+            this->expertise_tokens_amount_by_discipline.emplace(std::make_pair(discipline_id, r.expertise_tokens_amount_by_discipline.at(discipline_id).value));
         }
     }
 
@@ -811,17 +808,12 @@ struct review_api_obj
 
     int64_t id;
     int64_t research_content_id;
-    int64_t grant_application_id;
     string content;
     bool is_positive;
-    bool is_grant_application;
     account_name_type author;
     time_point_sec created_at;
     vector<discipline_api_obj> disciplines;
-
-    map<int64_t, int64_t> weight_per_discipline;
-    map<int64_t, int64_t> evaluation_per_discipline;
-    map<int64_t, int64_t> expertise_amounts_used;
+    map<int64_t, int64_t> expertise_tokens_amount_by_discipline;
 };
 
 struct research_token_api_obj
@@ -1091,12 +1083,37 @@ struct grant_application_api_obj
     int64_t grant_id;
     int64_t research_id;
     std::string application_hash;
-
     account_name_type creator;
-
     fc::time_point_sec created_at;
 
     grant_application_status status;
+};
+
+struct grant_application_review_api_obj
+{
+    grant_application_review_api_obj(const chain::grant_application_review_object& r, const vector<discipline_api_obj>& disciplines)
+            : id(r.id._id)
+            , grant_application_id(r.grant_application_id._id)
+            , content(fc::to_string(r.content))
+            , is_positive(r.is_positive)
+            , author(r.author)
+            , created_at(r.created_at)
+    {
+        this->disciplines = disciplines;
+    }
+
+    // because fc::variant require for temporary object
+    grant_application_review_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t grant_application_id;
+    string content;
+    bool is_positive;
+    account_name_type author;
+    time_point_sec created_at;
+    vector<discipline_api_obj> disciplines;
 };
 
 }; // namespace app
@@ -1334,16 +1351,12 @@ FC_REFLECT( deip::app::total_votes_api_obj,
 FC_REFLECT( deip::app::review_api_obj,
             (id)
             (research_content_id)
-            (grant_application_id)
             (content)
             (is_positive)
-            (is_grant_application)
             (author)
             (created_at)
             (disciplines)
-            (weight_per_discipline)
-            (evaluation_per_discipline)
-            (expertise_amounts_used)
+            (expertise_tokens_amount_by_discipline)
 )
 
 FC_REFLECT( deip::app::research_token_api_obj,
@@ -1450,6 +1463,16 @@ FC_REFLECT( deip::app::grant_application_api_obj,
             (created_at)
             (status)
 
+)
+
+FC_REFLECT( deip::app::grant_application_review_api_obj,
+            (id)
+            (grant_application_id)
+            (content)
+            (is_positive)
+            (author)
+            (created_at)
+            (disciplines)
 )
 
 // clang-format on
