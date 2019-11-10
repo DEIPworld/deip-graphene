@@ -1146,7 +1146,8 @@ public:
                                                                const std::string& name,
                                                                const std::string& permlink,
                                                                const std::string& description,
-                                                               const int64_t quorum_percent,
+                                                               const int64_t& quorum_percent,
+                                                               const bool& is_dao,
                                                                const bool broadcast);
 
     /**

@@ -25,14 +25,17 @@ protected:
     explicit dbs_research_group(database& db);
 
 public:
+    using research_group_refs_type = std::vector<std::reference_wrapper<const research_group_object>>;
 
     using research_group_token_refs_type = std::vector<std::reference_wrapper<const research_group_token_object>>;
     /** Get research group by id
      */
     const research_group_object& get_research_group(const research_group_id_type& id) const;
 
-
     const research_group_object& get_research_group_by_permlink(const fc::string& permlink) const;
+
+    research_group_refs_type get_all_research_groups(const bool& is_personal_need) const;
+
     /** Create research_group object.
      *
      * @returns research group object
@@ -42,7 +45,8 @@ public:
                                                        const string& description,
                                                        const share_type& quorum_percent,
                                                        const std::map<uint16_t, share_type>& proposal_quorums,
-                                                       const bool is_personal);
+                                                       const bool is_dao = true,
+                                                       const bool is_personal = false);
 
     void change_quorum(const uint32_t quorum_percent, const uint16_t proposal_type, const research_group_id_type& research_group_id);
 
