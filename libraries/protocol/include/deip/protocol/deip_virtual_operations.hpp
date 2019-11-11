@@ -61,6 +61,23 @@ struct producer_reward_operation : public virtual_operation
     account_name_type producer;
     share_type common_tokens_amount;
 };
+
+struct token_sale_contribution_to_history_operation : public virtual_operation
+{
+    token_sale_contribution_to_history_operation() {}
+    token_sale_contribution_to_history_operation(const int64_t& research_id, const int64_t& research_token_sale_id, const string& contributor, const asset& amount)
+        : research_id(research_id)
+        , research_token_sale_id(research_token_sale_id)
+        , contributor(contributor)
+        , amount(amount)
+    {
+    }
+
+    int64_t research_id;
+    int64_t research_token_sale_id;
+    account_name_type contributor;
+    asset amount;
+};
 }
 } // deip::protocol
 
@@ -68,3 +85,4 @@ FC_REFLECT(deip::protocol::fill_common_tokens_withdraw_operation, (from_account)
 FC_REFLECT(deip::protocol::shutdown_witness_operation, (owner))
 FC_REFLECT(deip::protocol::hardfork_operation, (hardfork_id))
 FC_REFLECT(deip::protocol::producer_reward_operation, (producer)(common_tokens_amount))
+FC_REFLECT(deip::protocol::token_sale_contribution_to_history_operation, (research_id)(research_token_sale_id)(contributor)(amount))

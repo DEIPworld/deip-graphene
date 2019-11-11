@@ -25,6 +25,8 @@ target_link_libraries( deip_plugins
 
    deip_witness
 
+   deip_tsc_history
+
 )
 
 # The `deip_mf_plugins` target has prototypes for querying plugins

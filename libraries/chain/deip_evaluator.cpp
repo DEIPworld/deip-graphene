@@ -801,6 +801,12 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
         research_token_sale_service.update_status(op.research_token_sale_id, token_sale_finished);
         _db.distribute_research_tokens(op.research_token_sale_id);
     }
+
+    _db.push_virtual_operation(token_sale_contribution_to_history_operation(research_token_sale.research_id._id,
+                                                                            research_token_sale.id._id,
+                                                                            op.owner,
+                                                                            amount_to_contribute));
+
 }
 
 void approve_research_group_invite_evaluator::do_apply(const approve_research_group_invite_operation& op)
