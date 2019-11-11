@@ -297,5 +297,13 @@ void adjust_account_balance_operation::validate() const
     FC_ASSERT(is_asset_type(delta, DEIP_SYMBOL), "Delta must be DEIP");
 }
 
+void request_review_operation::validate() const
+{
+    validate_account_name(requester);
+    FC_ASSERT(accounts_list.size() > 0, "Accounts list must be specified");
+    for (auto& account : accounts_list)
+        validate_account_name(account);
+}
+
 }
 } // deip::protocol

@@ -43,6 +43,7 @@ DEFINE_EVALUATOR(vote_for_expertise_allocation_proposal)
 DEFINE_EVALUATOR(accept_research_token_offer)
 DEFINE_EVALUATOR(reject_research_token_offer)
 DEFINE_EVALUATOR(adjust_account_balance)
+DEFINE_EVALUATOR(request_review)
 
 }
 } // deip::chain

@@ -753,6 +753,21 @@ struct adjust_account_balance_operation : public base_operation
     }
 };
 
+struct request_review_operation : public base_operation
+{
+    int64_t research_id;
+    std::vector<account_name_type> accounts_list;
+    account_name_type requester;
+
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(requester);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -819,6 +834,6 @@ FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (p
 FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 FC_REFLECT( deip::protocol::adjust_account_balance_operation, (account)(delta))
-
+FC_REFLECT( deip::protocol::request_review_operation, (research_id)(accounts_list)(requester))
 
 // clang-format on

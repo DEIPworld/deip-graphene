@@ -52,6 +52,7 @@ namespace deip {
                 accept_research_token_offer_operation,
                 reject_research_token_offer_operation,
                 adjust_account_balance_operation,
+                request_review_operation,
 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,
