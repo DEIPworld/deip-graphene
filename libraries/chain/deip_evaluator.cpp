@@ -1140,6 +1140,18 @@ void reject_research_token_offer_evaluator::do_apply(const reject_research_token
     _db._temporary_public_impl().remove(offer);
 }
 
+void adjust_account_balance_evaluator::do_apply(const adjust_account_balance_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+
+    account_service.check_account_existence(op.account);
+    auto& account = account_service.get_account(op.account);
+
+    FC_ASSERT(account.balance + op.delta >= asset(0, DEIP_SYMBOL), "Account does not have sufficient funds for adjust.");
+
+    account_service.adjust_balance(account, op.delta);
+}
+
 void request_review_evaluator::do_apply(const request_review_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();

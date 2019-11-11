@@ -291,6 +291,12 @@ void reject_research_token_offer_operation::validate() const
     validate_account_name(buyer);
 }
 
+void adjust_account_balance_operation::validate() const
+{
+    validate_account_name(account);
+    FC_ASSERT(is_asset_type(delta, DEIP_SYMBOL), "Delta must be DEIP");
+}
+
 void request_review_operation::validate() const
 {
     validate_account_name(requester);
