@@ -291,5 +291,13 @@ void reject_research_token_offer_operation::validate() const
     validate_account_name(buyer);
 }
 
+void request_review_operation::validate() const
+{
+    validate_account_name(requester);
+    FC_ASSERT(accounts_list.size() > 0, "Application hash must be specified");
+    for (auto& account : accounts_list)
+        validate_account_name(account);
+}
+
 }
 } // deip::protocol
