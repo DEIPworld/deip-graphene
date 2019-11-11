@@ -300,7 +300,7 @@ void adjust_account_balance_operation::validate() const
 void request_review_operation::validate() const
 {
     validate_account_name(requester);
-    FC_ASSERT(accounts_list.size() > 0, "Application hash must be specified");
+    FC_ASSERT(accounts_list.size() > 0, "Accounts list must be specified");
     for (auto& account : accounts_list)
         validate_account_name(account);
 }
