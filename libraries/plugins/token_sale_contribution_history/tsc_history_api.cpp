@@ -22,9 +22,9 @@ public:
     }
 
     template <typename history_object_type>
-    std::map<account_name_type, std::vector<applied_tsc_operation>> get_contributions_history_by_contributor(const account_name_type& contributor) const
+    std::vector<applied_tsc_operation> get_contributions_history_by_contributor(const account_name_type& contributor) const
     {
-        std::map<account_name_type, std::vector<applied_tsc_operation>> result;
+        std::vector<applied_tsc_operation> result;
 
         const auto db = _app.chain_database();
 
@@ -34,7 +34,7 @@ public:
         const auto it_end = idx.second;
         while (it != it_end)
         {
-            result[contributor].push_back(db->get(it->op));
+            result.push_back(db->get(it->op));
             ++it;
         }
 
@@ -74,7 +74,7 @@ tsc_history_api::~tsc_history_api()
 void tsc_history_api::on_api_startup() {
 }
 
-std::map<account_name_type, std::vector<applied_tsc_operation>>
+std::vector<applied_tsc_operation>
 tsc_history_api::get_contributions_history_by_contributor(const account_name_type &contributor) const
 {
     const auto db = _impl->_app.chain_database();

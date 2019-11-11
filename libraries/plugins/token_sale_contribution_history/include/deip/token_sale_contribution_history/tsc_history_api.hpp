@@ -24,7 +24,7 @@ public:
 
     void on_api_startup();
 
-    std::map<account_name_type, std::vector<applied_tsc_operation>>
+    std::vector<applied_tsc_operation>
     get_contributions_history_by_contributor(const account_name_type& contributor) const;
 
     std::vector<applied_tsc_operation>
