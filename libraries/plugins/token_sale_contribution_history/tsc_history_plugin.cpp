@@ -121,24 +121,14 @@ void tsc_history_plugin_impl::on_operation(const operation_notification& note)
 
     const tsc_operation_object& new_obj = create_operation_obj(note);
 
-    if (is_tsc_operation(note.op)){
-        account_name_type contributor;
-        int64_t research_id;
-        int64_t research_token_sale_id;
-        asset amount;
-        switch (note.op.which())
-        {
-            case operation::tag<token_sale_contribution_to_history_operation>::value :
-            {
-                token_sale_contribution_to_history_operation op = note.op.get<token_sale_contribution_to_history_operation>();
-                contributor = op.contributor;
-                research_id = op.research_id;
-                research_token_sale_id = op.research_token_sale_id;
-                amount = op.amount;
-            }
-                break;
+    if (note.op.which() == operation::tag<token_sale_contribution_to_history_operation>::value) {
 
-        }
+        token_sale_contribution_to_history_operation op = note.op.get<token_sale_contribution_to_history_operation>();
+        account_name_type contributor = op.contributor;
+        int64_t research_id = op.research_id;
+        int64_t research_token_sale_id = op.research_token_sale_id;
+        asset amount = op.amount;
+
         note.op.visit(tsc_operation_visitor(db, new_obj, contributor, research_id, research_token_sale_id, amount));
     }
 }
