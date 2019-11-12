@@ -324,4 +324,5 @@ void request_review_operation::validate() const
         validate_account_name(account);
 }
 
-} // deip::protocol
+} // namespace deip::protocol
+} // namespace deip

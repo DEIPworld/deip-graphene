@@ -1221,6 +1221,12 @@ void request_review_evaluator::do_apply(const request_review_operation& op)
     dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
     dbs_review& review_service = _db.obtain_service<dbs_review>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
+    dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
+    dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
+    dbs_vote& votes_service = _db.obtain_service<dbs_vote>();
+    dbs_discipline& disciplines_service = _db.obtain_service<dbs_discipline>();
 
     account_service.check_account_existence(op.requester);
     research_service.check_research_existence(op.research_id);
@@ -1228,17 +1234,11 @@ void request_review_evaluator::do_apply(const request_review_operation& op)
     for (auto& account : op.accounts_list)
         account_service.check_account_existence(account);
 
-    auto content_list
-        = research_content_service.get_by_research_and_type(op.research_id, research_content_type::announcement);
-    auto& content = content_list.front().get();
+    auto content_list = research_content_service.get_by_research_and_type(op.research_id, research_content_type::announcement);
 
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
-    dbs_research_discipline_relation& research_discipline_service
-        = _db.obtain_service<dbs_research_discipline_relation>();
-    dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
-    dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
-    dbs_vote& votes_service = _db.obtain_service<dbs_vote>();
-    dbs_discipline& disciplines_service = _db.obtain_service<dbs_discipline>();
+    FC_ASSERT(content_list.size() > 0, "Research does not have an announcement");
+
+    auto& content = content_list.front().get();
 
     auto& research = research_service.get_research(content.research_id);
     auto reseach_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);

@@ -2788,8 +2788,8 @@ void database::validate_invariants() const
             total_supply += itr->amount;
         }
 
-        const auto& grant_idx = get_index<grant_index, by_id>();
-        for (auto itr = grant_idx.begin(); itr != grant_idx.end(); ++itr)
+        const auto& discipline_supply_idx = get_index<discipline_supply_index, by_id>();
+        for (auto itr = discipline_supply_idx.begin(); itr != discipline_supply_idx.end(); ++itr)
         {
             total_supply += itr->balance;
         }
