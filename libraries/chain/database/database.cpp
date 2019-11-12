@@ -156,7 +156,7 @@ void database::open(const fc::path& data_dir,
                 FC_ASSERT(revision() == head_block_num(), "Chainbase revision does not match head block num",
                           ("rev", revision())("head_block", head_block_num()));
                 // TODO: Fix this !
-                // validate_invariants();
+                validate_invariants();
             });
 
             if (head_block_num())
@@ -1195,6 +1195,8 @@ void database::account_recovery_processing()
 
 void database::distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id)
 {
+    dbs_research& research_service = obtain_service<dbs_research>();
+    dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
     dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
     dbs_research_token& research_token_service = obtain_service<dbs_research_token>();
 
@@ -1222,6 +1224,8 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
         auto current = it++;
         remove(*current);
     }
+
+    research_group_service.increase_balance(research_service.get_research(research_token_sale.research_id).research_group_id, research_token_sale.total_amount);
 }
 
 void database::refund_research_tokens(const research_token_sale_id_type research_token_sale_id)
@@ -1891,6 +1895,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<reject_research_token_offer_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_application_evaluator>();
+    _my->_evaluator_registry.register_evaluator<adjust_account_balance_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -2773,6 +2778,18 @@ void database::validate_invariants() const
 
         const auto& vesting_balance_idx = get_index<vesting_balance_index, by_id>();
         for (auto itr = vesting_balance_idx.begin(); itr != vesting_balance_idx.end(); ++itr)
+        {
+            total_supply += itr->balance;
+        }
+
+        const auto& research_token_sale_contribution_idx = get_index<research_token_sale_contribution_index, by_id>();
+        for (auto itr = research_token_sale_contribution_idx.begin(); itr != research_token_sale_contribution_idx.end(); ++itr)
+        {
+            total_supply += itr->amount;
+        }
+
+        const auto& grant_idx = get_index<grant_index, by_id>();
+        for (auto itr = grant_idx.begin(); itr != grant_idx.end(); ++itr)
         {
             total_supply += itr->balance;
         }

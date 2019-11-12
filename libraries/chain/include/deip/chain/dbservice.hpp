@@ -3,6 +3,7 @@
 #include <fc/shared_string.hpp>
 
 #include <deip/chain/services/dbs_base_impl.hpp>
+#include <deip/protocol/operations.hpp>
 
 namespace chainbase {
 class database; // for _temporary_public_imp only
@@ -46,6 +47,8 @@ public:
 
     virtual share_type calculate_review_weight_modifier(const review_id_type& review_id, const discipline_id_type& discipline_id) = 0;
     virtual void distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id) = 0;
+
+    virtual inline void push_virtual_operation(const protocol::operation& op) = 0;
 
     // for TODO only:
     chainbase::database& _temporary_public_impl();

@@ -53,12 +53,14 @@ namespace deip {
                 reject_research_token_offer_operation,
                 create_grant_operation,
                 create_grant_application_operation,
-
+                adjust_account_balance_operation,
+                request_review_operation,
                 // virtual operations
                 fill_common_tokens_withdraw_operation,
                 shutdown_witness_operation,
                 hardfork_operation,
-                producer_reward_operation>
+                producer_reward_operation,
+                token_sale_contribution_to_history_operation>
                 operation;
 
 /*void operation_get_required_authorities( const operation& op,
@@ -72,6 +74,8 @@ void operation_validate( const operation& op );*/
         bool is_market_operation(const operation& op);
 
         bool is_virtual_operation(const operation& op);
+
+        bool is_tsc_operation(const operation& op);
     } // namespace protocol
 } // namespace deip
 

@@ -42,6 +42,26 @@ bool is_virtual_operation(const operation& op)
 {
     return op.visit(is_vop_visitor());
 }
+
+struct is_tsc_op_visitor
+{
+    typedef bool result_type;
+
+    template <typename T> bool operator()(T&& v) const
+    {
+        return false;
+    }
+    bool operator()(const token_sale_contribution_to_history_operation&) const
+    {
+        return true;
+    }
+};
+
+bool is_tsc_operation(const operation& op)
+{
+    return op.visit(is_tsc_op_visitor());
+}
+
 }
 } // deip::protocol
 
