@@ -185,8 +185,9 @@ void vote_proposal_operation::validate() const
 void make_review_operation::validate() const
 {
     validate_account_name(author);
+    FC_ASSERT(research_content_id >= 0, "Id cant be less than a 0");
     FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
-    FC_ASSERT(!content.empty(), "Research content cannot be empty");
+    FC_ASSERT(!content.empty(), "Content cannot be empty");
 }
 
 void contribute_to_token_sale_operation::validate() const
@@ -325,6 +326,14 @@ void request_review_operation::validate() const
     FC_ASSERT(accounts_list.size() > 0, "Accounts list must be specified");
     for (auto& account : accounts_list)
         validate_account_name(account);
+}
+
+void make_review_for_application_operation::validate() const
+{
+    validate_account_name(author);
+    FC_ASSERT(grant_application_id >= 0, "Id cant be less than a 0");
+    FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
+    FC_ASSERT(!content.empty(), "Content cannot be empty");
 }
 
 void approve_grant_application_operation::validate() const

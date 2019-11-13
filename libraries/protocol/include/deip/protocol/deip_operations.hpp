@@ -806,6 +806,21 @@ struct request_review_operation : public base_operation
     }
 };
 
+struct make_review_for_application_operation : public base_operation
+{
+    account_name_type author;
+    int64_t grant_application_id;
+    bool is_positive;
+    std::string content;
+    uint16_t weight;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(author);
+    }
+};
+
 struct approve_grant_application_operation : public base_operation
 {
     int64_t grant_application_id;
@@ -902,6 +917,7 @@ FC_REFLECT( deip::protocol::create_grant_operation, (target_discipline)(amount)(
 FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
 FC_REFLECT( deip::protocol::adjust_account_balance_operation, (account)(delta))
 FC_REFLECT( deip::protocol::request_review_operation, (research_id)(accounts_list)(requester))
+FC_REFLECT( deip::protocol::make_review_for_application_operation, (author)(grant_application_id)(content)(is_positive)(weight))
 FC_REFLECT( deip::protocol::approve_grant_application_operation, (grant_application_id)(approver))
 FC_REFLECT( deip::protocol::reject_grant_application_operation, (grant_application_id)(rejecter))
 

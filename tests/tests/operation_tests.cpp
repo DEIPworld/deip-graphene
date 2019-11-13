@@ -4673,6 +4673,76 @@ BOOST_AUTO_TEST_CASE(adjust_account_balance)
     } FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(make_review_grant_application)
+{
+    ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(john)(greg))
+    std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
+    std::map<uint16_t, share_type> proposal_quorums;
+
+    for (int i = First_proposal; i <= Last_proposal; i++)
+        proposal_quorums.insert(std::make_pair(i, 1));
+
+    setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
+
+    auto& research = db.create<research_object>([&](research_object& r) {
+        r.id = 1;
+        r.title = "Research #1";
+        r.permlink = "Research #1 permlink";
+        r.research_group_id = 31;
+        r.review_share_in_percent = 1000;
+        r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
+        r.is_finished = false;
+        r.created_at = db.head_block_time();
+        r.abstract = "abstract for Research #1";
+        r.owned_tokens = DEIP_100_PERCENT;
+    });
+
+    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& rdr) {
+        rdr.id = 0;
+        rdr.discipline_id = 1;
+        rdr.research_id = 1;
+    });
+
+    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& rdr) {
+        rdr.id = 1;
+        rdr.discipline_id = 2;
+        rdr.research_id = 1;
+    });
+
+    db.create<grant_application_object>([&](grant_application_object& ga) {
+        ga.id = 1;
+        ga.grant_id = 1;
+        ga.research_id = 1;
+        ga.application_hash = "test";
+
+        ga.creator = "alice";
+    });
+
+
+    make_review_for_application_operation op3;
+
+    op3.author = "john";
+    op3.grant_application_id = 1;
+    op3.content = "test";
+    op3.is_positive = true;
+    op3.weight =  DEIP_100_PERCENT;
+
+    private_key_type john_priv_key = generate_private_key("john");
+
+    signed_transaction tx3;
+    tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+    tx3.operations.push_back(op3);
+    tx3.sign(john_priv_key, db.get_chain_id());
+    tx3.validate();
+    db.push_transaction(tx3, 0);
+
+    auto& review = db.get<review_object>(0);
+
+    BOOST_CHECK(review.grant_application_id == 1);
+    BOOST_CHECK(review.is_grant_application == true);
+
+}
+
 BOOST_AUTO_TEST_CASE(approve_grant_application)
 {
     try

@@ -46,6 +46,7 @@ DEFINE_EVALUATOR(create_grant)
 DEFINE_EVALUATOR(create_grant_application)
 DEFINE_EVALUATOR(adjust_account_balance)
 DEFINE_EVALUATOR(request_review)
+DEFINE_EVALUATOR(make_review_for_application)
 DEFINE_EVALUATOR(approve_grant_application)
 DEFINE_EVALUATOR(reject_grant_application)
 

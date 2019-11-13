@@ -764,8 +764,10 @@ struct review_api_obj
     review_api_obj(const chain::review_object& r, const vector<discipline_api_obj>& disciplines)
             : id(r.id._id)
             , research_content_id(r.research_content_id._id)
+            , grant_application_id(r.grant_application_id._id)
             , content(fc::to_string(r.content))
             , is_positive(r.is_positive)
+            , is_grant_application(r.is_grant_application)
             , author(r.author)
             , created_at(r.created_at)
     {
@@ -787,8 +789,10 @@ struct review_api_obj
 
     int64_t id;
     int64_t research_content_id;
+    int64_t grant_application_id;
     string content;
     bool is_positive;
+    bool is_grant_application;
     account_name_type author;
     time_point_sec created_at;
     vector<discipline_api_obj> disciplines;
@@ -1301,8 +1305,10 @@ FC_REFLECT( deip::app::total_votes_api_obj,
 FC_REFLECT( deip::app::review_api_obj,
             (id)
             (research_content_id)
+            (grant_application_id)
             (content)
             (is_positive)
+            (is_grant_application)
             (author)
             (created_at)
             (disciplines)

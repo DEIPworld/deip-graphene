@@ -55,6 +55,7 @@ namespace deip {
                 create_grant_application_operation,
                 adjust_account_balance_operation, // todo: Remove this after the Demo
                 request_review_operation, // todo: Remove this after the Demo
+                make_review_for_application_operation,
                 approve_grant_application_operation,
                 reject_grant_application_operation,
 

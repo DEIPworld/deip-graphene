@@ -1765,6 +1765,31 @@ vector<review_api_obj> database_api::get_reviews_by_content(const research_conte
     });
 }
 
+vector<review_api_obj> database_api::get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<review_api_obj> results;
+        chain::dbs_review& review_service = my->_db.obtain_service<chain::dbs_review>();
+
+        auto reviews = review_service.get_grant_application_reviews(grant_application_id);
+
+        for (const chain::review_object& review : reviews)
+        {
+            vector<discipline_api_obj> disciplines;
+
+            for (const auto discipline_id : review.disciplines) {
+                auto discipline_ao = get_discipline(discipline_id);
+                disciplines.push_back(discipline_ao);
+            }
+
+            review_api_obj api_obj = review_api_obj(review, disciplines);
+            results.push_back(api_obj);
+        }
+
+        return results;
+    });
+}
+
 research_token_api_obj database_api::get_research_token_by_id(const research_token_id_type& research_token_id) const
 {
     return my->_db.with_read_lock([&]() {

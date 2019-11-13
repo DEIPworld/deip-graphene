@@ -2825,6 +2825,29 @@ annotated_signed_transaction wallet_api::reject_offer_research_tokens(const int6
     return my->sign_transaction(tx, broadcast);
 }
 
+annotated_signed_transaction wallet_api::make_review_for_application(const std::string& author,
+                                                                     const int64_t grant_application_id,
+                                                                     const bool is_positive,
+                                                                     const std::string& content,
+                                                                     const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    make_review_for_application_operation op;
+
+    op.author = author;
+    op.grant_application_id = grant_application_id;
+    op.is_positive = is_positive;
+    op.content = content;
+    op.weight = DEIP_100_PERCENT;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
 namespace utils {
 
 

@@ -1266,6 +1266,11 @@ public:
                                                               const std::string& buyer,
                                                               const bool broadcast);
 
+    annotated_signed_transaction make_review_for_application(const std::string& author,
+                                                             const int64_t grant_application_id,
+                                                             const bool is_positive,
+                                                             const std::string& content,
+                                                             const bool broadcast);
 
 public:
     fc::signal<void(bool)> lock_changed;
@@ -1404,6 +1409,7 @@ FC_API( deip::wallet::wallet_api,
         (propose_offer_research_tokens)
         (accept_offer_research_tokens)
         (reject_offer_research_tokens)
+        (make_review_for_application)
 
         /// helper api
         (get_prototype_operation)
