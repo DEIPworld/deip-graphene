@@ -301,6 +301,9 @@ void create_grant_operation::validate() const
     FC_ASSERT(researches_to_grant > 0, "Number of researches must be greater than 0");
     FC_ASSERT(end_time > start_time, "End time must be greater than a start time");
     validate_account_name(owner);
+    for (auto& officer : officers) {
+        validate_account_name(officer);
+    }
 }
 
 void create_grant_application_operation::validate() const
@@ -322,6 +325,18 @@ void request_review_operation::validate() const
     FC_ASSERT(accounts_list.size() > 0, "Accounts list must be specified");
     for (auto& account : accounts_list)
         validate_account_name(account);
+}
+
+void approve_grant_application_operation::validate() const
+{
+    FC_ASSERT(grant_application_id >= 0, "Application id cant be less than a 0");
+    validate_account_name(approver);
+}
+
+void reject_grant_application_operation::validate() const
+{
+    FC_ASSERT(grant_application_id >= 0, "Application id cant be less than a 0");
+    validate_account_name(rejecter);
 }
 
 } // namespace deip::protocol

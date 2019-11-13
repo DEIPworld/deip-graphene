@@ -1016,7 +1016,13 @@ struct grant_api_obj
         ,  start_time(g_o.start_time)
         ,  end_time(g_o.end_time)
 
-    {}
+    {
+        officers.insert(
+                g_o.officers.begin(),
+                g_o.officers.end()
+        );
+
+    }
 
     // because fc::variant require for temporary object
     grant_api_obj()
@@ -1036,6 +1042,8 @@ struct grant_api_obj
     fc::time_point_sec created_at;
     fc::time_point_sec start_time;
     fc::time_point_sec end_time;
+
+    std::set<string> officers;
 };
 
 struct grant_application_api_obj
@@ -1047,6 +1055,7 @@ struct grant_application_api_obj
         ,  application_hash(fc::to_string(ga_o.application_hash))
         ,  creator(ga_o.creator)
         ,  created_at(ga_o.created_at)
+        ,  status(ga_o.status)
 
     {}
 
@@ -1063,6 +1072,8 @@ struct grant_application_api_obj
     account_name_type creator;
 
     fc::time_point_sec created_at;
+
+    grant_application_status status;
 };
 
 }; // namespace app
@@ -1391,6 +1402,7 @@ FC_REFLECT( deip::app::grant_api_obj,
             (created_at)
             (start_time)
             (end_time)
+            (officers)
 
 )
 
@@ -1401,6 +1413,7 @@ FC_REFLECT( deip::app::grant_application_api_obj,
             (application_hash)
             (creator)
             (created_at)
+            (status)
 
 )
 

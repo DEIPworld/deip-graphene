@@ -753,6 +753,8 @@ struct create_grant_operation : public base_operation
 
     account_name_type owner;
 
+    vector<account_name_type> officers;
+
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -803,6 +805,33 @@ struct request_review_operation : public base_operation
         a.insert(requester);
     }
 };
+
+struct approve_grant_application_operation : public base_operation
+{
+    int64_t grant_application_id;
+    account_name_type approver;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(approver);
+    }
+};
+
+struct reject_grant_application_operation : public base_operation
+{
+    int64_t grant_application_id;
+    account_name_type rejecter;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(rejecter);
+    }
+};
+
 
 } // namespace protocol
 } // namespace deip
@@ -869,9 +898,11 @@ FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (cla
 FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (proposal_id)(voter)(voting_power))
 FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (offer_research_tokens_id)(buyer))
-FC_REFLECT( deip::protocol::create_grant_operation, (target_discipline)(amount)(min_number_of_positive_reviews)(min_number_of_applications)(researches_to_grant)(start_time)(end_time)(owner))
+FC_REFLECT( deip::protocol::create_grant_operation, (target_discipline)(amount)(min_number_of_positive_reviews)(min_number_of_applications)(researches_to_grant)(start_time)(end_time)(owner)(officers))
 FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
 FC_REFLECT( deip::protocol::adjust_account_balance_operation, (account)(delta))
 FC_REFLECT( deip::protocol::request_review_operation, (research_id)(accounts_list)(requester))
+FC_REFLECT( deip::protocol::approve_grant_application_operation, (grant_application_id)(approver))
+FC_REFLECT( deip::protocol::reject_grant_application_operation, (grant_application_id)(rejecter))
 
 // clang-format on

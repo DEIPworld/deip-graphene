@@ -63,7 +63,9 @@ BOOST_AUTO_TEST_CASE(create_grant)
 {
     try
     {
-        auto& grant = data_service.create(1, asset(100, DEIP_SYMBOL), 5, 10, 10, db.head_block_time(), db.head_block_time() + DAYS_TO_SECONDS(10), "alice");
+        std::vector<account_name_type> officers;
+        officers.push_back("rick");
+        auto& grant = data_service.create(1, asset(100, DEIP_SYMBOL), 5, 10, 10, db.head_block_time(), db.head_block_time() + DAYS_TO_SECONDS(10), "alice", officers);
 
         BOOST_CHECK(grant.target_discipline == 1);
         BOOST_CHECK(grant.amount ==  asset(100, DEIP_SYMBOL));
@@ -74,6 +76,7 @@ BOOST_AUTO_TEST_CASE(create_grant)
         BOOST_CHECK(grant.start_time == db.head_block_time());
         BOOST_CHECK(grant.end_time == db.head_block_time() + DAYS_TO_SECONDS(10));
         BOOST_CHECK(grant.owner == "alice");
+        BOOST_CHECK(grant.officers.size() == 1);
     }
     FC_LOG_AND_RETHROW()
 }

@@ -1165,6 +1165,10 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
     account_service.check_account_existence(op.owner);
     auto& owner = account_service.get_account(op.owner);
 
+    for (auto& officer : op.officers) {
+        account_service.check_account_existence(officer);
+    }
+
     FC_ASSERT(owner.balance >= op.amount, "You do not have enough funds to grant");
     FC_ASSERT(op.start_time >= _db.head_block_time(), "Start time must be greater than now");
 
@@ -1176,7 +1180,8 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
                          op.researches_to_grant,
                          op.start_time,
                          op.end_time,
-                         op.owner);
+                         op.owner,
+                         op.officers);
 }
 
 void create_grant_application_evaluator::do_apply(const create_grant_application_operation& op)
@@ -1351,6 +1356,51 @@ void request_review_evaluator::do_apply(const request_review_operation& op)
         }
     }
 }
+
+void approve_grant_application_evaluator::do_apply(const approve_grant_application_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+
+    account_service.check_account_existence(op.approver);
+    research_content_service.check_application_existence(op.grant_application_id);
+
+    auto& grant_application = research_content_service.get_grant_application(op.grant_application_id);
+    auto& grant = grant_service.get(grant_application.grant_id);
+
+    auto officers = grant.officers;
+    bool op_is_allowed = grant.owner == op.approver || std::any_of(officers.begin(), officers.end(), [&](account_name_type& officer) {
+        return officer == op.approver;
+    });
+
+
+    FC_ASSERT(op_is_allowed, "This account cannot approve applications");
+    research_content_service.update_application_status(op.grant_application_id, grant_application_status::application_approved);
+}
+
+void reject_grant_application_evaluator::do_apply(const reject_grant_application_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    account_service.check_account_existence(op.rejecter);
+    research_content_service.check_application_existence(op.grant_application_id);
+
+    auto& grant_application = research_content_service.get_grant_application(op.grant_application_id);
+    auto& grant = grant_service.get(grant_application.grant_id);
+
+    auto officers = grant.officers;
+    bool op_is_allowed = grant.owner == op.rejecter || std::any_of(officers.begin(), officers.end(), [&](account_name_type& officer) {
+        return officer == op.rejecter;
+    });
+
+    FC_ASSERT(op_is_allowed, "This account cannot reject applications");
+    research_content_service.update_application_status(op.grant_application_id, grant_application_status::application_rejected);
+}
+
 
 } // namespace chain
 } // namespace deip 

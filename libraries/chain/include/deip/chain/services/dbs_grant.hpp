@@ -24,7 +24,8 @@ public:
                                const int16_t& researches_to_grant,
                                fc::time_point_sec start_time,
                                fc::time_point_sec end_time,
-                               const account_name_type& owner);
+                               const account_name_type& owner,
+                               const vector<account_name_type> &officers);
 
     const grant_object& get(const grant_id_type& id) const;
 

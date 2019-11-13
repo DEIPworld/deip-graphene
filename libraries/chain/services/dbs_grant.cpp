@@ -19,7 +19,8 @@ const grant_object& dbs_grant::create(const discipline_id_type& target_disciplin
                                       const int16_t& researches_to_grant,
                                       fc::time_point_sec start_time,
                                       fc::time_point_sec end_time,
-                                      const account_name_type& owner)
+                                      const account_name_type& owner,
+                                      const vector<account_name_type> &officers)
 {
     auto now = db_impl().head_block_time();
 
@@ -35,6 +36,7 @@ const grant_object& dbs_grant::create(const discipline_id_type& target_disciplin
         grant.end_time = end_time;
         grant.created_at = now;
         grant.owner = owner;
+        grant.officers.insert(officers.begin(), officers.end());
     });
 
     return grant;

@@ -207,5 +207,20 @@ void dbs_research_content::delete_appication_by_id(const grant_application_id_ty
     db_impl().remove(grant_application);
 }
 
+void dbs_research_content::check_application_existence(const grant_application_id_type& grant_application_id)
+{
+    auto grant_application = db_impl().find<grant_application_object, by_id>(grant_application_id);
+    FC_ASSERT(grant_application != nullptr, "Grant application with id \"${1}\" must exist.", ("1", grant_application_id));
+}
+
+const grant_application_object& dbs_research_content::update_application_status(const grant_application_id_type& grant_application_id,
+                                                                                const grant_application_status& new_status)
+{
+    const grant_application_object& grant_application = get_grant_application(grant_application_id);
+    db_impl().modify(grant_application, [&](grant_application_object& ga_o) { ga_o.status = new_status; });
+    return grant_application;
+}
+
+
 }
 }
