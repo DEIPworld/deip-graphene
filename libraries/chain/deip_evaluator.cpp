@@ -97,14 +97,7 @@ void witness_update_evaluator::do_apply(const witness_update_operation& o)
         });
     }
     else
-    {
-        #ifdef IS_TEST_NET
-            if (_db.has_hardfork(DEIP_HARDFORK_0_1))
-            {
-                FC_ASSERT(false, "Adding new witnesses is disabled currently");
-            }
-        #endif
-        
+    {        
         _db._temporary_public_impl().create<witness_object>([&](witness_object& w) {
             w.owner = o.owner;
             fc::from_string(w.url, o.url);
@@ -355,13 +348,6 @@ void account_witness_proxy_evaluator::do_apply(const account_witness_proxy_opera
 
 void account_witness_vote_evaluator::do_apply(const account_witness_vote_operation& o)
 {
-    #ifdef IS_TEST_NET
-        if (_db.has_hardfork(DEIP_HARDFORK_0_1))
-        {
-            FC_ASSERT(false, "Voting for witnesses is disabled currently");
-        }
-    #endif
-
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_witness& witness_service = _db.obtain_service<dbs_witness>();
 
@@ -1295,7 +1281,7 @@ void approve_grant_application_evaluator::do_apply(const approve_grant_applicati
 
 
     FC_ASSERT(op_is_allowed, "This account cannot approve applications");
-    research_content_service.update_application_status(op.grant_application_id, grant_application_status::application_approved);
+    research_content_service.update_application_status(grant_application, grant_application_status::application_approved);
 }
 
 void reject_grant_application_evaluator::do_apply(const reject_grant_application_operation& op)
@@ -1317,7 +1303,7 @@ void reject_grant_application_evaluator::do_apply(const reject_grant_application
     });
 
     FC_ASSERT(op_is_allowed, "This account cannot reject applications");
-    research_content_service.update_application_status(op.grant_application_id, grant_application_status::application_rejected);
+    research_content_service.update_application_status(grant_application, grant_application_status::application_rejected);
 }
 
 

@@ -65,7 +65,7 @@ public:
 
     void check_application_existence(const grant_application_id_type& grant_application_id);
 
-    const grant_application_object& update_application_status(const grant_application_id_type& grant_application_id,
+    const grant_application_object& update_application_status(const grant_application_object& grant_application,
                                                               const grant_application_status& new_status);
 };
 }

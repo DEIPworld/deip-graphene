@@ -27,6 +27,7 @@ public:
             ga.start_time = db.head_block_time();
             ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
             ga.owner = "bob";
+            ga.officers = {"alice"};
         });
 
         db.create<grant_object>([&](grant_object& ga) {
@@ -39,6 +40,7 @@ public:
             ga.start_time = db.head_block_time();
             ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
             ga.owner = "jack";
+            ga.officers = {"alice"};
         });
 
         db.create<grant_object>([&](grant_object& ga) {
@@ -51,6 +53,7 @@ public:
             ga.start_time = db.head_block_time();
             ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
             ga.owner = "rick";
+            ga.officers = {"alice"};
         });
     }
 
@@ -147,20 +150,6 @@ BOOST_AUTO_TEST_CASE(get_by_target_discipline)
                    grant.end_time == db.head_block_time() + DAYS_TO_SECONDS(30) &&
                    grant.owner == "jack";
         }));
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(delete_grant)
-{
-    try
-    {
-        ACTORS((jack))
-        create_grants();
-
-        auto& grant = db.get<grant_object>(1);
-        BOOST_CHECK_NO_THROW(data_service.delete_grant(grant));
-        BOOST_CHECK_THROW(db.get<grant_object>(1), std::out_of_range);
     }
     FC_LOG_AND_RETHROW()
 }

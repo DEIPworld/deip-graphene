@@ -2602,6 +2602,28 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
 
         private_key_type alice_priv_key = generate_private_key("alice");
 
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 7000));
+
+        research_group_create(31, "group", "test", "test", 100, proposal_quorums, false);
+
+        const auto& new_research = db.create<research_object>([&](research_object& r) {
+            r.id = 1;
+            fc::from_string(r.title, "title");
+            fc::from_string(r.abstract, "abstract");
+            fc::from_string(r.permlink, "permlink");
+            r.research_group_id = 31;
+            r.review_share_in_percent = 1500;
+            r.dropout_compensation_in_percent = 1500;
+            r.is_finished = false;
+            r.owned_tokens = DEIP_100_PERCENT;
+            r.created_at = db.head_block_time();
+            r.last_update_time = db.head_block_time();
+            r.review_share_in_percent_last_update = fc::time_point_sec(db.head_block_time().sec_since_epoch() - DAYS_TO_SECONDS(100));
+        });
+
         research_token_sale_create(0, 1, db.head_block_time() - 60 * 60 * 5, db.head_block_time() + 60 * 60 * 5, 200, 1000, 100, 400);
         research_token_sale_contribution_create(0, 0, "bob", 200, db.head_block_time());
 
@@ -4761,6 +4783,7 @@ BOOST_AUTO_TEST_CASE(approve_grant_application)
             g_o.start_time = db.head_block_time();
             g_o.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
             g_o.owner = "bob";
+            g_o.officers = { "alice", "bob" };
         });
 
         db.create<grant_application_object>([&](grant_application_object& ga_o) {
@@ -4811,6 +4834,7 @@ BOOST_AUTO_TEST_CASE(reject_grant_application)
             g_o.start_time = db.head_block_time();
             g_o.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
             g_o.owner = "bob";
+            g_o.officers = { "alice", "bob" };
         });
 
         db.create<grant_application_object>([&](grant_application_object& ga_o) {

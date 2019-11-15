@@ -33,7 +33,7 @@ public:
 
     fc::time_point_sec created_at;
 
-    grant_application_status status;
+    grant_application_status status = grant_application_status::application_pending;
 };
 
 struct by_grant_id;
@@ -66,7 +66,7 @@ typedef multi_index_container<grant_application_object,
 FC_REFLECT_ENUM(deip::chain::grant_application_status, (application_pending)(application_approved)(application_rejected))
 
 FC_REFLECT( deip::chain::grant_application_object,
-             (id)(grant_id)(research_id)(application_hash)(creator)(created_at)
+             (id)(grant_id)(research_id)(application_hash)(creator)(created_at)(status)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::grant_application_object, deip::chain::grant_application_index )

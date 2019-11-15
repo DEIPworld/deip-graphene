@@ -250,9 +250,9 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (expertise_allocation_proposal_vote_object_type)
                  (expertise_stats_object_type)
                  (offer_research_tokens_object_type)
-                 (grant_application_object_type)
                  (grant_object_type)
-                 )
+                 (grant_application_object_type)
+)
 
 FC_REFLECT_ENUM( deip::chain::bandwidth_type, (post)(forum)(market) )
 
