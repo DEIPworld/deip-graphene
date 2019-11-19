@@ -75,8 +75,6 @@ void operation_validate( const operation& op );*/
         bool is_market_operation(const operation& op);
 
         bool is_virtual_operation(const operation& op);
-
-        bool is_tsc_operation(const operation& op);
     } // namespace protocol
 } // namespace deip
 
