@@ -4617,62 +4617,6 @@ BOOST_AUTO_TEST_CASE(create_grant_application_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(adjust_account_balance)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: adjust_account_balance");
-
-        ACTORS_WITH_EXPERT_TOKENS((alice));
-
-        generate_block();
-
-        fund("alice", 500000);
-
-        adjust_account_balance_operation op;
-        op.account = "alice";
-        op.delta = asset(100, DEIP_SYMBOL);
-
-        private_key_type priv_key = generate_private_key("alice");
-
-        signed_transaction tx;
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.operations.push_back(op);
-        tx.sign(priv_key, db.get_chain_id());
-        tx.validate();
-        db.push_transaction(tx, 0);
-
-        auto& account = db.get_account(op.account);
-
-        BOOST_CHECK(account.balance.amount == 500100);
-
-        adjust_account_balance_operation op2;
-        op2.account = "alice";
-        op2.delta = asset(-499100, DEIP_SYMBOL);
-
-        signed_transaction tx2;
-        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx2.operations.push_back(op2);
-        tx2.sign(priv_key, db.get_chain_id());
-        tx2.validate();
-        db.push_transaction(tx2, 0);
-
-        BOOST_CHECK(account.balance.amount == 1000);
-
-        adjust_account_balance_operation op3;
-        op3.account = "alice";
-        op3.delta = asset(-2000, DEIP_SYMBOL);
-
-        signed_transaction tx3;
-        tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx3.operations.push_back(op3);
-        tx3.sign(priv_key, db.get_chain_id());
-        tx3.validate();
-        BOOST_CHECK_THROW(db.push_transaction(tx3, 0), fc::assert_exception);
-    
-    } FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_SUITE_END()
 
 #endif
