@@ -44,8 +44,6 @@ DEFINE_EVALUATOR(accept_research_token_offer)
 DEFINE_EVALUATOR(reject_research_token_offer)
 DEFINE_EVALUATOR(create_grant)
 DEFINE_EVALUATOR(create_grant_application)
-DEFINE_EVALUATOR(adjust_account_balance)
-DEFINE_EVALUATOR(request_review)
 
 }
 } // deip::chain
