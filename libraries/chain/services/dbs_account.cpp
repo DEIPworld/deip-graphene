@@ -449,5 +449,23 @@ void dbs_account::increase_expertise_tokens(const account_object &account, const
     });
 }
 
+dbs_account::accounts_refs_type dbs_account::get_accounts_by_expert_discipline(const discipline_id_type& discipline_id) const
+{
+    FC_ASSERT(discipline_id > 0, "Cannot use root discipline.");
+
+    dbs_expert_token& expert_token_service = db_impl().obtain_service<dbs_expert_token>();
+
+    accounts_refs_type ret;
+    auto expert_tokens = expert_token_service.get_expert_tokens_by_discipline_id(discipline_id);
+
+    for (auto expert_token : expert_tokens)
+    {
+        auto &token = expert_token.get();
+        ret.push_back(std::cref(get_account(token.account_name)));
+    }
+
+    return ret;
+}
+
 }
 }

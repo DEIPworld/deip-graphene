@@ -536,6 +536,28 @@ optional<account_bandwidth_api_obj> database_api::get_account_bandwidth(string a
     return result;
 }
 
+vector<account_api_obj> database_api::get_accounts_by_expert_discipline(const discipline_id_type& discipline_id, uint32_t from, uint32_t limit) const
+{
+    return my->_db.with_read_lock([&]() {
+        FC_ASSERT(limit <= MAX_LIMIT);
+        FC_ASSERT(discipline_id > 0, "Cannot use root discipline.");
+
+        vector<account_api_obj> result;
+        result.reserve(limit);
+
+        chain::dbs_account& account_service = my->_db.obtain_service<chain::dbs_account>();
+
+        auto accounts_by_expert_discipline = account_service.get_accounts_by_expert_discipline(discipline_id);
+
+        FC_ASSERT(from + limit <= accounts_by_expert_discipline.size(), "from + limit cannot be bigger than size ${n}", ("n", accounts_by_expert_discipline.size()));
+
+        for (auto i = from; i < from + limit; i++)
+            result.push_back(account_api_obj(accounts_by_expert_discipline[i].get(), my->_db));
+
+        return result;
+    });
+}
+
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
 // Witnesses                                                        //

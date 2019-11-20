@@ -192,6 +192,8 @@ public:
 
     optional<account_bandwidth_api_obj> get_account_bandwidth(string account, witness::bandwidth_type type) const;
 
+    vector<account_api_obj> get_accounts_by_expert_discipline(const discipline_id_type& discipline_id, uint32_t from, uint32_t limit) const;
+
     ///////////////
     // Witnesses //
     ///////////////
@@ -548,6 +550,7 @@ FC_API(deip::app::database_api,
    (get_recovery_request)
    (get_withdraw_routes)
    (get_account_bandwidth)
+   (get_accounts_by_expert_discipline)
 
    // Authority / validation
    (get_transaction_hex)
