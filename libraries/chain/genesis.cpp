@@ -21,6 +21,7 @@
 #include <fc/io/json.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
 #include <deip/chain/schema/expertise_stats_object.hpp>
+#include <deip/chain/services/dbs_research_content.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
@@ -257,6 +258,7 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
 void database::init_research(const genesis_state_type& genesis_state)
 {
     const vector<genesis_state_type::research_type>& researches = genesis_state.researches;
+    const vector<genesis_state_type::research_content_type>& research_contents = genesis_state.research_contents;
 
     for (auto& research : researches)
     {
@@ -266,6 +268,20 @@ void database::init_research(const genesis_state_type& genesis_state)
                   "Dropout compensation percent should be in 0% to 100% range");
         FC_ASSERT(research.review_share_in_percent >= 0 && research.review_share_in_percent <= 50 * DEIP_1_PERCENT,
                   "Percent for review should be in 0% to 50% range");
+
+        uint16_t contents_amount = 0;
+
+        for (auto& research_content : research_contents) {
+            FC_ASSERT(!research_content.title.empty(), "Research content 'title' must be specified");
+            FC_ASSERT(!research_content.content.empty(), "Research content must be specified");
+            FC_ASSERT(research_content.authors.size() > 0, "Research group must contain at least 1 member");
+
+            for (auto& author : research_content.authors)
+                auto account = get<account_object, by_name>(author);
+
+            if (research.id == research_content.research_id)
+                contents_amount++;
+        }
 
         create<research_object>([&](research_object& r){
             r.id = research.id;
@@ -280,6 +296,7 @@ void database::init_research(const genesis_state_type& genesis_state)
             r.review_share_in_percent = research.review_share_in_percent;
             r.review_share_in_percent_last_update = get_genesis_time();
             r.dropout_compensation_in_percent = research.dropout_compensation_in_percent;
+            r.contents_amount = contents_amount;
         });
 
         for (auto& discipline_id : research.disciplines)
@@ -311,7 +328,7 @@ void database::init_research_content(const genesis_state_type& genesis_state)
 
         auto research = get<research_object, by_id>(research_content.research_id);
 
-        create<research_content_object>([&](research_content_object& rc) {
+        auto& c = create<research_content_object>([&](research_content_object& rc) {
 
             rc.research_id = research_content.research_id;
             rc.type = static_cast<deip::chain::research_content_type>(research_content.type);
