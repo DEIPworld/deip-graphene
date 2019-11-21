@@ -17,6 +17,8 @@ protected:
     explicit dbs_account(database& db);
 
 public:
+    using accounts_refs_type = std::vector<std::reference_wrapper<const account_object>>;
+
     const account_object& get_account(const account_name_type&) const;
 
     const account_authority_object& get_account_authority(const account_name_type&) const;
@@ -97,6 +99,7 @@ public:
 
     void increase_expertise_tokens(const account_object &account, const share_type &amount);
 
+    accounts_refs_type get_accounts_by_expert_discipline(const discipline_id_type& discipline_id) const;
 
 private:
     const account_object& get_account(const account_id_type &) const;
