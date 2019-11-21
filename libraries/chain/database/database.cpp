@@ -1894,6 +1894,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<accept_research_token_offer_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_research_token_offer_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_grant_application_evaluator>();
+    _my->_evaluator_registry.register_evaluator<adjust_account_balance_evaluator>();
 }
 
 void database::initialize_indexes()
