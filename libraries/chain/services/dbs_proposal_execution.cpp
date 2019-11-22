@@ -199,6 +199,11 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
             r_o.is_finished = true;
         });
     }
+
+    db_impl().modify(research, [&](research_object& r_o) {
+    for (auto author : data.authors)
+        r_o.members.insert(author);
+    });
 }
 
 void dbs_proposal_execution::start_research_token_sale(const proposal_object& proposal)

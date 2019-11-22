@@ -270,6 +270,7 @@ void database::init_research(const genesis_state_type& genesis_state)
                   "Percent for review should be in 0% to 50% range");
 
         uint16_t contents_amount = 0;
+        std::vector<account_name_type> members;
 
         for (auto& research_content : research_contents) {
             FC_ASSERT(!research_content.title.empty(), "Research content 'title' must be specified");
@@ -279,8 +280,11 @@ void database::init_research(const genesis_state_type& genesis_state)
             for (auto& author : research_content.authors)
                 auto account = get<account_object, by_name>(author);
 
-            if (research.id == research_content.research_id)
+            if (research.id == research_content.research_id) {
+                for (auto& author : research_content.authors)
+                    members.push_back(author);
                 contents_amount++;
+            }
         }
 
         create<research_object>([&](research_object& r){
@@ -297,6 +301,8 @@ void database::init_research(const genesis_state_type& genesis_state)
             r.review_share_in_percent_last_update = get_genesis_time();
             r.dropout_compensation_in_percent = research.dropout_compensation_in_percent;
             r.contents_amount = contents_amount;
+            for (auto member : members)
+                r.members.insert(member);
         });
 
         for (auto& discipline_id : research.disciplines)

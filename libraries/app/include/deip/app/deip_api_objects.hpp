@@ -382,6 +382,7 @@ struct research_api_obj
         ,  number_of_negative_reviews(r.number_of_negative_reviews)
         ,  last_update_time(r.last_update_time)
         ,  contents_amount(r.contents_amount)
+        ,  members(r.members.begin(), r.members.end())
     {
         for (const auto& kvp : r.eci_per_discipline) {
             discipline_id_type discipline_id = kvp.first;
@@ -415,6 +416,8 @@ struct research_api_obj
 
     time_point_sec last_update_time;
     uint16_t contents_amount;
+
+    std::vector<account_name_type> members;
 };
 
 struct research_content_api_obj
@@ -714,6 +717,7 @@ struct research_listing_api_obj
         ,  group_permlink(rg.permlink)
         ,  last_update_time(r.last_update_time)
         ,  contents_amount(r.contents_amount)
+        ,  members(r.members.begin(), r.members.end())
         {
             for (const auto& kvp : r.eci_per_discipline) {
                 discipline_id_type discipline_id = kvp.first;
@@ -742,6 +746,7 @@ struct research_listing_api_obj
     map<int64_t, int64_t> eci_per_discipline;
     time_point_sec last_update_time;
     uint16_t contents_amount;
+    std::vector<account_name_type> members;
 };
 
 struct total_votes_api_obj
@@ -1169,6 +1174,7 @@ FC_REFLECT( deip::app::research_api_obj,
             (number_of_negative_reviews)
             (last_update_time)
             (contents_amount)
+            (members)
           )
 
 FC_REFLECT( deip::app::research_content_api_obj,
@@ -1289,6 +1295,7 @@ FC_REFLECT( deip::app::research_listing_api_obj,
            (eci_per_discipline)
            (last_update_time)
            (contents_amount)
+           (members)
 )
 
 FC_REFLECT( deip::app::total_votes_api_obj,
