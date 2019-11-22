@@ -1581,15 +1581,15 @@ vector<research_listing_api_obj> database_api::get_research_listing(const discip
         auto researches = get_researches_by_discipline_id(from, limit, discipline_id);
         for (auto research : researches) {
             auto research_group_members = get_research_group_tokens_by_research_group(research.research_group_id);
-            vector<account_name_type> authors;
+            vector<account_name_type> group_members;
             for (auto member : research_group_members) {
-                authors.push_back(member.owner);
+                group_members.push_back(member.owner);
             }
 
             auto research_group = get_research_group_by_id(research.research_group_id);
             auto votes = vote_service.get_votes_by_research(research.id);
 
-            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, research_group, authors, votes.size());
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, research_group, group_members, votes.size());
             results.push_back(listing_api_obj);
         }
 
@@ -1634,15 +1634,15 @@ vector<research_listing_api_obj> database_api::get_all_researches_listing(const 
 
         for (auto research : researches) {
              auto research_group_members = get_research_group_tokens_by_research_group(research.research_group_id);
-            vector<account_name_type> authors;
+            vector<account_name_type> group_members;
             for (auto member : research_group_members) {
-                authors.push_back(member.owner);
+                group_members.push_back(member.owner);
             }
             
             auto research_group = get_research_group_by_id(research.research_group_id);
             auto votes = vote_service.get_votes_by_research(research.id);
 
-            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, research_group, authors, votes.size());
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, research_group, group_members, votes.size());
 
             if (limit != 0) {
                 if (results.size() + 1 > limit) {
