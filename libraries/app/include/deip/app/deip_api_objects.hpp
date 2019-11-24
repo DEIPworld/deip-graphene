@@ -681,9 +681,10 @@ struct research_group_invite_api_obj
 {
     research_group_invite_api_obj(const chain::research_group_invite_object& co)
         : id(co.id._id)
-        ,  account_name(co.account_name)
-        ,  research_group_id(co.research_group_id._id)
-        ,  research_group_token_amount(co.research_group_token_amount)
+        , account_name(co.account_name)
+        , research_group_id(co.research_group_id._id)
+        , research_group_token_amount(co.research_group_token_amount)
+        , cover_letter(fc::to_string(co.cover_letter))
     {}
 
     // because fc::variant require for temporary object
@@ -695,6 +696,7 @@ struct research_group_invite_api_obj
     account_name_type account_name;
     int64_t research_group_id;
     share_type research_group_token_amount;
+    std::string cover_letter;
 };
 
 struct research_listing_api_obj
@@ -1282,6 +1284,7 @@ FC_REFLECT( deip::app::research_group_invite_api_obj,
             (account_name)
             (research_group_id)
             (research_group_token_amount)
+            (cover_letter)
 )
 
 FC_REFLECT( deip::app::research_listing_api_obj,
