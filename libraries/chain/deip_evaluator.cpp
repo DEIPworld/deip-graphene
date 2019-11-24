@@ -756,10 +756,12 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
         });
 
         _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
-            if (review.is_positive)
+            if (review.is_positive) {
                 r_o.number_of_positive_reviews++;
-            else
+            }
+            else {
                 r_o.number_of_negative_reviews++;
+            }
         });
 
         _db._temporary_public_impl().modify(content, [&](research_content_object& rc_o) {

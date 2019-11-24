@@ -718,6 +718,8 @@ struct research_listing_api_obj
         , last_update_time(r.last_update_time)
         , contents_amount(r.contents_amount)
         , members(r.members.begin(), r.members.end())
+        , number_of_positive_reviews(r.number_of_positive_reviews)
+        , number_of_negative_reviews(r.number_of_negative_reviews)
     {
         for (const auto& kvp : r.eci_per_discipline)
         {
@@ -748,6 +750,8 @@ struct research_listing_api_obj
     time_point_sec last_update_time;
     uint16_t contents_amount;
     std::vector<account_name_type> members;
+    uint16_t number_of_positive_reviews;
+    uint16_t number_of_negative_reviews;
 };
 
 struct total_votes_api_obj
@@ -1297,6 +1301,8 @@ FC_REFLECT( deip::app::research_listing_api_obj,
            (last_update_time)
            (contents_amount)
            (members)
+           (number_of_positive_reviews)
+           (number_of_negative_reviews)
 )
 
 FC_REFLECT( deip::app::total_votes_api_obj,
