@@ -4,7 +4,7 @@ set -e
 TAG=$(git log -1 --pretty=%h)
 LATEST="latest"
 ORG="deipworld"
-IMAGE_PREFIX="oa-testnet"
+IMAGE_PREFIX="$1"
 NODE_PREFIX="node"
 FULL_NODE_PREFIX="full-node"
 WALLET_PREFIX="wallet"
