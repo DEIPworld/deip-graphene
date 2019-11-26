@@ -53,8 +53,6 @@ namespace deip {
                 reject_research_token_offer_operation,
                 create_grant_operation,
                 create_grant_application_operation,
-                adjust_account_balance_operation, // todo: Remove this after the Demo
-                request_review_operation, // todo: Remove this after the Demo
                 make_review_for_application_operation,
                 approve_grant_application_operation,
                 reject_grant_application_operation,
@@ -78,8 +76,6 @@ void operation_validate( const operation& op );*/
         bool is_market_operation(const operation& op);
 
         bool is_virtual_operation(const operation& op);
-
-        bool is_tsc_operation(const operation& op);
     } // namespace protocol
 } // namespace deip
 

@@ -54,10 +54,7 @@ public:
     void set_block_applied_callback(std::function<void(const variant& block_id)> cb);
 
     // Blocks and transactions
-    optional<block_header> get_block_header(uint32_t block_num) const;
     optional<signed_block_api_obj> get_block(uint32_t block_num) const;
-    std::map<uint32_t, block_header> get_block_headers_history(uint32_t block_num, uint32_t limit) const;
-    std::map<uint32_t, signed_block_api_obj> get_blocks_history(uint32_t block_num, uint32_t limit) const;
 
     // Globals
     fc::variant_object get_config() const;
@@ -177,20 +174,6 @@ void database_api::on_api_startup()
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-optional<block_header> database_api::get_block_header(uint32_t block_num) const
-{
-    FC_ASSERT(!my->_disable_get_block, "get_block_header is disabled on this node.");
-
-    return my->_db.with_read_lock([&]() { return my->get_block_header(block_num); });
-}
-
-optional<block_header> database_api_impl::get_block_header(uint32_t block_num) const
-{
-    auto result = _db.fetch_block_by_number(block_num);
-    if (result)
-        return *result;
-    return {};
-}
 
 optional<signed_block_api_obj> database_api::get_block(uint32_t block_num) const
 {
@@ -202,30 +185,6 @@ optional<signed_block_api_obj> database_api::get_block(uint32_t block_num) const
 optional<signed_block_api_obj> database_api_impl::get_block(uint32_t block_num) const
 {
     return _db.fetch_block_by_number(block_num);
-}
-
-std::map<uint32_t, block_header> database_api::get_block_headers_history(uint32_t block_num, uint32_t limit) const
-{
-    FC_ASSERT(!_app.is_read_only(), "Disabled for read only mode");
-    return my->_db.with_read_lock([&]() { return my->get_block_headers_history(block_num, limit); });
-}
-
-std::map<uint32_t, block_header> database_api_impl::get_block_headers_history(uint32_t block_num, uint32_t limit) const
-{
-    std::map<uint32_t, block_header> ret;
-    _db.get_blocks_history_by_number<block_header>(ret, block_num, limit);
-    return ret;
-}
-std::map<uint32_t, signed_block_api_obj> database_api::get_blocks_history(uint32_t block_num, uint32_t limit) const
-{
-    FC_ASSERT(!_app.is_read_only(), "Disabled for read only mode");
-    return my->_db.with_read_lock([&]() { return my->get_blocks_history(block_num, limit); });
-}
-std::map<uint32_t, signed_block_api_obj> database_api_impl::get_blocks_history(uint32_t block_num, uint32_t limit) const
-{
-    std::map<uint32_t, signed_block_api_obj> ret;
-    _db.get_blocks_history_by_number<signed_block_api_obj>(ret, block_num, limit);
-    return ret;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -534,6 +493,33 @@ optional<account_bandwidth_api_obj> database_api::get_account_bandwidth(string a
     }
 
     return result;
+}
+
+vector<account_api_obj> database_api::get_accounts_by_expert_discipline(const discipline_id_type& discipline_id, uint32_t from, uint32_t limit) const
+{
+    return my->_db.with_read_lock([&]() {
+        FC_ASSERT(limit <= MAX_LIMIT && limit > 0);
+        FC_ASSERT(discipline_id > 0, "Cannot use root discipline.");
+        FC_ASSERT(from >= 0, "From must be >= 0");
+
+        vector<account_api_obj> result;
+        result.reserve(limit);
+
+        chain::dbs_account& account_service = my->_db.obtain_service<chain::dbs_account>();
+
+        auto accounts_by_expert_discipline = account_service.get_accounts_by_expert_discipline(discipline_id);
+
+        if (from >= accounts_by_expert_discipline.size())
+            return result;
+
+        if (from + limit >= accounts_by_expert_discipline.size())
+            limit = accounts_by_expert_discipline.size() - from;
+
+        for (auto i = from; i < from + limit; i++)
+            result.push_back(account_api_obj(accounts_by_expert_discipline[i].get(), my->_db));
+
+        return result;
+    });
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1559,15 +1545,15 @@ vector<research_listing_api_obj> database_api::get_research_listing(const discip
         auto researches = get_researches_by_discipline_id(from, limit, discipline_id);
         for (auto research : researches) {
             auto research_group_members = get_research_group_tokens_by_research_group(research.research_group_id);
-            vector<account_name_type> authors;
+            vector<account_name_type> group_members;
             for (auto member : research_group_members) {
-                authors.push_back(member.owner);
+                group_members.push_back(member.owner);
             }
 
             auto research_group = get_research_group_by_id(research.research_group_id);
             auto votes = vote_service.get_votes_by_research(research.id);
 
-            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, research_group, authors, votes.size());
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, research_group, group_members, votes.size());
             results.push_back(listing_api_obj);
         }
 
@@ -1612,15 +1598,15 @@ vector<research_listing_api_obj> database_api::get_all_researches_listing(const 
 
         for (auto research : researches) {
              auto research_group_members = get_research_group_tokens_by_research_group(research.research_group_id);
-            vector<account_name_type> authors;
+            vector<account_name_type> group_members;
             for (auto member : research_group_members) {
-                authors.push_back(member.owner);
+                group_members.push_back(member.owner);
             }
             
             auto research_group = get_research_group_by_id(research.research_group_id);
             auto votes = vote_service.get_votes_by_research(research.id);
 
-            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, research_group, authors, votes.size());
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, research_group, group_members, votes.size());
 
             if (limit != 0) {
                 if (results.size() + 1 > limit) {
@@ -1765,19 +1751,45 @@ vector<review_api_obj> database_api::get_reviews_by_content(const research_conte
     });
 }
 
-vector<review_api_obj> database_api::get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const
+vector<review_api_obj> database_api::get_reviews_by_author(const account_name_type& author) const
 {
     return my->_db.with_read_lock([&]() {
         vector<review_api_obj> results;
         chain::dbs_review& review_service = my->_db.obtain_service<chain::dbs_review>();
 
-        auto reviews = review_service.get_grant_application_reviews(grant_application_id);
+        auto reviews = review_service.get_author_reviews(author);
 
         for (const chain::review_object& review : reviews)
         {
             vector<discipline_api_obj> disciplines;
 
             for (const auto discipline_id : review.disciplines) {
+                auto discipline_ao = get_discipline(discipline_id);
+                disciplines.push_back(discipline_ao);
+            }
+
+            review_api_obj api_obj = review_api_obj(review, disciplines);
+            results.push_back(api_obj);
+        }
+
+        return results;
+    });
+}
+
+vector<review_api_obj>
+database_api::get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<review_api_obj> results;
+        chain::dbs_review& review_service = my->_db.obtain_service<chain::dbs_review>();
+        auto reviews = review_service.get_grant_application_reviews(grant_application_id);
+
+        for (const chain::review_object& review : reviews)
+        {
+            vector<discipline_api_obj> disciplines;
+
+            for (const auto discipline_id : review.disciplines)
+            {
                 auto discipline_ao = get_discipline(discipline_id);
                 disciplines.push_back(discipline_ao);
             }

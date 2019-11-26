@@ -102,6 +102,7 @@ const review_object& dbs_review::get(const review_id_type &id)
     FC_CAPTURE_AND_RETHROW((id))
 }
 
+// TODO: Split this method into separate methods for content and grant application
 void dbs_review::make_review_execution(const int64_t& object_id,
                                        const research_id_type& research_id,
                                        const bool is_grant_application,

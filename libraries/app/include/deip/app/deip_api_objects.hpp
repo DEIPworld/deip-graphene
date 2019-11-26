@@ -380,6 +380,9 @@ struct research_api_obj
         ,  group_permlink(group_permlink)
         ,  number_of_positive_reviews(r.number_of_positive_reviews)
         ,  number_of_negative_reviews(r.number_of_negative_reviews)
+        ,  last_update_time(r.last_update_time)
+        ,  contents_amount(r.contents_amount)
+        ,  members(r.members.begin(), r.members.end())
     {
         for (const auto& kvp : r.eci_per_discipline) {
             discipline_id_type discipline_id = kvp.first;
@@ -410,6 +413,11 @@ struct research_api_obj
 
     uint16_t number_of_positive_reviews;
     uint16_t number_of_negative_reviews;
+
+    time_point_sec last_update_time;
+    uint16_t contents_amount;
+
+    std::vector<account_name_type> members;
 };
 
 struct research_content_api_obj
@@ -673,9 +681,10 @@ struct research_group_invite_api_obj
 {
     research_group_invite_api_obj(const chain::research_group_invite_object& co)
         : id(co.id._id)
-        ,  account_name(co.account_name)
-        ,  research_group_id(co.research_group_id._id)
-        ,  research_group_token_amount(co.research_group_token_amount)
+        , account_name(co.account_name)
+        , research_group_id(co.research_group_id._id)
+        , research_group_token_amount(co.research_group_token_amount)
+        , cover_letter(fc::to_string(co.cover_letter))
     {}
 
     // because fc::variant require for temporary object
@@ -687,34 +696,40 @@ struct research_group_invite_api_obj
     account_name_type account_name;
     int64_t research_group_id;
     share_type research_group_token_amount;
+    std::string cover_letter;
 };
 
 struct research_listing_api_obj
 {
     research_listing_api_obj(const research_api_obj& r,
                              const research_group_api_obj& rg,
-                             const vector<account_name_type>& authors,
-                             const int64_t& votes_count) :
-
-        research_id(r.id),
-        title(r.title),
-        abstract(r.abstract),
-        permlink(r.permlink),
-        owned_tokens(r.owned_tokens),
-        review_share_in_percent(r.review_share_in_percent),
-        created_at(r.created_at),
-        authors(authors.begin(), authors.end()),
-        disciplines(r.disciplines.begin(), r.disciplines.end()),
-        votes_count(votes_count),
-        group_id(rg.id),
-        group_permlink(rg.permlink)
+                             const vector<account_name_type>& group_members,
+                             const int64_t& votes_count)
+        : research_id(r.id)
+        , title(r.title)
+        , abstract(r.abstract)
+        , permlink(r.permlink)
+        , owned_tokens(r.owned_tokens)
+        , review_share_in_percent(r.review_share_in_percent)
+        , created_at(r.created_at)
+        , group_members(group_members.begin(), group_members.end())
+        , disciplines(r.disciplines.begin(), r.disciplines.end())
+        , votes_count(votes_count)
+        , group_id(rg.id)
+        , group_permlink(rg.permlink)
+        , last_update_time(r.last_update_time)
+        , contents_amount(r.contents_amount)
+        , members(r.members.begin(), r.members.end())
+        , number_of_positive_reviews(r.number_of_positive_reviews)
+        , number_of_negative_reviews(r.number_of_negative_reviews)
+    {
+        for (const auto& kvp : r.eci_per_discipline)
         {
-            for (const auto& kvp : r.eci_per_discipline) {
-                discipline_id_type discipline_id = kvp.first;
-                share_type weight = kvp.second;
-                eci_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
-            }
+            discipline_id_type discipline_id = kvp.first;
+            share_type weight = kvp.second;
+            eci_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
         }
+    }
 
     // because fc::variant require for temporary object
     research_listing_api_obj()
@@ -728,12 +743,17 @@ struct research_listing_api_obj
     share_type owned_tokens;
     uint16_t review_share_in_percent;
     time_point_sec created_at;
-    vector<account_name_type> authors;
+    vector<account_name_type> group_members;
     vector<discipline_api_obj> disciplines;
     int64_t votes_count;
     int64_t group_id;
     string group_permlink;
     map<int64_t, int64_t> eci_per_discipline;
+    time_point_sec last_update_time;
+    uint16_t contents_amount;
+    std::vector<account_name_type> members;
+    uint16_t number_of_positive_reviews;
+    uint16_t number_of_negative_reviews;
 };
 
 struct total_votes_api_obj
@@ -1174,6 +1194,9 @@ FC_REFLECT( deip::app::research_api_obj,
             (eci_per_discipline)
             (number_of_positive_reviews)
             (number_of_negative_reviews)
+            (last_update_time)
+            (contents_amount)
+            (members)
           )
 
 FC_REFLECT( deip::app::research_content_api_obj,
@@ -1276,6 +1299,7 @@ FC_REFLECT( deip::app::research_group_invite_api_obj,
             (account_name)
             (research_group_id)
             (research_group_token_amount)
+            (cover_letter)
 )
 
 FC_REFLECT( deip::app::research_listing_api_obj,
@@ -1286,12 +1310,17 @@ FC_REFLECT( deip::app::research_listing_api_obj,
            (owned_tokens)
            (review_share_in_percent)
            (created_at)
-           (authors)
+           (group_members)
            (disciplines)
            (votes_count)
            (group_id)
            (group_permlink)
            (eci_per_discipline)
+           (last_update_time)
+           (contents_amount)
+           (members)
+           (number_of_positive_reviews)
+           (number_of_negative_reviews)
 )
 
 FC_REFLECT( deip::app::total_votes_api_obj,

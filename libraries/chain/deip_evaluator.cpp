@@ -654,10 +654,10 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
     account_service.check_account_existence(op.author);
-
     research_content_service.check_research_content_existence(op.research_content_id);
 
     auto& content = research_content_service.get(op.research_content_id);
+    // TODO: Split this method into separate methods for content and grant application
     review_service.make_review_execution(op.research_content_id, content.research_id, false, op.author, op.weight, op.is_positive, op.content);
 }
 
@@ -834,6 +834,8 @@ void withdraw_vesting_balance_evaluator::do_apply(const withdraw_vesting_balance
     vesting_balance_service.check_existence(op.vesting_balance_id);
 
     const auto& vco = vesting_balance_service.get(op.vesting_balance_id);
+    FC_ASSERT(op.owner == vco.owner, "", ("op.owner", op.owner)("vco.owner", vco.owner));
+
     const auto now = _db.head_block_time();
     share_type allowed_withdraw = 0;
 
@@ -1108,158 +1110,8 @@ void make_review_for_application_evaluator::do_apply(const make_review_for_appli
     research_content_service.check_application_existence(op.grant_application_id);
 
     auto& application = research_content_service.get_grant_application(op.grant_application_id);
+    // TODO: Split this method into separate methods for content and grant application
     review_service.make_review_execution(op.grant_application_id, application.research_id, true, op.author, op.weight, op.is_positive, op.content);
-
-}
-
-void adjust_account_balance_evaluator::do_apply(const adjust_account_balance_operation& op)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-
-    account_service.check_account_existence(op.account);
-    auto& account = account_service.get_account(op.account);
-
-    FC_ASSERT(account.balance + op.delta >= asset(0, DEIP_SYMBOL),
-              "Account does not have sufficient funds for adjust.");
-
-    account_service.adjust_balance(account, op.delta);
-}
-
-void request_review_evaluator::do_apply(const request_review_operation& op)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_research& research_service = _db.obtain_service<dbs_research>();
-    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
-    dbs_review& review_service = _db.obtain_service<dbs_review>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
-    dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
-    dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
-    dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
-    dbs_vote& votes_service = _db.obtain_service<dbs_vote>();
-    dbs_discipline& disciplines_service = _db.obtain_service<dbs_discipline>();
-
-    account_service.check_account_existence(op.requester);
-    research_service.check_research_existence(op.research_id);
-
-    for (auto& account : op.accounts_list)
-        account_service.check_account_existence(account);
-
-    auto content_list = research_content_service.get_by_research_and_type(op.research_id, research_content_type::announcement);
-
-    FC_ASSERT(content_list.size() > 0, "Research does not have an announcement");
-
-    auto& content = content_list.front().get();
-
-    auto& research = research_service.get_research(content.research_id);
-    auto reseach_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
-
-    for (auto& account : op.accounts_list)
-    {
-        auto expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(account);
-        auto research_discipline_relations
-            = research_discipline_service.get_research_discipline_relations_by_research(content.research_id);
-
-        std::map<discipline_id_type, share_type> review_disciplines_with_weight;
-        std::set<discipline_id_type> review_disciplines;
-        std::set<discipline_id_type> research_disciplines_ids;
-        for (auto rdr : research_discipline_relations)
-        {
-            research_disciplines_ids.insert(rdr.get().discipline_id);
-        }
-
-        for (auto expert_token : expertise_tokens)
-        {
-            auto& token = expert_token.get();
-            if (research_disciplines_ids.find(token.discipline_id) != research_disciplines_ids.end())
-            {
-                const int64_t elapsed_seconds = (_db.head_block_time() - token.last_vote_time).to_seconds();
-
-                const int64_t regenerated_power = (DEIP_100_PERCENT * elapsed_seconds) / DEIP_VOTE_REGENERATION_SECONDS;
-                const int64_t current_power
-                    = std::min(int64_t(token.voting_power + regenerated_power), int64_t(DEIP_100_PERCENT));
-                FC_ASSERT(current_power > 0, "Account currently does not have voting power.");
-
-                const int64_t used_power = (DEIP_REVIEW_REQUIRED_POWER_PERCENT * DEIP_100_PERCENT) / DEIP_100_PERCENT;
-
-                FC_ASSERT(used_power <= current_power, "Account does not have enough power to vote.");
-
-                const uint64_t abs_used_tokens
-                    = ((uint128_t(token.amount.value) * current_power) / (DEIP_100_PERCENT)).to_uint64();
-
-                _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
-                    t.voting_power = current_power - used_power;
-                    t.last_vote_time = _db.head_block_time();
-                });
-                review_disciplines_with_weight.insert(std::make_pair(token.discipline_id, abs_used_tokens));
-                review_disciplines.insert(token.discipline_id);
-            }
-        }
-
-        if (review_disciplines.size() == 0)
-        {
-            ilog("Reviewer does not have enough expertise to make review.");
-            continue;
-        }
-
-        std::string content_string
-            = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vestibulum lobortis elementum. "
-              "Integer pulvinar massa a scelerisque volutpat. Sed erat arcu, porttitor in vehicula quis, laoreet ut "
-              "lectus. "
-              "Quisque venenatis aliquet lacus sed finibus. In id ex risus. In ultrices varius quam a interdum. "
-              "Duis a erat vitae urna sagittis malesuada. Vestibulum pharetra porta feugiat. "
-              "Pellentesque semper hendrerit ligula vitae finibus. Morbi vel porttitor nulla, nec mollis elit. "
-              "In placerat justo fringilla, euismod nibh et, placerat sapien. In imperdiet tortor eget varius "
-              "consectetur. "
-              "Sed posuere tincidunt erat, non suscipit nisl laoreet a. Maecenas congue maximus diam, et lobortis quam "
-              "hendrerit rhoncus. "
-              "Ut nulla nisl, posuere ac pharetra at, varius ac erat.";
-
-        auto& review = review_service.create(content.id._id, false, content_string, true, account, review_disciplines);
-
-        for (auto& review_discipline : review_disciplines)
-        {
-            auto& token
-                = expertise_token_service.get_expert_token_by_account_and_discipline(account, review_discipline);
-
-            auto used_expertise = review_disciplines_with_weight.at(token.discipline_id);
-
-            _db._temporary_public_impl().modify(review, [&](review_object& r) {
-                r.expertise_amounts_used[token.discipline_id] = used_expertise;
-                r.weights_per_discipline[token.discipline_id] = used_expertise;
-                r.weight_modifiers[token.discipline_id] = 1;
-            });
-
-            if (votes_service.is_exists_by_content_and_discipline(content.id, token.discipline_id))
-            {
-                auto& total_votes
-                    = votes_service.get_total_votes_by_content_and_discipline(content.id, token.discipline_id);
-
-                _db._temporary_public_impl().modify(total_votes,
-                                                    [&](total_votes_object& tv) { tv.total_weight += used_expertise; });
-            }
-            else
-            {
-                _db._temporary_public_impl().create<total_votes_object>([&](total_votes_object& tv) {
-                    tv.discipline_id = token.discipline_id;
-                    tv.research_content_id = content.id;
-                    tv.research_id = content.research_id;
-                    tv.total_weight = used_expertise;
-                    tv.content_type = content.type;
-                });
-            }
-
-            auto& discipline = disciplines_service.get_discipline(token.discipline_id);
-            _db._temporary_public_impl().modify(discipline,
-                                                [&](discipline_object& d) { d.total_active_weight += used_expertise; });
-
-            _db._temporary_public_impl().modify(content, [&](research_content_object& rc_o) {
-                rc_o.eci_per_discipline[review_discipline] += review.get_evaluation(token.discipline_id);
-            });
-
-            research_service.calculate_eci(content.research_id);
-            expertise_stats_service.update_used_expertise(used_expertise);
-        }
-    }
 }
 
 void approve_grant_application_evaluator::do_apply(const approve_grant_application_operation& op)
@@ -1305,7 +1157,6 @@ void reject_grant_application_evaluator::do_apply(const reject_grant_application
     FC_ASSERT(op_is_allowed, "This account cannot reject applications");
     research_content_service.update_application_status(grant_application, grant_application_status::application_rejected);
 }
-
 
 } // namespace chain
 } // namespace deip 

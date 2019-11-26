@@ -52,6 +52,7 @@ public:
         : _app(app)
         , _db(_app.chain_database())
     {
+        _disable_get_block = app._disable_get_block;
     }
 
     using result_type = std::map<uint32_t, applied_operation>;
@@ -91,6 +92,14 @@ public:
             return result;
         });
     }
+
+    optional<protocol::block_header> get_block_header(uint32_t block_num) const;
+
+    std::map<uint32_t, protocol::block_header> get_block_headers_history(uint32_t block_num, uint32_t limit) const;
+
+    std::map<uint32_t, app::signed_block_api_obj> get_blocks_history(uint32_t block_num, uint32_t limit) const;
+
+    bool _disable_get_block = false;
 };
 
 bool operation_filter(operation& op, const applied_operation_type& opt)
@@ -196,5 +205,46 @@ annotated_signed_transaction blockchain_history_api::get_transaction(transaction
     });
 #endif
 }
+
+optional<protocol::block_header> blockchain_history_api::get_block_header(uint32_t block_num) const
+{
+    FC_ASSERT(!_impl->_disable_get_block, "get_block_header is disabled on this node.");
+
+    return _impl->_db->with_read_lock([&]() { return _impl->get_block_header(block_num); });
+}
+
+optional<block_header> detail::blockchain_history_api_impl::get_block_header(uint32_t block_num) const
+{
+    auto result = _db->fetch_block_by_number(block_num);
+    if (result)
+        return *result;
+    return {};
+}
+
+std::map<uint32_t, block_header> blockchain_history_api::get_block_headers_history(uint32_t block_num, uint32_t limit) const
+{
+    FC_ASSERT(!_impl->_app.is_read_only(), "Disabled for read only mode");
+    return _impl->_db->with_read_lock([&]() { return _impl->get_block_headers_history(block_num, limit); });
+}
+
+std::map<uint32_t, block_header> detail::blockchain_history_api_impl::get_block_headers_history(uint32_t block_num, uint32_t limit) const
+{
+    std::map<uint32_t, block_header> ret;
+    _db->get_blocks_history_by_number<protocol::block_header>(ret, block_num, limit);
+    return ret;
+}
+
+std::map<uint32_t, app::signed_block_api_obj> blockchain_history_api::get_blocks_history(uint32_t block_num, uint32_t limit) const
+{
+    FC_ASSERT(!_impl->_app.is_read_only(), "Disabled for read only mode");
+    return _impl->_db->with_read_lock([&]() { return _impl->get_blocks_history(block_num, limit); });
+}
+std::map<uint32_t, app::signed_block_api_obj> detail::blockchain_history_api_impl::get_blocks_history(uint32_t block_num, uint32_t limit) const
+{
+    std::map<uint32_t, app::signed_block_api_obj> ret;
+    _db->get_blocks_history_by_number<app::signed_block_api_obj>(ret, block_num, limit);
+    return ret;
+}
+
 }
 }

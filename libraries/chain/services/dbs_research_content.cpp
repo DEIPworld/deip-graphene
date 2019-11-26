@@ -52,7 +52,11 @@ const research_content_object& dbs_research_content::create(const research_id_ty
         }
 
         auto& research = db_impl().get<research_object>(research_id);
-        db_impl().modify(research, [&](research_object& r_o) { r_o.last_update_time = now; });
+        db_impl().modify(research, [&](research_object& r_o)
+        {
+            r_o.last_update_time = now;
+            r_o.contents_amount++;
+        });
 
     });
 

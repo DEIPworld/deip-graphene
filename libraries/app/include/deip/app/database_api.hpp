@@ -85,36 +85,11 @@ public:
     /////////////////////////////
 
     /**
-     * @brief Retrieve a block header
-     * @param block_num Height of the block whose header should be returned
-     * @return header of the referenced block, or null if no matching block was found
-     */
-    optional<block_header> get_block_header(uint32_t block_num) const;
-
-    /**
      * @brief Retrieve a full, signed block
      * @param block_num Height of the block to be returned
      * @return the referenced block, or null if no matching block was found
      */
     optional<signed_block_api_obj> get_block(uint32_t block_num) const;
-
-    /**
-     * Retrieve the list of block headers in range [from-limit, from]
-     *
-     * @param block_num Height of the block to be returned
-     * @param limit the maximum number of blocks that can be queried (0 to 100], must be less than from
-     * @return the list of block headers
-     */
-    std::map<uint32_t, block_header> get_block_headers_history(uint32_t block_num, uint32_t limit) const;
-
-    /**
-     * Retrieve the list of signed block from block log (irreversible blocks) in range [from-limit, from]
-     *
-     * @param block_num Height of the block to be returned
-     * @param limit the maximum number of blocks that can be queried (0 to 100], must be less than from
-     * @return the list of signed blocks
-     */
-    std::map<uint32_t, signed_block_api_obj> get_blocks_history(uint32_t block_num, uint32_t limit) const;
 
     /////////////
     // Globals //
@@ -191,6 +166,8 @@ public:
     vector<withdraw_route> get_withdraw_routes(string account, withdraw_route_type type = outgoing) const;
 
     optional<account_bandwidth_api_obj> get_account_bandwidth(string account, witness::bandwidth_type type) const;
+
+    vector<account_api_obj> get_accounts_by_expert_discipline(const discipline_id_type& discipline_id, uint32_t from, uint32_t limit) const;
 
     ///////////////
     // Witnesses //
@@ -400,11 +377,16 @@ public:
             const discipline_id_type& discipline_id) const;
 
     ///////////////////////////////
-    // Reviews                   //
+    // Research Reviews          //
     ///////////////////////////////
     review_api_obj get_review_by_id(const review_id_type& review_id) const;
     vector<review_api_obj> get_reviews_by_research(const research_id_type& research_id) const;
     vector<review_api_obj> get_reviews_by_content(const research_content_id_type& research_content_id) const;
+    vector<review_api_obj> get_reviews_by_author(const account_name_type& author) const;
+
+    ///////////////////////////////
+    // Grnat Application Reviews //
+    ///////////////////////////////
     vector<review_api_obj> get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const;
 
     /////////////////////
@@ -520,11 +502,8 @@ FC_API(deip::app::database_api,
    // Subscriptions
    (set_block_applied_callback)
 
-   // Blocks and transactions
-   (get_block_header)
+   //blocks
    (get_block)
-   (get_block_headers_history)
-   (get_blocks_history)
    (get_state)
 
    // Globals
@@ -549,6 +528,7 @@ FC_API(deip::app::database_api,
    (get_recovery_request)
    (get_withdraw_routes)
    (get_account_bandwidth)
+   (get_accounts_by_expert_discipline)
 
    // Authority / validation
    (get_transaction_hex)
@@ -646,6 +626,9 @@ FC_API(deip::app::database_api,
    (get_review_by_id)
    (get_reviews_by_research)
    (get_reviews_by_content)
+   (get_reviews_by_author)
+
+   // Grant Application Reviews
    (get_reviews_by_grant_application)
 
    // Research token

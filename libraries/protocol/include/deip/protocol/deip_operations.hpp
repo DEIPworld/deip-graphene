@@ -779,33 +779,6 @@ struct create_grant_application_operation : public base_operation
     }
 };
 
-struct adjust_account_balance_operation : public base_operation
-{
-    account_name_type account;
-    asset delta;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(account);
-    }
-};
-
-struct request_review_operation : public base_operation
-{
-    int64_t research_id;
-    std::vector<account_name_type> accounts_list;
-    account_name_type requester;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type> & a) const
-    {
-        a.insert(requester);
-    }
-};
-
 struct make_review_for_application_operation : public base_operation
 {
     account_name_type author;
@@ -846,7 +819,6 @@ struct reject_grant_application_operation : public base_operation
         a.insert(rejecter);
     }
 };
-
 
 } // namespace protocol
 } // namespace deip
@@ -915,8 +887,6 @@ FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (offer_resear
 FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 FC_REFLECT( deip::protocol::create_grant_operation, (target_discipline)(amount)(min_number_of_positive_reviews)(min_number_of_applications)(researches_to_grant)(start_time)(end_time)(owner)(officers))
 FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
-FC_REFLECT( deip::protocol::adjust_account_balance_operation, (account)(delta))
-FC_REFLECT( deip::protocol::request_review_operation, (research_id)(accounts_list)(requester))
 FC_REFLECT( deip::protocol::make_review_for_application_operation, (author)(grant_application_id)(content)(is_positive)(weight))
 FC_REFLECT( deip::protocol::approve_grant_application_operation, (grant_application_id)(approver))
 FC_REFLECT( deip::protocol::reject_grant_application_operation, (grant_application_id)(rejecter))
