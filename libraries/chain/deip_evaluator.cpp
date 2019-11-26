@@ -948,6 +948,8 @@ void withdraw_vesting_balance_evaluator::do_apply(const withdraw_vesting_balance
     vesting_balance_service.check_existence(op.vesting_balance_id);
 
     const auto& vco = vesting_balance_service.get(op.vesting_balance_id);
+    FC_ASSERT(op.owner == vco.owner, "", ("op.owner", op.owner)("vco.owner", vco.owner));
+
     const auto now = _db.head_block_time();
     share_type allowed_withdraw = 0;
 
