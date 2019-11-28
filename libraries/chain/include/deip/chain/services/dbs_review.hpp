@@ -39,14 +39,6 @@ public:
                                 const account_name_type& author,
                                 const std::set<discipline_id_type>& disciplines);
 
-    void make_review_execution(const int64_t& object_id,
-                               const research_id_type& research_id,
-                               const bool is_grant_application,
-                               const account_name_type& author,
-                               const uint16_t& weight,
-                               const bool is_positive,
-                               const std::string& content);
-
 };
 } // namespace chain
 } // namespace deip
