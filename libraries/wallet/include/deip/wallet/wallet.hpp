@@ -1266,9 +1266,38 @@ public:
                                                               const std::string& buyer,
                                                               const bool broadcast);
 
+    annotated_signed_transaction create_grant(const int64_t& target_discipline,
+                                              const asset& amount,
+                                              const int64_t& min_number_of_positive_reviews,
+                                              const int64_t& min_number_of_applications,
+                                              const int64_t& max_number_of_researches_to_grant,
+                                              const uint32_t& start_time,
+                                              const uint32_t& end_time,
+                                              const std::string& owner,
+                                              const std::set<string>& officers,
+                                              const bool broadcast);
 
-public:
-    fc::signal<void(bool)> lock_changed;
+    annotated_signed_transaction create_grant_application(const int64_t& grant_id,
+                                                        const int64_t& research_id,
+                                                        const std::string& creator,
+                                                        const std::string& application_hash,
+                                                        const bool broadcast);
+
+    annotated_signed_transaction make_review_for_application(const std::string& author,
+                                                             const int64_t& grant_application_id,
+                                                             const bool& is_positive,
+                                                             const std::string& content,
+                                                             const bool broadcast);
+
+    annotated_signed_transaction approve_grant_application(const int64_t& grant_application_id,
+                                                           const std::string& approver, 
+                                                           const bool broadcast);
+
+    annotated_signed_transaction reject_grant_application(const int64_t& grant_application_id,
+                                                        const std::string& rejector,
+                                                        const bool broadcast);
+
+    public : fc::signal<void(bool)> lock_changed;
 
 private:
     std::shared_ptr<detail::wallet_api_impl> my;
@@ -1404,6 +1433,11 @@ FC_API( deip::wallet::wallet_api,
         (propose_offer_research_tokens)
         (accept_offer_research_tokens)
         (reject_offer_research_tokens)
+        (create_grant)
+        (create_grant_application)
+        (make_review_for_application)
+        (approve_grant_application)
+        (reject_grant_application)
 
         /// helper api
         (get_prototype_operation)

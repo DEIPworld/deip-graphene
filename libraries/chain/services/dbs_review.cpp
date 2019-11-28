@@ -1,4 +1,12 @@
+#include <deip/chain/services/dbs_discipline.hpp>
+#include <deip/chain/services/dbs_expert_token.hpp>
+#include <deip/chain/services/dbs_expertise_stats.hpp>
+#include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_research_content.hpp>
+#include <deip/chain/services/dbs_research_discipline_relation.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_review.hpp>
+#include <deip/chain/services/dbs_vote.hpp>
 #include <deip/chain/database/database.hpp>
 
 #include <tuple>
@@ -27,6 +35,22 @@ dbs_review::review_refs_type dbs_review::get_research_content_reviews(const rese
     return ret;
 }
 
+dbs_review::review_refs_type dbs_review::get_grant_application_reviews(const grant_application_id_type& grant_application_id) const
+{
+    review_refs_type ret;
+
+    auto it_pair = db_impl().get_index<review_index>().indicies().get<by_grant_application>().equal_range(grant_application_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
 dbs_review::review_refs_type dbs_review::get_author_reviews(const account_name_type &author) const
 {
     review_refs_type ret;
@@ -43,7 +67,8 @@ dbs_review::review_refs_type dbs_review::get_author_reviews(const account_name_t
     return ret;
 }
 
-const review_object& dbs_review::create(const research_content_id_type &research_content_id,
+const review_object& dbs_review::create(const int64_t& object_id,
+                                        const bool is_grant_application,
                                         const string &content,
                                         bool is_positive,
                                         const account_name_type &author,
@@ -53,7 +78,11 @@ const review_object& dbs_review::create(const research_content_id_type &research
 
         auto now = db_impl().head_block_time();
 
-        r.research_content_id = research_content_id;
+        if (is_grant_application)
+            r.grant_application_id = object_id;
+        else
+            r.research_content_id = object_id;
+        r.is_grant_application = is_grant_application;
         fc::from_string(r.content, content);
         r.author = author;
         r.is_positive = is_positive;

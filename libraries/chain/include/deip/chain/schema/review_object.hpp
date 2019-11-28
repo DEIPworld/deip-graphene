@@ -46,6 +46,9 @@ public:
     research_content_id_type_set references;
     // TODO: Add external references
 
+    grant_application_id_type grant_application_id;
+    bool is_grant_application = false;
+
     discipline_id_share_type_map weights_per_discipline;
     discipline_id_share_type_map weight_modifiers;
     discipline_id_share_type_map expertise_amounts_used;
@@ -64,9 +67,11 @@ public:
     }
 };
 
-struct by_author;
-struct by_research_content;
 struct by_author_and_research_content;
+struct by_author;
+struct by_grant_application;
+struct by_research_content;
+
 
 typedef multi_index_container<review_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -85,6 +90,10 @@ typedef multi_index_container<review_object,
                         member<review_object,
                                 account_name_type,
                                 &review_object::author>>,
+                ordered_non_unique<tag<by_grant_application>,
+                        member<review_object,
+                                grant_application_id_type,
+                                &review_object::grant_application_id>>,
                 ordered_non_unique<tag<by_research_content>,
                         member<review_object,
                                 research_content_id_type,
@@ -96,7 +105,7 @@ typedef multi_index_container<review_object,
 
 FC_REFLECT(deip::chain::review_object,
            (id)(research_content_id)(content)(is_positive)(author)(created_at)
-           (weights_per_discipline)(disciplines)(references)
+           (weights_per_discipline)(disciplines)(references)(grant_application_id)(is_grant_application)
                    (weight_modifiers)(expertise_amounts_used)
 )
 

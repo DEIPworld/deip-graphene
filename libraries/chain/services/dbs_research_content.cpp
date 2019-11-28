@@ -160,12 +160,13 @@ const grant_application_object dbs_research_content::create_grant_application(co
         fc::from_string(ga.application_hash, application_hash);
         ga.creator = creator;
         ga.created_at = now;
+        ga.status = grant_application_status::application_pending;
     });
 
     return new_grant_application;
 }
 
-const grant_application_object dbs_research_content::get_grant_application(const grant_application_id_type& id)
+const grant_application_object& dbs_research_content::get_grant_application(const grant_application_id_type& id)
 {
     try {
         return db_impl().get<grant_application_object, by_id>(id);
@@ -209,6 +210,19 @@ void dbs_research_content::delete_appication_by_id(const grant_application_id_ty
 {
     auto& grant_application = db_impl().get<grant_application_object, by_id>(grant_application_id);
     db_impl().remove(grant_application);
+}
+
+void dbs_research_content::check_application_existence(const grant_application_id_type& grant_application_id)
+{
+    auto grant_application = db_impl().find<grant_application_object, by_id>(grant_application_id);
+    FC_ASSERT(grant_application != nullptr, "Grant application with id \"${1}\" must exist.", ("1", grant_application_id));
+}
+
+const grant_application_object& dbs_research_content::update_application_status(const grant_application_object& grant_application,
+                                                                                const grant_application_status& new_status)
+{
+    db_impl().modify(grant_application, [&](grant_application_object& ga_o) { ga_o.status = new_status; });
+    return grant_application;
 }
 
 }

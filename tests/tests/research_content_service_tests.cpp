@@ -534,6 +534,34 @@ BOOST_AUTO_TEST_CASE(delete_appication_by_id)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(update_application_status)
+{
+    try
+    {
+        db.create<grant_object>([&](grant_object& ga) {
+            ga.id = 1;
+            ga.target_discipline = 1;
+            ga.max_number_of_researches_to_grant = 5;
+            ga.min_number_of_positive_reviews = 5;
+            ga.min_number_of_applications = 10;
+            ga.amount = asset(1000, DEIP_SYMBOL);
+            ga.start_time = db.head_block_time();
+            ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
+            ga.owner = "bob";
+            std::set<account_name_type> officers;
+            officers.insert("alice");
+            ga.officers.insert(officers.begin(), officers.end());
+        });
+
+        create_grant_applications();
+        auto& ga = data_service.get_grant_application(1);
+        data_service.update_application_status(ga, grant_application_status::application_approved);
+
+        BOOST_CHECK(ga.status == grant_application_status::application_approved);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace chain

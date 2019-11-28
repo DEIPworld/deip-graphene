@@ -747,11 +747,13 @@ struct create_grant_operation : public base_operation
 
     int16_t min_number_of_positive_reviews;
     int16_t min_number_of_applications;
-    int16_t researches_to_grant;
+    int16_t max_number_of_researches_to_grant;
     fc::time_point_sec start_time;
     fc::time_point_sec end_time;
 
     account_name_type owner;
+
+    std::set<account_name_type> officers;
 
     void validate() const;
 
@@ -774,6 +776,47 @@ struct create_grant_application_operation : public base_operation
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
         a.insert(creator);
+    }
+};
+
+struct make_review_for_application_operation : public base_operation
+{
+    account_name_type author;
+    int64_t grant_application_id;
+    bool is_positive;
+    std::string content;
+    uint16_t weight;
+
+    void validate() const;
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(author);
+    }
+};
+
+struct approve_grant_application_operation : public base_operation
+{
+    int64_t grant_application_id;
+    account_name_type approver;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(approver);
+    }
+};
+
+struct reject_grant_application_operation : public base_operation
+{
+    int64_t grant_application_id;
+    account_name_type rejector;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(rejector);
     }
 };
 
@@ -842,7 +885,10 @@ FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (cla
 FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (proposal_id)(voter)(voting_power))
 FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (offer_research_tokens_id)(buyer))
-FC_REFLECT( deip::protocol::create_grant_operation, (target_discipline)(amount)(min_number_of_positive_reviews)(min_number_of_applications)(researches_to_grant)(start_time)(end_time)(owner))
+FC_REFLECT( deip::protocol::create_grant_operation, (target_discipline)(amount)(min_number_of_positive_reviews)(min_number_of_applications)(max_number_of_researches_to_grant)(start_time)(end_time)(owner)(officers))
 FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
+FC_REFLECT( deip::protocol::make_review_for_application_operation, (author)(grant_application_id)(content)(is_positive)(weight))
+FC_REFLECT( deip::protocol::approve_grant_application_operation, (grant_application_id)(approver))
+FC_REFLECT( deip::protocol::reject_grant_application_operation, (grant_application_id)(rejector))
 
 // clang-format on

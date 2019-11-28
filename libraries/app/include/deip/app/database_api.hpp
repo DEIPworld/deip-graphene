@@ -377,12 +377,17 @@ public:
             const discipline_id_type& discipline_id) const;
 
     ///////////////////////////////
-    // Reviews                   //
+    // Research Reviews          //
     ///////////////////////////////
     review_api_obj get_review_by_id(const review_id_type& review_id) const;
     vector<review_api_obj> get_reviews_by_research(const research_id_type& research_id) const;
     vector<review_api_obj> get_reviews_by_content(const research_content_id_type& research_content_id) const;
     vector<review_api_obj> get_reviews_by_author(const account_name_type& author) const;
+
+    ///////////////////////////////
+    // Grnat Application Reviews //
+    ///////////////////////////////
+    vector<review_api_obj> get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const;
 
     /////////////////////
     // Research token ///
@@ -622,6 +627,9 @@ FC_API(deip::app::database_api,
    (get_reviews_by_research)
    (get_reviews_by_content)
    (get_reviews_by_author)
+
+   // Grant Application Reviews
+   (get_reviews_by_grant_application)
 
    // Research token
    (get_research_token_by_id)

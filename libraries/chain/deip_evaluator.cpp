@@ -97,14 +97,7 @@ void witness_update_evaluator::do_apply(const witness_update_operation& o)
         });
     }
     else
-    {
-        #ifdef IS_TEST_NET
-            if (_db.has_hardfork(DEIP_HARDFORK_0_1))
-            {
-                FC_ASSERT(false, "Adding new witnesses is disabled currently");
-            }
-        #endif
-        
+    {        
         _db._temporary_public_impl().create<witness_object>([&](witness_object& w) {
             w.owner = o.owner;
             fc::from_string(w.url, o.url);
@@ -355,13 +348,6 @@ void account_witness_proxy_evaluator::do_apply(const account_witness_proxy_opera
 
 void account_witness_vote_evaluator::do_apply(const account_witness_vote_operation& o)
 {
-    #ifdef IS_TEST_NET
-        if (_db.has_hardfork(DEIP_HARDFORK_0_1))
-        {
-            FC_ASSERT(false, "Voting for witnesses is disabled currently");
-        }
-    #endif
-
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_witness& witness_service = _db.obtain_service<dbs_witness>();
 
@@ -663,16 +649,16 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
 
 void make_review_evaluator::do_apply(const make_review_operation& op)
 {
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
-    dbs_research& research_service = _db.obtain_service<dbs_research>();
-    dbs_review& review_service = _db.obtain_service<dbs_review>();
-    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
-    dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
     dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+    dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_review& review_service = _db.obtain_service<dbs_review>();
     dbs_vote& votes_service = _db.obtain_service<dbs_vote>();
-    dbs_discipline& disciplines_service = _db.obtain_service<dbs_discipline>();
 
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
@@ -720,7 +706,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
     FC_ASSERT(review_disciplines.size() != 0, "Reviewer does not have enough expertise to make review.");
 
-    auto& review = review_service.create(op.research_content_id, op.content, op.is_positive, op.author, review_disciplines);
+    auto& review = review_service.create(op.research_content_id, false, op.content, op.is_positive, op.author, review_disciplines);
 
     for (auto& review_discipline : review_disciplines) {
         auto &token = expertise_token_service.get_expert_token_by_account_and_discipline(op.author, review_discipline);
@@ -750,7 +736,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             });
         }
 
-        auto& discipline = disciplines_service.get_discipline(token.discipline_id);
+        auto& discipline = discipline_service.get_discipline(token.discipline_id);
         _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
             d.total_active_weight += used_expertise;
         });
@@ -1171,6 +1157,10 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
     account_service.check_account_existence(op.owner);
     auto& owner = account_service.get_account(op.owner);
 
+    for (auto& officer : op.officers) {
+        account_service.check_account_existence(officer);
+    }
+
     FC_ASSERT(owner.balance >= op.amount, "You do not have enough funds to grant");
     FC_ASSERT(op.start_time >= _db.head_block_time(), "Start time must be greater than now");
 
@@ -1179,33 +1169,163 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
                          op.amount,
                          op.min_number_of_positive_reviews,
                          op.min_number_of_applications,
-                         op.researches_to_grant,
+                         op.max_number_of_researches_to_grant,
                          op.start_time,
                          op.end_time,
-                         op.owner);
+                         op.owner,
+                         op.officers);
 }
 
 void create_grant_application_evaluator::do_apply(const create_grant_application_operation& op)
 {
-    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    const dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
+    const dbs_account& account_service = _db.obtain_service<dbs_account>();
+    const dbs_research& research_service = _db.obtain_service<dbs_research>();
+    const dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    const dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
-    dbs_research& research_service = _db.obtain_service<dbs_research>();
-    dbs_research_token& research_token_service = _db.obtain_service<dbs_research_token>();
-    dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
 
     account_service.check_account_existence(op.creator);
     grant_service.check_grant_existence(op.grant_id);
     research_service.check_research_existence(op.research_id);
-    research_token_service.check_existence_by_owner_and_research(op.creator, op.research_id);
+    
+    const auto& research = research_service.get_research(op.research_id);
+    research_group_service.check_research_group_token_existence(op.creator, research.research_group_id);
 
-    auto& grant = grant_service.get(op.grant_id);
+    const auto& grant = grant_service.get(op.grant_id);
     research_discipline_relation_service.check_existence_by_research_and_discipline(op.research_id, grant.target_discipline);
 
     auto now = _db.head_block_time();
     FC_ASSERT((now >= grant.start_time) && (now <= grant.end_time), "Grant is inactive now");
 
     research_content_service.create_grant_application(op.grant_id, op.research_id, op.application_hash, op.creator);
+}
+
+void make_review_for_application_evaluator::do_apply(const make_review_for_application_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
+    dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
+    dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+    dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_review& review_service = _db.obtain_service<dbs_review>();
+    dbs_vote& votes_service = _db.obtain_service<dbs_vote>();
+
+    account_service.check_account_existence(op.author);
+    research_content_service.check_application_existence(op.grant_application_id);
+
+    auto& application = research_content_service.get_grant_application(op.grant_application_id);
+    auto& research = research_service.get_research(application.research_id);
+    auto reseach_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
+
+    for (auto& reseach_group_token : reseach_group_tokens)
+        FC_ASSERT(reseach_group_token.get().owner != op.author, "You cannot review your own content");
+
+    auto expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
+    auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(application.research_id);
+    std::map<discipline_id_type, share_type> review_disciplines_with_weight;
+    std::set<discipline_id_type> review_disciplines;
+    std::set<discipline_id_type> research_disciplines_ids;
+    for (auto rdr : research_discipline_relations) {
+        research_disciplines_ids.insert(rdr.get().discipline_id);
+    }
+
+    for (auto expert_token : expertise_tokens)
+    {
+        auto& token = expert_token.get();
+        if (research_disciplines_ids.find(token.discipline_id) != research_disciplines_ids.end())
+        {
+            const int64_t elapsed_seconds   = (_db.head_block_time() - token.last_vote_time).to_seconds();
+
+            const int64_t regenerated_power = (DEIP_100_PERCENT * elapsed_seconds) / DEIP_VOTE_REGENERATION_SECONDS;
+            const int64_t current_power = std::min(int64_t(token.voting_power + regenerated_power), int64_t(DEIP_100_PERCENT));
+            FC_ASSERT(current_power > 0, "Account currently does not have voting power.");
+
+            const int64_t used_power = (DEIP_REVIEW_REQUIRED_POWER_PERCENT * op.weight) / DEIP_100_PERCENT;
+
+            FC_ASSERT(used_power <= current_power, "Account does not have enough power to vote.");
+
+            const uint64_t abs_used_tokens = ((uint128_t(token.amount.value) * current_power) / (DEIP_100_PERCENT)).to_uint64();
+
+            _db._temporary_public_impl().modify(token, [&](expert_token_object& t) {
+                t.voting_power = current_power - used_power;
+                t.last_vote_time = _db.head_block_time();
+            });
+            review_disciplines_with_weight.insert(std::make_pair(token.discipline_id, abs_used_tokens));
+            review_disciplines.insert(token.discipline_id);
+        }
+    }
+
+    FC_ASSERT(review_disciplines.size() != 0, "Reviewer does not have enough expertise to make review.");
+
+    auto& review = review_service.create(op.grant_application_id, true, op.content, op.is_positive, op.author, review_disciplines);
+
+    for (auto& review_discipline : review_disciplines) {
+        auto &token = expertise_token_service.get_expert_token_by_account_and_discipline(op.author, review_discipline);
+
+        auto used_expertise = review_disciplines_with_weight.at(token.discipline_id);
+
+        _db._temporary_public_impl().modify(review, [&](review_object& r) {
+            r.expertise_amounts_used[token.discipline_id] = used_expertise;
+            r.weights_per_discipline[token.discipline_id] = used_expertise;
+            r.weight_modifiers[token.discipline_id] = 1;
+        });
+
+        auto& discipline = discipline_service.get_discipline(token.discipline_id);
+        _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
+            d.total_active_weight += used_expertise;
+        });
+
+        expertise_stats_service.update_used_expertise(used_expertise);
+    }
+}
+
+void approve_grant_application_evaluator::do_apply(const approve_grant_application_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+
+    account_service.check_account_existence(op.approver);
+    research_content_service.check_application_existence(op.grant_application_id);
+
+    auto& grant_application = research_content_service.get_grant_application(op.grant_application_id);
+    FC_ASSERT(grant_application.status == grant_application_status::application_pending,"Grant application ${a} has ${s} status", ("a", grant_application.id)("s", grant_application.status));
+    
+    auto& grant = grant_service.get(grant_application.grant_id);
+    auto officers = grant.officers;
+    bool op_is_allowed = grant.owner == op.approver || std::any_of(officers.begin(), officers.end(), [&](account_name_type& officer) {
+        return officer == op.approver;
+    });
+
+    FC_ASSERT(op_is_allowed, "This account cannot approve applications");
+    research_content_service.update_application_status(grant_application, grant_application_status::application_approved);
+}
+
+void reject_grant_application_evaluator::do_apply(const reject_grant_application_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
+    dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    account_service.check_account_existence(op.rejector);
+    research_content_service.check_application_existence(op.grant_application_id);
+
+    auto& grant_application = research_content_service.get_grant_application(op.grant_application_id);
+    FC_ASSERT(grant_application.status == grant_application_status::application_pending, "Grant application ${a} has ${s} status", ("a", grant_application.id)("s", grant_application.status));
+    
+    auto& grant = grant_service.get(grant_application.grant_id);
+    auto officers = grant.officers;
+    bool op_is_allowed = grant.owner == op.rejector || std::any_of(officers.begin(), officers.end(), [&](account_name_type& officer) {
+        return officer == op.rejector;
+    });
+
+    FC_ASSERT(op_is_allowed, "This account cannot reject applications");
+    research_content_service.update_application_status(grant_application, grant_application_status::application_rejected);
 }
 
 } // namespace chain

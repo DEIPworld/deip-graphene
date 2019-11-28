@@ -1340,14 +1340,14 @@ void database::distribute_grant(const grant_object& grant)
         researches_eci.insert(std::make_pair(rd_relation.research_eci, rd_relation.research_id));
     }
 
-    std::vector<std::pair<share_type, research_id_type>> researches_to_grant(grant.max_researches_to_grant);
-    std::copy(researches_eci.begin(), researches_eci.end(), researches_to_grant.begin());
+    std::vector<std::pair<share_type, research_id_type>> max_number_of_researches_to_grant(grant.max_number_of_researches_to_grant);
+    std::copy(researches_eci.begin(), researches_eci.end(), max_number_of_researches_to_grant.begin());
 
     share_type total_eci = 0;
-    for (auto& research_eci : researches_to_grant)
+    for (auto& research_eci : max_number_of_researches_to_grant)
         total_eci += research_eci.first;
 
-    for (auto& research_eci : researches_to_grant)
+    for (auto& research_eci : max_number_of_researches_to_grant)
     {
         asset research_reward = util::calculate_share(grant.amount, research_eci.first, total_eci);
         auto& research = get<research_object>(research_eci.second);
@@ -1894,6 +1894,10 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<accept_research_token_offer_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_research_token_offer_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_grant_application_evaluator>();
+    _my->_evaluator_registry.register_evaluator<make_review_for_application_evaluator>();
+    _my->_evaluator_registry.register_evaluator<approve_grant_application_evaluator>();
+    _my->_evaluator_registry.register_evaluator<reject_grant_application_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -2790,6 +2794,12 @@ void database::validate_invariants() const
         for (auto itr = discipline_supply_idx.begin(); itr != discipline_supply_idx.end(); ++itr)
         {
             total_supply += itr->balance;
+        }
+
+        const auto& grant_idx = get_index<grant_index, by_id>();
+        for (auto itr = grant_idx.begin(); itr != grant_idx.end(); ++itr)
+        {
+            total_supply += itr->amount;
         }
 
         total_supply +=  gpo.common_tokens_fund;

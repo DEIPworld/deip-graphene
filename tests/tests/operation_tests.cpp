@@ -2602,6 +2602,28 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
 
         private_key_type alice_priv_key = generate_private_key("alice");
 
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 7000));
+
+        research_group_create(31, "group", "test", "test", 100, proposal_quorums, false);
+
+        const auto& new_research = db.create<research_object>([&](research_object& r) {
+            r.id = 1;
+            fc::from_string(r.title, "title");
+            fc::from_string(r.abstract, "abstract");
+            fc::from_string(r.permlink, "permlink");
+            r.research_group_id = 31;
+            r.review_share_in_percent = 1500;
+            r.dropout_compensation_in_percent = 1500;
+            r.is_finished = false;
+            r.owned_tokens = DEIP_100_PERCENT;
+            r.created_at = db.head_block_time();
+            r.last_update_time = db.head_block_time();
+            r.review_share_in_percent_last_update = fc::time_point_sec(db.head_block_time().sec_since_epoch() - DAYS_TO_SECONDS(100));
+        });
+
         research_token_sale_create(0, 1, db.head_block_time() - 60 * 60 * 5, db.head_block_time() + 60 * 60 * 5, 200, 1000, 100, 400);
         research_token_sale_contribution_create(0, 0, "bob", 200, db.head_block_time());
 
@@ -4514,7 +4536,7 @@ BOOST_AUTO_TEST_CASE(create_grant_test)
         op.owner = "bob";
         op.min_number_of_positive_reviews = 4;
         op.min_number_of_applications = 10;
-        op.researches_to_grant = 10;
+        op.max_number_of_researches_to_grant = 10;
         op.start_time = db.head_block_time() + DAYS_TO_SECONDS(10);
         op.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
 
@@ -4535,7 +4557,7 @@ BOOST_AUTO_TEST_CASE(create_grant_test)
         BOOST_CHECK(grant.owner == "bob");
         BOOST_CHECK(grant.min_number_of_positive_reviews == 4);
         BOOST_CHECK(grant.min_number_of_applications == 10);
-        BOOST_CHECK(grant.max_researches_to_grant == 10);
+        BOOST_CHECK(grant.max_number_of_researches_to_grant == 10);
         BOOST_CHECK(grant.created_at == db.head_block_time());
         BOOST_CHECK(grant.start_time == db.head_block_time() + DAYS_TO_SECONDS(10));
         BOOST_CHECK(grant.end_time == db.head_block_time() + DAYS_TO_SECONDS(30));
@@ -4557,7 +4579,7 @@ BOOST_AUTO_TEST_CASE(create_grant_application_test)
         db.create<grant_object>([&](grant_object& ga) {
             ga.id = 0;
             ga.target_discipline = 1;
-            ga.max_researches_to_grant = 5;
+            ga.max_number_of_researches_to_grant = 5;
             ga.min_number_of_positive_reviews = 5;
             ga.amount = asset(1000, DEIP_SYMBOL);
             ga.start_time = db.head_block_time();
@@ -4613,6 +4635,181 @@ BOOST_AUTO_TEST_CASE(create_grant_application_test)
         BOOST_CHECK(grant_application.creator == "alice");
         BOOST_CHECK(grant_application.application_hash == "test");
         BOOST_CHECK(grant_application.created_at == db.head_block_time());
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(make_review_grant_application)
+{
+    ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(john)(greg))
+    std::vector<std::pair<account_name_type, share_type>> accounts = { std::make_pair("alice", 100)};
+    std::map<uint16_t, share_type> proposal_quorums;
+
+    for (int i = First_proposal; i <= Last_proposal; i++)
+        proposal_quorums.insert(std::make_pair(i, 1));
+
+    setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, false, accounts);
+
+    auto& research = db.create<research_object>([&](research_object& r) {
+        r.id = 1;
+        r.title = "Research #1";
+        r.permlink = "Research #1 permlink";
+        r.research_group_id = 31;
+        r.review_share_in_percent = 1000;
+        r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
+        r.is_finished = false;
+        r.created_at = db.head_block_time();
+        r.abstract = "abstract for Research #1";
+        r.owned_tokens = DEIP_100_PERCENT;
+    });
+
+    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& rdr) {
+        rdr.id = 0;
+        rdr.discipline_id = 1;
+        rdr.research_id = 1;
+    });
+
+    db.create<research_discipline_relation_object>([&](research_discipline_relation_object& rdr) {
+        rdr.id = 1;
+        rdr.discipline_id = 2;
+        rdr.research_id = 1;
+    });
+
+    db.create<grant_application_object>([&](grant_application_object& ga) {
+        ga.id = 1;
+        ga.grant_id = 1;
+        ga.research_id = 1;
+        ga.application_hash = "test";
+
+        ga.creator = "alice";
+    });
+
+
+    make_review_for_application_operation op3;
+
+    op3.author = "john";
+    op3.grant_application_id = 1;
+    op3.content = "test";
+    op3.is_positive = true;
+    op3.weight =  DEIP_100_PERCENT;
+
+    private_key_type john_priv_key = generate_private_key("john");
+
+    signed_transaction tx3;
+    tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+    tx3.operations.push_back(op3);
+    tx3.sign(john_priv_key, db.get_chain_id());
+    tx3.validate();
+    db.push_transaction(tx3, 0);
+
+    auto& review = db.get<review_object>(0);
+
+    BOOST_CHECK(review.grant_application_id == 1);
+    BOOST_CHECK(review.is_grant_application == true);
+
+}
+
+BOOST_AUTO_TEST_CASE(approve_grant_application)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: approve_grant_application");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(jack)(mike));
+        generate_block();
+
+
+        db.create<grant_object>([&](grant_object& g_o) {
+            g_o.id = 1;
+            g_o.target_discipline = 1;
+            g_o.min_number_of_positive_reviews = 5;
+            g_o.amount = asset(1000, DEIP_SYMBOL);
+            g_o.start_time = db.head_block_time();
+            g_o.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
+            g_o.owner = "bob";
+            g_o.officers = { "alice", "bob" };
+        });
+
+        db.create<grant_application_object>([&](grant_application_object& ga_o) {
+            ga_o.id = 1;
+            ga_o.grant_id = 1;
+            ga_o.research_id = 1;
+            ga_o.creator = "alice";
+            ga_o.application_hash = "test1";
+            ga_o.status = grant_application_status::application_pending;
+        });
+
+        approve_grant_application_operation op;
+
+        op.grant_application_id = 1;
+        op.approver = "bob";
+
+        private_key_type priv_key = generate_private_key("bob");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& grant_application = db.get<grant_application_object>(1);
+
+        BOOST_CHECK(grant_application.status == application_approved);
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE(reject_grant_application)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: reject_grant_application");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(jack)(mike));
+        generate_block();
+
+
+        db.create<grant_object>([&](grant_object& g_o) {
+            g_o.id = 1;
+            g_o.target_discipline = 1;
+            g_o.min_number_of_positive_reviews = 5;
+            g_o.amount = asset(1000, DEIP_SYMBOL);
+            g_o.start_time = db.head_block_time();
+            g_o.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
+            g_o.owner = "bob";
+            std::set<account_name_type> officers;
+            officers.insert("alice");
+            officers.insert("bob");
+            g_o.officers.insert(officers.begin(), officers.end());
+        });
+
+        db.create<grant_application_object>([&](grant_application_object& ga_o) {
+            ga_o.id = 1;
+            ga_o.grant_id = 1;
+            ga_o.research_id = 1;
+            ga_o.creator = "alice";
+            ga_o.application_hash = "test1";
+            ga_o.status = grant_application_status::application_pending;
+        });
+
+        reject_grant_application_operation op;
+
+        op.grant_application_id = 1;
+        op.rejector = "bob";
+
+        private_key_type priv_key = generate_private_key("bob");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        auto& grant_application = db.get<grant_application_object>(1);
+
+        BOOST_CHECK(grant_application.status == application_rejected);
     }
     FC_LOG_AND_RETHROW()
 }

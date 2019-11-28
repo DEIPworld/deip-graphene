@@ -784,8 +784,10 @@ struct review_api_obj
     review_api_obj(const chain::review_object& r, const vector<discipline_api_obj>& disciplines)
             : id(r.id._id)
             , research_content_id(r.research_content_id._id)
+            , grant_application_id(r.grant_application_id._id)
             , content(fc::to_string(r.content))
             , is_positive(r.is_positive)
+            , is_grant_application(r.is_grant_application)
             , author(r.author)
             , created_at(r.created_at)
     {
@@ -807,8 +809,10 @@ struct review_api_obj
 
     int64_t id;
     int64_t research_content_id;
+    int64_t grant_application_id;
     string content;
     bool is_positive;
+    bool is_grant_application;
     account_name_type author;
     time_point_sec created_at;
     vector<discipline_api_obj> disciplines;
@@ -1026,17 +1030,20 @@ struct eci_and_expertise_stats_api_obj
 struct grant_api_obj
 {
     grant_api_obj(const chain::grant_object& g_o)
-        :  id(g_o.id._id)
-        ,  target_discipline(g_o.target_discipline._id)
-        ,  amount(g_o.amount)
-        ,  owner(g_o.owner)
-        ,  min_number_of_positive_reviews(g_o.min_number_of_positive_reviews)
-        ,  max_researches_to_grant(g_o.max_researches_to_grant)
-        ,  created_at(g_o.created_at)
-        ,  start_time(g_o.start_time)
-        ,  end_time(g_o.end_time)
+        : id(g_o.id._id)
+        , target_discipline(g_o.target_discipline._id)
+        , amount(g_o.amount)
+        , owner(g_o.owner)
+        , min_number_of_positive_reviews(g_o.min_number_of_positive_reviews)
+        , min_number_of_applications(g_o.min_number_of_applications)
+        , max_number_of_researches_to_grant(g_o.max_number_of_researches_to_grant)
+        , created_at(g_o.created_at)
+        , start_time(g_o.start_time)
+        , end_time(g_o.end_time)
 
-    {}
+    {
+        officers.insert(g_o.officers.begin(), g_o.officers.end());
+    }
 
     // because fc::variant require for temporary object
     grant_api_obj()
@@ -1051,11 +1058,13 @@ struct grant_api_obj
 
     int16_t min_number_of_positive_reviews;
     int16_t min_number_of_applications;
-    int16_t max_researches_to_grant;
+    int16_t max_number_of_researches_to_grant;
 
     fc::time_point_sec created_at;
     fc::time_point_sec start_time;
     fc::time_point_sec end_time;
+
+    std::set<string> officers;
 };
 
 struct grant_application_api_obj
@@ -1067,6 +1076,7 @@ struct grant_application_api_obj
         ,  application_hash(fc::to_string(ga_o.application_hash))
         ,  creator(ga_o.creator)
         ,  created_at(ga_o.created_at)
+        ,  status(ga_o.status)
 
     {}
 
@@ -1083,6 +1093,8 @@ struct grant_application_api_obj
     account_name_type creator;
 
     fc::time_point_sec created_at;
+
+    grant_application_status status;
 };
 
 }; // namespace app
@@ -1319,8 +1331,10 @@ FC_REFLECT( deip::app::total_votes_api_obj,
 FC_REFLECT( deip::app::review_api_obj,
             (id)
             (research_content_id)
+            (grant_application_id)
             (content)
             (is_positive)
+            (is_grant_application)
             (author)
             (created_at)
             (disciplines)
@@ -1416,10 +1430,11 @@ FC_REFLECT( deip::app::grant_api_obj,
             (owner)
             (min_number_of_positive_reviews)
             (min_number_of_applications)
-            (max_researches_to_grant)
+            (max_number_of_researches_to_grant)
             (created_at)
             (start_time)
             (end_time)
+            (officers)
 
 )
 
@@ -1430,6 +1445,7 @@ FC_REFLECT( deip::app::grant_application_api_obj,
             (application_hash)
             (creator)
             (created_at)
+            (status)
 
 )
 

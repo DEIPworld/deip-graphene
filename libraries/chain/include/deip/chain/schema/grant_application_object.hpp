@@ -5,6 +5,13 @@
 namespace deip {
 namespace chain {
 
+enum grant_application_status : uint16_t
+{
+    application_pending = 1,
+    application_approved = 2,
+    application_rejected = 3
+};
+
 class grant_application_object : public object<grant_application_object_type, grant_application_object>
 {
     grant_application_object() = delete;
@@ -25,9 +32,12 @@ public:
     account_name_type creator;
 
     fc::time_point_sec created_at;
+
+    grant_application_status status = grant_application_status::application_pending;
 };
 
 struct by_grant_id;
+struct by_status;
 struct by_research_id;
 
 typedef multi_index_container<grant_application_object,
@@ -39,6 +49,10 @@ typedef multi_index_container<grant_application_object,
                                                         member<grant_application_object,
                                                                 grant_id_type,
                                                                &grant_application_object::grant_id>>,
+                                         ordered_non_unique<tag<by_status>,
+                                                        member<grant_application_object,
+                                                                grant_application_status,
+                                                               &grant_application_object::status>>,
                                          ordered_non_unique<tag<by_research_id>,
                                                         member<grant_application_object,
                                                                 research_id_type,
@@ -49,8 +63,10 @@ typedef multi_index_container<grant_application_object,
 }
 }
 
+FC_REFLECT_ENUM(deip::chain::grant_application_status, (application_pending)(application_approved)(application_rejected))
+
 FC_REFLECT( deip::chain::grant_application_object,
-             (id)(grant_id)(research_id)(application_hash)(creator)(created_at)
+             (id)(grant_id)(research_id)(application_hash)(creator)(created_at)(status)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::grant_application_object, deip::chain::grant_application_index )
