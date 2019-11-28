@@ -1293,8 +1293,9 @@ void approve_grant_application_evaluator::do_apply(const approve_grant_applicati
     research_content_service.check_application_existence(op.grant_application_id);
 
     auto& grant_application = research_content_service.get_grant_application(op.grant_application_id);
+    FC_ASSERT(grant_application.status == grant_application_status::application_pending,"Grant application ${a} has ${s} status", ("a", grant_application.id)("s", grant_application.status));
+    
     auto& grant = grant_service.get(grant_application.grant_id);
-
     auto officers = grant.officers;
     bool op_is_allowed = grant.owner == op.approver || std::any_of(officers.begin(), officers.end(), [&](account_name_type& officer) {
         return officer == op.approver;
@@ -1315,8 +1316,9 @@ void reject_grant_application_evaluator::do_apply(const reject_grant_application
     research_content_service.check_application_existence(op.grant_application_id);
 
     auto& grant_application = research_content_service.get_grant_application(op.grant_application_id);
+    FC_ASSERT(grant_application.status == grant_application_status::application_pending, "Grant application ${a} has ${s} status", ("a", grant_application.id)("s", grant_application.status));
+    
     auto& grant = grant_service.get(grant_application.grant_id);
-
     auto officers = grant.officers;
     bool op_is_allowed = grant.owner == op.rejector || std::any_of(officers.begin(), officers.end(), [&](account_name_type& officer) {
         return officer == op.rejector;
