@@ -166,7 +166,7 @@ const grant_application_object dbs_research_content::create_grant_application(co
     return new_grant_application;
 }
 
-const grant_application_object dbs_research_content::get_grant_application(const grant_application_id_type& id)
+const grant_application_object& dbs_research_content::get_grant_application(const grant_application_id_type& id)
 {
     try {
         return db_impl().get<grant_application_object, by_id>(id);

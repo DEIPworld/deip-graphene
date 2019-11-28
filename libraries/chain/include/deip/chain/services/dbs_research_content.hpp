@@ -55,7 +55,7 @@ public:
                                                             const std::string& application_hash,
                                                             const account_name_type& creator);
 
-    const grant_application_object get_grant_application(const grant_application_id_type& id);
+    const grant_application_object& get_grant_application(const grant_application_id_type& id);
 
     grant_applications_refs_type get_applications_by_grant(const grant_id_type& grant_id);
 
