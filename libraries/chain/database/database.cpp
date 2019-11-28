@@ -2796,6 +2796,12 @@ void database::validate_invariants() const
             total_supply += itr->balance;
         }
 
+        const auto& grant_idx = get_index<grant_index, by_id>();
+        for (auto itr = grant_idx.begin(); itr != grant_idx.end(); ++itr)
+        {
+            total_supply += itr->amount;
+        }
+
         total_supply +=  gpo.common_tokens_fund;
 
         FC_ASSERT(gpo.current_supply == total_supply, "",
