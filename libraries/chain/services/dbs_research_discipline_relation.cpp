@@ -83,7 +83,7 @@ const research_discipline_relation_object& dbs_research_discipline_relation::get
     FC_CAPTURE_AND_RETHROW((research_id)(discipline_id))
 }
 
-void dbs_research_discipline_relation::check_existence_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id)
+void dbs_research_discipline_relation::check_existence_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const
 {
     const auto& idx = db_impl().get_index<research_discipline_relation_index>().indices().get<by_research_and_discipline>();
 

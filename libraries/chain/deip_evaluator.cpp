@@ -1169,7 +1169,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
                          op.amount,
                          op.min_number_of_positive_reviews,
                          op.min_number_of_applications,
-                         op.researches_to_grant,
+                         op.max_number_of_researches_to_grant,
                          op.start_time,
                          op.end_time,
                          op.owner,
@@ -1178,19 +1178,21 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
 
 void create_grant_application_evaluator::do_apply(const create_grant_application_operation& op)
 {
-    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    const dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
+    const dbs_account& account_service = _db.obtain_service<dbs_account>();
+    const dbs_research& research_service = _db.obtain_service<dbs_research>();
+    const dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    const dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
-    dbs_research& research_service = _db.obtain_service<dbs_research>();
-    dbs_research_token& research_token_service = _db.obtain_service<dbs_research_token>();
-    dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
 
     account_service.check_account_existence(op.creator);
     grant_service.check_grant_existence(op.grant_id);
     research_service.check_research_existence(op.research_id);
-    research_token_service.check_existence_by_owner_and_research(op.creator, op.research_id);
+    
+    const auto& research = research_service.get_research(op.research_id);
+    research_group_service.check_research_group_token_existence(op.creator, research.research_group_id);
 
-    auto& grant = grant_service.get(op.grant_id);
+    const auto& grant = grant_service.get(op.grant_id);
     research_discipline_relation_service.check_existence_by_research_and_discipline(op.research_id, grant.target_discipline);
 
     auto now = _db.head_block_time();
@@ -1298,7 +1300,6 @@ void approve_grant_application_evaluator::do_apply(const approve_grant_applicati
         return officer == op.approver;
     });
 
-
     FC_ASSERT(op_is_allowed, "This account cannot approve applications");
     research_content_service.update_application_status(grant_application, grant_application_status::application_approved);
 }
@@ -1310,15 +1311,15 @@ void reject_grant_application_evaluator::do_apply(const reject_grant_application
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
-    account_service.check_account_existence(op.rejecter);
+    account_service.check_account_existence(op.rejector);
     research_content_service.check_application_existence(op.grant_application_id);
 
     auto& grant_application = research_content_service.get_grant_application(op.grant_application_id);
     auto& grant = grant_service.get(grant_application.grant_id);
 
     auto officers = grant.officers;
-    bool op_is_allowed = grant.owner == op.rejecter || std::any_of(officers.begin(), officers.end(), [&](account_name_type& officer) {
-        return officer == op.rejecter;
+    bool op_is_allowed = grant.owner == op.rejector || std::any_of(officers.begin(), officers.end(), [&](account_name_type& officer) {
+        return officer == op.rejector;
     });
 
     FC_ASSERT(op_is_allowed, "This account cannot reject applications");

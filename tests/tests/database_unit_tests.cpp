@@ -408,7 +408,7 @@ public:
         db.create<grant_object>([&](grant_object& ga) {
             ga.id = 1;
             ga.target_discipline = 1;
-            ga.max_researches_to_grant = 3;
+            ga.max_number_of_researches_to_grant = 3;
             ga.min_number_of_positive_reviews = 1;
             ga.min_number_of_applications = 2;
             ga.amount = asset(1000, DEIP_SYMBOL);
@@ -420,7 +420,7 @@ public:
         db.create<grant_object>([&](grant_object& ga) {
             ga.id = 2;
             ga.target_discipline = 2;
-            ga.max_researches_to_grant = 3;
+            ga.max_number_of_researches_to_grant = 3;
             ga.min_number_of_positive_reviews = 1;
             ga.min_number_of_applications = 2;
             ga.amount = asset(1000, DEIP_SYMBOL);

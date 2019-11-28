@@ -26,7 +26,7 @@ public:
 
     int16_t min_number_of_positive_reviews;
     int16_t min_number_of_applications;
-    int16_t max_researches_to_grant;
+    int16_t max_number_of_researches_to_grant;
 
     fc::time_point_sec created_at;
     fc::time_point_sec start_time;
@@ -69,7 +69,7 @@ typedef multi_index_container<grant_object,
 }
 
 FC_REFLECT( deip::chain::grant_object,
-             (id)(target_discipline)(amount)(owner)(min_number_of_positive_reviews)(min_number_of_applications)(max_researches_to_grant)
+             (id)(target_discipline)(amount)(owner)(min_number_of_positive_reviews)(min_number_of_applications)(max_number_of_researches_to_grant)
              (created_at)(start_time)(end_time)(officers)
 )
 

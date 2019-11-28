@@ -20,40 +20,46 @@ public:
         db.create<grant_object>([&](grant_object& ga) {
             ga.id = 0;
             ga.target_discipline = 1;
-            ga.max_researches_to_grant = 5;
+            ga.max_number_of_researches_to_grant = 5;
             ga.min_number_of_positive_reviews = 5;
             ga.min_number_of_applications = 10;
             ga.amount = asset(1000, DEIP_SYMBOL);
             ga.start_time = db.head_block_time();
             ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
             ga.owner = "bob";
-            ga.officers = {"alice"};
+            std::set<account_name_type> officers;
+            officers.insert("alice");
+            ga.officers.insert(officers.begin(), officers.end());
         });
 
         db.create<grant_object>([&](grant_object& ga) {
             ga.id = 1;
             ga.target_discipline = 1;
-            ga.max_researches_to_grant = 6;
+            ga.max_number_of_researches_to_grant = 6;
             ga.min_number_of_positive_reviews = 4;
             ga.min_number_of_applications = 10;
             ga.amount = asset(1000, DEIP_SYMBOL);
             ga.start_time = db.head_block_time();
             ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
             ga.owner = "jack";
-            ga.officers = {"alice"};
+            std::set<account_name_type> officers;
+            officers.insert("alice");
+            ga.officers.insert(officers.begin(), officers.end());
         });
 
         db.create<grant_object>([&](grant_object& ga) {
             ga.id = 2;
             ga.target_discipline = 2;
-            ga.max_researches_to_grant = 4;
+            ga.max_number_of_researches_to_grant = 4;
             ga.min_number_of_positive_reviews = 10;
             ga.min_number_of_applications = 15;
             ga.amount = asset(1000, DEIP_SYMBOL);
             ga.start_time = db.head_block_time();
             ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
             ga.owner = "rick";
-            ga.officers = {"alice"};
+            std::set<account_name_type> officers;
+            officers.insert("alice");
+            ga.officers.insert(officers.begin(), officers.end());
         });
     }
 
@@ -66,15 +72,15 @@ BOOST_AUTO_TEST_CASE(create_grant)
 {
     try
     {
-        std::vector<account_name_type> officers;
-        officers.push_back("rick");
+        std::set<account_name_type> officers;
+        officers.insert("rick");
         auto& grant = data_service.create(1, asset(100, DEIP_SYMBOL), 5, 10, 10, db.head_block_time(), db.head_block_time() + DAYS_TO_SECONDS(10), "alice", officers);
 
         BOOST_CHECK(grant.target_discipline == 1);
         BOOST_CHECK(grant.amount ==  asset(100, DEIP_SYMBOL));
         BOOST_CHECK(grant.min_number_of_positive_reviews == 5);
         BOOST_CHECK(grant.min_number_of_applications == 10);
-        BOOST_CHECK(grant.max_researches_to_grant == 10);
+        BOOST_CHECK(grant.max_number_of_researches_to_grant == 10);
         BOOST_CHECK(grant.created_at == db.head_block_time());
         BOOST_CHECK(grant.start_time == db.head_block_time());
         BOOST_CHECK(grant.end_time == db.head_block_time() + DAYS_TO_SECONDS(10));
@@ -97,7 +103,7 @@ BOOST_AUTO_TEST_CASE(get_grant)
         BOOST_CHECK(grant.amount ==  asset(1000, DEIP_SYMBOL));
         BOOST_CHECK(grant.min_number_of_positive_reviews == 4);
         BOOST_CHECK(grant.min_number_of_applications == 10);
-        BOOST_CHECK(grant.max_researches_to_grant == 6);
+        BOOST_CHECK(grant.max_number_of_researches_to_grant == 6);
         BOOST_CHECK(grant.start_time == db.head_block_time());
         BOOST_CHECK(grant.end_time == db.head_block_time() + DAYS_TO_SECONDS(30));
         BOOST_CHECK(grant.owner == "jack");
@@ -129,7 +135,7 @@ BOOST_AUTO_TEST_CASE(get_by_target_discipline)
             const grant_object &grant = wrapper.get();
 
             return grant.id == 0 && grant.target_discipline == 1 &&
-                    grant.max_researches_to_grant == 5 &&
+                    grant.max_number_of_researches_to_grant == 5 &&
                     grant.min_number_of_positive_reviews == 5 &&
                     grant.min_number_of_applications == 10 &&
                     grant.amount == asset(1000, DEIP_SYMBOL) &&
@@ -142,7 +148,7 @@ BOOST_AUTO_TEST_CASE(get_by_target_discipline)
             const grant_object &grant = wrapper.get();
 
             return grant.id == 1 && grant.target_discipline == 1 &&
-                   grant.max_researches_to_grant == 6 &&
+                   grant.max_number_of_researches_to_grant == 6 &&
                    grant.min_number_of_positive_reviews == 4 &&
                    grant.min_number_of_applications == 10 &&
                    grant.amount == asset(1000, DEIP_SYMBOL) &&

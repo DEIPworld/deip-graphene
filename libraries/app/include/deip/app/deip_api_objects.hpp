@@ -1030,22 +1030,19 @@ struct eci_and_expertise_stats_api_obj
 struct grant_api_obj
 {
     grant_api_obj(const chain::grant_object& g_o)
-        :  id(g_o.id._id)
-        ,  target_discipline(g_o.target_discipline._id)
-        ,  amount(g_o.amount)
-        ,  owner(g_o.owner)
-        ,  min_number_of_positive_reviews(g_o.min_number_of_positive_reviews)
-        ,  max_researches_to_grant(g_o.max_researches_to_grant)
-        ,  created_at(g_o.created_at)
-        ,  start_time(g_o.start_time)
-        ,  end_time(g_o.end_time)
+        : id(g_o.id._id)
+        , target_discipline(g_o.target_discipline._id)
+        , amount(g_o.amount)
+        , owner(g_o.owner)
+        , min_number_of_positive_reviews(g_o.min_number_of_positive_reviews)
+        , min_number_of_applications(g_o.min_number_of_applications)
+        , max_number_of_researches_to_grant(g_o.max_number_of_researches_to_grant)
+        , created_at(g_o.created_at)
+        , start_time(g_o.start_time)
+        , end_time(g_o.end_time)
 
     {
-        officers.insert(
-                g_o.officers.begin(),
-                g_o.officers.end()
-        );
-
+        officers.insert(g_o.officers.begin(), g_o.officers.end());
     }
 
     // because fc::variant require for temporary object
@@ -1061,7 +1058,7 @@ struct grant_api_obj
 
     int16_t min_number_of_positive_reviews;
     int16_t min_number_of_applications;
-    int16_t max_researches_to_grant;
+    int16_t max_number_of_researches_to_grant;
 
     fc::time_point_sec created_at;
     fc::time_point_sec start_time;
@@ -1433,7 +1430,7 @@ FC_REFLECT( deip::app::grant_api_obj,
             (owner)
             (min_number_of_positive_reviews)
             (min_number_of_applications)
-            (max_researches_to_grant)
+            (max_number_of_researches_to_grant)
             (created_at)
             (start_time)
             (end_time)

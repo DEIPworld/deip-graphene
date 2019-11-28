@@ -1340,14 +1340,14 @@ void database::distribute_grant(const grant_object& grant)
         researches_eci.insert(std::make_pair(rd_relation.research_eci, rd_relation.research_id));
     }
 
-    std::vector<std::pair<share_type, research_id_type>> researches_to_grant(grant.max_researches_to_grant);
-    std::copy(researches_eci.begin(), researches_eci.end(), researches_to_grant.begin());
+    std::vector<std::pair<share_type, research_id_type>> max_number_of_researches_to_grant(grant.max_number_of_researches_to_grant);
+    std::copy(researches_eci.begin(), researches_eci.end(), max_number_of_researches_to_grant.begin());
 
     share_type total_eci = 0;
-    for (auto& research_eci : researches_to_grant)
+    for (auto& research_eci : max_number_of_researches_to_grant)
         total_eci += research_eci.first;
 
-    for (auto& research_eci : researches_to_grant)
+    for (auto& research_eci : max_number_of_researches_to_grant)
     {
         asset research_reward = util::calculate_share(grant.amount, research_eci.first, total_eci);
         auto& research = get<research_object>(research_eci.second);

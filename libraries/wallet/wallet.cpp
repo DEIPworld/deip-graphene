@@ -2828,9 +2828,63 @@ annotated_signed_transaction wallet_api::reject_offer_research_tokens(const int6
     return my->sign_transaction(tx, broadcast);
 }
 
+annotated_signed_transaction wallet_api::create_grant(const int64_t& target_discipline,
+                                                      const asset& amount,
+                                                      const int64_t& min_number_of_positive_reviews,
+                                                      const int64_t& min_number_of_applications,
+                                                      const int64_t& max_number_of_researches_to_grant,
+                                                      const uint32_t& start_time,
+                                                      const uint32_t& end_time,
+                                                      const std::string& owner,
+                                                      const std::set<string>& officers,
+                                                      const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    create_grant_operation op;
+
+    op.target_discipline = target_discipline;
+    op.amount = amount;
+    op.min_number_of_positive_reviews = min_number_of_positive_reviews;
+    op.min_number_of_applications = min_number_of_applications;
+    op.max_number_of_researches_to_grant = max_number_of_researches_to_grant;
+    op.start_time = fc::time_point_sec(start_time);
+    op.end_time = fc::time_point_sec(end_time);
+    op.owner = owner;
+    op.officers.insert(officers.begin(), officers.end());
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::create_grant_application(const int64_t& grant_id,
+                                                                const int64_t& research_id,
+                                                                const std::string& creator,
+                                                                const std::string& application_hash,
+                                                                const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    create_grant_application_operation op;
+
+    op.grant_id = grant_id;
+    op.research_id = research_id;
+    op.creator = creator;
+    op.application_hash = application_hash;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
 annotated_signed_transaction wallet_api::make_review_for_application(const std::string& author,
-                                                                     const int64_t grant_application_id,
-                                                                     const bool is_positive,
+                                                                     const int64_t& grant_application_id,
+                                                                     const bool& is_positive,
                                                                      const std::string& content,
                                                                      const bool broadcast)
 {
@@ -2851,8 +2905,40 @@ annotated_signed_transaction wallet_api::make_review_for_application(const std::
     return my->sign_transaction(tx, broadcast);
 }
 
-namespace utils {
+annotated_signed_transaction wallet_api::approve_grant_application(const int64_t& grant_application_id,
+                                                                   const std::string& approver,
+                                                                   const bool broadcast)
+{
+    
+    approve_grant_application_operation op;
 
+    op.grant_application_id = grant_application_id;
+    op.approver = approver;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::reject_grant_application(const int64_t& grant_application_id,
+                                                                  const std::string& rejector,
+                                                                  const bool broadcast)
+{
+    reject_grant_application_operation op;
+
+    op.grant_application_id = grant_application_id;
+    op.rejector = rejector;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+namespace utils {
 
 fc::ecc::private_key derive_private_key(const std::string& prefix_string, int sequence_number)
 {
