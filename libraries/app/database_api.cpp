@@ -1304,6 +1304,21 @@ research_group_api_obj database_api::get_research_group_by_permlink(const string
     });
 }
 
+vector<research_group_api_obj> database_api::get_all_research_groups(const bool& is_personal_need) const
+{
+    return my->_db.with_read_lock([&]() {
+        vector<research_group_api_obj> results;
+        chain::dbs_research_group &research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
+        auto research_groups = research_group_service.get_all_research_groups(is_personal_need);
+
+        for (const chain::research_group_object &research_group : research_groups) {
+            results.push_back(research_group_api_obj(research_group));
+        }
+
+        return results;
+    });
+}
+
 bool database_api::check_research_group_existence_by_permlink(const string& permlink) const
 {
     const auto& idx = my->_db.get_index<research_group_index>().indices().get<by_permlink>();

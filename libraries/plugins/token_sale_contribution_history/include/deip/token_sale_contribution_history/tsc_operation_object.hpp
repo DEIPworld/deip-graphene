@@ -56,8 +56,9 @@ typedef chainbase::shared_multi_index_container<tsc_operation_object,
                                      indexed_by<ordered_unique<tag<by_id>,
                                                                member<tsc_operation_object,
                                                                        tsc_operation_object::id_type,
-                                                                      &tsc_operation_object::id>>,
+                                                                       &tsc_operation_object::id>>
 #ifndef SKIP_BY_TX_ID
+                                                                      ,
                                                 ordered_unique<tag<by_transaction_id>,
                                                                composite_key<tsc_operation_object,
                                                                              member<tsc_operation_object,
@@ -65,7 +66,7 @@ typedef chainbase::shared_multi_index_container<tsc_operation_object,
                                                                                     &tsc_operation_object::trx_id>,
                                                                              member<tsc_operation_object,
                                                                                      tsc_operation_object::id_type,
-                                                                                    &tsc_operation_object::id>>>
+                                                                                     &tsc_operation_object::id>>>
 #endif
                                                 >>
         tsc_operation_index;

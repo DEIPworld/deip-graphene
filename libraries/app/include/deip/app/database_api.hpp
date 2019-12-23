@@ -320,6 +320,7 @@ public:
     ////////////////////
     research_group_api_obj get_research_group_by_id(const research_group_id_type research_group_id) const;
     research_group_api_obj get_research_group_by_permlink(const string& permlink) const;
+    vector<research_group_api_obj> get_all_research_groups(const bool& is_personal_need) const;
     bool check_research_group_existence_by_permlink(const string& permlink) const;
 
     /////////////////////////////////
@@ -585,6 +586,7 @@ FC_API(deip::app::database_api,
    // Research group
    (get_research_group_by_id)
    (get_research_group_by_permlink)
+   (get_all_research_groups)
    (check_research_group_existence_by_permlink)
 
    // Research group tokens

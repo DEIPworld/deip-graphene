@@ -79,9 +79,14 @@
         "public_key": "DEIP6pqCE6hhqypsttExd87EXbdiSjUPCq72kz3uH3F5LJyzZUtVL8"
     }],
 
-    "doroty": [{
-        "private_key": "5JZjvuDKf9xovEqkSC9vvGf3e4HfyyUEeL6pHSdHZT355nW75sr",
-        "public_key": "DEIP57FNGfhjgz2TuRby5RrV4AgzEtM89zmn1yMdw8RqBD74ZEZZXm"
+    "dorothy": [{
+        "private_key": "5K95M83geAveUNYTXnp81eSpGsDiKAgzNTB81Rxjnj8aou81oAW",
+        "public_key": "DEIP6mJjLEE5m2vjsqEgRhMWeY9TNRyBkZZwdC4697i7rpLPWDKRzA"
+    }],
+
+    "regacc": [{
+        "private_key": "5KR5baFjXvuXVxaJs3epFZyriYARcv7VsVqAP88dDFLHnG7u4ud",
+        "public_key": "DEIP7jYZtDq39GUoHafoLg72myPhGN8a9QKWJE2GgnAuYjQnhp9mTa"    
     }],
 
     "initdelegate1": [{

@@ -377,6 +377,7 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
                 proposal_quorums.insert(std::make_pair(i, research_group.quorum_percent));
 
             rg.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
+            rg.is_dao = research_group.is_dao;
             rg.is_personal = research_group.is_personal;
         });
 
@@ -412,6 +413,7 @@ void database::init_personal_research_groups(const genesis_state_type& genesis_s
             fc::from_string(research_group.permlink, account.name);
             fc::from_string(research_group.description, account.name);
             research_group.proposal_quorums.insert(personal_research_group_proposal_quorums.begin(), personal_research_group_proposal_quorums.end());
+            research_group.is_dao = false;
             research_group.is_personal = true;
         });
 

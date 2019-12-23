@@ -135,21 +135,21 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
 
     // write in to DB
 
-    account_service.create_account_by_faucets(o.new_account_name, o.creator, o.memo_key, o.json_metadata, o.owner,
-                                              o.active, o.posting, o.fee);
+    account_service.create_account_by_faucets(o.new_account_name, o.creator, o.memo_key, o.json_metadata, o.owner, o.active, o.posting, o.fee);
 
-    bool is_personal = true;
-
-    std::map<uint16_t , share_type> personal_research_group_proposal_quorums;
-
+    std::map<uint16_t, share_type> personal_research_group_proposal_quorums;
     for (int i = First_proposal; i <= Last_proposal; i++)
         personal_research_group_proposal_quorums.insert(std::make_pair(i, DEIP_100_PERCENT));
 
-    auto& personal_research_group = research_group_service.create_research_group(o.new_account_name,
+    const bool is_dao = false;
+    const bool is_personal = true;
+
+    const auto& personal_research_group = research_group_service.create_research_group(o.new_account_name,
                                                                                  o.new_account_name,
                                                                                  o.new_account_name,
                                                                                  DEIP_100_PERCENT,
                                                                                  personal_research_group_proposal_quorums,
+                                                                                 is_dao,
                                                                                  is_personal);
     research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
 
@@ -584,18 +584,16 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     // the range must be checked in create_proposal_operation::validate()
 
     if (action == deip::protocol::proposal_action_type::invite_member ||
-            action == deip::protocol::proposal_action_type::dropout_member ||
-            action == deip::protocol::proposal_action_type::change_quorum ||
-            action == deip::protocol::proposal_action_type::rebalance_research_group_tokens)
-        FC_ASSERT(!research_group.is_personal,
-                  "You cannot invite or dropout member, change quorum and rebalance tokens in personal research group");
+        action == deip::protocol::proposal_action_type::dropout_member ||
+        action == deip::protocol::proposal_action_type::change_quorum ||
+        action == deip::protocol::proposal_action_type::rebalance_research_group_tokens) {
+        FC_ASSERT(!research_group.is_personal, "You cannot invite or dropout member, change quorums and rebalance tokens in your personal research group");
+    }
+
 
     std::hash<std::string> hash_string;
     std::string unique_string = op.data;
-    unique_string.erase(std::remove_if(unique_string.begin(),
-                                   unique_string.end(),
-                                   [](unsigned char x) { return std::isspace(x); }),
-                    unique_string.end());
+    unique_string.erase(std::remove_if(unique_string.begin(), unique_string.end(), [](unsigned char x) { return std::isspace(x); }), unique_string.end());
     unique_string += std::to_string(op.action);
     unique_string += std::to_string(op.research_group_id);
 
@@ -609,7 +607,7 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     }
     auto& proposal = proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent, hash_string(unique_string));
 
-    if (research_group.is_personal)
+    if (research_group.is_personal || !research_group.is_dao)
     {
         auto& proposal_execution_service = _db.obtain_service<dbs_proposal_execution>();
         proposal_execution_service.execute_proposal(proposal);
@@ -624,10 +622,7 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
     dbs_research_group_invite& research_group_invite_service = _db.obtain_service<dbs_research_group_invite>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
-    bool is_personal = false;
-
     std::map<uint16_t, share_type> proposal_quorums;
-
     for (auto& pair : op.proposal_quorums)
         proposal_quorums.insert(std::make_pair(pair.first, pair.second));
 
@@ -636,7 +631,7 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
                                                                                                op.description,
                                                                                                op.quorum_percent,
                                                                                                proposal_quorums,
-                                                                                               is_personal);
+                                                                                               op.is_dao);
     
     research_group_service.create_research_group_token(research_group.id, DEIP_100_PERCENT, op.creator);
 
@@ -1209,7 +1204,8 @@ void make_review_for_application_evaluator::do_apply(const make_review_for_appli
     dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
-    dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
+    dbs_research_discipline_relation& research_discipline_service
+        = _db.obtain_service<dbs_research_discipline_relation>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
     dbs_review& review_service = _db.obtain_service<dbs_review>();
     dbs_vote& votes_service = _db.obtain_service<dbs_vote>();
@@ -1225,11 +1221,13 @@ void make_review_for_application_evaluator::do_apply(const make_review_for_appli
         FC_ASSERT(reseach_group_token.get().owner != op.author, "You cannot review your own content");
 
     auto expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
-    auto research_discipline_relations = research_discipline_service.get_research_discipline_relations_by_research(application.research_id);
+    auto research_discipline_relations
+        = research_discipline_service.get_research_discipline_relations_by_research(application.research_id);
     std::map<discipline_id_type, share_type> review_disciplines_with_weight;
     std::set<discipline_id_type> review_disciplines;
     std::set<discipline_id_type> research_disciplines_ids;
-    for (auto rdr : research_discipline_relations) {
+    for (auto rdr : research_discipline_relations)
+    {
         research_disciplines_ids.insert(rdr.get().discipline_id);
     }
 
@@ -1238,7 +1236,7 @@ void make_review_for_application_evaluator::do_apply(const make_review_for_appli
         auto& token = expert_token.get();
         if (research_disciplines_ids.find(token.discipline_id) != research_disciplines_ids.end())
         {
-            const int64_t elapsed_seconds   = (_db.head_block_time() - token.last_vote_time).to_seconds();
+            const int64_t elapsed_seconds = (_db.head_block_time() - token.last_vote_time).to_seconds();
 
             const int64_t regenerated_power = (DEIP_100_PERCENT * elapsed_seconds) / DEIP_VOTE_REGENERATION_SECONDS;
             const int64_t current_power = std::min(int64_t(token.voting_power + regenerated_power), int64_t(DEIP_100_PERCENT));
@@ -1261,10 +1259,12 @@ void make_review_for_application_evaluator::do_apply(const make_review_for_appli
 
     FC_ASSERT(review_disciplines.size() != 0, "Reviewer does not have enough expertise to make review.");
 
-    auto& review = review_service.create(op.grant_application_id, true, op.content, op.is_positive, op.author, review_disciplines);
+    auto& review = review_service.create(op.grant_application_id, true, op.content, op.is_positive, op.author,
+                                         review_disciplines);
 
-    for (auto& review_discipline : review_disciplines) {
-        auto &token = expertise_token_service.get_expert_token_by_account_and_discipline(op.author, review_discipline);
+    for (auto& review_discipline : review_disciplines)
+    {
+        auto& token = expertise_token_service.get_expert_token_by_account_and_discipline(op.author, review_discipline);
 
         auto used_expertise = review_disciplines_with_weight.at(token.discipline_id);
 
@@ -1275,9 +1275,8 @@ void make_review_for_application_evaluator::do_apply(const make_review_for_appli
         });
 
         auto& discipline = discipline_service.get_discipline(token.discipline_id);
-        _db._temporary_public_impl().modify(discipline, [&](discipline_object& d) {
-            d.total_active_weight += used_expertise;
-        });
+        _db._temporary_public_impl().modify(discipline,
+                                            [&](discipline_object& d) { d.total_active_weight += used_expertise; });
 
         expertise_stats_service.update_used_expertise(used_expertise);
     }
