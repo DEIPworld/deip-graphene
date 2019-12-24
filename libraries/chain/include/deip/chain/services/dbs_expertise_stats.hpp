@@ -19,7 +19,7 @@ protected:
 public:
     const expertise_stats_object& get_expertise_stats() const;
     const expertise_stats_object& reset_used_expertise_per_block();
-    const expertise_stats_object& update_used_expertise(const share_type &delta);
+    const expertise_stats_object& increase_total_used_expertise_amount(const share_type& amount);
     const expertise_stats_object& calculate_used_expertise_for_week();
 };
 } // namespace chain

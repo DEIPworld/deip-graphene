@@ -29,9 +29,7 @@ public:
     review_object(Constructor &&c, allocator<Allocator> a) : content(a)
             , disciplines(a)
             , references(a)
-            , weights_per_discipline(a)
-            , weight_modifiers(a)
-            , expertise_amounts_used(a)
+            , expertise_tokens_amount_by_discipline(a)
     {
         c(*this);
     }
@@ -44,34 +42,13 @@ public:
     time_point_sec created_at;
     discipline_id_type_set disciplines;
     research_content_id_type_set references;
-    // TODO: Add external references
 
-    grant_application_id_type grant_application_id;
-    bool is_grant_application = false;
-
-    discipline_id_share_type_map weights_per_discipline;
-    discipline_id_share_type_map weight_modifiers;
-    discipline_id_share_type_map expertise_amounts_used;
-
-    share_type get_evaluation(const discipline_id_type &discipline_id) const {
-        if (weight_modifiers.count(discipline_id) == 0)
-            return 0;
-        FC_ASSERT(expertise_amounts_used.count(discipline_id) != 0,
-                  "Review is not made within discipline_id={d}", ("d", discipline_id));
-
-        auto& modifier = weight_modifiers.at(discipline_id);
-        auto sign = is_positive ? 1 : -1;
-        auto& expertise_amount = expertise_amounts_used.at(discipline_id);
-
-        return modifier * sign * expertise_amount;
-    }
+    discipline_id_share_type_map expertise_tokens_amount_by_discipline;
 };
 
-struct by_author_and_research_content;
 struct by_author;
-struct by_grant_application;
 struct by_research_content;
-
+struct by_author_and_research_content;
 
 typedef multi_index_container<review_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -90,10 +67,6 @@ typedef multi_index_container<review_object,
                         member<review_object,
                                 account_name_type,
                                 &review_object::author>>,
-                ordered_non_unique<tag<by_grant_application>,
-                        member<review_object,
-                                grant_application_id_type,
-                                &review_object::grant_application_id>>,
                 ordered_non_unique<tag<by_research_content>,
                         member<review_object,
                                 research_content_id_type,
@@ -105,8 +78,7 @@ typedef multi_index_container<review_object,
 
 FC_REFLECT(deip::chain::review_object,
            (id)(research_content_id)(content)(is_positive)(author)(created_at)
-           (weights_per_discipline)(disciplines)(references)(grant_application_id)(is_grant_application)
-                   (weight_modifiers)(expertise_amounts_used)
+           (disciplines)(references)(expertise_tokens_amount_by_discipline)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::review_object, deip::chain::review_index)

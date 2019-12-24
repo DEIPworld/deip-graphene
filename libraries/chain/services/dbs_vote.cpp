@@ -138,16 +138,28 @@ const vote_object& dbs_vote::create_vote(const discipline_id_type &discipline_id
 
 const total_votes_object& dbs_vote::create_total_votes(const discipline_id_type& discipline_id,
                                                        const research_id_type& research_id,
-                                                       const research_content_id_type& research_content_id)
+                                                       const research_content_id_type& research_content_id,
+                                                       const share_type& total_weight,
+                                                       const research_content_type& content_type)
 {
     const auto& new_total_votes = db_impl().create<total_votes_object>([&](total_votes_object& v_o) {
         v_o.discipline_id = discipline_id;
         v_o.research_id = research_id;
         v_o.research_content_id = research_content_id;
-        v_o.total_weight = 0;
+        v_o.total_weight = total_weight;
+        v_o.content_type = content_type;
     });
 
     return new_total_votes;
+}
+
+const total_votes_object& dbs_vote::get_total_votes(const total_votes_id_type& total_vote_id) const
+{
+    try
+    {
+        return db_impl().get<total_votes_object, by_id>(total_vote_id);
+    }
+    FC_CAPTURE_AND_RETHROW((total_vote_id));
 }
 
 const total_votes_object& dbs_vote::get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id,
@@ -204,12 +216,6 @@ dbs_vote::total_votes_refs_type dbs_vote::get_total_votes_by_discipline(const di
         ++it;
     }
     return ret;
-}
-
-const total_votes_object& dbs_vote::update_total_votes(const total_votes_object& total_votes, const share_type total_weight)
-{
-    db_impl().modify(total_votes, [&](total_votes_object& tv_o) { tv_o.total_weight = total_weight; });
-    return total_votes;
 }
 
 dbs_vote::total_votes_refs_type dbs_vote::get_total_votes_by_content(const research_content_id_type& research_content_id) const
@@ -307,15 +313,42 @@ dbs_vote::review_vote_refs_type dbs_vote::get_review_votes_by_discipline(const d
     return ret;
 }
 
-bool dbs_vote::is_exists_by_content_and_discipline(const research_content_id_type &research_content_id,
-                                                   const discipline_id_type &discipline_id)
+dbs_vote::review_vote_refs_type dbs_vote::get_review_votes_by_content(const research_content_id_type& research_content_id) const
+{
+    review_vote_refs_type ret;
+
+    auto it_pair = db_impl().get_index<review_vote_index>().indicies().get<by_research_content>().equal_range(research_content_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+    return ret;
+}
+
+bool dbs_vote::total_vote_exists_by_content_and_discipline(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id) const
 {
     const auto& idx = db_impl().get_index<total_votes_index>().indices().get<by_content_and_discipline>();
+    return idx.find(boost::make_tuple(research_content_id, discipline_id)) != idx.cend();
+}
 
-    if (idx.find(boost::make_tuple(research_content_id, discipline_id)) != idx.cend())
-        return true;
-    else
-        return false;
+bool dbs_vote::review_vote_exists_by_voter_and_discipline(const review_id_type& review_id, const account_name_type& voter, const discipline_id_type& discipline_id) const
+{
+    const auto& idx = db_impl().get_index<review_vote_index>().indices().get<by_voter_discipline_and_review>();
+    return idx.find(std::make_tuple(voter, discipline_id, review_id)) != idx.cend();
+}
+
+const total_votes_object& dbs_vote::increase_total_used_expertise_amount(const total_votes_id_type& total_vote_id, const share_type& amount)
+{
+    FC_ASSERT(amount >= 0, "Could not increase total vote used expertise with ${amount} value", ("amount", amount));
+
+    const total_votes_object& total_votes = get_total_votes(total_vote_id);
+    db_impl().modify(total_votes, [&](total_votes_object& tv) { 
+        tv.total_weight += amount; 
+    });
+    return total_votes;
 }
 
 } //namespace chain

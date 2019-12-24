@@ -35,6 +35,8 @@
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
 #include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_grant_application.hpp>
+#include <deip/chain/services/dbs_grant_application_review.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 #define MAX_LIMIT 1000
@@ -1747,7 +1749,7 @@ vector<review_api_obj> database_api::get_reviews_by_content(const research_conte
         vector<review_api_obj> results;
         chain::dbs_review& review_service = my->_db.obtain_service<chain::dbs_review>();
 
-        auto reviews = review_service.get_research_content_reviews(research_content_id);
+        auto reviews = review_service.get_reviews_by_content(research_content_id);
 
         for (const chain::review_object& review : reviews)
         {
@@ -1791,15 +1793,14 @@ vector<review_api_obj> database_api::get_reviews_by_author(const account_name_ty
     });
 }
 
-vector<review_api_obj>
-database_api::get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const
+vector<grant_application_review_api_obj> database_api::get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const
 {
     return my->_db.with_read_lock([&]() {
-        vector<review_api_obj> results;
-        chain::dbs_review& review_service = my->_db.obtain_service<chain::dbs_review>();
-        auto reviews = review_service.get_grant_application_reviews(grant_application_id);
+        vector<grant_application_review_api_obj> results;
+        chain::dbs_grant_application_review& grant_application_review_service = my->_db.obtain_service<chain::dbs_grant_application_review>();
+        auto reviews = grant_application_review_service.get_grant_application_reviews(grant_application_id);
 
-        for (const chain::review_object& review : reviews)
+        for (const chain::grant_application_review_object& review : reviews)
         {
             vector<discipline_api_obj> disciplines;
 
@@ -1809,7 +1810,7 @@ database_api::get_reviews_by_grant_application(const grant_application_id_type& 
                 disciplines.push_back(discipline_ao);
             }
 
-            review_api_obj api_obj = review_api_obj(review, disciplines);
+            grant_application_review_api_obj api_obj = grant_application_review_api_obj(review, disciplines);
             results.push_back(api_obj);
         }
 
@@ -2288,20 +2289,17 @@ set<string> database_api_impl::lookup_grant_owners(const string& lower_bound_nam
 grant_application_api_obj database_api::get_grant_application(const grant_application_id_type& id) const
 {
     return my->_db.with_read_lock([&]() {
-        chain::dbs_research_content& research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
-        return research_content_service.get_grant_application(id);
+        chain::dbs_grant_application& grant_application_service = my->_db.obtain_service<chain::dbs_grant_application>();
+        return grant_application_service.get_grant_application(id);
     });
 }
 
-vector<grant_application_api_obj>
-database_api::get_applications_by_grant(const grant_id_type& grant_id) const
+vector<grant_application_api_obj> database_api::get_grant_applications_by_grant(const grant_id_type& grant_id) const
 {
     return my->_db.with_read_lock([&]() {
         vector<grant_application_api_obj> results;
-        chain::dbs_research_content& research_content_service
-            = my->_db.obtain_service<chain::dbs_research_content>();
-
-        auto grant_applications = research_content_service.get_applications_by_grant(grant_id);
+        chain::dbs_grant_application& grant_application_service = my->_db.obtain_service<chain::dbs_grant_application>();
+        auto grant_applications = grant_application_service.get_grant_applications_by_grant(grant_id);
 
         for (const chain::grant_application_object& grant_application : grant_applications)
             results.push_back(grant_application);
@@ -2311,14 +2309,13 @@ database_api::get_applications_by_grant(const grant_id_type& grant_id) const
 }
 
 vector<grant_application_api_obj>
-database_api::get_applications_by_research_id(const research_id_type& research_id) const
+database_api::get_grant_applications_by_research_id(const research_id_type& research_id) const
 {
     return my->_db.with_read_lock([&]() {
         vector<grant_application_api_obj> results;
-        chain::dbs_research_content& research_content_service
-                = my->_db.obtain_service<chain::dbs_research_content>();
+        chain::dbs_grant_application& grant_application_service = my->_db.obtain_service<chain::dbs_grant_application>();
 
-        auto grant_applications = research_content_service.get_applications_by_research_id(research_id);
+        auto grant_applications = grant_application_service.get_grant_applications_by_research_id(research_id);
 
         for (const chain::grant_application_object& grant_application : grant_applications)
             results.push_back(grant_application);

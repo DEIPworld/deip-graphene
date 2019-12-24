@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(create)
 {
     try
     {
-        auto& review = data_service.create(1, false, "content", true, "alice", {1, 2});
+        auto& review = data_service.create(1, "content", true, "alice", { 1, 2 }, std::map<discipline_id_type, share_type>());
 
         std::vector<discipline_id_type> disciplines;
         for (auto discipline : review.disciplines)
@@ -69,7 +69,6 @@ BOOST_AUTO_TEST_CASE(create)
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.author == "alice");
         BOOST_CHECK(disciplines.size() == 2);
-
     }
     FC_LOG_AND_RETHROW()
 }
@@ -102,7 +101,7 @@ BOOST_AUTO_TEST_CASE(get_research_reviews)
     {
         create_reviews();
 
-        auto reviews = data_service.get_research_content_reviews(1);
+        auto reviews = data_service.get_reviews_by_content(1);
 
         BOOST_CHECK(reviews.size() == 2);
         BOOST_CHECK(std::any_of(reviews.begin(), reviews.end(), [](std::reference_wrapper<const review_object> wrapper){

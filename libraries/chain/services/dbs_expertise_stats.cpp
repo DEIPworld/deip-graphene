@@ -27,13 +27,13 @@ const expertise_stats_object& dbs_expertise_stats::reset_used_expertise_per_bloc
     return expertise_stats;
 }
 
-const expertise_stats_object& dbs_expertise_stats::update_used_expertise(const share_type &delta)
+const expertise_stats_object& dbs_expertise_stats::increase_total_used_expertise_amount(const share_type& amount)
 {
-    FC_ASSERT(delta >= 0, "Cannot update all used expertise.(delta < 0)");
-    auto& expertise_stats = get_expertise_stats();
+    FC_ASSERT(amount >= 0, "Could not increase expertise stats used expertise with ${amount} value", ("amount", amount));
+    const auto& expertise_stats = get_expertise_stats();
     db_impl().modify(expertise_stats, [&](expertise_stats_object& eso) {
-        eso.total_used_expertise += delta;
-        eso.used_expertise_per_block += delta;
+        eso.total_used_expertise += amount;
+        eso.used_expertise_per_block += amount;
     });
     return expertise_stats;
 }

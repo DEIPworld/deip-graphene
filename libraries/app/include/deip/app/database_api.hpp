@@ -388,7 +388,7 @@ public:
     ///////////////////////////////
     // Grnat Application Reviews //
     ///////////////////////////////
-    vector<review_api_obj> get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const;
+    vector<grant_application_review_api_obj> get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const;
 
     /////////////////////
     // Research token ///
@@ -476,8 +476,8 @@ public:
     ////////////////////////
 
     grant_application_api_obj get_grant_application(const grant_application_id_type& id) const;
-    vector<grant_application_api_obj> get_applications_by_grant(const grant_id_type& grant_id) const;
-    vector<grant_application_api_obj> get_applications_by_research_id(const research_id_type& research_id) const;
+    vector<grant_application_api_obj> get_grant_applications_by_grant(const grant_id_type& grant_id) const;
+    vector<grant_application_api_obj> get_grant_applications_by_research_id(const research_id_type& research_id) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -682,8 +682,8 @@ FC_API(deip::app::database_api,
 
    // Grant applications
    (get_grant_application)
-   (get_applications_by_grant)
-   (get_applications_by_research_id)
+   (get_grant_applications_by_grant)
+   (get_grant_applications_by_research_id)
 
 
 )

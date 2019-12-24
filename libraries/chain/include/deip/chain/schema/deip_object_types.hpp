@@ -76,7 +76,8 @@ enum object_type
     expertise_stats_object_type,
     offer_research_tokens_object_type,
     grant_object_type,
-    grant_application_object_type
+    grant_application_object_type,
+    grant_application_review_object_type
 };
 
 class dynamic_global_property_object;
@@ -123,6 +124,7 @@ class expertise_stats_object;
 class offer_research_tokens_object;
 class grant_object;
 class grant_application_object;
+class grant_application_review_object;
 
 typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
 typedef oid<chain_property_object> chain_property_id_type;
@@ -167,7 +169,7 @@ typedef oid<expertise_stats_object> expertise_stats_id_type;
 typedef oid<offer_research_tokens_object> offer_research_tokens_id_type;
 typedef oid<grant_object> grant_id_type;
 typedef oid<grant_application_object> grant_application_id_type;
-
+typedef oid<grant_application_review_object> grant_application_review_id_type;
 
 typedef allocator<account_name_type> account_name_allocator_type;
 typedef bip::set<account_name_type, std::less<account_name_type>, account_name_allocator_type> account_name_type_set;
@@ -252,6 +254,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (offer_research_tokens_object_type)
                  (grant_object_type)
                  (grant_application_object_type)
+                 (grant_application_review_object_type)
 )
 
 FC_REFLECT_ENUM( deip::chain::bandwidth_type, (post)(forum)(market) )

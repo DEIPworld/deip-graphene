@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(create_total_votes_object)
 {
     try
     {
-        auto& total_votes = data_service.create_total_votes(1, 1, 1);
+        auto& total_votes = data_service.create_total_votes(1, 1, 1, share_type(0), research_content_type::milestone_data);
 
         BOOST_CHECK(total_votes.discipline_id == 1);
         BOOST_CHECK(total_votes.research_id == 1);
@@ -243,22 +243,6 @@ BOOST_AUTO_TEST_CASE(get_total_votes_by_research_and_discipline)
                                            total_vote.discipline_id == 2048 &&
                                            total_vote.total_weight == 2000;
                                 }));
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(update_total_votes_object)
-{
-    try
-    {
-        create_total_votes();
-        auto& old_total_votes = data_service.get_total_votes_by_content_and_discipline(1, 1024);
-        auto& updated_total_votes = data_service.update_total_votes(old_total_votes, 2000);
-
-        BOOST_CHECK(updated_total_votes.discipline_id == 1024);
-        BOOST_CHECK(updated_total_votes.research_id == 1);
-        BOOST_CHECK(updated_total_votes.research_content_id == 1);
-        BOOST_CHECK(updated_total_votes.total_weight == 2000);
     }
     FC_LOG_AND_RETHROW()
 }

@@ -1,7 +1,10 @@
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/schema/research_object.hpp>
-
+#include <deip/chain/services/dbs_review.hpp>
+#include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_vote.hpp>
+#include <deip/chain/services/dbs_research_discipline_relation.hpp>
 
 namespace deip{
 namespace chain{
@@ -146,83 +149,58 @@ dbs_research_content::research_content_refs_type dbs_research_content::get_all_m
 
 // Grant applications
 
-const grant_application_object dbs_research_content::create_grant_application(const grant_id_type& grant_id,
-                                                                              const research_id_type& research_id,
-                                                                              const std::string& application_hash,
-                                                                              const account_name_type& creator)
+const std::map<discipline_id_type, share_type> dbs_research_content::get_eci_evaluation(const research_content_id_type& research_content_id) const
 {
-    const auto& new_grant_application = db_impl().create<grant_application_object>([&](grant_application_object& ga) {
+    const dbs_review& review_service = db_impl().obtain_service<dbs_review>();
+    const dbs_research& research_service = db_impl().obtain_service<dbs_research>();
+    const dbs_vote& review_vote_service = db_impl().obtain_service<dbs_vote>();
+    const dbs_research_discipline_relation& research_discipline_relation_service = db_impl().obtain_service<dbs_research_discipline_relation>();
 
-        auto now = db_impl().head_block_time();
+    const auto& research_content = get(research_content_id);
+    const auto& research_content_reviews = review_service.get_reviews_by_content(research_content_id);
+    const auto& research = research_service.get_research(research_content.research_id);
+    const auto& research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
 
-        ga.grant_id = grant_id;
-        ga.research_id = research_id;
-        fc::from_string(ga.application_hash, application_hash);
-        ga.creator = creator;
-        ga.created_at = now;
-        ga.status = grant_application_status::application_pending;
+    std::map<review_id_type, std::map<discipline_id_type, share_type>> reviews_weights;
+    for (auto& wrap: research_content_reviews) 
+    {
+        const review_object& review = wrap.get();
+        const auto review_weight_by_discipline = review_service.get_eci_weight(review.id);
+        reviews_weights[review.id] = review_weight_by_discipline;
+    }
+
+    std::map<discipline_id_type, share_type> research_content_eci_by_discipline;
+    for (auto& wrap: research_discipline_relations) 
+    {
+        const research_discipline_relation_object& relation = wrap.get();
+        const discipline_id_type discipline_id = relation.discipline_id;
+
+        const share_type Sdp = std::accumulate(reviews_weights.begin(), reviews_weights.end(), share_type(0), 
+            [=](share_type acc, const std::pair<review_id_type, std::map<discipline_id_type, share_type>>& entry) {
+                return entry.second.find(discipline_id) != entry.second.end() 
+                    ? acc + entry.second.at(discipline_id)
+                    : acc;
+            });
+
+        research_content_eci_by_discipline[discipline_id] = Sdp;
+    }
+
+    return research_content_eci_by_discipline;
+}
+
+const research_content_object& dbs_research_content::update_eci_evaluation(const research_content_id_type& research_content_id)
+{
+    const auto& research_content = get(research_content_id);
+    const auto& eci_evaluation = get_eci_evaluation(research_content_id);
+
+    db_impl().modify(research_content, [&](research_content_object& rc_o) {
+        for (auto& entry : eci_evaluation)
+        {
+            rc_o.eci_per_discipline[entry.first] = entry.second;
+        }
     });
 
-    return new_grant_application;
-}
-
-const grant_application_object& dbs_research_content::get_grant_application(const grant_application_id_type& id)
-{
-    try {
-        return db_impl().get<grant_application_object, by_id>(id);
-    }
-    FC_CAPTURE_AND_RETHROW((id))
-}
-
-dbs_research_content::grant_applications_refs_type dbs_research_content::get_applications_by_grant(const grant_id_type& grant_id)
-{
-    grant_applications_refs_type ret;
-
-    auto it_pair = db_impl().get_index<grant_application_index>().indicies().get<by_grant_id>().equal_range(grant_id);
-    auto it = it_pair.first;
-    const auto it_end = it_pair.second;
-    while (it != it_end)
-    {
-        ret.push_back(std::cref(*it));
-        ++it;
-    }
-
-    return ret;
-}
-
-dbs_research_content::grant_applications_refs_type dbs_research_content::get_applications_by_research_id(const research_id_type& research_id)
-{
-    grant_applications_refs_type ret;
-
-    auto it_pair = db_impl().get_index<grant_application_index>().indicies().get<by_research_id>().equal_range(research_id);
-    auto it = it_pair.first;
-    const auto it_end = it_pair.second;
-    while (it != it_end)
-    {
-        ret.push_back(std::cref(*it));
-        ++it;
-    }
-
-    return ret;
-}
-
-void dbs_research_content::delete_appication_by_id(const grant_application_id_type& grant_application_id)
-{
-    auto& grant_application = db_impl().get<grant_application_object, by_id>(grant_application_id);
-    db_impl().remove(grant_application);
-}
-
-void dbs_research_content::check_application_existence(const grant_application_id_type& grant_application_id)
-{
-    auto grant_application = db_impl().find<grant_application_object, by_id>(grant_application_id);
-    FC_ASSERT(grant_application != nullptr, "Grant application with id \"${1}\" must exist.", ("1", grant_application_id));
-}
-
-const grant_application_object& dbs_research_content::update_application_status(const grant_application_object& grant_application,
-                                                                                const grant_application_status& new_status)
-{
-    db_impl().modify(grant_application, [&](grant_application_object& ga_o) { ga_o.status = new_status; });
-    return grant_application;
+    return research_content;
 }
 
 }

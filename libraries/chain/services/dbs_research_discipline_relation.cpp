@@ -23,7 +23,7 @@ const research_discipline_relation_object& dbs_research_discipline_relation::cre
 
 const research_discipline_relation_object& dbs_research_discipline_relation::update_votes_count(const research_id_type& research_id, const discipline_id_type& discipline_id, int16_t delta)
 {
-    auto& relation = get_research_discipline_relations_by_research_and_discipline(research_id, discipline_id);
+    auto& relation = get_research_discipline_relation_by_research_and_discipline(research_id, discipline_id);
 
     FC_ASSERT(relation.votes_count + delta >= 0, "Votes amount cannot be negative");
 
@@ -75,7 +75,7 @@ dbs_research_discipline_relation::research_discipline_relation_refs_type dbs_res
     return ret;
 }
 
-const research_discipline_relation_object& dbs_research_discipline_relation::get_research_discipline_relations_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const
+const research_discipline_relation_object& dbs_research_discipline_relation::get_research_discipline_relation_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const
 {
     try {
         return db_impl().get<research_discipline_relation_object, by_research_and_discipline>(boost::make_tuple(research_id, discipline_id));

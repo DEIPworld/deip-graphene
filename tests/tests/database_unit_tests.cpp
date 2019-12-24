@@ -8,6 +8,7 @@
 #include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 #include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/grant_application_object.hpp>
+#include <deip/chain/schema/grant_application_review_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
@@ -191,9 +192,8 @@ public:
             d.research_content_id = 1;
             d.is_positive = true;
             d.author = "alice";
-            d.weights_per_discipline.insert(reward_weights_per_discipline.begin(), reward_weights_per_discipline.end());
-            d.expertise_amounts_used[10] = 50;
-            d.weight_modifiers[10] = 1;
+            d.expertise_tokens_amount_by_discipline.insert(reward_weights_per_discipline.begin(), reward_weights_per_discipline.end());
+            d.expertise_tokens_amount_by_discipline[10] = 50;
         });
 
         db.create<review_object>([&](review_object& d) {
@@ -203,9 +203,8 @@ public:
             d.research_content_id = 1;
             d.is_positive = true;
             d.author = "bob";
-            d.weights_per_discipline.insert(reward_weights_per_discipline.begin(), reward_weights_per_discipline.end());
-            d.expertise_amounts_used[10] = 50;
-            d.weight_modifiers[10] = 1;
+            d.expertise_tokens_amount_by_discipline.insert(reward_weights_per_discipline.begin(), reward_weights_per_discipline.end());
+            d.expertise_tokens_amount_by_discipline[10] = 50;
         });
     }
 

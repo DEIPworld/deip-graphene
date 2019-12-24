@@ -24,11 +24,12 @@
 #include <deip/chain/schema/expert_token_object.hpp>
 #include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 #include <deip/chain/schema/expertise_stats_object.hpp>
-#include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
-
+#include <deip/chain/schema/grant_object.hpp>
+#include <deip/chain/schema/grant_application_object.hpp>
+#include <deip/chain/schema/grant_application_review_object.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
@@ -173,7 +174,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         BOOST_CHECK(review.author == "john");
         BOOST_CHECK(review.is_positive == true);
         BOOST_CHECK(review.content == "test");
-        BOOST_CHECK(review.expertise_amounts_used.at(1) == (old_voting_power * op.weight * token.amount) / (DEIP_100_PERCENT * DEIP_100_PERCENT));
+        BOOST_CHECK(review.expertise_tokens_amount_by_discipline.at(1) == (old_voting_power * op.weight * token.amount) / (DEIP_100_PERCENT * DEIP_100_PERCENT));
         BOOST_CHECK(disciplines.size() == 1 && disciplines[0] == 1);
         BOOST_CHECK(old_voting_power - new_voting_power == (DEIP_REVIEW_REQUIRED_POWER_PERCENT * op.weight) / DEIP_100_PERCENT);
 
@@ -468,7 +469,7 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
         r.author = "bob";
         r.research_content_id = content.id;
         r.created_at = db.head_block_time();
-        r.expertise_amounts_used[discipline.id] = 1000;
+        r.expertise_tokens_amount_by_discipline[discipline.id] = 1000;
         r.disciplines.insert(discipline.id);
     });
 
@@ -538,14 +539,10 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
 
     auto& updated_review = db.get<review_object>(review.id);
 
-    BOOST_REQUIRE(updated_review.weights_per_discipline.at(vote.discipline_id) == expected_weight);
+    BOOST_REQUIRE(updated_review.expertise_tokens_amount_by_discipline.at(vote.discipline_id) == expected_weight);
 
     // Validate discipline
     BOOST_REQUIRE(discipline.total_active_weight == 1000);
-
-    // Validate review
-    auto weight_modifier = db.calculate_review_weight_modifier(updated_review.id, discipline.id);
-    BOOST_REQUIRE(updated_review.weight_modifiers.at(discipline.id) == weight_modifier);
 
     validate_database();
 }
@@ -4702,10 +4699,9 @@ BOOST_AUTO_TEST_CASE(make_review_grant_application)
     tx3.validate();
     db.push_transaction(tx3, 0);
 
-    auto& review = db.get<review_object>(0);
+    auto& review = db.get<grant_application_review_object>(0);
 
     BOOST_CHECK(review.grant_application_id == 1);
-    BOOST_CHECK(review.is_grant_application == true);
 
 }
 

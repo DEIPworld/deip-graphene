@@ -1,8 +1,7 @@
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_grant.hpp>
+#include <deip/chain/services/dbs_grant_application.hpp>
 #include <deip/chain/database/database.hpp>
-
-#include <deip/chain/schema/grant_application_object.hpp>
 
 namespace deip {
 namespace chain {

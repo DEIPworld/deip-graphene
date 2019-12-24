@@ -113,13 +113,13 @@ BOOST_AUTO_TEST_CASE(get_research_discipline_relations_by_research)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_research_discipline_relations_by_research_and_discipline)
+BOOST_AUTO_TEST_CASE(get_research_discipline_relation_by_research_and_discipline)
 {
     try
     {
         create_research_discipline_relations();
 
-        const auto& relation = data_service.get_research_discipline_relations_by_research_and_discipline(RESEARCH_ONE, DISCIPLINE_MATH);
+        const auto& relation = data_service.get_research_discipline_relation_by_research_and_discipline(RESEARCH_ONE, DISCIPLINE_MATH);
 
         BOOST_CHECK(relation.research_id == RESEARCH_ONE);
         BOOST_CHECK(relation.discipline_id == DISCIPLINE_MATH);

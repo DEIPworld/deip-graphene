@@ -24,21 +24,23 @@ protected:
 public:
     using review_refs_type = std::vector<std::reference_wrapper<const review_object>>;
 
-    const review_object& get(const review_id_type& id);
+    const review_object& get(const review_id_type& id) const;
 
     review_refs_type get_research_content_reviews(const research_content_id_type& research_content_id) const;
-
-    review_refs_type get_grant_application_reviews(const grant_application_id_type& grant_application_id) const;
+    
+    review_refs_type get_reviews_by_content(const research_content_id_type &research_content_id) const;
 
     review_refs_type get_author_reviews(const account_name_type& author) const;
 
-    const review_object& create(const int64_t& object_id,
-                                const bool is_grant_application,
+    const review_object& create(const research_content_id_type& research_content_id,
                                 const string& content,
                                 bool is_positive,
                                 const account_name_type& author,
-                                const std::set<discipline_id_type>& disciplines);
+                                const std::set<discipline_id_type>& disciplines,
+                                const std::map<discipline_id_type, share_type> used_expertise);
 
+    const std::map<discipline_id_type, share_type> get_eci_weight(const review_id_type& review_id) const;
+    
 };
 } // namespace chain
 } // namespace deip
