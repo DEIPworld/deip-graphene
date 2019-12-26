@@ -2324,5 +2324,29 @@ database_api::get_grant_applications_by_research_id(const research_id_type& rese
     });
 }
 
+std::map<discipline_id_type, share_type> database_api::calculate_research_eci(const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research& research_service = my->_db.obtain_service<chain::dbs_research>();
+        return research_service.get_eci_evaluation(research_id);
+    });
+}
+
+std::map<discipline_id_type, share_type> database_api::calculate_research_content_eci(const research_content_id_type& research_content_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_research_content& research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
+        return research_content_service.get_eci_evaluation(research_content_id);
+    });
+}
+
+std::map<discipline_id_type, share_type> database_api::calculate_review_weight(const review_id_type& review_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_review& review_service = my->_db.obtain_service<chain::dbs_review>();
+        return review_service.get_eci_weight(review_id);
+    });
+}
+
 } // namespace app
 } // namespace deip

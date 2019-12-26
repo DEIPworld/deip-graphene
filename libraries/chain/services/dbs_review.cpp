@@ -11,6 +11,7 @@
 #include <deip/chain/services/dbs_vote.hpp>
 
 #include <tuple>
+#include <math.h>
 
 namespace deip {
 namespace chain {
@@ -109,38 +110,38 @@ const std::map<discipline_id_type, share_type> dbs_review::get_eci_weight(const 
                 return rw_vote.discipline_id == discipline_id;
             });
 
-        const share_type Cea = share_type(DEIP_REVIEWER_INFLUENCE_FACTOR);
-        const share_type Cva = share_type(DEIP_CURATOR_INFLUENCE_FACTOR);
-        const share_type n = share_type(research_content_reviews_for_discipline.size());
+        const double Cea = (double) DEIP_REVIEWER_INFLUENCE_FACTOR;
+        const double Cva = (double) DEIP_CURATOR_INFLUENCE_FACTOR;
+        const double n = (double) research_content_reviews_for_discipline.size();
 
-        const share_type Er = review.expertise_tokens_amount_by_discipline.at(discipline_id);
+        const double Er = (double) review.expertise_tokens_amount_by_discipline.at(discipline_id).value;
 
-        const share_type Er_avg = (std::accumulate(research_content_reviews_for_discipline.begin(), research_content_reviews_for_discipline.end(), share_type(0),
-            [&](share_type acc, std::reference_wrapper<const review_object> rw_wrap) {
+        const double Er_avg = (double) (std::accumulate(research_content_reviews_for_discipline.begin(), research_content_reviews_for_discipline.end(), 0,
+            [&](int64_t acc, std::reference_wrapper<const review_object> rw_wrap) {
                 const review_object& rw = rw_wrap.get();
-                const share_type rw_Er = rw.expertise_tokens_amount_by_discipline.at(discipline_id);
+                const int64_t rw_Er = rw.expertise_tokens_amount_by_discipline.at(discipline_id).value;
                 return acc + rw_Er;
-            })) / research_content_reviews_for_discipline.size();
+            }) / research_content_reviews_for_discipline.size());
 
-        const share_type Vr = std::accumulate(research_content_reviews_votes_for_discipline.begin(), research_content_reviews_votes_for_discipline.end(), share_type(0),
-            [&](share_type acc, std::reference_wrapper<const review_vote_object> rw_vote_wrap) {
+        const double Vr = (double) std::accumulate(research_content_reviews_votes_for_discipline.begin(), research_content_reviews_votes_for_discipline.end(), 0,
+            [&](int64_t acc, std::reference_wrapper<const review_vote_object> rw_vote_wrap) {
                 const review_vote_object& rw_vote = rw_vote_wrap.get();
-                return rw_vote.review_id == review.id ? acc + share_type(rw_vote.weight) : acc;
+                return rw_vote.review_id == review.id ? acc + rw_vote.weight : acc;
             });
 
-        const share_type Vi = std::accumulate(research_content_reviews_votes_for_discipline.begin(), research_content_reviews_votes_for_discipline.end(), share_type(0),
-            [&](share_type acc, std::reference_wrapper<const review_vote_object> rw_vote_wrap) {
+        const double Vi = (double) std::accumulate(research_content_reviews_votes_for_discipline.begin(), research_content_reviews_votes_for_discipline.end(), 0,
+            [&](int64_t acc, std::reference_wrapper<const review_vote_object> rw_vote_wrap) {
                 const review_vote_object& rw_vote = rw_vote_wrap.get();
-                return acc + share_type(rw_vote.weight);
+                return acc + rw_vote.weight;
             });
 
-        const share_type Cr = Cea * (Er / Er_avg) + Cva * (1 - 1 / n) * (Vr / (Vi != 0 ? Vi : 1));
+        const double Cr = Cea * (Er / Er_avg) + Cva * (1 - 1 / n) * (Vr / (Vi != 0 ? Vi : 1));
 
-        const share_type mr = review.is_positive ? share_type(1) : share_type(-1);
+        const double mr = (double) review.is_positive ? 1 : -1;
 
-        const share_type review_weight = mr * Cr * Er;
+        const int64_t review_weight = std::round(mr * Cr * Er);
 
-        review_weight_by_discipline[discipline_id] = review_weight;
+        review_weight_by_discipline[discipline_id] = share_type(review_weight);
     }
 
     return review_weight_by_discipline;
