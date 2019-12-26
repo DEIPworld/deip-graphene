@@ -2162,10 +2162,10 @@ void database::_apply_block(const signed_block& next_block)
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
         process_research_token_sales();
-        process_funds();
+        // process_funds(); // TODO: Fix internal emission
         process_common_tokens_withdrawals();
         account_recovery_processing();
-        process_content_activity_windows();
+        // process_content_activity_windows(); // TODO: Fix internal emission
         process_hardforks();
         process_discipline_supplies();
 
