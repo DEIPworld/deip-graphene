@@ -2784,6 +2784,7 @@
   ],
   "research_contents": [
     {
+      "id": 0,
       "research_id": 0,
       "type": 3,
       "title": "Describing Myxococcus xanthus",
@@ -2796,6 +2797,7 @@
       "references": []
     },
     {
+      "id": 1,
       "research_id": 0,
       "type": 3,
       "title": "Inter-laboratory evolution of a model organism and its epistatic effects on mutagenesis screens",
@@ -2808,6 +2810,7 @@
       "references": []
     },
     {
+      "id": 2,
       "research_id": 1,
       "type": 9,
       "title": "Evidence in Tissint for recent subsurface water on Mars",
@@ -2820,6 +2823,7 @@
       "references": []
     },
     {
+      "id": 3,
       "research_id": 1,
       "type": 3,
       "title": "Fluor-schorl, a new member of the tourmaline supergroup, and new data on schorl from the cotype localities",
@@ -2832,6 +2836,7 @@
       "references": []
     },
     {
+      "id": 4,
       "research_id": 2,
       "type": 3,
       "title": "Micropolar effect on the cataclastic flow and brittle-ductile transition in high-porosity rocks",
@@ -2844,6 +2849,7 @@
       "references": []
     },
     {
+      "id": 5,
       "research_id": 2,
       "type": 3,
       "title": "On the solvability of incompressible Stokes with viscoplastic rheologies in geodynamics",
@@ -2856,6 +2862,7 @@
       "references": []
     },
     {
+      "id": 6,
       "research_id": 2,
       "type": 3,
       "title": "Effects of spatial heterogeneity and material anisotropy on the fracture pattern and macroscopic effective toughness of Mancos Shale in Brazilian tests",
@@ -2868,6 +2875,7 @@
       "references": []
     },
     {
+      "id": 7,
       "research_id": 2,
       "type": 3,
       "title": "TerraFERMA: The Transparent Finite Element Rapid Model Assembler for multiphysics problems in Earth sciences",
@@ -2880,6 +2888,7 @@
       "references": []
     },
     {
+      "id": 8,
       "research_id": 2,
       "type": 3,
       "title": "Geological and Geochemical Controls on Subsurface Microbial Life in the Samail Ophiolite, Oman",
@@ -2892,6 +2901,7 @@
       "references": []
     },
     {
+      "id": 9,
       "research_id": 2,
       "type": 3,
       "title": "Wave propagation and strain localization in a fully saturated softening porous 2 medium under the non-isothermal conditions",
@@ -2904,6 +2914,7 @@
       "references": []
     },
     {
+      "id": 10,
       "research_id": 3,
       "type": 3,
       "title": "Towards an assessment of riverine dissolved organic carbon in surface waters of the western Arctic Ocean based on remote sensing and biogeochemical modeling",
@@ -2916,6 +2927,7 @@
       "references": []
     },
     {
+      "id": 11,
       "research_id": 3,
       "type": 3,
       "title": "Dynamic Preconditioning of the Minimum September Sea-Ice Extent",
@@ -2928,6 +2940,7 @@
       "references": []
     },
     {
+      "id": 12,
       "research_id": 3,
       "type": 3,
       "title": "Increasing transnational sea-ice exchange in a changing Arctic Ocean",
@@ -2940,6 +2953,7 @@
       "references": []
     },
     {
+      "id": 13,
       "research_id": 3,
       "type": 3,
       "title": "Patterns of Sea Ice Retreat in the Transition to a Seasonally Ice-Free Arctic",
@@ -2952,6 +2966,7 @@
       "references": []
     },
     {
+      "id": 14,
       "research_id": 3,
       "type": 3,
       "title": "Sea Ice Model Intercomparison Project (SIMIP): Understanding sea ice through climate-model simulations",
@@ -2964,6 +2979,7 @@
       "references": []
     },
     {
+      "id": 15,
       "research_id": 4,
       "type": 3,
       "title": "BMP and FGF signaling interact to pattern mesoderm by controlling basic helix-loop-helix transcription factor activity",
@@ -2976,6 +2992,7 @@
       "references": []
     },
     {
+      "id": 16,
       "research_id": 4,
       "type": 3,
       "title": "FGF and canonical Wnt signaling cooperate to induce paraxial mesoderm from tailbud neuromesodermal progenitors through regulation of a two-step epithelial to mesenchymal transition",
@@ -2988,6 +3005,7 @@
       "references": []
     },
     {
+      "id": 17,
       "research_id": 4,
       "type": 3,
       "title": "Observing the cell in its native state: Imaging subcellular dynamics in multicellular organisms",
@@ -3000,6 +3018,7 @@
       "references": []
     },
     {
+      "id": 18,
       "research_id": 4,
       "type": 3,
       "title": "The zebrafish tailbud contains two independent populations of midline progenitor cells that maintain long-term germ layer plasticity and differentiate in response to local signaling cues",
@@ -3012,6 +3031,7 @@
       "references": []
     },
     {
+      "id": 19,
       "research_id": 5,
       "type": 3,
       "title": "Amino acid transporter expansions associated with the evolution of obligate endosymbiosis in sap-feeding insects (Hemiptera: sternorrhyncha)",
@@ -3024,6 +3044,7 @@
       "references": []
     },
     {
+      "id": 20,
       "research_id": 5,
       "type": 3,
       "title": "Bats (Chiroptera: Noctilionoidea) Challenge a Recent Origin of Extant Neotropical Diversity",
@@ -3036,6 +3057,7 @@
       "references": []
     },
     {
+      "id": 21,
       "research_id": 5,
       "type": 3,
       "title": "Bayesian hierarchical models suggest oldest known plant-visiting bat was omnivorous",
@@ -3048,6 +3070,7 @@
       "references": []
     },
     {
+      "id": 22,
       "research_id": 5,
       "type": 3,
       "title": "From the Field to the Lab: Best Practices for Field Preservation of Bat Specimens for Molecular Analyses",
@@ -3060,6 +3083,7 @@
       "references": []
     },
     {
+      "id": 23,
       "research_id": 5,
       "type": 3,
       "title": "Phylogeny and Divergence Times of Lemurs Inferred with Recent and Ancient Fossils in the Tree",
@@ -3072,6 +3096,7 @@
       "references": []
     },
     {
+      "id": 24,
       "research_id": 6,
       "type": 3,
       "title": "Paternal Induction of Hybrid Dysgenesis in Drosophila melanogaster Is Weakly Correlated with Both P-Element and hobo Element Dosage",
@@ -3084,6 +3109,7 @@
       "references": []
     },
     {
+      "id": 25,
       "research_id": 6,
       "type": 3,
       "title": "QTL mapping of natural variation reveals that the developmental regulator bruno reduces tolerance to P-element transposition in the Drosophila female germline",
@@ -3096,6 +3122,7 @@
       "references": []
     },
     {
+      "id": 26,
       "research_id": 6,
       "type": 3,
       "title": "Targeted identification of TE insertions in a Drosophila genome through hemi-specific PCR",
@@ -3108,6 +3135,7 @@
       "references": []
     },
     {
+      "id": 27,
       "research_id": 6,
       "type": 3,
       "title": "The Evolution of Small-RNA-Mediated Silencing of an Invading Transposable Element",
@@ -3120,6 +3148,7 @@
       "references": []
     },
     {
+      "id": 28,
       "research_id": 7,
       "type": 3,
       "title": "Dynamic Preconditioning of the Minimum September Sea-Ice Extent",
@@ -3132,6 +3161,7 @@
       "references": []
     },
     {
+      "id": 29,
       "research_id": 7,
       "type": 3,
       "title": "Increasing transnational sea-ice exchange in a changing Arctic Ocean ",
@@ -3144,6 +3174,7 @@
       "references": []
     },
     {
+      "id": 30,
       "research_id": 8,
       "type": 3,
       "title": "Molecular origin of the weak susceptibility of kinesin velocity to loads and its relation to the collective behavior of kinesins",
@@ -3156,6 +3187,7 @@
       "references": []
     },
     {
+      "id": 31,
       "research_id": 9,
       "type": 3,
       "title": "Degassing of reduced carbon from planetary basalts",
@@ -3168,6 +3200,7 @@
       "references": []
     },
     {
+      "id": 32,
       "research_id": 9,
       "type": 3,
       "title": "Optical reflectivity of solid and liquid methane: Application to spectroscopy of Titan’s hydrocarbon lakes",
@@ -3180,6 +3213,7 @@
       "references": []
     },
     {
+      "id": 33,
       "research_id": 10,
       "type": 3,
       "title": "A Comprehensive Analysis of Alternative Splicing in Paleopolyploid Maize",
@@ -3192,6 +3226,7 @@
       "references": []
     },
     {
+      "id": 34,
       "research_id": 10,
       "type": 3,
       "title": "Genetic Control of Maize Shoot Apical Meristem Architecture",
@@ -3204,6 +3239,7 @@
       "references": []
     },
     {
+      "id": 35,
       "research_id": 10,
       "type": 3,
       "title": "Genetic control of morphometric diversity in the maize shoot apical meristem",
@@ -3216,6 +3252,7 @@
       "references": []
     },
     {
+      "id": 36,
       "research_id": 10,
       "type": 3,
       "title": "Improving Response in Genomic Selection with a Population-Based Selection Strategy-Optimal Population Value Selection",
@@ -3228,6 +3265,7 @@
       "references": []
     },
     {
+      "id": 37,
       "research_id": 10,
       "type": 3,
       "title": "Modeling the Morphometric Evolution of the Maize Shoot Apical Meristem",
@@ -3240,6 +3278,7 @@
       "references": []
     },
     {
+      "id": 38,
       "research_id": 10,
       "type": 3,
       "title": "Substantial contribution of genetic variation in the expression of transcription factors to phenotypic variation revealed by eRD-GWAS",
@@ -3252,6 +3291,7 @@
       "references": []
     },
     {
+      "id": 39,
       "research_id": 11,
       "type": 19,
       "title": "Data Categories for Marine Planning",
@@ -3264,6 +3304,7 @@
       "references": []
     },
     {
+      "id": 40,
       "research_id": 12,
       "type": 3,
       "title": "Anomalous density and elastic properties of basalt at high pressure: Reevaluating of the effect of melt fraction on seismic velocity in the Earth’s crust and upper mantle",
@@ -3276,6 +3317,7 @@
       "references": []
     },
     {
+      "id": 41,
       "research_id": 12,
       "type": 3,
       "title": "Comparative compressibility of hydrous wadsleyite and ringwoodite: Effect of H2O and implications for detecting water in the transition zone",
@@ -3288,6 +3330,7 @@
       "references": []
     },
     {
+      "id": 42,
       "research_id": 13,
       "type": 3,
       "title": "A revised model for the control of fatty acid synthesis by master regulator Spo0A in Bacillus subtilis",
@@ -3300,6 +3343,7 @@
       "references": []
     },
     {
+      "id": 43,
       "research_id": 13,
       "type": 3,
       "title": "Optogenetic control of Bacillus subtilis gene expression",
@@ -3312,6 +3356,7 @@
       "references": []
     },
     {
+      "id": 44,
       "research_id": 14,
       "type": 3,
       "title": "Evidence in Tissint for recent subsurface water on Mars",
@@ -3324,6 +3369,7 @@
       "references": []
     },
     {
+      "id": 45,
       "research_id": 14,
       "type": 10,
       "title": "Tissintite, (Ca,Na) AlSi2O6, a highly-defective, shock-induced, high-pressure clinopyroxene in the Tissint martian meteorite",
@@ -3336,6 +3382,7 @@
       "references": []
     },
     {
+      "id": 46,
       "research_id": 15,
       "type": 3,
       "title": "Defining and measuring the mean residence time of lateral surface transient storage zones in small streams",
@@ -3348,6 +3395,7 @@
       "references": []
     },
     {
+      "id": 47,
       "research_id": 15,
       "type": 3,
       "title": "Development of a New USDA Plant Hardiness Zone Map for the United States",
@@ -3360,6 +3408,7 @@
       "references": []
     },
     {
+      "id": 48,
       "research_id": 15,
       "type": 3,
       "title": "Maximum entropy production: can it be used to constrain conceptual hydrological models?",
@@ -3372,6 +3421,7 @@
       "references": []
     },
     {
+      "id": 49,
       "research_id": 16,
       "type": 3,
       "title": "Warm-based basal sediment entrainment and far-field Pleistocene origin evidenced in central Transantarctic blue ice through stable isotopes and internal structures",
@@ -3384,6 +3434,7 @@
       "references": []
     },
     {
+      "id": 50,
       "research_id": 17,
       "type": 5,
       "title": "A reduced-complexity model for river delta formation – Part 1: Modeling deltas with channel dynamics",
@@ -3396,6 +3447,7 @@
       "references": []
     },
     {
+      "id": 51,
       "research_id": 17,
       "type": 5,
       "title": " A reduced-complexity model for river delta formation – Part 2: Assessment of the flow routing scheme",
@@ -3408,6 +3460,7 @@
       "references": []
     },
     {
+      "id": 52,
       "research_id": 17,
       "type": 3,
       "title": "Quantifying the patterns and dynamics of river deltas under conditions of steady forcing and relative sea level rise",
@@ -3420,6 +3473,7 @@
       "references": []
     },
     {
+      "id": 53,
       "research_id": 17,
       "type": 3,
       "title": "Testing morphodynamic controls on the location and frequency of river avulsions on fans versus deltas: Huanghe (Yellow River), China",
@@ -3432,6 +3486,7 @@
       "references": []
     },
     {
+      "id": 54,
       "research_id": 18,
       "type": 3,
       "title": "Depth as an Organizing Force in Pocillopora damicornis: Intra-Reef Genetic Architecture",
@@ -3444,6 +3499,7 @@
       "references": []
     },
     {
+      "id": 55,
       "research_id": 18,
       "type": 3,
       "title": "Digital data collection in forest dynamics plots",
@@ -3456,6 +3512,7 @@
       "references": []
     },
     {
+      "id": 56,
       "research_id": 18,
       "type": 3,
       "title": "PROCESSING, SWITCHING AND COMMUNICATION OF KNOWLEDGE",
@@ -3468,6 +3525,7 @@
       "references": []
     },
     {
+      "id": 57,
       "research_id": 18,
       "type": 3,
       "title": "Strategic light manipulation as a restoration strategy to reduce alien grasses and encourage native regeneration in Hawaiian mesic forests",
@@ -3480,6 +3538,7 @@
       "references": []
     },
     {
+      "id": 58,
       "research_id": 19,
       "type": 3,
       "title": "Defying Dissolution: Discovery of Deep-Sea Scleractinian Coral Reefs in the North Pacific",
@@ -3492,6 +3551,7 @@
       "references": []
     },
     {
+      "id": 59,
       "research_id": 20,
       "type": 3,
       "title": "Snowmelt onset hinders bromine monoxide heterogeneous recycling in the Arctic",
@@ -3504,6 +3564,7 @@
       "references": []
     },
     {
+      "id": 60,
       "research_id": 21,
       "type": 15,
       "title": "Equation of state of Mo from shock compression experiments on preheated samples",
@@ -3516,6 +3577,7 @@
       "references": []
     },
     {
+      "id": 61,
       "research_id": 21,
       "type": 3,
       "title": "Shock synthesis of quasicrystals with implications for their origin in asteroid collisions",
@@ -3528,6 +3590,7 @@
       "references": []
     },
     {
+      "id": 62,
       "research_id": 22,
       "type": 3,
       "title": "Rapid transport of ash and sulfate from the 2011 Puyehue-Cordón Caulle (Chile) eruption to West Antarctica",
@@ -3540,6 +3603,7 @@
       "references": []
     },
     {
+      "id": 63,
       "research_id": 22,
       "type": 3,
       "title": "The spectral and chemical measurement of pollutants on snow near South Pole, Antarctica",
@@ -3552,6 +3616,7 @@
       "references": []
     },
     {
+      "id": 64,
       "research_id": 23,
       "type": 3,
       "title": "Estimation of dissolved organic carbon contribution from hillslope soils to a headwater stream",
@@ -3564,6 +3629,7 @@
       "references": []
     },
     {
+      "id": 65,
       "research_id": 23,
       "type": 3,
       "title": "Rates of soil mixing and associated carbon fluxes in a forest versus tilled agricultural field: Implications for modeling the soil carbon cycle",
@@ -3576,6 +3642,7 @@
       "references": []
     },
     {
+      "id": 66,
       "research_id": 23,
       "type": 3,
       "title": "Riverine coupling of biogeochemical cycles between land, oceans, and atmosphere",
@@ -3588,6 +3655,7 @@
       "references": []
     },
     {
+      "id": 67,
       "research_id": 23,
       "type": 3,
       "title": "Seawater circulation in sediments driven by interactions between seabed topography and fluid density",
@@ -3600,6 +3668,7 @@
       "references": []
     },
     {
+      "id": 68,
       "research_id": 24,
       "type": 15,
       "title": "Constraints on Rift Basin Structure and Border Fault Growth in the Northern Malawi Rift from 3-D Seismic Refraction Imaging",
@@ -3612,6 +3681,7 @@
       "references": []
     },
     {
+      "id": 69,
       "research_id": 24,
       "type": 15,
       "title": "Seismic evidence for plume- and craton-influenced upper mantle structure 2 beneath the northern Malawi rift and the Rungwe volcanic province, East 3 Africa",
@@ -3624,6 +3694,7 @@
       "references": []
     },
     {
+      "id": 70,
       "research_id": 24,
       "type": 3,
       "title": "Surface wave imaging of the weakly extended Malawi Rift from ambient-noise and teleseismic Rayleigh waves from onshore and lake-bottom seismometers",
@@ -3636,6 +3707,7 @@
       "references": []
     },
     {
+      "id": 71,
       "research_id": 25,
       "type": 3,
       "title": "Development of Distributed Research Center for analysis of regional climatic and environmental changes",
@@ -3648,6 +3720,7 @@
       "references": []
     },
     {
+      "id": 72,
       "research_id": 25,
       "type": 3,
       "title": " Environmental science applications with Rapid Integrated Mapping and analysis System (RIMS)",
@@ -3660,6 +3733,7 @@
       "references": []
     },
     {
+      "id": 73,
       "research_id": 25,
       "type": 3,
       "title": "Pan-Arctic river discharge: Prioritizing monitoring of future climate change hot spots",
@@ -3672,6 +3746,7 @@
       "references": []
     },
     {
+      "id": 74,
       "research_id": 26,
       "type": 3,
       "title": "A magnesium-induced triplex pre-organizes the SAM-II riboswitch",
@@ -3684,6 +3759,7 @@
       "references": []
     },
     {
+      "id": 75,
       "research_id": 26,
       "type": 3,
       "title": "Elucidating the druggable interface of protein−protein interactions using fragment docking and coevolutionary analysis",
@@ -3696,6 +3772,7 @@
       "references": []
     },
     {
+      "id": 76,
       "research_id": 26,
       "type": 3,
       "title": "Phylogenetic analysis of eukaryotic NEET proteins uncovers a link between a key gene duplication event and the evolution of vertebrates",
@@ -3708,6 +3785,7 @@
       "references": []
     },
     {
+      "id": 77,
       "research_id": 26,
       "type": 3,
       "title": "Interrogating the topological robustness of gene regulatory circuits by randomization",
@@ -3720,6 +3798,7 @@
       "references": []
     },
     {
+      "id": 78,
       "research_id": 27,
       "type": 3,
       "title": "The Influence of Atmospheric Cloud Radiative Effects on the Large-Scale Stratospheric Circulation",
@@ -3732,6 +3811,7 @@
       "references": []
     },
     {
+      "id": 79,
       "research_id": 27,
       "type": 3,
       "title": "Thermodynamic constraint on the depth of the global tropospheric circulation",
@@ -3744,6 +3824,7 @@
       "references": []
     },
     {
+      "id": 80,
       "research_id": 28,
       "type": 3,
       "title": "Assessment of Wildfire Risk in Lebanon Using Geographic Object-Based Image Analysis",
@@ -3756,6 +3837,7 @@
       "references": []
     },
     {
+      "id": 81,
       "research_id": 28,
       "type": 3,
       "title": "Effects of biological legacies and herbivory on fuels and flammability traits: A long-term experimental study of alternative stable states",
@@ -3768,6 +3850,7 @@
       "references": []
     },
     {
+      "id": 82,
       "research_id": 28,
       "type": 3,
       "title": "Global climate evolution during the last deglaciation",
@@ -3780,6 +3863,7 @@
       "references": []
     },
     {
+      "id": 83,
       "research_id": 28,
       "type": 3,
       "title": "Interpreting modern and fossil pollen data along a steep environmental gradient in northern Patagonia",
@@ -3792,6 +3876,7 @@
       "references": []
     },
     {
+      "id": 84,
       "research_id": 28,
       "type": 3,
       "title": "Terrestrial biosphere changes over the last 120 kyr",
@@ -3804,6 +3889,7 @@
       "references": []
     },
     {
+      "id": 85,
       "research_id": 29,
       "type": 3,
       "title": "Simultaneous two-photon imaging and two-photon optogenetics of cortical circuits in three dimensions",
