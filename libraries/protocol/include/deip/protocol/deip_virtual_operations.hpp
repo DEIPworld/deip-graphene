@@ -78,6 +78,29 @@ struct token_sale_contribution_to_history_operation : public virtual_operation
     account_name_type contributor;
     asset amount;
 };
+
+struct content_reference_history_operation : public virtual_operation
+{
+    content_reference_history_operation() {}
+    content_reference_history_operation(const int64_t& research_content_id, const int64_t& research_id,
+                                        const std::string& content, const int64_t& research_content_reference_id,
+                                        const int64_t& research_reference_id, const std::string& content_reference)
+        : research_content_id(research_content_id)
+        , research_id(research_id)
+        , content(content)
+        , research_content_reference_id(research_content_reference_id)
+        , research_reference_id(research_reference_id)
+        , content_reference(content_reference)
+    {
+    }
+
+    int64_t research_content_id;
+    int64_t research_id;
+    std::string content;
+    int64_t research_content_reference_id;
+    int64_t research_reference_id;
+    std::string content_reference;
+};
 }
 } // deip::protocol
 
@@ -86,3 +109,4 @@ FC_REFLECT(deip::protocol::shutdown_witness_operation, (owner))
 FC_REFLECT(deip::protocol::hardfork_operation, (hardfork_id))
 FC_REFLECT(deip::protocol::producer_reward_operation, (producer)(common_tokens_amount))
 FC_REFLECT(deip::protocol::token_sale_contribution_to_history_operation, (research_id)(research_token_sale_id)(contributor)(amount))
+FC_REFLECT(deip::protocol::content_reference_history_operation, (research_content_id)(research_id)(content)(research_content_reference_id)(research_reference_id)(content_reference))

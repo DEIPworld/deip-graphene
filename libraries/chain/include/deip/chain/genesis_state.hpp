@@ -75,6 +75,7 @@ struct genesis_state_type
 
     struct research_content_type
     {
+        dc::research_content_id_type id;
         dc::research_id_type research_id;
         uint16_t type;
         std::string title;
@@ -176,6 +177,7 @@ FC_REFLECT(deip::chain::genesis_state_type::research_type,
 
 
 FC_REFLECT(deip::chain::genesis_state_type::research_content_type,
+           (id)
            (research_id)
            (type)
            (title)

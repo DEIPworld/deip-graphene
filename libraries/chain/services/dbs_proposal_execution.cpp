@@ -174,6 +174,17 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
 
     const auto& research_content = research_content_service.create(data.research_id, data.type, data.title, data.content, data.permlink, data.authors, data.references, data.external_references);
 
+    for (auto& reference : data.references)
+    {
+        auto& _content = research_content_service.get(reference);
+        db_impl().push_virtual_operation(content_reference_history_operation(research_content.id._id,
+                                                                             research_content.research_id._id,
+                                                                             fc::to_string(research_content.content),
+                                                                             _content.id._id,
+                                                                             _content.research_id._id,
+                                                                             fc::to_string(_content.content)));
+    }
+
     db_impl().modify(research, [&](research_object& r_o) {
         for (auto author : data.authors)
         {

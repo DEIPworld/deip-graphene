@@ -335,7 +335,7 @@ void database::init_research_content(const genesis_state_type& genesis_state)
         auto research = get<research_object, by_id>(research_content.research_id);
 
         auto& c = create<research_content_object>([&](research_content_object& rc) {
-
+            rc.id = research_content.id;
             rc.research_id = research_content.research_id;
             rc.type = static_cast<deip::chain::research_content_type>(research_content.type);
             fc::from_string(rc.title, research_content.title);
@@ -349,6 +349,17 @@ void database::init_research_content(const genesis_state_type& genesis_state)
             rc.activity_window_start = get_genesis_time();
             rc.activity_window_end = get_genesis_time() + DAYS_TO_SECONDS(14);
         });
+
+        for (auto& reference : research_content.references)
+        {
+            auto& _content = get<research_content_object>(reference);
+            push_virtual_operation(content_reference_history_operation(c.id._id,
+                                                                       c.research_id._id,
+                                                                       fc::to_string(c.content),
+                                                                       _content.id._id,
+                                                                       _content.research_id._id,
+                                                                       fc::to_string(_content.content)));
+        }
     }
 }
 
