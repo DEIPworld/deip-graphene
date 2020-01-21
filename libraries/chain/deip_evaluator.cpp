@@ -402,6 +402,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& op)
     dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
+    dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
 
     FC_ASSERT(op.weight > 0, "Vote weight must be specified.");
 
@@ -447,7 +448,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& op)
     });
 
     uint64_t max_vote_weight = 0;
-    _db._temporary_public_impl().create<review_vote_object>([&](review_vote_object& v) {
+    auto& vote = _db._temporary_public_impl().create<review_vote_object>([&](review_vote_object& v) {
         v.voter = voter.name;
         v.discipline_id = op.discipline_id;
         v.review_id = op.review_id;
@@ -467,8 +468,25 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& op)
         v.weight = w.to_uint64();
     });
 
-    research_content_service.update_eci_evaluation(research_content.id);
+    share_type old_content_eci_in_discipline = research_content.eci_per_discipline.at(op.discipline_id);
+    share_type old_research_eci_in_discipline = research_discipline_relation_service.get_research_discipline_relation_by_research_and_discipline(research.id, op.discipline_id).research_eci;
+
+    auto& _content = research_content_service.update_eci_evaluation(research_content.id);
     research_service.update_eci_evaluation(research.id);
+
+    share_type new_content_eci_in_discipline = _content.eci_per_discipline.at(op.discipline_id);
+    share_type new_research_eci_in_discipline = research_discipline_relation_service.get_research_discipline_relation_by_research_and_discipline(research.id, op.discipline_id).research_eci;
+
+    share_type delta_content_eci_in_discipline = new_content_eci_in_discipline - old_content_eci_in_discipline;
+    share_type delta_research_eci_in_discipline = new_research_eci_in_discipline - old_research_eci_in_discipline;
+
+    _db.push_virtual_operation(research_eci_history_operation(
+        research.id._id, op.discipline_id, new_research_eci_in_discipline, delta_research_eci_in_discipline, 
+        2, vote.id._id, _db.head_block_time().sec_since_epoch()));
+
+    _db.push_virtual_operation(research_content_eci_history_operation(
+        research_content.id._id, op.discipline_id, new_content_eci_in_discipline, delta_content_eci_in_discipline,
+        2, vote.id._id, _db.head_block_time().sec_since_epoch()));
 
     const auto& total_votes = vote_service.get_total_votes_by_content_and_discipline(review.research_content_id, discipline.id);
     vote_service.increase_total_used_expertise_amount(total_votes.id, used_expert_token_amount);
@@ -688,9 +706,41 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
     const auto& review = review_service.create(op.research_content_id, op.content, op.is_positive, op.author, review_disciplines, review_used_expertise_by_disciplines);
 
+    std::map<discipline_id_type, share_type> old_content_eci_in_disciplines;
+    std::map<discipline_id_type, share_type> old_research_eci_in_disciplines;
+
+    for (auto& discipline : review_disciplines)
+    {
+        old_content_eci_in_disciplines[discipline] = research_content.eci_per_discipline.at(discipline);
+        old_research_eci_in_disciplines[discipline] = research_discipline_service.get_research_discipline_relation_by_research_and_discipline(research.id, discipline).research_eci;
+    }
+
     research_content_service.update_eci_evaluation(research_content.id);
     research_service.update_eci_evaluation(research.id);
-    
+
+    std::map<discipline_id_type, share_type> new_content_eci_in_disciplines;
+    std::map<discipline_id_type, share_type> new_research_eci_in_disciplines;
+
+    for (auto& discipline : review_disciplines)
+    {
+        new_content_eci_in_disciplines[discipline] = research_content.eci_per_discipline.at(discipline);
+        new_research_eci_in_disciplines[discipline] = research_discipline_service.get_research_discipline_relation_by_research_and_discipline(research.id, discipline).research_eci;
+    }
+
+    for (auto& pair : new_research_eci_in_disciplines) 
+    {
+        _db.push_virtual_operation(research_eci_history_operation(
+            research.id._id, pair.first._id, pair.second, pair.second - old_research_eci_in_disciplines[pair.first], 
+            1, review.id._id, _db.head_block_time().sec_since_epoch()));
+    }
+
+    for (auto& pair : new_content_eci_in_disciplines) 
+    {
+        _db.push_virtual_operation(research_content_eci_history_operation(
+            research_content.id._id, pair.first._id, pair.second, pair.second - old_content_eci_in_disciplines[pair.first], 
+            1, review.id._id, _db.head_block_time().sec_since_epoch()));
+    }
+
     for (auto& review_discipline_id : review_disciplines)
     {
         const auto& expert_token = expertise_token_service.get_expert_token_by_account_and_discipline(op.author, review_discipline_id);

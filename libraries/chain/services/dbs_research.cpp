@@ -122,16 +122,16 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
     const auto& research_contents = research_content_service.get_by_research_id(research.id);
     const auto& research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
 
-    const fc::optional<research_content_object> final_result = research.is_finished 
+    const fc::optional<research_content_object> final_result = research.is_finished
         ? research_content_service.get_by_research_and_type(research.id, research_content_type::final_result)[0]
         : fc::optional<research_content_object>();
 
-    const std::vector<std::reference_wrapper<const review_object>>& final_result_reviews = research.is_finished 
+    const std::vector<std::reference_wrapper<const review_object>>& final_result_reviews = research.is_finished
         ? review_service.get_reviews_by_content(final_result->id)
         : std::vector<std::reference_wrapper<const review_object>>();
-    
-    const std::set<account_name_type> final_result_reviewers = research.is_finished 
-        ? std::accumulate(final_result_reviews.begin(), final_result_reviews.end(), std::set<account_name_type>(), 
+
+    const std::set<account_name_type> final_result_reviewers = research.is_finished
+        ? std::accumulate(final_result_reviews.begin(), final_result_reviews.end(), std::set<account_name_type>(),
             [](std::set<account_name_type> acc, std::reference_wrapper<const review_object> rw_wrap) {
                 const review_object& rw = rw_wrap.get();
                 acc.insert(rw.author);
@@ -153,7 +153,7 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
 
         const auto& milestone_reviews = review_service.get_reviews_by_content(research_content.id);
 
-        for (auto& rw_wrap: milestone_reviews) 
+        for (auto& rw_wrap: milestone_reviews)
         {
             const review_object& milestone_review = rw_wrap.get();
             if (final_result_reviewers.find(milestone_review.author) != final_result_reviewers.end()) {
@@ -176,11 +176,11 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
                 auto& max_and_min_weights = author_max_and_min_weights[milestone_review.author];
                 const share_type expertise_used = milestone_review.expertise_tokens_amount_by_discipline.at(discipline_id);
                 if (milestone_review.is_positive) {
-                    max_and_min_weights.first = max_and_min_weights.first < expertise_used 
+                    max_and_min_weights.first = max_and_min_weights.first < expertise_used
                         ? expertise_used
                         : max_and_min_weights.first;
                 } else {
-                    max_and_min_weights.second = max_and_min_weights.second < expertise_used 
+                    max_and_min_weights.second = max_and_min_weights.second < expertise_used
                         ? expertise_used
                         : max_and_min_weights.second;
                 }
@@ -189,23 +189,23 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
     }
 
     std::map<discipline_id_type, share_type> research_eci_by_discipline;
-    for (auto& wrap: research_discipline_relations) 
+    for (auto& wrap: research_discipline_relations)
     {
         const research_discipline_relation_object& relation = wrap.get();
         const discipline_id_type discipline_id = relation.discipline_id;
 
-        const auto authors_weights = max_and_min_reviewer_weight_by_discipline.find(discipline_id) != max_and_min_reviewer_weight_by_discipline.end() 
+        const auto authors_weights = max_and_min_reviewer_weight_by_discipline.find(discipline_id) != max_and_min_reviewer_weight_by_discipline.end()
             ? max_and_min_reviewer_weight_by_discipline[discipline_id]
             : std::map<account_name_type, std::pair<share_type, share_type>>();
 
-        const share_type Vdp = std::accumulate(authors_weights.begin(), authors_weights.end(), share_type(0), 
+        const share_type Vdp = std::accumulate(authors_weights.begin(), authors_weights.end(), share_type(0),
             [=](share_type acc, const std::pair<account_name_type, std::pair<share_type, share_type>>& entry) {
                 const share_type Ek_max = entry.second.first;
                 const share_type Ek_min = entry.second.second;
                 return acc + (Ek_max - Ek_min);
             });
 
-        const share_type Sdp = final_result_weight.find(discipline_id) != final_result_weight.end() 
+        const share_type Sdp = final_result_weight.find(discipline_id) != final_result_weight.end()
             ? final_result_weight.at(discipline_id)
             : share_type(0);
 
@@ -235,7 +235,7 @@ const research_object& dbs_research::update_eci_evaluation(const research_id_typ
     {
         const auto& relation = research_discipline_relation_service.get_research_discipline_relation_by_research_and_discipline(research_id, entry.first);
         db_impl().modify(relation, [&](research_discipline_relation_object& rdr_o) {
-            rdr_o.research_eci = entry.second; 
+            rdr_o.research_eci = entry.second;
         });
     }
 

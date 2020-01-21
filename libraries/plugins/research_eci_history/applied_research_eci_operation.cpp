@@ -1,13 +1,13 @@
-#include <deip/content_references_history/applied_cr_operation.hpp>
+#include <deip/research_eci_history/applied_research_eci_operation.hpp>
 
 namespace deip {
-namespace cr_history {
+namespace research_eci_history {
 
-applied_cr_operation::applied_cr_operation()
+applied_research_eci_operation::applied_research_eci_operation()
 {
 }
 
-applied_cr_operation::applied_cr_operation(const cr_operation_object& op_obj)
+applied_research_eci_operation::applied_research_eci_operation(const research_eci_operation_object& op_obj)
     : trx_id(op_obj.trx_id)
     , block(op_obj.block)
     , timestamp(op_obj.timestamp)

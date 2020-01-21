@@ -4,24 +4,24 @@
 #include <deip/chain/database/database.hpp>
 
 #ifndef CR_HISTORY_PLUGIN_NAME
-#define CR_HISTORY_PLUGIN_NAME "cr_history"
+#define CR_HISTORY_PLUGIN_NAME "research_content_references_history"
 #endif
 
 namespace deip {
-namespace cr_history {
+namespace research_content_references_history {
 
 using namespace chain;
 using app::application;
 
 namespace detail {
-class cr_history_plugin_impl;
+class research_content_reference_history_plugin_impl;
 }
 
-class cr_history_plugin : public deip::app::plugin
+class research_content_reference_history_plugin : public deip::app::plugin
 {
 public:
-    cr_history_plugin(application* app);
-    virtual ~cr_history_plugin();
+    research_content_reference_history_plugin(application* app);
+    virtual ~research_content_reference_history_plugin();
 
     std::string plugin_name() const override;
 
@@ -32,9 +32,9 @@ public:
 
     virtual void plugin_startup() override;
 
-    friend class detail::cr_history_plugin_impl;
+    friend class detail::research_content_reference_history_plugin_impl;
 
-    std::unique_ptr<detail::cr_history_plugin_impl> my;
+    std::unique_ptr<detail::research_content_reference_history_plugin_impl> my;
 };
 }
-} // deip::cr_history
+} // deip::research_content_references_history
