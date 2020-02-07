@@ -163,7 +163,7 @@ void create_research_group_operation::validate() const
     FC_ASSERT(fc::is_utf8(name), "Group name is not valid UTF8 string");
     FC_ASSERT(fc::is_utf8(description), "Description is not valid UTF8 string");
     FC_ASSERT(quorum_percent >= 5 * DEIP_1_PERCENT && quorum_percent <= DEIP_100_PERCENT, "Default proposal quorum must be in 0% to 100% range");
-        for(auto& quorum_percent : proposal_quorums)
+    for(auto& quorum_percent : proposal_quorums)
         FC_ASSERT(quorum_percent.second > 5 * DEIP_1_PERCENT && quorum_percent.second <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
 
     auto total_tokens_percents = share_type(0);
