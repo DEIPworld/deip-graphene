@@ -16,7 +16,6 @@ struct base_proposal_data_type
 
 struct dropout_member_proposal_data_type : base_proposal_data_type
 {
-    research_group_id_type research_group_id;
     account_name_type name;
 
     void validate() const
@@ -27,7 +26,6 @@ struct dropout_member_proposal_data_type : base_proposal_data_type
 
 struct invite_member_proposal_data_type : base_proposal_data_type
 {
-    research_group_id_type research_group_id;
     deip::protocol::account_name_type name;
     share_type research_group_token_amount_in_percent;
     std::string cover_letter;
@@ -42,7 +40,6 @@ struct invite_member_proposal_data_type : base_proposal_data_type
 
 struct change_quorum_proposal_data_type : base_proposal_data_type
 {
-    research_group_id_type research_group_id;
     uint16_t proposal_type;
     uint16_t quorum_percent;
 
@@ -57,7 +54,6 @@ struct start_research_proposal_data_type : base_proposal_data_type
     string title;
     string abstract;
     string permlink;
-    research_group_id_type research_group_id;
     uint16_t review_share_in_percent;
     uint16_t dropout_compensation_in_percent;
     std::vector<int64_t> disciplines;
@@ -81,7 +77,6 @@ struct start_research_proposal_data_type : base_proposal_data_type
 
 struct send_funds_data_type : base_proposal_data_type
 {
-    research_group_id_type research_group_id;
     account_name_type recipient;
     asset funds;
 
@@ -99,7 +94,6 @@ struct rebalance_info
 
 struct rebalance_research_group_tokens_data_type : base_proposal_data_type
 {
-    research_group_id_type research_group_id;
     std::vector<rebalance_info> accounts;
 
     void validate() const
@@ -195,7 +189,6 @@ struct offer_research_tokens_data_type : base_proposal_data_type
 
 struct change_research_group_name_and_description_data_type : base_proposal_data_type
 {
-    research_group_id_type research_group_id;
     string new_research_group_name;
     string new_research_group_description;
 
@@ -210,19 +203,19 @@ struct change_research_group_name_and_description_data_type : base_proposal_data
 };
 }
 
-FC_REFLECT(deip::chain::dropout_member_proposal_data_type, (research_group_id)(name))
+FC_REFLECT(deip::chain::dropout_member_proposal_data_type, (name))
 
-FC_REFLECT(deip::chain::invite_member_proposal_data_type, (research_group_id)(name)(research_group_token_amount_in_percent)(cover_letter))
+FC_REFLECT(deip::chain::invite_member_proposal_data_type, (name)(research_group_token_amount_in_percent)(cover_letter))
 
-FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (research_group_id)(proposal_type)(quorum_percent))
+FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (proposal_type)(quorum_percent))
 
-FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(research_group_id)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines))
+FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines))
 
-FC_REFLECT(deip::chain::send_funds_data_type, (research_group_id)(recipient)(funds))
+FC_REFLECT(deip::chain::send_funds_data_type, (recipient)(funds))
 
 FC_REFLECT(deip::chain::rebalance_info, (account_name)(new_amount_in_percent))
 
-FC_REFLECT(deip::chain::rebalance_research_group_tokens_data_type, (research_group_id)(accounts))
+FC_REFLECT(deip::chain::rebalance_research_group_tokens_data_type, (accounts))
 
 FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(title)(content)(permlink)(authors)(references)(external_references))
 
@@ -232,4 +225,4 @@ FC_REFLECT(deip::chain::change_research_review_share_percent_data_type, (researc
 
 FC_REFLECT(deip::chain::offer_research_tokens_data_type, (sender)(receiver)(research_id)(amount)(price))
 
-FC_REFLECT(deip::chain::change_research_group_name_and_description_data_type, (research_group_id)(new_research_group_name)(new_research_group_description))
+FC_REFLECT(deip::chain::change_research_group_name_and_description_data_type, (new_research_group_name)(new_research_group_description))
