@@ -80,6 +80,7 @@ protected:
     void create_research_material(const proposal_object& proposal);
     void start_research_token_sale(const proposal_object& proposal);
     void offer_research_tokens(const proposal_object& proposal);
+    void change_research_group_name_and_description(const proposal_object& proposal);
 
 private:
     proposal_evaluators_register executions;

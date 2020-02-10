@@ -193,6 +193,20 @@ struct offer_research_tokens_data_type : base_proposal_data_type
     }
 };
 
+struct change_research_group_name_and_description_data_type : base_proposal_data_type
+{
+    research_group_id_type research_group_id;
+    string new_research_group_name;
+    string new_research_group_description;
+
+    void validate() const {
+        FC_ASSERT(!new_research_group_name.empty(), "New name cannot be empty");
+        FC_ASSERT(fc::is_utf8(new_research_group_name), "New name is not valid UTF8 string");
+        FC_ASSERT(!new_research_group_description.empty(), "New description cannot be empty");
+        FC_ASSERT(fc::is_utf8(new_research_group_description), "New description is not valid UTF8 string");
+    }
+};
+
 };
 }
 
@@ -217,3 +231,5 @@ FC_REFLECT(deip::chain::start_research_token_sale_data_type, (research_id)(start
 FC_REFLECT(deip::chain::change_research_review_share_percent_data_type, (research_id)(review_share_in_percent))
 
 FC_REFLECT(deip::chain::offer_research_tokens_data_type, (sender)(receiver)(research_id)(amount)(price))
+
+FC_REFLECT(deip::chain::change_research_group_name_and_description_data_type, (research_group_id)(new_research_group_name)(new_research_group_description))
