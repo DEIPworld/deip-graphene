@@ -168,9 +168,10 @@ enum proposal_action_type : uint16_t
     offer_research_tokens = 9,
     create_research_material = 10,
     change_research_group_name_and_description = 11,
+    change_research_title_and_abstract = 12,
 
     First_proposal = start_research,
-    Last_proposal = change_research_group_name_and_description
+    Last_proposal = change_research_title_and_abstract
 };
 
 enum proposal_life_time_type
@@ -210,7 +211,8 @@ FC_REFLECT_ENUM(deip::protocol::proposal_action_type,   (start_research)
                                                         (change_research_review_share_percent)
                                                         (offer_research_tokens)
                                                         (create_research_material)
-                                                        (change_research_group_name_and_description))
+                                                        (change_research_group_name_and_description)
+                                                        (change_research_title_and_abstract))
 
 FC_REFLECT_ENUM(deip::protocol::proposal_life_time_type, (day)(week))
 

@@ -564,22 +564,7 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
         FC_ASSERT(!research_group.is_personal, "You cannot invite or dropout member, change quorums and rebalance tokens in your personal research group");
     }
 
-
-    std::hash<std::string> hash_string;
-    std::string unique_string = op.data;
-    unique_string.erase(std::remove_if(unique_string.begin(), unique_string.end(), [](unsigned char x) { return std::isspace(x); }), unique_string.end());
-    unique_string += std::to_string(op.action);
-    unique_string += std::to_string(op.research_group_id);
-
-    auto hash = hash_string(unique_string);
-    auto proposals = proposal_service.get_proposals_by_research_group_id(op.research_group_id);
-
-    for (auto proposal_wrapper : proposals)
-    {
-        auto& proposal = proposal_wrapper.get();
-        FC_ASSERT(hash != proposal.object_hash, "Proposal must be unique within research group");
-    }
-    auto& proposal = proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent, hash_string(unique_string));
+    auto& proposal = proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
 
     if (research_group.is_personal || !research_group.is_dao)
     {
@@ -871,6 +856,10 @@ void research_update_evaluator::do_apply(const research_update_operation& op)
 
     auto& research = research_service.get_research(op.research_id);
     research_group_service.check_research_group_token_existence(op.owner, research.research_group_id);
+
+    auto& research_group = research_group_service.get_research_group(research.research_group_id);
+
+    FC_ASSERT(research_group.is_dao == false || research_group.is_personal == true, "This operation is allowed only for personal and not DAO groups");
 
     _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
         fc::from_string(r_o.title, op.title);

@@ -43,8 +43,7 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
                                                      const account_name_type& creator,
                                                      const research_group_id_type& research_group_id,
                                                      const fc::time_point_sec expiration_time,
-                                                     const share_type quorum_percent,
-                                                     const size_t object_hash)
+                                                     const share_type quorum_percent)
 {
     const proposal_object& new_proposal = db_impl().create<proposal_object>([&](proposal_object& proposal) {
         proposal.action = action;
@@ -54,7 +53,6 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
         proposal.creation_time = db_impl().head_block_time();
         proposal.expiration_time = expiration_time;
         proposal.quorum_percent = quorum_percent;
-        proposal.object_hash = object_hash;
 
         switch (action)
         {

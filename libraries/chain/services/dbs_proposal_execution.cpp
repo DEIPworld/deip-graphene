@@ -32,6 +32,8 @@ dbs_proposal_execution::dbs_proposal_execution(database &db)
                    std::bind(&dbs_proposal_execution::offer_research_tokens, this, std::placeholders::_1));
     executions.set(proposal_action_type::change_research_group_name_and_description,
                    std::bind(&dbs_proposal_execution::change_research_group_name_and_description, this, std::placeholders::_1));
+    executions.set(proposal_action_type::change_research_title_and_abstract,
+                   std::bind(&dbs_proposal_execution::change_research_title_and_abstract, this, std::placeholders::_1));
 }
 
 void dbs_proposal_execution::invite(const proposal_object &proposal)
@@ -39,7 +41,7 @@ void dbs_proposal_execution::invite(const proposal_object &proposal)
     auto& research_group_invite_service = db_impl().obtain_service<dbs_research_group_invite>();
 
     invite_member_proposal_data_type data = get_data<invite_member_proposal_data_type>(proposal);
-    research_group_invite_service.create(data.name, data.research_group_id, data.research_group_token_amount_in_percent, data.cover_letter, account_name_type());
+    research_group_invite_service.create(data.name, proposal.research_group_id, data.research_group_token_amount_in_percent, data.cover_letter, account_name_type());
 }
 
 void dbs_proposal_execution::dropout(const proposal_object& proposal)
@@ -53,13 +55,13 @@ void dbs_proposal_execution::dropout(const proposal_object& proposal)
     dropout_member_proposal_data_type data = get_data<dropout_member_proposal_data_type>(proposal);
 
     account_service.check_account_existence(data.name);
-    research_group_service.check_research_group_token_existence(data.name, data.research_group_id);
+    research_group_service.check_research_group_token_existence(data.name, proposal.research_group_id);
 
-    proposal_service.remove_proposal_votes(data.name, data.research_group_id);
+    proposal_service.remove_proposal_votes(data.name, proposal.research_group_id);
 
-    auto& token = research_group_service.get_token_by_account_and_research_group(data.name, data.research_group_id);
+    auto& token = research_group_service.get_token_by_account_and_research_group(data.name, proposal.research_group_id);
 
-    auto researches = research_service.get_researches_by_research_group(data.research_group_id);
+    auto researches = research_service.get_researches_by_research_group(proposal.research_group_id);
     for (auto& r : researches)
     {
         auto& research = r.get();
@@ -82,8 +84,8 @@ void dbs_proposal_execution::dropout(const proposal_object& proposal)
         }
     }
     share_type token_amount = token.amount;
-    research_group_service.remove_token(data.name, data.research_group_id);
-    research_group_service.increase_research_group_tokens_amount(data.research_group_id, token_amount);
+    research_group_service.remove_token(data.name, proposal.research_group_id);
+    research_group_service.increase_research_group_tokens_amount(proposal.research_group_id, token_amount);
 }
 
 void dbs_proposal_execution::change_research_review_share(const proposal_object& proposal)
@@ -107,7 +109,7 @@ void dbs_proposal_execution::change_proposal_quorum(const proposal_object &propo
     auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
 
     change_quorum_proposal_data_type data = get_data<change_quorum_proposal_data_type>(proposal);
-    research_group_service.change_quorum(data.quorum_percent, static_cast<deip::protocol::proposal_action_type>(data.proposal_type), data.research_group_id);
+    research_group_service.change_quorum(data.quorum_percent, static_cast<deip::protocol::proposal_action_type>(data.proposal_type), proposal.research_group_id);
 }
 
 void dbs_proposal_execution::start_research(const proposal_object& proposal)
@@ -119,8 +121,8 @@ void dbs_proposal_execution::start_research(const proposal_object& proposal)
 
 
     start_research_proposal_data_type data = get_data<start_research_proposal_data_type>(proposal);
-    research_group_service.check_research_group_existence(data.research_group_id);
-    auto& research = research_service.create(data.title, data.abstract, data.permlink, data.research_group_id, data.review_share_in_percent, data.dropout_compensation_in_percent);
+    research_group_service.check_research_group_existence(proposal.research_group_id);
+    auto& research = research_service.create(data.title, data.abstract, data.permlink, proposal.research_group_id, data.review_share_in_percent, data.dropout_compensation_in_percent);
     for (auto& discipline_id : data.disciplines)
     {
         discipline_service.check_discipline_existence(discipline_id);
@@ -134,11 +136,11 @@ void dbs_proposal_execution::send_funds(const proposal_object &proposal)
     auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
 
     send_funds_data_type data = get_data<send_funds_data_type>(proposal);
-    research_group_service.check_research_group_existence(data.research_group_id);
+    research_group_service.check_research_group_existence(proposal.research_group_id);
     account_service.check_account_existence(data.recipient);
 
     auto& account = account_service.get_account(data.recipient);
-    auto& research_group = research_group_service.get_research_group(data.research_group_id);
+    auto& research_group = research_group_service.get_research_group(proposal.research_group_id);
     FC_ASSERT((research_group.balance.amount - data.funds.amount >= 0), "Research balance is less than amount (result amount < 0)");
 
     account_service.adjust_balance(account, data.funds);
@@ -150,15 +152,15 @@ void dbs_proposal_execution::rebalance_research_group_tokens(const proposal_obje
     auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
 
     rebalance_research_group_tokens_data_type data = get_data<rebalance_research_group_tokens_data_type>(proposal);
-    research_group_service.check_research_group_existence(data.research_group_id);
+    research_group_service.check_research_group_existence(proposal.research_group_id);
 
-    FC_ASSERT(data.accounts.size() == research_group_service.get_research_group_tokens(data.research_group_id).size(),
+    FC_ASSERT(data.accounts.size() == research_group_service.get_research_group_tokens(proposal.research_group_id).size(),
               "New amount of tokens should be provided for every research group member");
     for (auto account : data.accounts)
-        research_group_service.check_research_group_token_existence(account.account_name, data.research_group_id);
+        research_group_service.check_research_group_token_existence(account.account_name, proposal.research_group_id);
 
     for (auto account : data.accounts)
-        research_group_service.set_new_research_group_token_amount(data.research_group_id,
+        research_group_service.set_new_research_group_token_amount(proposal.research_group_id,
                                                                    account.account_name,
                                                                    account.new_amount_in_percent);
 }
@@ -252,13 +254,31 @@ void dbs_proposal_execution::change_research_group_name_and_description(const de
 
     change_research_group_name_and_description_data_type data = get_data<change_research_group_name_and_description_data_type>(proposal);
 
-    research_group_service.check_research_group_existence(data.research_group_id);
+    research_group_service.check_research_group_existence(proposal.research_group_id);
 
-    auto& research_group = research_group_service.get_research_group(data.research_group_id);
+    auto& research_group = research_group_service.get_research_group(proposal.research_group_id);
 
     db_impl().modify(research_group, [&](research_group_object& rg_o) {
         fc::from_string(rg_o.name, data.new_research_group_name);
         fc::from_string(rg_o.description, data.new_research_group_description);
+    });
+}
+
+void dbs_proposal_execution::change_research_title_and_abstract(const deip::chain::proposal_object &proposal)
+{
+    auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
+    auto& research_service = db_impl().obtain_service<dbs_research>();
+
+    change_research_title_and_abstract_data_type data = get_data<change_research_title_and_abstract_data_type>(proposal);
+
+    research_group_service.check_research_group_existence(proposal.research_group_id);
+    research_service.check_research_existence(data.research_id);
+
+    auto& research = research_service.get_research(data.research_id);
+
+    db_impl().modify(research, [&](research_object& r_o) {
+        fc::from_string(r_o.title, data.new_research_title);
+        fc::from_string(r_o.abstract, data.new_research_abstract);
     });
 }
 
