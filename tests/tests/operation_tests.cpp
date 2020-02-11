@@ -2707,7 +2707,7 @@ BOOST_AUTO_TEST_CASE(research_update_apply)
             proposal_quorums.insert(std::make_pair(i, 100));
 
         auto& research = research_create(0, "title", "abstract", "permlink", 31, 10, 10);
-        research_group_create(31, "name", "permlink", "description", 100, proposal_quorums, true, false);
+        research_group_create(31, "name", "permlink", "description", 100, proposal_quorums, false, false);
         research_group_token_create(31, "alice", DEIP_100_PERCENT);
 
         research_update_operation op;
@@ -4848,6 +4848,78 @@ BOOST_AUTO_TEST_CASE(change_research_group_name_and_description_apply)
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE(change_research_title_and_abstract_apply)
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: change_research_title_and_abstract_apply");
+
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
+
+        generate_block();
+
+        std::vector<std::pair<account_name_type, share_type>> accounts = {std::make_pair("alice", 5000),
+                                                                          std::make_pair("bob", 5000)};
+        std::map<uint16_t, share_type> proposal_quorums;
+
+        for (int i = First_proposal; i <= Last_proposal; i++)
+            proposal_quorums.insert(std::make_pair(i, 1));
+
+        setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, true, false, accounts);
+
+        auto& research = db.create<research_object>([&](research_object& r) {
+            r.id = 1;
+            r.title = "Research #1";
+            r.permlink = "Research #1 permlink";
+            r.research_group_id = 31;
+            r.review_share_in_percent = 1000;
+            r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
+            r.is_finished = false;
+            r.created_at = db.head_block_time();
+            r.abstract = "abstract for Research #1";
+            r.owned_tokens = DEIP_100_PERCENT;
+        });
+
+        const std::string json_str = "{\"research_id\":1, \"new_research_title\":\"newtitle\", \"new_research_abstract\":\"newabstract\"}";
+
+        create_proposal_operation op;
+        op.creator = "alice";
+        op.research_group_id = 31;
+        op.data = json_str;
+        op.action = dbs_proposal::action_t::change_research_title_and_abstract;
+        op.expiration_time = db.head_block_time() + DAYS_TO_SECONDS(7);
+
+        private_key_type priv_key = generate_private_key("alice");
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(priv_key, db.get_chain_id());
+        tx.validate();
+        db.push_transaction(tx, 0);
+
+        vote_proposal_operation op2;
+        op2.research_group_id = 31;
+        op2.proposal_id = 0;
+        op2.voter = "bob";
+
+        private_key_type bob_priv_key = generate_private_key("bob");
+
+        signed_transaction tx2;
+        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2.operations.push_back(op2);
+        tx2.sign(bob_priv_key, db.get_chain_id());
+        tx2.validate();
+        db.push_transaction(tx2, 0);
+
+        auto& r = db.get<research_object>(1);
+
+        BOOST_CHECK(r.title == "newtitle");
+        BOOST_CHECK(r.abstract == "newabstract");
+
+    }
+    FC_LOG_AND_RETHROW()
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 

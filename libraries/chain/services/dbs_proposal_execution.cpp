@@ -32,6 +32,8 @@ dbs_proposal_execution::dbs_proposal_execution(database &db)
                    std::bind(&dbs_proposal_execution::offer_research_tokens, this, std::placeholders::_1));
     executions.set(proposal_action_type::change_research_group_name_and_description,
                    std::bind(&dbs_proposal_execution::change_research_group_name_and_description, this, std::placeholders::_1));
+    executions.set(proposal_action_type::change_research_title_and_abstract,
+                   std::bind(&dbs_proposal_execution::change_research_title_and_abstract, this, std::placeholders::_1));
 }
 
 void dbs_proposal_execution::invite(const proposal_object &proposal)
@@ -259,6 +261,24 @@ void dbs_proposal_execution::change_research_group_name_and_description(const de
     db_impl().modify(research_group, [&](research_group_object& rg_o) {
         fc::from_string(rg_o.name, data.new_research_group_name);
         fc::from_string(rg_o.description, data.new_research_group_description);
+    });
+}
+
+void dbs_proposal_execution::change_research_title_and_abstract(const deip::chain::proposal_object &proposal)
+{
+    auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
+    auto& research_service = db_impl().obtain_service<dbs_research>();
+
+    change_research_title_and_abstract_data_type data = get_data<change_research_title_and_abstract_data_type>(proposal);
+
+    research_group_service.check_research_group_existence(proposal.research_group_id);
+    research_service.check_research_existence(data.research_id);
+
+    auto& research = research_service.get_research(data.research_id);
+
+    db_impl().modify(research, [&](research_object& r_o) {
+        fc::from_string(r_o.title, data.new_research_title);
+        fc::from_string(r_o.abstract, data.new_research_abstract);
     });
 }
 

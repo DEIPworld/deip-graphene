@@ -200,7 +200,21 @@ struct change_research_group_name_and_description_data_type : base_proposal_data
     }
 };
 
+struct change_research_title_and_abstract_data_type : base_proposal_data_type
+{
+    research_id_type research_id;
+    string new_research_title;
+    string new_research_abstract;
+
+    void validate() const {
+        FC_ASSERT(!new_research_title.empty(), "New title cannot be empty");
+        FC_ASSERT(fc::is_utf8(new_research_title), "New title is not valid UTF8 string");
+        FC_ASSERT(!new_research_abstract.empty(), "New abstract cannot be empty");
+        FC_ASSERT(fc::is_utf8(new_research_abstract), "New abstract is not valid UTF8 string");
+    }
 };
+
+}
 }
 
 FC_REFLECT(deip::chain::dropout_member_proposal_data_type, (name))
@@ -226,3 +240,5 @@ FC_REFLECT(deip::chain::change_research_review_share_percent_data_type, (researc
 FC_REFLECT(deip::chain::offer_research_tokens_data_type, (sender)(receiver)(research_id)(amount)(price))
 
 FC_REFLECT(deip::chain::change_research_group_name_and_description_data_type, (new_research_group_name)(new_research_group_description))
+
+FC_REFLECT(deip::chain::change_research_title_and_abstract_data_type, (research_id)(new_research_title)(new_research_abstract))

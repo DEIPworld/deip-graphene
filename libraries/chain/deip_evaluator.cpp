@@ -857,6 +857,10 @@ void research_update_evaluator::do_apply(const research_update_operation& op)
     auto& research = research_service.get_research(op.research_id);
     research_group_service.check_research_group_token_existence(op.owner, research.research_group_id);
 
+    auto& research_group = research_group_service.get_research_group(research.research_group_id);
+
+    FC_ASSERT(research_group.is_dao == false || research_group.is_personal == true, "This operation is allowed only for personal and not DAO groups");
+
     _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
         fc::from_string(r_o.title, op.title);
         fc::from_string(r_o.abstract, op.abstract);
