@@ -2418,7 +2418,6 @@ annotated_signed_transaction wallet_api::propose_invite_member(const std::string
 {    
     invite_member_proposal_data_type data;
 
-    data.research_group_id = research_group_id;
     data.name = member;
     data.research_group_token_amount_in_percent = research_group_token_amount_in_percent;
     data.cover_letter = cover_letter;
@@ -2434,8 +2433,6 @@ annotated_signed_transaction wallet_api::propose_exclude_member(const std::strin
     dropout_member_proposal_data_type data;
 
     data.name = member;
-    data.research_group_id = research_group_id;
-
     return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::dropout_member, PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
@@ -2454,7 +2451,6 @@ annotated_signed_transaction wallet_api::propose_create_research(const std::stri
     data.title = title;
     data.abstract = abstract;
     data.permlink = permlink;
-    data.research_group_id = research_group_id;
     data.review_share_in_percent = review_share_in_percent;
     data.dropout_compensation_in_percent = dropout_compensation_in_percent;
     data.disciplines = disciplines;
