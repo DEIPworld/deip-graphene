@@ -303,6 +303,7 @@ void database::init_research(const genesis_state_type& genesis_state)
             r.contents_amount = contents_amount;
             for (auto member : members)
                 r.members.insert(member);
+            r.is_private = research.is_private;
         });
 
         for (auto& discipline_id : research.disciplines)

@@ -55,6 +55,8 @@ public:
     uint16_t contents_amount = 0;
 
     account_name_type_set members;
+
+    bool is_private;
 };
 
 struct by_permlink;
@@ -96,7 +98,7 @@ typedef multi_index_container<research_object,
 FC_REFLECT(deip::chain::research_object,
                         (id)(title)(research_group_id)(permlink)(abstract)(created_at)(review_share_in_percent_last_update)
                         (last_update_time)(is_finished)(owned_tokens)(review_share_in_percent)(dropout_compensation_in_percent)(eci_per_discipline)
-                        (number_of_positive_reviews)(number_of_negative_reviews)(contents_amount)(members)
+                        (number_of_positive_reviews)(number_of_negative_reviews)(contents_amount)(members)(is_private)
             )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_object, deip::chain::research_index)

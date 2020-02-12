@@ -58,6 +58,7 @@ struct start_research_proposal_data_type : base_proposal_data_type
     uint16_t dropout_compensation_in_percent;
     std::vector<int64_t> disciplines;
 
+    bool is_private;
 
     void validate() const
     {
@@ -187,30 +188,32 @@ struct offer_research_tokens_data_type : base_proposal_data_type
     }
 };
 
-struct change_research_group_name_and_description_data_type : base_proposal_data_type
+struct change_research_group_meta_data_type : base_proposal_data_type
 {
-    string new_research_group_name;
-    string new_research_group_description;
+    string research_group_name;
+    string research_group_description;
 
     void validate() const {
-        FC_ASSERT(!new_research_group_name.empty(), "New name cannot be empty");
-        FC_ASSERT(fc::is_utf8(new_research_group_name), "New name is not valid UTF8 string");
-        FC_ASSERT(!new_research_group_description.empty(), "New description cannot be empty");
-        FC_ASSERT(fc::is_utf8(new_research_group_description), "New description is not valid UTF8 string");
+        FC_ASSERT(!research_group_name.empty(), "Name cannot be empty");
+        FC_ASSERT(fc::is_utf8(research_group_name), "Name is not valid UTF8 string");
+        FC_ASSERT(!research_group_description.empty(), "Description cannot be empty");
+        FC_ASSERT(fc::is_utf8(research_group_description), "Description is not valid UTF8 string");
     }
 };
 
-struct change_research_title_and_abstract_data_type : base_proposal_data_type
+struct change_research_meta_data_type : base_proposal_data_type
 {
     research_id_type research_id;
-    string new_research_title;
-    string new_research_abstract;
+    string research_title;
+    string research_abstract;
+
+    bool is_private;
 
     void validate() const {
-        FC_ASSERT(!new_research_title.empty(), "New title cannot be empty");
-        FC_ASSERT(fc::is_utf8(new_research_title), "New title is not valid UTF8 string");
-        FC_ASSERT(!new_research_abstract.empty(), "New abstract cannot be empty");
-        FC_ASSERT(fc::is_utf8(new_research_abstract), "New abstract is not valid UTF8 string");
+        FC_ASSERT(!research_title.empty(), "Title cannot be empty");
+        FC_ASSERT(fc::is_utf8(research_title), "Title is not valid UTF8 string");
+        FC_ASSERT(!research_abstract.empty(), "Abstract cannot be empty");
+        FC_ASSERT(fc::is_utf8(research_abstract), "Abstract is not valid UTF8 string");
     }
 };
 
@@ -223,7 +226,7 @@ FC_REFLECT(deip::chain::invite_member_proposal_data_type, (name)(research_group_
 
 FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (proposal_type)(quorum_percent))
 
-FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines))
+FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines)(is_private))
 
 FC_REFLECT(deip::chain::send_funds_data_type, (recipient)(funds))
 
@@ -239,6 +242,6 @@ FC_REFLECT(deip::chain::change_research_review_share_percent_data_type, (researc
 
 FC_REFLECT(deip::chain::offer_research_tokens_data_type, (sender)(receiver)(research_id)(amount)(price))
 
-FC_REFLECT(deip::chain::change_research_group_name_and_description_data_type, (new_research_group_name)(new_research_group_description))
+FC_REFLECT(deip::chain::change_research_group_meta_data_type, (research_group_name)(research_group_description))
 
-FC_REFLECT(deip::chain::change_research_title_and_abstract_data_type, (research_id)(new_research_title)(new_research_abstract))
+FC_REFLECT(deip::chain::change_research_meta_data_type, (research_id)(research_title)(research_abstract)(is_private))

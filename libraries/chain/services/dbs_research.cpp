@@ -13,7 +13,7 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 
 const research_object& dbs_research::create(const string &title, const string &abstract, const string &permlink,
                                             const research_group_id_type &research_group_id, const uint16_t review_share_in_percent,
-                                            const uint16_t dropout_compensation_in_percent)
+                                            const uint16_t dropout_compensation_in_percent, const bool is_private)
 {
     const auto& new_research = db_impl().create<research_object>([&](research_object& r) {
         fc::from_string(r.title, title);
@@ -27,6 +27,7 @@ const research_object& dbs_research::create(const string &title, const string &a
         r.created_at = db_impl().head_block_time();
         r.last_update_time = db_impl().head_block_time();
         r.review_share_in_percent_last_update = db_impl().head_block_time();
+        r.is_private = is_private;
     });
 
     return new_research;
