@@ -24,7 +24,7 @@ public:
 
     const research_object& create(const string& title, const string& abstract, const string& permlink,
                                   const research_group_id_type& research_group_id, const uint16_t review_share_in_percent,
-                                  const uint16_t dropout_compensation_in_percent);
+                                  const uint16_t dropout_compensation_in_percent, const bool is_private);
 
     research_refs_type get_researches() const;
 

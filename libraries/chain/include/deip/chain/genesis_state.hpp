@@ -71,6 +71,7 @@ struct genesis_state_type
         uint16_t review_share_in_percent;
         uint16_t dropout_compensation_in_percent;
         std::vector<int64_t> disciplines;
+        bool is_private;
     };
 
     struct research_content_type
@@ -173,7 +174,8 @@ FC_REFLECT(deip::chain::genesis_state_type::research_type,
            (is_finished)
            (review_share_in_percent)
            (dropout_compensation_in_percent)
-           (disciplines))
+           (disciplines)
+           (is_private))
 
 
 FC_REFLECT(deip::chain::genesis_state_type::research_content_type,

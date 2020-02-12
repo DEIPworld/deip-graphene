@@ -384,6 +384,7 @@ struct research_api_obj
         ,  last_update_time(r.last_update_time)
         ,  contents_amount(r.contents_amount)
         ,  members(r.members.begin(), r.members.end())
+        ,  is_private(r.is_private)
     {
         for (const auto& kvp : r.eci_per_discipline) {
             discipline_id_type discipline_id = kvp.first;
@@ -419,6 +420,8 @@ struct research_api_obj
     uint16_t contents_amount;
 
     std::vector<account_name_type> members;
+
+    bool is_private;
 };
 
 struct research_content_api_obj
@@ -725,6 +728,7 @@ struct research_listing_api_obj
         , members(r.members.begin(), r.members.end())
         , number_of_positive_reviews(r.number_of_positive_reviews)
         , number_of_negative_reviews(r.number_of_negative_reviews)
+        , is_private(r.is_private)
     {
         for (const auto& kvp : r.eci_per_discipline)
         {
@@ -757,6 +761,7 @@ struct research_listing_api_obj
     std::vector<account_name_type> members;
     uint16_t number_of_positive_reviews;
     uint16_t number_of_negative_reviews;
+    bool is_private;
 };
 
 struct total_votes_api_obj
@@ -1213,6 +1218,7 @@ FC_REFLECT( deip::app::research_api_obj,
             (last_update_time)
             (contents_amount)
             (members)
+            (is_private)
           )
 
 FC_REFLECT( deip::app::research_content_api_obj,
@@ -1338,6 +1344,7 @@ FC_REFLECT( deip::app::research_listing_api_obj,
            (members)
            (number_of_positive_reviews)
            (number_of_negative_reviews)
+           (is_private)
 )
 
 FC_REFLECT( deip::app::total_votes_api_obj,

@@ -3057,7 +3057,8 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
                 "\"permlink\":\"permlink\","
                 "\"review_share_in_percent\": 10,"
                 "\"dropout_compensation_in_percent\": 1500,"
-                "\"disciplines\": [1, 2, 3]}";
+                "\"disciplines\": [1, 2, 3],"
+                "\"is_private\":false}";
 
         create_proposal(1, dbs_proposal::action_t::start_research, json_str, "alice", 31,
                         fc::time_point_sec(0xffffffff), 1);
@@ -3355,7 +3356,8 @@ BOOST_AUTO_TEST_CASE(change_research_review_share_data_validate_test)
                                                           "\"permlink\":\"permlink\","
                                                           "\"review_share_in_percent\": 1000,"
                                                           "\"dropout_compensation_in_percent\": 1500,"
-                                                          "\"disciplines\": [1, 2, 3]}";
+                                                          "\"disciplines\": [1, 2, 3],"
+                                                          "\"is_private\":false}";
 
         const std::string change_review_share_proposal_json = "{\"review_share_in_percent\": 5100,\"research_id\": 0}";
 
@@ -4788,11 +4790,11 @@ BOOST_AUTO_TEST_CASE(reject_grant_application)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(change_research_group_name_and_description_apply)
+BOOST_AUTO_TEST_CASE(change_research_group_meta_apply)
 {
     try
     {
-        BOOST_TEST_MESSAGE("Testing: change_research_group_name_and_description_apply");
+        BOOST_TEST_MESSAGE("Testing: change_research_group_meta_apply");
 
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
 
@@ -4807,13 +4809,13 @@ BOOST_AUTO_TEST_CASE(change_research_group_name_and_description_apply)
 
         setup_research_group(31, "name", "research_group", "research group", 0, proposal_quorums, true, false, accounts);
 
-        const std::string json_str = "{\"new_research_group_name\":\"newname\", \"new_research_group_description\":\"newdescription\"}";
+        const std::string json_str = "{\"research_group_name\":\"newname\", \"research_group_description\":\"newdescription\"}";
 
         create_proposal_operation op;
         op.creator = "alice";
         op.research_group_id = 31;
         op.data = json_str;
-        op.action = dbs_proposal::action_t::change_research_group_name_and_description;
+        op.action = dbs_proposal::action_t::change_research_group_meta;
         op.expiration_time = db.head_block_time() + DAYS_TO_SECONDS(7);
 
         private_key_type priv_key = generate_private_key("alice");
@@ -4848,11 +4850,11 @@ BOOST_AUTO_TEST_CASE(change_research_group_name_and_description_apply)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(change_research_title_and_abstract_apply)
+BOOST_AUTO_TEST_CASE(change_research_meta_apply)
 {
     try
     {
-        BOOST_TEST_MESSAGE("Testing: change_research_title_and_abstract_apply");
+        BOOST_TEST_MESSAGE("Testing: change_research_meta_apply");
 
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob))
 
@@ -4878,15 +4880,16 @@ BOOST_AUTO_TEST_CASE(change_research_title_and_abstract_apply)
             r.created_at = db.head_block_time();
             r.abstract = "abstract for Research #1";
             r.owned_tokens = DEIP_100_PERCENT;
+            r.is_private = false;
         });
 
-        const std::string json_str = "{\"research_id\":1, \"new_research_title\":\"newtitle\", \"new_research_abstract\":\"newabstract\"}";
+        const std::string json_str = "{\"research_id\":1, \"research_title\":\"newtitle\", \"research_abstract\":\"newabstract\", \"is_private\":true}";
 
         create_proposal_operation op;
         op.creator = "alice";
         op.research_group_id = 31;
         op.data = json_str;
-        op.action = dbs_proposal::action_t::change_research_title_and_abstract;
+        op.action = dbs_proposal::action_t::change_research_meta;
         op.expiration_time = db.head_block_time() + DAYS_TO_SECONDS(7);
 
         private_key_type priv_key = generate_private_key("alice");
@@ -4916,6 +4919,7 @@ BOOST_AUTO_TEST_CASE(change_research_title_and_abstract_apply)
 
         BOOST_CHECK(r.title == "newtitle");
         BOOST_CHECK(r.abstract == "newabstract");
+        BOOST_CHECK(r.is_private == true);
 
     }
     FC_LOG_AND_RETHROW()
