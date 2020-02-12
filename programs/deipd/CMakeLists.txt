@@ -20,7 +20,9 @@ target_link_libraries(deipd PRIVATE
     deip_egenesis_full
     fc
     deip_tsc_history
-    deip_cr_history
+    deip_research_content_reference_history
+    deip_research_eci_history
+    deip_research_content_eci_history
     ${CMAKE_DL_LIBS}
     ${PLATFORM_SPECIFIC_LIBS}
 )

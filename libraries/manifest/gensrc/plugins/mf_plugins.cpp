@@ -30,6 +30,9 @@ std::shared_ptr< deip::app::abstract_plugin > create_tsc_history_plugin( deip::a
 
 std::shared_ptr< deip::app::abstract_plugin > create_cr_history_plugin( deip::app::application* app );
 
+std::shared_ptr< deip::app::abstract_plugin > create_research_eci_history_plugin( deip::app::application* app );
+
+std::shared_ptr< deip::app::abstract_plugin > create_rc_eci_history_plugin( deip::app::application* app );
 
 boost::container::flat_map< std::string, std::function< std::shared_ptr< deip::app::abstract_plugin >( deip::app::application* app ) > > plugin_factories_by_name;
 

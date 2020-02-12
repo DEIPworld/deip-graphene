@@ -169,6 +169,7 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
 {
     auto& research_service = db_impl().obtain_service<dbs_research>();
     auto& research_content_service = db_impl().obtain_service<dbs_research_content>();
+    auto& research_discipline_service = db_impl().obtain_service<dbs_research_discipline_relation>();
 
     const create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
     research_service.check_research_existence(data.research_id);
@@ -177,18 +178,7 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
     FC_ASSERT(!research.is_finished, "The research ${r} has been finished already", ("r", research.id));
 
     const auto& research_content = research_content_service.create(data.research_id, data.type, data.title, data.content, data.permlink, data.authors, data.references, data.external_references);
-
-    for (auto& reference : data.references)
-    {
-        auto& _content = research_content_service.get(reference);
-        db_impl().push_virtual_operation(content_reference_history_operation(research_content.id._id,
-                                                                             research_content.research_id._id,
-                                                                             fc::to_string(research_content.content),
-                                                                             _content.id._id,
-                                                                             _content.research_id._id,
-                                                                             fc::to_string(_content.content)));
-    }
-
+    
     db_impl().modify(research, [&](research_object& r_o) {
         for (auto author : data.authors)
         {
@@ -201,8 +191,38 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
         }
     });
 
+    for (auto& reference : data.references)
+    {
+        auto& _content = research_content_service.get(reference);
+        db_impl().push_virtual_operation(research_content_reference_history_operation(research_content.id._id,
+                                                                             research_content.research_id._id,
+                                                                             fc::to_string(research_content.content),
+                                                                             _content.id._id,
+                                                                             _content.research_id._id,
+                                                                             fc::to_string(_content.content)));
+    }
+
+    const auto& old_research_eci = research_service.get_eci_evaluation(research_content.research_id);
+
     research_content_service.update_eci_evaluation(research_content.id);
     research_service.update_eci_evaluation(research.id);
+
+    const auto& new_research_eci = research_service.get_eci_evaluation(research_content.research_id);
+    const auto& new_research_content_eci = research_content_service.get_eci_evaluation(research_content.id);
+
+    for (auto& pair : new_research_eci)
+    {
+        db_impl().push_virtual_operation(research_eci_history_operation(
+            research_content.research_id._id, pair.first._id, pair.second, pair.second - old_research_eci.at(pair.first), 
+            3, research_content.id._id, db_impl().head_block_time().sec_since_epoch()));
+    }
+
+    for (auto& pair : new_research_content_eci)
+    {
+        db_impl().push_virtual_operation(research_content_eci_history_operation(
+            research_content.id._id, pair.first._id, pair.second, pair.second, 
+            3, research_content.id._id, db_impl().head_block_time().sec_since_epoch()));
+    }
 }
 
 void dbs_proposal_execution::start_research_token_sale(const proposal_object& proposal)

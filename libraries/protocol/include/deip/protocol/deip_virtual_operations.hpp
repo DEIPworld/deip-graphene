@@ -79,10 +79,10 @@ struct token_sale_contribution_to_history_operation : public virtual_operation
     asset amount;
 };
 
-struct content_reference_history_operation : public virtual_operation
+struct research_content_reference_history_operation : public virtual_operation
 {
-    content_reference_history_operation() {}
-    content_reference_history_operation(const int64_t& research_content_id, const int64_t& research_id,
+    research_content_reference_history_operation() {}
+    research_content_reference_history_operation(const int64_t& research_content_id, const int64_t& research_id,
                                         const std::string& content, const int64_t& research_content_reference_id,
                                         const int64_t& research_reference_id, const std::string& content_reference)
         : research_content_id(research_content_id)
@@ -101,6 +101,69 @@ struct content_reference_history_operation : public virtual_operation
     int64_t research_reference_id;
     std::string content_reference;
 };
+
+struct research_content_eci_history_operation : public virtual_operation
+{
+    research_content_eci_history_operation() {}
+    research_content_eci_history_operation(const int64_t& research_content_id, const int64_t& discipline_id,
+                                  const share_type& new_eci_amount, const share_type& delta,
+                                  const uint16_t& action, const int64_t& action_object_id, const uint32_t& timestamp)
+        : research_content_id(research_content_id)
+        , discipline_id(discipline_id)
+        , new_eci_amount(new_eci_amount)
+        , delta(delta)
+        , action(action)
+        , action_object_id(action_object_id)
+        , timestamp(timestamp)
+    {
+    }
+
+    int64_t research_content_id;
+    int64_t discipline_id;
+
+    share_type new_eci_amount;
+    share_type delta;
+
+    uint16_t action;
+    int64_t action_object_id;
+
+    uint32_t timestamp;
+
+};
+
+struct research_eci_history_operation : public virtual_operation
+{
+    research_eci_history_operation() {}
+    research_eci_history_operation(const int64_t& research_id,
+                                   const int64_t& discipline_id,
+                                   const share_type& new_eci_amount,
+                                   const share_type& delta,
+                                   const uint16_t& action,
+                                   const int64_t& action_object_id,
+                                   const uint32_t& timestamp)
+        : research_id(research_id)
+        , discipline_id(discipline_id)
+        , new_eci_amount(new_eci_amount)
+        , delta(delta)
+        , action(action)
+        , action_object_id(action_object_id)
+        , timestamp(timestamp)
+    {
+    }
+
+    int64_t research_id;
+    int64_t discipline_id;
+
+    share_type new_eci_amount;
+    share_type delta;
+
+    uint16_t action;
+    int64_t action_object_id;
+
+    uint32_t timestamp;
+
+};
+
 }
 } // deip::protocol
 
@@ -109,4 +172,6 @@ FC_REFLECT(deip::protocol::shutdown_witness_operation, (owner))
 FC_REFLECT(deip::protocol::hardfork_operation, (hardfork_id))
 FC_REFLECT(deip::protocol::producer_reward_operation, (producer)(common_tokens_amount))
 FC_REFLECT(deip::protocol::token_sale_contribution_to_history_operation, (research_id)(research_token_sale_id)(contributor)(amount))
-FC_REFLECT(deip::protocol::content_reference_history_operation, (research_content_id)(research_id)(content)(research_content_reference_id)(research_reference_id)(content_reference))
+FC_REFLECT(deip::protocol::research_content_reference_history_operation, (research_content_id)(research_id)(content)(research_content_reference_id)(research_reference_id)(content_reference))
+FC_REFLECT(deip::protocol::research_content_eci_history_operation, (research_content_id)(discipline_id)(new_eci_amount)(delta)(action)(action_object_id)(timestamp))
+FC_REFLECT(deip::protocol::research_eci_history_operation, (research_id)(discipline_id)(new_eci_amount)(delta)(action)(action_object_id)(timestamp))

@@ -1564,7 +1564,8 @@ asset database::reward_reviews(const research_content_id_type &research_content_
     const auto it_end = it_pair.second;
     while (it != it_end)
     {
-        reviews.push_back(*it);
+        if (*it->disciplines.find(discipline_id) != *it->disciplines.end())
+            reviews.push_back(*it);
         ++it;
     }
 
@@ -1697,8 +1698,8 @@ asset database::allocate_rewards_to_reviews(const std::vector<review_object> &re
 
     share_type total_reviews_weight = share_type(0);
 
-    for (uint32_t i = 0; i < reviews.size(); i++) {
-        total_reviews_weight += reviews.at(i).expertise_tokens_amount_by_discipline.at(discipline_id);
+    for (auto& review : reviews) {
+        total_reviews_weight += review.expertise_tokens_amount_by_discipline.at(discipline_id);
     }
 
     if (total_reviews_weight == 0) return asset(0, DEIP_SYMBOL);
@@ -2162,7 +2163,7 @@ void database::_apply_block(const signed_block& next_block)
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
         process_research_token_sales();
-        // process_funds(); // TODO: Fix internal emission
+        //process_funds(); // TODO: Fix internal emission
         process_common_tokens_withdrawals();
         account_recovery_processing();
         // process_content_activity_windows(); // TODO: Fix internal emission

@@ -22,6 +22,7 @@
 #include <deip/chain/schema/vesting_balance_object.hpp>
 #include <deip/chain/schema/expertise_stats_object.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
+#include <deip/chain/services/dbs_research.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
@@ -245,9 +246,8 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
 
         for (auto& discipline : disciplines)
         {
-            if (discipline.id != 0) {
+            if (discipline.id != 0)
                 expert_token_service.create("hermes", discipline.id, 10000, true);
-            }
         }
     }
 #endif
@@ -320,7 +320,9 @@ void database::init_research(const genesis_state_type& genesis_state)
 void database::init_research_content(const genesis_state_type& genesis_state)
 {
     const vector<genesis_state_type::research_content_type>& research_contents = genesis_state.research_contents;
-    
+    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
+    dbs_research& research_service = obtain_service<dbs_research>();
+
     for (auto& research_content : research_contents)
     {
         FC_ASSERT(!research_content.title.empty(), "Research content 'title' must be specified");
@@ -354,12 +356,34 @@ void database::init_research_content(const genesis_state_type& genesis_state)
         for (auto& reference : research_content.references)
         {
             auto& _content = get<research_content_object>(reference);
-            push_virtual_operation(content_reference_history_operation(c.id._id,
+            push_virtual_operation(research_content_reference_history_operation(c.id._id,
                                                                        c.research_id._id,
                                                                        fc::to_string(c.content),
                                                                        _content.id._id,
                                                                        _content.research_id._id,
                                                                        fc::to_string(_content.content)));
+        }
+
+        auto& old_research_eci = research_service.get_eci_evaluation(c.research_id);
+
+        research_content_service.update_eci_evaluation(c.id);
+        research_service.update_eci_evaluation(research.id);
+
+        auto& new_research_eci = research_service.get_eci_evaluation(research_content.research_id);
+        auto& new_research_content_eci = research_content_service.get_eci_evaluation(research_content.id);
+
+        for (auto& pair : new_research_eci)
+        {
+            push_virtual_operation(research_eci_history_operation(
+                research_content.research_id._id, pair.first._id, pair.second, pair.second - old_research_eci.at(pair.first), 
+                3, research_content.id._id, get_genesis_time().sec_since_epoch()));
+        }
+
+        for (auto& pair : new_research_content_eci)
+        {
+            push_virtual_operation(research_content_eci_history_operation(
+                research_content.id._id, pair.first._id, pair.second, pair.second, 
+                3, research_content.id._id, get_genesis_time().sec_since_epoch()));
         }
     }
 }
