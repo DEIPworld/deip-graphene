@@ -1627,6 +1627,7 @@ void database::reward_research_authors_with_expertise(const research_object &res
                                                       const share_type &expertise_reward)
 {
     const auto& research_group_service = obtain_service<dbs_research_group>();
+    const auto& expert_token_service = obtain_service<dbs_expert_token>();
 
     share_type used_reward = 0;
 
@@ -1655,6 +1656,18 @@ void database::reward_research_authors_with_expertise(const research_object &res
         auto expertise_amount = (expertise_reward * token.amount) / total_tokens_amount;
         reward_account_with_expertise(token.owner, discipline_id, expertise_amount);
         used_reward += expertise_amount;
+
+        if (expertise_amount > 0)
+        {
+            auto& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(token.owner, discipline_id);
+            push_virtual_operation(account_eci_history_operation(token.owner,
+                                                                 discipline_id._id,
+                                                                 expert_token.amount,
+                                                                 expertise_amount,
+                                                                 1,
+                                                                 research_content.id._id,
+                                                                 head_block_time().sec_since_epoch()));
+        }
     }
 
     FC_ASSERT(used_reward <= expertise_reward, "Attempt to allocate expertise reward amount that is greater than reward amount");
@@ -1695,6 +1708,7 @@ asset database::allocate_rewards_to_reviews(const std::vector<review_object> &re
                                                  const asset &reward, const share_type &expertise_reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
+    dbs_expert_token &expert_token_service = obtain_service<dbs_expert_token>();
 
     share_type total_reviews_weight = share_type(0);
 
@@ -1727,6 +1741,19 @@ asset database::allocate_rewards_to_reviews(const std::vector<review_object> &re
         if (expertise_reward != 0) {
             auto author_expertise = util::calculate_share(expertise_reward, weight_per_discipline, total_reviews_weight);
             reward_account_with_expertise(author_name, discipline_id, author_expertise);
+
+            if (author_expertise > 0)
+            {
+                auto& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(author_name, discipline_id);
+                push_virtual_operation(account_eci_history_operation(author_name,
+                                                                     discipline_id._id,
+                                                                     expert_token.amount,
+                                                                     author_expertise,
+                                                                     2,
+                                                                     review.id._id,
+                                                                     head_block_time().sec_since_epoch())
+                );
+            }
         }
     }
 
@@ -2163,10 +2190,10 @@ void database::_apply_block(const signed_block& next_block)
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
         process_research_token_sales();
-        //process_funds(); // TODO: Fix internal emission
+        process_funds();
         process_common_tokens_withdrawals();
         account_recovery_processing();
-        // process_content_activity_windows(); // TODO: Fix internal emission
+        process_content_activity_windows();
         process_hardforks();
         process_discipline_supplies();
 

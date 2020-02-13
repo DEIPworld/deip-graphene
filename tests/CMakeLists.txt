@@ -9,7 +9,7 @@ file(GLOB_RECURSE COMMON_SOURCES "common/*.cpp")
 file(GLOB_RECURSE SOURCES "tests/*.cpp")
 
 add_executable(chain_test ${SOURCES} ${COMMON_SOURCES})
-target_link_libraries(chain_test chainbase deip_chain deip_protocol deip_app deip_blockchain_history deip_witness deip_egenesis_none deip_debug_node fc deip_tsc_history deip_research_content_reference_history deip_research_eci_history deip_research_content_eci_history ${PLATFORM_SPECIFIC_LIBS})
+target_link_libraries(chain_test chainbase deip_chain deip_protocol deip_app deip_blockchain_history deip_witness deip_egenesis_none deip_debug_node fc deip_tsc_history deip_research_content_reference_history deip_research_eci_history deip_research_content_eci_history deip_account_eci_history ${PLATFORM_SPECIFIC_LIBS})
 target_include_directories(chain_test PUBLIC "common")
 
 file(GLOB_RECURSE WALLET_SOURCES "wallet/*.cpp")

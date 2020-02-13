@@ -32,6 +32,8 @@ target_link_libraries( deip_plugins
    deip_research_eci_history
 
    deip_research_content_eci_history
+
+   deip_account_eci_history
 )
 
 # The `deip_mf_plugins` target has prototypes for querying plugins
