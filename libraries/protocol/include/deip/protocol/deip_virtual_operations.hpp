@@ -164,6 +164,37 @@ struct research_eci_history_operation : public virtual_operation
 
 };
 
+struct account_eci_history_operation : public virtual_operation
+{
+    account_eci_history_operation() {}
+    account_eci_history_operation(const account_name_type& account_name,
+                                  const int64_t& discipline_id,
+                                  const share_type& new_eci_amount,
+                                  const share_type& delta,
+                                  const uint16_t& action,
+                                  const int64_t& action_object_id,
+                                  const uint32_t& timestamp)
+        : account_name(account_name)
+        , discipline_id(discipline_id)
+        , new_eci_amount(new_eci_amount)
+        , delta(delta)
+        , action(action)
+        , action_object_id(action_object_id)
+        , timestamp(timestamp)
+    {
+    }
+
+    account_name_type account_name;
+    int64_t discipline_id;
+    share_type new_eci_amount;
+    share_type delta;
+    uint16_t action;
+    int64_t action_object_id;
+
+    uint32_t timestamp;
+};
+
+
 }
 } // deip::protocol
 
@@ -175,3 +206,4 @@ FC_REFLECT(deip::protocol::token_sale_contribution_to_history_operation, (resear
 FC_REFLECT(deip::protocol::research_content_reference_history_operation, (research_content_id)(research_id)(content)(research_content_reference_id)(research_reference_id)(content_reference))
 FC_REFLECT(deip::protocol::research_content_eci_history_operation, (research_content_id)(discipline_id)(new_eci_amount)(delta)(action)(action_object_id)(timestamp))
 FC_REFLECT(deip::protocol::research_eci_history_operation, (research_id)(discipline_id)(new_eci_amount)(delta)(action)(action_object_id)(timestamp))
+FC_REFLECT(deip::protocol::account_eci_history_operation, (account_name)(discipline_id)(new_eci_amount)(delta)(action)(action_object_id)(timestamp))

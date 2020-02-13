@@ -23,6 +23,7 @@ target_link_libraries(deipd PRIVATE
     deip_research_content_reference_history
     deip_research_eci_history
     deip_research_content_eci_history
+    deip_account_eci_history
     ${CMAKE_DL_LIBS}
     ${PLATFORM_SPECIFIC_LIBS}
 )
