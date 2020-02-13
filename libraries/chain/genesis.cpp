@@ -236,6 +236,14 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
         FC_ASSERT(discipline.id._id == expert_token.discipline_id); // verify that discipline exists
 
         expert_token_service.create(expert_token.account_name, expert_token.discipline_id, expert_token.amount, true);
+
+        push_virtual_operation(account_eci_history_operation(expert_token.account_name,
+                                                             expert_token.discipline_id._id,
+                                                             expert_token.amount,
+                                                             expert_token.amount,
+                                                             3,
+                                                             -1,
+                                                             get_genesis_time().sec_since_epoch()));
     }
 
 
@@ -246,8 +254,16 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
 
         for (auto& discipline : disciplines)
         {
-            if (discipline.id != 0)
+            if (discipline.id != 0) {
                 expert_token_service.create("hermes", discipline.id, 10000, true);
+                push_virtual_operation(account_eci_history_operation("hermes",
+                                                                     discipline.id._id,
+                                                                     10000,
+                                                                     10000,
+                                                                     3,
+                                                                     -1,
+                                                                     get_genesis_time().sec_since_epoch()));
+            }
         }
     }
 #endif
