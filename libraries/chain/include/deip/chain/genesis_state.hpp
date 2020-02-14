@@ -12,44 +12,49 @@
 namespace deip {
 namespace chain {
 
-namespace sp = deip::protocol;
-namespace dc = deip::chain;
-
 struct genesis_state_type
 {
+    struct registrar_account_type
+    {
+        std::string name;
+        std::string recovery_account;
+        protocol::public_key_type public_key;
+        share_type deip_amount;
+        share_type common_tokens_amount;
+    };
+
     struct account_type
     {
         std::string name;
         std::string recovery_account;
-        sp::public_key_type public_key;
-        sp::share_type deip_amount;
-        sp::share_type sp_amount;
+        protocol::public_key_type public_key;
+        share_type deip_amount;
     };
 
     struct witness_type
     {
         std::string owner_name;
-        sp::public_key_type block_signing_key;
+        protocol::public_key_type block_signing_key;
     };
 
     struct discipline_type
     {
-        dc::discipline_id_type id;
+        discipline_id_type id;
         std::string name;
-        sp::share_type votes_in_last_ten_weeks;
-        dc::discipline_id_type parent_id;
+        share_type votes_in_last_ten_weeks;
+        discipline_id_type parent_id;
     };
 
     struct expert_token_type
     {
         std::string account_name;
-        dc::discipline_id_type discipline_id;
+        discipline_id_type discipline_id;
         uint32_t amount;
     };
 
     struct research_group_type
     {
-        dc::research_group_id_type id;
+        research_group_id_type id;
         std::string name;
         std::string description;
         std::string permlink;
@@ -62,8 +67,8 @@ struct genesis_state_type
 
     struct research_type
     {
-        dc::research_id_type id;
-        dc::research_group_id_type research_group_id;
+        research_id_type id;
+        research_group_id_type research_group_id;
         std::string title;
         std::string abstract;
         std::string permlink;
@@ -76,8 +81,8 @@ struct genesis_state_type
 
     struct research_content_type
     {
-        dc::research_content_id_type id;
-        dc::research_id_type research_id;
+        research_content_id_type id;
+        research_id_type research_id;
         uint16_t type;
         std::string title;
         std::string content;
@@ -88,7 +93,7 @@ struct genesis_state_type
 
     struct vesting_balance_type
     {
-        dc::vesting_balance_id_type id;
+        vesting_balance_id_type id;
         std::string owner;
         uint32_t balance;
         uint32_t vesting_duration_seconds;
@@ -101,15 +106,15 @@ struct genesis_state_type
     {
     }
 
-    genesis_state_type(const sp::share_type& supply)
+    genesis_state_type(const share_type& supply)
         : init_supply(supply)
     {
     }
 
-    sp::share_type init_supply;
-    sp::asset init_rewards_supply;
+    share_type init_supply;
+    protocol::asset init_rewards_supply;
     time_point_sec initial_timestamp;
-    account_type registrar_account;
+    registrar_account_type registrar_account;
     std::vector<account_type> accounts;
     std::vector<witness_type> witness_candidates;
     std::vector<discipline_type> disciplines;
@@ -119,7 +124,7 @@ struct genesis_state_type
     std::vector<research_content_type> research_contents;
     std::vector<vesting_balance_type> vesting_balances;
 
-    sp::chain_id_type initial_chain_id;
+    chain_id_type initial_chain_id;
 };
 
 namespace utils {
@@ -131,12 +136,18 @@ void generate_default_genesis_state(genesis_state_type& genesis);
 } // namespace deip
 
 // clang-format off
-FC_REFLECT(deip::chain::genesis_state_type::account_type,
+FC_REFLECT(deip::chain::genesis_state_type::registrar_account_type,
            (name)
            (recovery_account)
            (public_key)
            (deip_amount)
-           (sp_amount))
+           (common_tokens_amount))
+
+FC_REFLECT(deip::chain::genesis_state_type::account_type,
+           (name)
+           (recovery_account)
+           (public_key)
+           (deip_amount))
 
 FC_REFLECT(deip::chain::genesis_state_type::witness_type,
            (owner_name)

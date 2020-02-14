@@ -4921,6 +4921,38 @@ BOOST_AUTO_TEST_CASE(change_research_meta_apply)
         BOOST_CHECK(r.abstract == "newabstract");
         BOOST_CHECK(r.is_private == true);
 
+        const std::string json_str2 = "{\"research_id\":1, \"research_title\":\"newtitle2\", \"research_abstract\":\"newabstract2\", \"is_private\":false}";
+
+        create_proposal_operation op3;
+        op3.creator = "bob";
+        op3.research_group_id = 31;
+        op3.data = json_str2;
+        op3.action = dbs_proposal::action_t::change_research_meta;
+        op3.expiration_time = db.head_block_time() + DAYS_TO_SECONDS(8);
+
+        signed_transaction tx3;
+        tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx3.operations.push_back(op3);
+        tx3.sign(bob_priv_key, db.get_chain_id());
+        tx3.validate();
+        db.push_transaction(tx3, 0);
+
+        vote_proposal_operation op4;
+        op4.research_group_id = 31;
+        op4.proposal_id = 1;
+        op4.voter = "alice";
+
+        signed_transaction tx4;
+        tx4.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx4.operations.push_back(op4);
+        tx4.sign(priv_key, db.get_chain_id());
+        tx4.validate();
+        db.push_transaction(tx4, 0);
+
+        BOOST_CHECK(r.title == "newtitle2");
+        BOOST_CHECK(r.abstract == "newabstract2");
+        BOOST_CHECK(r.is_private == false);
+
     }
     FC_LOG_AND_RETHROW()
 }
