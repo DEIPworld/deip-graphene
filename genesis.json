@@ -1,167 +1,145 @@
 {
-  "initial_timestamp": "2018-09-06T17:00:00",
-  "init_supply": 1000000000000,
+  "initial_timestamp": "2020-02-14T11:00:00",
+  "init_supply": 1010000000000,
   "registrar_account": {
     "name": "regacc",
     "recovery_account": "",
     "public_key": "DEIP7jYZtDq39GUoHafoLg72myPhGN8a9QKWJE2GgnAuYjQnhp9mTa",
     "deip_amount": 52000000000,
-    "sp_amount": 0
+    "common_tokens_amount": 10000000000
   },
   "accounts": [
     {
       "name": "initdelegate",
       "recovery_account": "",
       "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ",
-      "deip_amount": 0,
-      "sp_amount": 0
+      "deip_amount": 0
     },
     {
       "name": "alice",
       "recovery_account": "",
       "public_key": "DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83",
-      "deip_amount": 30000000000,
-      "sp_amount": 0
+      "deip_amount": 30000000000
     },
     {
       "name": "bob",
       "recovery_account": "",
       "public_key": "DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi",
-      "deip_amount": 30000000000,
-      "sp_amount": 0
+      "deip_amount": 30000000000
     },
     {
       "name": "mike",
       "recovery_account": "",
       "public_key": "DEIP8bwPxtWUEffTs7C8vRNT98Sv7XGCVDWCXVUeHvtNH5TxvrwVLj",
-      "deip_amount": 40000000000,
-      "sp_amount": 0
+      "deip_amount": 40000000000
     },
     {
       "name": "john",
       "recovery_account": "",
       "public_key": "DEIP5mFLmqoifrz3c9iTmFVpxjU29QjyKSGiKZf7GUM2T6cJpm6Gb7",
-      "deip_amount": 40000000000,
-      "sp_amount": 0
+      "deip_amount": 40000000000
     },
     {
       "name": "rachel",
       "recovery_account": "",
       "public_key": "DEIP7NAFzGdNUBhR1B3bf9g38yy4qEENJK1TSff2YdSstLQ6ztXrG6",
-      "deip_amount": 40000000000,
-      "sp_amount": 0
+      "deip_amount": 40000000000
     },
     {
       "name": "james",
       "recovery_account": "",
       "public_key": "DEIP7gp8xGzRdzVHqyiCbBqQn2FqUV1h94iwFwtS6RuqdaseyYgwEk",
-      "deip_amount": 50000000000,
-      "sp_amount": 0
+      "deip_amount": 50000000000
     },
     {
       "name": "rick",
       "recovery_account": "",
       "public_key": "DEIP7uK6Q7aXjdUL6M6b2s8YdnJ9pbf7UHKPhjHqpFdmypFSUDFUTp",
-      "deip_amount": 100000000000,
-      "sp_amount": 0
+      "deip_amount": 100000000000
     },
     {
       "name": "alex",
       "recovery_account": "",
       "public_key": "DEIP5YJaWc5RSQHnqd8pSmaWdqQhNGGEeiesgUZ34hAYM9VDdikabE",
-      "deip_amount": 40000000000,
-      "sp_amount": 0
+      "deip_amount": 40000000000
     },
     {
       "name": "anastasia",
       "recovery_account": "",
       "public_key": "DEIP5qm2iZaNGGcWqpJwnWmHjPorXZZBhudRp5jQSGfkrLphoLcQTh",
-      "deip_amount": 50000000000,
-      "sp_amount": 0
+      "deip_amount": 50000000000
     },
     {
       "name": "nick",
       "recovery_account": "",
       "public_key": "DEIP7SRfpY6Un2YBTa2y1ec5gju7s4MwqzQx8p8GDqZEFPewAJLVu7",
-      "deip_amount": 50000000000,
-      "sp_amount": 0
+      "deip_amount": 50000000000
     },
     {
       "name": "carla",
       "recovery_account": "",
       "public_key": "DEIP76KbisFA4j9g9h9o7HLKXtn2LcW8ygULkP7paHtuAouZG6hL2F",
-      "deip_amount": 50000000000,
-      "sp_amount": 0
+      "deip_amount": 50000000000
     },
     {
       "name": "irene",
       "recovery_account": "",
       "public_key": "DEIP5K19FrzAJmWJpVrMUQPHQ1vzSY5Y4H517AUp6pTnunaJdBtDYc",
-      "deip_amount": 50000000000,
-      "sp_amount": 0
+      "deip_amount": 50000000000
     },
     {
       "name": "sherlock",
       "recovery_account": "",
       "public_key": "DEIP8Y6vwKDcTLYy5ywFXQEdz9SLVgJNtnM5epwX5F6fwGnjbJfPfX",
-      "deip_amount": 250000000000,
-      "sp_amount": 0
+      "deip_amount": 250000000000
     },
     {
       "name": "greg",
       "recovery_account": "",
       "public_key": "DEIP6pqCE6hhqypsttExd87EXbdiSjUPCq72kz3uH3F5LJyzZUtVL8",
-      "deip_amount": 50000000000,
-      "sp_amount": 0
+      "deip_amount": 50000000000
     },
     {
       "name": "dorothy",
       "recovery_account": "",
       "public_key": "DEIP6mJjLEE5m2vjsqEgRhMWeY9TNRyBkZZwdC4697i7rpLPWDKRzA",
-      "deip_amount": 24990000000,
-      "sp_amount": 0
+      "deip_amount": 24990000000
     },
     {
       "name": "arty",
       "recovery_account": "",
       "public_key": "DEIP4xizrhvnDfiJQqv2zG4AG95t8wEnemYCoMVoMeqNz5Qxj4FPBp",
-      "deip_amount": 2000000000,
-      "sp_amount": 0
+      "deip_amount": 2000000000
     },
     {
       "name": "akulik",
       "recovery_account": "",
       "public_key": "DEIP6eKckGvWTqCX8KD1amz1zdLZitZbLWpjZCJBDweKkRPizEdYUm",
-      "deip_amount": 2000000000,
-      "sp_amount": 0
+      "deip_amount": 2000000000
     },
     {
       "name": "shkor",
       "recovery_account": "",
       "public_key": "DEIP8AZ7d8neLMVT57FZepuhJkyG9pdPErcU4mC8eJakwwuMXT79Po",
-      "deip_amount": 10000000000,
-      "sp_amount": 0
+      "deip_amount": 10000000000
     },
     {
       "name": "yahortsaryk",
       "recovery_account": "",
       "public_key": "DEIP6GBnNdExebmrFSZNem1ZckKNpA2V61btTe1J8Q4eu2nursVvwK",
-      "deip_amount": 20000000000,
-      "sp_amount": 0
+      "deip_amount": 20000000000
     },
     {
       "name": "egormarushko",
       "recovery_account": "",
       "public_key": "DEIP8PuWLpWZbsEcGNNCBxt4haGHD1KfiyYRZZQvXMhW6fgSLEQGEa",
-      "deip_amount": 15000000000,
-      "sp_amount": 0
+      "deip_amount": 15000000000
     },
     {
       "name": "hermes",
       "recovery_account": "",
       "public_key": "DEIP59qXbaUicSZvKQEZAVE6BnDcn5FuUrgoiLNUMBc35ay5KPK9Qv",
-      "deip_amount": 4010000000,
-      "sp_amount": 0
+      "deip_amount": 4010000000
     }
   ],
   "witness_candidates": [

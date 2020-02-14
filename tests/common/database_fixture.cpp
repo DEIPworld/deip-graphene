@@ -30,7 +30,7 @@ void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
     public_key_type init_public_key = init_delegate_priv_key.get_public_key();
 
     genesis_state.accounts.push_back(
-        { "initdelegate", "null", init_public_key, genesis_state.init_supply, uint64_t(0) });
+        { "initdelegate", "null", init_public_key, genesis_state.init_supply });
     genesis_state.witness_candidates.push_back({ "initdelegate", init_public_key });
 }
 
@@ -65,10 +65,11 @@ database_fixture::database_fixture()
     genesis_state.init_rewards_supply = TEST_REWARD_INITIAL_SUPPLY;
     genesis_state.initial_chain_id = TEST_CHAIN_ID;
     genesis_state.initial_timestamp = fc::time_point_sec(TEST_GENESIS_TIMESTAMP);
-    auto registrar = genesis_state_type::account_type();
+    auto registrar = genesis_state_type::registrar_account_type();
     registrar.name = "registrar";
     registrar.deip_amount = 0;
     registrar.public_key = public_key_type();
+    registrar.common_tokens_amount = 0;
     genesis_state.registrar_account = registrar;
 
     create_disciplines_for_genesis_state(genesis_state);

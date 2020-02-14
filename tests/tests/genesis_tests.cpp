@@ -15,7 +15,6 @@ BOOST_AUTO_TEST_CASE(check_accounts_fields)
                                     "\"recovery_account\":\"admin\","
                                     "\"public_key\":\"DEIP1111111111111111111111111111111114T1Anm\","
                                     "\"deip_amount\":1000,"
-                                    "\"sp_amount\":1000000"
                                     "}]}";
 
     const sc::genesis_state_type genesis_state = fc::json::from_string(genesis_str).as<sc::genesis_state_type>();
@@ -27,7 +26,6 @@ BOOST_AUTO_TEST_CASE(check_accounts_fields)
     BOOST_CHECK(account.name == "user");
     BOOST_CHECK(account.public_key == sp::public_key_type("DEIP1111111111111111111111111111111114T1Anm"));
     BOOST_CHECK(account.deip_amount == 1000);
-    BOOST_CHECK(account.sp_amount == 1000000);
     BOOST_CHECK(account.recovery_account == "admin");
 }
 
