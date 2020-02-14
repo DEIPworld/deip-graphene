@@ -2910,8 +2910,8 @@ void database::process_content_activity_windows()
                         // starts in 2 weeks after the 1st one has ended and continues for 1 week
                         rc.activity_round = 2;
                         rc.activity_state = research_content_activity_state::pending;
-                        rc.activity_window_start = now + DAYS_TO_SECONDS(14);
-                        rc.activity_window_end = now + DAYS_TO_SECONDS(14 + 7);
+                        rc.activity_window_start = now + DEIP_BREAK_BETWEEN_REGULAR_ACTIVITY_ROUNDS_DURATION;
+                        rc.activity_window_end = now + DEIP_BREAK_BETWEEN_REGULAR_ACTIVITY_ROUNDS_DURATION + DEIP_REGULAR_CONTENT_ACTIVITY_WINDOW_DURATION;
                         break;
                     }
                     default: {
@@ -2933,8 +2933,8 @@ void database::process_content_activity_windows()
                         // starts in 2 months after the 1st one has ended and continues for 1 months
                         rc.activity_round = 2;
                         rc.activity_state = research_content_activity_state::pending;
-                        rc.activity_window_start = now + DAYS_TO_SECONDS(60);
-                        rc.activity_window_end = now + DAYS_TO_SECONDS(60 + 30);
+                        rc.activity_window_start = now + DEIP_BREAK_BETWEEN_FINAL_ACTIVITY_ROUNDS_DURATION;
+                        rc.activity_window_end = now + DEIP_BREAK_BETWEEN_FINAL_ACTIVITY_ROUNDS_DURATION + DEIP_FINAL_RESULT_ACTIVITY_WINDOW_DURATION;
                         break;
                     }
                     case 2: {
@@ -2942,8 +2942,8 @@ void database::process_content_activity_windows()
                         // starts in one half of a year after the 2nd one has ended and continues for 2 weeks
                         rc.activity_round = 3;
                         rc.activity_state = research_content_activity_state::pending;
-                        rc.activity_window_start = now + DAYS_TO_SECONDS(182);
-                        rc.activity_window_end = now + DAYS_TO_SECONDS(182 + 14);
+                        rc.activity_window_start = now + DEIP_BREAK_BETWEEN_FINAL_ACTIVITY_ROUNDS_DURATION;
+                        rc.activity_window_end = now + DEIP_BREAK_BETWEEN_FINAL_ACTIVITY_ROUNDS_DURATION + DEIP_FINAL_RESULT_ACTIVITY_WINDOW_DURATION;
                         break;
                     }
                     default: {

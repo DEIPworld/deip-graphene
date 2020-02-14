@@ -373,7 +373,7 @@ void database::init_research_content(const genesis_state_type& genesis_state)
             rc.activity_round = 1;
             rc.activity_state = static_cast<deip::chain::research_content_activity_state>(1);
             rc.activity_window_start = get_genesis_time();
-            rc.activity_window_end = get_genesis_time() + DAYS_TO_SECONDS(14);
+            rc.activity_window_end = get_genesis_time() + DEIP_REGULAR_CONTENT_ACTIVITY_WINDOW_DURATION;
         });
 
         for (auto& reference : research_content.references)

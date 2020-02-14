@@ -45,13 +45,13 @@ const research_content_object& dbs_research_content::create(const research_id_ty
             // the 1st activity period for intermediate result starts immediately 
             // after publishing and continues for 2 weeks
             rc.activity_window_start = now;
-            rc.activity_window_end = now + DAYS_TO_SECONDS(14);
+            rc.activity_window_end = now + DEIP_REGULAR_CONTENT_ACTIVITY_WINDOW_DURATION;
 
         } else if (type == research_content_type::final_result) {
             // the 1st activity period for final result starts immediately 
             // after publishing and continues for 2 months
             rc.activity_window_start = now;
-            rc.activity_window_end = now + DAYS_TO_SECONDS(60);
+            rc.activity_window_end = now + DEIP_FINAL_RESULT_ACTIVITY_WINDOW_DURATION;
         }
 
         auto& research = db_impl().get<research_object>(research_id);
