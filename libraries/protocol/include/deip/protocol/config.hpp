@@ -39,6 +39,11 @@
 
 #define DEIP_HARDFORK_REQUIRED_WITNESSES      1
 
+#define DEIP_REGULAR_CONTENT_ACTIVITY_WINDOW_DURATION         300
+#define DEIP_FINAL_RESULT_ACTIVITY_WINDOW_DURATION            600
+#define DEIP_BREAK_BETWEEN_REGULAR_ACTIVITY_ROUNDS_DURATION   300
+#define DEIP_BREAK_BETWEEN_FINAL_ACTIVITY_ROUNDS_DURATION     600
+
 #else // IS LIVE DEIP NETWORK
 #define DEIP_SYMBOL (uint64_t(3) | (uint64_t('D') << 8) | (uint64_t('E') << 16) | (uint64_t('I') << 24) | (uint64_t('P') << 32)) ///< DEIP with 3 digits of precision
 
