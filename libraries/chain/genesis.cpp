@@ -36,12 +36,12 @@ using namespace deip::protocol;
 
 void generate_default_genesis_state(genesis_state_type& genesis)
 {
-    const sp::public_key_type init_public_key(DEIP_DEFAULT_INIT_PUBLIC_KEY);
+    const public_key_type init_public_key(DEIP_DEFAULT_INIT_PUBLIC_KEY);
 
     genesis.init_supply = DEIP_DEFAULT_INIT_SUPPLY;
     genesis.initial_timestamp = DEIP_DEFAULT_GENESIS_TIME;
 
-    genesis.accounts.push_back({ "initdelegate", "", init_public_key, genesis.init_supply, uint64_t(0) });
+    genesis.accounts.push_back({ "initdelegate", "", init_public_key, genesis.init_supply });
 
     genesis.witness_candidates.push_back({ "initdelegate", init_public_key });
 
@@ -116,7 +116,7 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
 {
     auto& account_service = obtain_service<dbs_account>();
 
-    const genesis_state_type::account_type& registrar = genesis_state.registrar_account;
+    const genesis_state_type::registrar_account_type& registrar = genesis_state.registrar_account;
     const vector<genesis_state_type::account_type>& accounts = genesis_state.accounts;
 
     FC_ASSERT(!registrar.name.empty(), "Registrar account 'name' should not be empty.");
@@ -128,6 +128,13 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
         a.balance = asset(registrar.deip_amount, DEIP_SYMBOL);
         a.json_metadata = "{created_at: 'GENESIS'}";
         a.recovery_account = registrar.recovery_account;
+        a.common_tokens_balance = registrar.common_tokens_amount;
+    });
+
+    auto& props = get<dynamic_global_property_object>();
+    modify(props, [&](dynamic_global_property_object& gpo) {
+        gpo.total_common_tokens_amount += registrar.common_tokens_amount;
+        gpo.common_tokens_fund += asset(registrar.common_tokens_amount, DEIP_SYMBOL);
     });
 
     create<account_authority_object>([&](account_authority_object& auth) {
