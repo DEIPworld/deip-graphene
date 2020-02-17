@@ -55,8 +55,9 @@ typedef chainbase::shared_multi_index_container<ip_protection_operation_object,
                                      indexed_by<ordered_unique<tag<by_id>,
                                                                member<ip_protection_operation_object,
                                                                        ip_protection_operation_object::id_type,
-                                                                      &ip_protection_operation_object::id>>,
+                                                                      &ip_protection_operation_object::id>>
 #ifndef SKIP_BY_TX_ID
+                                                ,
                                                 ordered_unique<tag<by_transaction_id>,
                                                                composite_key<ip_protection_operation_object,
                                                                              member<ip_protection_operation_object,
