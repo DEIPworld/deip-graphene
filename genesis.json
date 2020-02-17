@@ -4,20 +4,20 @@
     "registrar_account": {
         "name": "regacc",
         "recovery_account": "",
-        "public_key": "DEIP6kQ14yb62KXivT3XNja1WdJiLUC57kDHPbFkyKrEZdYURAUGDU",
+        "public_key": "DEIP6H5thYwo2vmBLpdX4ARewGe68q2D3zsVUrHYucMepXQAaTKEiK",
         "deip_amount": 1000000000000,
         "sp_amount": 0
     },
     "accounts": [{
         "name": "initdelegate",
         "recovery_account": "",
-        "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ",
+        "public_key": "DEIP7Ljod4qqDCA6wE751v8ujAK79mcgKUwWsks45UcpxBWKZ74T3b",
         "deip_amount": 0,
         "sp_amount": 0
     }],
     "witness_candidates": [{
         "owner_name": "initdelegate",
-        "block_signing_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ"
+        "block_signing_key": "DEIP7Ljod4qqDCA6wE751v8ujAK79mcgKUwWsks45UcpxBWKZ74T3b"
     }],
     "disciplines": [{
         "id": 0,
