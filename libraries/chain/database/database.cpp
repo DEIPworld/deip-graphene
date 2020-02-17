@@ -1357,7 +1357,10 @@ void database::distribute_grant(const grant_object& grant)
         used_grant += research_reward;
     }
 
-    FC_ASSERT(used_grant <= grant.amount, "Attempt to distribute amount that is greater than grant amount");
+    if (used_grant > grant.amount)
+        wlog("Attempt to distribute amount that is greater than grant amount: ${used_grant} > ${grant}, grant: ${g_id}", ("used_grant", used_grant)("grant", grant.amount)("g_id", grant.id._id));
+    
+    //FC_ASSERT(used_grant <= grant.amount, "Attempt to distribute amount that is greater than grant amount");
 
     modify(grant, [&](grant_object& g) {
         g.amount -= used_grant;
@@ -1396,16 +1399,22 @@ asset database::distribute_reward(const asset &reward, const share_type &experti
         }
     }
 
-    FC_ASSERT(used_reward <= reward, "Attempt to distribute amount that is greater than reward amount");
+    if (used_reward > reward)
+        wlog("Attempt to distribute amount that is greater than reward amount: ${used} > ${reward}", ("used", used_reward)("reward", reward));
+
+    //FC_ASSERT(used_reward <= reward, "Attempt to distribute amount that is greater than reward amount");
 
     return used_reward;
 }
 
 asset database::reward_researches_in_discipline(const discipline_object &discipline,
-                                                     const asset &reward,
-                                                     const share_type &expertise)
+                                                const asset &reward,
+                                                const share_type &expertise)
 {
-    FC_ASSERT(discipline.total_active_weight != 0, "Attempt to reward research in inactive discipline");
+    if (discipline.total_active_weight == 0)
+        wlog("Attempt to reward research in inactive discipline: ${id}", ("id", discipline.id._id));
+
+    //FC_ASSERT(discipline.total_active_weight != 0, "Attempt to reward research in inactive discipline");
 
     auto& content_service = obtain_service<dbs_research_content>();
     dbs_reward_pool& research_reward_pool_service = obtain_service<dbs_reward_pool>();
@@ -1444,7 +1453,10 @@ asset database::reward_researches_in_discipline(const discipline_object &discipl
         ++it;
     }
 
-    FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
+    if (used_reward > reward)
+        wlog("Attempt to distribute amount that is greater than reward amount: ${used} > ${reward} in discipline: ${id}", ("used", used_reward)("reward", reward)("id", discipline.id._id));
+
+    //FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
 
     return used_reward;
 }
@@ -1467,8 +1479,13 @@ asset database::reward_research_content(const research_content_id_type &research
     auto review_expertise_share = util::calculate_share(expertise, research.review_share_in_percent);
     auto authors_expertise_share = expertise - review_expertise_share;
 
-    FC_ASSERT(token_holders_share + review_share + references_share <= reward,
-              "Attempt to allocate funds amount that is greater than reward amount");
+    if (token_holders_share + review_share + references_share > reward)
+        wlog("Attempt to distribute amount that is greater than reward amount (reward_research_content): ${token_holders_share} + ${review_share} + "
+             "${references_share} > ${reward} in content: ${c_id} at discipline: ${d_id}", ("token_holders_share", token_holders_share)
+             ("review_share", review_share)("references_share", references_share)("reward", reward)("c_id", research_content_id._id)("d_id", discipline_id._id));
+
+    //FC_ASSERT(token_holders_share + review_share + references_share <= reward,
+    //          "Attempt to allocate funds amount that is greater than reward amount");
 
     asset used_reward = asset(0, DEIP_SYMBOL);
 
@@ -1478,7 +1495,11 @@ asset database::reward_research_content(const research_content_id_type &research
     used_reward += reward_references(research_content_id, discipline_id, references_share);
     used_reward += reward_reviews(research_content_id, discipline_id, review_share, review_expertise_share);
 
-    FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
+    if (used_reward > reward)
+        wlog("Attempt to distribute amount that is greater than reward amount (reward_research_content): ${used_reward} > ${reward} in content: ${c_id} at discipline: ${d_id}",
+                ("used_reward", used_reward)("reward", reward)("c_id", research_content_id._id)("d_id", discipline_id._id));
+
+    //FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
 
     return used_reward;
 }
@@ -1513,7 +1534,11 @@ asset database::reward_research_token_holders(const research_object &research,
         ++it;
     }
 
-    FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
+    if (used_reward > reward)
+        wlog("Attempt to distribute amount that is greater than reward amount (reward_research_token_holders): ${used_reward} > ${reward} in research: ${r_id} at discipline: ${d_id}",
+             ("used_reward", used_reward)("reward", reward)("r_id", research.id._id)("d_id", discipline_id._id));
+
+    //FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
 
     return used_reward;
 }
@@ -1545,7 +1570,11 @@ asset database::reward_references(const research_content_id_type &research_conte
         used_reward += reward_research_token_holders(research, discipline_id, reward_share);
     }
 
-    FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
+    if (used_reward > reward)
+        wlog("Attempt to distribute amount that is greater than reward amount (reward_references): ${used_reward} > ${reward} in content: ${c_id} at discipline: ${d_id}",
+             ("used_reward", used_reward)("reward", reward)("c_id", research_content_id._id)("d_id", discipline_id._id));
+
+    //FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
 
     return used_reward;
 }
@@ -1571,7 +1600,11 @@ asset database::reward_reviews(const research_content_id_type &research_content_
 
     used_reward = allocate_rewards_to_reviews(reviews, discipline_id, reward, expertise_reward);
 
-    FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
+    if (used_reward > reward)
+        wlog("Attempt to distribute amount that is greater than reward amount (reward_reviews): ${used_reward} > ${reward} in content: ${c_id} at discipline: ${d_id}",
+             ("used_reward", used_reward)("reward", reward)("c_id", research_content_id._id)("d_id", discipline_id._id));
+
+    //FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
 
     return used_reward;
 }
@@ -1598,7 +1631,11 @@ asset database::reward_review_voters(const review_object &review,
         used_reward += reward_amount;
     }
 
-    FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
+    if (used_reward > reward)
+        wlog("Attempt to distribute amount that is greater than reward amount (reward_review_voters): ${used_reward} > ${reward} in review: ${r_id} at discipline: ${d_id}",
+             ("used_reward", used_reward)("reward", reward)("c_id", review.id._id)("d_id", discipline_id._id));
+
+    //FC_ASSERT(used_reward <= reward, "Attempt to allocate funds amount that is greater than reward amount");
 
     return used_reward;
 }
@@ -1670,7 +1707,12 @@ void database::reward_research_authors_with_expertise(const research_object &res
         }
     }
 
-    FC_ASSERT(used_reward <= expertise_reward, "Attempt to allocate expertise reward amount that is greater than reward amount");
+    if (used_reward > expertise_reward)
+        wlog("Attempt to distribute amount that is greater than reward amount (reward_research_authors_with_expertise): ${used_reward} > ${expertise_reward} "
+             "in research: ${r_id}, content: ${c_id} at discipline: ${d_id}",
+             ("used_reward", used_reward)("expertise_reward", expertise_reward)("r_id", research.id._id)("c_id", research_content.id._id)("d_id", discipline_id._id));
+
+    //FC_ASSERT(used_reward <= expertise_reward, "Attempt to allocate expertise reward amount that is greater than reward amount");
 }
 
 
@@ -1809,7 +1851,11 @@ share_type database::supply_researches_in_discipline(const discipline_id_type &d
             }
     }
 
-    FC_ASSERT(used_grant <= grant, "Attempt to allocate discipline_supply amount that is greater than discipline_supply");
+    if (used_grant > grant)
+        wlog("Attempt to allocate discipline_supply amount that is greater than discipline_supply (supply_researches_in_discipline): ${used_grant} > ${grant}",
+             ("used_grant", used_grant)("grant", grant));
+
+    //FC_ASSERT(used_grant <= grant, "Attempt to allocate discipline_supply amount that is greater than discipline_supply");
 
     return used_grant;
 }
