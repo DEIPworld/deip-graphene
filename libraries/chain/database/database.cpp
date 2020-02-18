@@ -66,6 +66,11 @@
 
 #include <boost/range/adaptor/transformed.hpp>
 
+#ifdef DEFAULT_LOGGER
+#undef DEFAULT_LOGGER
+#endif
+#define DEFAULT_LOGGER "db_all"
+
 namespace deip {
 namespace chain {
 
