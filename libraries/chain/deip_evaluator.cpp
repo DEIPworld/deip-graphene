@@ -147,12 +147,13 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
     const bool is_personal = true;
 
     const auto& personal_research_group = research_group_service.create_research_group(o.new_account_name,
-                                                                                 o.new_account_name,
-                                                                                 o.new_account_name,
-                                                                                 DEIP_100_PERCENT,
-                                                                                 personal_research_group_proposal_quorums,
-                                                                                 is_dao,
-                                                                                 is_personal);
+                                                                                       o.new_account_name,
+                                                                                       o.new_account_name,
+                                                                                       o.new_account_name,
+                                                                                       DEIP_100_PERCENT,
+                                                                                       personal_research_group_proposal_quorums,
+                                                                                       is_dao,
+                                                                                       is_personal);
     research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
 
 }
@@ -603,7 +604,8 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
     for (auto& pair : op.proposal_quorums)
         proposal_quorums.insert(std::make_pair(pair.first, pair.second));
 
-    const research_group_object& research_group = research_group_service.create_research_group(op.name,
+    const research_group_object& research_group = research_group_service.create_research_group(op.creator,
+                                                                                               op.name,
                                                                                                op.permlink,
                                                                                                op.description,
                                                                                                op.quorum_percent,
