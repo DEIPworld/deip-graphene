@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_test)
         for (int i = First_proposal; i <= Last_proposal; i++)
             personal_research_group_proposal_quorums.insert(std::make_pair(i, DEIP_100_PERCENT));
 
-        const auto& research_group = data_service.create_research_group("test", "test", "test", DEIP_100_PERCENT, personal_research_group_proposal_quorums);
+        const auto& research_group = data_service.create_research_group("alice","test", "test", "test", DEIP_100_PERCENT, personal_research_group_proposal_quorums);
 
         BOOST_CHECK(research_group.name == "test");
         BOOST_CHECK(research_group.permlink == "test");

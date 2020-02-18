@@ -44,7 +44,8 @@ dbs_research_group::get_all_research_groups(const bool& is_personal_need) const
     return ret;
 }
 
-const research_group_object& dbs_research_group::create_research_group(const std::string& name,
+const research_group_object& dbs_research_group::create_research_group(const account_name_type& creator,
+                                                                       const std::string& name,
                                                                        const string& permlink,
                                                                        const string& description,
                                                                        const share_type& quorum_percent,
@@ -53,6 +54,7 @@ const research_group_object& dbs_research_group::create_research_group(const std
                                                                        const bool is_personal)
 {
     const research_group_object& new_research_group = db_impl().create<research_group_object>([&](research_group_object& research_group) {
+        research_group.creator = creator;
         fc::from_string(research_group.name, name);
         fc::from_string(research_group.permlink, permlink);
         fc::from_string(research_group.description, description);

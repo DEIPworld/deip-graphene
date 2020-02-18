@@ -25,6 +25,8 @@ public:
 public:
     research_group_id_type id;
 
+    account_name_type creator;
+
     shared_string name;
     shared_string description;
     shared_string permlink;
@@ -110,7 +112,7 @@ typedef multi_index_container<research_group_token_object,
 
   
 
-FC_REFLECT(deip::chain::research_group_object, (id)(name)(permlink)(description)(balance)(quorum_percent)(proposal_quorums)(is_dao)(is_personal))
+FC_REFLECT(deip::chain::research_group_object, (id)(creator)(name)(permlink)(description)(balance)(quorum_percent)(proposal_quorums)(is_dao)(is_personal))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_group_object, deip::chain::research_group_index)
 

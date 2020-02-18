@@ -1,4 +1,4 @@
-#pragma once
+ #pragma once
 #include <deip/chain/schema/account_object.hpp>
 #include <deip/chain/schema/block_summary_object.hpp>
 #include <deip/chain/schema/global_property_object.hpp>
@@ -581,7 +581,8 @@ struct research_group_token_api_obj
 struct research_group_api_obj
 {
     research_group_api_obj(const chain::research_group_object& rg)
-        : id(rg.id._id)
+        :  id(rg.id._id)
+        ,  creator(rg.creator)
         ,  name(fc::to_string(rg.name))
         ,  permlink(fc::to_string(rg.permlink))
         ,  description(fc::to_string(rg.description))
@@ -600,6 +601,7 @@ struct research_group_api_obj
     }
 
     int64_t id;
+    account_name_type creator;
     std::string name;
     std::string permlink;
     std::string description;
@@ -1279,6 +1281,7 @@ FC_REFLECT( deip::app::research_group_token_api_obj,
 
 FC_REFLECT( deip::app::research_group_api_obj,
             (id)
+            (creator)
             (name)
             (permlink)
             (description)
