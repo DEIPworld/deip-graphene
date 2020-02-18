@@ -1,4 +1,4 @@
- #pragma once
+#pragma once
 #include <deip/chain/schema/account_object.hpp>
 #include <deip/chain/schema/block_summary_object.hpp>
 #include <deip/chain/schema/global_property_object.hpp>
