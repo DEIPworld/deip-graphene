@@ -438,6 +438,8 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
             rg.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
             rg.is_dao = research_group.is_dao;
             rg.is_personal = research_group.is_personal;
+
+            rg.creator = research_group.members.front();
         });
 
         // TODO: Check that total amount of research group tokens is 10000
@@ -474,6 +476,7 @@ void database::init_personal_research_groups(const genesis_state_type& genesis_s
             research_group.proposal_quorums.insert(personal_research_group_proposal_quorums.begin(), personal_research_group_proposal_quorums.end());
             research_group.is_dao = false;
             research_group.is_personal = true;
+            research_group.creator = account.name;
         });
 
         create<research_group_token_object>([&](research_group_token_object& research_group_token) {
