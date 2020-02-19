@@ -570,18 +570,21 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
 
     deip::protocol::proposal_action_type action = static_cast<deip::protocol::proposal_action_type>(op.action);
 
-    auto quorum_percent = research_group.quorum_percent;
-    if (research_group.proposal_quorums.count(action) != 0) {
-        quorum_percent  = research_group.proposal_quorums.at(action);
-    }
-    // the range must be checked in create_proposal_operation::validate()
-
     if (action == deip::protocol::proposal_action_type::invite_member ||
         action == deip::protocol::proposal_action_type::dropout_member ||
         action == deip::protocol::proposal_action_type::change_quorum ||
         action == deip::protocol::proposal_action_type::rebalance_research_group_tokens) {
         FC_ASSERT(!research_group.is_personal, "You cannot invite or dropout member, change quorums and rebalance tokens in your personal research group");
     }
+
+    if (!research_group.is_dao)
+        FC_ASSERT(research_group.creator == op.creator, "Only research group creator can create a proposal");
+
+    auto quorum_percent = research_group.quorum_percent;
+    if (research_group.proposal_quorums.count(action) != 0) {
+        quorum_percent  = research_group.proposal_quorums.at(action);
+    }
+    // the range must be checked in create_proposal_operation::validate()
 
     auto& proposal = proposal_service.create_proposal(action, op.data, op.creator, op.research_group_id, op.expiration_time, quorum_percent);
 
