@@ -40,7 +40,8 @@ public:
      *
      * @returns research group object
      */
-    const research_group_object& create_research_group(const std::string& name,
+    const research_group_object& create_research_group(const account_name_type& creator,
+                                                       const std::string& name,
                                                        const string& permlink,
                                                        const string& description,
                                                        const share_type& quorum_percent,
