@@ -283,9 +283,9 @@ public:
     ////////////////
     // Researches //
     ////////////////
-    research_api_obj get_research_by_id(const research_id_type& id) const;
-    research_api_obj get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
-    research_api_obj get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
+    fc::optional<research_api_obj> get_research_by_id(const research_id_type& id) const;
+    fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
+    fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
     vector<research_api_obj> get_researches_by_discipline_id(const uint64_t from, const uint32_t limit, const discipline_id_type& discipline_id) const;
     vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
     bool check_research_existence_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
@@ -293,9 +293,9 @@ public:
     //////////////////////
     // Research Content //
     //////////////////////
-    research_content_api_obj get_research_content_by_id(const research_content_id_type& id) const;
-    research_content_api_obj get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
-    research_content_api_obj get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
+    fc::optional<research_content_api_obj> get_research_content_by_id(const research_content_id_type& id) const;
+    fc::optional<research_content_api_obj> get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
+    fc::optional<research_content_api_obj> get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
     vector<research_content_api_obj> get_all_research_content(const research_id_type& research_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
     vector<research_content_api_obj> get_all_milestones_by_research_id(const research_id_type& research_id) const;
@@ -318,8 +318,8 @@ public:
     ////////////////////
     // Research group //
     ////////////////////
-    research_group_api_obj get_research_group_by_id(const research_group_id_type research_group_id) const;
-    research_group_api_obj get_research_group_by_permlink(const string& permlink) const;
+    fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type research_group_id) const;
+    fc::optional<research_group_api_obj> get_research_group_by_permlink(const string& permlink) const;
     vector<research_group_api_obj> get_all_research_groups(const bool& is_personal_need) const;
     bool check_research_group_existence_by_permlink(const string& permlink) const;
 
