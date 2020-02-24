@@ -2224,7 +2224,7 @@ vector<vesting_balance_api_obj> wallet_api::get_vesting_balances(const std::stri
     return result;
 }
 
-research_group_api_obj wallet_api::get_research_group_by_permlink(const std::string& permlink)
+fc::optional<research_group_api_obj> wallet_api::get_research_group_by_permlink(const std::string& permlink)
 {
     return my->_remote_db->get_research_group_by_permlink({ permlink });
 }
@@ -2248,17 +2248,17 @@ vector<research_token_sale_api_obj> wallet_api::list_research_token_sales(const 
     return my->_remote_db->get_research_token_sale(from, limit);
 }
 
-research_content_api_obj wallet_api::get_research_content(const int64_t id)
+fc::optional<research_content_api_obj> wallet_api::get_research_content(const int64_t id)
 {
     return my->_remote_db->get_research_content_by_id(id);
 }
 
-research_content_api_obj wallet_api::get_research_content_by_permlink(const int64_t research_id, const string& permlink)
+fc::optional<research_content_api_obj> wallet_api::get_research_content_by_permlink(const int64_t research_id, const string& permlink)
 {
     return my->_remote_db->get_research_content_by_permlink(research_id, permlink);
 }
 
-research_content_api_obj wallet_api::get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink)
+fc::optional<research_content_api_obj> wallet_api::get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink)
 {
     return my->_remote_db->get_research_content_by_absolute_permlink(research_group_permlink, research_permlink, research_content_permlink);
 }
@@ -2268,17 +2268,17 @@ vector<research_content_api_obj> wallet_api::get_research_contents_by_type(const
     return my->_remote_db->get_research_content_by_type(research_id, (research_content_type)type);
 }
 
-research_api_obj wallet_api::get_research(const int64_t research_id)
+fc::optional<research_api_obj> wallet_api::get_research(const int64_t research_id)
 {
     return my->_remote_db->get_research_by_id(research_id);
 }
 
-research_api_obj wallet_api::get_research_by_permlink(const int64_t research_group_id, const string& permlink)
+fc::optional<research_api_obj> wallet_api::get_research_by_permlink(const int64_t research_group_id, const string& permlink)
 {
     return my->_remote_db->get_research_by_permlink(research_group_id, permlink);
 }
 
-research_api_obj wallet_api::get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink)
+fc::optional<research_api_obj> wallet_api::get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink)
 {
     return my->_remote_db->get_research_by_absolute_permlink(research_group_permlink, research_permlink);
 }
@@ -2305,7 +2305,7 @@ vector<research_group_api_obj> wallet_api::list_my_research_groups()
     {
         vector<research_group_token_api_obj> token_objects = my->_remote_db->get_research_group_tokens_by_account(account.name);
         for (const auto& token_object : token_objects)
-            research_groups.push_back(my->_remote_db->get_research_group_by_id(token_object.research_group_id));
+            research_groups.push_back(*my->_remote_db->get_research_group_by_id(token_object.research_group_id));
     }
 
     return research_groups;
