@@ -862,7 +862,7 @@ public:
     /**
      *  Gets research group details
      */
-    research_group_api_obj get_research_group_by_permlink(const std::string& permlink);
+    fc::optional<research_group_api_obj> get_research_group_by_permlink(const std::string& permlink);
 
     /**
      *  Gets proposal details
@@ -882,17 +882,17 @@ public:
     /**
      *  Gets research content by id
      */
-    research_content_api_obj get_research_content(const int64_t id);
+    fc::optional<research_content_api_obj> get_research_content(const int64_t id);
 
     /**
      *  Gets research content by permlink
      */
-    research_content_api_obj get_research_content_by_permlink(const int64_t research_id, const string& permlink);
+    fc::optional<research_content_api_obj> get_research_content_by_permlink(const int64_t research_id, const string& permlink);
 
     /**
      *  Gets research content by absolute permlink
      */
-    research_content_api_obj get_research_content_by_absolute_permlink(const string& research_group_permlink,
+    fc::optional<research_content_api_obj> get_research_content_by_absolute_permlink(const string& research_group_permlink,
                                                                        const string& research_permlink,
                                                                        const string& research_content_permlink);
 
@@ -904,17 +904,17 @@ public:
     /**
      *  Gets the research by id
      */
-    research_api_obj get_research(const int64_t research_id);
+    fc::optional<research_api_obj> get_research(const int64_t research_id);
 
     /**
      *  Gets the research by permlink
      */
-    research_api_obj get_research_by_permlink(const int64_t research_group_id, const string& permlink);
+    fc::optional<research_api_obj> get_research_by_permlink(const int64_t research_group_id, const string& permlink);
 
     /**
      *  Gets the research by absolute permlink
      */
-    research_api_obj get_research_by_absolute_permlink(const string& research_group_permlink,
+    fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink,
                                                        const string& research_permlink);
 
     /**
