@@ -157,7 +157,7 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
         auto& new_account = account_service.create_account_by_faucets(account.name,
                 registrar.name,
                 account.public_key,
-                "{",
+                "",
                 owner_authority,
                 owner_authority,
                 owner_authority,
