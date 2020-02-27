@@ -126,7 +126,7 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
         a.name = registrar.name;
         a.memo_key = registrar.public_key;
         a.balance = asset(registrar.deip_amount, DEIP_SYMBOL);
-        a.json_metadata = "{created_at: 'GENESIS'}";
+        a.json_metadata = "";
         a.recovery_account = registrar.recovery_account;
         a.common_tokens_balance = registrar.common_tokens_amount;
     });
@@ -157,7 +157,7 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
         auto& new_account = account_service.create_account_by_faucets(account.name,
                 registrar.name,
                 account.public_key,
-                "{created at: 'GENESIS'}",
+                "{",
                 owner_authority,
                 owner_authority,
                 owner_authority,
