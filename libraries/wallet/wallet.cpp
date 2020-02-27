@@ -2229,7 +2229,7 @@ fc::optional<research_group_api_obj> wallet_api::get_research_group_by_permlink(
     return my->_remote_db->get_research_group_by_permlink({ permlink });
 }
 
-proposal_api_obj wallet_api::get_proposal(const int64_t proposals_id)
+fc::optional<proposal_api_obj> wallet_api::get_proposal(const int64_t proposals_id)
 {
     return my->_remote_db->get_proposal({ proposals_id });
 }

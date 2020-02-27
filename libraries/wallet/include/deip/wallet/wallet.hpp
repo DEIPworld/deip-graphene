@@ -867,7 +867,7 @@ public:
     /**
      *  Gets proposal details
      */
-    proposal_api_obj get_proposal(const int64_t proposals_id);
+    fc::optional<proposal_api_obj> get_proposal(const int64_t proposals_id);
 
     /**
      *  Gets the list of all proposals for research group
