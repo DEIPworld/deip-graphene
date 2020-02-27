@@ -276,8 +276,8 @@ public:
     // Disciplines //
     /////////////////
     vector<discipline_api_obj> get_all_disciplines() const;
-    discipline_api_obj get_discipline(const discipline_id_type id) const;
-    discipline_api_obj get_discipline_by_name(const discipline_name_type name) const;
+    fc::optional<discipline_api_obj> get_discipline(const discipline_id_type& id) const;
+    fc::optional<discipline_api_obj> get_discipline_by_name(const discipline_name_type& name) const;
     vector<discipline_api_obj> get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
 
     ////////////////
@@ -303,17 +303,17 @@ public:
     ///////////////////
     // Expert Tokens //
     ///////////////////
-    expert_token_api_obj get_expert_token(const expert_token_id_type id) const;
+    fc::optional<expert_token_api_obj> get_expert_token(const expert_token_id_type id) const;
     vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_name_type account_name) const;
     vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
-    expert_token_api_obj get_common_token_by_account_name(const account_name_type account_name) const;
-    expert_token_api_obj get_expert_token_by_account_name_and_discipline_id(const account_name_type account_name, const discipline_id_type discipline_id) const;
+    fc::optional<expert_token_api_obj> get_common_token_by_account_name(const account_name_type account_name) const;
+    fc::optional<expert_token_api_obj> get_expert_token_by_account_name_and_discipline_id(const account_name_type account_name, const discipline_id_type discipline_id) const;
 
     ////////////////////
     // Proposal       //
     ////////////////////
     vector<proposal_api_obj> get_proposals_by_research_group_id(const research_group_id_type research_group_id) const;
-    proposal_api_obj get_proposal(const proposal_id_type id) const;
+    fc::optional<proposal_api_obj> get_proposal(const proposal_id_type id) const;
 
     ////////////////////
     // Research group //
@@ -328,20 +328,20 @@ public:
     /////////////////////////////////
     vector<research_group_token_api_obj> get_research_group_tokens_by_account(const account_name_type account) const;
     vector<research_group_token_api_obj> get_research_group_tokens_by_research_group(const research_group_id_type& research_group_id) const;
-    research_group_token_api_obj
+    fc::optional<research_group_token_api_obj>
     get_research_group_token_by_account_and_research_group_id(const account_name_type account,
                                                               const research_group_id_type& research_group_id) const;
 
     /////////////////////////
     // Research token sale //
     /////////////////////////
-    research_token_sale_api_obj get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const;
+    fc::optional<research_token_sale_api_obj> get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const;
     vector<research_token_sale_api_obj> get_research_token_sales_by_research_id(const research_id_type& research_id) const;
     vector<research_token_sale_api_obj> get_research_token_sale_by_end_time(const time_point_sec end_time) const;
     vector<research_token_sale_api_obj> get_research_token_sale(const uint32_t& from, uint32_t limit) const;
-    research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type research_token_sale_contribution_id) const;
+    fc::optional<research_token_sale_contribution_api_obj> get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type research_token_sale_contribution_id) const;
     vector<research_token_sale_contribution_api_obj> get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type research_token_sale_id) const;
-    research_token_sale_contribution_api_obj get_research_token_sale_contribution_by_contributor_and_research_token_sale_id(const account_name_type owner, const research_token_sale_id_type research_token_sale_id) const;
+    fc::optional<research_token_sale_contribution_api_obj> get_research_token_sale_contribution_by_contributor_and_research_token_sale_id(const account_name_type owner, const research_token_sale_id_type research_token_sale_id) const;
     vector<research_token_sale_contribution_api_obj> get_research_token_sale_contributions_by_contributor(const account_name_type owner) const;
     vector<research_token_sale_api_obj> get_research_token_sales_by_research_id_and_status(const research_id_type& research_id, const research_token_sale_status status);
 
@@ -355,8 +355,8 @@ public:
     // Research group invite         //
     ///////////////////////////////////
 
-    research_group_invite_api_obj get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id) const;
-    research_group_invite_api_obj get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
+    fc::optional<research_group_invite_api_obj> get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id) const;
+    fc::optional<research_group_invite_api_obj> get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
     vector<research_group_invite_api_obj> get_research_group_invites_by_account_name(const account_name_type& account_name) const;
     vector<research_group_invite_api_obj> get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const;
 
@@ -374,13 +374,13 @@ public:
     vector<total_votes_api_obj> get_total_votes_by_research_and_discipline(const research_id_type& research_id,
                                                                    const discipline_id_type& discipline_id) const;
     vector<total_votes_api_obj> get_total_votes_by_content(const research_content_id_type& research_content_id) const;
-    total_votes_api_obj get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id,
+    fc::optional<total_votes_api_obj> get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id,
             const discipline_id_type& discipline_id) const;
 
     ///////////////////////////////
     // Research Reviews          //
     ///////////////////////////////
-    review_api_obj get_review_by_id(const review_id_type& review_id) const;
+    fc::optional<review_api_obj> get_review_by_id(const review_id_type& review_id) const;
     vector<review_api_obj> get_reviews_by_research(const research_id_type& research_id) const;
     vector<review_api_obj> get_reviews_by_content(const research_content_id_type& research_content_id) const;
     vector<review_api_obj> get_reviews_by_author(const account_name_type& author) const;
@@ -394,11 +394,11 @@ public:
     // Research token ///
     /////////////////////
 
-    research_token_api_obj get_research_token_by_id(const research_token_id_type& research_token_id) const;
+    fc::optional<research_token_api_obj> get_research_token_by_id(const research_token_id_type& research_token_id) const;
     vector<research_token_api_obj> get_research_tokens_by_account_name(const account_name_type &account_name) const;
     vector<research_token_api_obj> get_research_tokens_by_research_id(const research_id_type &research_id) const;
-    research_token_api_obj get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
-                                                                              const research_id_type &research_id) const;
+    fc::optional<research_token_api_obj> get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
+                                                                                            const research_id_type &research_id) const;
 
     //////////////////
     // Vote object ///
@@ -420,9 +420,9 @@ public:
     // Expertise allocation proposal object///
     /////////////////////////////////////////
 
-    expertise_allocation_proposal_api_obj get_expertise_allocation_proposal_by_id(const expertise_allocation_proposal_id_type& id) const;
+    fc::optional<expertise_allocation_proposal_api_obj> get_expertise_allocation_proposal_by_id(const expertise_allocation_proposal_id_type& id) const;
     vector<expertise_allocation_proposal_api_obj> get_expertise_allocation_proposals_by_claimer(const account_name_type& claimer) const;
-    expertise_allocation_proposal_api_obj get_expertise_allocation_proposals_by_claimer_and_discipline(const account_name_type& claimer,
+    fc::optional<expertise_allocation_proposal_api_obj> get_expertise_allocation_proposals_by_claimer_and_discipline(const account_name_type& claimer,
                                                                                                        const discipline_id_type& discipline_id) const;
     vector<expertise_allocation_proposal_api_obj> get_expertise_allocation_proposals_by_discipline(const discipline_id_type& discipline_id) const;
 
@@ -430,11 +430,11 @@ public:
     // Expertise allocation proposal vote object///
     ///////////////////////////////////////////////
 
-    expertise_allocation_proposal_vote_api_obj get_expertise_allocation_proposal_vote_by_id(const expertise_allocation_proposal_vote_id_type& id) const;
+    fc::optional<expertise_allocation_proposal_vote_api_obj> get_expertise_allocation_proposal_vote_by_id(const expertise_allocation_proposal_vote_id_type& id) const;
     vector<expertise_allocation_proposal_vote_api_obj> get_expertise_allocation_proposal_votes_by_expertise_allocation_proposal_id
                                                                                           (const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const;
-    expertise_allocation_proposal_vote_api_obj get_expertise_allocation_proposal_vote_by_voter_and_expertise_allocation_proposal_id(const account_name_type& voter,
-                                                                                                                                    const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const;
+    fc::optional<expertise_allocation_proposal_vote_api_obj> get_expertise_allocation_proposal_vote_by_voter_and_expertise_allocation_proposal_id(const account_name_type& voter,
+                                                                                                                                                  const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const;
     vector<expertise_allocation_proposal_vote_api_obj> get_expertise_allocation_proposal_votes_by_voter_and_discipline_id(const account_name_type& voter,
                                                                                                                          const discipline_id_type& discipline_id) const;
     vector<expertise_allocation_proposal_vote_api_obj> get_expertise_allocation_proposal_votes_by_voter(const account_name_type& voter) const;
@@ -443,17 +443,17 @@ public:
     // Vesting balance ///
     //////////////////////
 
-    vesting_balance_api_obj get_vesting_balance_by_id(const vesting_balance_id_type& vesting_balance_id) const;
+    fc::optional<vesting_balance_api_obj> get_vesting_balance_by_id(const vesting_balance_id_type& vesting_balance_id) const;
     vector<vesting_balance_api_obj> get_vesting_balance_by_owner(const account_name_type& owner) const;
 
     ///////////////////////////
     // Offer research tokens///
     ///////////////////////////
 
-    offer_research_tokens_api_obj get_offer(const offer_research_tokens_id_type& id) const;
+    fc::optional<offer_research_tokens_api_obj> get_offer(const offer_research_tokens_id_type& id) const;
     vector<offer_research_tokens_api_obj> get_offers_by_receiver(const account_name_type& receiver) const;
-    offer_research_tokens_api_obj get_offer_by_receiver_and_research_id(const account_name_type& receiver,
-                                                                        const research_id_type& research_id) const;
+    fc::optional<offer_research_tokens_api_obj> get_offer_by_receiver_and_research_id(const account_name_type& receiver,
+                                                                                      const research_id_type& research_id) const;
     vector<offer_research_tokens_api_obj> get_offers_by_research_id(const research_id_type& research_id) const;
 
     ///////////////////////////
@@ -466,7 +466,7 @@ public:
     // Grants///
     ////////////
 
-    grant_api_obj get_grant(const grant_id_type& id) const;
+    fc::optional<grant_api_obj> get_grant(const grant_id_type& id) const;
     vector<grant_api_obj> get_grants_by_target_discipline(const discipline_id_type& discipline_id) const;
     vector<grant_api_obj> get_grants(const set<string>& account_names) const;
     set<string> lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const;
@@ -475,7 +475,7 @@ public:
     // Grant applications///
     ////////////////////////
 
-    grant_application_api_obj get_grant_application(const grant_application_id_type& id) const;
+    fc::optional<grant_application_api_obj> get_grant_application(const grant_application_id_type& id) const;
     vector<grant_application_api_obj> get_grant_applications_by_grant(const grant_id_type& grant_id) const;
     vector<grant_application_api_obj> get_grant_applications_by_research_id(const research_id_type& research_id) const;
 
