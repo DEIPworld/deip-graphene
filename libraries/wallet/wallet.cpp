@@ -565,7 +565,7 @@ public:
 
             account_create_op.creator = creator_account_name;
             account_create_op.new_account_name = account_name;
-            account_create_op.fee = _remote_db->get_chain_properties().account_creation_fee;
+            account_create_op.fee = _remote_db->get_chain_properties().account_creation_fee.amount;
             account_create_op.owner = authority(1, owner_pubkey, 1);
             account_create_op.active = authority(1, active_pubkey, 1);
             account_create_op.memo_key = memo_pubkey;
@@ -794,19 +794,23 @@ public:
             share_type total_expert_tokens_amount;
             for (const auto& a : accounts)
             {
-                total_deip += a.balance;
+                //total_deip += a.balance;
                 total_common_tokens_amount += a.common_tokens_balance;
                 total_expert_tokens_amount += a.expert_tokens_balance;
-                out << std::left << std::setw(17) << std::string(a.name) << std::right << std::setw(18)
-                    << fc::variant(a.balance).as_string() << " " << std::right << std::setw(26)
-                    << std::to_string(total_common_tokens_amount.value)<< " " << std::right << std::setw(28)
-                    << std::to_string(total_expert_tokens_amount.value) << "\n";
+                out << std::left << std::setw(17) << std::string(a.name) << std::right << std::setw(18);
+                
+                for (auto balance : a.balances)
+                    out << fc::variant(balance).as_string() << "\n";
+                
+                out << " " << std::right << std::setw(26)
+                << std::to_string(total_common_tokens_amount.value)<< " " << std::right << std::setw(28)
+                << std::to_string(total_expert_tokens_amount.value) << "\n";
             }
-            out << "-------------------------------------------------------------------------\n";
-            out << std::left << std::setw(17) << "TOTAL" << std::right << std::setw(18)
-                << fc::variant(total_deip).as_string() << " " << std::right << std::setw(26)
-                    << std::to_string(total_common_tokens_amount.value)<< " " << std::right << std::setw(28)
-                    << std::to_string(total_expert_tokens_amount.value) << "\n";
+//            out << "-------------------------------------------------------------------------\n";
+//            out << std::left << std::setw(17) << "TOTAL" << std::right << std::setw(18)
+//                << fc::variant(total_deip).as_string() << " " << std::right << std::setw(26)
+//                    << std::to_string(total_common_tokens_amount.value)<< " " << std::right << std::setw(28)
+//                    << std::to_string(total_expert_tokens_amount.value) << "\n";
             return out.str();
         };
         auto account_history_formatter = [this](variant result, const fc::variants& a) {
@@ -1311,7 +1315,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys(const std::str
                                                                   const public_key_type& active,
                                                                   const public_key_type& posting,
                                                                   const public_key_type& memo,
-                                                                  const asset& fee,
+                                                                  const share_type& fee,
                                                                   bool broadcast) const
 {
     try
@@ -1678,7 +1682,7 @@ wallet_api::update_account_memo_key(const std::string& account_name, const publi
 annotated_signed_transaction wallet_api::create_account(const std::string& creator,
                                                         const std::string& newname,
                                                         const std::string& json_meta,
-                                                        const asset& fee,
+                                                        const share_type& fee,
                                                         bool broadcast)
 {
     try
@@ -2508,7 +2512,7 @@ annotated_signed_transaction wallet_api::propose_start_token_sale(const std::str
                                                                   const asset& soft_cap,
                                                                   const asset& hard_cap,
                                                                   const bool broadcast)
-{    
+{
     start_research_token_sale_data_type data;
 
     data.research_id = research_id;
@@ -2907,6 +2911,7 @@ annotated_signed_transaction wallet_api::approve_grant_application(const int64_t
                                                                    const std::string& approver,
                                                                    const bool broadcast)
 {
+    FC_ASSERT(!is_locked());
     
     approve_grant_application_operation op;
 
@@ -2924,10 +2929,72 @@ annotated_signed_transaction wallet_api::reject_grant_application(const int64_t&
                                                                   const std::string& rejector,
                                                                   const bool broadcast)
 {
+    FC_ASSERT(!is_locked());
+
     reject_grant_application_operation op;
 
     op.grant_application_id = grant_application_id;
     op.rejector = rejector;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::create_asset(const std::string& issuer,
+                                                      const std::string& symbol,
+                                                      const uint8_t& precision,
+                                                      const std::string& name,
+                                                      const std::string& description,
+                                                      const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    create_asset_operation op;
+
+    op.issuer = issuer;
+    op.symbol = symbol;
+    op.precision = precision;
+    op.name = name;
+    op.description = description;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::issue_asset(const std::string& issuer,
+                                                     const asset& amount_to_issue,
+                                                     const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    issue_asset_operation op;
+
+    op.issuer = issuer;
+    op.amount_to_issue = amount_to_issue;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+annotated_signed_transaction wallet_api::reserve_asset(const std::string& balance_owner,
+                                                       const asset& amount_to_reserve,
+                                                       const bool broadcast)
+{
+    FC_ASSERT(!is_locked());
+
+    reserve_asset_operation op;
+
+    op.balance_owner = balance_owner;
+    op.amount_to_reserve = amount_to_reserve;
 
     signed_transaction tx;
     tx.operations.push_back(op);

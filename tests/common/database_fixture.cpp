@@ -16,6 +16,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include  <deip/chain/schema/account_balance_object.hpp>
 #include <deip/chain/schema/research_group_invite_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
 
@@ -29,8 +30,10 @@ void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
     private_key_type init_delegate_priv_key = private_key_type::regenerate(fc::sha256::hash(string("init_key")));
     public_key_type init_public_key = init_delegate_priv_key.get_public_key();
 
-    genesis_state.accounts.push_back(
-        { "initdelegate", "null", init_public_key, genesis_state.init_supply });
+    genesis_state.accounts.push_back({ "initdelegate", "null", init_public_key });
+
+    genesis_state.account_balances.push_back({ 0, "initdelegate", genesis_state.init_supply });
+
     genesis_state.witness_candidates.push_back({ "initdelegate", init_public_key });
 }
 
@@ -66,11 +69,12 @@ database_fixture::database_fixture()
     genesis_state.initial_chain_id = TEST_CHAIN_ID;
     genesis_state.initial_timestamp = fc::time_point_sec(TEST_GENESIS_TIMESTAMP);
     auto registrar = genesis_state_type::registrar_account_type();
-    registrar.name = "registrar";
-    registrar.deip_amount = 0;
+    registrar.name = DEIP_REGISTRAR_ACCOUNT_NAME;
     registrar.public_key = public_key_type();
     registrar.common_tokens_amount = 0;
     genesis_state.registrar_account = registrar;
+
+    genesis_state.assets.push_back({ 0, "TESTS", 3});
 
     create_disciplines_for_genesis_state(genesis_state);
     create_initdelegate_for_genesis_state(genesis_state);
@@ -728,11 +732,20 @@ void database_fixture::fund(const string& account_name, const asset& amount)
     {
         db_plugin->debug_update(
             [=](database& db) {
-                db.modify(db.get_account(account_name), [&](account_object& a) {
-                    if (amount.symbol == DEIP_SYMBOL)
-                        a.balance += amount;
-                });
-
+                const auto& idx = db.get_index<account_balance_index>().indices().get<by_owner_and_asset>();
+                if (idx.find(boost::make_tuple(account_name, DEIP_SYMBOL)) != idx.cend()){
+                    auto& balance = db.get<account_balance_object, by_owner_and_asset>(boost::make_tuple(account_name, amount.symbol));
+                    db.modify(balance, [&](account_balance_object& ab_o) {
+                        ab_o.amount += amount.amount;
+                    });
+                }
+                else {
+                    db.create<account_balance_object>([&](account_balance_object &account_balance) {
+                        account_balance.owner = account_name;
+                        account_balance.symbol = amount.symbol;
+                        account_balance.amount = amount.amount;
+                    });
+                }
                 db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object& gpo) {
                     if (amount.symbol == DEIP_SYMBOL)
                         gpo.current_supply += amount;
@@ -750,7 +763,7 @@ void database_fixture::transfer(const string& from, const string& to, const shar
         transfer_operation op;
         op.from = from;
         op.to = to;
-        op.amount = amount;
+        op.amount = asset(amount, DEIP_SYMBOL);
 
         trx.operations.push_back(op);
         trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -812,7 +825,8 @@ void database_fixture::proxy(const string& account, const string& proxy)
 
 const asset& database_fixture::get_balance(const string& account_name) const
 {
-    return db.get_account(account_name).balance;
+    auto& account_balance_service = db.obtain_service<dbs_account_balance>();
+    return account_balance_service.get_by_owner_and_asset(account_name, DEIP_SYMBOL).to_asset();
 }
 
 void database_fixture::sign(signed_transaction& trx, const fc::ecc::private_key& key)

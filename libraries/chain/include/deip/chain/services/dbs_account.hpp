@@ -47,8 +47,6 @@ public:
                        const optional<authority>& posting,
                        const optional<time_point_sec>& now = optional<time_point_sec>());
 
-    void adjust_balance(const account_object& account, const asset& delta);
-
     void update_withdraw(const account_object& account,
                          const share_type& common_tokens_withdraw_rate,
                          const time_point_sec& next_common_tokens_withdrawal,

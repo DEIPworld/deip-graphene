@@ -24,7 +24,7 @@ inline void validate_permlink(const string& permlink)
 
 inline void validate_enum_value_by_range(int val, int first, int last)
 {
-    FC_ASSERT(val >= first && val <= last, "Provided enum value is outside of the range: val = ${enum_val}, first = ${first}, last = ${last}", 
+    FC_ASSERT(val >= first && val <= last, "Provided enum value is outside of the range: val = ${enum_val}, first = ${first}, last = ${last}",
                                             ("enum_val", val)("first", first)("last", last));
 }
 
@@ -613,7 +613,7 @@ struct research_update_operation : public base_operation
 
 struct create_vesting_balance_operation : public base_operation
 {
-    account_name_type creator;  
+    account_name_type creator;
     account_name_type owner;
     asset balance;
     uint32_t vesting_duration_seconds;
@@ -820,6 +820,48 @@ struct reject_grant_application_operation : public base_operation
     }
 };
 
+struct create_asset_operation : public base_operation
+{
+    account_name_type issuer;
+    string symbol;
+    uint8_t precision;
+    string name;
+    string description;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(issuer);
+    }
+};
+
+struct issue_asset_operation : public base_operation
+{
+    account_name_type issuer;
+    asset amount_to_issue;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(issuer);
+    }
+};
+
+struct reserve_asset_operation : public base_operation
+{
+    account_name_type balance_owner;
+    asset amount_to_reserve;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
+    {
+        a.insert(balance_owner);
+    }
+};
+
 } // namespace protocol
 } // namespace deip
 
@@ -890,5 +932,9 @@ FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(resea
 FC_REFLECT( deip::protocol::make_review_for_application_operation, (author)(grant_application_id)(content)(is_positive)(weight))
 FC_REFLECT( deip::protocol::approve_grant_application_operation, (grant_application_id)(approver))
 FC_REFLECT( deip::protocol::reject_grant_application_operation, (grant_application_id)(rejector))
+FC_REFLECT( deip::protocol::create_asset_operation, (issuer)(symbol)(precision)(name)(description))
+FC_REFLECT( deip::protocol::issue_asset_operation, (issuer)(amount_to_issue))
+FC_REFLECT( deip::protocol::reserve_asset_operation, (balance_owner)(amount_to_reserve))
+
 
 // clang-format on

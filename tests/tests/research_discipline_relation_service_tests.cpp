@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(update_votes_count_negative_delta_expect_error)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(is_exists_by_research_and_discipline)
+BOOST_AUTO_TEST_CASE(exists_by_research_and_discipline)
 {
     try
     {

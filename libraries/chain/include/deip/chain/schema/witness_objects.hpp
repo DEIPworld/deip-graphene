@@ -11,7 +11,6 @@ namespace deip {
 namespace chain {
 
 using deip::protocol::asset;
-using deip::protocol::asset_symbol_type;
 using deip::protocol::chain_properties;
 using deip::protocol::digest_type;
 using deip::protocol::hardfork_version;

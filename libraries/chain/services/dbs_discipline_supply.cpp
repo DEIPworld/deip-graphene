@@ -1,9 +1,8 @@
-#include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/database/database.hpp>
-#include <deip/chain/services/dbs_account.hpp>
-#include <deip/chain/schema/account_object.hpp>
 
-#include <deip/chain/database/database.hpp>
+#include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_account_balance.hpp>
+#include <deip/chain/services/dbs_discipline_supply.hpp>
 
 #include <tuple>
 
@@ -82,12 +81,14 @@ const discipline_supply_object& dbs_discipline_supply::create_discipline_supply(
                                                                                 const std::string &content_hash)
 {
     // clang-format off
-    FC_ASSERT(balance.symbol == DEIP_SYMBOL, "invalid asset type (symbol)");
     FC_ASSERT(balance.amount > 0, "invalid balance");
-    FC_ASSERT(owner.balance >= balance, "insufficient funds");
     FC_ASSERT(_get_discipline_supplies_count(owner.name) < DEIP_LIMIT_DISCIPLINE_SUPPLIES_PER_OWNER,
               "can't create more then ${1} DISCIPLINE_SUPPLIES per owner", ("1", DEIP_LIMIT_DISCIPLINE_SUPPLIES_PER_OWNER));
     // clang-format on
+
+    auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
+    account_balance_service.check_existence_by_owner_and_asset(owner.name, balance.symbol);
+    account_balance_service.adjust_balance(owner.name, -balance);
 
     const dynamic_global_property_object& props = db_impl().get_dynamic_global_properties();
     auto head_block_num = props.head_block_number;
@@ -98,8 +99,6 @@ const discipline_supply_object& dbs_discipline_supply::create_discipline_supply(
     
     FC_ASSERT(start < end_block, "discipline_supply start block should be before end block");
     //Withdraw fund from account
-    dbs_account& account_service = db().obtain_service<dbs_account>();
-    account_service.adjust_balance(owner, -balance);
     
     share_type per_block(balance.amount);
     per_block /= (end_block - start);
@@ -135,6 +134,8 @@ asset dbs_discipline_supply::allocate_funds(const discipline_supply_object& disc
 
 void dbs_discipline_supply::clear_expired_discipline_supplies()
 {
+    auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
+
     const auto& discipline_supply_expiration_index = db_impl().get_index<discipline_supply_index>().indices().get<by_end_block>();
 
     auto block_num = db_impl().head_block_num();
@@ -146,9 +147,7 @@ void dbs_discipline_supply::clear_expired_discipline_supplies()
         if(discipline_supply.balance.amount > 0)
         {
             auto& owner = db_impl().get_account(discipline_supply.owner);
-            db_impl().modify(owner, [&](account_object& a) {
-                a.balance += discipline_supply.balance;
-            });
+            account_balance_service.adjust_balance(owner.name, discipline_supply.balance);
             db_impl().modify(discipline_supply, [&](discipline_supply_object& g) {
                 g.balance = asset(0, DEIP_SYMBOL);
             });

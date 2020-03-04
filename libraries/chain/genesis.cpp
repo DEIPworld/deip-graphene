@@ -8,21 +8,24 @@
 #include <deip/chain/schema/deip_objects.hpp>
 #include <deip/chain/schema/discipline_object.hpp>
 #include <deip/chain/schema/expert_token_object.hpp>
+#include <deip/chain/schema/offer_research_tokens_object.hpp>
+#include <deip/chain/schema/proposal_object.hpp>
+#include <deip/chain/schema/proposal_vote_object.hpp>
 #include <deip/chain/schema/research_group_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
 #include <deip/chain/schema/research_content_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
-#include <deip/chain/services/dbs_expert_token.hpp>
-#include <deip/chain/schema/proposal_object.hpp>
-#include <deip/chain/schema/proposal_vote_object.hpp>
+
 #include <deip/chain/services/dbs_account.hpp>
-#include <deip/chain/schema/offer_research_tokens_object.hpp>
+#include <deip/chain/services/dbs_account_balance.hpp>
+#include <deip/chain/services/dbs_expert_token.hpp>
 
 #include <fc/io/json.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
 #include <deip/chain/schema/expertise_stats_object.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_asset.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
@@ -41,7 +44,9 @@ void generate_default_genesis_state(genesis_state_type& genesis)
     genesis.init_supply = DEIP_DEFAULT_INIT_SUPPLY;
     genesis.initial_timestamp = DEIP_DEFAULT_GENESIS_TIME;
 
-    genesis.accounts.push_back({ "initdelegate", "", init_public_key, genesis.init_supply });
+    genesis.accounts.push_back({ "initdelegate", "", init_public_key });
+
+    genesis.account_balances.push_back({ 0, "initdelegate", genesis.init_supply });
 
     genesis.witness_candidates.push_back({ "initdelegate", init_public_key });
 
@@ -91,6 +96,8 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         });
 
         init_genesis_global_property_object(genesis_state);
+        init_genesis_assets(genesis_state);
+        init_genesis_account_balances(genesis_state);
         init_genesis_accounts(genesis_state);
         init_genesis_witnesses(genesis_state);
         init_genesis_witness_schedule(genesis_state);
@@ -125,7 +132,6 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
     create<account_object>([&](account_object& a) {
         a.name = registrar.name;
         a.memo_key = registrar.public_key;
-        a.balance = asset(registrar.deip_amount, DEIP_SYMBOL);
         a.json_metadata = "";
         a.recovery_account = registrar.recovery_account;
         a.common_tokens_balance = registrar.common_tokens_amount;
@@ -163,7 +169,54 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
                 owner_authority,
                 asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL));
 
-        account_service.adjust_balance(new_account, account.deip_amount);
+    }
+}
+
+
+void database::init_genesis_assets(const genesis_state_type& genesis_state)
+{
+    auto& asset_service = obtain_service<dbs_asset>();
+    const vector<genesis_state_type::asset_type>& assets = genesis_state.assets;
+
+    for (auto& asset : assets)
+    {
+        create<asset_object>([&](asset_object& a_o) {
+            a_o.id = asset.id;
+            int p = std::pow(10, asset.precision);
+            std::string string_asset = "0." + fc::to_string(p).erase(0, 1) + " " + asset.symbol;
+            protocol::asset new_asset = asset::from_string(string_asset);
+            a_o.symbol = new_asset.symbol;
+            fc::from_string(a_o.string_symbol, asset.symbol);
+            a_o.precision = asset.precision;
+            a_o.current_supply = asset.current_supply;
+        });
+    }
+}
+
+void database::init_genesis_account_balances(const genesis_state_type& genesis_state)
+{
+    auto& account_balance_service = obtain_service<dbs_account_balance>();
+    auto& asset_service = obtain_service<dbs_asset>();
+
+    const genesis_state_type::registrar_account_type& registrar = genesis_state.registrar_account;
+    const vector<genesis_state_type::account_balance_type>& account_balances = genesis_state.account_balances;
+
+    create<account_balance_object>([&](account_balance_object& ab_o) {
+        ab_o.asset_id = 0;
+        ab_o.symbol = DEIP_SYMBOL;
+        ab_o.owner = registrar.name;
+        ab_o.amount = registrar.deip_amount;
+    });
+
+    for (auto& account_balance : account_balances)
+    {
+        auto& _asset_obj = asset_service.get(account_balance.asset_id);
+        create<account_balance_object>([&](account_balance_object& ab_o) {
+            ab_o.asset_id = _asset_obj.id;
+            ab_o.symbol = DEIP_SYMBOL;
+            ab_o.owner = account_balance.owner;
+            ab_o.amount = account_balance.amount;
+        });
     }
 }
 
@@ -233,7 +286,7 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
     dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
     for (auto& expert_token : expert_tokens)
     {
-        FC_ASSERT(!expert_token.account_name.empty(), "Expertise token 'account_name' must not be empty.");
+        FC_ASSERT(!expert_token.account_name.empty(), "Expertise token 'account_name' must not be empty ${1}.", ("1", expert_token.discipline_id));
         FC_ASSERT(expert_token.amount != 0,  "Expertise token 'amount' must not be equal to 0 for genesis state.");
 
         auto account = get<account_object, by_name>(expert_token.account_name);
@@ -518,7 +571,6 @@ void database::init_genesis_vesting_balances(const genesis_state_type& genesis_s
         });
     }
 }
-
 
 } // namespace chain
 } // namespace deip

@@ -14,6 +14,8 @@
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/reward_pool_object.hpp>
 
+#include <deip/chain/services/dbs_account_balance.hpp>
+
 #include "database_fixture.hpp"
 
 namespace deip {
@@ -26,7 +28,8 @@ public:
             : account_service(db.obtain_service<dbs_account>()),
               vote_service(db.obtain_service<dbs_vote>()),
               research_content_service(db.obtain_service<dbs_research_content>()),
-              grant_service(db.obtain_service<dbs_grant>())
+              grant_service(db.obtain_service<dbs_grant>()),
+              account_balance_service(db.obtain_service<dbs_account_balance>())
     {
     }
 
@@ -583,6 +586,7 @@ public:
     dbs_vote& vote_service;
     dbs_research_content& research_content_service;
     dbs_grant& grant_service;
+    dbs_account_balance& account_balance_service;
 };
 
 BOOST_FIXTURE_TEST_SUITE(database_unit_service, database_unit_service_fixture)
@@ -601,8 +605,8 @@ BOOST_AUTO_TEST_CASE(reward_review_voters)
 
         BOOST_CHECK_NO_THROW(db.reward_review_voters(review, 10, reward));
 
-        BOOST_CHECK(jack.balance.amount == 40);
-        BOOST_CHECK(john.balance.amount == 60);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(jack.name, DEIP_SYMBOL).amount == 40);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(john.name, DEIP_SYMBOL).amount == 60);
 
     }
     FC_LOG_AND_RETHROW()
@@ -646,10 +650,10 @@ BOOST_AUTO_TEST_CASE(reward_reviews)
 
         BOOST_CHECK_NO_THROW(db.reward_reviews(1, 10, reward, expertise_reward));
 
-        BOOST_CHECK(alice.balance.amount == 475);
-        BOOST_CHECK(bob.balance.amount == 475);
-        BOOST_CHECK(jack.balance.amount == 20);
-        BOOST_CHECK(john.balance.amount == 30);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount == 475);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == 475);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(jack.name, DEIP_SYMBOL).amount == 20);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(john.name, DEIP_SYMBOL).amount == 30);
 
         BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("alice", 10).amount == 500);
         BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("bob", 10).amount == 500);
@@ -677,8 +681,8 @@ BOOST_AUTO_TEST_CASE(reward_references)
 
         BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 500);
 
-        BOOST_CHECK(db.get_account("alice").balance.amount == 200);
-        BOOST_CHECK(db.get_account("bob").balance.amount == 300);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount == 200);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == 300);
 
     }
     FC_LOG_AND_RETHROW()
@@ -702,8 +706,8 @@ BOOST_AUTO_TEST_CASE(reward_research_token_holders)
 
         BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 500);
 
-        BOOST_CHECK(db.get_account("alice").balance.amount == 200);
-        BOOST_CHECK(db.get_account("bob").balance.amount == 300);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount == 200);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == 300);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -731,8 +735,8 @@ BOOST_AUTO_TEST_CASE(reward_research_content)
         auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
         BOOST_CHECK(alice_expert_token.amount == 900);
 
-        BOOST_CHECK(alice.balance.amount == 20);
-        BOOST_CHECK(bob.balance.amount == 30);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount == 20);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == 30);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -758,10 +762,10 @@ BOOST_AUTO_TEST_CASE(fund_review_pool)
         auto& discipline = db.get<discipline_object>(10);
         BOOST_CHECK_NO_THROW(db.fund_review_pool(discipline, reward));
 
-        BOOST_CHECK(alice.balance.amount == 475);
-        BOOST_CHECK(bob.balance.amount == 475);
-        BOOST_CHECK(jack.balance.amount == 20);
-        BOOST_CHECK(john.balance.amount == 30);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount == 475);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == 475);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(jack.name, DEIP_SYMBOL).amount == 20);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(john.name, DEIP_SYMBOL).amount == 30);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -819,8 +823,8 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
 
         BOOST_CHECK_NO_THROW(used_reward = db.distribute_reward(reward, reward.amount));
 
-        BOOST_CHECK(alice.balance == asset(24, DEIP_SYMBOL));
-        BOOST_CHECK(bob.balance == asset(24, DEIP_SYMBOL));
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount == 24);
+        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == 24);
 
         auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight");
 
@@ -932,11 +936,8 @@ BOOST_AUTO_TEST_CASE(process_content_activity_windows)
        BOOST_CHECK(group_1.balance.amount > 0);
        BOOST_CHECK(group_2.balance.amount > 0);
 
-       auto& alice_acc = db.get_account("alice");
-       auto& bob_acc = db.get_account("bob");
-
-       BOOST_CHECK(alice_acc.balance.amount > 0);
-       BOOST_CHECK(bob_acc.balance.amount > 0);
+       BOOST_CHECK(account_balance_service.get_by_owner_and_asset("alice", DEIP_SYMBOL).amount > 0);
+       BOOST_CHECK(account_balance_service.get_by_owner_and_asset("bob", DEIP_SYMBOL).amount > 0);
 
        auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
        auto alex_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alex", 10));

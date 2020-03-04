@@ -7,6 +7,8 @@
 
 #include <deip/chain/database/database.hpp> //replace to dbservice after _temporary_public_impl remove
 #include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_account_balance.hpp>
+#include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_witness.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
@@ -114,15 +116,14 @@ void witness_update_evaluator::do_apply(const witness_update_operation& o)
 void account_create_evaluator::do_apply(const account_create_operation& o)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
-    const auto& creator = account_service.get_account(o.creator);
-
+    auto creator_balance = account_balance_service.get_by_owner_and_asset(o.creator, o.fee.symbol);
     // check creator balance
-    FC_ASSERT(creator.balance >= o.fee, "Insufficient balance to create account.",
-              ("creator.balance", creator.balance)("required", o.fee));
+    FC_ASSERT(creator_balance.amount >= o.fee.amount, "Insufficient balance to create account.",
+              ("creator.balance", creator_balance.amount)("required", o.fee.amount));
 
-    // check fee
     FC_ASSERT(o.fee >= asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL),
               "Insufficient Fee: ${f} required, ${p} provided.",
               ("f", asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL))("p", o.fee));
@@ -156,6 +157,7 @@ void account_create_evaluator::do_apply(const account_create_operation& o)
                                                                                        is_personal);
     research_group_service.create_research_group_token(personal_research_group.id, DEIP_100_PERCENT, o.new_account_name);
 
+    account_balance_service.create(o.new_account_name, DEIP_SYMBOL, 0);
 }
 
 void account_update_evaluator::do_apply(const account_update_operation& o)
@@ -198,28 +200,29 @@ void account_update_evaluator::do_apply(const account_update_operation& o)
 
 void transfer_evaluator::do_apply(const transfer_operation& o)
 {
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
 
-    const auto& from_account = account_service.get_account(o.from);
-    const auto& to_account = account_service.get_account(o.to);
+    auto from_balance = account_balance_service.get_by_owner_and_asset(o.from, o.amount.symbol);
 
-    FC_ASSERT(_db.get_balance(from_account, o.amount.symbol) >= o.amount,
-              "Account does not have sufficient funds for transfer.");
-    account_service.adjust_balance(from_account, -o.amount);
-    account_service.adjust_balance(to_account, o.amount);
+    FC_ASSERT(from_balance.to_asset() >= o.amount, "Account does not have sufficient funds for transfer.");
+
+    account_balance_service.adjust_balance(o.from, -o.amount);
+    account_balance_service.adjust_balance(o.to, o.amount);
 }
 
 void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_tokens_operation& o)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
+
+    auto from_balance = account_balance_service.get_by_owner_and_asset(o.from, o.amount.symbol);
 
     const auto& from_account = account_service.get_account(o.from);
     const auto& to_account = o.to.size() ? account_service.get_account(o.to) : from_account;
 
-    FC_ASSERT(_db.get_balance(from_account, DEIP_SYMBOL) >= o.amount,
-              "Account does not have sufficient DEIP for transfer.");
+    FC_ASSERT(from_balance.amount >= o.amount.amount, "Account does not have sufficient DEIP for transfer.");
 
-    account_service.adjust_balance(from_account, -o.amount);
+    account_balance_service.adjust_balance(o.from, -o.amount);
     account_service.increase_common_tokens(to_account, o.amount.amount);
 }
 
@@ -536,15 +539,22 @@ void change_recovery_account_evaluator::do_apply(const change_recovery_account_o
 
 void create_discipline_supply_evaluator::do_apply(const create_discipline_supply_operation& op)
 {
-    dbs_discipline_supply& discipline_supply_service = _db.obtain_service<dbs_discipline_supply>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
+    dbs_discipline_supply& discipline_supply_service = _db.obtain_service<dbs_discipline_supply>();
+
     account_service.check_account_existence(op.owner);
     const auto& owner = account_service.get_account(op.owner);
     discipline_service.check_discipline_existence_by_name(op.target_discipline);
     auto& discipline = discipline_service.get_discipline_by_name(op.target_discipline);
-    discipline_supply_service.create_discipline_supply(owner, op.balance, op.start_block, op.end_block, discipline.id,
-                                           op.is_extendable, op.content_hash);
+
+    discipline_supply_service.create_discipline_supply(owner,
+                                                       op.balance,
+                                                       op.start_block,
+                                                       op.end_block,
+                                                       discipline.id,
+                                                       op.is_extendable,
+                                                       op.content_hash);
 }
 
 void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
@@ -773,22 +783,23 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
 void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)
 {
-    dbs_account &account_service = _db.obtain_service<dbs_account>();
-    dbs_research_token_sale &research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
+    dbs_research_token_sale& research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
 
     research_token_sale_service.check_research_token_sale_existence(op.research_token_sale_id);
     account_service.check_account_existence(op.owner);
 
-    auto& account = account_service.get_account(op.owner);
+    auto account_balance = account_balance_service.get_by_owner_and_asset(op.owner, op.amount.symbol);
 
-    FC_ASSERT(account.balance >= op.amount, "Not enough funds to contribute");
+    FC_ASSERT(account_balance.amount >= op.amount.amount, "Not enough funds to contribute");
 
     auto& research_token_sale = research_token_sale_service.get_by_id(op.research_token_sale_id);
     FC_ASSERT(research_token_sale.status == research_token_sale_status::token_sale_active, "You cannot contribute to inactive, finished or expired token sale");
 
-    bool is_hard_cap_reached = research_token_sale.total_amount + op.amount >= research_token_sale.hard_cap;
-
     asset amount_to_contribute = op.amount;
+    bool is_hard_cap_reached = research_token_sale.total_amount + amount_to_contribute >= research_token_sale.hard_cap;
+
     if (is_hard_cap_reached) {
         amount_to_contribute = research_token_sale.hard_cap - research_token_sale.total_amount;
     }
@@ -805,7 +816,7 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
                                                contribution_time, amount_to_contribute);
     }
 
-    account_service.adjust_balance(account_service.get_account(op.owner), -amount_to_contribute);
+    account_balance_service.adjust_balance(op.owner, -amount_to_contribute);
     research_token_sale_service.increase_tokens_amount(op.research_token_sale_id, amount_to_contribute);
 
     if (is_hard_cap_reached) {
@@ -925,24 +936,27 @@ void research_update_evaluator::do_apply(const research_update_operation& op)
 
 void create_vesting_balance_evaluator::do_apply(const create_vesting_balance_operation& op)
 {
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
     dbs_vesting_balance& vesting_balance_service = _db.obtain_service<dbs_vesting_balance>();
-    dbs_account &account_service = _db.obtain_service<dbs_account>();
 
     account_service.check_account_existence(op.creator);
     account_service.check_account_existence(op.owner);
 
-    auto& creator = account_service.get_account(op.creator);
-    FC_ASSERT(creator.balance >= op.balance, "Not enough funds to create vesting contract");
+    auto account_balance = account_balance_service.get_by_owner_and_asset(op.creator, op.balance.symbol);
 
-    account_service.adjust_balance(creator, -op.balance);
+    FC_ASSERT(account_balance.amount >= op.balance.amount, "Not enough funds to create vesting contract");
+
+    account_balance_service.adjust_balance(op.creator, -op.balance);
     vesting_balance_service.create(op.owner, op.balance, op.vesting_duration_seconds, op.period_duration_seconds, op.vesting_cliff_seconds);
 
 }
 
 void withdraw_vesting_balance_evaluator::do_apply(const withdraw_vesting_balance_operation& op)
 {
-    dbs_vesting_balance& vesting_balance_service = _db.obtain_service<dbs_vesting_balance>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
+    dbs_vesting_balance& vesting_balance_service = _db.obtain_service<dbs_vesting_balance>();
 
     account_service.check_account_existence(op.owner);
     vesting_balance_service.check_existence(op.vesting_balance_id);
@@ -975,7 +989,7 @@ void withdraw_vesting_balance_evaluator::do_apply(const withdraw_vesting_balance
                     ("a", asset(allowed_withdraw, DEIP_SYMBOL))("r", op.amount));
 
             vesting_balance_service.withdraw(vco.id, op.amount);
-            account_service.adjust_balance(_db.get_account(op.owner), op.amount);
+            account_balance_service.adjust_balance(op.owner, op.amount);
         }
     }
 }
@@ -1128,6 +1142,7 @@ void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_e
 void accept_research_token_offer_evaluator::do_apply(const accept_research_token_offer_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
     dbs_offer_research_tokens& offer_service = _db.obtain_service<dbs_offer_research_tokens>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_research_token& research_token_service = _db.obtain_service<dbs_research_token>();
@@ -1135,15 +1150,16 @@ void accept_research_token_offer_evaluator::do_apply(const accept_research_token
     account_service.check_account_existence(op.buyer);
     offer_service.check_offer_existence(op.offer_research_tokens_id);
 
-    auto& buyer = account_service.get_account(op.buyer);
     auto& offer = offer_service.get(op.offer_research_tokens_id);
     auto& research = research_service.get_research(offer.research_id);
 
+    auto buyer_balance = account_balance_service.get_by_owner_and_asset(op.buyer, offer.price.symbol);
+
     FC_ASSERT(research.owned_tokens >= offer.amount, "Research group doesn't have enough tokens");
-    FC_ASSERT(buyer.balance.amount >= offer.price.amount, "Buyer doesn't have enough funds.");
+    FC_ASSERT(buyer_balance.amount >= offer.price.amount, "Buyer doesn't have enough funds.");
 
     research_service.decrease_owned_tokens(research, offer.amount);
-    account_service.adjust_balance(buyer, -offer.price);
+    account_balance_service.adjust_balance(op.buyer, -offer.price);
 
     research_token_service.create_research_token(op.buyer, offer.amount, offer.research_id);
 
@@ -1165,20 +1181,23 @@ void reject_research_token_offer_evaluator::do_apply(const reject_research_token
 
 void create_grant_evaluator::do_apply(const create_grant_operation& op)
 {
-    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
+    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
 
     account_service.check_account_existence(op.owner);
-    auto& owner = account_service.get_account(op.owner);
+
+    auto owner_balance = account_balance_service.get_by_owner_and_asset(op.owner, op.amount.symbol);
 
     for (auto& officer : op.officers) {
         account_service.check_account_existence(officer);
     }
 
-    FC_ASSERT(owner.balance >= op.amount, "You do not have enough funds to grant");
+    FC_ASSERT(owner_balance.amount >= op.amount.amount, "You do not have enough funds to grant");
+
     FC_ASSERT(op.start_time >= _db.head_block_time(), "Start time must be greater than now");
 
-    account_service.adjust_balance(owner, -op.amount);
+    account_balance_service.adjust_balance(op.owner, -op.amount);
     grant_service.create(op.target_discipline,
                          op.amount,
                          op.min_number_of_positive_reviews,
@@ -1218,15 +1237,12 @@ void create_grant_application_evaluator::do_apply(const create_grant_application
 void make_review_for_application_evaluator::do_apply(const make_review_for_application_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
-    dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_grant_application& grant_application_service = _db.obtain_service<dbs_grant_application>();
     dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
     dbs_grant_application_review& grant_application_review_service = _db.obtain_service<dbs_grant_application_review>();
-    dbs_vote& votes_service = _db.obtain_service<dbs_vote>();
 
     account_service.check_account_existence(op.author);
     grant_application_service.check_grant_application_existence(op.grant_application_id);
@@ -1292,7 +1308,6 @@ void reject_grant_application_evaluator::do_apply(const reject_grant_application
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
     dbs_grant_application& grant_application_service = _db.obtain_service<dbs_grant_application>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     account_service.check_account_existence(op.rejector);
     grant_application_service.check_grant_application_existence(op.grant_application_id);
@@ -1310,6 +1325,52 @@ void reject_grant_application_evaluator::do_apply(const reject_grant_application
 
     FC_ASSERT(op_is_allowed, "This account cannot reject grant applications");
     grant_application_service.update_grant_application_status(grant_application, grant_application_status::application_rejected);
+}
+
+void create_asset_evaluator::do_apply(const create_asset_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
+
+    account_service.check_account_existence(op.issuer);
+
+    int p = std::pow(10, op.precision);
+    std::string string_asset = "0." + fc::to_string(p).erase(0, 1) + " " + op.symbol;
+    asset new_asset = asset::from_string(string_asset);
+
+    asset_service.create(new_asset.symbol, op.symbol, op.precision, op.issuer, op.name, op.description);
+}
+
+void issue_asset_evaluator::do_apply(const issue_asset_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
+    dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
+
+    account_service.check_account_existence(op.issuer);
+    account_balance_service.adjust_balance(op.issuer, op.amount_to_issue);
+    asset_service.check_existence(op.amount_to_issue.symbol);
+
+    auto& asset_obj = asset_service.get_by_symbol(op.amount_to_issue.symbol);
+
+    asset_service.adjust_current_supply(asset_obj, op.amount_to_issue.amount);
+}
+
+void reserve_asset_evaluator::do_apply(const reserve_asset_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
+    dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
+
+    account_service.check_account_existence(op.balance_owner);
+
+    FC_ASSERT(asset_service.exists_by_symbol(op.amount_to_reserve.symbol), "Asset doesn't exist");
+    auto& _asset_obj = asset_service.get_by_symbol(op.amount_to_reserve.symbol);
+
+    account_balance_service.check_existence_by_owner_and_asset(op.balance_owner, op.amount_to_reserve.symbol);
+    account_balance_service.adjust_balance(op.balance_owner, -op.amount_to_reserve);
+
+    asset_service.adjust_current_supply(_asset_obj, -op.amount_to_reserve.amount);
 }
 
 } // namespace chain

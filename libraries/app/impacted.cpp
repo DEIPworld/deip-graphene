@@ -230,6 +230,26 @@ struct get_impacted_account_visitor
     {
         _impacted.insert(op.buyer);
     }
+
+    void operator()(const create_grant_operation& op)
+    {
+        _impacted.insert(op.owner);
+    }
+
+    void operator()(const create_grant_application_operation& op)
+    {
+        _impacted.insert(op.creator);
+    }
+
+    void operator()(const create_asset_operation& op)
+    {
+        _impacted.insert(op.issuer);
+    }
+
+    void operator()(const issue_asset_operation& op)
+    {
+        _impacted.insert(op.issuer);
+    }
     
     // virtual operations
 

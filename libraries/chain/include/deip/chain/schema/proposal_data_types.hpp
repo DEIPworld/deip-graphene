@@ -84,9 +84,10 @@ struct send_funds_data_type : base_proposal_data_type
     void validate() const
     {
         FC_ASSERT(is_valid_account_name(recipient), "Account name ${n} is invalid", ("n", recipient));
-        FC_ASSERT(funds >= asset(0, DEIP_SYMBOL), "Amount cant be negative");
+        FC_ASSERT(funds > asset(0, DEIP_SYMBOL), "Amount must be greater than 0");
     }
 };
+
 struct rebalance_info
 {
     account_name_type account_name;
@@ -147,13 +148,14 @@ struct start_research_token_sale_data_type : base_proposal_data_type
     fc::time_point_sec start_time;
     fc::time_point_sec end_time;
     share_type amount_for_sale;
-    protocol::asset soft_cap;
-    protocol::asset hard_cap;
+    asset soft_cap;
+    asset hard_cap;
 
     void validate() const {
         FC_ASSERT(amount_for_sale > 0, "Research tokens for sale amount should be > 0");
-        FC_ASSERT(soft_cap > asset(0, DEIP_SYMBOL), "Soft cap should be > 0");
-        FC_ASSERT(hard_cap > asset(0, DEIP_SYMBOL), "Hard cap should be > 0");
+        FC_ASSERT(soft_cap.amount > 0, "Soft cap should be > 0");
+        FC_ASSERT(hard_cap.amount > 0, "Hard cap should be > 0");
+        FC_ASSERT(soft_cap.symbol == hard_cap.symbol, "Assets doesn't match.");
         FC_ASSERT(hard_cap > soft_cap, "Hard cap should be greater than soft cap");
         FC_ASSERT(end_time > start_time, "End time should be greater than start time");
     }
@@ -178,7 +180,7 @@ struct offer_research_tokens_data_type : base_proposal_data_type
     research_id_type research_id;
 
     uint32_t amount;
-    protocol::asset price;
+    asset price;
 
     void validate() const {
         FC_ASSERT(is_valid_account_name(sender), "Account name ${n} is invalid", ("n", sender));

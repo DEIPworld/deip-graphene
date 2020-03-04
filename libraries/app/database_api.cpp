@@ -18,6 +18,7 @@
 #include <cfenv>
 #include <iostream>
 
+#include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_research.hpp>
@@ -2692,6 +2693,22 @@ std::map<discipline_id_type, share_type> database_api::calculate_review_weight(c
     return my->_db.with_read_lock([&]() {
         chain::dbs_review& review_service = my->_db.obtain_service<chain::dbs_review>();
         return review_service.get_eci_weight(review_id);
+    });
+}
+
+asset_api_obj database_api::get_asset(const asset_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_asset& asset_service = my->_db.obtain_service<chain::dbs_asset>();
+        return asset_service.get(id);
+    });
+}
+
+asset_api_obj database_api::get_asset_by_string_symbol(const std::string& string_symbol) const
+{
+    return my->_db.with_read_lock([&]() {
+        chain::dbs_asset& asset_service = my->_db.obtain_service<chain::dbs_asset>();
+        return asset_service.get_by_string_symbol(string_symbol);
     });
 }
 

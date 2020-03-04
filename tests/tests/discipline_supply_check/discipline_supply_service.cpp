@@ -2,6 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 
 #include "database_fixture.hpp"
@@ -23,6 +24,7 @@ public:
     discipline_supply_service_check_fixture()
         : discipline_supply_service(db.obtain_service<dbs_discipline_supply>())
         , account_service(db.obtain_service<dbs_account>())
+        , account_balance_service(db.obtain_service<dbs_account_balance>())
         , public_key(database_fixture::generate_private_key("user private key").get_public_key())
         , fake(account_service.create_account_by_faucets("",
                                                          "initdelegate",
@@ -37,12 +39,13 @@ public:
         , bob(account_service.create_account_by_faucets(
               "bob", "initdelegate", public_key, "", authority(), authority(), authority(), asset(0, DEIP_SYMBOL)))
     {
-        account_service.adjust_balance(alice, asset(ALICE_ACCOUNT_DISCIPLINE_SUPPLY, DEIP_SYMBOL));
-        account_service.adjust_balance(bob, asset(BOB_ACCOUNT_DISCIPLINE_SUPPLY, DEIP_SYMBOL));
+        account_balance_service.adjust_balance(alice.name, asset(ALICE_ACCOUNT_DISCIPLINE_SUPPLY, DEIP_SYMBOL));
+        account_balance_service.adjust_balance(bob.name, asset(BOB_ACCOUNT_DISCIPLINE_SUPPLY, DEIP_SYMBOL));
     }
 
     dbs_discipline_supply& discipline_supply_service;
     dbs_account& account_service;
+    dbs_account_balance& account_balance_service;
     const public_key_type public_key;
     const account_object& fake;
     const account_object& alice;
@@ -89,7 +92,7 @@ DEIP_TEST_CASE(owned_discipline_supply_creation)
 {
     asset balance(DISCIPLINE_SUPPLY_BALANCE_DEFAULT, DEIP_SYMBOL);
 
-    auto reqired_alice_balance = alice.balance.amount;
+    auto reqired_alice_balance = account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount;
 
     const auto& discipline_supply = discipline_supply_service.create_discipline_supply(alice, DISCIPLINE_SUPPLY_BALANCE, START_BLOCK, END_BLOCK,
                                                                TARGET_DISCIPLINE, false, "hash");
@@ -101,14 +104,14 @@ DEIP_TEST_CASE(owned_discipline_supply_creation)
 
     const auto& actual_account = account_service.get_account("alice");
 
-    BOOST_REQUIRE(actual_account.balance.amount == reqired_alice_balance);
+    BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(actual_account.name, DEIP_SYMBOL).amount == reqired_alice_balance);
 }
 
 DEIP_TEST_CASE(second_owned_discipline_supply_creation)
 {
     asset balance(DISCIPLINE_SUPPLY_BALANCE_DEFAULT, DEIP_SYMBOL);
 
-    auto reqired_alice_balance = alice.balance.amount;
+    auto reqired_alice_balance = account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount;
 
     BOOST_CHECK_NO_THROW(
             discipline_supply_service.create_discipline_supply(alice, DISCIPLINE_SUPPLY_BALANCE, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE,
@@ -126,7 +129,7 @@ DEIP_TEST_CASE(second_owned_discipline_supply_creation)
 
     const auto& actual_account = account_service.get_account("alice");
 
-    BOOST_REQUIRE(actual_account.balance.amount == reqired_alice_balance);
+    BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(actual_account.name, DEIP_SYMBOL).amount == reqired_alice_balance);
 }
 
 DEIP_TEST_CASE(owned_discipline_supply_creation_asserts)
@@ -172,7 +175,7 @@ DEIP_TEST_CASE(discipline_supply_creation_limit)
                                                        "hash"));
     }
 
-    BOOST_CHECK(bob.balance.amount == (BOB_ACCOUNT_DISCIPLINE_SUPPLY - DEIP_LIMIT_DISCIPLINE_SUPPLIES_PER_OWNER * balance.amount));
+    BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == (BOB_ACCOUNT_DISCIPLINE_SUPPLY - DEIP_LIMIT_DISCIPLINE_SUPPLIES_PER_OWNER * balance.amount));
 
     BOOST_REQUIRE_THROW(
             discipline_supply_service.create_discipline_supply(bob, balance, START_BLOCK, END_BLOCK, TARGET_DISCIPLINE, false,

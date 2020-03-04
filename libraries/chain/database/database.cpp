@@ -23,6 +23,8 @@
 #include <deip/chain/schema/transaction_object.hpp>
 
 #include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_account_balance.hpp>
+#include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
@@ -475,12 +477,14 @@ const hardfork_property_object& database::get_hardfork_property_object() const
 
 void database::pay_fee(const account_object& account, asset fee)
 {
+    FC_ASSERT(fee.symbol == DEIP_SYMBOL, "Invalid asset type.");
     FC_ASSERT(fee.amount >= 0); /// NOTE if this fails then validate() on some operation is probably wrong
     if (fee.amount == 0)
         return;
 
-    FC_ASSERT(account.balance >= fee);
-    adjust_balance(account, -fee);
+    auto& account_balance_service = obtain_service<dbs_account_balance>();
+
+    account_balance_service.adjust_balance(account.name, -fee);
     adjust_supply(-fee);
 }
 
@@ -975,6 +979,7 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when) const
 void database::process_common_tokens_withdrawals()
 {
     dbs_account& account_service = obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = obtain_service<dbs_account_balance>();
 
     const auto& widx = get_index<account_index>().indices().get<by_next_common_tokens_withdrawal>();
     const auto& didx = get_index<withdraw_common_tokens_route_index>().indices().get<by_withdraw_route>();
@@ -1048,7 +1053,8 @@ void database::process_common_tokens_withdrawals()
 
                 if (to_deposit > 0)
                 {
-                    modify(to_account, [&](account_object& a) { a.balance += converted_deip; });
+                    auto& account_balance = account_balance_service.get_by_owner_and_asset(to_account.name, DEIP_SYMBOL);
+                    modify(account_balance, [&](account_balance_object& ab_o) { ab_o.amount += converted_deip; });
 
                     modify(cprops, [&](dynamic_global_property_object& o) {
                         o.common_tokens_fund -= converted_deip;
@@ -1066,9 +1072,11 @@ void database::process_common_tokens_withdrawals()
 
         share_type converted_deip = to_convert;
 
+        auto& from_account_balance = account_balance_service.get_by_owner_and_asset(from_account.name, DEIP_SYMBOL);
+        modify(from_account_balance, [&](account_balance_object& ab_o) { ab_o.amount += converted_deip; });
+
         modify(from_account, [&](account_object& a) {
             a.common_tokens_balance -= to_withdraw;
-            a.balance += converted_deip;
             a.withdrawn += to_withdraw;
 
             if (a.withdrawn >= a.to_withdraw || a.common_tokens_balance == 0)
@@ -1237,7 +1245,7 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
 
 void database::refund_research_tokens(const research_token_sale_id_type research_token_sale_id)
 {
-    dbs_account& account_service = obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = obtain_service<dbs_account_balance>();
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
 
@@ -1251,7 +1259,7 @@ void database::refund_research_tokens(const research_token_sale_id_type research
 
     while (it != it_end)
     {
-        account_service.adjust_balance(account_service.get_account(it->owner), it->amount);
+        account_balance_service.adjust_balance(it->owner, it->amount);
 
         auto current = it++;
         remove(*current);
@@ -1514,6 +1522,7 @@ asset database::reward_research_token_holders(const research_object &research,
                                               const asset &reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = obtain_service<dbs_account_balance>();
 
     auto research_group_reward = util::calculate_share(reward, research.owned_tokens);
     asset used_reward = asset(0, DEIP_SYMBOL);
@@ -1534,7 +1543,7 @@ asset database::reward_research_token_holders(const research_object &research,
     {
         auto reward_amount = util::calculate_share(reward, it->amount);
         auto& account = account_service.get_account(it->account_name);
-        account_service.adjust_balance(account, reward_amount);
+        account_balance_service.adjust_balance(account.name, reward_amount);
         used_reward += reward_amount;
         ++it;
     }
@@ -1619,6 +1628,7 @@ asset database::reward_review_voters(const review_object &review,
                                           const asset &reward)
 {
     dbs_account& account_service = obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = obtain_service<dbs_account_balance>();
     dbs_vote& vote_service = obtain_service<dbs_vote>();
 
     auto votes_wrapper = vote_service.get_review_votes_by_review_and_discipline(review.id, discipline_id);
@@ -1632,7 +1642,7 @@ asset database::reward_review_voters(const review_object &review,
         auto vote = vote_ref.get();
         auto& voter = account_service.get_account(vote.voter);
         auto reward_amount = util::calculate_share(reward, vote.weight, total_weight);
-        account_service.adjust_balance(voter, reward_amount);
+        account_balance_service.adjust_balance(voter.name, reward_amount);
         used_reward += reward_amount;
     }
 
@@ -1756,6 +1766,7 @@ asset database::allocate_rewards_to_reviews(const std::vector<review_object> &re
 {
     dbs_account& account_service = obtain_service<dbs_account>();
     dbs_expert_token &expert_token_service = obtain_service<dbs_expert_token>();
+    dbs_account_balance& account_balance_service = obtain_service<dbs_account_balance>();
 
     share_type total_reviews_weight = share_type(0);
 
@@ -1779,7 +1790,7 @@ asset database::allocate_rewards_to_reviews(const std::vector<review_object> &re
 
         // Reward author
         auto& author = account_service.get_account(author_name);
-        account_service.adjust_balance(author, author_reward);
+        account_balance_service.adjust_balance(author.name, author_reward);
         used_reward += author_reward;
 
         used_reward += reward_review_voters(review, discipline_id, review_curators_reward_share);
@@ -1979,6 +1990,9 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<make_review_for_application_evaluator>();
     _my->_evaluator_registry.register_evaluator<approve_grant_application_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_grant_application_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_asset_evaluator>();
+    _my->_evaluator_registry.register_evaluator<issue_asset_evaluator>();
+    _my->_evaluator_registry.register_evaluator<reserve_asset_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -2024,7 +2038,8 @@ void database::initialize_indexes()
     add_index<grant_index>();
     add_index<grant_application_index>();
     add_index<grant_application_review_index>();
-    
+    add_index<account_balance_index>();
+    add_index<asset_index>();
     _plugin_index_signal();
 }
 
@@ -2635,20 +2650,6 @@ void database::clear_expired_discipline_supplies()
     discipline_supply_service.clear_expired_discipline_supplies();
 }
 
-void database::adjust_balance(const account_object& a, const asset& delta)
-{
-    modify(a, [&](account_object& acnt) {
-        switch (delta.symbol)
-        {
-        case DEIP_SYMBOL:
-            acnt.balance += delta;
-            break;
-        default:
-            FC_ASSERT(false, "invalid symbol");
-        }
-    });
-}
-
 void database::adjust_supply(const asset& delta, bool adjust_common_token)
 {
     const auto& props = get_dynamic_global_properties();
@@ -2673,15 +2674,17 @@ void database::adjust_supply(const asset& delta, bool adjust_common_token)
     });
 }
 
-asset database::get_balance(const account_object& a, asset_symbol_type symbol) const
+asset database::get_balance(const account_object& a,const protocol::asset_symbol_type& symbol) const
 {
-    switch (symbol)
-    {
-    case DEIP_SYMBOL:
-        return a.balance;
-    default:
-        FC_ASSERT(false, "invalid symbol");
-    }
+    dbs_asset& asset_service = obtain_service<dbs_asset>();
+    dbs_account_balance& account_balance_service = obtain_service<dbs_account_balance>();
+
+    asset_service.check_existence(symbol);
+    account_balance_service.check_existence_by_owner_and_asset(a.name, symbol);
+
+    auto& balance = account_balance_service.get_by_owner_and_asset(a.name, symbol);
+
+    return balance.to_asset();
 }
 
 void database::init_hardforks(time_point_sec genesis_time)
@@ -2821,6 +2824,7 @@ void database::validate_invariants() const
 {
     try
     {
+        auto& account_balance_service = obtain_service<dbs_account_balance>();
         const auto& account_idx = get_index<account_index>().indices().get<by_name>();
         asset total_supply = asset(0, DEIP_SYMBOL);
         share_type total_common_tokens_amount = share_type(0);
@@ -2837,7 +2841,8 @@ void database::validate_invariants() const
 
         for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr)
         {
-            total_supply += itr->balance;
+            auto& balance = account_balance_service.get_by_owner_and_asset(itr->name, DEIP_SYMBOL);
+            total_supply += balance.to_asset();
             total_common_tokens_amount += itr->common_tokens_balance;
             total_expert_tokens_amount += itr->expertise_tokens_balance;
             

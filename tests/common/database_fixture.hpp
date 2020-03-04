@@ -5,6 +5,7 @@
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/genesis_state.hpp>
 #include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_grant.hpp>
@@ -38,6 +39,7 @@ using namespace deip::protocol;
 void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state);
 void create_initdelegate_expert_tokens_for_genesis_state(genesis_state_type& genesis_state);
 void create_disciplines_for_genesis_state(genesis_state_type& genesis_state);
+void create_commitee_for_genesis_state(genesis_state_type& genesis_state);
 
 struct database_fixture
 {

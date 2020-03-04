@@ -25,7 +25,6 @@ namespace deip {
 namespace chain {
 
 using deip::protocol::asset;
-using deip::protocol::asset_symbol_type;
 using deip::protocol::authority;
 using deip::protocol::operation;
 using deip::protocol::price;
@@ -309,8 +308,8 @@ public:
 
     void adjust_supply(const asset& delta, bool adjust_common_token = false);
 
-    asset get_balance(const account_object& a, asset_symbol_type symbol) const override;
-    asset get_balance(const string& aname, asset_symbol_type symbol) const override
+    asset get_balance(const account_object& a, const protocol::asset_symbol_type& symbol) const override;
+    asset get_balance(const string& aname, const protocol::asset_symbol_type& symbol) const override
     {
         return get_balance(get_account(aname), symbol);
     }
@@ -418,8 +417,6 @@ public:
     }
 
 private:
-    void adjust_balance(const account_object& a, const asset& delta);
-
     void _reset_virtual_schedule_time();
 
     void _update_median_witness_props();
@@ -465,6 +462,8 @@ protected:
     ///@}
 
     void init_genesis_accounts(const genesis_state_type& genesis_state);
+    void init_genesis_assets(const genesis_state_type& genesis_state);
+    void init_genesis_account_balances(const genesis_state_type& genesis_state);
     void init_genesis_witnesses(const genesis_state_type& genesis_state);
     void init_genesis_witness_schedule(const genesis_state_type& genesis_state);
     void init_genesis_global_property_object(const genesis_state_type& genesis_state);
@@ -475,6 +474,7 @@ protected:
     void init_research_groups(const genesis_state_type& genesis_state);
     void init_personal_research_groups(const genesis_state_type& genesis_state);
     void init_genesis_vesting_balances(const genesis_state_type& genesis_state);
+    void init_committees(const genesis_state_type& genesis_state);
 
 
 private:

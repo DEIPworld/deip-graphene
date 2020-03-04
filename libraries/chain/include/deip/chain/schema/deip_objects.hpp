@@ -12,7 +12,6 @@ namespace deip {
 namespace chain {
 
 using deip::protocol::asset;
-using deip::protocol::asset_symbol_type;
 using deip::protocol::price;
 
 typedef fc::fixed_string_16 reward_fund_name_type;
