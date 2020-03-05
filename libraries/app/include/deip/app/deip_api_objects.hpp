@@ -115,7 +115,7 @@ struct account_api_obj
         while (it != it_end)
         {
             const account_balance_object& account_balance = std::cref(*it).get();
-            balances.push_back(account_balance.to_asset());
+            balances.push_back(asset(account_balance.amount, account_balance.symbol));
             ++it;
         }
     }
@@ -1166,6 +1166,26 @@ struct asset_api_obj
     share_type current_supply;
 };
 
+struct account_balance_api_obj
+{
+    account_balance_api_obj(const chain::account_balance_object& ab_o)
+        : id(ab_o.id._id)
+        , asset_id(ab_o.asset_id._id)
+        , owner(ab_o.owner)
+        , amount(asset(ab_o.amount, ab_o.symbol))
+    {}
+
+    // because fc::variant require for temporary object
+    account_balance_api_obj()
+    {
+    }
+
+    int64_t id;
+
+    int64_t asset_id;
+    account_name_type owner;
+    asset amount;
+};
 
 }; // namespace app
 } // namespace deip
@@ -1539,4 +1559,10 @@ FC_REFLECT( deip::app::asset_api_obj,
             (current_supply)
 )
 
+FC_REFLECT( deip::app::account_balance_api_obj,
+            (id)
+            (asset_id)
+            (owner)
+            (amount)
+)
 // clang-format on

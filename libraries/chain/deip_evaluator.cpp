@@ -204,7 +204,7 @@ void transfer_evaluator::do_apply(const transfer_operation& o)
 
     auto from_balance = account_balance_service.get_by_owner_and_asset(o.from, o.amount.symbol);
 
-    FC_ASSERT(from_balance.to_asset() >= o.amount, "Account does not have sufficient funds for transfer.");
+    FC_ASSERT(asset(from_balance.amount, from_balance.symbol) >= o.amount, "Account does not have sufficient funds for transfer.");
 
     account_balance_service.adjust_balance(o.from, -o.amount);
     account_balance_service.adjust_balance(o.to, o.amount);

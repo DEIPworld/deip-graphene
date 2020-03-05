@@ -2684,7 +2684,7 @@ asset database::get_balance(const account_object& a,const protocol::asset_symbol
 
     auto& balance = account_balance_service.get_by_owner_and_asset(a.name, symbol);
 
-    return balance.to_asset();
+    return asset(balance.amount, balance.symbol);
 }
 
 void database::init_hardforks(time_point_sec genesis_time)
@@ -2842,7 +2842,7 @@ void database::validate_invariants() const
         for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr)
         {
             auto& balance = account_balance_service.get_by_owner_and_asset(itr->name, DEIP_SYMBOL);
-            total_supply += balance.to_asset();
+            total_supply += asset(balance.amount, balance.symbol);
             total_common_tokens_amount += itr->common_tokens_balance;
             total_expert_tokens_amount += itr->expertise_tokens_balance;
             
@@ -2888,8 +2888,6 @@ void database::validate_invariants() const
         {
             total_supply += itr->amount;
         }
-
-        total_supply +=  gpo.common_tokens_fund;
 
         FC_ASSERT(gpo.current_supply == total_supply, "",
                   ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));

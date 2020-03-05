@@ -5068,7 +5068,7 @@ BOOST_AUTO_TEST_CASE(issue_asset_test)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        auto& account_balance_1 = db.get<account_balance_object, by_owner_and_asset>(boost::make_tuple(op.issuer, op.amount_to_issue.symbol));
+        auto& account_balance_1 = db.get<account_balance_object, by_owner_and_asset_symbol>(boost::make_tuple(op.issuer, op.amount_to_issue.symbol));
 
         BOOST_CHECK(account_balance_1.owner == "alice");
         BOOST_CHECK(account_balance_1.asset_id == 1);
@@ -5109,7 +5109,7 @@ BOOST_AUTO_TEST_CASE(issue_asset_test)
         tx4.validate();
         db.push_transaction(tx4, 0);
 
-        auto& account_balance_2 = db.get<account_balance_object, by_owner_and_asset>(boost::make_tuple(op4.issuer, op4.amount_to_issue.symbol));
+        auto& account_balance_2 = db.get<account_balance_object, by_owner_and_asset_symbol>(boost::make_tuple(op4.issuer, op4.amount_to_issue.symbol));
 
         BOOST_CHECK(account_balance_2.owner == "bob");
         BOOST_CHECK(account_balance_2.asset_id == 2);

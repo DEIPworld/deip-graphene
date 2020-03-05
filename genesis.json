@@ -1,11 +1,10 @@
 {
   "initial_timestamp": "2020-02-14T11:00:00",
-  "init_supply": 1010000000000,
+  "init_supply": 1000000000000,
   "registrar_account": {
     "name": "regacc",
     "recovery_account": "",
     "public_key": "DEIP7jYZtDq39GUoHafoLg72myPhGN8a9QKWJE2GgnAuYjQnhp9mTa",
-    "deip_amount": 52000000000,
     "common_tokens_amount": 10000000000
   },
   "accounts": [
@@ -122,19 +121,11 @@
   ],
   "assets": [
     {
-      "id": 0,
-      "symbol": "DEIP",
-      "precision": 3,
-      "current_supply": 1000000000000
-    },
-    {
-      "id": 1,
       "symbol": "USD",
       "precision": 2,
       "current_supply": 0
     },
     {
-      "id": 2,
       "symbol": "EUR",
       "precision": 2,
       "current_supply": 0
@@ -142,112 +133,94 @@
   ],
   "account_balances": [
     {
-      "asset_id": 0,
+      "owner": "regacc",
+      "amount": 52000000000
+    },
+    {
       "owner": "initdelegate",
       "amount": 0
     },
     {
-      "asset_id": 0,
       "owner": "alice",
       "amount": 30000000000
     },
     {
-      "asset_id": 0,
       "owner": "bob",
       "amount": 30000000000
     },
     {
-      "asset_id": 0,
       "owner": "mike",
       "amount": 40000000000
     },
     {
-      "asset_id": 0,
       "owner": "john",
       "amount": 40000000000
     },
     {
-      "asset_id": 0,
       "owner": "rachel",
       "amount": 40000000000
     },
     {
-      "asset_id": 0,
       "owner": "james",
       "amount": 50000000000
     },
     {
-      "asset_id": 0,
       "owner": "rick",
       "amount": 100000000000
     },
     {
-      "asset_id": 0,
       "owner": "alex",
       "amount": 40000000000
     },
     {
-      "asset_id": 0,
       "owner": "anastasia",
       "amount": 50000000000
     },
     {
-      "asset_id": 0,
       "owner": "nick",
       "amount": 50000000000
     },
     {
-      "asset_id": 0,
       "owner": "carla",
       "amount": 50000000000
     },
     {
-      "asset_id": 0,
       "owner": "irene",
       "amount": 50000000000
     },
     {
-      "asset_id": 0,
       "owner": "sherlock",
       "amount": 250000000000
     },
     {
-      "asset_id": 0,
       "owner": "greg",
       "amount": 50000000000
     },
     {
-      "asset_id": 0,
       "owner": "dorothy",
       "amount": 24990000000
     },
     {
-      "asset_id": 0,
       "owner": "arty",
       "amount": 2000000000
     },
     {
-      "asset_id": 0,
       "owner": "akulik",
       "amount": 2000000000
     },
     {
-      "asset_id": 0,
       "owner": "shkor",
       "amount": 10000000000
     },
     {
-      "asset_id": 0,
       "owner": "yahortsaryk",
       "amount": 20000000000
     },
     {
-      "asset_id": 0,
       "owner": "egormarushko",
       "amount": 15000000000
     },
     {
-      "asset_id": 0,
       "owner": "hermes",
       "amount": 4010000000
     }

@@ -56,10 +56,9 @@ void db_setup_and_open(database& db, const fc::path& path)
     auto registrar = genesis_state_type::registrar_account_type();
     registrar.name = DEIP_REGISTRAR_ACCOUNT_NAME;
     registrar.public_key = public_key_type();
-    registrar.deip_amount = 0;
     genesis.registrar_account = registrar;
 
-    genesis.assets.push_back({ 0, "TESTS", 3});
+    genesis.assets.push_back({ "TESTS", 3, 0 });
 
     create_disciplines_for_genesis_state(genesis);
     create_initdelegate_for_genesis_state(genesis);
@@ -373,8 +372,8 @@ BOOST_AUTO_TEST_CASE(duplicate_transactions)
 
         DEIP_CHECK_THROW(PUSH_TX(db1, trx, skip_sigs), fc::exception);
         DEIP_CHECK_THROW(PUSH_TX(db2, trx, skip_sigs), fc::exception);
-        BOOST_CHECK_EQUAL((db1.get<account_balance_object, by_owner_and_asset>(std::make_tuple("alice", DEIP_SYMBOL)).amount.value), 500);
-        BOOST_CHECK_EQUAL((db2.get<account_balance_object, by_owner_and_asset>(std::make_tuple("alice", DEIP_SYMBOL)).amount.value), 500);
+        BOOST_CHECK_EQUAL((db1.get<account_balance_object, by_owner_and_asset_symbol>(std::make_tuple("alice", DEIP_SYMBOL)).amount.value), 500);
+        BOOST_CHECK_EQUAL((db2.get<account_balance_object, by_owner_and_asset_symbol>(std::make_tuple("alice", DEIP_SYMBOL)).amount.value), 500);
     }
     catch (fc::exception& e)
     {

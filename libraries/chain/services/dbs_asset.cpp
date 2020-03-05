@@ -38,10 +38,7 @@ bool dbs_asset::exists_by_symbol(const protocol::asset_symbol_type& symbol) cons
 {
     const auto& idx = db_impl().get_index<asset_index>().indices().get<by_symbol>();
     auto itr = idx.find(symbol);
-    if (itr != idx.end())
-        return true;
-    else
-        return false;
+    return itr != idx.end();
 }
 
 void dbs_asset::check_existence(const protocol::asset_symbol_type& symbol) const

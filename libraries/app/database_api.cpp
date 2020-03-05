@@ -18,6 +18,7 @@
 #include <cfenv>
 #include <iostream>
 
+#include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
@@ -160,14 +161,21 @@ public:
 
     // Offer research tokens
     fc::optional<offer_research_tokens_api_obj> get_offer(const offer_research_tokens_id_type& id) const;
-    fc::optional<offer_research_tokens_api_obj> get_offer_by_receiver_and_research_id(const account_name_type& receiver,
-                                                                                      const research_id_type& research_id) const;
+    fc::optional<offer_research_tokens_api_obj> get_offer_by_receiver_and_research_id(const account_name_type& receiver, const research_id_type& research_id) const;
 
     // Grants
     fc::optional<grant_api_obj> get_grant(const grant_id_type& id) const;
 
     // Grant applications
     fc::optional<grant_application_api_obj> get_grant_application(const grant_application_id_type& id) const;
+
+    // Assets
+    fc::optional<asset_api_obj> get_asset(const asset_id_type& id) const;
+    fc::optional<asset_api_obj> get_asset_by_string_symbol(const std::string& string_symbol) const;
+
+    // Account balances
+    fc::optional<account_balance_api_obj> get_account_balance(const account_balance_id_type& id) const;
+    fc::optional<account_balance_api_obj> get_account_balance_by_owner_and_asset_symbol(const account_name_type& owner, const string& symbol) const;
 
     // Authority / validation
     std::string get_transaction_hex(const signed_transaction& trx) const;
@@ -2451,7 +2459,7 @@ vector<offer_research_tokens_api_obj> database_api::get_offers_by_receiver(const
 fc::optional<offer_research_tokens_api_obj> database_api::get_offer_by_receiver_and_research_id(const account_name_type& receiver,
                                                                                                 const research_id_type& research_id) const
 {
-    my->_db.with_read_lock([&]() { return my->get_offer_by_receiver_and_research_id(receiver, research_id); });
+  return my->_db.with_read_lock([&]() { return my->get_offer_by_receiver_and_research_id(receiver, research_id); });
 }
 
 fc::optional<offer_research_tokens_api_obj> database_api_impl::get_offer_by_receiver_and_research_id(const account_name_type& receiver,
@@ -2554,7 +2562,7 @@ eci_and_expertise_stats_api_obj database_api::get_eci_and_expertise_stats_by_dis
 
 fc::optional<grant_api_obj> database_api::get_grant(const grant_id_type& id) const
 {
-    my->_db.with_read_lock([&]() { return my->get_grant(id); });
+  return my->_db.with_read_lock([&]() { return my->get_grant(id); });
 }
 
 fc::optional<grant_api_obj> database_api_impl::get_grant(const grant_id_type& id) const
@@ -2629,7 +2637,7 @@ set<string> database_api_impl::lookup_grant_owners(const string& lower_bound_nam
 
 fc::optional<grant_application_api_obj> database_api::get_grant_application(const grant_application_id_type& id) const
 {
-    my->_db.with_read_lock([&]() { return my->get_grant_application(id); });
+  return my->_db.with_read_lock([&]() { return my->get_grant_application(id); });
 }
 
 fc::optional<grant_application_api_obj> database_api_impl::get_grant_application(const grant_application_id_type& id) const
@@ -2638,8 +2646,8 @@ fc::optional<grant_application_api_obj> database_api_impl::get_grant_application
     auto itr = idx.find(id);
     if (itr != idx.end())
         return *itr;
-
-    return {};
+    else
+        return {};
 }
 
 vector<grant_application_api_obj> database_api::get_grant_applications_by_grant(const grant_id_type& grant_id) const
@@ -2696,20 +2704,80 @@ std::map<discipline_id_type, share_type> database_api::calculate_review_weight(c
     });
 }
 
-asset_api_obj database_api::get_asset(const asset_id_type& id) const
+fc::optional<asset_api_obj> database_api::get_asset(const asset_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_asset(id); });
+}
+
+fc::optional<asset_api_obj> database_api_impl::get_asset(const asset_id_type& id) const
+{
+    const auto& idx = _db.get_index<asset_index>().indices().get<by_id>();
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+        return *itr;
+
+    return {};
+}
+
+fc::optional<asset_api_obj> database_api::get_asset_by_string_symbol(const std::string& string_symbol) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_asset_by_string_symbol(string_symbol); });
+}
+
+fc::optional<asset_api_obj> database_api_impl::get_asset_by_string_symbol(const std::string& string_symbol) const
+{
+    const auto& idx = _db.get_index<asset_index>().indices().get<by_string_symbol>();
+    auto itr = idx.find(string_symbol, fc::strcmp_less());
+    if (itr != idx.end())
+        return *itr;
+
+    return {};
+}
+
+fc::optional<account_balance_api_obj> database_api::get_account_balance(const account_balance_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_account_balance(id); });
+}
+
+fc::optional<account_balance_api_obj> database_api_impl::get_account_balance(const account_balance_id_type& id) const
+{
+    const auto& idx = _db.get_index<account_balance_index>().indicies().get<by_id>();
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+        return *itr;
+
+    return {};
+}
+
+vector<account_balance_api_obj> database_api::get_account_balances_by_owner(const account_name_type& owner) const
 {
     return my->_db.with_read_lock([&]() {
-        chain::dbs_asset& asset_service = my->_db.obtain_service<chain::dbs_asset>();
-        return asset_service.get(id);
+        vector<account_balance_api_obj> results;
+        chain::dbs_account_balance& account_balance_service
+                = my->_db.obtain_service<chain::dbs_account_balance>();
+
+        auto account_balances = account_balance_service.get_by_owner(owner);
+
+        for (const chain::account_balance_object& account_balance : account_balances)
+            results.push_back(account_balance);
+
+        return results;
     });
 }
 
-asset_api_obj database_api::get_asset_by_string_symbol(const std::string& string_symbol) const
+fc::optional<account_balance_api_obj> database_api::get_account_balance_by_owner_and_asset_symbol(const account_name_type& owner, const string& symbol) const
 {
-    return my->_db.with_read_lock([&]() {
-        chain::dbs_asset& asset_service = my->_db.obtain_service<chain::dbs_asset>();
-        return asset_service.get_by_string_symbol(string_symbol);
-    });
+    return my->_db.with_read_lock([&]() { return my->get_account_balance_by_owner_and_asset_symbol(owner, symbol); });
+}
+
+fc::optional<account_balance_api_obj> database_api_impl::get_account_balance_by_owner_and_asset_symbol(const account_name_type& owner, const string& symbol) const
+{
+    const auto& idx = _db.get_index<account_balance_index>().indicies().get<by_owner_and_asset_string_symbol>();
+    auto itr = idx.find(std::make_tuple(owner, symbol));
+    if (itr != idx.end())
+        return *itr;
+
+    return {};
 }
 
 } // namespace app

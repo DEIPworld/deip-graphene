@@ -16,11 +16,12 @@ const account_balance_object& dbs_account_balance::create(const account_name_typ
                                                           const protocol::asset_symbol_type& symbol,
                                                           const share_type& amount)
 {
-    auto& _asset_obj = db_impl().get<asset_object, by_symbol>(symbol);
+    const auto& asset_obj = db_impl().get<asset_object, by_symbol>(symbol);
     auto& account_balance = db_impl().create<account_balance_object>([&](account_balance_object& account_balance) {
         account_balance.owner = owner;
-        account_balance.asset_id = _asset_obj.id;
+        account_balance.asset_id = asset_obj.id;
         account_balance.symbol = symbol;
+        fc::from_string(account_balance.string_symbol, fc::to_string(asset_obj.string_symbol));
         account_balance.amount = amount;
     });
 
@@ -32,15 +33,10 @@ const account_balance_object& dbs_account_balance::get(const account_balance_id_
     return db_impl().get<account_balance_object>(id);
 }
 
-bool dbs_account_balance::exists_by_owner_and_asset(const account_name_type& owner,
-                                                       const protocol::asset_symbol_type& symbol) const
+bool dbs_account_balance::exists_by_owner_and_asset(const account_name_type& owner, const protocol::asset_symbol_type& symbol) const
 {
-    const auto& idx = db_impl().get_index<account_balance_index>().indices().get<by_owner_and_asset>();
-
-    if (idx.find(boost::make_tuple(owner, symbol)) != idx.cend())
-        return true;
-    else
-        return false;
+    const auto& idx = db_impl().get_index<account_balance_index>().indices().get<by_owner_and_asset_symbol>();
+    return idx.find(boost::make_tuple(owner, symbol)) != idx.cend();
 }
 
 dbs_account_balance::account_balance_refs_type dbs_account_balance::get_by_owner(const account_name_type& owner)
@@ -68,7 +64,7 @@ void dbs_account_balance::check_existence(const account_balance_id_type &id) con
 void dbs_account_balance::check_existence_by_owner_and_asset(const account_name_type& owner,
                                                              const protocol::asset_symbol_type& symbol) const
 {
-    const auto& idx = db_impl().get_index<account_balance_index>().indices().get<by_owner_and_asset>();
+    const auto& idx = db_impl().get_index<account_balance_index>().indices().get<by_owner_and_asset_symbol>();
     FC_ASSERT(idx.find(std::make_tuple(owner, symbol)) != idx.cend(), "Account balance \"${1}\" with \"${2}\" asset does not exist.", ("1", owner)("2", symbol));
 }
 
@@ -80,8 +76,15 @@ void dbs_account_balance::remove(const account_balance_object& account_balance)
 const account_balance_object& dbs_account_balance::get_by_owner_and_asset(const account_name_type& owner,
                                                                           const protocol::asset_symbol_type& symbol) const
 {
-    return db_impl().get<account_balance_object, by_owner_and_asset>(boost::make_tuple(owner, symbol));
+    return db_impl().get<account_balance_object, by_owner_and_asset_symbol>(boost::make_tuple(owner, symbol));
 }
+
+const account_balance_object& dbs_account_balance::get_by_owner_and_asset(const account_name_type& owner,
+                                                                          const string& symbol) const
+{
+    return db_impl().get<account_balance_object, by_owner_and_asset_string_symbol>(boost::make_tuple(owner, symbol));
+}
+
 
 void dbs_account_balance::adjust_balance(const account_name_type& account_name, const asset& delta)
 {

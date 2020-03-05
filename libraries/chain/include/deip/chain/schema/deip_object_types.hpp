@@ -29,6 +29,7 @@ using deip::protocol::chain_id_type;
 using deip::protocol::share_type;
 using deip::protocol::transaction_id_type;
 using deip::protocol::discipline_name_type;
+using deip::protocol::asset_symbol_type;
 
 struct by_id;
 
@@ -94,7 +95,6 @@ class witness_vote_object;
 class hardfork_property_object;
 class operation_object;
 class withdraw_common_tokens_route_object;
-
 class owner_authority_history_object;
 class account_recovery_request_object;
 class change_recovery_account_request_object;
@@ -260,7 +260,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (expertise_stats_object_type)
                  (offer_research_tokens_object_type)
                  (grant_object_type)
-                 
                  (grant_application_object_type)
                  (grant_application_review_object_type)
                  (account_balance_object_type)
