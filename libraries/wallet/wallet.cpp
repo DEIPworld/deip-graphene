@@ -2572,8 +2572,7 @@ annotated_signed_transaction wallet_api::create_research_group(const std::string
                                                                const std::string& name,
                                                                const std::string& permlink,
                                                                const std::string& description,
-                                                               const int64_t& quorum_percent,
-                                                               const bool& is_dao,
+                                                               const percent_type& default_quorum,
                                                                const bool broadcast)
 {
     FC_ASSERT(!is_locked());
@@ -2584,8 +2583,6 @@ annotated_signed_transaction wallet_api::create_research_group(const std::string
     op.name = name;
     op.permlink = permlink;
     op.description = description;
-    op.quorum_percent = quorum_percent;    
-    op.is_dao = is_dao;
 
     signed_transaction tx;
     tx.operations.push_back(op);

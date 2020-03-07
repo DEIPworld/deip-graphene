@@ -156,7 +156,7 @@ struct extended_private_key_type
     friend bool operator!=(const extended_private_key_type& p1, const extended_private_key_type& p2);
 };
 
-enum proposal_action_type : uint16_t
+enum research_group_quorum_action : uint16_t
 {
     start_research = 1,
     invite_member = 2,
@@ -171,8 +171,8 @@ enum proposal_action_type : uint16_t
     change_research_group_meta = 11,
     change_research_meta = 12,
 
-    First_proposal = start_research,
-    Last_proposal = change_research_meta
+    FIRST_ACTION_QUORUM_TYPE = start_research,
+    LAST_ACTION_QUORUM_TYPE = change_research_meta
 };
 
 enum proposal_life_time_type
@@ -180,6 +180,8 @@ enum proposal_life_time_type
     day,
     week
 };
+
+typedef uint32_t percent_type;
 
 } // namespace protocol
 } // namespace deip
@@ -202,7 +204,8 @@ FC_REFLECT(deip::protocol::extended_private_key_type::binary_key, (check)(data))
 
 
 
-FC_REFLECT_ENUM(deip::protocol::proposal_action_type,   (start_research)
+FC_REFLECT_ENUM(deip::protocol::research_group_quorum_action,
+                                                        (start_research)
                                                         (invite_member)
                                                         (dropout_member)
                                                         (send_funds)

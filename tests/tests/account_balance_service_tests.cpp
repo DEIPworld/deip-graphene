@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(get_by_owner)
         auto account_balances = data_service.get_by_owner("alice");
 
         BOOST_CHECK(account_balances.size() == 2);
-        BOOST_CHECK(std::any_of(account_balances.begin(), account_balances.end(), [this](std::reference_wrapper<const account_balance_object> wrapper){
+        BOOST_CHECK(std::any_of(account_balances.begin(), account_balances.end(), [=](std::reference_wrapper<const account_balance_object> wrapper){
             const account_balance_object& account_balance = wrapper.get();
 
             return  account_balance.id == 30 &&
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(get_by_owner)
                     account_balance.amount == 5000;
         }));
 
-        BOOST_CHECK(std::any_of(account_balances.begin(), account_balances.end(), [this](std::reference_wrapper<const account_balance_object> wrapper){
+        BOOST_CHECK(std::any_of(account_balances.begin(), account_balances.end(), [=](std::reference_wrapper<const account_balance_object> wrapper){
             const account_balance_object& account_balance = wrapper.get();
 
             return  account_balance.id == 31 &&

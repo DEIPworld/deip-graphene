@@ -27,7 +27,7 @@ public:
     fc::time_point_sec expiration_time;
     fc::shared_string cover_letter;
     account_name_type token_source;
-
+    bool is_head;
 };
 
 struct by_account_name;
@@ -68,8 +68,14 @@ typedef multi_index_container<research_group_invite_object,
     } // namespace chain
 } // namespace deip
 
-
-
-FC_REFLECT(deip::chain::research_group_invite_object, (id)(account_name)(research_group_id)(research_group_token_amount)(expiration_time)(cover_letter)(token_source))
+FC_REFLECT(deip::chain::research_group_invite_object,
+  (id)
+  (account_name)
+  (research_group_id)
+  (research_group_token_amount)
+  (expiration_time)
+  (cover_letter)
+  (token_source)
+  (is_head))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_group_invite_object, deip::chain::research_group_invite_index)

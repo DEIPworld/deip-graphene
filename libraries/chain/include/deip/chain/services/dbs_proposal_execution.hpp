@@ -41,7 +41,7 @@ public:
     class proposal_evaluators_register
     {
     public:
-        void set(proposal_action_type action, evaluator_callback callback)
+        void set(research_group_quorum_action action, evaluator_callback callback)
         {
             _register.insert(std::make_pair(action, callback));
         }
@@ -59,13 +59,10 @@ public:
         }
 
     private:
-        fc::flat_map<proposal_action_type, evaluator_callback> _register;
+        fc::flat_map<research_group_quorum_action, evaluator_callback> _register;
     };
 
-    void execute_proposal(const proposal_object& proposal)
-    {
-        executions.execute(proposal);
-    }
+    const proposal_object& execute_proposal(const proposal_object& proposal);
 
 protected:
     explicit dbs_proposal_execution(database &db);

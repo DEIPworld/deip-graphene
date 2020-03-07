@@ -472,8 +472,8 @@ public:
     set<string> lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const;
 
     /////////////////////////
-    // Grant applications///
-    ////////////////////////
+    // Grant applications////
+    /////////////////////////
 
     fc::optional<grant_application_api_obj> get_grant_application(const grant_application_id_type& id) const;
     vector<grant_application_api_obj> get_grant_applications_by_grant(const grant_id_type& grant_id) const;
@@ -484,20 +484,30 @@ public:
     std::map<discipline_id_type, share_type> calculate_research_content_eci(const research_content_id_type& research_content_id) const;
     std::map<discipline_id_type, share_type> calculate_review_weight(const review_id_type& review_id) const;
 
-    /////////////
-    // Assets///
+    ////////////
+    // Assets //
     ////////////
 
     fc::optional<asset_api_obj> get_asset(const asset_id_type& id) const;
     fc::optional<asset_api_obj> get_asset_by_string_symbol(const std::string& string_symbol) const;
 
     //////////////////////
-    // Account balances///
-    /////////////////////
+    // Account balances //
+    //////////////////////
 
     fc::optional<account_balance_api_obj> get_account_balance(const account_balance_id_type& id) const;
     vector<account_balance_api_obj> get_account_balances_by_owner(const account_name_type& owner) const;
     fc::optional<account_balance_api_obj> get_account_balance_by_owner_and_asset_symbol(const account_name_type& owner, const string& symbol) const;
+
+    //////////////////////////////
+    // Organizational contracts //
+    //////////////////////////////
+
+    fc::optional<research_group_organization_contract_api_obj> get_organizational_contract(const research_group_organization_contract_id_type& id) const;
+    fc::optional<research_group_organization_contract_api_obj> get_organizational_contract_by_organization_and_research_group_and_type(const research_group_id_type& organization_id, const research_group_id_type& research_group_id, const uint16_t& type) const;
+    vector<research_group_organization_contract_api_obj> get_organizational_contracts_by_research_group(const research_group_id_type& research_group_id) const;
+    vector<research_group_organization_contract_api_obj> get_organizational_contracts_by_organization(const research_group_id_type& organization_id) const;
+
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -715,6 +725,11 @@ FC_API(deip::app::database_api,
    (get_account_balance)
    (get_account_balances_by_owner)
    (get_account_balance_by_owner_and_asset_symbol)
+
+   (get_organizational_contract)
+   (get_organizational_contract_by_organization_and_research_group_and_type)
+   (get_organizational_contracts_by_organization)
+   (get_organizational_contracts_by_research_group)
 )
 
 // clang-format on

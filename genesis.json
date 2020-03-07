@@ -1,11 +1,11 @@
 {
   "initial_timestamp": "2020-02-14T11:00:00",
-  "init_supply": 1000000000000,
+  "init_supply": 2000000000000,
   "registrar_account": {
     "name": "regacc",
     "recovery_account": "",
     "public_key": "DEIP7jYZtDq39GUoHafoLg72myPhGN8a9QKWJE2GgnAuYjQnhp9mTa",
-    "common_tokens_amount": 10000000000
+    "common_tokens_amount": 1000000000000
   },
   "accounts": [
     {
@@ -123,18 +123,28 @@
     {
       "symbol": "USD",
       "precision": 2,
-      "current_supply": 0
+      "current_supply": 115000000000
     },
     {
       "symbol": "EUR",
       "precision": 2,
-      "current_supply": 0
+      "current_supply": 115000000000
     }
   ],
   "account_balances": [
     {
       "owner": "regacc",
       "amount": 52000000000
+    },
+    {
+      "owner": "regacc",
+      "amount": 100000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "regacc",
+      "amount": 100000000000,
+      "symbol": "EUR"
     },
     {
       "owner": "initdelegate",
@@ -145,60 +155,210 @@
       "amount": 30000000000
     },
     {
+      "owner": "alice",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "alice",
+      "amount": 1000000000,
+      "symbol": "EUR"
+    },
+    {
       "owner": "bob",
       "amount": 30000000000
+    },
+    {
+      "owner": "bob",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "bob",
+      "amount": 1000000000,
+      "symbol": "EUR"
     },
     {
       "owner": "mike",
       "amount": 40000000000
     },
     {
+      "owner": "mike",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "mike",
+      "amount": 1000000000,
+      "symbol": "EUR"
+    },
+    {
       "owner": "john",
       "amount": 40000000000
+    },
+    {
+      "owner": "john",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "john",
+      "amount": 1000000000,
+      "symbol": "EUR"
     },
     {
       "owner": "rachel",
       "amount": 40000000000
     },
     {
+      "owner": "rachel",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "rachel",
+      "amount": 1000000000,
+      "symbol": "EUR"
+    },
+    {
       "owner": "james",
       "amount": 50000000000
+    },
+    {
+      "owner": "james",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "james",
+      "amount": 1000000000,
+      "symbol": "EUR"
     },
     {
       "owner": "rick",
       "amount": 100000000000
     },
     {
+      "owner": "rick",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "rick",
+      "amount": 1000000000,
+      "symbol": "EUR"
+    },
+    {
       "owner": "alex",
       "amount": 40000000000
+    },
+    {
+      "owner": "alex",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "alex",
+      "amount": 1000000000,
+      "symbol": "EUR"
     },
     {
       "owner": "anastasia",
       "amount": 50000000000
     },
     {
+      "owner": "anastasia",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "anastasia",
+      "amount": 1000000000,
+      "symbol": "EUR"
+    },
+    {
       "owner": "nick",
       "amount": 50000000000
+    },
+    {
+      "owner": "nick",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "nick",
+      "amount": 1000000000,
+      "symbol": "EUR"
     },
     {
       "owner": "carla",
       "amount": 50000000000
     },
     {
+      "owner": "carla",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "carla",
+      "amount": 1000000000,
+      "symbol": "EUR"
+    },
+    {
       "owner": "irene",
       "amount": 50000000000
+    },
+    {
+      "owner": "irene",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "irene",
+      "amount": 1000000000,
+      "symbol": "EUR"
     },
     {
       "owner": "sherlock",
       "amount": 250000000000
     },
     {
+      "owner": "sherlock",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "sherlock",
+      "amount": 1000000000,
+      "symbol": "EUR"
+    },
+    {
       "owner": "greg",
       "amount": 50000000000
     },
     {
+      "owner": "greg",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "greg",
+      "amount": 1000000000,
+      "symbol": "EUR"
+    },
+    {
       "owner": "dorothy",
       "amount": 24990000000
+    },
+    {
+      "owner": "dorothy",
+      "amount": 1000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "dorothy",
+      "amount": 1000000000,
+      "symbol": "EUR"
     },
     {
       "owner": "arty",
@@ -2107,7 +2267,7 @@
       "name": "Syracuse University",
       "description": "Syracuse University is a private research university in Syracuse, New York. The institution's roots can be traced to the Genesee Wesleyan Seminary, founded in 1831 by the Methodist Episcopal Church in Lima, New York.",
       "permlink": "syracuse-university",
-      "quorum_percent": 1000,
+      "default_quorum": 1000,
       "is_personal": false,
       "members": [
         "james",
@@ -2119,7 +2279,7 @@
       "name": "California Institute of Technology",
       "description": "The California Institute of Technology is a private doctorate-granting research university in Pasadena, California. Known for its strength in natural science and engineering, Caltech is often ranked as one of the world's top-ten universities.",
       "permlink": "california-institute-of-technology",
-      "quorum_percent": 1000,
+      "default_quorum": 1000,
       "is_personal": false,
       "members": [
         "sherlock",
@@ -2133,7 +2293,7 @@
       "name": "Columbia University",
       "description": "Columbia University is a private Ivy League research university in New York City. Established in 1754 on the grounds of Trinity Church in Manhattan, Columbia is the oldest institution of higher education in New York and the fifth-oldest institution of higher learning in the United States",
       "permlink": "columbia-university",
-      "quorum_percent": 1000,
+      "default_quorum": 1000,
       "is_personal": false,
       "members": [
         "irene",
@@ -2145,7 +2305,7 @@
       "name": "McGill University",
       "description": "McGill University is a public research university in Montreal, Quebec, Canada. It was established in 1821 by royal charter, granted by King George IV. The university bears the name of James McGill, a Montreal merchant originally from Scotland whose bequest in 1813 formed the university's precursor, McGill College.",
       "permlink": "mcgill-university",
-      "quorum_percent": 1000,
+      "default_quorum": 1000,
       "is_personal": false,
       "members": [
         "james",
@@ -2159,7 +2319,7 @@
       "name": "SUNY at Stony Brook",
       "description": "The State University of New York at Stony Brook, commonly referred to as Stony Brook University or SUNY Stony Brook, is a public sea-grant and space-grant research university in Stony Brook, New York. It is one of four university centers of the State University of New York system.",
       "permlink": "suny-at-stony-brook",
-      "quorum_percent": 1000,
+      "default_quorum": 1000,
       "is_personal": false,
       "members": [
         "dorothy",
@@ -2171,7 +2331,7 @@
       "name": "University of California-Los Angeles",
       "description": "The University of California, Los Angeles is a public research university in Los Angeles. It became the Southern Branch of the University of California in 1919, making it the fourth-oldest of the 10-campus University of California system and oldest of the campuses in Southern California.",
       "permlink": "university-of-california-los-angeles",
-      "quorum_percent": 1000,
+      "default_quorum": 1000,
       "is_personal": false,
       "members": [
         "rachel",
@@ -2183,7 +2343,7 @@
       "name": "University of Houston",
       "description": "The University of Houston is a public research university in Houston, Texas and the main institution of the University of Houston System. Founded in 1927, UH is the third-largest university in Texas with over 46,000 students.",
       "permlink": "university-of-houston",
-      "quorum_percent": 1000,
+      "default_quorum": 1000,
       "is_personal": false,
       "members": [
         "rick",
@@ -2197,7 +2357,7 @@
       "name": "University of Washington",
       "description": "The University of Washington is a public research university in Seattle, Washington. Founded in 1861, Washington was first established in downtown Seattle approximately a decade after the city's founding to aid its economic development.",
       "permlink": "university-of-washington",
-      "quorum_percent": 1000,
+      "default_quorum": 1000,
       "is_personal": false,
       "members": [
         "john",
@@ -2209,7 +2369,7 @@
       "name": "Northwestern University",
       "description": "Northwestern University is a private research university based in Evanston, Illinois, United States, with other campuses located in Chicago and Doha, Qatar, and academic programs and facilities in Miami, Florida; Washington, D.C.; and San Francisco, California.",
       "permlink": "northwestern-university",
-      "quorum_percent": 1000,
+      "default_quorum": 1000,
       "is_personal": false,
       "members": [
         "nick",
@@ -2221,7 +2381,7 @@
       "name": "Cornell University",
       "description": "Cornell University is a private and statutory Ivy League research university in Ithaca, New York. Founded in 1865 by Ezra Cornell and Andrew Dickson White, the university was intended to teach and make contributions in all fields of knowledge—from the classics to the sciences, and from the theoretical to the applied.",
       "permlink": "cornell-university",
-      "quorum_percent": 1000,
+      "default_quorum": 1000,
       "is_personal": false,
       "members": [
         "james",
@@ -2233,7 +2393,7 @@
       "name": "National Oceanic and Atmospheric Administration",
       "description": "The National Oceanic and Atmospheric Administration is an American scientific agency within the United States Department of Commerce that focuses on the conditions of the oceans, major waterways, and the atmosphere.",
       "permlink": "national-oceanic-and-atmospheric-administration",
-      "quorum_percent": 1000,
+      "default_quorum": 1000,
       "is_personal": false,
       "members": [
         "john",
@@ -2245,7 +2405,7 @@
       "name": "William Marsh Rice University",
       "description": "William Marsh Rice University, commonly known as Rice University, is a private research university in Houston, Texas. The university is situated on a 300-acre campus near the Houston Museum District and is adjacent to the Texas Medical Center.",
       "permlink": "william-marsh-rice-university",
-      "quorum_percent": 1000,
+      "default_quorum": 1000,
       "is_personal": false,
       "members": [
         "dorothy",
@@ -2258,7 +2418,7 @@
       "name": "Oregon State University",
       "description": "Oregon State University is a public research university in Corvallis, Oregon. The university offers more than 200 undergraduate degree programs along with a variety of graduate and doctoral degrees. It is also the largest university in the state, with a total enrollment exceeding 28,000.",
       "permlink": "oregon-state-university",
-      "quorum_percent": 5000,
+      "default_quorum": 5000,
       "is_personal": false,
       "members": [
         "alice",
@@ -2270,7 +2430,7 @@
       "name": "University of Minnesota",
       "description": "The University of Minnesota, Twin Cities is a public research university in Minneapolis and Saint Paul, MN. The Twin Cities campus comprises locations in Minneapolis and St. Paul approximately 3 miles apart, and the St. Paul location is in neighboring Falcon Heights.",
       "permlink": "university-of-minnesota",
-      "quorum_percent": 5000,
+      "default_quorum": 5000,
       "is_personal": false,
       "members": [
         "irene",
@@ -2282,7 +2442,7 @@
       "name": "University of Hawaii",
       "description": "The University of Hawaiʻi at Mānoa is a public research university in Mānoa, a neighborhood in Honolulu, Hawaiʻi. It the flagship campus of the University of Hawaiʻi system. Its campus occupies the eastern half of the mouth of Mānoa Valley.",
       "permlink": "university-of-hawaii",
-      "quorum_percent": 5000,
+      "default_quorum": 5000,
       "is_personal": false,
       "members": [
         "carla",
@@ -2294,7 +2454,7 @@
       "name": "Florida State University",
       "description": "Florida State University is a public space-grant and sea-grant research university in Tallahassee, Florida. It is a senior member of the State University System of Florida. Founded in 1851, it is located on the oldest continuous site of higher education in the state of Florida.",
       "permlink": "florida-state-university",
-      "quorum_percent": 5000,
+      "default_quorum": 5000,
       "is_personal": false,
       "members": [
         "mike",
@@ -2306,7 +2466,7 @@
       "name": "The University of Maine",
       "description": "The University of Maine is a public research university in Orono, Maine. The university was established in 1865 as a land grant college and is the flagship university of the University of Maine System. The University of Maine is one of only a few land, sea and space grant institutions in the nation.",
       "permlink": "the-university-of-maine",
-      "quorum_percent": 5000,
+      "default_quorum": 5000,
       "is_personal": false,
       "members": [
         "bob",
@@ -2318,7 +2478,7 @@
       "name": "The University of Delaware",
       "description": "The University of Delaware is a public research university located in Newark, Delaware. The University of Delaware is the largest university in Delaware. UD currently offers three associate's programs, 148 bachelor's programs, 121 master's programs and 55 doctoral programs across its eight colleges.",
       "permlink": "the-university-of-delaware",
-      "quorum_percent": 5000,
+      "default_quorum": 5000,
       "is_personal": false,
       "members": [
         "bob",
@@ -2330,7 +2490,7 @@
       "name": "Woods Hole Research Center",
       "description": "The Woods Hole Research Center is a scientific research organization that studies climate change impacts and solutions. WHRC was named the world's top climate change think tank for 2013, 2014, 2015, and 2016 by the International Center for Climate Governance",
       "permlink": "woods-hole-research-center",
-      "quorum_percent": 5000,
+      "default_quorum": 5000,
       "is_personal": false,
       "members": [
         "alice",
@@ -2342,7 +2502,7 @@
       "name": "Colorado State University",
       "description": "Colorado State University is a public research university in Fort Collins, Colorado. The university is the state's land grant university and the flagship university of the Colorado State University System.",
       "permlink": "colorado-state-university",
-      "quorum_percent": 5000,
+      "default_quorum": 5000,
       "is_personal": false,
       "members": [
         "bob",
@@ -2354,7 +2514,7 @@
       "name": "Montana State University",
       "description": "Montana State University is a public land-grant research university in Bozeman, Montana. It is the state's largest university. MSU offers baccalaureate degrees in 51 fields, master's degrees in 41 fields, and doctoral degrees in 18 fields through its nine colleges.",
       "permlink": "montana-state-university",
-      "quorum_percent": 5000,
+      "default_quorum": 5000,
       "is_personal": false,
       "members": [
         "alice",
@@ -2366,7 +2526,7 @@
       "name": "University of North Carolina at Chapel Hill",
       "description": "The University of North Carolina at Chapel Hill, also known as UNC, UNC-Chapel Hill, North Carolina, Chapel Hill, or simply Carolina is a public research university in Chapel Hill, North Carolina. It is the flagship of the 17 campuses of the University of North Carolina system.",
       "permlink": "university-of-north-carolina-at-chapel-hill",
-      "quorum_percent": 5000,
+      "default_quorum": 5000,
       "is_personal": false,
       "members": [
         "alex",

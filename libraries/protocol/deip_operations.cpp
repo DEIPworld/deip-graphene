@@ -146,32 +146,10 @@ void create_discipline_supply_operation::validate() const
 
 void create_proposal_operation::validate() const
 {
-    validate_enum_value_by_range(action, proposal_action_type::First_proposal, proposal_action_type::Last_proposal);
+    validate_enum_value_by_range(action, research_group_quorum_action::FIRST_ACTION_QUORUM_TYPE, research_group_quorum_action::LAST_ACTION_QUORUM_TYPE);
     validate_account_name(creator);
     FC_ASSERT(expiration_time > fc::time_point_sec());
     FC_ASSERT(fc::is_utf8(data), "Data is not valid UTF8 string");
-}
-
-void create_research_group_operation::validate() const
-{
-    validate_account_name(creator);
-    validate_permlink(permlink);
-    FC_ASSERT(name.size() > 0, "Group name must be specified");
-    FC_ASSERT(fc::is_utf8(name), "Group name is not valid UTF8 string");
-    FC_ASSERT(fc::is_utf8(description), "Description is not valid UTF8 string");
-    FC_ASSERT(quorum_percent >= 5 * DEIP_1_PERCENT && quorum_percent <= DEIP_100_PERCENT, "Default proposal quorum must be in 0% to 100% range");
-    for(auto& quorum_percent : proposal_quorums)
-        FC_ASSERT(quorum_percent.second > 5 * DEIP_1_PERCENT && quorum_percent.second <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
-
-    auto total_tokens_percents = share_type(0);
-    for (auto& invitee : invitees) {
-        validate_account_name(invitee.account);
-        FC_ASSERT(invitee.research_group_tokens_in_percent > 0
-                  && invitee.research_group_tokens_in_percent <= 95 * DEIP_1_PERCENT,
-                  "Invitee should receive 0% to 95% of research group tokens");
-        total_tokens_percents += invitee.research_group_tokens_in_percent;
-    }
-    FC_ASSERT(total_tokens_percents <= 95 * DEIP_1_PERCENT);
 }
 
 void vote_proposal_operation::validate() const

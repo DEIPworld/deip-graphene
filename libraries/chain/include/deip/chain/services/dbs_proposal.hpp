@@ -27,7 +27,7 @@ public:
     using proposal_votes_ref_type = std::vector<std::reference_wrapper<const proposal_vote_object>>;
     using proposal_ref_type = std::vector<std::reference_wrapper<const proposal_object>>;
 
-    typedef deip::protocol::proposal_action_type action_t;
+    typedef deip::protocol::research_group_quorum_action action_t;
 
         /** Create proposal object.
      *
@@ -42,7 +42,7 @@ public:
                                            const account_name_type& initiator,
                                            const research_group_id_type& research_group_id,
                                            const fc::time_point_sec expiration_time,
-                                           const share_type quorum_percent);
+                                           const percent_type quorum);
 
     /** Get proposal by id
      */
@@ -57,8 +57,6 @@ public:
     void check_proposal_existence(const proposal_id_type& proposal_id) const;
 
     bool is_expired(const proposal_object& proposal);
-
-    void complete(const proposal_object& proposal);
 
     void clear_expired_proposals();
 

@@ -1140,15 +1140,14 @@ public:
      * @param name Name of the research group
      * @param permlink Permlink to the research group
      * @param description Description of the research group
-     * @param quorum_percent Quorum percent of the research group (500 to 10000). This quorum percent will be set for all proposal types
+     * @param default_quorum Quorum percent of the research group (500 to 10000). This quorum percent will be set for all proposal types
      * @param broadcast
      */
     annotated_signed_transaction create_research_group(const std::string& creator,
                                                                const std::string& name,
                                                                const std::string& permlink,
                                                                const std::string& description,
-                                                               const int64_t& quorum_percent,
-                                                               const bool& is_dao,
+                                                               const percent_type& default_quorum,
                                                                const bool broadcast);
 
     /**

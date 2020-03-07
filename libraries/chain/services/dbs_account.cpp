@@ -96,8 +96,7 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
     });
 
     // Convert fee to Common tokens and increase account common tokens balance
-    // increase_common_tokens(get_account(new_account_name), fee.amount);
-    account_balance_service.adjust_balance(DEIP_REGISTRAR_ACCOUNT_NAME, fee);
+    increase_common_tokens(get_account(new_account_name), fee.amount);
 
     return new_account;
 }

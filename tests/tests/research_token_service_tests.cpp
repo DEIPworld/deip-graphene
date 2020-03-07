@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(create_research_token)
 {
     try
     {
-        const research_token_object& research_token = data_service.create_research_token("john", 250, 34);
+        const research_token_object& research_token = data_service.create_research_token("john", 250, 34, false);
 
         BOOST_CHECK(research_token.account_name == "john");
         BOOST_CHECK(research_token.amount == 250);

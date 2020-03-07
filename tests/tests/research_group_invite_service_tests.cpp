@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(create)
 {
     try
     {
-        auto& research_group_invite = data_service.create("bob", 2, 100, "test", "alice");
+        auto& research_group_invite = data_service.create("bob", 2, 100, "test", "alice", false);
 
         BOOST_CHECK(research_group_invite.account_name == "bob");
         BOOST_CHECK(research_group_invite.research_group_id == 2);
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(throw_on_create_research_invite_object)
     {
         create_research_invite_objects();
 
-        BOOST_CHECK_THROW(data_service.create("alice", 1, 200, "test", "alice"), boost::exception);
+        BOOST_CHECK_THROW(data_service.create("alice", 1, 200, "test", "alice", false), boost::exception);
 
     }
     FC_LOG_AND_RETHROW()
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(get)
     {
         create_research_invite_objects();
 
-        auto& research_group_invite = data_service.get(1);
+        auto& research_group_invite = data_service.get_research_group_invite(1);
 
         BOOST_CHECK(research_group_invite.account_name == "alice");
         BOOST_CHECK(research_group_invite.research_group_id == 1);
@@ -92,13 +92,13 @@ BOOST_AUTO_TEST_CASE(get)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_research_group_invite_by_account_name_and_research_group_id)
+BOOST_AUTO_TEST_CASE(get_research_group_invite)
 {
     try
     {
         create_research_invite_objects();
 
-        auto& research_group_invite = data_service.get_research_group_invite_by_account_name_and_research_group_id("alice", 1);
+        auto& research_group_invite = data_service.get_research_group_invite("alice", 1);
 
         BOOST_CHECK(research_group_invite.account_name == "alice");
         BOOST_CHECK(research_group_invite.research_group_id == 1);
@@ -109,15 +109,15 @@ BOOST_AUTO_TEST_CASE(get_research_group_invite_by_account_name_and_research_grou
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(check_research_group_invite_existence)
+BOOST_AUTO_TEST_CASE(research_group_invite_exists)
 {
     try
     {
         create_research_invite_objects();
 
-        BOOST_CHECK_NO_THROW(data_service.check_research_group_invite_existence(1));
-        BOOST_CHECK_NO_THROW(data_service.check_research_group_invite_existence(2));
-        BOOST_CHECK_THROW(data_service.check_research_group_invite_existence(25), fc::assert_exception);
+        BOOST_CHECK(data_service.research_group_invite_exists(1));
+        BOOST_CHECK(data_service.research_group_invite_exists(2));
+        BOOST_CHECK(!data_service.research_group_invite_exists(25));
 
     }
     FC_LOG_AND_RETHROW()
