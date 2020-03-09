@@ -1144,16 +1144,17 @@ fc::optional<research_api_obj> database_api::get_research_by_absolute_permlink(c
 
 fc::optional<research_api_obj> database_api_impl::get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const
 {
+    fc::optional<research_api_obj> research;
     const auto& idx = _db.get_index<research_group_index>().indices().get<by_permlink>();
     auto itr = idx.find(research_group_permlink, fc::strcmp_less());
 
-    if (itr != idx.end()) {
-        auto research = get_research_by_permlink(itr->id, research_permlink);
-
-        return get_research_by_id(research->id);
+    if (itr != idx.end()) 
+    {
+        const research_group_object& research_group = *itr;
+        research = get_research_by_permlink(research_group.id, research_permlink);
     }
 
-    return {};
+    return research;
 }
 
 vector<research_api_obj> database_api::get_researches_by_discipline_id(const uint64_t from,
@@ -1214,10 +1215,7 @@ bool database_api::check_research_existence_by_permlink(const research_group_id_
 {
     const auto& idx = my->_db.get_index<research_index>().indices().get<by_permlink>();
     auto itr = idx.find(std::make_tuple(research_group_id, permlink));
-    if (itr != idx.end())
-        return true;
-    else
-        return false;
+    return itr != idx.end();
 }
 
 fc::optional<research_content_api_obj> database_api::get_research_content_by_id(const research_content_id_type& id) const
@@ -1263,16 +1261,20 @@ fc::optional<research_content_api_obj> database_api::get_research_content_by_abs
 fc::optional<research_content_api_obj>
 database_api_impl::get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const
 {
+    fc::optional<research_content_api_obj> research_content;
     const auto& idx = _db.get_index<research_group_index>().indices().get<by_permlink>();
     auto itr = idx.find(research_group_permlink, fc::strcmp_less());
 
     if (itr != idx.end()) {
-        auto research = get_research_by_permlink(itr->id, research_permlink);
-
-        return get_research_content_by_permlink(research->id, research_content_permlink);
+        const research_group_object& research_group = *itr;
+        fc::optional<research_api_obj> research = get_research_by_permlink(research_group.id, research_permlink);
+        if (research.valid()) 
+        {
+            research_content = get_research_content_by_permlink(research->id, research_content_permlink);
+        }
     }
 
-    return {};
+    return research_content;
 }
 
 vector<research_content_api_obj> database_api::get_all_research_content(const research_id_type& research_id) const
