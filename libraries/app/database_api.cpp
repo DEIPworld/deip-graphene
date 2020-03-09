@@ -2468,7 +2468,7 @@ fc::optional<offer_research_tokens_api_obj> database_api_impl::get_offer_by_rece
     const auto& idx = _db.get_index<offer_research_tokens_index>().indices().get<by_receiver_and_research_id>();
     auto itr = idx.find(std::make_tuple(receiver, research_id));
     if (itr != idx.end())
-        return *itr;
+        return fc::optional<offer_research_tokens_api_obj>(*itr);
 
     return {};
 }

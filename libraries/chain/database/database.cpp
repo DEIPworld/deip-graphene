@@ -1558,7 +1558,7 @@ asset database::reward_research_token_holders(const research_object &research,
 }
 
 asset database::reward_references(const research_content_id_type &research_content_id,
-                                       const discipline_id_type &discipline_id, const asset &reward)
+                                  const discipline_id_type &discipline_id, const asset &reward)
 {
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
@@ -1571,17 +1571,21 @@ asset database::reward_references(const research_content_id_type &research_conte
 
     for (auto content_id : research_content.references)
     {
-        auto total_votes = vote_service.get_total_votes_by_content_and_discipline(content_id, discipline_id);
-        total_votes_amount += total_votes.total_weight;
+        if (vote_service.total_vote_exists_by_content_and_discipline(content_id, discipline_id)) {
+            auto total_votes = vote_service.get_total_votes_by_content_and_discipline(content_id, discipline_id);
+            total_votes_amount += total_votes.total_weight;
+        }
     }
 
     for (auto content_id : research_content.references)
     {
-        auto total_votes = vote_service.get_total_votes_by_content_and_discipline(content_id, discipline_id);
-        auto& research = research_service.get_research(total_votes.research_id);
+        if (vote_service.total_vote_exists_by_content_and_discipline(content_id, discipline_id)) {
+            auto total_votes = vote_service.get_total_votes_by_content_and_discipline(content_id, discipline_id);
+            auto &research = research_service.get_research(total_votes.research_id);
 
-        auto reward_share = util::calculate_share(reward, total_votes.total_weight, total_votes_amount);
-        used_reward += reward_research_token_holders(research, discipline_id, reward_share);
+            auto reward_share = util::calculate_share(reward, total_votes.total_weight, total_votes_amount);
+            used_reward += reward_research_token_holders(research, discipline_id, reward_share);
+        }
     }
 
     if (used_reward > reward)
