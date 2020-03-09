@@ -365,7 +365,7 @@ FC_REFLECT( deip::chain::account_object,
              (created)(mined)
              (recovery_account)(last_account_recovery)
              (lifetime_vote_count)(can_vote)
-             /*(balance)*/(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)
+             (common_tokens_withdraw_rate)(next_common_tokens_withdrawal)
              (withdrawn)(to_withdraw)(withdraw_routes)
              (expertise_tokens_balance)
              (common_tokens_balance)
