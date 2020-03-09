@@ -135,20 +135,21 @@ const std::map<discipline_id_type, share_type> dbs_review::get_eci_weight(const 
                 return acc + rw_vote.weight;
             });
 
-        // const double Cr = Cea * (Er / Er_avg) + Cva * (1 - 1 / n) * (Vr / (Vi != 0 ? Vi : 1));
+        const double Cr = Cea * (Er / Er_avg) + Cva * (1 - 1 / n) * (Vr / (Vi != 0 ? Vi : 1));
+        
+        const double mr = (double) review.is_positive ? 1 : -1;
 
-        // TODO: remove the fake formula afte the EU demo
-        const double review_votes_count = (double)std::count_if(
+        /* Temporal simplification for demo purposes */
+
+        /* const double review_votes_count = (double)std::count_if(
             research_content_reviews_votes_for_discipline.begin(), research_content_reviews_votes_for_discipline.end(),
             [&](std::reference_wrapper<const review_vote_object> rw_vote_wrap) {
                 const review_vote_object& rw_vote = rw_vote_wrap.get();
                 return rw_vote.review_id == review.id;
             });
-        const double Cr = Cea * (Er / Er_avg) + Cva * (1 - 1 / n);
+        const double Cr = Cea * (Er / Er_avg) + Cva * (1 - 1 / n); */
 
-        const double mr = (double) review.is_positive ? 1 : -1;
-
-        const int64_t review_weight = std::round(mr * Cr * Er + (review_votes_count * 100));
+        const int64_t review_weight = std::round(mr * Cr * Er);
 
         review_weight_by_discipline[discipline_id] = share_type(review_weight);
     }
