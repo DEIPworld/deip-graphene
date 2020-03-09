@@ -1348,12 +1348,12 @@ void issue_asset_evaluator::do_apply(const issue_asset_operation& op)
     dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
 
     account_service.check_account_existence(op.issuer);
-    account_balance_service.adjust_balance(op.issuer, op.amount_to_issue);
-    asset_service.check_existence(op.amount_to_issue.symbol);
+    account_balance_service.adjust_balance(op.issuer, op.amount);
+    asset_service.check_existence(op.amount.symbol);
 
-    auto& asset_obj = asset_service.get_by_symbol(op.amount_to_issue.symbol);
+    auto& asset_obj = asset_service.get_by_symbol(op.amount.symbol);
 
-    asset_service.adjust_current_supply(asset_obj, op.amount_to_issue.amount);
+    asset_service.adjust_current_supply(asset_obj, op.amount.amount);
 }
 
 void reserve_asset_evaluator::do_apply(const reserve_asset_operation& op)
@@ -1362,15 +1362,15 @@ void reserve_asset_evaluator::do_apply(const reserve_asset_operation& op)
     dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
     dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
 
-    account_service.check_account_existence(op.balance_owner);
+    account_service.check_account_existence(op.owner);
 
-    FC_ASSERT(asset_service.exists_by_symbol(op.amount_to_reserve.symbol), "Asset doesn't exist");
-    auto& _asset_obj = asset_service.get_by_symbol(op.amount_to_reserve.symbol);
+    FC_ASSERT(asset_service.exists_by_symbol(op.amount.symbol), "Asset doesn't exist");
+    auto& _asset_obj = asset_service.get_by_symbol(op.amount.symbol);
 
-    account_balance_service.check_existence_by_owner_and_asset(op.balance_owner, op.amount_to_reserve.symbol);
-    account_balance_service.adjust_balance(op.balance_owner, -op.amount_to_reserve);
+    account_balance_service.check_existence_by_owner_and_asset(op.owner, op.amount.symbol);
+    account_balance_service.adjust_balance(op.owner, -op.amount);
 
-    asset_service.adjust_current_supply(_asset_obj, -op.amount_to_reserve.amount);
+    asset_service.adjust_current_supply(_asset_obj, -op.amount.amount);
 }
 
 } // namespace chain

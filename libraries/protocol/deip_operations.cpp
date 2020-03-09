@@ -333,8 +333,8 @@ void create_asset_operation::validate() const
 void issue_asset_operation::validate() const
 {
     validate_account_name(issuer);
-    FC_ASSERT(!is_asset_type(amount_to_issue, DEIP_SYMBOL), "You cannot issue DEIP tokens manually.");
-    FC_ASSERT(amount_to_issue.amount > 0, "Amount to issue must be greater than 0");
+    FC_ASSERT(!is_asset_type(amount, DEIP_SYMBOL), "You cannot issue DEIP tokens manually.");
+    FC_ASSERT(amount.amount > 0, "Amount to issue must be greater than 0");
 }
 
 void approve_grant_application_operation::validate() const
@@ -351,9 +351,9 @@ void reject_grant_application_operation::validate() const
 
 void reserve_asset_operation::validate() const
 {
-    validate_account_name(balance_owner);
-    FC_ASSERT(!is_asset_type(amount_to_reserve, DEIP_SYMBOL), "You cannot reserve DEIP tokens manually.");
-    FC_ASSERT(amount_to_reserve.amount > 0, "Amount to reserve must be greater than 0");
+    validate_account_name(owner);
+    FC_ASSERT(!is_asset_type(amount, DEIP_SYMBOL), "You cannot reserve DEIP tokens manually.");
+    FC_ASSERT(amount.amount > 0, "Amount to reserve must be greater than 0");
 }
 
 } // namespace deip::protocol

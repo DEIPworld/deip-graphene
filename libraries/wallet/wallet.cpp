@@ -2967,16 +2967,15 @@ annotated_signed_transaction wallet_api::create_asset(const std::string& issuer,
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::issue_asset(const std::string& issuer,
-                                                     const asset& amount_to_issue,
-                                                     const bool broadcast)
+annotated_signed_transaction
+wallet_api::issue_asset(const std::string& issuer, const asset& amount, const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
     issue_asset_operation op;
 
     op.issuer = issuer;
-    op.amount_to_issue = amount_to_issue;
+    op.amount = amount;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2985,16 +2984,16 @@ annotated_signed_transaction wallet_api::issue_asset(const std::string& issuer,
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::reserve_asset(const std::string& balance_owner,
-                                                       const asset& amount_to_reserve,
+annotated_signed_transaction wallet_api::reserve_asset(const std::string& owner,
+                                                       const asset& amount,
                                                        const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
     reserve_asset_operation op;
 
-    op.balance_owner = balance_owner;
-    op.amount_to_reserve = amount_to_reserve;
+    op.owner = owner;
+    op.amount = amount;
 
     signed_transaction tx;
     tx.operations.push_back(op);
