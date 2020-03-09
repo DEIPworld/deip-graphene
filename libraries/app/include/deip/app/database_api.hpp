@@ -488,8 +488,16 @@ public:
     // Assets///
     ////////////
 
-    asset_api_obj get_asset(const asset_id_type& id) const;
-    asset_api_obj get_asset_by_string_symbol(const std::string& string_symbol) const;
+    fc::optional<asset_api_obj> get_asset(const asset_id_type& id) const;
+    fc::optional<asset_api_obj> get_asset_by_string_symbol(const std::string& string_symbol) const;
+
+    //////////////////////
+    // Account balances///
+    /////////////////////
+
+    fc::optional<account_balance_api_obj> get_account_balance(const account_balance_id_type& id) const;
+    vector<account_balance_api_obj> get_account_balances_by_owner(const account_name_type& owner) const;
+    fc::optional<account_balance_api_obj> get_account_balance_by_owner_and_asset_symbol(const account_name_type& owner, const string& symbol) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -696,13 +704,17 @@ FC_API(deip::app::database_api,
    (get_grant_application)
    (get_grant_applications_by_grant)
    (get_grant_applications_by_research_id)
-
-   (get_asset)
-   (get_asset_by_string_symbol)
    
    (calculate_research_eci)
    (calculate_research_content_eci)
    (calculate_review_weight)
+
+   (get_asset)
+   (get_asset_by_string_symbol)
+
+   (get_account_balance)
+   (get_account_balances_by_owner)
+   (get_account_balance_by_owner_and_asset_symbol)
 )
 
 // clang-format on

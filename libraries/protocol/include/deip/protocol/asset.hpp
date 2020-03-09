@@ -5,8 +5,6 @@
 namespace deip {
 namespace protocol {
 
-typedef uint64_t asset_symbol_type;
-
 struct asset
 {
     asset(share_type a = 0, asset_symbol_type id = DEIP_SYMBOL)

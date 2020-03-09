@@ -1,12 +1,14 @@
 #pragma once
 #include "deip_object_types.hpp"
 #include <boost/multi_index/composite_key.hpp>
+#include <deip/protocol/protocol.hpp>
 #include <fc/shared_string.hpp>
 
 namespace deip {
 namespace chain {
 
-typedef uint64_t asset_symbol_type;
+using deip::protocol::asset_symbol_type;
+using deip::protocol::asset;
 
 class asset_object : public object<asset_object_type, asset_object>
 {
@@ -31,24 +33,6 @@ public:
     fc::shared_string description;
 
     share_type current_supply = 0;
-
-
-    string to_string(const share_type& amount) const
-    {
-        share_type scaled_precision = pow(10, precision);
-        string result = fc::to_string(amount.value / scaled_precision.value);
-
-        auto decimals = abs( amount.value % scaled_precision.value );
-        if( decimals )
-        {
-            if( amount < 0 && result == "0" )
-                result = "-0";
-            result += "." + fc::to_string(scaled_precision.value + decimals).erase(0,1);
-        }
-        result += " " + fc::to_string(symbol);
-
-        return result;
-    }
 };
 
 struct by_symbol;

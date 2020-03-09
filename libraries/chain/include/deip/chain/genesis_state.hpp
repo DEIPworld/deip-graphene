@@ -19,7 +19,6 @@ struct genesis_state_type
         std::string name;
         std::string recovery_account;
         protocol::public_key_type public_key;
-        share_type deip_amount;
         share_type common_tokens_amount;
     };
 
@@ -32,7 +31,6 @@ struct genesis_state_type
 
     struct asset_type
     {
-        asset_id_type id;
         std::string symbol;
         uint8_t precision;
         share_type current_supply;
@@ -40,9 +38,9 @@ struct genesis_state_type
 
     struct account_balance_type
     {
-        asset_id_type asset_id;
         std::string owner;
         share_type amount;
+        std::string symbol = protocol::asset(0, DEIP_SYMBOL).symbol_name();
     };
 
     struct witness_type
@@ -156,7 +154,6 @@ FC_REFLECT(deip::chain::genesis_state_type::registrar_account_type,
            (name)
            (recovery_account)
            (public_key)
-           (deip_amount)
            (common_tokens_amount))
 
 FC_REFLECT(deip::chain::genesis_state_type::account_type,
@@ -165,15 +162,14 @@ FC_REFLECT(deip::chain::genesis_state_type::account_type,
            (public_key))
 
 FC_REFLECT(deip::chain::genesis_state_type::asset_type,
-           (id)
            (symbol)
            (precision)
            (current_supply))
 
 FC_REFLECT(deip::chain::genesis_state_type::account_balance_type,
-           (asset_id)
            (owner)
-           (amount))
+           (amount)
+           (symbol))
 
 FC_REFLECT(deip::chain::genesis_state_type::witness_type,
            (owner_name)

@@ -31,8 +31,11 @@ void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
     public_key_type init_public_key = init_delegate_priv_key.get_public_key();
 
     genesis_state.accounts.push_back({ "initdelegate", "null", init_public_key });
-
-    genesis_state.account_balances.push_back({ 0, "initdelegate", genesis_state.init_supply });
+    
+    genesis_state_type::account_balance_type ballance;
+    ballance.owner = "initdelegate";
+    ballance.amount = genesis_state.init_supply;
+    genesis_state.account_balances.push_back(ballance);
 
     genesis_state.witness_candidates.push_back({ "initdelegate", init_public_key });
 }
@@ -74,7 +77,7 @@ database_fixture::database_fixture()
     registrar.common_tokens_amount = 0;
     genesis_state.registrar_account = registrar;
 
-    genesis_state.assets.push_back({ 0, "TESTS", 3});
+    genesis_state.assets.push_back({"TESTS", 3});
 
     create_disciplines_for_genesis_state(genesis_state);
     create_initdelegate_for_genesis_state(genesis_state);
@@ -732,9 +735,9 @@ void database_fixture::fund(const string& account_name, const asset& amount)
     {
         db_plugin->debug_update(
             [=](database& db) {
-                const auto& idx = db.get_index<account_balance_index>().indices().get<by_owner_and_asset>();
+                const auto& idx = db.get_index<account_balance_index>().indices().get<by_owner_and_asset_symbol>();
                 if (idx.find(boost::make_tuple(account_name, DEIP_SYMBOL)) != idx.cend()){
-                    auto& balance = db.get<account_balance_object, by_owner_and_asset>(boost::make_tuple(account_name, amount.symbol));
+                    auto& balance = db.get<account_balance_object, by_owner_and_asset_symbol>(boost::make_tuple(account_name, amount.symbol));
                     db.modify(balance, [&](account_balance_object& ab_o) {
                         ab_o.amount += amount.amount;
                     });
@@ -823,10 +826,11 @@ void database_fixture::proxy(const string& account, const string& proxy)
     FC_CAPTURE_AND_RETHROW((account)(proxy))
 }
 
-const asset& database_fixture::get_balance(const string& account_name) const
+const asset database_fixture::get_balance(const string& account_name) const
 {
-    auto& account_balance_service = db.obtain_service<dbs_account_balance>();
-    return account_balance_service.get_by_owner_and_asset(account_name, DEIP_SYMBOL).to_asset();
+    const auto& account_balance_service = db.obtain_service<dbs_account_balance>();
+    const auto& account_balance = account_balance_service.get_by_owner_and_asset(account_name, DEIP_SYMBOL);
+    return asset(account_balance.amount, account_balance.symbol);
 }
 
 void database_fixture::sign(signed_transaction& trx, const fc::ecc::private_key& key)

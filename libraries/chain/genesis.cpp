@@ -40,16 +40,17 @@ using namespace deip::protocol;
 void generate_default_genesis_state(genesis_state_type& genesis)
 {
     const public_key_type init_public_key(DEIP_DEFAULT_INIT_PUBLIC_KEY);
+    std::string symbol = asset(0, DEIP_SYMBOL).symbol_name();
+
+    genesis_state_type::account_balance_type ballance;
+    ballance.owner = "initdelegate";
+    ballance.amount = genesis.init_supply;
 
     genesis.init_supply = DEIP_DEFAULT_INIT_SUPPLY;
     genesis.initial_timestamp = DEIP_DEFAULT_GENESIS_TIME;
-
     genesis.accounts.push_back({ "initdelegate", "", init_public_key });
-
-    genesis.account_balances.push_back({ 0, "initdelegate", genesis.init_supply });
-
+    genesis.account_balances.push_back(ballance);
     genesis.witness_candidates.push_back({ "initdelegate", init_public_key });
-
     genesis.initial_chain_id = fc::sha256::hash(fc::json::to_string(genesis));
 }
 
@@ -177,18 +178,52 @@ void database::init_genesis_assets(const genesis_state_type& genesis_state)
 {
     auto& asset_service = obtain_service<dbs_asset>();
     const vector<genesis_state_type::asset_type>& assets = genesis_state.assets;
+    const vector<genesis_state_type::account_balance_type>& account_balances = genesis_state.account_balances;
+
+    const share_type deip_total_supply = std::accumulate(
+      account_balances.begin(), account_balances.end(), share_type(0),
+      [&](share_type acc, const genesis_state_type::account_balance_type& account_balance) {
+        return account_balance.symbol == asset(0, DEIP_SYMBOL).symbol_name() 
+          ? share_type(account_balance.amount) + acc
+          : acc;
+      });
+
+    FC_ASSERT(deip_total_supply.value == genesis_state.init_supply,
+      "Total supply (${total}) is not equal to inited supply (${inited}) for ${s} asset",
+      ("total", deip_total_supply.value)("inited", genesis_state.init_supply)("s", asset(0, DEIP_SYMBOL).symbol_name()));
+
+    create<asset_object>([&](asset_object& a_o) {
+        const protocol::asset a = asset(0, DEIP_SYMBOL);
+
+        a_o.symbol = a.symbol;
+        fc::from_string(a_o.string_symbol, a.symbol_name());
+        a_o.precision = a.decimals();
+        a_o.current_supply = genesis_state.init_supply;
+    });
 
     for (auto& asset : assets)
     {
-        create<asset_object>([&](asset_object& a_o) {
-            a_o.id = asset.id;
-            int p = std::pow(10, asset.precision);
-            std::string string_asset = "0." + fc::to_string(p).erase(0, 1) + " " + asset.symbol;
-            protocol::asset new_asset = asset::from_string(string_asset);
-            a_o.symbol = new_asset.symbol;
-            fc::from_string(a_o.string_symbol, asset.symbol);
-            a_o.precision = asset.precision;
-            a_o.current_supply = asset.current_supply;
+        const int p = std::pow(10, asset.precision);
+        const std::string string_asset = "0." + fc::to_string(p).erase(0, 1) + " " + asset.symbol;
+        const protocol::asset a = asset::from_string(string_asset);
+
+        const share_type asset_total_supply = std::accumulate(
+          account_balances.begin(), account_balances.end(), share_type(0),
+          [&](share_type acc, const genesis_state_type::account_balance_type& account_balance) {
+              return account_balance.symbol == a.symbol_name() 
+                ? share_type(account_balance.amount) + acc
+                : acc;
+          });
+
+        FC_ASSERT(asset_total_supply.value == asset.current_supply,
+          "Total supply (${total}) is not equal to inited supply (${inited}) for ${s} asset",
+          ("total", asset_total_supply.value)("inited", asset.current_supply)("s", a.symbol_name()));
+
+        create<asset_object>([&](asset_object& a_o) {        
+          a_o.symbol = a.symbol;
+          fc::from_string(a_o.string_symbol, a.symbol_name());
+          a_o.precision = a.decimals();
+          a_o.current_supply = asset.current_supply;
         });
     }
 }
@@ -201,19 +236,13 @@ void database::init_genesis_account_balances(const genesis_state_type& genesis_s
     const genesis_state_type::registrar_account_type& registrar = genesis_state.registrar_account;
     const vector<genesis_state_type::account_balance_type>& account_balances = genesis_state.account_balances;
 
-    create<account_balance_object>([&](account_balance_object& ab_o) {
-        ab_o.asset_id = 0;
-        ab_o.symbol = DEIP_SYMBOL;
-        ab_o.owner = registrar.name;
-        ab_o.amount = registrar.deip_amount;
-    });
-
     for (auto& account_balance : account_balances)
     {
-        auto& _asset_obj = asset_service.get(account_balance.asset_id);
+        const auto& asset_obj = asset_service.get_by_string_symbol(account_balance.symbol);
         create<account_balance_object>([&](account_balance_object& ab_o) {
-            ab_o.asset_id = _asset_obj.id;
-            ab_o.symbol = DEIP_SYMBOL;
+            ab_o.asset_id = asset_obj.id;
+            ab_o.symbol = asset_obj.symbol;
+            ab_o.string_symbol = asset_obj.string_symbol;
             ab_o.owner = account_balance.owner;
             ab_o.amount = account_balance.amount;
         });

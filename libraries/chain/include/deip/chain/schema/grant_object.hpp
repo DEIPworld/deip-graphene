@@ -37,7 +37,6 @@ public:
     account_name_type_set officers;
 };
 
-struct by_grant_id;
 struct by_target_discipline;
 struct by_owner;
 struct by_start_time;

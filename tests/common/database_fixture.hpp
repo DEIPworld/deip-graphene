@@ -216,7 +216,7 @@ struct database_fixture
     void convert_deip_to_common_token(const string& from, const share_type& amount);
     const expert_token_object& expert_token(const string& account, const discipline_id_type& discipline_id, const share_type& amount);
     void proxy(const string& account, const string& proxy);
-    const asset& get_balance(const string& account_name) const;
+    const asset get_balance(const string& account_name) const;
     void sign(signed_transaction& trx, const fc::ecc::private_key& key);
 
     vector<operation> get_last_operations(uint32_t ops);
