@@ -839,7 +839,7 @@ struct create_asset_operation : public base_operation
 struct issue_asset_operation : public base_operation
 {
     account_name_type issuer;
-    asset amount_to_issue;
+    asset amount;
 
     void validate() const;
 
@@ -851,14 +851,14 @@ struct issue_asset_operation : public base_operation
 
 struct reserve_asset_operation : public base_operation
 {
-    account_name_type balance_owner;
-    asset amount_to_reserve;
+    account_name_type owner;
+    asset amount;
 
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(balance_owner);
+        a.insert(owner);
     }
 };
 
@@ -933,8 +933,7 @@ FC_REFLECT( deip::protocol::make_review_for_application_operation, (author)(gran
 FC_REFLECT( deip::protocol::approve_grant_application_operation, (grant_application_id)(approver))
 FC_REFLECT( deip::protocol::reject_grant_application_operation, (grant_application_id)(rejector))
 FC_REFLECT( deip::protocol::create_asset_operation, (issuer)(symbol)(precision)(name)(description))
-FC_REFLECT( deip::protocol::issue_asset_operation, (issuer)(amount_to_issue))
-FC_REFLECT( deip::protocol::reserve_asset_operation, (balance_owner)(amount_to_reserve))
-
+FC_REFLECT( deip::protocol::issue_asset_operation, (issuer)(amount))
+FC_REFLECT( deip::protocol::reserve_asset_operation, (owner)(amount))
 
 // clang-format on

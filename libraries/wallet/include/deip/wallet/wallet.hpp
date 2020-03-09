@@ -1307,11 +1307,11 @@ public:
                                               const bool broadcast);
 
     annotated_signed_transaction issue_asset(const std::string& issuer,
-                                             const asset& amount_to_issue,
+                                             const asset& amount,
                                              const bool broadcast);
 
-    annotated_signed_transaction reserve_asset(const std::string& balance_owner,
-                                               const asset& amount_to_reserve,
+    annotated_signed_transaction reserve_asset(const std::string& owner,
+                                               const asset& amount,
                                                const bool broadcast);
 
     public : fc::signal<void(bool)> lock_changed;

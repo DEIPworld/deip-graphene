@@ -5057,7 +5057,7 @@ BOOST_AUTO_TEST_CASE(issue_asset_test)
         issue_asset_operation op;
 
         op.issuer = "alice";
-        op.amount_to_issue = asset(1000, new_asset1.symbol);
+        op.amount = asset(1000, new_asset1.symbol);
 
         private_key_type priv_key = generate_private_key("alice");
 
@@ -5068,20 +5068,20 @@ BOOST_AUTO_TEST_CASE(issue_asset_test)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        auto& account_balance_1 = db.get<account_balance_object, by_owner_and_asset_symbol>(boost::make_tuple(op.issuer, op.amount_to_issue.symbol));
+        auto& account_balance_1 = db.get<account_balance_object, by_owner_and_asset_symbol>(boost::make_tuple(op.issuer, op.amount.symbol));
 
         BOOST_CHECK(account_balance_1.owner == "alice");
         BOOST_CHECK(account_balance_1.asset_id == 1);
         BOOST_CHECK(account_balance_1.amount == 1000);
 
-        auto& asset_obj = db.get<asset_object, by_symbol>(op.amount_to_issue.symbol);
+        auto& asset_obj = db.get<asset_object, by_symbol>(op.amount.symbol);
 
         BOOST_CHECK(asset_obj.current_supply == 1000);
 
         issue_asset_operation op2;
 
         op2.issuer = "alice";
-        op2.amount_to_issue = asset(10000, new_asset1.symbol);
+        op2.amount = asset(10000, new_asset1.symbol);
 
         signed_transaction tx2;
         tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
@@ -5098,7 +5098,7 @@ BOOST_AUTO_TEST_CASE(issue_asset_test)
         issue_asset_operation op4;
 
         op4.issuer = "bob";
-        op4.amount_to_issue = asset(10000, new_asset2.symbol);
+        op4.amount = asset(10000, new_asset2.symbol);
 
         private_key_type bob_priv_key = generate_private_key("bob");
 
@@ -5109,13 +5109,13 @@ BOOST_AUTO_TEST_CASE(issue_asset_test)
         tx4.validate();
         db.push_transaction(tx4, 0);
 
-        auto& account_balance_2 = db.get<account_balance_object, by_owner_and_asset_symbol>(boost::make_tuple(op4.issuer, op4.amount_to_issue.symbol));
+        auto& account_balance_2 = db.get<account_balance_object, by_owner_and_asset_symbol>(boost::make_tuple(op4.issuer, op4.amount.symbol));
 
         BOOST_CHECK(account_balance_2.owner == "bob");
         BOOST_CHECK(account_balance_2.asset_id == 2);
         BOOST_CHECK(account_balance_2.amount == 10000);
 
-        auto& asset_obj_2 = db.get<asset_object, by_symbol>(op4.amount_to_issue.symbol);
+        auto& asset_obj_2 = db.get<asset_object, by_symbol>(op4.amount.symbol);
 
         BOOST_CHECK(asset_obj_2.current_supply == 10000);
 
@@ -5153,8 +5153,8 @@ BOOST_AUTO_TEST_CASE(reserve_asset_test)
 
         reserve_asset_operation op;
 
-        op.balance_owner = "alice";
-        op.amount_to_reserve = asset(1000, new_asset1.symbol);
+        op.owner = "alice";
+        op.amount = asset(1000, new_asset1.symbol);
 
         private_key_type priv_key = generate_private_key("alice");
 
