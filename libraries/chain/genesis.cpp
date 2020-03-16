@@ -498,44 +498,83 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
 
     for (auto& research_group : research_groups)
     {
-        FC_ASSERT(!research_group.name.empty(), "Research group 'name' must be specified");
-        FC_ASSERT(!research_group.permlink.empty(), "Research group 'permlink' must be specified");
-        FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
-        FC_ASSERT(research_group.default_quorum >= 5 * DEIP_1_PERCENT && research_group.default_quorum <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
+        init_research_group(research_group);
+    }
+}
 
-        create<research_group_object>([&](research_group_object& rg) {
-            rg.id = research_group.id;
-            fc::from_string(rg.name, research_group.name);
-            fc::from_string(rg.description, research_group.description);
-            fc::from_string(rg.permlink, research_group.permlink);
-            rg.balance = asset(0, DEIP_SYMBOL);
-            rg.default_quorum = research_group.default_quorum;
+void database::init_research_group(const genesis_state_type::research_group_type& research_group)
+{
+    FC_ASSERT(!research_group.name.empty(), "Research group 'name' must be specified");
+    FC_ASSERT(!research_group.permlink.empty(), "Research group 'permlink' must be specified");
+    FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
+
+    create<research_group_object>([&](research_group_object& rg) {
+        rg.id = research_group.id;
+        fc::from_string(rg.name, research_group.name);
+        fc::from_string(rg.description, research_group.description);
+        fc::from_string(rg.permlink, research_group.permlink);
+        rg.balance = asset(0, DEIP_SYMBOL);
+
+        if (research_group.management_model_v == research_group_details::tag<dao_voting_research_group_management_model_v1_0_0_type>::value)
+        {
+            FC_ASSERT(research_group.default_quorum.valid(), "Default quorum must be specified.");
+            FC_ASSERT(*research_group.default_quorum >= DEIP_1_PERCENT && *research_group.default_quorum <= DEIP_100_PERCENT, "Quorum percent must be in 1% to 100% range");
+            rg.default_quorum = *research_group.default_quorum;
 
             std::map<research_group_quorum_action, percent_type> action_quorums;
-
             for (int i = FIRST_ACTION_QUORUM_TYPE; i <= LAST_ACTION_QUORUM_TYPE; i++)
             {
-                action_quorums.insert(std::make_pair(research_group_quorum_action(i), research_group.default_quorum));
+                action_quorums.insert(std::make_pair(research_group_quorum_action(i), *research_group.default_quorum));
             }
 
             rg.action_quorums.insert(action_quorums.begin(), action_quorums.end());
-            rg.is_dao = research_group.is_dao;
-            rg.is_personal = research_group.is_personal;
-            rg.is_centralized = !research_group.is_dao;
-            rg.creator = research_group.members.front();
-        });
-
-        // TODO: Check that total amount of research group tokens is 10000
-        for (auto& member : research_group.members)
-        {
-            auto account = get<account_object, by_name>(member);
-            create<research_group_token_object>([&](research_group_token_object& rgt) {
-               rgt.research_group_id = research_group.id;
-               rgt.amount = DEIP_100_PERCENT / research_group.members.size();
-               rgt.owner = account.name;
-           });
+            rg.is_personal = false;
+            rg.is_centralized = false;
+            rg.is_dao = true;
         }
-    }
+        else if (research_group.management_model_v == research_group_details::tag<centralized_research_group_management_model_v1_0_0_type>::value)
+        {
+            std::set<account_name_type> heads = { research_group.members.front() };
+            rg.heads.insert(heads.begin(), heads.end());
+            rg.is_personal = false;
+            rg.is_centralized = true;
+            rg.is_dao = false;
+        }
+
+        if (research_group.organization_id.valid() && research_group.organization_agents.valid())
+        {
+            rg.is_created_by_organization = true;
+            rg.has_organization = true;
+        }
+
+        rg.creator = research_group.members.front();
+    });
+
+    // TODO: Check that total amount of research group tokens is 10000
+     for (auto& member : research_group.members)
+     {
+         auto account = get<account_object, by_name>(member);
+         create<research_group_token_object>([&](research_group_token_object& rgt) {
+             rgt.research_group_id = research_group.id;
+             rgt.amount = DEIP_100_PERCENT / research_group.members.size();
+             rgt.owner = account.name;
+         });
+     }
+
+     if (research_group.organization_id.valid() && research_group.organization_agents.valid())
+     {
+         create<research_group_organization_contract_object>([&](research_group_organization_contract_object& contract) {
+             contract.organization_id = *research_group.organization_id;
+             contract.research_group_id = research_group.id;
+             contract.organization_agents.insert(research_group.organization_agents->begin(), research_group.organization_agents->end());
+             contract.type = static_cast<uint16_t>(research_group_organization_contract_type::division);
+             contract.unilateral_termination_allowed = false;
+             fc::from_string(contract.notes, "");
+         });
+     }
+
+     for (auto& subgroup : research_group.subgroups)
+         init_research_group(subgroup);
 }
 
 void database::init_personal_research_groups(const genesis_state_type& genesis_state)

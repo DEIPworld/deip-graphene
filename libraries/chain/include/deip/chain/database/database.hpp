@@ -13,6 +13,7 @@
 #include <deip/protocol/protocol.hpp>
 
 #include <deip/chain/dbservice.hpp>
+#include <deip/chain/genesis_state.hpp>
 
 #include <fc/signals.hpp>
 #include <fc/shared_string.hpp>
@@ -472,6 +473,7 @@ protected:
     void init_research(const genesis_state_type& genesis_state);
     void init_research_content(const genesis_state_type& genesis_state);
     void init_research_groups(const genesis_state_type& genesis_state);
+    void init_research_group(const genesis_state_type::research_group_type& research_group);
     void init_personal_research_groups(const genesis_state_type& genesis_state);
     void init_genesis_vesting_balances(const genesis_state_type& genesis_state);
     void init_committees(const genesis_state_type& genesis_state);

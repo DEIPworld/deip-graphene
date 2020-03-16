@@ -2268,11 +2268,11 @@
       "description": "Syracuse University is a private research university in Syracuse, New York. The institution's roots can be traced to the Genesee Wesleyan Seminary, founded in 1831 by the Methodist Episcopal Church in Lima, New York.",
       "permlink": "syracuse-university",
       "default_quorum": 1000,
-      "is_personal": false,
       "members": [
         "james",
         "rick"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 1,
@@ -2280,13 +2280,13 @@
       "description": "The California Institute of Technology is a private doctorate-granting research university in Pasadena, California. Known for its strength in natural science and engineering, Caltech is often ranked as one of the world's top-ten universities.",
       "permlink": "california-institute-of-technology",
       "default_quorum": 1000,
-      "is_personal": false,
       "members": [
         "sherlock",
         "dorothy",
         "carla",
         "john"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 2,
@@ -2294,11 +2294,11 @@
       "description": "Columbia University is a private Ivy League research university in New York City. Established in 1754 on the grounds of Trinity Church in Manhattan, Columbia is the oldest institution of higher education in New York and the fifth-oldest institution of higher learning in the United States",
       "permlink": "columbia-university",
       "default_quorum": 1000,
-      "is_personal": false,
       "members": [
         "irene",
         "greg"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 3,
@@ -2306,13 +2306,13 @@
       "description": "McGill University is a public research university in Montreal, Quebec, Canada. It was established in 1821 by royal charter, granted by King George IV. The university bears the name of James McGill, a Montreal merchant originally from Scotland whose bequest in 1813 formed the university's precursor, McGill College.",
       "permlink": "mcgill-university",
       "default_quorum": 1000,
-      "is_personal": false,
       "members": [
         "james",
         "rick",
         "dorothy",
         "greg"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 4,
@@ -2320,11 +2320,11 @@
       "description": "The State University of New York at Stony Brook, commonly referred to as Stony Brook University or SUNY Stony Brook, is a public sea-grant and space-grant research university in Stony Brook, New York. It is one of four university centers of the State University of New York system.",
       "permlink": "suny-at-stony-brook",
       "default_quorum": 1000,
-      "is_personal": false,
       "members": [
         "dorothy",
         "rick"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 5,
@@ -2332,11 +2332,11 @@
       "description": "The University of California, Los Angeles is a public research university in Los Angeles. It became the Southern Branch of the University of California in 1919, making it the fourth-oldest of the 10-campus University of California system and oldest of the campuses in Southern California.",
       "permlink": "university-of-california-los-angeles",
       "default_quorum": 1000,
-      "is_personal": false,
       "members": [
         "rachel",
         "mike"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 6,
@@ -2344,13 +2344,13 @@
       "description": "The University of Houston is a public research university in Houston, Texas and the main institution of the University of Houston System. Founded in 1927, UH is the third-largest university in Texas with over 46,000 students.",
       "permlink": "university-of-houston",
       "default_quorum": 1000,
-      "is_personal": false,
       "members": [
         "rick",
         "rachel",
         "alex",
         "anastasia"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 7,
@@ -2358,11 +2358,11 @@
       "description": "The University of Washington is a public research university in Seattle, Washington. Founded in 1861, Washington was first established in downtown Seattle approximately a decade after the city's founding to aid its economic development.",
       "permlink": "university-of-washington",
       "default_quorum": 1000,
-      "is_personal": false,
       "members": [
         "john",
         "greg"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 8,
@@ -2370,11 +2370,11 @@
       "description": "Northwestern University is a private research university based in Evanston, Illinois, United States, with other campuses located in Chicago and Doha, Qatar, and academic programs and facilities in Miami, Florida; Washington, D.C.; and San Francisco, California.",
       "permlink": "northwestern-university",
       "default_quorum": 1000,
-      "is_personal": false,
       "members": [
         "nick",
         "irene"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 9,
@@ -2382,11 +2382,11 @@
       "description": "Cornell University is a private and statutory Ivy League research university in Ithaca, New York. Founded in 1865 by Ezra Cornell and Andrew Dickson White, the university was intended to teach and make contributions in all fields of knowledge—from the classics to the sciences, and from the theoretical to the applied.",
       "permlink": "cornell-university",
       "default_quorum": 1000,
-      "is_personal": false,
       "members": [
         "james",
         "anastasia"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 10,
@@ -2394,11 +2394,11 @@
       "description": "The National Oceanic and Atmospheric Administration is an American scientific agency within the United States Department of Commerce that focuses on the conditions of the oceans, major waterways, and the atmosphere.",
       "permlink": "national-oceanic-and-atmospheric-administration",
       "default_quorum": 1000,
-      "is_personal": false,
       "members": [
         "john",
         "irene"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 11,
@@ -2406,12 +2406,12 @@
       "description": "William Marsh Rice University, commonly known as Rice University, is a private research university in Houston, Texas. The university is situated on a 300-acre campus near the Houston Museum District and is adjacent to the Texas Medical Center.",
       "permlink": "william-marsh-rice-university",
       "default_quorum": 1000,
-      "is_personal": false,
       "members": [
         "dorothy",
         "rachel",
         "sherlock"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 12,
@@ -2419,11 +2419,11 @@
       "description": "Oregon State University is a public research university in Corvallis, Oregon. The university offers more than 200 undergraduate degree programs along with a variety of graduate and doctoral degrees. It is also the largest university in the state, with a total enrollment exceeding 28,000.",
       "permlink": "oregon-state-university",
       "default_quorum": 5000,
-      "is_personal": false,
       "members": [
         "alice",
         "nick"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 13,
@@ -2431,11 +2431,11 @@
       "description": "The University of Minnesota, Twin Cities is a public research university in Minneapolis and Saint Paul, MN. The Twin Cities campus comprises locations in Minneapolis and St. Paul approximately 3 miles apart, and the St. Paul location is in neighboring Falcon Heights.",
       "permlink": "university-of-minnesota",
       "default_quorum": 5000,
-      "is_personal": false,
       "members": [
         "irene",
         "nick"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 14,
@@ -2443,11 +2443,11 @@
       "description": "The University of Hawaiʻi at Mānoa is a public research university in Mānoa, a neighborhood in Honolulu, Hawaiʻi. It the flagship campus of the University of Hawaiʻi system. Its campus occupies the eastern half of the mouth of Mānoa Valley.",
       "permlink": "university-of-hawaii",
       "default_quorum": 5000,
-      "is_personal": false,
       "members": [
         "carla",
         "greg"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 15,
@@ -2455,11 +2455,11 @@
       "description": "Florida State University is a public space-grant and sea-grant research university in Tallahassee, Florida. It is a senior member of the State University System of Florida. Founded in 1851, it is located on the oldest continuous site of higher education in the state of Florida.",
       "permlink": "florida-state-university",
       "default_quorum": 5000,
-      "is_personal": false,
       "members": [
         "mike",
         "carla"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 16,
@@ -2467,11 +2467,11 @@
       "description": "The University of Maine is a public research university in Orono, Maine. The university was established in 1865 as a land grant college and is the flagship university of the University of Maine System. The University of Maine is one of only a few land, sea and space grant institutions in the nation.",
       "permlink": "the-university-of-maine",
       "default_quorum": 5000,
-      "is_personal": false,
       "members": [
         "bob",
         "john"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 17,
@@ -2479,11 +2479,11 @@
       "description": "The University of Delaware is a public research university located in Newark, Delaware. The University of Delaware is the largest university in Delaware. UD currently offers three associate's programs, 148 bachelor's programs, 121 master's programs and 55 doctoral programs across its eight colleges.",
       "permlink": "the-university-of-delaware",
       "default_quorum": 5000,
-      "is_personal": false,
       "members": [
         "bob",
         "alex"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 18,
@@ -2491,11 +2491,11 @@
       "description": "The Woods Hole Research Center is a scientific research organization that studies climate change impacts and solutions. WHRC was named the world's top climate change think tank for 2013, 2014, 2015, and 2016 by the International Center for Climate Governance",
       "permlink": "woods-hole-research-center",
       "default_quorum": 5000,
-      "is_personal": false,
       "members": [
         "alice",
         "bob"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 19,
@@ -2503,11 +2503,11 @@
       "description": "Colorado State University is a public research university in Fort Collins, Colorado. The university is the state's land grant university and the flagship university of the Colorado State University System.",
       "permlink": "colorado-state-university",
       "default_quorum": 5000,
-      "is_personal": false,
       "members": [
         "bob",
         "greg"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 20,
@@ -2515,11 +2515,11 @@
       "description": "Montana State University is a public land-grant research university in Bozeman, Montana. It is the state's largest university. MSU offers baccalaureate degrees in 51 fields, master's degrees in 41 fields, and doctoral degrees in 18 fields through its nine colleges.",
       "permlink": "montana-state-university",
       "default_quorum": 5000,
-      "is_personal": false,
       "members": [
         "alice",
         "john"
-      ]
+      ],
+      "management_model_v": 0
     },
     {
       "id": 21,
@@ -2527,10 +2527,40 @@
       "description": "The University of North Carolina at Chapel Hill, also known as UNC, UNC-Chapel Hill, North Carolina, Chapel Hill, or simply Carolina is a public research university in Chapel Hill, North Carolina. It is the flagship of the 17 campuses of the University of North Carolina system.",
       "permlink": "university-of-north-carolina-at-chapel-hill",
       "default_quorum": 5000,
-      "is_personal": false,
       "members": [
         "alex",
         "james"
+      ],
+      "management_model_v": 0
+    },
+    {
+      "id": 22,
+      "name": "NSF",
+      "description": "The National Science Foundation (NSF) is an independent federal agency created by Congress in 1950 to promote the progress of science; to advance the national health, prosperity, and welfare; to secure the national defense.",
+      "permlink": "national-science-foundation",
+      "members": [
+        "alice",
+        "alex",
+        "james"
+      ],
+      "management_model_v": 2,
+      "subgroups": [
+        {
+          "id": 23,
+          "name": "NSF review committee",
+          "description": "NSF review committee",
+          "permlink": "nsf-review-committee",
+          "members": [
+            "john",
+            "bob"
+          ],
+          "management_model_v": 2,
+          "organization_id": 22,
+          "organization_agents": [
+            "alice",
+            "james"
+          ]
+        }
       ]
     }
   ],
