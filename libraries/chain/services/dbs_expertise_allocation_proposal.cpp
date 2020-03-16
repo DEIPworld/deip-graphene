@@ -19,7 +19,7 @@ const expertise_allocation_proposal_object& dbs_expertise_allocation_proposal::c
     auto& expertise_allocation_proposal = db_impl().create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
         eap_o.claimer = claimer;
         eap_o.discipline_id = discipline_id;
-        eap_o.quorum_percent = 15 * DEIP_1_PERCENT;
+        eap_o.quorum = 15 * DEIP_1_PERCENT;
         eap_o.creation_time = db_impl().head_block_time();
         eap_o.expiration_time = db_impl().head_block_time() + DAYS_TO_SECONDS(14);
         fc::from_string(eap_o.description, description);
@@ -159,7 +159,7 @@ bool dbs_expertise_allocation_proposal::is_quorum(const expertise_allocation_pro
     if (discipline.total_expertise_amount == 0) // for now let's wait for someone who has expertise
         return false;
     
-    auto quorum_amount = (expertise_allocation_proposal.quorum_percent * discipline.total_expertise_amount) / DEIP_100_PERCENT;
+    auto quorum_amount = (expertise_allocation_proposal.quorum * discipline.total_expertise_amount) / DEIP_100_PERCENT;
     return expertise_allocation_proposal.total_voted_expertise >= quorum_amount.value;
 }
 

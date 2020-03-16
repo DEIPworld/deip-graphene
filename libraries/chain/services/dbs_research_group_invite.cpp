@@ -10,9 +10,10 @@ dbs_research_group_invite::dbs_research_group_invite(database &db) : _base_type(
 
 const research_group_invite_object& dbs_research_group_invite::create(const account_name_type& account_name,
                                                                       const research_group_id_type& research_group_id,
-                                                                      const share_type research_group_token_amount,
+                                                                      const share_type& research_group_token_amount,
                                                                       const std::string& cover_letter,
-                                                                      const account_name_type& token_source)
+                                                                      const account_name_type& token_source,
+                                                                      const bool& is_head)
 {
     const auto& new_research_group_invite = db_impl().create<research_group_invite_object>([&](research_group_invite_object& rgi_o) {
         rgi_o.account_name = account_name;
@@ -21,34 +22,47 @@ const research_group_invite_object& dbs_research_group_invite::create(const acco
         rgi_o.expiration_time = _get_now() + DAYS_TO_SECONDS(14);
         fc::from_string(rgi_o.cover_letter, cover_letter);
         rgi_o.token_source = token_source;
+        rgi_o.is_head = is_head;
     });
 
     return new_research_group_invite;
 }
 
-const research_group_invite_object& dbs_research_group_invite::get(const research_group_invite_id_type& research_group_invite_id)
+const research_group_invite_object& dbs_research_group_invite::get_research_group_invite(const research_group_invite_id_type& research_group_invite_id)
 {
-    try {
-        return db_impl().get<research_group_invite_object>(research_group_invite_id);
-    }
-    FC_CAPTURE_AND_RETHROW((research_group_invite_id))
+    const auto& idx = db_impl()
+      .get_index<research_group_invite_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(research_group_invite_id);
+    FC_ASSERT(itr != idx.end(), "Research group invite ${i} does not exist", ("i", research_group_invite_id));
+
+    return *itr;
 }
 
-const research_group_invite_object&
-    dbs_research_group_invite::get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name,
-                                                                                               const research_group_id_type& research_group_id)
+const bool dbs_research_group_invite::research_group_invite_exists(const research_group_invite_id_type& research_group_invite_id) const
 {
-    try {
-        return db_impl().get<research_group_invite_object, by_account_and_research_group_id>(
-                boost::make_tuple(account_name, research_group_id));
-    }
-    FC_CAPTURE_AND_RETHROW((account_name)(research_group_id))
+    const auto& idx = db_impl()
+      .get_index<research_group_invite_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(research_group_invite_id);
+    return itr != idx.end();
 }
 
-void dbs_research_group_invite::check_research_group_invite_existence(const research_group_invite_id_type& research_group_invite_id)
+const research_group_invite_object& dbs_research_group_invite::get_research_group_invite(const account_name_type& account_name, const research_group_id_type& research_group_id)
 {
-    auto research_group_invite = db_impl().find<research_group_invite_object, by_id>(research_group_invite_id);
-    FC_ASSERT(research_group_invite != nullptr, "Research group invite with id \"${1}\" must exist.", ("1", research_group_invite_id));
+    const auto& idx = db_impl()
+      .get_index<research_group_invite_index>()
+      .indicies()
+      .get<by_account_and_research_group_id>();
+
+    auto itr = idx.find(std::make_tuple(account_name, research_group_id));
+    FC_ASSERT(itr != idx.end(), "Research group invite for ${a} in researh group ${rg} does not exist", ("a", account_name)("rg", research_group_id));
+
+    return *itr;
 }
 
 dbs_research_group_invite::research_group_invite_refs_type
@@ -101,6 +115,11 @@ void dbs_research_group_invite::clear_expired_invites()
 bool dbs_research_group_invite::is_expired(const research_group_invite_object& invite)
 {
     return _get_now() > invite.expiration_time;
+}
+
+void dbs_research_group_invite::remove(const research_group_invite_object& invite)
+{
+    db_impl().remove(invite);
 }
 
 }

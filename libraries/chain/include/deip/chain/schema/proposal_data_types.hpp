@@ -29,6 +29,7 @@ struct invite_member_proposal_data_type : base_proposal_data_type
     deip::protocol::account_name_type name;
     share_type research_group_token_amount_in_percent;
     std::string cover_letter;
+    bool is_head;
 
     void validate() const
     {
@@ -38,14 +39,18 @@ struct invite_member_proposal_data_type : base_proposal_data_type
     }
 };
 
-struct change_quorum_proposal_data_type : base_proposal_data_type
+struct change_action_quorum_proposal_data_type : base_proposal_data_type
 {
-    uint16_t proposal_type;
-    uint16_t quorum_percent;
+    deip::protocol::research_group_quorum_action action;
+    deip::protocol::percent_type quorum;
 
     void validate() const
     {
-        FC_ASSERT(quorum_percent >= 5 * DEIP_1_PERCENT && quorum_percent <= DEIP_100_PERCENT, "Quorum percent should be in 500 to 10000 range");
+        const percent_type min = 5 * DEIP_1_PERCENT;
+        const percent_type max = DEIP_100_PERCENT;
+        FC_ASSERT(quorum >= min && quorum <= max, 
+          "Quorum value (${val}) should be in range of ${min} to ${max}. ", 
+          ("min", min)("max", max)("val", quorum));
     }
 };
 
@@ -161,7 +166,7 @@ struct start_research_token_sale_data_type : base_proposal_data_type
     }
 };
 
-struct change_research_review_share_percent_data_type : base_proposal_data_type
+struct change_research_review_reward_percent_data_type : base_proposal_data_type
 {
     research_id_type research_id;
     uint16_t review_share_in_percent;
@@ -190,7 +195,7 @@ struct offer_research_tokens_data_type : base_proposal_data_type
     }
 };
 
-struct change_research_group_meta_data_type : base_proposal_data_type
+struct change_research_group_metadata_type : base_proposal_data_type
 {
     string research_group_name;
     string research_group_description;
@@ -203,7 +208,7 @@ struct change_research_group_meta_data_type : base_proposal_data_type
     }
 };
 
-struct change_research_meta_data_type : base_proposal_data_type
+struct change_research_metadata_type : base_proposal_data_type
 {
     research_id_type research_id;
     string research_title;
@@ -224,9 +229,9 @@ struct change_research_meta_data_type : base_proposal_data_type
 
 FC_REFLECT(deip::chain::dropout_member_proposal_data_type, (name))
 
-FC_REFLECT(deip::chain::invite_member_proposal_data_type, (name)(research_group_token_amount_in_percent)(cover_letter))
+FC_REFLECT(deip::chain::invite_member_proposal_data_type, (name)(research_group_token_amount_in_percent)(cover_letter)(is_head))
 
-FC_REFLECT(deip::chain::change_quorum_proposal_data_type, (proposal_type)(quorum_percent))
+FC_REFLECT(deip::chain::change_action_quorum_proposal_data_type, (action)(quorum))
 
 FC_REFLECT(deip::chain::start_research_proposal_data_type, (title)(abstract)(permlink)(review_share_in_percent)(dropout_compensation_in_percent)(disciplines)(is_private))
 
@@ -240,10 +245,10 @@ FC_REFLECT(deip::chain::create_research_content_data_type, (research_id)(type)(t
 
 FC_REFLECT(deip::chain::start_research_token_sale_data_type, (research_id)(start_time)(end_time)(amount_for_sale)(soft_cap)(hard_cap))
 
-FC_REFLECT(deip::chain::change_research_review_share_percent_data_type, (research_id)(review_share_in_percent))
+FC_REFLECT(deip::chain::change_research_review_reward_percent_data_type, (research_id)(review_share_in_percent))
 
 FC_REFLECT(deip::chain::offer_research_tokens_data_type, (sender)(receiver)(research_id)(amount)(price))
 
-FC_REFLECT(deip::chain::change_research_group_meta_data_type, (research_group_name)(research_group_description))
+FC_REFLECT(deip::chain::change_research_group_metadata_type, (research_group_name)(research_group_description))
 
-FC_REFLECT(deip::chain::change_research_meta_data_type, (research_id)(research_title)(research_abstract)(is_private))
+FC_REFLECT(deip::chain::change_research_metadata_type, (research_id)(research_title)(research_abstract)(is_private))

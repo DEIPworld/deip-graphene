@@ -15,6 +15,8 @@
 namespace deip {
 namespace chain {
 
+using deip::protocol::percent_type;
+
 class expertise_allocation_proposal_object : public object<expertise_allocation_proposal_object_type, expertise_allocation_proposal_object>
 {
     expertise_allocation_proposal_object() = delete;
@@ -33,7 +35,7 @@ public:
 
     int64_t total_voted_expertise = 0;
 
-    share_type quorum_percent;
+    percent_type quorum;
 
     time_point_sec creation_time;
     time_point_sec expiration_time;
@@ -78,7 +80,7 @@ typedef multi_index_container<expertise_allocation_proposal_object,
 
 FC_REFLECT( deip::chain::expertise_allocation_proposal_object,
             (id)(claimer)(discipline_id)(total_voted_expertise)
-                    (quorum_percent)(creation_time)(expiration_time)(description)
+                    (quorum)(creation_time)(expiration_time)(description)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::expertise_allocation_proposal_object, deip::chain::expertise_allocation_proposal_index )

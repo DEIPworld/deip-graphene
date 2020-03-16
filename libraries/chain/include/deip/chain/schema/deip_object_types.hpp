@@ -26,10 +26,12 @@ using chainbase::oid;
 using deip::protocol::account_name_type;
 using deip::protocol::block_id_type;
 using deip::protocol::chain_id_type;
-using deip::protocol::share_type;
-using deip::protocol::transaction_id_type;
 using deip::protocol::discipline_name_type;
 using deip::protocol::asset_symbol_type;
+using deip::protocol::percent_type;
+using deip::protocol::research_group_quorum_action;
+using deip::protocol::share_type;
+using deip::protocol::transaction_id_type;
 
 struct by_id;
 
@@ -62,6 +64,7 @@ enum object_type
     proposal_object_type,
     research_group_object_type,
     research_group_token_object_type,
+    research_group_organization_contract_object_type,
     proposal_vote_object_type,
     expert_token_object_type,
     research_token_object_type,
@@ -104,6 +107,7 @@ class discipline_supply_object;
 class proposal_object;
 class research_group_object;
 class research_group_token_object;
+class research_group_organization_contract_object;
 class discipline_object;
 class vote_object;
 class total_votes_object;
@@ -151,6 +155,7 @@ typedef oid<discipline_supply_object> discipline_supply_id_type;
 typedef oid<proposal_object> proposal_id_type;
 typedef oid<research_group_object> research_group_id_type;
 typedef oid<research_group_token_object> research_group_token_id_type;
+typedef oid<research_group_organization_contract_object> research_group_organization_contract_id_type;
 typedef oid<discipline_object> discipline_id_type;
 typedef oid<vote_object> vote_id_type;
 typedef oid<total_votes_object> total_votes_id_type;
@@ -199,8 +204,8 @@ typedef bip::map<discipline_id_type, share_type, std::less<discipline_id_type>, 
 typedef allocator<std::pair<const discipline_id_type, std::vector<account_name_type>>> discipline_id_account_name_allocator_type;
 typedef bip::map<discipline_id_type, std::vector<account_name_type>, std::less<discipline_id_type>, discipline_id_account_name_allocator_type> delegated_expertise_type_map;
 
-typedef allocator<std::pair<const uint16_t, share_type>> proposal_share_type_allocator_type;
-typedef bip::map<uint16_t, share_type, std::less<uint16_t>, proposal_share_type_allocator_type> proposal_type_share_type_map;
+typedef allocator<std::pair<const research_group_quorum_action, percent_type>> research_group_quorum_action_threshold_allocator_type;
+typedef bip::map<research_group_quorum_action, percent_type, std::less<uint16_t>, research_group_quorum_action_threshold_allocator_type> research_group_quorum_action_threshold_map;
 
 typedef allocator<share_type> share_type_allocator_type;
 typedef bip::deque<share_type, share_type_allocator_type> share_type_deque;
@@ -239,6 +244,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (proposal_object_type)
                  (research_group_object_type)
                  (research_group_token_object_type)
+                 (research_group_organization_contract_object_type)
                  (discipline_object_type)
                  (vote_object_type)
                  (total_votes_object_type)

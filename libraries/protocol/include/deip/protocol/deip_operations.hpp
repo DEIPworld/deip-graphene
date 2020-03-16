@@ -7,6 +7,7 @@
 #include <fc/crypto/equihash.hpp>
 #include <fc/shared_string.hpp>
 #include <fc/io/json.hpp>
+#include <deip/protocol/operations/create_research_group_operation.hpp>
 
 namespace deip {
 namespace protocol {
@@ -418,23 +419,6 @@ struct change_recovery_account_operation : public base_operation
 
 // DEIP native operations
 
-struct invitee_type
-{
-    invitee_type()
-    {
-    }
-    invitee_type(const account_name_type& a, const uint32_t& t, const std::string& c)
-            : account(a)
-            , research_group_tokens_in_percent(t)
-            , cover_letter(c)
-    {
-    }
-
-    account_name_type account;
-    uint32_t research_group_tokens_in_percent;
-    std::string cover_letter;
-};
-
 struct expertise_amount_pair_type
 {
     expertise_amount_pair_type()
@@ -467,24 +451,6 @@ struct create_discipline_supply_operation : public base_operation
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
         a.insert(owner);
-    }
-};
-
-struct create_research_group_operation : public base_operation
-{
-    account_name_type creator;
-    std::string name;
-    std::string permlink;
-    std::string description;
-    uint32_t quorum_percent;
-    std::map<uint16_t, uint32_t> proposal_quorums;
-    bool is_dao; // we have the same field in IPL module, Testnet will require a hardfork to be consistent
-    vector<invitee_type> invitees;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(creator);
     }
 };
 
@@ -903,10 +869,8 @@ FC_REFLECT( deip::protocol::recover_account_operation, (account_to_recover)(new_
 FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) )
 
 // DEIP native operations
-FC_REFLECT( deip::protocol::invitee_type, (account)(research_group_tokens_in_percent)(cover_letter))
 FC_REFLECT( deip::protocol::expertise_amount_pair_type, (discipline_id)(amount) )
 FC_REFLECT( deip::protocol::create_discipline_supply_operation, (owner)(balance)(target_discipline)(start_block)(end_block)(is_extendable)(content_hash) )
-FC_REFLECT( deip::protocol::create_research_group_operation, (creator)(name)(permlink)(description)(quorum_percent)(proposal_quorums)(is_dao)(invitees))
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
 FC_REFLECT( deip::protocol::make_review_operation, (author)(research_content_id)(content)(is_positive)(weight))

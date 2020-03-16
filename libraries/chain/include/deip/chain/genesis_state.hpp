@@ -70,8 +70,8 @@ struct genesis_state_type
         std::string name;
         std::string description;
         std::string permlink;
-        uint32_t quorum_percent;
-        std::map<uint16_t, uint32_t> proposal_quorums;
+        uint32_t default_quorum;
+        std::map<research_group_quorum_action, percent_type> action_quorums;
         std::vector<std::string> members;
         bool is_dao = true;
         bool is_personal = false;
@@ -191,8 +191,8 @@ FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
            (name)
            (description)
            (permlink)
-           (quorum_percent)
-           (proposal_quorums)
+           (default_quorum)
+           (action_quorums)
            (members)
            (is_dao)
            (is_personal))

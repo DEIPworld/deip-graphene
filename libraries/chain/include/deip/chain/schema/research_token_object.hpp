@@ -24,7 +24,7 @@ public:
     account_name_type account_name;
     research_id_type research_id;
     share_type amount = 0;
-
+    bool is_compensation;
 };
 
 struct by_account_name;
@@ -57,6 +57,6 @@ typedef multi_index_container<research_token_object,
     }
 }
 
-FC_REFLECT( deip::chain::research_token_object, (id)(account_name)(research_id)(amount))
+FC_REFLECT(deip::chain::research_token_object, (id)(account_name)(research_id)(amount)(is_compensation))
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::research_token_object, deip::chain::research_token_index )

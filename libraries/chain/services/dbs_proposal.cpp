@@ -43,7 +43,7 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
                                                      const account_name_type& creator,
                                                      const research_group_id_type& research_group_id,
                                                      const fc::time_point_sec expiration_time,
-                                                     const share_type quorum_percent)
+                                                     const percent_type quorum)
 {
     const proposal_object& new_proposal = db_impl().create<proposal_object>([&](proposal_object& proposal) {
         proposal.action = action;
@@ -52,7 +52,7 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
         proposal.research_group_id = research_group_id;
         proposal.creation_time = db_impl().head_block_time();
         proposal.expiration_time = expiration_time;
-        proposal.quorum_percent = quorum_percent;
+        proposal.quorum = quorum;
 
         switch (action)
         {
@@ -75,10 +75,10 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
                 fc::json::from_string(json_data).as<rebalance_research_group_tokens_data_type>().validate();
                 break;
             case change_quorum:
-                fc::json::from_string(json_data).as<change_quorum_proposal_data_type>().validate();
+                fc::json::from_string(json_data).as<change_action_quorum_proposal_data_type>().validate();
                 break;
             case change_research_review_share_percent :
-                fc::json::from_string(json_data).as<change_research_review_share_percent_data_type>().validate();
+                fc::json::from_string(json_data).as<change_research_review_reward_percent_data_type>().validate();
                 break;
             case offer_research_tokens :
                 fc::json::from_string(json_data).as<offer_research_tokens_data_type>().validate();
@@ -87,10 +87,10 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
                 fc::json::from_string(json_data).as<create_research_content_data_type>().validate();
                 break;
             case change_research_group_meta:
-                fc::json::from_string(json_data).as<change_research_group_meta_data_type>().validate();
+                fc::json::from_string(json_data).as<change_research_group_metadata_type>().validate();
                 break;
             case change_research_meta:
-                fc::json::from_string(json_data).as<change_research_meta_data_type>().validate();
+                fc::json::from_string(json_data).as<change_research_metadata_type>().validate();
                 break;
         }
     });
@@ -112,12 +112,6 @@ void dbs_proposal::check_proposal_existence(const proposal_id_type& proposal_id)
 bool dbs_proposal::is_expired(const proposal_object& proposal)
 {
     return db_impl().head_block_time() > proposal.expiration_time && !proposal.is_completed;
-}
-
-void dbs_proposal::complete(const proposal_object &proposal) {
-    db_impl().modify(proposal, [&](proposal_object& p) {
-       p.is_completed = true;
-    });
 }
 
 void dbs_proposal::clear_expired_proposals()

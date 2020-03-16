@@ -31,16 +31,16 @@ public:
 
     const research_group_invite_object& create(const account_name_type& account_name,
                                                const research_group_id_type& research_group_id,
-                                               const share_type research_group_token_amount,
+                                               const share_type& research_group_token_amount,
                                                const std::string& cover_letter,
-                                               const account_name_type& token_source);
+                                               const account_name_type& token_source,
+                                               const bool& is_head);
 
-    const research_group_invite_object& get(const research_group_invite_id_type& research_group_invite_id);
+    const research_group_invite_object& get_research_group_invite(const research_group_invite_id_type& research_group_invite_id);
 
-    const research_group_invite_object& get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name,
-                                                                                                    const research_group_id_type& research_group_id);
+    const research_group_invite_object& get_research_group_invite(const account_name_type& account_name, const research_group_id_type& research_group_id);
 
-    void check_research_group_invite_existence(const research_group_invite_id_type& research_group_invite_id);
+    const bool research_group_invite_exists(const research_group_invite_id_type& research_group_invite_id) const;
 
     research_group_invite_refs_type get_research_group_invites_by_account_name(const account_name_type& account_name);
 
@@ -50,6 +50,7 @@ public:
 
     bool is_expired(const research_group_invite_object& invite);
 
+    void remove(const research_group_invite_object& invite);
 };
 
 } // namespace chain
