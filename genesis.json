@@ -123,12 +123,12 @@
     {
       "symbol": "USD",
       "precision": 2,
-      "current_supply": 115000000000
+      "current_supply": 215000000000
     },
     {
       "symbol": "EUR",
       "precision": 2,
-      "current_supply": 115000000000
+      "current_supply": 215000000000
     }
   ],
   "account_balances": [
@@ -383,6 +383,16 @@
     {
       "owner": "hermes",
       "amount": 4010000000
+    },
+    {
+      "owner": "hermes",
+      "amount": 100000000000,
+      "symbol": "USD"
+    },
+    {
+      "owner": "hermes",
+      "amount": 100000000000,
+      "symbol": "EUR"
     }
   ],
   "witness_candidates": [
