@@ -11,9 +11,6 @@
 #include <deip/chain/schema/expert_token_object.hpp>
 #include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 #include <deip/chain/schema/expertise_allocation_proposal_vote_object.hpp>
-#include <deip/chain/schema/grant_application_object.hpp>
-#include <deip/chain/schema/grant_object.hpp>
-#include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/proposal_object.hpp>
 #include <deip/chain/schema/proposal_vote_object.hpp>
 #include <deip/chain/schema/research_content_object.hpp>
@@ -32,6 +29,8 @@
 #include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/grant_application_object.hpp>
 #include <deip/chain/schema/grant_application_review_object.hpp>
+#include <deip/chain/schema/grant_application_review_object.hpp>
+#include <deip/chain/schema/funding_opportunity_object.hpp>
 #include <deip/chain/schema/vote_object.hpp>
 #include <deip/chain/schema/witness_objects.hpp>
 #include <deip/witness/witness_objects.hpp>
@@ -453,14 +452,18 @@ struct research_content_api_obj
         ,  created_at(rc.created_at)
     {
         for (auto reference : rc.references)
+        {
             references.insert(reference._id);
+        }
 
-        external_references.insert(
-            rc.external_references.begin(), 
-            rc.external_references.end()
-        );
+        for (auto& str : rc.external_references)
+        {
+            std::string val = fc::to_string(str);
+            external_references.insert(val);
+        }
 
-        for (const auto& kvp : rc.eci_per_discipline) {
+        for (const auto& kvp : rc.eci_per_discipline) 
+        {
             discipline_id_type discipline_id = kvp.first;
             share_type weight = kvp.second;
             eci_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
@@ -1054,19 +1057,20 @@ struct grant_api_obj
 {
     grant_api_obj(const chain::grant_object& g_o)
         : id(g_o.id._id)
-        , target_discipline(g_o.target_discipline._id)
+        , grantor(g_o.grantor)
         , amount(g_o.amount)
-        , owner(g_o.owner)
+        , review_committee_id(g_o.review_committee_id._id)
         , min_number_of_positive_reviews(g_o.min_number_of_positive_reviews)
         , min_number_of_applications(g_o.min_number_of_applications)
-        , max_number_of_researches_to_grant(g_o.max_number_of_researches_to_grant)
+        , max_number_of_research_to_grant(g_o.max_number_of_research_to_grant)
         , created_at(g_o.created_at)
-        , start_time(g_o.start_time)
-        , end_time(g_o.end_time)
+        , start_date(g_o.start_date)
+        , end_date(g_o.end_date)
 
     {
-        officers.insert(g_o.officers.begin(), g_o.officers.end());
+        target_disciplines.insert(g_o.target_disciplines.begin(), g_o.target_disciplines.end());
     }
+    
 
     // because fc::variant require for temporary object
     grant_api_obj()
@@ -1074,20 +1078,19 @@ struct grant_api_obj
     }
 
     int64_t id;
-    int64_t target_discipline;
+    account_name_type grantor;
     asset amount;
+    int64_t review_committee_id;
 
-    account_name_type owner;
-
-    int16_t min_number_of_positive_reviews;
-    int16_t min_number_of_applications;
-    int16_t max_number_of_researches_to_grant;
+    uint16_t min_number_of_positive_reviews;
+    uint16_t min_number_of_applications;
+    uint16_t max_number_of_research_to_grant;
 
     fc::time_point_sec created_at;
-    fc::time_point_sec start_time;
-    fc::time_point_sec end_time;
+    fc::time_point_sec start_date;
+    fc::time_point_sec end_date;
 
-    std::set<string> officers;
+    std::set<discipline_id_type> target_disciplines;
 };
 
 struct grant_application_api_obj
@@ -1143,6 +1146,58 @@ struct grant_application_review_api_obj
     account_name_type author;
     time_point_sec created_at;
     vector<discipline_api_obj> disciplines;
+};
+
+struct funding_opportunity_api_obj
+{
+    funding_opportunity_api_obj(const chain::funding_opportunity_object& fo_o)
+        :  id(fo_o.id._id)
+        ,  review_committee_id(fo_o.review_committee_id._id)
+        ,  grantor(fo_o.grantor)
+        ,  funding_opportunity_number(fc::to_string(fo_o.funding_opportunity_number))
+        ,  amount(fo_o.amount)
+        ,  award_ceiling(fo_o.award_ceiling)
+        ,  award_floor(fo_o.award_floor)
+        ,  expected_number_of_awards(fo_o.expected_number_of_awards)
+        ,  posted_date(fo_o.posted_date)
+        ,  open_date(fo_o.open_date)
+        ,  close_date(fo_o.close_date)
+    {
+        for (auto& pair : fo_o.additional_info)
+        {
+            std::string key = fc::to_string(pair.first);
+            std::string val = fc::to_string(pair.second);
+            additional_info.insert(std::pair<string, string>(key, val));
+        }
+
+        for (auto& discipline_id : fo_o.target_disciplines)
+        {
+            target_disciplines.insert(discipline_id._id);
+        }
+    }
+
+    // because fc::variant require for temporary object
+    funding_opportunity_api_obj()
+    {
+    }
+
+    int64_t id;
+    research_group_id_type review_committee_id;
+    account_name_type grantor;
+    string funding_opportunity_number;
+
+    asset amount = asset(0, DEIP_SYMBOL);
+    asset award_ceiling = asset(0, DEIP_SYMBOL);
+    asset award_floor = asset(0, DEIP_SYMBOL);
+
+    uint16_t expected_number_of_awards;
+
+    fc::time_point_sec posted_date;
+    fc::time_point_sec open_date;
+    fc::time_point_sec close_date;
+
+    std::map<std::string, std::string> additional_info;
+    std::set<int64_t> target_disciplines;
 };
 
 struct asset_api_obj
@@ -1559,17 +1614,16 @@ FC_REFLECT( deip::app::eci_and_expertise_stats_api_obj,
 
 FC_REFLECT( deip::app::grant_api_obj,
             (id)
-            (target_discipline)
+            (grantor)       
             (amount)
-            (owner)
+            (review_committee_id)
             (min_number_of_positive_reviews)
             (min_number_of_applications)
-            (max_number_of_researches_to_grant)
+            (max_number_of_research_to_grant)
             (created_at)
-            (start_time)
-            (end_time)
-            (officers)
-
+            (start_date)
+            (end_date)
+            (target_disciplines)
 )
 
 FC_REFLECT( deip::app::grant_application_api_obj,
@@ -1580,7 +1634,6 @@ FC_REFLECT( deip::app::grant_application_api_obj,
             (creator)
             (created_at)
             (status)
-
 )
 
 FC_REFLECT( deip::app::grant_application_review_api_obj,
@@ -1591,6 +1644,22 @@ FC_REFLECT( deip::app::grant_application_review_api_obj,
             (author)
             (created_at)
             (disciplines)
+)
+
+FC_REFLECT( deip::app::funding_opportunity_api_obj,
+            (id)
+            (review_committee_id)
+            (grantor)
+            (funding_opportunity_number)
+            (amount)
+            (award_ceiling)
+            (award_floor)
+            (expected_number_of_awards)
+            (posted_date)
+            (open_date)
+            (close_date)
+            (additional_info)
+            (target_disciplines)
 )
 
 FC_REFLECT( deip::app::asset_api_obj,

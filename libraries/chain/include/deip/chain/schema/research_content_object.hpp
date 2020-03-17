@@ -64,7 +64,13 @@ public:
 
     template <typename Constructor, typename Allocator>
     research_content_object(Constructor &&c, allocator<Allocator> a) 
-        : title(a), content(a), permlink(a), authors(a), references(a), external_references(a), eci_per_discipline(a)
+      : title(a), 
+        content(a), 
+        permlink(a), 
+        authors(a), 
+        references(a), 
+        external_references(a), 
+        eci_per_discipline(a)
     {
         c(*this);
     }
@@ -82,7 +88,7 @@ public:
     time_point_sec created_at;
 
     research_content_id_type_set references;
-    fixed_string_32_type_set external_references;
+    shared_string_type_set external_references;
 
     uint16_t activity_round;
     research_content_activity_state activity_state;

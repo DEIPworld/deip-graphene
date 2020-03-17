@@ -409,26 +409,27 @@ public:
     {
         db.create<grant_object>([&](grant_object& ga) {
             ga.id = 1;
-            ga.target_discipline = 1;
-            ga.max_number_of_researches_to_grant = 3;
+            ga.target_disciplines = {1};
             ga.min_number_of_positive_reviews = 1;
             ga.min_number_of_applications = 2;
             ga.amount = asset(1000, DEIP_SYMBOL);
-            ga.start_time = db.head_block_time() - DAYS_TO_SECONDS(30);
-            ga.end_time = db.head_block_time() - DAYS_TO_SECONDS(1);
-            ga.owner = "bob";
+            ga.start_date = db.head_block_time() - DAYS_TO_SECONDS(30);
+            ga.end_date = db.head_block_time() - DAYS_TO_SECONDS(1);
+            ga.grantor = "bob";
+            ga.review_committee_id = 1;
         });
 
         db.create<grant_object>([&](grant_object& ga) {
             ga.id = 2;
-            ga.target_discipline = 2;
-            ga.max_number_of_researches_to_grant = 3;
+            ga.target_disciplines = {2};
+            ga.max_number_of_research_to_grant = 3;
             ga.min_number_of_positive_reviews = 1;
             ga.min_number_of_applications = 2;
             ga.amount = asset(1000, DEIP_SYMBOL);
-            ga.start_time = db.head_block_time() - DAYS_TO_SECONDS(30);
-            ga.end_time = db.head_block_time() - DAYS_TO_SECONDS(1);
-            ga.owner = "jack";
+            ga.start_date = db.head_block_time() - DAYS_TO_SECONDS(30);
+            ga.end_date = db.head_block_time() - DAYS_TO_SECONDS(1);
+            ga.grantor = "jack";
+            ga.review_committee_id = 1;
         });
     }
 

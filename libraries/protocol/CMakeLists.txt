@@ -11,6 +11,7 @@ add_library( deip_protocol
              deip_operations.cpp
              operations/create_research_group_operation.cpp
              operations/make_review_operation.cpp
+             operations/create_grant_operation.cpp
              transaction.cpp
              block.cpp
              asset.cpp

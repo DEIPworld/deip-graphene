@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
             c.authors = { "alice", "bob" };
             c.content = "content";
             c.references = {};
-            c.external_references = { "http://google.com" };
+            c.external_references = {};
             c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
         });
@@ -312,7 +312,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
 //        c.authors = { "alice", "bob" };
 //        c.content = "content";
 //        c.references = {};
-//        c.external_references = { "http://google.com" };
+//        c.external_references = {};
 //        c.type = research_content_type::milestone;
 //    });
 //
@@ -427,7 +427,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
 //        c.authors = { "alice", "bob" };
 //        c.content = "content";
 //        c.references = {};
-//        c.external_references = { "http://google.com" };
+//        c.external_references = {};
 //        c.type = research_content_type::milestone;
 //        c.activity_state = research_content_activity_state::active;
 //    });
@@ -3751,7 +3751,7 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
             c.authors = {"alice"};
             c.content = "content";
             c.references = {};
-            c.external_references = { "http://google.com" };
+            c.external_references = {};
             c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
         });
@@ -3843,7 +3843,7 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
             c.authors = {"alice", "bob"};
             c.content = "content";
             c.references = {};
-            c.external_references = {"http://google.com"};
+            c.external_references = {};
             c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
         });
@@ -4465,7 +4465,7 @@ BOOST_AUTO_TEST_CASE(calculate_eci_test_case)
             c.authors = { "alice" };
             c.content = "content";
             c.references = {};
-            c.external_references = { "http://google.com" };
+            c.external_references = {};
             c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
             c.permlink = "12";
@@ -4478,7 +4478,7 @@ BOOST_AUTO_TEST_CASE(calculate_eci_test_case)
             c.authors = { "alice" };
             c.content = "content2";
             c.references = {};
-            c.external_references = { "http://google.com" };
+            c.external_references = {};
             c.type = research_content_type::milestone_data;
             c.activity_state = research_content_activity_state::active;
             c.permlink = "123";
@@ -4605,14 +4605,18 @@ BOOST_AUTO_TEST_CASE(create_grant_test)
         fund("bob", 500000);
 
         create_grant_operation op;
-        op.target_discipline = 1;
+        op.target_disciplines = {1};
         op.amount = asset(1000, DEIP_SYMBOL);
-        op.owner = "bob";
-        op.min_number_of_positive_reviews = 4;
-        op.min_number_of_applications = 10;
-        op.max_number_of_researches_to_grant = 10;
-        op.start_time = db.head_block_time() + DAYS_TO_SECONDS(10);
-        op.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
+        op.grantor = "bob";
+
+        announced_application_window_contract_v1_0_0_type announced_application_window_contract;
+        announced_application_window_contract.review_committee_id = 1;
+        announced_application_window_contract.min_number_of_positive_reviews = 4;
+        announced_application_window_contract.min_number_of_applications = 10;
+        announced_application_window_contract.max_number_of_research_to_grant = 10;
+        announced_application_window_contract.start_date = db.head_block_time() + DAYS_TO_SECONDS(10);
+        announced_application_window_contract.end_date = db.head_block_time() + DAYS_TO_SECONDS(30);
+        op.details.push_back(announced_application_window_contract);
 
         private_key_type priv_key = generate_private_key("bob");
 
@@ -4624,17 +4628,16 @@ BOOST_AUTO_TEST_CASE(create_grant_test)
         db.push_transaction(tx, 0);
 
         auto& grant = db.get<grant_object>(0);
-        auto& bob_acc = db.get_account(op.owner);
+        auto& bob_acc = db.get_account(op.grantor);
 
         BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob_acc.name, DEIP_SYMBOL).amount == 499000);
-        BOOST_CHECK(grant.target_discipline == 1);
-        BOOST_CHECK(grant.owner == "bob");
+        BOOST_CHECK(grant.grantor == "bob");
         BOOST_CHECK(grant.min_number_of_positive_reviews == 4);
         BOOST_CHECK(grant.min_number_of_applications == 10);
-        BOOST_CHECK(grant.max_number_of_researches_to_grant == 10);
+        BOOST_CHECK(grant.max_number_of_research_to_grant == 10);
         BOOST_CHECK(grant.created_at == db.head_block_time());
-        BOOST_CHECK(grant.start_time == db.head_block_time() + DAYS_TO_SECONDS(10));
-        BOOST_CHECK(grant.end_time == db.head_block_time() + DAYS_TO_SECONDS(30));
+        BOOST_CHECK(grant.start_date == db.head_block_time() + DAYS_TO_SECONDS(10));
+        BOOST_CHECK(grant.end_date == db.head_block_time() + DAYS_TO_SECONDS(30));
     }
     FC_LOG_AND_RETHROW()
 }
@@ -4652,13 +4655,13 @@ BOOST_AUTO_TEST_CASE(create_grant_application_test)
 
         db.create<grant_object>([&](grant_object& ga) {
             ga.id = 0;
-            ga.target_discipline = 1;
-            ga.max_number_of_researches_to_grant = 5;
+            ga.target_disciplines = {1};
+            ga.max_number_of_research_to_grant = 5;
             ga.min_number_of_positive_reviews = 5;
             ga.amount = asset(1000, DEIP_SYMBOL);
-            ga.start_time = db.head_block_time();
-            ga.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
-            ga.owner = "bob";
+            ga.start_date = db.head_block_time();
+            ga.end_date = db.head_block_time() + DAYS_TO_SECONDS(30);
+            ga.grantor = "bob";
         });
 
         db.create<research_object>([&](research_object& r) {
@@ -4796,13 +4799,15 @@ BOOST_AUTO_TEST_CASE(approve_grant_application)
 
         db.create<grant_object>([&](grant_object& g_o) {
             g_o.id = 1;
-            g_o.target_discipline = 1;
+            g_o.target_disciplines = {1};
+            g_o.review_committee_id = 1;
             g_o.min_number_of_positive_reviews = 5;
+            g_o.min_number_of_applications = 10;
+            g_o.max_number_of_research_to_grant = 10;
             g_o.amount = asset(1000, DEIP_SYMBOL);
-            g_o.start_time = db.head_block_time();
-            g_o.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
-            g_o.owner = "bob";
-            g_o.officers = { "alice", "bob" };
+            g_o.start_date = db.head_block_time();
+            g_o.end_date = db.head_block_time() + DAYS_TO_SECONDS(30);
+            g_o.grantor = "bob";
         });
 
         db.create<grant_application_object>([&](grant_application_object& ga_o) {
@@ -4846,16 +4851,12 @@ BOOST_AUTO_TEST_CASE(reject_grant_application)
 
         db.create<grant_object>([&](grant_object& g_o) {
             g_o.id = 1;
-            g_o.target_discipline = 1;
+            g_o.target_disciplines = {1};
             g_o.min_number_of_positive_reviews = 5;
             g_o.amount = asset(1000, DEIP_SYMBOL);
-            g_o.start_time = db.head_block_time();
-            g_o.end_time = db.head_block_time() + DAYS_TO_SECONDS(30);
-            g_o.owner = "bob";
-            std::set<account_name_type> officers;
-            officers.insert("alice");
-            officers.insert("bob");
-            g_o.officers.insert(officers.begin(), officers.end());
+            g_o.start_date = db.head_block_time();
+            g_o.end_date = db.head_block_time() + DAYS_TO_SECONDS(30);
+            g_o.grantor = "bob";
         });
 
         db.create<grant_application_object>([&](grant_application_object& ga_o) {

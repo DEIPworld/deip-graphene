@@ -31,6 +31,7 @@
 #include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_grant_application.hpp>
 #include <deip/chain/services/dbs_grant_application_review.hpp>
+#include <deip/chain/services/dbs_funding_opportunity.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -1371,32 +1372,84 @@ void reject_research_token_offer_evaluator::do_apply(const reject_research_token
 
 void create_grant_evaluator::do_apply(const create_grant_operation& op)
 {
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    const dbs_account& accounts_service = _db.obtain_service<dbs_account>();
     dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
-    dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
+    const dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_funding_opportunity& funding_opportunities_service = _db.obtain_service<dbs_funding_opportunity>();
+    dbs_grant& grants_service = _db.obtain_service<dbs_grant>();
+    const dbs_asset& assets_service = _db.obtain_service<dbs_asset>();
 
-    account_service.check_account_existence(op.owner);
+    FC_ASSERT(accounts_service.account_exists(op.grantor), "Account ${a} does not exists", ("a", op.grantor));
+    FC_ASSERT(assets_service.exists_by_symbol(op.amount.symbol), "Asset ${s} does not exists", ("s", op.amount.symbol));
 
-    auto owner_balance = account_balance_service.get_by_owner_and_asset(op.owner, op.amount.symbol);
+    std::set<discipline_id_type> target_disciplines;
+    target_disciplines.insert(op.target_disciplines.begin(), op.target_disciplines.end());
+    FC_ASSERT(target_disciplines.size() != 0, "Grant target disciplines are not specified");
 
-    for (auto& officer : op.officers) {
-        account_service.check_account_existence(officer);
+    const account_balance_object& grantor_balance = account_balance_service.get_by_owner_and_asset(op.grantor, op.amount.symbol);
+    FC_ASSERT(grantor_balance.amount >= op.amount.amount, 
+      "Grantor ${g} does not have enough funds. Requested: ${ga} Actual: ${ba}", 
+      ("g", op.grantor)("ga", op.amount)("ba", grantor_balance.amount));
+
+
+    const grant_contract_details grant_contract = *(op.get_grant_contract());
+    
+    if (grant_contract.which() == grant_contract_details::tag<announced_application_window_contract_v1_0_0_type>::value)
+    {
+        const auto announced_application_window_contract = grant_contract.get<announced_application_window_contract_v1_0_0_type>();
+        FC_ASSERT(research_group_service.research_group_exists(announced_application_window_contract.review_committee_id), 
+          "Review committee ${rg} does not exists", 
+          ("rg", announced_application_window_contract.review_committee_id));
+          
+        FC_ASSERT(announced_application_window_contract.start_date >= _db.head_block_time(), "Start date must be greater than now");
+        FC_ASSERT(announced_application_window_contract.start_date < announced_application_window_contract.end_date, "Start date must be earlier than end date");
+
+        grants_service.create_grant_with_announced_application_window(
+          op.grantor,
+          op.amount,
+          target_disciplines,
+          announced_application_window_contract.review_committee_id,
+          announced_application_window_contract.min_number_of_positive_reviews,
+          announced_application_window_contract.min_number_of_applications,
+          announced_application_window_contract.max_number_of_research_to_grant,
+          announced_application_window_contract.start_date,
+          announced_application_window_contract.end_date);
+    }
+ 
+    else if (grant_contract.which() == grant_contract_details::tag<funding_opportunity_announcement_contract_v1_0_0_type>::value)
+    {
+        const auto funding_opportunity_announcement_contract = grant_contract.get<funding_opportunity_announcement_contract_v1_0_0_type>();
+        FC_ASSERT(research_group_service.research_group_exists(funding_opportunity_announcement_contract.organization_id), 
+          "Organization ${rg} does not exists", 
+          ("rg", funding_opportunity_announcement_contract.organization_id));
+
+        FC_ASSERT(research_group_service.research_group_exists(funding_opportunity_announcement_contract.review_committee_id), 
+          "Review committee ${rg} does not exists", 
+          ("rg", funding_opportunity_announcement_contract.review_committee_id));
+        
+        FC_ASSERT(funding_opportunity_announcement_contract.open_date >= _db.head_block_time(), "Open date must be greater than now");
+        FC_ASSERT(funding_opportunity_announcement_contract.open_date < funding_opportunity_announcement_contract.close_date, "Open date must be earlier than close date");
+
+        funding_opportunities_service.create_funding_opportunity_announcement(
+          funding_opportunity_announcement_contract.organization_id, 
+          funding_opportunity_announcement_contract.review_committee_id,
+          op.grantor,
+          funding_opportunity_announcement_contract.funding_opportunity_number,
+          funding_opportunity_announcement_contract.additional_info,
+          target_disciplines,
+          op.amount,
+          funding_opportunity_announcement_contract.award_ceiling,
+          funding_opportunity_announcement_contract.award_floor,
+          funding_opportunity_announcement_contract.expected_number_of_awards,
+          funding_opportunity_announcement_contract.open_date,
+          funding_opportunity_announcement_contract.close_date
+        );
     }
 
-    FC_ASSERT(owner_balance.amount >= op.amount.amount, "You do not have enough funds to grant");
-
-    FC_ASSERT(op.start_time >= _db.head_block_time(), "Start time must be greater than now");
-
-    account_balance_service.adjust_balance(op.owner, -op.amount);
-    grant_service.create(op.target_discipline,
-                         op.amount,
-                         op.min_number_of_positive_reviews,
-                         op.min_number_of_applications,
-                         op.max_number_of_researches_to_grant,
-                         op.start_time,
-                         op.end_time,
-                         op.owner,
-                         op.officers);
+    else 
+    {
+        FC_ASSERT(true, "WIP");
+    }
 }
 
 void create_grant_application_evaluator::do_apply(const create_grant_application_operation& op)
@@ -1409,7 +1462,10 @@ void create_grant_application_evaluator::do_apply(const create_grant_application
     dbs_grant_application& grant_application_service = _db.obtain_service<dbs_grant_application>();
 
     account_service.check_account_existence(op.creator);
-    grant_service.check_grant_existence(op.grant_id);
+
+    FC_ASSERT(grant_service.grant_with_announced_application_window_exists(op.grant_id), 
+      "Grant ${1} does not exist", ("1", op.grant_id));
+
     research_service.check_research_existence(op.research_id);
     
     const auto& research = research_service.get_research(op.research_id);    
@@ -1417,11 +1473,13 @@ void create_grant_application_evaluator::do_apply(const create_grant_application
       "${a} is not a member of ${rg} research group",
       ("${a}", op.creator)("rg", research.research_group_id));
 
-    const auto& grant = grant_service.get(op.grant_id);
-    research_discipline_relation_service.check_existence_by_research_and_discipline(op.research_id, grant.target_discipline);
+    const auto& grant = grant_service.get_grant_with_announced_application_window(op.grant_id);
+    auto parent_discipline_itr = std::min_element(grant.target_disciplines.begin(), grant.target_disciplines.end());
+    FC_ASSERT(parent_discipline_itr != grant.target_disciplines.end(), "Grant main disciplne is not defined");
+    research_discipline_relation_service.check_existence_by_research_and_discipline(op.research_id, *parent_discipline_itr);
 
     auto now = _db.head_block_time();
-    FC_ASSERT((now >= grant.start_time) && (now <= grant.end_time), "Grant is inactive now");
+    FC_ASSERT((now >= grant.start_date) && (now <= grant.end_date), "Grant is inactive now");
 
     grant_application_service.create_grant_application(op.grant_id, op.research_id, op.application_hash, op.creator);
 }
@@ -1477,6 +1535,7 @@ void approve_grant_application_evaluator::do_apply(const approve_grant_applicati
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
     dbs_grant_application& grant_application_service = _db.obtain_service<dbs_grant_application>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     account_service.check_account_existence(op.approver);
     grant_application_service.check_grant_application_existence(op.grant_application_id);
@@ -1485,11 +1544,12 @@ void approve_grant_application_evaluator::do_apply(const approve_grant_applicati
     FC_ASSERT(grant_application.status == grant_application_status::application_pending,
               "Grant application ${a} has ${s} status", ("a", grant_application.id)("s", grant_application.status));
 
-    auto& grant = grant_service.get(grant_application.grant_id);
-    auto officers = grant.officers;
-    bool op_is_allowed = grant.owner == op.approver
+    const auto& grant = grant_service.get_grant_with_announced_application_window(grant_application.grant_id);
+
+    const auto officers = research_group_service.get_research_group_members(grant.review_committee_id);
+    bool op_is_allowed = grant.grantor == op.approver
         || std::any_of(officers.begin(), officers.end(),
-                       [&](account_name_type& officer) { return officer == op.approver; });
+                       [&](const account_name_type& officer) { return officer == op.approver; });
 
     FC_ASSERT(op_is_allowed, "This account cannot approve grant applications");
     grant_application_service.update_grant_application_status(grant_application, grant_application_status::application_approved);
@@ -1500,6 +1560,7 @@ void reject_grant_application_evaluator::do_apply(const reject_grant_application
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_grant& grant_service = _db.obtain_service<dbs_grant>();
     dbs_grant_application& grant_application_service = _db.obtain_service<dbs_grant_application>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     account_service.check_account_existence(op.rejector);
     grant_application_service.check_grant_application_existence(op.grant_application_id);
@@ -1508,12 +1569,12 @@ void reject_grant_application_evaluator::do_apply(const reject_grant_application
     FC_ASSERT(grant_application.status == grant_application_status::application_pending,
               "Grant application ${a} has ${s} status", ("a", grant_application.id)("s", grant_application.status));
 
-    const auto& grant = grant_service.get(grant_application.grant_id);
-    
-    auto officers = grant.officers;
-    bool op_is_allowed = grant.owner == op.rejector
+    const auto& grant = grant_service.get_grant_with_announced_application_window(grant_application.grant_id);
+
+    const auto officers = research_group_service.get_research_group_members(grant.review_committee_id);
+    bool op_is_allowed = grant.grantor == op.rejector
         || std::any_of(officers.begin(), officers.end(),
-                       [&](account_name_type& officer) { return officer == op.rejector; });
+                       [&](const account_name_type& officer) { return officer == op.rejector; });
 
     FC_ASSERT(op_is_allowed, "This account cannot reject grant applications");
     grant_application_service.update_grant_application_status(grant_application, grant_application_status::application_rejected);

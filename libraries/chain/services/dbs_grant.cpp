@@ -11,106 +11,113 @@ dbs_grant::dbs_grant(database &db)
 {
 }
 
-const grant_object& dbs_grant::create(const discipline_id_type& target_discipline,
-                                      const asset& amount,
-                                      const int16_t& min_number_of_positive_reviews,
-                                      const int16_t& min_number_of_applications,
-                                      const int16_t& max_number_of_researches_to_grant,
-                                      fc::time_point_sec start_time,
-                                      fc::time_point_sec end_time,
-                                      const account_name_type& owner,
-                                      const set<account_name_type>& officers)
+const grant_object& dbs_grant::create_grant_with_announced_application_window(
+    const account_name_type& grantor,
+    const asset& amount,
+    const std::set<discipline_id_type>& target_disciplines,
+    const research_group_id_type& review_committee_id,
+    const uint16_t& min_number_of_positive_reviews,
+    const uint16_t& min_number_of_applications,
+    const uint16_t& max_number_of_research_to_grant,
+    const fc::time_point_sec start_date,
+    const fc::time_point_sec end_date)
 {
-    auto now = db_impl().head_block_time();
+    auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
+    account_balance_service.adjust_balance(grantor, -amount);
 
-    FC_ASSERT(start_time >= now, "Start time must be greater then now");
-
-    auto& grant = db_impl().create<grant_object>([&](grant_object& grant) {
-        grant.target_discipline = target_discipline;
+    const auto now = db_impl().head_block_time();
+    const grant_object& grant = db_impl().create<grant_object>([&](grant_object& grant) {
+        grant.grantor = grantor;
         grant.amount = amount;
+        grant.target_disciplines.insert(target_disciplines.begin(), target_disciplines.end());
+        grant.review_committee_id = review_committee_id;
         grant.min_number_of_positive_reviews = min_number_of_positive_reviews;
         grant.min_number_of_applications = min_number_of_applications;
-        grant.max_number_of_researches_to_grant = max_number_of_researches_to_grant;
-        grant.start_time = start_time;
-        grant.end_time = end_time;
+        grant.max_number_of_research_to_grant = max_number_of_research_to_grant;
+        grant.start_date = start_date;
+        grant.end_date = end_date;
         grant.created_at = now;
-        grant.owner = owner;
-        grant.officers.insert(officers.begin(), officers.end());
     });
 
     return grant;
 }
 
-const grant_object& dbs_grant::get(const grant_id_type& id) const
+const grant_object& dbs_grant::get_grant_with_announced_application_window(const grant_id_type& id) const
 {
-    try {
-        return db_impl().get<grant_object>(id);
-    }
-    FC_CAPTURE_AND_RETHROW((id))
+    const auto& idx = db_impl()
+      .get_index<grant_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    FC_ASSERT(itr != idx.end(), "Grant with id ${1} does not exist", ("1", id));
+    return *itr;
 }
 
-void dbs_grant::check_grant_existence(const grant_id_type& id) const
+const fc::optional<std::reference_wrapper<const grant_object>> dbs_grant::get_grant_with_announced_application_window_if_exists(const grant_id_type& id) const
 {
-    const auto& grant = db_impl().find<grant_object, by_id>(id);
-    FC_ASSERT(grant != nullptr, "Grant with id \"${1}\" must exist.", ("1", id));
-}
+    fc::optional<std::reference_wrapper<const grant_object>> result;
 
-dbs_grant::grant_refs_type dbs_grant::get_by_target_discipline(const discipline_id_type& discipline_id)
-{
-    grant_refs_type ret;
+    const auto& idx = db_impl()
+      .get_index<grant_index>()
+      .indicies()
+      .get<by_id>();
 
-    auto it_pair = db_impl().get_index<grant_index>().indicies().get<by_target_discipline>().equal_range(discipline_id);
-    auto it = it_pair.first;
-    const auto it_end = it_pair.second;
-    while (it != it_end)
+    auto itr = idx.find(id);
+    if (itr != idx.end())
     {
-        ret.push_back(std::cref(*it));
-        ++it;
-    }
-
-    return ret;
-}
-
-dbs_grant::grant_refs_type dbs_grant::get_by_owner(const account_name_type& owner)
-{
-    grant_refs_type ret;
-
-    auto it_pair = db_impl().get_index<grant_index>().indicies().get<by_owner>().equal_range(owner);
-    auto it = it_pair.first;
-    const auto it_end = it_pair.second;
-    while (it != it_end)
-    {
-        ret.push_back(std::cref(*it));
-        ++it;
-    }
-
-    return ret;
-}
-
-std::set<string> dbs_grant::lookup_grant_owners(const string &lower_bound_owner_name,
-                                                                        uint32_t limit) const
-{
-    FC_ASSERT(limit <= DEIP_LIMIT_DISCIPLINE_SUPPLIES_LIST_SIZE,
-              "limit must be less or equal than ${1}, actual limit value == ${2}",
-              ("1", DEIP_LIMIT_DISCIPLINE_SUPPLIES_LIST_SIZE)("2", limit));
-    const auto& grants_by_owner_name = db_impl().get_index<grant_index>().indices().get<by_owner>();
-    set<string> result;
-
-    for (auto itr = grants_by_owner_name.lower_bound(lower_bound_owner_name);
-         limit-- && itr != grants_by_owner_name.end(); ++itr)
-    {
-        result.insert(itr->owner);
+        result = *itr;
     }
 
     return result;
 }
 
-void dbs_grant::delete_grant(const grant_object& grant)
+
+const bool dbs_grant::grant_with_announced_application_window_exists(const grant_id_type& id) const
+{
+    const auto& idx = db_impl()
+      .get_index<grant_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    return itr != idx.end(); 
+}
+
+
+dbs_grant::grant_refs_type dbs_grant::get_grants_with_announced_application_window_by_grantor(const account_name_type& grantor)
+{
+    grant_refs_type ret;
+
+    const auto& idx = db_impl()
+      .get_index<grant_index>()
+      .indicies()
+      .get<by_owner>();
+
+    auto it_pair = idx.equal_range(grantor);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+
+void dbs_grant::remove_grant_with_announced_application_window(const grant_object& grant)
 {
     auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
-    account_balance_service.adjust_balance(grant.owner, grant.amount);
+    account_balance_service.adjust_balance(grant.grantor, grant.amount);
 
-    auto it_pair = db_impl().get_index<grant_application_index>().indicies().get<by_grant_id>().equal_range(grant.id);
+    const auto& applications_idx = db_impl()
+      .get_index<grant_application_index>()
+      .indicies()
+      .get<by_grant_id>();
+      
+    auto it_pair = applications_idx.equal_range(grant.id);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)

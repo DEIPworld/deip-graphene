@@ -224,9 +224,17 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
     research_service.check_research_existence(data.research_id);
     
     const auto& research = research_service.get_research(data.research_id);
-    FC_ASSERT(!research.is_finished, "The research ${r} has been finished already", ("r", research.id));
+    FC_ASSERT(!research.is_finished, "The research ${r} has been finished already", ("r", research.title));
 
-    const auto& research_content = research_content_service.create(data.research_id, data.type, data.title, data.content, data.permlink, data.authors, data.references, data.external_references);
+    const auto& research_content = research_content_service.create_research_content(
+      data.research_id, 
+      data.type, 
+      data.title, 
+      data.content, 
+      data.permlink, 
+      data.authors, 
+      data.references, 
+      data.external_references);
     
     db_impl().modify(research, [&](research_object& r_o) {
         for (auto author : data.authors)
