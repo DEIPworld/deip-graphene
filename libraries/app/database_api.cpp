@@ -130,8 +130,7 @@ public:
 
     // Research group invites
     fc::optional<research_group_invite_api_obj> get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id) const;
-    fc::optional<research_group_invite_api_obj> get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name,
-                                                                                                                const research_group_id_type& research_group_id) const;
+    fc::optional<research_group_invite_api_obj> get_research_group_invite(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
 
     // Total votes
     fc::optional<total_votes_api_obj> get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id,
@@ -176,6 +175,12 @@ public:
     // Account balances
     fc::optional<account_balance_api_obj> get_account_balance(const account_balance_id_type& id) const;
     fc::optional<account_balance_api_obj> get_account_balance_by_owner_and_asset_symbol(const account_name_type& owner, const string& symbol) const;
+
+    // Organizational contracts
+    fc::optional<research_group_organization_contract_api_obj> get_organizational_contract(const research_group_organization_contract_id_type& id) const;
+    fc::optional<research_group_organization_contract_api_obj> get_organizational_contract_by_organization_and_research_group_and_type(const research_group_id_type& organization_id, const research_group_id_type& research_group_id, const uint16_t& type) const;
+    vector<research_group_organization_contract_api_obj> get_organizational_contracts_by_research_group(const research_group_id_type& research_group_id) const;
+    vector<research_group_organization_contract_api_obj> get_organizational_contracts_by_organization(const research_group_id_type& organization_id) const;
 
     // Authority / validation
     std::string get_transaction_hex(const signed_transaction& trx) const;
@@ -942,7 +947,7 @@ state database_api::get_state(string path) const
                 auto acnt = part[0].substr(1);
                 _state.accounts[acnt] = extended_account(my->_db.get_account(acnt), my->_db);
 
-                auto& eacnt = _state.accounts[acnt];
+                // auto& eacnt = _state.accounts[acnt];
                 if (part[1] == "transfers")
                 {
                     // TODO: rework this garbage method - split it into sensible parts
@@ -1767,11 +1772,10 @@ database_api_impl::get_research_group_invite_by_id(const research_group_invite_i
 fc::optional<research_group_invite_api_obj> database_api::get_research_group_invite_by_account_name_and_research_group_id(
     const account_name_type& account_name, const research_group_id_type& research_group_id) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_research_group_invite_by_account_name_and_research_group_id(account_name, research_group_id); });
+    return my->_db.with_read_lock([&]() { return my->get_research_group_invite(account_name, research_group_id); });
 }
 
-fc::optional<research_group_invite_api_obj> database_api_impl::get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name,
-                                                                                                                               const research_group_id_type& research_group_id) const
+fc::optional<research_group_invite_api_obj> database_api_impl::get_research_group_invite(const account_name_type& account_name, const research_group_id_type& research_group_id) const
 {
     const auto& idx = _db.get_index<research_group_invite_index>().indices().get<by_account_and_research_group_id>();
     auto itr = idx.find(std::make_tuple(account_name, research_group_id));
@@ -2461,7 +2465,7 @@ vector<offer_research_tokens_api_obj> database_api::get_offers_by_receiver(const
 fc::optional<offer_research_tokens_api_obj> database_api::get_offer_by_receiver_and_research_id(const account_name_type& receiver,
                                                                                                 const research_id_type& research_id) const
 {
-  return my->_db.with_read_lock([&]() { return my->get_offer_by_receiver_and_research_id(receiver, research_id); });
+    return my->_db.with_read_lock([&]() { return my->get_offer_by_receiver_and_research_id(receiver, research_id); });
 }
 
 fc::optional<offer_research_tokens_api_obj> database_api_impl::get_offer_by_receiver_and_research_id(const account_name_type& receiver,
@@ -2564,7 +2568,7 @@ eci_and_expertise_stats_api_obj database_api::get_eci_and_expertise_stats_by_dis
 
 fc::optional<grant_api_obj> database_api::get_grant(const grant_id_type& id) const
 {
-  return my->_db.with_read_lock([&]() { return my->get_grant(id); });
+    return my->_db.with_read_lock([&]() { return my->get_grant(id); });
 }
 
 fc::optional<grant_api_obj> database_api_impl::get_grant(const grant_id_type& id) const
@@ -2639,7 +2643,7 @@ set<string> database_api_impl::lookup_grant_owners(const string& lower_bound_nam
 
 fc::optional<grant_application_api_obj> database_api::get_grant_application(const grant_application_id_type& id) const
 {
-  return my->_db.with_read_lock([&]() { return my->get_grant_application(id); });
+    return my->_db.with_read_lock([&]() { return my->get_grant_application(id); });
 }
 
 fc::optional<grant_application_api_obj> database_api_impl::get_grant_application(const grant_application_id_type& id) const
@@ -2780,6 +2784,112 @@ fc::optional<account_balance_api_obj> database_api_impl::get_account_balance_by_
         return *itr;
 
     return {};
+}
+
+fc::optional<research_group_organization_contract_api_obj> database_api::get_organizational_contract(const research_group_organization_contract_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_organizational_contract(id); });
+}
+
+fc::optional<research_group_organization_contract_api_obj> database_api_impl::get_organizational_contract(const research_group_organization_contract_id_type& id) const
+{
+    fc::optional<research_group_organization_contract_api_obj> contract;
+
+    const auto& idx = _db
+      .get_index<research_group_organization_contract_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        contract = research_group_organization_contract_api_obj(*itr);
+    }
+
+    return contract;
+}
+
+
+vector<research_group_organization_contract_api_obj> database_api::get_organizational_contracts_by_organization(const research_group_id_type& organization_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_organizational_contracts_by_organization(organization_id); });
+}
+
+vector<research_group_organization_contract_api_obj> database_api_impl::get_organizational_contracts_by_organization(const research_group_id_type& organization_id) const
+{
+    vector<research_group_organization_contract_api_obj> results;
+
+    const auto& idx = _db
+      .get_index<research_group_organization_contract_index>()
+      .indicies()
+      .get<contracts_by_organization>();
+
+    auto itr = idx.find(organization_id);
+    const auto itr_end = idx.end();
+    while (itr != itr_end)
+    {
+        results.push_back(research_group_organization_contract_api_obj(*itr));
+        ++itr;
+    }
+
+    return results;
+}
+
+
+vector<research_group_organization_contract_api_obj> database_api::get_organizational_contracts_by_research_group(const research_group_id_type& research_group_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_organizational_contracts_by_research_group(research_group_id); });
+}
+
+vector<research_group_organization_contract_api_obj> database_api_impl::get_organizational_contracts_by_research_group(const research_group_id_type& research_group_id) const
+{
+    vector<research_group_organization_contract_api_obj> results;
+
+    const auto& itr_pair = _db
+      .get_index<research_group_organization_contract_index>()
+      .indicies()
+      .get<contracts_by_research_group>()
+      .equal_range(research_group_id);
+
+    auto itr = itr_pair.first;
+    const auto itr_end = itr_pair.second;
+
+    while (itr != itr_end)
+    {
+        results.push_back(research_group_organization_contract_api_obj(*itr));
+        ++itr;
+    }
+
+    return results;
+}
+
+
+fc::optional<research_group_organization_contract_api_obj> database_api::get_organizational_contract_by_organization_and_research_group_and_type(const research_group_id_type& organization_id, const research_group_id_type& research_group_id, const uint16_t& type) const
+{
+    return my->_db.with_read_lock([&]() {
+        return my->get_organizational_contract_by_organization_and_research_group_and_type(
+          organization_id,
+          research_group_id, 
+          type);
+    });
+}
+
+fc::optional<research_group_organization_contract_api_obj> database_api_impl::get_organizational_contract_by_organization_and_research_group_and_type(const research_group_id_type& organization_id, const research_group_id_type& research_group_id, const uint16_t& type) const
+{
+    fc::optional<research_group_organization_contract_api_obj> contract;
+
+    const auto& idx = _db
+      .get_index<research_group_organization_contract_index>()
+      .indicies()
+      .get<contract_by_organization_and_research_group_and_type>();
+
+    auto itr = idx.find(std::make_tuple(organization_id, research_group_id, type));
+    if (itr != idx.end())
+    {
+        contract = research_group_organization_contract_api_obj(*itr);
+    }
+
+    return contract;
 }
 
 } // namespace app

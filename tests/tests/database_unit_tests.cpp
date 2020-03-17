@@ -383,7 +383,7 @@ public:
             eap_o.total_voted_expertise = 0;
             eap_o.description = "test1";
             eap_o.expiration_time = time_point_sec(132);
-            eap_o.quorum_percent = 15 * DEIP_1_PERCENT;
+            eap_o.quorum = 15 * DEIP_1_PERCENT;
         });
         db.create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
             eap_o.id = 1;
@@ -392,7 +392,7 @@ public:
             eap_o.total_voted_expertise = 0;
             eap_o.description = "test2";
             eap_o.expiration_time = time_point_sec(0xffffffff);
-            eap_o.quorum_percent = 15 * DEIP_1_PERCENT;
+            eap_o.quorum = 15 * DEIP_1_PERCENT;
         });
         db.create<expertise_allocation_proposal_object>([&](expertise_allocation_proposal_object& eap_o) {
             eap_o.id = 2;
@@ -401,7 +401,7 @@ public:
             eap_o.total_voted_expertise = 100000;
             eap_o.description = "test3";
             eap_o.expiration_time = time_point_sec(0xffffffff);
-            eap_o.quorum_percent = 15 * DEIP_1_PERCENT;
+            eap_o.quorum = 15 * DEIP_1_PERCENT;
         });
     }
 
@@ -1001,7 +1001,7 @@ BOOST_AUTO_TEST_CASE(clear_expired_discipline_supplies)
 
         generate_block();
 
-        auto& grant = db.create<discipline_supply_object>([&](discipline_supply_object& g) {
+        db.create<discipline_supply_object>([&](discipline_supply_object& g) {
             g.id = 0;
             g.balance = asset(0, DEIP_SYMBOL);
             g.end_block = db.head_block_num() - 1;

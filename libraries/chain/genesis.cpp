@@ -161,26 +161,26 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
         owner_authority.add_authority(account.public_key, 1);
         owner_authority.weight_threshold = 1;
 
-        auto& new_account = account_service.create_account_by_faucets(account.name,
-                registrar.name,
-                account.public_key,
-                "",
-                owner_authority,
-                owner_authority,
-                owner_authority,
-                asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL));
-
+        account_service.create_account_by_faucets(
+          account.name,
+          registrar.name,
+          account.public_key,
+          "",
+          owner_authority,
+          owner_authority,
+          owner_authority,
+          asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL));
     }
 }
 
 
 void database::init_genesis_assets(const genesis_state_type& genesis_state)
 {
-    auto& asset_service = obtain_service<dbs_asset>();
     const vector<genesis_state_type::asset_type>& assets = genesis_state.assets;
     const vector<genesis_state_type::account_balance_type>& account_balances = genesis_state.account_balances;
+    const genesis_state_type::registrar_account_type& registrar = genesis_state.registrar_account;
 
-    const share_type deip_total_supply = std::accumulate(
+    const share_type liquid_total_supply = std::accumulate(
       account_balances.begin(), account_balances.end(), share_type(0),
       [&](share_type acc, const genesis_state_type::account_balance_type& account_balance) {
         return account_balance.symbol == asset(0, DEIP_SYMBOL).symbol_name() 
@@ -188,9 +188,9 @@ void database::init_genesis_assets(const genesis_state_type& genesis_state)
           : acc;
       });
 
-    FC_ASSERT(deip_total_supply.value == genesis_state.init_supply,
+    FC_ASSERT(liquid_total_supply.value == genesis_state.init_supply - registrar.common_tokens_amount,
       "Total supply (${total}) is not equal to inited supply (${inited}) for ${s} asset",
-      ("total", deip_total_supply.value)("inited", genesis_state.init_supply)("s", asset(0, DEIP_SYMBOL).symbol_name()));
+      ("total", liquid_total_supply.value)("inited", genesis_state.init_supply)("s", asset(0, DEIP_SYMBOL).symbol_name()));
 
     create<asset_object>([&](asset_object& a_o) {
         const protocol::asset a = asset(0, DEIP_SYMBOL);
@@ -230,8 +230,7 @@ void database::init_genesis_assets(const genesis_state_type& genesis_state)
 
 void database::init_genesis_account_balances(const genesis_state_type& genesis_state)
 {
-    auto& account_balance_service = obtain_service<dbs_account_balance>();
-    auto& asset_service = obtain_service<dbs_asset>();
+    const auto& asset_service = obtain_service<dbs_asset>();
 
     const genesis_state_type::registrar_account_type& registrar = genesis_state.registrar_account;
     const vector<genesis_state_type::account_balance_type>& account_balances = genesis_state.account_balances;
@@ -502,7 +501,7 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
         FC_ASSERT(!research_group.name.empty(), "Research group 'name' must be specified");
         FC_ASSERT(!research_group.permlink.empty(), "Research group 'permlink' must be specified");
         FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
-        FC_ASSERT(research_group.quorum_percent >= 5 * DEIP_1_PERCENT && research_group.quorum_percent <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
+        FC_ASSERT(research_group.default_quorum >= 5 * DEIP_1_PERCENT && research_group.default_quorum <= DEIP_100_PERCENT, "Quorum percent must be in 5% to 100% range");
 
         create<research_group_object>([&](research_group_object& rg) {
             rg.id = research_group.id;
@@ -510,17 +509,19 @@ void database::init_research_groups(const genesis_state_type& genesis_state)
             fc::from_string(rg.description, research_group.description);
             fc::from_string(rg.permlink, research_group.permlink);
             rg.balance = asset(0, DEIP_SYMBOL);
-            rg.quorum_percent = research_group.quorum_percent;
+            rg.default_quorum = research_group.default_quorum;
 
-            std::map<uint16_t , share_type> proposal_quorums;
+            std::map<research_group_quorum_action, percent_type> action_quorums;
 
-            for (int i = First_proposal; i <= Last_proposal; i++)
-                proposal_quorums.insert(std::make_pair(i, research_group.quorum_percent));
+            for (int i = FIRST_ACTION_QUORUM_TYPE; i <= LAST_ACTION_QUORUM_TYPE; i++)
+            {
+                action_quorums.insert(std::make_pair(research_group_quorum_action(i), research_group.default_quorum));
+            }
 
-            rg.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
+            rg.action_quorums.insert(action_quorums.begin(), action_quorums.end());
             rg.is_dao = research_group.is_dao;
             rg.is_personal = research_group.is_personal;
-
+            rg.is_centralized = !research_group.is_dao;
             rg.creator = research_group.members.front();
         });
 
@@ -546,16 +547,18 @@ void database::init_personal_research_groups(const genesis_state_type& genesis_s
         FC_ASSERT(!account.name.empty(), "Account 'name' should not be empty.");
         FC_ASSERT(is_valid_account_name(account.name), "Account name ${n} is invalid", ("n", account.name));
 
-        std::map<uint16_t, share_type> personal_research_group_proposal_quorums;
+        std::map<research_group_quorum_action, percent_type> personal_research_group_proposal_quorums;
 
-        for (int i = First_proposal; i <= Last_proposal; i++)
-            personal_research_group_proposal_quorums.insert(std::make_pair(i, DEIP_100_PERCENT));
+        for (int i = FIRST_ACTION_QUORUM_TYPE; i <= LAST_ACTION_QUORUM_TYPE; i++)
+        {
+            personal_research_group_proposal_quorums.insert(std::make_pair(research_group_quorum_action(i), percent_type(DEIP_100_PERCENT)));
+        }
 
         auto& research_group = create<research_group_object>([&](research_group_object& research_group) {
             fc::from_string(research_group.name, account.name);
             fc::from_string(research_group.permlink, account.name);
             fc::from_string(research_group.description, account.name);
-            research_group.proposal_quorums.insert(personal_research_group_proposal_quorums.begin(), personal_research_group_proposal_quorums.end());
+            research_group.action_quorums.insert(personal_research_group_proposal_quorums.begin(), personal_research_group_proposal_quorums.end());
             research_group.is_dao = false;
             research_group.is_centralized = true;
             research_group.is_personal = true;

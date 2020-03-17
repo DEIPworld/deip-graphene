@@ -153,7 +153,6 @@ const std::map<discipline_id_type, share_type> dbs_research_content::get_eci_eva
 {
     const dbs_review& review_service = db_impl().obtain_service<dbs_review>();
     const dbs_research& research_service = db_impl().obtain_service<dbs_research>();
-    const dbs_vote& review_vote_service = db_impl().obtain_service<dbs_vote>();
     const dbs_research_discipline_relation& research_discipline_relation_service = db_impl().obtain_service<dbs_research_discipline_relation>();
 
     const auto& research_content = get(research_content_id);

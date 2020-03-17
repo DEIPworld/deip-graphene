@@ -25,6 +25,9 @@
 namespace deip {
 namespace chain {
 
+using deip::protocol::research_group_quorum_action;
+using deip::protocol::percent_type;
+
 void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
 {
     private_key_type init_delegate_priv_key = private_key_type::regenerate(fc::sha256::hash(string("init_key")));
@@ -413,7 +416,7 @@ database_fixture::research_group_create(const int64_t& id,
                                         const string& permlink,
                                         const string& description,
                                         const share_type funds,
-                                        const std::map<uint16_t, share_type>& proposal_quorums,
+                                        const std::map<research_group_quorum_action, percent_type>& action_quorums,
                                         const bool is_dao,
                                         const bool is_personal)
 {
@@ -424,7 +427,7 @@ database_fixture::research_group_create(const int64_t& id,
               fc::from_string(rg.permlink, permlink);
               fc::from_string(rg.description, description);
               rg.balance = funds;
-              rg.proposal_quorums.insert(proposal_quorums.begin(), proposal_quorums.end());
+              rg.action_quorums.insert(action_quorums.begin(), action_quorums.end());
               rg.is_dao = is_dao;
               rg.is_personal = is_personal;
           });
@@ -436,8 +439,8 @@ const research_group_object& database_fixture::research_group_create_by_operatio
                                                                                   const string& name,
                                                                                   const string& permlink,
                                                                                   const string& description,
-                                                                                  const uint32_t& quorum_percent,
-                                                                                  const std::map<uint16_t, uint32_t>& proposal_quorums,
+                                                                                  const percent_type& default_quorum,
+                                                                                  const std::map<research_group_quorum_action, percent_type>& action_quorums,
                                                                                   const bool is_dao)
 {
     try
@@ -449,11 +452,7 @@ const research_group_object& database_fixture::research_group_create_by_operatio
         op.name = name;
         op.permlink = permlink;
         op.description = description;
-
         op.creator = creator;
-        op.quorum_percent = quorum_percent;
-        op.proposal_quorums = proposal_quorums;
-        op.is_dao = is_dao;
 
         trx.operations.push_back(op);
 
@@ -476,21 +475,22 @@ const research_group_token_object& database_fixture::research_group_token_create
     const research_group_id_type& research_group_id, const account_name_type& account, const share_type tokens_amount)
 {
     auto& research_group_service = db.obtain_service<dbs_research_group>();
-    const research_group_token_object& new_research_group_token = research_group_service.create_research_group_token(research_group_id, tokens_amount, account);
+    const research_group_token_object& new_research_group_token = research_group_service.add_member_to_research_group(account, research_group_id, tokens_amount, account_name_type());
     return new_research_group_token;
 }
 
-const research_group_object& database_fixture::setup_research_group(const int64_t &id,
-                                                                    const string &name,
-                                                                    const string &permlink,
-                                                                    const string &description,
-                                                                    const share_type funds,
-                                                                    const std::map<uint16_t, share_type> proposal_quorums,
-                                                                    const bool is_dao,
-                                                                    const bool is_personal,
-                                                                    const vector<std::pair<account_name_type, share_type>> &accounts)
+const research_group_object&
+database_fixture::setup_research_group(const int64_t& id,
+                                       const string& name,
+                                       const string& permlink,
+                                       const string& description,
+                                       const share_type funds,
+                                       const std::map<research_group_quorum_action, percent_type> action_quorums,
+                                       const bool is_dao,
+                                       const bool is_personal,
+                                       const vector<std::pair<account_name_type, share_type>>& accounts)
 {
-    const auto& research_group = research_group_create(id, name, permlink, description, funds, proposal_quorums, is_dao, is_personal);
+    const auto& research_group = research_group_create(id, name, permlink, description, funds, action_quorums, is_dao, is_personal);
 
     for (const auto& account : accounts)
     {
@@ -505,7 +505,7 @@ const proposal_object& database_fixture::create_proposal(const int64_t id, const
                                        const account_name_type& creator,
                                        const research_group_id_type& research_group_id,
                                        const fc::time_point_sec expiration_time,
-                                       const share_type quorum_percent)
+                                       const percent_type quorum)
 {
     const proposal_object& new_proposal = db.create<proposal_object>([&](proposal_object& proposal) {
         proposal.action = action;
@@ -515,7 +515,7 @@ const proposal_object& database_fixture::create_proposal(const int64_t id, const
         proposal.research_group_id = research_group_id;
         proposal.creation_time = fc::time_point_sec();
         proposal.expiration_time = expiration_time;
-        proposal.quorum_percent = quorum_percent;
+        proposal.quorum = quorum;
     });
 
     return new_proposal;

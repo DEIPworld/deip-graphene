@@ -42,6 +42,7 @@ namespace app {
 
 using namespace deip::chain;
 using research_group_token_refs_type = std::vector<std::reference_wrapper<const research_group_token_object>>;
+using deip::protocol::percent_type;
 
 typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
 typedef chain::block_summary_object block_summary_api_obj;
@@ -537,17 +538,17 @@ struct proposal_api_obj
 {
     proposal_api_obj(const chain::proposal_object& p, const vector<proposal_vote_api_obj>& _votes)
         : id(p.id._id)
-        ,  research_group_id(p.research_group_id._id)
-        ,  action(p.action)
-        ,  creation_time(p.creation_time)
-        ,  expiration_time(p.expiration_time)
-        ,  creator(p.creator)
-        ,  data(fc::to_string(p.data))
-        ,  quorum_percent(p.quorum_percent.value)
-        ,  current_votes_amount(p.current_votes_amount)
-        ,  is_completed(p.is_completed)
-        ,  voted_accounts(p.voted_accounts.begin(), p.voted_accounts.end())
-        ,  votes(_votes)
+        , research_group_id(p.research_group_id._id)
+        , action(p.action)
+        , creation_time(p.creation_time)
+        , expiration_time(p.expiration_time)
+        , creator(p.creator)
+        , data(fc::to_string(p.data))
+        , quorum_percent(p.quorum)
+        , current_votes_amount(p.current_votes_amount)
+        , is_completed(p.is_completed)
+        , voted_accounts(p.voted_accounts.begin(), p.voted_accounts.end())
+        , votes(_votes)
     {}
 
     // because fc::variant require for temporary object
@@ -562,7 +563,7 @@ struct proposal_api_obj
     fc::time_point_sec expiration_time;
     std::string creator;
     std::string data;
-    uint16_t quorum_percent;
+    percent_type quorum_percent;
     share_type current_votes_amount;
     bool is_completed;
 
@@ -587,7 +588,7 @@ struct research_group_token_api_obj
     int64_t id;
     int64_t research_group_id;
     uint32_t amount;
-    fc::fixed_string_16 owner;
+    account_name_type owner;
 };
 
 struct research_group_api_obj
@@ -598,13 +599,13 @@ struct research_group_api_obj
         ,  name(fc::to_string(rg.name))
         ,  permlink(fc::to_string(rg.permlink))
         ,  description(fc::to_string(rg.description))
-        ,  quorum_percent(rg.quorum_percent.value)
+        ,  quorum_percent(rg.default_quorum)
         ,  is_dao(rg.is_dao)
         ,  is_personal(rg.is_personal)
+        ,  is_centralized(rg.is_centralized)
         ,  balance(rg.balance)
     {
-        for (auto& proposal_quorum : rg.proposal_quorums)
-            proposal_quorums.insert(std::make_pair(static_cast<uint16_t>(proposal_quorum.first), proposal_quorum.second.value));
+        proposal_quorums.insert(rg.action_quorums.begin(), rg.action_quorums.end());
     }
 
     // because fc::variant require for temporary object
@@ -617,10 +618,11 @@ struct research_group_api_obj
     std::string name;
     std::string permlink;
     std::string description;
-    uint32_t quorum_percent;
-    std::map<uint16_t, uint32_t> proposal_quorums;
+    percent_type quorum_percent;
+    std::map<research_group_quorum_action, percent_type> proposal_quorums;
     bool is_dao;
     bool is_personal;
+    bool is_centralized;
     asset balance;
 };
 
@@ -699,12 +701,13 @@ struct research_discipline_relation_api_obj
 
 struct research_group_invite_api_obj
 {
-    research_group_invite_api_obj(const chain::research_group_invite_object& co)
-        : id(co.id._id)
-        , account_name(co.account_name)
-        , research_group_id(co.research_group_id._id)
-        , research_group_token_amount(co.research_group_token_amount)
-        , cover_letter(fc::to_string(co.cover_letter))
+    research_group_invite_api_obj(const chain::research_group_invite_object& invite)
+        : id(invite.id._id)
+        , account_name(invite.account_name)
+        , research_group_id(invite.research_group_id._id)
+        , research_group_token_amount(invite.research_group_token_amount)
+        , cover_letter(fc::to_string(invite.cover_letter))
+        , is_head(invite.is_head)
     {}
 
     // because fc::variant require for temporary object
@@ -717,6 +720,7 @@ struct research_group_invite_api_obj
     int64_t research_group_id;
     share_type research_group_token_amount;
     std::string cover_letter;
+    bool is_head;
 };
 
 struct research_listing_api_obj
@@ -837,11 +841,12 @@ struct review_api_obj
 
 struct research_token_api_obj
 {
-   research_token_api_obj(const chain::research_token_object& rt)
-            : id(rt.id._id)
-            , account_name(rt.account_name)
-            , research_id(rt.research_id._id)            
-            , amount(rt.amount)
+    research_token_api_obj(const chain::research_token_object& rt)
+        : id(rt.id._id)
+        , account_name(rt.account_name)
+        , research_id(rt.research_id._id)
+        , amount(rt.amount)
+        , is_compensation(rt.is_compensation)
     {}
 
     // because fc::variant require for temporary object
@@ -853,6 +858,7 @@ struct research_token_api_obj
     account_name_type account_name;
     int64_t research_id;
     share_type amount;
+    bool is_compensation;
 };
 
 struct vote_api_obj
@@ -921,7 +927,7 @@ struct expertise_allocation_proposal_api_obj
             , discipline_id(eapo.discipline_id._id)
             , amount(DEIP_EXPERTISE_CLAIM_AMOUNT)
             , total_voted_expertise(eapo.total_voted_expertise)
-            , quorum_percent(eapo.quorum_percent.value)
+            , quorum_percent(eapo.quorum)
             , creation_time(eapo.creation_time)
             , expiration_time(eapo.expiration_time)
             , description(fc::to_string(eapo.description))
@@ -939,7 +945,7 @@ struct expertise_allocation_proposal_api_obj
     share_type amount;
 
     int64_t total_voted_expertise;
-    uint16_t quorum_percent;
+    percent_type quorum_percent;
 
     time_point_sec creation_time;
     time_point_sec expiration_time;
@@ -1187,6 +1193,36 @@ struct account_balance_api_obj
     asset amount;
 };
 
+struct research_group_organization_contract_api_obj
+{
+    research_group_organization_contract_api_obj(const chain::research_group_organization_contract_object& contract)
+        : id(contract.id._id)
+        , organization_id(contract.organization_id._id)
+        , research_group_id(contract.research_group_id._id)
+        , unilateral_termination_allowed(contract.unilateral_termination_allowed)
+        , notes(fc::to_string(contract.notes))
+        , type(contract.type)
+
+    {
+        organization_agents.insert(contract.organization_agents.begin(), contract.organization_agents.end());
+    }
+
+    // because fc::variant require for temporary object
+    research_group_organization_contract_api_obj()
+    {
+    }
+
+    int64_t id;
+
+    int64_t organization_id;
+    int64_t research_group_id;
+    bool unilateral_termination_allowed;
+    string notes;
+    uint16_t type;
+
+    std::set<account_name_type> organization_agents;
+};
+
 }; // namespace app
 } // namespace deip
 
@@ -1352,6 +1388,7 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (proposal_quorums)
             (is_dao)
             (is_personal)
+            (is_centralized)
             (balance)
 )
 
@@ -1389,6 +1426,7 @@ FC_REFLECT( deip::app::research_group_invite_api_obj,
             (research_group_id)
             (research_group_token_amount)
             (cover_letter)
+            (is_head)
 )
 
 FC_REFLECT( deip::app::research_listing_api_obj,
@@ -1437,6 +1475,7 @@ FC_REFLECT( deip::app::research_token_api_obj,
             (account_name)
             (research_id)
             (amount)
+            (is_compensation)
 )
 
 FC_REFLECT( deip::app::vote_api_obj,
@@ -1565,4 +1604,15 @@ FC_REFLECT( deip::app::account_balance_api_obj,
             (owner)
             (amount)
 )
+
+FC_REFLECT( deip::app::research_group_organization_contract_api_obj,
+            (id)
+            (organization_id)
+            (research_group_id)
+            (unilateral_termination_allowed)
+            (notes)
+            (type)
+            (organization_agents)
+)
+
 // clang-format on

@@ -9,6 +9,7 @@ add_library( deip_protocol
              sign_state.cpp
              operation_util_impl.cpp
              deip_operations.cpp
+             operations/create_research_group_operation.cpp
              transaction.cpp
              block.cpp
              asset.cpp

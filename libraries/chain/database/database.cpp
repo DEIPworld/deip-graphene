@@ -1234,13 +1234,13 @@ void database::distribute_research_tokens(const research_token_sale_id_type& res
         }
         else
         {
-            research_token_service.create_research_token(it->owner, transfer_amount, research_token_sale.research_id);
+            research_token_service.create_research_token(it->owner, transfer_amount, research_token_sale.research_id, false);
         }
         auto current = it++;
         remove(*current);
     }
 
-    research_group_service.increase_balance(research_service.get_research(research_token_sale.research_id).research_group_id, research_token_sale.total_amount);
+    research_group_service.increase_research_group_balance(research_service.get_research(research_token_sale.research_id).research_group_id, research_token_sale.total_amount);
 }
 
 void database::refund_research_tokens(const research_token_sale_id_type research_token_sale_id)
@@ -1366,7 +1366,7 @@ void database::distribute_grant(const grant_object& grant)
     {
         asset research_reward = util::calculate_share(grant.amount, research_eci.first, total_eci);
         auto& research = get<research_object>(research_eci.second);
-        research_group_service.increase_balance(research.research_group_id, research_reward);
+        research_group_service.increase_research_group_balance(research.research_group_id, research_reward);
         used_grant += research_reward;
     }
 
@@ -1530,7 +1530,7 @@ asset database::reward_research_token_holders(const research_object &research,
     if(research_group_reward > asset(0, DEIP_SYMBOL))
     {
         dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
-        research_group_service.increase_balance(research.research_group_id, research_group_reward);
+        research_group_service.increase_research_group_balance(research.research_group_id, research_group_reward);
         used_reward += research_group_reward;
     }
 
@@ -1687,12 +1687,12 @@ void database::reward_research_authors_with_expertise(const research_object &res
 
     share_type used_reward = 0;
 
-    flat_set<account_name_type> authors;
+    std::set<account_name_type> authors;
 
     switch (research_content.type) {
         case research_content_type::announcement:
         case research_content_type::final_result:
-            authors = research_group_service.get_members(research.research_group_id);
+            authors = research_group_service.get_research_group_members(research.research_group_id);
             break;
         default:
             authors.insert(research_content.authors.begin(), research_content.authors.end());
@@ -1702,7 +1702,7 @@ void database::reward_research_authors_with_expertise(const research_object &res
     share_type total_tokens_amount = share_type(0);
     std::vector<research_group_token_object> tokens;
     for (auto& author : authors) {
-        auto& token = research_group_service.get_token_by_account_and_research_group(author, research.research_group_id);
+        auto& token = research_group_service.get_research_group_token_by_account_and_research_group(author, research.research_group_id);
         tokens.push_back(token);
 
         total_tokens_amount += token.amount;
@@ -1866,7 +1866,7 @@ share_type database::supply_researches_in_discipline(const discipline_id_type &d
             && total_vote.total_weight != 0) {
                 auto share = util::calculate_share(grant, total_vote.total_weight, total_research_weight);
                 auto& research = research_service.get_research(total_vote.research_id);
-                research_group_service.increase_balance(research.research_group_id, asset(share, DEIP_SYMBOL));
+                research_group_service.increase_research_group_balance(research.research_group_id, asset(share, DEIP_SYMBOL));
                 used_grant += share;
             }
     }
@@ -2020,6 +2020,7 @@ void database::initialize_indexes()
     add_index<proposal_vote_index>();
     add_index<research_group_index>();
     add_index<research_group_token_index>();
+    add_index<research_group_organization_contract_index>();
     add_index<discipline_index>();
     add_index<research_discipline_relation_index>();
     add_index<research_index>();
@@ -2892,6 +2893,8 @@ void database::validate_invariants() const
         {
             total_supply += itr->amount;
         }
+
+        total_supply += gpo.common_tokens_fund;
 
         FC_ASSERT(gpo.current_supply == total_supply, "",
                   ("gpo.current_supply", gpo.current_supply)("total_supply", total_supply));
