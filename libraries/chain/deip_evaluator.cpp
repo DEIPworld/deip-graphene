@@ -600,8 +600,8 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     op.research_group_id, 
     op.expiration_time, 
     quorum);
-  
-  if (research_group.is_centralized)
+
+  if (research_group.is_centralized || research_group.is_personal)
   {
     proposal_execution_service.execute_proposal(proposal);
   }

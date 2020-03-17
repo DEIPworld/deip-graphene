@@ -56,7 +56,7 @@ const research_group_object& dbs_research_group::create_personal_research_group(
       fc::from_string(research_group.description, account);
       research_group.management_model_v = deip::protocol::research_group_details::tag<centralized_research_group_management_model_v1_0_0_type>::value;
       research_group.is_personal = true;
-      research_group.is_centralized = true;
+      research_group.is_centralized = false;
       research_group.is_dao = false;
       research_group.heads.insert(account);
       research_group.is_created_by_organization = false;
