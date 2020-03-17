@@ -632,10 +632,10 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
       op.creator, 
       op.name, 
       op.permlink, 
-      op.description, 
-      op.is_created_by_organization,
-      op.is_organization_division(),
+      op.description,
       management_model.which(),
+      op.is_organization_division(),
+      op.is_created_by_organization,
       dao_voting_model.default_quorum, 
       action_quorums);
 
@@ -669,10 +669,10 @@ void create_research_group_evaluator::do_apply(const create_research_group_opera
       op.creator, 
       op.name, 
       op.permlink, 
-      op.description, 
-      op.is_created_by_organization,
-      op.is_organization_division(),
+      op.description,
       management_model.which(),
+      op.is_organization_division(),
+      op.is_created_by_organization,
       heads);
 
     for (const auto& invitee : op.invitees)
