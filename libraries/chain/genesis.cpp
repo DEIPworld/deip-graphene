@@ -534,8 +534,8 @@ void database::init_research_group(const genesis_state_type::research_group_type
         }
         else if (research_group.management_model_v == research_group_details::tag<centralized_research_group_management_model_v1_0_0_type>::value)
         {
-            std::set<account_name_type> heads = { research_group.members.front() };
-            rg.heads.insert(heads.begin(), heads.end());
+            FC_ASSERT(research_group.heads.valid(), "Heads must be specified.");
+            rg.heads.insert(research_group.heads->begin(), research_group.heads->end());
             rg.is_personal = false;
             rg.is_centralized = true;
             rg.is_dao = false;
@@ -547,7 +547,7 @@ void database::init_research_group(const genesis_state_type::research_group_type
             rg.has_organization = true;
         }
 
-        rg.creator = research_group.members.front();
+        rg.creator = research_group.creator;
     });
 
     // TODO: Check that total amount of research group tokens is 10000
