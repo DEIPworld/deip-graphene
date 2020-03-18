@@ -2567,7 +2567,7 @@
     },
     {
       "id": 22,
-      "name": "NSF",
+      "name": "The National Science Foundation",
       "description": "The National Science Foundation (NSF) is an independent federal agency created by Congress in 1950 to promote the progress of science; to advance the national health, prosperity, and welfare; to secure the national defense.",
       "permlink": "national-science-foundation",
       "members": [
@@ -2585,22 +2585,24 @@
       "subgroups": [
         {
           "id": 23,
-          "name": "NSF review committee",
-          "description": "NSF review committee",
-          "permlink": "nsf-review-committee",
+          "name": "NSF Grants Review Committee",
+          "description": "The Grant Review Committee is established to evaluate applications for funding from NSF Grants Program.",
+          "permlink": "nsf-grants-review-committee",
           "members": [
+            "alice",
             "john",
             "bob"
           ],
           "management_model_v": 2,
           "creator": "alice",
           "heads": [
-            "alice"
+            "alice",
+            "john",
+            "bob"
           ],
           "organization_id": 22,
           "organization_agents": [
-            "alice",
-            "james"
+            "alice"
           ]
         }
       ]
