@@ -2282,7 +2282,8 @@
         "james",
         "rick"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "james"
     },
     {
       "id": 1,
@@ -2296,7 +2297,8 @@
         "carla",
         "john"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "sherlock"
     },
     {
       "id": 2,
@@ -2308,7 +2310,8 @@
         "irene",
         "greg"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "irene"
     },
     {
       "id": 3,
@@ -2322,7 +2325,8 @@
         "dorothy",
         "greg"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "james"
     },
     {
       "id": 4,
@@ -2334,7 +2338,8 @@
         "dorothy",
         "rick"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "dorothy"
     },
     {
       "id": 5,
@@ -2346,7 +2351,8 @@
         "rachel",
         "mike"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "rachel"
     },
     {
       "id": 6,
@@ -2360,7 +2366,8 @@
         "alex",
         "anastasia"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "rick"
     },
     {
       "id": 7,
@@ -2372,7 +2379,8 @@
         "john",
         "greg"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "john"
     },
     {
       "id": 8,
@@ -2384,7 +2392,8 @@
         "nick",
         "irene"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "nick"
     },
     {
       "id": 9,
@@ -2396,7 +2405,8 @@
         "james",
         "anastasia"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "james"
     },
     {
       "id": 10,
@@ -2408,7 +2418,8 @@
         "john",
         "irene"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "john"
     },
     {
       "id": 11,
@@ -2421,7 +2432,8 @@
         "rachel",
         "sherlock"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "dorothy"
     },
     {
       "id": 12,
@@ -2433,7 +2445,8 @@
         "alice",
         "nick"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "alice"
     },
     {
       "id": 13,
@@ -2445,7 +2458,8 @@
         "irene",
         "nick"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "irene"
     },
     {
       "id": 14,
@@ -2457,7 +2471,8 @@
         "carla",
         "greg"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "carla"
     },
     {
       "id": 15,
@@ -2469,7 +2484,8 @@
         "mike",
         "carla"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "mike"
     },
     {
       "id": 16,
@@ -2481,7 +2497,8 @@
         "bob",
         "john"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "bob"
     },
     {
       "id": 17,
@@ -2493,7 +2510,8 @@
         "bob",
         "alex"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "bob"
     },
     {
       "id": 18,
@@ -2505,7 +2523,8 @@
         "alice",
         "bob"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "alice"
     },
     {
       "id": 19,
@@ -2517,7 +2536,8 @@
         "bob",
         "greg"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "bob"
     },
     {
       "id": 20,
@@ -2529,7 +2549,8 @@
         "alice",
         "john"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "alice"
     },
     {
       "id": 21,
@@ -2541,7 +2562,8 @@
         "alex",
         "james"
       ],
-      "management_model_v": 0
+      "management_model_v": 0,
+      "creator": "alex"
     },
     {
       "id": 22,
@@ -2554,6 +2576,12 @@
         "james"
       ],
       "management_model_v": 2,
+      "creator": "alice",
+      "heads": [
+        "alice",
+        "alex",
+        "james"
+      ],
       "subgroups": [
         {
           "id": 23,
@@ -2565,6 +2593,10 @@
             "bob"
           ],
           "management_model_v": 2,
+          "creator": "alice",
+          "heads": [
+            "alice"
+          ],
           "organization_id": 22,
           "organization_agents": [
             "alice",

@@ -71,10 +71,12 @@ struct genesis_state_type
         std::string description;
         std::string permlink;
         fc::optional<uint32_t> default_quorum;
-        std::vector<std::string> members;
+        std::set<std::string> members;
         int32_t management_model_v;
+        account_name_type creator;
+        fc::optional<std::set<account_name_type>> heads;
         fc::optional<research_group_id_type> organization_id;
-        fc::optional<std::vector<account_name_type>> organization_agents;
+        fc::optional<std::set<account_name_type>> organization_agents;
         std::vector<research_group_type> subgroups;
     };
 
@@ -195,6 +197,8 @@ FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
            (default_quorum)
            (members)
            (management_model_v)
+           (creator)
+           (heads)
            (organization_id)
            (organization_agents)
            (subgroups))
