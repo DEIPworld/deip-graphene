@@ -2537,7 +2537,6 @@ annotated_signed_transaction wallet_api::make_review(const std::string& author,
 
     op.author = author;
     op.research_content_id = research_content_id;
-    op.is_positive = is_positive;
     op.content = content;
     op.weight = DEIP_100_PERCENT;
 

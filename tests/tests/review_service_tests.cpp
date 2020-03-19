@@ -1,10 +1,8 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
-
+#include "database_fixture.hpp"
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/services/dbs_review.hpp>
-
-#include "database_fixture.hpp"
 
 namespace deip {
 namespace chain {
@@ -58,7 +56,8 @@ BOOST_AUTO_TEST_CASE(create)
 {
     try
     {
-        auto& review = data_service.create(1, "content", true, "alice", { 1, 2 }, std::map<discipline_id_type, share_type>());
+        fc::optional<std::map<assessment_criteria, uint16_t>> scores;
+        auto& review = data_service.create(1, "content", true, "alice", { 1, 2 }, std::map<discipline_id_type, share_type>(), 0, scores);
 
         std::vector<discipline_id_type> disciplines;
         for (auto discipline : review.disciplines)

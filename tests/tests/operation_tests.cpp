@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
     {
         BOOST_TEST_MESSAGE("Testing: make_review_research_apply");
 
-        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(john)(rachel));
+        ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(john)(rachel)(dorothy));
 
         generate_block();
 
@@ -141,8 +141,12 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         op.author = "john";
         op.research_content_id = 1;
         op.content = "test";
-        op.is_positive = true;
         op.weight =  DEIP_100_PERCENT;
+
+        binary_scoring_assessment_model_v1_0_0_type static_model;
+        static_model.is_positive = true;
+
+        op.assessment_model = static_model;
 
         fc::uint128 total_expert_tokens_amount; // With Common Token
         auto it_pair = db.get_index<expert_token_index>().indicies().get<by_account_name>().equal_range("john");
@@ -180,32 +184,103 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         BOOST_CHECK(disciplines.size() == 1 && disciplines[0] == 1);
         BOOST_CHECK(old_voting_power - new_voting_power == (DEIP_REVIEW_REQUIRED_POWER_PERCENT * op.weight) / DEIP_100_PERCENT);
 
-        BOOST_CHECK(research.number_of_positive_reviews == 1);
+        //BOOST_CHECK(research.number_of_positive_reviews == 1);
 
         validate_database();
 
-        BOOST_TEST_MESSAGE("--- Test failing review creation");
+        BOOST_TEST_MESSAGE("--- Test review creation with scores model");
 
-        research_create(2, "test_research11", "abstract11", "permlink111", 1, 10, 1500);
+        make_review_operation op2;
 
-        db.create<research_discipline_relation_object>([&](research_discipline_relation_object& rdr) {
-            rdr.discipline_id = 2;
-            rdr.research_id = 2;
-        });
+        op2.author = "rachel";
+        op2.research_content_id = 1;
+        op2.content = "test";
+        op2.weight = DEIP_100_PERCENT;
 
-        op.author = "john";
-        op.research_content_id = 1;
-        op.content = "test";
-        op.is_positive = true;
+        multicriteria_scoring_assessment_model_v1_0_0_type scores_model;
+        scores_model.scores = {
+            std::make_pair(1, 4),
+            std::make_pair(2, 4),
+            std::make_pair(3, 4),
+        };
 
-        tx.operations.clear();
-        tx.signatures.clear();
+        op2.assessment_model = scores_model;
 
-        tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        tx.operations.push_back(op);
-        tx.sign(priv_key, db.get_chain_id());
-        tx.validate();
-        BOOST_CHECK_THROW(db.push_transaction(tx, 0), fc::assert_exception);
+        private_key_type rachel_priv_key = generate_private_key("rachel");
+
+        signed_transaction tx2;
+        tx2.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx2.operations.push_back(op2);
+        tx2.sign(rachel_priv_key, db.get_chain_id());
+        tx2.validate();
+        db.push_transaction(tx2, 0);
+
+        make_review_operation op3;
+
+        op3.author = "dorothy";
+        op3.research_content_id = 1;
+        op3.content = "test";
+        op3.weight = DEIP_100_PERCENT;
+
+        multicriteria_scoring_assessment_model_v1_0_0_type invalid_scores_model;
+        invalid_scores_model.scores = {
+                std::make_pair(1, 0),
+                std::make_pair(2, 4),
+                std::make_pair(3, 4),
+        };
+
+        op3.assessment_model = invalid_scores_model;
+
+        private_key_type dorothy_priv_key = generate_private_key("dorothy");
+
+        signed_transaction tx3;
+        tx3.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx3.operations.push_back(op3);
+        tx3.sign(dorothy_priv_key, db.get_chain_id());
+        tx3.validate();
+        BOOST_CHECK_THROW(db.push_transaction(tx3, 0), fc::assert_exception);
+
+        make_review_operation op4;
+
+        op4.author = "dorothy";
+        op4.research_content_id = 1;
+        op4.content = "test";
+        op4.weight = DEIP_100_PERCENT;
+
+        multicriteria_scoring_assessment_model_v1_0_0_type invalid_scores_model2;
+        invalid_scores_model2.scores = {
+            std::make_pair(1, 6),
+            std::make_pair(2, 4),
+            std::make_pair(3, 4),
+        };
+
+        op4.assessment_model = invalid_scores_model2;
+
+        signed_transaction tx4;
+        tx4.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx4.operations.push_back(op4);
+        tx4.sign(dorothy_priv_key, db.get_chain_id());
+        tx4.validate();
+        BOOST_CHECK_THROW(db.push_transaction(tx4, 0), fc::assert_exception);
+
+        make_review_operation op5;
+
+        op5.author = "dorothy";
+        op5.research_content_id = 1;
+        op5.content = "test";
+        op5.weight = DEIP_100_PERCENT;
+
+        multicriteria_scoring_assessment_model_v1_0_0_type invalid_scores_model3;
+        invalid_scores_model3.scores = { std::make_pair(1, 3), std::make_pair(2, 4) };
+
+        op5.assessment_model = invalid_scores_model3;
+
+        signed_transaction tx5;
+        tx5.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
+        tx5.operations.push_back(op5);
+        tx5.sign(dorothy_priv_key, db.get_chain_id());
+        tx5.validate();
+        BOOST_CHECK_THROW(db.push_transaction(tx5, 0), fc::assert_exception);
 
     }
     FC_LOG_AND_RETHROW()
@@ -3606,7 +3681,6 @@ BOOST_AUTO_TEST_CASE(create_research_material)
     op3.author = "john";
     op3.research_content_id = 0;
     op3.content = "test";
-    op3.is_positive = true;
     op3.weight =  DEIP_100_PERCENT;
 
     signed_transaction tx3;
@@ -3699,7 +3773,6 @@ BOOST_AUTO_TEST_CASE(check_dgpo_used_power)
         op.author = "jack";
         op.research_content_id = 1;
         op.content = "test";
-        op.is_positive = true;
         op.weight = DEIP_100_PERCENT;
 
         signed_transaction tx;
@@ -3788,7 +3861,6 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
         op.author = "alice";
         op.research_content_id = 1;
         op.content = "test";
-        op.is_positive = false;
         op.weight = DEIP_100_PERCENT;
 
         signed_transaction tx;
@@ -3859,7 +3931,7 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_apply)
         tx.sign(priv_key, db.get_chain_id());
         tx.validate();
         db.push_transaction(tx, 0);
-        
+
         auto& bob_token = db.get<research_token_object>(1);
 
         BOOST_CHECK(alice_token.amount == 10 * DEIP_1_PERCENT);
@@ -3878,7 +3950,7 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_apply)
         tx2.sign(priv_key, db.get_chain_id());
         tx2.validate();
         db.push_transaction(tx2, 0);
-        
+
         BOOST_CHECK_THROW(db.get<research_token_object>(0), std::out_of_range);
         BOOST_CHECK(bob_token.amount == 50 * DEIP_1_PERCENT);
     }
@@ -4428,7 +4500,6 @@ BOOST_AUTO_TEST_CASE(calculate_eci_test_case)
         op.author = "bob";
         op.research_content_id = 1;
         op.content = "test";
-        op.is_positive = true;
         op.weight =  DEIP_100_PERCENT;
 
         signed_transaction tx;
@@ -4482,7 +4553,6 @@ BOOST_AUTO_TEST_CASE(calculate_eci_test_case)
         op4.author = "bob";
         op4.research_content_id = 2;
         op4.content = "test3";
-        op4.is_positive = false;
         op4.weight =  10000;
 
         signed_transaction tx4;

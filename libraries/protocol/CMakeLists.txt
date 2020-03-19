@@ -10,6 +10,7 @@ add_library( deip_protocol
              operation_util_impl.cpp
              deip_operations.cpp
              operations/create_research_group_operation.cpp
+             operations/make_review_operation.cpp
              transaction.cpp
              block.cpp
              asset.cpp

@@ -210,6 +210,8 @@ typedef bip::map<research_group_quorum_action, percent_type, std::less<uint16_t>
 typedef allocator<share_type> share_type_allocator_type;
 typedef bip::deque<share_type, share_type_allocator_type> share_type_deque;
 
+typedef allocator<std::pair<const uint16_t, uint16_t>> assessment_criterias_allocator_type;
+typedef bip::map<uint16_t, uint16_t, std::less<uint16_t>, assessment_criterias_allocator_type> assessment_criterias_map;
 
 enum bandwidth_type
 {
