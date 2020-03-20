@@ -1040,7 +1040,6 @@ void approve_research_group_invite_evaluator::do_apply(const approve_research_gr
 
 void reject_research_group_invite_evaluator::do_apply(const reject_research_group_invite_operation& op)
 {
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
     dbs_research_group_invite& research_group_invites_service = _db.obtain_service<dbs_research_group_invite>();
 
     FC_ASSERT(research_group_invites_service.research_group_invite_exists(op.research_group_invite_id), 

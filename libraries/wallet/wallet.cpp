@@ -813,7 +813,7 @@ public:
 //                    << std::to_string(total_expert_tokens_amount.value) << "\n";
             return out.str();
         };
-        auto account_history_formatter = [this](variant result, const fc::variants& a) {
+        auto account_history_formatter = [&](variant result, const fc::variants& a) {
             std::stringstream ss;
             ss << std::left << std::setw(5) << "#"
                << " ";

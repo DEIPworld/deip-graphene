@@ -5517,10 +5517,6 @@ node::node(const std::string& user_agent)
 {
 }
 
-node::~node()
-{
-}
-
 void node::set_node_delegate(node_delegate* del)
 {
     fc::thread* delegate_thread = &fc::thread::current();
