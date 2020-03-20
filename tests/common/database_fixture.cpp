@@ -80,7 +80,7 @@ database_fixture::database_fixture()
     registrar.common_tokens_amount = 0;
     genesis_state.registrar_account = registrar;
 
-    genesis_state.assets.push_back({"TESTS", 3});
+    genesis_state.assets.push_back({"TESTS", 3, 0});
 
     create_disciplines_for_genesis_state(genesis_state);
     create_initdelegate_for_genesis_state(genesis_state);

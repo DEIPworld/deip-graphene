@@ -210,7 +210,7 @@ void database::init_genesis_assets(const genesis_state_type& genesis_state)
         const share_type asset_total_supply = std::accumulate(
           account_balances.begin(), account_balances.end(), share_type(0),
           [&](share_type acc, const genesis_state_type::account_balance_type& account_balance) {
-              return account_balance.symbol == a.symbol_name() 
+              return account_balance.symbol == a.symbol_name()
                 ? share_type(account_balance.amount) + acc
                 : acc;
           });
@@ -219,7 +219,7 @@ void database::init_genesis_assets(const genesis_state_type& genesis_state)
           "Total supply (${total}) is not equal to inited supply (${inited}) for ${s} asset",
           ("total", asset_total_supply.value)("inited", asset.current_supply)("s", a.symbol_name()));
 
-        create<asset_object>([&](asset_object& a_o) {        
+        create<asset_object>([&](asset_object& a_o) {
           a_o.symbol = a.symbol;
           fc::from_string(a_o.string_symbol, a.symbol_name());
           a_o.precision = a.decimals();

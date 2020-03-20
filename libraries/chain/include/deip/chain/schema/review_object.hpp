@@ -18,6 +18,8 @@
 namespace deip{
 namespace chain{
 
+typedef uint16_t assessment_criteria_value;
+
 class review_object : public object<review_object_type, review_object>
 {
 
@@ -30,6 +32,7 @@ public:
             , disciplines(a)
             , references(a)
             , expertise_tokens_amount_by_discipline(a)
+            , scores(a)
     {
         c(*this);
     }
@@ -44,6 +47,9 @@ public:
     research_content_id_type_set references;
 
     discipline_id_share_type_map expertise_tokens_amount_by_discipline;
+
+    int32_t assessment_model_v;
+    assessment_criterias_map scores;
 };
 
 struct by_author;
@@ -77,8 +83,17 @@ typedef multi_index_container<review_object,
 }
 
 FC_REFLECT(deip::chain::review_object,
-           (id)(research_content_id)(content)(is_positive)(author)(created_at)
-           (disciplines)(references)(expertise_tokens_amount_by_discipline)
+           (id)
+           (research_content_id)
+           (content)
+           (is_positive)
+           (author)
+           (created_at)
+           (disciplines)
+           (references)
+           (expertise_tokens_amount_by_discipline)
+           (assessment_model_v)
+           (scores)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::review_object, deip::chain::review_index)

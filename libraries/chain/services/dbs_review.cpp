@@ -1,3 +1,4 @@
+#include <deip/chain/database/database.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_expertise_stats.hpp>
@@ -7,7 +8,6 @@
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_vote.hpp>
-#include <deip/chain/database/database.hpp>
 #include <deip/chain/services/dbs_vote.hpp>
 
 #include <tuple>
@@ -21,13 +21,15 @@ dbs_review::dbs_review(database &db)
 {
 }
 
-
-const review_object& dbs_review::create(const research_content_id_type& research_content_id,
-                                        const string& content,
-                                        bool is_positive,
-                                        const account_name_type& author,
-                                        const std::set<discipline_id_type>& disciplines,
-                                        const std::map<discipline_id_type, share_type> used_expertise)
+const review_object&
+dbs_review::create(const research_content_id_type& research_content_id,
+                   const string& content,
+                   bool is_positive,
+                   const account_name_type& author,
+                   const std::set<discipline_id_type>& disciplines,
+                   const std::map<discipline_id_type, share_type> used_expertise,
+                   const int32_t& assessment_model_v,
+                   const fc::optional<std::map<assessment_criteria, assessment_criteria_value>> scores)
 {
     const auto& new_review = db_impl().create<review_object>([&](review_object& r) {
         const auto now = db_impl().head_block_time();
@@ -39,6 +41,15 @@ const review_object& dbs_review::create(const research_content_id_type& research
         r.created_at = now;
         r.disciplines.insert(disciplines.begin(), disciplines.end());
         r.expertise_tokens_amount_by_discipline.insert(used_expertise.begin(), used_expertise.end());
+        r.assessment_model_v = assessment_model_v;
+
+        if (scores.valid()) 
+        {
+            for (auto& score : *scores)
+            {
+                r.scores.insert(std::make_pair(static_cast<uint16_t>(score.first), score.second));
+            }
+        }
     });
 
     return new_review;

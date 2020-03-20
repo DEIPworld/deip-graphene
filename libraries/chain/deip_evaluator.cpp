@@ -853,7 +853,48 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
             return acc;
         });
 
-    const auto& review = review_service.create(op.research_content_id, op.content, op.is_positive, op.author, review_disciplines, review_used_expertise_by_disciplines);
+    bool is_positive;
+    fc::optional<std::map<assessment_criteria, uint16_t>> scores;
+
+    if (op.assessment_model.which() == assessment_models::tag<binary_scoring_assessment_model_v1_0_0_type>::value)
+    {
+        const auto model = op.assessment_model.get<binary_scoring_assessment_model_v1_0_0_type>();
+        is_positive = model.is_positive;
+    }
+    else if (op.assessment_model.which() == assessment_models::tag<multicriteria_scoring_assessment_model_v1_0_0_type>::value)
+    {
+        const auto model = op.assessment_model.get<multicriteria_scoring_assessment_model_v1_0_0_type>();
+
+        const uint16_t total_score = std::accumulate(std::begin(model.scores), std::end(model.scores), 0,
+                [&](uint16_t total, const std::map<uint16_t, uint16_t>::value_type& m) {
+                    return total + m.second; });
+
+        is_positive = total_score >= DEIP_MIN_POSITIVE_REVIEW_MARK;
+
+        std::map<assessment_criteria, uint16_t> temp_scores;
+        for (const auto& score : model.scores)
+        {
+            const assessment_criteria criteria = static_cast<assessment_criteria>(score.first);
+            temp_scores.insert(std::make_pair(criteria, score.second));
+        }
+
+        scores = temp_scores;
+    } 
+    else
+    {
+        FC_ASSERT(false, "Review assessment model is not specified");
+    }
+
+    const auto& review = review_service.create(op.research_content_id,
+                                               op.content,
+                                               is_positive,
+                                               op.author,
+                                               review_disciplines,
+                                               review_used_expertise_by_disciplines,
+                                               op.assessment_model.which(),
+                                               scores);
+
+
 
     std::map<discipline_id_type, share_type> old_content_eci_in_disciplines;
     std::map<discipline_id_type, share_type> old_research_eci_in_disciplines;
@@ -876,17 +917,17 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
         new_research_eci_in_disciplines[discipline] = research_discipline_service.get_research_discipline_relation_by_research_and_discipline(research.id, discipline).research_eci;
     }
 
-    for (auto& pair : new_research_eci_in_disciplines) 
+    for (auto& pair : new_research_eci_in_disciplines)
     {
         _db.push_virtual_operation(research_eci_history_operation(
-            research.id._id, pair.first._id, pair.second, pair.second - old_research_eci_in_disciplines[pair.first], 
+            research.id._id, pair.first._id, pair.second, pair.second - old_research_eci_in_disciplines[pair.first],
             1, review.id._id, _db.head_block_time().sec_since_epoch()));
     }
 
-    for (auto& pair : new_content_eci_in_disciplines) 
+    for (auto& pair : new_content_eci_in_disciplines)
     {
         _db.push_virtual_operation(research_content_eci_history_operation(
-            research_content.id._id, pair.first._id, pair.second, pair.second - old_content_eci_in_disciplines[pair.first], 
+            research_content.id._id, pair.first._id, pair.second, pair.second - old_content_eci_in_disciplines[pair.first],
             1, review.id._id, _db.head_block_time().sec_since_epoch()));
     }
 

@@ -814,6 +814,8 @@ struct review_api_obj
             , is_positive(r.is_positive)
             , author(r.author)
             , created_at(r.created_at)
+            , assessment_model_v(r.assessment_model_v)
+            , scores(r.scores.begin(), r.scores.end())
     {
         this->disciplines = disciplines;
 
@@ -837,6 +839,8 @@ struct review_api_obj
     time_point_sec created_at;
     vector<discipline_api_obj> disciplines;
     map<int64_t, int64_t> expertise_tokens_amount_by_discipline;
+    int32_t assessment_model_v;
+    map<uint16_t, uint16_t> scores;
 };
 
 struct research_token_api_obj
@@ -1468,6 +1472,8 @@ FC_REFLECT( deip::app::review_api_obj,
             (created_at)
             (disciplines)
             (expertise_tokens_amount_by_discipline)
+            (assessment_model_v)
+            (scores)
 )
 
 FC_REFLECT( deip::app::research_token_api_obj,

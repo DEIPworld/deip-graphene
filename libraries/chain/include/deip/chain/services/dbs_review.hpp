@@ -37,7 +37,9 @@ public:
                                 bool is_positive,
                                 const account_name_type& author,
                                 const std::set<discipline_id_type>& disciplines,
-                                const std::map<discipline_id_type, share_type> used_expertise);
+                                const std::map<discipline_id_type, share_type> used_expertise,
+                                const int32_t& assessment_model_v,
+                                const fc::optional<std::map<assessment_criteria, assessment_criteria_value>> scores);
 
     const std::map<discipline_id_type, share_type> get_eci_weight(const review_id_type& review_id) const;
     

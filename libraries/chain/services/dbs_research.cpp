@@ -1,8 +1,8 @@
+#include <deip/chain/database/database.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_review.hpp>
-#include <deip/chain/database/database.hpp>
 
 namespace deip{
 namespace chain{
