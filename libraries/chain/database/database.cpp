@@ -895,7 +895,7 @@ void database::notify_post_apply_operation(const operation_notification& note)
     DEIP_TRY_NOTIFY(post_apply_operation, note)
 }
 
-inline void database::push_virtual_operation(const operation& op)
+void database::push_virtual_operation(const operation& op)
 {
 #if defined(IS_LOW_MEM) && !defined(IS_TEST_NET)
     return;
@@ -907,7 +907,7 @@ inline void database::push_virtual_operation(const operation& op)
     notify_post_apply_operation(note);
 }
 
-inline void database::push_hf_operation(const operation& op)
+void database::push_hf_operation(const operation& op)
 {
     FC_ASSERT(is_virtual_operation(op));
     operation_notification note(op);

@@ -47,7 +47,7 @@ public:
 
     virtual void distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id) = 0;
 
-    virtual inline void push_virtual_operation(const protocol::operation& op) = 0;
+    virtual void push_virtual_operation(const protocol::operation& op) = 0;
 
     // for TODO only:
     chainbase::database& _temporary_public_impl();
