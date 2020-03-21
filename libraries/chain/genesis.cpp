@@ -232,7 +232,6 @@ void database::init_genesis_account_balances(const genesis_state_type& genesis_s
 {
     const auto& asset_service = obtain_service<dbs_asset>();
 
-    const genesis_state_type::registrar_account_type& registrar = genesis_state.registrar_account;
     const vector<genesis_state_type::account_balance_type>& account_balances = genesis_state.account_balances;
 
     for (auto& account_balance : account_balances)

@@ -10,9 +10,15 @@ class dbservice;
 template <typename OperationType = deip::protocol::operation> class evaluator
 {
 public:
+    virtual ~evaluator() = 0;
     virtual void apply(const OperationType& op) = 0;
     virtual int get_type() const = 0;
 };
+
+template <typename OperationType>
+evaluator<OperationType>::~evaluator()
+{
+}
 
 template <typename EvaluatorType, typename OperationType = deip::protocol::operation>
 class evaluator_impl : public evaluator<OperationType>

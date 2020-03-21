@@ -67,11 +67,7 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
     FC_ASSERT(fee.symbol == DEIP_SYMBOL, "invalid asset type (asset_id)");
 
     auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
-
     const auto& props = db_impl().get_dynamic_global_properties();
-    const auto& creator = get_account(creator_name);
-
-    auto& account_balance = account_balance_service.get_by_owner_and_asset(creator_name, DEIP_SYMBOL);
     account_balance_service.adjust_balance(creator_name, -fee);
 
     const auto& new_account = db_impl().create<account_object>([&](account_object& acc) {

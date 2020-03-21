@@ -214,8 +214,8 @@ public:
     void notify_post_apply_operation(const operation_notification& note);
 
     // vops are not needed for low mem. Force will push them on low mem.
-    inline void push_virtual_operation(const operation& op) override;
-    inline void push_hf_operation(const operation& op);
+    void push_virtual_operation(const operation& op) override;
+    void push_hf_operation(const operation& op);
 
     void notify_applied_block(const signed_block& block);
     void notify_on_pending_transaction(const signed_transaction& tx);
