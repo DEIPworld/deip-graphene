@@ -605,7 +605,7 @@ const research_content_object& database_fixture::research_content_create(
                                 const time_point_sec& activity_window_end,
                                 const std::vector<account_name_type>& authors,
                                 const std::vector<research_content_id_type>& references,
-                                const std::vector<string>& external_references)
+                                const std::set<string>& external_references)
 {
     const auto& new_research_content = db.create<research_content_object>([&](research_content_object& rc) {
 
@@ -619,7 +619,6 @@ const research_content_object& database_fixture::research_content_create(
         rc.created_at = now;
         rc.authors.insert(authors.begin(), authors.end());
         rc.references.insert(references.begin(), references.end());
-        rc.external_references.insert(external_references.begin(), external_references.end());
         rc.activity_round = activity_round;
         rc.activity_state = activity_state;
         rc.activity_window_start = activity_window_start;

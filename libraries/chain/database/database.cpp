@@ -45,6 +45,7 @@
 #include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_grant_application.hpp>
 #include <deip/chain/services/dbs_grant_application_review.hpp>
+#include <deip/chain/services/dbs_funding_opportunity.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1302,17 +1303,17 @@ void database::process_grants()
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_grant_application& grant_application_service = obtain_service<dbs_grant_application>();
 
-    const auto& grants_idx = get_index<grant_index>().indices().get<by_end_time>();
+    const auto& grants_idx = get_index<grant_index>().indices().get<by_end_date>();
     auto itr = grants_idx.begin();
     auto _head_block_time = head_block_time();
 
-    while (itr != grants_idx.end() && itr->end_time <= _head_block_time)
+    while (itr != grants_idx.end() && itr->end_date <= _head_block_time)
     {
         auto current_grant = itr++;
         auto& grant = *current_grant;
         auto applications = grant_application_service.get_grant_applications_by_grant(grant.id);
         if (applications.size() < grant.min_number_of_applications) {
-            grant_service.delete_grant(grant);
+            grant_service.remove_grant_with_announced_application_window(grant);
             continue;
         }
 
@@ -1329,7 +1330,7 @@ void database::process_grants()
 
         if (grant_application_service.get_grant_applications_by_grant(grant.id).size() == 0)
         {
-            grant_service.delete_grant(grant);
+            grant_service.remove_grant_with_announced_application_window(grant);
             continue;
         }
 
@@ -1344,25 +1345,30 @@ void database::distribute_grant(const grant_object& grant)
     dbs_research_discipline_relation& rdr_service = obtain_service<dbs_research_discipline_relation>();
     dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
 
-    asset used_grant = asset(0, DEIP_SYMBOL);
+    asset used_grant = asset(0, grant.amount.symbol);
 
     auto applications = grant_application_service.get_grant_applications_by_grant(grant.id);
     std::multimap<share_type, research_id_type, std::greater<share_type>> researches_eci;
 
     for (auto& application_ref : applications) {
         const auto &application = application_ref.get();
-        const auto& rd_relation = rdr_service.get_research_discipline_relation_by_research_and_discipline(application.research_id, grant.target_discipline);
-        researches_eci.insert(std::make_pair(rd_relation.research_eci, rd_relation.research_id));
+
+        auto parent_discipline_itr = std::min_element(grant.target_disciplines.begin(), grant.target_disciplines.end());
+        if (parent_discipline_itr != grant.target_disciplines.end())
+        {
+            const auto& rd_relation = rdr_service.get_research_discipline_relation_by_research_and_discipline(application.research_id, *parent_discipline_itr);
+            researches_eci.insert(std::make_pair(rd_relation.research_eci, rd_relation.research_id));
+        }
     }
 
-    std::vector<std::pair<share_type, research_id_type>> max_number_of_researches_to_grant(grant.max_number_of_researches_to_grant);
-    std::copy(researches_eci.begin(), researches_eci.end(), max_number_of_researches_to_grant.begin());
+    std::vector<std::pair<share_type, research_id_type>> max_number_of_research_to_grant(grant.max_number_of_research_to_grant);
+    std::copy(researches_eci.begin(), researches_eci.end(), max_number_of_research_to_grant.begin());
 
     share_type total_eci = 0;
-    for (auto& research_eci : max_number_of_researches_to_grant)
+    for (auto& research_eci : max_number_of_research_to_grant)
         total_eci += research_eci.first;
 
-    for (auto& research_eci : max_number_of_researches_to_grant)
+    for (auto& research_eci : max_number_of_research_to_grant)
     {
         asset research_reward = util::calculate_share(grant.amount, research_eci.first, total_eci);
         auto& research = get<research_object>(research_eci.second);
@@ -1379,7 +1385,7 @@ void database::distribute_grant(const grant_object& grant)
         g.amount -= used_grant;
     });
 
-    grant_service.delete_grant(grant);
+    grant_service.remove_grant_with_announced_application_window(grant);
 }
 
 asset database::distribute_reward(const asset &reward, const share_type &expertise)
@@ -2043,6 +2049,7 @@ void database::initialize_indexes()
     add_index<grant_index>();
     add_index<grant_application_index>();
     add_index<grant_application_review_index>();
+    add_index<funding_opportunity_index>();
     add_index<account_balance_index>();
     add_index<asset_index>();
     _plugin_index_signal();

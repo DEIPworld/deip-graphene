@@ -26,9 +26,13 @@ class research_object : public object<research_object_type, research_object>
     research_object() = delete;
 
 public:
-
     template <typename Constructor, typename Allocator>
-    research_object(Constructor &&c, allocator<Allocator> a) : title(a), abstract(a), permlink(a), eci_per_discipline(a), members(a)
+    research_object(Constructor&& c, allocator<Allocator> a)
+        : title(a)
+        , abstract(a)
+        , permlink(a)
+        , eci_per_discipline(a)
+        , members(a)
     {
         c(*this);
     }

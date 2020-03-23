@@ -55,6 +55,8 @@
 #include <fc/thread/scoped_lock.hpp>
 #include <fc/smart_ref_impl.hpp>
 
+#include <deip/protocol/operations/create_grant_operation.hpp>
+
 #ifndef WIN32
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -2139,46 +2141,11 @@ vector<discipline_supply_api_obj> wallet_api::get_discipline_supplies(const std:
     return result;
 }
 
-vector<grant_api_obj> wallet_api::list_my_grants()
-{
-    FC_ASSERT(!is_locked());
 
-    try
-    {
-        my->use_remote_account_by_key_api();
-    }
-    catch (fc::exception& e)
-    {
-        elog("Connected node needs to enable account_by_key_api");
-        return {};
-    }
-
-    vector<public_key_type> pub_keys;
-    pub_keys.reserve(my->_keys.size());
-
-    for (const auto& item : my->_keys)
-        pub_keys.push_back(item.first);
-
-    auto refs = (*my->_remote_account_by_key_api)->get_key_references(pub_keys);
-    set<string> names;
-    for (const auto& item : refs)
-        for (const auto& name : item)
-            names.insert(name);
-
-    return my->_remote_db->get_grants(names);
-}
-
-set<string> wallet_api::list_grant_owners(const string& lowerbound, uint32_t limit)
-{
-    return my->_remote_db->lookup_grant_owners(lowerbound, limit);
-}
-
-vector<grant_api_obj> wallet_api::get_grants(const std::string& account_name)
+vector<grant_api_obj> wallet_api::get_grants_with_announced_application_window_by_grantor(const std::string& grantor)
 {
     vector<grant_api_obj> result;
-
-    result = my->_remote_db->get_grants({ account_name });
-
+    result = my->_remote_db->get_grants_with_announced_application_window_by_grantor(grantor);
     return result;
 }
 
@@ -2471,7 +2438,7 @@ annotated_signed_transaction wallet_api::propose_create_research_content(const s
                                                                   const std::string& permlink,
                                                                   const std::vector<string> authors,
                                                                   const std::vector<int64_t> references,
-                                                                  const std::vector<string>& external_references,
+                                                                  const std::set<string>& external_references,
                                                                   const bool broadcast)
 {    
     std::vector<fc::fixed_string_16> authors_fc;
@@ -2826,30 +2793,34 @@ annotated_signed_transaction wallet_api::reject_offer_research_tokens(const int6
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::create_grant(const int64_t& target_discipline,
+annotated_signed_transaction wallet_api::create_grant(const std::string& grantor,
                                                       const asset& amount,
-                                                      const int64_t& min_number_of_positive_reviews,
-                                                      const int64_t& min_number_of_applications,
-                                                      const int64_t& max_number_of_researches_to_grant,
-                                                      const uint32_t& start_time,
-                                                      const uint32_t& end_time,
-                                                      const std::string& owner,
-                                                      const std::set<string>& officers,
+                                                      const int64_t& target_discipline,
+                                                      const int64_t& review_committee_id,
+                                                      const uint16_t& min_number_of_positive_reviews,
+                                                      const uint16_t& min_number_of_applications,
+                                                      const uint16_t& max_number_of_research_to_grant,
+                                                      const uint32_t& start_date,
+                                                      const uint32_t& end_date,
                                                       const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
     create_grant_operation op;
 
-    op.target_discipline = target_discipline;
+    op.grantor = grantor;
     op.amount = amount;
-    op.min_number_of_positive_reviews = min_number_of_positive_reviews;
-    op.min_number_of_applications = min_number_of_applications;
-    op.max_number_of_researches_to_grant = max_number_of_researches_to_grant;
-    op.start_time = fc::time_point_sec(start_time);
-    op.end_time = fc::time_point_sec(end_time);
-    op.owner = owner;
-    op.officers.insert(officers.begin(), officers.end());
+    op.target_disciplines = { target_discipline };
+    op.type = 1;
+
+    announced_application_window_contract_v1_0_0_type announced_application_window_contract;
+    announced_application_window_contract.review_committee_id = review_committee_id;
+    announced_application_window_contract.min_number_of_positive_reviews = min_number_of_positive_reviews;
+    announced_application_window_contract.min_number_of_applications = min_number_of_applications;
+    announced_application_window_contract.max_number_of_research_to_grant = max_number_of_research_to_grant;
+    announced_application_window_contract.start_date = fc::time_point_sec(start_date);
+    announced_application_window_contract.end_date = fc::time_point_sec(end_date);
+    op.details.push_back(announced_application_window_contract);
 
     signed_transaction tx;
     tx.operations.push_back(op);

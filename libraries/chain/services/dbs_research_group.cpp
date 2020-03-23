@@ -140,6 +140,16 @@ void dbs_research_group::check_research_group_existence(const research_group_id_
   FC_ASSERT(idx.find(research_group_id) != idx.cend(), "Group \"${1}\" does not exist.", ("1", research_group_id));
 }
 
+const bool dbs_research_group::research_group_exists(const research_group_id_type& research_group_id) const
+{
+  const auto& idx = db_impl()
+    .get_index<research_group_index>()
+    .indices()
+    .get<by_id>();
+
+  return idx.find(research_group_id) != idx.end();
+}
+
 const research_group_token_object& dbs_research_group::get_research_group_token_by_id(
   const research_group_token_id_type& id) const 
 {

@@ -126,7 +126,7 @@ struct create_research_content_data_type : base_proposal_data_type
     string permlink;
     std::vector<account_name_type> authors;
     std::vector<research_content_id_type> references;
-    std::vector<string> external_references;
+    std::set<string> external_references;
 
     void validate() const
     {
@@ -139,10 +139,10 @@ struct create_research_content_data_type : base_proposal_data_type
             FC_ASSERT(is_valid_account_name(author), "Account name ${n} is invalid", ("n", author));
         }
 
-        for (auto& link : external_references)
+        for (auto& ref : external_references)
         {
-            FC_ASSERT(!link.empty(), "External reference link cannot be empty");
-            FC_ASSERT(fc::is_utf8(link), "External reference link is not valid UTF8 string");
+            FC_ASSERT(!ref.empty(), "External reference link cannot be empty");
+            FC_ASSERT(fc::is_utf8(ref), "External reference link is not valid UTF8 string");
         }
     }
 };

@@ -49,7 +49,7 @@ public:
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
-            rc.external_references = {"one", "two", "four"};
+            rc.external_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -63,7 +63,7 @@ public:
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
-            rc.external_references = {"one", "four"};
+            rc.external_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -77,7 +77,7 @@ public:
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
-            rc.external_references = {"one", "two", "three"};
+            rc.external_references = {};
         });
 
         db.create<research_object>([&](research_object& r) {
@@ -105,7 +105,7 @@ public:
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
             rc.references.insert(1);
-            rc.external_references = {"one", "two"};
+            rc.external_references = {};
         });
     }
 
@@ -122,7 +122,7 @@ public:
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
-            rc.external_references = {"one", "two", "four"};
+            rc.external_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -136,7 +136,7 @@ public:
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
-            rc.external_references = {"one", "four"};
+            rc.external_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -150,7 +150,7 @@ public:
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
-            rc.external_references = {"one", "two", "three"};
+            rc.external_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -164,7 +164,7 @@ public:
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
             rc.references.insert(1);
-            rc.external_references = {"one", "two"};
+            rc.external_references = {};
         });
     }
 
@@ -329,9 +329,9 @@ BOOST_AUTO_TEST_CASE(create_research_content)
 
         std::vector<research_content_id_type> research_references;
         research_references.push_back(1);
-        std::vector<string> external_references = {"one", "two", "three"};
+        std::set<string> external_references = {"one", "two", "three"};
 
-        auto milestone = data_service.create(2, type, title, content, "permlink", authors, research_references, external_references);
+        auto milestone = data_service.create_research_content(2, type, title, content, "permlink", authors, research_references, external_references);
         BOOST_CHECK(milestone.research_id == 2);
         BOOST_CHECK(milestone.type == research_content_type::milestone_data);
         BOOST_CHECK(milestone.title == "title for milestone for Research #2");

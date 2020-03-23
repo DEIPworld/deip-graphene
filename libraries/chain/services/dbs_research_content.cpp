@@ -14,14 +14,15 @@ dbs_research_content::dbs_research_content(database &db) : _base_type(db)
 {
 }
 
-const research_content_object& dbs_research_content::create(const research_id_type& research_id,
+const research_content_object& dbs_research_content::create_research_content(
+                                                            const research_id_type& research_id,
                                                             const research_content_type& type,
                                                             const std::string& title,
                                                             const std::string& content,
                                                             const std::string& permlink,
                                                             const std::vector<account_name_type>& authors,
                                                             const std::vector<research_content_id_type>& references,
-                                                            const std::vector<string>& external_references)
+                                                            const std::set<string>& external_references)
 {
     const auto& new_research_content = db_impl().create<research_content_object>([&](research_content_object& rc) {
         
@@ -35,26 +36,35 @@ const research_content_object& dbs_research_content::create(const research_id_ty
         rc.created_at = now;
         rc.authors.insert(authors.begin(), authors.end());
         rc.references.insert(references.begin(), references.end());
-        rc.external_references.insert(external_references.begin(), external_references.end());
+        
+        for (auto& str : external_references)
+        {
+            int val_length = str.length();
+            char val_array[val_length + 1];
+            strcpy(val_array, str.c_str());
+            rc.external_references.insert(fc::shared_string(val_array, basic_string_allocator(db_impl().get_segment_manager())));
+        }
+
         rc.activity_round = 1;
         rc.activity_state = research_content_activity_state::active;
 
-        if (type == research_content_type::announcement || 
-                (type >= research_content_type::start_milestone_type && type <= research_content_type::last_milestone_type)) {
-
+        if (type == research_content_type::announcement ||  (type >= research_content_type::start_milestone_type && type <= research_content_type::last_milestone_type)) 
+        {
             // the 1st activity period for intermediate result starts immediately 
             // after publishing and continues for 2 weeks
             rc.activity_window_start = now;
             rc.activity_window_end = now + DEIP_REGULAR_CONTENT_ACTIVITY_WINDOW_DURATION;
 
-        } else if (type == research_content_type::final_result) {
+        }
+
+        else if (type == research_content_type::final_result) {
             // the 1st activity period for final result starts immediately 
             // after publishing and continues for 2 months
             rc.activity_window_start = now;
             rc.activity_window_end = now + DEIP_FINAL_RESULT_ACTIVITY_WINDOW_DURATION;
         }
 
-        auto& research = db_impl().get<research_object>(research_id);
+        const auto& research = db_impl().get<research_object>(research_id);
         db_impl().modify(research, [&](research_object& r_o)
         {
             r_o.last_update_time = now;

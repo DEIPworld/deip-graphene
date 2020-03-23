@@ -75,6 +75,8 @@ class dbs_research_group : public dbs_base
     void check_research_group_existence(
       const research_group_id_type& research_group_id) const;
 
+    const bool research_group_exists(const research_group_id_type& research_group_id) const;
+
     const research_group_token_object& get_research_group_token_by_id(
       const research_group_token_id_type& id) const;
 

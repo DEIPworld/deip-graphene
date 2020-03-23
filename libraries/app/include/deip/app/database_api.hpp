@@ -374,8 +374,7 @@ public:
     vector<total_votes_api_obj> get_total_votes_by_research_and_discipline(const research_id_type& research_id,
                                                                    const discipline_id_type& discipline_id) const;
     vector<total_votes_api_obj> get_total_votes_by_content(const research_content_id_type& research_content_id) const;
-    fc::optional<total_votes_api_obj> get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id,
-            const discipline_id_type& discipline_id) const;
+    fc::optional<total_votes_api_obj> get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id, const discipline_id_type& discipline_id) const;
 
     ///////////////////////////////
     // Research Reviews          //
@@ -386,7 +385,7 @@ public:
     vector<review_api_obj> get_reviews_by_author(const account_name_type& author) const;
 
     ///////////////////////////////
-    // Grnat Application Reviews //
+    // Grant Application Reviews //
     ///////////////////////////////
     vector<grant_application_review_api_obj> get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const;
 
@@ -462,22 +461,32 @@ public:
 
     eci_and_expertise_stats_api_obj get_eci_and_expertise_stats_by_discipline_id(const discipline_id_type& discipline_id);
 
-    /////////////
-    // Grants///
     ////////////
+    // Grants //
+    ////////////
+    fc::optional<grant_api_obj> get_grant_with_announced_application_window(const grant_id_type& id) const;
+    vector<grant_api_obj> get_grants_with_announced_application_window_by_grantor(const string& grantor) const;
 
-    fc::optional<grant_api_obj> get_grant(const grant_id_type& id) const;
-    vector<grant_api_obj> get_grants_by_target_discipline(const discipline_id_type& discipline_id) const;
-    vector<grant_api_obj> get_grants(const set<string>& account_names) const;
-    set<string> lookup_grant_owners(const string& lower_bound_name, uint32_t limit) const;
 
-    /////////////////////////
-    // Grant applications////
-    /////////////////////////
+    ////////////////////////
+    // Grant applications //
+    ////////////////////////
 
     fc::optional<grant_application_api_obj> get_grant_application(const grant_application_id_type& id) const;
     vector<grant_application_api_obj> get_grant_applications_by_grant(const grant_id_type& grant_id) const;
     vector<grant_application_api_obj> get_grant_applications_by_research_id(const research_id_type& research_id) const;
+
+
+    ///////////////////////////
+    // Funding opportunities //
+    ///////////////////////////
+
+    fc::optional<funding_opportunity_api_obj> get_funding_opportunity_announcement(const funding_opportunity_id_type& id) const;
+    fc::optional<funding_opportunity_api_obj> get_funding_opportunity_announcement_by_number(const string& number) const;
+    vector<funding_opportunity_api_obj> get_funding_opportunity_announcements_by_grantor(const set<string>& names) const;
+    vector<funding_opportunity_api_obj> get_funding_opportunity_announcements_by_organization(const research_group_id_type& research_group_id) const;
+    vector<funding_opportunity_api_obj> get_funding_opportunity_announcements_listing(const uint16_t& page, const uint16_t& limit) const;
+
 
     // These methods are just for ECI debugging purposes, for actual values use 'eci_per_discipline' field
     std::map<discipline_id_type, share_type> calculate_research_eci(const research_id_type& research_id) const;
@@ -705,10 +714,15 @@ FC_API(deip::app::database_api,
    (get_eci_and_expertise_stats_by_discipline_id)
 
    //Grants
-   (get_grant)
-   (get_grants_by_target_discipline)
-   (get_grants)
-   (lookup_grant_owners)
+   (get_grant_with_announced_application_window)
+   (get_grants_with_announced_application_window_by_grantor)
+
+   // FOA
+   (get_funding_opportunity_announcement)
+   (get_funding_opportunity_announcement_by_number)
+   (get_funding_opportunity_announcements_by_grantor)
+   (get_funding_opportunity_announcements_by_organization)
+   (get_funding_opportunity_announcements_listing)
 
    // Grant applications
    (get_grant_application)

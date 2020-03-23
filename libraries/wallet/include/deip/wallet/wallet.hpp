@@ -830,14 +830,9 @@ public:
     vector<grant_api_obj> list_my_grants();
 
     /**
-     *  Gets the list of all grant owners (look list_accounts to understand input parameters)
-     */
-    set<string> list_grant_owners(const std::string& lowerbound, uint32_t limit);
-
-    /**
      *  Gets the grant information for certain account
      */
-    vector<grant_api_obj> get_grants(const std::string& account_name);
+    vector<grant_api_obj> get_grants_with_announced_application_window_by_grantor(const std::string& account_name);
 
     /**
      *  Gets the list of all research group invites for all accounts
@@ -1076,7 +1071,7 @@ public:
                                                                   const std::string& permlink,
                                                                   const std::vector<string> authors,
                                                                   const std::vector<int64_t> references,
-                                                                  const std::vector<string>& external_references,
+                                                                  const std::set<string>& external_references,
                                                                   const bool broadcast);
 
 
@@ -1267,15 +1262,15 @@ public:
                                                               const std::string& buyer,
                                                               const bool broadcast);
 
-    annotated_signed_transaction create_grant(const int64_t& target_discipline,
+    annotated_signed_transaction create_grant(const std::string& grantor,
                                               const asset& amount,
-                                              const int64_t& min_number_of_positive_reviews,
-                                              const int64_t& min_number_of_applications,
-                                              const int64_t& max_number_of_researches_to_grant,
-                                              const uint32_t& start_time,
-                                              const uint32_t& end_time,
-                                              const std::string& owner,
-                                              const std::set<string>& officers,
+                                              const int64_t& target_discipline,
+                                              const int64_t& review_committee_id,
+                                              const uint16_t& min_number_of_positive_reviews,
+                                              const uint16_t& min_number_of_applications,
+                                              const uint16_t& max_number_of_research_to_grant,
+                                              const uint32_t& start_date,
+                                              const uint32_t& end_date,
                                               const bool broadcast);
 
     annotated_signed_transaction create_grant_application(const int64_t& grant_id,
@@ -1377,9 +1372,7 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (list_my_discipline_supplies)
         (list_discipline_supply_owners)
         (get_discipline_supplies)
-        (list_my_grants)
-        (list_grant_owners)
-        (get_grants)
+        (get_grants_with_announced_application_window_by_grantor)
         (list_my_research_group_invites)
         (list_my_research_tokens)
         (list_account_research_tokens)

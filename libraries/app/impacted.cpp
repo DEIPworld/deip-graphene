@@ -23,6 +23,7 @@
  */
 
 #include <deip/protocol/authority.hpp>
+#include <deip/protocol/operations/create_grant_operation.hpp>
 
 #include <deip/app/impacted.hpp>
 
@@ -233,7 +234,7 @@ struct get_impacted_account_visitor
 
     void operator()(const create_grant_operation& op)
     {
-        _impacted.insert(op.owner);
+        _impacted.insert(op.grantor);
     }
 
     void operator()(const create_grant_application_operation& op)

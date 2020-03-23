@@ -258,20 +258,6 @@ void reject_research_token_offer_operation::validate() const
     validate_account_name(buyer);
 }
 
-void create_grant_operation::validate() const
-{
-    FC_ASSERT(target_discipline > 0, "Cannot use root discipline (id = 0)");
-    FC_ASSERT(amount.amount > 0, "Grant amount must be greater than 0");
-    FC_ASSERT(min_number_of_positive_reviews >= 0, "Number of positive reviews must be equal or greater than 0");
-    FC_ASSERT(min_number_of_applications > 0, "Number of applications must be greater than 0");
-    FC_ASSERT(min_number_of_applications >= max_number_of_researches_to_grant, "Number of applications must be equal or greater than number of researches");
-    FC_ASSERT(max_number_of_researches_to_grant > 0, "Number of researches must be greater than 0");
-    FC_ASSERT(end_time > start_time, "End time must be greater than a start time");
-    validate_account_name(owner);
-    for (auto& officer : officers) {
-        validate_account_name(officer);
-    }
-}
 
 void create_grant_application_operation::validate() const
 {

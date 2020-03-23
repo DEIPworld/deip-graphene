@@ -23,14 +23,14 @@ public:
 
     using research_content_refs_type = std::vector<std::reference_wrapper<const research_content_object>>;
 
-    const research_content_object& create(const research_id_type& research_id,
+    const research_content_object& create_research_content(const research_id_type& research_id,
                                           const research_content_type& type,
                                           const string& title,
                                           const string& content,
                                           const string& permlink,
                                           const std::vector<account_name_type>& authors,
                                           const std::vector<research_content_id_type>& references,
-                                          const std::vector<string>& external_references);
+                                          const std::set<string>& external_references);
 
     const research_content_object& get(const research_content_id_type& id) const;
 

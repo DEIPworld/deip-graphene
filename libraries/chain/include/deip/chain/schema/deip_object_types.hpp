@@ -82,6 +82,7 @@ enum object_type
     grant_object_type,
     grant_application_object_type,
     grant_application_review_object_type,
+    funding_opportunity_object_type,
     account_balance_object_type,
     asset_object_type
 };
@@ -131,6 +132,7 @@ class offer_research_tokens_object;
 class grant_object;
 class grant_application_object;
 class grant_application_review_object;
+class funding_opportunity_object;
 class account_balance_object;
 class asset_object;
 
@@ -179,9 +181,11 @@ typedef oid<offer_research_tokens_object> offer_research_tokens_id_type;
 typedef oid<grant_object> grant_id_type;
 typedef oid<grant_application_object> grant_application_id_type;
 typedef oid<grant_application_review_object> grant_application_review_id_type;
+typedef oid<funding_opportunity_object> funding_opportunity_id_type;
 typedef oid<account_balance_object> account_balance_id_type;
 typedef oid<asset_object> asset_id_type;
 
+typedef bip::allocator<fc::shared_string, bip::managed_mapped_file::segment_manager> basic_string_allocator;
 
 typedef allocator<account_name_type> account_name_allocator_type;
 typedef bip::set<account_name_type, std::less<account_name_type>, account_name_allocator_type> account_name_type_set;
@@ -192,9 +196,12 @@ typedef bip::set<research_id_type, std::less<research_id_type>, research_id_allo
 typedef allocator<research_content_id_type> research_content_id_allocator_type;
 typedef bip::set<research_content_id_type, std::less<research_content_id_type>, research_content_id_allocator_type> research_content_id_type_set;
 
-typedef allocator<fc::fixed_string_32> fixed_string_32_allocator_type;
-typedef bip::set<fc::fixed_string_32, std::less<fc::fixed_string_32>, fixed_string_32_allocator_type> fixed_string_32_type_set;
-    
+typedef allocator<fc::shared_string> shared_string_set_allocator_type;
+typedef bip::set<fc::shared_string, std::less<fc::shared_string>, shared_string_set_allocator_type> shared_string_type_set;
+
+typedef allocator<std::pair<const fc::shared_string, fc::shared_string>> shared_string_map_allocator_type;
+typedef bip::map<fc::shared_string, fc::shared_string, std::less<fc::shared_string>, shared_string_map_allocator_type> shared_string_type_map;
+
 typedef allocator<discipline_id_type> discipline_id_allocator_type;    
 typedef bip::set<discipline_id_type, std::less<discipline_id_type>, discipline_id_allocator_type> discipline_id_type_set;
 
@@ -270,6 +277,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (grant_object_type)
                  (grant_application_object_type)
                  (grant_application_review_object_type)
+                 (funding_opportunity_object_type)
                  (account_balance_object_type)
                  (asset_object_type)
 )
