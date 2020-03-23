@@ -46,7 +46,7 @@ struct change_action_quorum_proposal_data_type : base_proposal_data_type
 
     void validate() const
     {
-        const percent_type min = 5 * DEIP_1_PERCENT;
+        const percent_type min = DEIP_1_PERCENT;
         const percent_type max = DEIP_100_PERCENT;
         FC_ASSERT(quorum >= min && quorum <= max, 
           "Quorum value (${val}) should be in range of ${min} to ${max}. ", 
