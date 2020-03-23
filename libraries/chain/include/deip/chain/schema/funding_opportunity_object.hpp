@@ -10,12 +10,12 @@ class funding_opportunity_object : public object<funding_opportunity_object_type
     funding_opportunity_object() = delete;
 
 public:
-
     template <typename Constructor, typename Allocator>
     funding_opportunity_object(Constructor&& c, allocator<Allocator> a)
         : funding_opportunity_number(a)
         , additional_info(a)
         , target_disciplines(a)
+        , officers(a)
     {
         c(*this);
     }
@@ -35,6 +35,8 @@ public:
     asset award_floor = asset(0, DEIP_SYMBOL);
 
     uint16_t expected_number_of_awards;
+
+    account_name_type_set officers;
 
     fc::time_point_sec open_date;
     fc::time_point_sec close_date;
@@ -91,6 +93,7 @@ FC_REFLECT(deip::chain::funding_opportunity_object,
   (award_ceiling)
   (award_floor)
   (expected_number_of_awards)
+  (officers)
   (open_date)
   (close_date)
   (posted_date)

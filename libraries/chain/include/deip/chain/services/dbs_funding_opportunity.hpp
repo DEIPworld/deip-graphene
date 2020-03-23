@@ -28,6 +28,7 @@ public:
                                                                                 const asset& award_ceiling, 
                                                                                 const asset& award_floor,
                                                                                 const uint16_t& expected_number_of_awards,
+                                                                                const std::set<account_name_type>& officers,
                                                                                 const fc::time_point_sec& open_date,
                                                                                 const fc::time_point_sec& close_date);
 

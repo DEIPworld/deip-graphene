@@ -22,6 +22,7 @@ const funding_opportunity_object& dbs_funding_opportunity::create_funding_opport
   const asset& award_ceiling, 
   const asset& award_floor,
   const uint16_t& expected_number_of_awards,
+  const std::set<account_name_type>& officers,
   const fc::time_point_sec& open_date,
   const fc::time_point_sec& close_date)
 {
@@ -59,6 +60,7 @@ const funding_opportunity_object& dbs_funding_opportunity::create_funding_opport
         funding_opportunity.award_ceiling = award_ceiling;
         funding_opportunity.award_floor = award_floor;
         funding_opportunity.expected_number_of_awards = expected_number_of_awards;
+        funding_opportunity.officers.insert(officers.begin(), officers.end());
         funding_opportunity.open_date = open_date;
         funding_opportunity.close_date = close_date;
         funding_opportunity.posted_date = now;

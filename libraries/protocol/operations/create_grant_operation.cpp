@@ -67,7 +67,7 @@ void inline validate_grant_contract_permitted_details(
 }
 
 
-void inline validate_grant_contract(const grant_contract_details grant_contract, const asset& amount)
+void inline validate_grant_contract(const grant_contract_details grant_contract, const asset& amount, const account_name_type& grantor)
 {  
   bool is_validated = false;
 
@@ -95,6 +95,9 @@ void inline validate_grant_contract(const grant_contract_details grant_contract,
         FC_ASSERT(fc::is_utf8(pair.first), "Info key ${key} is not valid UTF-8 string", ("key", pair.first));
         FC_ASSERT(fc::is_utf8(pair.second), "Info value ${val} is not valid UTF-8 string", ("val", pair.second));
     }
+
+    FC_ASSERT(funding_opportunity_announcement_contract.officers.count(grantor) != 0, 
+      "Funding opportunity officers list should include the grantor ${1}", ("1", grantor));
 
     FC_ASSERT(funding_opportunity_announcement_contract.award_ceiling <= amount, "Award ceiling amount must be less than total amount");
     FC_ASSERT(funding_opportunity_announcement_contract.award_floor <= funding_opportunity_announcement_contract.award_ceiling, "Award floor must be less than total amount");
@@ -136,7 +139,7 @@ void create_grant_operation::validate() const
 
     const auto grant_contract_opt = get_grant_contract();
     FC_ASSERT(grant_contract_opt.valid(), "Grant contract details are not required");
-    validate_grant_contract(*grant_contract_opt, amount);
+    validate_grant_contract(*grant_contract_opt, amount, grantor);
 }
 
 

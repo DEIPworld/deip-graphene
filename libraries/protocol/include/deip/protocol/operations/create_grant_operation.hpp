@@ -65,6 +65,8 @@ struct funding_opportunity_announcement_contract_v1_0_0_type : base_grant_contra
     fc::time_point_sec open_date;
     fc::time_point_sec close_date;
 
+    std::set<account_name_type> officers;
+
     flat_map<string, string> additional_info;
 };
 
@@ -201,7 +203,7 @@ FC_REFLECT_ENUM( deip::protocol::grant_contract_type, (unknown)(announced_applic
 
 FC_REFLECT( deip::protocol::base_grant_contract, (version) )
 FC_REFLECT_DERIVED( deip::protocol::announced_application_window_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (review_committee_id)(min_number_of_positive_reviews)(min_number_of_applications)(max_number_of_research_to_grant)(start_date)(end_date) )
-FC_REFLECT_DERIVED( deip::protocol::funding_opportunity_announcement_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (organization_id)(review_committee_id)(funding_opportunity_number)(award_ceiling)(award_floor)(expected_number_of_awards)(open_date)(close_date)(additional_info) )
+FC_REFLECT_DERIVED( deip::protocol::funding_opportunity_announcement_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (organization_id)(review_committee_id)(funding_opportunity_number)(award_ceiling)(award_floor)(expected_number_of_awards)(open_date)(close_date)(officers)(additional_info) )
 
 
 DECLARE_GRANT_CONTRACT_DETAILS_TYPE(deip::protocol::grant_contract_details)
