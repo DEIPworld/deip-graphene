@@ -1420,12 +1420,19 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
     {
         const auto funding_opportunity_announcement_contract = grant_contract.get<funding_opportunity_announcement_contract_v1_0_0_type>();
         FC_ASSERT(research_group_service.research_group_exists(funding_opportunity_announcement_contract.organization_id), 
-          "Organization ${rg} does not exists", 
-          ("rg", funding_opportunity_announcement_contract.organization_id));
+          "Organization ${1} does not exists", 
+          ("1", funding_opportunity_announcement_contract.organization_id));
 
         FC_ASSERT(research_group_service.research_group_exists(funding_opportunity_announcement_contract.review_committee_id), 
-          "Review committee ${rg} does not exists", 
-          ("rg", funding_opportunity_announcement_contract.review_committee_id));
+          "Review committee ${1} does not exists", 
+          ("1", funding_opportunity_announcement_contract.review_committee_id));
+
+        for (auto& officer: funding_opportunity_announcement_contract.officers)
+        {
+            FC_ASSERT(research_group_service.is_research_group_member(officer, funding_opportunity_announcement_contract.organization_id),
+              "Account ${1} is not a member of ${2} organization and can not be programm officer",
+              ("1", officer)("2", funding_opportunity_announcement_contract.organization_id));
+        }
         
         FC_ASSERT(funding_opportunity_announcement_contract.open_date >= _db.head_block_time(), "Open date must be greater than now");
         FC_ASSERT(funding_opportunity_announcement_contract.open_date < funding_opportunity_announcement_contract.close_date, "Open date must be earlier than close date");
@@ -1441,6 +1448,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
           funding_opportunity_announcement_contract.award_ceiling,
           funding_opportunity_announcement_contract.award_floor,
           funding_opportunity_announcement_contract.expected_number_of_awards,
+          funding_opportunity_announcement_contract.officers,
           funding_opportunity_announcement_contract.open_date,
           funding_opportunity_announcement_contract.close_date
         );
