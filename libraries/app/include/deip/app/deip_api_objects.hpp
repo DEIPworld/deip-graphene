@@ -1174,6 +1174,8 @@ struct funding_opportunity_api_obj
         {
             target_disciplines.insert(discipline_id._id);
         }
+
+        officers.insert(fo_o.officers.begin(), fo_o.officers.end());
     }
 
     // because fc::variant require for temporary object
@@ -1198,6 +1200,7 @@ struct funding_opportunity_api_obj
 
     std::map<std::string, std::string> additional_info;
     std::set<int64_t> target_disciplines;
+    std::set<account_name_type> officers;
 };
 
 struct asset_api_obj
@@ -1660,6 +1663,7 @@ FC_REFLECT( deip::app::funding_opportunity_api_obj,
             (close_date)
             (additional_info)
             (target_disciplines)
+            (officers)
 )
 
 FC_REFLECT( deip::app::asset_api_obj,
