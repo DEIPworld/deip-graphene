@@ -319,18 +319,24 @@ struct dynamic_global_property_api_obj : public dynamic_global_property_object
 
 struct discipline_supply_api_obj
 {
-    discipline_supply_api_obj(const chain::discipline_supply_object& b)
-        : id(b.id._id)
-        , owner(b.owner)
-        , target_discipline(b.target_discipline._id)
-        , created(b.created)
-        , balance(b.balance)
-        , per_block(b.per_block)
-        , start_block(b.start_block)
-        , end_block(b.end_block)
-        , is_extendable(b.is_extendable)
-        , content_hash(fc::to_string(b.content_hash))
+    discipline_supply_api_obj(const chain::discipline_supply_object& ds_o)
+        : id(ds_o.id._id)
+        , grantor(ds_o.grantor)
+        , target_discipline(ds_o.target_discipline._id)
+        , created(ds_o.created)
+        , balance(ds_o.balance)
+        , per_block(ds_o.per_block)
+        , start_time(ds_o.start_time)
+        , end_time(ds_o.end_time)
+        , is_extendable(ds_o.is_extendable)
+        , content_hash(fc::to_string(ds_o.content_hash))
     {
+        for (auto& pair : ds_o.additional_info)
+        {
+            std::string key = fc::to_string(pair.first);
+            std::string val = fc::to_string(pair.second);
+            additional_info.insert(std::pair<string, string>(key, val));
+        }
     }
 
     // because fc::variant require for temporary object
@@ -340,18 +346,20 @@ struct discipline_supply_api_obj
 
     int64_t id;
 
-    account_name_type owner;
+    account_name_type grantor;
     int64_t target_discipline;
 
     time_point_sec created;
 
     asset balance;
     share_type per_block;
-    uint32_t start_block;
-    uint32_t end_block;
+    time_point_sec start_time;
+    time_point_sec end_time;
 
     bool is_extendable;
     string content_hash;
+
+    std::map<std::string, std::string> additional_info;
 };
 
 struct discipline_api_obj
@@ -1341,16 +1349,17 @@ FC_REFLECT_DERIVED( deip::app::dynamic_global_property_api_obj, (deip::chain::dy
                   )
 
 FC_REFLECT( deip::app::discipline_supply_api_obj,
-             (id)
-            (owner)
+            (id)
+            (grantor)
             (target_discipline)
             (created)
             (balance)
             (per_block)
-            (start_block)
-            (end_block)
+            (start_time)
+            (end_time)
             (is_extendable)
             (content_hash)
+            (additional_info)
           )
 
 FC_REFLECT( deip::app::discipline_api_obj,

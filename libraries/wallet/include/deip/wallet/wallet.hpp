@@ -817,7 +817,7 @@ public:
     /**
      *  Gets the list of all discipline_supply owners (look list_accounts to understand input parameters)
      */
-    set<string> list_discipline_supply_owners(const std::string& lowerbound, uint32_t limit);
+    set<string> list_discipline_supply_grantors(const std::string& lowerbound, uint32_t limit);
 
     /**
      *  Gets the discipline_supply information for certain account
@@ -943,20 +943,20 @@ public:
      *
      *  @warning The owner account must have sufficient balance for discipline_supply
      *
-     *  @param discipline_supply_owner The future owner of creating discipline_supply
-     *  @param balance The balance of discipline_supply
-     *  @param start_block Block number starting which discipline_supply will be distributed
-     *  @param end_block Block number discipline_supply distribution ends
+     *  @param grantor The future owner of creating discipline_supply
+     *  @param amount The amount of discipline_supply
+     *  @param start_time Time when discipline_supply will be distributed
+     *  @param end_time Time when discipline_supply distribution ends
      *  @param target_discipline The target discipline name discipline_supply will be distributed to
      *  @param content_hash Hash of description of discipline_supply
      *  @param is_extendable Set to 'true' if you want your discipline_supply to extend if not distributed in specified period
      *  @param broadcast
      */
-    annotated_signed_transaction create_discipline_supply(const std::string& discipline_supply_owner,
-                                                          const asset& balance,
-                                                          const uint32_t& start_block,
-                                                          const uint32_t& end_block,
-                                                          const std::string& target_discipline,
+    annotated_signed_transaction create_discipline_supply(const std::string& grantor,
+                                                          const asset& amount,
+                                                          const uint32_t start_time,
+                                                          const uint32_t end_time,
+                                                          const int64_t& target_discipline,
                                                           const std::string& content_hash,
                                                           const bool is_extendable,
                                                           const bool broadcast);
@@ -1370,7 +1370,7 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (get_state)
         (get_withdraw_routes)
         (list_my_discipline_supplies)
-        (list_discipline_supply_owners)
+        (list_discipline_supply_grantors)
         (get_discipline_supplies)
         (get_grants_with_announced_application_window_by_grantor)
         (list_my_research_group_invites)

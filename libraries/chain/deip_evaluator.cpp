@@ -530,26 +530,6 @@ void change_recovery_account_evaluator::do_apply(const change_recovery_account_o
     account_service.change_recovery_account(account_to_recover, o.new_recovery_account);
 }
 
-void create_discipline_supply_evaluator::do_apply(const create_discipline_supply_operation& op)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
-    dbs_discipline_supply& discipline_supply_service = _db.obtain_service<dbs_discipline_supply>();
-
-    account_service.check_account_existence(op.owner);
-    const auto& owner = account_service.get_account(op.owner);
-    discipline_service.check_discipline_existence_by_name(op.target_discipline);
-    auto& discipline = discipline_service.get_discipline_by_name(op.target_discipline);
-
-    discipline_supply_service.create_discipline_supply(owner,
-                                                       op.balance,
-                                                       op.start_block,
-                                                       op.end_block,
-                                                       discipline.id,
-                                                       op.is_extendable,
-                                                       op.content_hash);
-}
-
 void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
 {
   dbs_proposal& proposals_service = _db.obtain_service<dbs_proposal>();
@@ -1378,6 +1358,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
     dbs_funding_opportunity& funding_opportunities_service = _db.obtain_service<dbs_funding_opportunity>();
     dbs_grant& grants_service = _db.obtain_service<dbs_grant>();
     const dbs_asset& assets_service = _db.obtain_service<dbs_asset>();
+    dbs_discipline_supply& discipline_supply_service = _db.obtain_service<dbs_discipline_supply>();
 
     FC_ASSERT(accounts_service.account_exists(op.grantor), "Account ${a} does not exists", ("a", op.grantor));
     FC_ASSERT(assets_service.exists_by_symbol(op.amount.symbol), "Asset ${s} does not exists", ("s", op.amount.symbol));
@@ -1450,8 +1431,23 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
           funding_opportunity_announcement_contract.expected_number_of_awards,
           funding_opportunity_announcement_contract.officers,
           funding_opportunity_announcement_contract.open_date,
-          funding_opportunity_announcement_contract.close_date
-        );
+          funding_opportunity_announcement_contract.close_date);
+    }
+
+    else if (grant_contract.which() == grant_contract_details::tag<discipline_supply_announcement_contract_v1_0_0_type>::value)
+    {
+        const auto discipline_supply_announcement_contract = grant_contract.get<discipline_supply_announcement_contract_v1_0_0_type>();
+
+        int64_t target_discipline = *op.target_disciplines.begin();
+        discipline_supply_service.create_discipline_supply(
+          op.grantor,
+          op.amount,
+          discipline_supply_announcement_contract.start_time,
+          discipline_supply_announcement_contract.end_time,
+          target_discipline,
+          discipline_supply_announcement_contract.is_extendable,
+          discipline_supply_announcement_contract.content_hash,
+          discipline_supply_announcement_contract.additional_info);
     }
 
     else 

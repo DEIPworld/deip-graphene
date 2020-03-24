@@ -70,20 +70,38 @@ struct funding_opportunity_announcement_contract_v1_0_0_type : base_grant_contra
     flat_map<string, string> additional_info;
 };
 
+struct discipline_supply_announcement_contract_v1_0_0_type : base_grant_contract
+{
+  discipline_supply_announcement_contract_v1_0_0_type(string v = "1.0.0")
+    : base_grant_contract(v)
+  {
+  }
+
+    fc::time_point_sec start_time;
+    fc::time_point_sec end_time;
+
+    bool is_extendable;
+    string content_hash;
+
+    flat_map<string, string> additional_info;
+};
+
 enum class grant_contract_type : uint16_t
 {
   unknown = 0,
   announced_application_window = 1,
   funding_opportunity_announcement = 2,
+  discipline_supply_announcement = 3,
 
   FIRST = announced_application_window,
-  LAST = funding_opportunity_announcement
+  LAST = discipline_supply_announcement
 };
 
 
 typedef fc::static_variant<
   announced_application_window_contract_v1_0_0_type,
-  funding_opportunity_announcement_contract_v1_0_0_type
+  funding_opportunity_announcement_contract_v1_0_0_type,
+  discipline_supply_announcement_contract_v1_0_0_type
   >
   grant_contract_details;
 
@@ -189,7 +207,7 @@ struct get_grant_contract_details_type
         else                                                                                                           \
         {                                                                                                              \
             auto itr = to_tag.find(ar[0].as_string());                                                                 \
-            FC_ASSERT(itr != to_tag.end(), "Invalid research group management type: ${n}", ("n", ar[0]));              \
+            FC_ASSERT(itr != to_tag.end(), "Invalid grant contract type: ${n}", ("n", ar[0]));              \
             vo.set_which(to_tag[ar[0].as_string()]);                                                                   \
         }                                                                                                              \
         vo.visit(fc::to_static_variant(ar[1]));                                                                        \
@@ -199,12 +217,12 @@ struct get_grant_contract_details_type
 
 
 FC_REFLECT( deip::protocol::create_grant_operation, (grantor)(amount)(type)(target_disciplines)(details) )
-FC_REFLECT_ENUM( deip::protocol::grant_contract_type, (unknown)(announced_application_window)(funding_opportunity_announcement) )
+FC_REFLECT_ENUM( deip::protocol::grant_contract_type, (unknown)(announced_application_window)(funding_opportunity_announcement)(discipline_supply_announcement) )
 
 FC_REFLECT( deip::protocol::base_grant_contract, (version) )
 FC_REFLECT_DERIVED( deip::protocol::announced_application_window_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (review_committee_id)(min_number_of_positive_reviews)(min_number_of_applications)(max_number_of_research_to_grant)(start_date)(end_date) )
 FC_REFLECT_DERIVED( deip::protocol::funding_opportunity_announcement_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (organization_id)(review_committee_id)(funding_opportunity_number)(award_ceiling)(award_floor)(expected_number_of_awards)(open_date)(close_date)(officers)(additional_info) )
-
+FC_REFLECT_DERIVED( deip::protocol::discipline_supply_announcement_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (start_time)(end_time)(is_extendable)(content_hash)(additional_info) )
 
 DECLARE_GRANT_CONTRACT_DETAILS_TYPE(deip::protocol::grant_contract_details)
 FC_REFLECT_TYPENAME(deip::protocol::grant_contract_details)

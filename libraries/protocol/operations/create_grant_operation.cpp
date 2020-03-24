@@ -63,11 +63,30 @@ void inline validate_grant_contract_permitted_details(
         is_validated = true;
     }
 
+    else if (type == grant_contract_type::discipline_supply_announcement)
+    {
+        const std::set<int>& permitted_details =
+        {
+            grant_contract_details::tag<discipline_supply_announcement_contract_v1_0_0_type>::value
+        };
+
+        const bool is_permitted = std::count_if(details.begin(), details.end(),
+          [&](const grant_contract_details& detail) {
+              return permitted_details.count(detail.which()) != 0;
+          }) == details.size();
+
+        FC_ASSERT(is_permitted,
+          "Provided grant contract details are not permitted for ${type} type",
+          ("type", type));
+
+        is_validated = true;
+    }
+
     FC_ASSERT(is_validated, "Grant contract details are not validated");
 }
 
 
-void inline validate_grant_contract(const grant_contract_details grant_contract, const asset& amount, const account_name_type& grantor)
+void inline validate_grant_contract(const grant_contract_details grant_contract, const asset& amount, const account_name_type& grantor, const std::set<int64_t>& target_disciplines)
 {  
   bool is_validated = false;
 
@@ -107,6 +126,24 @@ void inline validate_grant_contract(const grant_contract_details grant_contract,
     is_validated = true;
   }
 
+  else if (grant_contract.which() == grant_contract_details::tag<discipline_supply_announcement_contract_v1_0_0_type>::value)
+  {
+    const auto discipline_supply_announcement_contract = grant_contract.get<discipline_supply_announcement_contract_v1_0_0_type>();
+
+    FC_ASSERT(target_disciplines.size() == 1, "Must be only 1 target discipline in discipline supply.");
+    FC_ASSERT(discipline_supply_announcement_contract.end_time > discipline_supply_announcement_contract.start_time, "Invalid discipline supply duration.");
+    FC_ASSERT(discipline_supply_announcement_contract.content_hash.size() > 0, "Content hash must be specified");
+    FC_ASSERT(fc::is_utf8(discipline_supply_announcement_contract.content_hash), "Content hash is not valid UTF8 string");
+
+    for (auto& pair : discipline_supply_announcement_contract.additional_info)
+    {
+        FC_ASSERT(fc::is_utf8(pair.first), "Info key ${key} is not valid UTF-8 string", ("key", pair.first));
+        FC_ASSERT(fc::is_utf8(pair.second), "Info value ${val} is not valid UTF-8 string", ("val", pair.second));
+    }
+
+    is_validated = true;
+  }
+
   FC_ASSERT(is_validated, "Grant contract details are not validated");
 }
 
@@ -117,7 +154,8 @@ fc::optional<grant_contract_details> create_grant_operation::get_grant_contract(
       [&](const grant_contract_details& detail) {
         return 
             detail.which() == grant_contract_details::tag<announced_application_window_contract_v1_0_0_type>::value || 
-            detail.which() == grant_contract_details::tag<funding_opportunity_announcement_contract_v1_0_0_type>::value;
+            detail.which() == grant_contract_details::tag<funding_opportunity_announcement_contract_v1_0_0_type>::value ||
+            detail.which() == grant_contract_details::tag<discipline_supply_announcement_contract_v1_0_0_type>::value;
     });
 
     if (itr != details.end())
@@ -139,7 +177,7 @@ void create_grant_operation::validate() const
 
     const auto grant_contract_opt = get_grant_contract();
     FC_ASSERT(grant_contract_opt.valid(), "Grant contract details are not required");
-    validate_grant_contract(*grant_contract_opt, amount, grantor);
+    validate_grant_contract(*grant_contract_opt, amount, grantor, target_disciplines);
 }
 
 

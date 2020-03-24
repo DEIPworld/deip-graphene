@@ -129,11 +129,6 @@ struct get_impacted_account_visitor
         _impacted.insert(op.account_to_recover);
     }
 
-    void operator()(const create_discipline_supply_operation& op)
-    {
-        _impacted.insert(op.owner);
-    }
-
     void operator()(const create_research_group_operation& op)
     {
         _impacted.insert(op.creator);

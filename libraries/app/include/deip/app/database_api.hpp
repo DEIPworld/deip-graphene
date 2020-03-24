@@ -157,7 +157,7 @@ public:
 
     vector<discipline_supply_api_obj> get_discipline_supplies(const set<string>& account_names) const;
 
-    set<string> lookup_discipline_supply_owners(const string& lower_bound_name, uint32_t limit) const;
+    set<string> lookup_discipline_supply_grantors(const string& lower_bound_name, uint32_t limit) const;
 
     vector<owner_authority_history_api_obj> get_owner_history(string account) const;
 
@@ -517,6 +517,11 @@ public:
     vector<research_group_organization_contract_api_obj> get_organizational_contracts_by_research_group(const research_group_id_type& research_group_id) const;
     vector<research_group_organization_contract_api_obj> get_organizational_contracts_by_organization(const research_group_id_type& organization_id) const;
 
+    //////////////////////////
+    // Discipline supplies //
+    /////////////////////////
+
+    fc::optional<discipline_supply_api_obj> get_discipline_supply(const discipline_supply_id_type& id) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -587,7 +592,7 @@ FC_API(deip::app::database_api,
 
     // Discipline supply
    (get_discipline_supplies)
-   (lookup_discipline_supply_owners)
+   (lookup_discipline_supply_grantors)
 
    // Disciplines
    (get_all_disciplines)
@@ -744,6 +749,8 @@ FC_API(deip::app::database_api,
    (get_organizational_contract_by_organization_and_research_group_and_type)
    (get_organizational_contracts_by_organization)
    (get_organizational_contracts_by_research_group)
+
+   (get_discipline_supply)
 )
 
 // clang-format on
