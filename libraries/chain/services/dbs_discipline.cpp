@@ -44,19 +44,19 @@ void dbs_discipline::increase_total_expertise_amount(const discipline_id_type& i
     });
 }
 
-const discipline_object& dbs_discipline::get_discipline_by_name(const discipline_name_type& name) const
+const discipline_object& dbs_discipline::get_discipline_by_name(const fc::string& name) const
 {
-    try {
-        return db_impl().get<discipline_object, by_discipline_name>(name);
-    }
-    FC_CAPTURE_AND_RETHROW((name))
+    const auto& idx = db_impl().get_index<discipline_index>().indices().get<by_discipline_name>();
+    auto itr = idx.find(name, fc::strcmp_less());
+    FC_ASSERT(itr != idx.end(), "Discipline: ${n} is not found", ("n", name));
+    return *itr;
 }
 
-void dbs_discipline::check_discipline_existence_by_name(const discipline_name_type &name)
+void dbs_discipline::check_discipline_existence_by_name(const fc::string& name)
 {
     const auto& idx = db_impl().get_index<discipline_index>().indices().get<by_discipline_name>();
 
-    FC_ASSERT(idx.find(name) != idx.cend(), "Discipline \"${1}\" does not exist", ("1", name));
+    FC_ASSERT(idx.find(name, fc::strcmp_less()) != idx.cend(), "Discipline \"${1}\" does not exist", ("1", name));
 }
 
 void dbs_discipline::check_discipline_existence(const discipline_id_type &id)

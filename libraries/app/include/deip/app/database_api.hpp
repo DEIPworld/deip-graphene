@@ -277,7 +277,7 @@ public:
     /////////////////
     vector<discipline_api_obj> get_all_disciplines() const;
     fc::optional<discipline_api_obj> get_discipline(const discipline_id_type& id) const;
-    fc::optional<discipline_api_obj> get_discipline_by_name(const discipline_name_type& name) const;
+    fc::optional<discipline_api_obj> get_discipline_by_name(const string& name) const;
     vector<discipline_api_obj> get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
 
     ////////////////

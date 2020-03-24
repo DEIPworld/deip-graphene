@@ -35,9 +35,9 @@ public:
 
     /** Get discipline by name
     */
-    const discipline_object& get_discipline_by_name(const discipline_name_type& name) const;
+    const discipline_object& get_discipline_by_name(const fc::string& name) const;
 
-    void check_discipline_existence_by_name(const discipline_name_type& name);
+    void check_discipline_existence_by_name(const fc::string& name);
     void check_discipline_existence(const discipline_id_type& id);
 
     /** Get discipline by parent_id

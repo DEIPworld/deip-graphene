@@ -359,7 +359,7 @@ struct discipline_api_obj
     discipline_api_obj(const chain::discipline_object& d)
         : id(d.id._id)
         ,  parent_id(d.parent_id._id)
-        ,  name(d.name)
+        ,  name(fc::to_string(d.name))
         ,  total_active_weight(d.total_active_weight)
         ,  total_expertise_amount(d.total_expertise_amount)
     {}

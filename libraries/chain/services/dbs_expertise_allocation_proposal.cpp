@@ -1,5 +1,7 @@
-#include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
+#include <deip/chain/services/dbs_expert_token.hpp>
+#include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
+
 #include <deip/chain/database/database.hpp>
 
 #include <tuple>
@@ -185,6 +187,33 @@ void dbs_expertise_allocation_proposal::clear_expired_expertise_allocation_propo
     const auto& expiration_index = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_expiration_time>();
     while (!expiration_index.empty() && is_expired(*expiration_index.begin()))
         db_impl().remove(*expiration_index.begin());
+}
+
+
+void dbs_expertise_allocation_proposal::process_expertise_allocation_proposals()
+{
+    dbs_expert_token& expert_token_service = db_impl().obtain_service<dbs_expert_token>();
+
+    clear_expired_expertise_allocation_proposals();
+    vector<expertise_allocation_proposal_id_type> approved_proposals_ids;
+
+    const auto& idx = db_impl().get_index<expertise_allocation_proposal_index>().indices().get<by_id>();
+    auto current = idx.begin();
+    while (current != idx.end())
+    {
+        auto& proposal = get(current->id);
+        if (is_quorum(proposal))
+        {
+            expert_token_service.create(proposal.claimer, proposal.discipline_id, DEIP_EXPERTISE_CLAIM_AMOUNT, true);
+            approved_proposals_ids.push_back(proposal.id);
+        }
+        ++current;
+    }
+
+    for (auto &id : approved_proposals_ids)
+    {
+        remove(id);
+    }
 }
 
 const expertise_allocation_proposal_vote_object& dbs_expertise_allocation_proposal::create_vote(const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id,

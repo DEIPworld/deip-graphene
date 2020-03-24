@@ -1,7 +1,12 @@
+#include <deip/chain/database/database.hpp>
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_grant_application.hpp>
-#include <deip/chain/database/database.hpp>
+#include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_research_discipline_relation.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
+
+#include <deip/chain/util/reward.hpp>
 
 namespace deip {
 namespace chain {
@@ -127,6 +132,95 @@ void dbs_grant::remove_grant_with_announced_application_window(const grant_objec
     }
 
     db_impl().remove(grant);
+}
+
+void dbs_grant::distribute_grant(const grant_object& grant)
+{
+    dbs_grant_application& grant_application_service = db_impl().obtain_service<dbs_grant_application>();
+    dbs_research_discipline_relation& rdr_service = db_impl().obtain_service<dbs_research_discipline_relation>();
+    dbs_research_group& research_group_service = db_impl().obtain_service<dbs_research_group>();
+
+    asset used_grant = asset(0, grant.amount.symbol);
+
+    auto applications = grant_application_service.get_grant_applications_by_grant(grant.id);
+    std::multimap<share_type, research_id_type, std::greater<share_type>> researches_eci;
+
+    for (auto& application_ref : applications) {
+        const auto &application = application_ref.get();
+
+        auto parent_discipline_itr = std::min_element(grant.target_disciplines.begin(), grant.target_disciplines.end());
+        if (parent_discipline_itr != grant.target_disciplines.end())
+        {
+            const auto& rd_relation = rdr_service.get_research_discipline_relation_by_research_and_discipline(application.research_id, *parent_discipline_itr);
+            researches_eci.insert(std::make_pair(rd_relation.research_eci, rd_relation.research_id));
+        }
+    }
+
+    std::vector<std::pair<share_type, research_id_type>> max_number_of_research_to_grant(grant.max_number_of_research_to_grant);
+    std::copy(researches_eci.begin(), researches_eci.end(), max_number_of_research_to_grant.begin());
+
+    share_type total_eci = 0;
+    for (auto& research_eci : max_number_of_research_to_grant)
+        total_eci += research_eci.first;
+
+    for (auto& research_eci : max_number_of_research_to_grant)
+    {
+        asset research_reward = util::calculate_share(grant.amount, research_eci.first, total_eci);
+        auto& research = db_impl().get<research_object>(research_eci.second);
+        research_group_service.increase_research_group_balance(research.research_group_id, research_reward);
+        used_grant += research_reward;
+    }
+
+    if (used_grant > grant.amount)
+        wlog("Attempt to distribute amount that is greater than grant amount: ${used_grant} > ${grant}, grant: ${g_id}", ("used_grant", used_grant)("grant", grant.amount)("g_id", grant.id._id));
+
+    //FC_ASSERT(used_grant <= grant.amount, "Attempt to distribute amount that is greater than grant amount");
+
+    db_impl().modify(grant, [&](grant_object& g) {
+        g.amount -= used_grant;
+    });
+
+    remove_grant_with_announced_application_window(grant);
+}
+
+void dbs_grant::process_grants()
+{
+    dbs_research& research_service = db_impl().obtain_service<dbs_research>();
+    dbs_grant_application& grant_application_service = db_impl().obtain_service<dbs_grant_application>();
+
+    const auto& grants_idx = db_impl().get_index<grant_index>().indices().get<by_end_date>();
+    auto itr = grants_idx.begin();
+    auto _head_block_time = db_impl().head_block_time();
+
+    while (itr != grants_idx.end() && itr->end_date <= _head_block_time)
+    {
+        auto current_grant = itr++;
+        auto& grant = *current_grant;
+        auto applications = grant_application_service.get_grant_applications_by_grant(grant.id);
+        if (applications.size() < grant.min_number_of_applications) {
+            remove_grant_with_announced_application_window(grant);
+            continue;
+        }
+
+        std::vector<grant_application_id_type> applications_to_delete;
+        for (auto& application_ref : applications) {
+            const auto& application = application_ref.get();
+            const auto& research = research_service.get_research(application.research_id);
+            if (research.number_of_positive_reviews < grant.min_number_of_positive_reviews)
+                applications_to_delete.push_back(application.id);
+        }
+
+        for (auto& application_id : applications_to_delete)
+            grant_application_service.delete_grant_appication_by_id(application_id);
+
+        if (grant_application_service.get_grant_applications_by_grant(grant.id).size() == 0)
+        {
+            remove_grant_with_announced_application_window(grant);
+            continue;
+        }
+
+        distribute_grant(grant);
+    }
 }
 
 } //namespace chain

@@ -309,17 +309,17 @@ public:
 
     void create_discipline_supplies()
     {
-        db.create<discipline_supply_object>([&](discipline_supply_object& d) {
-            d.id = 1;
-            d.owner = "bob";
-            d.target_discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").id;
-            d.balance = asset(100, DEIP_SYMBOL);
-            d.per_block = 100;
-            d.start_block = int(db.head_block_num());
-            d.end_block = int(db.head_block_num());
-            d.is_extendable = true;
-            d.content_hash = "hash";
-        });
+//        db.create<discipline_supply_object>([&](discipline_supply_object& d) {
+//            d.id = 1;
+//            d.owner = "bob";
+//            d.target_discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").id;
+//            d.balance = asset(100, DEIP_SYMBOL);
+//            d.per_block = 100;
+//            d.start_block = int(db.head_block_num());
+//            d.end_block = int(db.head_block_num());
+//            d.is_extendable = true;
+//            d.content_hash = "hash";
+//        });
 
         db.create<discipline_supply_object>([&](discipline_supply_object& d) {
             d.id = 2;
@@ -357,13 +357,13 @@ public:
             d.total_active_weight = 200;
         });
 
-        db.create<total_votes_object>([&](total_votes_object& d) {
-            d.id = 3;
-            d.discipline_id = db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").id;
-            d.research_id = 3;
-            d.research_content_id = 3;
-            d.total_weight = 50;
-        });
+//        db.create<total_votes_object>([&](total_votes_object& d) {
+//            d.id = 3;
+//            d.discipline_id = db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").id;
+//            d.research_id = 3;
+//            d.research_content_id = 3;
+//            d.total_weight = 50;
+//        });
 
         db.create<research_content_object>([&](research_content_object& d) {
             d.id = 3;
@@ -789,7 +789,8 @@ BOOST_AUTO_TEST_CASE(reward_researches_in_discipline)
 
         share_type reward = 1000;
 
-        auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight");
+        //auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight");
+        auto& discipline = db.get<discipline_object>(1);
 
         BOOST_CHECK_NO_THROW(db.reward_researches_in_discipline(discipline, reward, reward));
 
@@ -827,7 +828,8 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
         BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount == 24);
         BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == 24);
 
-        auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight");
+        //auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight");
+        auto& discipline = db.get<discipline_object>(1);
 
         auto& reward_pool_1 = db.get<reward_pool_object, by_content_and_discipline>(std::make_tuple(1, discipline.id));
         auto& reward_pool_2 = db.get<reward_pool_object, by_content_and_discipline>(std::make_tuple(2, discipline.id));
@@ -836,63 +838,6 @@ BOOST_AUTO_TEST_CASE(distribute_reward)
         BOOST_CHECK(reward_pool_1.expertise + reward_pool_2.expertise == 1000);
     }
     FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(grant_researches_in_discipline)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_research_contents();
-        create_researches();
-        create_total_votes();
-        create_research_groups();
-        create_research_group_tokens();
-        create_grant_test_case();
-
-        share_type grant = 1000;
-
-        auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight");
-
-        BOOST_CHECK_NO_THROW(db.supply_researches_in_discipline(discipline.id, grant));
-
-        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(1).total_weight, discipline.total_active_weight));
-        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(grant, db.get<total_votes_object>(2).total_weight, discipline.total_active_weight));
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(process_discipline_supplies)
-{
-   try
-   {
-       BOOST_TEST_MESSAGE("Testing: process_discipline_supplies");
-
-       ACTORS((alice)(alex)(jack)(bob)(john));
-
-       generate_block();
-
-       create_discipline_with_weight();
-       create_research_contents();
-       create_researches();
-       create_votes();
-       create_total_votes();
-       create_research_groups();
-       create_research_group_tokens();
-       create_discipline_supplies();
-
-       int num = db.head_block_num();
-
-       BOOST_CHECK_NO_THROW(db.process_discipline_supplies());
-
-       BOOST_CHECK(db.get<research_group_object>(31).balance.amount == util::calculate_share(100, db.get<total_votes_object>(1).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_weight));
-       BOOST_CHECK(db.get<research_group_object>(32).balance.amount == util::calculate_share(100, db.get<total_votes_object>(2).total_weight, db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").total_active_weight));
-
-       BOOST_CHECK_THROW(db.get<discipline_supply_object>(1), std::out_of_range);
-       BOOST_CHECK(db.get<discipline_supply_object>(2).end_block == num + 1);
-   }
-   FC_LOG_AND_RETHROW()
 }
 
 BOOST_AUTO_TEST_CASE(process_content_activity_windows)
@@ -1013,111 +958,6 @@ BOOST_AUTO_TEST_CASE(clear_expired_discipline_supplies)
     }
     FC_LOG_AND_RETHROW()
 }
-
-BOOST_AUTO_TEST_CASE(process_expertise_allocation_proposals)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: process_expertise_allocation_proposals");
-
-        ACTORS((alice)(alex)(jack)(bob)(john)(mike));
-
-        generate_block();
-
-        create_expertise_allocation_proposals();
-
-        auto& discipline = db.get<discipline_object>(2);
-
-        db.modify(discipline, [&](discipline_object& d)
-            { d.total_expertise_amount = 1000; });
-
-        db.create<discipline_object>([&](discipline_object& d) {
-            d.id = 21;
-            d.parent_id = 1;
-            d.name = "test";
-            d.total_expertise_amount = 1000;
-        });
-
-        db.process_expertise_allocation_proposals();
-
-        BOOST_CHECK_THROW(db.get<expertise_allocation_proposal_object>(0), std::out_of_range);
-        BOOST_CHECK_NO_THROW(db.get<expertise_allocation_proposal_object>(1));
-        BOOST_CHECK_THROW(db.get<expertise_allocation_proposal_object>(2), std::out_of_range);
-
-        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 21))).amount == DEIP_EXPERTISE_CLAIM_AMOUNT);
-        BOOST_CHECK((db.get<expert_token_object, by_account_and_discipline>(std::make_tuple("alice", 1))).amount == DEIP_EXPERTISE_CLAIM_AMOUNT);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(distribute_grant)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: distribute_grant");
-
-        ACTORS((alice)(alex)(jack)(bob)(john)(mike));
-
-        generate_block();
-
-        create_grants();
-        create_grant_applications();
-        create_research_groups_for_grants();
-        create_researches_for_grants();
-        create_rd_relations_for_grants();
-
-        auto& grant = db.get<grant_object>(1);
-
-        db.distribute_grant(grant);
-
-        BOOST_CHECK_THROW(db.get<grant_object>(1), std::out_of_range);
-        BOOST_CHECK_THROW(db.get<grant_application_object>(1), std::out_of_range);
-        BOOST_CHECK_THROW(db.get<grant_application_object>(2), std::out_of_range);
-        BOOST_CHECK_THROW(db.get<grant_application_object>(3), std::out_of_range);
-
-        BOOST_CHECK(db.get<research_group_object>(31).balance == asset(500, DEIP_SYMBOL));
-        BOOST_CHECK(db.get<research_group_object>(32).balance == asset(300, DEIP_SYMBOL));
-        BOOST_CHECK(db.get<research_group_object>(33).balance == asset(200, DEIP_SYMBOL));
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(process_grants)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: process_grants");
-
-        ACTORS((alice)(alex)(jack)(bob)(john)(mike));
-
-        generate_block();
-
-        create_grants();
-        create_grant_applications();
-        create_research_groups_for_grants();
-        create_researches_for_grants();
-        create_rd_relations_for_grants();
-
-        db.process_grants();
-
-        BOOST_CHECK_THROW(db.get<grant_object>(1), std::out_of_range);
-        BOOST_CHECK_THROW(db.get<grant_object>(2), std::out_of_range);
-        BOOST_CHECK_THROW(db.get<grant_application_object>(1), std::out_of_range);
-        BOOST_CHECK_THROW(db.get<grant_application_object>(2), std::out_of_range);
-        BOOST_CHECK_THROW(db.get<grant_application_object>(3), std::out_of_range);
-        BOOST_CHECK_THROW(db.get<grant_application_object>(4), std::out_of_range);
-        BOOST_CHECK_THROW(db.get<grant_application_object>(5), std::out_of_range);
-        BOOST_CHECK_THROW(db.get<grant_application_object>(6), std::out_of_range);
-
-        BOOST_CHECK(db.get<research_group_object>(31).balance == asset(1000, DEIP_SYMBOL));
-        BOOST_CHECK(db.get<research_group_object>(32).balance == asset(600, DEIP_SYMBOL));
-        BOOST_CHECK(db.get<research_group_object>(33).balance == asset(400, DEIP_SYMBOL));
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
 
 BOOST_AUTO_TEST_SUITE_END()
 

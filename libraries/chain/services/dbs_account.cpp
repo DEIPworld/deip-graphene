@@ -473,5 +473,42 @@ dbs_account::accounts_refs_type dbs_account::get_accounts_by_expert_discipline(c
     return ret;
 }
 
+void dbs_account::process_account_recovery()
+{
+    // Clear expired recovery requests
+    const auto& rec_req_idx = db_impl().get_index<account_recovery_request_index>().indices().get<by_expiration>();
+    auto rec_req = rec_req_idx.begin();
+
+    while (rec_req != rec_req_idx.end() && rec_req->expires <= db_impl().head_block_time())
+    {
+        db_impl().remove(*rec_req);
+        rec_req = rec_req_idx.begin();
+    }
+
+    // Clear invalid historical authorities
+    const auto& hist_idx = db_impl().get_index<owner_authority_history_index>().indices(); // by id
+    auto hist = hist_idx.begin();
+
+    while (hist != hist_idx.end()
+           && time_point_sec(hist->last_valid_time + DEIP_OWNER_AUTH_RECOVERY_PERIOD) < db_impl().head_block_time())
+    {
+        db_impl().remove(*hist);
+        hist = hist_idx.begin();
+    }
+
+    // Apply effective recovery_account changes
+    const auto& change_req_idx = db_impl().get_index<change_recovery_account_request_index>().indices().get<by_effective_date>();
+    auto change_req = change_req_idx.begin();
+
+    while (change_req != change_req_idx.end() && change_req->effective_on <= db_impl().head_block_time())
+    {
+        db_impl().modify(get_account(change_req->account_to_recover),
+               [&](account_object& a) { a.recovery_account = change_req->recovery_account; });
+
+        db_impl().remove(*change_req);
+        change_req = change_req_idx.begin();
+    }
+}
+
 }
 }

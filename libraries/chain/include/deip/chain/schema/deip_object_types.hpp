@@ -26,7 +26,6 @@ using chainbase::oid;
 using deip::protocol::account_name_type;
 using deip::protocol::block_id_type;
 using deip::protocol::chain_id_type;
-using deip::protocol::discipline_name_type;
 using deip::protocol::asset_symbol_type;
 using deip::protocol::percent_type;
 using deip::protocol::research_group_quorum_action;

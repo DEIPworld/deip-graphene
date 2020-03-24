@@ -1,3 +1,7 @@
+#include <deip/chain/services/dbs_account_balance.hpp>
+#include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
 #include <deip/chain/database/database.hpp>
 
@@ -79,9 +83,10 @@ dbs_research_token_sale::get_by_end_time(const fc::time_point_sec &end_time) con
 {
     research_token_sale_refs_type ret;
 
-    auto it_pair = db_impl().get_index<research_token_sale_index>().indicies().get<by_end_time>().equal_range(end_time);
-    auto it = it_pair.first;
-    const auto it_end = it_pair.second;
+    const auto& idx = db_impl().get_index<research_token_sale_index>().indices().get<by_end_time>();
+    auto it = idx.begin();
+    auto it_end = idx.upper_bound(end_time);
+
     while (it != it_end)
     {
         ret.push_back(std::cref(*it));
@@ -202,6 +207,89 @@ dbs_research_token_sale::research_token_sale_contribution_refs_type
     }
 
     return ret;
+}
+
+void dbs_research_token_sale::distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id)
+{
+    dbs_research& research_service = db_impl().obtain_service<dbs_research>();
+    dbs_research_group& research_group_service = db_impl().obtain_service<dbs_research_group>();
+    dbs_research_token& research_token_service = db_impl().obtain_service<dbs_research_token>();
+
+    auto& research_token_sale = get_by_id(research_token_sale_id);
+
+    const auto& idx = db_impl().get_index<research_token_sale_contribution_index>().indicies()
+            .get<by_research_token_sale_id>()
+            .equal_range(research_token_sale_id);
+    auto it = idx.first;
+    const auto it_end = idx.second;
+
+    while (it != it_end)
+    {
+        auto transfer_amount = (it->amount.amount * research_token_sale.balance_tokens) / research_token_sale.total_amount.amount;
+
+        if (research_token_service.exists_by_owner_and_research(it->owner, research_token_sale.research_id))
+        {
+            auto& research_token = research_token_service.get_by_owner_and_research(it->owner, research_token_sale.research_id);
+            research_token_service.increase_research_token_amount(research_token, transfer_amount);
+        }
+        else
+        {
+            research_token_service.create_research_token(it->owner, transfer_amount, research_token_sale.research_id, false);
+        }
+        auto current = it++;
+        db_impl().remove(*current);
+    }
+
+    research_group_service.increase_research_group_balance(research_service.get_research(research_token_sale.research_id).research_group_id, research_token_sale.total_amount);
+}
+
+void dbs_research_token_sale::refund_research_tokens(const research_token_sale_id_type research_token_sale_id)
+{
+    dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
+    dbs_research& research_service = db_impl().obtain_service<dbs_research>();
+
+    auto& research_token_sale = get_by_id(research_token_sale_id);
+
+    const auto& idx = db_impl().get_index<research_token_sale_contribution_index>().indicies().
+            get<by_research_token_sale_id>().equal_range(research_token_sale_id);
+
+    auto it = idx.first;
+    const auto it_end = idx.second;
+
+    while (it != it_end)
+    {
+        account_balance_service.adjust_balance(it->owner, it->amount);
+
+        auto current = it++;
+        db_impl().remove(*current);
+    }
+
+    auto& research = research_service.get_research(research_token_sale.research_id);
+    db_impl().modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
+}
+
+void dbs_research_token_sale::process_research_token_sales()
+{
+    auto _head_block_time = db_impl().head_block_time();
+
+    const auto token_sales_refs = get_by_end_time(_head_block_time);
+    for (auto& token_sale_ref : token_sales_refs)
+    {
+        auto& token_sale = token_sale_ref.get();
+        if (token_sale.end_time <= _head_block_time && token_sale.status == research_token_sale_status::token_sale_active) {
+            if (token_sale.total_amount < token_sale.soft_cap) {
+                update_status(token_sale.id, research_token_sale_status::token_sale_expired);
+                refund_research_tokens(token_sale.id);
+            } else if (token_sale.total_amount >= token_sale.soft_cap) {
+                update_status(token_sale.id, research_token_sale_status::token_sale_finished);
+                distribute_research_tokens(token_sale.id);
+            }
+        } else if (token_sale.end_time > _head_block_time) {
+            if (_head_block_time >= token_sale.start_time && token_sale.status == research_token_sale_status::token_sale_inactive) {
+                update_status(token_sale.id, research_token_sale_status::token_sale_active);
+            }
+        }
+    }
 }
 
 } // namespace chain

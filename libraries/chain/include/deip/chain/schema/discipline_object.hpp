@@ -24,14 +24,14 @@ class discipline_object : public object<discipline_object_type, discipline_objec
 public:
 
     template <typename Constructor, typename Allocator>
-    discipline_object(Constructor&& c, allocator<Allocator> a)
+    discipline_object(Constructor&& c, allocator<Allocator> a) : name(a)
     {
         c(*this);
     }
 
     discipline_id_type id;
     discipline_id_type parent_id;
-    discipline_name_type name;
+    fc::shared_string name;
 
     share_type total_active_weight;
     share_type total_expertise_amount;
@@ -47,7 +47,7 @@ typedef multi_index_container<discipline_object,
                            &discipline_object::id>>,
             ordered_unique<tag<by_discipline_name>,
                     member<discipline_object,
-                           discipline_name_type ,
+                            fc::shared_string,
                            &discipline_object::name>>,
             ordered_non_unique<tag<by_parent_id>,
                     member<discipline_object,

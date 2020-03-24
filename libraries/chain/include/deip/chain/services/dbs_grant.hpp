@@ -38,6 +38,10 @@ public:
     
     void remove_grant_with_announced_application_window(const grant_object& grant);
 
+    void distribute_grant(const grant_object& grant);
+
+    void process_grants();
+
 };
 } // namespace chain
 } // namespace deip

@@ -997,7 +997,7 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
 
     if (is_hard_cap_reached) {
         research_token_sale_service.update_status(op.research_token_sale_id, token_sale_finished);
-        _db.distribute_research_tokens(op.research_token_sale_id);
+        research_token_sale_service.distribute_research_tokens(op.research_token_sale_id);
     }
 
     _db.push_virtual_operation(token_sale_contribution_to_history_operation(research_token_sale.research_id._id,

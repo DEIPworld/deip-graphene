@@ -1172,222 +1172,6 @@ void database::process_funds()
     push_virtual_operation(producer_reward_operation(cwit.owner, witness_reward));
 }
 
-void database::account_recovery_processing()
-{
-    // Clear expired recovery requests
-    const auto& rec_req_idx = get_index<account_recovery_request_index>().indices().get<by_expiration>();
-    auto rec_req = rec_req_idx.begin();
-
-    while (rec_req != rec_req_idx.end() && rec_req->expires <= head_block_time())
-    {
-        remove(*rec_req);
-        rec_req = rec_req_idx.begin();
-    }
-
-    // Clear invalid historical authorities
-    const auto& hist_idx = get_index<owner_authority_history_index>().indices(); // by id
-    auto hist = hist_idx.begin();
-
-    while (hist != hist_idx.end()
-           && time_point_sec(hist->last_valid_time + DEIP_OWNER_AUTH_RECOVERY_PERIOD) < head_block_time())
-    {
-        remove(*hist);
-        hist = hist_idx.begin();
-    }
-
-    // Apply effective recovery_account changes
-    const auto& change_req_idx = get_index<change_recovery_account_request_index>().indices().get<by_effective_date>();
-    auto change_req = change_req_idx.begin();
-
-    while (change_req != change_req_idx.end() && change_req->effective_on <= head_block_time())
-    {
-        modify(get_account(change_req->account_to_recover),
-               [&](account_object& a) { a.recovery_account = change_req->recovery_account; });
-
-        remove(*change_req);
-        change_req = change_req_idx.begin();
-    }
-}
-
-void database::distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id)
-{
-    dbs_research& research_service = obtain_service<dbs_research>();
-    dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
-    dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
-    dbs_research_token& research_token_service = obtain_service<dbs_research_token>();
-
-    auto& research_token_sale = research_token_sale_service.get_by_id(research_token_sale_id);
-
-    const auto& idx = get_index<research_token_sale_contribution_index>().indicies()
-            .get<by_research_token_sale_id>()
-            .equal_range(research_token_sale_id);
-    auto it = idx.first;
-    const auto it_end = idx.second;
-
-    while (it != it_end)
-    {
-        auto transfer_amount = (it->amount.amount * research_token_sale.balance_tokens) / research_token_sale.total_amount.amount;
-
-        if (research_token_service.exists_by_owner_and_research(it->owner, research_token_sale.research_id))
-        {
-            auto& research_token = research_token_service.get_by_owner_and_research(it->owner, research_token_sale.research_id);
-            research_token_service.increase_research_token_amount(research_token, transfer_amount);
-        }
-        else
-        {
-            research_token_service.create_research_token(it->owner, transfer_amount, research_token_sale.research_id, false);
-        }
-        auto current = it++;
-        remove(*current);
-    }
-
-    research_group_service.increase_research_group_balance(research_service.get_research(research_token_sale.research_id).research_group_id, research_token_sale.total_amount);
-}
-
-void database::refund_research_tokens(const research_token_sale_id_type research_token_sale_id)
-{
-    dbs_account_balance& account_balance_service = obtain_service<dbs_account_balance>();
-    dbs_research& research_service = obtain_service<dbs_research>();
-    dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
-
-    auto& research_token_sale = research_token_sale_service.get_by_id(research_token_sale_id);
-
-    const auto& idx = get_index<research_token_sale_contribution_index>().indicies().
-            get<by_research_token_sale_id>().equal_range(research_token_sale_id);
-
-    auto it = idx.first;
-    const auto it_end = idx.second;
-
-    while (it != it_end)
-    {
-        account_balance_service.adjust_balance(it->owner, it->amount);
-
-        auto current = it++;
-        remove(*current);
-    }
-
-    auto& research = research_service.get_research(research_token_sale.research_id);
-    modify(research, [&](research_object& r_o) { r_o.owned_tokens += research_token_sale.balance_tokens; });
-}
-
-void database::process_expertise_allocation_proposals()
-{
-    dbs_expertise_allocation_proposal& expertise_allocation_proposal_service = obtain_service<dbs_expertise_allocation_proposal>();
-    dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
-
-    expertise_allocation_proposal_service.clear_expired_expertise_allocation_proposals();
-    vector<expertise_allocation_proposal_id_type> approved_proposals_ids;
-
-    const auto& idx = get_index<expertise_allocation_proposal_index>().indices().get<by_id>();
-    auto current = idx.begin();
-    while (current != idx.end())
-    {
-        auto& proposal = expertise_allocation_proposal_service.get(current->id);
-        if (expertise_allocation_proposal_service.is_quorum(proposal))
-        {
-            expert_token_service.create(proposal.claimer, proposal.discipline_id, DEIP_EXPERTISE_CLAIM_AMOUNT, true);
-            approved_proposals_ids.push_back(proposal.id);
-        }
-        ++current;
-    }
-
-    for (auto &id : approved_proposals_ids) 
-    {
-        expertise_allocation_proposal_service.remove(id);
-    }
-}
-
-void database::process_grants()
-{
-    dbs_grant& grant_service = obtain_service<dbs_grant>();
-    dbs_research& research_service = obtain_service<dbs_research>();
-    dbs_grant_application& grant_application_service = obtain_service<dbs_grant_application>();
-
-    const auto& grants_idx = get_index<grant_index>().indices().get<by_end_date>();
-    auto itr = grants_idx.begin();
-    auto _head_block_time = head_block_time();
-
-    while (itr != grants_idx.end() && itr->end_date <= _head_block_time)
-    {
-        auto current_grant = itr++;
-        auto& grant = *current_grant;
-        auto applications = grant_application_service.get_grant_applications_by_grant(grant.id);
-        if (applications.size() < grant.min_number_of_applications) {
-            grant_service.remove_grant_with_announced_application_window(grant);
-            continue;
-        }
-
-        std::vector<grant_application_id_type> applications_to_delete;
-        for (auto& application_ref : applications) {
-            const auto& application = application_ref.get();
-            const auto& research = research_service.get_research(application.research_id);
-            if (research.number_of_positive_reviews < grant.min_number_of_positive_reviews)
-                applications_to_delete.push_back(application.id);
-        }
-
-        for (auto& application_id : applications_to_delete)
-            grant_application_service.delete_grant_appication_by_id(application_id);
-
-        if (grant_application_service.get_grant_applications_by_grant(grant.id).size() == 0)
-        {
-            grant_service.remove_grant_with_announced_application_window(grant);
-            continue;
-        }
-
-        distribute_grant(grant);
-    }
-}
-
-void database::distribute_grant(const grant_object& grant)
-{
-    dbs_grant& grant_service = obtain_service<dbs_grant>();
-    dbs_grant_application& grant_application_service = obtain_service<dbs_grant_application>();
-    dbs_research_discipline_relation& rdr_service = obtain_service<dbs_research_discipline_relation>();
-    dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
-
-    asset used_grant = asset(0, grant.amount.symbol);
-
-    auto applications = grant_application_service.get_grant_applications_by_grant(grant.id);
-    std::multimap<share_type, research_id_type, std::greater<share_type>> researches_eci;
-
-    for (auto& application_ref : applications) {
-        const auto &application = application_ref.get();
-
-        auto parent_discipline_itr = std::min_element(grant.target_disciplines.begin(), grant.target_disciplines.end());
-        if (parent_discipline_itr != grant.target_disciplines.end())
-        {
-            const auto& rd_relation = rdr_service.get_research_discipline_relation_by_research_and_discipline(application.research_id, *parent_discipline_itr);
-            researches_eci.insert(std::make_pair(rd_relation.research_eci, rd_relation.research_id));
-        }
-    }
-
-    std::vector<std::pair<share_type, research_id_type>> max_number_of_research_to_grant(grant.max_number_of_research_to_grant);
-    std::copy(researches_eci.begin(), researches_eci.end(), max_number_of_research_to_grant.begin());
-
-    share_type total_eci = 0;
-    for (auto& research_eci : max_number_of_research_to_grant)
-        total_eci += research_eci.first;
-
-    for (auto& research_eci : max_number_of_research_to_grant)
-    {
-        asset research_reward = util::calculate_share(grant.amount, research_eci.first, total_eci);
-        auto& research = get<research_object>(research_eci.second);
-        research_group_service.increase_research_group_balance(research.research_group_id, research_reward);
-        used_grant += research_reward;
-    }
-
-    if (used_grant > grant.amount)
-        wlog("Attempt to distribute amount that is greater than grant amount: ${used_grant} > ${grant}, grant: ${g_id}", ("used_grant", used_grant)("grant", grant.amount)("g_id", grant.id._id));
-    
-    //FC_ASSERT(used_grant <= grant.amount, "Attempt to distribute amount that is greater than grant amount");
-
-    modify(grant, [&](grant_object& g) {
-        g.amount -= used_grant;
-    });
-
-    grant_service.remove_grant_with_announced_application_window(grant);
-}
-
 asset database::distribute_reward(const asset &reward, const share_type &expertise)
 {
     auto& discipline_service = obtain_service<dbs_discipline>();
@@ -1828,113 +1612,6 @@ asset database::allocate_rewards_to_reviews(const std::vector<review_object> &re
     return used_reward;
 }
 
-share_type database::supply_researches_in_discipline(const discipline_id_type &discipline_id, const share_type &grant)
-{
-    dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
-    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
-    dbs_vote& vote_service = obtain_service<dbs_vote>();
-    dbs_research& research_service = obtain_service<dbs_research>();
-    dbs_research_group& research_group_service = obtain_service<dbs_research_group>();
-
-    const auto& discipline = discipline_service.get_discipline(discipline_id);
-    if (discipline.total_active_weight == 0) return 0;
-
-    share_type used_grant = 0;
-    share_type total_research_weight = discipline.total_active_weight;
-
-    std::map<research_group_id_type, share_type> grant_shares_per_research;
-
-    // Exclude final results from share calculation and discipline_supply distribution
-    const auto& final_results_idx = get_index<total_votes_index>().indices().get<by_discipline_and_content_type>();
-    auto final_results_itr_pair = final_results_idx.equal_range(std::make_tuple(discipline.id, research_content_type::final_result));
-    auto& final_results_itr = final_results_itr_pair.first;
-    const auto& final_results_itr_end = final_results_itr_pair.second;
-
-    while (final_results_itr != final_results_itr_end)
-    {
-        const auto& final_result = research_content_service.get(final_results_itr->research_content_id);
-        if (final_result.activity_state == research_content_activity_state::active) {
-            total_research_weight -= final_results_itr->total_weight;
-        }
-        ++final_results_itr;
-    }
-
-
-    auto total_votes = vote_service.get_total_votes_by_discipline(discipline.id);
-
-    for (auto tvw : total_votes)
-    {
-        auto& total_vote = tvw.get();
-        const auto& research_content = research_content_service.get(total_vote.research_content_id);
-
-        if (research_content.type != research_content_type::final_result
-            && research_content.activity_state == research_content_activity_state::active
-            && total_vote.total_weight != 0) {
-                auto share = util::calculate_share(grant, total_vote.total_weight, total_research_weight);
-                auto& research = research_service.get_research(total_vote.research_id);
-                research_group_service.increase_research_group_balance(research.research_group_id, asset(share, DEIP_SYMBOL));
-                used_grant += share;
-            }
-    }
-
-    if (used_grant > grant)
-        wlog("Attempt to allocate discipline_supply amount that is greater than discipline_supply (supply_researches_in_discipline): ${used_grant} > ${grant}",
-             ("used_grant", used_grant)("grant", grant));
-
-    //FC_ASSERT(used_grant <= grant, "Attempt to allocate discipline_supply amount that is greater than discipline_supply");
-
-    return used_grant;
-}
-
-void database::process_discipline_supplies()
-{
-    uint32_t block_num = head_block_num();
-
-    dbs_discipline_supply& discipline_supply_service = obtain_service<dbs_discipline_supply>();
-
-    const auto& discipline_supplies_idx = get_index<discipline_supply_index>().indices().get<by_start_block>();
-
-    auto discipline_supplies_itr = discipline_supplies_idx.upper_bound(block_num);
-
-    for (auto itr = discipline_supplies_idx.begin(); itr != discipline_supplies_itr; ++itr)
-    {
-        auto& discipline_supply = *itr;
-        auto used_discipline_supply = supply_researches_in_discipline(discipline_supply.target_discipline, discipline_supply.per_block);
-
-        if (used_discipline_supply == 0 && discipline_supply.is_extendable)
-            modify(discipline_supply, [&](discipline_supply_object& g_o) { g_o.end_block++;} );
-        else if (used_discipline_supply != 0)
-            discipline_supply_service.allocate_funds(discipline_supply);
-    }
-}
-
-
-void database::process_research_token_sales()
-{
-    dbs_research_token_sale& research_token_sale_service = obtain_service<dbs_research_token_sale>();
-    const auto& idx = get_index<research_token_sale_index>().indices().get<by_end_time>();
-    auto itr = idx.begin();
-    auto _head_block_time = head_block_time();
-
-    while (itr != idx.end())
-    {
-        if (itr->end_time <= _head_block_time && itr->status == research_token_sale_status::token_sale_active) {
-            if (itr->total_amount < itr->soft_cap) {
-                research_token_sale_service.update_status(itr->id, research_token_sale_status::token_sale_expired);
-                refund_research_tokens(itr->id);
-            } else if (itr->total_amount >= itr->soft_cap) {
-                research_token_sale_service.update_status(itr->id, research_token_sale_status::token_sale_finished);
-                distribute_research_tokens(itr->id);
-            }
-        } else if (itr->end_time > _head_block_time) {
-            if (_head_block_time >= itr->start_time && itr->status == research_token_sale_status::token_sale_inactive) {
-                research_token_sale_service.update_status(itr->id, research_token_sale_status::token_sale_active);
-            }
-        }
-        itr++;
-    }
-}
-
 time_point_sec database::head_block_time() const
 {
     return get_dynamic_global_properties().time;
@@ -2217,7 +1894,14 @@ void database::_apply_block(const signed_block& next_block)
                     throw e;
             }
         }
+
+        auto& account_service = obtain_service<dbs_account>();
+        auto& discipline_supply_service = obtain_service<dbs_discipline_supply>();
+        auto& expertise_allocation_proposal_service = obtain_service<dbs_expertise_allocation_proposal>();
         auto& expertise_stats_service = obtain_service<dbs_expertise_stats>();
+        auto& proposal_service = obtain_service<dbs_proposal>();
+        auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
+        auto& research_token_sale_service = obtain_service<dbs_research_token_sale>();
 
         const witness_object& signing_witness = validate_block_header(skip, next_block);
 
@@ -2261,25 +1945,26 @@ void database::_apply_block(const signed_block& next_block)
 
         create_block_summary(next_block);
         clear_expired_transactions();
-        clear_expired_proposals();
-        clear_expired_invites();
-        clear_expired_discipline_supplies();
+
+        proposal_service.clear_expired_proposals();
+        research_group_invite_service.clear_expired_invites();
+        discipline_supply_service.clear_expired_discipline_supplies();
 
         // in dbs_database_witness_schedule.cpp
         update_witness_schedule();
-        process_research_token_sales();
+        research_token_sale_service.process_research_token_sales();
         process_funds();
         process_common_tokens_withdrawals();
-        account_recovery_processing();
+        account_service.process_account_recovery();
         process_content_activity_windows();
         process_hardforks();
-        process_discipline_supplies();
+        discipline_supply_service.process_discipline_supplies();
 
         /// modify expertise stats to correctly calculate emission
         expertise_stats_service.calculate_used_expertise_for_week();
         expertise_stats_service.reset_used_expertise_per_block();
 
-        process_expertise_allocation_proposals();
+        expertise_allocation_proposal_service.process_expertise_allocation_proposals();
 
         // notify observers that the block has been applied
         notify_applied_block(next_block);
@@ -2642,24 +2327,6 @@ void database::clear_expired_transactions()
     const auto& dedupe_index = transaction_idx.indices().get<by_expiration>();
     while ((!dedupe_index.empty()) && (head_block_time() > dedupe_index.begin()->expiration))
         remove(*dedupe_index.begin());
-}
-
-void database::clear_expired_proposals()
-{
-    auto& proposal_service = obtain_service<dbs_proposal>();
-    proposal_service.clear_expired_proposals();
-}
-
-void database::clear_expired_invites()
-{
-    auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
-    research_group_invite_service.clear_expired_invites();
-}
-
-void database::clear_expired_discipline_supplies()
-{
-    dbs_discipline_supply& discipline_supply_service = obtain_service<dbs_discipline_supply>();
-    discipline_supply_service.clear_expired_discipline_supplies();
 }
 
 void database::adjust_supply(const asset& delta, bool adjust_common_token)

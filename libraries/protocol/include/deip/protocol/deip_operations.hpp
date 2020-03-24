@@ -442,7 +442,7 @@ struct create_discipline_supply_operation : public base_operation
     account_name_type owner;
     asset balance;
 
-    discipline_name_type target_discipline;
+    string target_discipline;
     uint32_t start_block;
     uint32_t end_block;
 
