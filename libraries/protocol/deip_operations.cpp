@@ -136,15 +136,6 @@ void change_recovery_account_operation::validate() const
     validate_account_name(new_recovery_account);
 }
 
-void create_discipline_supply_operation::validate() const
-{
-    validate_account_name(owner);
-    FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Balance must be positive and DEIP");
-    FC_ASSERT(fc::is_utf8(target_discipline), "Data is not valid UTF8 string");
-    FC_ASSERT(content_hash.size() > 0, "Content hash must be specified");
-    FC_ASSERT(fc::is_utf8(content_hash), "Content hash is not valid UTF8 string");
-}
-
 void create_proposal_operation::validate() const
 {
     validate_enum_value_by_range(action, research_group_quorum_action::FIRST_ACTION_QUORUM_TYPE, research_group_quorum_action::LAST_ACTION_QUORUM_TYPE);

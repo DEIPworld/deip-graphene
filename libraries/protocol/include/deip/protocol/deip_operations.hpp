@@ -437,23 +437,8 @@ struct expertise_amount_pair_type
     int64_t amount;
 };
 
-struct create_discipline_supply_operation : public base_operation
+struct placeholder_operation : public base_operation
 {
-    account_name_type owner;
-    asset balance;
-
-    string target_discipline;
-    uint32_t start_block;
-    uint32_t end_block;
-
-    bool is_extendable;
-    string content_hash;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
 };
 
 struct create_proposal_operation : public base_operation
@@ -834,7 +819,7 @@ FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recov
 
 // DEIP native operations
 FC_REFLECT( deip::protocol::expertise_amount_pair_type, (discipline_id)(amount) )
-FC_REFLECT( deip::protocol::create_discipline_supply_operation, (owner)(balance)(target_discipline)(start_block)(end_block)(is_extendable)(content_hash) )
+FC_REFLECT( deip::protocol::placeholder_operation, )
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
 

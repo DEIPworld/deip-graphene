@@ -2127,9 +2127,9 @@ vector<discipline_supply_api_obj> wallet_api::list_my_discipline_supplies()
     return my->_remote_db->get_discipline_supplies(names);
 }
 
-set<string> wallet_api::list_discipline_supply_owners(const string& lowerbound, uint32_t limit)
+set<string> wallet_api::list_discipline_supply_grantors(const string& lowerbound, uint32_t limit)
 {
-    return my->_remote_db->lookup_discipline_supply_owners(lowerbound, limit);
+    return my->_remote_db->lookup_discipline_supply_grantors(lowerbound, limit);
 }
 
 vector<discipline_supply_api_obj> wallet_api::get_discipline_supplies(const std::string& account_name)
@@ -2304,26 +2304,31 @@ vector<discipline_api_obj> wallet_api::list_all_disciplines()
     return result;
 }
 
-annotated_signed_transaction wallet_api::create_discipline_supply(const std::string& discipline_supply_owner,
-                                                                  const asset& balance,
-                                                                  const uint32_t& start_block,
-                                                                  const uint32_t& end_block,
-                                                                  const std::string& target_discipline,
+annotated_signed_transaction wallet_api::create_discipline_supply(const std::string& grantor,
+                                                                  const asset& amount,
+                                                                  const uint32_t start_time,
+                                                                  const uint32_t end_time,
+                                                                  const int64_t& target_discipline,
                                                                   const std::string& content_hash,
                                                                   const bool is_extendable,
                                                                   const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
-    create_discipline_supply_operation op;
+    create_grant_operation op;
 
-    op.owner = discipline_supply_owner;
-    op.target_discipline = target_discipline;
-    op.balance = balance;
-    op.start_block = start_block;
-    op.end_block = end_block;
-    op.content_hash = content_hash;
-    op.is_extendable = is_extendable;
+    op.grantor = grantor;
+    op.amount = amount;
+    op.target_disciplines = { target_discipline };
+    op.type = 3;
+
+    discipline_supply_announcement_contract_v1_0_0_type discipline_supply_announcement;
+    discipline_supply_announcement.start_time = fc::time_point_sec(start_time);
+    discipline_supply_announcement.end_time = fc::time_point_sec(end_time);
+    discipline_supply_announcement.content_hash = content_hash;
+    discipline_supply_announcement.is_extendable = is_extendable;
+
+    op.details.push_back(discipline_supply_announcement);
 
     signed_transaction tx;
     tx.operations.push_back(op);

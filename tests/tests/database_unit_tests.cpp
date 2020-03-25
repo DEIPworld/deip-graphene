@@ -309,38 +309,38 @@ public:
 
     void create_discipline_supplies()
     {
-//        db.create<discipline_supply_object>([&](discipline_supply_object& d) {
-//            d.id = 1;
-//            d.owner = "bob";
-//            d.target_discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight").id;
-//            d.balance = asset(100, DEIP_SYMBOL);
-//            d.per_block = 100;
-//            d.start_block = int(db.head_block_num());
-//            d.end_block = int(db.head_block_num());
-//            d.is_extendable = true;
-//            d.content_hash = "hash";
-//        });
+        db.create<discipline_supply_object>([&](discipline_supply_object& d) {
+            d.id = 1;
+            d.grantor = "bob";
+            d.target_discipline = 1;
+            d.balance = asset(100, DEIP_SYMBOL);
+            d.per_block = 100;
+            d.start_time = db.head_block_time();
+            d.end_time = db.head_block_time();
+            d.is_extendable = true;
+            d.content_hash = "hash";
+        });
 
         db.create<discipline_supply_object>([&](discipline_supply_object& d) {
             d.id = 2;
-            d.owner = "jack";
+            d.grantor = "jack";
             d.target_discipline = 2;
             d.balance = asset(100, DEIP_SYMBOL);
             d.per_block = 100;
-            d.start_block = int(db.head_block_num());
-            d.end_block = int(db.head_block_num());
+            d.start_time = db.head_block_time();
+            d.end_time = db.head_block_time();
             d.is_extendable = true;
             d.content_hash = "hash";
         });
 
         db.create<discipline_supply_object>([&](discipline_supply_object& d) {
             d.id = 3;
-            d.owner = "john";
+            d.grantor = "john";
             d.target_discipline = 4;
             d.balance = asset(100, DEIP_SYMBOL);
             d.per_block = 100;
-            d.start_block = int(db.head_block_num());
-            d.end_block = int(db.head_block_num());
+            d.start_time = db.head_block_time();
+            d.end_time = db.head_block_time();
             d.is_extendable = false;
             d.content_hash = "hash";
         });
@@ -950,7 +950,7 @@ BOOST_AUTO_TEST_CASE(clear_expired_discipline_supplies)
         db.create<discipline_supply_object>([&](discipline_supply_object& g) {
             g.id = 0;
             g.balance = asset(0, DEIP_SYMBOL);
-            g.end_block = db.head_block_num() - 1;
+            g.end_time = db.head_block_time() - 1;
         });
 
         generate_block();

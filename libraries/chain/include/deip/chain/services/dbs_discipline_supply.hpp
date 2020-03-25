@@ -25,12 +25,12 @@ protected:
 public:
     using discipline_supply_refs_type = std::vector<std::reference_wrapper<const discipline_supply_object>>;
 
-    /** Lists all discipline supply owners.
+    /** Lists all discipline supply grantors.
      *
      *  @warning limit must be less or equal than DEIP_LIMIT_DISCIPLINE_SUPPLIES_LIST_SIZE.
      *
      */
-    std::set<string> lookup_discipline_supply_owners(const string &lower_bound_owner_name, uint32_t limit) const;
+    std::set<string> lookup_discipline_supply_grantors(const string &lower_bound_grantor_name, uint32_t limit) const;
 
     /** Lists all discipline_supplies.
      *
@@ -38,21 +38,21 @@ public:
      */
     discipline_supply_refs_type get_discipline_supplies() const;
 
-    /** Lists all discipline supplies registered for owner.
+    /** Lists all discipline supplies registered for grantor.
      *
-     * @param owner the name of the owner
+     * @param grantor the name of the grantor
      * @returns a list of grant objects
      */
-    discipline_supply_refs_type get_discipline_supplies_by_owner(const account_name_type &owner) const;
+    discipline_supply_refs_type get_discipline_supplies_by_grantor(const account_name_type &grantor) const;
 
     /** Get discipline supply by id
      */
     const discipline_supply_object& get_discipline_supply(discipline_supply_id_type id) const;
 
     /** Create discipline supply.
-     *  The owner has abilities for all operations (for update, close and schedule operations).
+     *  The grantor has abilities for all operations (for update, close and schedule operations).
      *
-     * @param owner the name of the owner
+     * @param grantor the name of the grantor
      * @param balance the total balance (use DEIP_SYMBOL)
      * @param start_block the block number when start allocate discipline supply
      * @param end_block the block number when finish allocate discipline supply
@@ -60,13 +60,14 @@ public:
      * @param target_research the discipline supply target research tos allocate funds
      * @returns a discipline supply object
      */
-    const discipline_supply_object& create_discipline_supply(const account_object &owner,
+    const discipline_supply_object& create_discipline_supply(const account_name_type &grantor,
                                                              const asset &balance,
-                                                             const uint32_t &start_block,
-                                                             const uint32_t &end_block,
+                                                             const fc::time_point_sec& start_time,
+                                                             const fc::time_point_sec& end_time,
                                                              const discipline_id_type &target_discipline,
                                                              const bool is_extendable,
-                                                             const std::string &content_hash);
+                                                             const std::string &content_hash,
+                                                             const flat_map<string, string>& additional_info);
 
 
     /** Distribute asset from discipline supply.
@@ -85,7 +86,7 @@ public:
     void process_discipline_supplies();
 
 private:
-    uint64_t _get_discipline_supplies_count(const account_name_type &owner) const;
+    uint64_t _get_discipline_supplies_count(const account_name_type &grantor) const;
 };
 } // namespace chain
 } // namespace deip

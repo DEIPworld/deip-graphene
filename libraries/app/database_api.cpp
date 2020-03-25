@@ -78,7 +78,7 @@ public:
 
     // discipline_supplies
     vector<discipline_supply_api_obj> get_discipline_supplies(const set<string>& names) const;
-    set<string> lookup_discipline_supply_owners(const string& lower_bound_name, uint32_t limit) const;
+    set<string> lookup_discipline_supply_grantors(const string& lower_bound_name, uint32_t limit) const;
 
     // Witnesses
     vector<optional<witness_api_obj>> get_witnesses(const vector<witness_id_type>& witness_ids) const;
@@ -185,6 +185,9 @@ public:
     fc::optional<research_group_organization_contract_api_obj> get_organizational_contract_by_organization_and_research_group_and_type(const research_group_id_type& organization_id, const research_group_id_type& research_group_id, const uint16_t& type) const;
     vector<research_group_organization_contract_api_obj> get_organizational_contracts_by_research_group(const research_group_id_type& research_group_id) const;
     vector<research_group_organization_contract_api_obj> get_organizational_contracts_by_organization(const research_group_id_type& organization_id) const;
+
+    // Discipline supplies
+    fc::optional<discipline_supply_api_obj> get_discipline_supply(const discipline_supply_id_type& id) const;
 
     // Authority / validation
     std::string get_transaction_hex(const signed_transaction& trx) const;
@@ -871,7 +874,7 @@ vector<discipline_supply_api_obj> database_api_impl::get_discipline_supplies(con
 
     for (const auto& name : names)
     {
-        auto discipline_supplies = discipline_supply_service.get_discipline_supplies_by_owner(name);
+        auto discipline_supplies = discipline_supply_service.get_discipline_supplies_by_grantor(name);
         if (results.size() + discipline_supplies.size() > DEIP_LIMIT_API_DISCIPLINE_SUPPLIES_LIST_SIZE)
         {
             break;
@@ -886,19 +889,19 @@ vector<discipline_supply_api_obj> database_api_impl::get_discipline_supplies(con
     return results;
 }
 
-set<string> database_api::lookup_discipline_supply_owners(const string& lower_bound_name, uint32_t limit) const
+set<string> database_api::lookup_discipline_supply_grantors(const string& lower_bound_name, uint32_t limit) const
 {
-    return my->_db.with_read_lock([&]() { return my->lookup_discipline_supply_owners(lower_bound_name, limit); });
+    return my->_db.with_read_lock([&]() { return my->lookup_discipline_supply_grantors(lower_bound_name, limit); });
 }
 
-set<string> database_api_impl::lookup_discipline_supply_owners(const string& lower_bound_name, uint32_t limit) const
+set<string> database_api_impl::lookup_discipline_supply_grantors(const string& lower_bound_name, uint32_t limit) const
 {
     FC_ASSERT(limit <= DEIP_LIMIT_API_DISCIPLINE_SUPPLIES_LIST_SIZE, "limit must be less or equal than ${1}",
               ("1", DEIP_LIMIT_API_DISCIPLINE_SUPPLIES_LIST_SIZE));
 
     chain::dbs_discipline_supply& discipline_supply_service = _db.obtain_service<chain::dbs_discipline_supply>();
 
-    return discipline_supply_service.lookup_discipline_supply_owners(lower_bound_name, limit);
+    return discipline_supply_service.lookup_discipline_supply_grantors(lower_bound_name, limit);
 }
 
 /**
@@ -2929,7 +2932,6 @@ vector<research_group_organization_contract_api_obj> database_api_impl::get_orga
     return results;
 }
 
-
 fc::optional<research_group_organization_contract_api_obj> database_api::get_organizational_contract_by_organization_and_research_group_and_type(const research_group_id_type& organization_id, const research_group_id_type& research_group_id, const uint16_t& type) const
 {
     return my->_db.with_read_lock([&]() {
@@ -2953,6 +2955,31 @@ fc::optional<research_group_organization_contract_api_obj> database_api_impl::ge
     if (itr != idx.end())
     {
         contract = research_group_organization_contract_api_obj(*itr);
+    }
+
+    return contract;
+}
+
+fc::optional<discipline_supply_api_obj> database_api::get_discipline_supply(const discipline_supply_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        return my->get_discipline_supply(id);
+    });
+}
+
+fc::optional<discipline_supply_api_obj> database_api_impl::get_discipline_supply(const discipline_supply_id_type& id) const
+{
+    fc::optional<discipline_supply_api_obj> contract;
+
+    const auto& idx = _db
+      .get_index<discipline_supply_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        contract = discipline_supply_api_obj(*itr);
     }
 
     return contract;

@@ -23,14 +23,14 @@ class discipline_supply_object : public object<discipline_supply_object_type, di
 public:
 
     template <typename Constructor, typename Allocator>
-    discipline_supply_object(Constructor&& c, allocator<Allocator> a) : content_hash(a)
+    discipline_supply_object(Constructor&& c, allocator<Allocator> a) : content_hash(a), additional_info(a)
     {
         c(*this);
     }
 
     discipline_supply_id_type id;
 
-    account_name_type owner;
+    account_name_type grantor;
 
     discipline_id_type target_discipline;
     
@@ -38,34 +38,36 @@ public:
 
     asset balance = asset(0, DEIP_SYMBOL);
     share_type per_block = 0;
-    uint32_t start_block = 0;
-    uint32_t end_block = 0;
+    fc::time_point_sec start_time = time_point_sec::min();
+    fc::time_point_sec end_time = time_point_sec::min();
 
     bool is_extendable;
     fc::shared_string content_hash;
+
+    shared_string_type_map additional_info;
 };
 
-struct by_owner_name;
-struct by_end_block;
-struct by_start_block;
+struct by_grantor_name;
+struct by_start_time;
+struct by_end_time;
 
 typedef multi_index_container<discipline_supply_object,
                               indexed_by<ordered_unique<tag<by_id>,
                                                         member<discipline_supply_object,
                                                                 discipline_supply_id_type,
                                                                &discipline_supply_object::id>>,
-                                         ordered_non_unique<tag<by_start_block>,
+                                         ordered_non_unique<tag<by_start_time>,
                                                         member<discipline_supply_object,
-                                                               uint32_t,
-                                                               &discipline_supply_object::start_block>>,
-                                         ordered_non_unique<tag<by_end_block>,
+                                                                fc::time_point_sec,
+                                                               &discipline_supply_object::start_time>>,
+                                         ordered_non_unique<tag<by_end_time>,
                                                         member<discipline_supply_object,
-                                                               uint32_t,
-                                                               &discipline_supply_object::end_block>>,
-                                         ordered_non_unique<tag<by_owner_name>,
+                                                                fc::time_point_sec,
+                                                               &discipline_supply_object::end_time>>,
+                                         ordered_non_unique<tag<by_grantor_name>,
                                                         member<discipline_supply_object,
                                                                account_name_type,
-                                                               &discipline_supply_object::owner>>>,
+                                                               &discipline_supply_object::grantor>>>,
                               allocator<discipline_supply_object>>
     discipline_supply_index;
 
@@ -73,7 +75,7 @@ typedef multi_index_container<discipline_supply_object,
 }
 
 FC_REFLECT( deip::chain::discipline_supply_object,
-             (id)(owner)(target_discipline)(created)(balance)(per_block)(start_block)(end_block)(is_extendable)(content_hash)
+             (id)(grantor)(target_discipline)(created)(balance)(per_block)(start_time)(end_time)(is_extendable)(content_hash)(additional_info)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::discipline_supply_object, deip::chain::discipline_supply_index )
