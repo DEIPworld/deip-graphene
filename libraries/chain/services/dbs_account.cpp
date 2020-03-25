@@ -445,13 +445,22 @@ void dbs_account::decrease_common_tokens(const account_object &account, const sh
     });
 }
 
-void dbs_account::increase_expertise_tokens(const account_object &account, const share_type &amount)
+void dbs_account::adjust_expertise_tokens_throughput(const account_object& account, const share_type& delta)
 {
-    FC_ASSERT(amount >= 0, "Amount cannot be < 0");
     auto& props = db_impl().get_dynamic_global_properties();
-    db_impl().modify(account, [&](account_object& a) { a.expertise_tokens_balance += amount; });
+    db_impl().modify(account, [&](account_object& a) {
+        a.expertise_tokens_balance += delta;
+        if (a.expertise_tokens_balance < 0)
+        {
+            a.expertise_tokens_balance = 0;
+        }
+    });
     db_impl().modify(props, [&](dynamic_global_property_object& gpo) {
-        gpo.total_expert_tokens_amount += amount;
+        gpo.total_expert_tokens_amount += delta;
+        if (gpo.total_expert_tokens_amount < 0)
+        {
+            gpo.total_expert_tokens_amount = 0;
+        }
     });
 }
 

@@ -2,7 +2,7 @@
 #include <deip/protocol/base.hpp>
 #include <deip/protocol/block_header.hpp>
 #include <deip/protocol/asset.hpp>
-
+#include <deip/protocol/eci_diff.hpp>
 #include <fc/utf8.hpp>
 
 namespace deip {
@@ -82,9 +82,12 @@ struct token_sale_contribution_to_history_operation : public virtual_operation
 struct research_content_reference_history_operation : public virtual_operation
 {
     research_content_reference_history_operation() {}
-    research_content_reference_history_operation(const int64_t& research_content_id, const int64_t& research_id,
-                                        const std::string& content, const int64_t& research_content_reference_id,
-                                        const int64_t& research_reference_id, const std::string& content_reference)
+    research_content_reference_history_operation(const int64_t& research_content_id, 
+                                                 const int64_t& research_id,
+                                                 const std::string& content, 
+                                                 const int64_t& research_content_reference_id,
+                                                 const int64_t& research_reference_id,
+                                                 const std::string& content_reference)
         : research_content_id(research_content_id)
         , research_id(research_id)
         , content(content)
@@ -105,30 +108,18 @@ struct research_content_reference_history_operation : public virtual_operation
 struct research_content_eci_history_operation : public virtual_operation
 {
     research_content_eci_history_operation() {}
-    research_content_eci_history_operation(const int64_t& research_content_id, const int64_t& discipline_id,
-                                  const share_type& new_eci_amount, const share_type& delta,
-                                  const uint16_t& action, const int64_t& action_object_id, const uint32_t& timestamp)
+    research_content_eci_history_operation(const int64_t& research_content_id,
+                                           const int64_t& discipline_id,
+                                           const eci_diff& diff)
         : research_content_id(research_content_id)
         , discipline_id(discipline_id)
-        , new_eci_amount(new_eci_amount)
-        , delta(delta)
-        , action(action)
-        , action_object_id(action_object_id)
-        , timestamp(timestamp)
+        , diff(diff)
     {
     }
 
     int64_t research_content_id;
     int64_t discipline_id;
-
-    share_type new_eci_amount;
-    share_type delta;
-
-    uint16_t action;
-    int64_t action_object_id;
-
-    uint32_t timestamp;
-
+    eci_diff diff;
 };
 
 struct research_eci_history_operation : public virtual_operation
@@ -136,62 +127,33 @@ struct research_eci_history_operation : public virtual_operation
     research_eci_history_operation() {}
     research_eci_history_operation(const int64_t& research_id,
                                    const int64_t& discipline_id,
-                                   const share_type& new_eci_amount,
-                                   const share_type& delta,
-                                   const uint16_t& action,
-                                   const int64_t& action_object_id,
-                                   const uint32_t& timestamp)
+                                   const eci_diff& diff)
         : research_id(research_id)
         , discipline_id(discipline_id)
-        , new_eci_amount(new_eci_amount)
-        , delta(delta)
-        , action(action)
-        , action_object_id(action_object_id)
-        , timestamp(timestamp)
+        , diff(diff)
     {
     }
 
     int64_t research_id;
     int64_t discipline_id;
-
-    share_type new_eci_amount;
-    share_type delta;
-
-    uint16_t action;
-    int64_t action_object_id;
-
-    uint32_t timestamp;
-
+    eci_diff diff;
 };
 
 struct account_eci_history_operation : public virtual_operation
 {
     account_eci_history_operation() {}
-    account_eci_history_operation(const account_name_type& account_name,
+    account_eci_history_operation(const account_name_type& account,
                                   const int64_t& discipline_id,
-                                  const share_type& new_eci_amount,
-                                  const share_type& delta,
-                                  const uint16_t& action,
-                                  const int64_t& action_object_id,
-                                  const uint32_t& timestamp)
-        : account_name(account_name)
+                                  const eci_diff& diff)
+        : account(account)
         , discipline_id(discipline_id)
-        , new_eci_amount(new_eci_amount)
-        , delta(delta)
-        , action(action)
-        , action_object_id(action_object_id)
-        , timestamp(timestamp)
+        , diff(diff)
     {
     }
 
-    account_name_type account_name;
+    account_name_type account;
     int64_t discipline_id;
-    share_type new_eci_amount;
-    share_type delta;
-    uint16_t action;
-    int64_t action_object_id;
-
-    uint32_t timestamp;
+    eci_diff diff;
 };
 
 
@@ -204,6 +166,6 @@ FC_REFLECT(deip::protocol::hardfork_operation, (hardfork_id))
 FC_REFLECT(deip::protocol::producer_reward_operation, (producer)(common_tokens_amount))
 FC_REFLECT(deip::protocol::token_sale_contribution_to_history_operation, (research_id)(research_token_sale_id)(contributor)(amount))
 FC_REFLECT(deip::protocol::research_content_reference_history_operation, (research_content_id)(research_id)(content)(research_content_reference_id)(research_reference_id)(content_reference))
-FC_REFLECT(deip::protocol::research_content_eci_history_operation, (research_content_id)(discipline_id)(new_eci_amount)(delta)(action)(action_object_id)(timestamp))
-FC_REFLECT(deip::protocol::research_eci_history_operation, (research_id)(discipline_id)(new_eci_amount)(delta)(action)(action_object_id)(timestamp))
-FC_REFLECT(deip::protocol::account_eci_history_operation, (account_name)(discipline_id)(new_eci_amount)(delta)(action)(action_object_id)(timestamp))
+FC_REFLECT(deip::protocol::research_content_eci_history_operation, (research_content_id)(discipline_id)(diff))
+FC_REFLECT(deip::protocol::research_eci_history_operation, (research_id)(discipline_id)(diff))
+FC_REFLECT(deip::protocol::account_eci_history_operation, (account)(discipline_id)(diff))

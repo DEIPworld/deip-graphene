@@ -56,7 +56,7 @@ enum object_type
     discipline_supply_object_type,
     discipline_object_type,
     vote_object_type,
-    total_votes_object_type,
+    expertise_contribution_object_type,
     research_object_type,
     research_discipline_relation_object_type,
     research_content_object_type,
@@ -76,7 +76,6 @@ enum object_type
     reward_pool_object_type,
     expertise_allocation_proposal_object_type,
     expertise_allocation_proposal_vote_object_type,
-    expertise_stats_object_type,
     offer_research_tokens_object_type,
     grant_object_type,
     grant_application_object_type,
@@ -111,8 +110,7 @@ class research_group_object;
 class research_group_token_object;
 class research_group_organization_contract_object;
 class discipline_object;
-class vote_object;
-class total_votes_object;
+class expertise_contribution_object;
 class research_object;
 class research_discipline_relation_object;
 class research_content_object;
@@ -128,7 +126,6 @@ class vesting_balance_object;
 class reward_pool_object;
 class expertise_allocation_proposal_object;
 class expertise_allocation_proposal_vote_object;
-class expertise_stats_object;
 class offer_research_tokens_object;
 class grant_object;
 class grant_application_object;
@@ -162,8 +159,7 @@ typedef oid<research_group_object> research_group_id_type;
 typedef oid<research_group_token_object> research_group_token_id_type;
 typedef oid<research_group_organization_contract_object> research_group_organization_contract_id_type;
 typedef oid<discipline_object> discipline_id_type;
-typedef oid<vote_object> vote_id_type;
-typedef oid<total_votes_object> total_votes_id_type;
+typedef oid<expertise_contribution_object> expertise_contribution_id_type;
 typedef oid<research_object> research_id_type;
 typedef oid<research_discipline_relation_object> research_discipline_relation_id_type;
 typedef oid<research_content_object> research_content_id_type;
@@ -179,7 +175,6 @@ typedef oid<vesting_balance_object> vesting_balance_id_type;
 typedef oid<reward_pool_object> reward_pool_id_type;
 typedef oid<expertise_allocation_proposal_object> expertise_allocation_proposal_id_type;
 typedef oid<expertise_allocation_proposal_vote_object> expertise_allocation_proposal_vote_id_type;
-typedef oid<expertise_stats_object> expertise_stats_id_type;
 typedef oid<offer_research_tokens_object> offer_research_tokens_id_type;
 typedef oid<grant_object> grant_id_type;
 typedef oid<grant_application_object> grant_application_id_type;
@@ -261,7 +256,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (research_group_organization_contract_object_type)
                  (discipline_object_type)
                  (vote_object_type)
-                 (total_votes_object_type)
+                 (expertise_contribution_object_type)
                  (research_object_type)
                  (research_discipline_relation_object_type)
                  (research_content_object_type)
@@ -277,7 +272,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (reward_pool_object_type)
                  (expertise_allocation_proposal_object_type)
                  (expertise_allocation_proposal_vote_object_type)
-                 (expertise_stats_object_type)
                  (offer_research_tokens_object_type)
                  (grant_object_type)
                  (grant_application_object_type)

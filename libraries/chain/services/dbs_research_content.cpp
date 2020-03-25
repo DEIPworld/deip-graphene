@@ -3,7 +3,7 @@
 #include <deip/chain/schema/research_object.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_research.hpp>
-#include <deip/chain/services/dbs_vote.hpp>
+#include <deip/chain/services/dbs_review_vote.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 
 namespace deip{
@@ -166,7 +166,7 @@ const std::map<discipline_id_type, share_type> dbs_research_content::get_eci_eva
     const dbs_research_discipline_relation& research_discipline_relation_service = db_impl().obtain_service<dbs_research_discipline_relation>();
 
     const auto& research_content = get(research_content_id);
-    const auto& research_content_reviews = review_service.get_reviews_by_content(research_content_id);
+    const auto& research_content_reviews = review_service.get_reviews_by_research_content(research_content_id);
     const auto& research = research_service.get_research(research_content.research_id);
     const auto& research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
 
@@ -191,7 +191,7 @@ const std::map<discipline_id_type, share_type> dbs_research_content::get_eci_eva
                     : acc;
             });
 
-        research_content_eci_by_discipline[discipline_id] = Sdp;
+        research_content_eci_by_discipline[discipline_id] = Sdp > 0 ? Sdp : 0;
     }
 
     return research_content_eci_by_discipline;

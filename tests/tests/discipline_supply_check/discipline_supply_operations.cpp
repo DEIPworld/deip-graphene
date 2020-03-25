@@ -96,7 +96,7 @@ private_key_type discipline_supply_transaction_check_fixture::alice_create_disci
 {
 //    BOOST_REQUIRE(BLOCK_LIMIT_DEFAULT > 0);
 //
-//    ACTORS((alice))
+   ACTORS((alice))
 //
 //    fund("alice", DISCIPLINE_SUPPLY_BALANCE_DEFAULT);
 //
@@ -121,7 +121,7 @@ private_key_type discipline_supply_transaction_check_fixture::alice_create_disci
 //
 //    BOOST_REQUIRE(discipline_supply_service.get_discipline_supplies_by_owner("alice").size() == 1);
 //
-//    return alice_private_key;
+   return alice_private_key;
 }
 
 BOOST_FIXTURE_TEST_SUITE(grant_transaction_check, discipline_supply_transaction_check_fixture)

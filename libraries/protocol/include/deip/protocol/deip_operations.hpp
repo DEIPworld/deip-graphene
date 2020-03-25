@@ -438,8 +438,14 @@ struct expertise_amount_pair_type
     int64_t amount;
 };
 
-struct placeholder_operation : public base_operation
+struct placeholder1_operation : public base_operation
 {
+    void validate() const;
+};
+
+struct placeholder2_operation : public base_operation
+{
+    void validate() const;
 };
 
 struct create_proposal_operation : public base_operation
@@ -513,19 +519,6 @@ struct transfer_research_tokens_to_research_group_operation : public base_operat
     int64_t research_id;
     account_name_type owner;
     uint32_t amount;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
-
-struct set_expertise_tokens_operation : public base_operation
-{
-    account_name_type owner;
-    account_name_type account_name;
-    std::vector<expertise_amount_pair_type> disciplines_to_add;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -820,7 +813,8 @@ FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recov
 
 // DEIP native operations
 FC_REFLECT( deip::protocol::expertise_amount_pair_type, (discipline_id)(amount) )
-FC_REFLECT( deip::protocol::placeholder_operation, )
+FC_REFLECT( deip::protocol::placeholder1_operation, )
+FC_REFLECT( deip::protocol::placeholder2_operation, )
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
 
@@ -829,7 +823,6 @@ FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_g
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
 FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_id)(owner)(amount))
-FC_REFLECT( deip::protocol::set_expertise_tokens_operation, (owner)(account_name)(disciplines_to_add))
 FC_REFLECT( deip::protocol::research_update_operation, (research_id)(title)(abstract)(permlink)(owner))
 FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds))
 FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance_id)(owner)(amount))

@@ -4,7 +4,6 @@
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/database/database.hpp>
-
 #include <tuple>
 
 namespace deip {
@@ -15,39 +14,42 @@ dbs_expert_token::dbs_expert_token(database &db)
 {
 }
 
-const expert_token_object & dbs_expert_token::create(const account_name_type &account, const discipline_id_type &discipline_id,
-                                                     const share_type &amount, const bool &create_parent)
+const expert_token_object& dbs_expert_token::create_expert_token(
+  const account_name_type& name, 
+  const discipline_id_type& discipline_id,
+  const share_type& amount,
+  const bool& create_parent = true)
 {
     auto& account_service = db_impl().obtain_service<dbs_account>();
-    auto& disciplines_service = db_impl().obtain_service<dbs_discipline>();
-
     const auto& props = db_impl().get_dynamic_global_properties();
-    const auto& to_account = account_service.get_account(account);
+    const auto& account = account_service.get_account(name);
 
-    FC_ASSERT(discipline_id != 0, "You cannot create expert token with discipline 0");
-    FC_ASSERT(expert_token_exists_by_account_and_discipline(account, discipline_id) == false, "Expert token already exists.");
+    FC_ASSERT(discipline_id != 0, "Expertise token can not be created for the common discipline");
 
-    auto& token = db_impl().create<expert_token_object>([&](expert_token_object& token) {
-        token.account_name = account;
-        token.discipline_id = discipline_id;
-        token.amount = amount;
-        token.last_vote_time = props.time;
+    const auto& exp = db_impl().create<expert_token_object>([&](expert_token_object& exp_o) {
+        exp_o.account_name = name;
+        exp_o.discipline_id = discipline_id;
+        exp_o.amount = amount;
+        if (exp_o.amount < 0) 
+        {
+            exp_o.amount = 0;
+        }
+        exp_o.last_vote_time = props.time;
     });
 
-    account_service.increase_expertise_tokens(to_account, amount);
-    account_service.adjust_proxied_witness_votes(to_account, amount);
+    account_service.adjust_expertise_tokens_throughput(account, amount);
+    adjust_proxied_expertise(exp, amount);
 
-    disciplines_service.increase_total_expertise_amount(discipline_id, amount);
-
-    if (create_parent) {
-        auto& discipline = db_impl().get<discipline_object>(discipline_id);
-        if (discipline.parent_id != 0) {
-            if (!expert_token_exists_by_account_and_discipline(account, discipline.parent_id))
-                create(account, discipline.parent_id, amount, true);
+    if (create_parent)
+    {
+        const auto& discipline = db_impl().get<discipline_object>(discipline_id);
+        if (discipline.parent_id != 0 && !expert_token_exists_by_account_and_discipline(name, discipline.parent_id))
+        {
+            create_expert_token(name, discipline.parent_id, amount, true);
         }
     }
 
-    return token;
+    return exp;
 }
 
 const expert_token_object& dbs_expert_token::get_expert_token(const expert_token_id_type& id) const
@@ -99,36 +101,48 @@ dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_
     return ret;
 }
 
-void dbs_expert_token::check_expert_token_existence_by_account_and_discipline(const account_name_type &account,
-                                                                              const discipline_id_type &discipline_id)
+const bool dbs_expert_token::expert_token_exists_by_account_and_discipline(
+  const account_name_type &account,
+  const discipline_id_type &discipline_id) const
 {
-    const auto& idx = db_impl().get_index<expert_token_index>().indices().get<by_account_and_discipline>();
-    FC_ASSERT(idx.find(std::make_tuple(account, discipline_id)) != idx.cend(), "Expert token for account \"${1}\" and discipline \"${2}\" does not exist", ("1", account)("2", discipline_id));
+    const auto& idx = db_impl()
+      .get_index<expert_token_index>()
+      .indices()
+      .get<by_account_and_discipline>();
+
+    return idx.find(std::make_tuple(account, discipline_id)) != idx.end();
 }
 
-bool dbs_expert_token::expert_token_exists_by_account_and_discipline(const account_name_type &account,
-                                                                     const discipline_id_type &discipline_id)
+const std::tuple<share_type, share_type> dbs_expert_token::adjust_expert_token( 
+  const account_name_type& name,
+  const discipline_id_type& discipline_id,
+  const share_type& delta) 
 {
-    const auto& idx = db_impl().get_index<expert_token_index>().indices().get<by_account_and_discipline>();
-    return idx.find(boost::make_tuple(account, discipline_id)) != idx.cend();
-}
+    dbs_account& accounts_service = db_impl().obtain_service<dbs_account>();
+    const auto& account = accounts_service.get_account(name);
 
-void dbs_expert_token::increase_expertise_tokens(const account_object &account,
-                                                 const discipline_id_type &discipline_id,
-                                                 const share_type &amount) {
-    FC_ASSERT(amount >= 0, "Amount cannot be < 0");
+    if (expert_token_exists_by_account_and_discipline(name, discipline_id))
+    {
+        const expert_token_object& exp = get_expert_token_by_account_and_discipline(account.name, discipline_id);
+        share_type previous = exp.amount;
+        db_impl().modify(exp, [&](expert_token_object& exp_o) {
+            exp_o.amount += delta;
+            if (exp_o.amount < 0)
+            {
+                exp_o.amount = 0;
+            }
+        });
 
-    dbs_account& account_service = db_impl().obtain_service<dbs_account>();
-    auto& disciplines_service = db_impl().obtain_service<dbs_discipline>();
-
-    auto& token = get_expert_token_by_account_and_discipline(account.name, discipline_id);
-    db_impl().modify(token, [&](expert_token_object et) {
-        et.amount += amount;
-    });
-
-    disciplines_service.increase_total_expertise_amount(discipline_id, amount);
-    account_service.increase_expertise_tokens(account, amount);
-    adjust_proxied_expertise(token, amount);
+        accounts_service.adjust_expertise_tokens_throughput(account, delta);
+        adjust_proxied_expertise(exp, delta);
+        return std::make_tuple(previous, exp.amount);
+    }
+    else 
+    {
+        share_type previous = share_type(0);
+        const expert_token_object& exp = create_expert_token(name, discipline_id, delta, true);
+        return std::make_tuple(previous, exp.amount);
+    }
 }
 
 void dbs_expert_token::update_expertise_proxy(const expert_token_object& expert_token, const optional<expert_token_object>& proxy_expert_token)

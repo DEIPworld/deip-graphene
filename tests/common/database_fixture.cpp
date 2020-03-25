@@ -806,7 +806,7 @@ const expert_token_object&
 database_fixture::expert_token(const string& account, const discipline_id_type& discipline_id, const share_type& amount)
 {
     dbs_expert_token& expert_token_service = db.obtain_service<dbs_expert_token>();
-    auto& expert_token = expert_token_service.create(account, discipline_id, amount, false);
+    auto& expert_token = expert_token_service.create_expert_token(account, discipline_id, amount, false);
 
     return expert_token;
 }

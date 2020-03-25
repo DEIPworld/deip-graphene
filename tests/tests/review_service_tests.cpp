@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(get_research_reviews)
     {
         create_reviews();
 
-        auto reviews = data_service.get_reviews_by_content(1);
+        auto reviews = data_service.get_reviews_by_research_content(1);
 
         BOOST_CHECK(reviews.size() == 2);
         BOOST_CHECK(std::any_of(reviews.begin(), reviews.end(), [](std::reference_wrapper<const review_object> wrapper){

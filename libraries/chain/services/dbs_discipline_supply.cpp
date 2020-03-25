@@ -7,7 +7,8 @@
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
-#include <deip/chain/services/dbs_vote.hpp>
+#include <deip/chain/services/dbs_review_vote.hpp>
+#include <deip/chain/services/dbs_expertise_contribution.hpp>
 
 #include <deip/chain/util/reward.hpp>
 #include <tuple>
@@ -200,52 +201,52 @@ share_type dbs_discipline_supply::supply_researches_in_discipline(const discipli
 {
     dbs_discipline& discipline_service = db_impl().obtain_service<dbs_discipline>();
     dbs_research_content& research_content_service = db_impl().obtain_service<dbs_research_content>();
-    dbs_vote& vote_service = db_impl().obtain_service<dbs_vote>();
+    dbs_expertise_contribution& expertise_contribution_service = db_impl().obtain_service<dbs_expertise_contribution>();
     dbs_research& research_service = db_impl().obtain_service<dbs_research>();
     dbs_research_group& research_group_service = db_impl().obtain_service<dbs_research_group>();
 
+    auto expertise_contributions = expertise_contribution_service.get_expertise_contributions_by_discipline(discipline_id);
+    share_type total_eci_amount = std::accumulate(expertise_contributions.begin(), expertise_contributions.end(), share_type(0),
+      [&](share_type acc, const expertise_contribution_object& exp) { return acc + exp.eci; });
+
     const auto& discipline = discipline_service.get_discipline(discipline_id);
-    if (discipline.total_active_weight == 0)
+    if (total_eci_amount == 0)
         return 0;
 
     share_type used_grant = 0;
-    share_type total_research_weight = discipline.total_active_weight;
+    share_type total_research_weight = total_eci_amount;
 
     std::map<research_group_id_type, share_type> grant_shares_per_research;
 
     // Exclude final results from share calculation and discipline_supply distribution
     const auto& final_results_idx
-        = db_impl().get_index<total_votes_index>().indices().get<by_discipline_and_content_type>();
-    auto final_results_itr_pair
-        = final_results_idx.equal_range(std::make_tuple(discipline.id, research_content_type::final_result));
-    auto& final_results_itr = final_results_itr_pair.first;
-    const auto& final_results_itr_end = final_results_itr_pair.second;
+        = db_impl().get_index<expertise_contribution_index>().indices().get<by_discipline_id>();
+    auto research_content_itr_pair = final_results_idx.equal_range(discipline.id);
+    auto& research_content_itr = research_content_itr_pair.first;
+    const auto& research_content_end = research_content_itr_pair.second;
 
-    while (final_results_itr != final_results_itr_end)
+    while (research_content_itr != research_content_end)
     {
-        const auto& final_result = research_content_service.get(final_results_itr->research_content_id);
-        if (final_result.activity_state == research_content_activity_state::active)
+        const auto& research_content = research_content_service.get(research_content_itr->research_content_id);
+        if (research_content.type == research_content_type::final_result && research_content.activity_state == research_content_activity_state::active)
         {
-            total_research_weight -= final_results_itr->total_weight;
+            total_research_weight -= research_content_itr->eci;
         }
-        ++final_results_itr;
+        ++research_content_itr;
     }
 
-    auto total_votes = vote_service.get_total_votes_by_discipline(discipline.id);
-
-    for (auto tvw : total_votes)
+    for (auto& wrap : expertise_contributions)
     {
-        auto& total_vote = tvw.get();
-        const auto& research_content = research_content_service.get(total_vote.research_content_id);
+        auto& expertise_contribution = wrap.get();
+        const auto& research_content = research_content_service.get(expertise_contribution.research_content_id);
 
         if (research_content.type != research_content_type::final_result
             && research_content.activity_state == research_content_activity_state::active
-            && total_vote.total_weight != 0)
+            && expertise_contribution.eci != 0)
         {
-            auto share = util::calculate_share(grant, total_vote.total_weight, total_research_weight);
-            auto& research = research_service.get_research(total_vote.research_id);
-            research_group_service.increase_research_group_balance(research.research_group_id,
-                                                                   asset(share, DEIP_SYMBOL));
+            auto share = util::calculate_share(grant, expertise_contribution.eci, total_research_weight);
+            auto& research = research_service.get_research(expertise_contribution.research_id);
+            research_group_service.increase_research_group_balance(research.research_group_id, asset(share, DEIP_SYMBOL));
             used_grant += share;
         }
     }

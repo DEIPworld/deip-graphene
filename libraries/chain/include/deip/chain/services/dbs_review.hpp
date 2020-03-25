@@ -26,9 +26,7 @@ public:
 
     const review_object& get(const review_id_type& id) const;
 
-    review_refs_type get_research_content_reviews(const research_content_id_type& research_content_id) const;
-    
-    review_refs_type get_reviews_by_content(const research_content_id_type &research_content_id) const;
+    review_refs_type get_reviews_by_research_content(const research_content_id_type& research_content_id) const;
 
     review_refs_type get_author_reviews(const account_name_type& author) const;
 

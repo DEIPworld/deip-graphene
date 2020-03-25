@@ -1,6 +1,7 @@
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
+#include <deip/chain/services/dbs_expertise_contribution.hpp>
 
 #include <deip/chain/database/database.hpp>
 
@@ -155,13 +156,20 @@ void dbs_expertise_allocation_proposal::downvote(const expertise_allocation_prop
     }
 }
 
-bool dbs_expertise_allocation_proposal::is_quorum(const expertise_allocation_proposal_object &expertise_allocation_proposal)
+bool dbs_expertise_allocation_proposal::is_quorum(const expertise_allocation_proposal_object& expertise_allocation_proposal)
 {
-    auto& discipline = db_impl().get<discipline_object, by_id>(expertise_allocation_proposal.discipline_id);
-    if (discipline.total_expertise_amount == 0) // for now let's wait for someone who has expertise
+    const dbs_expertise_contribution& expertise_contributions_service  = db_impl().obtain_service<dbs_expertise_contribution>();
+    auto expertise_contributions = expertise_contributions_service.get_expertise_contributions_by_discipline(expertise_allocation_proposal.discipline_id);
+    share_type total_eci_amount = std::accumulate(
+      expertise_contributions.begin(), expertise_contributions.end(), share_type(0),
+      [&](share_type acc, const expertise_contribution_object& exp) {
+          return acc + exp.eci;
+      });
+
+    if (total_eci_amount == 0) // for now let's wait for someone who has expertise
         return false;
-    
-    auto quorum_amount = (expertise_allocation_proposal.quorum * discipline.total_expertise_amount) / DEIP_100_PERCENT;
+
+    auto quorum_amount = (expertise_allocation_proposal.quorum * total_eci_amount) / DEIP_100_PERCENT;
     return expertise_allocation_proposal.total_voted_expertise >= quorum_amount.value;
 }
 
@@ -204,7 +212,7 @@ void dbs_expertise_allocation_proposal::process_expertise_allocation_proposals()
         auto& proposal = get(current->id);
         if (is_quorum(proposal))
         {
-            expert_token_service.create(proposal.claimer, proposal.discipline_id, DEIP_EXPERTISE_CLAIM_AMOUNT, true);
+            expert_token_service.create_expert_token(proposal.claimer, proposal.discipline_id, DEIP_EXPERTISE_CLAIM_AMOUNT, true);
             approved_proposals_ids.push_back(proposal.id);
         }
         ++current;

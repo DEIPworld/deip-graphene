@@ -30,7 +30,8 @@ add_library( deip_chain
         services/dbs_proposal.cpp
         services/dbs_research_group.cpp
         services/dbs_discipline.cpp
-        services/dbs_vote.cpp
+        services/dbs_review_vote.cpp
+        services/dbs_expertise_contribution.cpp
         services/dbs_research.cpp
         services/dbs_research_discipline_relation.cpp
         services/dbs_research_content.cpp
@@ -43,7 +44,6 @@ add_library( deip_chain
         services/dbs_vesting_balance.cpp
         services/dbs_proposal_execution.cpp
         services/dbs_reward_pool.cpp
-        services/dbs_expertise_stats.cpp
         services/dbs_expertise_allocation_proposal.cpp
         services/dbs_offer_research_tokens.cpp
         services/dbs_grant.cpp

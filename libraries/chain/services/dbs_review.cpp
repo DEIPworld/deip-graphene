@@ -1,15 +1,12 @@
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
-#include <deip/chain/services/dbs_expertise_stats.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_review.hpp>
-#include <deip/chain/services/dbs_vote.hpp>
-#include <deip/chain/services/dbs_vote.hpp>
-
+#include <deip/chain/services/dbs_review_vote.hpp>
 #include <tuple>
 #include <math.h>
 
@@ -64,7 +61,7 @@ const review_object& dbs_review::get(const review_id_type &id) const
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-dbs_review::review_refs_type dbs_review::get_reviews_by_content(const research_content_id_type &research_content_id) const
+dbs_review::review_refs_type dbs_review::get_reviews_by_research_content(const research_content_id_type &research_content_id) const
 {
     review_refs_type ret;
 
@@ -98,26 +95,24 @@ dbs_review::review_refs_type dbs_review::get_author_reviews(const account_name_t
 
 const std::map<discipline_id_type, share_type> dbs_review::get_eci_weight(const review_id_type& review_id) const
 {
-    const dbs_vote& vote_service = db_impl().obtain_service<dbs_vote>();
+    const dbs_review_vote& review_votes_service = db_impl().obtain_service<dbs_review_vote>();
 
     const review_object& review = get(review_id);
-    const auto& research_content_reviews = get_reviews_by_content(review.research_content_id);
-    const auto& research_content_reviews_votes = vote_service.get_review_votes_by_content(review.research_content_id);
+    const auto& research_content_reviews = get_reviews_by_research_content(review.research_content_id);
+    const auto& research_content_reviews_votes = review_votes_service.get_review_votes_by_researh_content(review.research_content_id);
 
     std::map<discipline_id_type, share_type> review_weight_by_discipline;
     for (discipline_id_type discipline_id : review.disciplines)
     {
         std::vector<std::reference_wrapper<const review_object>> research_content_reviews_for_discipline;
         std::copy_if(research_content_reviews.begin(), research_content_reviews.end(), std::back_inserter(research_content_reviews_for_discipline),
-            [=](const std::reference_wrapper<const review_object> rw_wrap) { 
-                const review_object& rw = rw_wrap.get();
+            [=](const review_object& rw) { 
                 return rw.disciplines.find(discipline_id) != rw.disciplines.end();
             });
 
         std::vector<std::reference_wrapper<const review_vote_object>> research_content_reviews_votes_for_discipline;
         std::copy_if(research_content_reviews_votes.begin(), research_content_reviews_votes.end(), std::back_inserter(research_content_reviews_votes_for_discipline),
-            [=](const std::reference_wrapper<const review_vote_object> rw_vote_wrap) { 
-                const review_vote_object& rw_vote = rw_vote_wrap.get();
+            [=](const review_vote_object& rw_vote) { 
                 return rw_vote.discipline_id == discipline_id;
             });
 
@@ -128,39 +123,39 @@ const std::map<discipline_id_type, share_type> dbs_review::get_eci_weight(const 
         const double Er = (double) review.expertise_tokens_amount_by_discipline.at(discipline_id).value;
 
         const double Er_avg = (double) (std::accumulate(research_content_reviews_for_discipline.begin(), research_content_reviews_for_discipline.end(), 0,
-            [&](int64_t acc, std::reference_wrapper<const review_object> rw_wrap) {
-                const review_object& rw = rw_wrap.get();
+            [&](int64_t acc, const review_object& rw) {
                 const int64_t rw_Er = rw.expertise_tokens_amount_by_discipline.at(discipline_id).value;
                 return acc + rw_Er;
             }) / research_content_reviews_for_discipline.size());
 
         const double Vr = (double) std::accumulate(research_content_reviews_votes_for_discipline.begin(), research_content_reviews_votes_for_discipline.end(), 0,
-            [&](int64_t acc, std::reference_wrapper<const review_vote_object> rw_vote_wrap) {
-                const review_vote_object& rw_vote = rw_vote_wrap.get();
+            [&](int64_t acc, const review_vote_object& rw_vote) {
                 return rw_vote.review_id == review.id ? acc + rw_vote.weight : acc;
             });
 
         const double Vi = (double) std::accumulate(research_content_reviews_votes_for_discipline.begin(), research_content_reviews_votes_for_discipline.end(), 0,
-            [&](int64_t acc, std::reference_wrapper<const review_vote_object> rw_vote_wrap) {
-                const review_vote_object& rw_vote = rw_vote_wrap.get();
+            [&](int64_t acc, const review_vote_object& rw_vote) {
                 return acc + rw_vote.weight;
             });
 
-        const double Cr = Cea * (Er / Er_avg) + Cva * (1 - 1 / n) * (Vr / (Vi != 0 ? Vi : 1));
+        /* 
         
-        const double mr = (double) review.is_positive ? 1 : -1;
+        Original Formula
+        
+        const double Cr = (1 / n) * Cea * (Er / Er_avg) + Cva * (1 - 1 / n) * (Vr / (Vi != 0 ? Vi : 1));
+        
+        */
 
-        /* Temporal simplification for demo purposes */
-
-        /* const double review_votes_count = (double)std::count_if(
-            research_content_reviews_votes_for_discipline.begin(), research_content_reviews_votes_for_discipline.end(),
-            [&](std::reference_wrapper<const review_vote_object> rw_vote_wrap) {
-                const review_vote_object& rw_vote = rw_vote_wrap.get();
+        const double review_votes_count = (double) std::count_if(research_content_reviews_votes_for_discipline.begin(), research_content_reviews_votes_for_discipline.end(),
+            [&](const review_vote_object& rw_vote) {
                 return rw_vote.review_id == review.id;
             });
-        const double Cr = Cea * (Er / Er_avg) + Cva * (1 - 1 / n); */
 
-        const int64_t review_weight = std::round(mr * Cr * Er);
+        const double Cr = (1 / n) * Cea * (Er_avg / Er) + Cva * (1 - 1 / n);
+
+        const double mr = (double)review.is_positive ? 1 : -1;
+
+        const int64_t review_weight = std::round(mr * Cr * Er) + (review.is_positive ? review_votes_count * DEIP_CURATOR_INFLUENCE_BONUS : -review_votes_count * DEIP_CURATOR_INFLUENCE_BONUS);
 
         review_weight_by_discipline[discipline_id] = share_type(review_weight);
     }

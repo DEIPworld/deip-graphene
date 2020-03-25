@@ -20,7 +20,7 @@
 #include "dbs_discipline.hpp"
 #include "dbs_research_discipline_relation.hpp"
 #include "dbs_research_group_invite.hpp"
-#include "dbs_vote.hpp"
+#include "dbs_review_vote.hpp"
 
 #include "dbs_base_impl.hpp"
 #include <deip/chain/schema/proposal_object.hpp>

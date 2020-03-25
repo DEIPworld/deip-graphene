@@ -35,15 +35,6 @@ const discipline_object& dbs_discipline::get_discipline(const discipline_id_type
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-void dbs_discipline::increase_total_expertise_amount(const discipline_id_type& id, const share_type& amount)
-{
-    FC_ASSERT(amount >= 0, "Could not increase discipline total expertise amount with ${amount} value", ("amount", amount));
-    const discipline_object& discipline = get_discipline(id);
-    db_impl().modify(discipline, [&](discipline_object& d) {
-        d.total_expertise_amount += amount; 
-    });
-}
-
 const discipline_object& dbs_discipline::get_discipline_by_name(const fc::string& name) const
 {
     const auto& idx = db_impl().get_index<discipline_index>().indices().get<by_discipline_name>();
@@ -80,15 +71,6 @@ dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines_by_parent_id
     }
 
     return ret;
-}
-
-void dbs_discipline::increase_total_used_expertise_amount(const discipline_id_type& id, const share_type& amount)
-{
-    FC_ASSERT(amount >= 0, "Could not increase discipline total active weight with ${amount} value", ("amount", amount));
-    const discipline_object& discipline = get_discipline(id);
-    db_impl().modify(discipline, [&](discipline_object& d) {
-        d.total_active_weight += amount;
-    });
 }
 
 } //namespace chain

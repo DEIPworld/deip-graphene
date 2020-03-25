@@ -37,6 +37,7 @@ public:
     int64_t weight;
     time_point_sec voting_time;
     research_content_id_type research_content_id;
+    research_id_type research_id;
 };
 
 struct by_discipline_id;
@@ -45,6 +46,7 @@ struct by_voter;
 struct by_review_and_discipline;
 struct by_voter_discipline_and_review;
 struct by_research_content;
+struct by_research;
 
 typedef multi_index_container<review_vote_object,
         indexed_by<ordered_unique<tag<by_id>,
@@ -63,6 +65,10 @@ typedef multi_index_container<review_vote_object,
                         member<review_vote_object,
                                 research_content_id_type,
                                 &review_vote_object::research_content_id>>,
+                ordered_non_unique<tag<by_research>,
+                        member<review_vote_object,
+                                research_id_type,
+                                &review_vote_object::research_id>>,
                 ordered_non_unique<tag<by_review_and_discipline>,
                         composite_key<review_vote_object,
                                 member<review_vote_object,
@@ -92,7 +98,14 @@ typedef multi_index_container<review_vote_object,
 }
 
 FC_REFLECT( deip::chain::review_vote_object,
-            (id)(discipline_id)(voter)(review_id)(weight)(voting_time)(research_content_id)
+  (id)
+  (discipline_id)
+  (voter)
+  (review_id)
+  (weight)
+  (voting_time)
+  (research_content_id)
+  (research_id)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::review_vote_object, deip::chain::review_vote_index )
