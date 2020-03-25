@@ -371,12 +371,12 @@ const account_object& database_fixture::account_create(const string& name, const
 
 
 const discipline_object& database_fixture::discipline_create(const discipline_id_type& id, 
-                                                            const discipline_name_type& name, 
+                                                            const std::string& name,
                                                             const discipline_id_type& parent_id)
 {
    const discipline_object& discipline = db.create<discipline_object>([&](discipline_object& d) {
             d.id = id;
-            d.name = name;
+            fc::from_string(d.name, name);
             d.parent_id = parent_id;
     });
 

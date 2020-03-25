@@ -101,6 +101,8 @@ public:
 
     accounts_refs_type get_accounts_by_expert_discipline(const discipline_id_type& discipline_id) const;
 
+    void process_account_recovery();
+
 private:
     const account_object& get_account(const account_id_type &) const;
 

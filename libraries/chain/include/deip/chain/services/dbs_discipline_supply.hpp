@@ -80,6 +80,10 @@ public:
 
     bool is_expired(const discipline_supply_object& discipline_supply);
 
+    share_type supply_researches_in_discipline(const discipline_id_type &discipline_id, const share_type &amount);
+
+    void process_discipline_supplies();
+
 private:
     uint64_t _get_discipline_supplies_count(const account_name_type &owner) const;
 };

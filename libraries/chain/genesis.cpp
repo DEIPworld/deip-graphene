@@ -297,7 +297,7 @@ void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
 
         create<discipline_object>([&](discipline_object& d) {
             d.id = discipline.id;
-            d.name = discipline.name;
+            fc::from_string(d.name, discipline.name);
             d.parent_id = discipline.parent_id;
             d.total_active_weight = 0;
             d.total_expertise_amount = 0;

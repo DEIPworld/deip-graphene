@@ -140,6 +140,7 @@ void create_discipline_supply_operation::validate() const
 {
     validate_account_name(owner);
     FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Balance must be positive and DEIP");
+    FC_ASSERT(fc::is_utf8(target_discipline), "Data is not valid UTF8 string");
     FC_ASSERT(content_hash.size() > 0, "Content hash must be specified");
     FC_ASSERT(fc::is_utf8(content_hash), "Content hash is not valid UTF8 string");
 }

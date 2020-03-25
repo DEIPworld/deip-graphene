@@ -44,9 +44,7 @@ public:
     virtual bool has_hardfork(uint32_t hardfork) const = 0;
 
     virtual fc::time_point_sec get_genesis_time() const = 0;
-
-    virtual void distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id) = 0;
-
+    
     virtual void push_virtual_operation(const protocol::operation& op) = 0;
 
     // for TODO only:

@@ -63,6 +63,8 @@ public:
 
     void clear_expired_expertise_allocation_proposals();
 
+    void process_expertise_allocation_proposals();
+
     /* Expertise allocation proposal vote */
 
     using expertise_allocation_proposal_vote_refs_type = std::vector<std::reference_wrapper<const expertise_allocation_proposal_vote_object>>;

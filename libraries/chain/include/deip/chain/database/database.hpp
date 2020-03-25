@@ -315,22 +315,8 @@ public:
         return get_balance(get_account(aname), symbol);
     }
 
-    /** clears all vote records for a particular account but does not update the
-     * witness vote totals.  Vote totals should be updated first via a call to
-     * adjust_proxied_witness_votes( a, -a.witness_vote_weight() )
-     */
-    void clear_witness_votes(const account_object& a);
     void process_common_tokens_withdrawals();
     void process_funds();
-    void process_conversions();
-    void account_recovery_processing();
-    void update_median_feed();
-    void process_research_token_sales();
-    void distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id) override;
-    void refund_research_tokens(const research_token_sale_id_type research_token_sale_id);
-    void process_expertise_allocation_proposals();
-    void process_grants();
-    void distribute_grant(const grant_object& grant);
 
     /**
      * Rewards distribution
@@ -360,9 +346,6 @@ public:
                                                     const share_type &expertise_reward);
 
     asset fund_review_pool(const discipline_object& discipline, const asset &amount);
-
-    share_type supply_researches_in_discipline(const discipline_id_type &discipline_id, const share_type &amount);
-    void process_discipline_supplies();
 
     time_point_sec head_block_time() const override;
     uint32_t head_block_num() const;
@@ -451,11 +434,8 @@ protected:
     void update_signing_witness(const witness_object& signing_witness, const signed_block& new_block);
     void update_last_irreversible_block();
     void clear_expired_transactions();
-    void clear_expired_proposals();
     void process_content_activity_windows();
     void process_header_extensions(const signed_block& next_block);
-    void clear_expired_invites();
-    void clear_expired_discipline_supplies();
 
     void init_hardforks(fc::time_point_sec genesis_time);
     void process_hardforks();

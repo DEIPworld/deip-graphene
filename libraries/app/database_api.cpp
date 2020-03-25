@@ -103,7 +103,7 @@ public:
 
     // Disciplines
     fc::optional<discipline_api_obj> get_discipline(const discipline_id_type& id) const;
-    fc::optional<discipline_api_obj> get_discipline_by_name(const discipline_name_type& name) const;
+    fc::optional<discipline_api_obj> get_discipline_by_name(const string& name) const;
 
     // Proposals
     fc::optional<proposal_api_obj> get_proposal(const proposal_id_type id) const;
@@ -1042,15 +1042,15 @@ fc::optional<discipline_api_obj> database_api_impl::get_discipline(const discipl
     return {};
 }
 
-fc::optional<discipline_api_obj> database_api::get_discipline_by_name(const discipline_name_type& name) const
+fc::optional<discipline_api_obj> database_api::get_discipline_by_name(const string& name) const
 {
     return my->_db.with_read_lock([&]() { return my->get_discipline_by_name(name); });
 }
 
-fc::optional<discipline_api_obj> database_api_impl::get_discipline_by_name(const discipline_name_type& name) const
+fc::optional<discipline_api_obj> database_api_impl::get_discipline_by_name(const string& name) const
 {
     const auto& idx = _db.get_index<discipline_index>().indices().get<by_discipline_name>();
-    auto itr = idx.find(name);
+    auto itr = idx.find(name, fc::strcmp_less());
 
     if (itr != idx.end()) {
         chain::dbs_discipline &discipline_service = _db.obtain_service<chain::dbs_discipline>();
@@ -1342,7 +1342,7 @@ fc::optional<expert_token_api_obj> database_api_impl::get_expert_token(const exp
     if (itr != idx.end()) {
         chain::dbs_discipline& discipline_service = _db.obtain_service<chain::dbs_discipline>();
         auto& discipline = discipline_service.get_discipline(itr->discipline_id);
-        return expert_token_api_obj(*itr, discipline.name);
+        return expert_token_api_obj(*itr, fc::to_string(discipline.name));
     }
 
     return {};
@@ -1359,7 +1359,7 @@ vector<expert_token_api_obj> database_api::get_expert_tokens_by_account_name(con
         for (const chain::expert_token_object &expert_token : expert_tokens) {
             auto& discipline = discipline_service.get_discipline(expert_token.discipline_id);
             if (expert_token.discipline_id != 0)
-                results.push_back(expert_token_api_obj(expert_token, discipline.name));
+                results.push_back(expert_token_api_obj(expert_token, fc::to_string(discipline.name)));
         }
         return results;
     });
@@ -1376,7 +1376,7 @@ vector<expert_token_api_obj> database_api::get_expert_tokens_by_discipline_id(co
 
         for (const chain::expert_token_object &expert_token : expert_tokens) {
             auto& discipline = discipline_service.get_discipline(expert_token.discipline_id);
-            results.push_back(expert_token_api_obj(expert_token, discipline.name));
+            results.push_back(expert_token_api_obj(expert_token, fc::to_string(discipline.name)));
         }
 
         return results;
@@ -1395,7 +1395,7 @@ fc::optional<expert_token_api_obj> database_api_impl::get_common_token_by_accoun
     if (itr != idx.end()) {
         chain::dbs_discipline& discipline_service = _db.obtain_service<chain::dbs_discipline>();
         auto& discipline = discipline_service.get_discipline(itr->discipline_id);
-        return expert_token_api_obj(*itr, discipline.name);
+        return expert_token_api_obj(*itr, fc::to_string(discipline.name));
     }
 
     return {};
@@ -1415,7 +1415,7 @@ fc::optional<expert_token_api_obj> database_api_impl::get_expert_token_by_accoun
     if (itr != idx.end()) {
         chain::dbs_discipline& discipline_service = _db.obtain_service<chain::dbs_discipline>();
         auto& discipline = discipline_service.get_discipline(itr->discipline_id);
-        return expert_token_api_obj(*itr, discipline.name);
+        return expert_token_api_obj(*itr, fc::to_string(discipline.name));
     }
 
     return {};

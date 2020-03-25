@@ -2308,7 +2308,7 @@ annotated_signed_transaction wallet_api::create_discipline_supply(const std::str
                                                                   const asset& balance,
                                                                   const uint32_t& start_block,
                                                                   const uint32_t& end_block,
-                                                                  const discipline_name_type& target_discipline,
+                                                                  const std::string& target_discipline,
                                                                   const std::string& content_hash,
                                                                   const bool is_extendable,
                                                                   const bool broadcast)

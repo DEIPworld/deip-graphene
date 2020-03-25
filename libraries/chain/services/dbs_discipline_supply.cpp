@@ -2,8 +2,14 @@
 
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_account_balance.hpp>
+#include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
+#include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_research_content.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_vote.hpp>
 
+#include <deip/chain/util/reward.hpp>
 #include <tuple>
 
 namespace deip {
@@ -159,6 +165,84 @@ void dbs_discipline_supply::clear_expired_discipline_supplies()
 bool dbs_discipline_supply::is_expired(const discipline_supply_object& discipline_supply)
 {
     return discipline_supply.end_block < db_impl().head_block_num();
+}
+
+share_type dbs_discipline_supply::supply_researches_in_discipline(const discipline_id_type &discipline_id, const share_type &grant)
+{
+    dbs_discipline& discipline_service = db_impl().obtain_service<dbs_discipline>();
+    dbs_research_content& research_content_service = db_impl().obtain_service<dbs_research_content>();
+    dbs_vote& vote_service = db_impl().obtain_service<dbs_vote>();
+    dbs_research& research_service = db_impl().obtain_service<dbs_research>();
+    dbs_research_group& research_group_service = db_impl().obtain_service<dbs_research_group>();
+
+    const auto& discipline = discipline_service.get_discipline(discipline_id);
+    if (discipline.total_active_weight == 0) return 0;
+
+    share_type used_grant = 0;
+    share_type total_research_weight = discipline.total_active_weight;
+
+    std::map<research_group_id_type, share_type> grant_shares_per_research;
+
+    // Exclude final results from share calculation and discipline_supply distribution
+    const auto& final_results_idx = db_impl().get_index<total_votes_index>().indices().get<by_discipline_and_content_type>();
+    auto final_results_itr_pair = final_results_idx.equal_range(std::make_tuple(discipline.id, research_content_type::final_result));
+    auto& final_results_itr = final_results_itr_pair.first;
+    const auto& final_results_itr_end = final_results_itr_pair.second;
+
+    while (final_results_itr != final_results_itr_end)
+    {
+        const auto& final_result = research_content_service.get(final_results_itr->research_content_id);
+        if (final_result.activity_state == research_content_activity_state::active) {
+            total_research_weight -= final_results_itr->total_weight;
+        }
+        ++final_results_itr;
+    }
+
+
+    auto total_votes = vote_service.get_total_votes_by_discipline(discipline.id);
+
+    for (auto tvw : total_votes)
+    {
+        auto& total_vote = tvw.get();
+        const auto& research_content = research_content_service.get(total_vote.research_content_id);
+
+        if (research_content.type != research_content_type::final_result
+            && research_content.activity_state == research_content_activity_state::active
+            && total_vote.total_weight != 0) {
+                auto share = util::calculate_share(grant, total_vote.total_weight, total_research_weight);
+                auto& research = research_service.get_research(total_vote.research_id);
+                research_group_service.increase_research_group_balance(research.research_group_id, asset(share, DEIP_SYMBOL));
+                used_grant += share;
+            }
+    }
+
+    if (used_grant > grant)
+        wlog("Attempt to allocate discipline_supply amount that is greater than discipline_supply (supply_researches_in_discipline): ${used_grant} > ${grant}",
+             ("used_grant", used_grant)("grant", grant));
+
+    //FC_ASSERT(used_grant <= grant, "Attempt to allocate discipline_supply amount that is greater than discipline_supply");
+
+    return used_grant;
+}
+
+void dbs_discipline_supply::process_discipline_supplies()
+{
+    uint32_t block_num = db_impl().head_block_num();
+
+    const auto& discipline_supplies_idx = db_impl().get_index<discipline_supply_index>().indices().get<by_start_block>();
+
+    auto discipline_supplies_itr = discipline_supplies_idx.upper_bound(block_num);
+
+    for (auto itr = discipline_supplies_idx.begin(); itr != discipline_supplies_itr; ++itr)
+    {
+        auto& discipline_supply = *itr;
+        auto used_discipline_supply = supply_researches_in_discipline(discipline_supply.target_discipline, discipline_supply.per_block);
+
+        if (used_discipline_supply == 0 && discipline_supply.is_extendable)
+            db_impl().modify(discipline_supply, [&](discipline_supply_object& g_o) { g_o.end_block++;} );
+        else if (used_discipline_supply != 0)
+            allocate_funds(discipline_supply);
+    }
 }
 
 uint64_t dbs_discipline_supply::_get_discipline_supplies_count(const account_name_type &owner) const
