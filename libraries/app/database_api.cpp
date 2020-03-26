@@ -20,6 +20,7 @@
 
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
+#include <deip/chain/services/dbs_award.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_research.hpp>
@@ -188,6 +189,14 @@ public:
 
     // Discipline supplies
     fc::optional<discipline_supply_api_obj> get_discipline_supply(const discipline_supply_id_type& id) const;
+
+    // Awards
+    fc::optional<award_api_obj> get_award(const award_id_type& id) const;
+    vector<award_api_obj> get_awards_by_creator(const account_name_type& creator) const;
+
+    fc::optional<award_research_relation_api_obj> get_award_research_relation(const award_research_relation_id_type& id) const;
+    fc::optional<award_research_relation_api_obj> get_award_research_relation_by_award_and_research(const award_id_type& award_id, const research_id_type& research_id) const;
+    vector<award_research_relation_api_obj> get_award_research_relations_by_award(const award_id_type& award_id) const;
 
     // Authority / validation
     std::string get_transaction_hex(const signed_transaction& trx) const;
@@ -2983,6 +2992,137 @@ fc::optional<discipline_supply_api_obj> database_api_impl::get_discipline_supply
     }
 
     return contract;
+}
+
+fc::optional<award_api_obj> database_api::get_award(const award_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        return my->get_award(id);
+    });
+}
+
+fc::optional<award_api_obj> database_api_impl::get_award(const award_id_type& id) const
+{
+    fc::optional<award_api_obj> award;
+
+    const auto& idx = _db
+      .get_index<award_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        award = award_api_obj(*itr);
+    }
+
+    return award;
+}
+
+vector<award_api_obj> database_api::get_awards_by_creator(const account_name_type& creator) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_awards_by_creator(creator); });
+}
+
+vector<award_api_obj> database_api_impl::get_awards_by_creator(const account_name_type& creator) const
+{
+    vector<award_api_obj> results;
+
+    const auto& itr_pair = _db
+      .get_index<award_index>()
+      .indicies()
+      .get<by_creator>()
+      .equal_range(creator);
+
+    auto itr = itr_pair.first;
+    const auto itr_end = itr_pair.second;
+
+    while (itr != itr_end)
+    {
+        results.push_back(award_api_obj(*itr));
+        ++itr;
+    }
+
+    return results;
+}
+
+fc::optional<award_research_relation_api_obj> database_api::get_award_research_relation(const award_research_relation_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() {
+        return my->get_award_research_relation(id);
+    });
+}
+
+fc::optional<award_research_relation_api_obj> database_api_impl::get_award_research_relation(const award_research_relation_id_type& id) const
+{
+    fc::optional<award_research_relation_api_obj> award_research_relation;
+
+    const auto& idx = _db
+      .get_index<award_research_relation_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        award_research_relation = award_research_relation_api_obj(*itr);
+    }
+
+    return award_research_relation;
+}
+
+fc::optional<award_research_relation_api_obj> database_api::get_award_research_relation_by_award_and_research(const award_id_type& award_id,
+                                                                                                              const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() {
+        return my->get_award_research_relation_by_award_and_research(award_id, research_id);
+    });
+}
+
+fc::optional<award_research_relation_api_obj> database_api_impl::get_award_research_relation_by_award_and_research(const award_id_type& award_id,
+                                                                                                                   const research_id_type& research_id) const
+{
+    fc::optional<award_research_relation_api_obj> award_research_relation;
+
+    const auto& idx = _db
+      .get_index<award_research_relation_index>()
+      .indicies()
+      .get<by_award_and_research>();
+
+    auto itr = idx.find(std::make_tuple(award_id, research_id));
+    if (itr != idx.end())
+    {
+        award_research_relation = award_research_relation_api_obj(*itr);
+    }
+
+    return award_research_relation;
+}
+
+vector<award_research_relation_api_obj> database_api::get_award_research_relations_by_award(const award_id_type& award_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_award_research_relations_by_award(award_id); });
+}
+
+vector<award_research_relation_api_obj> database_api_impl::get_award_research_relations_by_award(const award_id_type& award_id) const
+{
+    vector<award_research_relation_api_obj> results;
+
+    const auto& itr_pair = _db
+      .get_index<award_research_relation_index>()
+      .indicies()
+      .get<by_award>()
+      .equal_range(award_id);
+
+    auto itr = itr_pair.first;
+    const auto itr_end = itr_pair.second;
+
+    while (itr != itr_end)
+    {
+        results.push_back(award_research_relation_api_obj(*itr));
+        ++itr;
+    }
+
+    return results;
 }
 
 } // namespace app

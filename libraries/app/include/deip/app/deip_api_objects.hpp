@@ -3,6 +3,8 @@
 #include <deip/chain/schema/block_summary_object.hpp>
 #include <deip/chain/schema/global_property_object.hpp>
 //#include <deip/chain/history_object.hpp>
+#include <deip/chain/schema/award_object.hpp>
+#include <deip/chain/schema/award_research_relation_object.hpp>
 #include <deip/chain/schema/account_balance_object.hpp>
 #include <deip/chain/schema/asset_object.hpp>
 #include <deip/chain/schema/deip_objects.hpp>
@@ -1166,6 +1168,7 @@ struct funding_opportunity_api_obj
         ,  amount(fo_o.amount)
         ,  award_ceiling(fo_o.award_ceiling)
         ,  award_floor(fo_o.award_floor)
+        ,  awarded(fo_o.awarded)
         ,  expected_number_of_awards(fo_o.expected_number_of_awards)
         ,  posted_date(fo_o.posted_date)
         ,  open_date(fo_o.open_date)
@@ -1199,6 +1202,7 @@ struct funding_opportunity_api_obj
     asset amount = asset(0, DEIP_SYMBOL);
     asset award_ceiling = asset(0, DEIP_SYMBOL);
     asset award_floor = asset(0, DEIP_SYMBOL);
+    asset awarded = asset(0, DEIP_SYMBOL);
 
     uint16_t expected_number_of_awards;
 
@@ -1291,6 +1295,64 @@ struct research_group_organization_contract_api_obj
     uint16_t type;
 
     std::set<account_name_type> organization_agents;
+};
+
+struct award_api_obj
+{
+    award_api_obj(const chain::award_object& award)
+        : id(award.id._id)
+        , funding_opportunity_id(award.funding_opportunity_id._id)
+        , creator(award.creator)
+        , status(award.status)
+        , amount(award.amount)
+
+    {
+    }
+
+    // because fc::variant require for temporary object
+    award_api_obj()
+    {
+    }
+
+    int64_t id;
+
+    int64_t funding_opportunity_id;
+    account_name_type creator;
+    award_status status;
+    asset amount;
+};
+
+struct award_research_relation_api_obj
+{
+    award_research_relation_api_obj(const chain::award_research_relation_object& arr_o)
+        : id(arr_o.id._id)
+        , award_id(arr_o.award_id._id)
+        , research_id(arr_o.research_id._id)
+        , research_group_id(arr_o.research_group_id._id)
+        , awardee(arr_o.awardee)
+        , total_amount(arr_o.total_amount)
+        , total_expenses(arr_o.total_expenses)
+        , university_id(arr_o.university_id._id)
+        , university_overhead(arr_o.university_overhead)
+    {
+    }
+
+    // because fc::variant require for temporary object
+    award_research_relation_api_obj()
+    {
+    }
+
+    int64_t id;
+
+    int64_t award_id;
+    int64_t research_id;
+    int64_t research_group_id;
+    account_name_type awardee;
+    asset total_amount;
+    asset total_expenses;
+
+    int64_t university_id;
+    share_type university_overhead;
 };
 
 }; // namespace app
@@ -1666,6 +1728,7 @@ FC_REFLECT( deip::app::funding_opportunity_api_obj,
             (amount)
             (award_ceiling)
             (award_floor)
+            (awarded)
             (expected_number_of_awards)
             (posted_date)
             (open_date)
@@ -1701,6 +1764,26 @@ FC_REFLECT( deip::app::research_group_organization_contract_api_obj,
             (notes)
             (type)
             (organization_agents)
+)
+
+FC_REFLECT( deip::app::award_api_obj,
+            (id)
+            (funding_opportunity_id)
+            (creator)
+            (status)
+            (amount)
+)
+
+FC_REFLECT( deip::app::award_research_relation_api_obj,
+            (id)
+            (award_id)
+            (research_id)
+            (research_group_id)
+            (awardee)
+            (total_amount)
+            (total_expenses)
+            (university_id)
+            (university_overhead)
 )
 
 // clang-format on

@@ -45,6 +45,8 @@ public:
     const std::map<discipline_id_type, share_type> get_eci_evaluation(const research_id_type& research_id) const;
 
     const research_object& update_eci_evaluation(const research_id_type& research_id);
+
+    const bool research_exists(const research_id_type& research_id) const;
 };
 }
 }

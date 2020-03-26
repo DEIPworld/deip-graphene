@@ -10,6 +10,7 @@
 #include <deip/protocol/operations/create_research_group_operation.hpp>
 #include <deip/protocol/operations/make_review_operation.hpp>
 #include <deip/protocol/operations/create_grant_operation.hpp>
+#include <deip/protocol/operations/create_award_operation.hpp>
 
 namespace deip {
 namespace protocol {

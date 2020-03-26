@@ -59,6 +59,7 @@ const funding_opportunity_object& dbs_funding_opportunity::create_funding_opport
         funding_opportunity.amount = amount;
         funding_opportunity.award_ceiling = award_ceiling;
         funding_opportunity.award_floor = award_floor;
+        funding_opportunity.awarded = asset(0, amount.symbol);
         funding_opportunity.expected_number_of_awards = expected_number_of_awards;
         funding_opportunity.officers.insert(officers.begin(), officers.end());
         funding_opportunity.open_date = open_date;

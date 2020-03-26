@@ -242,5 +242,16 @@ const research_object& dbs_research::update_eci_evaluation(const research_id_typ
     return research;
 }
 
+const bool dbs_research::research_exists(const research_id_type& research_id) const
+{
+    const auto& idx = db_impl()
+      .get_index<research_index>()
+      .indices()
+      .get<by_id>();
+
+    auto itr = idx.find(research_id);
+    return itr != idx.end();
+}
+
 }
 }
