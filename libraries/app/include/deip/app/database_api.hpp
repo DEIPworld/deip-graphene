@@ -509,13 +509,18 @@ public:
     // Awards //
     ///////////
 
-    fc::optional<award_api_obj> get_award(const award_id_type& id) const;
-    vector<award_api_obj> get_awards_by_funding_opportunity(const string& number) const;
+    fc::optional<award_api_obj> get_award(const string& award_number) const;
+    vector<award_api_obj> get_awards_by_funding_opportunity(const string& funding_opportunity_number) const;
 
     fc::optional<award_recipient_api_obj> get_award_recipient(const award_recipient_id_type& id) const;
-    vector<award_recipient_api_obj> get_award_recipients_by_award(const award_id_type& award_id) const;
+    vector<award_recipient_api_obj> get_award_recipients_by_award(const string& award_number) const;
     vector<award_recipient_api_obj> get_award_recipients_by_account(const account_name_type& awardee) const;
     vector<award_recipient_api_obj> get_award_recipients_by_funding_opportunity(const string& number) const;
+
+    fc::optional<award_withdrawal_request_api_obj> get_award_withdrawal_request(const string& award_number, const string& payment_number) const;
+    vector<award_withdrawal_request_api_obj> get_award_withdrawal_requests_by_award(const string& award_number) const;
+    vector<award_withdrawal_request_api_obj> get_award_withdrawal_requests_by_award_and_subaward(const string& award_number, const string& subaward_number) const;
+    vector<award_withdrawal_request_api_obj> get_award_withdrawal_requests_by_award_and_status(const string& award_number, const uint16_t& status) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -744,6 +749,11 @@ FC_API(deip::app::database_api,
    (get_award_recipients_by_award)
    (get_award_recipients_by_account)
    (get_award_recipients_by_funding_opportunity)
+
+   (get_award_withdrawal_request)
+   (get_award_withdrawal_requests_by_award)
+   (get_award_withdrawal_requests_by_award_and_subaward)
+   (get_award_withdrawal_requests_by_award_and_status)
 )
 
 // clang-format on

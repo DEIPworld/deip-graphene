@@ -218,6 +218,8 @@
 #define DEIP_MAX_REVIEW_MARK                  5
 #define DEIP_MIN_POSITIVE_REVIEW_MARK         8
 
+#define DEIP_TREASURY_PERMLINK                "united-states-department-of-the-treasury"
+
 /**
  *  Reserved Account IDs with special meaning
  */

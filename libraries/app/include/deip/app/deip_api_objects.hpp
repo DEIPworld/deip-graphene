@@ -5,6 +5,7 @@
 //#include <deip/chain/history_object.hpp>
 #include <deip/chain/schema/award_object.hpp>
 #include <deip/chain/schema/award_recipient_object.hpp>
+#include <deip/chain/schema/award_withdrawal_request_object.hpp>
 #include <deip/chain/schema/account_balance_object.hpp>
 #include <deip/chain/schema/asset_object.hpp>
 #include <deip/chain/schema/deip_objects.hpp>
@@ -1120,7 +1121,7 @@ struct funding_opportunity_api_obj
         ,  amount(fo_o.amount)
         ,  award_ceiling(fo_o.award_ceiling)
         ,  award_floor(fo_o.award_floor)
-        ,  awarded(fo_o.awarded)
+        ,  current_supply(fo_o.current_supply)
         ,  expected_number_of_awards(fo_o.expected_number_of_awards)
         ,  posted_date(fo_o.posted_date)
         ,  open_date(fo_o.open_date)
@@ -1154,7 +1155,7 @@ struct funding_opportunity_api_obj
     asset amount = asset(0, DEIP_SYMBOL);
     asset award_ceiling = asset(0, DEIP_SYMBOL);
     asset award_floor = asset(0, DEIP_SYMBOL);
-    asset awarded = asset(0, DEIP_SYMBOL);
+    asset current_supply = asset(0, DEIP_SYMBOL);
 
     uint16_t expected_number_of_awards;
 
@@ -1253,15 +1254,15 @@ struct award_recipient_api_obj
 {
     award_recipient_api_obj(const chain::award_recipient_object& ar_o)
         : id(ar_o.id._id)
-        , award_id(ar_o.award_id._id)
-        , funding_opportunity_id(ar_o.funding_opportunity_id._id)
+        , award_number(fc::to_string(ar_o.award_number))
+        , subaward_number(fc::to_string(ar_o.subaward_number))
+        , funding_opportunity_number(fc::to_string(ar_o.funding_opportunity_number))
         , research_id(ar_o.research_id._id)
-        , research_group_id(ar_o.research_group_id._id)
         , awardee(ar_o.awardee)
+        , source(ar_o.source)
         , total_amount(ar_o.total_amount)
         , total_expenses(ar_o.total_expenses)
-        , university_id(ar_o.university_id._id)
-        , university_overhead(ar_o.university_overhead)
+        , status(ar_o.status)
     {
     }
 
@@ -1271,30 +1272,33 @@ struct award_recipient_api_obj
 
     int64_t id;
 
-    int64_t award_id;
-    int64_t funding_opportunity_id;
+    string award_number;
+    string subaward_number;
+    string funding_opportunity_number;
 
     int64_t research_id;
-    int64_t research_group_id;
     account_name_type awardee;
+    account_name_type source;
     asset total_amount;
     asset total_expenses;
-
-    int64_t university_id;
-    share_type university_overhead;
+    uint16_t status;
 };
 
 struct award_api_obj
 {
     award_api_obj(const chain::award_object& award, const vector<award_recipient_api_obj>& awardees_list)
         : id(award.id._id)
-        , funding_opportunity_id(award.funding_opportunity_id._id)
+        , funding_opportunity_number(fc::to_string(award.funding_opportunity_number))
+        , award_number(fc::to_string(award.award_number))
+        , awardee(award.awardee)
         , creator(award.creator)
         , status(award.status)
         , amount(award.amount)
-
+        , university_id(award.university_id._id)
+        , university_overhead(award.university_overhead)
     {
         awardees.insert(awardees.end(), awardees_list.begin(), awardees_list.end());
+        university_fee = asset(((award.amount.amount * share_type(award.university_overhead))) / DEIP_100_PERCENT, award.amount.symbol);
     }
 
     // because fc::variant require for temporary object
@@ -1304,11 +1308,52 @@ struct award_api_obj
 
     int64_t id;
 
-    int64_t funding_opportunity_id;
-    account_name_type creator;
-    award_status status;
+    string funding_opportunity_number;
+    string award_number;
+    string awardee;
+    string creator;
+    uint16_t status;
     asset amount;
+    int64_t university_id;
+    percent_type university_overhead;
+    asset university_fee;
     vector<award_recipient_api_obj> awardees;
+};
+
+struct award_withdrawal_request_api_obj
+{
+    award_withdrawal_request_api_obj(const chain::award_withdrawal_request_object& awr_o)
+        : id(awr_o.id._id)
+        , award_number(fc::to_string(awr_o.award_number))
+        , subaward_number(fc::to_string(awr_o.subaward_number))
+        , payment_number(fc::to_string(awr_o.payment_number))
+        , requester(awr_o.requester)
+        , amount(awr_o.amount)
+        , description(fc::to_string(awr_o.description))
+        , status(awr_o.status)
+        , time(awr_o.time)
+        , attachment(fc::to_string(awr_o.attachment))
+    {
+    }
+
+    // because fc::variant require for temporary object
+    award_withdrawal_request_api_obj()
+    {
+    }
+
+    int64_t id;
+
+    string award_number;
+    string subaward_number;
+    string payment_number;
+
+    account_name_type requester;
+
+    asset amount = asset(0, DEIP_SYMBOL);
+    std::string description;
+    uint16_t status;
+    fc::time_point_sec time;
+    std::string attachment;
 };
 
 }; // namespace app
@@ -1661,7 +1706,7 @@ FC_REFLECT( deip::app::funding_opportunity_api_obj,
             (amount)
             (award_ceiling)
             (award_floor)
-            (awarded)
+            (current_supply)
             (expected_number_of_awards)
             (posted_date)
             (open_date)
@@ -1701,24 +1746,43 @@ FC_REFLECT( deip::app::research_group_organization_contract_api_obj,
 
 FC_REFLECT( deip::app::award_api_obj,
             (id)
-            (funding_opportunity_id)
+            (funding_opportunity_number)
+            (award_number)
+            (awardee)
             (creator)
             (status)
             (amount)
+            (university_id)
+            (university_overhead)
+            (university_fee)
             (awardees)
 )
 
 FC_REFLECT( deip::app::award_recipient_api_obj,
             (id)
-            (award_id)
-            (funding_opportunity_id)
+            (award_number)
+            (subaward_number)
+            (funding_opportunity_number)
             (research_id)
-            (research_group_id)
             (awardee)
+            (source)
             (total_amount)
             (total_expenses)
-            (university_id)
-            (university_overhead)
+            (status)
+)
+
+
+FC_REFLECT( deip::app::award_withdrawal_request_api_obj,
+            (id)
+            (award_number)
+            (subaward_number)
+            (payment_number)
+            (requester)
+            (amount)
+            (description)
+            (status)
+            (time)
+            (attachment)
 )
 
 // clang-format on

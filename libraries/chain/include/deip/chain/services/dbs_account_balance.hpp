@@ -36,10 +36,10 @@ public:
     void remove(const account_balance_object& asset_backed_token);
 
     const account_balance_object& get_by_owner_and_asset(const account_name_type& owner,
-                                                        const protocol::asset_symbol_type& symbol) const;
+                                                         const protocol::asset_symbol_type& symbol) const;
 
     const account_balance_object& get_by_owner_and_asset(const account_name_type& owner,
-                                                        const string& symbol) const;
+                                                         const string& symbol) const;
 
     void adjust_balance(const account_name_type& account_name, const asset& delta);
 

@@ -193,14 +193,19 @@ public:
     fc::optional<discipline_supply_api_obj> get_discipline_supply(const discipline_supply_id_type& id) const;
 
     // Awards
-    fc::optional<award_api_obj> get_award(const award_id_type& id) const;
-    vector<award_api_obj> get_awards_by_funding_opportunity(const string& number) const;
+    fc::optional<award_api_obj> get_award(const string& award_number) const;
+    vector<award_api_obj> get_awards_by_funding_opportunity(const string& funding_opportunity_number) const;
 
     // Awardees
     fc::optional<award_recipient_api_obj> get_award_recipient(const award_recipient_id_type& id) const;
-    vector<award_recipient_api_obj> get_award_recipients_by_award(const award_id_type& award_id) const;
+    vector<award_recipient_api_obj> get_award_recipients_by_award(const string& award_number) const;
     vector<award_recipient_api_obj> get_award_recipients_by_account(const account_name_type& awardee) const;
-    vector<award_recipient_api_obj> get_award_recipients_by_funding_opportunity(const string& number) const;
+    vector<award_recipient_api_obj> get_award_recipients_by_funding_opportunity(const string& funding_opportunity_number) const;
+
+    fc::optional<award_withdrawal_request_api_obj> get_award_withdrawal_request(const string& award_number, const string& payment_number) const;
+    vector<award_withdrawal_request_api_obj> get_award_withdrawal_requests_by_award(const string& award_number) const;
+    vector<award_withdrawal_request_api_obj> get_award_withdrawal_requests_by_award_and_subaward(const string& award_number, const string& subaward_number) const;
+    vector<award_withdrawal_request_api_obj> get_award_withdrawal_requests_by_award_and_status(const string& award_number, const award_withdrawal_request_status& status) const;
 
     // Authority / validation
     std::string get_transaction_hex(const signed_transaction& trx) const;
@@ -2577,7 +2582,7 @@ fc::optional<funding_opportunity_api_obj> database_api_impl::get_funding_opportu
 {
     fc::optional<funding_opportunity_api_obj> result;
     chain::dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<chain::dbs_funding_opportunity>();
-    const auto& opt = funding_opportunity_service.get_funding_opportunity_announcement_by_number_if_exists(funding_opportunity_number);
+    const auto& opt = funding_opportunity_service.get_funding_opportunity_announcement_if_exists(funding_opportunity_number);
     
     if (opt.valid())
     {
@@ -2853,23 +2858,22 @@ fc::optional<discipline_supply_api_obj> database_api_impl::get_discipline_supply
     return result;
 }
 
-fc::optional<award_api_obj> database_api::get_award(const award_id_type& id) const
+fc::optional<award_api_obj> database_api::get_award(const string& award_number) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_award(id); });
+    return my->_db.with_read_lock([&]() { return my->get_award(award_number); });
 }
 
-fc::optional<award_api_obj> database_api_impl::get_award(const award_id_type& id) const
+fc::optional<award_api_obj> database_api_impl::get_award(const string& award_number) const
 {
     chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
     
     fc::optional<award_api_obj> result;
-    const auto& opt = awards_service.get_award_if_exists(id);
+    const auto& opt = awards_service.get_award_if_exists(award_number);
 
     if (opt.valid())
     {   
-        const auto& award = (*opt).get();
         vector<award_recipient_api_obj> awardees_list;
-        auto awardees = awards_service.get_award_recipients_by_award(award.id);
+        auto awardees = awards_service.get_award_recipients_by_award(award_number);
         for (auto& wrap : awardees)
         {
             const auto& awardee = wrap.get();
@@ -2881,35 +2885,28 @@ fc::optional<award_api_obj> database_api_impl::get_award(const award_id_type& id
     return result;
 }
 
-vector<award_api_obj> database_api::get_awards_by_funding_opportunity(const string& number) const
+vector<award_api_obj> database_api::get_awards_by_funding_opportunity(const string& funding_opportunity_number) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_awards_by_funding_opportunity(number); });
+    return my->_db.with_read_lock([&]() { return my->get_awards_by_funding_opportunity(funding_opportunity_number); });
 }
 
-vector<award_api_obj> database_api_impl::get_awards_by_funding_opportunity(const string& number) const
+vector<award_api_obj> database_api_impl::get_awards_by_funding_opportunity(const string& funding_opportunity_number) const
 {
     chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
-    chain::dbs_funding_opportunity& foa_service = _db.obtain_service<chain::dbs_funding_opportunity>();
     
     vector<award_api_obj> results;
-    const auto& foa_opt = foa_service.get_funding_opportunity_announcement_by_number_if_exists(number);
-
-    if (foa_opt.valid())
+    auto awards = awards_service.get_awards_by_funding_opportunity(funding_opportunity_number);
+    for (auto& wrap : awards)
     {
-        const auto& foa = (*foa_opt).get();
-        auto awards = awards_service.get_awards_by_funding_opportunity(foa.id);
-        for (auto& wrap : awards)
+        const auto& award = wrap.get();
+        vector<award_recipient_api_obj> awardees_list;
+        auto awardees = awards_service.get_award_recipients_by_award(fc::to_string(award.award_number));
+        for (auto& awardee_wrap : awardees)
         {
-            const auto& award = wrap.get();
-            vector<award_recipient_api_obj> awardees_list;
-            auto awardees = awards_service.get_award_recipients_by_award(award.id);
-            for (auto& awardee_wrap : awardees)
-            {
-                const auto& awardee = awardee_wrap.get();
-                awardees_list.push_back(awardee);
-            }
-            results.push_back(award_api_obj(award, awardees_list));
+            const auto& awardee = awardee_wrap.get();
+            awardees_list.push_back(awardee);
         }
+        results.push_back(award_api_obj(award, awardees_list));
     }
 
     return results;
@@ -2935,17 +2932,17 @@ fc::optional<award_recipient_api_obj> database_api_impl::get_award_recipient(con
     return result;
 }
 
-vector<award_recipient_api_obj> database_api::get_award_recipients_by_award(const award_id_type& award_id) const
+vector<award_recipient_api_obj> database_api::get_award_recipients_by_award(const string& award_number) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_award_recipients_by_award(award_id); });
+    return my->_db.with_read_lock([&]() { return my->get_award_recipients_by_award(award_number); });
 }
 
-vector<award_recipient_api_obj> database_api_impl::get_award_recipients_by_award(const award_id_type& award_id) const
+vector<award_recipient_api_obj> database_api_impl::get_award_recipients_by_award(const string& award_number) const
 {
     chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
 
     vector<award_recipient_api_obj> results;
-    auto awardees = awards_service.get_award_recipients_by_award(award_id);
+    auto awardees = awards_service.get_award_recipients_by_award(award_number);
     for (auto& wrap : awardees)
     {
         const auto& awardee = wrap.get();
@@ -2983,20 +2980,101 @@ vector<award_recipient_api_obj> database_api::get_award_recipients_by_funding_op
 vector<award_recipient_api_obj> database_api_impl::get_award_recipients_by_funding_opportunity(const string& number) const
 {
     chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
-    chain::dbs_funding_opportunity& foa_service = _db.obtain_service<chain::dbs_funding_opportunity>();
-
     vector<award_recipient_api_obj> results;
-    const auto& foa_opt = foa_service.get_funding_opportunity_announcement_by_number_if_exists(number);
 
-    if (foa_opt.valid())
+    auto awardees = awards_service.get_award_recipients_by_funding_opportunity(number);
+    for (auto& wrap : awardees)
     {
-        const auto& foa = (*foa_opt).get();
-        auto awardees = awards_service.get_award_recipients_by_funding_opportunity(foa.id);
-        for (auto& wrap : awardees)
-        {
-            const auto& awardee = wrap.get();
-            results.push_back(awardee);
-        }
+        const auto& awardee = wrap.get();
+        results.push_back(awardee);
+    }
+    return results;
+}
+
+fc::optional<award_withdrawal_request_api_obj> database_api::get_award_withdrawal_request(const string& award_number, const string& payment_number) const
+{
+    return my->_db.with_read_lock([&]() {
+        return my->get_award_withdrawal_request(award_number, payment_number);
+    });
+}
+
+fc::optional<award_withdrawal_request_api_obj> database_api_impl::get_award_withdrawal_request(const string& award_number, const string& payment_number) const
+{
+    chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
+
+    fc::optional<award_withdrawal_request_api_obj> result;
+    const auto& opt = awards_service.get_award_withdrawal_request_if_exists(award_number, payment_number);
+
+    if (opt.valid())
+    {
+        result = award_withdrawal_request_api_obj(*opt);
+    }
+
+    return result;
+}
+
+vector<award_withdrawal_request_api_obj> database_api::get_award_withdrawal_requests_by_award(const string& award_number) const
+{
+    return my->_db.with_read_lock([&]() {
+        return my->get_award_withdrawal_requests_by_award(award_number);
+    });
+}
+
+vector<award_withdrawal_request_api_obj> database_api_impl::get_award_withdrawal_requests_by_award(const string& award_number) const
+{
+    chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
+
+    vector<award_withdrawal_request_api_obj> results;
+    auto withdrawal_requests = awards_service.get_award_withdrawal_requests_by_award(award_number);
+    for (auto& wrap : withdrawal_requests)
+    {
+        const auto& withdrawal_request = wrap.get();
+        results.push_back(withdrawal_request);
+    }
+
+    return results;
+}
+
+vector<award_withdrawal_request_api_obj> database_api::get_award_withdrawal_requests_by_award_and_subaward(const string& award_number, const string& subaward_number) const
+{
+    return my->_db.with_read_lock([&]() {
+        return my->get_award_withdrawal_requests_by_award_and_subaward(award_number, subaward_number);
+    });
+}
+
+vector<award_withdrawal_request_api_obj> database_api_impl::get_award_withdrawal_requests_by_award_and_subaward(const string& award_number, const string& subaward_number) const
+{
+    chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
+
+    vector<award_withdrawal_request_api_obj> results;
+    auto withdrawal_requests = awards_service.get_award_withdrawal_requests_by_award_and_subaward(award_number, subaward_number);
+    for (auto& wrap : withdrawal_requests)
+    {
+        const auto& withdrawal_request = wrap.get();
+        results.push_back(withdrawal_request);
+    }
+
+    return results;
+}
+
+vector<award_withdrawal_request_api_obj> database_api::get_award_withdrawal_requests_by_award_and_status(const string& award_number, const uint16_t& status) const
+{
+    return my->_db.with_read_lock([&]() {
+        const award_withdrawal_request_status st = static_cast<award_withdrawal_request_status>(status);
+        return my->get_award_withdrawal_requests_by_award_and_status(award_number, st);
+    });
+}
+
+vector<award_withdrawal_request_api_obj> database_api_impl::get_award_withdrawal_requests_by_award_and_status(const string& award_number, const award_withdrawal_request_status& status) const
+{
+    chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
+
+    vector<award_withdrawal_request_api_obj> results;
+    auto withdrawal_requests = awards_service.get_award_withdrawal_requests_by_award_and_status(award_number, status);
+    for (auto& wrap : withdrawal_requests)
+    {
+        const auto& withdrawal_request = wrap.get();
+        results.push_back(withdrawal_request);
     }
 
     return results;

@@ -34,13 +34,15 @@ public:
 
     const funding_opportunity_object& get_funding_opportunity_announcement(const funding_opportunity_id_type& id) const;
     
+    const funding_opportunity_object& get_funding_opportunity_announcement(const string& funding_opportunity_number) const;
+
     const fc::optional<std::reference_wrapper<const funding_opportunity_object>> get_funding_opportunity_announcement_if_exists(const funding_opportunity_id_type& id) const;
 
-    const funding_opportunity_object& get_funding_opportunity_announcement_by_number(const string& opportunity_number) const;
-
-    const fc::optional<std::reference_wrapper<const funding_opportunity_object>> get_funding_opportunity_announcement_by_number_if_exists(const string& opportunity_number) const;
+    const fc::optional<std::reference_wrapper<const funding_opportunity_object>> get_funding_opportunity_announcement_if_exists(const string& opportunity_number) const;
 
     const bool funding_opportunity_announcement_exists(const funding_opportunity_id_type& id) const;
+
+    const bool funding_opportunity_announcement_exists(const string& number) const;
 
     funding_opportunity_refs_type get_funding_opportunity_announcements_by_grantor(const account_name_type& owner) const;
     
@@ -49,6 +51,8 @@ public:
     funding_opportunity_refs_type get_funding_opportunity_announcements_listing(const uint16_t& page, const uint16_t& limit) const;
     
     void remove_funding_opportunity_announcement(const funding_opportunity_object& funding_opportunity);
+
+    void adjust_fundind_opportunity_supply(const funding_opportunity_id_type& funding_opportunity_id, const asset& delta);
 };
 } // namespace chain
 } // namespace deip

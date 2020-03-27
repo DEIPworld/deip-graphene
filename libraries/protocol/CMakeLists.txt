@@ -13,6 +13,13 @@ add_library( deip_protocol
              operations/make_review_operation.cpp
              operations/create_grant_operation.cpp
              operations/create_award_operation.cpp
+             operations/approve_award_operation.cpp
+             operations/reject_award_operation.cpp
+             operations/create_award_withdrawal_request_operation.cpp
+             operations/certify_award_withdrawal_request_operation.cpp
+             operations/approve_award_withdrawal_request_operation.cpp
+             operations/reject_award_withdrawal_request_operation.cpp
+             operations/pay_award_withdrawal_request_operation.cpp
              transaction.cpp
              block.cpp
              asset.cpp

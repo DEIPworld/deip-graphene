@@ -11,9 +11,43 @@
 #include <deip/protocol/operations/make_review_operation.hpp>
 #include <deip/protocol/operations/create_grant_operation.hpp>
 #include <deip/protocol/operations/create_award_operation.hpp>
+#include <deip/protocol/operations/approve_award_operation.hpp>
+#include <deip/protocol/operations/reject_award_operation.hpp>
+#include <deip/protocol/operations/create_award_withdrawal_request_operation.hpp>
+#include <deip/protocol/operations/certify_award_withdrawal_request_operation.hpp>
+#include <deip/protocol/operations/approve_award_withdrawal_request_operation.hpp>
+#include <deip/protocol/operations/reject_award_withdrawal_request_operation.hpp>
+#include <deip/protocol/operations/pay_award_withdrawal_request_operation.hpp>
 
 namespace deip {
 namespace protocol {
+
+inline void validate_payment_number(const string& number)
+{
+    const int min = 3;
+    const int max = 15;
+    FC_ASSERT(number.size() >= min && number.size() <= max, 
+      "Track number length should be in range of ${1} - ${2}",
+      ("1", min)("2", max));
+}
+
+inline void validate_foa_number(const string& number)
+{
+    const int min = 3;
+    const int max = 15;
+    FC_ASSERT(number.size() >= min && number.size() <= max, 
+      "Track number length should be in range of ${1} - ${2}",
+      ("1", min)("2", max));
+}
+
+inline void validate_award_number(const string& number)
+{
+    const int min = 3;
+    const int max = 15;
+    FC_ASSERT(number.size() >= min && number.size() <= max, 
+      "Track number length should be in range of ${1} - ${2}", 
+      ("1", min)("2", max));
+}
 
 inline void validate_account_name(const string& name)
 {

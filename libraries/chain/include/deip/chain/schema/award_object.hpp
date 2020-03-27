@@ -23,20 +23,32 @@ public:
 
     template <typename Constructor, typename Allocator>
     award_object(Constructor&& c, allocator<Allocator> a)
+      : funding_opportunity_number(a)
+      , award_number(a)
     {
         c(*this);
     }
 
     award_id_type id;
 
-    funding_opportunity_id_type funding_opportunity_id;
+    fc::shared_string funding_opportunity_number;
+    fc::shared_string award_number;
+    account_name_type awardee;
+
+    research_group_id_type university_id;
+    percent_type university_overhead;
+
     account_name_type creator;
-    award_status status = award_status::pending;
+    uint16_t status = static_cast<uint16_t>(award_status::pending);
     asset amount;
+
+    // award_map_type_map award_map;
 };
 
 struct by_creator;
-struct by_funding_opportunity;
+struct by_awardee;
+struct by_funding_opportunity_number;
+struct by_award_number;
 
 typedef multi_index_container<award_object,
   indexed_by<
@@ -49,6 +61,14 @@ typedef multi_index_container<award_object,
         >
     >,
     ordered_non_unique<
+      tag<by_awardee>,
+        member<
+          award_object,
+          account_name_type,
+          &award_object::awardee
+        >
+    >,
+    ordered_non_unique<
       tag<by_creator>,
         member<
           award_object,
@@ -56,28 +76,45 @@ typedef multi_index_container<award_object,
           &award_object::creator
         >
     >,
-    ordered_non_unique<
-      tag<by_funding_opportunity>,
+    ordered_unique<
+      tag<by_award_number>,
         member<
           award_object,
-          funding_opportunity_id_type,
-          &award_object::funding_opportunity_id
+          fc::shared_string,
+          &award_object::award_number
+        >
+    >,
+    ordered_non_unique<
+      tag<by_funding_opportunity_number>,
+        member<
+          award_object,
+          fc::shared_string,
+          &award_object::funding_opportunity_number
         >
     >
     >,
     allocator<award_object>>
     award_index;
-    }
+
+}
 }
 
-FC_REFLECT_ENUM(deip::chain::award_status, (pending)(approved)(rejected))
+FC_REFLECT_ENUM(deip::chain::award_status, 
+  (pending)
+  (approved)
+  (rejected)
+)
 
-FC_REFLECT( deip::chain::award_object,
-    (id)
-    (funding_opportunity_id)
-    (creator)
-    (status)
-    (amount)
+FC_REFLECT(deip::chain::award_object,
+  (id)
+  (funding_opportunity_number)
+  (award_number)
+  (awardee)
+  (university_id)
+  (university_overhead)
+  (creator)
+  (status)
+  (amount)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::award_object, deip::chain::award_index )

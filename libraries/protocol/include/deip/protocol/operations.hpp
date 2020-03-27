@@ -60,6 +60,13 @@ namespace deip {
                 issue_asset_operation,
                 reserve_asset_operation,
                 create_award_operation,
+                approve_award_operation,
+                reject_award_operation,
+                create_award_withdrawal_request_operation,
+                certify_award_withdrawal_request_operation,
+                approve_award_withdrawal_request_operation,
+                reject_award_withdrawal_request_operation,
+                pay_award_withdrawal_request_operation,
 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,
