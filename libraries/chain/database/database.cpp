@@ -10,6 +10,8 @@
 #include <deip/chain/operation_notification.hpp>
 #include <deip/chain/shared_db_merkle.hpp>
 
+#include <deip/chain/schema/award_object.hpp>
+#include <deip/chain/schema/award_research_relation_object.hpp>
 #include <deip/chain/schema/block_summary_object.hpp>
 #include <deip/chain/schema/chain_property_object.hpp>
 #include <deip/chain/schema/deip_objects.hpp>
@@ -1728,6 +1730,8 @@ void database::initialize_indexes()
     add_index<funding_opportunity_index>();
     add_index<account_balance_index>();
     add_index<asset_index>();
+    add_index<award_index>();
+    add_index<award_research_relation_index>();
     _plugin_index_signal();
 }
 

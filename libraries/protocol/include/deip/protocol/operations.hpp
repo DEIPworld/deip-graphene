@@ -59,6 +59,7 @@ namespace deip {
                 create_asset_operation,
                 issue_asset_operation,
                 reserve_asset_operation,
+                create_award_operation,
 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,

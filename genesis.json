@@ -129,6 +129,11 @@
       "symbol": "EUR",
       "precision": 2,
       "current_supply": 215000000000
+    },
+    {
+      "symbol": "NGT",
+      "precision": 3,
+      "current_supply": 1000000000
     }
   ],
   "account_balances": [
@@ -163,6 +168,11 @@
       "owner": "alice",
       "amount": 1000000000,
       "symbol": "EUR"
+    },
+    {
+      "owner": "alice",
+      "amount": 1000000000,
+      "symbol": "NGT"
     },
     {
       "owner": "bob",

@@ -523,6 +523,18 @@ public:
 
     fc::optional<discipline_supply_api_obj> get_discipline_supply(const discipline_supply_id_type& id) const;
 
+    ////////////
+    // Awards //
+    ///////////
+
+    fc::optional<award_api_obj> get_award(const award_id_type& id) const;
+    vector<award_api_obj> get_awards_by_creator(const account_name_type& creator) const;
+
+    fc::optional<award_research_relation_api_obj> get_award_research_relation(const award_research_relation_id_type& id) const;
+    fc::optional<award_research_relation_api_obj> get_award_research_relation_by_award_and_research(const award_id_type& award_id, const research_id_type& research_id) const;
+    vector<award_research_relation_api_obj> get_award_research_relations_by_award(const award_id_type& award_id) const;
+
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -751,6 +763,14 @@ FC_API(deip::app::database_api,
    (get_organizational_contracts_by_research_group)
 
    (get_discipline_supply)
+
+   // Awards
+   (get_award)
+   (get_awards_by_creator)
+
+   (get_award_research_relation)
+   (get_award_research_relation_by_award_and_research)
+   (get_award_research_relations_by_award)
 )
 
 // clang-format on

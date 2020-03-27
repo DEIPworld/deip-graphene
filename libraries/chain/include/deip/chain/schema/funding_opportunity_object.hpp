@@ -33,6 +33,7 @@ public:
     asset amount = asset(0, DEIP_SYMBOL);
     asset award_ceiling = asset(0, DEIP_SYMBOL);
     asset award_floor = asset(0, DEIP_SYMBOL);
+    asset awarded = asset(0, DEIP_SYMBOL);
 
     uint16_t expected_number_of_awards;
 
@@ -92,6 +93,7 @@ FC_REFLECT(deip::chain::funding_opportunity_object,
   (amount)
   (award_ceiling)
   (award_floor)
+  (awarded)
   (expected_number_of_awards)
   (officers)
   (open_date)

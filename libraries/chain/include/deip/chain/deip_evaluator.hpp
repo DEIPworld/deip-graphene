@@ -49,6 +49,7 @@ DEFINE_EVALUATOR(reject_grant_application)
 DEFINE_EVALUATOR(create_asset)
 DEFINE_EVALUATOR(issue_asset)
 DEFINE_EVALUATOR(reserve_asset)
+DEFINE_EVALUATOR(create_award)
 
 }
 } // deip::chain

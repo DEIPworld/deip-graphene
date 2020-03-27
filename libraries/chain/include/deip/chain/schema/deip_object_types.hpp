@@ -83,7 +83,9 @@ enum object_type
     grant_application_review_object_type,
     funding_opportunity_object_type,
     account_balance_object_type,
-    asset_object_type
+    asset_object_type,
+    award_object_type,
+    award_research_relation_object_type
 };
 
 class dynamic_global_property_object;
@@ -134,6 +136,8 @@ class grant_application_review_object;
 class funding_opportunity_object;
 class account_balance_object;
 class asset_object;
+class award_object;
+class award_research_relation_object;
 
 typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
 typedef oid<chain_property_object> chain_property_id_type;
@@ -183,6 +187,8 @@ typedef oid<grant_application_review_object> grant_application_review_id_type;
 typedef oid<funding_opportunity_object> funding_opportunity_id_type;
 typedef oid<account_balance_object> account_balance_id_type;
 typedef oid<asset_object> asset_id_type;
+typedef oid<award_object> award_id_type;
+typedef oid<award_research_relation_object> award_research_relation_id_type;
 
 typedef bip::allocator<fc::shared_string, bip::managed_mapped_file::segment_manager> basic_string_allocator;
 
@@ -279,6 +285,8 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (funding_opportunity_object_type)
                  (account_balance_object_type)
                  (asset_object_type)
+                 (award_object_type)
+                 (award_research_relation_object_type)
 )
 
 
