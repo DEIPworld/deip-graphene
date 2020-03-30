@@ -97,7 +97,7 @@ public:
     void increase_common_tokens(const account_object &account, const share_type &amount);
     void decrease_common_tokens(const account_object &account, const share_type &amount);
 
-    void increase_expertise_tokens(const account_object &account, const share_type &amount);
+    void adjust_expertise_tokens_throughput(const account_object& account, const share_type& delta);
 
     accounts_refs_type get_accounts_by_expert_discipline(const discipline_id_type& discipline_id) const;
 

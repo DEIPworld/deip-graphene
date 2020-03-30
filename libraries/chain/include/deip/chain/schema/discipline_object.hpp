@@ -32,9 +32,6 @@ public:
     discipline_id_type id;
     discipline_id_type parent_id;
     fc::shared_string name;
-
-    share_type total_active_weight;
-    share_type total_expertise_amount;
 };
 
 struct by_discipline_name;
@@ -59,7 +56,9 @@ typedef multi_index_container<discipline_object,
 }
 
 FC_REFLECT( deip::chain::discipline_object,
-            (id)(parent_id)(name)(total_active_weight)(total_expertise_amount)
+  (id)
+  (parent_id)
+  (name)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::discipline_object, deip::chain::discipline_index )

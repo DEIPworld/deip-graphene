@@ -367,14 +367,13 @@ public:
     vector<research_listing_api_obj> get_research_listing(const discipline_id_type& discipline_id, const uint64_t& from, const uint32_t& limit) const;
     vector<research_listing_api_obj> get_all_researches_listing(const discipline_id_type& discipline_id, const uint32_t& limit) const;
 
-    ///////////////////////////////////
-    // Total votes                   //
-    ///////////////////////////////////
-    vector<total_votes_api_obj> get_total_votes_by_research(const research_id_type& research_id) const;
-    vector<total_votes_api_obj> get_total_votes_by_research_and_discipline(const research_id_type& research_id,
-                                                                   const discipline_id_type& discipline_id) const;
-    vector<total_votes_api_obj> get_total_votes_by_content(const research_content_id_type& research_content_id) const;
-    fc::optional<total_votes_api_obj> get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id, const discipline_id_type& discipline_id) const;
+    /////////////////////////////
+    // Expertise contributions //
+    /////////////////////////////
+    fc::optional<expertise_contribution_object_api_obj> get_expertise_contribution_by_research_content_and_discipline(const research_content_id_type& research_content_id, const discipline_id_type& discipline_id) const;
+    vector<expertise_contribution_object_api_obj> get_expertise_contributions_by_research(const research_id_type& research_id) const;
+    vector<expertise_contribution_object_api_obj> get_expertise_contributions_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const;
+    vector<expertise_contribution_object_api_obj> get_expertise_contributions_by_research_content(const research_content_id_type& research_content_id) const;
 
     ///////////////////////////////
     // Research Reviews          //
@@ -398,15 +397,6 @@ public:
     vector<research_token_api_obj> get_research_tokens_by_research_id(const research_id_type &research_id) const;
     fc::optional<research_token_api_obj> get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
                                                                                             const research_id_type &research_id) const;
-
-    //////////////////
-    // Vote object ///
-    //////////////////
-
-    vector<vote_api_obj> get_votes_by_voter(const account_name_type &voter) const;
-    vector<vote_api_obj> get_votes_by_research_id(const research_id_type &research_id) const;
-    vector<vote_api_obj> get_votes_by_research_content_id(const research_content_id_type &research_content_id) const;
-
 
     /////////////////////////
     // Review vote object ///
@@ -454,12 +444,6 @@ public:
     fc::optional<offer_research_tokens_api_obj> get_offer_by_receiver_and_research_id(const account_name_type& receiver,
                                                                                       const research_id_type& research_id) const;
     vector<offer_research_tokens_api_obj> get_offers_by_research_id(const research_id_type& research_id) const;
-
-    ///////////////////////////
-    // Eci and expertise stats///
-    ///////////////////////////
-
-    eci_and_expertise_stats_api_obj get_eci_and_expertise_stats_by_discipline_id(const discipline_id_type& discipline_id);
 
     ////////////
     // Grants //
@@ -675,10 +659,10 @@ FC_API(deip::app::database_api,
    (get_all_researches_listing)
 
    // Total votes
-   (get_total_votes_by_research)
-   (get_total_votes_by_research_and_discipline)
-   (get_total_votes_by_content)
-   (get_total_votes_by_content_and_discipline)
+   (get_expertise_contributions_by_research)
+   (get_expertise_contributions_by_research_and_discipline)
+   (get_expertise_contributions_by_research_content)
+   (get_expertise_contribution_by_research_content_and_discipline)
 
    // Reviews
    (get_review_by_id)
@@ -694,11 +678,6 @@ FC_API(deip::app::database_api,
    (get_research_tokens_by_account_name)
    (get_research_tokens_by_research_id)
    (get_research_token_by_account_name_and_research_id)
-
-   // Votes
-   (get_votes_by_voter)
-   (get_votes_by_research_id)
-   (get_votes_by_research_content_id)
 
    // Review votes
    (get_review_votes_by_voter)
@@ -726,9 +705,6 @@ FC_API(deip::app::database_api,
    (get_offers_by_receiver)
    (get_offer_by_receiver_and_research_id)
    (get_offers_by_research_id)
-
-   //Eci and expertise stats
-   (get_eci_and_expertise_stats_by_discipline_id)
 
    //Grants
    (get_grant_with_announced_application_window)

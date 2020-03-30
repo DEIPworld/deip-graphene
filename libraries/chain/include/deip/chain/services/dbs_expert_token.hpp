@@ -26,8 +26,10 @@ public:
 
     using expert_token_refs_type = std::vector<std::reference_wrapper<const expert_token_object>>;
 
-    const expert_token_object &create(const account_name_type &account, const discipline_id_type &discipline_id,
-                                          const share_type &amount, const bool &create_parent);
+    const expert_token_object& create_expert_token(const account_name_type& account, 
+                                                   const discipline_id_type& discipline_id,
+                                                   const share_type& delta, 
+                                                   const bool& create_parent);
 
     /* Get expert token by id
      * @returns expert token object by its id
@@ -50,15 +52,12 @@ public:
     */
     expert_token_refs_type get_expert_tokens_by_discipline_id(const discipline_id_type& discipline_id) const;
 
-    void check_expert_token_existence_by_account_and_discipline(const account_name_type& account,
-                                                                const discipline_id_type& discipline_id);
+    const bool expert_token_exists_by_account_and_discipline(const account_name_type& account,
+                                                       const discipline_id_type& discipline_id) const;
 
-    bool expert_token_exists_by_account_and_discipline(const account_name_type& account,
-                                                       const discipline_id_type& discipline_id);
-
-    void increase_expertise_tokens(const account_object &account,
-                                   const discipline_id_type &discipline_id,
-                                   const share_type &amount);
+    const std::tuple<share_type, share_type> adjust_expert_token( const account_name_type& account,
+                                                                  const discipline_id_type& discipline_id,
+                                                                  const share_type& amount);
 
     void update_expertise_proxy(const expert_token_object& expert_token, const optional<expert_token_object>& proxy_expert_token);
 

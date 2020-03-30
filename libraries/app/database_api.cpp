@@ -30,7 +30,8 @@
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_research_group_invite.hpp>
-#include <deip/chain/services/dbs_vote.hpp>
+#include <deip/chain/services/dbs_review_vote.hpp>
+#include <deip/chain/services/dbs_expertise_contribution.hpp>
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
@@ -130,8 +131,10 @@ public:
     fc::optional<research_group_invite_api_obj> get_research_group_invite(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
 
     // Total votes
-    fc::optional<total_votes_api_obj> get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id,
-                                                                                const discipline_id_type& discipline_id) const;
+    fc::optional<expertise_contribution_object_api_obj> get_expertise_contribution_by_research_content_and_discipline(const research_content_id_type& research_content_id, const discipline_id_type& discipline_id) const;
+    vector<expertise_contribution_object_api_obj> get_expertise_contributions_by_research(const research_id_type& research_id) const;
+    vector<expertise_contribution_object_api_obj> get_expertise_contributions_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const;
+    vector<expertise_contribution_object_api_obj> get_expertise_contributions_by_research_content(const research_content_id_type& research_content_id) const;
 
     // Reviews
     fc::optional<review_api_obj> get_review_by_id(const review_id_type& review_id) const;
@@ -1848,7 +1851,7 @@ vector<research_listing_api_obj> database_api::get_research_listing(const discip
         vector<research_listing_api_obj> results;
         results.reserve(limit);
 
-        chain::dbs_vote& vote_service = my->_db.obtain_service<dbs_vote>();
+      chain::dbs_expertise_contribution& expertise_contribution_service = my->_db.obtain_service<dbs_expertise_contribution>();
 
         auto researches = get_researches_by_discipline_id(from, limit, discipline_id);
         for (auto research : researches) {
@@ -1859,9 +1862,9 @@ vector<research_listing_api_obj> database_api::get_research_listing(const discip
             }
 
             auto research_group = get_research_group_by_id(research.research_group_id);
-            auto votes = vote_service.get_votes_by_research(research.id);
+            auto expertise_contributions = expertise_contribution_service.get_expertise_contributions_by_research(research.id);
 
-            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, *research_group, group_members, votes.size());
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, *research_group, group_members, expertise_contributions.size());
             results.push_back(listing_api_obj);
         }
 
@@ -1875,7 +1878,7 @@ vector<research_listing_api_obj> database_api::get_all_researches_listing(const 
 {
     return my->_db.with_read_lock([&]() {
         vector<research_listing_api_obj> results;
-        chain::dbs_vote& vote_service = my->_db.obtain_service<dbs_vote>();
+        chain::dbs_expertise_contribution& expertise_contributions_service = my->_db.obtain_service<dbs_expertise_contribution>();
 
         vector<research_api_obj> researches;
 
@@ -1912,9 +1915,9 @@ vector<research_listing_api_obj> database_api::get_all_researches_listing(const 
             }
             
             auto research_group = get_research_group_by_id(research.research_group_id);
-            auto votes = vote_service.get_votes_by_research(research.id);
+            auto expertise_contributions = expertise_contributions_service.get_expertise_contributions_by_research(research.id);
 
-            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, *research_group, group_members, votes.size());
+            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, *research_group, group_members, expertise_contributions.size());
 
             if (limit != 0) {
                 if (results.size() + 1 > limit) {
@@ -1930,78 +1933,93 @@ vector<research_listing_api_obj> database_api::get_all_researches_listing(const 
     });
 }
 
-vector<total_votes_api_obj>
-database_api::get_total_votes_by_research(const research_id_type& research_id) const
+vector<expertise_contribution_object_api_obj> database_api::get_expertise_contributions_by_research(const research_id_type& research_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<total_votes_api_obj> results;
-        chain::dbs_vote& vote_service
-            = my->_db.obtain_service<chain::dbs_vote>();
-
-        auto total_votes_r = vote_service.get_total_votes_by_research(research_id);
-
-        for (const chain::total_votes_object& total_votes : total_votes_r)
-        {
-            results.push_back(total_votes);
-        }
-
-        return results;
-    });
+    return my->_db.with_read_lock([&]() { return my->get_expertise_contributions_by_research(research_id); });
 }
 
-vector<total_votes_api_obj>
-database_api::get_total_votes_by_research_and_discipline(const research_id_type& research_id,
-                                                         const discipline_id_type& discipline_id) const
+vector<expertise_contribution_object_api_obj> database_api_impl::get_expertise_contributions_by_research(const research_id_type& research_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<total_votes_api_obj> results;
-        chain::dbs_vote& vote_service = my->_db.obtain_service<chain::dbs_vote>();
+    vector<expertise_contribution_object_api_obj> results;
+    chain::dbs_expertise_contribution& expertise_contributions_service = _db.obtain_service<chain::dbs_expertise_contribution>();
 
-        auto total_votes_r = vote_service.get_total_votes_by_research_and_discipline(research_id, discipline_id);
+    auto expertise_contributions = expertise_contributions_service.get_expertise_contributions_by_research(research_id);
+    for (const chain::expertise_contribution_object& contrib : expertise_contributions)
+    {
+        results.push_back(contrib);
+    }
 
-        for (const chain::total_votes_object& total_votes : total_votes_r)
-        {
-            results.push_back(total_votes);
-        }
-
-        return results;
-    });
+    return results;
 }
 
-vector<total_votes_api_obj>
-database_api::get_total_votes_by_content(const research_content_id_type& research_content_id) const
+vector<expertise_contribution_object_api_obj> database_api::get_expertise_contributions_by_research_and_discipline(
+  const research_id_type& research_id,
+  const discipline_id_type& discipline_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<total_votes_api_obj> results;
-        chain::dbs_vote& vote_service
-                = my->_db.obtain_service<chain::dbs_vote>();
-
-        auto total_votes_r = vote_service.get_total_votes_by_content(research_content_id);
-
-        for (const chain::total_votes_object& total_votes : total_votes_r)
-        {
-            results.push_back(total_votes);
-        }
-
-        return results;
-    });
+    return my->_db.with_read_lock([&]() { return my->get_expertise_contributions_by_research_and_discipline(research_id, discipline_id); });
 }
 
-fc::optional<total_votes_api_obj> database_api::get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id,
-                                                                                          const discipline_id_type& discipline_id) const
+vector<expertise_contribution_object_api_obj> database_api_impl::get_expertise_contributions_by_research_and_discipline(
+  const research_id_type& research_id, 
+  const discipline_id_type& discipline_id) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_total_votes_by_content_and_discipline(research_content_id, discipline_id); });
+    vector<expertise_contribution_object_api_obj> results;
+    chain::dbs_expertise_contribution& expertise_contributions_service = _db.obtain_service<chain::dbs_expertise_contribution>();
+
+    auto expertise_contributions = expertise_contributions_service.get_expertise_contributions_by_research_and_discipline(research_id, discipline_id);
+    for (const chain::expertise_contribution_object& contrib : expertise_contributions)
+    {
+        results.push_back(contrib);
+    }
+
+    return results;
 }
 
-fc::optional<total_votes_api_obj> database_api_impl::get_total_votes_by_content_and_discipline(const research_content_id_type& research_content_id,
-                                                                                               const discipline_id_type& discipline_id) const
+
+vector<expertise_contribution_object_api_obj> database_api::get_expertise_contributions_by_research_content(
+  const research_content_id_type& research_content_id) const
 {
-    const auto& idx = _db.get_index<total_votes_index>().indices().get<by_content_and_discipline>();
+    return my->_db.with_read_lock([&]() { return my->get_expertise_contributions_by_research_content(research_content_id); });
+}
+
+vector<expertise_contribution_object_api_obj> database_api_impl::get_expertise_contributions_by_research_content(const research_content_id_type& research_content_id) const
+{
+    vector<expertise_contribution_object_api_obj> results;
+    chain::dbs_expertise_contribution& expertise_contributions_service = _db.obtain_service<chain::dbs_expertise_contribution>();
+
+    auto expertise_contributions = expertise_contributions_service.get_expertise_contributions_by_research_content(research_content_id);
+
+    for (const chain::expertise_contribution_object& contrib : expertise_contributions)
+    {
+        results.push_back(contrib);
+    }
+    return results;
+}
+
+
+fc::optional<expertise_contribution_object_api_obj> database_api::get_expertise_contribution_by_research_content_and_discipline(
+  const research_content_id_type& research_content_id,
+  const discipline_id_type& discipline_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_expertise_contribution_by_research_content_and_discipline(research_content_id, discipline_id); });
+}
+
+fc::optional<expertise_contribution_object_api_obj> database_api_impl::get_expertise_contribution_by_research_content_and_discipline(
+  const research_content_id_type& research_content_id,
+  const discipline_id_type& discipline_id) const
+{
+    fc::optional<expertise_contribution_object_api_obj> result;
+    const auto& idx = _db.get_index<expertise_contribution_index>()
+      .indices()
+      .get<by_research_content_and_discipline>();
+      
     auto itr = idx.find(std::make_tuple(research_content_id, discipline_id));
     if (itr != idx.end())
-        return *itr;
+    {
+        result = *itr;
+    }
 
-    return {};
+    return result;
 }
 
 fc::optional<review_api_obj> database_api::get_review_by_id(const review_id_type& review_id) const
@@ -2050,7 +2068,7 @@ vector<review_api_obj> database_api::get_reviews_by_content(const research_conte
         vector<review_api_obj> results;
         chain::dbs_review& review_service = my->_db.obtain_service<chain::dbs_review>();
 
-        auto reviews = review_service.get_reviews_by_content(research_content_id);
+        auto reviews = review_service.get_reviews_by_research_content(research_content_id);
 
         for (const chain::review_object& review : reviews)
         {
@@ -2183,62 +2201,14 @@ fc::optional<research_token_api_obj> database_api_impl::get_research_token_by_ac
     return {};
 }
 
-vector<vote_api_obj> database_api::get_votes_by_voter(const account_name_type &voter) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<vote_api_obj> results;
-        chain::dbs_vote& vote_service
-                = my->_db.obtain_service<chain::dbs_vote>();
-
-        auto votes = vote_service.get_votes_by_voter(voter);
-
-        for (const chain::vote_object& vote : votes)
-            results.push_back(vote);
-
-        return results;
-    });
-}
-
-vector<vote_api_obj> database_api::get_votes_by_research_id(const research_id_type &research_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<vote_api_obj> results;
-        chain::dbs_vote& vote_service
-                = my->_db.obtain_service<chain::dbs_vote>();
-
-        auto votes = vote_service.get_votes_by_research(research_id);
-
-        for (const chain::vote_object& vote : votes)
-            results.push_back(vote);
-
-        return results;
-    });
-}
-
-vector<vote_api_obj> database_api::get_votes_by_research_content_id(const research_content_id_type &research_content_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<vote_api_obj> results;
-        chain::dbs_vote& vote_service
-                = my->_db.obtain_service<chain::dbs_vote>();
-
-        auto votes = vote_service.get_votes_by_research_content(research_content_id);
-
-        for (const chain::vote_object& vote : votes)
-            results.push_back(vote);
-
-        return results;
-    });
-}
-
 vector<review_vote_api_obj> database_api::get_review_votes_by_voter(const account_name_type &voter) const
 {
     return my->_db.with_read_lock([&]() {
         vector<review_vote_api_obj> results;
-        chain::dbs_vote& vote_service
-                = my->_db.obtain_service<chain::dbs_vote>();
+        chain::dbs_review_vote& review_votes_service
+                = my->_db.obtain_service<chain::dbs_review_vote>();
 
-        auto review_votes = vote_service.get_review_votes_by_voter(voter);
+        auto review_votes = review_votes_service.get_review_votes_by_voter(voter);
 
         for (const chain::review_vote_object& review_vote : review_votes)
             results.push_back(review_vote);
@@ -2251,10 +2221,10 @@ vector<review_vote_api_obj> database_api::get_review_votes_by_review_id(const re
 {
     return my->_db.with_read_lock([&]() {
         vector<review_vote_api_obj> results;
-        chain::dbs_vote& vote_service
-                = my->_db.obtain_service<chain::dbs_vote>();
+        chain::dbs_review_vote& review_votes_service
+                = my->_db.obtain_service<chain::dbs_review_vote>();
 
-        auto review_votes = vote_service.get_review_votes(review_id);
+        auto review_votes = review_votes_service.get_review_votes(review_id);
 
         for (const chain::review_vote_object& review_vote : review_votes)
             results.push_back(review_vote);
@@ -2511,75 +2481,6 @@ vector<offer_research_tokens_api_obj> database_api::get_offers_by_research_id(co
 
         return results;
     });
-}
-
-eci_and_expertise_stats_api_obj database_api::get_eci_and_expertise_stats_by_discipline_id(const discipline_id_type& discipline_id)
-{
-    return my->_db.with_read_lock([&]() {
-        eci_and_expertise_stats_api_obj results;
-        chain::dbs_expert_token& expert_token_service = my->_db.obtain_service<chain::dbs_expert_token>();
-        chain::dbs_research& research_service = my->_db.obtain_service<chain::dbs_research>();
-        chain::dbs_research_discipline_relation& research_discipline_relation_service = my->_db.obtain_service<chain::dbs_research_discipline_relation>();
-        chain::dbs_research_content& research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
-
-        auto expert_tokens = expert_token_service.get_expert_tokens_by_discipline_id(discipline_id);
-        auto rdrs = research_discipline_relation_service.get_research_discipline_relations_by_discipline(discipline_id);
-
-        vector<research_object> researches;
-        for (auto& rdr : rdrs)
-            researches.push_back(research_service.get_research(rdr.get().research_id));
-
-        int64_t total_research_eci = 0;
-        int64_t contents_count = 0;
-        int64_t total_content_eci = 0;
-        uint32_t max_research_eci_in_discipline = 0;
-
-        for (auto& research : researches)
-        {
-            auto research_eci = research.eci_per_discipline.find(discipline_id) != research.eci_per_discipline.end() 
-                ? research.eci_per_discipline.at(discipline_id).value 
-                : 0;
-
-            if (research_eci > max_research_eci_in_discipline)
-                max_research_eci_in_discipline = research_eci;
-
-            total_research_eci += research_eci;
-            auto contents = research_content_service.get_by_research_id(research.id);
-
-            for (auto& content : contents)
-            {
-                total_content_eci += (content.get().eci_per_discipline.find(discipline_id) != content.get().eci_per_discipline.end() 
-                    ? content.get().eci_per_discipline.at(discipline_id).value
-                    : 0
-                );
-                contents_count++;
-            }
-        }
-
-        int64_t total_expert_tokens_amount = 0;
-        for (auto& expert_token : expert_tokens)
-            total_expert_tokens_amount += expert_token.get().amount.value;
-
-        if (expert_tokens.size() == 0)
-            results.average_expertise_in_discipline = 0;
-        else
-            results.average_expertise_in_discipline = total_expert_tokens_amount / expert_tokens.size();
-
-        if (contents_count == 0)
-            results.average_content_eci_in_discipline = 0;
-        else
-            results.average_content_eci_in_discipline = total_content_eci / contents_count;
-
-        if (researches.size() == 0)
-            results.average_research_eci_in_discipline = 0;
-        else
-            results.average_research_eci_in_discipline = total_research_eci / researches.size();
-
-        results.max_research_eci_in_discipline = max_research_eci_in_discipline;
-
-        return results;
-    });
-
 }
 
 fc::optional<grant_api_obj> database_api::get_grant_with_announced_application_window(const grant_id_type& id) const

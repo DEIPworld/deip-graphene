@@ -26,7 +26,7 @@ class database_unit_service_fixture : public clean_database_fixture
 public:
     database_unit_service_fixture()
             : account_service(db.obtain_service<dbs_account>()),
-              vote_service(db.obtain_service<dbs_vote>()),
+              review_votes_service(db.obtain_service<dbs_review_vote>()),
               research_content_service(db.obtain_service<dbs_research_content>()),
               grant_service(db.obtain_service<dbs_grant>()),
               account_balance_service(db.obtain_service<dbs_account_balance>())
@@ -211,54 +211,6 @@ public:
         });
     }
 
-    void create_votes()
-    {
-        db.create<vote_object>([&](vote_object& d) {
-            d.id = 1;
-            d.discipline_id = 10;
-            d.voter = "bob";
-            d.research_id = 1;
-            d.research_content_id = 1;
-            d.weight = 10;
-        });
-
-        db.create<vote_object>([&](vote_object& d) {
-            d.id = 2;
-            d.discipline_id = 10;
-            d.voter = "john";
-            d.research_id = 1;
-            d.research_content_id = 1;
-            d.weight = 30;
-        });
-
-        db.create<vote_object>([&](vote_object& d) {
-            d.id = 3;
-            d.discipline_id = 10;
-            d.voter = "alice";
-            d.research_id = 2;
-            d.research_content_id = 2;
-            d.weight = 60;
-        });
-    }
-
-    void create_total_votes()
-    {
-        db.create<total_votes_object>([&](total_votes_object& d) {
-            d.id = 1;
-            d.discipline_id = 10;
-            d.research_id = 1;
-            d.research_content_id = 1;
-            d.total_weight = 100;
-        });
-
-        db.create<total_votes_object>([&](total_votes_object& d) {
-            d.id = 2;
-            d.discipline_id = 10;
-            d.research_id = 2;
-            d.research_content_id = 2;
-            d.total_weight = 100;
-        });
-    }
 
     void create_review_votes()
     {
@@ -303,7 +255,6 @@ public:
             d.id = discipline_service.get_disciplines().size();
             d.parent_id = 1;
             d.name = "Test Discipline With Weight";
-            d.total_active_weight = 200;
         });
     }
 
@@ -354,10 +305,9 @@ public:
             d.id = discipline_service.get_disciplines().size();
             d.parent_id = 1;
             d.name = "Test Discipline For Grant With Weight";
-            d.total_active_weight = 200;
         });
 
-//        db.create<total_votes_object>([&](total_votes_object& d) {
+//        db.create<expertise_contribution_object>([&](expertise_contribution_object& d) {
 //            d.id = 3;
 //            d.discipline_id = db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").id;
 //            d.research_id = 3;
@@ -584,316 +534,13 @@ public:
     }
 
     dbs_account& account_service;
-    dbs_vote& vote_service;
+    dbs_review_vote& review_votes_service;
     dbs_research_content& research_content_service;
     dbs_grant& grant_service;
     dbs_account_balance& account_balance_service;
 };
 
 BOOST_FIXTURE_TEST_SUITE(database_unit_service, database_unit_service_fixture)
-
-BOOST_AUTO_TEST_CASE(reward_review_voters)
-{
-    try
-    {
-        ACTORS((jack)(john));
-        create_discipline_with_weight();
-        create_review_votes();
-        create_reviews();
-
-        share_type reward = 100;
-        auto& review = db.get<review_object, by_id>(1);
-
-        BOOST_CHECK_NO_THROW(db.reward_review_voters(review, 10, reward));
-
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(jack.name, DEIP_SYMBOL).amount == 40);
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(john.name, DEIP_SYMBOL).amount == 60);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(reward_with_expertise)
-{
-    try
-    {
-        ACTOR(alice);
-        create_discipline_with_weight();
-
-        share_type reward = 30;
-
-        BOOST_CHECK_NO_THROW(db.reward_account_with_expertise("alice", 10, reward));
-
-        auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
-        BOOST_CHECK(alice_expert_token.amount == reward);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(reward_reviews)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_research_contents();
-        create_researches();
-        create_total_votes();
-        create_research_tokens();
-        create_research_groups();
-        create_research_group_tokens();
-        create_reviews();
-        create_review_votes();
-
-        share_type reward = 1000;
-        share_type expertise_reward = 1000;
-
-        BOOST_CHECK_NO_THROW(db.reward_reviews(1, 10, reward, expertise_reward));
-
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount == 475);
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == 475);
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(jack.name, DEIP_SYMBOL).amount == 20);
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(john.name, DEIP_SYMBOL).amount == 30);
-
-        BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("alice", 10).amount == 500);
-        BOOST_CHECK(db.obtain_service<dbs_expert_token>().get_expert_token_by_account_and_discipline("bob", 10).amount == 500);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(reward_references)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_research_contents();
-        create_researches();
-        create_total_votes();
-        create_research_tokens();
-        create_research_groups();
-        create_research_group_tokens();
-
-        share_type reward = 1000;
-
-        BOOST_CHECK_NO_THROW(db.reward_references(1, 10, reward));
-
-        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 500);
-
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount == 200);
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == 300);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(reward_research_token_holders)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_researches();
-        create_research_groups();
-        create_research_group_tokens();
-        create_research_tokens();
-
-        share_type reward = 1000;
-
-        BOOST_CHECK_NO_THROW(db.reward_research_token_holders(db.get<research_object>(2), 1, reward));
-
-        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 500);
-
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount == 200);
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == 300);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(reward_research_content)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_research_contents();
-        create_researches();
-        create_total_votes();
-        create_research_tokens();
-        create_research_groups();
-        create_research_group_tokens();
-
-        share_type reward = 1000;
-        BOOST_CHECK_NO_THROW(db.reward_research_content(1, 10, reward, reward));
-
-        BOOST_CHECK(db.get<research_group_object>(31).balance.amount == 800);
-        BOOST_CHECK(db.get<research_group_object>(32).balance.amount == 50);
-
-        auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
-        BOOST_CHECK(alice_expert_token.amount == 900);
-
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount == 20);
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == 30);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(fund_review_pool)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_research_contents();
-        create_researches();
-        create_total_votes();
-        create_research_tokens();
-        create_research_groups();
-        create_research_group_tokens();
-        create_reviews();
-        create_review_votes();
-
-        share_type reward = 1000;
-
-        auto& discipline = db.get<discipline_object>(10);
-        BOOST_CHECK_NO_THROW(db.fund_review_pool(discipline, reward));
-
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount == 475);
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == 475);
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(jack.name, DEIP_SYMBOL).amount == 20);
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(john.name, DEIP_SYMBOL).amount == 30);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(reward_researches_in_discipline)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_research_contents();
-        create_researches();
-        create_total_votes();
-        create_research_tokens();
-        create_research_groups();
-        create_research_group_tokens();
-        create_reviews();
-        create_review_votes();
-
-        share_type reward = 1000;
-
-        //auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight");
-        auto& discipline = db.get<discipline_object>(1);
-
-        BOOST_CHECK_NO_THROW(db.reward_researches_in_discipline(discipline, reward, reward));
-
-        auto& reward_pool_1 = db.get<reward_pool_object, by_content_and_discipline>(std::make_tuple(1, discipline.id));
-        auto& reward_pool_2 = db.get<reward_pool_object, by_content_and_discipline>(std::make_tuple(2, discipline.id));
-
-        BOOST_CHECK(reward_pool_1.balance + reward_pool_2.balance == asset(1000, DEIP_SYMBOL));
-        BOOST_CHECK(reward_pool_1.expertise + reward_pool_2.expertise == 1000);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(distribute_reward)
-{
-    try
-    {
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        create_discipline_with_weight();
-        create_research_contents();
-        create_reviews();
-        create_review_votes();
-        create_researches();
-        create_total_votes();
-        create_research_tokens();
-        create_research_groups();
-        create_research_group_tokens();
-
-        asset reward = asset(1000, DEIP_SYMBOL);
-        asset used_reward = asset(0, DEIP_SYMBOL);
-
-        BOOST_CHECK_NO_THROW(used_reward = db.distribute_reward(reward, reward.amount));
-
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount == 24);
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount == 24);
-
-        //auto& discipline = db.get<discipline_object, by_discipline_name>("Test Discipline With Weight");
-        auto& discipline = db.get<discipline_object>(1);
-
-        auto& reward_pool_1 = db.get<reward_pool_object, by_content_and_discipline>(std::make_tuple(1, discipline.id));
-        auto& reward_pool_2 = db.get<reward_pool_object, by_content_and_discipline>(std::make_tuple(2, discipline.id));
-
-        BOOST_CHECK(reward_pool_1.balance + reward_pool_2.balance == asset(950, DEIP_SYMBOL));
-        BOOST_CHECK(reward_pool_1.expertise + reward_pool_2.expertise == 1000);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(process_content_activity_windows)
-{
-   try
-   {
-       BOOST_TEST_MESSAGE("Testing: process_content_activity_windows");
-
-       ACTORS((alice)(alex)(jack)(bob)(john));
-
-       generate_block();
-
-       create_discipline_with_weight();
-       create_research_contents_for_activity_windows();
-       create_researches();
-       create_total_votes();
-       create_research_tokens();
-       create_research_groups();
-       create_research_group_tokens();
-       create_reviews();
-       create_review_votes();
-
-       BOOST_CHECK_NO_THROW(generate_blocks(db.head_block_time() + DAYS_TO_SECONDS(10), true));
-
-       generate_block();
-
-       auto& content = db.get<research_content_object>(1);
-
-       BOOST_CHECK(content.activity_state == closed);
-
-       BOOST_CHECK_NO_THROW(generate_blocks(db.head_block_time() + DAYS_TO_SECONDS(15), true));
-
-       generate_block();
-
-       auto& content_2 = db.get<research_content_object>(2);
-
-       BOOST_CHECK(content_2.activity_state == closed);
-
-       auto& group_1 = db.get<research_group_object>(31);
-       auto& group_2 = db.get<research_group_object>(32);
-
-       BOOST_CHECK(group_1.balance.amount > 0);
-       BOOST_CHECK(group_2.balance.amount > 0);
-
-       BOOST_CHECK(account_balance_service.get_by_owner_and_asset("alice", DEIP_SYMBOL).amount > 0);
-       BOOST_CHECK(account_balance_service.get_by_owner_and_asset("bob", DEIP_SYMBOL).amount > 0);
-
-       auto alice_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alice", 10));
-       auto alex_expert_token = db.get<expert_token_object, by_account_and_discipline>(boost::make_tuple("alex", 10));
-
-       BOOST_CHECK(alice_expert_token.amount > 0);
-       BOOST_CHECK(alex_expert_token.amount > 0);
-
-   }
-   FC_LOG_AND_RETHROW()
-}
 
 BOOST_AUTO_TEST_CASE(clear_expired_proposals)
 {

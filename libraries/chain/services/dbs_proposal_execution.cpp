@@ -5,6 +5,7 @@
 #include <deip/chain/services/dbs_research_group_invite.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
+#include <deip/chain/services/dbs_expertise_contribution.hpp>
 
 namespace deip {
 namespace chain {
@@ -219,9 +220,12 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
 {
     auto& research_service = db_impl().obtain_service<dbs_research>();
     auto& research_content_service = db_impl().obtain_service<dbs_research_content>();
+    auto& research_discipline_relation_service = db_impl().obtain_service<dbs_research_discipline_relation>();
+    auto& expertise_contributions_service = db_impl().obtain_service<dbs_expertise_contribution>();
 
     const create_research_content_data_type data = get_data<create_research_content_data_type>(proposal);
     research_service.check_research_existence(data.research_id);
+    const auto& now = db_impl().head_block_time();
     
     const auto& research = research_service.get_research(data.research_id);
     FC_ASSERT(!research.is_finished, "The research ${r} has been finished already", ("r", research.title));
@@ -250,35 +254,61 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
 
     for (auto& reference : data.references)
     {
-        auto& _content = research_content_service.get(reference);
-        db_impl().push_virtual_operation(research_content_reference_history_operation(research_content.id._id,
-                                                                             research_content.research_id._id,
-                                                                             fc::to_string(research_content.content),
-                                                                             _content.id._id,
-                                                                             _content.research_id._id,
-                                                                             fc::to_string(_content.content)));
+        const auto& ref = research_content_service.get(reference);
+        db_impl().push_virtual_operation(research_content_reference_history_operation(
+          research_content.id._id,
+          research_content.research_id._id,
+          fc::to_string(research_content.content),
+          ref.id._id,
+          ref.research_id._id,
+          fc::to_string(ref.content))
+        );
     }
+    const std::map<discipline_id_type, share_type> previous_research_content_eci = research_content_service.get_eci_evaluation(research_content.id);
+    const std::map<discipline_id_type, share_type> previous_research_eci = research_service.get_eci_evaluation(research.id);
 
-    const auto& old_research_eci = research_service.get_eci_evaluation(research_content.research_id);
+    const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(research_content.id);
+    const research_object& updated_research = research_service.update_eci_evaluation(research.id);
 
-    research_content_service.update_eci_evaluation(research_content.id);
-    research_service.update_eci_evaluation(research.id);
-
-    const auto& new_research_eci = research_service.get_eci_evaluation(research_content.research_id);
-    const auto& new_research_content_eci = research_content_service.get_eci_evaluation(research_content.id);
-
-    for (auto& pair : new_research_eci)
+    auto relations = research_discipline_relation_service.get_research_discipline_relations_by_research(data.research_id);
+    for (auto& wrap : relations)
     {
-        db_impl().push_virtual_operation(research_eci_history_operation(
-            research_content.research_id._id, pair.first._id, pair.second, pair.second - old_research_eci.at(pair.first), 
-            3, research_content.id._id, db_impl().head_block_time().sec_since_epoch()));
-    }
+        const auto& rel = wrap.get();
 
-    for (auto& pair : new_research_content_eci)
-    {
+        const eci_diff research_content_eci_diff = eci_diff(
+          previous_research_content_eci.at(rel.discipline_id),
+          updated_research_content.eci_per_discipline.at(rel.discipline_id),
+          now,
+          static_cast<uint16_t>(expertise_contribution_type::publication),
+          updated_research_content.id._id
+        );
+
+        expertise_contributions_service.adjust_expertise_contribution(
+          rel.discipline_id, 
+          research.id,
+          research_content.id,
+          research_content_eci_diff
+        );
+        
         db_impl().push_virtual_operation(research_content_eci_history_operation(
-            research_content.id._id, pair.first._id, pair.second, pair.second, 
-            3, research_content.id._id, db_impl().head_block_time().sec_since_epoch()));
+            updated_research_content.id._id, 
+            rel.discipline_id._id,
+            research_content_eci_diff)
+        );
+
+        const eci_diff research_eci_diff = eci_diff(
+          previous_research_eci.at(rel.discipline_id),
+          updated_research.eci_per_discipline.at(rel.discipline_id),
+          now,
+          static_cast<uint16_t>(expertise_contribution_type::publication),
+          updated_research_content.id._id
+        );
+
+        db_impl().push_virtual_operation(research_eci_history_operation(
+            research.id._id, 
+            rel.discipline_id._id,
+            research_eci_diff)
+        );
     }
 }
 

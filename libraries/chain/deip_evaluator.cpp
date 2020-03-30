@@ -19,14 +19,14 @@
 #include <deip/chain/services/dbs_proposal.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
-#include <deip/chain/services/dbs_vote.hpp>
+#include <deip/chain/services/dbs_review_vote.hpp>
+#include <deip/chain/services/dbs_expertise_contribution.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_research_group_invite.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_proposal_execution.hpp>
-#include <deip/chain/services/dbs_expertise_stats.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_offer_research_tokens.hpp>
 #include <deip/chain/services/dbs_grant.hpp>
@@ -396,22 +396,22 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& op)
     dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
     dbs_discipline& discipline_service = _db.obtain_service<dbs_discipline>();
     dbs_review& review_service = _db.obtain_service<dbs_review>();
-    dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
-    dbs_vote& vote_service = _db.obtain_service<dbs_vote>();
+    dbs_review_vote& review_votes_service = _db.obtain_service<dbs_review_vote>();
+    dbs_expertise_contribution& expertise_contributions_service = _db.obtain_service<dbs_expertise_contribution>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();
     dbs_research_content& research_content_service = _db.obtain_service<dbs_research_content>();
-    dbs_research_discipline_relation& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
 
-    FC_ASSERT(op.weight > 0, "Vote weight must be specified.");
+    FC_ASSERT(op.weight > 0, "Review vote weight must be specified.");
 
     const auto& voter = account_service.get_account(op.voter);
-    FC_ASSERT(voter.can_vote, "Voter has declined his voting rights.");
+    FC_ASSERT(voter.can_vote, "Review voter has declined his voting rights.");
 
     const auto& review = review_service.get(op.review_id);
     const auto& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.voter, op.discipline_id);
     const auto& discipline = discipline_service.get_discipline(op.discipline_id);
     const auto& research_content = research_content_service.get(review.research_content_id);
     const auto& research = research_service.get_research(research_content.research_id);
+    const auto& now = _db.head_block_time();
 
     FC_ASSERT(std::any_of(review.disciplines.begin(), review.disciplines.end(),
             [&](const discipline_id_type& discipline_id) {
@@ -419,11 +419,11 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& op)
             "Cannot vote with {d} expert tokens as this discipline is not related to the review",
             ("d", discipline.name));
 
-    FC_ASSERT(!vote_service.review_vote_exists_by_voter_and_discipline(op.review_id, voter.name, op.discipline_id), 
+    FC_ASSERT(!review_votes_service.review_vote_exists_by_voter_and_discipline(op.review_id, voter.name, op.discipline_id), 
             "${a} has voted for this review with ${d} discipline already", 
             ("a", voter.name)("d", discipline.name));
 
-    const int64_t elapsed_seconds = (_db.head_block_time() - expert_token.last_vote_time).to_seconds();
+    const int64_t elapsed_seconds = (now - expert_token.last_vote_time).to_seconds();
     const int64_t regenerated_power_percent = (DEIP_100_PERCENT * elapsed_seconds) / DEIP_VOTE_REGENERATION_SECONDS;
     const int64_t current_power_percent = std::min(int64_t(expert_token.voting_power + regenerated_power_percent), int64_t(DEIP_100_PERCENT));
     FC_ASSERT(current_power_percent > 0, 
@@ -436,60 +436,65 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& op)
             "${a} does not have enough power for ${e} expertise to vote for the review with ${w} % of power. The available power is ${p} %",
             ("a", voter.name)("e", expert_token.discipline_id)("w", vote_applied_power_percent / DEIP_1_PERCENT)("p", current_power_percent / DEIP_1_PERCENT));
 
-
     const uint64_t used_expert_token_amount = ((uint128_t(expert_token.amount.value) * used_power_percent) / (DEIP_100_PERCENT)).to_uint64();
     FC_ASSERT(used_expert_token_amount > 0, "Account does not have enough power to vote for review.");
 
     _db._temporary_public_impl().modify(expert_token, [&](expert_token_object& t) {
         t.voting_power = current_power_percent - (DEIP_REVIEW_VOTE_SPREAD_DENOMINATOR != 0 ? (used_power_percent / DEIP_REVIEW_VOTE_SPREAD_DENOMINATOR) : 0);
-        t.last_vote_time = _db.head_block_time();
+        t.last_vote_time = now;
     });
 
-    uint64_t max_vote_weight = 0;
-    auto& vote = _db._temporary_public_impl().create<review_vote_object>([&](review_vote_object& v) {
-        v.voter = voter.name;
-        v.discipline_id = op.discipline_id;
-        v.review_id = op.review_id;
-        v.weight = used_expert_token_amount;
-        v.voting_time = _db.head_block_time();
-        v.research_content_id = research_content.id;
+    const discipline_id_share_type_map previous_research_content_eci = research_content.eci_per_discipline;
+    const discipline_id_share_type_map previous_research_eci = research.eci_per_discipline;
 
-        max_vote_weight = v.weight;
+    const review_vote_object& review_vote = review_votes_service.create_review_vote(
+      voter.name, 
+      review.id, 
+      op.discipline_id, 
+      used_expert_token_amount, 
+      now, 
+      review.created_at,
+      research_content.id,
+      research.id
+    );
 
-        /// discount weight by time
-        uint128_t w(max_vote_weight);
-        const uint64_t delta_t = std::min(uint64_t((v.voting_time - review.created_at).to_seconds()),
-                                          uint64_t(DEIP_REVERSE_AUCTION_WINDOW_SECONDS));
+    const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(research_content.id);
+    const research_object& updated_research = research_service.update_eci_evaluation(research.id);
 
-        w *= delta_t;
-        w /= DEIP_REVERSE_AUCTION_WINDOW_SECONDS;
-        v.weight = w.to_uint64();
-    });
+    const eci_diff research_content_eci_diff = eci_diff(
+      previous_research_content_eci.at(op.discipline_id),
+      updated_research_content.eci_per_discipline.at(op.discipline_id),
+      now,
+      static_cast<uint16_t>(expertise_contribution_type::review_support),
+      review_vote.id._id
+    );
 
-    share_type old_content_eci_in_discipline = research_content.eci_per_discipline.at(op.discipline_id);
-    share_type old_research_eci_in_discipline = research_discipline_relation_service.get_research_discipline_relation_by_research_and_discipline(research.id, op.discipline_id).research_eci;
-
-    auto& _content = research_content_service.update_eci_evaluation(research_content.id);
-    research_service.update_eci_evaluation(research.id);
-
-    share_type new_content_eci_in_discipline = _content.eci_per_discipline.at(op.discipline_id);
-    share_type new_research_eci_in_discipline = research_discipline_relation_service.get_research_discipline_relation_by_research_and_discipline(research.id, op.discipline_id).research_eci;
-
-    share_type delta_content_eci_in_discipline = new_content_eci_in_discipline - old_content_eci_in_discipline;
-    share_type delta_research_eci_in_discipline = new_research_eci_in_discipline - old_research_eci_in_discipline;
-
-    _db.push_virtual_operation(research_eci_history_operation(
-        research.id._id, op.discipline_id, new_research_eci_in_discipline, delta_research_eci_in_discipline, 
-        2, vote.id._id, _db.head_block_time().sec_since_epoch()));
+    expertise_contributions_service.adjust_expertise_contribution(
+        discipline.id, 
+        research.id, 
+        research_content.id,
+        research_content_eci_diff
+    );
 
     _db.push_virtual_operation(research_content_eci_history_operation(
-        research_content.id._id, op.discipline_id, new_content_eci_in_discipline, delta_content_eci_in_discipline,
-        2, vote.id._id, _db.head_block_time().sec_since_epoch()));
+        research_content.id._id, 
+        op.discipline_id,
+        research_content_eci_diff)
+    );
 
-    const auto& total_votes = vote_service.get_total_votes_by_content_and_discipline(review.research_content_id, discipline.id);
-    vote_service.increase_total_used_expertise_amount(total_votes.id, used_expert_token_amount);
-    discipline_service.increase_total_used_expertise_amount(expert_token.discipline_id, used_expert_token_amount);
-    expertise_stats_service.increase_total_used_expertise_amount(used_expert_token_amount);
+    const eci_diff research_eci_diff = eci_diff(
+      previous_research_eci.at(op.discipline_id),
+      updated_research.eci_per_discipline.at(op.discipline_id),
+      now,
+      static_cast<uint16_t>(expertise_contribution_type::review_support),
+      review_vote.id._id
+    );
+
+    _db.push_virtual_operation(research_eci_history_operation(
+        research.id._id, 
+        op.discipline_id,
+        research_eci_diff)
+    );
 }
 
 void request_account_recovery_evaluator::do_apply(const request_account_recovery_operation& o)
@@ -759,9 +764,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     dbs_research_discipline_relation& research_discipline_service = _db.obtain_service<dbs_research_discipline_relation>();
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();
-    dbs_expertise_stats& expertise_stats_service = _db.obtain_service<dbs_expertise_stats>();
-    dbs_vote& votes_service = _db.obtain_service<dbs_vote>();
-    dbs_discipline& disciplines_service = _db.obtain_service<dbs_discipline>();
+    dbs_expertise_contribution& expertise_contributions_service = _db.obtain_service<dbs_expertise_contribution>();
 
     FC_ASSERT(op.weight > 0, "Review weight must be specified.");
 
@@ -770,25 +773,24 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
     const auto& research_content = research_content_service.get(op.research_content_id);
     const auto& research = research_service.get_research(research_content.research_id);
     const auto& reseach_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
-    const auto& existing_reviews = review_service.get_reviews_by_content(op.research_content_id);
+    const auto& existing_reviews = review_service.get_reviews_by_research_content(op.research_content_id);
+    const auto& now = _db.head_block_time();
 
     FC_ASSERT(std::none_of(existing_reviews.begin(), existing_reviews.end(),
-            [&](const std::reference_wrapper<const review_object> rw_wrap) {
-                const review_object& rw = rw_wrap.get();
+            [&](const review_object& rw) {
                 return rw.author == op.author && rw.research_content_id == op.research_content_id; }),
             "${a} has reviewed research content ${rc} already", 
             ("a", op.author)("rc", op.research_content_id));
 
     FC_ASSERT(std::none_of(reseach_group_tokens.begin(), reseach_group_tokens.end(),
-            [&](const std::reference_wrapper<const research_group_token_object> rgt_wrap) {
-                const research_group_token_object& rgt = rgt_wrap.get();
+            [&](const research_group_token_object& rgt) {
                 return rgt.owner == op.author; }),
             "${a} is member of research group ${g} and can not review its research content", 
             ("a", op.author)("g", research.research_group_id));
 
     const auto& expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
     const auto& research_disciplines_relations = research_discipline_service.get_research_discipline_relations_by_research(research_content.research_id);
-    
+
     std::map<discipline_id_type, share_type> review_used_expertise_by_disciplines;
     for (auto& wrap : expertise_tokens)
     {
@@ -800,7 +802,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
                 return relation.discipline_id == expert_token.discipline_id;
             }))
         {
-            const int64_t elapsed_seconds = (_db.head_block_time() - expert_token.last_vote_time).to_seconds();
+            const int64_t elapsed_seconds = (now - expert_token.last_vote_time).to_seconds();
             const int64_t regenerated_power_percent = (DEIP_100_PERCENT * elapsed_seconds) / DEIP_VOTE_REGENERATION_SECONDS;
             const int64_t current_power_percent = std::min(int64_t(expert_token.voting_power + regenerated_power_percent), int64_t(DEIP_100_PERCENT));
             FC_ASSERT(current_power_percent > 0, 
@@ -818,7 +820,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
             _db._temporary_public_impl().modify(expert_token, [&](expert_token_object& exp) {
                 exp.voting_power = current_power_percent - used_power_percent;
-                exp.last_vote_time = _db.head_block_time();
+                exp.last_vote_time = now;
             });
 
             review_used_expertise_by_disciplines.insert(std::make_pair(expert_token.discipline_id, used_expert_token_amount));
@@ -848,8 +850,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
         const auto model = op.assessment_model.get<multicriteria_scoring_assessment_model_v1_0_0_type>();
 
         const uint16_t total_score = std::accumulate(std::begin(model.scores), std::end(model.scores), 0,
-                [&](uint16_t total, const std::map<uint16_t, uint16_t>::value_type& m) {
-                    return total + m.second; });
+            [&](uint16_t total, const std::map<uint16_t, uint16_t>::value_type& m) { return total + m.second; });
 
         is_positive = total_score >= DEIP_MIN_POSITIVE_REVIEW_MARK;
 
@@ -867,69 +868,58 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
         FC_ASSERT(false, "Review assessment model is not specified");
     }
 
-    const auto& review = review_service.create(op.research_content_id,
-                                               op.content,
-                                               is_positive,
-                                               op.author,
-                                               review_disciplines,
-                                               review_used_expertise_by_disciplines,
-                                               op.assessment_model.which(),
-                                               scores);
+    const discipline_id_share_type_map previous_research_content_eci = research_content.eci_per_discipline;
+    const discipline_id_share_type_map previous_research_eci = research.eci_per_discipline;
 
+    const auto& review = review_service.create(
+      op.research_content_id,
+      op.content,
+      is_positive,
+      op.author,
+      review_disciplines,
+      review_used_expertise_by_disciplines,
+      op.assessment_model.which(),
+      scores);
 
-
-    std::map<discipline_id_type, share_type> old_content_eci_in_disciplines;
-    std::map<discipline_id_type, share_type> old_research_eci_in_disciplines;
-
-    for (auto& discipline : review_disciplines)
-    {
-        old_content_eci_in_disciplines[discipline] = research_content.eci_per_discipline.at(discipline);
-        old_research_eci_in_disciplines[discipline] = research_discipline_service.get_research_discipline_relation_by_research_and_discipline(research.id, discipline).research_eci;
-    }
-
-    research_content_service.update_eci_evaluation(research_content.id);
-    research_service.update_eci_evaluation(research.id);
-
-    std::map<discipline_id_type, share_type> new_content_eci_in_disciplines;
-    std::map<discipline_id_type, share_type> new_research_eci_in_disciplines;
-
-    for (auto& discipline : review_disciplines)
-    {
-        new_content_eci_in_disciplines[discipline] = research_content.eci_per_discipline.at(discipline);
-        new_research_eci_in_disciplines[discipline] = research_discipline_service.get_research_discipline_relation_by_research_and_discipline(research.id, discipline).research_eci;
-    }
-
-    for (auto& pair : new_research_eci_in_disciplines)
-    {
-        _db.push_virtual_operation(research_eci_history_operation(
-            research.id._id, pair.first._id, pair.second, pair.second - old_research_eci_in_disciplines[pair.first],
-            1, review.id._id, _db.head_block_time().sec_since_epoch()));
-    }
-
-    for (auto& pair : new_content_eci_in_disciplines)
-    {
-        _db.push_virtual_operation(research_content_eci_history_operation(
-            research_content.id._id, pair.first._id, pair.second, pair.second - old_content_eci_in_disciplines[pair.first],
-            1, review.id._id, _db.head_block_time().sec_since_epoch()));
-    }
+    const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(research_content.id);
+    const research_object& updated_research = research_service.update_eci_evaluation(research.id);
 
     for (auto& review_discipline_id : review_disciplines)
     {
-        const auto& expert_token = expertise_token_service.get_expert_token_by_account_and_discipline(op.author, review_discipline_id);
-        const auto& used_expert_token_amount = review_used_expertise_by_disciplines.at(expert_token.discipline_id);
+        const eci_diff research_content_eci_diff = eci_diff(
+          previous_research_content_eci.at(review_discipline_id),
+          updated_research_content.eci_per_discipline.at(review_discipline_id),
+          now,
+          static_cast<uint16_t>(expertise_contribution_type::review),
+          review.id._id
+        );
 
-        if (votes_service.total_vote_exists_by_content_and_discipline(research_content.id, expert_token.discipline_id))
-        {
-            const auto& total_votes = votes_service.get_total_votes_by_content_and_discipline(research_content.id, expert_token.discipline_id);
-            votes_service.increase_total_used_expertise_amount(total_votes.id, used_expert_token_amount);
-        }
-        else
-        {
-            votes_service.create_total_votes(expert_token.discipline_id, research_content.research_id, research_content.id, used_expert_token_amount, research_content.type);
-        }
+        expertise_contributions_service.adjust_expertise_contribution(
+            review_discipline_id,
+            research.id, 
+            research_content.id, 
+            research_content_eci_diff
+        );
 
-        disciplines_service.increase_total_used_expertise_amount(expert_token.discipline_id, used_expert_token_amount);
-        expertise_stats_service.increase_total_used_expertise_amount(used_expert_token_amount);
+        _db.push_virtual_operation(research_content_eci_history_operation(
+            research_content.id._id, 
+            review_discipline_id._id,
+            research_content_eci_diff)
+        );
+
+        const eci_diff research_eci_diff = eci_diff(
+          previous_research_eci.at(review_discipline_id),
+          updated_research.eci_per_discipline.at(review_discipline_id),
+          now,
+          static_cast<uint16_t>(expertise_contribution_type::review),
+          review.id._id
+        );
+
+        _db.push_virtual_operation(research_eci_history_operation(
+            research.id._id,
+            review_discipline_id._id,
+            research_eci_diff)
+        );
     }
 
     _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
@@ -1057,27 +1047,6 @@ void transfer_research_tokens_to_research_group_evaluator::do_apply(const transf
         });
     }
 
-}
-
-void set_expertise_tokens_evaluator::do_apply(const set_expertise_tokens_operation& op)
-{
-    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
-
-    for (auto& discipline_to_add : op.disciplines_to_add)
-    {
-        FC_ASSERT(discipline_to_add.amount > 0, "Amount must be bigger than 0");
-        const bool exist = expert_token_service.expert_token_exists_by_account_and_discipline(op.account_name, discipline_to_add.discipline_id);
-        
-        if (exist)
-        {
-            const expert_token_object& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.account_name, discipline_to_add.discipline_id);
-            _db._temporary_public_impl().modify(expert_token, [&](expert_token_object& et_o) {
-                et_o.amount = discipline_to_add.amount;
-            });
-        } 
-        else
-            expert_token_service.create(op.account_name, discipline_to_add.discipline_id, discipline_to_add.amount, true);
-    }
 }
 
 void research_update_evaluator::do_apply(const research_update_operation& op)
@@ -1241,8 +1210,13 @@ void delegate_expertise_evaluator::do_apply(const delegate_expertise_operation& 
     account_service.check_account_existence(op.sender);
     account_service.check_account_existence(op.receiver);
 
-    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.sender, op.discipline_id);
-    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.receiver, op.discipline_id);
+    FC_ASSERT(expert_token_service.expert_token_exists_by_account_and_discipline(op.sender, op.discipline_id), 
+      "Expertise token ${1} for ${2} does not exist",
+      ("1", op.sender)("2", op.discipline_id));
+
+    FC_ASSERT(expert_token_service.expert_token_exists_by_account_and_discipline(op.receiver, op.discipline_id),
+      "Expertise token ${1} for ${2} does not exist", 
+      ("1", op.receiver)("2", op.discipline_id));
 
     auto& sender_token = expert_token_service.get_expert_token_by_account_and_discipline(op.sender, op.discipline_id);
 
@@ -1260,7 +1234,9 @@ void revoke_expertise_delegation_evaluator::do_apply(const revoke_expertise_dele
     dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
 
     account_service.check_account_existence(op.sender);
-    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.sender, op.discipline_id);
+    FC_ASSERT(expert_token_service.expert_token_exists_by_account_and_discipline(op.sender, op.discipline_id),
+      "Expertise token ${1} for ${2} does not exist", 
+      ("1", op.sender)("2", op.discipline_id));
 
     auto& sender_token = expert_token_service.get_expert_token_by_account_and_discipline(op.sender, op.discipline_id);
 
@@ -1298,7 +1274,10 @@ void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_e
 
     account_service.check_account_existence(op.voter);
 
-    expert_token_service.check_expert_token_existence_by_account_and_discipline(op.voter, proposal.discipline_id);
+    FC_ASSERT(expert_token_service.expert_token_exists_by_account_and_discipline(op.voter, proposal.discipline_id),
+      "Expertise token ${1} for ${2} does not exist", 
+      ("1", op.voter)("2", proposal.discipline_id));
+
     auto& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.voter, proposal.discipline_id);
 
     FC_ASSERT(expert_token.proxy.size() == 0, "A proxy is currently set, please clear the proxy before voting.");

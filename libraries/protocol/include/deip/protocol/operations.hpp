@@ -31,7 +31,7 @@ namespace deip {
                 change_recovery_account_operation,
 
                 // DEIP native operations
-                placeholder_operation,
+                placeholder1_operation,
                 create_research_group_operation,
                 create_proposal_operation,
                 vote_proposal_operation,
@@ -40,7 +40,7 @@ namespace deip {
                 approve_research_group_invite_operation,
                 reject_research_group_invite_operation,
                 transfer_research_tokens_to_research_group_operation,
-                set_expertise_tokens_operation,
+                placeholder2_operation,
                 research_update_operation,
                 create_vesting_balance_operation,
                 withdraw_vesting_balance_operation,

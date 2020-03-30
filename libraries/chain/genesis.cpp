@@ -15,6 +15,7 @@
 #include <deip/chain/schema/research_object.hpp>
 #include <deip/chain/schema/research_content_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
+#include <deip/chain/schema/expertise_contribution_object.hpp>
 
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_account_balance.hpp>
@@ -22,8 +23,8 @@
 
 #include <fc/io/json.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
-#include <deip/chain/schema/expertise_stats_object.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
+#include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
 
@@ -90,11 +91,6 @@ void database::init_genesis(const genesis_state_type& genesis_state)
 
         _const_genesis_time = genesis_state.initial_timestamp;
         create<chain_property_object>([&](chain_property_object& cp) { cp.chain_id = genesis_state.initial_chain_id; });
-
-        create<expertise_stats_object>([&](expertise_stats_object& es) {
-           es.total_used_expertise = 0;
-           es.used_expertise_per_block = 0;
-        });
 
         init_genesis_global_property_object(genesis_state);
         init_genesis_assets(genesis_state);
@@ -299,8 +295,6 @@ void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
             d.id = discipline.id;
             fc::from_string(d.name, discipline.name);
             d.parent_id = discipline.parent_id;
-            d.total_active_weight = 0;
-            d.total_expertise_amount = 0;
         });
     }
 }
@@ -322,15 +316,15 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
         auto& discipline = get<discipline_object, by_id>(expert_token.discipline_id); // verify that discipline exists
         FC_ASSERT(discipline.id._id == expert_token.discipline_id); // verify that discipline exists
 
-        expert_token_service.create(expert_token.account_name, expert_token.discipline_id, expert_token.amount, true);
+        expert_token_service.create_expert_token(expert_token.account_name, expert_token.discipline_id, expert_token.amount, true);
 
-        push_virtual_operation(account_eci_history_operation(expert_token.account_name,
-                                                             expert_token.discipline_id._id,
-                                                             expert_token.amount,
-                                                             expert_token.amount,
-                                                             3,
-                                                             -1,
-                                                             get_genesis_time().sec_since_epoch()));
+        // push_virtual_operation(account_eci_history_operation(expert_token.account_name,
+        //                                                      expert_token.discipline_id._id,
+        //                                                      expert_token.amount,
+        //                                                      expert_token.amount,
+        //                                                      3,
+        //                                                      -1,
+        //                                                      get_genesis_time().sec_since_epoch()));
     }
 
 
@@ -342,14 +336,14 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
         for (auto& discipline : disciplines)
         {
             if (discipline.id != 0) {
-                expert_token_service.create("hermes", discipline.id, 10000, true);
-                push_virtual_operation(account_eci_history_operation("hermes",
-                                                                     discipline.id._id,
-                                                                     10000,
-                                                                     10000,
-                                                                     3,
-                                                                     -1,
-                                                                     get_genesis_time().sec_since_epoch()));
+                expert_token_service.create_expert_token("hermes", discipline.id, 10000, true);
+                // push_virtual_operation(account_eci_history_operation("hermes",
+                //                                                      discipline.id._id,
+                //                                                      10000,
+                //                                                      10000,
+                //                                                      3,
+                //                                                      -1,
+                //                                                      get_genesis_time().sec_since_epoch()));
             }
         }
     }
@@ -425,6 +419,7 @@ void database::init_research_content(const genesis_state_type& genesis_state)
     const vector<genesis_state_type::research_content_type>& research_contents = genesis_state.research_contents;
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
     dbs_research& research_service = obtain_service<dbs_research>();
+    dbs_research_discipline_relation& research_discipline_relation_service = obtain_service<dbs_research_discipline_relation>();
 
     for (auto& research_content : research_contents)
     {
@@ -467,26 +462,44 @@ void database::init_research_content(const genesis_state_type& genesis_state)
                                                                        fc::to_string(_content.content)));
         }
 
-        auto& old_research_eci = research_service.get_eci_evaluation(c.research_id);
+        const std::map<discipline_id_type, share_type> previous_research_content_eci = research_content_service.get_eci_evaluation(research_content.id);
+        const std::map<discipline_id_type, share_type> previous_research_eci = research_service.get_eci_evaluation(research.id);
 
-        research_content_service.update_eci_evaluation(c.id);
-        research_service.update_eci_evaluation(research.id);
+        const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(c.id);
+        const research_object& updated_research = research_service.update_eci_evaluation(research.id);
 
-        auto& new_research_eci = research_service.get_eci_evaluation(research_content.research_id);
-        auto& new_research_content_eci = research_content_service.get_eci_evaluation(research_content.id);
-
-        for (auto& pair : new_research_eci)
+        auto relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research_content.research_id);
+        for (auto& wrap : relations)
         {
-            push_virtual_operation(research_eci_history_operation(
-                research_content.research_id._id, pair.first._id, pair.second, pair.second - old_research_eci.at(pair.first), 
-                3, research_content.id._id, get_genesis_time().sec_since_epoch()));
-        }
+            const auto& rel = wrap.get();
 
-        for (auto& pair : new_research_content_eci)
-        {
+            const eci_diff research_content_eci_diff = eci_diff(
+              previous_research_content_eci.at(rel.discipline_id),
+              updated_research_content.eci_per_discipline.at(rel.discipline_id),
+              get_genesis_time(),
+              static_cast<uint16_t>(expertise_contribution_type::publication),
+              updated_research_content.id._id
+            );
+
             push_virtual_operation(research_content_eci_history_operation(
-                research_content.id._id, pair.first._id, pair.second, pair.second, 
-                3, research_content.id._id, get_genesis_time().sec_since_epoch()));
+              updated_research_content.id._id, 
+              rel.discipline_id._id,
+              research_content_eci_diff)
+            );
+
+            const eci_diff research_eci_diff = eci_diff(
+              previous_research_eci.at(rel.discipline_id),
+              updated_research.eci_per_discipline.at(rel.discipline_id),
+              get_genesis_time(),
+              static_cast<uint16_t>(expertise_contribution_type::publication),
+              updated_research_content.id._id
+            );
+
+            push_virtual_operation(research_eci_history_operation(
+              updated_research.id._id, 
+              rel.discipline_id._id,
+              research_eci_diff)
+            );
         }
     }
 }

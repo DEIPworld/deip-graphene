@@ -16,7 +16,7 @@
 #include <deip/chain/services/dbs_research_group_invite.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
-#include <deip/chain/services/dbs_vote.hpp>
+#include <deip/chain/services/dbs_review_vote.hpp>
 
 #include <fc/io/json.hpp>
 #include <fc/smart_ref_impl.hpp>

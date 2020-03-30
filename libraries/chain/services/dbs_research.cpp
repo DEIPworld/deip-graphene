@@ -3,6 +3,7 @@
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_review.hpp>
+#include <deip/chain/services/dbs_review_vote.hpp>
 
 namespace deip{
 namespace chain{
@@ -117,6 +118,7 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
     const dbs_research_content& research_content_service = db_impl().obtain_service<dbs_research_content>();
     const dbs_review& review_service = db_impl().obtain_service<dbs_review>();
     const dbs_research_discipline_relation& research_discipline_relation_service = db_impl().obtain_service<dbs_research_discipline_relation>();
+    const dbs_review_vote& review_votes_service = db_impl().obtain_service<dbs_review_vote>();
 
     const research_object& research = get_research(research_id);
     const auto& research_contents = research_content_service.get_by_research_id(research.id);
@@ -127,7 +129,7 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
         : fc::optional<research_content_object>();
 
     const std::vector<std::reference_wrapper<const review_object>>& final_result_reviews = research.is_finished
-        ? review_service.get_reviews_by_content(final_result->id)
+        ? review_service.get_reviews_by_research_content(final_result->id)
         : std::vector<std::reference_wrapper<const review_object>>();
 
     const std::set<account_name_type> final_result_reviewers = research.is_finished
@@ -151,7 +153,7 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
             continue;
         }
 
-        const auto& milestone_reviews = review_service.get_reviews_by_content(research_content.id);
+        const auto& milestone_reviews = review_service.get_reviews_by_research_content(research_content.id);
 
         for (auto& rw_wrap: milestone_reviews)
         {
@@ -162,6 +164,13 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
 
             for (discipline_id_type discipline_id: milestone_review.disciplines)
             {
+                auto milestone_review_votes = review_votes_service.get_review_votes(milestone_review.id);
+                const double milestone_review_votes_count = (double)std::count_if(
+                    milestone_review_votes.begin(), milestone_review_votes.end(),
+                    [&](const review_vote_object& rw_vote) {
+                        return rw_vote.review_id == milestone_review.id && rw_vote.discipline_id == discipline_id;
+                    });
+
                 if (max_and_min_reviewer_weight_by_discipline.find(discipline_id) == max_and_min_reviewer_weight_by_discipline.end()) {
                     std::map<account_name_type, std::pair<share_type, share_type>> author_max_and_min_weights;
                     max_and_min_reviewer_weight_by_discipline[discipline_id] = author_max_and_min_weights;
@@ -177,11 +186,11 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
                 const share_type expertise_used = milestone_review.expertise_tokens_amount_by_discipline.at(discipline_id);
                 if (milestone_review.is_positive) {
                     max_and_min_weights.first = max_and_min_weights.first < expertise_used
-                        ? expertise_used
+                        ? expertise_used + (milestone_review_votes_count * DEIP_CURATOR_INFLUENCE_BONUS)
                         : max_and_min_weights.first;
                 } else {
                     max_and_min_weights.second = max_and_min_weights.second < expertise_used
-                        ? expertise_used
+                        ? expertise_used + (milestone_review_votes_count * DEIP_CURATOR_INFLUENCE_BONUS)
                         : max_and_min_weights.second;
                 }
             }
@@ -209,9 +218,17 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
             ? final_result_weight.at(discipline_id)
             : share_type(0);
 
+        /*
+
+        Original Formula
+
         const share_type Sdfr = Vdp + Sdp;
 
-        research_eci_by_discipline[discipline_id] = Sdfr;
+        */
+
+        const share_type Sdfr = Vdp + Sdp;
+
+        research_eci_by_discipline[discipline_id] = Sdfr > 0 ? Sdfr : 0;
     }
 
     return research_eci_by_discipline;

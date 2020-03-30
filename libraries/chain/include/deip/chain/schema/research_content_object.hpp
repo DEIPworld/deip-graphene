@@ -21,7 +21,7 @@ namespace chain {
 using chainbase::allocator;
 using fc::shared_string;
 
-enum    research_content_type : uint16_t
+enum research_content_type : uint16_t
 {
     announcement = 1,
     final_result = 2,

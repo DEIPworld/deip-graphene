@@ -19,10 +19,10 @@ public:
 
     void create_expert_tokens()
     {
-        data_service.create("alice", 1, 100, false);
-        data_service.create("bob", 2, 200, false);
-        data_service.create("alice", 3, 300, false);
-        data_service.create("john", 1, 150, false);
+        data_service.create_expert_token("alice", 1, 100, false);
+        data_service.create_expert_token("bob", 2, 200, false);
+        data_service.create_expert_token("alice", 3, 300, false);
+        data_service.create_expert_token("john", 1, 150, false);
     }
 
     dbs_expert_token& data_service;
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(create)
 
     try
     {
-        auto token = data_service.create("alice", 2, 6651, false);
+        auto token = data_service.create_expert_token("alice", 2, 6651, false);
 
         BOOST_CHECK(token.account_name == "alice");
         BOOST_CHECK(token.discipline_id == 2);
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(get_expert_token_by_account_and_discipline_id)
 
 BOOST_AUTO_TEST_CASE(check_expert_token_existence_by_account_and_discipline_id)
 {
-    BOOST_CHECK_THROW(data_service.check_expert_token_existence_by_account_and_discipline("alice", 1), fc::assert_exception);
+    BOOST_CHECK(!data_service.expert_token_exists_by_account_and_discipline("alice", 1));
 }
 
 

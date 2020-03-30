@@ -24,7 +24,7 @@
 #include <deip/chain/schema/research_token_sale_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/review_vote_object.hpp>
-#include <deip/chain/schema/total_votes_object.hpp>
+#include <deip/chain/schema/expertise_contribution_object.hpp>
 #include <deip/chain/schema/transaction_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
 #include <deip/chain/schema/offer_research_tokens_object.hpp>
@@ -33,7 +33,6 @@
 #include <deip/chain/schema/grant_application_review_object.hpp>
 #include <deip/chain/schema/grant_application_review_object.hpp>
 #include <deip/chain/schema/funding_opportunity_object.hpp>
-#include <deip/chain/schema/vote_object.hpp>
 #include <deip/chain/schema/witness_objects.hpp>
 #include <deip/witness/witness_objects.hpp>
 #include <deip/chain/database/database.hpp>
@@ -370,8 +369,6 @@ struct discipline_api_obj
         : id(d.id._id)
         ,  parent_id(d.parent_id._id)
         ,  name(fc::to_string(d.name))
-        ,  total_active_weight(d.total_active_weight)
-        ,  total_expertise_amount(d.total_expertise_amount)
     {}
 
     // because fc::variant require for temporary object
@@ -382,8 +379,6 @@ struct discipline_api_obj
     int64_t id;
     int64_t parent_id;
     std::string name;
-    share_type total_active_weight;
-    share_type total_expertise_amount;
 };
 
 struct research_api_obj
@@ -795,18 +790,18 @@ struct research_listing_api_obj
     bool is_private;
 };
 
-struct total_votes_api_obj
+struct expertise_contribution_object_api_obj
 {
-    total_votes_api_obj(const chain::total_votes_object& vo)
-        : id(vo.id._id)
-        ,  discipline_id(vo.discipline_id._id)
-        ,  research_id(vo.research_id._id)
-        ,  research_content_id(vo.research_content_id._id)
-        ,  total_weight(vo.total_weight)
+    expertise_contribution_object_api_obj(const chain::expertise_contribution_object& ec)
+        :  id(ec.id._id)
+        ,  discipline_id(ec.discipline_id._id)
+        ,  research_id(ec.research_id._id)
+        ,  research_content_id(ec.research_content_id._id)
+        ,  eci(ec.eci)
     {}
 
     // because fc::variant require for temporary object
-    total_votes_api_obj()
+    expertise_contribution_object_api_obj()
     {
     }
 
@@ -815,7 +810,7 @@ struct total_votes_api_obj
     int64_t research_id;
     int64_t research_content_id;
 
-    share_type total_weight;
+    share_type eci;
 };
 
 struct review_api_obj
@@ -876,38 +871,6 @@ struct research_token_api_obj
     int64_t research_id;
     share_type amount;
     bool is_compensation;
-};
-
-struct vote_api_obj
-{
-    vote_api_obj(const chain::vote_object& vo)
-            : id(vo.id._id)
-            , discipline_id(vo.discipline_id._id)
-            , voter(vo.voter)
-            , research_id(vo.research_id._id)
-            , research_content_id(vo.research_content_id._id)
-            , tokens_amount(vo.tokens_amount)
-            , weight(vo.weight)
-            , voting_power(vo.voting_power)
-            , voting_time(vo.voting_time)
-    {}
-
-    // because fc::variant require for temporary object
-    vote_api_obj()
-    {
-    }
-
-    int64_t id;
-    int64_t discipline_id;
-    account_name_type voter;
-    int64_t research_id;
-    int64_t research_content_id;
-
-    share_type tokens_amount;
-    int64_t weight;
-    uint16_t voting_power;
-    time_point_sec voting_time;
-
 };
 
 struct review_vote_api_obj
@@ -1051,17 +1014,6 @@ struct offer_research_tokens_api_obj
     asset price;
 };
 
-
-struct eci_and_expertise_stats_api_obj
-{
-    eci_and_expertise_stats_api_obj()
-    {}
-
-    uint32_t max_research_eci_in_discipline;
-    uint32_t average_research_eci_in_discipline;
-    uint32_t average_content_eci_in_discipline;
-    uint32_t average_expertise_in_discipline;
-};
 
 struct grant_api_obj
 {
@@ -1428,9 +1380,7 @@ FC_REFLECT( deip::app::discipline_api_obj,
             (id)
             (parent_id)
             (name)
-            (total_active_weight)
-            (total_expertise_amount)
-          )
+)
 
 
 FC_REFLECT( deip::app::research_api_obj,
@@ -1584,12 +1534,12 @@ FC_REFLECT( deip::app::research_listing_api_obj,
            (is_private)
 )
 
-FC_REFLECT( deip::app::total_votes_api_obj,
+FC_REFLECT( deip::app::expertise_contribution_object_api_obj,
            (id)
            (discipline_id)
            (research_id)
            (research_content_id)
-           (total_weight)
+           (eci)
 )
 
 FC_REFLECT( deip::app::review_api_obj,
@@ -1611,19 +1561,6 @@ FC_REFLECT( deip::app::research_token_api_obj,
             (research_id)
             (amount)
             (is_compensation)
-)
-
-FC_REFLECT( deip::app::vote_api_obj,
-            (id)
-            (discipline_id)
-            (voter)
-            (research_id)
-            (research_content_id)
-            (weight)
-            (voting_time)
-            (voting_power)
-            (tokens_amount)
-
 )
 
 FC_REFLECT( deip::app::review_vote_api_obj,
@@ -1675,14 +1612,6 @@ FC_REFLECT( deip::app::offer_research_tokens_api_obj,
             (research_id)
             (amount)
             (price)
-
-)
-
-FC_REFLECT( deip::app::eci_and_expertise_stats_api_obj,
-            (max_research_eci_in_discipline)
-            (average_research_eci_in_discipline)
-            (average_content_eci_in_discipline)
-            (average_expertise_in_discipline)
 
 )
 

@@ -11,6 +11,16 @@ bool inline is_asset_type(asset asset, asset_symbol_type symbol)
     return asset.symbol == symbol;
 }
 
+void placeholder1_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+}
+
+void placeholder2_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+}
+
 void account_create_operation::validate() const
 {
     validate_account_name(new_account_name);
@@ -171,12 +181,6 @@ void transfer_research_tokens_to_research_group_operation::validate() const
     validate_account_name(owner);
 }    
 
-void set_expertise_tokens_operation::validate() const
-{
-    validate_account_name(owner);
-    validate_account_name(account_name);
-    FC_ASSERT(!disciplines_to_add.empty(), "List of disciplines to adjust cannot be empty");
-}
 
 void research_update_operation::validate() const
 {
