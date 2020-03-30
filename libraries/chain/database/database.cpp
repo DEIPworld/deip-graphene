@@ -1461,6 +1461,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_asset_evaluator>();
     _my->_evaluator_registry.register_evaluator<issue_asset_evaluator>();
     _my->_evaluator_registry.register_evaluator<reserve_asset_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_award_evaluator>();
 }
 
 void database::initialize_indexes()
