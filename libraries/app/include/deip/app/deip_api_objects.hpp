@@ -4,7 +4,7 @@
 #include <deip/chain/schema/global_property_object.hpp>
 //#include <deip/chain/history_object.hpp>
 #include <deip/chain/schema/award_object.hpp>
-#include <deip/chain/schema/award_research_relation_object.hpp>
+#include <deip/chain/schema/award_recipient_object.hpp>
 #include <deip/chain/schema/account_balance_object.hpp>
 #include <deip/chain/schema/asset_object.hpp>
 #include <deip/chain/schema/deip_objects.hpp>
@@ -1249,9 +1249,44 @@ struct research_group_organization_contract_api_obj
     std::set<account_name_type> organization_agents;
 };
 
+struct award_recipient_api_obj
+{
+    award_recipient_api_obj(const chain::award_recipient_object& ar_o)
+        : id(ar_o.id._id)
+        , award_id(ar_o.award_id._id)
+        , funding_opportunity_id(ar_o.funding_opportunity_id._id)
+        , research_id(ar_o.research_id._id)
+        , research_group_id(ar_o.research_group_id._id)
+        , awardee(ar_o.awardee)
+        , total_amount(ar_o.total_amount)
+        , total_expenses(ar_o.total_expenses)
+        , university_id(ar_o.university_id._id)
+        , university_overhead(ar_o.university_overhead)
+    {
+    }
+
+    award_recipient_api_obj()
+    {
+    }
+
+    int64_t id;
+
+    int64_t award_id;
+    int64_t funding_opportunity_id;
+
+    int64_t research_id;
+    int64_t research_group_id;
+    account_name_type awardee;
+    asset total_amount;
+    asset total_expenses;
+
+    int64_t university_id;
+    share_type university_overhead;
+};
+
 struct award_api_obj
 {
-    award_api_obj(const chain::award_object& award)
+    award_api_obj(const chain::award_object& award, const vector<award_recipient_api_obj>& awardees_list)
         : id(award.id._id)
         , funding_opportunity_id(award.funding_opportunity_id._id)
         , creator(award.creator)
@@ -1259,6 +1294,7 @@ struct award_api_obj
         , amount(award.amount)
 
     {
+        awardees.insert(awardees.end(), awardees_list.begin(), awardees_list.end());
     }
 
     // because fc::variant require for temporary object
@@ -1272,39 +1308,7 @@ struct award_api_obj
     account_name_type creator;
     award_status status;
     asset amount;
-};
-
-struct award_research_relation_api_obj
-{
-    award_research_relation_api_obj(const chain::award_research_relation_object& arr_o)
-        : id(arr_o.id._id)
-        , award_id(arr_o.award_id._id)
-        , research_id(arr_o.research_id._id)
-        , research_group_id(arr_o.research_group_id._id)
-        , awardee(arr_o.awardee)
-        , total_amount(arr_o.total_amount)
-        , total_expenses(arr_o.total_expenses)
-        , university_id(arr_o.university_id._id)
-        , university_overhead(arr_o.university_overhead)
-    {
-    }
-
-    // because fc::variant require for temporary object
-    award_research_relation_api_obj()
-    {
-    }
-
-    int64_t id;
-
-    int64_t award_id;
-    int64_t research_id;
-    int64_t research_group_id;
-    account_name_type awardee;
-    asset total_amount;
-    asset total_expenses;
-
-    int64_t university_id;
-    share_type university_overhead;
+    vector<award_recipient_api_obj> awardees;
 };
 
 }; // namespace app
@@ -1701,11 +1705,13 @@ FC_REFLECT( deip::app::award_api_obj,
             (creator)
             (status)
             (amount)
+            (awardees)
 )
 
-FC_REFLECT( deip::app::award_research_relation_api_obj,
+FC_REFLECT( deip::app::award_recipient_api_obj,
             (id)
             (award_id)
+            (funding_opportunity_id)
             (research_id)
             (research_group_id)
             (awardee)

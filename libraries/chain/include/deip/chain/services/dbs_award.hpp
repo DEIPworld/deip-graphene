@@ -2,7 +2,7 @@
 
 #include "dbs_base_impl.hpp"
 #include <deip/chain/schema/award_object.hpp>
-#include <deip/chain/schema/award_research_relation_object.hpp>
+#include <deip/chain/schema/award_recipient_object.hpp>
 
 #include <vector>
 
@@ -21,25 +21,43 @@ protected:
 
 public:
 
+    using award_refs_type = std::vector<std::reference_wrapper<const award_object>>;
+    using award_optional_type = fc::optional<std::reference_wrapper<const award_object>>;
+    using award_recipient_refs_type = std::vector<std::reference_wrapper<const award_recipient_object>>;
+    using award_recipient_optional_type = fc::optional<std::reference_wrapper<const award_recipient_object>>;
+
     const award_object& create_award(const funding_opportunity_id_type& funding_opportunity_id,
                                      const account_name_type& creator,
                                      const asset& amount);
 
     const award_object& get_award(const award_id_type& id) const;
 
-    // Award research relation
+    const award_optional_type get_award_if_exists(const award_id_type& id) const;
 
-    using award_research_relation_refs_type = std::vector<std::reference_wrapper<const award_research_relation_object>>;
+    award_refs_type get_awards_by_funding_opportunity(const funding_opportunity_id_type& funding_opportunity_id) const;
 
-    const award_research_relation_object& create_award_research_relation(const award_id_type& award_id,
-                                                                         const research_id_type& research_id,
-                                                                         const research_group_id_type& research_group_id,
-                                                                         const account_name_type& awardee,
-                                                                         const asset& total_amount,
-                                                                         const research_group_id_type& university_id,
-                                                                         const share_type& university_overhead);
+    // Award recipients
 
-    const award_research_relation_object& get_award_research_relation(const award_research_relation_id_type& id);
+
+    const award_recipient_object& create_award_recipient(const award_id_type& award_id,
+                                                         const funding_opportunity_id_type& funding_opportunity_id,
+                                                         const research_id_type& research_id,
+                                                         const research_group_id_type& research_group_id,
+                                                         const account_name_type& awardee,
+                                                         const asset& total_amount,
+                                                         const research_group_id_type& university_id,
+                                                         const share_type& university_overhead);
+
+
+    const award_recipient_object& get_award_recipient(const award_recipient_id_type& id);
+
+    const award_recipient_optional_type get_award_recipient_if_exists(const award_recipient_id_type& id);
+
+    award_recipient_refs_type get_award_recipients_by_account(const account_name_type& awardee);
+
+    award_recipient_refs_type get_award_recipients_by_award(const award_id_type& award_id);
+
+    award_recipient_refs_type get_award_recipients_by_funding_opportunity(const funding_opportunity_id_type& funding_opportunity_id);
 
 
 };

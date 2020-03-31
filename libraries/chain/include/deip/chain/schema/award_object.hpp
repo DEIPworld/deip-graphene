@@ -36,29 +36,48 @@ public:
 };
 
 struct by_creator;
+struct by_funding_opportunity;
 
 typedef multi_index_container<award_object,
-            indexed_by<ordered_unique<tag<by_id>,
-                    member<award_object,
-                            award_id_type,
-                           &award_object::id>>,
-            ordered_non_unique<tag<by_creator>,
-                    member<award_object,
-                            account_name_type,
-                           &award_object::creator>>>,
-        allocator<award_object>>
-        award_index;
+  indexed_by<
+    ordered_unique<
+      tag<by_id>,
+        member<
+          award_object,
+          award_id_type,
+          &award_object::id
+        >
+    >,
+    ordered_non_unique<
+      tag<by_creator>,
+        member<
+          award_object,
+          account_name_type,
+          &award_object::creator
+        >
+    >,
+    ordered_non_unique<
+      tag<by_funding_opportunity>,
+        member<
+          award_object,
+          funding_opportunity_id_type,
+          &award_object::funding_opportunity_id
+        >
+    >
+    >,
+    allocator<award_object>>
+    award_index;
     }
 }
 
 FC_REFLECT_ENUM(deip::chain::award_status, (pending)(approved)(rejected))
 
 FC_REFLECT( deip::chain::award_object,
-            (id)
-            (funding_opportunity_id)
-            (creator)
-            (status)
-            (amount)
+    (id)
+    (funding_opportunity_id)
+    (creator)
+    (status)
+    (amount)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::award_object, deip::chain::award_index )

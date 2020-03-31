@@ -1353,11 +1353,9 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
       ("g", op.grantor)("ga", op.amount)("ba", grantor_balance.amount));
 
 
-    const grant_contract_details grant_contract = *(op.get_grant_contract());
-    
-    if (grant_contract.which() == grant_contract_details::tag<announced_application_window_contract_v1_0_0_type>::value)
+    if (op.distribution_model.which() == grant_distribution_models::tag<announced_application_window_contract_v1_0_0_type>::value)
     {
-        const auto announced_application_window_contract = grant_contract.get<announced_application_window_contract_v1_0_0_type>();
+        const auto announced_application_window_contract = op.distribution_model.get<announced_application_window_contract_v1_0_0_type>();
         FC_ASSERT(research_group_service.research_group_exists(announced_application_window_contract.review_committee_id), 
           "Review committee ${rg} does not exists", 
           ("rg", announced_application_window_contract.review_committee_id));
@@ -1377,9 +1375,9 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
           announced_application_window_contract.end_date);
     }
  
-    else if (grant_contract.which() == grant_contract_details::tag<funding_opportunity_announcement_contract_v1_0_0_type>::value)
+    else if (op.distribution_model.which() == grant_distribution_models::tag<funding_opportunity_announcement_contract_v1_0_0_type>::value)
     {
-        const auto foa_contract = grant_contract.get<funding_opportunity_announcement_contract_v1_0_0_type>();
+        const auto foa_contract = op.distribution_model.get<funding_opportunity_announcement_contract_v1_0_0_type>();
         FC_ASSERT(research_group_service.research_group_exists(foa_contract.organization_id), 
           "Organization ${1} does not exists", 
           ("1", foa_contract.organization_id));
@@ -1414,9 +1412,9 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
           foa_contract.close_date);
     }
 
-    else if (grant_contract.which() == grant_contract_details::tag<discipline_supply_announcement_contract_v1_0_0_type>::value)
+    else if (op.distribution_model.which() == grant_distribution_models::tag<discipline_supply_announcement_contract_v1_0_0_type>::value)
     {
-        const auto discipline_supply_announcement_contract = grant_contract.get<discipline_supply_announcement_contract_v1_0_0_type>();
+        const auto discipline_supply_announcement_contract = op.distribution_model.get<discipline_supply_announcement_contract_v1_0_0_type>();
 
         int64_t target_discipline = *op.target_disciplines.begin();
         discipline_supply_service.create_discipline_supply(
@@ -1647,9 +1645,10 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       "Account balance with for ${1} for asset ${2} does not exist", 
       ("1", op.creator)("2", op.award.symbol_name()));
 
-    auto& award = award_service.create_award(op.funding_opportunity_id, op.creator, op.award);
+    const auto& award = award_service.create_award(op.funding_opportunity_id, op.creator, op.award);
 
-    for (auto& awardee : op.awardees) {
+    for (auto& awardee : op.awardees) 
+    {
         FC_ASSERT(account_service.account_exists(awardee.awardee),
                   "Account ${1} does not exist",
                   ("1", awardee.awardee));
@@ -1671,8 +1670,9 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
         FC_ASSERT(awardee.university_id != research.research_group_id,
                   "University id and research group id can't be the same.");
 
-        award_service.create_award_research_relation(
+        award_service.create_award_recipient(
           award.id,
+          foa.id,
           research.id,
           research.research_group_id,
           awardee.awardee,

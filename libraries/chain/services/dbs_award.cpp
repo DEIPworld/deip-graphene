@@ -26,42 +26,171 @@ const award_object& dbs_award::create_award(const funding_opportunity_id_type& f
 
 const award_object& dbs_award::get_award(const award_id_type& id) const
 {
-    try{
-        return db_impl().get<award_object, by_id>(id);
-    }
-    FC_CAPTURE_AND_RETHROW((id))
+    const auto& idx = db_impl()
+      .get_index<award_index>()
+      .indicies()
+      .get<by_id>();
+      
+    auto itr = idx.find(id);
+    FC_ASSERT(itr != idx.end(), "Award id:${1} does not exist", ("1", id));
+    return *itr;
 }
 
-const award_research_relation_object& dbs_award::create_award_research_relation(const award_id_type& award_id,
-                                                                                const research_id_type& research_id,
-                                                                                const research_group_id_type& research_group_id,
-                                                                                const account_name_type& awardee,
-                                                                                const asset& total_amount,
-                                                                                const research_group_id_type& university_id,
-                                                                                const share_type& university_overhead)
+const dbs_award::award_optional_type dbs_award::get_award_if_exists(const award_id_type& id) const
 {
-    auto& new_award_research_relation = db_impl().create<award_research_relation_object>([&](award_research_relation_object& arr_o) {
-        arr_o.award_id = award_id;
-        arr_o.research_id = research_id;
-        arr_o.research_group_id = research_group_id;
-        arr_o.awardee = awardee;
-        arr_o.total_amount = total_amount;
-        arr_o.total_expenses = asset(0, total_amount.symbol);
-        arr_o.university_id = university_id;
-        arr_o.university_overhead = university_overhead;
+    award_optional_type result;
+
+    const auto& idx = db_impl()
+      .get_index<award_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
+dbs_award::award_refs_type dbs_award::get_awards_by_funding_opportunity(const funding_opportunity_id_type& funding_opportunity_id) const
+{
+    award_refs_type ret;
+
+    const auto& idx = db_impl()
+      .get_index<award_index>()
+      .indicies()
+      .get<by_funding_opportunity>();
+
+    auto it_pair = idx.equal_range(funding_opportunity_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+const award_recipient_object& dbs_award::create_award_recipient(const award_id_type& award_id,
+                                                                const funding_opportunity_id_type& funding_opportunity_id,
+                                                                const research_id_type& research_id,
+                                                                const research_group_id_type& research_group_id,
+                                                                const account_name_type& awardee,
+                                                                const asset& total_amount,
+                                                                const research_group_id_type& university_id,
+                                                                const share_type& university_overhead)
+{
+    auto& award_recipient = db_impl().create<award_recipient_object>([&](award_recipient_object& ar_o) {
+        ar_o.award_id = award_id;
+        ar_o.funding_opportunity_id = funding_opportunity_id;
+        ar_o.research_id = research_id;
+        ar_o.research_group_id = research_group_id;
+        ar_o.awardee = awardee;
+        ar_o.total_amount = total_amount;
+        ar_o.total_expenses = asset(0, total_amount.symbol);
+        ar_o.university_id = university_id;
+        ar_o.university_overhead = university_overhead;
     });
 
-    return new_award_research_relation;
+    return award_recipient;
 }
 
-const award_research_relation_object& dbs_award::get_award_research_relation(const award_research_relation_id_type& id)
+const award_recipient_object& dbs_award::get_award_recipient(const award_recipient_id_type& id)
 {
-    try{
-        return db_impl().get<award_research_relation_object, by_id>(id);
-    }
-    FC_CAPTURE_AND_RETHROW((id))
+    const auto& idx = db_impl()
+      .get_index<award_recipient_index>()
+      .indicies()
+      .get<by_id>();
+      
+    auto itr = idx.find(id);
+    FC_ASSERT(itr != idx.end(), "Award recipient id:${1} does not exists", ("1", id));
+    return *itr;
 }
 
+const dbs_award::award_recipient_optional_type dbs_award::get_award_recipient_if_exists(const award_recipient_id_type& id)
+{
+    award_recipient_optional_type result;
+
+    const auto& idx = db_impl()
+      .get_index<award_recipient_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
+dbs_award::award_recipient_refs_type dbs_award::get_award_recipients_by_award(const award_id_type& award_id)
+{
+    award_recipient_refs_type ret;
+
+    const auto& idx = db_impl()
+      .get_index<award_recipient_index>()
+      .indicies()
+      .get<by_award>();
+
+    auto it_pair = idx.equal_range(award_id);
+
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_award::award_recipient_refs_type dbs_award::get_award_recipients_by_funding_opportunity(const funding_opportunity_id_type& funding_opportunity_id)
+{
+    award_recipient_refs_type ret;
+
+    const auto& idx = db_impl()
+      .get_index<award_recipient_index>()
+      .indicies()
+      .get<by_funding_opportunity>();
+
+    auto it_pair = idx.equal_range(funding_opportunity_id);
+
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_award::award_recipient_refs_type dbs_award::get_award_recipients_by_account(const account_name_type& awardee)
+{
+    award_recipient_refs_type ret;
+
+    const auto& idx = db_impl().get_index<award_recipient_index>().indicies().get<by_awardee>();
+
+    auto it_pair = idx.equal_range(awardee);
+
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
 
 } //namespace chain
 } //

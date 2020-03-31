@@ -43,6 +43,7 @@ struct announced_application_window_contract_v1_0_0_type : base_grant_contract
   
   fc::time_point_sec start_date;
   fc::time_point_sec end_date;
+  flat_map<string, string> additional_info;
 };
 
 struct funding_opportunity_announcement_contract_v1_0_0_type : base_grant_contract
@@ -86,33 +87,21 @@ struct discipline_supply_announcement_contract_v1_0_0_type : base_grant_contract
     flat_map<string, string> additional_info;
 };
 
-enum class grant_contract_type : uint16_t
-{
-  unknown = 0,
-  announced_application_window = 1,
-  funding_opportunity_announcement = 2,
-  discipline_supply_announcement = 3,
-
-  FIRST = announced_application_window,
-  LAST = discipline_supply_announcement
-};
-
-
 typedef fc::static_variant<
   announced_application_window_contract_v1_0_0_type,
   funding_opportunity_announcement_contract_v1_0_0_type,
   discipline_supply_announcement_contract_v1_0_0_type
   >
-  grant_contract_details;
+  grant_distribution_models;
 
 
 struct create_grant_operation : public base_operation
 {
     account_name_type grantor;
     asset amount;
-    uint16_t type;
     std::set<int64_t> target_disciplines;
-    std::vector<grant_contract_details> details;
+    grant_distribution_models distribution_model;
+    extensions_type extensions;
 
     void validate() const;
 
@@ -120,32 +109,29 @@ struct create_grant_operation : public base_operation
     {
         a.insert(grantor);
     }
-
-    fc::optional<grant_contract_details> get_grant_contract() const;
 };
 
 
 }
 }
 
-#define DECLARE_GRANT_CONTRACT_DETAILS_TYPE(GrantContractDetailsType)                                                  \
+#define DECLARE_GRANT_DISTRIBUTION_MODELS_TYPE(GrantDistributionModelsType)                                                  \
     namespace fc {                                                                                                     \
                                                                                                                        \
-    void to_variant(const GrantContractDetailsType&, fc::variant&);                                                    \
-    void from_variant(const fc::variant&, GrantContractDetailsType&);                                                  \
+    void to_variant(const GrantDistributionModelsType&, fc::variant&);                                                    \
+    void from_variant(const fc::variant&, GrantDistributionModelsType&);                                                  \
                                                                                                                        \
     } /* fc */
 
-
-namespace fc {
+    namespace fc {
 using namespace deip::protocol;
 
-std::string grant_contract_detail_name_from_type(const std::string& type_name);
+std::string grant_distribution_model_name_from_type(const std::string& type_name);
 
-struct from_grant_contract_details_type
+struct from_grant_distribution_models_type
 {
     variant& var;
-    from_grant_contract_details_type(variant& dv)
+    from_grant_distribution_models_type(variant& dv)
         : var(dv)
     {
     }
@@ -153,15 +139,15 @@ struct from_grant_contract_details_type
     typedef void result_type;
     template <typename T> void operator()(const T& v) const
     {
-        auto name = grant_contract_detail_name_from_type(fc::get_typename<T>::name());
+        auto name = grant_distribution_model_name_from_type(fc::get_typename<T>::name());
         var = variant(std::make_pair(name, v));
     }
 };
 
-struct get_grant_contract_details_type
+struct get_grant_distribution_models_type
 {
   string& name;
-  get_grant_contract_details_type(string& dv)
+  get_grant_distribution_models_type(string& dv)
     : name(dv)
   {
   }
@@ -169,31 +155,31 @@ struct get_grant_contract_details_type
   typedef void result_type;
   template <typename T> void operator()(const T& v) const
   {
-    name = grant_contract_detail_name_from_type(fc::get_typename<T>::name());
+      name = grant_distribution_model_name_from_type(fc::get_typename<T>::name());
   }
 };
 } // namespace fc
 
 
 
-#define DEFINE_GRANT_CONTRACT_DETAILS_TYPE(GrantContractDetailsType)                                                   \
+#define DEFINE_GRANT_DISTRIBUTION_MODELS_TYPE(GrantDistributionModelsType)                                                   \
     namespace fc {                                                                                                     \
                                                                                                                        \
-    void to_variant(const GrantContractDetailsType& var, fc::variant& vo)                                              \
+    void to_variant(const GrantDistributionModelsType& var, fc::variant& vo)                                              \
     {                                                                                                                  \
-        var.visit(from_grant_contract_details_type(vo));                                                               \
+        var.visit(from_grant_distribution_models_type(vo));                                                               \
     }                                                                                                                  \
                                                                                                                        \
-    void from_variant(const fc::variant& var, GrantContractDetailsType& vo)                                            \
+    void from_variant(const fc::variant& var, GrantDistributionModelsType& vo)                                            \
     {                                                                                                                  \
         static std::map<string, uint32_t> to_tag = []() {                                                              \
             std::map<string, uint32_t> name_map;                                                                       \
-            for (int i = 0; i < GrantContractDetailsType::count(); ++i)                                                \
+            for (int i = 0; i < GrantDistributionModelsType::count(); ++i)                                                \
             {                                                                                                          \
-                GrantContractDetailsType tmp;                                                                          \
+                GrantDistributionModelsType tmp;                                                                          \
                 tmp.set_which(i);                                                                                      \
                 string n;                                                                                              \
-                tmp.visit(get_grant_contract_details_type(n));                                                         \
+                tmp.visit(get_grant_distribution_models_type(n));                                                         \
                 name_map[n] = i;                                                                                       \
             }                                                                                                          \
             return name_map;                                                                                           \
@@ -214,15 +200,12 @@ struct get_grant_contract_details_type
     }                                                                                                                  \
     } /* fc */
 
-
-
-FC_REFLECT( deip::protocol::create_grant_operation, (grantor)(amount)(type)(target_disciplines)(details) )
-FC_REFLECT_ENUM( deip::protocol::grant_contract_type, (unknown)(announced_application_window)(funding_opportunity_announcement)(discipline_supply_announcement) )
+FC_REFLECT( deip::protocol::create_grant_operation, (grantor)(amount)(target_disciplines)(distribution_model)(extensions) )
 
 FC_REFLECT( deip::protocol::base_grant_contract, (version) )
-FC_REFLECT_DERIVED( deip::protocol::announced_application_window_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (review_committee_id)(min_number_of_positive_reviews)(min_number_of_applications)(max_number_of_research_to_grant)(start_date)(end_date) )
+FC_REFLECT_DERIVED( deip::protocol::announced_application_window_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (review_committee_id)(min_number_of_positive_reviews)(min_number_of_applications)(max_number_of_research_to_grant)(start_date)(end_date)(additional_info) )
 FC_REFLECT_DERIVED( deip::protocol::funding_opportunity_announcement_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (organization_id)(review_committee_id)(funding_opportunity_number)(award_ceiling)(award_floor)(expected_number_of_awards)(open_date)(close_date)(officers)(additional_info) )
 FC_REFLECT_DERIVED( deip::protocol::discipline_supply_announcement_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (start_time)(end_time)(is_extendable)(content_hash)(additional_info) )
 
-DECLARE_GRANT_CONTRACT_DETAILS_TYPE(deip::protocol::grant_contract_details)
-FC_REFLECT_TYPENAME(deip::protocol::grant_contract_details)
+DECLARE_GRANT_DISTRIBUTION_MODELS_TYPE(deip::protocol::grant_distribution_models)
+FC_REFLECT_TYPENAME(deip::protocol::grant_distribution_models)

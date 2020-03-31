@@ -4467,7 +4467,7 @@ BOOST_AUTO_TEST_CASE(create_grant_test)
         announced_application_window_contract.max_number_of_research_to_grant = 10;
         announced_application_window_contract.start_date = db.head_block_time() + DAYS_TO_SECONDS(10);
         announced_application_window_contract.end_date = db.head_block_time() + DAYS_TO_SECONDS(30);
-        op.details.push_back(announced_application_window_contract);
+        op.distribution_model = announced_application_window_contract;
 
         private_key_type priv_key = generate_private_key("bob");
 
