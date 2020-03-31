@@ -2320,7 +2320,6 @@ annotated_signed_transaction wallet_api::create_discipline_supply(const std::str
     op.grantor = grantor;
     op.amount = amount;
     op.target_disciplines = { target_discipline };
-    op.type = 3;
 
     discipline_supply_announcement_contract_v1_0_0_type discipline_supply_announcement;
     discipline_supply_announcement.start_time = fc::time_point_sec(start_time);
@@ -2328,7 +2327,7 @@ annotated_signed_transaction wallet_api::create_discipline_supply(const std::str
     discipline_supply_announcement.content_hash = content_hash;
     discipline_supply_announcement.is_extendable = is_extendable;
 
-    op.details.push_back(discipline_supply_announcement);
+    op.distribution_model = discipline_supply_announcement;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2816,7 +2815,6 @@ annotated_signed_transaction wallet_api::create_grant(const std::string& grantor
     op.grantor = grantor;
     op.amount = amount;
     op.target_disciplines = { target_discipline };
-    op.type = 1;
 
     announced_application_window_contract_v1_0_0_type announced_application_window_contract;
     announced_application_window_contract.review_committee_id = review_committee_id;
@@ -2825,7 +2823,7 @@ annotated_signed_transaction wallet_api::create_grant(const std::string& grantor
     announced_application_window_contract.max_number_of_research_to_grant = max_number_of_research_to_grant;
     announced_application_window_contract.start_date = fc::time_point_sec(start_date);
     announced_application_window_contract.end_date = fc::time_point_sec(end_date);
-    op.details.push_back(announced_application_window_contract);
+    op.distribution_model = announced_application_window_contract;
 
     signed_transaction tx;
     tx.operations.push_back(op);

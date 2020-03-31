@@ -169,7 +169,6 @@ public:
     // Funding opportunities
     fc::optional<funding_opportunity_api_obj> get_funding_opportunity_announcement(const funding_opportunity_id_type& id) const;
     fc::optional<funding_opportunity_api_obj> get_funding_opportunity_announcement_by_number(const string& number) const;
-    vector<funding_opportunity_api_obj> get_funding_opportunity_announcements_by_grantor(const set<string>& names) const;
     vector<funding_opportunity_api_obj> get_funding_opportunity_announcements_by_organization(const research_group_id_type& research_group_id) const;
     vector<funding_opportunity_api_obj> get_funding_opportunity_announcements_listing(const uint16_t&, const uint16_t& limit) const;
 
@@ -195,11 +194,13 @@ public:
 
     // Awards
     fc::optional<award_api_obj> get_award(const award_id_type& id) const;
-    vector<award_api_obj> get_awards_by_creator(const account_name_type& creator) const;
+    vector<award_api_obj> get_awards_by_funding_opportunity(const string& number) const;
 
-    fc::optional<award_research_relation_api_obj> get_award_research_relation(const award_research_relation_id_type& id) const;
-    fc::optional<award_research_relation_api_obj> get_award_research_relation_by_award_and_research(const award_id_type& award_id, const research_id_type& research_id) const;
-    vector<award_research_relation_api_obj> get_award_research_relations_by_award(const award_id_type& award_id) const;
+    // Awardees
+    fc::optional<award_recipient_api_obj> get_award_recipient(const award_recipient_id_type& id) const;
+    vector<award_recipient_api_obj> get_award_recipients_by_award(const award_id_type& award_id) const;
+    vector<award_recipient_api_obj> get_award_recipients_by_account(const account_name_type& awardee) const;
+    vector<award_recipient_api_obj> get_award_recipients_by_funding_opportunity(const string& number) const;
 
     // Authority / validation
     std::string get_transaction_hex(const signed_transaction& trx) const;
@@ -2605,28 +2606,6 @@ fc::optional<funding_opportunity_api_obj> database_api_impl::get_funding_opportu
     return result;
 }
 
-vector<funding_opportunity_api_obj> database_api::get_funding_opportunity_announcements_by_grantor(const set<string>& names) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_funding_opportunity_announcements_by_grantor(names); });
-}
-
-vector<funding_opportunity_api_obj> database_api_impl::get_funding_opportunity_announcements_by_grantor(const set<string>& names) const
-{
-    vector<funding_opportunity_api_obj> results;
-    chain::dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<chain::dbs_funding_opportunity>();
-    for (const auto& name : names)
-    {
-        auto funding_opportunities = funding_opportunity_service.get_funding_opportunity_announcements_by_grantor(name);
-        for (const chain::funding_opportunity_object& funding_opportunity: funding_opportunities)
-        {
-            results.push_back(funding_opportunity_api_obj(funding_opportunity));
-        }
-    }
-
-    return results;
-}
-
-
 vector<funding_opportunity_api_obj> database_api::get_funding_opportunity_announcements_by_organization(const research_group_id_type& research_group_id) const
 {
     return my->_db.with_read_lock([&]() { return my->get_funding_opportunity_announcements_by_organization(research_group_id); });
@@ -2772,7 +2751,7 @@ fc::optional<research_group_organization_contract_api_obj> database_api::get_org
 
 fc::optional<research_group_organization_contract_api_obj> database_api_impl::get_organizational_contract(const research_group_organization_contract_id_type& id) const
 {
-    fc::optional<research_group_organization_contract_api_obj> contract;
+    fc::optional<research_group_organization_contract_api_obj> result;
 
     const auto& idx = _db
       .get_index<research_group_organization_contract_index>()
@@ -2782,10 +2761,10 @@ fc::optional<research_group_organization_contract_api_obj> database_api_impl::ge
     auto itr = idx.find(id);
     if (itr != idx.end())
     {
-        contract = research_group_organization_contract_api_obj(*itr);
+        result = research_group_organization_contract_api_obj(*itr);
     }
 
-    return contract;
+    return result;
 }
 
 
@@ -2854,7 +2833,7 @@ fc::optional<research_group_organization_contract_api_obj> database_api::get_org
 
 fc::optional<research_group_organization_contract_api_obj> database_api_impl::get_organizational_contract_by_organization_and_research_group_and_type(const research_group_id_type& organization_id, const research_group_id_type& research_group_id, const uint16_t& type) const
 {
-    fc::optional<research_group_organization_contract_api_obj> contract;
+    fc::optional<research_group_organization_contract_api_obj> result;
 
     const auto& idx = _db
       .get_index<research_group_organization_contract_index>()
@@ -2864,22 +2843,20 @@ fc::optional<research_group_organization_contract_api_obj> database_api_impl::ge
     auto itr = idx.find(std::make_tuple(organization_id, research_group_id, type));
     if (itr != idx.end())
     {
-        contract = research_group_organization_contract_api_obj(*itr);
+        result = research_group_organization_contract_api_obj(*itr);
     }
 
-    return contract;
+    return result;
 }
 
 fc::optional<discipline_supply_api_obj> database_api::get_discipline_supply(const discipline_supply_id_type& id) const
 {
-    return my->_db.with_read_lock([&]() {
-        return my->get_discipline_supply(id);
-    });
+    return my->_db.with_read_lock([&]() { return my->get_discipline_supply(id); });
 }
 
 fc::optional<discipline_supply_api_obj> database_api_impl::get_discipline_supply(const discipline_supply_id_type& id) const
 {
-    fc::optional<discipline_supply_api_obj> contract;
+    fc::optional<discipline_supply_api_obj> result;
 
     const auto& idx = _db
       .get_index<discipline_supply_index>()
@@ -2889,138 +2866,156 @@ fc::optional<discipline_supply_api_obj> database_api_impl::get_discipline_supply
     auto itr = idx.find(id);
     if (itr != idx.end())
     {
-        contract = discipline_supply_api_obj(*itr);
+        result = discipline_supply_api_obj(*itr);
     }
 
-    return contract;
+    return result;
 }
 
 fc::optional<award_api_obj> database_api::get_award(const award_id_type& id) const
 {
-    return my->_db.with_read_lock([&]() {
-        return my->get_award(id);
-    });
+    return my->_db.with_read_lock([&]() { return my->get_award(id); });
 }
 
 fc::optional<award_api_obj> database_api_impl::get_award(const award_id_type& id) const
 {
-    fc::optional<award_api_obj> award;
+    chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
+    
+    fc::optional<award_api_obj> result;
+    const auto& opt = awards_service.get_award_if_exists(id);
 
-    const auto& idx = _db
-      .get_index<award_index>()
-      .indicies()
-      .get<by_id>();
-
-    auto itr = idx.find(id);
-    if (itr != idx.end())
-    {
-        award = award_api_obj(*itr);
+    if (opt.valid())
+    {   
+        const auto& award = (*opt).get();
+        vector<award_recipient_api_obj> awardees_list;
+        auto awardees = awards_service.get_award_recipients_by_award(award.id);
+        for (auto& wrap : awardees)
+        {
+            const auto& awardee = wrap.get();
+            awardees_list.push_back(awardee);
+        }
+        result = award_api_obj(*opt, awardees_list);
     }
 
-    return award;
+    return result;
 }
 
-vector<award_api_obj> database_api::get_awards_by_creator(const account_name_type& creator) const
+vector<award_api_obj> database_api::get_awards_by_funding_opportunity(const string& number) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_awards_by_creator(creator); });
+    return my->_db.with_read_lock([&]() { return my->get_awards_by_funding_opportunity(number); });
 }
 
-vector<award_api_obj> database_api_impl::get_awards_by_creator(const account_name_type& creator) const
+vector<award_api_obj> database_api_impl::get_awards_by_funding_opportunity(const string& number) const
 {
+    chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
+    chain::dbs_funding_opportunity& foa_service = _db.obtain_service<chain::dbs_funding_opportunity>();
+    
     vector<award_api_obj> results;
+    const auto& foa_opt = foa_service.get_funding_opportunity_announcement_by_number_if_exists(number);
 
-    const auto& itr_pair = _db
-      .get_index<award_index>()
-      .indicies()
-      .get<by_creator>()
-      .equal_range(creator);
-
-    auto itr = itr_pair.first;
-    const auto itr_end = itr_pair.second;
-
-    while (itr != itr_end)
+    if (foa_opt.valid())
     {
-        results.push_back(award_api_obj(*itr));
-        ++itr;
+        const auto& foa = (*foa_opt).get();
+        auto awards = awards_service.get_awards_by_funding_opportunity(foa.id);
+        for (auto& wrap : awards)
+        {
+            const auto& award = wrap.get();
+            vector<award_recipient_api_obj> awardees_list;
+            auto awardees = awards_service.get_award_recipients_by_award(award.id);
+            for (auto& awardee_wrap : awardees)
+            {
+                const auto& awardee = awardee_wrap.get();
+                awardees_list.push_back(awardee);
+            }
+            results.push_back(award_api_obj(award, awardees_list));
+        }
     }
 
     return results;
 }
 
-fc::optional<award_research_relation_api_obj> database_api::get_award_research_relation(const award_research_relation_id_type& id) const
+fc::optional<award_recipient_api_obj> database_api::get_award_recipient(const award_recipient_id_type& id) const
 {
-    return my->_db.with_read_lock([&]() {
-        return my->get_award_research_relation(id);
-    });
+    return my->_db.with_read_lock([&]() { return my->get_award_recipient(id); });
 }
 
-fc::optional<award_research_relation_api_obj> database_api_impl::get_award_research_relation(const award_research_relation_id_type& id) const
+fc::optional<award_recipient_api_obj> database_api_impl::get_award_recipient(const award_recipient_id_type& id) const
 {
-    fc::optional<award_research_relation_api_obj> award_research_relation;
+    chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
 
-    const auto& idx = _db
-      .get_index<award_research_relation_index>()
-      .indicies()
-      .get<by_id>();
+    fc::optional<award_recipient_api_obj> result;
+    const auto& opt = awards_service.get_award_recipient_if_exists(id);
 
-    auto itr = idx.find(id);
-    if (itr != idx.end())
+    if (opt.valid())
     {
-        award_research_relation = award_research_relation_api_obj(*itr);
+        result = award_recipient_api_obj(*opt);
     }
 
-    return award_research_relation;
+    return result;
 }
 
-fc::optional<award_research_relation_api_obj> database_api::get_award_research_relation_by_award_and_research(const award_id_type& award_id,
-                                                                                                              const research_id_type& research_id) const
+vector<award_recipient_api_obj> database_api::get_award_recipients_by_award(const award_id_type& award_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        return my->get_award_research_relation_by_award_and_research(award_id, research_id);
-    });
+    return my->_db.with_read_lock([&]() { return my->get_award_recipients_by_award(award_id); });
 }
 
-fc::optional<award_research_relation_api_obj> database_api_impl::get_award_research_relation_by_award_and_research(const award_id_type& award_id,
-                                                                                                                   const research_id_type& research_id) const
+vector<award_recipient_api_obj> database_api_impl::get_award_recipients_by_award(const award_id_type& award_id) const
 {
-    fc::optional<award_research_relation_api_obj> award_research_relation;
+    chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
 
-    const auto& idx = _db
-      .get_index<award_research_relation_index>()
-      .indicies()
-      .get<by_award_and_research>();
-
-    auto itr = idx.find(std::make_tuple(award_id, research_id));
-    if (itr != idx.end())
+    vector<award_recipient_api_obj> results;
+    auto awardees = awards_service.get_award_recipients_by_award(award_id);
+    for (auto& wrap : awardees)
     {
-        award_research_relation = award_research_relation_api_obj(*itr);
+        const auto& awardee = wrap.get();
+        results.push_back(awardee);
     }
 
-    return award_research_relation;
+    return results;
 }
 
-vector<award_research_relation_api_obj> database_api::get_award_research_relations_by_award(const award_id_type& award_id) const
+vector<award_recipient_api_obj> database_api::get_award_recipients_by_account(const account_name_type& account) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_award_research_relations_by_award(award_id); });
+    return my->_db.with_read_lock([&]() { return my->get_award_recipients_by_account(account); });
 }
 
-vector<award_research_relation_api_obj> database_api_impl::get_award_research_relations_by_award(const award_id_type& award_id) const
+vector<award_recipient_api_obj> database_api_impl::get_award_recipients_by_account(const account_name_type& account) const
 {
-    vector<award_research_relation_api_obj> results;
+    chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
 
-    const auto& itr_pair = _db
-      .get_index<award_research_relation_index>()
-      .indicies()
-      .get<by_award>()
-      .equal_range(award_id);
-
-    auto itr = itr_pair.first;
-    const auto itr_end = itr_pair.second;
-
-    while (itr != itr_end)
+    vector<award_recipient_api_obj> results;
+    auto awardees = awards_service.get_award_recipients_by_account(account);
+    for (auto& wrap : awardees)
     {
-        results.push_back(award_research_relation_api_obj(*itr));
-        ++itr;
+        const auto& awardee = wrap.get();
+        results.push_back(awardee);
+    }
+
+    return results;
+}
+
+vector<award_recipient_api_obj> database_api::get_award_recipients_by_funding_opportunity(const string& number) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_award_recipients_by_funding_opportunity(number); });
+}
+
+vector<award_recipient_api_obj> database_api_impl::get_award_recipients_by_funding_opportunity(const string& number) const
+{
+    chain::dbs_award& awards_service = _db.obtain_service<chain::dbs_award>();
+    chain::dbs_funding_opportunity& foa_service = _db.obtain_service<chain::dbs_funding_opportunity>();
+
+    vector<award_recipient_api_obj> results;
+    const auto& foa_opt = foa_service.get_funding_opportunity_announcement_by_number_if_exists(number);
+
+    if (foa_opt.valid())
+    {
+        const auto& foa = (*foa_opt).get();
+        auto awardees = awards_service.get_award_recipients_by_funding_opportunity(foa.id);
+        for (auto& wrap : awardees)
+        {
+            const auto& awardee = wrap.get();
+            results.push_back(awardee);
+        }
     }
 
     return results;

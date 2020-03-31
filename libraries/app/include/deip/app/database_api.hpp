@@ -467,7 +467,6 @@ public:
 
     fc::optional<funding_opportunity_api_obj> get_funding_opportunity_announcement(const funding_opportunity_id_type& id) const;
     fc::optional<funding_opportunity_api_obj> get_funding_opportunity_announcement_by_number(const string& number) const;
-    vector<funding_opportunity_api_obj> get_funding_opportunity_announcements_by_grantor(const set<string>& names) const;
     vector<funding_opportunity_api_obj> get_funding_opportunity_announcements_by_organization(const research_group_id_type& research_group_id) const;
     vector<funding_opportunity_api_obj> get_funding_opportunity_announcements_listing(const uint16_t& page, const uint16_t& limit) const;
 
@@ -512,12 +511,12 @@ public:
     ///////////
 
     fc::optional<award_api_obj> get_award(const award_id_type& id) const;
-    vector<award_api_obj> get_awards_by_creator(const account_name_type& creator) const;
+    vector<award_api_obj> get_awards_by_funding_opportunity(const string& number) const;
 
-    fc::optional<award_research_relation_api_obj> get_award_research_relation(const award_research_relation_id_type& id) const;
-    fc::optional<award_research_relation_api_obj> get_award_research_relation_by_award_and_research(const award_id_type& award_id, const research_id_type& research_id) const;
-    vector<award_research_relation_api_obj> get_award_research_relations_by_award(const award_id_type& award_id) const;
-
+    fc::optional<award_recipient_api_obj> get_award_recipient(const award_recipient_id_type& id) const;
+    vector<award_recipient_api_obj> get_award_recipients_by_award(const award_id_type& award_id) const;
+    vector<award_recipient_api_obj> get_award_recipients_by_account(const account_name_type& awardee) const;
+    vector<award_recipient_api_obj> get_award_recipients_by_funding_opportunity(const string& number) const;
 
     ////////////////////////////
     // Handlers - not exposed //
@@ -713,7 +712,6 @@ FC_API(deip::app::database_api,
    // FOA
    (get_funding_opportunity_announcement)
    (get_funding_opportunity_announcement_by_number)
-   (get_funding_opportunity_announcements_by_grantor)
    (get_funding_opportunity_announcements_by_organization)
    (get_funding_opportunity_announcements_listing)
 
@@ -742,11 +740,12 @@ FC_API(deip::app::database_api,
 
    // Awards
    (get_award)
-   (get_awards_by_creator)
+   (get_awards_by_funding_opportunity)
 
-   (get_award_research_relation)
-   (get_award_research_relation_by_award_and_research)
-   (get_award_research_relations_by_award)
+   (get_award_recipient)
+   (get_award_recipients_by_award)
+   (get_award_recipients_by_account)
+   (get_award_recipients_by_funding_opportunity)
 )
 
 // clang-format on
