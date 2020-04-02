@@ -214,44 +214,6 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_by_research_id)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_research_token_sales_by_end_time)
-{
-    try
-    {
-        create_research_token_sales();
-
-        auto research_token_sales = data_service.get_by_end_time(END_TIME);
-
-        BOOST_CHECK(research_token_sales.size() == 2);
-
-        BOOST_CHECK(std::any_of(research_token_sales.begin(), research_token_sales.end(),
-                                [](std::reference_wrapper<const research_token_sale_object> wrapper) {
-                                    const research_token_sale_object& research_token_sale = wrapper.get();
-                                    return research_token_sale.id == 0
-                                        && research_token_sale.research_id == 1
-                                        && research_token_sale.start_time == START_TIME
-                                        && research_token_sale.end_time == END_TIME
-                                        && research_token_sale.total_amount == asset(0, DEIP_SYMBOL)
-                                        && research_token_sale.balance_tokens == BALANCE_TOKENS
-                                        && research_token_sale.soft_cap == asset(SOFT_CAP, DEIP_SYMBOL)
-                                        && research_token_sale.hard_cap == asset(HARD_CAP, DEIP_SYMBOL);
-                                }));
-
-        BOOST_CHECK(std::any_of(research_token_sales.begin(), research_token_sales.end(),
-                                [](std::reference_wrapper<const research_token_sale_object> wrapper) {
-                                    const research_token_sale_object& research_token_sale = wrapper.get();
-                                    return research_token_sale.id == 2 && research_token_sale.research_id == 3
-                                        && research_token_sale.start_time == fc::time_point_sec(1581177654)
-                                        && research_token_sale.end_time == END_TIME
-                                        && research_token_sale.total_amount == asset(0, DEIP_SYMBOL)
-                                        && research_token_sale.balance_tokens == 90
-                                        && research_token_sale.soft_cap == asset(60, DEIP_SYMBOL)
-                                        && research_token_sale.hard_cap == asset(90, DEIP_SYMBOL);
-                                }));
-    }
-    FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_CASE(check_research_token_sale_existence)
 {
     try

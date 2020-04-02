@@ -1665,25 +1665,6 @@ database_api::get_research_token_sales_by_research_id_and_status(const research_
     });
 }
 
-vector<research_token_sale_api_obj>
-database_api::get_research_token_sale_by_end_time(const time_point_sec end_time) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<research_token_sale_api_obj> results;
-        chain::dbs_research_token_sale& research_token_sale_service
-            = my->_db.obtain_service<chain::dbs_research_token_sale>();
-
-        auto research_token_sales = research_token_sale_service.get_by_end_time(end_time);
-
-        for (const chain::research_token_sale_object& research_token_sale : research_token_sales)
-        {
-            results.push_back(research_token_sale);
-        }
-
-        return results;
-    });
-}
-
 fc::optional<research_token_sale_contribution_api_obj>
 database_api::get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type research_token_sale_contribution_id) const
 {

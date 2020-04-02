@@ -78,24 +78,6 @@ dbs_research_token_sale::get_by_research_id(const research_id_type &research_id)
     return ret;
 }
 
-dbs_research_token_sale::research_token_sale_refs_type
-dbs_research_token_sale::get_by_end_time(const fc::time_point_sec &end_time) const
-{
-    research_token_sale_refs_type ret;
-
-    const auto& idx = db_impl().get_index<research_token_sale_index>().indices().get<by_end_time>();
-    auto it = idx.begin();
-    auto it_end = idx.upper_bound(end_time);
-
-    while (it != it_end)
-    {
-        ret.push_back(std::cref(*it));
-        ++it;
-    }
-
-    return ret;
-}
-
 void dbs_research_token_sale::check_research_token_sale_existence(const research_token_sale_id_type& id) const
 {
     auto research_token_sale = db_impl().find<research_token_sale_object, by_id>(id);
@@ -270,25 +252,38 @@ void dbs_research_token_sale::refund_research_tokens(const research_token_sale_i
 
 void dbs_research_token_sale::process_research_token_sales()
 {
-    auto _head_block_time = db_impl().head_block_time();
+    const auto& idx = db_impl()
+      .get_index<research_token_sale_index>()
+      .indices()
+      .get<by_end_time>();
 
-    const auto token_sales_refs = get_by_end_time(_head_block_time);
-    for (auto& token_sale_ref : token_sales_refs)
+    auto itr = idx.begin();
+    const auto now = db_impl().head_block_time();
+
+    while (itr != idx.end()) // TODO add index by status to decrease iteration time
     {
-        auto& token_sale = token_sale_ref.get();
-        if (token_sale.end_time <= _head_block_time && token_sale.status == research_token_sale_status::token_sale_active) {
-            if (token_sale.total_amount < token_sale.soft_cap) {
-                update_status(token_sale.id, research_token_sale_status::token_sale_expired);
-                refund_research_tokens(token_sale.id);
-            } else if (token_sale.total_amount >= token_sale.soft_cap) {
-                update_status(token_sale.id, research_token_sale_status::token_sale_finished);
-                distribute_research_tokens(token_sale.id);
+        if (itr->end_time <= now && itr->status == research_token_sale_status::token_sale_active)
+        {
+            if (itr->total_amount < itr->soft_cap)
+            {
+                update_status(itr->id, research_token_sale_status::token_sale_expired);
+                refund_research_tokens(itr->id);
             }
-        } else if (token_sale.end_time > _head_block_time) {
-            if (_head_block_time >= token_sale.start_time && token_sale.status == research_token_sale_status::token_sale_inactive) {
-                update_status(token_sale.id, research_token_sale_status::token_sale_active);
+            else if (itr->total_amount >= itr->soft_cap)
+            {
+                update_status(itr->id, research_token_sale_status::token_sale_finished);
+                distribute_research_tokens(itr->id);
             }
         }
+        else if (itr->end_time > now)
+        {
+            if (now >= itr->start_time && itr->status == research_token_sale_status::token_sale_inactive)
+            {
+                update_status(itr->id, research_token_sale_status::token_sale_active);
+            }
+        }
+
+        itr++;
     }
 }
 
