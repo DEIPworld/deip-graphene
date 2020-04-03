@@ -1599,7 +1599,7 @@ void reserve_asset_evaluator::do_apply(const reserve_asset_operation& op)
 
     account_service.check_account_existence(op.owner);
 
-    FC_ASSERT(asset_service.exists_by_symbol(op.amount.symbol), "Asset doesn't exist");
+    FC_ASSERT(asset_service.exists_by_symbol(op.amount.symbol), "Asset does not exist");
     auto& _asset_obj = asset_service.get_by_symbol(op.amount.symbol);
 
     account_balance_service.check_existence_by_owner_and_asset(op.owner, op.amount.symbol);
@@ -1621,67 +1621,429 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       "Account ${1} does not exist", 
       ("1", op.creator));
 
-    FC_ASSERT(funding_opportunity_service.funding_opportunity_announcement_exists(op.funding_opportunity_id),
+    FC_ASSERT(account_service.account_exists(op.awardee),
+      "Account ${1} does not exist",
+      ("1", op.awardee));
+
+    FC_ASSERT(research_service.research_exists(op.research_id),
+      "Research ID:${1} does not exist",
+      ("1", op.research_id));
+
+    FC_ASSERT(research_group_service.research_group_exists(op.university_id),
+      "University with ID:${1} does not exist",
+      ("1", op.university_id));
+
+    FC_ASSERT(funding_opportunity_service.funding_opportunity_announcement_exists(op.funding_opportunity_number),
       "Funding opportunity with ID ${1} does not exist", 
-      ("1", op.funding_opportunity_id));
+      ("1", op.funding_opportunity_number));
 
-    const auto& foa = funding_opportunity_service.get_funding_opportunity_announcement(op.funding_opportunity_id);
+    const auto& foa = funding_opportunity_service.get_funding_opportunity_announcement(op.funding_opportunity_number);
 
-    FC_ASSERT(foa.amount - foa.awarded >= op.award,
-              "Funding opportunity doesn't have enough funds to award. Availabale amount:${1}, required:${2}.",
-              ("1", foa.amount.amount - foa.awarded.amount)("2", op.award.amount));
+    FC_ASSERT(foa.current_supply >= op.award,
+      "Funding opportunity does not have enough funds to award. Availabale amount:${1}, Required amount:${2}.",
+      ("1", foa.current_supply.amount)("2", op.award.amount));
 
     const auto& foa_organization = research_group_service.get_research_group(foa.organization_id);
     
     FC_ASSERT(research_group_service.is_research_group_member(op.creator, foa_organization.id),
-      "${1} is not a member of organization ${2}", 
+      "${1} is not a member of FOA organization ${2}", 
       ("1", op.creator)("2", foa_organization.id));
 
+    FC_ASSERT(research_group_id_type(op.university_id) != foa_organization.id,
+      "Funding opportunity agency ${1} is not allowed as intermediary",
+      ("1", op.university_id));
+
     FC_ASSERT(op.award.symbol == foa.amount.symbol,
-      "Award asset ${1} does not match with funding opportunity asset ${2}.",
+      "Award asset ${1} does not match funding opportunity asset ${2}.",
       ("1", op.award.symbol_name())("2", foa.amount.symbol_name()));
 
     FC_ASSERT(account_balance_service.exists_by_owner_and_asset(op.creator, op.award.symbol),
-      "Account balance with for ${1} for asset ${2} does not exist", 
+      "Account balance for ${1} for asset ${2} does not exist", 
       ("1", op.creator)("2", op.award.symbol_name()));
 
-    const auto& award = award_service.create_award(op.funding_opportunity_id, op.creator, op.award);
+    const asset university_fee = asset(((op.award.amount * share_type(op.university_overhead))) / DEIP_100_PERCENT, op.award.symbol);
+    const asset top_subawards_amount = std::accumulate(
+        op.subawardees.begin(), op.subawardees.end(), asset(0, op.award.symbol),
+        [&](asset acc, const subawardee_type& s) { return s.source == op.awardee ? acc + s.subaward : acc; });
 
-    for (auto& awardee : op.awardees) 
+    std::map<account_name_type, asset> awards_map = { { op.awardee, op.award - university_fee - top_subawards_amount } };
+    for (auto& subaward : op.subawardees)
     {
-        FC_ASSERT(account_service.account_exists(awardee.awardee),
-                  "Account ${1} does not exist",
-                  ("1", awardee.awardee));
+        const asset subsequent_subawards_amount = std::accumulate(
+            op.subawardees.begin(), op.subawardees.end(), asset(0, op.award.symbol), 
+            [&](asset acc, const subawardee_type& s) {
+                return s.source == subaward.subawardee ? acc + s.subaward : acc;
+            });
 
-        FC_ASSERT(research_service.research_exists(awardee.research_id),
-                  "Research with id ${1} does not exist",
-                  ("1", awardee.research_id));
+        awards_map[subaward.subawardee] = subaward.subaward - subsequent_subawards_amount;
+    }
 
-        FC_ASSERT(research_group_service.research_group_exists(awardee.university_id),
-                  "University with id ${1} does not exist",
-                  ("1", awardee.university_id));
+    const auto& award = award_service.create_award(
+      op.funding_opportunity_number, 
+      op.award_number, 
+      op.awardee,
+      op.award, 
+      op.university_id,
+      op.university_overhead,
+      op.creator,
+      award_status::pending);
 
-        const auto& research = research_service.get_research(awardee.research_id);
+    award_service.create_award_recipient(
+      fc::to_string(award.award_number),
+      fc::to_string(award.award_number),
+      fc::to_string(award.funding_opportunity_number),
+      award.awardee,
+      account_name_type(),
+      awards_map[award.awardee],
+      op.research_id,
+      award_recipient_status::unconfirmed);
 
-        FC_ASSERT(research_group_service.is_research_group_member(awardee.awardee, research.research_group_id),
-                  "Awardee ${1} is not a member of research group with ID:{2}",
-                  ("1", awardee.awardee)("2", research.research_group_id));
+    for (auto& subaward : op.subawardees)
+    {
+        FC_ASSERT(account_service.account_exists(subaward.subawardee),
+          "Account ${1} does not exist",
+          ("1", subaward.subawardee));
 
-        FC_ASSERT(awardee.university_id != research.research_group_id,
-                  "University id and research group id can't be the same.");
+        FC_ASSERT(research_service.research_exists(subaward.research_id),
+          "Research ID:${1} does not exist",
+          ("1", subaward.research_id));
+
+        const auto& research = research_service.get_research(subaward.research_id);
+
+        FC_ASSERT(research_group_service.is_research_group_member(subaward.subawardee, research.research_group_id),
+          "Awardee ${1} is not a member of research group ID:{2}",
+          ("1", subaward.subawardee)("2", research.research_group_id));
 
         award_service.create_award_recipient(
-          award.id,
-          foa.id,
-          research.id,
-          research.research_group_id,
-          awardee.awardee,
-          awardee.award,
-          awardee.university_id,
-          awardee.university_overhead);
+          fc::to_string(award.award_number),
+          subaward.subaward_number,
+          fc::to_string(award.funding_opportunity_number),
+          subaward.subawardee,
+          subaward.source,
+          awards_map[subaward.subawardee],
+          subaward.research_id,
+          award_recipient_status::unconfirmed);
     }
 }
 
+void approve_award_evaluator::do_apply(const approve_award_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_award& award_service = _db.obtain_service<dbs_award>();
+    dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<dbs_funding_opportunity>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
+
+    FC_ASSERT(account_service.account_exists(op.approver),
+      "Account ${1} does not exist",
+      ("1", op.approver));
+
+    FC_ASSERT(award_service.award_exists(op.award_number),
+      "Award ${1} does not exist",
+      ("1", op.award_number));
+
+    const auto& award = award_service.get_award(op.award_number);
+    const auto& foa = funding_opportunity_service.get_funding_opportunity_announcement(fc::to_string(award.funding_opportunity_number));
+
+    FC_ASSERT(std::any_of(foa.officers.begin(), foa.officers.end(),
+      [&](const account_name_type& officer) { return officer == op.approver; }),
+      "Account ${1} is not program officer",
+      ("1", op.approver));
+
+    FC_ASSERT(award.status == static_cast<uint16_t>(award_status::pending),
+      "Only pending award can be approved. The current status is: ${1}",
+      ("1", award.status));
+
+    const auto& university = research_group_service.get_research_group(award.university_id);
+    const asset university_fee = asset(((award.amount.amount * share_type(award.university_overhead)) / DEIP_100_PERCENT), award.amount.symbol);
+    account_balance_service.adjust_balance(university.creator, university_fee);
+
+    auto awardees = award_service.get_award_recipients_by_award(op.award_number);
+
+    for (auto& wrap : awardees)
+    {
+        const award_recipient_object& award_recipient = wrap.get();
+        account_balance_service.adjust_balance(award_recipient.awardee, award_recipient.total_amount);
+        award_service.update_award_recipient_status(award_recipient, award_recipient_status::confirmed);
+    }
+
+    funding_opportunity_service.adjust_fundind_opportunity_supply(foa.id, -award.amount);
+    award_service.update_award_status(award, award_status::approved);
+}
+
+void reject_award_evaluator::do_apply(const reject_award_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_award& award_service = _db.obtain_service<dbs_award>();
+    dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<dbs_funding_opportunity>();
+
+    FC_ASSERT(account_service.account_exists(op.rejector),
+      "Account ${1} does not exist",
+      ("1", op.rejector));
+
+    FC_ASSERT(award_service.award_exists(op.award_number),
+      "Award ${1} does not exist",
+      ("1", op.award_number));
+
+    const auto& award = award_service.get_award(op.award_number);
+    const auto& foa = funding_opportunity_service.get_funding_opportunity_announcement(fc::to_string(award.funding_opportunity_number));
+
+    FC_ASSERT(std::any_of(foa.officers.begin(), foa.officers.end(),
+      [&](const account_name_type& officer) { return officer == op.rejector; }),
+      "Account ${1} is not program officer",
+      ("1", op.rejector));
+
+    FC_ASSERT(award.status == static_cast<uint16_t>(award_status::pending),
+      "Only pending award can be rejected. The current status is: ${1}",
+      ("1", award.status));
+
+    auto awardees = award_service.get_award_recipients_by_award(op.award_number);
+
+    for (auto& wrap : awardees)
+    {
+        const auto& award_recipient = wrap.get();
+        award_service.update_award_recipient_status(award_recipient, award_recipient_status::canceled);
+    }
+
+    funding_opportunity_service.adjust_fundind_opportunity_supply(foa.id, award.amount);
+    award_service.update_award_status(award, award_status::rejected);
+}
+
+void create_award_withdrawal_request_evaluator::do_apply(const create_award_withdrawal_request_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_award& award_service = _db.obtain_service<dbs_award>();
+
+    const string payment_number = op.payment_number;
+    const string award_number = op.award_number;
+    const string subaward_number = op.subaward_number.valid() ? *op.subaward_number : op.award_number;
+
+    FC_ASSERT(account_service.account_exists(op.requester),
+      "Account ${1} does not exist",
+      ("1", op.requester));
+
+    FC_ASSERT(award_service.award_exists(award_number),
+      "Award ${1} does not exist",
+      ("1", award_number));
+
+    const auto& award = award_service.get_award(award_number);
+
+    FC_ASSERT(award.status == static_cast<uint16_t>(award_status::approved),
+      "Award ${1} is not approved",
+      ("1", award_number));
+
+    FC_ASSERT(award_service.award_recipient_exists(award_number, subaward_number),
+      "Award recipient ${1}:${2} does not exist",
+      ("1", award_number)("2", subaward_number));
+
+    const auto& award_recipient = award_service.get_award_recipient(award_number, subaward_number);
+
+    FC_ASSERT(award_recipient.awardee == op.requester, 
+      "Requester ${1} is not the award recipient ${2}. Make sure you specified the correct Subaward number", 
+      ("1", op.requester)("2", award_recipient.awardee));
+
+    FC_ASSERT(op.amount.symbol == award_recipient.total_amount.symbol,
+      "Withdrawal asset ${1} does not match the award asset ${2}.",
+      ("1", op.amount.symbol_name())("2", award_recipient.total_amount.symbol_name()));
+
+    FC_ASSERT(award_recipient.total_amount - award_recipient.total_expenses >= op.amount,
+      "Not enough funds. Requested amount: ${1} Available amount: ${2}",
+      ("1", op.amount.to_string())("2", (award_recipient.total_amount - award_recipient.total_expenses).to_string()));
+
+    const auto now = _db.head_block_time();
+
+    award_service.create_award_withdrawal_request(
+      payment_number,
+      award_number,
+      subaward_number,
+      op.requester,
+      op.amount,
+      op.description,
+      now,
+      op.attachment
+    );
+}
+
+void certify_award_withdrawal_request_evaluator::do_apply(const certify_award_withdrawal_request_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_award& award_service = _db.obtain_service<dbs_award>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    const string payment_number = op.payment_number;
+    const string award_number = op.award_number;
+    const string subaward_number = op.subaward_number.valid() ? *op.subaward_number : op.award_number;
+
+    FC_ASSERT(account_service.account_exists(op.certifier),
+      "Account ${1} does not exist",
+      ("1", op.certifier));
+
+    FC_ASSERT(award_service.award_withdrawal_request_exists(award_number, payment_number),
+      "Award withdrawal request ${1}:${2} does not exist",
+      ("1", award_number)("2", payment_number));
+
+    const auto& withdrawal = award_service.get_award_withdrawal_request(award_number, payment_number);
+    const auto& award_recipient = award_service.get_award_recipient(award_number, subaward_number);
+
+    FC_ASSERT(award_recipient.awardee == withdrawal.requester,
+      "Requester ${1} is not the award recipient ${2}. Make sure you specified the correct Subaward number",
+      ("1", withdrawal.requester)("2", award_recipient.awardee));
+
+    FC_ASSERT(withdrawal.status == static_cast<uint16_t>(award_withdrawal_request_status::pending),
+      "Only pending award withdrawal request can be certified. The current status is: ${1}",
+      ("1", withdrawal.status));
+
+    const auto& award = award_service.get_award(award_number);
+
+    FC_ASSERT(research_group_service.is_research_group_member(op.certifier, award.university_id),
+      "Certifier ${1} is not a member of university with ID:{2}",
+      ("1", op.certifier)("2", award.university_id));
+
+    award_service.update_award_withdrawal_request(withdrawal, award_withdrawal_request_status::certified);
+}
+
+void approve_award_withdrawal_request_evaluator::do_apply(const approve_award_withdrawal_request_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_award& award_service = _db.obtain_service<dbs_award>();
+    dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<dbs_funding_opportunity>();
+
+    const string payment_number = op.payment_number;
+    const string award_number = op.award_number;
+    const string subaward_number = op.subaward_number.valid() ? *op.subaward_number : op.award_number;
+
+    FC_ASSERT(account_service.account_exists(op.approver),
+      "Account ${1} does not exist",
+      ("1", op.approver));
+
+    FC_ASSERT(award_service.award_withdrawal_request_exists(award_number, payment_number),
+      "Award withdrawal request ${1}:${2} does not exist",
+      ("1", award_number)("2", payment_number));
+
+    const auto& withdrawal = award_service.get_award_withdrawal_request(award_number, payment_number);
+    const auto& award_recipient = award_service.get_award_recipient(award_number, subaward_number);
+
+    FC_ASSERT(award_recipient.awardee == withdrawal.requester,
+      "Requester ${1} is not the award recipient ${2}. Make sure you specified the correct Subaward number",
+      ("1", withdrawal.requester)("2", award_recipient.awardee));
+
+    FC_ASSERT(withdrawal.status == static_cast<uint16_t>(award_withdrawal_request_status::certified),
+      "Not certified withdrawal request can not be approved. The current status is: ${1}",
+      ("1", withdrawal.status));
+
+    const auto& foa = funding_opportunity_service.get_funding_opportunity_announcement(fc::to_string(award_recipient.funding_opportunity_number));
+
+    FC_ASSERT(std::any_of(foa.officers.begin(), foa.officers.end(),
+      [&](const account_name_type& officer) { return officer == op.approver; }),
+      "Account ${1} is not Funding Opportunity officer",
+      ("1", op.approver));
+
+    award_service.update_award_withdrawal_request(withdrawal, award_withdrawal_request_status::approved);
+}
+
+void reject_award_withdrawal_request_evaluator::do_apply(const reject_award_withdrawal_request_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_award& award_service = _db.obtain_service<dbs_award>();
+    dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<dbs_funding_opportunity>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    const string payment_number = op.payment_number;
+    const string award_number = op.award_number;
+    const string subaward_number = op.subaward_number.valid() ? *op.subaward_number : op.award_number;
+
+    FC_ASSERT(account_service.account_exists(op.rejector),
+      "Account ${1} does not exist",
+      ("1", op.rejector));
+
+    FC_ASSERT(award_service.award_withdrawal_request_exists(award_number, payment_number),
+      "Award withdrawal request ${1}:${2} does not exist",
+      ("1", award_number)("2", payment_number));
+
+    const auto& withdrawal = award_service.get_award_withdrawal_request(award_number, payment_number);
+    const auto& award_recipient = award_service.get_award_recipient(award_number, subaward_number);
+
+    FC_ASSERT(award_recipient.awardee == withdrawal.requester,
+      "Requester ${1} is not the award recipient ${2}. Make sure you specified the correct Subaward number",
+      ("1", withdrawal.requester)("2", award_recipient.awardee));
+
+    FC_ASSERT(withdrawal.status == static_cast<uint16_t>(award_withdrawal_request_status::pending) ||
+              withdrawal.status == static_cast<uint16_t>(award_withdrawal_request_status::certified),
+      "Only pending or certified award withdrawal request can be rejected. The current status is: ${1}",
+      ("1", withdrawal.status));
+
+    const auto& award = award_service.get_award(award_number);
+    const auto& foa = funding_opportunity_service.get_funding_opportunity_announcement(fc::to_string(award_recipient.funding_opportunity_number));
+
+    if (withdrawal.status == static_cast<uint16_t>(award_withdrawal_request_status::pending))
+    {
+        FC_ASSERT(research_group_service.is_research_group_member(op.rejector, award.university_id),
+          "Rejector ${1} is not a member of university with ID:{2}",
+          ("1", op.rejector)("2", award.university_id));
+    }
+    else if (withdrawal.status == static_cast<uint16_t>(award_withdrawal_request_status::certified))
+    {
+        FC_ASSERT(std::any_of(foa.officers.begin(), foa.officers.end(),
+          [&](const account_name_type &officer) { return officer == op.rejector; }),
+          "Account ${1} is not Funding Opportunity officer",
+          ("1", op.rejector));
+    }
+    else 
+    {
+        FC_ASSERT(false, "Unexpected status");
+    }
+
+    award_service.update_award_withdrawal_request(withdrawal, award_withdrawal_request_status::rejected);
+}
+
+void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal_request_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
+    dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
+    dbs_award& award_service = _db.obtain_service<dbs_award>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    const string payment_number = op.payment_number;
+    const string award_number = op.award_number;
+    const string subaward_number = op.subaward_number.valid() ? *op.subaward_number : op.award_number;
+
+    FC_ASSERT(account_service.account_exists(op.payer),
+      "Account ${1} does not exist",
+      ("1", op.payer));
+
+    FC_ASSERT(award_service.award_withdrawal_request_exists(award_number, payment_number),
+      "Award withdrawal request ${1}:${2} does not exist",
+      ("1", award_number)("2", payment_number));
+
+    const auto& withdrawal = award_service.get_award_withdrawal_request(award_number, payment_number);
+    const auto& award_recipient = award_service.get_award_recipient(award_number, subaward_number);
+
+    FC_ASSERT(award_recipient.awardee == withdrawal.requester,
+      "Requester ${1} is not the award recipient ${2}. Make sure you specified the correct Subaward number",
+      ("1", withdrawal.requester)("2", award_recipient.awardee));
+
+    FC_ASSERT(withdrawal.status == static_cast<uint16_t>(award_withdrawal_request_status::approved),
+      "Only approved award withdrawal request can be paid. The current status is: ${1}",
+      ("1", withdrawal.status));
+
+    const auto& treasury = research_group_service.get_research_group_by_permlink(DEIP_TREASURY_PERMLINK);
+
+    FC_ASSERT(research_group_service.is_research_group_member(op.payer, treasury.id),
+      "Account ${1} is not a member o fthe Treasury",
+      ("1", op.payer));
+
+    FC_ASSERT(award_recipient.total_amount - award_recipient.total_expenses >= withdrawal.amount, 
+      "Not enough funds to process the payment. Requested ${1}, Available: ${2} ", 
+      ("1", withdrawal.amount)("2", award_recipient.total_amount - award_recipient.total_expenses));
+
+    account_balance_service.adjust_balance(withdrawal.requester, -withdrawal.amount);
+
+    auto& asset = asset_service.get_by_symbol(withdrawal.amount.symbol);
+    asset_service.adjust_current_supply(asset, -withdrawal.amount.amount);
+    award_service.adjust_expenses(award_recipient.id, withdrawal.amount);
+    award_service.update_award_withdrawal_request(withdrawal, award_withdrawal_request_status::paid);
+}
 
 } // namespace chain
 } // namespace deip 

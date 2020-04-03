@@ -49,6 +49,13 @@ DEFINE_EVALUATOR(create_asset)
 DEFINE_EVALUATOR(issue_asset)
 DEFINE_EVALUATOR(reserve_asset)
 DEFINE_EVALUATOR(create_award)
+DEFINE_EVALUATOR(approve_award)
+DEFINE_EVALUATOR(reject_award)
+DEFINE_EVALUATOR(create_award_withdrawal_request)
+DEFINE_EVALUATOR(certify_award_withdrawal_request)
+DEFINE_EVALUATOR(approve_award_withdrawal_request)
+DEFINE_EVALUATOR(reject_award_withdrawal_request)
+DEFINE_EVALUATOR(pay_award_withdrawal_request)
 
 }
 } // deip::chain

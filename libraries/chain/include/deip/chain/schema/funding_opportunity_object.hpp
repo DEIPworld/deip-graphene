@@ -33,7 +33,7 @@ public:
     asset amount = asset(0, DEIP_SYMBOL);
     asset award_ceiling = asset(0, DEIP_SYMBOL);
     asset award_floor = asset(0, DEIP_SYMBOL);
-    asset awarded = asset(0, DEIP_SYMBOL);
+    asset current_supply = asset(0, DEIP_SYMBOL);
 
     uint16_t expected_number_of_awards;
 
@@ -44,7 +44,7 @@ public:
     fc::time_point_sec posted_date;
 };
 
-struct by_opportunity_number;
+struct by_funding_opportunity_number;
 struct by_grantor;
 struct by_open_date;
 struct by_close_date;
@@ -52,30 +52,54 @@ struct by_organization;
 
 typedef multi_index_container<funding_opportunity_object,
   indexed_by<
-    ordered_unique<tag<by_id>,
-      member<funding_opportunity_object,
-              funding_opportunity_id_type,
-              &funding_opportunity_object::id>>,
-    ordered_non_unique<tag<by_opportunity_number>,
-      member<funding_opportunity_object,
-              fc::shared_string,
-              &funding_opportunity_object::funding_opportunity_number>>,
-    ordered_non_unique<tag<by_grantor>,
-      member<funding_opportunity_object,
-              account_name_type,
-              &funding_opportunity_object::grantor>>,
-    ordered_non_unique<tag<by_organization>,
-      member<funding_opportunity_object,
-              research_group_id_type,
-              &funding_opportunity_object::organization_id>>,
-    ordered_non_unique<tag<by_open_date>,
-      member<funding_opportunity_object,
-              fc::time_point_sec,
-              &funding_opportunity_object::open_date>>,
-    ordered_non_unique<tag<by_close_date>,
-      member<funding_opportunity_object,
-              fc::time_point_sec,
-              &funding_opportunity_object::close_date>>>,
+    ordered_unique<
+      tag<by_id>,
+        member<
+          funding_opportunity_object,
+          funding_opportunity_id_type,
+          &funding_opportunity_object::id
+        >
+    >,
+    ordered_unique<
+      tag<by_funding_opportunity_number>,
+        member<
+          funding_opportunity_object,
+          fc::shared_string,
+          &funding_opportunity_object::funding_opportunity_number
+        >
+    >,
+    ordered_non_unique<
+      tag<by_grantor>,
+        member<
+          funding_opportunity_object,
+          account_name_type,
+          &funding_opportunity_object::grantor
+        >
+    >,
+    ordered_non_unique<
+      tag<by_organization>,
+        member<
+          funding_opportunity_object,
+          research_group_id_type,
+          &funding_opportunity_object::organization_id
+        >
+    >,
+    ordered_non_unique<
+      tag<by_open_date>,
+        member<
+          funding_opportunity_object,
+          fc::time_point_sec,
+          &funding_opportunity_object::open_date
+        >
+    >,
+    ordered_non_unique<
+      tag<by_close_date>,
+        member<
+          funding_opportunity_object,
+          fc::time_point_sec,
+          &funding_opportunity_object::close_date>
+        >
+    >,
     allocator<funding_opportunity_object>>
     funding_opportunity_index;
 
@@ -93,7 +117,7 @@ FC_REFLECT(deip::chain::funding_opportunity_object,
   (amount)
   (award_ceiling)
   (award_floor)
-  (awarded)
+  (current_supply)
   (expected_number_of_awards)
   (officers)
   (open_date)

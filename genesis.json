@@ -2616,6 +2616,38 @@
           ]
         }
       ]
+    },
+    {
+      "id": 24,
+      "name": "Massachusetts Institute of Technology",
+      "description": "Founded to accelerate the nation’s industrial revolution, MIT is profoundly American. With ingenuity and drive, our graduates have invented fundamental technologies, launched new industries, and created millions of American jobs.",
+      "permlink": "massachusetts-institute-of-technology",
+      "members": [
+        "alex",
+        "james"
+      ],
+      "management_model_v": 2,
+      "creator": "alex",
+      "heads": [
+        "alex",
+        "james"
+      ]
+    },
+    {
+      "id": 25,
+      "name": "United States Department of the Treasury",
+      "description": "The Department of the Treasury (USDT) is an executive department and the treasury of the United States federal government. Established by an Act of Congress in 1789 to manage government revenue,[3] the Treasury prints all paper currency and mints all coins in circulation through the Bureau of Engraving and Printing and the United States Mint, respectively; collects all federal taxes through the Internal Revenue Service; manages U.S. government debt instruments; licenses and supervises banks and thrift institutions; and advises the legislative and executive branches on matters of fiscal policy.",
+      "permlink": "united-states-department-of-the-treasury",
+      "members": [
+        "alice",
+        "bob"
+      ],
+      "management_model_v": 2,
+      "creator": "bob",
+      "heads": [
+        "alice",
+        "bob"
+      ]
     }
   ],
   "researches": [

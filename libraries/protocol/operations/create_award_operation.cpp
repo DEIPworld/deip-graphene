@@ -7,48 +7,62 @@
 namespace deip {
 namespace protocol {
 
-void inline validate_awardees(const flat_set<awardee_type>& awardees, const asset& award)
+void inline validate_awardees(const vector<subawardee_type>& subawardees, const account_name_type& awardee, const asset& award, const percent_type& university_overhead)
 {
-    FC_ASSERT(awardees.size() > 0, "Awardees list cannot be empty.");
+    const asset top_subawards_amount = std::accumulate(
+      subawardees.begin(), subawardees.end(), asset(0, award.symbol),
+      [&](asset acc, const subawardee_type& s) {
+          return s.source == awardee ? acc + s.subaward : acc;
+      });
 
-    std::map<account_name_type, share_type> incoming_values;
-    std::map<account_name_type, share_type> outcoming_values;
+    const asset university_fee = asset(((award.amount * share_type(university_overhead)) / DEIP_100_PERCENT), award.symbol);
 
-    bool is_main_awardee_set = false;
+    FC_ASSERT(award > (top_subawards_amount + university_fee), 
+      "Total subawards amount with overhead fee should be less than total award amount");
 
-    for (auto& awardee : awardees)
+    FC_ASSERT(!std::any_of(subawardees.begin(), subawardees.end(),
+      [&](const subawardee_type& s) { return s.subawardee == awardee; }), 
+      "Main awardee ${1} should not be specified in subawardees list", 
+      ("1", awardee));
+
+    FC_ASSERT(std::any_of(subawardees.begin(), subawardees.end(),
+      [&](const subawardee_type& s) { return s.source == awardee; }), 
+      "At least 1 subawardee should refer to the main awardee ${1}", 
+      ("1", awardee));
+
+    for (auto& subaward : subawardees)
     {
-        validate_account_name(awardee.awardee);
-        FC_ASSERT(awardee.research_id >= 0, "Research id cant be less than a 0");
-        FC_ASSERT(awardee.university_id >= 0, "University id cant be less than a 0");
-        FC_ASSERT(awardee.university_overhead >= 0 && awardee.university_overhead <= DEIP_1_PERCENT * 50, "University overhead must be in 0% to 50% range");
-        FC_ASSERT(awardee.award.symbol == award.symbol, "Asset symbols don't match.");
-        if (is_main_awardee_set)
-            FC_ASSERT(awardee.source.valid(), "Must be only 1 main awardee.");
+        validate_account_name(subaward.subawardee);
+        validate_award_number(subaward.subaward_number);
+        FC_ASSERT(subaward.subaward.amount > 0, "Award amount must be specified");
+        FC_ASSERT(subaward.subaward.symbol == award.symbol, "Subaward asset does not match the award asset");
 
-        share_type university_fee = (awardee.award.amount * awardee.university_overhead) / DEIP_100_PERCENT;
-        share_type award_with_fee = awardee.award.amount + university_fee;
+        FC_ASSERT(std::count_if(subawardees.begin(), subawardees.end(),
+          [&](const subawardee_type& s) { return subaward.subawardee == s.subawardee; }) == 1, 
+          "Duplicated subawardee ${1} found in the list", 
+          ("1", subaward.subawardee));
 
-        incoming_values[awardee.awardee] += award_with_fee;
+        FC_ASSERT(std::none_of(subawardees.begin(), subawardees.end(),
+          [&](const subawardee_type& s) { return subaward.source == s.subawardee && s.source == subaward.subawardee; }), 
+          "Circular subaward reference detected for ${1}", 
+          ("1", subaward.subawardee));
 
-        if (awardee.source.valid()) {
-            outcoming_values[*awardee.source] += award_with_fee;
-        } else {
-            is_main_awardee_set = true;
-        }
-    }
-
-    for (const std::pair<account_name_type, share_type>& outcoming : outcoming_values)
-    {
-        FC_ASSERT(incoming_values.find(outcoming.first) != incoming_values.end(), "Wrong list structure(trying to give away money without receiving)");
-    }
-
-    for (const std::pair<account_name_type, share_type>& incoming : incoming_values)
-    {
-        auto it = outcoming_values.find(incoming.first);
-        if (it != outcoming_values.end())
+        if (subaward.source != awardee)
         {
-            FC_ASSERT(it->second <= incoming_values[it->first], "Wrong list structure(trying to give away money more than received)");
+            FC_ASSERT(std::any_of(subawardees.begin(), subawardees.end(),
+              [&](const subawardee_type& s) { return subaward.source == s.subawardee; }), 
+              "Subaward source ${1} for ${2} is not presented in the list", 
+              ("1", subaward.source)("2", subaward.subawardee));
+
+            const asset subsequent_subawards_amount = std::accumulate(
+              subawardees.begin(), subawardees.end(), asset(0, award.symbol),
+              [&](asset acc, const subawardee_type& s) { 
+                return s.source == subaward.subawardee ? acc + s.subaward : acc;
+              });
+
+            FC_ASSERT(subaward.subaward > subsequent_subawards_amount,
+              "Subaward ${1} amount ${2} is less than its subawards total amount ${3}",
+              ("1", subaward.subawardee)("2", subaward.subaward)("3", subsequent_subawards_amount));
         }
     }
 }
@@ -56,9 +70,15 @@ void inline validate_awardees(const flat_set<awardee_type>& awardees, const asse
 void create_award_operation::validate() const
 {
     validate_account_name(creator);
-    FC_ASSERT(funding_opportunity_id >= 0, "Funding opportunity id cant be less than a 0");
+    validate_account_name(awardee);
+    validate_foa_number(funding_opportunity_number);
+    validate_award_number(award_number);
     FC_ASSERT(award.amount > 0, "Award amount must be > 0.");
-    validate_awardees(awardees, award);
+    FC_ASSERT(research_id >= 0, "Research id cant be less than a 0");
+    FC_ASSERT(university_id >= 0, "University id cant be less than a 0");
+    FC_ASSERT(university_overhead >= 0 && university_overhead <= DEIP_1_PERCENT * 50, "University overhead should be in range of 0% to 50%");
+
+    validate_awardees(subawardees, awardee, award, university_overhead);
 }
 
 

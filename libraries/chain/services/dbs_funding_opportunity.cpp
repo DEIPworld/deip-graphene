@@ -59,7 +59,7 @@ const funding_opportunity_object& dbs_funding_opportunity::create_funding_opport
         funding_opportunity.amount = amount;
         funding_opportunity.award_ceiling = award_ceiling;
         funding_opportunity.award_floor = award_floor;
-        funding_opportunity.awarded = asset(0, amount.symbol);
+        funding_opportunity.current_supply = amount; 
         funding_opportunity.expected_number_of_awards = expected_number_of_awards;
         funding_opportunity.officers.insert(officers.begin(), officers.end());
         funding_opportunity.open_date = open_date;
@@ -101,26 +101,26 @@ const fc::optional<std::reference_wrapper<const funding_opportunity_object>> dbs
 }
 
 
-const funding_opportunity_object& dbs_funding_opportunity::get_funding_opportunity_announcement_by_number(const string& opportunity_number) const
+const funding_opportunity_object& dbs_funding_opportunity::get_funding_opportunity_announcement(const string& funding_opportunity_number) const
 {
     const auto& idx = db_impl()
       .get_index<funding_opportunity_index>()
       .indicies()
-      .get<by_opportunity_number>();
+      .get<by_funding_opportunity_number>();
 
-    auto itr = idx.find(opportunity_number, fc::strcmp_less());
-    FC_ASSERT(itr != idx.end(), "FO with ${num} does not exist", ("num", opportunity_number));
+    auto itr = idx.find(funding_opportunity_number, fc::strcmp_less());
+    FC_ASSERT(itr != idx.end(), "FO with ${1} does not exist", ("1", funding_opportunity_number));
     return *itr;
 }
 
 
-const fc::optional<std::reference_wrapper<const funding_opportunity_object>> dbs_funding_opportunity::get_funding_opportunity_announcement_by_number_if_exists(const string& opportunity_number) const
+const fc::optional<std::reference_wrapper<const funding_opportunity_object>> dbs_funding_opportunity::get_funding_opportunity_announcement_if_exists(const string& opportunity_number) const
 {
     fc::optional<std::reference_wrapper<const funding_opportunity_object>> result;
     const auto& idx = db_impl()
       .get_index<funding_opportunity_index>()
       .indicies()
-      .get<by_opportunity_number>();
+      .get<by_funding_opportunity_number>();
 
     auto itr = idx.find(opportunity_number, fc::strcmp_less());
 
@@ -140,6 +140,17 @@ const bool dbs_funding_opportunity::funding_opportunity_announcement_exists(cons
       .get<by_id>();
 
     auto itr = idx.find(id);
+    return itr != idx.end();
+}
+
+const bool dbs_funding_opportunity::funding_opportunity_announcement_exists(const string& number) const
+{
+    const auto& idx = db_impl()
+      .get_index<funding_opportunity_index>()
+      .indicies()
+      .get<by_funding_opportunity_number>();
+
+    auto itr = idx.find(number, fc::strcmp_less());
     return itr != idx.end();
 }
 
@@ -210,6 +221,19 @@ void dbs_funding_opportunity::remove_funding_opportunity_announcement(const fund
     account_balance_service.adjust_balance(funding_opportunity.grantor, funding_opportunity.amount);
 
     db_impl().remove(funding_opportunity);
+}
+
+void dbs_funding_opportunity::adjust_fundind_opportunity_supply(const funding_opportunity_id_type& funding_opportunity_id, const asset& delta)
+{
+    const auto& foa = get_funding_opportunity_announcement(funding_opportunity_id);
+    
+    FC_ASSERT(foa.current_supply.amount + delta.amount > 0, 
+      "Funding opportunity supply can not be negative. Current:${1} , Delta:{2}",
+      ("1", foa.current_supply.amount)("2", delta.amount));
+      
+    db_impl().modify(foa, [&](funding_opportunity_object& ab_o) { 
+        ab_o.current_supply += delta; 
+    });
 }
 
 } //namespace chain

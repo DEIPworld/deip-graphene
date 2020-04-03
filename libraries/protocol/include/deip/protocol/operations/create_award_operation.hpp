@@ -10,49 +10,51 @@ namespace protocol {
 
 using deip::protocol::asset;
 
-struct awardee_type
+struct subawardee_type
 {
-    awardee_type()
+    subawardee_type()
     {
     }
 
-    awardee_type(const account_name_type& awardee,
-                 const int64_t& research_id,
-                 const int64_t& university_id,
-                 const share_type& university_overhead,
-                 const asset& award,
-                 const fc::optional<account_name_type>& source)
-            : awardee(awardee)
-            , research_id(research_id)
-            , university_id(university_id)
-            , university_overhead(university_overhead)
-            , award(award)
-            , source(source)
+    subawardee_type(const string& subaward_number,
+                    const asset& subaward,
+                    const account_name_type& subawardee,
+                    const account_name_type& source,
+                    const int64_t& research_id)
+
+        : subaward_number(subaward_number)
+        , subaward(subaward)
+        , subawardee(subawardee)
+        , source(source)
+        , research_id(research_id)
     {
     }
 
-    account_name_type awardee;
+    string subaward_number;
+    asset subaward;
+    account_name_type subawardee;
+    account_name_type source;
     int64_t research_id;
-    int64_t university_id;
-    share_type university_overhead;
-    asset award;
 
-    fc::optional<account_name_type> source;
-
-    bool operator<(const awardee_type& other) const
+    bool operator<(const subawardee_type& other) const
     {
-        return (this->awardee < other.awardee);
+        return (this->subawardee < other.subawardee);
     }
 };
 
 struct create_award_operation : public base_operation
 {
-    int64_t funding_opportunity_id;
-    account_name_type creator;
+    string funding_opportunity_number;
+    string award_number;
 
-    flat_set<awardee_type> awardees;
     asset award;
-
+    account_name_type awardee;
+    int64_t research_id;
+    int64_t university_id;
+    uint32_t university_overhead;
+    vector<subawardee_type> subawardees;
+    
+    account_name_type creator;
     extensions_type extensions;
 
     void validate() const;
@@ -61,12 +63,29 @@ struct create_award_operation : public base_operation
     {
         a.insert(creator);
     }
-
 };
 
 
 }
 }
 
-FC_REFLECT( deip::protocol::create_award_operation, (funding_opportunity_id)(creator)(awardees)(award)(extensions) )
-FC_REFLECT( deip::protocol::awardee_type, (awardee)(research_id)(university_id)(university_overhead)(award)(source) )
+FC_REFLECT(deip::protocol::create_award_operation, 
+  (funding_opportunity_number)
+  (award_number)
+  (award)
+  (awardee)
+  (research_id)
+  (university_id)
+  (university_overhead)
+  (subawardees)
+  (creator)
+  (extensions)
+)
+
+FC_REFLECT(deip::protocol::subawardee_type, 
+  (subaward_number)
+  (subaward)
+  (subawardee)
+  (source)
+  (research_id)
+)

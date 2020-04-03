@@ -12,6 +12,7 @@
 
 #include <deip/chain/schema/award_object.hpp>
 #include <deip/chain/schema/award_recipient_object.hpp>
+#include <deip/chain/schema/award_withdrawal_request_object.hpp>
 #include <deip/chain/schema/block_summary_object.hpp>
 #include <deip/chain/schema/chain_property_object.hpp>
 #include <deip/chain/schema/deip_objects.hpp>
@@ -1462,6 +1463,13 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<issue_asset_evaluator>();
     _my->_evaluator_registry.register_evaluator<reserve_asset_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_award_evaluator>();
+    _my->_evaluator_registry.register_evaluator<approve_award_evaluator>();
+    _my->_evaluator_registry.register_evaluator<reject_award_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_award_withdrawal_request_evaluator>();
+    _my->_evaluator_registry.register_evaluator<certify_award_withdrawal_request_evaluator>();
+    _my->_evaluator_registry.register_evaluator<approve_award_withdrawal_request_evaluator>();
+    _my->_evaluator_registry.register_evaluator<reject_award_withdrawal_request_evaluator>();
+    _my->_evaluator_registry.register_evaluator<pay_award_withdrawal_request_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -1511,6 +1519,8 @@ void database::initialize_indexes()
     add_index<asset_index>();
     add_index<award_index>();
     add_index<award_recipient_index>();
+    add_index<award_withdrawal_request_index>();
+
     _plugin_index_signal();
 }
 
