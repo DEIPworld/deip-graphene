@@ -1838,8 +1838,8 @@ void create_award_withdrawal_request_evaluator::do_apply(const create_award_with
 
     const auto& award_recipient = award_service.get_award_recipient(award_number, subaward_number);
 
-    FC_ASSERT(award_recipient.awardee == op.requester, 
-      "Requester ${1} is not the award recipient ${2}. Make sure you specified the correct Subaward number", 
+    FC_ASSERT(award_recipient.awardee == op.requester,
+      "Requester ${1} is not the award recipient ${2}. Make sure you specified the correct Subaward number",
       ("1", op.requester)("2", award_recipient.awardee));
 
     FC_ASSERT(op.amount.symbol == award_recipient.total_amount.symbol,
@@ -2030,7 +2030,7 @@ void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal
     const auto& treasury = research_group_service.get_research_group_by_permlink(DEIP_TREASURY_PERMLINK);
 
     FC_ASSERT(research_group_service.is_research_group_member(op.payer, treasury.id),
-      "Account ${1} is not a member o fthe Treasury",
+      "Account ${1} is not a member of the Treasury",
       ("1", op.payer));
 
     FC_ASSERT(award_recipient.total_amount - award_recipient.total_expenses >= withdrawal.amount, 
@@ -2043,6 +2043,7 @@ void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal
     asset_service.adjust_current_supply(asset, -withdrawal.amount.amount);
     award_service.adjust_expenses(award_recipient.id, withdrawal.amount);
     award_service.update_award_withdrawal_request(withdrawal, award_withdrawal_request_status::paid);
+
 }
 
 } // namespace chain

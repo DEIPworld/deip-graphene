@@ -156,7 +156,6 @@ struct account_eci_history_operation : public virtual_operation
     eci_diff diff;
 };
 
-
 }
 } // deip::protocol
 
