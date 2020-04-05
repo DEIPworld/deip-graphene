@@ -1115,6 +1115,7 @@ struct funding_opportunity_api_obj
 {
     funding_opportunity_api_obj(const chain::funding_opportunity_object& fo_o)
         :  id(fo_o.id._id)
+        ,  organization_id(fo_o.organization_id._id)
         ,  review_committee_id(fo_o.review_committee_id._id)
         ,  grantor(fo_o.grantor)
         ,  funding_opportunity_number(fc::to_string(fo_o.funding_opportunity_number))
@@ -1148,6 +1149,7 @@ struct funding_opportunity_api_obj
     }
 
     int64_t id;
+    research_group_id_type organization_id;
     research_group_id_type review_committee_id;
     account_name_type grantor;
     string funding_opportunity_number;
@@ -1700,6 +1702,7 @@ FC_REFLECT( deip::app::grant_application_review_api_obj,
 
 FC_REFLECT( deip::app::funding_opportunity_api_obj,
             (id)
+            (organization_id)
             (review_committee_id)
             (grantor)
             (funding_opportunity_number)
