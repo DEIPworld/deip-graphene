@@ -55,7 +55,8 @@ struct funding_opportunity_announcement_contract_v1_0_0_type : base_grant_contra
 
     int64_t organization_id;
     int64_t review_committee_id;
-    
+    int64_t treasury_id;
+
     string funding_opportunity_number;
 
     asset award_ceiling;
@@ -204,7 +205,7 @@ FC_REFLECT( deip::protocol::create_grant_operation, (grantor)(amount)(target_dis
 
 FC_REFLECT( deip::protocol::base_grant_contract, (version) )
 FC_REFLECT_DERIVED( deip::protocol::announced_application_window_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (review_committee_id)(min_number_of_positive_reviews)(min_number_of_applications)(max_number_of_research_to_grant)(start_date)(end_date)(additional_info) )
-FC_REFLECT_DERIVED( deip::protocol::funding_opportunity_announcement_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (organization_id)(review_committee_id)(funding_opportunity_number)(award_ceiling)(award_floor)(expected_number_of_awards)(open_date)(close_date)(officers)(additional_info) )
+FC_REFLECT_DERIVED( deip::protocol::funding_opportunity_announcement_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (organization_id)(review_committee_id)(treasury_id)(funding_opportunity_number)(award_ceiling)(award_floor)(expected_number_of_awards)(open_date)(close_date)(officers)(additional_info) )
 FC_REFLECT_DERIVED( deip::protocol::discipline_supply_announcement_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (start_time)(end_time)(is_extendable)(content_hash)(additional_info) )
 
 DECLARE_GRANT_DISTRIBUTION_MODELS_TYPE(deip::protocol::grant_distribution_models)

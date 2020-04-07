@@ -25,10 +25,13 @@ void inline validate_awardees(const vector<subawardee_type>& subawardees, const 
       "Main awardee ${1} should not be specified in subawardees list", 
       ("1", awardee));
 
-    FC_ASSERT(std::any_of(subawardees.begin(), subawardees.end(),
-      [&](const subawardee_type& s) { return s.source == awardee; }), 
-      "At least 1 subawardee should refer to the main awardee ${1}", 
-      ("1", awardee));
+    if (subawardees.size() != 0)
+    {
+        FC_ASSERT(std::any_of(subawardees.begin(), subawardees.end(),
+          [&](const subawardee_type& s) { return s.source == awardee; }), 
+          "At least 1 subawardee should refer to the main awardee ${1}", 
+          ("1", awardee));
+    }
 
     for (auto& subaward : subawardees)
     {

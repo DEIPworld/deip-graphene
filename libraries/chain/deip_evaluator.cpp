@@ -1386,6 +1386,10 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
           "Review committee ${1} does not exists", 
           ("1", foa_contract.review_committee_id));
 
+        FC_ASSERT(research_group_service.research_group_exists(foa_contract.treasury_id), 
+          "Treasury ${1} does not exists", 
+          ("1", foa_contract.treasury_id));
+
         for (auto& officer : foa_contract.officers)
         {
             FC_ASSERT(research_group_service.is_research_group_member(officer, foa_contract.organization_id),
@@ -1399,6 +1403,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
         funding_opportunities_service.create_funding_opportunity_announcement(
           foa_contract.organization_id, 
           foa_contract.review_committee_id,
+          foa_contract.treasury_id,
           op.grantor,
           foa_contract.funding_opportunity_number,
           foa_contract.additional_info,
@@ -1639,6 +1644,10 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
 
     const auto& foa = funding_opportunity_service.get_funding_opportunity_announcement(op.funding_opportunity_number);
 
+    FC_ASSERT(op.award.symbol == foa.amount.symbol,
+      "Award asset ${1} should be the same as funding opportunity asset ${2}", 
+      ("1", op.award.symbol_name())("2", foa.amount.symbol_name()));
+
     FC_ASSERT(foa.current_supply >= op.award,
       "Funding opportunity does not have enough funds to award. Availabale amount:${1}, Required amount:${2}.",
       ("1", foa.current_supply.amount)("2", op.award.amount));
@@ -1805,7 +1814,6 @@ void reject_award_evaluator::do_apply(const reject_award_operation& op)
         award_service.update_award_recipient_status(award_recipient, award_recipient_status::canceled);
     }
 
-    funding_opportunity_service.adjust_fundind_opportunity_supply(foa.id, award.amount);
     award_service.update_award_status(award, award_status::rejected);
 }
 
@@ -1827,6 +1835,10 @@ void create_award_withdrawal_request_evaluator::do_apply(const create_award_with
       ("1", award_number));
 
     const auto& award = award_service.get_award(award_number);
+
+    FC_ASSERT(op.amount.symbol == award.amount.symbol,
+      "Award withdrawal request asset ${1} should be the same as award asset ${2}",
+      ("1", op.amount.symbol_name())("2", award.amount.symbol_name()));
 
     FC_ASSERT(award.status == static_cast<uint16_t>(award_status::approved),
       "Award ${1} is not approved",
@@ -2003,6 +2015,7 @@ void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal
     dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
     dbs_award& award_service = _db.obtain_service<dbs_award>();
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_funding_opportunity& funding_opportunity_service = _db.obtain_service<dbs_funding_opportunity>();
 
     const string payment_number = op.payment_number;
     const string award_number = op.award_number;
@@ -2027,7 +2040,8 @@ void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal
       "Only approved award withdrawal request can be paid. The current status is: ${1}",
       ("1", withdrawal.status));
 
-    const auto& treasury = research_group_service.get_research_group_by_permlink(DEIP_TREASURY_PERMLINK);
+    const auto& foa = funding_opportunity_service.get_funding_opportunity_announcement(fc::to_string(award_recipient.funding_opportunity_number));
+    const auto& treasury = research_group_service.get_research_group(foa.treasury_id);
 
     FC_ASSERT(research_group_service.is_research_group_member(op.payer, treasury.id),
       "Account ${1} is not a member of the Treasury",
@@ -2037,13 +2051,18 @@ void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal
       "Not enough funds to process the payment. Requested ${1}, Available: ${2} ", 
       ("1", withdrawal.amount)("2", award_recipient.total_amount - award_recipient.total_expenses));
 
-    account_balance_service.adjust_balance(withdrawal.requester, -withdrawal.amount);
+    const auto& grant_asset = asset_service.get_by_symbol(withdrawal.amount.symbol);
 
-    auto& asset = asset_service.get_by_symbol(withdrawal.amount.symbol);
-    asset_service.adjust_current_supply(asset, -withdrawal.amount.amount);
     award_service.adjust_expenses(award_recipient.id, withdrawal.amount);
-    award_service.update_award_withdrawal_request(withdrawal, award_withdrawal_request_status::paid);
+    asset_service.adjust_current_supply(grant_asset, -withdrawal.amount.amount); // burn grant tokens
 
+    const price rate = price(asset(1, DEIP_USD_SYMBOL), asset(1, withdrawal.amount.symbol));
+    const asset payout = withdrawal.amount * rate;
+
+    account_balance_service.adjust_balance(withdrawal.requester, payout); // imitation of acquiring api call
+    account_balance_service.adjust_balance(treasury.creator, -payout); // imitation of acquiring api call
+
+    award_service.update_award_withdrawal_request(withdrawal, award_withdrawal_request_status::paid);
 }
 
 } // namespace chain

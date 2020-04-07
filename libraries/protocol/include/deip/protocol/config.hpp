@@ -15,6 +15,7 @@
 
 #ifdef IS_TEST_NET
 #define DEIP_SYMBOL  (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< DEIP with 3 digits of precision
+#define DEIP_USD_SYMBOL (uint64_t(2) | (uint64_t('U') << 8) | (uint64_t('S') << 16) | (uint64_t('D') << 24)) ///< USD MOCK with 2 digits of precision
 
 #define DEIP_CASHOUT_WINDOW_SECONDS          (60*60) /// 1 hr
 #define DEIP_UPVOTE_LOCKOUT                  (fc::minutes(5))
@@ -47,6 +48,7 @@
 #else // IS LIVE DEIP NETWORK
 
 #define DEIP_SYMBOL (uint64_t(3) | (uint64_t('D') << 8) | (uint64_t('E') << 16) | (uint64_t('I') << 24) | (uint64_t('P') << 32)) ///< DEIP with 3 digits of precision
+#define DEIP_USD_SYMBOL (uint64_t(2) | (uint64_t('U') << 8) | (uint64_t('S') << 16) | (uint64_t('D') << 24)) ///< USD MOCK with 2 digits of precision
 
 #define DEIP_CASHOUT_WINDOW_SECONDS          (60*60*24*7)  /// 7 days
 #define DEIP_UPVOTE_LOCKOUT                  (fc::hours(12))
@@ -217,8 +219,6 @@
 #define DEIP_MIN_REVIEW_MARK                  1
 #define DEIP_MAX_REVIEW_MARK                  5
 #define DEIP_MIN_POSITIVE_REVIEW_MARK         8
-
-#define DEIP_TREASURY_PERMLINK                "united-states-department-of-the-treasury"
 
 /**
  *  Reserved Account IDs with special meaning

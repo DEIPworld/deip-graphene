@@ -21,8 +21,11 @@ public:
     }
 
     funding_opportunity_id_type id;
+
     research_group_id_type organization_id;
     research_group_id_type review_committee_id;
+    research_group_id_type treasury_id;
+
     account_name_type grantor;
     fc::shared_string funding_opportunity_number;
 
@@ -110,6 +113,7 @@ FC_REFLECT(deip::chain::funding_opportunity_object,
   (id)
   (organization_id)
   (review_committee_id)
+  (treasury_id)
   (grantor)
   (funding_opportunity_number)
   (additional_info)

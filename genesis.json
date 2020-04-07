@@ -1,6 +1,6 @@
 {
   "initial_timestamp": "2020-02-14T11:00:00",
-  "init_supply": 2000000000000,
+  "init_supply": 2004000000000,
   "registrar_account": {
     "name": "regacc",
     "recovery_account": "",
@@ -117,13 +117,33 @@
       "name": "hermes",
       "recovery_account": "",
       "public_key": "DEIP59qXbaUicSZvKQEZAVE6BnDcn5FuUrgoiLNUMBc35ay5KPK9Qv"
+    },
+    {
+      "name": "peter",
+      "recovery_account": "",
+      "public_key": "DEIP6voSBZvHYCDx6DbfMgNcb6N9PxgsrB7iNHwDChDkxtL8kpXaDE"
+    },
+    {
+      "name": "thomas",
+      "recovery_account": "",
+      "public_key": "DEIP6pCSdfeBQmSnfKnpDbq75ZxfQBgme6xJNW6RHwxd9TpQ7wQQ6J"
+    },
+    {
+      "name": "david",
+      "recovery_account": "",
+      "public_key": "DEIP7BpumvNemMkYpZgEoaU6ceNiHfzCLXwBwdWmvC65jXwPm8wY5e"
+    },
+    {
+      "name": "kim",
+      "recovery_account": "",
+      "public_key": "DEIP6TcshvA9QU9PNFQqe6heyZ9DyKQbg25fc5a2xCLYiyMq2jXt2M"
     }
   ],
   "assets": [
     {
       "symbol": "USD",
       "precision": 2,
-      "current_supply": 215000000000
+      "current_supply": 100215000000000
     },
     {
       "symbol": "EUR",
@@ -132,8 +152,8 @@
     },
     {
       "symbol": "NGT",
-      "precision": 3,
-      "current_supply": 1000000000
+      "precision": 2,
+      "current_supply": 100000000000000
     }
   ],
   "account_balances": [
@@ -171,7 +191,7 @@
     },
     {
       "owner": "alice",
-      "amount": 1000000000,
+      "amount": 100000000000000,
       "symbol": "NGT"
     },
     {
@@ -369,6 +389,27 @@
       "owner": "dorothy",
       "amount": 1000000000,
       "symbol": "EUR"
+    },
+    {
+      "owner": "peter",
+      "amount": 1000000000
+    },
+    {
+      "owner": "thomas",
+      "amount": 1000000000
+    },
+    {
+      "owner": "david",
+      "amount": 1000000000
+    },
+    {
+      "owner": "kim",
+      "amount": 1000000000
+    },
+    {
+      "owner": "kim",
+      "amount": 100000000000000,
+      "symbol": "USD"
     },
     {
       "owner": "arty",
@@ -2279,6 +2320,26 @@
       "account_name": "arty",
       "discipline_id": 197,
       "amount": 10000
+    },
+    {
+      "account_name": "peter",
+      "discipline_id": 1,
+      "amount": 10000
+    },
+    {
+      "account_name": "thomas",
+      "discipline_id": 1,
+      "amount": 10000
+    },
+    {
+      "account_name": "david",
+      "discipline_id": 1,
+      "amount": 10000
+    },
+    {
+      "account_name": "kim",
+      "discipline_id": 1,
+      "amount": 10000
     }
   ],
   "research_groups": [
@@ -2579,18 +2640,18 @@
       "id": 22,
       "name": "The National Science Foundation",
       "description": "The National Science Foundation (NSF) is an independent federal agency created by Congress in 1950 to promote the progress of science; to advance the national health, prosperity, and welfare; to secure the national defense.",
-      "permlink": "national-science-foundation",
+      "permlink": "nsf",
       "members": [
         "alice",
-        "alex",
-        "james"
+        "peter",
+        "thomas"
       ],
       "management_model_v": 2,
       "creator": "alice",
       "heads": [
         "alice",
-        "alex",
-        "james"
+        "peter",
+        "thomas"
       ],
       "subgroups": [
         {
@@ -2599,16 +2660,14 @@
           "description": "The Grant Review Committee is established to evaluate applications for funding from NSF Grants Program.",
           "permlink": "nsf-grants-review-committee",
           "members": [
-            "alice",
-            "john",
-            "bob"
+            "mike",
+            "rick"
           ],
           "management_model_v": 2,
           "creator": "alice",
           "heads": [
-            "alice",
-            "john",
-            "bob"
+            "mike",
+            "rick"
           ],
           "organization_id": 22,
           "organization_agents": [
@@ -2621,32 +2680,86 @@
       "id": 24,
       "name": "Massachusetts Institute of Technology",
       "description": "Founded to accelerate the nation’s industrial revolution, MIT is profoundly American. With ingenuity and drive, our graduates have invented fundamental technologies, launched new industries, and created millions of American jobs.",
-      "permlink": "massachusetts-institute-of-technology",
+      "permlink": "mit",
       "members": [
-        "alex",
-        "james"
+        "rachel",
+        "david"
       ],
       "management_model_v": 2,
-      "creator": "alex",
+      "creator": "rachel",
       "heads": [
-        "alex",
-        "james"
+        "rachel",
+        "david"
+      ],
+      "subgroups": [
+        {
+          "id": 25,
+          "name": "The Research Laboratory of Electronics (RLE) at MIT",
+          "description": "The Research Laboratory of Electronics (RLE) was founded in 1946 as the first of the Institute's great modern interdepartmental research centers. Today, it is one of MIT's largest, as well as the most diverse in intellectual interests.",
+          "permlink": "rle-mit",
+          "members": [
+            "bob"
+          ],
+          "management_model_v": 2,
+          "creator": "rachel",
+          "heads": [
+            "bob"
+          ],
+          "organization_id": 24,
+          "organization_agents": [
+            "rachel"
+          ]
+        },
+        {
+          "id": 26,
+          "name": "Center for Materials Science and Engineering at MIT",
+          "description": "The MIT Center for Materials Science and Engineering (CMSE) is devoted to the design, creation, and fundamental understanding of materials that are capable of enhancing the human experience. CMSE has a special mission: to foster collaborative, interdisciplinary research and education in the science and engineering of materials that will address the future needs of society. CMSE promotes collaboration among MIT faculty and between MIT faculty and researchers of other universities, industry, and government laboratories.",
+          "permlink": "cmse-mit",
+          "members": [
+            "john"
+          ],
+          "management_model_v": 2,
+          "creator": "rachel",
+          "heads": [
+            "john"
+          ],
+          "organization_id": 24,
+          "organization_agents": [
+            "rachel"
+          ]
+        },
+        {
+          "id": 27,
+          "name": "Nano-Cybernetic biotrek at MIT media lab",
+          "description": "Founded in 1985, the MIT Media Lab is one of the world’s leading research and academic organizations. Unconstrained by traditional disciplines, Media Lab designers, engineers, artists, and scientists strive to create technologies and experiences that enable people to understand and transform their lives, communities, and environments.",
+          "permlink": "nano-cybernetic-biotrek",
+          "members": [
+            "nick"
+          ],
+          "management_model_v": 2,
+          "creator": "rachel",
+          "heads": [
+            "nick"
+          ],
+          "organization_id": 24,
+          "organization_agents": [
+            "rachel"
+          ]
+        }
       ]
     },
     {
-      "id": 25,
+      "id": 28,
       "name": "United States Department of the Treasury",
       "description": "The Department of the Treasury (USDT) is an executive department and the treasury of the United States federal government. Established by an Act of Congress in 1789 to manage government revenue,[3] the Treasury prints all paper currency and mints all coins in circulation through the Bureau of Engraving and Printing and the United States Mint, respectively; collects all federal taxes through the Internal Revenue Service; manages U.S. government debt instruments; licenses and supervises banks and thrift institutions; and advises the legislative and executive branches on matters of fiscal policy.",
-      "permlink": "united-states-department-of-the-treasury",
+      "permlink": "us-treasury",
       "members": [
-        "alice",
-        "bob"
+        "kim"
       ],
       "management_model_v": 2,
-      "creator": "bob",
+      "creator": "kim",
       "heads": [
-        "alice",
-        "bob"
+        "kim"
       ]
     }
   ],
@@ -3147,7 +3260,54 @@
         77
       ],
       "is_private": false
-    }
+    },
+    {
+      "id": 30,
+      "research_group_id": 25,
+      "title": "Heterogeneous integration of singlecrystalline complex-oxide membranes",
+      "abstract": "Complex-oxide materials exhibit a vast range of functional properties desirable for next-generation electronic, spintronic, magnetoelectric, neuromorphic, and energy conversion storage devices. Their physical functionalities can be coupled by stacking layers of such materials to create heterostructures and can be further boosted by applying strain. The predominant method for heterogeneous integration and application of strain has been through heteroepitaxy, which drastically limits the possible material combinations and the ability to integrate complex oxides with mature semiconductor technologies. Moreover, key physical properties of complex-oxide thin films, such as piezoelectricity and magnetostriction, are severely reduced by the substrate clamping effect. Here we demonstrate a universal mechanical exfoliation method of producing freestanding single-crystalline membranes made from a wide range of complex-oxide materials including perovskite, spinel and garnet crystal structures with varying crystallographic orientations. In addition, we create artificial heterostructures and hybridize their physical properties by directly stacking such freestanding membranes with different crystal structures and orientations, which is not possible using conventional methods. Our results establish a platform for stacking and coupling three-dimensional structures, akin to two-dimensional material-based heterostructures, for enhancing device functionalities",
+      "permlink": "heterogeneous-integration-of-singlecrystalline-complex-oxide-membranes",
+      "is_finished": false,
+      "review_share_in_percent": 5000,
+      "dropout_compensation_in_percent": 0,
+      "disciplines": [
+        4,
+        5
+      ],
+      "is_private": false
+    },
+    {
+      "id": 31,
+      "research_group_id": 26,
+      "title": "Chemically Modified Carbon Cathodes of High Capacity Li-O2 Batteries",
+      "abstract": "Li-O2 batteries are poised to transform the consumer electronic and electric vehicle markets because they possess a theoretical energy density of 3,213 W h/kg, three fold larger than the current state of the art. This dramatic boost in energy density is provided by the carbon-based Li-O2 cathode, at which O2 is reduced to Li2O2 upon cell discharge. However, the insoluble Li2O2 precipitates indiscriminately on the surface of the carbon cathode, inhibiting subsequent reduction of O2, leading to diminished capacity, poor rate capability, and poor round-trip efficiency. These challenges could be overcome if the surfaces of carbon cathodes can be modified to discourage the indiscriminate nucleation and growth of Li2O2 crystallites. We hypothesize that Li2O2 nucleation occurs via Li+ coordination to oxidic surface functionalities including ketones, carboxylic acids, and alcohols, which are known to be prevalent on carbon surfaces. Thus, we will apply well-known oxygen protecting group (PG) chemistries (e.g. silylation, benzylation, alkylation) to carbon electrodes to impede the nucleation of Li2O2 crystallites. By reducing the nucleation site density, fewer, larger Li2O2 crystallites will be favored, leaving the majority of the electrode surface available to sustain rapid O2 reduction, thereby, enabling high energy and power densities.",
+      "permlink": "chemically-modified-carbon-cathodes-of-high-capacity-li-o2-batteries",
+      "is_finished": false,
+      "review_share_in_percent": 5000,
+      "dropout_compensation_in_percent": 0,
+      "disciplines": [
+        4,
+        5
+      ],
+      "is_private": false
+    },
+    {
+      "id": 32,
+      "research_group_id": 27,
+      "title": "Nano-implants for energy harvesting and wireless sensing",
+      "abstract": "We are developing nano-devices using meta-materials that can non-invasively and remotely monitor and modulate our biological system. The requirements of the system are: 1) they should be as small as possible such that the volume displacement of tissue due to the placement of the device is minimal, and 2) they should be untethered/wireless such that they can be remotely controlled. Such a device will sense the biological environment and send the information to a system outside the body in real time. The device will also have the capability to do internal analysis of the sensed data and depending on the analysis results, take further action such as electrical stimulation or drug delivery. The device will harvest energy from external applied fields for its functioning and also modulate the external fields for communicating sensed data. The possibilities with such bioelectronic devices are endless, and we are exploring, among others, brain activity recording at a large scale with the precision of a single neuron, activity recording in spinal cord and peripheral nervous systems, monitoring tumor microenvironment, observing response to pathology development or external stimulus at a single cell level, along with integrated functionalities such as stimulation and drug delivery.",
+      "permlink": "nano-implants-for-energy-harvesting-and-wireless-sensing",
+      "is_finished": false,
+      "review_share_in_percent": 5000,
+      "dropout_compensation_in_percent": 0,
+      "disciplines": [
+        3,
+        4,
+        5,
+        94
+      ],
+      "is_private": false
+    }    
   ],
   "research_contents": [
     {
