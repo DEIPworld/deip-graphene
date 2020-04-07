@@ -30,11 +30,9 @@ std::shared_ptr< deip::app::abstract_plugin > create_tsc_history_plugin( deip::a
 
 std::shared_ptr< deip::app::abstract_plugin > create_cr_history_plugin( deip::app::application* app );
 
-std::shared_ptr< deip::app::abstract_plugin > create_research_eci_history_plugin( deip::app::application* app );
+std::shared_ptr<deip::app::abstract_plugin> create_eci_history_plugin(deip::app::application* app);
 
-std::shared_ptr< deip::app::abstract_plugin > create_rc_eci_history_plugin( deip::app::application* app );
-
-std::shared_ptr< deip::app::abstract_plugin > create_account_eci_history_plugin( deip::app::application* app );
+std::shared_ptr< deip::app::abstract_plugin > create_funding_opportunity_history_plugin( deip::app::application* app );
 
 boost::container::flat_map< std::string, std::function< std::shared_ptr< deip::app::abstract_plugin >( deip::app::application* app ) > > plugin_factories_by_name;
 
@@ -90,6 +88,27 @@ void initialize_plugin_factories()
    {
       return create_witness_plugin( app );
    };
+
+   plugin_factories_by_name[ "tsc_history" ] = []( deip::app::application* app ) -> std::shared_ptr< deip::app::abstract_plugin >
+   {
+      return create_tsc_history_plugin( app );
+   };
+
+   plugin_factories_by_name[ "research_content_references_history" ] = []( deip::app::application* app ) -> std::shared_ptr< deip::app::abstract_plugin >
+   {
+      return create_cr_history_plugin( app );
+   };
+
+   plugin_factories_by_name[ "eci_history" ] = []( deip::app::application* app ) -> std::shared_ptr< deip::app::abstract_plugin >
+   {
+      return create_eci_history_plugin( app );
+   };
+
+   plugin_factories_by_name[ "fo_history" ] = []( deip::app::application* app ) -> std::shared_ptr< deip::app::abstract_plugin >
+   {
+      return create_funding_opportunity_history_plugin( app );
+   };
+
    
 }
 

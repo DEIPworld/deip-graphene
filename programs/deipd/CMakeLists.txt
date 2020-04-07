@@ -22,6 +22,7 @@ target_link_libraries(deipd PRIVATE
     deip_tsc_history
     deip_research_content_reference_history
     deip_eci_history
+    deip_fo_history
     ${CMAKE_DL_LIBS}
     ${PLATFORM_SPECIFIC_LIBS}
 )
