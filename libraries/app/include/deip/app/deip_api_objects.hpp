@@ -273,6 +273,7 @@ struct signed_block_api_obj : public signed_block
         : signed_block(block)
     {
         block_id = id();
+        block_num = block.block_num();
         signing_key = signee();
         transaction_ids.reserve(transactions.size());
         for (const signed_transaction& tx : transactions)
@@ -283,6 +284,7 @@ struct signed_block_api_obj : public signed_block
     }
 
     block_id_type block_id;
+    uint32_t block_num;
     public_key_type signing_key;
     vector<transaction_id_type> transaction_ids;
 };
@@ -1117,6 +1119,7 @@ struct funding_opportunity_api_obj
         :  id(fo_o.id._id)
         ,  organization_id(fo_o.organization_id._id)
         ,  review_committee_id(fo_o.review_committee_id._id)
+        ,  treasury_id(fo_o.treasury_id._id)
         ,  grantor(fo_o.grantor)
         ,  funding_opportunity_number(fc::to_string(fo_o.funding_opportunity_number))
         ,  amount(fo_o.amount)
@@ -1151,6 +1154,8 @@ struct funding_opportunity_api_obj
     int64_t id;
     research_group_id_type organization_id;
     research_group_id_type review_committee_id;
+    research_group_id_type treasury_id;
+
     account_name_type grantor;
     string funding_opportunity_number;
 
@@ -1403,6 +1408,7 @@ FC_REFLECT( deip::app::witness_api_obj,
 
 FC_REFLECT_DERIVED( deip::app::signed_block_api_obj, (deip::protocol::signed_block),
                      (block_id)
+                     (block_num)
                      (signing_key)
                      (transaction_ids)
                   )
@@ -1704,6 +1710,7 @@ FC_REFLECT( deip::app::funding_opportunity_api_obj,
             (id)
             (organization_id)
             (review_committee_id)
+            (treasury_id)
             (grantor)
             (funding_opportunity_number)
             (amount)

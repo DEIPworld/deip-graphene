@@ -14,6 +14,7 @@ dbs_funding_opportunity::dbs_funding_opportunity(database &db)
 const funding_opportunity_object& dbs_funding_opportunity::create_funding_opportunity_announcement(
   const research_group_id_type& organization_id,
   const research_group_id_type& review_committee_id,
+  const research_group_id_type& treasury_id,
   const account_name_type& grantor,
   const string& funding_opportunity_number,
   const flat_map<string, string>& additional_info,
@@ -33,6 +34,7 @@ const funding_opportunity_object& dbs_funding_opportunity::create_funding_opport
     const funding_opportunity_object& foa = db_impl().create<funding_opportunity_object>([&](funding_opportunity_object& funding_opportunity) {
         funding_opportunity.organization_id = organization_id;
         funding_opportunity.review_committee_id = review_committee_id;
+        funding_opportunity.treasury_id = treasury_id;
         funding_opportunity.grantor = grantor;
 
         fc::from_string(funding_opportunity.funding_opportunity_number, funding_opportunity_number);

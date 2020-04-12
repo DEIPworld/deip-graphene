@@ -19,7 +19,6 @@ void create_award_withdrawal_request_operation::validate() const
     FC_ASSERT(amount.amount > 0, "Amount must be greater than 0");
     FC_ASSERT(description.size() > 0, "Description must be specified");
     FC_ASSERT(fc::is_utf8(description), "Description is not valid UTF8 string");
-    FC_ASSERT(attachment.size() > 0, "Attachment must be specified");
     FC_ASSERT(fc::is_utf8(attachment), "Attachment is not valid UTF8 string");
 }
 

@@ -89,6 +89,26 @@
         "public_key": "DEIP7jYZtDq39GUoHafoLg72myPhGN8a9QKWJE2GgnAuYjQnhp9mTa"    
     }],
 
+    "peter": [{
+        "private_key": "5JMn5qP59zoTQWryqfRQGEYoEDwSnyLNmknsCupw2wUbBHTWnMV",
+        "public_key": "DEIP6voSBZvHYCDx6DbfMgNcb6N9PxgsrB7iNHwDChDkxtL8kpXaDE"
+    }],
+
+    "thomas": [{
+        "private_key": "5JkjkzaV9dfEmKeof6FPmcSBY89sE5JcjqjPEbAwAB6NixFSm3A",
+        "public_key": "DEIP6pCSdfeBQmSnfKnpDbq75ZxfQBgme6xJNW6RHwxd9TpQ7wQQ6J"
+    }],
+
+    "david": [{
+        "private_key": "5JhVb3rLtBPYJeS784ZJxX6jFECiZsiEhHDzBMWaePwqmDN7N3V",
+        "public_key": "DEIP7BpumvNemMkYpZgEoaU6ceNiHfzCLXwBwdWmvC65jXwPm8wY5e"
+    }],
+
+    "kim": [{
+        "private_key": "5JBUoX9L6fjHmfwtK2S8ksEevmM3q6LzYncsdeoax5V662PehFa",
+        "public_key": "DEIP6TcshvA9QU9PNFQqe6heyZ9DyKQbg25fc5a2xCLYiyMq2jXt2M"
+    }],
+
     "initdelegate1": [{
         "private_key": "5JgGXpUFNiZuWSu2DD1ewFTM6WEthN6gueq86meHDFcGNtg5wfF",
         "public_key": "DEIP6GGrScrv5S8MDwAiQrg5Tvh4KPndcEV7ZDu8f9zfQ96gfTsNXP"
