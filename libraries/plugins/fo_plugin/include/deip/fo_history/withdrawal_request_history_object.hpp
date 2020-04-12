@@ -150,6 +150,7 @@ FC_REFLECT(deip::fo_history::withdrawal_request_history_object,
     (description)
     (attachment)
     (status)
+    (version)
     (trx_id)
     (block)
     (trx_in_block)
