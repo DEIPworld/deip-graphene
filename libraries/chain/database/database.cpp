@@ -17,6 +17,7 @@
 #include <deip/chain/schema/chain_property_object.hpp>
 #include <deip/chain/schema/deip_objects.hpp>
 #include <deip/chain/schema/global_property_object.hpp>
+#include <deip/chain/schema/nda_contract_file_access_object.hpp>
 #include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/operation_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
@@ -33,6 +34,7 @@
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
+#include <deip/chain/services/dbs_nda_contract.hpp>
 #include <deip/chain/services/dbs_proposal.hpp>
 #include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
@@ -1470,6 +1472,12 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<approve_award_withdrawal_request_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_award_withdrawal_request_evaluator>();
     _my->_evaluator_registry.register_evaluator<pay_award_withdrawal_request_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<sign_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<decline_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<close_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_request_by_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<fulfill_request_by_nda_contract_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -1520,6 +1528,8 @@ void database::initialize_indexes()
     add_index<award_index>();
     add_index<award_recipient_index>();
     add_index<award_withdrawal_request_index>();
+    add_index<nda_contract_index>();
+    add_index<nda_contract_file_access_index>();
 
     _plugin_index_signal();
 }
@@ -1693,6 +1703,7 @@ void database::_apply_block(const signed_block& next_block)
         auto& proposal_service = obtain_service<dbs_proposal>();
         auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
         auto& research_token_sale_service = obtain_service<dbs_research_token_sale>();
+        auto& nda_contract_service = obtain_service<dbs_nda_contract>();
 
         const witness_object& signing_witness = validate_block_header(skip, next_block);
 
@@ -1752,6 +1763,7 @@ void database::_apply_block(const signed_block& next_block)
         discipline_supply_service.process_discipline_supplies();
 
         expertise_allocation_proposal_service.process_expertise_allocation_proposals();
+        nda_contract_service.process_nda_contracts();
 
         // notify observers that the block has been applied
         notify_applied_block(next_block);

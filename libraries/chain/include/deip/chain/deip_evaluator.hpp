@@ -56,6 +56,12 @@ DEFINE_EVALUATOR(certify_award_withdrawal_request)
 DEFINE_EVALUATOR(approve_award_withdrawal_request)
 DEFINE_EVALUATOR(reject_award_withdrawal_request)
 DEFINE_EVALUATOR(pay_award_withdrawal_request)
+DEFINE_EVALUATOR(create_nda_contract)
+DEFINE_EVALUATOR(sign_nda_contract)
+DEFINE_EVALUATOR(decline_nda_contract)
+DEFINE_EVALUATOR(close_nda_contract)
+DEFINE_EVALUATOR(create_request_by_nda_contract)
+DEFINE_EVALUATOR(fulfill_request_by_nda_contract)
 
 }
 } // deip::chain
