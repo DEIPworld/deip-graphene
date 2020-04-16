@@ -522,6 +522,31 @@ public:
     vector<award_withdrawal_request_api_obj> get_award_withdrawal_requests_by_award_and_subaward(const string& award_number, const string& subaward_number) const;
     vector<award_withdrawal_request_api_obj> get_award_withdrawal_requests_by_award_and_status(const string& award_number, const uint16_t& status) const;
 
+    ///////////////////
+    // NDA Contracts //
+    ///////////////////
+
+    fc::optional<nda_contract_api_obj> get_nda_contract(const nda_contract_id_type& id) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_creator(const account_name_type& party_a) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_signee(const account_name_type &party_b) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_hash(const string& hash) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group(const research_group_id_type& research_group_id) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_signee_research_group(const research_group_id_type& research_group_id) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_signee_research_group(const research_group_id_type& party_a_research_group_id, const research_group_id_type& party_b_research_group_id) const;
+    vector<nda_contract_api_obj> get_nda_contracts_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& party_a_research_group_id, const research_group_id_type& party_b_research_group_id, const fc::string& hash) const;
+
+    ////////////////////////////
+    // NDA Contracts Requests //
+    ////////////////////////////
+
+    fc::optional<nda_contract_file_access_api_obj> get_nda_contract_request(const nda_contract_file_access_id_type& id) const;
+    fc::optional<nda_contract_file_access_api_obj> get_nda_contract_request_by_contract_id_and_hash(const nda_contract_id_type& contract_id, const fc::string& encrypted_payload_hash) const;
+    vector<nda_contract_file_access_api_obj> get_nda_contract_requests_by_contract_id(const nda_contract_id_type& contract_id) const;
+    vector<nda_contract_file_access_api_obj> get_nda_contract_requests_by_requester(const account_name_type& requester) const;
+
+
     ////////////////////////////
     // Handlers - not exposed //
     ////////////////////////////
@@ -754,6 +779,24 @@ FC_API(deip::app::database_api,
    (get_award_withdrawal_requests_by_award)
    (get_award_withdrawal_requests_by_award_and_subaward)
    (get_award_withdrawal_requests_by_award_and_status)
+
+   // Contracts
+   (get_nda_contract)
+   (get_nda_contracts_by_creator)
+   (get_nda_contracts_by_signee)
+   (get_nda_contracts_by_hash)
+   (get_nda_contracts_by_creator_research_group)
+   (get_nda_contracts_by_signee_research_group)
+   (get_nda_contracts_by_creator_research_group_and_contract_hash)
+   (get_nda_contracts_by_signee_research_group_and_contract_hash)
+   (get_nda_contracts_by_creator_research_group_and_signee_research_group)
+   (get_nda_contracts_by_creator_research_group_and_signee_research_group_and_contract_hash)
+
+   (get_nda_contract_request)
+   (get_nda_contract_request_by_contract_id_and_hash)
+   (get_nda_contract_requests_by_contract_id)
+   (get_nda_contract_requests_by_requester)
+
 )
 
 // clang-format on

@@ -14,6 +14,8 @@
 #include <deip/chain/schema/expert_token_object.hpp>
 #include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 #include <deip/chain/schema/expertise_allocation_proposal_vote_object.hpp>
+#include <deip/chain/schema/nda_contract_object.hpp>
+#include <deip/chain/schema/nda_contract_file_access_object.hpp>
 #include <deip/chain/schema/proposal_object.hpp>
 #include <deip/chain/schema/proposal_vote_object.hpp>
 #include <deip/chain/schema/research_content_object.hpp>
@@ -1363,6 +1365,85 @@ struct award_withdrawal_request_api_obj
     std::string attachment;
 };
 
+struct nda_contract_api_obj
+{
+    nda_contract_api_obj(const chain::nda_contract_object& c_o)
+        : id(c_o.id._id)
+        , contract_creator(c_o.contract_creator)
+        , party_a(c_o.party_a)
+        , party_a_research_group_id(c_o.party_a_research_group_id._id)
+        , party_b(c_o.party_b)
+        , party_b_research_group_id(c_o.party_b_research_group_id._id)
+        , disclosing_party(c_o.disclosing_party.begin(), c_o.disclosing_party.end())
+        , party_a_signature(fc::to_string(c_o.party_a_signature))
+        , party_b_signature(fc::to_string(c_o.party_b_signature))
+        , title(fc::to_string(c_o.title))
+        , contract_hash(fc::to_string(c_o.contract_hash))
+        , status(c_o.status)
+        , created_at(c_o.created_at)
+        , start_date(c_o.start_date)
+        , end_date(c_o.end_date)
+
+    {}
+
+    // because fc::variant require for temporary object
+    nda_contract_api_obj()
+    {
+    }
+
+    int64_t id;
+    account_name_type contract_creator;
+
+    account_name_type party_a;
+    int64_t party_a_research_group_id;
+
+    account_name_type party_b;
+    int64_t party_b_research_group_id;
+
+    std::set<account_name_type> disclosing_party;
+
+    std::string party_a_signature;
+    std::string party_b_signature;
+
+    std::string title;
+    std::string contract_hash;
+    uint16_t status;
+
+    fc::time_point_sec created_at;
+    fc::time_point_sec start_date;
+    fc::time_point_sec end_date;
+};
+
+struct nda_contract_file_access_api_obj
+{
+    nda_contract_file_access_api_obj(const chain::nda_contract_file_access_object& cfa_o)
+        : id(cfa_o.id._id)
+        , contract_id(cfa_o.contract_id._id)
+        , status(cfa_o.status)
+        , requester(cfa_o.requester)
+        , encrypted_payload_hash(fc::to_string(cfa_o.encrypted_payload_hash))
+        , encrypted_payload_iv(fc::to_string(cfa_o.encrypted_payload_iv))
+        , encrypted_payload_encryption_key(fc::to_string(cfa_o.encrypted_payload_encryption_key))
+        , proof_of_encrypted_payload_encryption_key(fc::to_string(cfa_o.proof_of_encrypted_payload_encryption_key))
+
+    {}
+
+    // because fc::variant require for temporary object
+    nda_contract_file_access_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t contract_id;
+    uint16_t status;
+
+    account_name_type requester;
+    std::string encrypted_payload_hash;
+    std::string encrypted_payload_iv;
+    std::string encrypted_payload_encryption_key;
+    std::string proof_of_encrypted_payload_encryption_key;
+};
+
 }; // namespace app
 } // namespace deip
 
@@ -1793,6 +1874,36 @@ FC_REFLECT( deip::app::award_withdrawal_request_api_obj,
             (status)
             (time)
             (attachment)
+)
+
+FC_REFLECT( deip::app::nda_contract_api_obj,
+            (id)
+            (contract_creator)
+            (party_a)
+            (party_a_research_group_id)
+            (party_a_signature)
+            (party_b)
+            (party_b_research_group_id)
+            (party_b_signature)
+            (disclosing_party)
+            (title)
+            (contract_hash)
+            (status)
+            (created_at)
+            (start_date)
+            (end_date)
+
+)
+
+FC_REFLECT( deip::app::nda_contract_file_access_api_obj,
+            (id)
+            (contract_id)
+            (status)
+            (requester)
+            (encrypted_payload_hash)
+            (encrypted_payload_iv)
+            (encrypted_payload_encryption_key)
+            (proof_of_encrypted_payload_encryption_key)
 )
 
 // clang-format on

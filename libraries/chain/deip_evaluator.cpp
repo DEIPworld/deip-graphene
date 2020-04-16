@@ -13,6 +13,8 @@
 #include <deip/chain/services/dbs_witness.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
+#include <deip/chain/services/dbs_nda_contract.hpp>
+#include <deip/chain/services/dbs_nda_contract_requests.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
@@ -2065,5 +2067,306 @@ void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal
     award_service.update_award_withdrawal_request(withdrawal, award_withdrawal_request_status::paid);
 }
 
+void create_nda_contract_evaluator::do_apply(const create_nda_contract_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    fc::time_point_sec now = _db.head_block_time();
+    fc::time_point_sec start_date = op.start_date.valid() ? *op.start_date : now;
+
+    FC_ASSERT(account_service.account_exists(op.contract_creator),
+              "Account(contract_creator) ${1} does not exist",
+              ("1", op.contract_creator));
+
+    FC_ASSERT(account_service.account_exists(op.party_a),
+              "Account(party_a) ${1} does not exist",
+              ("1", op.party_a));
+
+    FC_ASSERT(account_service.account_exists(op.party_a),
+              "Account(party_b) ${1} does not exist",
+              ("1", op.party_b));
+
+    FC_ASSERT(research_group_service.is_research_group_member(op.party_a, op.party_a_research_group_id),
+              "Account(party_a) ${1} is not a member of research group ID: ${2}",
+              ("1", op.party_a)("2", op.party_a_research_group_id));
+
+    FC_ASSERT(research_group_service.is_research_group_member(op.party_b, op.party_a_research_group_id),
+              "Account(party_b) ${1} is not a member of research group ID: ${2}",
+              ("1", op.party_b)("2", op.party_b_research_group_id));
+
+    const auto& contracts = nda_contracts_service.get_by_creator_research_group_and_signee_research_group_and_contract_hash(op.party_a_research_group_id,
+                                                                                                                            op.party_b_research_group_id,
+                                                                                                                            op.contract_hash);
+
+    FC_ASSERT(start_date >= now,
+              "NDA start date (${start_date}) must be later or equal to the current moment (${now})",
+              ("start_date", start_date)("now", now));
+
+    FC_ASSERT(op.end_date > now,
+              "NDA end date (${end_date}) must be later the current moment (${now})",
+              ("end_date", op.end_date)("now", now));
+
+    FC_ASSERT(op.end_date > start_date,
+              "NDA start date (${start_date}) must be less than end date (${end_date})",
+              ("start_date", start_date)("end_date", op.end_date));
+
+    for (const auto& wrapper : contracts)
+    {
+        const auto& contract = wrapper.get();
+        FC_ASSERT(contract.status != static_cast<uint16_t>(nda_contract_status::nda_contract_pending),
+                  "NDA contract '${hash}' already exists with status '${status}' ",
+                  ("hash", op.contract_hash)("status", contract.status));
+
+        FC_ASSERT(contract.status != static_cast<uint16_t>(nda_contract_status::nda_contract_signed),
+                  "NDA contract '${hash}' already exists with status '${status}' ",
+                  ("hash", op.contract_hash)("status", contract.status));
+    }
+
+//    if (_db.has_hardfork(DEIP_HARDFORK_0_1)) {
+//        dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
+//        subscription_service.consume_nda_contract_quota_unit(op.party_a_research_group_id);
+//    }
+
+    nda_contracts_service.create(op.contract_creator,
+                                 op.party_a,
+                                 op.party_a_research_group_id,
+                                 op.party_b,
+                                 op.party_b_research_group_id,
+                                 op.disclosing_party,
+                                 op.title,
+                                 op.contract_hash,
+                                 now,
+                                 start_date,
+                                 op.end_date);
+}
+
+void sign_nda_contract_evaluator::do_apply(const sign_nda_contract_operation& op)
+{
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
+    dbs_research_group &research_group_service = _db.obtain_service<dbs_research_group>();
+
+    FC_ASSERT(account_service.account_exists(op.contract_signer),
+              "Account(contract_signer) ${1} does not exist",
+              ("1", op.contract_signer));
+
+    FC_ASSERT(nda_contracts_service.nda_contract_exists(op.contract_id),
+              "Nda contract with ID:${1} does not exist",
+              ("1", op.contract_id));
+
+    const auto &signer = account_service.get_account(op.contract_signer);
+    const auto& contract = nda_contracts_service.get(op.contract_id);
+
+    const bool is_party_a_sig = contract.party_a == op.contract_signer;
+
+    FC_ASSERT((contract.party_a == op.contract_signer) || (contract.party_b == op.contract_signer),
+              "Only ${party_a} or ${party_b} accounts can sign this NDA contract",
+              ("party_a", contract.party_a)("party_b", contract.party_b));
+
+    FC_ASSERT(contract.status == static_cast<uint16_t>(nda_contract_status::nda_contract_pending),
+              "NDA contract with status ${status} cannot be signed",
+              ("status", contract.status));
+
+    FC_ASSERT(research_group_service.is_research_group_member(op.contract_signer, is_party_a_sig ? contract.party_a_research_group_id : contract.party_b_research_group_id),
+              "Account(contract_signer) ${1} is not a member of research group ID: ${2}",
+              ("1", op.contract_signer)("2", is_party_a_sig ? contract.party_a_research_group_id : contract.party_b_research_group_id));
+
+    std::string stringified_party_a_signature = fc::to_string(contract.party_a_signature);
+    std::string stringified_party_b_signature = fc::to_string(contract.party_b_signature);
+
+    FC_ASSERT(stringified_party_a_signature.find(op.signature) == std::string::npos,
+              "Signature ${signature} is already made from ${party} party",
+              ("signature", op.signature)("party", contract.party_a));
+
+    FC_ASSERT(stringified_party_b_signature.find(op.signature) == std::string::npos,
+              "Signature ${signature} is already made from ${party} party",
+              ("signature", op.signature)("party", contract.party_b));
+
+    fc::sha256 digest = fc::sha256::hash(fc::to_string(contract.contract_hash));
+    fc::ecc::compact_signature signature;
+    fc::array<char, 65> buffer;
+    fc::from_hex(op.signature, buffer.begin(), buffer.size());
+    for (int i = 0; i < 65; i++)
+    {
+        unsigned char ch = static_cast<unsigned char>(buffer.at(i));
+        signature.data[i] = ch;
+    }
+    fc::ecc::public_key signer_public_key = fc::ecc::public_key(signature, digest);
+
+    const auto &signee_auth = account_service.get_account_authority(signer.name);
+    std::set<public_key_type> keys;
+    for (const auto &k : authority(signee_auth.owner).get_keys())
+        keys.insert(k);
+    for (const auto &k : authority(signee_auth.active).get_keys())
+        keys.insert(k);
+
+    const bool is_signature_valid = keys.find(signer_public_key) != keys.end();
+
+    FC_ASSERT(is_signature_valid,
+              "Signature ${signature} does not correspond any of ${signer} authorities",
+              ("signature", signature)("signer", op.contract_signer));
+
+    const auto& signed_contract = nda_contracts_service.sign(contract, op.contract_signer, op.signature);
+
+    if (signed_contract.party_a_signature.size() && signed_contract.party_b_signature.size()) { // todo: add contract status resolver
+        nda_contracts_service.set_new_contract_status(signed_contract, nda_contract_status::nda_contract_signed);
+    }
+}
+
+void decline_nda_contract_evaluator::do_apply(const decline_nda_contract_operation& op)
+{
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
+    dbs_research_group &research_group_service = _db.obtain_service<dbs_research_group>();
+
+    FC_ASSERT(account_service.account_exists(op.decliner),
+              "Account(decliner) ${1} does not exist",
+              ("1", op.decliner));
+
+    FC_ASSERT(nda_contracts_service.nda_contract_exists(op.contract_id),
+              "Nda contract with ID:${1} does not exist",
+              ("1", op.contract_id));
+
+    const auto& contract = nda_contracts_service.get(op.contract_id);
+
+    // Currently we are not supporting sharing files by both sides within a single NDA contract
+    FC_ASSERT(contract.party_b == op.decliner,
+              "Only ${party_b} account can decline the contract",
+              ("party_b", contract.party_b));
+
+    FC_ASSERT(research_group_service.is_research_group_member(op.decliner, contract.party_b_research_group_id),
+              "Account(decliner) ${1} is not a member of research group ID: ${2}",
+              ("1", op.decliner)("2", contract.party_b_research_group_id));
+
+    FC_ASSERT(contract.status == static_cast<uint16_t>(nda_contract_status::nda_contract_pending),
+              "NDA contract with status ${status} cannot be declined",
+              ("status", contract.status));
+
+    nda_contracts_service.set_new_contract_status(contract, nda_contract_status::nda_contract_declined);
+}
+
+void close_nda_contract_evaluator::do_apply(const close_nda_contract_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    FC_ASSERT(account_service.account_exists(op.closer),
+              "Account(closer) ${1} does not exist",
+              ("1", op.closer));
+
+    FC_ASSERT(nda_contracts_service.nda_contract_exists(op.contract_id),
+              "Nda contract with ID:${1} does not exist",
+              ("1", op.contract_id));
+
+    const auto& contract = nda_contracts_service.get(op.contract_id);
+
+    // Currently we are not supporting sharing files by both sides within a single NDA contract
+    FC_ASSERT(contract.party_a == op.closer,
+              "Only ${party_a} account can close the contract",
+              ("party_a", contract.party_a));
+
+    FC_ASSERT(research_group_service.is_research_group_member(op.closer, contract.party_b_research_group_id),
+              "Account(closer) ${1} is not a member of research group ID: ${2}",
+              ("1", op.closer)("2", contract.party_b_research_group_id));
+
+    FC_ASSERT(contract.status == static_cast<uint16_t>(nda_contract_status::nda_contract_pending),
+              "NDA contract with status ${status} cannot be closed",
+              ("status", contract.status));
+
+    nda_contracts_service.set_new_contract_status(contract, nda_contract_status::nda_contract_closed);
+}
+
+void create_request_by_nda_contract_evaluator::do_apply(const create_request_by_nda_contract_operation& op)
+{
+    dbs_account &account_service = _db.obtain_service<dbs_account>();
+    dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_nda_contract_requests& nda_contract_requests_service = _db.obtain_service<dbs_nda_contract_requests>();
+
+    fc::time_point_sec now = _db.head_block_time();
+
+    FC_ASSERT(account_service.account_exists(op.requester),
+              "Account(requester) ${1} does not exist",
+              ("1", op.requester));
+
+    FC_ASSERT(nda_contracts_service.nda_contract_exists(op.contract_id),
+              "Nda contract with ID:${1} does not exist",
+              ("1", op.contract_id));
+
+    const auto& contract = nda_contracts_service.get(op.contract_id);
+
+    // Currently we are not supporting sharing files by both sides within a single NDA contract
+    FC_ASSERT(op.requester == contract.party_b,
+              "Two-way NDA contracts are not supported currently. Only ${party_b} can create the request",
+              ("party_b", contract.party_b));
+
+    FC_ASSERT(research_group_service.is_research_group_member(op.requester, contract.party_b_research_group_id),
+              "Account(requester) ${1} is not a member of research group ID: ${2}",
+              ("1", op.requester)("2", contract.party_b_research_group_id));
+
+    FC_ASSERT(contract.status == static_cast<uint16_t>(nda_contract_status::nda_contract_signed),
+              "Files cannot be shared under the terms of a contract with ${status} status",
+              ("status", contract.status));
+
+    FC_ASSERT(contract.start_date <= now,
+              "NDA contract is not active yet and will be operational at ${start_date}",
+              ("start_date", contract.start_date));
+
+    nda_contract_requests_service.create_file_access_request(op.contract_id, op.requester, op.encrypted_payload_hash, op.encrypted_payload_iv);
+}
+
+void fulfill_request_by_nda_contract_evaluator::do_apply(const fulfill_request_by_nda_contract_operation& op)
+{
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_nda_contract& nda_contracts_service = _db.obtain_service<dbs_nda_contract>();
+    dbs_nda_contract_requests& nda_contract_requests_service = _db.obtain_service<dbs_nda_contract_requests>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+
+    FC_ASSERT(account_service.account_exists(op.grantor),
+              "Account(grantor) ${1} does not exist",
+              ("1", op.grantor));
+
+    FC_ASSERT(nda_contract_requests_service.request_exists(op.request_id),
+              "Request with ID:${1} does not exist",
+              ("1", op.request_id));
+
+    const auto& request = nda_contract_requests_service.get(op.request_id);
+
+    FC_ASSERT(nda_contracts_service.nda_contract_exists(request.contract_id),
+              "Nda contract with ID:${1} does not exist",
+              ("1", request.contract_id));
+
+    const auto& contract = nda_contracts_service.get(request.contract_id);
+
+    // Currently we are not supporting sharing files by both sides within a single NDA contract
+    FC_ASSERT(op.grantor == contract.party_a,
+              "Two-way NDA contracts are not supported currently. Only ${party_a} can fulfill the request",
+              ("party_a", contract.party_a));
+
+    FC_ASSERT(research_group_service.is_research_group_member(op.grantor, contract.party_a_research_group_id),
+              "Account(grantor) ${1} is not a member of research group ID: ${2}",
+              ("1", op.grantor)("2", contract.party_a_research_group_id));
+
+    FC_ASSERT(contract.status == static_cast<uint16_t>(nda_contract_status::nda_contract_signed),
+              "Files cannot be shared under the terms of a contract with ${status} status",
+              ("status", contract.status));
+
+    FC_ASSERT(request.status == static_cast<uint16_t>(nda_contract_file_access_status::pending),
+              "File access request with ${status} status cannot be fulfilled",
+              ("status", request.status));
+
+//    if (_db.has_hardfork(DEIP_HARDFORK_0_1)) {
+//        dbs_subscription& subscription_service = _db.obtain_service<dbs_subscription>();
+//        subscription_service.consume_nda_protected_file_quota_unit(contract.party_a_research_group_id);
+//    }
+
+    nda_contract_requests_service.fulfill_file_access_request(request, op.encrypted_payload_encryption_key, op.proof_of_encrypted_payload_encryption_key);
+}
+
+
+
 } // namespace chain
-} // namespace deip 
+} // namespace deip

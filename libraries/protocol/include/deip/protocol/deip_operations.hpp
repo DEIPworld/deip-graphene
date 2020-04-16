@@ -18,6 +18,12 @@
 #include <deip/protocol/operations/approve_award_withdrawal_request_operation.hpp>
 #include <deip/protocol/operations/reject_award_withdrawal_request_operation.hpp>
 #include <deip/protocol/operations/pay_award_withdrawal_request_operation.hpp>
+#include <deip/protocol/operations/create_nda_contract_operation.hpp>
+#include <deip/protocol/operations/sign_nda_contract_operation.hpp>
+#include <deip/protocol/operations/decline_nda_contract_operation.hpp>
+#include <deip/protocol/operations/close_nda_contract_operation.hpp>
+#include <deip/protocol/operations/create_request_by_nda_contract_operation.hpp>
+#include <deip/protocol/operations/fulfill_request_by_nda_contract_operation.hpp>
 
 namespace deip {
 namespace protocol {
@@ -64,6 +70,27 @@ inline void validate_enum_value_by_range(int val, int first, int last)
 {
     FC_ASSERT(val >= first && val <= last, "Provided enum value is outside of the range: val = ${enum_val}, first = ${first}, last = ${last}",
                                             ("enum_val", val)("first", first)("last", last));
+}
+
+inline void validate_520_bits_hexadecimal_string(const string& str)
+{
+    FC_ASSERT(((str.size() / 2) == 65), "Provided value must be a lowercase hexadecimal string 520 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 520 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 520 bits in length");
+}
+
+inline void validate_256_bits_hexadecimal_string(const string& str)
+{
+    FC_ASSERT(((str.size() / 2) == 32), "Provided value must be a lowercase hexadecimal string 256 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 256 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 256 bits in length");
+}
+
+inline void validate_128_bits_hexadecimal_string(const string& str)
+{
+    FC_ASSERT(((str.size() / 2) == 16), "Provided value must be a lowercase hexadecimal string 128 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 128 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 128 bits in length");
 }
 
 struct account_create_operation : public base_operation

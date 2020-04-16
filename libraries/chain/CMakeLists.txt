@@ -53,6 +53,8 @@ add_library( deip_chain
         services/dbs_account_balance.cpp
         services/dbs_asset.cpp
         services/dbs_award.cpp
+        services/dbs_nda_contract.cpp
+        services/dbs_nda_contract_requests.cpp
 
         deip_evaluator.cpp
         schema/deip_objects.cpp

@@ -67,6 +67,12 @@ namespace deip {
                 approve_award_withdrawal_request_operation,
                 reject_award_withdrawal_request_operation,
                 pay_award_withdrawal_request_operation,
+                create_nda_contract_operation,
+                sign_nda_contract_operation,
+                decline_nda_contract_operation,
+                close_nda_contract_operation,
+                create_request_by_nda_contract_operation,
+                fulfill_request_by_nda_contract_operation,
 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,
