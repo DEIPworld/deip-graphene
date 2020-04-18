@@ -57,7 +57,7 @@ void dbs_account::check_account_existence(const account_name_type& name,
     }
 }
 
-void dbs_account::check_account_existence(const account_authority_map& names,
+void dbs_account::check_account_existence(const authority::account_authority_map& names,
                                           const optional<const char*>& context_type_name) const
 {
     for (const auto& a : names)

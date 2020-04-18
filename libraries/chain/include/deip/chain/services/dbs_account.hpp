@@ -26,7 +26,7 @@ public:
     void check_account_existence(const account_name_type&,
                                  const optional<const char*>& context_type_name = optional<const char*>()) const;
 
-    void check_account_existence(const account_authority_map&,
+    void check_account_existence(const authority::account_authority_map&,
                                  const optional<const char*>& context_type_name = optional<const char*>()) const;
 
     const bool account_exists(const account_name_type& name) const;
