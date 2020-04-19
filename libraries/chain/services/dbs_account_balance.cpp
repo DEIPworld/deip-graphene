@@ -16,12 +16,12 @@ const account_balance_object& dbs_account_balance::create(const account_name_typ
                                                           const protocol::asset_symbol_type& symbol,
                                                           const share_type& amount)
 {
-    const auto& asset_obj = db_impl().get<asset_object, by_symbol>(symbol);
-    auto& account_balance = db_impl().create<account_balance_object>([&](account_balance_object& account_balance) {
+    const auto& asset = db_impl().get<asset_object, by_symbol>(symbol);
+    const auto& account_balance = db_impl().create<account_balance_object>([&](account_balance_object& account_balance) {
         account_balance.owner = owner;
-        account_balance.asset_id = asset_obj.id;
+        account_balance.asset_id = asset.id;
         account_balance.symbol = symbol;
-        fc::from_string(account_balance.string_symbol, fc::to_string(asset_obj.string_symbol));
+        fc::from_string(account_balance.string_symbol, fc::to_string(asset.string_symbol));
         account_balance.amount = amount;
     });
 

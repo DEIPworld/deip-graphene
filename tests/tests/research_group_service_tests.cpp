@@ -141,38 +141,6 @@ BOOST_AUTO_TEST_CASE(get_research_group_by_id_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(create_research_group_test)
-{
-    try
-    {
-        std::map<research_group_quorum_action, percent_type> action_quorums;
-        for (int i = FIRST_ACTION_QUORUM_TYPE; i <= LAST_ACTION_QUORUM_TYPE; i++)
-        {
-            action_quorums.insert(std::make_pair(research_group_quorum_action(i), percent_type(DEIP_100_PERCENT)));
-        }
-
-        int management_model_v = 0;
-        const auto& research_group = data_service.create_dao_voting_research_group(
-            "alice", 
-            "test", 
-            "test", 
-            "test",
-            management_model_v,
-            false,
-            false,
-            DEIP_100_PERCENT, 
-            action_quorums);
-
-        BOOST_CHECK(research_group.name == "test");
-        BOOST_CHECK(research_group.permlink == "test");
-        BOOST_CHECK(research_group.description == "test");
-        BOOST_CHECK(research_group.balance.amount == 0);
-        BOOST_CHECK(research_group.is_dao == true);
-        BOOST_CHECK(research_group.is_personal == false);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_CASE(change_quorum_test)
 {
     try

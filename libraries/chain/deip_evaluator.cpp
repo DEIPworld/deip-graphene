@@ -63,19 +63,6 @@ namespace deip {
 namespace chain {
 using fc::uint128_t;
 
-inline void validate_permlink_0_1(const string& permlink)
-{
-    FC_ASSERT(permlink.size() > DEIP_MIN_PERMLINK_LENGTH && permlink.size() < DEIP_MAX_PERMLINK_LENGTH,
-              "Permlink is not a valid size.");
-
-    for (auto ch : permlink)
-    {
-        if (!std::islower(ch) && !std::isdigit(ch) && !(ch == '-'))
-        {
-            FC_ASSERT(false, "Invalid permlink character: ${ch}", ("ch", std::string(1, ch)));
-        }
-    }
-}
 
 struct strcmp_equal
 {
@@ -117,43 +104,36 @@ void witness_update_evaluator::do_apply(const witness_update_operation& o)
     }
 }
 
-void create_account_evaluator::do_apply(const create_account_operation& o)
+void create_account_evaluator::do_apply(const create_account_operation& op)
 {
-  dbs_account& account_service = _db.obtain_service<dbs_account>();
-  dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
-  dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
 
-  auto creator_balance = account_balance_service.get_by_owner_and_asset(o.creator, o.fee.symbol);
-  FC_ASSERT(creator_balance.amount >= o.fee.amount, 
-    "Insufficient balance to create account.",
-    ("creator.balance", creator_balance.amount)("required", o.fee.amount));
+    auto creator_balance = account_balance_service.get_by_owner_and_asset(op.creator, op.fee.symbol);
+    FC_ASSERT(creator_balance.amount >= op.fee.amount, 
+      "Insufficient balance to create account.",
+      ("creator.balance", creator_balance.amount)("required", op.fee.amount));
 
-  FC_ASSERT(o.fee >= asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL),
-    "Insufficient Fee: ${f} required, ${p} provided.",
-    ("f", asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL))("p", o.fee));
+    FC_ASSERT(op.fee >= asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL),
+      "Insufficient Fee: ${f} required, ${p} provided.",
+      ("f", asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL))("p", op.fee));
 
-  // check accounts existence
-  account_service.check_account_existence(o.owner.account_auths);
-  account_service.check_account_existence(o.active.account_auths);
-  account_service.check_account_existence(o.posting.account_auths);
+    // check accounts existence
+    account_service.check_account_existence(op.owner.account_auths);
+    account_service.check_account_existence(op.active.account_auths);
+    account_service.check_account_existence(op.posting.account_auths);
 
-  account_service.create_account_by_faucets(
-    o.new_account_name, 
-    o.creator, 
-    o.memo_key, 
-    o.json_metadata, 
-    o.owner, 
-    o.active, 
-    o.posting, 
-    o.fee);
-
-  account_balance_service.create(o.new_account_name, DEIP_SYMBOL, 0);
-  const auto& personal_research_group = research_group_service.create_personal_research_group(o.new_account_name);
-  research_group_service.add_member_to_research_group(
-    o.new_account_name,
-    personal_research_group.id, 
-    DEIP_100_PERCENT, 
-    account_name_type());
+    account_service.create_account_by_faucets(
+      op.new_account_name, 
+      op.creator, 
+      op.memo_key, 
+      op.json_metadata, 
+      op.owner, 
+      op.active, 
+      op.posting, 
+      op.fee,
+      op.traits,
+      op.is_user_account());
 }
 
 void account_update_evaluator::do_apply(const account_update_operation& o)
@@ -609,36 +589,36 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
   
 //   if (management_model.which() == research_group_details::tag<dao_voting_research_group_management_model_v1_0_0_type>::value)
 //   {
-//     const auto dao_voting_model = management_model.get<dao_voting_research_group_management_model_v1_0_0_type>();
-//     std::map<research_group_quorum_action, percent_type> action_quorums;
-//     for (const auto& action_quorum : dao_voting_model.action_quorums)
-//     {
-//       const deip::protocol::research_group_quorum_action action = static_cast<deip::protocol::research_group_quorum_action>(action_quorum.first);
-//       action_quorums.insert(std::make_pair(action, action_quorum.second));
-//     }
+    // const auto dao_voting_model = management_model.get<dao_voting_research_group_management_model_v1_0_0_type>();
+    // std::map<research_group_quorum_action, percent_type> action_quorums;
+    // for (const auto& action_quorum : dao_voting_model.action_quorums)
+    // {
+    //   const deip::protocol::research_group_quorum_action action = static_cast<deip::protocol::research_group_quorum_action>(action_quorum.first);
+    //   action_quorums.insert(std::make_pair(action, action_quorum.second));
+    // }
 
-//     const research_group_object& research_group = research_group_service.create_dao_voting_research_group(
-//       op.creator, 
-//       op.name, 
-//       op.permlink, 
-//       op.description,
-//       management_model.which(),
-//       op.is_organization_division(),
-//       op.is_created_by_organization,
-//       dao_voting_model.default_quorum, 
-//       action_quorums);
+    // const research_group_object& research_group = research_group_service.create_dao_voting_research_group(
+    //   op.creator, 
+    //   op.name, 
+    //   op.permlink, 
+    //   op.description,
+    //   management_model.which(),
+    //   op.is_organization_division(),
+    //   op.is_created_by_organization,
+    //   dao_voting_model.default_quorum, 
+    //   action_quorums);
 
-//     for (const auto& invitee : op.invitees)
-//     {
-//       account_service.check_account_existence(invitee.account);
-//       research_group_invites_service.create(
-//         invitee.account, 
-//         research_group.id, 
-//         invitee.rgt, 
-//         invitee.notes,
-//         op.creator, 
-//         false);
-//     }
+    // for (const auto& invitee : op.invitees)
+    // {
+    //   account_service.check_account_existence(invitee.account);
+    //   research_group_invites_service.create(
+    //     invitee.account, 
+    //     research_group.id, 
+    //     invitee.rgt, 
+    //     invitee.notes,
+    //     op.creator, 
+    //     false);
+    // }
 
 //     research_group_id = research_group.id;
 //   }
@@ -651,7 +631,7 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
 
 //   else if (management_model.which() == research_group_details::tag<centralized_research_group_management_model_v1_0_0_type>::value) 
 //   {
-//     const auto centralized_model = management_model.get<centralized_research_group_management_model_v1_0_0_type>();
+    // const auto centralized_model = management_model.get<centralized_research_group_management_model_v1_0_0_type>();
 //     std::set<account_name_type> heads = { op.creator };
 
 //     const research_group_object& research_group = research_group_service.create_centralized_research_group(

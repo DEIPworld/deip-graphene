@@ -10,6 +10,7 @@ namespace deip {
 namespace protocol {
 
 using deip::protocol::asset;
+using deip::protocol::authority;
 
 struct base_account_trait
 {
@@ -54,6 +55,7 @@ struct research_group_v1_0_0_trait : base_account_trait
     std::string permlink;
     std::string description;
     std::set<invitee_type> invitees;
+    std::map<uint16_t, authority> threshold_overrides;
 };
 
 typedef fc::static_variant<
@@ -81,6 +83,9 @@ struct create_account_operation : public base_operation
     {
         a.insert(creator);
     }
+
+    bool is_research_group_account() const;
+    bool is_user_account() const;
 };
 
 
@@ -192,6 +197,7 @@ FC_REFLECT_DERIVED(deip::protocol::research_group_v1_0_0_trait, (deip::protocol:
   (permlink)
   (description)
   (invitees)
+  (threshold_overrides)
 )
 
 DECLARE_ACCOUNT_TRAIT_TYPE(deip::protocol::account_trait)

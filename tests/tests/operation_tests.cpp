@@ -20,7 +20,6 @@
 #include <stdexcept>
 
 #include <deip/chain/schema/deip_objects.hpp>
-#include <deip/chain/schema/discipline_supply_object.hpp>
 #include <deip/chain/schema/expert_token_object.hpp>
 #include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>

@@ -66,62 +66,25 @@ const research_group_object& dbs_research_group::create_personal_research_group(
   return personal_research_group;
 }
 
-const research_group_object& dbs_research_group::create_dao_voting_research_group(
+const research_group_object& dbs_research_group::create_research_group(
   const account_name_type& creator,
   const std::string& name,
   const string& permlink,
-  const string& description,
-  const int& management_model_v,
-  const bool& is_created_by_organization,
-  const bool& has_organization,
-  const percent_type& default_quorum,
-  const std::map<research_group_quorum_action, percent_type>& action_quorums)
+  const string& description)
 {
-  const research_group_object& dao_research_group = db_impl()
-    .create<research_group_object>([&](research_group_object& research_group) {
-      research_group.creator = creator;
-      fc::from_string(research_group.name, name);
-      fc::from_string(research_group.permlink, permlink);
-      fc::from_string(research_group.description, description);
-      research_group.management_model_v = management_model_v;
-      research_group.is_personal = false;
-      research_group.is_centralized = false;
-      research_group.is_dao = true;
-      research_group.default_quorum = default_quorum;
-      research_group.action_quorums.insert(action_quorums.begin(), action_quorums.end());
-      research_group.is_created_by_organization = is_created_by_organization;
-      research_group.has_organization = has_organization;
-    });
+    const research_group_object& research_group
+        = db_impl().create<research_group_object>([&](research_group_object& rg_o) {
+              rg_o.creator = creator;
+              fc::from_string(rg_o.name, name);
+              fc::from_string(rg_o.permlink, permlink);
+              fc::from_string(rg_o.description, description);
+              rg_o.is_personal = false;
+              rg_o.is_centralized = false;
+              rg_o.is_dao = true;
+              rg_o.default_quorum = DEIP_100_PERCENT;
+          });
 
-  return dao_research_group;
-}
-
-const research_group_object& dbs_research_group::create_centralized_research_group(
-  const account_name_type& creator,
-  const std::string& name,
-  const string& permlink,
-  const string& description,
-  const int& management_model_v,
-  const bool& is_created_by_organization,
-  const bool& has_organization,
-  const std::set<account_name_type>& heads)
-{
-  const research_group_object& dao_research_group = db_impl()
-    .create<research_group_object>([&](research_group_object& research_group) {
-      research_group.creator = creator;
-      fc::from_string(research_group.name, name);
-      fc::from_string(research_group.permlink, permlink);
-      fc::from_string(research_group.description, description);
-      research_group.management_model_v = management_model_v;
-      research_group.is_personal = false;
-      research_group.is_centralized = true;
-      research_group.is_dao = false;
-      research_group.heads.insert(heads.begin(), heads.end());
-      research_group.is_created_by_organization = is_created_by_organization;
-      research_group.has_organization = has_organization;
-    });
-
-  return dao_research_group;
+    return research_group;
 }
 
 void dbs_research_group::change_quorum(const percent_type quorum, const research_group_quorum_action quorum_action, const research_group_id_type& research_group_id)

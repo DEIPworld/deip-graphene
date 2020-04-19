@@ -4,7 +4,6 @@
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/util/reward.hpp>
 
-#include <deip/chain/schema/discipline_supply_object.hpp>
 #include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
 #include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/grant_application_object.hpp>
@@ -258,44 +257,7 @@ public:
         });
     }
 
-    void create_discipline_supplies()
-    {
-        db.create<discipline_supply_object>([&](discipline_supply_object& d) {
-            d.id = 1;
-            d.grantor = "bob";
-            d.target_discipline = 1;
-            d.balance = asset(100, DEIP_SYMBOL);
-            d.per_block = 100;
-            d.start_time = db.head_block_time();
-            d.end_time = db.head_block_time();
-            d.is_extendable = true;
-            d.content_hash = "hash";
-        });
 
-        db.create<discipline_supply_object>([&](discipline_supply_object& d) {
-            d.id = 2;
-            d.grantor = "jack";
-            d.target_discipline = 2;
-            d.balance = asset(100, DEIP_SYMBOL);
-            d.per_block = 100;
-            d.start_time = db.head_block_time();
-            d.end_time = db.head_block_time();
-            d.is_extendable = true;
-            d.content_hash = "hash";
-        });
-
-        db.create<discipline_supply_object>([&](discipline_supply_object& d) {
-            d.id = 3;
-            d.grantor = "john";
-            d.target_discipline = 4;
-            d.balance = asset(100, DEIP_SYMBOL);
-            d.per_block = 100;
-            d.start_time = db.head_block_time();
-            d.end_time = db.head_block_time();
-            d.is_extendable = false;
-            d.content_hash = "hash";
-        });
-    }
 
     void create_grant_test_case()
     {
@@ -584,27 +546,6 @@ BOOST_AUTO_TEST_CASE(clear_expired_group_invite)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(clear_expired_discipline_supplies)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: clear_expired_proposals");
-
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        generate_block();
-
-        db.create<discipline_supply_object>([&](discipline_supply_object& g) {
-            g.id = 0;
-            g.balance = asset(0, DEIP_SYMBOL);
-            g.end_time = db.head_block_time() - 1;
-        });
-
-        generate_block();
-        BOOST_CHECK_THROW(db.get<discipline_supply_object>(0), std::out_of_range);
-    }
-    FC_LOG_AND_RETHROW()
-}
 
 BOOST_AUTO_TEST_SUITE_END()
 

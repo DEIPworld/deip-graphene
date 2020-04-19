@@ -165,7 +165,9 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
           owner_authority,
           owner_authority,
           owner_authority,
-          asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL));
+          asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL),
+          {},
+          true);
     }
 }
 

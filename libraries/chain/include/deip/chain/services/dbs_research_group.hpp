@@ -46,26 +46,11 @@ class dbs_research_group : public dbs_base
     const research_group_object& create_personal_research_group(
       const account_name_type& creator);
 
-    const research_group_object& create_dao_voting_research_group(
+    const research_group_object& create_research_group(
       const account_name_type& creator,
       const std::string& name,
       const string& permlink,
-      const string& description,
-      const int& management_model_v,
-      const bool& is_created_by_organization,
-      const bool& has_organization,
-      const percent_type& default_quorum,
-      const std::map<research_group_quorum_action, percent_type>& action_quorums);
-
-    const research_group_object& create_centralized_research_group(
-      const account_name_type& creator,
-      const std::string& name,
-      const string& permlink,
-      const string& description,
-      const int& management_model_v,
-      const bool& is_created_by_organization,
-      const bool& has_organization,
-      const std::set<account_name_type>& heads);
+      const string& description);
 
     void change_quorum(
       const percent_type quorum,
