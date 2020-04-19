@@ -65,7 +65,7 @@ struct operation_process
         });
     }
 
-    void operator()(const account_create_operation& op) const
+    void operator()(const create_account_operation& op) const
     {
         _db.modify(_bucket, [&](bucket_object& b) { b.paid_accounts_created++; });
     }

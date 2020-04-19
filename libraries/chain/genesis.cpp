@@ -527,7 +527,7 @@ void database::init_research_group(const genesis_state_type::research_group_type
         fc::from_string(rg.permlink, research_group.permlink);
         rg.balance = asset(0, DEIP_SYMBOL);
 
-        if (research_group.management_model_v == research_group_details::tag<dao_voting_research_group_management_model_v1_0_0_type>::value)
+        if (research_group.management_model_v == 0)
         {
             FC_ASSERT(research_group.default_quorum.valid(), "Default quorum must be specified.");
             FC_ASSERT(*research_group.default_quorum >= DEIP_1_PERCENT && *research_group.default_quorum <= DEIP_100_PERCENT, "Quorum percent must be in 1% to 100% range");
@@ -544,7 +544,7 @@ void database::init_research_group(const genesis_state_type::research_group_type
             rg.is_centralized = false;
             rg.is_dao = true;
         }
-        else if (research_group.management_model_v == research_group_details::tag<centralized_research_group_management_model_v1_0_0_type>::value)
+        else if (research_group.management_model_v == 2)
         {
             FC_ASSERT(research_group.heads.valid(), "Heads must be specified.");
             rg.heads.insert(research_group.heads->begin(), research_group.heads->end());

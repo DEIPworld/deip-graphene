@@ -21,22 +21,6 @@ void placeholder2_operation::validate() const
     FC_ASSERT(false, "The operation is reserved");
 }
 
-void account_create_operation::validate() const
-{
-    validate_account_name(new_account_name);
-    owner.validate();
-    active.validate();
-
-    if (json_metadata.size() > 0)
-    {
-        FC_ASSERT(fc::is_utf8(json_metadata), "JSON Metadata not formatted in UTF8");
-        FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
-    }
-    FC_ASSERT(fee >= asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL),
-              "Insufficient Fee: ${f} required, ${p} provided.",
-              ("f", asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL))("p", fee));
-}
-
 void account_update_operation::validate() const
 {
     validate_account_name(account);

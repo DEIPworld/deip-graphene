@@ -1429,7 +1429,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<transfer_to_common_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_common_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<set_withdraw_common_tokens_route_evaluator>();
-    _my->_evaluator_registry.register_evaluator<account_create_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_account_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<witness_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_witness_vote_evaluator>();
@@ -1437,7 +1437,6 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator>();
     _my->_evaluator_registry.register_evaluator<recover_account_evaluator>();
     _my->_evaluator_registry.register_evaluator<change_recovery_account_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<make_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();

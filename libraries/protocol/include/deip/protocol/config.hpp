@@ -187,7 +187,7 @@
 #define DEIP_MIN_PAYOUT                  (asset(5, DEIP_SYMBOL))
 
 #define DEIP_MIN_ACCOUNT_NAME_LENGTH          3
-#define DEIP_MAX_ACCOUNT_NAME_LENGTH         16
+#define DEIP_MAX_ACCOUNT_NAME_LENGTH         40
 
 #define DEIP_MIN_PERMLINK_LENGTH             0
 #define DEIP_MAX_PERMLINK_LENGTH             256

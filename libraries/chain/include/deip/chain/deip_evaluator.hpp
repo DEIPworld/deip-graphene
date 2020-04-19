@@ -9,7 +9,7 @@ namespace chain {
 
 using namespace deip::protocol;
 
-DEFINE_EVALUATOR(account_create)
+DEFINE_EVALUATOR(create_account)
 DEFINE_EVALUATOR(account_update)
 DEFINE_EVALUATOR(transfer)
 DEFINE_EVALUATOR(transfer_to_common_tokens)
@@ -22,7 +22,6 @@ DEFINE_EVALUATOR(request_account_recovery)
 DEFINE_EVALUATOR(recover_account)
 DEFINE_EVALUATOR(change_recovery_account)
 DEFINE_EVALUATOR(create_proposal)
-DEFINE_EVALUATOR(create_research_group)
 DEFINE_EVALUATOR(make_review)
 DEFINE_EVALUATOR(contribute_to_token_sale)
 DEFINE_EVALUATOR(approve_research_group_invite)

@@ -52,7 +52,7 @@ struct pre_operation_visitor
     {
     }
 
-    void operator()(const account_create_operation& op) const
+    void operator()(const create_account_operation& op) const
     {
         _plugin.my->clear_cache();
     }
@@ -99,7 +99,7 @@ struct post_operation_visitor
     {
     }
 
-    void operator()(const account_create_operation& op) const
+    void operator()(const create_account_operation& op) const
     {
         auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.new_account_name);
         if (acct_itr)

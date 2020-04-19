@@ -84,7 +84,7 @@ struct database_fixture
      */
     void generate_blocks(fc::time_point_sec timestamp, bool miss_intermediate_blocks = true);
 
-    const account_object& account_create(const string& name,
+    const account_object& create_account(const string& name,
                                          const string& creator,
                                          const private_key_type& creator_key,
                                          const share_type& fee,
@@ -93,9 +93,9 @@ struct database_fixture
                                          const string& json_metadata);
 
     const account_object&
-    account_create(const string& name, const public_key_type& key, const public_key_type& post_key);
+    create_account(const string& name, const public_key_type& key, const public_key_type& post_key);
 
-    const account_object& account_create(const string& name, const public_key_type& key);
+    const account_object& create_account(const string& name, const public_key_type& key);
 
     const witness_object& witness_create(const string& owner,
                                          const private_key_type& owner_key,
@@ -116,13 +116,6 @@ struct database_fixture
                                                        const bool is_dao,
                                                        const bool is_personal);
 
-    const research_group_object& research_group_create_by_operation(const account_name_type& creator,
-                                                                    const string& name,
-                                                                    const string& permlink,
-                                                                    const string& description,
-                                                                    const percent_type& default_quorum,
-                                                                    const std::map<research_group_quorum_action, percent_type>& action_quorums,
-                                                                    const bool is_dao);
 
     const research_group_token_object& research_group_token_create(const research_group_id_type& research_group_id,
                                                                    const account_name_type& account,

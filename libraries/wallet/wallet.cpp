@@ -563,7 +563,7 @@ public:
             deip::chain::public_key_type active_pubkey = active_privkey.get_public_key();
             deip::chain::public_key_type memo_pubkey = memo_privkey.get_public_key();
 
-            account_create_operation account_create_op;
+            create_account_operation account_create_op;
 
             account_create_op.creator = creator_account_name;
             account_create_op.new_account_name = account_name;
@@ -1323,7 +1323,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys(const std::str
     try
     {
         FC_ASSERT(!is_locked());
-        account_create_operation op;
+        create_account_operation op;
         op.creator = creator;
         op.new_account_name = newname;
         op.owner = authority(1, owner, 1);
@@ -2445,11 +2445,12 @@ annotated_signed_transaction wallet_api::propose_create_research_content(const s
                                                                   const std::set<string>& external_references,
                                                                   const bool broadcast)
 {    
-    std::vector<fc::fixed_string_16> authors_fc;
+    std::vector<fc::fixed_string_40
+    > authors_fc;
     for (size_t i = 0; i < authors.size(); i++)
     {
         const std::string& s = authors[i];
-        fc::fixed_string_16 fc(s);
+        fc::fixed_string_40 fc(s);
         authors_fc.push_back(fc);
     }
 
@@ -2530,29 +2531,6 @@ annotated_signed_transaction wallet_api::contribute_to_token_sale(const std::str
     op.research_token_sale_id = research_token_sale_id;
     op.owner = contributor;
     op.amount = amount;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
-annotated_signed_transaction wallet_api::create_research_group(const std::string& creator,
-                                                               const std::string& name,
-                                                               const std::string& permlink,
-                                                               const std::string& description,
-                                                               const percent_type& default_quorum,
-                                                               const bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    create_research_group_operation op;
-
-    op.creator = creator;
-    op.name = name;
-    op.permlink = permlink;
-    op.description = description;
 
     signed_transaction tx;
     tx.operations.push_back(op);

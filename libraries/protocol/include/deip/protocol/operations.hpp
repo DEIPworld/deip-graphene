@@ -17,7 +17,7 @@ namespace deip {
                 transfer_to_common_tokens_operation,
                 withdraw_common_tokens_operation,
 
-                account_create_operation,
+                create_account_operation,
                 account_update_operation,
 
                 witness_update_operation,
@@ -31,8 +31,6 @@ namespace deip {
                 change_recovery_account_operation,
 
                 // DEIP native operations
-                placeholder1_operation,
-                create_research_group_operation,
                 create_proposal_operation,
                 vote_proposal_operation,
                 make_review_operation,

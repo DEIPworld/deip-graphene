@@ -95,9 +95,9 @@ FC_DECLARE_DERIVED_EXCEPTION(pop_empty_chain,
 DEIP_DECLARE_OP_BASE_EXCEPTIONS(transfer);
 //   DEIP_DECLARE_OP_EVALUATE_EXCEPTION( from_account_not_whitelisted, transfer, 1, "owner mismatch" )
 
-DEIP_DECLARE_OP_BASE_EXCEPTIONS(account_create);
-DEIP_DECLARE_OP_EVALUATE_EXCEPTION(max_auth_exceeded, account_create, 1, "Exceeds max authority fan-out")
-DEIP_DECLARE_OP_EVALUATE_EXCEPTION(auth_account_not_found, account_create, 2, "Auth account not found")
+DEIP_DECLARE_OP_BASE_EXCEPTIONS(create_account);
+DEIP_DECLARE_OP_EVALUATE_EXCEPTION(max_auth_exceeded, create_account, 1, "Exceeds max authority fan-out")
+DEIP_DECLARE_OP_EVALUATE_EXCEPTION(auth_account_not_found, create_account, 2, "Auth account not found")
 
 DEIP_DECLARE_OP_BASE_EXCEPTIONS(account_update);
 DEIP_DECLARE_OP_EVALUATE_EXCEPTION(max_auth_exceeded, account_update, 1, "Exceeds max authority fan-out")

@@ -53,7 +53,7 @@ struct get_impacted_account_visitor
     }
 
     // ops
-    void operator()(const account_create_operation& op)
+    void operator()(const create_account_operation& op)
     {
         _impacted.insert(op.new_account_name);
         _impacted.insert(op.creator);
@@ -127,11 +127,6 @@ struct get_impacted_account_visitor
     void operator()(const change_recovery_account_operation& op)
     {
         _impacted.insert(op.account_to_recover);
-    }
-
-    void operator()(const create_research_group_operation& op)
-    {
-        _impacted.insert(op.creator);
     }
 
     void operator()(const create_proposal_operation& op)

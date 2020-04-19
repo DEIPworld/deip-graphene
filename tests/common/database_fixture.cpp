@@ -128,7 +128,7 @@ clean_database_fixture::clean_database_fixture()
         // Fill up the rest of the required miners
         for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
         {
-            account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
+            create_account(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
             fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1000);
         }
 
@@ -197,7 +197,7 @@ void clean_database_fixture::resize_shared_mem(uint64_t size)
     // Fill up the rest of the required miners
     for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
     {
-        account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
+        create_account(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
         fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), DEIP_MIN_PRODUCER_REWARD.amount.value);
     }
 
@@ -313,7 +313,7 @@ void database_fixture::generate_blocks(fc::time_point_sec timestamp, bool miss_i
     BOOST_REQUIRE((db.head_block_time() - timestamp).to_seconds() < DEIP_BLOCK_INTERVAL);
 }
 
-const account_object& database_fixture::account_create(const string& name,
+const account_object& database_fixture::create_account(const string& name,
                                                        const string& creator,
                                                        const private_key_type& creator_key,
                                                        const share_type& fee,
@@ -324,7 +324,7 @@ const account_object& database_fixture::account_create(const string& name,
     try
     {
 
-        account_create_operation op;
+        create_account_operation op;
         op.new_account_name = name;
         op.creator = creator;
         op.fee = asset(fee, DEIP_SYMBOL);
@@ -351,11 +351,11 @@ const account_object& database_fixture::account_create(const string& name,
 }
 
 const account_object&
-database_fixture::account_create(const string& name, const public_key_type& key, const public_key_type& post_key)
+database_fixture::create_account(const string& name, const public_key_type& key, const public_key_type& post_key)
 {
     try
     {
-        return account_create(name, TEST_INIT_DELEGATE_NAME, init_account_priv_key,
+        return create_account(name, TEST_INIT_DELEGATE_NAME, init_account_priv_key,
                               std::max(db.get_witness_schedule_object().median_props.account_creation_fee.amount
                                            * DEIP_CREATE_ACCOUNT_WITH_DEIP_MODIFIER,
                                        share_type(10000)),
@@ -364,9 +364,9 @@ database_fixture::account_create(const string& name, const public_key_type& key,
     FC_CAPTURE_AND_RETHROW((name));
 }
 
-const account_object& database_fixture::account_create(const string& name, const public_key_type& key)
+const account_object& database_fixture::create_account(const string& name, const public_key_type& key)
 {
-    return account_create(name, key, key);
+    return create_account(name, key, key);
 }
 
 
@@ -433,42 +433,6 @@ database_fixture::research_group_create(const int64_t& id,
           });
 
     return new_research_group;
-}
-
-const research_group_object& database_fixture::research_group_create_by_operation(const account_name_type& creator,
-                                                                                  const string& name,
-                                                                                  const string& permlink,
-                                                                                  const string& description,
-                                                                                  const percent_type& default_quorum,
-                                                                                  const std::map<research_group_quorum_action, percent_type>& action_quorums,
-                                                                                  const bool is_dao)
-{
-    try
-    {
-        auto cr = std::string(creator);
-        private_key_type priv_key = generate_private_key(cr);
-
-        create_research_group_operation op;
-        op.name = name;
-        op.permlink = permlink;
-        op.description = description;
-        op.creator = creator;
-
-        trx.operations.push_back(op);
-
-        trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        trx.sign(priv_key, db.get_chain_id());
-        trx.validate();
-        db.push_transaction(trx, 0);
-        trx.operations.clear();
-        trx.signatures.clear();
-
-        auto& research_group_service = db.obtain_service<dbs_research_group>();
-        const research_group_object& rg = research_group_service.get_research_group_by_permlink(permlink);
-
-        return rg;
-    }
-    FC_CAPTURE_AND_RETHROW((creator)(permlink))
 }
 
 const research_group_token_object& database_fixture::research_group_token_create(

@@ -1009,7 +1009,7 @@ state database_api::get_state(string path) const
                     //     case operation::tag<account_witness_proxy_operation>::value:
                     //         //   eacnt.vote_history[item.first] =  item.second;
                     //         break;
-                    //     case operation::tag<account_create_operation>::value:
+                    //     case operation::tag<create_account_operation>::value:
                     //     case operation::tag<account_update_operation>::value:
                     //     case operation::tag<witness_update_operation>::value:
                     //     case operation::tag<producer_reward_operation>::value:

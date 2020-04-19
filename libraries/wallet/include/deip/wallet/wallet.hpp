@@ -1127,24 +1127,6 @@ public:
                                                           const asset& amount,
                                                           const bool broadcast);
 
-
-    /**
-     * Create research group
-     *
-     * @param creator The account who creates research group
-     * @param name Name of the research group
-     * @param permlink Permlink to the research group
-     * @param description Description of the research group
-     * @param default_quorum Quorum percent of the research group (500 to 10000). This quorum percent will be set for all proposal types
-     * @param broadcast
-     */
-    annotated_signed_transaction create_research_group(const std::string& creator,
-                                                               const std::string& name,
-                                                               const std::string& permlink,
-                                                               const std::string& description,
-                                                               const percent_type& default_quorum,
-                                                               const bool broadcast);
-
     /**
      * Approve research group invite
      *
@@ -1429,7 +1411,6 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (propose_start_token_sale)
         (make_review)
         (contribute_to_token_sale)
-        (create_research_group)
         (approve_research_group_invite)
         (reject_research_group_invite)
         (transfer_research_tokens_to_research_group)

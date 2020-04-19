@@ -14,7 +14,6 @@ namespace chain {
 
 using deip::protocol::research_group_quorum_action;
 using deip::protocol::percent_type;
-using deip::protocol::research_group_details;
 
 class research_group_service_fixture : public clean_database_fixture
 {
@@ -152,7 +151,7 @@ BOOST_AUTO_TEST_CASE(create_research_group_test)
             action_quorums.insert(std::make_pair(research_group_quorum_action(i), percent_type(DEIP_100_PERCENT)));
         }
 
-        int management_model_v = research_group_details::tag<dao_voting_research_group_management_model_v1_0_0_type>::value;
+        int management_model_v = 0;
         const auto& research_group = data_service.create_dao_voting_research_group(
             "alice", 
             "test", 

@@ -44,13 +44,13 @@ using namespace deip::chain;
 using namespace deip::protocol;
 using fc::string;
 
-BOOST_AUTO_TEST_SUITE(test_account_create_operation_get_authorities)
+BOOST_AUTO_TEST_SUITE(test_create_account_operation_get_authorities)
 
 BOOST_AUTO_TEST_CASE(there_is_no_owner_authority)
 {
     try
     {
-        account_create_operation op;
+        create_account_operation op;
         op.creator = "alice";
         op.new_account_name = "bob";
 
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(there_is_no_posting_authority)
 {
     try
     {
-        account_create_operation op;
+        create_account_operation op;
         op.creator = "alice";
         op.new_account_name = "bob";
 
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(creator_have_active_authority)
 {
     try
     {
-        account_create_operation op;
+        create_account_operation op;
         op.creator = "alice";
         op.new_account_name = "bob";
 
@@ -645,9 +645,6 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_apply)
             action_quorums.insert(std::make_pair(research_group_quorum_action(i), percent_type(50)));
         }
 
-        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", DEIP_100_PERCENT, action_quorums, true);
-        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", DEIP_100_PERCENT, action_quorums, true);
-
         research_group_invite_create(0, "bob", 0, 5000);
         research_group_invite_create(1, "bob", 1, 5000);
 
@@ -744,9 +741,6 @@ BOOST_AUTO_TEST_CASE(approve_research_group_invite_data_validate_apply)
         ///                                            ///
         //////////////////////////////////////////////////
 
-        research_group_create_by_operation("alice", "name rg1", "permlink rg1", "description rg1", DEIP_100_PERCENT, action_quorums, true);
-        research_group_create_by_operation("alice", "name rg2", "permlink rg2", "description rg2", DEIP_100_PERCENT, action_quorums, true);
-
         research_group_invite_create(0, "bob", 0, 10000);
         research_group_invite_create(1, "bob", 1, 10000);
 
@@ -777,7 +771,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        auto& account_balance_service = db.obtain_service<dbs_account_balance>();
        asset init_starting_balance = asset(account_balance_service.get_by_owner_and_asset(TEST_INIT_DELEGATE_NAME, DEIP_SYMBOL).amount, DEIP_SYMBOL);
 
-       account_create_operation op;
+       create_account_operation op;
 
        op.fee = asset(30000, DEIP_SYMBOL);
        op.new_account_name = "alice";
@@ -1941,7 +1935,7 @@ BOOST_AUTO_TEST_CASE(account_recovery)
 
        BOOST_TEST_MESSAGE("Creating account bob with alice");
 
-       account_create_operation acc_create;
+       create_account_operation acc_create;
        acc_create.fee = asset(30000, DEIP_SYMBOL);
        acc_create.creator = "alice";
        acc_create.new_account_name = "bob";
@@ -2511,113 +2505,6 @@ BOOST_AUTO_TEST_CASE(account_bandwidth)
 //    }
 //    FC_LOG_AND_RETHROW()
 // }
-
-BOOST_AUTO_TEST_CASE(create_research_group_apply)
-{
-   try
-   {
-       BOOST_TEST_MESSAGE("Testing: create_research_group_apply");
-
-       ACTORS_WITH_EXPERT_TOKENS((alice));
-       generate_block();
-
-       private_key_type priv_key = generate_private_key("alice");
-
-       std::map<research_group_quorum_action, percent_type> action_quorums;
-       for (int i = FIRST_ACTION_QUORUM_TYPE; i <= LAST_ACTION_QUORUM_TYPE; i++)
-       {
-           action_quorums.insert(std::make_pair(research_group_quorum_action(i), percent_type(1000)));
-       }
-
-       create_research_group_operation op;
-
-       op.name = "test";
-       op.creator = "alice";
-       op.permlink = "group";
-       op.description = "group";
-
-       BOOST_TEST_MESSAGE("--- Test");
-       signed_transaction tx;
-       tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-       tx.operations.push_back(op);
-       tx.sign(alice_private_key, db.get_chain_id());
-       tx.validate();
-       db.push_transaction(tx, 0);
-
-       auto& research_group_service = db.obtain_service<dbs_research_group>();
-       auto& research_group = research_group_service.get_research_group_by_permlink("group");
-
-       BOOST_CHECK(research_group.name == "test");
-       BOOST_CHECK(research_group.description == "group");
-       BOOST_CHECK(research_group.permlink == "group");
-
-   }
-   FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(create_research_group_with_invitees_apply)
-{
-   try
-   {
-       BOOST_TEST_MESSAGE("Testing: create_research_group_apply");
-
-       ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(sam)(corp));
-       generate_block();
-
-       private_key_type priv_key = generate_private_key("alice");
-
-       std::map<research_group_quorum_action, percent_type> action_quorums;
-       for (int i = FIRST_ACTION_QUORUM_TYPE; i <= LAST_ACTION_QUORUM_TYPE; i++)
-       {
-           action_quorums.insert(std::make_pair(research_group_quorum_action(i), percent_type(1000)));
-       }
-
-       create_research_group_operation op;
-
-       op.name = "test";
-       op.creator = "alice";
-       op.permlink = "group";
-       op.description = "group";
-       op.invitees.insert(invitee_type("bob", 1000, "good"));
-       op.invitees.insert(invitee_type("sam", 1000, "best"));
-       op.invitees.insert(invitee_type("corp", 6000, "bad"));
-
-       BOOST_TEST_MESSAGE("--- Test");
-       signed_transaction tx;
-       tx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-       tx.operations.push_back(op);
-       tx.sign(alice_private_key, db.get_chain_id());
-       tx.validate();
-       db.push_transaction(tx, 0);
-
-       auto& research_group_service = db.obtain_service<dbs_research_group>();
-       auto& research_group = research_group_service.get_research_group_by_permlink("group");
-
-       BOOST_CHECK(research_group.name == "test");
-       BOOST_CHECK(research_group.description == "group");
-       BOOST_CHECK(research_group.permlink == "group");
-       BOOST_CHECK(research_group.action_quorums.size() == 11);
-
-       auto& research_group_invite_service = db.obtain_service<dbs_research_group_invite>();
-       auto& rg_invite_bob = research_group_invite_service.get_research_group_invite("bob", 25);
-       auto& rg_invite_sam = research_group_invite_service.get_research_group_invite("sam", 25);
-       auto& rg_invite_corp = research_group_invite_service.get_research_group_invite("corp", 25);
-
-       BOOST_CHECK(rg_invite_bob.account_name == "bob");
-       BOOST_CHECK(rg_invite_bob.research_group_id == 25);
-       BOOST_CHECK(rg_invite_bob.research_group_token_amount == 1000);
-       BOOST_CHECK(rg_invite_bob.cover_letter == "good");
-       BOOST_CHECK(rg_invite_sam.account_name == "sam");
-       BOOST_CHECK(rg_invite_sam.research_group_id == 25);
-       BOOST_CHECK(rg_invite_sam.research_group_token_amount == 1000);
-       BOOST_CHECK(rg_invite_sam.cover_letter == "best");
-       BOOST_CHECK(rg_invite_corp.account_name == "corp");
-       BOOST_CHECK(rg_invite_corp.research_group_id == 25);
-       BOOST_CHECK(rg_invite_corp.research_group_token_amount == 6000);
-       BOOST_CHECK(rg_invite_corp.cover_letter == "bad");
-   }
-   FC_LOG_AND_RETHROW()
-}
 
 BOOST_AUTO_TEST_CASE(transfer_research_tokens_to_research_group_apply)
 {

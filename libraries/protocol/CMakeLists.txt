@@ -9,7 +9,7 @@ add_library( deip_protocol
              sign_state.cpp
              operation_util_impl.cpp
              deip_operations.cpp
-             operations/create_research_group_operation.cpp
+             operations/create_account_operation.cpp
              operations/make_review_operation.cpp
              operations/create_grant_operation.cpp
              operations/create_award_operation.cpp

@@ -70,7 +70,7 @@ namespace protocol {
 
 typedef fc::ecc::private_key private_key_type;
 typedef fc::sha256 chain_id_type;
-typedef fc::fixed_string_16 account_name_type;
+typedef fc::fixed_string_40 account_name_type;
 typedef fc::ripemd160 block_id_type;
 typedef fc::ripemd160 checksum_type;
 typedef fc::ripemd160 transaction_id_type;

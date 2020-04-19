@@ -7,7 +7,7 @@
 #include <fc/crypto/equihash.hpp>
 #include <fc/shared_string.hpp>
 #include <fc/io/json.hpp>
-#include <deip/protocol/operations/create_research_group_operation.hpp>
+#include <deip/protocol/operations/create_account_operation.hpp>
 #include <deip/protocol/operations/make_review_operation.hpp>
 #include <deip/protocol/operations/create_grant_operation.hpp>
 #include <deip/protocol/operations/create_award_operation.hpp>
@@ -92,24 +92,6 @@ inline void validate_128_bits_hexadecimal_string(const string& str)
     FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 128 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 128 bits in length");
 }
-
-struct account_create_operation : public base_operation
-{
-    asset fee;
-    account_name_type creator;
-    account_name_type new_account_name;
-    authority owner;
-    authority active;
-    authority posting;
-    public_key_type memo_key;
-    string json_metadata;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(creator);
-    }
-};
 
 struct account_update_operation : public base_operation
 {
@@ -839,15 +821,7 @@ struct reserve_asset_operation : public base_operation
 
 FC_REFLECT( deip::protocol::chain_properties, (account_creation_fee)(maximum_block_size) )
 
-FC_REFLECT( deip::protocol::account_create_operation,
-            (fee)
-            (creator)
-            (new_account_name)
-            (owner)
-            (active)
-            (posting)
-            (memo_key)
-            (json_metadata) )
+
 
 FC_REFLECT( deip::protocol::account_update_operation,
             (account)
