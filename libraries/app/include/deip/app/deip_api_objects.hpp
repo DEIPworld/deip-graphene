@@ -45,6 +45,8 @@ namespace app {
 
 using namespace deip::chain;
 using research_group_token_refs_type = std::vector<std::reference_wrapper<const research_group_token_object>>;
+using account_balance_refs_type = std::vector<std::reference_wrapper<const account_balance_object>>;
+
 using deip::protocol::percent_type;
 
 typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
@@ -57,7 +59,9 @@ typedef witness::account_bandwidth_object account_bandwidth_api_obj;
 
 struct account_api_obj
 {
-    account_api_obj(const chain::account_object& a, const chain::database& db)
+    account_api_obj(const chain::account_object& a,
+                    const chain::account_authority_object& auth,
+                    const account_balance_refs_type account_balances)
         : id(a.id)
         , name(a.name)
         , memo_key(a.memo_key)
@@ -82,45 +86,24 @@ struct account_api_obj
         size_t n = a.proxied_vsf_votes.size();
         proxied_vsf_votes.reserve(n);
         for (size_t i = 0; i < n; i++)
+        {
             proxied_vsf_votes.push_back(a.proxied_vsf_votes[i]);
+        }
 
-        const auto& auth = db.get<account_authority_object, by_account>(name);
         owner = authority(auth.owner);
         active = authority(auth.active);
         posting = authority(auth.posting);
         last_owner_update = auth.last_owner_update;
 
-        if (db.has_index<witness::account_bandwidth_index>())
+        for (auto& pair : auth.threshold_overrides)
         {
-            auto forum_bandwidth = db.find<witness::account_bandwidth_object, witness::by_account_bandwidth_type>(
-                boost::make_tuple(name, witness::bandwidth_type::forum));
-
-            if (forum_bandwidth != nullptr)
-            {
-                average_bandwidth = forum_bandwidth->average_bandwidth;
-                lifetime_bandwidth = forum_bandwidth->lifetime_bandwidth;
-                last_bandwidth_update = forum_bandwidth->last_bandwidth_update;
-            }
-
-            auto market_bandwidth = db.find<witness::account_bandwidth_object, witness::by_account_bandwidth_type>(
-                boost::make_tuple(name, witness::bandwidth_type::market));
-
-            if (market_bandwidth != nullptr)
-            {
-                average_market_bandwidth = market_bandwidth->average_bandwidth;
-                lifetime_market_bandwidth = market_bandwidth->lifetime_bandwidth;
-                last_market_bandwidth_update = market_bandwidth->last_bandwidth_update;
-            }
+            threshold_overrides.insert(std::pair<uint16_t, authority>(pair.first, authority(pair.second)));
         }
 
-        auto it_pair = db.get_index<account_balance_index>().indicies().get<by_owner>().equal_range(a.name);
-        auto it = it_pair.first;
-        const auto it_end = it_pair.second;
-        while (it != it_end)
+        for (auto& wrap : account_balances)
         {
-            const account_balance_object& account_balance = std::cref(*it).get();
+            const auto& account_balance = wrap.get();
             balances.push_back(asset(account_balance.amount, account_balance.symbol));
-            ++it;
         }
     }
 
@@ -135,6 +118,9 @@ struct account_api_obj
     authority active;
     authority posting;
     public_key_type memo_key;
+
+    std::map<uint16_t, authority> threshold_overrides;
+
     string json_metadata;
     account_name_type proxy;
 
@@ -606,19 +592,35 @@ struct research_group_token_api_obj
 
 struct research_group_api_obj
 {
-    research_group_api_obj(const chain::research_group_object& rg)
-        :  id(rg.id._id)
-        ,  creator(rg.creator)
-        ,  name(fc::to_string(rg.name))
-        ,  permlink(fc::to_string(rg.permlink))
-        ,  description(fc::to_string(rg.description))
-        ,  quorum_percent(rg.default_quorum)
-        ,  is_dao(rg.is_dao)
-        ,  is_personal(rg.is_personal)
-        ,  is_centralized(rg.is_centralized)
-        ,  balance(rg.balance)
+    research_group_api_obj(const chain::research_group_object& rg_o, const account_api_obj& acc_o)
+        : id(rg_o.id._id)
+        , creator(rg_o.creator)
+        , name(fc::to_string(rg_o.name))
+        , permlink(fc::to_string(rg_o.permlink))
+        , description(fc::to_string(rg_o.description))
+        , quorum_percent(rg_o.default_quorum)
+        , is_dao(rg_o.is_dao)
+        , is_personal(rg_o.is_personal)
+        , is_centralized(rg_o.is_centralized)
+        , balance(rg_o.balance)
+        , account(acc_o)
     {
-        proposal_quorums.insert(rg.action_quorums.begin(), rg.action_quorums.end());
+        proposal_quorums.insert(rg_o.action_quorums.begin(), rg_o.action_quorums.end());
+    }
+
+    research_group_api_obj(const chain::research_group_object& rg_o)
+        : id(rg_o.id._id)
+        , creator(rg_o.creator)
+        , name(fc::to_string(rg_o.name))
+        , permlink(fc::to_string(rg_o.permlink))
+        , description(fc::to_string(rg_o.description))
+        , quorum_percent(rg_o.default_quorum)
+        , is_dao(rg_o.is_dao)
+        , is_personal(rg_o.is_personal)
+        , is_centralized(rg_o.is_centralized)
+        , balance(rg_o.balance)
+    {
+        proposal_quorums.insert(rg_o.action_quorums.begin(), rg_o.action_quorums.end());
     }
 
     // because fc::variant require for temporary object
@@ -637,6 +639,7 @@ struct research_group_api_obj
     bool is_personal;
     bool is_centralized;
     asset balance;
+    account_api_obj account;
 };
 
 struct research_token_sale_api_obj
@@ -1450,7 +1453,7 @@ struct nda_contract_file_access_api_obj
 // clang-format off
 
 FC_REFLECT( deip::app::account_api_obj,
-             (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(last_owner_update)(last_account_update)
+             (id)(name)(owner)(active)(posting)(memo_key)(threshold_overrides)(json_metadata)(proxy)(last_owner_update)(last_account_update)
              (created)(mined)
              (recovery_account)(last_account_recovery)
              (lifetime_vote_count)(can_vote)
@@ -1611,6 +1614,7 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (is_personal)
             (is_centralized)
             (balance)
+            (account)
 )
 
 FC_REFLECT( deip::app::research_token_sale_api_obj,

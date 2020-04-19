@@ -321,27 +321,6 @@ public:
      * Rewards distribution
      */
     asset distribute_reward(const asset &reward, const share_type &expertise);
-    // asset reward_researches_in_discipline(const discipline_object &discipline, const asset &reward,
-    //                                                const share_type &expertise);
-    // asset reward_research_content(const research_content_id_type &research_content_id,
-    //                               const discipline_id_type &discipline_id, const asset &reward,
-    //                               const share_type &expertise);
-    // asset reward_research_token_holders(const research_object &research,
-    //                                     const discipline_id_type &discipline_id,
-    //                                     const asset &reward);
-    // asset reward_references(const research_content_id_type &research_content_id,
-    //                                  const discipline_id_type &discipline_id, const asset &reward);
-    // asset reward_reviews(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id,
-    //                               const asset &reward, const share_type &expertise_reward);
-    // asset reward_review_voters(const review_object &review,
-    //                                 const discipline_id_type &discipline_id,
-    //                                 const asset &reward);
-    // void reward_research_authors_with_expertise(const research_object &research,
-    //                                                 const research_content_object &research_content,
-    //                                                 const discipline_id_type &discipline_id,
-    //                                                 const share_type &expertise_reward);
-
-    // asset fund_review_pool(const discipline_object& discipline, const asset &amount);
 
     time_point_sec head_block_time() const override;
     uint32_t head_block_num() const;

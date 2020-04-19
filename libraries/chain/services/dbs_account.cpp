@@ -24,6 +24,23 @@ const account_object& dbs_account::get_account(const account_name_type& name) co
     FC_CAPTURE_AND_RETHROW((name))
 }
 
+const dbs_account::account_optional_ref_type dbs_account::get_account_if_exists(const account_name_type& name) const
+{
+    account_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<account_index>()
+      .indicies()
+      .get<by_name>();
+
+    auto itr = idx.find(name);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 const account_authority_object& dbs_account::get_account_authority(const account_name_type& name) const
 {
     try
@@ -159,16 +176,11 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         {
             check_account_existence(pair.second.account_auths);
             db_impl().modify(account_auth, [&](account_authority_object& auth) {
-                auth.threshold_overrides.insert(std::pair<uint16_t, authority>(pair.first, pair.second));
+                auth.threshold_overrides.insert(std::pair<uint16_t, shared_authority>(
+                    pair.first, shared_authority(pair.second, shared_authority::allocator_type(db_impl().get_segment_manager()))
+                ));
             });
         }
-
-        // db_impl().modify(account_auth, [&](account_authority_object& auth) {
-        //     for (auto& pair : rg_trait.threshold_overrides)
-        //     {
-        //         auth.threshold_overrides.insert(std::pair<uint16_t, authority>(pair.first, pair.second));
-        //     }
-        // });
     }
 
     return new_account;

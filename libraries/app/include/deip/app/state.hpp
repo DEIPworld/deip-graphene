@@ -9,6 +9,7 @@ namespace deip {
 namespace app {
 using std::string;
 using std::vector;
+using account_balance_refs_type = std::vector<std::reference_wrapper<const account_balance_object>>;
 
 struct discussion_index
 {
@@ -44,8 +45,8 @@ struct account_vote
 struct extended_account : public account_api_obj
 {
     extended_account() {}
-    extended_account(const account_object& a, const database& db)
-        : account_api_obj(a, db)
+    extended_account(const account_object& a, const account_authority_object& auth, const account_balance_refs_type account_balances)
+      : account_api_obj(a, auth, account_balances)
     {
     }
 

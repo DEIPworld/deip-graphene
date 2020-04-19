@@ -26,7 +26,7 @@ public:
     bool exists_by_owner_and_asset(const account_name_type& owner,
                                       const protocol::asset_symbol_type& symbol) const;
 
-    account_balance_refs_type get_by_owner(const account_name_type& owner);
+    const account_balance_refs_type get_by_owner(const account_name_type& owner) const;
 
     void check_existence(const account_balance_id_type &id) const;
 

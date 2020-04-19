@@ -31,36 +31,39 @@ class dbs_research_group : public dbs_base
     using research_group_refs_type = std::vector<std::reference_wrapper<const research_group_object>>;
     using research_group_token_refs_type = std::vector<std::reference_wrapper<const research_group_token_object>>;
     using research_group_organization_contract_refs_type = std::vector<std::reference_wrapper<const research_group_organization_contract_object>>;
+    using research_group_optional_ref_type = fc::optional<std::reference_wrapper<const research_group_object>>;
 
     /** Get research group by id
      */
-    const research_group_object& get_research_group(
-      const research_group_id_type& id) const;
 
-    const research_group_object& get_research_group_by_permlink(
-      const fc::string& permlink) const;
+    const research_group_object& get_research_group(const research_group_id_type& id) const;
 
-    research_group_refs_type get_all_research_groups(
-      const bool& is_personal_need) const;
+    const research_group_optional_ref_type get_research_group_if_exists(const research_group_id_type& id) const;
 
-    const research_group_object& create_personal_research_group(
-      const account_name_type& creator);
+    const research_group_object& get_research_group_by_account(const account_name_type& account) const;
 
-    const research_group_object& create_research_group(
-      const account_name_type& creator,
-      const std::string& name,
-      const string& permlink,
-      const string& description);
+    const research_group_object& get_research_group_by_permlink(const string& permlink) const;
 
-    void change_quorum(
-      const percent_type quorum,
-      const research_group_quorum_action quorum_action,
-      const research_group_id_type& research_group_id);
+    const research_group_optional_ref_type get_research_group_by_permlink_if_exists(const string& permlink) const;
 
-    void check_research_group_existence(
-      const research_group_id_type& research_group_id) const;
+    research_group_refs_type get_all_research_groups(const bool& is_personal_need) const; // remove this
+
+    const research_group_object& create_personal_research_group(const account_name_type& creator);
+
+    const research_group_object& create_research_group(const account_name_type& creator,
+                                                       const string& name,
+                                                       const string& permlink,
+                                                       const string& description);
+
+    void change_quorum(const percent_type quorum,
+                       const research_group_quorum_action quorum_action,
+                       const research_group_id_type& research_group_id);
+
+    void check_research_group_existence(const research_group_id_type& research_group_id) const; // remove this
 
     const bool research_group_exists(const research_group_id_type& research_group_id) const;
+
+    const bool research_group_exists(const string& permlink) const;
 
     const research_group_token_object& get_research_group_token_by_id(
       const research_group_token_id_type& id) const;

@@ -39,11 +39,16 @@ bool dbs_account_balance::exists_by_owner_and_asset(const account_name_type& own
     return idx.find(boost::make_tuple(owner, symbol)) != idx.cend();
 }
 
-dbs_account_balance::account_balance_refs_type dbs_account_balance::get_by_owner(const account_name_type& owner)
+const dbs_account_balance::account_balance_refs_type dbs_account_balance::get_by_owner(const account_name_type& owner) const
 {
     account_balance_refs_type ret;
 
-    auto it_pair = db_impl().get_index<account_balance_index>().indicies().get<by_owner>().equal_range(owner);
+    auto it_pair = db_impl()
+      .get_index<account_balance_index>()
+      .indicies()
+      .get<by_owner>()
+      .equal_range(owner);
+
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)

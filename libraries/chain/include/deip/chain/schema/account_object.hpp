@@ -31,7 +31,7 @@ public:
         c(*this);
     };
 
-    id_type id;
+    account_id_type id;
 
     account_name_type name;
     public_key_type memo_key;
@@ -103,8 +103,8 @@ public:
 
     time_point_sec last_owner_update;
 
-    typedef allocator<std::pair<const uint16_t, authority>> op_tag_authority_allocator_type;
-    typedef chainbase::bip::map<uint16_t, authority, std::less<uint16_t>, op_tag_authority_allocator_type> op_tag_authority_map;
+    typedef allocator<std::pair<const uint16_t, shared_authority>> op_tag_authority_allocator_type;
+    typedef chainbase::bip::map<uint16_t, shared_authority, std::less<uint16_t>, op_tag_authority_allocator_type> op_tag_authority_map;
 
     op_tag_authority_map threshold_overrides;
 };

@@ -17,9 +17,12 @@ protected:
     explicit dbs_account(database& db);
 
 public:
+    using account_optional_ref_type = fc::optional<std::reference_wrapper<const account_object>>;
     using accounts_refs_type = std::vector<std::reference_wrapper<const account_object>>;
 
     const account_object& get_account(const account_name_type&) const;
+    
+    const account_optional_ref_type get_account_if_exists(const account_name_type&) const;
 
     const account_authority_object& get_account_authority(const account_name_type&) const;
 

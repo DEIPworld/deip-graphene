@@ -10,21 +10,62 @@ dbs_research_group::dbs_research_group(database& db)
 {
 }
 
-const research_group_object& dbs_research_group::get_research_group(
-  const research_group_id_type& id) const 
+const research_group_object& dbs_research_group::get_research_group(const research_group_id_type& id) const 
 {
-  try {
-    return db_impl().get<research_group_object, by_id>(id);
-  }
+  try { return db_impl().get<research_group_object, by_id>(id); }
   FC_CAPTURE_AND_RETHROW((id))
+}
+
+const dbs_research_group::research_group_optional_ref_type dbs_research_group::get_research_group_if_exists(const research_group_id_type& id) const
+{
+    research_group_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<research_group_index>()
+      .indices()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 const research_group_object& dbs_research_group::get_research_group_by_permlink(const fc::string& permlink) const 
 {
-  const auto& idx = db_impl().get_index<research_group_index>().indices().get<by_permlink>();
-  auto itr = idx.find(permlink, fc::strcmp_less());
-  FC_ASSERT(itr != idx.end(), "Research group by permlink ${n} is not found", ("n", permlink));
-  return *itr;
+    const auto& idx = db_impl()
+      .get_index<research_group_index>()
+      .indices()
+      .get<by_permlink>();
+
+    auto itr = idx.find(permlink, fc::strcmp_less());
+    FC_ASSERT(itr != idx.end(), "Research group with permlink \"${1}\" does not exist.", ("1", permlink));
+    return *itr;
+}
+
+const dbs_research_group::research_group_optional_ref_type dbs_research_group::get_research_group_by_permlink_if_exists(const string& permlink) const
+{
+    research_group_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<research_group_index>()
+      .indices()
+      .get<by_permlink>();
+
+    auto itr = idx.find(permlink, fc::strcmp_less());
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
+const research_group_object& dbs_research_group::get_research_group_by_account(const account_name_type& account) const
+{
+    try { return db_impl().get<research_group_object, by_account>(account); }
+    FC_CAPTURE_AND_RETHROW((account))
 }
 
 dbs_research_group::research_group_refs_type dbs_research_group::get_all_research_groups(
@@ -113,12 +154,19 @@ const bool dbs_research_group::research_group_exists(const research_group_id_typ
   return idx.find(research_group_id) != idx.end();
 }
 
-const research_group_token_object& dbs_research_group::get_research_group_token_by_id(
-  const research_group_token_id_type& id) const 
+const bool dbs_research_group::research_group_exists(const string& permlink) const
 {
-  try {
-    return db_impl().get<research_group_token_object>(id);
-  }
+  const auto& idx = db_impl()
+    .get_index<research_group_index>()
+    .indices()
+    .get<by_permlink>();
+
+  return idx.find(permlink, fc::strcmp_less()) != idx.end();
+}
+
+const research_group_token_object& dbs_research_group::get_research_group_token_by_id(const research_group_token_id_type& id) const 
+{
+  try { return db_impl().get<research_group_token_object>(id); }
   FC_CAPTURE_AND_RETHROW((id))
 }
 
@@ -129,7 +177,8 @@ dbs_research_group::research_group_token_refs_type dbs_research_group::get_token
 
   auto it_pair = db_impl()
     .get_index<research_group_token_index>()
-    .indicies().get<by_owner>()
+    .indicies()
+    .get<by_owner>()
     .equal_range(account_name);
 
   auto it = it_pair.first;
