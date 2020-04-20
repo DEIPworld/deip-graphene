@@ -36,7 +36,6 @@
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_nda_contract.hpp>
 #include <deip/chain/services/dbs_proposal.hpp>
-#include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_group_invite.hpp>
@@ -1477,6 +1476,13 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<close_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_request_by_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<fulfill_request_by_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<invite_member_evaluator>();
+    _my->_evaluator_registry.register_evaluator<exclude_member_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_content_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_token_sale_evaluator>();
+    _my->_evaluator_registry.register_evaluator<update_research_group_metadata_evaluator>();
+    _my->_evaluator_registry.register_evaluator<update_research_metadata_evaluator>();
 }
 
 void database::initialize_indexes()

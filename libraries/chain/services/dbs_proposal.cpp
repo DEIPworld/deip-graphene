@@ -1,6 +1,5 @@
 #include <deip/chain/services/dbs_proposal.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
-#include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/database/database.hpp>
 
 #include <tuple>
@@ -38,15 +37,13 @@ dbs_proposal::get_proposals_by_research_group_id(const research_group_id_type& r
     return ret;
 }
 
-const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_t action,
-                                                     const std::string json_data,
+const proposal_object& dbs_proposal::create_proposal(const std::string json_data,
                                                      const account_name_type& creator,
                                                      const research_group_id_type& research_group_id,
                                                      const fc::time_point_sec expiration_time,
                                                      const percent_type quorum)
 {
     const proposal_object& new_proposal = db_impl().create<proposal_object>([&](proposal_object& proposal) {
-        proposal.action = action;
         fc::from_string(proposal.data, json_data);
         proposal.creator = creator;
         proposal.research_group_id = research_group_id;
@@ -54,45 +51,6 @@ const proposal_object& dbs_proposal::create_proposal(const dbs_proposal::action_
         proposal.expiration_time = expiration_time;
         proposal.quorum = quorum;
 
-        switch (action)
-        {
-            case start_research:
-                fc::json::from_string(json_data).as<start_research_proposal_data_type>().validate();
-                break;
-            case invite_member :
-                fc::json::from_string(json_data).as<invite_member_proposal_data_type>().validate();
-                break;
-            case dropout_member :
-                fc::json::from_string(json_data).as<dropout_member_proposal_data_type>().validate();
-                break;
-            case send_funds:
-                fc::json::from_string(json_data).as<send_funds_data_type>().validate();
-                break;
-            case start_research_token_sale:
-                fc::json::from_string(json_data).as<start_research_token_sale_data_type>().validate();
-                break;
-            case rebalance_research_group_tokens:
-                fc::json::from_string(json_data).as<rebalance_research_group_tokens_data_type>().validate();
-                break;
-            case change_quorum:
-                fc::json::from_string(json_data).as<change_action_quorum_proposal_data_type>().validate();
-                break;
-            case change_research_review_share_percent :
-                fc::json::from_string(json_data).as<change_research_review_reward_percent_data_type>().validate();
-                break;
-            case offer_research_tokens :
-                fc::json::from_string(json_data).as<offer_research_tokens_data_type>().validate();
-                break;
-            case create_research_material:
-                fc::json::from_string(json_data).as<create_research_content_data_type>().validate();
-                break;
-            case change_research_group_meta:
-                fc::json::from_string(json_data).as<change_research_group_metadata_type>().validate();
-                break;
-            case change_research_meta:
-                fc::json::from_string(json_data).as<change_research_metadata_type>().validate();
-                break;
-        }
     });
 
     return new_proposal;

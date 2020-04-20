@@ -132,7 +132,6 @@ void change_recovery_account_operation::validate() const
 
 void create_proposal_operation::validate() const
 {
-    validate_enum_value_by_range(action, research_group_quorum_action::FIRST_ACTION_QUORUM_TYPE, research_group_quorum_action::LAST_ACTION_QUORUM_TYPE);
     validate_account_name(creator);
     FC_ASSERT(expiration_time > fc::time_point_sec());
     FC_ASSERT(fc::is_utf8(data), "Data is not valid UTF8 string");

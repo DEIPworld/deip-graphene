@@ -21,7 +21,6 @@ class research_group_object : public object<research_group_object_type, research
       : name(a)
       , description(a)
       , permlink(a)
-      , action_quorums(a)
       , heads(a)
     {
       c(*this);
@@ -43,7 +42,6 @@ class research_group_object : public object<research_group_object_type, research
 
     bool is_dao;
     percent_type default_quorum;
-    research_group_quorum_action_threshold_map action_quorums;
 
     bool is_centralized;
     account_name_type_set heads;
@@ -249,7 +247,6 @@ FC_REFLECT(deip::chain::research_group_object,
   (is_personal)
   (is_dao)
   (default_quorum)
-  (action_quorums)
   (is_centralized)
   (heads)
   (is_created_by_organization)

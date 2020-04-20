@@ -982,14 +982,12 @@ public:
      * @param creator The account who creates a proposal
      * @param research_group_id Id of research group to create proposal for
      * @param data Proposal data
-     * @param action Proposal action type
      * @param expiration Seconds till expiration of proposal since creation
      * @param broadcast
      */
     annotated_signed_transaction create_proposal(const std::string& creator,
                                                  const int64_t research_group_id,
                                                  const std::string& data,
-                                                 const uint16_t action,
                                                  const int64_t expiration,
                                                  const bool broadcast);
 

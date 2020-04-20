@@ -538,7 +538,6 @@ struct proposal_api_obj
     proposal_api_obj(const chain::proposal_object& p, const vector<proposal_vote_api_obj>& _votes)
         : id(p.id._id)
         , research_group_id(p.research_group_id._id)
-        , action(p.action)
         , creation_time(p.creation_time)
         , expiration_time(p.expiration_time)
         , creator(p.creator)
@@ -557,7 +556,6 @@ struct proposal_api_obj
 
     int64_t id;
     int64_t research_group_id;
-    int8_t action;
     fc::time_point_sec creation_time;
     fc::time_point_sec expiration_time;
     std::string creator;
@@ -605,7 +603,6 @@ struct research_group_api_obj
         , is_centralized(rg_o.is_centralized)
         , account(acc_o)
     {
-        proposal_quorums.insert(rg_o.action_quorums.begin(), rg_o.action_quorums.end());
     }
 
     research_group_api_obj(const chain::research_group_object& rg_o)
@@ -620,7 +617,6 @@ struct research_group_api_obj
         , is_personal(rg_o.is_personal)
         , is_centralized(rg_o.is_centralized)
     {
-        proposal_quorums.insert(rg_o.action_quorums.begin(), rg_o.action_quorums.end());
     }
 
     // because fc::variant require for temporary object
@@ -635,7 +631,6 @@ struct research_group_api_obj
     std::string permlink;
     std::string description;
     percent_type quorum_percent;
-    std::map<research_group_quorum_action, percent_type> proposal_quorums;
     bool is_dao;
     bool is_personal;
     bool is_centralized;
@@ -1576,7 +1571,6 @@ FC_REFLECT( deip::app::expert_token_api_obj,
 FC_REFLECT( deip::app::proposal_api_obj,
             (id)
             (research_group_id)
-            (action)
             (creation_time)
             (expiration_time)
             (creator)
@@ -1611,7 +1605,6 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (permlink)
             (description)
             (quorum_percent)
-            (proposal_quorums)
             (is_dao)
             (is_personal)
             (is_centralized)

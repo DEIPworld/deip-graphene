@@ -28,7 +28,6 @@ using deip::protocol::block_id_type;
 using deip::protocol::chain_id_type;
 using deip::protocol::asset_symbol_type;
 using deip::protocol::percent_type;
-using deip::protocol::research_group_quorum_action;
 using deip::protocol::share_type;
 using deip::protocol::transaction_id_type;
 
@@ -220,9 +219,6 @@ typedef bip::map<discipline_id_type, share_type, std::less<discipline_id_type>, 
 
 typedef allocator<std::pair<const discipline_id_type, std::vector<account_name_type>>> discipline_id_account_name_allocator_type;
 typedef bip::map<discipline_id_type, std::vector<account_name_type>, std::less<discipline_id_type>, discipline_id_account_name_allocator_type> delegated_expertise_type_map;
-
-typedef allocator<std::pair<const research_group_quorum_action, percent_type>> research_group_quorum_action_threshold_allocator_type;
-typedef bip::map<research_group_quorum_action, percent_type, std::less<uint16_t>, research_group_quorum_action_threshold_allocator_type> research_group_quorum_action_threshold_map;
 
 typedef allocator<share_type> share_type_allocator_type;
 typedef bip::deque<share_type, share_type_allocator_type> share_type_deque;

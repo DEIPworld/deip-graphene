@@ -156,25 +156,6 @@ struct extended_private_key_type
     friend bool operator!=(const extended_private_key_type& p1, const extended_private_key_type& p2);
 };
 
-enum research_group_quorum_action : uint16_t
-{
-    start_research = 1,
-    invite_member = 2,
-    dropout_member = 3,
-    send_funds = 4,
-    start_research_token_sale = 5,
-    rebalance_research_group_tokens = 6,
-    change_quorum = 7,
-    change_research_review_share_percent = 8,
-    offer_research_tokens = 9,
-    create_research_material = 10,
-    change_research_group_meta = 11,
-    change_research_meta = 12,
-
-    FIRST_ACTION_QUORUM_TYPE = start_research,
-    LAST_ACTION_QUORUM_TYPE = change_research_meta
-};
-
 enum proposal_life_time_type
 {
     day,
@@ -201,22 +182,6 @@ FC_REFLECT(deip::protocol::extended_public_key_type, (key_data))
 FC_REFLECT(deip::protocol::extended_public_key_type::binary_key, (check)(data))
 FC_REFLECT(deip::protocol::extended_private_key_type, (key_data))
 FC_REFLECT(deip::protocol::extended_private_key_type::binary_key, (check)(data))
-
-
-
-FC_REFLECT_ENUM(deip::protocol::research_group_quorum_action,
-                                                        (start_research)
-                                                        (invite_member)
-                                                        (dropout_member)
-                                                        (send_funds)
-                                                        (start_research_token_sale)
-                                                        (rebalance_research_group_tokens)
-                                                        (change_quorum)
-                                                        (change_research_review_share_percent)
-                                                        (offer_research_tokens)
-                                                        (create_research_material)
-                                                        (change_research_group_meta)
-                                                        (change_research_meta))
 
 FC_REFLECT_ENUM(deip::protocol::proposal_life_time_type, (day)(week))
 

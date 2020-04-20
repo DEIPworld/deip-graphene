@@ -71,6 +71,13 @@ namespace deip {
                 close_nda_contract_operation,
                 create_request_by_nda_contract_operation,
                 fulfill_request_by_nda_contract_operation,
+                invite_member_operation,
+                exclude_member_operation,
+                create_research_operation,
+                create_research_content_operation,
+                create_research_token_sale_operation,
+                update_research_group_metadata_operation,
+                update_research_metadata_operation,
 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,

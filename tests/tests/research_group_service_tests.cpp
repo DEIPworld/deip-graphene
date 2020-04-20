@@ -12,7 +12,6 @@
 namespace deip {
 namespace chain {
 
-using deip::protocol::research_group_quorum_action;
 using deip::protocol::percent_type;
 
 class research_group_service_fixture : public clean_database_fixture
@@ -26,18 +25,12 @@ class research_group_service_fixture : public clean_database_fixture
 
     void create_research_groups()
     {
-        std::map<research_group_quorum_action, percent_type> action_quorums;
-        for (int i = FIRST_ACTION_QUORUM_TYPE; i <= LAST_ACTION_QUORUM_TYPE; i++)
-        {
-            action_quorums.insert(std::make_pair(research_group_quorum_action(i), percent_type(1000)));
-        }
 
         db.create<research_group_object>([&](research_group_object& d) {
             d.id = 21;
             d.name = "test21";
             d.permlink = "test21";
             d.description = "test";
-            d.action_quorums.insert(action_quorums.begin(), action_quorums.end());
         });
 
         db.create<research_group_object>([&](research_group_object& d) {
@@ -45,7 +38,6 @@ class research_group_service_fixture : public clean_database_fixture
             d.name = "test22";
             d.permlink = "test22";
             d.description = "test";
-            d.action_quorums.insert(action_quorums.begin(), action_quorums.end());
           });
     }
 
@@ -136,21 +128,6 @@ BOOST_AUTO_TEST_CASE(get_research_group_by_id_test)
         BOOST_CHECK(research_group.name == "test21");
         BOOST_CHECK(research_group.permlink == "test21");
         BOOST_CHECK(research_group.description == "test");
-        BOOST_CHECK(research_group.action_quorums.size() == 11);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(change_quorum_test)
-{
-    try
-    {
-        create_research_groups();
-        data_service.change_quorum(percent_type(24 * DEIP_1_PERCENT), research_group_quorum_action(1), research_group_id_type(21));
-
-        auto& research_group = data_service.get_research_group(21);
-
-        BOOST_CHECK(research_group.action_quorums.at(start_research) == 24 * DEIP_1_PERCENT);
     }
     FC_LOG_AND_RETHROW()
 }

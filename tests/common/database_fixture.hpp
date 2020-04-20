@@ -112,7 +112,6 @@ struct database_fixture
                                                        const string& permlink,
                                                        const string& desciption,
                                                        const share_type funds,
-                                                       const std::map<research_group_quorum_action, percent_type>& action_quorums,
                                                        const bool is_dao,
                                                        const bool is_personal);
 
@@ -126,13 +125,11 @@ struct database_fixture
                                                       const string& permlink,
                                                       const string& desciption,
                                                       const share_type funds,
-                                                      const std::map<research_group_quorum_action, percent_type> action_quorums,
                                                       const bool is_dao,
                                                       const bool is_personal,
                                                       const vector<std::pair<account_name_type, share_type>>& accounts);
 
     const proposal_object& create_proposal(const int64_t id,
-                                           const dbs_proposal::action_t action,
                                            const string json_data,
                                            const account_name_type& creator,
                                            const research_group_id_type& research_group_id,
@@ -142,7 +139,6 @@ struct database_fixture
     void create_proposal_by_operation(const account_name_type& creator,
                                       const research_group_id_type& research_group_id,
                                       const std::string json_data,
-                                      const dbs_proposal::action_t action,
                                       const fc::time_point_sec expiration_time);
 
     void create_disciplines();

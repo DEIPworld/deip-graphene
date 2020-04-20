@@ -2361,7 +2361,6 @@ annotated_signed_transaction wallet_api::vote_for_review(const std::string& vote
 annotated_signed_transaction wallet_api::create_proposal(const std::string& creator,
                                                          const int64_t research_group_id,
                                                          const std::string& data,
-                                                         const uint16_t action,
                                                          const int64_t expiration,
                                                          const bool broadcast)
 {
@@ -2374,7 +2373,6 @@ annotated_signed_transaction wallet_api::create_proposal(const std::string& crea
     op.creator = creator;
     op.research_group_id = research_group_id;
     op.data = data;
-    op.action = action;
     op.expiration_time = props.time + expiration;
 
     signed_transaction tx;
@@ -2397,7 +2395,7 @@ annotated_signed_transaction wallet_api::propose_invite_member(const std::string
     data.research_group_token_amount_in_percent = research_group_token_amount_in_percent;
     data.cover_letter = cover_letter;
 
-    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::invite_member, PROPOSAL_EXPIRATION_TIME, broadcast);
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
 annotated_signed_transaction wallet_api::propose_exclude_member(const std::string& creator,
@@ -2408,7 +2406,7 @@ annotated_signed_transaction wallet_api::propose_exclude_member(const std::strin
     dropout_member_proposal_data_type data;
 
     data.name = member;
-    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::dropout_member, PROPOSAL_EXPIRATION_TIME, broadcast);
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
 annotated_signed_transaction wallet_api::propose_create_research(const std::string& creator,
@@ -2430,7 +2428,7 @@ annotated_signed_transaction wallet_api::propose_create_research(const std::stri
     data.dropout_compensation_in_percent = dropout_compensation_in_percent;
     data.disciplines = disciplines;
 
-    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::start_research, PROPOSAL_EXPIRATION_TIME, broadcast);
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
 annotated_signed_transaction wallet_api::propose_create_research_content(const std::string& creator,
@@ -2459,7 +2457,7 @@ annotated_signed_transaction wallet_api::propose_create_research_content(const s
     data.references = references;
     data.external_references = external_references;
 
-    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::create_research_material, PROPOSAL_EXPIRATION_TIME, broadcast);
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
 annotated_signed_transaction wallet_api::propose_start_token_sale(const std::string& creator,
@@ -2481,7 +2479,7 @@ annotated_signed_transaction wallet_api::propose_start_token_sale(const std::str
     data.soft_cap = soft_cap;
     data.hard_cap = hard_cap;
 
-    return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::start_research_token_sale, PROPOSAL_EXPIRATION_TIME, broadcast);
+    return create_proposal(creator, research_group_id, fc::json::to_string(data), PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
 annotated_signed_transaction wallet_api::make_review(const std::string& author,
@@ -2723,7 +2721,7 @@ annotated_signed_transaction wallet_api::propose_offer_research_tokens(const std
     data.amount = amount;
     data.price = price;
 
-    return create_proposal(sender, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::offer_research_tokens, PROPOSAL_EXPIRATION_TIME, broadcast);
+    return create_proposal(sender, research_group_id, fc::json::to_string(data), PROPOSAL_EXPIRATION_TIME, broadcast);
 }
 
 annotated_signed_transaction wallet_api::accept_offer_research_tokens(const int64_t offer_research_tokens_id,
