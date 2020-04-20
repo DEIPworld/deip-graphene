@@ -195,7 +195,7 @@ typedef multi_index_container<account_object,
           &account_object::name
         >
     >,
-    ordered_unique<
+    ordered_non_unique<
       tag<by_research_group>,
         member<
           account_object,

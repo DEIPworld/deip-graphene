@@ -2664,7 +2664,7 @@
             "rick"
           ],
           "management_model_v": 2,
-          "creator": "alice",
+          "creator": "mike",
           "heads": [
             "mike",
             "rick"
@@ -2701,7 +2701,7 @@
             "bob"
           ],
           "management_model_v": 2,
-          "creator": "rachel",
+          "creator": "bob",
           "heads": [
             "bob"
           ],
@@ -2719,7 +2719,7 @@
             "john"
           ],
           "management_model_v": 2,
-          "creator": "rachel",
+          "creator": "john",
           "heads": [
             "john"
           ],
@@ -2737,7 +2737,7 @@
             "nick"
           ],
           "management_model_v": 2,
-          "creator": "rachel",
+          "creator": "nick",
           "heads": [
             "nick"
           ],

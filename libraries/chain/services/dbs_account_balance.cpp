@@ -93,30 +93,21 @@ const account_balance_object& dbs_account_balance::get_by_owner_and_asset(const 
 
 void dbs_account_balance::adjust_balance(const account_name_type& account_name, const asset& delta)
 {
-    if (!exists_by_owner_and_asset(account_name, delta.symbol) && delta.amount > 0)
+    if (!exists_by_owner_and_asset(account_name, delta.symbol))
     {
         create(account_name, delta.symbol, 0);
     }
 
-    const auto& balance_object = get_by_owner_and_asset(account_name, delta.symbol);
+    const auto& balance = get_by_owner_and_asset(account_name, delta.symbol);
 
-#ifdef IS_TEST_NET
-    if (delta.amount < 0 && account_name != DEIP_REGISTRAR_ACCOUNT_NAME)
-    {
-        FC_ASSERT(balance_object.amount >= abs(delta.amount.value), 
-          "Account ${a} does not have enough funds to transfer ${amount}", 
-          ("amount", account_name)("asset", delta.amount));
-    }
-#else
     if (delta.amount < 0)
     {
-        FC_ASSERT(balance_object.amount >= abs(delta.amount.value), 
-          "Account ${a} does not have enough funds to transfer ${amount}", 
-          ("amount", account_name)("asset", delta.amount));
+        FC_ASSERT(balance.amount >= abs(delta.amount.value),
+          "Account ${1} does not have enough funds to transfer ${2}",
+          ("1", account_name)("2", delta));
     }
-#endif
 
-    db_impl().modify(balance_object, [&](account_balance_object& ab_o) { ab_o.amount += delta.amount; });
+    db_impl().modify(balance, [&](account_balance_object& ab_o) { ab_o.amount += delta.amount; });
 }
 
 } //namespace chain

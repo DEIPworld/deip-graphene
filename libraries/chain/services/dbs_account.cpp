@@ -147,7 +147,8 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         const auto rg_trait = trait.get<research_group_v1_0_0_trait>();
 
         const auto& shared_rg = research_groups_service.create_research_group(
-          creator_name, 
+          creator_name,
+          account_name,
           rg_trait.name, 
           rg_trait.permlink, 
           rg_trait.description

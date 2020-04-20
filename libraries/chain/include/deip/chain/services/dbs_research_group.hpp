@@ -48,9 +48,10 @@ class dbs_research_group : public dbs_base
 
     research_group_refs_type get_all_research_groups(const bool& is_personal_need) const; // remove this
 
-    const research_group_object& create_personal_research_group(const account_name_type& creator);
+    const research_group_object& create_personal_research_group(const account_name_type& account);
 
     const research_group_object& create_research_group(const account_name_type& creator,
+                                                       const account_name_type& account,
                                                        const string& name,
                                                        const string& permlink,
                                                        const string& description);

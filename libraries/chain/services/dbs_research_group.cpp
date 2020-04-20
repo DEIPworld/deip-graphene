@@ -86,29 +86,30 @@ dbs_research_group::research_group_refs_type dbs_research_group::get_all_researc
   return ret;
 }
 
-const research_group_object& dbs_research_group::create_personal_research_group(
-  const account_name_type& account)
+const research_group_object& dbs_research_group::create_personal_research_group(const account_name_type& account)
 {
-  const research_group_object& personal_research_group = db_impl()
-    .create<research_group_object>([&](research_group_object& research_group) {
-      research_group.creator = account;
-      fc::from_string(research_group.name, account);
-      fc::from_string(research_group.permlink, account);
-      fc::from_string(research_group.description, account);
-      research_group.management_model_v = 2;
-      research_group.is_personal = true;
-      research_group.is_centralized = false;
-      research_group.is_dao = false;
-      research_group.heads.insert(account);
-      research_group.is_created_by_organization = false;
-      research_group.has_organization = false;
-    });
+    const research_group_object& personal_research_group
+        = db_impl().create<research_group_object>([&](research_group_object& rg_o) {
+              rg_o.creator = account;
+              rg_o.account = account;
+              fc::from_string(rg_o.name, account);
+              fc::from_string(rg_o.permlink, account);
+              fc::from_string(rg_o.description, account);
+              rg_o.management_model_v = 2;
+              rg_o.is_personal = true;
+              rg_o.is_centralized = false;
+              rg_o.is_dao = false;
+              rg_o.heads.insert(account);
+              rg_o.is_created_by_organization = false;
+              rg_o.has_organization = false;
+          });
 
-  return personal_research_group;
+    return personal_research_group;
 }
 
 const research_group_object& dbs_research_group::create_research_group(
   const account_name_type& creator,
+  const account_name_type& account,
   const std::string& name,
   const string& permlink,
   const string& description)
@@ -116,6 +117,7 @@ const research_group_object& dbs_research_group::create_research_group(
     const research_group_object& research_group
         = db_impl().create<research_group_object>([&](research_group_object& rg_o) {
               rg_o.creator = creator;
+              rg_o.account = account;
               fc::from_string(rg_o.name, name);
               fc::from_string(rg_o.permlink, permlink);
               fc::from_string(rg_o.description, description);
