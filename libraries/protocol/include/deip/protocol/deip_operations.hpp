@@ -24,6 +24,13 @@
 #include <deip/protocol/operations/close_nda_contract_operation.hpp>
 #include <deip/protocol/operations/create_request_by_nda_contract_operation.hpp>
 #include <deip/protocol/operations/fulfill_request_by_nda_contract_operation.hpp>
+#include <deip/protocol/operations/invite_member_operation.hpp>
+#include <deip/protocol/operations/exclude_member_operation.hpp>
+#include <deip/protocol/operations/create_research_operation.hpp>
+#include <deip/protocol/operations/create_research_content_operation.hpp>
+#include <deip/protocol/operations/create_research_token_sale_operation.hpp>
+#include <deip/protocol/operations/update_research_group_metadata_operation.hpp>
+#include <deip/protocol/operations/update_research_metadata_operation.hpp>
 
 namespace deip {
 namespace protocol {
@@ -84,6 +91,13 @@ inline void validate_256_bits_hexadecimal_string(const string& str)
     FC_ASSERT(((str.size() / 2) == 32), "Provided value must be a lowercase hexadecimal string 256 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 256 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 256 bits in length");
+}
+
+inline void validate_160_bits_hexadecimal_string(const string &str)
+{
+    FC_ASSERT(((str.size() / 2) == 20), "Provided value must be a lowercase hexadecimal string 160 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 160 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 160 bits in length");
 }
 
 inline void validate_128_bits_hexadecimal_string(const string& str)

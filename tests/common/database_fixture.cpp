@@ -25,7 +25,6 @@
 namespace deip {
 namespace chain {
 
-using deip::protocol::research_group_quorum_action;
 using deip::protocol::percent_type;
 
 void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
@@ -416,7 +415,6 @@ database_fixture::research_group_create(const int64_t& id,
                                         const string& permlink,
                                         const string& description,
                                         const share_type funds,
-                                        const std::map<research_group_quorum_action, percent_type>& action_quorums,
                                         const bool is_dao,
                                         const bool is_personal)
 {
@@ -427,7 +425,6 @@ database_fixture::research_group_create(const int64_t& id,
               fc::from_string(rg.permlink, permlink);
               fc::from_string(rg.description, description);
               rg.balance = funds;
-              rg.action_quorums.insert(action_quorums.begin(), action_quorums.end());
               rg.is_dao = is_dao;
               rg.is_personal = is_personal;
           });
@@ -449,12 +446,11 @@ database_fixture::setup_research_group(const int64_t& id,
                                        const string& permlink,
                                        const string& description,
                                        const share_type funds,
-                                       const std::map<research_group_quorum_action, percent_type> action_quorums,
                                        const bool is_dao,
                                        const bool is_personal,
                                        const vector<std::pair<account_name_type, share_type>>& accounts)
 {
-    const auto& research_group = research_group_create(id, name, permlink, description, funds, action_quorums, is_dao, is_personal);
+    const auto& research_group = research_group_create(id, name, permlink, description, funds, is_dao, is_personal);
 
     for (const auto& account : accounts)
     {
@@ -464,7 +460,7 @@ database_fixture::setup_research_group(const int64_t& id,
     return research_group;
 }
 
-const proposal_object& database_fixture::create_proposal(const int64_t id, const dbs_proposal::action_t action,
+const proposal_object& database_fixture::create_proposal(const int64_t id,
                                        const std::string json_data,
                                        const account_name_type& creator,
                                        const research_group_id_type& research_group_id,
@@ -472,7 +468,6 @@ const proposal_object& database_fixture::create_proposal(const int64_t id, const
                                        const percent_type quorum)
 {
     const proposal_object& new_proposal = db.create<proposal_object>([&](proposal_object& proposal) {
-        proposal.action = action;
         proposal.id = id;
         fc::from_string(proposal.data, json_data);
         proposal.creator = creator;
@@ -488,7 +483,6 @@ const proposal_object& database_fixture::create_proposal(const int64_t id, const
 void database_fixture::create_proposal_by_operation(const account_name_type& creator,
                                                                       const research_group_id_type& research_group_id,
                                                                       const std::string json_data,
-                                                                      const dbs_proposal::action_t action,
                                                                       const fc::time_point_sec expiration_time)
 {
     try
@@ -500,7 +494,6 @@ void database_fixture::create_proposal_by_operation(const account_name_type& cre
         op.creator = creator;
         op.research_group_id = research_group_id._id;
         op.data = json_data;
-        op.action = action;
         op.expiration_time = expiration_time;
 
         trx.operations.push_back(op);

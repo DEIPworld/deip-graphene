@@ -63,6 +63,8 @@ public:
     const research_object& update_eci_evaluation(const research_id_type& research_id);
 
     const bool research_exists(const research_id_type& research_id) const;
+
+    const bool research_exists(const external_id_type& external_id) const;
 };
 }
 }

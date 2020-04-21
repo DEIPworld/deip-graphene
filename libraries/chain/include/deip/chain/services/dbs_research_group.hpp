@@ -15,7 +15,6 @@
 namespace deip {
 namespace chain {
 
-using deip::protocol::research_group_quorum_action;
 using deip::protocol::percent_type;
 
 class dbs_research_group : public dbs_base
@@ -56,15 +55,17 @@ class dbs_research_group : public dbs_base
                                                        const string& permlink,
                                                        const string& description);
 
-    void change_quorum(const percent_type quorum,
-                       const research_group_quorum_action quorum_action,
-                       const research_group_id_type& research_group_id);
+//    void change_quorum(const percent_type quorum,
+//                       const research_group_quorum_action quorum_action,
+//                       const research_group_id_type& research_group_id);
 
     void check_research_group_existence(const research_group_id_type& research_group_id) const; // remove this
 
     const bool research_group_exists(const research_group_id_type& research_group_id) const;
 
     const bool research_group_exists(const string& permlink) const;
+
+    const bool research_group_exists(const account_name_type& account) const;
 
     const research_group_token_object& get_research_group_token_by_id(
       const research_group_token_id_type& id) const;

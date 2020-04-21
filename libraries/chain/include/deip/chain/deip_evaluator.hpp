@@ -61,6 +61,13 @@ DEFINE_EVALUATOR(decline_nda_contract)
 DEFINE_EVALUATOR(close_nda_contract)
 DEFINE_EVALUATOR(create_request_by_nda_contract)
 DEFINE_EVALUATOR(fulfill_request_by_nda_contract)
+DEFINE_EVALUATOR(invite_member)
+DEFINE_EVALUATOR(exclude_member)
+DEFINE_EVALUATOR(create_research)
+DEFINE_EVALUATOR(create_research_content)
+DEFINE_EVALUATOR(create_research_token_sale)
+DEFINE_EVALUATOR(update_research_group_metadata)
+DEFINE_EVALUATOR(update_research_metadata)
 
 }
 } // deip::chain

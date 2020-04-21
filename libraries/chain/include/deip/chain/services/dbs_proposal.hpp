@@ -27,18 +27,14 @@ public:
     using proposal_votes_ref_type = std::vector<std::reference_wrapper<const proposal_vote_object>>;
     using proposal_ref_type = std::vector<std::reference_wrapper<const proposal_object>>;
 
-    typedef deip::protocol::research_group_quorum_action action_t;
-
         /** Create proposal object.
      *
-     * @param action - type of proposal
      * @param json_data - data attached to particular action type
      * @param initiator - person who promote this proposal
      * @param lifetime - lifetime of proposal !!!(will be changed to end date)
      * @returns proposal object
      */
-    const proposal_object& create_proposal(const action_t action,
-                                           const std::string json_data,
+    const proposal_object& create_proposal(const std::string json_data,
                                            const account_name_type& initiator,
                                            const research_group_id_type& research_group_id,
                                            const fc::time_point_sec expiration_time,

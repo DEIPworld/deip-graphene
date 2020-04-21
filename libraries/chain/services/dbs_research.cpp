@@ -329,5 +329,16 @@ const bool dbs_research::research_exists(const research_id_type& research_id) co
     return itr != idx.end();
 }
 
+const bool dbs_research::research_exists(const external_id_type& external_id) const
+{
+    const auto& idx = db_impl()
+            .get_index<research_index>()
+            .indicies()
+            .get<by_external_id>();
+
+    auto itr = idx.find(external_id);
+    return itr != idx.end();
+}
+
 }
 }

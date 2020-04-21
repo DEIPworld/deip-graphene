@@ -16,7 +16,6 @@ using fc::time_point_sec;
 
 class proposal_object : public object<proposal_object_type, proposal_object>
 {
-    typedef deip::protocol::research_group_quorum_action action_t;
     typedef deip::protocol::account_name_type account_t;
 
 public:
@@ -29,7 +28,6 @@ public:
     proposal_id_type id;
 
     research_group_id_type research_group_id;
-    action_t action;
     time_point_sec creation_time;
     time_point_sec expiration_time;
     account_t creator;
@@ -71,7 +69,7 @@ typedef multi_index_container<proposal_object,
 } // namespace deip
 
 
-FC_REFLECT(deip::chain::proposal_object, (id)(research_group_id)(action)(creation_time)
+FC_REFLECT(deip::chain::proposal_object, (id)(research_group_id)(creation_time)
         (expiration_time)(creator)(data)(quorum)(current_votes_amount)(is_completed)(voted_accounts))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::proposal_object, deip::chain::proposal_index)

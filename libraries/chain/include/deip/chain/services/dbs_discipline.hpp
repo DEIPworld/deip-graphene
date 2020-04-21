@@ -40,6 +40,8 @@ public:
     void check_discipline_existence_by_name(const fc::string& name);
     void check_discipline_existence(const discipline_id_type& id);
 
+    const bool discipline_exists(const discipline_id_type& id) const;
+
     /** Get discipline by parent_id
     */
     discipline_ref_type get_disciplines_by_parent_id(const discipline_id_type parent_id) const;

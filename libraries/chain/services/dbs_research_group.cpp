@@ -136,15 +136,15 @@ const research_group_object& dbs_research_group::create_research_group(
     return research_group;
 }
 
-void dbs_research_group::change_quorum(const percent_type quorum, const research_group_quorum_action quorum_action, const research_group_id_type& research_group_id)
-{
-  check_research_group_existence(research_group_id);
-  const research_group_object& research_group = get_research_group(research_group_id);
-
-  db_impl().modify(research_group, [&](research_group_object& rg) { 
-    rg.action_quorums[quorum_action] = quorum; 
-  });
-}
+//void dbs_research_group::change_quorum(const percent_type quorum, const research_group_quorum_action quorum_action, const research_group_id_type& research_group_id)
+//{
+//  check_research_group_existence(research_group_id);
+//  const research_group_object& research_group = get_research_group(research_group_id);
+//
+//  db_impl().modify(research_group, [&](research_group_object& rg) {
+//    rg.action_quorums[quorum_action] = quorum;
+//  });
+//}
 
 void dbs_research_group::check_research_group_existence(const research_group_id_type& research_group_id) const
 {
@@ -170,6 +170,16 @@ const bool dbs_research_group::research_group_exists(const string& permlink) con
     .get<by_permlink>();
 
   return idx.find(permlink, fc::strcmp_less()) != idx.end();
+}
+
+const bool dbs_research_group::research_group_exists(const account_name_type& account) const
+{
+    const auto& idx = db_impl()
+            .get_index<research_group_index>()
+            .indices()
+            .get<by_account>();
+
+    return idx.find(account) != idx.end();
 }
 
 const research_group_token_object& dbs_research_group::get_research_group_token_by_id(const research_group_token_id_type& id) const 
