@@ -50,7 +50,6 @@ public:
 
     bool is_research_group;
 
-    //asset balance = asset(0, DEIP_SYMBOL); ///< total liquid shares held by this account
     share_type expertise_tokens_balance = 0; ///< total expertise tokens held by this account
     share_type common_tokens_balance = 0; ///< total common tokens held by this account
 

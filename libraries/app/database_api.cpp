@@ -1187,7 +1187,7 @@ fc::optional<research_api_obj> database_api_impl::get_research_by_id(const resea
         chain::dbs_research_discipline_relation& research_discipline_relation_service
                 = _db.obtain_service<chain::dbs_research_discipline_relation>();
 
-        auto research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research_id);
+        const auto& research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research_id);
 
         for (const chain::research_discipline_relation_object& research_discipline_relation : research_discipline_relations)
         {
@@ -1221,7 +1221,7 @@ fc::optional<research_api_obj> database_api_impl::get_research_by_permlink(const
         chain::dbs_research_discipline_relation& research_discipline_relation_service
                 = _db.obtain_service<chain::dbs_research_discipline_relation>();
 
-        auto research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
+        const auto& research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
 
         for (const chain::research_discipline_relation_object& research_discipline_relation : research_discipline_relations)
         {
@@ -1329,7 +1329,7 @@ fc::optional<research_content_api_obj> database_api_impl::get_research_content_b
 
     if (itr != idx.end()) {
         chain::dbs_research_content &research_content_service = _db.obtain_service<chain::dbs_research_content>();
-        return research_content_service.get(id);
+        return research_content_service.get_research_content(id);
     }
 
     return {};
@@ -1397,20 +1397,6 @@ vector<research_content_api_obj> database_api::get_research_content_by_type(cons
         vector<research_content_api_obj> results;
         chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
         auto contents = research_content_service.get_by_research_and_type(research_id, type);
-
-        for (const chain::research_content_object &content : contents) {
-            results.push_back(research_content_api_obj(content));
-        }
-        return results;
-    });
-}
-
-vector<research_content_api_obj> database_api::get_all_milestones_by_research_id(const research_id_type& research_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<research_content_api_obj> results;
-        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
-        auto contents = research_content_service.get_all_milestones_by_research_id(research_id);
 
         for (const chain::research_content_object &content : contents) {
             results.push_back(research_content_api_obj(content));
@@ -1847,7 +1833,7 @@ database_api::get_disciplines_by_research(const research_id_type& research_id) c
         chain::dbs_research_discipline_relation& research_discipline_relation_service
                 = my->_db.obtain_service<chain::dbs_research_discipline_relation>();
 
-        auto research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research_id);
+        const auto& research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research_id);
 
         for (const chain::research_discipline_relation_object& research_discipline_relation : research_discipline_relations)
         {

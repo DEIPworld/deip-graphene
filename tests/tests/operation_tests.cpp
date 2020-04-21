@@ -3007,7 +3007,7 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
         db.push_transaction(tx, 0);
 
         auto &research_service = db.obtain_service<dbs_research>();
-        auto &research = research_service.get_research(0);
+        auto& research = research_service.get_research(research_id_type(0));
 
         BOOST_CHECK(research.title == "test");
         BOOST_CHECK(research.abstract == "abstract");
@@ -3017,7 +3017,7 @@ BOOST_AUTO_TEST_CASE(start_research_execute_test)
         BOOST_CHECK(research.dropout_compensation_in_percent == DROPOUT_COMPENSATION_IN_PERCENT);
 
         auto &research_discipline_relation_service = db.obtain_service<dbs_research_discipline_relation>();
-        auto relations = research_discipline_relation_service.get_research_discipline_relations_by_research(0);
+        const auto& relations = research_discipline_relation_service.get_research_discipline_relations_by_research(0);
 
         BOOST_CHECK(relations.size() == 3);
 

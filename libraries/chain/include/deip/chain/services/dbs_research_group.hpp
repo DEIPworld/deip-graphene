@@ -50,8 +50,8 @@ class dbs_research_group : public dbs_base
 
     const research_group_object& create_personal_research_group(const account_name_type& account);
 
-    const research_group_object& create_research_group(const account_name_type& creator,
-                                                       const account_name_type& account,
+    const research_group_object& create_research_group(const account_name_type& account,
+                                                       const account_name_type& creator,
                                                        const string& name,
                                                        const string& permlink,
                                                        const string& description);

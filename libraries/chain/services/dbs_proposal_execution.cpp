@@ -169,17 +169,43 @@ void dbs_proposal_execution::start_research(const proposal_object& proposal)
     auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
     auto& research_service = db_impl().obtain_service<dbs_research>();
     auto& discipline_service = db_impl().obtain_service<dbs_discipline>();
-    auto& research_discipline_relation_service = db_impl().obtain_service<dbs_research_discipline_relation>();
-
 
     start_research_proposal_data_type data = get_data<start_research_proposal_data_type>(proposal);
     research_group_service.check_research_group_existence(proposal.research_group_id);
-    auto& research = research_service.create(data.title, data.abstract, data.permlink, proposal.research_group_id, data.review_share_in_percent, data.dropout_compensation_in_percent, data.is_private);
+
+    std::set<discipline_id_type> disciplines;
     for (auto& discipline_id : data.disciplines)
     {
         discipline_service.check_discipline_existence(discipline_id);
-        research_discipline_relation_service.create(research.id, discipline_id);
+        disciplines.insert(discipline_id_type(discipline_id));
     }
+
+    const auto now = db_impl().head_block_time();
+    const bool is_finished = false;
+
+    // TODO: move to operation
+    string external_id(data.title);
+    external_id.append(data.abstract);
+    external_id.append(data.permlink);
+    external_id.append(proposal.creator);
+    external_id.append(std::to_string(db_impl().head_block_num()));
+
+    research_service.create_research(
+        proposal.research_group_id,
+        external_id_type((string)fc::ripemd160::hash(external_id)),
+        data.title,
+        data.abstract,
+        data.permlink,
+        disciplines,
+        data.review_share_in_percent,
+        data.dropout_compensation_in_percent,
+        data.is_private,
+        is_finished,
+        DEIP_100_PERCENT,
+        now,
+        now,
+        now
+    );
 }
 
 void dbs_proposal_execution::send_funds(const proposal_object &proposal)
@@ -230,15 +256,24 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
     const auto& research = research_service.get_research(data.research_id);
     FC_ASSERT(!research.is_finished, "The research ${r} has been finished already", ("r", research.title));
 
+    // TODO: move to operation
+    string external_id(data.title);
+    external_id.append(data.content);
+    external_id.append(data.permlink);
+    external_id.append(proposal.creator);
+    external_id.append(std::to_string(db_impl().head_block_num()));
+
     const auto& research_content = research_content_service.create_research_content(
       data.research_id, 
-      data.type, 
+      external_id_type((string)fc::ripemd160::hash(external_id)),
       data.title, 
       data.content, 
       data.permlink, 
+      data.type, 
       data.authors, 
       data.references, 
-      data.external_references);
+      data.external_references,
+      now);
     
     db_impl().modify(research, [&](research_object& r_o) {
         for (auto author : data.authors)
@@ -254,7 +289,7 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
 
     for (auto& reference : data.references)
     {
-        const auto& ref = research_content_service.get(reference);
+        const auto& ref = research_content_service.get_research_content(reference);
         db_impl().push_virtual_operation(research_content_reference_history_operation(
           research_content.id._id,
           research_content.research_id._id,
@@ -270,7 +305,7 @@ void dbs_proposal_execution::create_research_material(const proposal_object& pro
     const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(research_content.id);
     const research_object& updated_research = research_service.update_eci_evaluation(research.id);
 
-    auto relations = research_discipline_relation_service.get_research_discipline_relations_by_research(data.research_id);
+    const auto& relations = research_discipline_relation_service.get_research_discipline_relations_by_research(data.research_id);
     for (auto& wrap : relations)
     {
         const auto& rel = wrap.get();

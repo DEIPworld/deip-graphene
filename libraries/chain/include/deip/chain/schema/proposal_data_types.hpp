@@ -61,7 +61,7 @@ struct start_research_proposal_data_type : base_proposal_data_type
     string permlink;
     uint16_t review_share_in_percent;
     uint16_t dropout_compensation_in_percent;
-    std::vector<int64_t> disciplines;
+    std::set<int64_t> disciplines;
 
     bool is_private;
 
@@ -124,8 +124,8 @@ struct create_research_content_data_type : base_proposal_data_type
     string title;
     string content;
     string permlink;
-    std::vector<account_name_type> authors;
-    std::vector<research_content_id_type> references;
+    std::set<account_name_type> authors;
+    std::set<research_content_id_type> references;
     std::set<string> external_references;
 
     void validate() const

@@ -12,33 +12,57 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 {
 }
 
-const research_object& dbs_research::create(const string &title, const string &abstract, const string &permlink,
-                                            const research_group_id_type &research_group_id, const uint16_t review_share_in_percent,
-                                            const uint16_t dropout_compensation_in_percent, const bool is_private)
-{
-    const auto& new_research = db_impl().create<research_object>([&](research_object& r) {
-        fc::from_string(r.title, title);
-        fc::from_string(r.abstract, abstract);
-        fc::from_string(r.permlink, permlink);
-        r.research_group_id = research_group_id;
-        r.review_share_in_percent = review_share_in_percent;
-        r.dropout_compensation_in_percent = dropout_compensation_in_percent;
-        r.is_finished = false;
-        r.owned_tokens = DEIP_100_PERCENT;
-        r.created_at = db_impl().head_block_time();
-        r.last_update_time = db_impl().head_block_time();
-        r.review_share_in_percent_last_update = db_impl().head_block_time();
-        r.is_private = is_private;
+const research_object& dbs_research::create_research(
+  const research_group_id_type& research_group_id,
+  const external_id_type& external_id,
+  const string& title, 
+  const string& abstract, 
+  const string& permlink,
+  std::set<discipline_id_type>& disciplines,
+  const uint16_t& review_share_in_percent,
+  const uint16_t& dropout_compensation_in_percent, 
+  const bool& is_private,
+  const bool& is_finished,
+  const share_type& owned_tokens,
+  const time_point_sec& created_at,
+  const time_point_sec& last_update_time,
+  const time_point_sec& review_share_in_percent_last_update
+) {
+    auto& research_disciplines_service = db_impl().obtain_service<dbs_research_discipline_relation>();
+
+    const auto& research = db_impl().create<research_object>([&](research_object& r_o) {
+        r_o.research_group_id = research_group_id;
+        r_o.external_id = external_id;
+        fc::from_string(r_o.title, title);
+        fc::from_string(r_o.abstract, abstract);
+        fc::from_string(r_o.permlink, permlink);
+        r_o.review_share_in_percent = review_share_in_percent;
+        r_o.dropout_compensation_in_percent = dropout_compensation_in_percent;
+        r_o.is_private = is_private;
+        r_o.is_finished = is_finished;
+        r_o.owned_tokens = owned_tokens;
+        r_o.created_at = created_at;
+        r_o.last_update_time = last_update_time;
+        r_o.review_share_in_percent_last_update = review_share_in_percent_last_update;
     });
 
-    return new_research;
+    for (auto& discipline_id : disciplines)
+    {
+        research_disciplines_service.create_research_relation(research.id, discipline_id);
+    }
+
+    return research;
 }
 
 dbs_research::research_refs_type dbs_research::get_researches() const
 {
     research_refs_type ret;
 
-    const auto& idx = db_impl().get_index<research_index>().indicies().get<by_id>();
+    const auto& idx = db_impl()
+      .get_index<research_index>()
+      .indicies()
+      .get<by_id>();
+    
     auto it = idx.lower_bound(0);
     const auto it_end = idx.cend();
     while (it != it_end)
@@ -54,8 +78,12 @@ dbs_research::research_refs_type dbs_research::get_researches_by_research_group(
 {
     research_refs_type ret;
 
-    auto it_pair
-        = db_impl().get_index<research_index>().indicies().get<by_research_group>().equal_range(research_group_id);
+    const auto& idx = db_impl()
+      .get_index<research_index>()
+      .indicies()
+      .get<by_research_group>();
+
+    auto it_pair = idx.equal_range(research_group_id);
 
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
@@ -70,15 +98,46 @@ dbs_research::research_refs_type dbs_research::get_researches_by_research_group(
 
 const research_object& dbs_research::get_research(const research_id_type& id) const
 {
-    try {
-        return db_impl().get<research_object>(id);
-    }
+    try { return db_impl().get<research_object>(id); }
     FC_CAPTURE_AND_RETHROW((id))
+}
+
+const research_object& dbs_research::get_research(const external_id_type& external_id) const
+{
+    const auto& idx = db_impl()
+      .get_index<research_index>()
+      .indicies()
+      .get<by_external_id>();
+
+    auto itr = idx.find(external_id);
+    FC_ASSERT(itr != idx.end(), "Research with external_id ${1} does not exist", ("1", external_id));
+    return *itr;
+}
+
+const dbs_research::research_optional_ref_type dbs_research::get_research_if_exists(const external_id_type& external_id) const
+{
+    research_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<research_index>()
+      .indicies()
+      .get<by_external_id>();
+
+    auto itr = idx.find(external_id);
+    if (itr !=idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 const research_object& dbs_research::get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const
 {
-    const auto& idx = db_impl().get_index<research_index>().indices().get<by_permlink>();
+    const auto& idx = db_impl()
+      .get_index<research_index>()
+      .indices()
+      .get<by_permlink>();
+
     auto itr = idx.find(std::make_tuple(research_group_id, permlink));
     FC_ASSERT(itr != idx.end(), "Research by permlink ${p} is not found", ("p", permlink));
     return *itr;

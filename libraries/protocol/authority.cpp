@@ -75,7 +75,7 @@ bool is_valid_account_name(const string& name)
         if (end - begin < 3)
             return false;
 
-        if (!std::islower(name[begin]))
+        if (!std::islower(name[begin]) && !std::isdigit(name[begin]))
             return false;
 
         if (!std::islower(name[end - 1]) && !std::isdigit(name[end - 1]))

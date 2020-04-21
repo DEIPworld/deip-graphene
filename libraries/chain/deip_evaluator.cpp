@@ -391,7 +391,7 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& op)
     const auto& review = review_service.get(op.review_id);
     const auto& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.voter, op.discipline_id);
     const auto& discipline = discipline_service.get_discipline(op.discipline_id);
-    const auto& research_content = research_content_service.get(review.research_content_id);
+    const auto& research_content = research_content_service.get_research_content(review.research_content_id);
     const auto& research = research_service.get_research(research_content.research_id);
     const auto& now = _db.head_block_time();
 
@@ -591,7 +591,7 @@ void make_review_evaluator::do_apply(const make_review_operation& op)
 
     account_service.check_account_existence(op.author);
     research_content_service.check_research_content_existence(op.research_content_id);
-    const auto& research_content = research_content_service.get(op.research_content_id);
+    const auto& research_content = research_content_service.get_research_content(op.research_content_id);
     const auto& research = research_service.get_research(research_content.research_id);
     const auto& reseach_group_tokens = research_group_service.get_research_group_tokens(research.research_group_id);
     const auto& existing_reviews = review_service.get_reviews_by_research_content(op.research_content_id);
@@ -1313,7 +1313,7 @@ void make_review_for_application_evaluator::do_apply(const make_review_for_appli
         FC_ASSERT(reseach_group_token.get().owner != op.author, "You cannot review your own content");
 
     auto expertise_tokens = expertise_token_service.get_expert_tokens_by_account_name(op.author);
-    auto research_disciplines_relations = research_discipline_service.get_research_discipline_relations_by_research(application.research_id);
+    const auto& research_disciplines_relations = research_discipline_service.get_research_discipline_relations_by_research(application.research_id);
 
     std::set<discipline_id_type> disciplines_ids;
     for (auto& wrap : expertise_tokens)

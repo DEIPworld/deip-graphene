@@ -335,156 +335,147 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
 
 void database::init_genesis_research(const genesis_state_type& genesis_state)
 {
+    dbs_research& research_service = obtain_service<dbs_research>();
+    dbs_research_group& research_groups_service = obtain_service<dbs_research_group>();
+
     const vector<genesis_state_type::research_type>& researches = genesis_state.researches;
-    const vector<genesis_state_type::research_content_type>& research_contents = genesis_state.research_contents;
 
     for (auto& research : researches)
     {
-        FC_ASSERT(!research.title.empty(), "Research 'title' must be provided");
-        FC_ASSERT(!research.permlink.empty(),  "Research group 'permlink' must be provided");
-        FC_ASSERT(research.dropout_compensation_in_percent >= 0 && research.dropout_compensation_in_percent <= DEIP_100_PERCENT,
-                  "Dropout compensation percent should be in 0% to 100% range");
-        FC_ASSERT(research.review_share_in_percent >= 0 && research.review_share_in_percent <= 50 * DEIP_1_PERCENT,
-                  "Percent for review should be in 0% to 50% range");
+        FC_ASSERT(!research.title.empty(), "Research 'title' is required");
+        FC_ASSERT(!research.permlink.empty(), "Research 'permlink' is required");
 
-        uint16_t contents_amount = 0;
-        std::vector<account_name_type> members;
-
-        for (auto& research_content : research_contents) {
-            FC_ASSERT(!research_content.title.empty(), "Research content 'title' must be specified");
-            FC_ASSERT(!research_content.content.empty(), "Research content must be specified");
-            FC_ASSERT(research_content.authors.size() > 0, "Research group must contain at least 1 member");
-
-            for (auto& author : research_content.authors)
-                auto account = get<account_object, by_name>(author);
-
-            if (research.id == research_content.research_id) {
-                for (auto& author : research_content.authors)
-                    members.push_back(author);
-                contents_amount++;
-            }
-        }
-
-        create<research_object>([&](research_object& r){
-            r.id = research.id;
-            r.research_group_id = research.research_group_id;
-            fc::from_string(r.title, research.title);
-            fc::from_string(r.abstract, research.abstract);
-            fc::from_string(r.permlink, research.permlink);
-            r.created_at = get_genesis_time();
-            r.last_update_time = get_genesis_time();
-            r.is_finished = research.is_finished;
-            r.owned_tokens = DEIP_100_PERCENT;
-            r.review_share_in_percent = research.review_share_in_percent;
-            r.review_share_in_percent_last_update = get_genesis_time();
-            r.dropout_compensation_in_percent = research.dropout_compensation_in_percent;
-            r.contents_amount = contents_amount;
-            for (auto member : members)
-                r.members.insert(member);
-            r.is_private = research.is_private;
-        });
-
+        std::set<discipline_id_type> disciplines;
         for (auto& discipline_id : research.disciplines)
         {
-            create<research_discipline_relation_object>([&](research_discipline_relation_object& rel){
-                rel.research_id = research.id;
-                rel.discipline_id = discipline_id;
-                rel.votes_count = 0;
-            });
+            disciplines.insert(discipline_id_type(discipline_id));
         }
+
+        const time_point_sec genesis_time = get_genesis_time();
+        const bool& is_private = false;
+        const uint16_t& review_share = DEIP_1_PERCENT * 20;
+        const uint16_t& compensation_share = DEIP_1_PERCENT * 5;
+
+        const auto& research_group = research_groups_service.get_research_group_by_account(research.account);
+
+        research_service.create_research(
+          research_group.id, 
+          research.external_id,
+          research.title, 
+          research.abstract, 
+          research.permlink,
+          disciplines, 
+          review_share,
+          compensation_share,
+          is_private,
+          research.is_finished,
+          DEIP_100_PERCENT,
+          genesis_time,
+          genesis_time,
+          genesis_time
+        );
     }
 }
 
 void database::init_genesis_research_content(const genesis_state_type& genesis_state)
 {
     const vector<genesis_state_type::research_content_type>& research_contents = genesis_state.research_contents;
-    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
-    dbs_research& research_service = obtain_service<dbs_research>();
-    dbs_research_discipline_relation& research_discipline_relation_service = obtain_service<dbs_research_discipline_relation>();
+    auto& research_service = obtain_service<dbs_research>();
+    auto& research_content_service = obtain_service<dbs_research_content>();
+    auto& accounts_service = obtain_service<dbs_account>();
+    auto& research_discipline_relation_service = obtain_service<dbs_research_discipline_relation>();
 
     for (auto& research_content : research_contents)
     {
-        FC_ASSERT(!research_content.title.empty(), "Research content 'title' must be specified");
-        FC_ASSERT(!research_content.content.empty(),  "Research content must be specified");
-        FC_ASSERT(research_content.authors.size() > 0, "Research group must contain at least 1 member");
+        FC_ASSERT(!research_content.title.empty(), "Research content 'title' is required");
+        FC_ASSERT(!research_content.content.empty(), "Research content payload is require");
+        FC_ASSERT(research_content.authors.size() > 0, "Research group should contain at least 1 member");
 
         for (auto& author : research_content.authors)
         {
-            // validate for account existence
-            auto account = get<account_object, by_name>(author);
+            FC_ASSERT(accounts_service.account_exists(author), "Research content 'author' does not exist");
         }
 
-        auto research = get<research_object, by_id>(research_content.research_id);
+        const auto& research = research_service.get_research(research_content.research_external_id);
+        
+        const std::set<string>& external_references = {};
+        const time_point_sec timestamp = get_genesis_time();
+        std::set<research_content_id_type> references_ids;
 
-        auto& c = create<research_content_object>([&](research_content_object& rc) {
-            rc.id = research_content.id;
-            rc.research_id = research_content.research_id;
-            rc.type = static_cast<deip::chain::research_content_type>(research_content.type);
-            fc::from_string(rc.title, research_content.title);
-            fc::from_string(rc.content, research_content.content);
-            fc::from_string(rc.permlink, research_content.permlink);
-            rc.authors.insert(research_content.authors.begin(), research_content.authors.end());
-            rc.references.insert(research_content.references.begin(), research_content.references.end());
-            rc.created_at = get_genesis_time();
-            rc.activity_round = 1;
-            rc.activity_state = static_cast<deip::chain::research_content_activity_state>(1);
-            rc.activity_window_start = get_genesis_time();
-            rc.activity_window_end = get_genesis_time() + DEIP_REGULAR_CONTENT_ACTIVITY_WINDOW_DURATION;
-        });
-
-        for (auto& reference : research_content.references)
+        for (auto& reference_external_id : research_content.references)
         {
-            auto& _content = get<research_content_object>(reference);
-            push_virtual_operation(research_content_reference_history_operation(c.id._id,
-                                                                       c.research_id._id,
-                                                                       fc::to_string(c.content),
-                                                                       _content.id._id,
-                                                                       _content.research_id._id,
-                                                                       fc::to_string(_content.content)));
+            const auto& reference = research_content_service.get_research_content(reference_external_id);
+            references_ids.insert(reference.id);
         }
 
-        const std::map<discipline_id_type, share_type> previous_research_content_eci = research_content_service.get_eci_evaluation(research_content.id);
+        const auto& created_research_content = research_content_service.create_research_content(
+          research.id,
+          research_content.external_id,
+          research_content.title,
+          research_content.content,
+          research_content.permlink,
+          static_cast<deip::chain::research_content_type>(research_content.type),
+          research_content.authors,
+          references_ids,
+          external_references,
+          timestamp
+        );
+
+        for (auto& reference_external_id : research_content.references)
+        {
+            const auto& reference = research_content_service.get_research_content(reference_external_id);
+            push_virtual_operation(research_content_reference_history_operation(
+                created_research_content.id._id, 
+                created_research_content.research_id._id,
+                fc::to_string(created_research_content.content),
+                reference.id._id, 
+                reference.research_id._id,
+                fc::to_string(reference.content)
+            ));
+        }
+
+        const std::map<discipline_id_type, share_type> previous_research_content_eci = research_content_service.get_eci_evaluation(created_research_content.id);
         const std::map<discipline_id_type, share_type> previous_research_eci = research_service.get_eci_evaluation(research.id);
 
-        const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(c.id);
+        const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(created_research_content.id);
         const research_object& updated_research = research_service.update_eci_evaluation(research.id);
 
-        auto relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research_content.research_id);
+        const auto& relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
+
         for (auto& wrap : relations)
         {
             const auto& rel = wrap.get();
 
             const eci_diff research_content_eci_diff = eci_diff(
-              previous_research_content_eci.at(rel.discipline_id),
-              updated_research_content.eci_per_discipline.at(rel.discipline_id),
-              get_genesis_time(),
-              static_cast<uint16_t>(expertise_contribution_type::publication),
-              updated_research_content.id._id
+                previous_research_content_eci.at(rel.discipline_id),
+                updated_research_content.eci_per_discipline.at(rel.discipline_id),
+                timestamp,
+                static_cast<uint16_t>(expertise_contribution_type::publication),
+                updated_research_content.id._id
             );
 
             push_virtual_operation(research_content_eci_history_operation(
-              updated_research_content.id._id, 
-              rel.discipline_id._id,
-              research_content_eci_diff)
-            );
+                updated_research_content.id._id, 
+                rel.discipline_id._id, 
+                research_content_eci_diff
+            ));
 
             const eci_diff research_eci_diff = eci_diff(
-              previous_research_eci.at(rel.discipline_id),
-              updated_research.eci_per_discipline.at(rel.discipline_id),
-              get_genesis_time(),
-              static_cast<uint16_t>(expertise_contribution_type::publication),
-              updated_research_content.id._id
+                previous_research_eci.at(rel.discipline_id), 
+                updated_research.eci_per_discipline.at(rel.discipline_id),
+                timestamp, 
+                static_cast<uint16_t>(expertise_contribution_type::publication),
+                updated_research_content.id._id
             );
 
             push_virtual_operation(research_eci_history_operation(
               updated_research.id._id, 
-              rel.discipline_id._id,
-              research_eci_diff)
-            );
+              rel.discipline_id._id, 
+              research_eci_diff
+            ));
         }
     }
 }
-
 
 void database::init_genesis_research_groups(const genesis_state_type& genesis_state)
 {
@@ -524,13 +515,6 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
         posting_authority.weight_threshold += 1;
     }
 
-    std::string id("");
-    id.append(research_group.name);
-    id.append(research_group.permlink);
-    id.append(research_group.description);
-
-    std::string rg_account = (std::string)fc::ripemd160::hash(id);
-
     research_group_v1_0_0_trait research_group_trait;
     research_group_trait.name = research_group.name;
     research_group_trait.permlink = research_group.permlink;
@@ -539,7 +523,7 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
     vector<account_trait> traits = { research_group_trait };
 
     account_service.create_account_by_faucets(
-      rg_account,
+      research_group.account,
       creator.name,
       creator.memo_key,
       "",
@@ -551,7 +535,7 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
       false
     );
 
-    const auto& rg = research_groups_service.get_research_group_by_account(rg_account);
+    const auto& rg = research_groups_service.get_research_group_by_account(research_group.account);
 
     for (auto& member_name : research_group.members)
     {

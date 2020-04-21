@@ -227,7 +227,7 @@ share_type dbs_discipline_supply::supply_researches_in_discipline(const discipli
 
     while (research_content_itr != research_content_end)
     {
-        const auto& research_content = research_content_service.get(research_content_itr->research_content_id);
+        const auto& research_content = research_content_service.get_research_content(research_content_itr->research_content_id);
         if (research_content.type == research_content_type::final_result && research_content.activity_state == research_content_activity_state::active)
         {
             total_research_weight -= research_content_itr->eci;
@@ -238,7 +238,7 @@ share_type dbs_discipline_supply::supply_researches_in_discipline(const discipli
     for (auto& wrap : expertise_contributions)
     {
         auto& expertise_contribution = wrap.get();
-        const auto& research_content = research_content_service.get(expertise_contribution.research_content_id);
+        const auto& research_content = research_content_service.get_research_content(expertise_contribution.research_content_id);
 
         if (research_content.type != research_content_type::final_result
             && research_content.activity_state == research_content_activity_state::active

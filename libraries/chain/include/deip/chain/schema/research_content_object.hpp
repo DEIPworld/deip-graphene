@@ -19,6 +19,7 @@ namespace chain {
 
 using chainbase::allocator;
 using fc::shared_string;
+using protocol::external_id_type;
 
 enum research_content_type : uint16_t
 {
@@ -75,30 +76,29 @@ public:
     }
 
     research_content_id_type id;
+    external_id_type external_id;
+
     research_id_type research_id;
-    
-    research_content_type type;
 
     shared_string title;
     shared_string content;
     shared_string permlink;
-    
+
+    research_content_type type;
+
     account_name_type_set authors;
     time_point_sec created_at;
 
     research_content_id_type_set references;
     shared_string_type_set external_references;
 
+    discipline_id_share_type_map eci_per_discipline;
+
+    // deprecated
     uint16_t activity_round;
     research_content_activity_state activity_state;
     time_point_sec activity_window_start;
     time_point_sec activity_window_end;
-
-    discipline_id_share_type_map eci_per_discipline;
-
-    bool is_milestone() const{
-        return type >= research_content_type::start_milestone_type && type <= research_content_type::last_milestone_type;
-    }
 };
 
 struct by_research_id;
@@ -107,60 +107,147 @@ struct by_activity_state;
 struct by_activity_window_start;
 struct by_activity_window_end;
 struct by_permlink;
+struct by_external_id;
 
 typedef multi_index_container<research_content_object,
-        indexed_by<ordered_unique<tag<by_id>,
-                member<research_content_object,
-                        research_content_id_type,
-                        &research_content_object::id>>,
+  indexed_by<
+    ordered_unique<
+      tag<by_id>,
+        member<
+          research_content_object,
+          research_content_id_type,
+          &research_content_object::id
+        >
+    >,
 
-                ordered_non_unique<tag<by_research_id>,
-                        member<research_content_object,
-                                research_id_type,
-                                &research_content_object::research_id>>,
+    ordered_unique<
+      tag<by_external_id>,
+        member<
+          research_content_object,
+          external_id_type,
+          &research_content_object::external_id
+        >
+    >,
 
-                ordered_non_unique<tag<by_research_id_and_content_type>,
-                        composite_key<research_content_object,
-                                member<research_content_object,
-                                        research_id_type,
-                                        &research_content_object::research_id>,
-                                member<research_content_object,
-                                        research_content_type,
-                                        &research_content_object::type>>>,
+    ordered_non_unique<
+      tag<by_research_id>,
+        member<
+          research_content_object,
+          research_id_type,
+          &research_content_object::research_id
+        >
+    >,
 
-                ordered_unique<tag<by_permlink>,
-                        composite_key<research_content_object,
-                                member<research_content_object,
-                                        research_id_type,
-                                        &research_content_object::research_id>,
-                                member<research_content_object,
-                                        shared_string,
-                                        &research_content_object::permlink>>,
-                        composite_key_compare<std::less<research_id_type>,
-                                              fc::strcmp_less>>,
+    ordered_non_unique<
+      tag<by_research_id_and_content_type>,
+        composite_key<research_content_object,
+          member<
+            research_content_object,
+            research_id_type,
+            &research_content_object::research_id
+          >,
+          member<
+            research_content_object,
+            research_content_type,
+            &research_content_object::type
+          >
+        >
+    >,
 
-                ordered_non_unique<tag<by_activity_window_start>,
-                                member<research_content_object,
-                                        time_point_sec,
-                                        &research_content_object::activity_window_start>>,
+    ordered_unique<
+      tag<by_permlink>,
+        composite_key<research_content_object,
+          member<
+            research_content_object,
+            research_id_type,
+            &research_content_object::research_id
+          >,
+          member<
+            research_content_object,
+            shared_string,
+            &research_content_object::permlink
+          >
+        >,
+        composite_key_compare<
+          std::less<research_id_type>,
+          fc::strcmp_less
+        >
+    >,
 
-                ordered_non_unique<tag<by_activity_window_end>,
-                                member<research_content_object,
-                                        time_point_sec,
-                                        &research_content_object::activity_window_end>>,
+    ordered_non_unique<
+      tag<by_activity_window_start>,
+        member<
+          research_content_object,
+          time_point_sec,
+          &research_content_object::activity_window_start
+        >
+    >,
 
-                ordered_non_unique<tag<by_activity_state>,
-                                member<research_content_object,
-                                        research_content_activity_state,
-                                        &research_content_object::activity_state>>>,
-        allocator<research_content_object>>
-        research_content_index;
+    ordered_non_unique<
+      tag<by_activity_window_end>,
+        member<
+          research_content_object,
+          time_point_sec,
+          &research_content_object::activity_window_end
+        >
+    >,
+
+    ordered_non_unique<
+      tag<by_activity_state>,
+        member<
+          research_content_object,
+          research_content_activity_state,
+          &research_content_object::activity_state
+        >
+    >
+  >,
+  allocator<research_content_object>>
+  research_content_index;
 }
 }
 
-FC_REFLECT_ENUM(deip::chain::research_content_type, (announcement)(final_result)(milestone_article)(milestone_book)(milestone_chapter)(milestone_code)(milestone_conference_paper)
-        (milestone_cover_page)(milestone_data)(milestone_experiment_findings)(milestone_method)(milestone_negative_results)(milestone_patent)(milestone_poster)(milestone_preprint)
-        (milestone_presentation)(milestone_raw_data)(milestone_research_proposal)(milestone_technical_report)(milestone_thesis))
-FC_REFLECT_ENUM(deip::chain::research_content_activity_state, (active)(pending)(closed) )
-FC_REFLECT(deip::chain::research_content_object, (id)(research_id)(type)(title)(content)(permlink)(authors)(created_at)(references)(external_references)(activity_round)(activity_state)(activity_window_start)(activity_window_end)(eci_per_discipline))
+FC_REFLECT_ENUM(deip::chain::research_content_type, 
+  (announcement)
+  (final_result)
+  (milestone_article)
+  (milestone_book)
+  (milestone_chapter)
+  (milestone_code)
+  (milestone_conference_paper)
+  (milestone_cover_page)
+  (milestone_data)
+  (milestone_experiment_findings)
+  (milestone_method)
+  (milestone_negative_results)
+  (milestone_patent)
+  (milestone_poster)
+  (milestone_preprint)
+  (milestone_presentation)
+  (milestone_raw_data)
+  (milestone_research_proposal)
+  (milestone_technical_report)
+  (milestone_thesis)
+)
+
+FC_REFLECT_ENUM(deip::chain::research_content_activity_state, (active)(pending)(closed))
+
+FC_REFLECT(deip::chain::research_content_object, 
+  (id)
+  (external_id)
+  (research_id)
+  (type)
+  (title)
+  (content)
+  (permlink)
+  (authors)
+  (created_at)
+  (references)
+  (external_references)
+  (activity_round)
+  (activity_state)
+  (activity_window_start)
+  (activity_window_end)
+  (eci_per_discipline)
+)
+
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_content_object, deip::chain::research_content_index)

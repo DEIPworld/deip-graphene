@@ -1044,7 +1044,7 @@ public:
                                                          const int64_t research_group_id,
                                                          const uint16_t review_share_in_percent,
                                                          const uint16_t dropout_compensation_in_percent,
-                                                         const std::vector<int64_t> disciplines,
+                                                         const std::set<int64_t> disciplines,
                                                          const bool broadcast);
 
     /**
@@ -1063,17 +1063,16 @@ public:
      * @param broadcast
      */
     annotated_signed_transaction propose_create_research_content(const std::string& creator,
-                                                                  const int64_t research_group_id,
-                                                                  const int64_t research_id,
-                                                                  const uint16_t type,
-                                                                  const std::string& title,
-                                                                  const std::string& content,
-                                                                  const std::string& permlink,
-                                                                  const std::vector<string> authors,
-                                                                  const std::vector<int64_t> references,
-                                                                  const std::set<string>& external_references,
-                                                                  const bool broadcast);
-
+                                                                 const int64_t research_group_id,
+                                                                 const int64_t research_id,
+                                                                 const uint16_t type,
+                                                                 const std::string& title,
+                                                                 const std::string& content,
+                                                                 const std::string& permlink,
+                                                                 const std::set<account_name_type> authors,
+                                                                 const std::set<research_content_id_type> references,
+                                                                 const std::set<string>& external_references,
+                                                                 const bool broadcast);
 
     /**
      * Propose start token sale

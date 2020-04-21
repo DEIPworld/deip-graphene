@@ -64,8 +64,14 @@ const dbs_research_group::research_group_optional_ref_type dbs_research_group::g
 
 const research_group_object& dbs_research_group::get_research_group_by_account(const account_name_type& account) const
 {
-    try { return db_impl().get<research_group_object, by_account>(account); }
-    FC_CAPTURE_AND_RETHROW((account))
+    const auto& idx = db_impl()
+      .get_index<research_group_index>()
+      .indices()
+      .get<by_account>();
+
+    auto itr = idx.find(account);
+    FC_ASSERT(itr != idx.end(), "Research group account \"${1}\" does not exist.", ("1", account));
+    return *itr;
 }
 
 dbs_research_group::research_group_refs_type dbs_research_group::get_all_research_groups(
@@ -90,8 +96,8 @@ const research_group_object& dbs_research_group::create_personal_research_group(
 {
     const research_group_object& personal_research_group
         = db_impl().create<research_group_object>([&](research_group_object& rg_o) {
-              rg_o.creator = account;
               rg_o.account = account;
+              rg_o.creator = account;
               fc::from_string(rg_o.name, account);
               fc::from_string(rg_o.permlink, account);
               fc::from_string(rg_o.description, account);
@@ -108,16 +114,16 @@ const research_group_object& dbs_research_group::create_personal_research_group(
 }
 
 const research_group_object& dbs_research_group::create_research_group(
-  const account_name_type& creator,
   const account_name_type& account,
+  const account_name_type& creator,
   const std::string& name,
   const string& permlink,
   const string& description)
 {
     const research_group_object& research_group
         = db_impl().create<research_group_object>([&](research_group_object& rg_o) {
-              rg_o.creator = creator;
               rg_o.account = account;
+              rg_o.creator = creator;
               fc::from_string(rg_o.name, name);
               fc::from_string(rg_o.permlink, permlink);
               fc::from_string(rg_o.description, description);

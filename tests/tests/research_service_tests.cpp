@@ -72,27 +72,6 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(research_service_tests, research_service_fixture)
 
-BOOST_AUTO_TEST_CASE(create_research)
-{
-    try
-    {
-        auto& research = data_service.create(RESEARCH_TITLE, ABSTRACT, RESEARCH_TITLE, RESEARCH_GROUP_ID, REVIEW_SHARE, DROPOUT_COMPENSATION, false);
-
-        BOOST_CHECK(research.title == RESEARCH_TITLE);
-        BOOST_CHECK(research.permlink == RESEARCH_TITLE);
-        BOOST_CHECK(research.research_group_id == RESEARCH_GROUP_ID);
-        BOOST_CHECK(research.review_share_in_percent == REVIEW_SHARE);
-        BOOST_CHECK(research.dropout_compensation_in_percent == DROPOUT_COMPENSATION);
-        BOOST_CHECK(research.is_finished == false);
-        BOOST_CHECK(research.created_at <= db.head_block_time());
-        BOOST_CHECK(research.abstract == ABSTRACT);
-        BOOST_CHECK(research.owned_tokens == DEIP_100_PERCENT);
-        BOOST_CHECK(research.is_private == false);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_CASE(get_researches)
 {
     try

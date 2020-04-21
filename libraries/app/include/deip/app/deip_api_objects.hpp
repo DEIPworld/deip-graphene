@@ -390,7 +390,6 @@ struct research_api_obj
         ,  number_of_positive_reviews(r.number_of_positive_reviews)
         ,  number_of_negative_reviews(r.number_of_negative_reviews)
         ,  last_update_time(r.last_update_time)
-        ,  contents_amount(r.contents_amount)
         ,  members(r.members.begin(), r.members.end())
         ,  is_private(r.is_private)
     {
@@ -425,7 +424,6 @@ struct research_api_obj
     uint16_t number_of_negative_reviews;
 
     time_point_sec last_update_time;
-    uint16_t contents_amount;
 
     std::vector<account_name_type> members;
 
@@ -602,7 +600,6 @@ struct research_group_api_obj
         , is_dao(rg_o.is_dao)
         , is_personal(rg_o.is_personal)
         , is_centralized(rg_o.is_centralized)
-        , balance(rg_o.balance)
         , account(acc_o)
     {
         proposal_quorums.insert(rg_o.action_quorums.begin(), rg_o.action_quorums.end());
@@ -618,7 +615,6 @@ struct research_group_api_obj
         , is_dao(rg_o.is_dao)
         , is_personal(rg_o.is_personal)
         , is_centralized(rg_o.is_centralized)
-        , balance(rg_o.balance)
     {
         proposal_quorums.insert(rg_o.action_quorums.begin(), rg_o.action_quorums.end());
     }
@@ -638,7 +634,6 @@ struct research_group_api_obj
     bool is_dao;
     bool is_personal;
     bool is_centralized;
-    asset balance;
     account_api_obj account;
 };
 
@@ -758,7 +753,6 @@ struct research_listing_api_obj
         , group_id(rg.id)
         , group_permlink(rg.permlink)
         , last_update_time(r.last_update_time)
-        , contents_amount(r.contents_amount)
         , members(r.members.begin(), r.members.end())
         , number_of_positive_reviews(r.number_of_positive_reviews)
         , number_of_negative_reviews(r.number_of_negative_reviews)
@@ -791,7 +785,6 @@ struct research_listing_api_obj
     string group_permlink;
     map<int64_t, int64_t> eci_per_discipline;
     time_point_sec last_update_time;
-    uint16_t contents_amount;
     std::vector<account_name_type> members;
     uint16_t number_of_positive_reviews;
     uint16_t number_of_negative_reviews;
@@ -1541,7 +1534,6 @@ FC_REFLECT( deip::app::research_api_obj,
             (number_of_positive_reviews)
             (number_of_negative_reviews)
             (last_update_time)
-            (contents_amount)
             (members)
             (is_private)
           )
@@ -1613,7 +1605,6 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (is_dao)
             (is_personal)
             (is_centralized)
-            (balance)
             (account)
 )
 
@@ -1669,7 +1660,6 @@ FC_REFLECT( deip::app::research_listing_api_obj,
            (group_permlink)
            (eci_per_discipline)
            (last_update_time)
-           (contents_amount)
            (members)
            (number_of_positive_reviews)
            (number_of_negative_reviews)

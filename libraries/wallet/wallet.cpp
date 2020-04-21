@@ -2418,7 +2418,7 @@ annotated_signed_transaction wallet_api::propose_create_research(const std::stri
                                                          const int64_t research_group_id,
                                                          const uint16_t review_share_in_percent,
                                                          const uint16_t dropout_compensation_in_percent,
-                                                         const std::vector<int64_t> disciplines,
+                                                         const std::set<int64_t> disciplines,
                                                          const bool broadcast)
 {    
     start_research_proposal_data_type data;
@@ -2434,32 +2434,19 @@ annotated_signed_transaction wallet_api::propose_create_research(const std::stri
 }
 
 annotated_signed_transaction wallet_api::propose_create_research_content(const std::string& creator,
-                                                                  const int64_t research_group_id,
-                                                                  const int64_t research_id,
-                                                                  const uint16_t type,
-                                                                  const std::string& title,
-                                                                  const std::string& content,
-                                                                  const std::string& permlink,
-                                                                  const std::vector<string> authors,
-                                                                  const std::vector<int64_t> references,
-                                                                  const std::set<string>& external_references,
-                                                                  const bool broadcast)
-{    
-    std::vector<fc::fixed_string_40
-    > authors_fc;
-    for (size_t i = 0; i < authors.size(); i++)
-    {
-        const std::string& s = authors[i];
-        fc::fixed_string_40 fc(s);
-        authors_fc.push_back(fc);
-    }
+                                                                         const int64_t research_group_id,
+                                                                         const int64_t research_id,
+                                                                         const uint16_t type,
+                                                                         const std::string& title,
+                                                                         const std::string& content,
+                                                                         const std::string& permlink,
+                                                                         const std::set<account_name_type> authors,
+                                                                         const std::set<research_content_id_type> references,
+                                                                         const std::set<string>& external_references,
+                                                                         const bool broadcast)
+{
 
-    std::vector<research_content_id_type> references_v;
-    for (size_t i = 0; i < references.size(); i++)
-    {
-        research_content_id_type r = (research_content_id_type)references[i];
-        references_v.push_back(r);
-    }
+
 
     create_research_content_data_type data;
 
@@ -2468,8 +2455,8 @@ annotated_signed_transaction wallet_api::propose_create_research_content(const s
     data.title = title;
     data.content = content;
     data.permlink = permlink;
-    data.authors = authors_fc;
-    data.references = references_v;
+    data.authors = authors;
+    data.references = references;
     data.external_references = external_references;
 
     return create_proposal(creator, research_group_id, fc::json::to_string(data), dbs_proposal::action_t::create_research_material, PROPOSAL_EXPIRATION_TIME, broadcast);

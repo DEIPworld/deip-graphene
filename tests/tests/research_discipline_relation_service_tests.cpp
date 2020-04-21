@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(create_research_discipline_relation)
 {
     try
     {
-        auto& relation = data_service.create(RESEARCH_ONE, DISCIPLINE_MATH);
+        auto& relation = data_service.create_research_relation(RESEARCH_ONE, DISCIPLINE_MATH);
 
         BOOST_CHECK(relation.research_id == RESEARCH_ONE);
         BOOST_CHECK(relation.discipline_id == DISCIPLINE_MATH);
