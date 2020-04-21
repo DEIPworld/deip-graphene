@@ -505,6 +505,26 @@ struct placeholder2_operation : public base_operation
     void validate() const;
 };
 
+struct placeholder3_operation : public base_operation
+{
+    void validate() const;
+};
+
+struct placeholder4_operation : public base_operation
+{
+    void validate() const;
+};
+
+struct placeholder5_operation : public base_operation
+{
+    void validate() const;
+};
+
+struct placeholder6_operation : public base_operation
+{
+    void validate() const;
+};
+
 struct create_proposal_operation : public base_operation
 {
     account_name_type creator;
@@ -584,21 +604,6 @@ struct transfer_research_tokens_to_research_group_operation : public base_operat
     }
 };
 
-struct research_update_operation : public base_operation
-{
-    int64_t research_id;
-    string title;
-    string abstract;
-    string permlink;
-    account_name_type owner;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
 
 struct create_vesting_balance_operation : public base_operation
 {
@@ -700,32 +705,6 @@ struct vote_for_expertise_allocation_proposal_operation : public base_operation
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
         a.insert(voter);
-    }
-};
-
-struct accept_research_token_offer_operation : public base_operation
-{
-    int64_t offer_research_tokens_id;
-    account_name_type buyer;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(buyer);
-    }
-};
-
-struct reject_research_token_offer_operation : public base_operation
-{
-    int64_t offer_research_tokens_id;
-    account_name_type buyer;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(buyer);
     }
 };
 
@@ -864,6 +843,11 @@ FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recov
 FC_REFLECT( deip::protocol::expertise_amount_pair_type, (discipline_id)(amount) )
 FC_REFLECT( deip::protocol::placeholder1_operation, )
 FC_REFLECT( deip::protocol::placeholder2_operation, )
+FC_REFLECT( deip::protocol::placeholder3_operation, )
+FC_REFLECT( deip::protocol::placeholder4_operation, )
+FC_REFLECT( deip::protocol::placeholder5_operation, )
+FC_REFLECT( deip::protocol::placeholder6_operation, )
+
 FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
 
@@ -872,7 +856,6 @@ FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_g
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
 FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_id)(owner)(amount))
-FC_REFLECT( deip::protocol::research_update_operation, (research_id)(title)(abstract)(permlink)(owner))
 FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds))
 FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance_id)(owner)(amount))
 FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_id)(sender)(receiver)(amount))
@@ -880,8 +863,6 @@ FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(dis
 FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(discipline_id))
 FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (claimer)(discipline_id)(description))
 FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (proposal_id)(voter)(voting_power))
-FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (offer_research_tokens_id)(buyer))
-FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (offer_research_tokens_id)(buyer))
 FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
 FC_REFLECT( deip::protocol::make_review_for_application_operation, (author)(grant_application_id)(content)(is_positive)(weight))
 FC_REFLECT( deip::protocol::approve_grant_application_operation, (grant_application_id)(approver))
@@ -890,4 +871,4 @@ FC_REFLECT( deip::protocol::create_asset_operation, (issuer)(symbol)(precision)(
 FC_REFLECT( deip::protocol::issue_asset_operation, (issuer)(amount))
 FC_REFLECT( deip::protocol::reserve_asset_operation, (owner)(amount))
 
-// clang-format on
+    // clang-format on

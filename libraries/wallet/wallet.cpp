@@ -12,7 +12,6 @@
 #include <deip/blockchain_history/account_history_api.hpp>
 #include <deip/blockchain_history/blockchain_history_api.hpp>
 
-#include <deip/chain/schema/proposal_data_types.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -2382,106 +2381,6 @@ annotated_signed_transaction wallet_api::create_proposal(const std::string& crea
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::propose_invite_member(const std::string& creator,
-                                                         const std::string& member,
-                                                         const int64_t research_group_id,
-                                                         const int64_t research_group_token_amount_in_percent,
-                                                         const std::string& cover_letter,
-                                                         const bool broadcast)
-{    
-    invite_member_proposal_data_type data;
-
-    data.name = member;
-    data.research_group_token_amount_in_percent = research_group_token_amount_in_percent;
-    data.cover_letter = cover_letter;
-
-    return create_proposal(creator, research_group_id, fc::json::to_string(data), PROPOSAL_EXPIRATION_TIME, broadcast);
-}
-
-annotated_signed_transaction wallet_api::propose_exclude_member(const std::string& creator,
-                                                         const std::string& member,
-                                                         const int64_t research_group_id,
-                                                         const bool broadcast)
-{    
-    dropout_member_proposal_data_type data;
-
-    data.name = member;
-    return create_proposal(creator, research_group_id, fc::json::to_string(data), PROPOSAL_EXPIRATION_TIME, broadcast);
-}
-
-annotated_signed_transaction wallet_api::propose_create_research(const std::string& creator,
-                                                         const std::string& title,
-                                                         const std::string& abstract,
-                                                         const std::string& permlink,
-                                                         const int64_t research_group_id,
-                                                         const uint16_t review_share_in_percent,
-                                                         const uint16_t dropout_compensation_in_percent,
-                                                         const std::set<int64_t> disciplines,
-                                                         const bool broadcast)
-{    
-    start_research_proposal_data_type data;
-
-    data.title = title;
-    data.abstract = abstract;
-    data.permlink = permlink;
-    data.review_share_in_percent = review_share_in_percent;
-    data.dropout_compensation_in_percent = dropout_compensation_in_percent;
-    data.disciplines = disciplines;
-
-    return create_proposal(creator, research_group_id, fc::json::to_string(data), PROPOSAL_EXPIRATION_TIME, broadcast);
-}
-
-annotated_signed_transaction wallet_api::propose_create_research_content(const std::string& creator,
-                                                                         const int64_t research_group_id,
-                                                                         const int64_t research_id,
-                                                                         const uint16_t type,
-                                                                         const std::string& title,
-                                                                         const std::string& content,
-                                                                         const std::string& permlink,
-                                                                         const std::set<account_name_type> authors,
-                                                                         const std::set<research_content_id_type> references,
-                                                                         const std::set<string>& external_references,
-                                                                         const bool broadcast)
-{
-
-
-
-    create_research_content_data_type data;
-
-    data.research_id = research_id;
-    data.type = (research_content_type)type;
-    data.title = title;
-    data.content = content;
-    data.permlink = permlink;
-    data.authors = authors;
-    data.references = references;
-    data.external_references = external_references;
-
-    return create_proposal(creator, research_group_id, fc::json::to_string(data), PROPOSAL_EXPIRATION_TIME, broadcast);
-}
-
-annotated_signed_transaction wallet_api::propose_start_token_sale(const std::string& creator,
-                                                                  const int64_t research_group_id,
-                                                                  const int64_t research_id,
-                                                                  const uint32_t start_time,
-                                                                  const uint32_t end_time,
-                                                                  const int64_t amount_for_sale,
-                                                                  const asset& soft_cap,
-                                                                  const asset& hard_cap,
-                                                                  const bool broadcast)
-{
-    start_research_token_sale_data_type data;
-
-    data.research_id = research_id;
-    data.start_time = fc::time_point_sec(start_time);
-    data.end_time = fc::time_point_sec(end_time);
-    data.amount_for_sale = amount_for_sale;
-    data.soft_cap = soft_cap;
-    data.hard_cap = hard_cap;
-
-    return create_proposal(creator, research_group_id, fc::json::to_string(data), PROPOSAL_EXPIRATION_TIME, broadcast);
-}
-
 annotated_signed_transaction wallet_api::make_review(const std::string& author,
                                                      const int64_t research_content_id,
                                                      const bool is_positive,
@@ -2580,29 +2479,6 @@ annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_gr
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::research_update(const int64_t research_id,
-                                                                   const std::string& title,
-                                                                   const std::string& abstract,
-                                                                   const std::string& permlink,
-                                                                   const std::string& owner,
-                                                                   const bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    research_update_operation op;
-
-    op.research_id = research_id;
-    op.title = title;
-    op.abstract = abstract;
-    op.permlink = permlink;
-    op.owner = owner;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
 
 annotated_signed_transaction
 wallet_api::create_vesting_balance(const std::string &creator, const std::string &owner, const asset &balance,
@@ -2703,62 +2579,6 @@ annotated_signed_transaction wallet_api::vote_for_expertise_allocation_proposal(
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::propose_offer_research_tokens(const std::string& sender,
-                                                                       const std::string& receiver,
-                                                                       const int64_t research_group_id,
-                                                                       const int64_t research_id,
-                                                                       const uint32_t amount,
-                                                                       const asset& price,
-                                                                       const bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    offer_research_tokens_data_type data;
-
-    data.sender = sender;
-    data.receiver = receiver;
-    data.research_id = research_id;
-    data.amount = amount;
-    data.price = price;
-
-    return create_proposal(sender, research_group_id, fc::json::to_string(data), PROPOSAL_EXPIRATION_TIME, broadcast);
-}
-
-annotated_signed_transaction wallet_api::accept_offer_research_tokens(const int64_t offer_research_tokens_id,
-                                                                      const std::string& buyer,
-                                                                      const bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    accept_research_token_offer_operation op;
-
-    op.offer_research_tokens_id = offer_research_tokens_id;
-    op.buyer = buyer;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
-annotated_signed_transaction wallet_api::reject_offer_research_tokens(const int64_t offer_research_tokens_id,
-                                                                      const std::string& buyer,
-                                                                      const bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    reject_research_token_offer_operation op;
-
-    op.offer_research_tokens_id = offer_research_tokens_id;
-    op.buyer = buyer;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
 
 annotated_signed_transaction wallet_api::create_grant(const std::string& grantor,
                                                       const asset& amount,

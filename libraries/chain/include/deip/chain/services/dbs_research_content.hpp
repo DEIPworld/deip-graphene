@@ -32,7 +32,7 @@ public:
                                                            const research_content_type& type,
                                                            const std::set<account_name_type>& authors,
                                                            const std::set<research_content_id_type>& references,
-                                                           const std::set<string>& external_references,
+                                                           const std::set<string>& foreign_references,
                                                            const fc::time_point_sec& timestamp);
 
     const research_content_object& get_research_content(const research_content_id_type& id) const;

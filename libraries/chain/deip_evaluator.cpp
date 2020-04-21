@@ -29,7 +29,6 @@
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
-#include <deip/chain/services/dbs_offer_research_tokens.hpp>
 #include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_grant_application.hpp>
 #include <deip/chain/services/dbs_grant_application_review.hpp>
@@ -815,29 +814,6 @@ void transfer_research_tokens_to_research_group_evaluator::do_apply(const transf
 
 }
 
-void research_update_evaluator::do_apply(const research_update_operation& op)
-{
-    dbs_research& research_service = _db.obtain_service<dbs_research>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-    account_service.check_account_existence(op.owner);
-    research_service.check_research_existence(op.research_id);
-
-    auto& research = research_service.get_research(op.research_id);
-    FC_ASSERT(research_group_service.is_research_group_member(op.owner, research.research_group_id), 
-      "${a} is not a member of ${rg} research group",
-      ("${a}", op.owner)("rg", research.research_group_id));
-
-    auto& research_group = research_group_service.get_research_group(research.research_group_id);
-
-    FC_ASSERT(research_group.is_dao == false || research_group.is_personal == true, "This operation is allowed only for personal and not DAO groups");
-
-    _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
-        fc::from_string(r_o.title, op.title);
-        fc::from_string(r_o.abstract, op.abstract);
-        fc::from_string(r_o.permlink, op.permlink);
-    });
-}
 
 void create_vesting_balance_evaluator::do_apply(const create_vesting_balance_operation& op)
 {
@@ -1020,46 +996,6 @@ void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_e
     else if (op.voting_power == -DEIP_100_PERCENT)
         expertise_allocation_proposal_service.downvote(proposal, op.voter, expert_token.amount + expert_token.proxied_expertise_total());
 
-}
-
-void accept_research_token_offer_evaluator::do_apply(const accept_research_token_offer_operation& op)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
-    dbs_offer_research_tokens& offer_service = _db.obtain_service<dbs_offer_research_tokens>();
-    dbs_research& research_service = _db.obtain_service<dbs_research>();
-    dbs_research_token& research_token_service = _db.obtain_service<dbs_research_token>();
-
-    account_service.check_account_existence(op.buyer);
-    offer_service.check_offer_existence(op.offer_research_tokens_id);
-
-    auto& offer = offer_service.get(op.offer_research_tokens_id);
-    auto& research = research_service.get_research(offer.research_id);
-
-    auto buyer_balance = account_balance_service.get_by_owner_and_asset(op.buyer, offer.price.symbol);
-
-    FC_ASSERT(research.owned_tokens >= offer.amount, "Research group doesn't have enough tokens");
-    FC_ASSERT(buyer_balance.amount >= offer.price.amount, "Buyer doesn't have enough funds.");
-
-    research_service.decrease_owned_tokens(research, offer.amount);
-    account_balance_service.adjust_balance(op.buyer, -offer.price);
-
-    research_token_service.create_research_token(op.buyer, offer.amount, offer.research_id, false);
-
-    _db._temporary_public_impl().remove(offer);
-}
-
-void reject_research_token_offer_evaluator::do_apply(const reject_research_token_offer_operation& op)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_offer_research_tokens& offer_service = _db.obtain_service<dbs_offer_research_tokens>();
-
-    account_service.check_account_existence(op.buyer);
-    offer_service.check_offer_existence(op.offer_research_tokens_id);
-
-    auto& offer = offer_service.get(op.offer_research_tokens_id);
-
-    _db._temporary_public_impl().remove(offer);
 }
 
 void create_grant_evaluator::do_apply(const create_grant_operation& op)
@@ -2258,15 +2194,9 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
     const auto now = _db.head_block_time();
     const bool is_finished = false;
 
-    string external_id(op.title);
-    external_id.append(op.abstract);
-    external_id.append(op.permlink);
-    external_id.append(op.creator);
-    external_id.append(std::to_string(_db.get_dynamic_global_properties().head_block_number));
-
     research_service.create_research(
             research_group.id,
-            external_id_type((string)fc::ripemd160::hash(external_id)),
+            op.external_id,
             op.title,
             op.abstract,
             op.permlink,
@@ -2318,40 +2248,29 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
               "The research ${1} has been finished already",
               ("1", research.title));
 
-    string external_id(op.title);
-    external_id.append(op.content);
-    external_id.append(op.permlink);
-    external_id.append(op.creator);
-    external_id.append(std::to_string(_db.get_dynamic_global_properties().head_block_number));
+    std::set<research_content_id_type> references_internal_ids;
+    std::set<research_content_object> references;
 
-    std::set<research_content_id_type> references(op.references.begin(), op.references.end());
-    const auto& research_content = research_content_service.create_research_content(
-            research.id,
-            external_id_type((string)fc::ripemd160::hash(external_id)),
-            op.title,
-            op.content,
-            op.permlink,
-            static_cast<research_content_type>(op.type),
-            op.authors,
-            references,
-            op.external_references,
-            now);
-
-    _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
-        for (auto author : op.authors)
-        {
-            r_o.members.insert(author);
-        }
-
-        if (research_content.type == research_content_type::final_result)
-        {
-            r_o.is_finished = true;
-        }
-    });
-
-    for (auto& reference : op.references)
+    for (external_id_type reference : op.references)
     {
         const auto& ref = research_content_service.get_research_content(reference);
+        references_internal_ids.insert(ref.id);
+    }
+
+    const auto& research_content = research_content_service.create_research_content(
+      research.id,
+      op.external_id,
+      op.title,
+      op.content,
+      op.permlink,
+      static_cast<research_content_type>(op.type),
+      op.authors,
+      references_internal_ids,
+      op.foreign_references,
+      now);
+
+    for (auto& ref : references)
+    {
         _db.push_virtual_operation(research_content_reference_history_operation(
           research_content.id._id,
           research_content.research_id._id,

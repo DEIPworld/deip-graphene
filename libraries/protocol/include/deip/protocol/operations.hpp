@@ -31,6 +31,8 @@ namespace deip {
                 change_recovery_account_operation,
 
                 // DEIP native operations
+                placeholder1_operation,
+                placeholder2_operation,
                 create_proposal_operation,
                 vote_proposal_operation,
                 make_review_operation,
@@ -38,17 +40,22 @@ namespace deip {
                 approve_research_group_invite_operation,
                 reject_research_group_invite_operation,
                 transfer_research_tokens_to_research_group_operation,
-                placeholder2_operation,
-                research_update_operation,
+
+                placeholder3_operation,
+                placeholder4_operation,
+
                 create_vesting_balance_operation,
                 withdraw_vesting_balance_operation,
+
                 transfer_research_tokens_operation,
+
                 delegate_expertise_operation,
                 revoke_expertise_delegation_operation,
                 create_expertise_allocation_proposal_operation,
                 vote_for_expertise_allocation_proposal_operation,
-                accept_research_token_offer_operation,
-                reject_research_token_offer_operation,
+                placeholder5_operation,
+                placeholder6_operation,
+
                 create_grant_operation,
                 create_grant_application_operation,
                 make_review_for_application_operation,
@@ -57,6 +64,7 @@ namespace deip {
                 create_asset_operation,
                 issue_asset_operation,
                 reserve_asset_operation,
+
                 create_award_operation,
                 approve_award_operation,
                 reject_award_operation,
@@ -65,12 +73,7 @@ namespace deip {
                 approve_award_withdrawal_request_operation,
                 reject_award_withdrawal_request_operation,
                 pay_award_withdrawal_request_operation,
-                create_nda_contract_operation,
-                sign_nda_contract_operation,
-                decline_nda_contract_operation,
-                close_nda_contract_operation,
-                create_request_by_nda_contract_operation,
-                fulfill_request_by_nda_contract_operation,
+
                 invite_member_operation,
                 exclude_member_operation,
                 create_research_operation,
@@ -78,6 +81,13 @@ namespace deip {
                 create_research_token_sale_operation,
                 update_research_group_metadata_operation,
                 update_research_metadata_operation,
+
+                create_nda_contract_operation,
+                sign_nda_contract_operation,
+                decline_nda_contract_operation,
+                close_nda_contract_operation,
+                create_request_by_nda_contract_operation,
+                fulfill_request_by_nda_contract_operation,
 
                 // virtual operations
                 fill_common_tokens_withdraw_operation,

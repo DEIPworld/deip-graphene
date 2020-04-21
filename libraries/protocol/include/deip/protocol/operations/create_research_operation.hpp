@@ -10,6 +10,7 @@ namespace protocol {
 struct create_research_operation : public base_operation
 {
     account_name_type creator;
+    external_id_type external_id;
     external_id_type research_group_external_id;
 
     string title;
@@ -38,6 +39,7 @@ struct create_research_operation : public base_operation
 
 FC_REFLECT(deip::protocol::create_research_operation,
           (creator)
+          (external_id)
           (research_group_external_id)
           (title)
           (abstract)

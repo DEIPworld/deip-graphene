@@ -37,7 +37,6 @@
 #include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
-#include <deip/chain/services/dbs_offer_research_tokens.hpp>
 #include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_grant_application.hpp>
 #include <deip/chain/services/dbs_grant_application_review.hpp>
@@ -163,10 +162,6 @@ public:
 
     // Vesting balances
     fc::optional<vesting_balance_api_obj> get_vesting_balance_by_id(const vesting_balance_id_type& vesting_balance_id) const;
-
-    // Offer research tokens
-    fc::optional<offer_research_tokens_api_obj> get_offer(const offer_research_tokens_id_type& id) const;
-    fc::optional<offer_research_tokens_api_obj> get_offer_by_receiver_and_research_id(const account_name_type& receiver, const research_id_type& research_id) const;
 
     // Grants
     fc::optional<grant_api_obj> get_grant_with_announced_application_window(const grant_id_type& id) const;
@@ -2488,73 +2483,7 @@ database_api::get_vesting_balance_by_owner(const account_name_type &owner) const
     });
 }
 
-fc::optional<offer_research_tokens_api_obj> database_api::get_offer(const offer_research_tokens_id_type& id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_offer(id); });
-}
 
-fc::optional<offer_research_tokens_api_obj> database_api_impl::get_offer(const offer_research_tokens_id_type& id) const
-{
-    const auto& idx = _db.get_index<offer_research_tokens_index>().indices().get<by_id>();
-    auto itr = idx.find(id);
-    if (itr != idx.end())
-        return *itr;
-
-    return {};
-}
-
-vector<offer_research_tokens_api_obj> database_api::get_offers_by_receiver(const account_name_type& receiver) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<offer_research_tokens_api_obj> results;
-        chain::dbs_offer_research_tokens& offer_service
-                = my->_db.obtain_service<chain::dbs_offer_research_tokens>();
-
-        auto offers = offer_service.get_offers_by_receiver(receiver);
-
-        for (const chain::offer_research_tokens_object& offer : offers)
-        {
-            results.push_back(offer);
-        }
-
-        return results;
-    });
-}
-
-fc::optional<offer_research_tokens_api_obj> database_api::get_offer_by_receiver_and_research_id(const account_name_type& receiver,
-                                                                                                const research_id_type& research_id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_offer_by_receiver_and_research_id(receiver, research_id); });
-}
-
-fc::optional<offer_research_tokens_api_obj> database_api_impl::get_offer_by_receiver_and_research_id(const account_name_type& receiver,
-                                                                                                     const research_id_type& research_id) const
-{
-    const auto& idx = _db.get_index<offer_research_tokens_index>().indices().get<by_receiver_and_research_id>();
-    auto itr = idx.find(std::make_tuple(receiver, research_id));
-    if (itr != idx.end())
-        return fc::optional<offer_research_tokens_api_obj>(*itr);
-
-    return {};
-}
-
-vector<offer_research_tokens_api_obj> database_api::get_offers_by_research_id(const research_id_type& research_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<offer_research_tokens_api_obj> results;
-        chain::dbs_offer_research_tokens& offer_service
-                = my->_db.obtain_service<chain::dbs_offer_research_tokens>();
-
-        auto offers = offer_service.get_offers_by_research_id(research_id);
-
-        for (const chain::offer_research_tokens_object& offer : offers)
-        {
-            results.push_back(offer);
-        }
-
-        return results;
-    });
-}
 
 fc::optional<grant_api_obj> database_api::get_grant_with_announced_application_window(const grant_id_type& id) const
 {

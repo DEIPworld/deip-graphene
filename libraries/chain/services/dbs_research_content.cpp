@@ -23,7 +23,7 @@ const research_content_object& dbs_research_content::create_research_content(
   const research_content_type& type,
   const std::set<account_name_type>& authors,
   const std::set<research_content_id_type>& references,
-  const std::set<string>& external_references,
+  const std::set<string>& foreign_references,
   const fc::time_point_sec& timestamp) 
 {
     const auto& research_content = db_impl().create<research_content_object>([&](research_content_object& rc_o) {
@@ -37,12 +37,12 @@ const research_content_object& dbs_research_content::create_research_content(
         rc_o.references.insert(references.begin(), references.end());   
         rc_o.created_at = timestamp;
 
-        for (auto& str : external_references)
+        for (auto& str : foreign_references)
         {
             int val_length = str.length();
             char val_array[val_length + 1];
             strcpy(val_array, str.c_str());
-            rc_o.external_references.insert(
+            rc_o.foreign_references.insert(
               fc::shared_string(val_array, basic_string_allocator(db_impl().get_segment_manager()))
             );
         }
@@ -58,6 +58,10 @@ const research_content_object& dbs_research_content::create_research_content(
     db_impl().modify(research, [&](research_object& r_o) { 
       r_o.last_update_time = timestamp;
       r_o.members.insert(authors.begin(), authors.end());
+      if (type == research_content_type::final_result)
+      {
+          r_o.is_finished = true;
+      }
     });
 
     return research_content;

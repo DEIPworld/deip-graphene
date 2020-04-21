@@ -164,11 +164,6 @@ struct get_impacted_account_visitor
         _impacted.insert(op.owner);
     }
 
-    void operator()(const research_update_operation& op)
-    {
-        _impacted.insert(op.owner);
-    }
-
     void operator()(const create_vesting_balance_operation& op)
     {
         _impacted.insert(op.creator);
@@ -207,16 +202,6 @@ struct get_impacted_account_visitor
         _impacted.insert(op.voter);
     }
     
-    void operator()(const accept_research_token_offer_operation& op)
-    {
-        _impacted.insert(op.buyer);
-    }
-    
-    void operator()(const reject_research_token_offer_operation& op)
-    {
-        _impacted.insert(op.buyer);
-    }
-
     void operator()(const create_grant_operation& op)
     {
         _impacted.insert(op.grantor);

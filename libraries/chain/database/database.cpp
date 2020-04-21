@@ -18,7 +18,6 @@
 #include <deip/chain/schema/deip_objects.hpp>
 #include <deip/chain/schema/global_property_object.hpp>
 #include <deip/chain/schema/nda_contract_file_access_object.hpp>
-#include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/operation_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
@@ -1443,7 +1442,6 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
-    _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_vesting_balance_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_vesting_balance_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
@@ -1452,8 +1450,6 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<revoke_expertise_delegation_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_expertise_allocation_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_expertise_allocation_proposal_evaluator>();
-    _my->_evaluator_registry.register_evaluator<accept_research_token_offer_evaluator>();
-    _my->_evaluator_registry.register_evaluator<reject_research_token_offer_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_application_evaluator>();
     _my->_evaluator_registry.register_evaluator<make_review_for_application_evaluator>();
@@ -1523,7 +1519,6 @@ void database::initialize_indexes()
     add_index<reward_pool_index>();
     add_index<expertise_allocation_proposal_index>();
     add_index<expertise_allocation_proposal_vote_index>();
-    add_index<offer_research_tokens_index>();
     add_index<grant_index>();
     add_index<grant_application_index>();
     add_index<grant_application_review_index>();

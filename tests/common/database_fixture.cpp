@@ -562,7 +562,7 @@ const research_content_object& database_fixture::research_content_create(
                                 const time_point_sec& activity_window_end,
                                 const std::vector<account_name_type>& authors,
                                 const std::vector<research_content_id_type>& references,
-                                const std::set<string>& external_references)
+                                const std::set<string>& foreign_references)
 {
     const auto& new_research_content = db.create<research_content_object>([&](research_content_object& rc) {
 

@@ -8,7 +8,6 @@
 #include <deip/chain/schema/deip_objects.hpp>
 #include <deip/chain/schema/discipline_object.hpp>
 #include <deip/chain/schema/expert_token_object.hpp>
-#include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/proposal_object.hpp>
 #include <deip/chain/schema/proposal_vote_object.hpp>
 #include <deip/chain/schema/research_group_object.hpp>
@@ -397,8 +396,8 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
         }
 
         const auto& research = research_service.get_research(research_content.research_external_id);
-        
-        const std::set<string>& external_references = {};
+
+        const std::set<string>& foreign_references = {};
         const time_point_sec timestamp = get_genesis_time();
         std::set<research_content_id_type> references_ids;
 
@@ -417,7 +416,7 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
           static_cast<deip::chain::research_content_type>(research_content.type),
           research_content.authors,
           references_ids,
-          external_references,
+          foreign_references,
           timestamp
         );
 

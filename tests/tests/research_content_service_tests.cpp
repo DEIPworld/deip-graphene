@@ -49,7 +49,7 @@ public:
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -63,7 +63,7 @@ public:
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -77,7 +77,7 @@ public:
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
 
         db.create<research_object>([&](research_object& r) {
@@ -105,7 +105,7 @@ public:
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
             rc.references.insert(1);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
     }
 
@@ -122,7 +122,7 @@ public:
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -136,7 +136,7 @@ public:
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -150,7 +150,7 @@ public:
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
             rc.references.insert(2);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -164,7 +164,7 @@ public:
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
             rc.references.insert(1);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
     }
 
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_id)
         BOOST_CHECK(announcement.authors.size() == 1);
         BOOST_CHECK(authors[0] == "john");
         BOOST_CHECK(announcement.references.size() == 1);
-        BOOST_CHECK(announcement.external_references.size() == 2);
+        BOOST_CHECK(announcement.foreign_references.size() == 2);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                     content.authors.size() == 2 &&
                     authors[0] == "alice" && authors[1] == "bob" &&
                     content.references.size() == 1 &&
-                    content.external_references.size() == 3;
+                    content.foreign_references.size() == 3;
 
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
@@ -233,7 +233,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                     content.authors.size() == 1 && 
                     authors[0] == "alice" &&
                     content.references.size() == 1 &&
-                    content.external_references.size() == 2;
+                    content.foreign_references.size() == 2;
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                     content.authors.size() == 1 && 
                     authors[0] == "bob" &&
                     content.references.size() == 1 &&
-                    content.external_references.size() == 3;
+                    content.foreign_references.size() == 3;
         }));
     }
     FC_LOG_AND_RETHROW()
@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
                     content.authors.size() == 1 && 
                     authors[0] == "john" &&
                     content.references.size() == 1 &&
-                    content.external_references.size() == 2;
+                    content.foreign_references.size() == 2;
         }));
 
     }

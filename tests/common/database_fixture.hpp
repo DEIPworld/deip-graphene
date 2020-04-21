@@ -169,7 +169,7 @@ struct database_fixture
                                             const time_point_sec& activity_window_end,
                                             const std::vector<account_name_type>& authors,
                                             const std::vector<research_content_id_type>& references,
-                                            const std::set<string>& external_references);
+                                            const std::set<string>& foreign_references);
 
 
     const expert_token_object& expert_token_create(const int64_t id,

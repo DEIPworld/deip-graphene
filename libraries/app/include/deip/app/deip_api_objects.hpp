@@ -30,7 +30,6 @@
 #include <deip/chain/schema/expertise_contribution_object.hpp>
 #include <deip/chain/schema/transaction_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
-#include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/grant_application_object.hpp>
 #include <deip/chain/schema/grant_application_review_object.hpp>
@@ -451,10 +450,10 @@ struct research_content_api_obj
             references.insert(reference._id);
         }
 
-        for (auto& str : rc.external_references)
+        for (auto& str : rc.foreign_references)
         {
             std::string val = fc::to_string(str);
-            external_references.insert(val);
+            foreign_references.insert(val);
         }
 
         for (const auto& kvp : rc.eci_per_discipline) 
@@ -483,7 +482,7 @@ struct research_content_api_obj
     fc::time_point_sec activity_window_end;
     fc::time_point_sec created_at;
 
-    std::set<string> external_references;
+    std::set<string> foreign_references;
     std::set<int64_t> references;
 
     map<int64_t, int64_t> eci_per_discipline;
@@ -991,32 +990,6 @@ struct vesting_balance_api_obj
     uint32_t period_duration_seconds;
     time_point_sec start_timestamp;
 };
-
-struct offer_research_tokens_api_obj
-{
-    offer_research_tokens_api_obj(const chain::offer_research_tokens_object& orto)
-        :  id(orto.id._id)
-        ,  sender(orto.sender)
-        ,  receiver(orto.receiver)
-        ,  research_id(orto.research_id._id)
-        ,  amount(orto.amount.value)
-        ,  price(orto.price)
-    {}
-
-    // because fc::variant require for temporary object
-    offer_research_tokens_api_obj()
-    {
-    }
-
-    int64_t id;
-    account_name_type sender;
-    account_name_type receiver;
-
-    int64_t research_id;
-    uint32_t amount;
-    asset price;
-};
-
 
 struct grant_api_obj
 {
@@ -1555,7 +1528,7 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (activity_window_end)
             (created_at)
             (references)
-            (external_references)
+            (foreign_references)
             (eci_per_discipline)
           )
 
@@ -1741,15 +1714,6 @@ FC_REFLECT( deip::app::vesting_balance_api_obj,
             (start_timestamp)
 )
 
-FC_REFLECT( deip::app::offer_research_tokens_api_obj,
-            (id)
-            (sender)
-            (receiver)
-            (research_id)
-            (amount)
-            (price)
-
-)
 
 FC_REFLECT( deip::app::grant_api_obj,
             (id)

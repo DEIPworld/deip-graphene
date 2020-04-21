@@ -21,6 +21,26 @@ void placeholder2_operation::validate() const
     FC_ASSERT(false, "The operation is reserved");
 }
 
+void placeholder3_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+}
+
+void placeholder4_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+}
+
+void placeholder5_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+}
+
+void placeholder6_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+}
+
 void account_update_operation::validate() const
 {
     validate_account_name(account);
@@ -165,14 +185,6 @@ void transfer_research_tokens_to_research_group_operation::validate() const
 }    
 
 
-void research_update_operation::validate() const
-{
-    FC_ASSERT(!title.empty(), "Title cannot be empty");
-    FC_ASSERT(!abstract.empty(), "Abstract cannot be empty");
-    FC_ASSERT(!permlink.empty(), "Permlink cannot be empty");
-    validate_account_name(owner);
-}
-
 void create_vesting_balance_operation::validate() const
 {
     FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Deposit balance must be DEIP and greater than 0");
@@ -224,17 +236,6 @@ void vote_for_expertise_allocation_proposal_operation::validate() const
 {
     validate_account_name(voter);
     FC_ASSERT(voting_power == DEIP_100_PERCENT || voting_power == -DEIP_100_PERCENT, "Voting power must be -100% or +100%");
-}
-
-void accept_research_token_offer_operation::validate() const
-{
-    validate_account_name(buyer);
-}
-
-
-void reject_research_token_offer_operation::validate() const
-{
-    validate_account_name(buyer);
 }
 
 
