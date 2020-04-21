@@ -55,7 +55,10 @@ const research_content_object& dbs_research_content::create_research_content(
     });
 
     const auto& research = db_impl().get<research_object>(research_content.research_id);
-    db_impl().modify(research, [&](research_object& r_o) { r_o.last_update_time = timestamp; });
+    db_impl().modify(research, [&](research_object& r_o) { 
+      r_o.last_update_time = timestamp;
+      r_o.members.insert(authors.begin(), authors.end());
+    });
 
     return research_content;
 }

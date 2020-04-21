@@ -375,7 +375,8 @@ struct discipline_api_obj
 struct research_api_obj
 {
     research_api_obj(const chain::research_object& r, const vector<discipline_api_obj>& disciplines, const string& group_permlink)
-        : id(r.id._id)
+        :  id(r.id._id)
+        ,  external_id(r.external_id)
         ,  research_group_id(r.research_group_id._id)
         ,  title(fc::to_string(r.title))
         ,  abstract(fc::to_string(r.abstract))
@@ -406,6 +407,7 @@ struct research_api_obj
     }
 
     int64_t id;
+    external_id_type external_id;
     int64_t research_group_id;
     std::string title;
     std::string abstract;
@@ -422,18 +424,17 @@ struct research_api_obj
 
     uint16_t number_of_positive_reviews;
     uint16_t number_of_negative_reviews;
-
     time_point_sec last_update_time;
 
     std::vector<account_name_type> members;
-
     bool is_private;
 };
 
 struct research_content_api_obj
 {
     research_content_api_obj(const chain::research_content_object& rc)
-        : id(rc.id._id)
+        :  id(rc.id._id)
+        ,  external_id(rc.external_id)
         ,  research_id(rc.research_id._id)
         ,  content_type(rc.type)
         ,  authors(rc.authors.begin(), rc.authors.end())
@@ -470,6 +471,7 @@ struct research_content_api_obj
     }
 
     int64_t id;
+    external_id_type external_id;
     int64_t research_id;
     research_content_type content_type;
     std::set<account_name_type> authors;
@@ -592,6 +594,7 @@ struct research_group_api_obj
 {
     research_group_api_obj(const chain::research_group_object& rg_o, const account_api_obj& acc_o)
         : id(rg_o.id._id)
+        , external_id(rg_o.account)
         , creator(rg_o.creator)
         , name(fc::to_string(rg_o.name))
         , permlink(fc::to_string(rg_o.permlink))
@@ -607,6 +610,7 @@ struct research_group_api_obj
 
     research_group_api_obj(const chain::research_group_object& rg_o)
         : id(rg_o.id._id)
+        , external_id(rg_o.account)
         , creator(rg_o.creator)
         , name(fc::to_string(rg_o.name))
         , permlink(fc::to_string(rg_o.permlink))
@@ -625,6 +629,7 @@ struct research_group_api_obj
     }
 
     int64_t id;
+    external_id_type external_id;
     account_name_type creator;
     std::string name;
     std::string permlink;
@@ -741,6 +746,7 @@ struct research_listing_api_obj
                              const vector<account_name_type>& group_members,
                              const int64_t& votes_count)
         : research_id(r.id)
+        , external_id(r.external_id)
         , title(r.title)
         , abstract(r.abstract)
         , permlink(r.permlink)
@@ -772,6 +778,7 @@ struct research_listing_api_obj
     }
 
     int64_t research_id;
+    external_id_type external_id;
     string title;
     string abstract;
     string permlink;
@@ -1519,6 +1526,7 @@ FC_REFLECT( deip::app::discipline_api_obj,
 
 FC_REFLECT( deip::app::research_api_obj,
             (id)
+            (external_id)
             (research_group_id)
             (title)
             (abstract)
@@ -1540,6 +1548,7 @@ FC_REFLECT( deip::app::research_api_obj,
 
 FC_REFLECT( deip::app::research_content_api_obj,
             (id)
+            (external_id)
             (research_id)
             (content_type)
             (title)
@@ -1596,6 +1605,7 @@ FC_REFLECT( deip::app::research_group_token_api_obj,
 
 FC_REFLECT( deip::app::research_group_api_obj,
             (id)
+            (external_id)
             (creator)
             (name)
             (permlink)
@@ -1647,6 +1657,7 @@ FC_REFLECT( deip::app::research_group_invite_api_obj,
 
 FC_REFLECT( deip::app::research_listing_api_obj,
            (research_id)
+           (external_id)
            (title)
            (abstract)
            (permlink)
