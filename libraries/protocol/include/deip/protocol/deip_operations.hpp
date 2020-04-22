@@ -1,12 +1,9 @@
 #pragma once
-#include <deip/protocol/base.hpp>
-#include <deip/protocol/block_header.hpp>
-#include <deip/protocol/asset.hpp>
 
 #include <fc/utf8.hpp>
-#include <fc/crypto/equihash.hpp>
-#include <fc/shared_string.hpp>
 #include <fc/io/json.hpp>
+#include <deip/protocol/base.hpp>
+#include <deip/protocol/asset.hpp>
 #include <deip/protocol/operations/create_account_operation.hpp>
 #include <deip/protocol/operations/make_review_operation.hpp>
 #include <deip/protocol/operations/create_grant_operation.hpp>
