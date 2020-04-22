@@ -5,7 +5,7 @@
 #include <deip/protocol/deip_virtual_operations.hpp>
 
 namespace deip {
-    namespace protocol {
+namespace protocol {
 
 /** NOTE: do not change the order of any operations prior to the virtual operations
  * or it will trigger a hardfork.
@@ -105,13 +105,23 @@ namespace deip {
         bool is_market_operation(const operation& op);
 
         bool is_virtual_operation(const operation& op);
-    } // namespace protocol
-} // namespace deip
 
-/*namespace fc {
-    void to_variant( const deip::protocol::operation& var,  fc::variant& vo );
-    void from_variant( const fc::variant& var,  deip::protocol::operation& vo );
-}*/
+        /**
+         * op_wrapper is used to get around the circular definition of operation and proposals that contain them.
+         */
+        struct op_wrapper
+        {
+            op_wrapper(const operation& op = operation())
+                : op(op)
+            {
+            }
+
+            operation op;
+        };
+
+} //  deip::protocol
+} //  deip
 
 DECLARE_OPERATION_TYPE(deip::protocol::operation)
 FC_REFLECT_TYPENAME(deip::protocol::operation)
+FC_REFLECT(deip::protocol::op_wrapper, (op))

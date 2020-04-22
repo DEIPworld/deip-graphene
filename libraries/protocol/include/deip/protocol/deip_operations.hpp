@@ -31,6 +31,7 @@
 #include <deip/protocol/operations/create_research_token_sale_operation.hpp>
 #include <deip/protocol/operations/update_research_group_metadata_operation.hpp>
 #include <deip/protocol/operations/update_research_metadata_operation.hpp>
+#include <deip/protocol/operations/create_proposal_operation.hpp>
 
 namespace deip {
 namespace protocol {
@@ -525,22 +526,6 @@ struct placeholder6_operation : public base_operation
     void validate() const;
 };
 
-struct create_proposal_operation : public base_operation
-{
-    account_name_type creator;
-    int64_t research_group_id;
-    string data; ///< must be proper utf8 / JSON string.
-
-    uint16_t action;
-    time_point_sec expiration_time;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(creator);
-    }
-};
-
 struct vote_proposal_operation : public base_operation
 {
     account_name_type voter;
@@ -814,8 +799,6 @@ struct reserve_asset_operation : public base_operation
 
 FC_REFLECT( deip::protocol::chain_properties, (account_creation_fee)(maximum_block_size) )
 
-
-
 FC_REFLECT( deip::protocol::account_update_operation,
             (account)
             (owner)
@@ -848,7 +831,6 @@ FC_REFLECT( deip::protocol::placeholder4_operation, )
 FC_REFLECT( deip::protocol::placeholder5_operation, )
 FC_REFLECT( deip::protocol::placeholder6_operation, )
 
-FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
 FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
 
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_token_sale_id)(owner)(amount))

@@ -150,13 +150,6 @@ void change_recovery_account_operation::validate() const
     validate_account_name(new_recovery_account);
 }
 
-void create_proposal_operation::validate() const
-{
-    validate_account_name(creator);
-    FC_ASSERT(expiration_time > fc::time_point_sec());
-    FC_ASSERT(fc::is_utf8(data), "Data is not valid UTF8 string");
-}
-
 void vote_proposal_operation::validate() const
 {
     validate_account_name(voter);

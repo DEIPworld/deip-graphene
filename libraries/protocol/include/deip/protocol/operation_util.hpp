@@ -22,11 +22,14 @@
                                                                                                                        \
     } /* fc */                                                                                                         \
                                                                                                                        \
-    namespace deip {                                                                                                 \
+    namespace deip {                                                                                                   \
     namespace protocol {                                                                                               \
                                                                                                                        \
     void operation_validate(const OperationType& o);                                                                   \
-    void operation_get_required_authorities(const OperationType& op, flat_set<account_name_type>& active,              \
-        flat_set<account_name_type>& owner, flat_set<account_name_type>& posting, vector<authority>& other);           \
+    void operation_get_required_authorities(const OperationType& op,                                                   \
+                                            flat_set<account_name_type>& active,                                       \
+                                            flat_set<account_name_type>& owner,                                        \
+                                            flat_set<account_name_type>& posting,                                      \
+                                            vector<authority>& other);                                                 \
     }                                                                                                                  \
     } /* deip::protocol */

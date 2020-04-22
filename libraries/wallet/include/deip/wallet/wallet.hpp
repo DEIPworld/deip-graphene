@@ -976,20 +976,6 @@ public:
                                                  const int16_t weight,
                                                  const bool broadcast);
 
-    /**
-     * Create proposal
-     *
-     * @param creator The account who creates a proposal
-     * @param research_group_id Id of research group to create proposal for
-     * @param data Proposal data
-     * @param expiration Seconds till expiration of proposal since creation
-     * @param broadcast
-     */
-    annotated_signed_transaction create_proposal(const std::string& creator,
-                                                 const int64_t research_group_id,
-                                                 const std::string& data,
-                                                 const int64_t expiration,
-                                                 const bool broadcast);
 
     /**
      * Make review for specified research content
@@ -1083,19 +1069,6 @@ public:
                                                            const std::string &owner,
                                                            const asset &amount,
                                                            const bool broadcast);
-
-    /**
-     * Vote for proposal
-     *
-     * @param voter The account who votes
-     * @param proposal_id Id of proposal to vote for
-     * @param research_group_id Id of research group which owns the proposal
-     * @param broadcast
-     */
-    annotated_signed_transaction vote_proposal(const std::string& voter,
-                                               const int64_t proposal_id,
-                                               const int64_t research_group_id,
-                                               const bool broadcast);
 
 
     annotated_signed_transaction create_expertise_allocation_proposal(const std::string &claimer, const std::string &description,
@@ -1264,7 +1237,6 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (decrypt_memo)
         (create_discipline_supply)
         (vote_for_review)
-        (create_proposal)
         (make_review)
         (contribute_to_token_sale)
         (approve_research_group_invite)
@@ -1272,7 +1244,6 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (transfer_research_tokens_to_research_group)
         (create_vesting_balance)
         (withdraw_vesting_balance)
-        (vote_proposal)
         (create_expertise_allocation_proposal)
         (vote_for_expertise_allocation_proposal)
         (create_grant)

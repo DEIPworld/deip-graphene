@@ -2357,29 +2357,6 @@ annotated_signed_transaction wallet_api::vote_for_review(const std::string& vote
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::create_proposal(const std::string& creator,
-                                                         const int64_t research_group_id,
-                                                         const std::string& data,
-                                                         const int64_t expiration,
-                                                         const bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    auto props = my->_remote_db->get_dynamic_global_properties();
-
-    create_proposal_operation op;
-
-    op.creator = creator;
-    op.research_group_id = research_group_id;
-    op.data = data;
-    op.expiration_time = props.time + expiration;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
 
 annotated_signed_transaction wallet_api::make_review(const std::string& author,
                                                      const int64_t research_content_id,
@@ -2515,26 +2492,6 @@ annotated_signed_transaction wallet_api::withdraw_vesting_balance(const int64_t 
     op.vesting_balance_id = vesting_balance_id;
     op.owner = owner;
     op.amount = amount;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
-annotated_signed_transaction wallet_api::vote_proposal(const std::string& voter,
-                                                       const int64_t proposal_id,
-                                                       const int64_t research_group_id,
-                                                       const bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    vote_proposal_operation op;
-
-    op.voter = voter;
-    op.proposal_id = proposal_id;
-    op.research_group_id = research_group_id;
 
     signed_transaction tx;
     tx.operations.push_back(op);

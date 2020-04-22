@@ -1,5 +1,4 @@
 #include <deip/protocol/operations.hpp>
-
 #include <deip/protocol/operation_util_impl.hpp>
 
 namespace deip {

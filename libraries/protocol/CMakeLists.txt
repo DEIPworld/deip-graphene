@@ -33,6 +33,7 @@ add_library( deip_protocol
              operations/create_research_token_sale_operation.cpp
              operations/update_research_group_metadata_operation.cpp
              operations/update_research_metadata_operation.cpp
+             operations/create_proposal_operation.cpp
              transaction.cpp
              block.cpp
              asset.cpp
