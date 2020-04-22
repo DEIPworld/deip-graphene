@@ -136,11 +136,6 @@ struct database_fixture
                                            const time_point_sec expiration_time,
                                            const percent_type quorum);
 
-    void create_proposal_by_operation(const account_name_type& creator,
-                                      const research_group_id_type& research_group_id,
-                                      const std::string json_data,
-                                      const fc::time_point_sec expiration_time);
-
     void create_disciplines();
 
     const research_object& research_create(const int64_t id,

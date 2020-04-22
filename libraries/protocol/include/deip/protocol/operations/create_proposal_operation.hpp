@@ -8,10 +8,7 @@
 namespace deip {
 namespace protocol {
 
-// struct operation;
 struct op_wrapper;
-
-// void operation_validate(const deip::protocol::operation& op);
 
 struct create_proposal_operation : public base_operation
 {

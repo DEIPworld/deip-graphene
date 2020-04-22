@@ -480,22 +480,6 @@ struct change_recovery_account_operation : public base_operation
 
 // DEIP native operations
 
-struct expertise_amount_pair_type
-{
-    expertise_amount_pair_type()
-    {
-    }
-
-    expertise_amount_pair_type(const int64_t& d, const int64_t& a)
-            : discipline_id(d)
-            , amount(a)
-    {
-    }
-
-    int64_t discipline_id;
-    int64_t amount;
-};
-
 struct placeholder1_operation : public base_operation
 {
     void validate() const;
@@ -823,7 +807,6 @@ FC_REFLECT( deip::protocol::recover_account_operation, (account_to_recover)(new_
 FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) )
 
 // DEIP native operations
-FC_REFLECT( deip::protocol::expertise_amount_pair_type, (discipline_id)(amount) )
 FC_REFLECT( deip::protocol::placeholder1_operation, )
 FC_REFLECT( deip::protocol::placeholder2_operation, )
 FC_REFLECT( deip::protocol::placeholder3_operation, )

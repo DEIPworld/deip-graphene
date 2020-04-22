@@ -1,8 +1,11 @@
 #pragma once
 
-#include <deip/protocol/operation_util.hpp>
 #include <deip/protocol/deip_operations.hpp>
 #include <deip/protocol/deip_virtual_operations.hpp>
+#include <boost/container/flat_set.hpp>
+#include <deip/protocol/authority.hpp>
+#include <fc/variant.hpp>
+#include <vector>
 
 namespace deip {
 namespace protocol {
@@ -106,6 +109,14 @@ namespace protocol {
 
         bool is_virtual_operation(const operation& op);
 
+        void operation_validate(const operation& op);
+
+        void operation_get_required_authorities(const operation& op,
+                                                flat_set<account_name_type>& active,
+                                                flat_set<account_name_type>& owner,
+                                                flat_set<account_name_type>& posting,
+                                                vector<authority>& other);
+
         /**
          * op_wrapper is used to get around the circular definition of operation and proposals that contain them.
          */
@@ -122,6 +133,14 @@ namespace protocol {
 } //  deip::protocol
 } //  deip
 
-DECLARE_OPERATION_TYPE(deip::protocol::operation)
+namespace fc {
+
+using namespace deip::protocol;
+
+void to_variant(const operation&, fc::variant&);
+void from_variant(const fc::variant&, operation&);
+
+} //
+
 FC_REFLECT_TYPENAME(deip::protocol::operation)
 FC_REFLECT(deip::protocol::op_wrapper, (op))

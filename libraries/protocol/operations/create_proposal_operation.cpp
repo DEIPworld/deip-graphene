@@ -14,7 +14,7 @@ void create_proposal_operation::validate() const
     FC_ASSERT(!proposed_ops.empty());
     // for (const auto& op : proposed_ops)
     // {
-    //     // operation_validate(op);
+    //    operation_validate(op);
     // }
 }
 

@@ -7,7 +7,6 @@ add_library( deip_protocol
              authority.cpp
              operations.cpp
              sign_state.cpp
-             operation_util_impl.cpp
              deip_operations.cpp
              operations/create_account_operation.cpp
              operations/make_review_operation.cpp

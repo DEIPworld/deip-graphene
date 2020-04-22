@@ -480,36 +480,6 @@ const proposal_object& database_fixture::create_proposal(const int64_t id,
     return new_proposal;
 }
 
-void database_fixture::create_proposal_by_operation(const account_name_type& creator,
-                                                                      const research_group_id_type& research_group_id,
-                                                                      const std::string json_data,
-                                                                      const fc::time_point_sec expiration_time)
-{
-    try
-    {
-        auto cr = std::string(creator);
-        private_key_type priv_key = generate_private_key(cr);
-
-        create_proposal_operation op;
-        op.creator = creator;
-        op.research_group_id = research_group_id._id;
-        op.data = json_data;
-        op.expiration_time = expiration_time;
-
-        trx.operations.push_back(op);
-
-        trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        trx.sign(priv_key, db.get_chain_id());
-        trx.validate();
-        db.push_transaction(trx, 0);
-        trx.operations.clear();
-        trx.signatures.clear();
-
-        // generate_block();
-    }
-    FC_CAPTURE_AND_RETHROW((creator))
-}
-
 const research_object& database_fixture::research_create(const int64_t id,
                                                          const string &title,
                                                          const string &abstract,
