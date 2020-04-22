@@ -1,5 +1,6 @@
 
 #include <deip/protocol/deip_operations.hpp>
+#include <deip/protocol/operations.hpp>
 #include <locale>
 #include <fc/log/logger.hpp>
 #include <functional>
@@ -12,10 +13,10 @@ void create_proposal_operation::validate() const
 {
     validate_account_name(creator);
     FC_ASSERT(!proposed_ops.empty());
-    // for (const auto& op : proposed_ops)
-    // {
-    //    operation_validate(op);
-    // }
+    for (const auto& op : proposed_ops)
+    {
+        operation_validate(op.op);
+    }
 }
 
 } // namespace protocol
