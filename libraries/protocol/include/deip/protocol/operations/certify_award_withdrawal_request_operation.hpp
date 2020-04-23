@@ -7,9 +7,9 @@ namespace protocol {
 
 struct certify_award_withdrawal_request_operation : public base_operation
 {
-    string payment_number;
-    string award_number;
-    fc::optional<std::string> subaward_number;
+    external_id_type payment_number;
+    external_id_type award_number;
+    fc::optional<external_id_type> subaward_number;
 
     account_name_type certifier;
 

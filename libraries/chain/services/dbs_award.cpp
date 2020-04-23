@@ -12,8 +12,8 @@ dbs_award::dbs_award(database &db)
 }
 
 const award_object& dbs_award::create_award(
-  const string& funding_opportunity_number,
-  const string& award_number,
+  const external_id_type& funding_opportunity_number,
+  const external_id_type& award_number,
   const account_name_type& awardee,
   const asset& amount, 
   const research_group_id_type& university_id,
@@ -22,8 +22,8 @@ const award_object& dbs_award::create_award(
   const award_status& status)
 {
     const award_object& award = db_impl().create<award_object>([&](award_object& award) {
-        fc::from_string(award.funding_opportunity_number, funding_opportunity_number);
-        fc::from_string(award.award_number, award_number);
+        award.funding_opportunity_number = funding_opportunity_number;
+        award.award_number = award_number;
         award.awardee = awardee;
         award.amount = amount;
         award.university_id = university_id;
@@ -47,14 +47,14 @@ const award_object& dbs_award::get_award(const award_id_type& id) const
     return *itr;
 }
 
-const award_object& dbs_award::get_award(const string& award_number) const
+const award_object& dbs_award::get_award(const external_id_type& award_number) const
 {
     const auto& idx = db_impl()
       .get_index<award_index>()
       .indicies()
       .get<by_award_number>();
 
-    auto itr = idx.find(award_number, fc::strcmp_less());
+    auto itr = idx.find(award_number);
     FC_ASSERT(itr != idx.end(), "Award NUM:${1} does not exist", ("1", award_number));
     return *itr;
 }
@@ -77,7 +77,7 @@ const dbs_award::award_optional_ref_type dbs_award::get_award_if_exists(const aw
     return result;
 }
 
-const dbs_award::award_optional_ref_type dbs_award::get_award_if_exists(const string& award_number) const
+const dbs_award::award_optional_ref_type dbs_award::get_award_if_exists(const external_id_type& award_number) const
 {
     award_optional_ref_type result;
 
@@ -86,7 +86,7 @@ const dbs_award::award_optional_ref_type dbs_award::get_award_if_exists(const st
       .indicies()
       .get<by_award_number>();
 
-    auto itr = idx.find(award_number, fc::strcmp_less());
+    auto itr = idx.find(award_number);
     if (itr != idx.end())
     {
         result = *itr;
@@ -94,7 +94,7 @@ const dbs_award::award_optional_ref_type dbs_award::get_award_if_exists(const st
     return result;
 }
 
-dbs_award::award_refs_type dbs_award::get_awards_by_funding_opportunity(const string& funding_opportunity_number) const
+dbs_award::award_refs_type dbs_award::get_awards_by_funding_opportunity(const external_id_type& funding_opportunity_number) const
 {
     award_refs_type ret;
 
@@ -103,7 +103,7 @@ dbs_award::award_refs_type dbs_award::get_awards_by_funding_opportunity(const st
       .indicies()
       .get<by_funding_opportunity_number>();
 
-    auto it_pair = idx.equal_range(funding_opportunity_number, fc::strcmp_less());
+    auto it_pair = idx.equal_range(funding_opportunity_number);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
@@ -117,9 +117,9 @@ dbs_award::award_refs_type dbs_award::get_awards_by_funding_opportunity(const st
 
 
 const award_recipient_object& dbs_award::create_award_recipient(
-  const string& award_number,
-  const string& subaward_number,
-  const string& funding_opportunity_number,
+  const external_id_type& award_number,
+  const external_id_type& subaward_number,
+  const external_id_type& funding_opportunity_number,
   const account_name_type& awardee,
   const account_name_type& source,
   const asset& total_amount,
@@ -128,9 +128,9 @@ const award_recipient_object& dbs_award::create_award_recipient(
 {
     const award_recipient_object& award_recipient = 
       db_impl().create<award_recipient_object>([&](award_recipient_object& ar_o) {
-        fc::from_string(ar_o.award_number, award_number);
-        fc::from_string(ar_o.subaward_number, subaward_number);
-        fc::from_string(ar_o.funding_opportunity_number, funding_opportunity_number);
+        ar_o.award_number = award_number;
+        ar_o.subaward_number = subaward_number;
+        ar_o.funding_opportunity_number = funding_opportunity_number;
         ar_o.awardee = awardee;
         ar_o.source = source;
         ar_o.total_amount = total_amount;
@@ -153,14 +153,14 @@ const bool dbs_award::award_exists(const award_id_type& award_id) const
     return itr != idx.end();
 }
 
-const bool dbs_award::award_exists(const string& award_number) const
+const bool dbs_award::award_exists(const external_id_type& award_number) const
 {
     const auto& idx = db_impl()
       .get_index<award_index>()
       .indices()
       .get<by_award_number>();
 
-    auto itr = idx.find(award_number, fc::strcmp_less());
+    auto itr = idx.find(award_number);
     return itr != idx.end();
 }
 
@@ -204,7 +204,7 @@ const dbs_award::award_recipient_optional_ref_type dbs_award::get_award_recipien
     return result;
 }
 
-dbs_award::award_recipient_refs_type dbs_award::get_award_recipients_by_funding_opportunity(const string& funding_opportunity_number) const
+dbs_award::award_recipient_refs_type dbs_award::get_award_recipients_by_funding_opportunity(const external_id_type& funding_opportunity_number) const
 {
     award_recipient_refs_type ret;
 
@@ -213,7 +213,7 @@ dbs_award::award_recipient_refs_type dbs_award::get_award_recipients_by_funding_
       .indicies()
       .get<by_funding_opportunity_number>();
 
-    auto it_pair = idx.equal_range(funding_opportunity_number, fc::strcmp_less());
+    auto it_pair = idx.equal_range(funding_opportunity_number);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
@@ -225,7 +225,7 @@ dbs_award::award_recipient_refs_type dbs_award::get_award_recipients_by_funding_
     return ret;
 }
 
-dbs_award::award_recipient_refs_type dbs_award::get_award_recipients_by_award(const string& award_number) const
+dbs_award::award_recipient_refs_type dbs_award::get_award_recipients_by_award(const external_id_type& award_number) const
 {
     award_recipient_refs_type ret;
 
@@ -234,7 +234,7 @@ dbs_award::award_recipient_refs_type dbs_award::get_award_recipients_by_award(co
       .indicies()
       .get<by_award_number>();
 
-    auto it_pair = idx.equal_range(award_number, fc::strcmp_less());
+    auto it_pair = idx.equal_range(award_number);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
@@ -289,8 +289,8 @@ const award_recipient_object& dbs_award::adjust_expenses(
 }
 
 const bool dbs_award::award_recipient_exists(
-  const string& award_number,
-  const string& subaward_number) const
+  const external_id_type& award_number,
+  const external_id_type& subaward_number) const
 {
     const auto& idx = db_impl()
       .get_index<award_recipient_index>()
@@ -311,7 +311,7 @@ const award_recipient_object& dbs_award::update_award_recipient_status(
     return award_recipient;
 }
 
-const award_recipient_object& dbs_award::get_award_recipient(const string& award_number, const string& subaward_number) const
+const award_recipient_object& dbs_award::get_award_recipient(const external_id_type& award_number, const external_id_type& subaward_number) const
 {
     const auto& idx = db_impl()
       .get_index<award_recipient_index>()
@@ -324,9 +324,9 @@ const award_recipient_object& dbs_award::get_award_recipient(const string& award
 }
 
 const award_withdrawal_request_object& dbs_award::create_award_withdrawal_request(
-  const string& payment_number,
-  const string& award_number,
-  const string& subaward_number,
+  const external_id_type& payment_number,
+  const external_id_type& award_number,
+  const external_id_type& subaward_number,
   const account_name_type& requester,
   const asset& amount,
   const std::string& description,
@@ -334,9 +334,9 @@ const award_withdrawal_request_object& dbs_award::create_award_withdrawal_reques
   const std::string& attachment)
 {
     const auto& withdrawal = db_impl().create<award_withdrawal_request_object>([&](award_withdrawal_request_object& awr_o) {
-        fc::from_string(awr_o.payment_number, payment_number);
-        fc::from_string(awr_o.award_number, award_number);
-        fc::from_string(awr_o.subaward_number, subaward_number);
+        awr_o.payment_number = payment_number;
+        awr_o.award_number = award_number;
+        awr_o.subaward_number = subaward_number;
         awr_o.requester = requester;
         awr_o.amount = amount;
         awr_o.time = time;
@@ -348,8 +348,8 @@ const award_withdrawal_request_object& dbs_award::create_award_withdrawal_reques
 }
 
 const dbs_award::award_withdrawal_request_ref_optional_type dbs_award::get_award_withdrawal_request_if_exists(
-  const string& award_number, 
-  const string& payment_number) const
+  const external_id_type& award_number,
+  const external_id_type& payment_number) const
 {
     award_withdrawal_request_ref_optional_type result;
 
@@ -368,8 +368,8 @@ const dbs_award::award_withdrawal_request_ref_optional_type dbs_award::get_award
 }
 
 const bool dbs_award::award_withdrawal_request_exists(
-  const string& award_number, 
-  const string& payment_number) const
+  const external_id_type& award_number,
+  const external_id_type& payment_number) const
 {
     const auto& idx = db_impl()
       .get_index<award_withdrawal_request_index>()
@@ -381,8 +381,8 @@ const bool dbs_award::award_withdrawal_request_exists(
 }
 
 const award_withdrawal_request_object& dbs_award::get_award_withdrawal_request(
-  const string& award_number, 
-  const string& payment_number) const
+  const external_id_type& award_number,
+  const external_id_type& payment_number) const
 {
     const auto& idx = db_impl()
       .get_index<award_withdrawal_request_index>()
@@ -406,7 +406,7 @@ const award_withdrawal_request_object& dbs_award::update_award_withdrawal_reques
 
 
 dbs_award::award_withdrawal_request_refs_type dbs_award::get_award_withdrawal_requests_by_award_and_status(
-  const string& award_number,
+  const external_id_type& award_number,
   const award_withdrawal_request_status& status) const
 {
     award_withdrawal_request_refs_type ret;
@@ -428,7 +428,7 @@ dbs_award::award_withdrawal_request_refs_type dbs_award::get_award_withdrawal_re
     return ret;
 }
 
-dbs_award::award_withdrawal_request_refs_type dbs_award::get_award_withdrawal_requests_by_award(const string& award_number) const
+dbs_award::award_withdrawal_request_refs_type dbs_award::get_award_withdrawal_requests_by_award(const external_id_type& award_number) const
 {
     award_withdrawal_request_refs_type ret;
 
@@ -437,7 +437,7 @@ dbs_award::award_withdrawal_request_refs_type dbs_award::get_award_withdrawal_re
       .indicies()
       .get<by_award_number>();
 
-    auto it_pair = idx.equal_range(award_number, fc::strcmp_less());
+    auto it_pair = idx.equal_range(award_number);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
@@ -450,8 +450,8 @@ dbs_award::award_withdrawal_request_refs_type dbs_award::get_award_withdrawal_re
 }
 
 dbs_award::award_withdrawal_request_refs_type dbs_award::get_award_withdrawal_requests_by_award_and_subaward(
-  const string& award_number, 
-  const string& subaward_number) const
+  const external_id_type& award_number,
+  const external_id_type& subaward_number) const
 {
     award_withdrawal_request_refs_type ret;
 

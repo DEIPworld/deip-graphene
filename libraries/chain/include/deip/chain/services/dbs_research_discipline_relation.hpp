@@ -45,6 +45,8 @@ public:
     const research_discipline_relation_object& get_research_discipline_relation_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const;
 
     void check_existence_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const;
+
+    const bool exists_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const;
 };
 } // namespace chain
 } // namespace deip

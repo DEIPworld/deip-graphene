@@ -230,6 +230,7 @@ void vote_for_expertise_allocation_proposal_operation::validate() const
 void create_grant_application_operation::validate() const
 {
     validate_account_name(creator);
+    validate_160_bits_hexadecimal_string(funding_opportunity_number);
     FC_ASSERT(application_hash.size() > 0, "Application hash must be specified");
     FC_ASSERT(fc::is_utf8(application_hash), "Application hash is not valid UTF8 string");
 }

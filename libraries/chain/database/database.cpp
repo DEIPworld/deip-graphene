@@ -45,9 +45,7 @@
 #include <deip/chain/services/dbs_review_vote.hpp>
 #include <deip/chain/services/dbs_expertise_contribution.hpp>
 #include <deip/chain/services/dbs_witness.hpp>
-#include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_grant_application.hpp>
-#include <deip/chain/services/dbs_grant_application_review.hpp>
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
 
 #include <deip/chain/util/asset.hpp>
@@ -1528,7 +1526,6 @@ void database::initialize_indexes()
     add_index<reward_pool_index>();
     add_index<expertise_allocation_proposal_index>();
     add_index<expertise_allocation_proposal_vote_index>();
-    add_index<grant_index>();
     add_index<grant_application_index>();
     add_index<grant_application_review_index>();
     add_index<funding_opportunity_index>();
@@ -2415,8 +2412,8 @@ void database::validate_invariants() const
             total_supply += itr->balance;
         }
 
-        const auto& grant_idx = get_index<grant_index, by_id>();
-        for (auto itr = grant_idx.begin(); itr != grant_idx.end(); ++itr)
+        const auto& funding_opportunity_idx = get_index<funding_opportunity_index, by_id>();
+        for (auto itr = funding_opportunity_idx.begin(); itr != funding_opportunity_idx.end(); ++itr)
         {
             total_supply += itr->amount;
         }

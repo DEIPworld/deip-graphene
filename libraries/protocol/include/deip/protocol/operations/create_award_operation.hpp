@@ -13,7 +13,7 @@ struct subawardee_type
     {
     }
 
-    subawardee_type(const string& subaward_number,
+    subawardee_type(const external_id_type& subaward_number,
                     const asset& subaward,
                     const account_name_type& subawardee,
                     const account_name_type& source,
@@ -27,7 +27,7 @@ struct subawardee_type
     {
     }
 
-    string subaward_number;
+    external_id_type subaward_number;
     asset subaward;
     account_name_type subawardee;
     account_name_type source;
@@ -41,8 +41,8 @@ struct subawardee_type
 
 struct create_award_operation : public base_operation
 {
-    string funding_opportunity_number;
-    string award_number;
+    external_id_type funding_opportunity_number;
+    external_id_type award_number;
 
     asset award;
     account_name_type awardee;

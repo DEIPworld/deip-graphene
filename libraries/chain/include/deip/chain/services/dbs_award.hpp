@@ -28,8 +28,8 @@ public:
     using award_withdrawal_request_refs_type = std::vector<std::reference_wrapper<const award_withdrawal_request_object>>;
     using award_withdrawal_request_ref_optional_type = fc::optional<std::reference_wrapper<const award_withdrawal_request_object>>;
 
-    const award_object& create_award(const string& funding_opportunity_number,
-                                     const string& award_number,
+    const award_object& create_award(const external_id_type& funding_opportunity_number,
+                                     const external_id_type& award_number,
                                      const account_name_type& awardee,
                                      const asset& amount,
                                      const research_group_id_type& university_id,
@@ -39,26 +39,26 @@ public:
 
     const award_object& get_award(const award_id_type& id) const;
 
-    const award_object& get_award(const string& number) const;
+    const award_object& get_award(const external_id_type& number) const;
 
     const award_optional_ref_type get_award_if_exists(const award_id_type& id) const;
 
-    const award_optional_ref_type get_award_if_exists(const string& number) const;
+    const award_optional_ref_type get_award_if_exists(const external_id_type& number) const;
 
-    award_refs_type get_awards_by_funding_opportunity(const string& funding_opportunity_number) const;
+    award_refs_type get_awards_by_funding_opportunity(const external_id_type& funding_opportunity_number) const;
 
     const award_object& update_award_status(const award_object& award, const award_status& status);
 
     const bool award_exists(const award_id_type& award_id) const;
 
-    const bool award_exists(const string& award_number) const;
+    const bool award_exists(const external_id_type& award_number) const;
 
     // Award recipients
 
     const award_recipient_object& create_award_recipient(
-      const string& award_number,
-      const string& subaward_number,
-      const string& funding_opportunity_number,
+      const external_id_type& award_number,
+      const external_id_type& subaward_number,
+      const external_id_type& funding_opportunity_number,
       const account_name_type& awardee,
       const account_name_type& source,
       const asset& total_amount,
@@ -67,48 +67,48 @@ public:
 
     const award_recipient_object& get_award_recipient(const award_recipient_id_type& id) const;
 
-    const award_recipient_object& get_award_recipient(const string& award_number, const string& subaward_number) const;
+    const award_recipient_object& get_award_recipient(const external_id_type& award_number, const external_id_type& subaward_number) const;
 
     const award_recipient_optional_ref_type get_award_recipient_if_exists(const award_recipient_id_type& id) const;
 
     award_recipient_refs_type get_award_recipients_by_account(const account_name_type& awardee) const;
 
-    award_recipient_refs_type get_award_recipients_by_award(const string& award_number) const;
+    award_recipient_refs_type get_award_recipients_by_award(const external_id_type& award_number) const;
 
-    award_recipient_refs_type get_award_recipients_by_funding_opportunity(const string& funding_opportunity_number) const;
+    award_recipient_refs_type get_award_recipients_by_funding_opportunity(const external_id_type& funding_opportunity_number) const;
 
     const bool award_recipient_exists(const award_recipient_id_type& award_recipient_id) const;
 
-    const bool award_recipient_exists(const string& award_number, const string& subaward_number) const;
+    const bool award_recipient_exists(const external_id_type& award_number, const external_id_type& subaward_number) const;
 
-    const award_recipient_object& adjust_expenses(const award_recipient_id_type&award_recipient_id, const asset& delta);
+    const award_recipient_object& adjust_expenses(const award_recipient_id_type& award_recipient_id, const asset& delta);
 
     const award_recipient_object& update_award_recipient_status(const award_recipient_object& award_recipient, const award_recipient_status& status);
 
     // Award withdrawal requests
 
-    const award_withdrawal_request_object& create_award_withdrawal_request(const string& payment_number,
-                                                                           const string& award_number,
-                                                                           const string& subaward_number,
+    const award_withdrawal_request_object& create_award_withdrawal_request(const external_id_type& payment_number,
+                                                                           const external_id_type& award_number,
+                                                                           const external_id_type& subaward_number,
                                                                            const account_name_type& requester,
                                                                            const asset& amount,
                                                                            const std::string& description,
                                                                            const fc::time_point_sec& time,
                                                                            const std::string& attachment);
     
-    const award_withdrawal_request_object& get_award_withdrawal_request(const string& award_number, const string& payment_number) const;
+    const award_withdrawal_request_object& get_award_withdrawal_request(const external_id_type & award_number, const external_id_type& payment_number) const;
 
-    const award_withdrawal_request_ref_optional_type get_award_withdrawal_request_if_exists(const string& award_number, const string& payment_number) const;
+    const award_withdrawal_request_ref_optional_type get_award_withdrawal_request_if_exists(const external_id_type& award_number, const external_id_type& payment_number) const;
 
-    const bool award_withdrawal_request_exists(const string& award_number, const string& payment_number) const;
+    const bool award_withdrawal_request_exists(const external_id_type& award_number, const external_id_type& payment_number) const;
 
     const award_withdrawal_request_object& update_award_withdrawal_request(const award_withdrawal_request_object& award_withdrawal_request, const award_withdrawal_request_status& status);
 
-    award_withdrawal_request_refs_type get_award_withdrawal_requests_by_award(const string& award_number) const;
+    award_withdrawal_request_refs_type get_award_withdrawal_requests_by_award(const external_id_type& award_number) const;
     
-    award_withdrawal_request_refs_type get_award_withdrawal_requests_by_award_and_subaward(const string& award_number, const string& subaward_number) const;
+    award_withdrawal_request_refs_type get_award_withdrawal_requests_by_award_and_subaward(const external_id_type& award_number, const external_id_type& subaward_number) const;
 
-    award_withdrawal_request_refs_type get_award_withdrawal_requests_by_award_and_status(const string& award_number, const award_withdrawal_request_status& status) const;
+    award_withdrawal_request_refs_type get_award_withdrawal_requests_by_award_and_status(const external_id_type& award_number, const award_withdrawal_request_status& status) const;
 };
 }
 }

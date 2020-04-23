@@ -99,5 +99,16 @@ void dbs_research_discipline_relation::check_existence_by_research_and_disciplin
               "Research discipline relation for research \"${1}\" and discipline \"${2}\" does not exist", ("1", research_id)("2", discipline_id));
 }
 
+const bool dbs_research_discipline_relation::exists_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const
+{
+    const auto& idx = db_impl()
+            .get_index<research_discipline_relation_index>()
+            .indices()
+            .get<by_research_and_discipline>();
+
+    auto itr = idx.find(std::make_tuple(research_id, discipline_id));
+    return itr != idx.end();
+}
+
 } //namespace chain
 } //namespace deip

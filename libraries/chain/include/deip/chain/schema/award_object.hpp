@@ -13,6 +13,7 @@ enum class award_status : uint16_t
     rejected = 3
 };
 
+using protocol::external_id_type;
 using deip::protocol::asset;
 
 class award_object : public object<award_object_type, award_object>
@@ -23,16 +24,14 @@ public:
 
     template <typename Constructor, typename Allocator>
     award_object(Constructor&& c, allocator<Allocator> a)
-      : funding_opportunity_number(a)
-      , award_number(a)
     {
         c(*this);
     }
 
     award_id_type id;
 
-    fc::shared_string funding_opportunity_number;
-    fc::shared_string award_number;
+    external_id_type funding_opportunity_number;
+    external_id_type award_number;
     account_name_type awardee;
 
     research_group_id_type university_id;
@@ -80,7 +79,7 @@ typedef multi_index_container<award_object,
       tag<by_award_number>,
         member<
           award_object,
-          fc::shared_string,
+          external_id_type,
           &award_object::award_number
         >
     >,
@@ -88,7 +87,7 @@ typedef multi_index_container<award_object,
       tag<by_funding_opportunity_number>,
         member<
           award_object,
-          fc::shared_string,
+          external_id_type,
           &award_object::funding_opportunity_number
         >
     >

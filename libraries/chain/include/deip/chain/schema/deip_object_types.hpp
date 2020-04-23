@@ -74,7 +74,6 @@ enum object_type
     reward_pool_object_type,
     expertise_allocation_proposal_object_type,
     expertise_allocation_proposal_vote_object_type,
-    grant_object_type,
     grant_application_object_type,
     grant_application_review_object_type,
     funding_opportunity_object_type,
@@ -125,7 +124,6 @@ class vesting_balance_object;
 class reward_pool_object;
 class expertise_allocation_proposal_object;
 class expertise_allocation_proposal_vote_object;
-class grant_object;
 class grant_application_object;
 class grant_application_review_object;
 class funding_opportunity_object;
@@ -176,7 +174,6 @@ typedef oid<vesting_balance_object> vesting_balance_id_type;
 typedef oid<reward_pool_object> reward_pool_id_type;
 typedef oid<expertise_allocation_proposal_object> expertise_allocation_proposal_id_type;
 typedef oid<expertise_allocation_proposal_vote_object> expertise_allocation_proposal_vote_id_type;
-typedef oid<grant_object> grant_id_type;
 typedef oid<grant_application_object> grant_application_id_type;
 typedef oid<grant_application_review_object> grant_application_review_id_type;
 typedef oid<funding_opportunity_object> funding_opportunity_id_type;
@@ -271,7 +268,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (reward_pool_object_type)
                  (expertise_allocation_proposal_object_type)
                  (expertise_allocation_proposal_vote_object_type)
-                 (grant_object_type)
                  (grant_application_object_type)
                  (grant_application_review_object_type)
                  (funding_opportunity_object_type)

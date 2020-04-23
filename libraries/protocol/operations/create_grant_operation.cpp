@@ -17,37 +17,38 @@ void inline validate_distribution_model(const grant_distribution_models distribu
   if (distribution_model.which() == grant_distribution_models::tag<announced_application_window_contract_v1_0_0_type>::value) 
   {
       const auto announced_application_window_contract = distribution_model.get<announced_application_window_contract_v1_0_0_type>();
+      validate_160_bits_hexadecimal_string(announced_application_window_contract.funding_opportunity_number);
+
       FC_ASSERT(announced_application_window_contract.min_number_of_positive_reviews >= 0, "Min number of positive reviews must be equal or greater than 0");
       FC_ASSERT(announced_application_window_contract.min_number_of_applications > 0, "Min number of grant applications must be greater than 0");
       FC_ASSERT(announced_application_window_contract.min_number_of_applications >= announced_application_window_contract.max_number_of_research_to_grant, "Min number of grant applications must be equal or greater than max number of research");
       FC_ASSERT(announced_application_window_contract.max_number_of_research_to_grant > 0, "Max number of research must be greater than 0");
-      FC_ASSERT(announced_application_window_contract.end_date > announced_application_window_contract.start_date, "Grant applications apply period is not valid");
+      FC_ASSERT(announced_application_window_contract.open_date > announced_application_window_contract.close_date, "Grant applications apply period is not valid");
 
       is_validated = true;
   }
 
   else if (distribution_model.which() == grant_distribution_models::tag<funding_opportunity_announcement_contract_v1_0_0_type>::value) 
   {
-    const auto funding_opportunity_announcement_contract = distribution_model.get<funding_opportunity_announcement_contract_v1_0_0_type>();
-    
-    FC_ASSERT(funding_opportunity_announcement_contract.funding_opportunity_number.size() > 0, "Funding opportunity number is not specified");
-    FC_ASSERT(fc::is_utf8(funding_opportunity_announcement_contract.funding_opportunity_number), "Funding opportunity number is not valid UTF-8 string");
+      const auto funding_opportunity_announcement_contract = distribution_model.get<funding_opportunity_announcement_contract_v1_0_0_type>();
 
-    for (auto& pair : funding_opportunity_announcement_contract.additional_info)
-    {
-        FC_ASSERT(fc::is_utf8(pair.first), "Info key ${1} is not valid UTF-8 string", ("1", pair.first));
-        FC_ASSERT(fc::is_utf8(pair.second), "Info value ${1} is not valid UTF-8 string", ("1", pair.second));
-    }
+      validate_160_bits_hexadecimal_string(funding_opportunity_announcement_contract.funding_opportunity_number);
 
-    FC_ASSERT(funding_opportunity_announcement_contract.officers.count(grantor) != 0, 
-      "Funding opportunity officers list should include the grantor ${1}", ("1", grantor));
+      for (auto& pair : funding_opportunity_announcement_contract.additional_info)
+      {
+          FC_ASSERT(fc::is_utf8(pair.first), "Info key ${1} is not valid UTF-8 string", ("1", pair.first));
+          FC_ASSERT(fc::is_utf8(pair.second), "Info value ${1} is not valid UTF-8 string", ("1", pair.second));
+      }
 
-    FC_ASSERT(funding_opportunity_announcement_contract.award_ceiling <= amount, "Award ceiling amount must be less than total amount");
-    FC_ASSERT(funding_opportunity_announcement_contract.award_floor <= funding_opportunity_announcement_contract.award_ceiling, "Award floor must be less than total amount");
-    FC_ASSERT(funding_opportunity_announcement_contract.expected_number_of_awards > 0, "Expected number of awards must be specified");
-    FC_ASSERT(funding_opportunity_announcement_contract.close_date > funding_opportunity_announcement_contract.open_date, "Close date must be greater than open date");
+      FC_ASSERT(funding_opportunity_announcement_contract.officers.count(grantor) != 0,
+                "Funding opportunity officers list should include the grantor ${1}", ("1", grantor));
 
-    is_validated = true;
+      FC_ASSERT(funding_opportunity_announcement_contract.award_ceiling <= amount, "Award ceiling amount must be less than total amount");
+      FC_ASSERT(funding_opportunity_announcement_contract.award_floor <= funding_opportunity_announcement_contract.award_ceiling, "Award floor must be less than total amount");
+      FC_ASSERT(funding_opportunity_announcement_contract.expected_number_of_awards > 0, "Expected number of awards must be specified");
+      FC_ASSERT(funding_opportunity_announcement_contract.close_date > funding_opportunity_announcement_contract.open_date, "Close date must be greater than open date");
+
+      is_validated = true;
   }
 
   else if (distribution_model.which() == grant_distribution_models::tag<discipline_supply_announcement_contract_v1_0_0_type>::value)

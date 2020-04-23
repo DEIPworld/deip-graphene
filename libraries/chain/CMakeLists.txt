@@ -44,9 +44,7 @@ add_library( deip_chain
         services/dbs_vesting_balance.cpp
         services/dbs_reward_pool.cpp
         services/dbs_expertise_allocation_proposal.cpp
-        services/dbs_grant.cpp
         services/dbs_grant_application.cpp
-        services/dbs_grant_application_review.cpp
         services/dbs_funding_opportunity.cpp
         services/dbs_account_balance.cpp
         services/dbs_asset.cpp

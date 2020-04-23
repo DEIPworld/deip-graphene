@@ -36,7 +36,7 @@ void inline validate_awardees(const vector<subawardee_type>& subawardees, const 
     for (auto& subaward : subawardees)
     {
         validate_account_name(subaward.subawardee);
-        validate_award_number(subaward.subaward_number);
+        validate_160_bits_hexadecimal_string(subaward.subaward_number);
         FC_ASSERT(subaward.subaward.amount > 0, "Award amount must be specified");
         FC_ASSERT(subaward.subaward.symbol == award.symbol, "Subaward asset does not match the award asset");
 
@@ -74,8 +74,8 @@ void create_award_operation::validate() const
 {
     validate_account_name(creator);
     validate_account_name(awardee);
-    validate_foa_number(funding_opportunity_number);
-    validate_award_number(award_number);
+    validate_160_bits_hexadecimal_string(funding_opportunity_number);
+    validate_160_bits_hexadecimal_string(award_number);
     FC_ASSERT(award.amount > 0, "Award amount must be > 0.");
     FC_ASSERT(research_id >= 0, "Research id cant be less than a 0");
     FC_ASSERT(university_id >= 0, "University id cant be less than a 0");
