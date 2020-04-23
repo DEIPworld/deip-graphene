@@ -150,11 +150,6 @@ void change_recovery_account_operation::validate() const
     validate_account_name(new_recovery_account);
 }
 
-void vote_proposal_operation::validate() const
-{
-    validate_account_name(voter);
-}
-
 void contribute_to_token_sale_operation::validate() const
 {
     validate_account_name(owner);

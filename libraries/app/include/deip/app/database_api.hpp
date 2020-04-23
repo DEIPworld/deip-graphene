@@ -311,8 +311,8 @@ public:
     ////////////////////
     // Proposal       //
     ////////////////////
-    vector<proposal_api_obj> get_proposals_by_research_group_id(const research_group_id_type research_group_id) const;
-    fc::optional<proposal_api_obj> get_proposal(const proposal_id_type id) const;
+    vector<proposal_api_obj> get_proposals_by_research_group_id(const research_group_id_type& research_group_id) const;
+    fc::optional<proposal_api_obj> get_proposal(const proposal_id_type& id) const;
 
     ////////////////////
     // Research group //

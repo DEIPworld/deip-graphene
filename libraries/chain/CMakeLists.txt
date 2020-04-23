@@ -57,6 +57,7 @@ add_library( deip_chain
         deip_evaluator.cpp
         schema/deip_objects.cpp
         schema/shared_authority.cpp
+        schema/proposal_object.cpp
         block_log.cpp
 
         genesis.cpp

@@ -9,7 +9,6 @@
 #include <deip/chain/schema/discipline_object.hpp>
 #include <deip/chain/schema/expert_token_object.hpp>
 #include <deip/chain/schema/proposal_object.hpp>
-#include <deip/chain/schema/proposal_vote_object.hpp>
 #include <deip/chain/schema/research_group_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
 #include <deip/chain/schema/research_content_object.hpp>

@@ -460,26 +460,6 @@ database_fixture::setup_research_group(const int64_t& id,
     return research_group;
 }
 
-const proposal_object& database_fixture::create_proposal(const int64_t id,
-                                       const std::string json_data,
-                                       const account_name_type& creator,
-                                       const research_group_id_type& research_group_id,
-                                       const fc::time_point_sec expiration_time,
-                                       const percent_type quorum)
-{
-    const proposal_object& new_proposal = db.create<proposal_object>([&](proposal_object& proposal) {
-        proposal.id = id;
-        fc::from_string(proposal.data, json_data);
-        proposal.creator = creator;
-        proposal.research_group_id = research_group_id;
-        proposal.creation_time = fc::time_point_sec();
-        proposal.expiration_time = expiration_time;
-        proposal.quorum = quorum;
-    });
-
-    return new_proposal;
-}
-
 const research_object& database_fixture::research_create(const int64_t id,
                                                          const string &title,
                                                          const string &abstract,

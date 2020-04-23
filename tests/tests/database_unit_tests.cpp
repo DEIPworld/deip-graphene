@@ -504,28 +504,6 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(database_unit_service, database_unit_service_fixture)
 
-BOOST_AUTO_TEST_CASE(clear_expired_proposals)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: clear_expired_proposals");
-
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        generate_block();
-
-        db.create<proposal_object>([&](proposal_object& p) {
-           p.id = 0;
-           p.is_completed = false;
-           p.expiration_time = db.head_block_time() + 60;
-        });
-
-        generate_blocks(DEIP_BLOCKS_PER_HOUR * 2);
-
-        BOOST_CHECK_THROW(db.get<proposal_object>(0), std::out_of_range);
-    }
-    FC_LOG_AND_RETHROW()
-}
 
 BOOST_AUTO_TEST_CASE(clear_expired_group_invite)
 {

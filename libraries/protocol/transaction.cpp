@@ -90,7 +90,9 @@ void verify_authority(const vector<operation>& ops,
                       const authority_getter& get_active,
                       const authority_getter& get_owner,
                       const authority_getter& get_posting,
-                      uint32_t max_recursion_depth)
+                      uint32_t max_recursion_depth,
+                      const flat_set<account_name_type>& active_aprovals,
+                      const flat_set<account_name_type>& owner_approvals)
 {
     try
     {

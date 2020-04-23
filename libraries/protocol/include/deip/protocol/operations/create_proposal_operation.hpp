@@ -10,6 +10,7 @@ struct op_wrapper;
 
 struct create_proposal_operation : public base_operation
 {
+    external_id_type external_id;
     account_name_type creator;
     vector<op_wrapper> proposed_ops;
     time_point_sec expiration_time;
@@ -28,6 +29,7 @@ struct create_proposal_operation : public base_operation
 
 
 FC_REFLECT(deip::protocol::create_proposal_operation,
+  (external_id)
   (creator)
   (proposed_ops)
   (expiration_time)

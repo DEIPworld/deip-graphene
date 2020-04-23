@@ -41,6 +41,8 @@ class dbs_research_group : public dbs_base
 
     const research_group_object& get_research_group_by_account(const account_name_type& account) const;
 
+    const research_group_optional_ref_type get_research_group_by_account_if_exists(const account_name_type& account) const;
+
     const research_group_object& get_research_group_by_permlink(const string& permlink) const;
 
     const research_group_optional_ref_type get_research_group_by_permlink_if_exists(const string& permlink) const;

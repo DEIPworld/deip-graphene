@@ -134,11 +134,6 @@ struct get_impacted_account_visitor
         _impacted.insert(op.creator);
     }
 
-    void operator()(const vote_proposal_operation& op)
-    {
-        _impacted.insert(op.voter);
-    }
-
     void operator()(const make_review_operation& op)
     {
         _impacted.insert(op.author);

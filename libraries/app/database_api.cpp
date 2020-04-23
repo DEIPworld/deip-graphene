@@ -103,6 +103,9 @@ public:
     vector<research_group_api_obj> get_all_research_groups(const bool& is_personal_need) const;
     bool check_research_group_existence_by_permlink(const string& permlink) const;
 
+    vector<proposal_api_obj> get_proposals_by_research_group_id(const research_group_id_type& research_group_id) const;
+    fc::optional<proposal_api_obj> get_proposal(const proposal_id_type& id) const;
+
     // Research contents
     fc::optional<research_content_api_obj> get_research_content_by_id(const research_content_id_type& id) const;
     fc::optional<research_content_api_obj> get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
@@ -111,9 +114,6 @@ public:
     // Disciplines
     fc::optional<discipline_api_obj> get_discipline(const discipline_id_type& id) const;
     fc::optional<discipline_api_obj> get_discipline_by_name(const string& name) const;
-
-    // Proposals
-    fc::optional<proposal_api_obj> get_proposal(const proposal_id_type id) const;
 
     // Research group tokens
     fc::optional<research_group_token_api_obj> get_research_group_token_by_account_and_research_group_id(const account_name_type account,
@@ -883,16 +883,16 @@ bool database_api::verify_authority(const signed_transaction& trx) const
 bool database_api_impl::verify_authority(const signed_transaction& trx) const
 {
     trx.verify_authority(get_chain_id(),
-                         [&](string account_name) {
-                             return authority(_db.get<account_authority_object, by_account>(account_name).active);
-                         },
-                         [&](string account_name) {
-                             return authority(_db.get<account_authority_object, by_account>(account_name).owner);
-                         },
-                         [&](string account_name) {
-                             return authority(_db.get<account_authority_object, by_account>(account_name).posting);
-                         },
-                         DEIP_MAX_SIG_CHECK_DEPTH);
+        [&](string account_name) {
+            return authority(_db.get<account_authority_object, by_account>(account_name).active);
+        },
+        [&](string account_name) {
+            return authority(_db.get<account_authority_object, by_account>(account_name).owner);
+        },
+        [&](string account_name) {
+            return authority(_db.get<account_authority_object, by_account>(account_name).posting);
+        },
+        DEIP_MAX_SIG_CHECK_DEPTH);
     return true;
 }
 
@@ -1492,45 +1492,57 @@ fc::optional<expert_token_api_obj> database_api_impl::get_expert_token_by_accoun
     return {};
 }
 
-vector<proposal_api_obj>
-database_api::get_proposals_by_research_group_id(const research_group_id_type research_group_id) const
+vector<proposal_api_obj> database_api::get_proposals_by_research_group_id(const research_group_id_type& research_group_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<proposal_api_obj> results;
-
-        chain::dbs_proposal& proposal_service = my->_db.obtain_service<chain::dbs_proposal>();
-        auto proposals = proposal_service.get_proposals_by_research_group_id(research_group_id);
-
-        for (const chain::proposal_object& proposal : proposals)
-        {
-            auto& votes = proposal_service.get_votes_for(proposal.id);
-            vector<proposal_vote_api_obj> votes_for;
-            for (const proposal_vote_object& vote : votes)
-                votes_for.push_back(vote);
-            results.push_back(proposal_api_obj(proposal, votes_for));
-        }
-
-        return results;
-    });
+    return my->_db.with_read_lock([&]() { return my->get_proposals_by_research_group_id(research_group_id); });
 }
 
-fc::optional<proposal_api_obj> database_api::get_proposal(const proposal_id_type id) const
+vector<proposal_api_obj> database_api_impl::get_proposals_by_research_group_id(const research_group_id_type& research_group_id) const
+{
+    vector<proposal_api_obj> results;
+
+    const auto& proposal_service = _db.obtain_service<chain::dbs_proposal>();
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+
+    const auto& research_group_opt = research_groups_service.get_research_group_if_exists(research_group_id);
+
+    if (research_group_opt.valid())
+    {
+        const auto& research_group = (*research_group_opt).get();
+        auto proposals = proposal_service.get_proposals_by_research_group_id(research_group.account);
+        for (const chain::proposal_object& proposal : proposals)
+        {
+            results.push_back(proposal_api_obj(proposal, research_group));
+        }
+    }
+
+    return results;
+}
+
+fc::optional<proposal_api_obj> database_api::get_proposal(const proposal_id_type& id) const
 {
     return my->_db.with_read_lock([&]() { return my->get_proposal(id); });
 }
 
-fc::optional<proposal_api_obj> database_api_impl::get_proposal(const proposal_id_type id) const
+fc::optional<proposal_api_obj> database_api_impl::get_proposal(const proposal_id_type& id) const
 {
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+          
     const auto& idx = _db.get_index<proposal_index>().indices().get<by_id>();
     auto itr = idx.find(id);
 
-    if (itr != idx.end()) {
-        chain::dbs_proposal &proposal_service = _db.obtain_service<chain::dbs_proposal>();
-        vector<proposal_vote_api_obj> votes_for;
-        auto& votes = proposal_service.get_votes_for(id);
-        for (const proposal_vote_object& vote : votes)
-            votes_for.push_back(vote);
-        return proposal_api_obj(*itr, votes_for);
+    if (itr != idx.end())
+    {
+        const auto& research_group_opt = research_groups_service.get_research_group_by_account_if_exists(itr->proposer);
+        if (research_group_opt.valid())
+        {
+            return proposal_api_obj(*itr, (*research_group_opt).get());
+        }
+        else 
+        {
+          return proposal_api_obj(*itr);
+        }
+        
     }
 
     return {};

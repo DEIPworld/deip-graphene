@@ -74,6 +74,23 @@ const research_group_object& dbs_research_group::get_research_group_by_account(c
     return *itr;
 }
 
+const dbs_research_group::research_group_optional_ref_type dbs_research_group::get_research_group_by_account_if_exists(const account_name_type& account) const
+{
+    research_group_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<research_group_index>()
+      .indices()
+      .get<by_account>();
+
+    auto itr = idx.find(account);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+    return result;
+}
+
+
 dbs_research_group::research_group_refs_type dbs_research_group::get_all_research_groups(
   const bool& is_personal_need) const
 {

@@ -37,7 +37,7 @@ namespace protocol {
                 placeholder1_operation,
                 placeholder2_operation,
                 create_proposal_operation,
-                vote_proposal_operation,
+                update_proposal_operation,
                 make_review_operation,
                 contribute_to_token_sale_operation,
                 approve_research_group_invite_operation,

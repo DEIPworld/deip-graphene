@@ -188,6 +188,7 @@ public:
 
     bool push_block(const signed_block& b, uint32_t skip = skip_nothing);
     void push_transaction(const signed_transaction& trx, uint32_t skip = skip_nothing);
+    void push_proposal(const proposal_object& proposal) override;
     void _maybe_warn_multiple_production(uint32_t height) const;
     bool _push_block(const signed_block& b);
     void _push_transaction(const signed_transaction& trx);
@@ -454,6 +455,9 @@ private:
     uint16_t _current_op_in_trx = 0;
 
     flat_map<uint32_t, block_id_type> _checkpoints;
+
+    // Counts nested proposal updates
+    uint32_t _push_proposal_nesting_depth = 0;
 
     node_property_object _node_property_object;
 

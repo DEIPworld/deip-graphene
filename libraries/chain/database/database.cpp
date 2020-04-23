@@ -693,6 +693,15 @@ void database::_push_transaction(const signed_transaction& trx)
     notify_on_pending_transaction(trx);
 }
 
+void database::validate_transaction(const signed_transaction& trx)
+{
+    database::with_write_lock([&]() {
+        auto session = start_undo_session(true);
+        _apply_transaction(trx);
+        session.undo();
+    });
+}
+
 signed_block database::generate_block(fc::time_point_sec when,
                                       const account_name_type& witness_owner,
                                       const fc::ecc::private_key& block_signing_private_key,
@@ -1436,6 +1445,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<recover_account_evaluator>();
     _my->_evaluator_registry.register_evaluator<change_recovery_account_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_proposal_evaluator>();
+    _my->_evaluator_registry.register_evaluator<update_proposal_evaluator>();    
     _my->_evaluator_registry.register_evaluator<make_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
     _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
@@ -1444,7 +1454,6 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_vesting_balance_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_vesting_balance_evaluator>();
-    _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_expertise_evaluator>();
     _my->_evaluator_registry.register_evaluator<revoke_expertise_delegation_evaluator>();
@@ -1499,7 +1508,6 @@ void database::initialize_indexes()
     add_index<change_recovery_account_request_index>();
     add_index<discipline_supply_index>();
     add_index<proposal_index>();
-    add_index<proposal_vote_index>();
     add_index<research_group_index>();
     add_index<research_group_token_index>();
     add_index<research_group_organization_contract_index>();
@@ -1534,14 +1542,64 @@ void database::initialize_indexes()
     _plugin_index_signal();
 }
 
-void database::validate_transaction(const signed_transaction& trx)
-{
-    database::with_write_lock([&]() {
-        auto session = start_undo_session(true);
-        _apply_transaction(trx);
-        session.undo();
-    });
-}
+
+class push_proposal_nesting_guard {
+public:
+   push_proposal_nesting_guard( uint32_t& nesting_counter, const database& db )
+      : orig_value(nesting_counter), counter(nesting_counter)
+   {
+      const witness_schedule_object& wso = db.get_witness_schedule_object();
+      vector<account_name_type> active_witnesses;
+      flat_set<witness_id_type> selected_voted;
+
+      active_witnesses.reserve(DEIP_MAX_WITNESSES);
+      selected_voted.reserve(wso.max_voted_witnesses);
+
+      const auto& widx = db.get_index<witness_index>().indices().get<by_vote_name>();
+      for (auto itr = widx.begin(); itr != widx.end() && selected_voted.size() < wso.max_voted_witnesses; ++itr)
+      {
+          if (itr->signing_key == public_key_type())
+              continue;
+          selected_voted.insert(itr->id);
+          active_witnesses.push_back(itr->owner);
+      }
+
+      FC_ASSERT( counter < active_witnesses.size() * 2, "Max proposal nesting depth exceeded!" );
+      counter++;
+   }
+   ~push_proposal_nesting_guard()
+   {
+      if( --counter != orig_value )
+         elog( "Unexpected proposal nesting count value: ${n} != ${o}", ("n",counter)("o",orig_value) );
+   }
+private:
+    const uint32_t  orig_value;
+    uint32_t& counter;
+};
+
+void database::push_proposal(const proposal_object& proposal)
+{ try {
+
+   try {
+      push_proposal_nesting_guard guard( _push_proposal_nesting_depth, *this );
+      // if( _undo_db.size() >= _undo_db.max_size() )
+      //    _undo_db.set_max_size( _undo_db.size() + 1 );
+
+      auto session = start_undo_session(true);
+      for(auto& op : proposal.proposed_transaction.operations)
+      {
+         apply_operation(op);
+      }
+
+      remove(proposal);
+      session.squash();
+    } catch ( const fc::exception& e ) {
+      wlog( "${e}", ("e", e.to_detail_string() ) );
+      throw;
+   }
+
+} FC_CAPTURE_AND_RETHROW( (proposal) ) }
+
 
 void database::notify_changed_objects()
 {

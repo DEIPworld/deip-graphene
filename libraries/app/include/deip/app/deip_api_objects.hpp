@@ -17,7 +17,6 @@
 #include <deip/chain/schema/nda_contract_object.hpp>
 #include <deip/chain/schema/nda_contract_file_access_object.hpp>
 #include <deip/chain/schema/proposal_object.hpp>
-#include <deip/chain/schema/proposal_vote_object.hpp>
 #include <deip/chain/schema/research_content_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/research_group_invite_object.hpp>
@@ -510,42 +509,22 @@ struct expert_token_api_obj
     share_type amount;
 };
 
-struct proposal_vote_api_obj
-{
-    proposal_vote_api_obj(const chain::proposal_vote_object& pv)
-        : id(pv.id._id)
-        ,  proposal_id(pv.proposal_id._id)
-        ,  research_group_id(pv.research_group_id._id)
-        ,  voting_time(pv.voting_time)
-        ,  voter(pv.voter)
-    {}
-
-    // because fc::variant require for temporary object
-    proposal_vote_api_obj()
-    {
-    }
-
-    int64_t id;
-    int64_t proposal_id;
-    int64_t research_group_id;
-    fc::time_point_sec voting_time;
-    account_name_type voter;
-};
 
 struct proposal_api_obj
 {
-    proposal_api_obj(const chain::proposal_object& p, const vector<proposal_vote_api_obj>& _votes)
+    proposal_api_obj(const chain::proposal_object& p, const chain::research_group_object& research_group)
         : id(p.id._id)
-        , research_group_id(p.research_group_id._id)
-        , creation_time(p.creation_time)
+        , research_group_id(research_group.id._id)
+        , creation_time(p.created_at)
         , expiration_time(p.expiration_time)
-        , creator(p.creator)
-        , data(fc::to_string(p.data))
-        , quorum_percent(p.quorum)
-        , current_votes_amount(p.current_votes_amount)
-        , is_completed(p.is_completed)
-        , voted_accounts(p.voted_accounts.begin(), p.voted_accounts.end())
-        , votes(_votes)
+        , creator(p.proposer)
+    {}
+
+    proposal_api_obj(const chain::proposal_object& p)
+        : id(p.id._id)
+        , creation_time(p.created_at)
+        , expiration_time(p.expiration_time)
+        , creator(p.proposer)
     {}
 
     // because fc::variant require for temporary object
@@ -554,7 +533,7 @@ struct proposal_api_obj
     }
 
     int64_t id;
-    int64_t research_group_id;
+    fc::optional<int64_t> research_group_id;
     fc::time_point_sec creation_time;
     fc::time_point_sec expiration_time;
     std::string creator;
@@ -564,7 +543,7 @@ struct proposal_api_obj
     bool is_completed;
 
     flat_set<account_name_type> voted_accounts;
-    vector<proposal_vote_api_obj> votes;
+    vector<string> votes;
 };
 
 struct research_group_token_api_obj
@@ -1553,14 +1532,6 @@ FC_REFLECT( deip::app::proposal_api_obj,
             (is_completed)
             (voted_accounts)
             (votes)
-)
-
-FC_REFLECT( deip::app::proposal_vote_api_obj,
-            (id)
-            (proposal_id)
-            (research_group_id)
-            (voting_time)
-            (voter)
 )
 
 FC_REFLECT( deip::app::research_group_token_api_obj,

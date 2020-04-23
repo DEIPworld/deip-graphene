@@ -518,6 +518,122 @@ void change_recovery_account_evaluator::do_apply(const change_recovery_account_o
 
 void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
 {
+    const auto& block_time = _db.head_block_time();
+    FC_ASSERT(op.expiration_time > block_time, "Proposal has already expired on creation." );
+    // FC_ASSERT(op.expiration_time <= block_time + global_parameters.maximum_proposal_lifetime,
+    //             "Proposal expiration time is too far in the future.");
+    FC_ASSERT(!op.review_period_seconds || fc::seconds(*op.review_period_seconds) < (op.expiration_time - block_time),
+      "Proposal review period must be less than its overall lifetime." );
+    
+    {
+        // If we're dealing with the committee authority, make sure this transaction has a sufficient review period.
+        flat_set<account_name_type> auths;
+        vector<authority> other;
+        for( auto& wrap : op.proposed_ops )
+        {
+          operation_get_required_authorities(wrap.op, auths, auths, auths, other);
+        }
+
+        FC_ASSERT( other.size() == 0 ); // TODO: what about other??? 
+    }
+
+    transaction _proposed_trx;
+
+    for (const op_wrapper& wrap : op.proposed_ops)
+    {
+        _proposed_trx.operations.push_back(wrap.op);
+    }
+
+   _proposed_trx.validate();
+
+   const proposal_object& proposal = _db._temporary_public_impl().create<proposal_object>([&](proposal_object& proposal) {
+      proposal.external_id = op.external_id;
+      _proposed_trx.expiration = op.expiration_time;
+      proposal.proposed_transaction = _proposed_trx;
+      proposal.expiration_time = op.expiration_time;
+      proposal.proposer = op.creator;
+      if (op.review_period_seconds)
+        proposal.review_period_time = op.expiration_time - *op.review_period_seconds;
+
+      //Populate the required approval sets
+      flat_set<account_name_type> required_active;
+      flat_set<account_name_type> required_posting;
+      vector<authority> other;
+      
+      // TODO: consider caching values from evaluate?
+      for( auto& o : _proposed_trx.operations )
+      {
+          operation_get_required_authorities(o, required_active, proposal.required_owner_approvals, required_posting, other);
+      }
+
+      //All accounts which must provide both owner and active authority should be omitted from the active authority set;
+      //owner authority approval implies active authority approval.
+      std::set_difference(required_active.begin(), required_active.end(),
+                          proposal.required_owner_approvals.begin(), proposal.required_owner_approvals.end(),
+                          std::inserter(proposal.required_active_approvals, proposal.required_active_approvals.begin()));
+   });
+}
+
+void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
+{
+    const auto& proposals_service = _db.obtain_service<dbs_proposal>();
+    const auto& block_time = _db.head_block_time();
+    chainbase::database& db = _db._temporary_public_impl();
+
+    FC_ASSERT(proposals_service.proposal_exists(op.external_id),
+      "Proposal ${1} does not exist", ("1", op.external_id));
+
+    const auto& proposal = proposals_service.get_proposal(op.external_id);
+
+    if (proposal.review_period_time && block_time >= *proposal.review_period_time)
+    {
+        FC_ASSERT(op.active_approvals_to_add.empty() && op.owner_approvals_to_add.empty(),
+          "This proposal is in its review period. No new approvals may be added." );
+    }
+
+    for (account_name_type account : op.active_approvals_to_remove)
+    {
+        FC_ASSERT(proposal.available_active_approvals.find(account) != proposal.available_active_approvals.end(),
+          "", ("account", account)("available", proposal.available_active_approvals));
+    }
+    for (account_name_type account : op.owner_approvals_to_remove)
+    {
+        FC_ASSERT(proposal.available_owner_approvals.find(account) != proposal.available_owner_approvals.end(),
+          "", ("account", account)("available", proposal.available_owner_approvals));
+    }
+
+    db.modify(proposal, [&](proposal_object& p) {
+        p.available_active_approvals.insert(op.active_approvals_to_add.begin(), op.active_approvals_to_add.end());
+        p.available_owner_approvals.insert(op.owner_approvals_to_add.begin(), op.owner_approvals_to_add.end());
+        for(account_name_type account : op.active_approvals_to_remove)
+          p.available_active_approvals.erase(account);
+        for(account_name_type account : op.owner_approvals_to_remove)
+          p.available_owner_approvals.erase(account);
+        for(const auto& key : op.key_approvals_to_add)
+          p.available_key_approvals.insert(key);
+        for(const auto& key : op.key_approvals_to_remove)
+          p.available_key_approvals.erase(key);
+    });
+
+    // If the proposal has a review period, don't bother attempting to authorize/execute it.
+    // Proposals with a review period may never be executed except at their expiration.
+    if (proposal.review_period_time) return;
+
+    if (proposal.is_authorized_to_execute(db))
+    {
+        // All required approvals are satisfied. Execute!
+        try {
+            _db.push_proposal(proposal);
+        } catch(fc::exception& e) {
+            db.modify(proposal, [&e](proposal_object& p) {
+                fc::from_string(p.fail_reason, e.to_string(fc::log_level(fc::log_level::all)));
+            });
+
+          // wlog("Proposed transaction ${id} failed to apply once approved with exception:\n----\n${reason}\n----\nWill try again when it expires.",
+          //       ("id", op.proposal)("reason", e.to_detail_string()));
+        }
+    }
+
 }
 
 void make_review_evaluator::do_apply(const make_review_operation& op)
@@ -873,10 +989,6 @@ void withdraw_vesting_balance_evaluator::do_apply(const withdraw_vesting_balance
             account_balance_service.adjust_balance(op.owner, op.amount);
         }
     }
-}
-
-void vote_proposal_evaluator::do_apply(const vote_proposal_operation& op)
-{
 }
 
 void transfer_research_tokens_evaluator::do_apply(const transfer_research_tokens_operation& op)

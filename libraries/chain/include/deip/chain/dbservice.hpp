@@ -47,6 +47,8 @@ public:
     
     virtual void push_virtual_operation(const protocol::operation& op) = 0;
 
+    virtual void push_proposal(const proposal_object& proposal) = 0;
+
     // for TODO only:
     chainbase::database& _temporary_public_impl();
 };

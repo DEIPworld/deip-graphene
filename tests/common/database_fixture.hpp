@@ -129,13 +129,6 @@ struct database_fixture
                                                       const bool is_personal,
                                                       const vector<std::pair<account_name_type, share_type>>& accounts);
 
-    const proposal_object& create_proposal(const int64_t id,
-                                           const string json_data,
-                                           const account_name_type& creator,
-                                           const research_group_id_type& research_group_id,
-                                           const time_point_sec expiration_time,
-                                           const percent_type quorum);
-
     void create_disciplines();
 
     const research_object& research_create(const int64_t id,

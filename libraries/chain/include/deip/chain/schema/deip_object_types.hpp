@@ -63,7 +63,6 @@ enum object_type
     research_group_object_type,
     research_group_token_object_type,
     research_group_organization_contract_object_type,
-    proposal_vote_object_type,
     expert_token_object_type,
     research_token_object_type,
     research_token_sale_object_type,
@@ -115,7 +114,6 @@ class expertise_contribution_object;
 class research_object;
 class research_discipline_relation_object;
 class research_content_object;
-class proposal_vote_object;
 class expert_token_object;
 class research_token_object;
 class research_token_sale_object;
@@ -167,7 +165,6 @@ typedef oid<expertise_contribution_object> expertise_contribution_id_type;
 typedef oid<research_object> research_id_type;
 typedef oid<research_discipline_relation_object> research_discipline_relation_id_type;
 typedef oid<research_content_object> research_content_id_type;
-typedef oid<proposal_vote_object> proposal_vote_id_type;
 typedef oid<expert_token_object> expert_token_id_type;
 typedef oid<research_token_object> research_token_id_type;
 typedef oid<research_token_sale_object> research_token_sale_id_type;
@@ -263,7 +260,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (research_object_type)
                  (research_discipline_relation_object_type)
                  (research_content_object_type)
-                 (proposal_vote_object_type)
                  (expert_token_object_type)
                  (research_token_object_type)
                  (research_token_sale_object_type)

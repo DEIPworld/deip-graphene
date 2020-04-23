@@ -29,6 +29,7 @@
 #include <deip/protocol/operations/update_research_group_metadata_operation.hpp>
 #include <deip/protocol/operations/update_research_metadata_operation.hpp>
 #include <deip/protocol/operations/create_proposal_operation.hpp>
+#include <deip/protocol/operations/update_proposal_operation.hpp>
 
 namespace deip {
 namespace protocol {
@@ -507,19 +508,6 @@ struct placeholder6_operation : public base_operation
     void validate() const;
 };
 
-struct vote_proposal_operation : public base_operation
-{
-    account_name_type voter;
-    int64_t proposal_id;
-    int64_t research_group_id;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(voter);
-    }
-};
-
 struct contribute_to_token_sale_operation : public base_operation
 {
     int64_t research_token_sale_id;
@@ -810,8 +798,6 @@ FC_REFLECT( deip::protocol::placeholder3_operation, )
 FC_REFLECT( deip::protocol::placeholder4_operation, )
 FC_REFLECT( deip::protocol::placeholder5_operation, )
 FC_REFLECT( deip::protocol::placeholder6_operation, )
-
-FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
 
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_token_sale_id)(owner)(amount))
 FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner))
