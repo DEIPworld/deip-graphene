@@ -518,65 +518,66 @@ void change_recovery_account_evaluator::do_apply(const change_recovery_account_o
 
 void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
 {
+    auto& proposals_service = _db.obtain_service<dbs_proposal>();
     const auto& block_time = _db.head_block_time();
+
     FC_ASSERT(op.expiration_time > block_time, "Proposal has already expired on creation." );
-    // FC_ASSERT(op.expiration_time <= block_time + global_parameters.maximum_proposal_lifetime,
-    //             "Proposal expiration time is too far in the future.");
+    FC_ASSERT(op.expiration_time <= block_time + DEIP_DEFAULT_MAX_PROPOSAL_LIFETIME_SEC,
+      "Proposal expiration time is too far in the future.");
     FC_ASSERT(!op.review_period_seconds || fc::seconds(*op.review_period_seconds) < (op.expiration_time - block_time),
       "Proposal review period must be less than its overall lifetime." );
-    
-    {
-        // If we're dealing with the committee authority, make sure this transaction has a sufficient review period.
-        flat_set<account_name_type> auths;
-        vector<authority> other;
-        for( auto& wrap : op.proposed_ops )
-        {
-          operation_get_required_authorities(wrap.op, auths, auths, auths, other);
-        }
 
-        FC_ASSERT( other.size() == 0 ); // TODO: what about other??? 
+    flat_set<account_name_type> required_posting;
+    flat_set<account_name_type> required_active;
+    flat_set<account_name_type> required_owner;
+    vector<authority> other;
+
+    for( auto& wrap : op.proposed_ops )
+    {
+        operation_get_required_authorities(wrap.op, required_active, required_owner, required_posting, other);
     }
 
-    transaction _proposed_trx;
+    FC_ASSERT(other.size() == 0); // TODO: what about other??? 
+    if (required_posting.size() != 0) // Transactions with operations required posting authority cannot be combined with transactions requiring active or owner authority
+    {
+        FC_ASSERT(required_active.size() == 0);
+        FC_ASSERT(required_owner.size() == 0);
+    }
 
+    transaction proposed_trx;
+    proposed_trx.expiration = op.expiration_time;
     for (const op_wrapper& wrap : op.proposed_ops)
     {
-        _proposed_trx.operations.push_back(wrap.op);
+        proposed_trx.operations.push_back(wrap.op);
     }
 
-   _proposed_trx.validate();
+    proposed_trx.validate();
 
-   const proposal_object& proposal = _db._temporary_public_impl().create<proposal_object>([&](proposal_object& proposal) {
-      proposal.external_id = op.external_id;
-      _proposed_trx.expiration = op.expiration_time;
-      proposal.proposed_transaction = _proposed_trx;
-      proposal.expiration_time = op.expiration_time;
-      proposal.proposer = op.creator;
-      if (op.review_period_seconds)
-        proposal.review_period_time = op.expiration_time - *op.review_period_seconds;
+    // All accounts which must provide both owner and active authority should be omitted from the active authority set;
+    // owner authority approval implies active authority approval.
+    // Posting authority can not be combined with owner/active authorities
+    flat_set<account_name_type> remaining_active;
+    std::set_difference(
+      required_active.begin(), required_active.end(),
+      required_owner.begin(), required_owner.end(),
+      std::inserter(remaining_active, remaining_active.begin())
+    );
 
-      //Populate the required approval sets
-      flat_set<account_name_type> required_active;
-      flat_set<account_name_type> required_posting;
-      vector<authority> other;
-      
-      // TODO: consider caching values from evaluate?
-      for( auto& o : _proposed_trx.operations )
-      {
-          operation_get_required_authorities(o, required_active, proposal.required_owner_approvals, required_posting, other);
-      }
-
-      //All accounts which must provide both owner and active authority should be omitted from the active authority set;
-      //owner authority approval implies active authority approval.
-      std::set_difference(required_active.begin(), required_active.end(),
-                          proposal.required_owner_approvals.begin(), proposal.required_owner_approvals.end(),
-                          std::inserter(proposal.required_active_approvals, proposal.required_active_approvals.begin()));
-   });
+    proposals_service.create_proposal(
+      op.external_id, 
+      proposed_trx,
+      op.expiration_time,
+      op.creator,
+      op.review_period_seconds,
+      required_owner,
+      remaining_active,
+      required_posting
+    );
 }
 
 void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
 {
-    const auto& proposals_service = _db.obtain_service<dbs_proposal>();
+    auto& proposals_service = _db.obtain_service<dbs_proposal>();
     const auto& block_time = _db.head_block_time();
     chainbase::database& db = _db._temporary_public_impl();
 
@@ -587,33 +588,39 @@ void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
 
     if (proposal.review_period_time && block_time >= *proposal.review_period_time)
     {
-        FC_ASSERT(op.active_approvals_to_add.empty() && op.owner_approvals_to_add.empty(),
-          "This proposal is in its review period. No new approvals may be added." );
+        FC_ASSERT(
+          op.owner_approvals_to_add.empty() && 
+          op.active_approvals_to_add.empty() && 
+          op.posting_approvals_to_add.empty(), 
+          "This proposal is in its review period. No new approvals may be added.");
     }
 
+    for (account_name_type account : op.owner_approvals_to_remove)
+    {
+        FC_ASSERT(proposal.available_owner_approvals.find(account) != proposal.available_owner_approvals.end(), 
+        "", ("account", account)("available", proposal.available_owner_approvals));
+    }
     for (account_name_type account : op.active_approvals_to_remove)
     {
         FC_ASSERT(proposal.available_active_approvals.find(account) != proposal.available_active_approvals.end(),
           "", ("account", account)("available", proposal.available_active_approvals));
     }
-    for (account_name_type account : op.owner_approvals_to_remove)
+    for (account_name_type account : op.posting_approvals_to_remove)
     {
-        FC_ASSERT(proposal.available_owner_approvals.find(account) != proposal.available_owner_approvals.end(),
-          "", ("account", account)("available", proposal.available_owner_approvals));
+        FC_ASSERT(proposal.available_posting_approvals.find(account) != proposal.available_posting_approvals.end(),
+          "", ("account", account)("available", proposal.available_posting_approvals));
     }
 
-    db.modify(proposal, [&](proposal_object& p) {
-        p.available_active_approvals.insert(op.active_approvals_to_add.begin(), op.active_approvals_to_add.end());
-        p.available_owner_approvals.insert(op.owner_approvals_to_add.begin(), op.owner_approvals_to_add.end());
-        for(account_name_type account : op.active_approvals_to_remove)
-          p.available_active_approvals.erase(account);
-        for(account_name_type account : op.owner_approvals_to_remove)
-          p.available_owner_approvals.erase(account);
-        for(const auto& key : op.key_approvals_to_add)
-          p.available_key_approvals.insert(key);
-        for(const auto& key : op.key_approvals_to_remove)
-          p.available_key_approvals.erase(key);
-    });
+    proposals_service.update_proposal(proposal, 
+      op.owner_approvals_to_add,
+      op.active_approvals_to_add,
+      op.posting_approvals_to_add,
+      op.owner_approvals_to_remove,
+      op.active_approvals_to_remove,
+      op.posting_approvals_to_remove,
+      op.key_approvals_to_add,
+      op.key_approvals_to_remove
+    );
 
     // If the proposal has a review period, don't bother attempting to authorize/execute it.
     // Proposals with a review period may never be executed except at their expiration.
@@ -622,18 +629,18 @@ void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
     if (proposal.is_authorized_to_execute(db))
     {
         // All required approvals are satisfied. Execute!
-        try {
+        try 
+        {
             _db.push_proposal(proposal);
-        } catch(fc::exception& e) {
+        } 
+        catch(fc::exception& e) {
             db.modify(proposal, [&e](proposal_object& p) {
                 fc::from_string(p.fail_reason, e.to_string(fc::log_level(fc::log_level::all)));
             });
-
-          // wlog("Proposed transaction ${id} failed to apply once approved with exception:\n----\n${reason}\n----\nWill try again when it expires.",
-          //       ("id", op.proposal)("reason", e.to_detail_string()));
+            wlog("Proposed transaction ${id} failed to apply once approved with exception:\n----\n${reason}\n----\nWill try again when it expires.",
+                ("id", proposal.external_id)("reason", e.to_detail_string()));
         }
     }
-
 }
 
 void make_review_evaluator::do_apply(const make_review_operation& op)

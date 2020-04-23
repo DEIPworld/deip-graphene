@@ -16,19 +16,23 @@ bool proposal_object::is_authorized_to_execute(chainbase::database& db) const
         = [&](const string& name) { return authority(db.get<account_authority_object, by_account>(name).posting); };
 
    try {
-      verify_authority( proposed_transaction.operations, 
-                        available_key_approvals,
-                        get_active,
-                        get_owner,
-                        get_posting,
-                        DEIP_MAX_SIG_CHECK_DEPTH,
-                        available_active_approvals,
-                        available_owner_approvals);
+      verify_authority(
+        proposed_transaction.operations, 
+        available_key_approvals,
+        get_active,
+        get_owner,
+        get_posting,
+        DEIP_MAX_SIG_CHECK_DEPTH,
+        available_active_approvals,
+        available_owner_approvals,
+        available_posting_approvals
+      );
    } 
    catch ( const fc::exception& e )
    {
       return false;
    }
+
    return true;
 }
 

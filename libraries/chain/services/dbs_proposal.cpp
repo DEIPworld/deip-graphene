@@ -80,22 +80,108 @@ const dbs_proposal::proposal_ref_type dbs_proposal::get_proposals_by_research_gr
     return ret;
 }
 
-const proposal_object& dbs_proposal::create_proposal(const std::string json_data,
-                                                     const account_name_type& creator,
-                                                     const research_group_id_type& research_group_id,
-                                                     const fc::time_point_sec expiration_time,
-                                                     const percent_type quorum)
+const proposal_object& dbs_proposal::create_proposal(
+  const external_id_type& external_id,
+  const deip::protocol::transaction& proposed_trx,
+  const fc::time_point_sec& expiration_time,
+  const account_name_type& proposer,
+  const fc::optional<uint32_t>& review_period_seconds,
+  const flat_set<account_name_type>& required_owner,
+  const flat_set<account_name_type>& required_active,
+  const flat_set<account_name_type>& required_posting
+) 
 {
-    const proposal_object& new_proposal = db_impl().create<proposal_object>([&](proposal_object& proposal) {
-        // fc::from_string(proposal.data, json_data);
-        // proposal.creator = creator;
-        // proposal.research_group_id = research_group_id;
-        // proposal.creation_time = db_impl().head_block_time();
-        // proposal.expiration_time = expiration_time;
-        // proposal.quorum = quorum;
+    FC_ASSERT(proposed_trx.expiration == expiration_time,
+      "Proposal expiration time must be equal to proposed transaction expiration time");
+
+    std::vector<account_name_type> owner_active_diff;
+    std::vector<account_name_type> owner_posting_diff;
+    std::vector<account_name_type> active_posting_diff;
+
+    std::set_intersection(
+      required_owner.begin(), required_owner.end(), 
+      required_active.begin(), required_active.end(),
+      std::inserter(owner_active_diff, owner_active_diff.begin()));
+
+    std::set_intersection(
+      required_owner.begin(), required_owner.end(), 
+      required_posting.begin(), required_posting.end(),
+      std::inserter(owner_posting_diff, owner_posting_diff.begin()));
+
+    std::set_intersection(
+      required_active.begin(), required_active.end(), 
+      required_posting.begin(), required_posting.end(),
+      std::inserter(active_posting_diff, active_posting_diff.begin()));
+
+    FC_ASSERT(owner_active_diff.size() == 0,
+      "Ambiguous owner and active authorities detected", 
+      ("owner", required_owner)
+      ("active", required_active)
+    );
+
+    FC_ASSERT(owner_posting_diff.size() == 0,
+      "Ambiguous owner and posting authorities detected", 
+      ("owner", required_owner)
+      ("posting", required_posting)
+    );
+
+    FC_ASSERT(active_posting_diff.size() == 0,
+      "Ambiguous active and posting authorities detected", 
+      ("active", required_active)
+      ("posting", required_posting)
+    );
+
+    const proposal_object& proposal = db_impl().create<proposal_object>([&](proposal_object& p_o) {
+        p_o.external_id = external_id;
+        p_o.proposed_transaction = proposed_trx;
+        p_o.expiration_time = expiration_time;
+        p_o.proposer = proposer;
+
+        if (review_period_seconds)
+        {
+            p_o.review_period_time = expiration_time - *review_period_seconds;
+        }
+
+        p_o.required_owner_approvals.insert(required_owner.begin(), required_owner.end());
+        p_o.required_active_approvals.insert(required_active.begin(), required_active.end());
+        p_o.required_posting_approvals.insert(required_posting.begin(), required_posting.end());
     });
 
-    return new_proposal;
+    return proposal;
+}
+
+
+const proposal_object& dbs_proposal::update_proposal(
+  const proposal_object& proposal,
+  const flat_set<account_name_type>& owner_approvals_to_add,
+  const flat_set<account_name_type>& active_approvals_to_add,
+  const flat_set<account_name_type>& posting_approvals_to_add,
+  const flat_set<account_name_type>& owner_approvals_to_remove,
+  const flat_set<account_name_type>& active_approvals_to_remove,
+  const flat_set<account_name_type>& posting_approvals_to_remove,
+  const flat_set<public_key_type>& key_approvals_to_add,
+  const flat_set<public_key_type>& key_approvals_to_remove 
+)
+{
+    db_impl().modify(proposal, [&](proposal_object& p_o) {
+        p_o.available_owner_approvals.insert(owner_approvals_to_add.begin(), owner_approvals_to_add.end());
+        p_o.available_active_approvals.insert(active_approvals_to_add.begin(), active_approvals_to_add.end());
+        p_o.available_posting_approvals.insert(posting_approvals_to_add.begin(), posting_approvals_to_add.end());
+
+        for (account_name_type account : owner_approvals_to_remove)
+            p_o.available_owner_approvals.erase(account);
+        for (account_name_type account : active_approvals_to_remove)
+            p_o.available_active_approvals.erase(account);
+        for (account_name_type account : posting_approvals_to_remove)
+            p_o.available_posting_approvals.erase(account);
+
+        for (const auto& key : key_approvals_to_add)
+            p_o.available_key_approvals.insert(key);
+        for (const auto& key : key_approvals_to_remove)
+            p_o.available_key_approvals.erase(key);
+    });
+    
+    return proposal;
 }
 
 void dbs_proposal::remove(const proposal_object& proposal)

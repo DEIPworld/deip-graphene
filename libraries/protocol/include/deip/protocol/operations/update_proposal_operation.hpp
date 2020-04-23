@@ -10,6 +10,8 @@ namespace protocol {
 struct update_proposal_operation: public base_operation
 {
     external_id_type              external_id;
+    flat_set<account_name_type>   posting_approvals_to_add;
+    flat_set<account_name_type>   posting_approvals_to_remove;
     flat_set<account_name_type>   active_approvals_to_add;
     flat_set<account_name_type>   active_approvals_to_remove;
     flat_set<account_name_type>   owner_approvals_to_add;
@@ -31,6 +33,12 @@ struct update_proposal_operation: public base_operation
 
         if( auth.weight_threshold > 0 )
             o.emplace_back( std::move(auth) );
+    }
+
+    void get_required_posting_authorities( flat_set<account_name_type>& a )const
+    {
+        for( const auto& i : posting_approvals_to_add )    a.insert(i);
+        for( const auto& i : posting_approvals_to_remove ) a.insert(i);
     }
 
     void get_required_active_authorities( flat_set<account_name_type>& a )const

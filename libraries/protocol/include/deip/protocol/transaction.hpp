@@ -94,7 +94,8 @@ void verify_authority(
     const authority_getter& get_posting,
     uint32_t max_recursion = DEIP_MAX_SIG_CHECK_DEPTH,
     const flat_set<account_name_type>& active_aprovals = flat_set<account_name_type>(),
-    const flat_set<account_name_type>& owner_approvals = flat_set<account_name_type>());
+    const flat_set<account_name_type>& owner_approvals = flat_set<account_name_type>(),
+    const flat_set<account_name_type>& posting_approvals = flat_set<account_name_type>());
 
 struct annotated_signed_transaction : public signed_transaction
 {

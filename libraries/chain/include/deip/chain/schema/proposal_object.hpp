@@ -28,22 +28,14 @@ public:
 
 public:
 
-    // research_group_id_type research_group_id;
-    // time_point_sec creation_time;
-    // time_point_sec expiration_time;
-    // account_t creator;
-    // shared_string data;
-    // percent_type quorum;
-    // share_type current_votes_amount;
-    // bool is_completed = false;
-    // account_name_type_set voted_accounts;
-
       proposal_id_type                id;
 
-      external_id_type                external_id;   
+      external_id_type                external_id; 
       time_point_sec                  expiration_time;
       optional<time_point_sec>        review_period_time;
       transaction                     proposed_transaction;
+      flat_set<account_name_type>     required_posting_approvals;
+      flat_set<account_name_type>     available_posting_approvals;
       flat_set<account_name_type>     required_active_approvals;
       flat_set<account_name_type>     available_active_approvals;
       flat_set<account_name_type>     required_owner_approvals;
@@ -130,6 +122,8 @@ FC_REFLECT(deip::chain::proposal_object,
   (expiration_time)
   (review_period_time)
   (proposed_transaction)
+  (required_posting_approvals)
+  (available_posting_approvals)
   (required_active_approvals)
   (available_active_approvals)
   (required_owner_approvals)
