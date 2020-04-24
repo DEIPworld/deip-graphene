@@ -35,7 +35,7 @@ namespace protocol {
 
                 // DEIP native operations
                 placeholder1_operation,
-                placeholder2_operation,
+                delete_proposal_operation,
                 create_proposal_operation,
                 update_proposal_operation,
                 make_review_operation,

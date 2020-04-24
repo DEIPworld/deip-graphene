@@ -156,10 +156,15 @@ struct extended_private_key_type
     friend bool operator!=(const extended_private_key_type& p1, const extended_private_key_type& p2);
 };
 
-enum proposal_life_time_type
+enum class authority_type : uint16_t
 {
-    day,
-    week
+    unknown = 0,
+    owner = 1,
+    active = 2,
+    posting = 3,
+
+    FIRST = owner,
+    LAST = posting
 };
 
 typedef uint32_t percent_type;
@@ -183,8 +188,13 @@ FC_REFLECT(deip::protocol::extended_public_key_type::binary_key, (check)(data))
 FC_REFLECT(deip::protocol::extended_private_key_type, (key_data))
 FC_REFLECT(deip::protocol::extended_private_key_type::binary_key, (check)(data))
 
-FC_REFLECT_ENUM(deip::protocol::proposal_life_time_type, (day)(week))
-
 FC_REFLECT_TYPENAME(deip::protocol::share_type)
 
 FC_REFLECT(deip::void_t, )
+
+FC_REFLECT_ENUM(deip::protocol::authority_type, 
+  (unknown)
+  (owner)
+  (active)
+  (posting)
+)

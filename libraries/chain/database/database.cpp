@@ -1445,7 +1445,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<recover_account_evaluator>();
     _my->_evaluator_registry.register_evaluator<change_recovery_account_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_proposal_evaluator>();
-    _my->_evaluator_registry.register_evaluator<update_proposal_evaluator>();    
+    _my->_evaluator_registry.register_evaluator<update_proposal_evaluator>();
+    _my->_evaluator_registry.register_evaluator<delete_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<make_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
     _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
@@ -1582,13 +1583,10 @@ void database::push_proposal(const proposal_object& proposal)
 
    try {
       push_proposal_nesting_guard guard( _push_proposal_nesting_depth, *this );
-      // if( _undo_db.size() >= _undo_db.max_size() )
-      //    _undo_db.set_max_size( _undo_db.size() + 1 );
-
       auto session = start_undo_session(true);
       for(auto& op : proposal.proposed_transaction.operations)
       {
-         apply_operation(op);
+          apply_operation(op);
       }
 
       remove(proposal);

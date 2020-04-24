@@ -53,11 +53,9 @@ public:
 
     const proposal_ref_type get_proposals_by_research_group_id(const account_name_type& proposer) const;
 
-    void remove(const proposal_object& proposal);
+    void remove_proposal(const proposal_object& proposal);
 
     const bool proposal_exists(const external_id_type& external_id) const;
-
-    const bool is_proposal_expired(const proposal_object& proposal) const;
 
     void clear_expired_proposals();
 };

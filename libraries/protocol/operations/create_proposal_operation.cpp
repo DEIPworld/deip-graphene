@@ -9,6 +9,78 @@
 namespace deip {
 namespace protocol {
 
+struct proposal_nesting_guard
+{
+    struct proposal_nesting_state
+    {
+        uint16_t depth = 0;
+        uint16_t nested_create_count = 0;
+        uint16_t nested_update_count = 0;
+        uint16_t nested_delete_count = 0;
+    };
+
+    std::map<external_id_type, proposal_nesting_state> nesting_state;
+
+    typedef void result_type;
+    template <typename T> void operator()(const T& v) const
+    {
+    }
+
+    // loop and self visit in proposals
+    void operator()(const create_proposal_operation& op)
+    {
+        FC_ASSERT(nesting_state.find(op.external_id) == nesting_state.end(),
+          "Ambiguous proposal ${1} detected", ("1",  op.external_id));
+
+        proposal_nesting_state proposal_state;
+        proposal_state.depth = nesting_state.size() + 1;
+        nesting_state[op.external_id] = proposal_state;
+
+        for (const op_wrapper& wrap : op.proposed_ops)
+        {
+            // Do not allow more than 1 create_proposal_operation in a proposal
+            if (wrap.op.which() == operation::tag<create_proposal_operation>().value)
+            {
+                FC_ASSERT(nesting_state[op.external_id].nested_create_count == 0,
+                  "At most one proposal create can be nested in a single proposal!");
+                nesting_state[op.external_id].nested_create_count++;
+            }
+
+            // Do not allow more than 1 update_proposal_operation in a proposal
+            if (wrap.op.which() == operation::tag<update_proposal_operation>().value)
+            {
+                FC_ASSERT(nesting_state[op.external_id].nested_update_count == 0, 
+                  "At most one proposal update can be nested in a single proposal!");
+                nesting_state[op.external_id].nested_update_count++;
+            }
+
+            // Do not allow more than 1 update_proposal_operation in a proposal
+            if (wrap.op.which() == operation::tag<delete_proposal_operation>().value)
+            {
+                FC_ASSERT(nesting_state[op.external_id].nested_delete_count == 0,
+                  "At most one proposal delete can be nested in a single proposal!");
+                nesting_state[op.external_id].nested_delete_count++;
+            }
+
+            wrap.op.visit(*this);
+        }
+    }
+
+    void operator()(const update_proposal_operation& op)
+    {
+        FC_ASSERT(nesting_state.find(op.external_id) == nesting_state.end(), 
+          "Nested proposal can not update its parent ${1} proposal",
+          ("1", op.external_id));
+    }
+
+    void operator()(const delete_proposal_operation& op)
+    {
+        FC_ASSERT(nesting_state.find(op.external_id) == nesting_state.end(), 
+          "Nested proposal can not delete its parent ${1} proposal",
+          ("1", op.external_id));
+    }
+};
+
 void create_proposal_operation::validate() const
 {
     validate_account_name(creator);
@@ -17,6 +89,9 @@ void create_proposal_operation::validate() const
     {
         operation_validate(op.op);
     }
+
+    proposal_nesting_guard nesting_guard;
+    nesting_guard(*this);
 }
 
 } // namespace protocol

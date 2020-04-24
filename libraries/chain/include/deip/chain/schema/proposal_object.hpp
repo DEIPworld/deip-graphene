@@ -73,15 +73,7 @@ typedef multi_index_container<proposal_object,
           &proposal_object::external_id
         >
     >,
-    // ordered_non_unique<
-    //   tag<by_expiration_time>,
-    //     member<
-    //       proposal_object,
-    //       fc::time_point_sec,
-    //       &proposal_object::expiration_time
-    //     >
-    // >,
-
+    
     ordered_unique<
       tag<by_expiration>,
         composite_key<proposal_object,

@@ -586,13 +586,15 @@ void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
 
     const auto& proposal = proposals_service.get_proposal(op.external_id);
 
-    if (proposal.review_period_time && block_time >= *proposal.review_period_time)
+    if (proposal.review_period_time.valid() && block_time >= *proposal.review_period_time)
     {
         FC_ASSERT(
           op.owner_approvals_to_add.empty() && 
           op.active_approvals_to_add.empty() && 
-          op.posting_approvals_to_add.empty(), 
-          "This proposal is in its review period. No new approvals may be added.");
+          op.posting_approvals_to_add.empty() && 
+          op.key_approvals_to_add.empty(), 
+          "This proposal is in its review period. No new approvals may be added."
+        );
     }
 
     for (account_name_type account : op.owner_approvals_to_remove)
@@ -624,7 +626,7 @@ void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
 
     // If the proposal has a review period, don't bother attempting to authorize/execute it.
     // Proposals with a review period may never be executed except at their expiration.
-    if (proposal.review_period_time) return;
+    if (proposal.review_period_time.valid()) return;
 
     if (proposal.is_authorized_to_execute(db))
     {
@@ -641,6 +643,30 @@ void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
                 ("id", proposal.external_id)("reason", e.to_detail_string()));
         }
     }
+}
+
+void delete_proposal_evaluator::do_apply(const delete_proposal_operation& op)
+{
+    auto& proposals_service = _db.obtain_service<dbs_proposal>();
+
+    FC_ASSERT(proposals_service.proposal_exists(op.external_id),
+      "Proposal ${1} does not exist", ("1", op.external_id));
+
+    const auto& proposal = proposals_service.get_proposal(op.external_id);
+    const auto& required_approvals = 
+      op.authority_type == static_cast<uint16_t>(authority_type::owner) 
+      ? proposal.required_owner_approvals 
+      : op.authority_type == static_cast<uint16_t>(authority_type::active)
+      ? proposal.required_active_approvals 
+      : op.authority_type == static_cast<uint16_t>(authority_type::posting)
+      ? proposal.required_posting_approvals
+      : flat_set<account_name_type>();
+
+    FC_ASSERT(required_approvals.find(op.account) != required_approvals.end(),
+      "Provided authority is not authoritative for this proposal.",
+      ("provided", op.account)("required", required_approvals));
+
+    proposals_service.remove_proposal(proposal);
 }
 
 void make_review_evaluator::do_apply(const make_review_operation& op)

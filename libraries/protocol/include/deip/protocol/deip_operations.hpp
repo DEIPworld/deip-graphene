@@ -30,6 +30,7 @@
 #include <deip/protocol/operations/update_research_metadata_operation.hpp>
 #include <deip/protocol/operations/create_proposal_operation.hpp>
 #include <deip/protocol/operations/update_proposal_operation.hpp>
+#include <deip/protocol/operations/delete_proposal_operation.hpp>
 
 namespace deip {
 namespace protocol {
@@ -72,10 +73,11 @@ inline void validate_permlink(const string& permlink)
     FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
 }
 
-inline void validate_enum_value_by_range(int val, int first, int last)
+inline void validate_enum_value_by_range(uint16_t val, uint16_t first, uint16_t last)
 {
-    FC_ASSERT(val >= first && val <= last, "Provided enum value is outside of the range: val = ${enum_val}, first = ${first}, last = ${last}",
-                                            ("enum_val", val)("first", first)("last", last));
+    FC_ASSERT(val >= first && val <= last, 
+      "Provided enum value is outside of the range: val: ${1}; FIRST: ${2}; LAST: ${3}",
+      ("1", val)("2", first)("3", last));
 }
 
 inline void validate_520_bits_hexadecimal_string(const string& str)
@@ -159,7 +161,7 @@ struct vote_for_review_operation : public base_operation
     int16_t weight = 0;
 
     void validate() const;
-    void get_required_posting_authorities(flat_set<account_name_type>& a) const
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
         a.insert(voter);
     }

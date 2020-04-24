@@ -184,19 +184,38 @@ const proposal_object& dbs_proposal::update_proposal(
     return proposal;
 }
 
-void dbs_proposal::remove(const proposal_object& proposal)
+void dbs_proposal::remove_proposal(const proposal_object& proposal)
 {
     db_impl().remove(proposal);
 }
 
-const bool dbs_proposal::is_proposal_expired(const proposal_object& proposal) const
-{
-    return db_impl().head_block_time() > proposal.expiration_time;
-}
-
 void dbs_proposal::clear_expired_proposals()
 {
+    const auto block_time = db_impl().head_block_time();
+    const auto& idx = db_impl()
+      .get_index<proposal_index>()
+      .indicies()
+      .get<by_expiration>();
 
+    while (!idx.empty() && idx.begin()->expiration_time <= block_time)
+    {
+        const proposal_object& proposal = *idx.begin();
+        try
+        {
+            if (proposal.is_authorized_to_execute(db_impl()))
+            {
+                db_impl().push_proposal(proposal);
+                // TODO: Do something with result so plugins can process it.
+                continue;
+            }
+        }
+        catch (const fc::exception& e)
+        {
+            elog("Failed to apply proposed transaction on its expiration. Deleting it.\n${proposal}\n${error}",
+                 ("proposal", proposal)("error", e.to_detail_string()));
+        }
+        remove_proposal(proposal);
+    }
 }
 
 } // namespace chain
