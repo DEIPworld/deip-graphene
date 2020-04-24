@@ -118,7 +118,7 @@ void verify_authority(const vector<operation>& ops,
             FC_ASSERT(other.size() == 0);
 
             flat_set<public_key_type> avail;
-            sign_state s(sigs, get_posting, avail);
+            sign_state s(sigs, get_posting, get_active, avail);
             s.max_recursion = max_recursion_depth;
             for (auto& id : posting_approvals)
                 s.approved_by.insert(id);
@@ -142,7 +142,7 @@ void verify_authority(const vector<operation>& ops,
         }
 
         flat_set<public_key_type> avail;
-        sign_state s(sigs, get_active, avail);
+        sign_state s(sigs, get_active, get_owner, avail);
         s.max_recursion = max_recursion_depth;
         for (auto& id : active_approvals)
             s.approved_by.insert(id);
@@ -227,7 +227,7 @@ set<public_key_type> signed_transaction::get_required_signatures(const chain_id_
     /** posting authority cannot be mixed with active authority in same transaction */
     if (required_posting.size())
     {
-        sign_state s(get_signature_keys(chain_id), get_posting, available_keys);
+        sign_state s(get_signature_keys(chain_id), get_posting, get_active, available_keys);
         s.max_recursion = max_recursion_depth;
 
         FC_ASSERT(!required_owner.size());
@@ -246,7 +246,7 @@ set<public_key_type> signed_transaction::get_required_signatures(const chain_id_
         return result;
     }
 
-    sign_state s(get_signature_keys(chain_id), get_active, available_keys);
+    sign_state s(get_signature_keys(chain_id), get_active, get_owner, available_keys);
     s.max_recursion = max_recursion_depth;
 
     for (const auto& auth : other)

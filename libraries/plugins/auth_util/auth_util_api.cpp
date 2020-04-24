@@ -74,12 +74,17 @@ void auth_util_api_impl::check_authority_signature(const check_authority_signatu
     }
 
     flat_set<protocol::public_key_type> avail;
-    protocol::sign_state ss(signing_keys,
-                            [&db](const std::string& account_name) -> const protocol::authority {
-                                return protocol::authority(
-                                    db->get<chain::account_authority_object, chain::by_account>(account_name).active);
-                            },
-                            avail);
+    protocol::sign_state ss(
+        signing_keys,
+        [&db](const std::string& account_name) -> const protocol::authority {
+            return protocol::authority(
+                db->get<chain::account_authority_object, chain::by_account>(account_name).active);
+        },
+        [&db](const std::string& account_name) -> const protocol::authority {
+            return protocol::authority(
+                db->get<chain::account_authority_object, chain::by_account>(account_name).owner);
+        },
+        avail);
 
     bool has_authority = ss.check_authority(auth);
     FC_ASSERT(has_authority);
