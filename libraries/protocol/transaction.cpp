@@ -118,23 +118,25 @@ void verify_authority(const vector<operation>& ops,
             FC_ASSERT(other.size() == 0);
 
             flat_set<public_key_type> avail;
-            sign_state s(sigs, get_posting, get_active, avail);
+            sign_state s(sigs, get_active, get_owner, get_posting, avail);
             s.max_recursion = max_recursion_depth;
+            s.allow_posting = true;
+
             for (auto& id : posting_approvals)
                 s.approved_by.insert(id);
 
             for (auto id : required_posting)
             {
                 DEIP_ASSERT(
-                    s.check_authority(id) || 
-                    s.check_authority(get_active(id)) || 
-                    s.check_authority(get_owner(id)), 
-                    tx_missing_posting_auth, 
-                    "Missing Posting Authority ${id}", 
-                    ("id", id)
-                    ("posting", get_posting(id))
-                    ("active", get_active(id))
-                    ("owner", get_owner(id))
+                  s.check_authority(id) || 
+                  s.check_authority(get_active(id)) || 
+                  s.check_authority(get_owner(id)), 
+                  tx_missing_posting_auth, 
+                  "Missing Posting Authority ${id}", 
+                  ("id", id)
+                  ("posting", get_posting(id))
+                  ("active", get_active(id))
+                  ("owner", get_owner(id))
                 );
             }
             DEIP_ASSERT(!s.remove_unused_signatures(), tx_irrelevant_sig, "Unnecessary signature(s) detected");
@@ -142,8 +144,9 @@ void verify_authority(const vector<operation>& ops,
         }
 
         flat_set<public_key_type> avail;
-        sign_state s(sigs, get_active, get_owner, avail);
+        sign_state s(sigs, get_active, get_owner, get_posting, avail);
         s.max_recursion = max_recursion_depth;
+
         for (auto& id : active_approvals)
             s.approved_by.insert(id);
         for (auto& id : owner_approvals)
@@ -152,24 +155,11 @@ void verify_authority(const vector<operation>& ops,
         for (const auto& auth : other)
         {
             DEIP_ASSERT(
-                s.check_authority(auth), 
-                tx_missing_other_auth, 
-                "Missing Authority", 
-                ("auth", auth)
-                ("sigs", sigs)
-            );
-        }
-
-        // fetch all of the top level authorities
-        for (auto id : required_owner)
-        {
-            DEIP_ASSERT(
-              owner_approvals.find(id) != owner_approvals.end() ||
-              s.check_authority(get_owner(id)),
-              tx_missing_owner_auth, 
-              "Missing Owner Authority ${id}", 
-              ("id", id)
-              ("auth", get_owner(id))
+              s.check_authority(auth), 
+              tx_missing_other_auth, 
+              "Missing Authority", 
+              ("auth", auth)
+              ("sigs", sigs)
             );
         }
 
@@ -183,6 +173,19 @@ void verify_authority(const vector<operation>& ops,
               ("id", id)
               ("auth", get_active(id))
               ("owner", get_owner(id))
+            );
+        }
+
+        // fetch all of the top level authorities
+        for (auto id : required_owner)
+        {
+            DEIP_ASSERT(
+              owner_approvals.find(id) != owner_approvals.end() ||
+              s.check_authority(get_owner(id)),
+              tx_missing_owner_auth, 
+              "Missing Owner Authority ${id}", 
+              ("id", id)
+              ("auth", get_owner(id))
             );
         }
 
@@ -222,16 +225,20 @@ set<public_key_type> signed_transaction::get_required_signatures(const chain_id_
     flat_set<account_name_type> required_owner;
     flat_set<account_name_type> required_posting;
     vector<authority> other;
+    
     get_required_authorities(required_active, required_owner, required_posting, other);
 
     /** posting authority cannot be mixed with active authority in same transaction */
     if (required_posting.size())
     {
-        sign_state s(get_signature_keys(chain_id), get_posting, get_active, available_keys);
-        s.max_recursion = max_recursion_depth;
+        FC_ASSERT(required_owner.size() == 0);
+        FC_ASSERT(required_active.size() == 0);
+        FC_ASSERT(other.size() == 0);
 
-        FC_ASSERT(!required_owner.size());
-        FC_ASSERT(!required_active.size());
+        sign_state s(get_signature_keys(chain_id), get_active, get_owner, get_posting, available_keys);
+        s.max_recursion = max_recursion_depth;
+        s.allow_posting = true;
+
         for (auto& posting : required_posting)
             s.check_authority(posting);
 
@@ -246,7 +253,7 @@ set<public_key_type> signed_transaction::get_required_signatures(const chain_id_
         return result;
     }
 
-    sign_state s(get_signature_keys(chain_id), get_active, get_owner, available_keys);
+    sign_state s(get_signature_keys(chain_id), get_active, get_owner, get_posting, available_keys);
     s.max_recursion = max_recursion_depth;
 
     for (const auto& auth : other)
