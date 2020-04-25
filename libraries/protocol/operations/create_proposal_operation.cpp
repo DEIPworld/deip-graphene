@@ -38,25 +38,55 @@ struct proposal_nesting_guard
 
         for (const op_wrapper& wrap : op.proposed_ops)
         {
-            // Do not allow more than 1 create_proposal_operation in a proposal
             if (wrap.op.which() == operation::tag<create_proposal_operation>().value)
             {
+                // Do not allow more than 1 create_proposal_operation in a proposal
                 FC_ASSERT(nesting_state[op.external_id].nested_create_count == 0,
                   "At most one proposal create can be nested in a single proposal!");
                 nesting_state[op.external_id].nested_create_count++;
             }
 
-            // Do not allow more than 1 update_proposal_operation in a proposal
             if (wrap.op.which() == operation::tag<update_proposal_operation>().value)
             {
+                const auto& update_proposal_op = wrap.op.get<update_proposal_operation>();
+                FC_ASSERT(std::none_of(op.proposed_ops.begin(), op.proposed_ops.end(), [&](const op_wrapper& wrap) {
+                    if (wrap.op.which() == operation::tag<create_proposal_operation>().value)
+                    {
+                        const auto& create_proposal_op = wrap.op.get<create_proposal_operation>();
+                        return update_proposal_op.external_id == create_proposal_op.external_id;
+                    }
+                    if (wrap.op.which() == operation::tag<delete_proposal_operation>().value)
+                    {
+                        const auto& delete_proposal_op = wrap.op.get<delete_proposal_operation>();
+                        return update_proposal_op.external_id == delete_proposal_op.external_id;
+                    }
+                    return false;
+                }), "Nested proposal can not affect its sibling ${1} proposal", ("1", update_proposal_op.external_id));
+
+                // Do not allow more than 1 update_proposal_operation in a proposal
                 FC_ASSERT(nesting_state[op.external_id].nested_update_count == 0, 
                   "At most one proposal update can be nested in a single proposal!");
                 nesting_state[op.external_id].nested_update_count++;
             }
 
-            // Do not allow more than 1 update_proposal_operation in a proposal
             if (wrap.op.which() == operation::tag<delete_proposal_operation>().value)
             {
+                const auto& delete_proposal_op = wrap.op.get<delete_proposal_operation>();
+                FC_ASSERT(std::none_of(op.proposed_ops.begin(), op.proposed_ops.end(), [&](const op_wrapper& wrap) {
+                    if (wrap.op.which() == operation::tag<create_proposal_operation>().value)
+                    {
+                        const auto& create_proposal_op = wrap.op.get<create_proposal_operation>();
+                        return delete_proposal_op.external_id == create_proposal_op.external_id;
+                    }
+                    if (wrap.op.which() == operation::tag<update_proposal_operation>().value)
+                    {
+                        const auto& update_proposal_op = wrap.op.get<update_proposal_operation>();
+                        return delete_proposal_op.external_id == update_proposal_op.external_id;
+                    }
+                    return false;
+                }), "Nested proposal can not affect its sibling ${1} proposal", ("1", delete_proposal_op.external_id));
+
+                // Do not allow more than 1 update_proposal_operation in a proposal
                 FC_ASSERT(nesting_state[op.external_id].nested_delete_count == 0,
                   "At most one proposal delete can be nested in a single proposal!");
                 nesting_state[op.external_id].nested_delete_count++;
@@ -89,7 +119,7 @@ void create_proposal_operation::validate() const
     {
         operation_validate(op.op);
     }
-
+    // let's keep the nesting as simple as possible for now
     proposal_nesting_guard nesting_guard;
     nesting_guard(*this);
 }

@@ -59,6 +59,8 @@ struct update_proposal_operation: public base_operation
 
 FC_REFLECT( deip::protocol::update_proposal_operation,
   (external_id)
+  (posting_approvals_to_add)
+  (posting_approvals_to_remove)
   (active_approvals_to_add)
   (active_approvals_to_remove)
   (owner_approvals_to_add)
