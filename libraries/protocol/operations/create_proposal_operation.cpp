@@ -38,6 +38,8 @@ struct proposal_nesting_guard
 
         for (const op_wrapper& wrap : op.proposed_ops)
         {
+            FC_ASSERT(!is_virtual_operation(wrap.op), "Virtual operations can not be nested in proposals");
+
             if (wrap.op.which() == operation::tag<create_proposal_operation>().value)
             {
                 // Do not allow more than 1 create_proposal_operation in a proposal
