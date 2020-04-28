@@ -21,9 +21,9 @@ const research_content_object& dbs_research_content::create_research_content(
   const std::string& content,
   const std::string& permlink,
   const research_content_type& type,
-  const std::set<account_name_type>& authors,
-  const std::set<research_content_id_type>& references,
-  const std::set<string>& foreign_references,
+  const flat_set<account_name_type>& authors,
+  const flat_set<research_content_id_type>& references,
+  const flat_set<string>& foreign_references,
   const fc::time_point_sec& timestamp) 
 {
     const auto& research_content = db_impl().create<research_content_object>([&](research_content_object& rc_o) {

@@ -95,8 +95,8 @@ struct genesis_state_type
         std::string content;
         std::string permlink;
         uint16_t type;
-        std::set<account_name_type> authors;
-        std::set<protocol::external_id_type> references;
+        flat_set<account_name_type> authors;
+        flat_set<protocol::external_id_type> references;
     };
 
     struct vesting_balance_type

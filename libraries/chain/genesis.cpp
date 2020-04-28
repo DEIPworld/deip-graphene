@@ -396,9 +396,9 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
 
         const auto& research = research_service.get_research(research_content.research_external_id);
 
-        const std::set<string>& foreign_references = {};
+        const flat_set<string> foreign_references;
         const time_point_sec timestamp = get_genesis_time();
-        std::set<research_content_id_type> references_ids;
+        flat_set<research_content_id_type> references_ids;
 
         for (auto& reference_external_id : research_content.references)
         {

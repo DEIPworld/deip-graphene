@@ -283,7 +283,8 @@ public:
     ////////////////
     // Researches //
     ////////////////
-    fc::optional<research_api_obj> get_research_by_id(const research_id_type& id) const;
+    fc::optional<research_api_obj> get_research(const external_id_type& id) const;
+    fc::optional<research_api_obj> get_research_by_id(const research_id_type& internal_id) const;
     fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
     fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
     vector<research_api_obj> get_researches_by_discipline_id(const uint64_t from, const uint32_t limit, const discipline_id_type& discipline_id) const;
@@ -293,7 +294,8 @@ public:
     //////////////////////
     // Research Content //
     //////////////////////
-    fc::optional<research_content_api_obj> get_research_content_by_id(const research_content_id_type& id) const;
+    fc::optional<research_content_api_obj> get_research_content(const external_id_type& id) const;
+    fc::optional<research_content_api_obj> get_research_content_by_id(const research_content_id_type& internal_id) const;
     fc::optional<research_content_api_obj> get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
     fc::optional<research_content_api_obj> get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
     vector<research_content_api_obj> get_all_research_content(const research_id_type& research_id) const;
@@ -317,6 +319,7 @@ public:
     ////////////////////
     // Research group //
     ////////////////////
+    fc::optional<research_group_api_obj> get_research_group(const account_name_type& account) const;
     fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type research_group_id) const;
     fc::optional<research_group_api_obj> get_research_group_by_permlink(const string& permlink) const;
     vector<research_group_api_obj> get_all_research_groups(const bool& is_personal_need) const;
@@ -612,6 +615,7 @@ FC_API(deip::app::database_api,
    (get_disciplines_by_parent_id)
 
    // Research
+   (get_research)
    (get_research_by_id)
    (get_research_by_permlink)
    (get_researches_by_discipline_id)
@@ -621,6 +625,7 @@ FC_API(deip::app::database_api,
 
 
    // Research Content
+   (get_research_content)
    (get_research_content_by_id)
    (get_all_research_content)
    (get_research_content_by_type)
@@ -639,12 +644,12 @@ FC_API(deip::app::database_api,
    (get_proposal)
 
    // Research group
+   (get_research_group)
    (get_research_group_by_id)
    (get_research_group_by_permlink)
    (get_all_research_groups)
    (check_research_group_existence_by_permlink)
 
-   // Research group tokens
    (get_research_group_tokens_by_account)
    (get_research_group_tokens_by_research_group)
    (get_research_group_token_by_account_and_research_group_id)

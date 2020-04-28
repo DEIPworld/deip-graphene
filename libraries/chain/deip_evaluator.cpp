@@ -2313,12 +2313,12 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
     auto& discipline_service =_db.obtain_service<dbs_discipline>();
 
     FC_ASSERT(account_service.account_exists(op.research_group),
-              "Account(creator) ${1} does not exist",
-              ("1", op.research_group));
+      "Account(creator) ${1} does not exist",
+      ("1", op.research_group));
 
     FC_ASSERT(research_group_service.research_group_exists(op.research_group),
-              "Research group with external id: ${1} does not exists",
-              ("1", op.research_group));
+      "Research group with external id: ${1} does not exists",
+      ("1", op.research_group));
 
     const auto& research_group = research_group_service.get_research_group_by_account(op.research_group);
 
@@ -2326,9 +2326,9 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
     for (auto& discipline_id : op.disciplines)
     {
         FC_ASSERT(discipline_service.discipline_exists(discipline_id),
-                  "Discipline with ID: ${1} does not exist",
-                  ("1", discipline_id))
-                  ;
+          "Discipline with ID: ${1} does not exist",
+          ("1", discipline_id));
+
         disciplines.insert(discipline_id_type(discipline_id));
     }
 
@@ -2348,35 +2348,31 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
     auto& research_content_service = _db.obtain_service<dbs_research_content>();
     auto& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
     auto& expertise_contributions_service = _db.obtain_service<dbs_expertise_contribution>();
+    const auto& block_time = _db.head_block_time();
 
-    FC_ASSERT(account_service.account_exists(op.creator),
-              "Account(creator) ${1} does not exist",
-              ("1", op.creator));
+    FC_ASSERT(account_service.account_exists(op.research_group),
+      "Account(creator) ${1} does not exist",
+      ("1", op.research_group));
+              
+    FC_ASSERT(research_group_service.research_group_exists(op.research_group),
+      "Research group with external id: ${1} does not exists",
+      ("1", op.research_group));
 
-    FC_ASSERT(research_group_service.research_group_exists(op.research_group_external_id),
-              "Research group with external id: ${1} does not exists",
-              ("1", op.research_group_external_id));
-
-    const auto& research_group = research_group_service.get_research_group_by_account(op.research_group_external_id);
-
-    FC_ASSERT(research_group_service.is_research_group_member(op.creator, research_group.id),
-              "Account(creator) ${1} is not a member of ${2} research group",
-              ("${1}", op.creator)("2", research_group.id));
+    const auto& research_group = research_group_service.get_research_group_by_account(op.research_group);
 
     FC_ASSERT(research_service.research_exists(op.research_external_id),
-              "Research with external id: ${1} does not exist",
-              ("1", op.research_external_id));
+      "Research with external id: ${1} does not exist",
+      ("1", op.research_external_id));
 
-    const auto& now = _db.head_block_time();
 
     const auto& research = research_service.get_research(op.research_external_id);
 
     FC_ASSERT(!research.is_finished,
-              "The research ${1} has been finished already",
-              ("1", research.title));
+      "The research ${1} has been finished already",
+      ("1", research.title));
 
-    std::set<research_content_id_type> references_internal_ids;
-    std::set<research_content_object> references;
+    flat_set<research_content_id_type> references_internal_ids;
+    flat_set<research_content_object> references;
 
     for (external_id_type reference : op.references)
     {
@@ -2394,7 +2390,7 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
       op.authors,
       references_internal_ids,
       op.foreign_references,
-      now);
+      block_time);
 
     for (auto& ref : references)
     {
@@ -2421,7 +2417,7 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
         const eci_diff research_content_eci_diff = eci_diff(
           previous_research_content_eci.at(rel.discipline_id),
           updated_research_content.eci_per_discipline.at(rel.discipline_id),
-          now,
+          block_time,
           static_cast<uint16_t>(expertise_contribution_type::publication),
           updated_research_content.id._id
         );
@@ -2442,7 +2438,7 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
         const eci_diff research_eci_diff = eci_diff(
           previous_research_eci.at(rel.discipline_id),
           updated_research.eci_per_discipline.at(rel.discipline_id),
-          now,
+          block_time,
           static_cast<uint16_t>(expertise_contribution_type::publication),
           updated_research_content.id._id
         );
