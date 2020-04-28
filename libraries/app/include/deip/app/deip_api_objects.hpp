@@ -381,9 +381,9 @@ struct research_api_obj
         ,  permlink(fc::to_string(r.permlink))
         ,  is_finished(r.is_finished)
         ,  owned_tokens(r.owned_tokens)
-        ,  review_share_in_percent(r.review_share_in_percent)
+        ,  review_share(r.review_share)
         ,  created_at(r.created_at)
-        ,  dropout_compensation_in_percent(r.dropout_compensation_in_percent)
+        ,  compensation_share(r.compensation_share)
         ,  disciplines(disciplines.begin(), disciplines.end())
         ,  group_permlink(group_permlink)
         ,  number_of_positive_reviews(r.number_of_positive_reviews)
@@ -412,9 +412,9 @@ struct research_api_obj
     std::string permlink;
     bool is_finished;
     share_type owned_tokens;
-    uint16_t review_share_in_percent;
+    uint16_t review_share;
     time_point_sec created_at;
-    int16_t dropout_compensation_in_percent;
+    int16_t compensation_share;
     vector<discipline_api_obj> disciplines;
     string group_permlink;
 
@@ -546,26 +546,6 @@ struct proposal_api_obj
     vector<string> votes;
 };
 
-struct research_group_token_api_obj
-{
-    research_group_token_api_obj(const chain::research_group_token_object& rgt)
-        : id(rgt.id._id)
-        ,  research_group_id(rgt.research_group_id._id)
-        ,  amount(rgt.amount.value)
-        ,  owner(rgt.owner)
-    {}
-
-    // because fc::variant require for temporary object
-    research_group_token_api_obj()
-    {
-    }
-
-    int64_t id;
-    int64_t research_group_id;
-    uint32_t amount;
-    account_name_type owner;
-};
-
 struct research_group_api_obj
 {
     research_group_api_obj(const chain::research_group_object& rg_o, const account_api_obj& acc_o)
@@ -612,7 +592,30 @@ struct research_group_api_obj
     bool is_dao;
     bool is_personal;
     bool is_centralized;
-    account_api_obj account;
+    fc::optional<account_api_obj> account;
+};
+
+struct research_group_token_api_obj
+{
+    research_group_token_api_obj(const chain::research_group_token_object& rgt, const research_group_api_obj& rg)
+        : id(rgt.id._id)
+        , research_group_id(rgt.research_group_id._id)
+        , amount(rgt.amount.value)
+        , owner(rgt.owner)
+        , research_group(rg)
+    {
+    }
+
+    // because fc::variant require for temporary object
+    research_group_token_api_obj()
+    {
+    }
+
+    int64_t id;
+    int64_t research_group_id; // deprecated
+    uint32_t amount;
+    account_name_type owner;
+    research_group_api_obj research_group;
 };
 
 struct research_token_sale_api_obj
@@ -724,7 +727,7 @@ struct research_listing_api_obj
         , abstract(r.abstract)
         , permlink(r.permlink)
         , owned_tokens(r.owned_tokens)
-        , review_share_in_percent(r.review_share_in_percent)
+        , review_share(r.review_share)
         , created_at(r.created_at)
         , group_members(group_members.begin(), group_members.end())
         , disciplines(r.disciplines.begin(), r.disciplines.end())
@@ -756,7 +759,7 @@ struct research_listing_api_obj
     string abstract;
     string permlink;
     share_type owned_tokens;
-    uint16_t review_share_in_percent;
+    uint16_t review_share;
     time_point_sec created_at;
     vector<account_name_type> group_members;
     vector<discipline_api_obj> disciplines;
@@ -1480,9 +1483,9 @@ FC_REFLECT( deip::app::research_api_obj,
             (permlink)
             (is_finished)
             (owned_tokens)
-            (review_share_in_percent)
+            (review_share)
             (created_at)
-            (dropout_compensation_in_percent)
+            (compensation_share)
             (disciplines)
             (group_permlink)
             (eci_per_discipline)
@@ -1539,6 +1542,7 @@ FC_REFLECT( deip::app::research_group_token_api_obj,
             (research_group_id)
             (amount)
             (owner)
+            (research_group)
 )
 
 FC_REFLECT( deip::app::research_group_api_obj,
@@ -1599,7 +1603,7 @@ FC_REFLECT( deip::app::research_listing_api_obj,
            (abstract)
            (permlink)
            (owned_tokens)
-           (review_share_in_percent)
+           (review_share)
            (created_at)
            (group_members)
            (disciplines)

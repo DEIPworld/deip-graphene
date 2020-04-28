@@ -19,14 +19,14 @@ const research_object& dbs_research::create_research(
   const string& abstract, 
   const string& permlink,
   std::set<discipline_id_type>& disciplines,
-  const uint16_t& review_share_in_percent,
-  const uint16_t& dropout_compensation_in_percent, 
+  const uint16_t& review_share,
+  const uint16_t& compensation_share, 
   const bool& is_private,
   const bool& is_finished,
   const share_type& owned_tokens,
   const time_point_sec& created_at,
   const time_point_sec& last_update_time,
-  const time_point_sec& review_share_in_percent_last_update
+  const time_point_sec& review_share_last_update
 ) {
     auto& research_disciplines_service = db_impl().obtain_service<dbs_research_discipline_relation>();
 
@@ -36,14 +36,14 @@ const research_object& dbs_research::create_research(
         fc::from_string(r_o.title, title);
         fc::from_string(r_o.abstract, abstract);
         fc::from_string(r_o.permlink, permlink);
-        r_o.review_share_in_percent = review_share_in_percent;
-        r_o.dropout_compensation_in_percent = dropout_compensation_in_percent;
+        r_o.review_share = review_share;
+        r_o.compensation_share = compensation_share;
         r_o.is_private = is_private;
         r_o.is_finished = is_finished;
         r_o.owned_tokens = owned_tokens;
         r_o.created_at = created_at;
         r_o.last_update_time = last_update_time;
-        r_o.review_share_in_percent_last_update = review_share_in_percent_last_update;
+        r_o.review_share_last_update = review_share_last_update;
     });
 
     for (auto& discipline_id : disciplines)
@@ -162,13 +162,13 @@ void dbs_research::increase_owned_tokens(const research_object& research, const 
 }
 
 void dbs_research::change_research_review_share_percent(const research_id_type& research_id,
-                                                        const uint16_t review_share_in_percent)
+                                                        const uint16_t review_share)
 {
     check_research_existence(research_id);
     const research_object& research = get_research(research_id);
     db_impl().modify(research, [&](research_object& r) {
-        r.review_share_in_percent = review_share_in_percent;
-        r.review_share_in_percent_last_update = db_impl().head_block_time();
+        r.review_share = review_share;
+        r.review_share_last_update = db_impl().head_block_time();
     });
 }
 

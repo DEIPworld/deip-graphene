@@ -9,7 +9,7 @@
 
 #define RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT 10
 #define RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT 20
-#define DROPOUT_COMPENSATION_IN_PERCENT 1500
+#define COMPENSATION_IN_PERCENT 1500
 
 namespace deip {
 namespace chain {
@@ -30,8 +30,8 @@ public:
             r.title = "Research #1";
             r.permlink = "Research #1 permlink";
             r.research_group_id = 1;
-            r.review_share_in_percent = RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT;
-            r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
+            r.review_share = RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT;
+            r.compensation_share = COMPENSATION_IN_PERCENT;
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for Research #1";
@@ -86,8 +86,8 @@ public:
             r.title = "Research #2";
             r.permlink = "permlink for Research #2";
             r.research_group_id = 2;
-            r.review_share_in_percent = RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT;
-            r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
+            r.review_share = RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT;
+            r.compensation_share = COMPENSATION_IN_PERCENT;
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for research #2";

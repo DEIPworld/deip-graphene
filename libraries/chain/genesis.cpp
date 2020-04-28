@@ -91,9 +91,9 @@ void database::init_genesis(const genesis_state_type& genesis_state)
 
         init_genesis_global_property_object(genesis_state);
         init_genesis_assets(genesis_state);
+        init_genesis_account_balances(genesis_state);
         init_genesis_accounts(genesis_state);
         init_genesis_research_groups(genesis_state);
-        init_genesis_account_balances(genesis_state);
         init_genesis_witnesses(genesis_state);
         init_genesis_witness_schedule(genesis_state);
         init_genesis_disciplines(genesis_state);
@@ -161,7 +161,7 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
           owner_authority,
           owner_authority,
           owner_authority,
-          asset(0, DEIP_SYMBOL),
+          DEIP_MIN_ACCOUNT_CREATION_FEE,
           {},
           true
         );
@@ -528,7 +528,7 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
       owner_authority,
       active_authority,
       posting_authority,
-      asset(0, DEIP_SYMBOL),
+      DEIP_MIN_ACCOUNT_CREATION_FEE,
       traits,
       false
     );

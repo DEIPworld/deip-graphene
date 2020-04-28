@@ -112,9 +112,9 @@ void create_account_evaluator::do_apply(const create_account_operation& op)
       "Insufficient balance to create account.",
       ("creator.balance", creator_balance.amount)("required", op.fee.amount));
 
-    FC_ASSERT(op.fee >= asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL),
+    FC_ASSERT(op.fee >= DEIP_MIN_ACCOUNT_CREATION_FEE,
       "Insufficient Fee: ${f} required, ${p} provided.",
-      ("f", asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL))("p", op.fee));
+      ("f", DEIP_MIN_ACCOUNT_CREATION_FEE)("p", op.fee));
 
     // check accounts existence
     account_service.check_account_existence(op.owner.account_auths);
@@ -2277,14 +2277,14 @@ void exclude_member_evaluator::do_apply(const exclude_member_operation& op)
         }
     }
 
-    auto& token = research_group_service.get_research_group_token_by_account_and_research_group(op.account_to_exclude, research_group.id);
+    auto& token = research_group_service.get_research_group_token_by_member(op.account_to_exclude, research_group.id);
     auto researches = research_service.get_researches_by_research_group(research_group.id);
     for (auto& r : researches)
     {
         auto& research = r.get();
 
         auto tokens_amount_in_percent_after_dropout_compensation
-                = token.amount * research.dropout_compensation_in_percent / DEIP_100_PERCENT;
+                = token.amount * research.compensation_share / DEIP_100_PERCENT;
         auto tokens_amount_after_dropout_compensation
                 = research.owned_tokens * tokens_amount_in_percent_after_dropout_compensation / DEIP_100_PERCENT;
 
@@ -2312,19 +2312,15 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
     auto& research_service = _db.obtain_service<dbs_research>();
     auto& discipline_service =_db.obtain_service<dbs_discipline>();
 
-    FC_ASSERT(account_service.account_exists(op.creator),
+    FC_ASSERT(account_service.account_exists(op.research_group),
               "Account(creator) ${1} does not exist",
-              ("1", op.creator));
+              ("1", op.research_group));
 
-    FC_ASSERT(research_group_service.research_group_exists(op.research_group_external_id),
+    FC_ASSERT(research_group_service.research_group_exists(op.research_group),
               "Research group with external id: ${1} does not exists",
-              ("1", op.research_group_external_id));
+              ("1", op.research_group));
 
-    const auto& research_group = research_group_service.get_research_group_by_account(op.research_group_external_id);
-
-    FC_ASSERT(research_group_service.is_research_group_member(op.creator, research_group.id),
-              "Account(creator) ${1} is not a member of ${2} research group",
-              ("${1}", op.creator)("2", research_group.id));
+    const auto& research_group = research_group_service.get_research_group_by_account(op.research_group);
 
     std::set<discipline_id_type> disciplines;
     for (auto& discipline_id : op.disciplines)
@@ -2336,26 +2332,12 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
         disciplines.insert(discipline_id_type(discipline_id));
     }
 
-    const auto now = _db.head_block_time();
+    const auto block_time = _db.head_block_time();
     const bool is_finished = false;
 
-    research_service.create_research(
-            research_group.id,
-            op.external_id,
-            op.title,
-            op.abstract,
-            op.permlink,
-            disciplines,
-            op.review_share_in_percent,
-            op.dropout_compensation_in_percent,
-            op.is_private,
-            is_finished,
-            DEIP_100_PERCENT,
-            now,
-            now,
-            now
-    );
-
+    research_service.create_research(research_group.id, op.external_id, op.title, op.abstract, op.permlink, disciplines,
+                                     op.review_share.amount.value, op.compensation_share.amount.value, op.is_private, is_finished,
+                                     DEIP_100_PERCENT, block_time, block_time, block_time);
 }
 
 void create_research_content_evaluator::do_apply(const create_research_content_operation& op)

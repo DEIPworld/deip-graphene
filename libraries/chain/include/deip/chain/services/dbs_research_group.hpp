@@ -31,9 +31,7 @@ class dbs_research_group : public dbs_base
     using research_group_token_refs_type = std::vector<std::reference_wrapper<const research_group_token_object>>;
     using research_group_organization_contract_refs_type = std::vector<std::reference_wrapper<const research_group_organization_contract_object>>;
     using research_group_optional_ref_type = fc::optional<std::reference_wrapper<const research_group_object>>;
-
-    /** Get research group by id
-     */
+    using research_group_token_optional_ref_type = fc::optional<std::reference_wrapper<const research_group_token_object>>;
 
     const research_group_object& get_research_group(const research_group_id_type& id) const;
 
@@ -57,10 +55,6 @@ class dbs_research_group : public dbs_base
                                                        const string& permlink,
                                                        const string& description);
 
-//    void change_quorum(const percent_type quorum,
-//                       const research_group_quorum_action quorum_action,
-//                       const research_group_id_type& research_group_id);
-
     void check_research_group_existence(const research_group_id_type& research_group_id) const; // remove this
 
     const bool research_group_exists(const research_group_id_type& research_group_id) const;
@@ -69,22 +63,19 @@ class dbs_research_group : public dbs_base
 
     const bool research_group_exists(const account_name_type& account) const;
 
-    const research_group_token_object& get_research_group_token_by_id(
-      const research_group_token_id_type& id) const;
+    const research_group_token_object& get_research_group_token_by_id(const research_group_token_id_type& id) const;
 
-    research_group_token_refs_type get_tokens_by_account(
-      const account_name_type &account_name) const;
+    research_group_token_refs_type get_research_group_tokens_by_member(const account_name_type& member) const;
 
-    research_group_token_refs_type get_research_group_tokens(
-      const research_group_id_type& research_group_id) const;
+    research_group_token_refs_type get_research_group_tokens(const research_group_id_type& research_group_id) const;
 
-    const research_group_token_object& get_research_group_token_by_account_and_research_group(
-      const account_name_type &account,
-      const research_group_id_type &research_group_id) const;
+    const research_group_token_object& get_research_group_token_by_member(const account_name_type& member,
+                                                                          const research_group_id_type& internal_id) const;
 
-    const bool is_research_group_member(
-      const account_name_type& account,
-      const research_group_id_type& research_group_id) const;
+    const research_group_token_optional_ref_type get_research_group_token_by_member_if_exists(const account_name_type& member,
+                                                                                              const research_group_id_type& internal_id) const;
+    
+    const bool is_research_group_member(const account_name_type& member, const research_group_id_type& research_group_id) const;
 
     const research_group_object& increase_research_group_balance(
       const research_group_id_type &research_group_id, 

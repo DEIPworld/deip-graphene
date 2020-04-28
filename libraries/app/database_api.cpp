@@ -116,8 +116,11 @@ public:
     fc::optional<discipline_api_obj> get_discipline_by_name(const string& name) const;
 
     // Research group tokens
-    fc::optional<research_group_token_api_obj> get_research_group_token_by_account_and_research_group_id(const account_name_type account,
-                                                                                                         const research_group_id_type& research_group_id) const;
+    fc::optional<research_group_token_api_obj> get_research_group_token_by_member(const account_name_type& account,
+                                                                                                         const research_group_id_type& internal_id) const;
+    vector<research_group_token_api_obj> get_research_group_tokens_by_account(const account_name_type& member) const; // TODO: rename this
+    vector<research_group_token_api_obj> get_research_group_tokens_by_research_group(const research_group_id_type& internal_id) const;
+    fc::optional<research_group_token_api_obj> get_research_group_token_by_account_and_research_group_id(const account_name_type& member, const research_group_id_type& internal_id) const;
 
     // Expert tokens
     fc::optional<expert_token_api_obj> get_expert_token(const expert_token_id_type id) const;
@@ -1548,58 +1551,67 @@ fc::optional<proposal_api_obj> database_api_impl::get_proposal(const proposal_id
     return {};
 }
 
-vector<research_group_token_api_obj>
-database_api::get_research_group_tokens_by_account(const account_name_type account) const
+// should be renamed
+vector<research_group_token_api_obj> database_api::get_research_group_tokens_by_account(const account_name_type& member) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<research_group_token_api_obj> results;
-
-        chain::dbs_research_group& research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
-        auto research_group_tokens = research_group_service.get_tokens_by_account(account);
-
-        for (const chain::research_group_token_object& research_group_token : research_group_tokens)
-        {
-            results.push_back(research_group_token_api_obj(research_group_token));
-        }
-
-        return results;
-    });
+    return my->_db.with_read_lock([&]() { return my->get_research_group_tokens_by_account(member); });
 }
 
-vector<research_group_token_api_obj>
-database_api::get_research_group_tokens_by_research_group(const research_group_id_type& research_group_id) const
+vector<research_group_token_api_obj> database_api_impl::get_research_group_tokens_by_account(const account_name_type& member) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<research_group_token_api_obj> results;
+    vector<research_group_token_api_obj> results;
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
 
-        chain::dbs_research_group& research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
-        auto research_group_tokens = research_group_service.get_research_group_tokens(research_group_id);
-
-        for (const chain::research_group_token_object& research_group_token : research_group_tokens)
-        {
-            results.push_back(research_group_token_api_obj(research_group_token));
-        }
-
-        return results;
-    });
+    const auto& rg_tokens = research_groups_service.get_research_group_tokens_by_member(member);
+    for (const chain::research_group_token_object& rgt : rg_tokens)
+    {
+        const auto& rg = research_groups_service.get_research_group(rgt.research_group_id);
+        results.push_back(research_group_token_api_obj(rgt, research_group_api_obj(rg)));
+    }
+    return results;
 }
 
-fc::optional<research_group_token_api_obj> database_api::get_research_group_token_by_account_and_research_group_id(const account_name_type account,
-                                                                                                                   const research_group_id_type& research_group_id) const
+vector<research_group_token_api_obj> database_api::get_research_group_tokens_by_research_group(const research_group_id_type& internal_id) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_research_group_token_by_account_and_research_group_id(account, research_group_id); });
+    return my->_db.with_read_lock([&]() { return my->get_research_group_tokens_by_research_group(internal_id); });
 }
 
-fc::optional<research_group_token_api_obj> database_api_impl::get_research_group_token_by_account_and_research_group_id(const account_name_type account,
-                                                                                                                        const research_group_id_type& research_group_id) const
+vector<research_group_token_api_obj> database_api_impl::get_research_group_tokens_by_research_group(const research_group_id_type& internal_id) const
 {
-    const auto& idx = _db.get_index<research_group_token_index>().indices().get<by_owner>();
-    auto itr = idx.find(std::make_tuple(account, research_group_id));
+    vector<research_group_token_api_obj> results;
 
-    if (itr != idx.end())
-        return *itr;
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+    const auto& rg_tokens = research_groups_service.get_research_group_tokens(internal_id);
+    const auto& rg = research_groups_service.get_research_group(internal_id);
 
-    return {};
+    for (const chain::research_group_token_object& rgt : rg_tokens)
+    {
+        results.push_back(research_group_token_api_obj(rgt, research_group_api_obj(rg)));
+    }
+    return results;
+}
+
+fc::optional<research_group_token_api_obj> database_api::get_research_group_token_by_account_and_research_group_id(
+  const account_name_type& member,
+  const research_group_id_type& internal_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_group_token_by_account_and_research_group_id(member, internal_id); });
+}
+
+fc::optional<research_group_token_api_obj> database_api_impl::get_research_group_token_by_account_and_research_group_id(
+  const account_name_type& member,
+  const research_group_id_type& internal_id) const
+{
+    fc::optional<research_group_token_api_obj> result;
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+    const auto& rgt_opt = research_groups_service.get_research_group_token_by_member_if_exists(member, internal_id);
+    if (rgt_opt.valid())
+    {
+        const auto& rgt = (*rgt_opt).get();
+        const auto& rg = research_groups_service.get_research_group(rgt.research_group_id);
+        result = research_group_token_api_obj(rgt, research_group_api_obj(rg));
+    }
+    return result;
 }
 
 fc::optional<research_group_api_obj> database_api::get_research_group_by_id(const research_group_id_type research_group_id) const

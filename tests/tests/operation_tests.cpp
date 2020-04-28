@@ -35,7 +35,7 @@
 
 
 
-#define DROPOUT_COMPENSATION_IN_PERCENT 1500
+#define COMPENSATION_IN_PERCENT 1500
 
 using namespace deip;
 using namespace deip::chain;
@@ -1387,7 +1387,7 @@ BOOST_AUTO_TEST_CASE(witness_update_apply)
        op.url = "foo.bar";
        op.fee = asset(1000, DEIP_SYMBOL);
        op.block_signing_key = signing_key.get_public_key();
-       op.props.account_creation_fee = asset(DEIP_MIN_ACCOUNT_CREATION_FEE + 10, DEIP_SYMBOL);
+       op.props.account_creation_fee = DEIP_MIN_ACCOUNT_CREATION_FEE;
        op.props.maximum_block_size = DEIP_MIN_BLOCK_SIZE_LIMIT + 100;
 
        signed_transaction tx;
@@ -2322,13 +2322,13 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
             fc::from_string(r.abstract, "abstract");
             fc::from_string(r.permlink, "permlink");
             r.research_group_id = 31;
-            r.review_share_in_percent = 1500;
-            r.dropout_compensation_in_percent = 1500;
+            r.review_share = 1500;
+            r.compensation_share = 1500;
             r.is_finished = false;
             r.owned_tokens = DEIP_100_PERCENT;
             r.created_at = db.head_block_time();
             r.last_update_time = db.head_block_time();
-            r.review_share_in_percent_last_update = fc::time_point_sec(db.head_block_time().sec_since_epoch() - DAYS_TO_SECONDS(100));
+            r.review_share_last_update = fc::time_point_sec(db.head_block_time().sec_since_epoch() - DAYS_TO_SECONDS(100));
         });
 
         research_token_sale_create(0, 1, db.head_block_time() - 60 * 60 * 5, db.head_block_time() + 60 * 60 * 5, 200, 1000, 100, 400);
@@ -3072,8 +3072,8 @@ BOOST_AUTO_TEST_CASE(create_grant_application_test)
             r.title = "title";
             r.permlink = "permlink";
             r.research_group_id = 1;
-            r.review_share_in_percent = 1000;
-            r.dropout_compensation_in_percent = 500;
+            r.review_share = 1000;
+            r.compensation_share = 500;
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract";
@@ -3133,8 +3133,8 @@ BOOST_AUTO_TEST_CASE(make_review_grant_application)
         r.title = "Research #1";
         r.permlink = "Research #1 permlink";
         r.research_group_id = 31;
-        r.review_share_in_percent = 1000;
-        r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
+        r.review_share = 1000;
+        r.compensation_share = COMPENSATION_IN_PERCENT;
         r.is_finished = false;
         r.created_at = db.head_block_time();
         r.abstract = "abstract for Research #1";

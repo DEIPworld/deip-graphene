@@ -153,16 +153,6 @@ const research_group_object& dbs_research_group::create_research_group(
     return research_group;
 }
 
-//void dbs_research_group::change_quorum(const percent_type quorum, const research_group_quorum_action quorum_action, const research_group_id_type& research_group_id)
-//{
-//  check_research_group_existence(research_group_id);
-//  const research_group_object& research_group = get_research_group(research_group_id);
-//
-//  db_impl().modify(research_group, [&](research_group_object& rg) {
-//    rg.action_quorums[quorum_action] = quorum;
-//  });
-//}
-
 void dbs_research_group::check_research_group_existence(const research_group_id_type& research_group_id) const
 {
   const auto& idx = db_impl().get_index<research_group_index>().indices().get<by_id>();
@@ -205,16 +195,38 @@ const research_group_token_object& dbs_research_group::get_research_group_token_
   FC_CAPTURE_AND_RETHROW((id))
 }
 
-dbs_research_group::research_group_token_refs_type dbs_research_group::get_tokens_by_account(
-  const account_name_type& account_name) const
+dbs_research_group::research_group_token_refs_type dbs_research_group::get_research_group_tokens_by_member(
+  const account_name_type& member) const
 {
   research_group_token_refs_type ret;
 
-  auto it_pair = db_impl()
+  const auto& idx = db_impl()
     .get_index<research_group_token_index>()
     .indicies()
-    .get<by_owner>()
-    .equal_range(account_name);
+    .get<by_owner>();
+
+   auto it_pair = idx.equal_range(member);
+
+   auto it = it_pair.first;
+   const auto it_end = it_pair.second;
+   while (it != it_end)
+   {
+       ret.push_back(std::cref(*it));
+       ++it;
+  }
+
+  return ret;
+}
+
+dbs_research_group::research_group_token_refs_type dbs_research_group::get_research_group_tokens(const research_group_id_type& internal_id) const
+{
+  research_group_token_refs_type ret;
+  const auto& idx = db_impl()
+    .get_index<research_group_token_index>()
+    .indicies()
+    .get<by_research_group>();
+
+  auto it_pair = idx.equal_range(internal_id);
 
   auto it = it_pair.first;
   const auto it_end = it_pair.second;
@@ -227,36 +239,38 @@ dbs_research_group::research_group_token_refs_type dbs_research_group::get_token
   return ret;
 }
 
-dbs_research_group::research_group_token_refs_type dbs_research_group::get_research_group_tokens(
-  const research_group_id_type &research_group_id) const
+const research_group_token_object& dbs_research_group::get_research_group_token_by_member(
+  const account_name_type& member,
+  const research_group_id_type& internal_id) const
 {
-  research_group_token_refs_type ret;
-
-  auto it_pair = db_impl()
+  const auto& idx = db_impl()
     .get_index<research_group_token_index>()
     .indicies()
-    .get<by_research_group>()
-    .equal_range(research_group_id);
+    .get<by_owner>();
 
-  auto it = it_pair.first;
-  const auto it_end = it_pair.second;
-  while (it != it_end)
-  {
-    ret.push_back(std::cref(*it));
-    ++it;
-  }
-
-  return ret;
+  auto itr = idx.find(std::make_tuple(member, internal_id));
+  FC_ASSERT(itr != idx.end(), "Research group ${1} token for ${2} does not exist", ("1", internal_id)("2", member));
+  return *itr;
 }
 
-const research_group_token_object& dbs_research_group::get_research_group_token_by_account_and_research_group(
-  const account_name_type &account,
-  const research_group_id_type &research_group_id) const
+
+const dbs_research_group::research_group_token_optional_ref_type dbs_research_group::get_research_group_token_by_member_if_exists(
+  const account_name_type& member,
+  const research_group_id_type& internal_id) const
 {
-  try {
-    return db_impl().get<research_group_token_object, by_owner>(boost::make_tuple(account, research_group_id));
-  }
-  FC_CAPTURE_AND_RETHROW((account)(research_group_id))
+    research_group_token_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<research_group_token_index>()
+      .indicies()
+      .get<by_owner>();
+
+    auto itr = idx.find(std::make_tuple(member, internal_id));
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 const research_group_token_object& dbs_research_group::add_member_to_research_group(
@@ -270,8 +284,8 @@ const research_group_token_object& dbs_research_group::add_member_to_research_gr
     share_type amount = 0;
 
     if (inviter != account_name_type()) // invited by individual
-    { 
-        const auto& inviter_rgt = get_research_group_token_by_account_and_research_group(inviter, research_group_id);
+    {
+        const auto& inviter_rgt = get_research_group_token_by_member(inviter, research_group_id);
         FC_ASSERT(inviter_rgt.amount - share > DEIP_1_PERCENT, 
           "Inviter ${inviter} does not have enough RGT amount to invite ${invitee}. Inviter RGT: ${inviter_rgt}. Invitee RGT ${invitee_rgt}",
           ("inviter", inviter_rgt.owner)("invitee", account)("inviter_rgt", inviter_rgt.amount)("invitee_rgt", share));
@@ -332,7 +346,7 @@ dbs_research_group::research_group_token_refs_type dbs_research_group::remove_me
   const account_name_type& account,
   const research_group_id_type& research_group_id)
   {
-      const research_group_token_object& rgt = get_research_group_token_by_account_and_research_group(account, research_group_id);
+      const research_group_token_object& rgt = get_research_group_token_by_member(account, research_group_id);
       share_type share = rgt.amount;
       db_impl().remove(rgt);
 
@@ -369,7 +383,7 @@ dbs_research_group::research_group_token_refs_type dbs_research_group::remove_me
 
       if (remainder != 0 && weakest_member_name != account_name_type()) 
       {
-          const research_group_token_object& weakest_rgt = get_research_group_token_by_account_and_research_group(weakest_member_name, research_group_id);
+          const research_group_token_object& weakest_rgt = get_research_group_token_by_member(weakest_member_name, research_group_id);
           db_impl().modify(weakest_rgt, [&](research_group_token_object& rgt_o)
           {
               rgt_o.amount += remainder;
@@ -391,15 +405,15 @@ dbs_research_group::research_group_token_refs_type dbs_research_group::remove_me
   }
 
 const bool dbs_research_group::is_research_group_member(
-  const account_name_type& account,
+  const account_name_type& member,
   const research_group_id_type& research_group_id) const
 { 
   const auto& idx = db_impl()
     .get_index<research_group_token_index>()
     .indices()
     .get<by_owner>();
-  
-  auto itr = idx.find(std::make_tuple(account, research_group_id));
+
+  auto itr = idx.find(std::make_tuple(member, research_group_id));
   return itr != idx.end();
 }
 

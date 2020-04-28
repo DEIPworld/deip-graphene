@@ -39,9 +39,9 @@ void create_account_operation::validate() const
         FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
     }
 
-    FC_ASSERT(fee >= asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL),
+    FC_ASSERT(fee >= DEIP_MIN_ACCOUNT_CREATION_FEE,
               "Insufficient Fee: ${f} required, ${p} provided.",
-              ("f", asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL))("p", fee));
+              ("f", DEIP_MIN_ACCOUNT_CREATION_FEE)("p", fee));
     
     for(auto& trait : traits)
     {

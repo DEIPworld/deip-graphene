@@ -39,6 +39,7 @@ add_library( deip_protocol
              block.cpp
              asset.cpp
              version.cpp
+             percent.cpp
              get_config.cpp
 
              ${HEADERS}

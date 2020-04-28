@@ -7,21 +7,24 @@
 namespace deip {
 namespace protocol {
 
+using deip::protocol::percent;
+
 struct create_research_operation : public base_operation
 {
-    account_name_type creator;
     external_id_type external_id;
-    external_id_type research_group_external_id;
+    account_name_type research_group;
 
     string title;
     string abstract;
     string permlink;
-    uint16_t review_share_in_percent;
-    uint16_t dropout_compensation_in_percent;
+
     std::set<int64_t> disciplines;
     bool is_private;
+    
+    flat_set<account_name_type> members;
 
-    time_point_sec expiration_time;
+    percent review_share;
+    percent compensation_share;
 
     extensions_type extensions;
 
@@ -29,7 +32,7 @@ struct create_research_operation : public base_operation
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(creator);
+        a.insert(research_group);
     }
 };
 
@@ -38,16 +41,15 @@ struct create_research_operation : public base_operation
 }
 
 FC_REFLECT(deip::protocol::create_research_operation,
-          (creator)
-          (external_id)
-          (research_group_external_id)
-          (title)
-          (abstract)
-          (permlink)
-          (review_share_in_percent)
-          (dropout_compensation_in_percent)
-          (disciplines)
-          (is_private)
-          (expiration_time)
-          (extensions)
+  (external_id)
+  (research_group)
+  (title)
+  (abstract)
+  (permlink)
+  (disciplines)
+  (is_private)
+  (members)
+  (review_share)
+  (compensation_share)
+  (extensions)
 )

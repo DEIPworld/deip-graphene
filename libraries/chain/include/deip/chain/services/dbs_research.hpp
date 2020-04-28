@@ -29,14 +29,14 @@ public:
                                            const string& abstract,
                                            const string& permlink,
                                            std::set<discipline_id_type>& disciplines,
-                                           const uint16_t& review_share_in_percent,
-                                           const uint16_t& dropout_compensation_in_percent,
+                                           const uint16_t& review_share,
+                                           const uint16_t& compensation_share,
                                            const bool& is_private,
                                            const bool& is_finished,
                                            const share_type& owned_tokens,
                                            const time_point_sec& created_at,
                                            const time_point_sec& last_update_time,
-                                           const time_point_sec& review_share_in_percent_last_update);
+                                           const time_point_sec& review_share_last_update);
 
     research_refs_type get_researches() const;
 
@@ -55,8 +55,8 @@ public:
     void decrease_owned_tokens(const research_object& research, const share_type delta);
 
     void increase_owned_tokens(const research_object& research, const share_type delta);
-    
-    void change_research_review_share_percent(const research_id_type& research_id, const uint16_t review_share_in_percent);
+
+    void change_research_review_share_percent(const research_id_type& research_id, const uint16_t review_share);
 
     const std::map<discipline_id_type, share_type> get_eci_evaluation(const research_id_type& research_id) const;
 

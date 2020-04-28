@@ -99,7 +99,10 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
     dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
     dbs_research_group_invite& research_group_invites_service = db_impl().obtain_service<dbs_research_group_invite>();
 
-    FC_ASSERT(fee.symbol == DEIP_SYMBOL, "invalid asset type (asset_id)");
+    FC_ASSERT(fee >= DEIP_MIN_ACCOUNT_CREATION_FEE, 
+      "Insufficient fee ${1} for account creation. Min fee is ${1}", 
+      ("1", fee)("2", DEIP_MIN_ACCOUNT_CREATION_FEE)
+    );
 
     const auto& props = db_impl().get_dynamic_global_properties();
     account_balance_service.adjust_balance(creator_name, -fee);
@@ -116,10 +119,11 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
 #endif
     });
 
-    account_balance_service.create(account_name, DEIP_SYMBOL, 0);
-
-    // Convert fee to Common tokens and increase account common tokens balance
-    increase_common_tokens(get_account(account_name), fee.amount); // throughput
+    if (!account_balance_service.exists_by_owner_and_asset(account_name, DEIP_SYMBOL)) // check for genesis
+        account_balance_service.create(account_name, DEIP_SYMBOL, 0);
+    
+    // Convert fee to Common tokens and increase account common tokens balance for throughput
+    increase_common_tokens(get_account(account_name), fee.amount);
 
     const auto& account_auth = db_impl().create<account_authority_object>([&](account_authority_object& auth) {
         auth.account = account_name;

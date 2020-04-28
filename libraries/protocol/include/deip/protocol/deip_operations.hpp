@@ -4,6 +4,7 @@
 #include <fc/io/json.hpp>
 #include <deip/protocol/base.hpp>
 #include <deip/protocol/asset.hpp>
+#include <deip/protocol/percent.hpp>
 #include <deip/protocol/operations/create_account_operation.hpp>
 #include <deip/protocol/operations/make_review_operation.hpp>
 #include <deip/protocol/operations/create_grant_operation.hpp>
@@ -268,7 +269,7 @@ struct chain_properties
      *  fee requires all accounts to have some kind of commitment to the network that includes the
      *  ability to vote and make transactions.
      */
-    asset account_creation_fee = asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL);
+    asset account_creation_fee = DEIP_MIN_ACCOUNT_CREATION_FEE;
 
     /**
      *  This witnesses vote for the maximum_block_size which is used by the network
@@ -278,7 +279,7 @@ struct chain_properties
 
     void validate() const
     {
-        FC_ASSERT(account_creation_fee.amount >= DEIP_MIN_ACCOUNT_CREATION_FEE);
+        FC_ASSERT(account_creation_fee >= DEIP_MIN_ACCOUNT_CREATION_FEE);
         FC_ASSERT(maximum_block_size >= DEIP_MIN_BLOCK_SIZE_LIMIT);
     }
 };

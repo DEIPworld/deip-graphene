@@ -41,7 +41,7 @@ public:
             d.abstract = "abstract1";
             d.permlink = "permlink1";
             d.owned_tokens = 100 * DEIP_1_PERCENT;
-            d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.review_share = 10 * DEIP_1_PERCENT;
         });
 
         db.create<research_object>([&](research_object& d) {
@@ -51,7 +51,7 @@ public:
             d.abstract = "abstract2";
             d.permlink = "permlink2";
             d.owned_tokens = 50 * DEIP_1_PERCENT;
-            d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.review_share = 10 * DEIP_1_PERCENT;
         });
     }
 
@@ -405,7 +405,7 @@ public:
             d.abstract = "abstract1";
             d.permlink = "permlink1";
             d.owned_tokens = 100 * DEIP_1_PERCENT;
-            d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.review_share = 10 * DEIP_1_PERCENT;
             d.number_of_positive_reviews = 10;
         });
 
@@ -416,7 +416,7 @@ public:
             d.abstract = "abstract2";
             d.permlink = "permlink2";
             d.owned_tokens = 100 * DEIP_1_PERCENT;
-            d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.review_share = 10 * DEIP_1_PERCENT;
             d.number_of_positive_reviews = 10;
         });
 
@@ -427,7 +427,7 @@ public:
             d.abstract = "abstract3";
             d.permlink = "permlink3";
             d.owned_tokens = 100 * DEIP_1_PERCENT;
-            d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.review_share = 10 * DEIP_1_PERCENT;
             d.number_of_positive_reviews = 10;
         });
     }

@@ -20,8 +20,6 @@
 #define DEIP_CASHOUT_WINDOW_SECONDS          (60*60) /// 1 hr
 #define DEIP_UPVOTE_LOCKOUT                  (fc::minutes(5))
 
-#define DEIP_MIN_ACCOUNT_CREATION_FEE        1
-
 #define DEIP_OWNER_AUTH_RECOVERY_PERIOD                  fc::seconds(60)
 #define DEIP_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::seconds(12)
 #define DEIP_OWNER_UPDATE_LIMIT                          fc::seconds(0)
@@ -53,8 +51,6 @@
 #define DEIP_CASHOUT_WINDOW_SECONDS          (60*60*24*7)  /// 7 days
 #define DEIP_UPVOTE_LOCKOUT                  (fc::hours(12))
 
-#define DEIP_MIN_ACCOUNT_CREATION_FEE           1
-
 #define DEIP_OWNER_AUTH_RECOVERY_PERIOD                  fc::days(30)
 #define DEIP_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::days(1)
 #define DEIP_OWNER_UPDATE_LIMIT                          fc::minutes(60)
@@ -75,6 +71,7 @@
 
 #endif
 
+#define DEIP_MIN_ACCOUNT_CREATION_FEE        asset( 10000, DEIP_SYMBOL )
 #define DEIP_MIN_DISCIPLINE_SUPPLY_PER_BLOCK 1
 
 #define DEIP_BLOCK_INTERVAL                  3
@@ -112,6 +109,7 @@
 
 #define DEIP_MAX_ACCOUNT_WITNESS_VOTES       30
 
+#define DEIP_PERCENT_DECIMALS                2
 #define DEIP_100_PERCENT                     10000
 #define DEIP_1_PERCENT                       (DEIP_100_PERCENT/100)
 #define DEIP_1_TENTH_PERCENT                 (DEIP_100_PERCENT/1000)

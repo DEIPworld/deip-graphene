@@ -44,13 +44,13 @@ public:
     shared_string abstract;
     shared_string permlink;
     time_point_sec created_at;
-    time_point_sec review_share_in_percent_last_update;
+    time_point_sec review_share_last_update;
     time_point_sec last_update_time;
     
     bool is_finished;
     share_type owned_tokens;
-    uint16_t review_share_in_percent;
-    uint16_t dropout_compensation_in_percent;
+    uint16_t review_share;
+    uint16_t compensation_share;
 
     discipline_id_share_type_map eci_per_discipline;
 
@@ -140,12 +140,12 @@ FC_REFLECT(deip::chain::research_object,
   (permlink)
   (abstract)
   (created_at)
-  (review_share_in_percent_last_update)
+  (review_share_last_update)
   (last_update_time)
   (is_finished)
   (owned_tokens)
-  (review_share_in_percent)
-  (dropout_compensation_in_percent)
+  (review_share)
+  (compensation_share)
   (eci_per_discipline)
   (number_of_positive_reviews)
   (number_of_negative_reviews)
