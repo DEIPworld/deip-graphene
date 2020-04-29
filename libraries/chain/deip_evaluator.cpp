@@ -2458,47 +2458,49 @@ void create_research_token_sale_evaluator::do_apply(const create_research_token_
     auto& research_service = _db.obtain_service<dbs_research>();
     auto& research_group_service = _db.obtain_service<dbs_research_group>();
     auto& research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
+    const auto& block_time = _db.head_block_time();
 
-    FC_ASSERT(account_service.account_exists(op.creator),
-              "Account(creator) ${1} does not exist",
-              ("1", op.creator));
+    FC_ASSERT(account_service.account_exists(op.research_group),
+      "Account(creator) ${1} does not exist",
+      ("1", op.research_group));
+              
+    FC_ASSERT(research_group_service.research_group_exists(op.research_group),
+      "Research group with external id: ${1} does not exists",
+      ("1", op.research_group));
 
-    FC_ASSERT(research_group_service.research_group_exists(op.research_group_external_id),
-              "Research group with external id: ${1} does not exists",
-              ("1", op.research_group_external_id));
-
-    const auto& research_group = research_group_service.get_research_group_by_account(op.research_group_external_id);
-
-    FC_ASSERT(research_group_service.is_research_group_member(op.creator, research_group.id),
-              "Account(creator) ${1} is not a member of ${2} research group",
-              ("${1}", op.creator)("2", research_group.id));
+    const auto& research_group = research_group_service.get_research_group_by_account(op.research_group);
 
     FC_ASSERT(research_service.research_exists(op.research_external_id),
-              "Research with external id: ${1} does not exist",
-              ("1", op.research_external_id));
+      "Research with external id: ${1} does not exist",
+      ("1", op.research_external_id));
 
-    auto &research = research_service.get_research(op.research_external_id);
+    const auto& research = research_service.get_research(op.research_external_id);
 
     FC_ASSERT(research.research_group_id == research_group.id,
-              "Research ${1} does not attached to research group ${2}. Research's group id: ${3}.",
-              ("1", op.research_group_external_id)("2", research_group.id)("3", research.research_group_id));
+      "Research ${1} does not belong to research group ${2}",
+      ("1", op.research_external_id)("2", research_group.name));
 
     auto research_token_sales = research_token_sale_service.get_by_research_id_and_status(research.id, research_token_sale_status::token_sale_active);
 
-    FC_ASSERT(research_token_sales.size() == 0, "Another token sale in progress.");
-    FC_ASSERT(op.start_time >= _db.head_block_time());
+    FC_ASSERT(research_token_sales.size() == 0, 
+      "Research ${1} token sale is in progress", 
+      ("1", op.research_external_id));
 
-    FC_ASSERT(research.owned_tokens - op.amount_for_sale >= 0,
-              "Tokens for sale is more than research balance. Provided amount: ${1}, available: ${2}.",
-              ("1", op.amount_for_sale)("2", research.owned_tokens));
+    FC_ASSERT(op.start_time >= block_time);
 
-    research_service.decrease_owned_tokens(research, op.amount_for_sale);
-    research_token_sale_service.start(research.id,
-                                      op.start_time,
-                                      op.end_time,
-                                      op.amount_for_sale,
-                                      op.soft_cap,
-                                      op.hard_cap);
+    FC_ASSERT(research.owned_tokens - op.share.amount >= 0,
+      "Provided share: ${1}, Available share: ${2}.",
+      ("1", op.share)("2", percent(research.owned_tokens)));
+
+    research_service.decrease_owned_tokens(research, op.share.amount);
+    research_token_sale_service.start(
+      research.id,
+      op.start_time,
+      op.end_time,
+      op.share.amount,
+      op.soft_cap,
+      op.hard_cap
+    );
 }
 
 void update_research_group_metadata_evaluator::do_apply(const update_research_group_metadata_operation& op)
