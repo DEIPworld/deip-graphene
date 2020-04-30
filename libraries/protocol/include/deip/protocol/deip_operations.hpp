@@ -28,7 +28,7 @@
 #include <deip/protocol/operations/create_research_content_operation.hpp>
 #include <deip/protocol/operations/create_research_token_sale_operation.hpp>
 #include <deip/protocol/operations/update_research_group_metadata_operation.hpp>
-#include <deip/protocol/operations/update_research_metadata_operation.hpp>
+#include <deip/protocol/operations/update_research_operation.hpp>
 #include <deip/protocol/operations/create_proposal_operation.hpp>
 #include <deip/protocol/operations/update_proposal_operation.hpp>
 #include <deip/protocol/operations/delete_proposal_operation.hpp>
@@ -552,7 +552,7 @@ struct transfer_research_tokens_to_research_group_operation : public base_operat
 {
     int64_t research_id;
     account_name_type owner;
-    uint32_t amount;
+    percent share;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -806,7 +806,7 @@ FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_token_
 FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
-FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_id)(owner)(amount))
+FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_id)(owner)(share))
 FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds))
 FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance_id)(owner)(amount))
 FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_id)(sender)(receiver)(amount))

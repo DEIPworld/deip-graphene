@@ -25,8 +25,6 @@
 namespace deip {
 namespace chain {
 
-using deip::protocol::percent_type;
-
 void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
 {
     private_key_type init_delegate_priv_key = private_key_type::regenerate(fc::sha256::hash(string("init_key")));
@@ -465,8 +463,8 @@ const research_object& database_fixture::research_create(const int64_t id,
                                                          const string& abstract,
                                                          const string& permlink,
                                                          const research_group_id_type& research_group_id,
-                                                         const uint16_t review_share,
-                                                         const uint16_t compensation_share)
+                                                         const percent& review_share,
+                                                         const percent& compensation_share)
 {
     const auto& new_research = db.create<research_object>([&](research_object& r) {
         r.id = id;
@@ -477,7 +475,7 @@ const research_object& database_fixture::research_create(const int64_t id,
         r.review_share = review_share;
         r.compensation_share = compensation_share;
         r.is_finished = false;
-        r.owned_tokens = DEIP_100_PERCENT;
+        r.owned_tokens = percent(DEIP_100_PERCENT);
         r.created_at = db.head_block_time();
         r.review_share_last_update = db.head_block_time();
     });

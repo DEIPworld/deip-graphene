@@ -372,25 +372,27 @@ struct discipline_api_obj
 
 struct research_api_obj
 {
-    research_api_obj(const chain::research_object& r, const vector<discipline_api_obj>& disciplines, const string& group_permlink)
-        :  id(r.id._id)
-        ,  external_id(r.external_id)
-        ,  research_group_id(r.research_group_id._id)
-        ,  title(fc::to_string(r.title))
-        ,  abstract(fc::to_string(r.abstract))
-        ,  permlink(fc::to_string(r.permlink))
-        ,  is_finished(r.is_finished)
-        ,  owned_tokens(r.owned_tokens)
-        ,  review_share(r.review_share)
-        ,  created_at(r.created_at)
-        ,  compensation_share(r.compensation_share)
-        ,  disciplines(disciplines.begin(), disciplines.end())
-        ,  group_permlink(group_permlink)
-        ,  number_of_positive_reviews(r.number_of_positive_reviews)
-        ,  number_of_negative_reviews(r.number_of_negative_reviews)
-        ,  last_update_time(r.last_update_time)
-        ,  members(r.members.begin(), r.members.end())
-        ,  is_private(r.is_private)
+    research_api_obj(const chain::research_object& r,
+                     const vector<discipline_api_obj>& disciplines,
+                     const string& group_permlink)
+        : id(r.id._id)
+        , external_id(r.external_id)
+        , research_group_id(r.research_group_id._id)
+        , title(fc::to_string(r.title))
+        , abstract(fc::to_string(r.abstract))
+        , permlink(fc::to_string(r.permlink))
+        , is_finished(r.is_finished)
+        , owned_tokens(r.owned_tokens.amount)
+        , review_share(r.review_share.amount)
+        , created_at(r.created_at)
+        , compensation_share(r.compensation_share.amount)
+        , disciplines(disciplines.begin(), disciplines.end())
+        , group_permlink(group_permlink)
+        , number_of_positive_reviews(r.number_of_positive_reviews)
+        , number_of_negative_reviews(r.number_of_negative_reviews)
+        , last_update_time(r.last_update_time)
+        , members(r.members.begin(), r.members.end())
+        , is_private(r.is_private)
     {
         for (const auto& kvp : r.eci_per_discipline) {
             discipline_id_type discipline_id = kvp.first;
@@ -412,9 +414,9 @@ struct research_api_obj
     std::string permlink;
     bool is_finished;
     share_type owned_tokens;
-    uint16_t review_share;
+    share_type review_share;
     time_point_sec created_at;
-    int16_t compensation_share;
+    share_type compensation_share;
     vector<discipline_api_obj> disciplines;
     string group_permlink;
 
@@ -759,7 +761,7 @@ struct research_listing_api_obj
     string abstract;
     string permlink;
     share_type owned_tokens;
-    uint16_t review_share;
+    share_type review_share;
     time_point_sec created_at;
     vector<account_name_type> group_members;
     vector<discipline_api_obj> disciplines;

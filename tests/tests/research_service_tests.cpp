@@ -31,12 +31,12 @@ public:
             r.title = RESEARCH_TITLE;
             r.permlink = RESEARCH_TITLE;
             r.research_group_id = RESEARCH_GROUP_ID;
-            r.review_share = 1000;
-            r.compensation_share = DROPOUT_COMPENSATION;
+            r.review_share = percent(1000);
+            r.compensation_share = percent(DROPOUT_COMPENSATION);
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = ABSTRACT;
-            r.owned_tokens = DEIP_100_PERCENT;
+            r.owned_tokens = percent(DEIP_100_PERCENT);
             r.is_private = false;
         });
 
@@ -44,12 +44,12 @@ public:
             r.id = 2;
             r.permlink = "Second";
             r.research_group_id = 2;
-            r.review_share = 1000;
-            r.compensation_share = DROPOUT_COMPENSATION;
+            r.review_share = percent(1000);
+            r.compensation_share = percent(DROPOUT_COMPENSATION);
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = ABSTRACT;
-            r.owned_tokens = DEIP_100_PERCENT;
+            r.owned_tokens = percent(DEIP_100_PERCENT);
             r.is_private = false;
         });
 
@@ -57,12 +57,12 @@ public:
             r.id = 3;
             r.permlink = "Third";
             r.research_group_id = 2;
-            r.review_share = 1000;
-            r.compensation_share = DROPOUT_COMPENSATION;
+            r.review_share = percent(1000);
+            r.compensation_share = percent(DROPOUT_COMPENSATION);
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = ABSTRACT;
-            r.owned_tokens = DEIP_100_PERCENT;
+            r.owned_tokens = percent(DEIP_100_PERCENT);
             r.is_private = false;
         });
     }
@@ -87,11 +87,11 @@ BOOST_AUTO_TEST_CASE(get_researches)
             return  research.id == 1 &&
                     research.permlink == RESEARCH_TITLE &&
                     research.research_group_id == RESEARCH_GROUP_ID &&
-                    research.review_share == 1000 &&
-                    research.compensation_share == DROPOUT_COMPENSATION &&
+                    research.review_share == percent(1000) &&
+                    research.compensation_share == percent(DROPOUT_COMPENSATION) &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
-                    research.owned_tokens == DEIP_100_PERCENT &&
+                    research.owned_tokens == percent(DEIP_100_PERCENT) &&
                     research.is_private == false;
         }));
 
@@ -100,11 +100,11 @@ BOOST_AUTO_TEST_CASE(get_researches)
             return  research.id == 2 &&
                     research.permlink == "Second" &&
                     research.research_group_id == 2 &&
-                    research.review_share == 1000 &&
-                    research.compensation_share == DROPOUT_COMPENSATION &&
+                    research.review_share == percent(1000) &&
+                    research.compensation_share == percent(DROPOUT_COMPENSATION) &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
-                    research.owned_tokens == DEIP_100_PERCENT &&
+                    research.owned_tokens == percent(DEIP_100_PERCENT) &&
                     research.is_private == false;
         }));
 
@@ -113,11 +113,11 @@ BOOST_AUTO_TEST_CASE(get_researches)
             return  research.id == 3 &&
                     research.permlink == "Third" &&
                     research.research_group_id == 2 &&
-                    research.review_share == 1000 &&
-                    research.compensation_share == DROPOUT_COMPENSATION &&
+                    research.review_share == percent(1000) &&
+                    research.compensation_share == percent(DROPOUT_COMPENSATION) &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
-                    research.owned_tokens == DEIP_100_PERCENT &&
+                    research.owned_tokens == percent(DEIP_100_PERCENT) &&
                     research.is_private == false;
         }));
     }
@@ -139,11 +139,11 @@ BOOST_AUTO_TEST_CASE(get_researches_by_research_group)
             return  research.id == 2 &&
                     research.permlink == "Second" &&
                     research.research_group_id == 2 &&
-                    research.review_share == 1000 &&
-                    research.compensation_share == DROPOUT_COMPENSATION &&
+                    research.review_share == percent(1000) &&
+                    research.compensation_share == percent(DROPOUT_COMPENSATION) &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
-                    research.owned_tokens == DEIP_100_PERCENT &&
+                    research.owned_tokens == percent(DEIP_100_PERCENT) &&
                     research.is_private == false;
         }));
 
@@ -152,11 +152,11 @@ BOOST_AUTO_TEST_CASE(get_researches_by_research_group)
             return  research.id == 3 &&
                     research.permlink == "Third" &&
                     research.research_group_id == 2 &&
-                    research.review_share == 1000 &&
-                    research.compensation_share == DROPOUT_COMPENSATION &&
+                    research.review_share == percent(1000) &&
+                    research.compensation_share == percent(DROPOUT_COMPENSATION) &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
-                    research.owned_tokens == DEIP_100_PERCENT &&
+                    research.owned_tokens == percent(DEIP_100_PERCENT) &&
                     research.is_private == false;
         }));
     }
@@ -175,12 +175,12 @@ BOOST_AUTO_TEST_CASE(get_research)
         BOOST_CHECK(research.title == RESEARCH_TITLE);
         BOOST_CHECK(research.permlink == RESEARCH_TITLE);
         BOOST_CHECK(research.research_group_id == RESEARCH_GROUP_ID);
-        BOOST_CHECK(research.review_share == 1000);
-        BOOST_CHECK(research.compensation_share == DROPOUT_COMPENSATION);
+        BOOST_CHECK(research.review_share == percent(1000));
+        BOOST_CHECK(research.compensation_share == percent(DROPOUT_COMPENSATION));
         BOOST_CHECK(research.is_finished == false);
         BOOST_CHECK(research.created_at <= db.head_block_time());
         BOOST_CHECK(research.abstract == ABSTRACT);
-        BOOST_CHECK(research.owned_tokens == DEIP_100_PERCENT);
+        BOOST_CHECK(research.owned_tokens == percent(DEIP_100_PERCENT));
         BOOST_CHECK(research.is_private == false);
 
     }
@@ -198,12 +198,12 @@ BOOST_AUTO_TEST_CASE(get_research_by_permlink)
         BOOST_CHECK(research.title == RESEARCH_TITLE);
         BOOST_CHECK(research.permlink == RESEARCH_TITLE);
         BOOST_CHECK(research.research_group_id == RESEARCH_GROUP_ID);
-        BOOST_CHECK(research.review_share == 1000);
-        BOOST_CHECK(research.compensation_share == DROPOUT_COMPENSATION);
+        BOOST_CHECK(research.review_share == percent(1000));
+        BOOST_CHECK(research.compensation_share == percent(DROPOUT_COMPENSATION));
         BOOST_CHECK(research.is_finished == false);
         BOOST_CHECK(research.created_at <= db.head_block_time());
         BOOST_CHECK(research.abstract == ABSTRACT);
-        BOOST_CHECK(research.owned_tokens == DEIP_100_PERCENT);
+        BOOST_CHECK(research.owned_tokens == percent(DEIP_100_PERCENT));
         BOOST_CHECK(research.is_private == false);
 
     }
@@ -217,8 +217,8 @@ BOOST_AUTO_TEST_CASE(decrease_owned_tokens)
         create_researches();
 
         auto& research = db.get<research_object, by_id>(1);
-        BOOST_CHECK_NO_THROW(data_service.decrease_owned_tokens(research, 200));
-        BOOST_CHECK(research.owned_tokens == 9800);
+        BOOST_CHECK_NO_THROW(data_service.decrease_owned_tokens(research, percent(200)));
+        BOOST_CHECK(research.owned_tokens == percent(9800));
 
     }
     FC_LOG_AND_RETHROW()
@@ -231,25 +231,12 @@ BOOST_AUTO_TEST_CASE(increase_owned_tokens)
         create_researches();
 
         auto& research = db.get<research_object, by_id>(1);
-        BOOST_CHECK_NO_THROW(data_service.increase_owned_tokens(research, 200));
-        BOOST_CHECK(research.owned_tokens == 10200);
+        BOOST_CHECK_NO_THROW(data_service.increase_owned_tokens(research, percent(200)));
+        BOOST_CHECK(research.owned_tokens == percent(10200));
 
     }
     FC_LOG_AND_RETHROW()
 }
-
-BOOST_AUTO_TEST_CASE(change_research_review_share_percent)
-{
-    try
-    {
-        create_researches();
-
-        auto& research = db.get<research_object, by_id>(1);
-        BOOST_CHECK_NO_THROW(data_service.change_research_review_share_percent(1,  4500));
-        BOOST_CHECK(research.review_share == 4500);
-    }
-    FC_LOG_AND_RETHROW()
-}        
 
 BOOST_AUTO_TEST_SUITE_END()
 

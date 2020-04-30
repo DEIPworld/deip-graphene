@@ -168,7 +168,7 @@ void reject_research_group_invite_operation::validate() const
 
 void transfer_research_tokens_to_research_group_operation::validate() const 
 {
-    FC_ASSERT(amount > 0, "Transfer amount must be greater than 0");
+    FC_ASSERT(share > percent(0) , "Transfer share must be greater than 0 %");
     validate_account_name(owner);
 }    
 

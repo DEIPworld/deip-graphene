@@ -1488,7 +1488,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_research_content_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_token_sale_evaluator>();
     _my->_evaluator_registry.register_evaluator<update_research_group_metadata_evaluator>();
-    _my->_evaluator_registry.register_evaluator<update_research_metadata_evaluator>();
+    _my->_evaluator_registry.register_evaluator<update_research_evaluator>();
 }
 
 void database::initialize_indexes()

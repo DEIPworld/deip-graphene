@@ -947,20 +947,18 @@ void transfer_research_tokens_to_research_group_evaluator::do_apply(const transf
     auto& research_token = research_token_service.get_by_owner_and_research(op.owner, op.research_id);
     auto& research = research_service.get_research(op.research_id);
 
-    FC_ASSERT(op.amount > 0 && share_type(op.amount) <= research_token.amount, "Amount cannot be negative or greater than research token amount");
+    FC_ASSERT(op.share > percent(DEIP_1_PERCENT * 1) && op.share <= percent(research_token.amount),
+      "Amount cannot be negative or greater than research token amount");
 
-    _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
-        r_o.owned_tokens += op.amount;
-    });
+    research_service.increase_owned_tokens(research, op.share);
 
-    if (op.amount == research_token.amount) {
+    if (op.share == percent(research_token.amount)) {
         _db._temporary_public_impl().remove(research_token);
     } else {
         _db._temporary_public_impl().modify(research_token, [&](research_token_object &rt_o) {
-            rt_o.amount -= op.amount;
+            rt_o.amount -= op.share.amount;
         });
     }
-
 }
 
 
@@ -2283,12 +2281,12 @@ void exclude_member_evaluator::do_apply(const exclude_member_operation& op)
     {
         auto& research = r.get();
 
-        auto tokens_amount_in_percent_after_dropout_compensation
-                = token.amount * research.compensation_share / DEIP_100_PERCENT;
-        auto tokens_amount_after_dropout_compensation
-                = research.owned_tokens * tokens_amount_in_percent_after_dropout_compensation / DEIP_100_PERCENT;
+        const share_type tokens_amount_in_percent_after_dropout_compensation
+            = token.amount * research.compensation_share.amount / DEIP_100_PERCENT;
+        const share_type tokens_amount_after_dropout_compensation
+            = research.owned_tokens.amount * tokens_amount_in_percent_after_dropout_compensation / DEIP_100_PERCENT;
 
-        research_service.decrease_owned_tokens(research, tokens_amount_after_dropout_compensation);
+        research_service.decrease_owned_tokens(research, percent(tokens_amount_after_dropout_compensation));
 
         if (research_token_service.exists_by_owner_and_research(op.account_to_exclude, research.id))
         {
@@ -2335,9 +2333,22 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
     const auto block_time = _db.head_block_time();
     const bool is_finished = false;
 
-    research_service.create_research(research_group.id, op.external_id, op.title, op.abstract, op.permlink, disciplines,
-                                     op.review_share.amount.value, op.compensation_share.amount.value, op.is_private, is_finished,
-                                     DEIP_100_PERCENT, block_time, block_time, block_time);
+    research_service.create_research(
+      research_group.id, 
+      op.external_id, 
+      op.title, 
+      op.abstract, 
+      op.permlink, 
+      disciplines,
+      op.review_share, 
+      op.compensation_share, 
+      op.is_private,
+      is_finished,
+      percent(DEIP_100_PERCENT), 
+      block_time, 
+      block_time, 
+      block_time
+    );
 }
 
 void create_research_content_evaluator::do_apply(const create_research_content_operation& op)
@@ -2364,8 +2375,11 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
       "Research with external id: ${1} does not exist",
       ("1", op.research_external_id));
 
-
     const auto& research = research_service.get_research(op.research_external_id);
+
+    FC_ASSERT(research.research_group_id == research_group.id,
+      "Research ${1} does not belong to research group ${2}",
+      ("1", research.external_id)("2", research_group.account));
 
     FC_ASSERT(!research.is_finished,
       "The research ${1} has been finished already",
@@ -2488,11 +2502,11 @@ void create_research_token_sale_evaluator::do_apply(const create_research_token_
 
     FC_ASSERT(op.start_time >= block_time);
 
-    FC_ASSERT(research.owned_tokens - op.share.amount >= 0,
+    FC_ASSERT(research.owned_tokens - op.share >= percent(0),
       "Provided share: ${1}, Available share: ${2}.",
       ("1", op.share)("2", percent(research.owned_tokens)));
 
-    research_service.decrease_owned_tokens(research, op.share.amount);
+    research_service.decrease_owned_tokens(research, op.share);
     research_token_sale_service.start(
       research.id,
       op.start_time,
@@ -2528,41 +2542,39 @@ void update_research_group_metadata_evaluator::do_apply(const update_research_gr
     });
 }
 
-void update_research_metadata_evaluator::do_apply(const update_research_metadata_operation& op)
+void update_research_evaluator::do_apply(const update_research_operation& op)
 {
     auto& account_service = _db.obtain_service<dbs_account>();
     auto& research_service = _db.obtain_service<dbs_research>();
     auto& research_group_service = _db.obtain_service<dbs_research_group>();
 
-    FC_ASSERT(account_service.account_exists(op.creator),
-              "Account(creator) ${1} does not exist",
-              ("1", op.creator));
+    FC_ASSERT(account_service.account_exists(op.research_group),
+      "Account(creator) ${1} does not exist",
+      ("1", op.research_group));
+              
+    FC_ASSERT(research_group_service.research_group_exists(op.research_group),
+      "Research group with external id: ${1} does not exists",
+      ("1", op.research_group));
 
-    FC_ASSERT(research_group_service.research_group_exists(op.research_group_external_id),
-              "Research group with external id: ${1} does not exists",
-              ("1", op.research_group_external_id));
+    const auto& research_group = research_group_service.get_research_group_by_account(op.research_group);
 
-    const auto& research_group = research_group_service.get_research_group_by_account(op.research_group_external_id);
+    FC_ASSERT(research_service.research_exists(op.external_id),
+      "Research with external id: ${1} does not exist",
+      ("1", op.external_id));
 
-    FC_ASSERT(research_group_service.is_research_group_member(op.creator, research_group.id),
-              "Account(creator) ${1} is not a member of ${2} research group",
-              ("${1}", op.creator)("2", research_group.id));
-
-    FC_ASSERT(research_service.research_exists(op.research_external_id),
-              "Research with external id: ${1} does not exist",
-              ("1", op.research_external_id));
-
-    auto &research = research_service.get_research(op.research_external_id);
+    const auto& research = research_service.get_research(op.external_id);
 
     FC_ASSERT(research.research_group_id == research_group.id,
-              "Research ${1} does not attached to research group ${2}. Research's group id: ${3}.",
-              ("1", op.research_group_external_id)("2", research_group.id)("3", research.research_group_id));
+      "Research ${1} does not belong to research group ${2}",
+      ("1", research.external_id)("2", research_group.account));
 
-    _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
-        fc::from_string(r_o.title, op.research_title);
-        fc::from_string(r_o.abstract, op.research_abstract);
-        r_o.is_private = op.is_private;
-    });
+    research_service.update_research(research, 
+      op.title, 
+      op.abstract, 
+      op.permlink,
+      op.is_private,
+      op.review_share,
+      op.compensation_share);
 }
 
 

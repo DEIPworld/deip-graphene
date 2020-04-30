@@ -31,7 +31,7 @@ add_library( deip_protocol
              operations/create_research_content_operation.cpp
              operations/create_research_token_sale_operation.cpp
              operations/update_research_group_metadata_operation.cpp
-             operations/update_research_metadata_operation.cpp
+             operations/update_research_operation.cpp
              operations/create_proposal_operation.cpp
              operations/update_proposal_operation.cpp
              operations/delete_proposal_operation.cpp

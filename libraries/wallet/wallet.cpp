@@ -2438,7 +2438,7 @@ annotated_signed_transaction wallet_api::reject_research_group_invite(const int6
 
 annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_group(const int64_t research_id,
                                                                                     const std::string& owner,
-                                                                                    const uint32_t amount,
+                                                                                    const percent share,
                                                                                     const bool broadcast)
 {
     FC_ASSERT(!is_locked());
@@ -2447,7 +2447,7 @@ annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_gr
 
     op.research_id = research_id;
     op.owner = owner;
-    op.amount = amount;
+    op.share = share;
 
     signed_transaction tx;
     tx.operations.push_back(op);

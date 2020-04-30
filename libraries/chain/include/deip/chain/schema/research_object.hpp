@@ -19,10 +19,10 @@ namespace chain {
 
 using fc::shared_string;
 using protocol::external_id_type;
+using deip::protocol::percent;
 
 class research_object : public object<research_object_type, research_object>
 { 
-
     research_object() = delete;
 
 public:
@@ -32,7 +32,6 @@ public:
         , abstract(a)
         , permlink(a)
         , eci_per_discipline(a)
-        , members(a)
     {
         c(*this);
     }
@@ -48,16 +47,16 @@ public:
     time_point_sec last_update_time;
     
     bool is_finished;
-    share_type owned_tokens;
-    uint16_t review_share;
-    uint16_t compensation_share;
+    percent owned_tokens;
+    percent review_share;
+    percent compensation_share;
 
     discipline_id_share_type_map eci_per_discipline;
 
     uint16_t number_of_positive_reviews = 0;
     uint16_t number_of_negative_reviews = 0;
 
-    account_name_type_set members;
+    flat_set<account_name_type> members;
 
     bool is_private;
 };

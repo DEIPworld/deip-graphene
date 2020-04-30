@@ -1038,9 +1038,8 @@ public:
      */
     annotated_signed_transaction transfer_research_tokens_to_research_group(const int64_t research_id,
                                                                             const std::string& owner,
-                                                                            const uint32_t amount,
+                                                                            const percent share,
                                                                             const bool broadcast);
-
 
     /**
      * Create new vesting contract

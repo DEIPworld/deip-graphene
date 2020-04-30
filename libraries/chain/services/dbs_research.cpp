@@ -18,12 +18,12 @@ const research_object& dbs_research::create_research(
   const string& title, 
   const string& abstract, 
   const string& permlink,
-  std::set<discipline_id_type>& disciplines,
-  const uint16_t& review_share,
-  const uint16_t& compensation_share, 
+  const std::set<discipline_id_type>& disciplines,
+  const percent& review_share,
+  const percent& compensation_share, 
   const bool& is_private,
   const bool& is_finished,
-  const share_type& owned_tokens,
+  const percent& owned_tokens,
   const time_point_sec& created_at,
   const time_point_sec& last_update_time,
   const time_point_sec& review_share_last_update
@@ -50,6 +50,33 @@ const research_object& dbs_research::create_research(
     {
         research_disciplines_service.create_research_relation(research.id, discipline_id);
     }
+
+    return research;
+}
+
+const research_object& dbs_research::update_research(
+  const research_object& research,
+  const string& title,
+  const string& abstract,
+  const string& permlink,
+  const bool& is_private,
+  const percent& review_share,
+  const percent& compensation_share
+) {
+    const auto& block_time = db_impl().head_block_time();
+    db_impl().modify(research, [&](research_object& r_o) {
+        fc::from_string(r_o.title, title);
+        fc::from_string(r_o.abstract, abstract);
+        fc::from_string(r_o.permlink, permlink);
+        r_o.is_private = is_private;
+        if (r_o.review_share != review_share)
+        {
+            r_o.review_share_last_update = block_time;
+        }
+        r_o.review_share = review_share;
+        r_o.compensation_share = compensation_share;
+        r_o.last_update_time = block_time;
+    });
 
     return research;
 }
@@ -149,27 +176,16 @@ void dbs_research::check_research_existence(const research_id_type& id) const
     FC_ASSERT(research != nullptr, "Research with id \"${1}\" must exist.", ("1", id));
 }
 
-void dbs_research::decrease_owned_tokens(const research_object& research, const share_type delta)
+void dbs_research::decrease_owned_tokens(const research_object& research, const percent& delta)
 {
-    FC_ASSERT((research.owned_tokens - delta > 0), "Cannot update research owned tokens (result amount < 0)");
+    FC_ASSERT((research.owned_tokens - delta > percent(0)), "Cannot update research owned tokens (result amount < 0)");
     db_impl().modify(research, [&](research_object& r_o) { r_o.owned_tokens -= delta; });
 }
 
-void dbs_research::increase_owned_tokens(const research_object& research, const share_type delta)
+void dbs_research::increase_owned_tokens(const research_object& research, const percent& delta)
 {
-    FC_ASSERT(delta >= 0, "Cannot update research owned tokens (delta < 0)");
+    FC_ASSERT(delta >= percent(0), "Cannot update research owned tokens (delta < 0)");
     db_impl().modify(research, [&](research_object& r_o) { r_o.owned_tokens += delta; });
-}
-
-void dbs_research::change_research_review_share_percent(const research_id_type& research_id,
-                                                        const uint16_t review_share)
-{
-    check_research_existence(research_id);
-    const research_object& research = get_research(research_id);
-    db_impl().modify(research, [&](research_object& r) {
-        r.review_share = review_share;
-        r.review_share_last_update = db_impl().head_block_time();
-    });
 }
 
 const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(const research_id_type& research_id) const

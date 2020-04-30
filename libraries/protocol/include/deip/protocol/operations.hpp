@@ -83,7 +83,7 @@ namespace protocol {
                 create_research_content_operation,
                 create_research_token_sale_operation,
                 update_research_group_metadata_operation,
-                update_research_metadata_operation,
+                update_research_operation,
 
                 create_nda_contract_operation,
                 sign_nda_contract_operation,

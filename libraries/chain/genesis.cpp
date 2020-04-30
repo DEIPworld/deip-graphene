@@ -351,8 +351,8 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
 
         const time_point_sec genesis_time = get_genesis_time();
         const bool& is_private = false;
-        const uint16_t& review_share = DEIP_1_PERCENT * 20;
-        const uint16_t& compensation_share = DEIP_1_PERCENT * 5;
+        const percent& review_share = percent(DEIP_1_PERCENT * 20);
+        const percent& compensation_share = percent(DEIP_1_PERCENT * 5);
 
         const auto& research_group = research_groups_service.get_research_group_by_account(research.account);
 
@@ -367,7 +367,7 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
           compensation_share,
           is_private,
           research.is_finished,
-          DEIP_100_PERCENT,
+          percent(DEIP_100_PERCENT),
           genesis_time,
           genesis_time,
           genesis_time

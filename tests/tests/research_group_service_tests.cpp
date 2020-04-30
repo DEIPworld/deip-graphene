@@ -12,8 +12,6 @@
 namespace deip {
 namespace chain {
 
-using deip::protocol::percent_type;
-
 class research_group_service_fixture : public clean_database_fixture
 {
  public:

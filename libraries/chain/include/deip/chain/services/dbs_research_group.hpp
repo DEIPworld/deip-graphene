@@ -15,8 +15,6 @@
 namespace deip {
 namespace chain {
 
-using deip::protocol::percent_type;
-
 class dbs_research_group : public dbs_base
 {
 

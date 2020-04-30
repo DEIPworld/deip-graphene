@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         generate_block();
 
         BOOST_TEST_MESSAGE("--- Test normal review creation");
-        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
+        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, percent(10), percent(1500));
         db.create<research_content_object>([&](research_content_object& c) {
             c.id = 1;
             c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE(vote_for_review_apply_success)
 
     generate_block();
 
-    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
+    auto& research = research_create(1, "test_research", "abstract", "permlink", 1, percent(10), percent(1500));
     auto& content = db.create<research_content_object>([&](research_content_object& rc) {
         rc.id = 1;
         rc.research_id = research.id;
@@ -2270,18 +2270,18 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_to_research_group_apply)
         generate_block();
 
         research_token_create(1, "alice", 5000, 1);
-        auto& research = research_create(1, "title", "abstract", "permlink", 1, 1, 1);
+        auto& research = research_create(1, "title", "abstract", "permlink", 1, percent(1), percent(1));
 
         private_key_type priv_key = generate_private_key("alice");
 
         db.modify(research, [&](research_object& r_o){
-            r_o.owned_tokens = 50 * DEIP_1_PERCENT;
+            r_o.owned_tokens = percent(50 * DEIP_1_PERCENT);
         });
 
         transfer_research_tokens_to_research_group_operation op;
 
         op.research_id = 1;
-        op.amount = 50 * DEIP_1_PERCENT;
+        op.share = percent(50 * DEIP_1_PERCENT);
         op.owner = "alice";
 
         signed_transaction tx;
@@ -2291,7 +2291,7 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_to_research_group_apply)
         tx.validate();
         db.push_transaction(tx, 0);
 
-        BOOST_CHECK(research.owned_tokens == DEIP_100_PERCENT);
+        BOOST_CHECK(research.owned_tokens == percent(DEIP_100_PERCENT));
         BOOST_CHECK_THROW(db.get<research_token_object>(1), std::out_of_range);
     }
     FC_LOG_AND_RETHROW()
@@ -2322,10 +2322,10 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
             fc::from_string(r.abstract, "abstract");
             fc::from_string(r.permlink, "permlink");
             r.research_group_id = 31;
-            r.review_share = 1500;
-            r.compensation_share = 1500;
+            r.review_share = percent(1500);
+            r.compensation_share = percent(1500);
             r.is_finished = false;
-            r.owned_tokens = DEIP_100_PERCENT;
+            r.owned_tokens = percent(DEIP_100_PERCENT);
             r.created_at = db.head_block_time();
             r.last_update_time = db.head_block_time();
             r.review_share_last_update = fc::time_point_sec(db.head_block_time().sec_since_epoch() - DAYS_TO_SECONDS(100));
@@ -2490,7 +2490,7 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
         generate_block();
 
         BOOST_TEST_MESSAGE("--- Test normal review creation");
-        auto &research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
+        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, percent(10), percent(1500));
         db.create<research_content_object>([&](research_content_object &c) {
             c.id = 1;
             c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
@@ -2565,12 +2565,12 @@ BOOST_AUTO_TEST_CASE(transfer_research_tokens_apply)
         generate_block();
 
         auto& alice_token = research_token_create(0, "alice", 5000, 1);
-        auto& research = research_create(1, "title", "abstract", "permlink", 1, 1, 1);
+        auto& research = research_create(1, "title", "abstract", "permlink", 1, percent(1), percent(1));
 
         private_key_type priv_key = generate_private_key("alice");
 
         db.modify(research, [&](research_object& r_o){
-            r_o.owned_tokens = 50 * DEIP_1_PERCENT;
+            r_o.owned_tokens = percent(50 * DEIP_1_PERCENT);
         });
 
         transfer_research_tokens_operation op;
@@ -2860,7 +2860,8 @@ BOOST_AUTO_TEST_CASE(calculate_eci_test_case)
         generate_block();
 
         BOOST_TEST_MESSAGE("--- Test normal review creation");
-        auto& research = research_create(1, "test_research", "abstract", "permlink", 1, 10, 1500);
+        auto& research
+            = research_create(1, "test_research", "abstract", "permlink", 1, percent(10), percent(1500));
         db.create<research_content_object>([&](research_content_object& c) {
             c.id = 1;
             c.created_at = fc::time_point_sec(db.head_block_time() - 60 * 60 * 5);
@@ -3072,12 +3073,12 @@ BOOST_AUTO_TEST_CASE(create_grant_application_test)
             r.title = "title";
             r.permlink = "permlink";
             r.research_group_id = 1;
-            r.review_share = 1000;
-            r.compensation_share = 500;
+            r.review_share = percent(1000);
+            r.compensation_share = percent(500);
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract";
-            r.owned_tokens = DEIP_100_PERCENT;
+            r.owned_tokens = percent(DEIP_100_PERCENT);
         });
 
         db.create<research_token_object>([&](research_token_object& d) {
@@ -3133,12 +3134,12 @@ BOOST_AUTO_TEST_CASE(make_review_grant_application)
         r.title = "Research #1";
         r.permlink = "Research #1 permlink";
         r.research_group_id = 31;
-        r.review_share = 1000;
-        r.compensation_share = COMPENSATION_IN_PERCENT;
+        r.review_share = percent(1000);
+        r.compensation_share = percent(COMPENSATION_IN_PERCENT);
         r.is_finished = false;
         r.created_at = db.head_block_time();
         r.abstract = "abstract for Research #1";
-        r.owned_tokens = DEIP_100_PERCENT;
+        r.owned_tokens = percent(DEIP_100_PERCENT);
     });
 
     db.create<research_discipline_relation_object>([&](research_discipline_relation_object& rdr) {
