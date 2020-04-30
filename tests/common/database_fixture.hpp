@@ -8,7 +8,6 @@
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
-#include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_proposal.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>

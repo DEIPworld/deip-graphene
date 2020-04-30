@@ -2140,14 +2140,6 @@ vector<discipline_supply_api_obj> wallet_api::get_discipline_supplies(const std:
     return result;
 }
 
-
-vector<grant_api_obj> wallet_api::get_grants_with_announced_application_window_by_grantor(const std::string& grantor)
-{
-    vector<grant_api_obj> result;
-    result = my->_remote_db->get_grants_with_announced_application_window_by_grantor(grantor);
-    return result;
-}
-
 vector<research_group_invite_api_obj> wallet_api::list_my_research_group_invites()
 {
     vector<account_api_obj> accounts = list_my_accounts();
@@ -2540,12 +2532,13 @@ annotated_signed_transaction wallet_api::vote_for_expertise_allocation_proposal(
 annotated_signed_transaction wallet_api::create_grant(const std::string& grantor,
                                                       const asset& amount,
                                                       const int64_t& target_discipline,
+                                                      const std::string& funding_opportunity_number,
                                                       const int64_t& review_committee_id,
                                                       const uint16_t& min_number_of_positive_reviews,
                                                       const uint16_t& min_number_of_applications,
                                                       const uint16_t& max_number_of_research_to_grant,
-                                                      const uint32_t& start_date,
-                                                      const uint32_t& end_date,
+                                                      const uint32_t& open_date,
+                                                      const uint32_t& close_date,
                                                       const bool broadcast)
 {
     FC_ASSERT(!is_locked());
@@ -2557,12 +2550,13 @@ annotated_signed_transaction wallet_api::create_grant(const std::string& grantor
     op.target_disciplines = { target_discipline };
 
     announced_application_window_contract_v1_0_0_type announced_application_window_contract;
+    announced_application_window_contract.funding_opportunity_number = funding_opportunity_number;
     announced_application_window_contract.review_committee_id = review_committee_id;
     announced_application_window_contract.min_number_of_positive_reviews = min_number_of_positive_reviews;
     announced_application_window_contract.min_number_of_applications = min_number_of_applications;
     announced_application_window_contract.max_number_of_research_to_grant = max_number_of_research_to_grant;
-    announced_application_window_contract.start_date = fc::time_point_sec(start_date);
-    announced_application_window_contract.end_date = fc::time_point_sec(end_date);
+    announced_application_window_contract.open_date = fc::time_point_sec(open_date);
+    announced_application_window_contract.close_date = fc::time_point_sec(close_date);
     op.distribution_model = announced_application_window_contract;
 
     signed_transaction tx;
@@ -2572,17 +2566,17 @@ annotated_signed_transaction wallet_api::create_grant(const std::string& grantor
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::create_grant_application(const int64_t& grant_id,
-                                                                const int64_t& research_id,
-                                                                const std::string& creator,
-                                                                const std::string& application_hash,
-                                                                const bool broadcast)
+annotated_signed_transaction wallet_api::create_grant_application(const std::string& funding_opportunity_number,
+                                                                  const int64_t& research_id,
+                                                                  const std::string& creator,
+                                                                  const std::string& application_hash,
+                                                                  const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
     create_grant_application_operation op;
 
-    op.grant_id = grant_id;
+    op.funding_opportunity_number = funding_opportunity_number;
     op.research_id = research_id;
     op.creator = creator;
     op.application_hash = application_hash;

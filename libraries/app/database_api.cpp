@@ -37,9 +37,7 @@
 #include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
-#include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_grant_application.hpp>
-#include <deip/chain/services/dbs_grant_application_review.hpp>
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
 #include <deip/chain/services/dbs_nda_contract.hpp>
 #include <deip/chain/services/dbs_nda_contract_requests.hpp>
@@ -168,10 +166,6 @@ public:
     // Vesting balances
     fc::optional<vesting_balance_api_obj> get_vesting_balance_by_id(const vesting_balance_id_type& vesting_balance_id) const;
 
-    // Grants
-    fc::optional<grant_api_obj> get_grant_with_announced_application_window(const grant_id_type& id) const;
-    vector<grant_api_obj> get_grants_with_announced_application_window_by_grantor(const string& grantor) const;
-
     // Funding opportunities
     fc::optional<funding_opportunity_api_obj> get_funding_opportunity_announcement(const funding_opportunity_id_type& id) const;
     fc::optional<funding_opportunity_api_obj> get_funding_opportunity_announcement_by_number(const string& number) const;
@@ -180,6 +174,11 @@ public:
 
     // Grant applications
     fc::optional<grant_application_api_obj> get_grant_application(const grant_application_id_type& id) const;
+    vector<grant_application_api_obj> get_grant_applications_by_funding_opportunity_number(const std::string& funding_opportunity_number) const;
+    vector<grant_application_api_obj> get_grant_applications_by_research_id(const research_id_type& research_id) const;
+
+    //Grant application reviews
+    vector<grant_application_review_api_obj> get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const;
 
     // Assets
     fc::optional<asset_api_obj> get_asset(const asset_id_type& id) const;
@@ -2287,27 +2286,30 @@ vector<review_api_obj> database_api::get_reviews_by_author(const account_name_ty
 
 vector<grant_application_review_api_obj> database_api::get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<grant_application_review_api_obj> results;
-        chain::dbs_grant_application_review& grant_application_review_service = my->_db.obtain_service<chain::dbs_grant_application_review>();
-        auto reviews = grant_application_review_service.get_grant_application_reviews(grant_application_id);
+    return my->_db.with_read_lock([&]() { return my->get_reviews_by_grant_application(grant_application_id); });
+}
 
-        for (const chain::grant_application_review_object& review : reviews)
+vector<grant_application_review_api_obj> database_api_impl::get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const
+{
+    vector<grant_application_review_api_obj> results;
+    chain::dbs_grant_application& grant_application_service = _db.obtain_service<chain::dbs_grant_application>();
+    auto reviews = grant_application_service.get_grant_application_reviews(grant_application_id);
+
+    for (const chain::grant_application_review_object& review : reviews)
+    {
+        vector<discipline_api_obj> disciplines;
+
+        for (const auto discipline_id : review.disciplines)
         {
-            vector<discipline_api_obj> disciplines;
-
-            for (const auto discipline_id : review.disciplines)
-            {
-                auto discipline_ao = get_discipline(discipline_id);
-                disciplines.push_back(*discipline_ao);
-            }
-
-            grant_application_review_api_obj api_obj = grant_application_review_api_obj(review, disciplines);
-            results.push_back(api_obj);
+            auto discipline_ao = get_discipline(discipline_id);
+            disciplines.push_back(*discipline_ao);
         }
 
-        return results;
-    });
+        grant_application_review_api_obj api_obj = grant_application_review_api_obj(review, disciplines);
+        results.push_back(api_obj);
+    }
+
+    return results;
 }
 
 fc::optional<research_token_api_obj> database_api::get_research_token_by_id(const research_token_id_type& research_token_id) const
@@ -2588,46 +2590,6 @@ database_api::get_vesting_balance_by_owner(const account_name_type &owner) const
     });
 }
 
-
-
-fc::optional<grant_api_obj> database_api::get_grant_with_announced_application_window(const grant_id_type& id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_grant_with_announced_application_window(id); });
-}
-
-fc::optional<grant_api_obj> database_api_impl::get_grant_with_announced_application_window(const grant_id_type& id) const
-{
-    fc::optional<grant_api_obj> result;
-    chain::dbs_grant& grant_service = _db.obtain_service<chain::dbs_grant>();
-    const auto& opt = grant_service.get_grant_with_announced_application_window_if_exists(id);
-
-    if (opt.valid())
-    {
-        result = grant_api_obj(*opt);
-    }
-
-    return result;
-}
-
-vector<grant_api_obj> database_api::get_grants_with_announced_application_window_by_grantor(const string& grantor) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_grants_with_announced_application_window_by_grantor(grantor); });
-}
-
-vector<grant_api_obj> database_api_impl::get_grants_with_announced_application_window_by_grantor(const string& grantor) const
-{
-    vector<grant_api_obj> results;
-    chain::dbs_grant& grant_service = _db.obtain_service<chain::dbs_grant>();
-
-    auto grants = grant_service.get_grants_with_announced_application_window_by_grantor(grantor);
-    for (const chain::grant_object& grant: grants)
-    {
-        results.push_back(grant_api_obj(grant));
-    }
-
-    return results;
-}
-
 fc::optional<grant_application_api_obj> database_api::get_grant_application(const grant_application_id_type& id) const
 {
     return my->_db.with_read_lock([&]() { return my->get_grant_application(id); });
@@ -2635,42 +2597,52 @@ fc::optional<grant_application_api_obj> database_api::get_grant_application(cons
 
 fc::optional<grant_application_api_obj> database_api_impl::get_grant_application(const grant_application_id_type& id) const
 {
-    const auto& idx = _db.get_index<grant_application_index>().indices().get<by_id>();
-    auto itr = idx.find(id);
-    if (itr != idx.end())
-        return *itr;
-    else
-        return {};
+    fc::optional<grant_application_api_obj> result;
+
+    chain::dbs_grant_application& grant_application_service = _db.obtain_service<chain::dbs_grant_application>();
+    const auto& opt = grant_application_service.get_grant_application_if_exists(id);
+
+    if (opt.valid())
+    {
+        result = grant_application_api_obj(*opt);
+    }
+
+    return result;
 }
 
-vector<grant_application_api_obj> database_api::get_grant_applications_by_grant(const grant_id_type& grant_id) const
+vector<grant_application_api_obj> database_api::get_grant_applications_by_funding_opportunity_number(const std::string& funding_opportunity_number) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<grant_application_api_obj> results;
-        chain::dbs_grant_application& grant_application_service = my->_db.obtain_service<chain::dbs_grant_application>();
-        auto grant_applications = grant_application_service.get_grant_applications_by_grant(grant_id);
+    return my->_db.with_read_lock([&]() { return my->get_grant_applications_by_funding_opportunity_number(funding_opportunity_number); });
+}
 
-        for (const chain::grant_application_object& grant_application : grant_applications)
-            results.push_back(grant_application);
+vector<grant_application_api_obj> database_api_impl::get_grant_applications_by_funding_opportunity_number(const std::string& funding_opportunity_number) const
+{
+    vector<grant_application_api_obj> results;
+    chain::dbs_grant_application& grant_application_service = _db.obtain_service<chain::dbs_grant_application>();
+    auto grant_applications = grant_application_service.get_grant_applications_by_funding_opportunity_number(funding_opportunity_number);
 
-        return results;
-    });
+    for (const chain::grant_application_object& grant_application : grant_applications)
+        results.push_back(grant_application);
+
+    return results;
+}
+
+vector<grant_application_api_obj> database_api::get_grant_applications_by_research_id(const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_grant_applications_by_research_id(research_id); });
 }
 
 vector<grant_application_api_obj>
-database_api::get_grant_applications_by_research_id(const research_id_type& research_id) const
+database_api_impl::get_grant_applications_by_research_id(const research_id_type& research_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<grant_application_api_obj> results;
-        chain::dbs_grant_application& grant_application_service = my->_db.obtain_service<chain::dbs_grant_application>();
+    vector<grant_application_api_obj> results;
+    chain::dbs_grant_application& grant_application_service = _db.obtain_service<chain::dbs_grant_application>();
+    auto grant_applications = grant_application_service.get_grant_applications_by_research_id(research_id);
 
-        auto grant_applications = grant_application_service.get_grant_applications_by_research_id(research_id);
+    for (const chain::grant_application_object& grant_application : grant_applications)
+        results.push_back(grant_application);
 
-        for (const chain::grant_application_object& grant_application : grant_applications)
-            results.push_back(grant_application);
-
-        return results;
-    });
+    return results;
 }
 
 fc::optional<funding_opportunity_api_obj> database_api::get_funding_opportunity_announcement(const funding_opportunity_id_type& id) const
@@ -3020,7 +2992,7 @@ vector<award_api_obj> database_api_impl::get_awards_by_funding_opportunity(const
     {
         const auto& award = wrap.get();
         vector<award_recipient_api_obj> awardees_list;
-        auto awardees = awards_service.get_award_recipients_by_award(fc::to_string(award.award_number));
+        auto awardees = awards_service.get_award_recipients_by_award(award.award_number);
         for (auto& awardee_wrap : awardees)
         {
             const auto& awardee = awardee_wrap.get();

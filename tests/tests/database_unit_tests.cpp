@@ -5,7 +5,6 @@
 #include <deip/chain/util/reward.hpp>
 
 #include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
-#include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/grant_application_object.hpp>
 #include <deip/chain/schema/grant_application_review_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
@@ -27,7 +26,6 @@ public:
             : account_service(db.obtain_service<dbs_account>()),
               review_votes_service(db.obtain_service<dbs_review_vote>()),
               research_content_service(db.obtain_service<dbs_research_content>()),
-              grant_service(db.obtain_service<dbs_grant>()),
               account_balance_service(db.obtain_service<dbs_account_balance>())
     {
     }
@@ -317,85 +315,6 @@ public:
         });
     }
 
-    void create_grants()
-    {
-        db.create<grant_object>([&](grant_object& ga) {
-            ga.id = 1;
-            ga.target_disciplines = {1};
-            ga.min_number_of_positive_reviews = 1;
-            ga.min_number_of_applications = 2;
-            ga.amount = asset(1000, DEIP_SYMBOL);
-            ga.start_date = db.head_block_time() - DAYS_TO_SECONDS(30);
-            ga.end_date = db.head_block_time() - DAYS_TO_SECONDS(1);
-            ga.grantor = "bob";
-            ga.review_committee_id = 1;
-        });
-
-        db.create<grant_object>([&](grant_object& ga) {
-            ga.id = 2;
-            ga.target_disciplines = {2};
-            ga.max_number_of_research_to_grant = 3;
-            ga.min_number_of_positive_reviews = 1;
-            ga.min_number_of_applications = 2;
-            ga.amount = asset(1000, DEIP_SYMBOL);
-            ga.start_date = db.head_block_time() - DAYS_TO_SECONDS(30);
-            ga.end_date = db.head_block_time() - DAYS_TO_SECONDS(1);
-            ga.grantor = "jack";
-            ga.review_committee_id = 1;
-        });
-    }
-
-    void create_grant_applications()
-    {
-        db.create<grant_application_object>([&](grant_application_object& ga_o) {
-            ga_o.id = 1;
-            ga_o.grant_id = 1;
-            ga_o.research_id = 1;
-            ga_o.creator = "alice";
-            ga_o.application_hash = "test1";
-        });
-
-        db.create<grant_application_object>([&](grant_application_object& ga_o) {
-            ga_o.id = 2;
-            ga_o.grant_id = 1;
-            ga_o.research_id = 2;
-            ga_o.creator = "mike";
-            ga_o.application_hash = "test2";
-        });
-
-        db.create<grant_application_object>([&](grant_application_object& ga_o) {
-            ga_o.id = 3;
-            ga_o.grant_id = 1;
-            ga_o.research_id = 3;
-            ga_o.creator = "john";
-            ga_o.application_hash = "test3";
-        });
-
-        db.create<grant_application_object>([&](grant_application_object& ga_o) {
-            ga_o.id = 4;
-            ga_o.grant_id = 2;
-            ga_o.research_id = 1;
-            ga_o.creator = "alice";
-            ga_o.application_hash = "test4";
-        });
-
-        db.create<grant_application_object>([&](grant_application_object& ga_o) {
-            ga_o.id = 5;
-            ga_o.grant_id = 2;
-            ga_o.research_id = 2;
-            ga_o.creator = "mike";
-            ga_o.application_hash = "test5";
-        });
-
-        db.create<grant_application_object>([&](grant_application_object& ga_o) {
-            ga_o.id = 6;
-            ga_o.grant_id = 2;
-            ga_o.research_id = 3;
-            ga_o.creator = "john";
-            ga_o.application_hash = "test6";
-        });
-    }
-
     void create_researches_for_grants()
     {
         db.create<research_object>([&](research_object& d) {
@@ -498,7 +417,6 @@ public:
     dbs_account& account_service;
     dbs_review_vote& review_votes_service;
     dbs_research_content& research_content_service;
-    dbs_grant& grant_service;
     dbs_account_balance& account_balance_service;
 };
 

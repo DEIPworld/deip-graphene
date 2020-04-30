@@ -6,6 +6,7 @@
 namespace deip {
 namespace chain {
 
+using deip::protocol::external_id_type;
 using deip::protocol::asset;
 
 enum class award_recipient_status : uint16_t
@@ -26,18 +27,15 @@ class award_recipient_object : public object<award_recipient_object_type, award_
 public:
     template <typename Constructor, typename Allocator>
     award_recipient_object(Constructor&& c, allocator<Allocator> a)
-      : funding_opportunity_number(a)
-      , award_number(a)
-      , subaward_number(a)
     {
         c(*this);
     }
 
     award_recipient_id_type id;
 
-    fc::shared_string funding_opportunity_number;
-    fc::shared_string award_number;
-    fc::shared_string subaward_number;
+    external_id_type funding_opportunity_number;
+    external_id_type award_number;
+    external_id_type subaward_number;
 
     research_id_type research_id;
     account_name_type awardee;
@@ -75,7 +73,7 @@ typedef multi_index_container<award_recipient_object,
         tag<by_funding_opportunity_number>,
           member<
             award_recipient_object,
-            fc::shared_string,
+            external_id_type,
             &award_recipient_object::funding_opportunity_number
           >
       >,
@@ -84,25 +82,21 @@ typedef multi_index_container<award_recipient_object,
           composite_key<award_recipient_object,
             member<
               award_recipient_object,
-              fc::shared_string,
+              external_id_type,
               &award_recipient_object::award_number
             >,
             member<
               award_recipient_object,
-              fc::shared_string,
+              external_id_type,
               &award_recipient_object::subaward_number
             >
-          >,
-          composite_key_compare<
-            fc::strcmp_less,
-            fc::strcmp_less
           >
       >,
       ordered_non_unique<
         tag<by_award_number>,
           member<
             award_recipient_object,
-            fc::shared_string,
+            external_id_type,
             &award_recipient_object::award_number
           >
       >

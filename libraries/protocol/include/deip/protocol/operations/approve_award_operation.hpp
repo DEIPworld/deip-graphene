@@ -6,7 +6,7 @@ namespace protocol {
 
 struct approve_award_operation : public base_operation
 {
-    string award_number;
+    external_id_type award_number;
     account_name_type approver;
 
     void validate() const;

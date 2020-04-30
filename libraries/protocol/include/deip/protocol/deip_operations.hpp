@@ -667,7 +667,7 @@ struct vote_for_expertise_allocation_proposal_operation : public base_operation
 
 struct create_grant_application_operation : public base_operation
 {
-    int64_t grant_id;
+    external_id_type funding_opportunity_number;
     int64_t research_id;
     account_name_type creator;
 
@@ -814,7 +814,7 @@ FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(dis
 FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(discipline_id))
 FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (claimer)(discipline_id)(description))
 FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (proposal_id)(voter)(voting_power))
-FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
+FC_REFLECT( deip::protocol::create_grant_application_operation, (funding_opportunity_number)(research_id)(creator)(application_hash))
 FC_REFLECT( deip::protocol::make_review_for_application_operation, (author)(grant_application_id)(content)(is_positive)(weight))
 FC_REFLECT( deip::protocol::approve_grant_application_operation, (grant_application_id)(approver))
 FC_REFLECT( deip::protocol::reject_grant_application_operation, (grant_application_id)(rejector))

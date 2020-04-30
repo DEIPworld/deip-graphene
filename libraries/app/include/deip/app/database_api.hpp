@@ -434,19 +434,13 @@ public:
     fc::optional<vesting_balance_api_obj> get_vesting_balance_by_id(const vesting_balance_id_type& vesting_balance_id) const;
     vector<vesting_balance_api_obj> get_vesting_balance_by_owner(const account_name_type& owner) const;
 
-    ////////////
-    // Grants //
-    ////////////
-    fc::optional<grant_api_obj> get_grant_with_announced_application_window(const grant_id_type& id) const;
-    vector<grant_api_obj> get_grants_with_announced_application_window_by_grantor(const string& grantor) const;
-
 
     ////////////////////////
     // Grant applications //
     ////////////////////////
 
     fc::optional<grant_application_api_obj> get_grant_application(const grant_application_id_type& id) const;
-    vector<grant_application_api_obj> get_grant_applications_by_grant(const grant_id_type& grant_id) const;
+    vector<grant_application_api_obj> get_grant_applications_by_funding_opportunity_number(const std::string& funding_opportunity_number) const;
     vector<grant_application_api_obj> get_grant_applications_by_research_id(const research_id_type& research_id) const;
 
 
@@ -719,10 +713,6 @@ FC_API(deip::app::database_api,
    (get_vesting_balance_by_id)
    (get_vesting_balance_by_owner)
 
-   //Grants
-   (get_grant_with_announced_application_window)
-   (get_grants_with_announced_application_window_by_grantor)
-
    // FOA
    (get_funding_opportunity_announcement)
    (get_funding_opportunity_announcement_by_number)
@@ -731,7 +721,7 @@ FC_API(deip::app::database_api,
 
    // Grant applications
    (get_grant_application)
-   (get_grant_applications_by_grant)
+   (get_grant_applications_by_funding_opportunity_number)
    (get_grant_applications_by_research_id)
    
    (calculate_research_eci)

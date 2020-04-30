@@ -825,16 +825,6 @@ public:
     vector<discipline_supply_api_obj> get_discipline_supplies(const std::string& account_name);
 
     /**
-     *  Gets the grant information for all my grant (list_my_accounts)
-     */
-    vector<grant_api_obj> list_my_grants();
-
-    /**
-     *  Gets the grant information for certain account
-     */
-    vector<grant_api_obj> get_grants_with_announced_application_window_by_grantor(const std::string& account_name);
-
-    /**
      *  Gets the list of all research group invites for all accounts
      */
     vector<research_group_invite_api_obj> list_my_research_group_invites();
@@ -1080,6 +1070,7 @@ public:
     annotated_signed_transaction create_grant(const std::string& grantor,
                                               const asset& amount,
                                               const int64_t& target_discipline,
+                                              const std::string& funding_opportunity_number,
                                               const int64_t& review_committee_id,
                                               const uint16_t& min_number_of_positive_reviews,
                                               const uint16_t& min_number_of_applications,
@@ -1088,11 +1079,11 @@ public:
                                               const uint32_t& end_date,
                                               const bool broadcast);
 
-    annotated_signed_transaction create_grant_application(const int64_t& grant_id,
-                                                        const int64_t& research_id,
-                                                        const std::string& creator,
-                                                        const std::string& application_hash,
-                                                        const bool broadcast);
+    annotated_signed_transaction create_grant_application(const std::string& funding_opportunity_number,
+                                                          const int64_t& research_id,
+                                                          const std::string& creator,
+                                                          const std::string& application_hash,
+                                                          const bool broadcast);
 
     annotated_signed_transaction make_review_for_application(const std::string& author,
                                                              const int64_t& grant_application_id,
@@ -1105,8 +1096,8 @@ public:
                                                            const bool broadcast);
 
     annotated_signed_transaction reject_grant_application(const int64_t& grant_application_id,
-                                                        const std::string& rejector,
-                                                        const bool broadcast);
+                                                          const std::string& rejector,
+                                                          const bool broadcast);
 
     annotated_signed_transaction create_asset(const std::string& issuer,
                                               const std::string& symbol,
@@ -1187,7 +1178,6 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (list_my_discipline_supplies)
         (list_discipline_supply_grantors)
         (get_discipline_supplies)
-        (get_grants_with_announced_application_window_by_grantor)
         (list_my_research_group_invites)
         (list_my_research_tokens)
         (list_account_research_tokens)
