@@ -23,16 +23,15 @@ namespace deip {
             using research_token_refs_type = std::vector<std::reference_wrapper<const research_token_object>>;
 
             const research_token_object& create_research_token(const account_name_type& owner,
-                                                               const deip::chain::share_type amount,
                                                                const research_id_type& research_id,
+                                                               const share_type& amount,
                                                                const bool& is_compensation);
 
-            void increase_research_token_amount(const research_token_object& research_token, 
-                                                const share_type delta);
-
-            void decrease_research_token_amount(const research_token_object& research_token, 
-                                                const share_type delta);
-
+            const research_token_object& adjust_research_token(const account_name_type& owner,
+                                                               const research_id_type& research_id,
+                                                               const share_type& delta,
+                                                               const bool& is_compensation);
+                                                               
             /* Get research token by id
              * @returns research token object by its id
             */
@@ -57,8 +56,8 @@ namespace deip {
             void check_existence_by_owner_and_research( const account_name_type& owner,
                                                         const research_id_type& research_id);
 
-            bool exists_by_owner_and_research(const account_name_type& owner,
-                                              const research_id_type& research_id);
+            const bool exists_by_owner_and_research(const account_name_type& owner,
+                                                    const research_id_type& research_id) const;
         };
     } // namespace chain
 } // namespace deip

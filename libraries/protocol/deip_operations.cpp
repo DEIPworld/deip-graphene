@@ -41,6 +41,16 @@ void placeholder6_operation::validate() const
     FC_ASSERT(false, "The operation is reserved");
 }
 
+void placeholder7_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+};
+
+void placeholder8_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+};
+
 void account_update_operation::validate() const
 {
     validate_account_name(account);
@@ -154,16 +164,6 @@ void contribute_to_token_sale_operation::validate() const
 {
     validate_account_name(owner);
     FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Amount must be DEIP and greater than 0");
-}
-
-void approve_research_group_invite_operation::validate() const
-{
-    validate_account_name(owner);
-}
-
-void reject_research_group_invite_operation::validate() const
-{
-    validate_account_name(owner);
 }
 
 void transfer_research_tokens_to_research_group_operation::validate() const 

@@ -144,16 +144,6 @@ struct get_impacted_account_visitor
         _impacted.insert(op.owner);
     }
 
-    void operator()(const approve_research_group_invite_operation& op)
-    {
-        _impacted.insert(op.owner);
-    }
-
-    void operator()(const reject_research_group_invite_operation& op)
-    {
-        _impacted.insert(op.owner);
-    }
-
     void operator()(const transfer_research_tokens_to_research_group_operation& op)
     {
         _impacted.insert(op.owner);

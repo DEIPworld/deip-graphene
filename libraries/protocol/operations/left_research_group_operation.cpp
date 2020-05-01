@@ -7,11 +7,10 @@
 namespace deip {
 namespace protocol {
 
-void exclude_member_operation::validate() const
+void left_research_group_operation::validate() const
 {
-    validate_account_name(creator);
-    validate_account_name(account_to_exclude);
-    validate_160_bits_hexadecimal_string(research_group_external_id);
+    validate_account_name(member);
+    validate_account_name(research_group);
 }
 
 } /* deip::protocol */

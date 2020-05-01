@@ -1447,8 +1447,6 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<delete_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<make_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
-    _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
-    _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_vesting_balance_evaluator>();
@@ -1480,8 +1478,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<close_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_request_by_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<fulfill_request_by_nda_contract_evaluator>();
-    _my->_evaluator_registry.register_evaluator<invite_member_evaluator>();
-    _my->_evaluator_registry.register_evaluator<exclude_member_evaluator>();
+    _my->_evaluator_registry.register_evaluator<join_research_group_evaluator>();
+    _my->_evaluator_registry.register_evaluator<left_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_content_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_token_sale_evaluator>();

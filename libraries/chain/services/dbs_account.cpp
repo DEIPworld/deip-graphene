@@ -157,19 +157,7 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
           rg_trait.permlink, 
           rg_trait.description
         );
-          
-        for (const auto& invitee : rg_trait.invitees)
-        {
-            check_account_existence(invitee.account);
-            research_group_invites_service.create(
-              invitee.account, 
-              shared_rg.id, 
-              invitee.rgt, 
-              invitee.notes,
-              creator_name, 
-              false);
-        }
-
+        
         research_groups_service.add_member_to_research_group(
           creator_name,
           shared_rg.id,

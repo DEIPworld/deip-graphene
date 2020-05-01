@@ -19,29 +19,6 @@ struct base_account_trait
     }
 };
 
-struct invitee_type
-{
-    invitee_type()
-    {
-    }
-
-    invitee_type(const account_name_type& a, const percent_type& rgt, const std::string& c)
-        : account(a)
-        , rgt(rgt)
-        , notes(c)
-    {
-    }
-
-    account_name_type account;
-    percent_type rgt;
-    std::string notes;
-
-    bool operator<(const invitee_type& other) const
-    {
-        return (this->account < other.account);
-    }
-};
-
 struct research_group_v1_0_0_trait : base_account_trait
 {
     research_group_v1_0_0_trait(string v = "1.0.0")
@@ -52,7 +29,6 @@ struct research_group_v1_0_0_trait : base_account_trait
     std::string name;
     std::string permlink;
     std::string description;
-    std::set<invitee_type> invitees;
     std::map<uint16_t, authority> threshold_overrides;
 };
 
@@ -174,7 +150,6 @@ struct get_account_trait_type
     }                                                                                                                  \
     } /* fc */
 
-FC_REFLECT(deip::protocol::invitee_type, (account)(rgt)(notes))
 
 FC_REFLECT(deip::protocol::create_account_operation,
   (fee)
@@ -194,7 +169,6 @@ FC_REFLECT_DERIVED(deip::protocol::research_group_v1_0_0_trait, (deip::protocol:
   (name)
   (permlink)
   (description)
-  (invitees)
   (threshold_overrides)
 )
 

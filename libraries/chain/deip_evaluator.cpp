@@ -890,50 +890,6 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
 
 }
 
-void approve_research_group_invite_evaluator::do_apply(const approve_research_group_invite_operation& op)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
-    dbs_research_group_invite &research_group_invites_service = _db.obtain_service<dbs_research_group_invite>();
-
-    FC_ASSERT(research_group_invites_service.research_group_invite_exists(op.research_group_invite_id), 
-      "Invite ${i} for ${a} is expired or does not exist", 
-      ("i", op.research_group_invite_id)("a", op.owner));
-
-    const research_group_invite_object& invite = research_group_invites_service.get_research_group_invite(op.research_group_invite_id);
-    account_service.check_account_existence(invite.account_name);
-    research_group_service.check_research_group_existence(invite.research_group_id);
-
-    const research_group_object& research_group = research_group_service.get_research_group(invite.research_group_id);
-
-    research_group_service.add_member_to_research_group(
-      invite.account_name,
-      research_group.id,
-      invite.research_group_token_amount,
-      invite.token_source);
-
-    if (invite.is_head)
-    {
-        research_group_service.add_research_group_head( 
-          invite.account_name,
-          research_group);
-    }
-
-    research_group_invites_service.remove(invite);
-}
-
-void reject_research_group_invite_evaluator::do_apply(const reject_research_group_invite_operation& op)
-{
-    dbs_research_group_invite& research_group_invites_service = _db.obtain_service<dbs_research_group_invite>();
-
-    FC_ASSERT(research_group_invites_service.research_group_invite_exists(op.research_group_invite_id), 
-      "Invite ${i} for ${a} is expired or does not exist", 
-      ("i", op.research_group_invite_id)("a", op.owner));
-
-    const research_group_invite_object& invite = research_group_invites_service.get_research_group_invite(op.research_group_invite_id);
-    research_group_invites_service.remove(invite);
-}
-
 void transfer_research_tokens_to_research_group_evaluator::do_apply(const transfer_research_tokens_to_research_group_operation& op)
 {
     dbs_research_token &research_token_service = _db.obtain_service<dbs_research_token>();
@@ -1039,7 +995,7 @@ void transfer_research_tokens_evaluator::do_apply(const transfer_research_tokens
             r_o.amount += op.amount;
         });
     } else {
-        research_token_service.create_research_token(op.receiver, op.amount, op.research_id, false);
+        research_token_service.create_research_token(op.receiver, op.research_id, op.amount, false);
     }
 
     if (op.amount == research_token_to_transfer.amount) {
@@ -2193,132 +2149,70 @@ void fulfill_request_by_nda_contract_evaluator::do_apply(const fulfill_request_b
     nda_contract_requests_service.fulfill_file_access_request(request, op.encrypted_payload_encryption_key, op.proof_of_encrypted_payload_encryption_key);
 }
 
-void invite_member_evaluator::do_apply(const invite_member_operation& op)
+void join_research_group_evaluator::do_apply(const join_research_group_operation& op)
 {
     auto& account_service = _db.obtain_service<dbs_account>();
-    auto& research_group_invite_service = _db.obtain_service<dbs_research_group_invite>();
-    auto& research_group_service = _db.obtain_service<dbs_research_group>();
+    auto& research_groups_service = _db.obtain_service<dbs_research_group>();
 
-    FC_ASSERT(account_service.account_exists(op.creator),
-              "Account(creator) ${1} does not exist",
-              ("1", op.creator));
+    FC_ASSERT(account_service.account_exists(op.member), "Account ${1} does not exist", ("1", op.member));
 
-    FC_ASSERT(research_group_service.research_group_exists(op.research_group_external_id),
-              "Research group with external id: ${1} does not exists",
-              ("1", op.research_group_external_id));
+    FC_ASSERT(account_service.account_exists(op.research_group),
+      "Research group ${1} does not exist",
+      ("1", op.research_group));
 
-    const auto& research_group = research_group_service.get_research_group_by_account(op.research_group_external_id);
+    const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
 
-    FC_ASSERT(!research_group_service.is_research_group_member(op.creator, research_group.id),
-              "Account(invitee) ${1} is already a member of ${2} research group",
-              ("${1}", op.invitee)("2", research_group.id));
+    FC_ASSERT(!research_groups_service.is_research_group_member(op.member, research_group.id),
+      "Account ${1} is already a member of ${2} research group",
+      ("1", op.member)("2", research_group.account));
 
-    FC_ASSERT(account_service.account_exists(op.invitee),
-              "Account(invitee) ${1} does not exist",
-              ("1", op.invitee));
-
-    if (op.is_head)
-    {
-        FC_ASSERT(research_group.is_centralized,
-          "Heads are allowed only in centralized research groups");
-    }
-
-    research_group_invite_service.create(op.invitee,
-                                         research_group.id,
-                                         op.research_group_token_amount_in_percent,
-                                         op.cover_letter,
-                                         account_name_type(),
-                                         op.is_head);
+    research_groups_service.add_member_to_research_group(
+      op.member,
+      research_group.id,
+      op.weight.amount,
+      account_name_type());
 }
 
-void exclude_member_evaluator::do_apply(const exclude_member_operation& op)
+void left_research_group_evaluator::do_apply(const left_research_group_operation& op)
 {
     auto& account_service = _db.obtain_service<dbs_account>();
-    auto& research_group_service = _db.obtain_service<dbs_research_group>();
+    auto& research_groups_service = _db.obtain_service<dbs_research_group>();
     auto& research_service = _db.obtain_service<dbs_research>();
     auto& research_token_service = _db.obtain_service<dbs_research_token>();
 
-    FC_ASSERT(account_service.account_exists(op.creator),
-              "Account(creator) ${1} does not exist",
-              ("1", op.creator));
+    FC_ASSERT(account_service.account_exists(op.member), 
+      "Account ${1} does not exist", 
+      ("1", op.member));
 
-    FC_ASSERT(research_group_service.research_group_exists(op.research_group_external_id),
-              "Research group with external id: ${1} does not exists",
-              ("1", op.research_group_external_id));
+    FC_ASSERT(account_service.account_exists(op.research_group), 
+      "Research group ${1} does not exist", 
+      ("1", op.research_group));
 
-    const auto& research_group = research_group_service.get_research_group_by_account(op.research_group_external_id);
+    const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
 
-    FC_ASSERT(research_group_service.is_research_group_member(op.creator, research_group.id),
-              "Account(creator) ${1} is not a member of ${2} research group",
-              ("${1}", op.creator)("2", research_group.id));
+    FC_ASSERT(research_groups_service.is_research_group_member(op.member, research_group.id),
+      "Account ${1} is not a member of ${2} research group",
+      ("1", op.member)("2", research_group.account));
 
-    FC_ASSERT(account_service.account_exists(op.account_to_exclude),
-              "Account(to exclude) ${1} does not exist",
-              ("1", op.account_to_exclude));
+    const auto& rgt = research_groups_service.get_research_group_token_by_member(op.member, research_group.id);
+    const auto& researches = research_service.get_researches_by_research_group(research_group.id);
 
-    FC_ASSERT(research_group_service.is_research_group_member(op.account_to_exclude, research_group.id),
-              "Account(to exclude) ${1} is not a member of ${2} research group",
-              ("${1}", op.account_to_exclude)("2", research_group.id));
-
-    // TODO: rewrite after multisig implementation
-    /*if (op.account_to_dropout == research_group.creator)
+    if (op.is_exclusion)
     {
-        FC_ASSERT(op.creator == research_group.creator || proposal.voted_accounts.count(research_group.creator) != 0,
-                  "Research group Creator ${c} can not be excluded by member ${m} without his own approval",
-                  ("c", research_group.creator)("m", proposal.creator));
-    }*/
-
-    if (research_group.heads.count(op.account_to_exclude) != 0) // centralized
-    {
-        FC_ASSERT(op.creator == op.account_to_exclude || op.creator == research_group.creator,
-                  "Research group Head ${1} can not be excluded by member ${2} without his own or research group creator ${3} approval",
-                  ("1", op.account_to_exclude)("2", op.creator)("3", research_group.creator));
-    }
-
-    if (research_group_service.is_organization_division(research_group.id))
-    {
-        const auto& division_contract = research_group_service.get_division_contract_by_research_group(research_group.id);
-        if (division_contract.organization_agents.count(op.account_to_exclude) != 0)
+        for (auto& wrap : researches)
         {
-            // TODO: rewrite after multisig implementation
-            /*FC_ASSERT(
-                    op.creator == op.account_to_dropout
-                    || proposal.voted_accounts.count(data.name) != 0
-                    || proposal.creator == research_group.creator
-                    || proposal.voted_accounts.count(research_group.creator) != 0,
-                    "Organization agent ${a} can not be excluded without organization approval",
-                    ("a", data.name));*/
-
-            research_group_service.remove_organization_agent_from_division_contract(division_contract, op.account_to_exclude);
+            const auto& research = wrap.get();
+            if (research.members.find(op.member) != research.members.end())
+            {
+                const auto& compensation = research.owned_tokens.amount
+                    * (rgt.amount * research.compensation_share.amount / DEIP_100_PERCENT) / DEIP_100_PERCENT;
+                research_service.decrease_owned_tokens(research, percent(compensation));
+                research_token_service.adjust_research_token(op.member, research.id, compensation, true);
+            }
         }
     }
 
-    auto& token = research_group_service.get_research_group_token_by_member(op.account_to_exclude, research_group.id);
-    auto researches = research_service.get_researches_by_research_group(research_group.id);
-    for (auto& r : researches)
-    {
-        auto& research = r.get();
-
-        const share_type tokens_amount_in_percent_after_dropout_compensation
-            = token.amount * research.compensation_share.amount / DEIP_100_PERCENT;
-        const share_type tokens_amount_after_dropout_compensation
-            = research.owned_tokens.amount * tokens_amount_in_percent_after_dropout_compensation / DEIP_100_PERCENT;
-
-        research_service.decrease_owned_tokens(research, percent(tokens_amount_after_dropout_compensation));
-
-        if (research_token_service.exists_by_owner_and_research(op.account_to_exclude, research.id))
-        {
-            auto& research_token = research_token_service.get_by_owner_and_research(op.account_to_exclude, research.id);
-            research_token_service.increase_research_token_amount(research_token, tokens_amount_after_dropout_compensation);
-        }
-        else
-        {
-            research_token_service.create_research_token(op.account_to_exclude, tokens_amount_after_dropout_compensation, research.id, true);
-        }
-    }
-
-    const auto& members = research_group_service.remove_member_from_research_group(op.account_to_exclude, research_group.id);
-    FC_ASSERT(members.size() != 0, "The last research group member can not be excluded"); // let's forbid it for now
+    research_groups_service.remove_member_from_research_group(op.member, research_group.id);
 }
 
 void create_research_evaluator::do_apply(const create_research_operation& op)

@@ -40,8 +40,8 @@ namespace protocol {
                 update_proposal_operation,
                 make_review_operation,
                 contribute_to_token_sale_operation,
-                approve_research_group_invite_operation,
-                reject_research_group_invite_operation,
+                placeholder7_operation,
+                placeholder8_operation,
                 transfer_research_tokens_to_research_group_operation,
 
                 placeholder3_operation,
@@ -77,8 +77,8 @@ namespace protocol {
                 reject_award_withdrawal_request_operation,
                 pay_award_withdrawal_request_operation,
 
-                invite_member_operation,
-                exclude_member_operation,
+                join_research_group_operation,
+                left_research_group_operation,
                 create_research_operation,
                 create_research_content_operation,
                 create_research_token_sale_operation,

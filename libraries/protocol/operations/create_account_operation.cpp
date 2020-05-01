@@ -18,9 +18,6 @@ void validate_account_trait(const account_name_type& creator, const account_trai
         FC_ASSERT(research_group_trait.name.size() > 0, "Research group name is required");
         FC_ASSERT(fc::is_utf8(research_group_trait.name), "Research group name is not valid UTF-8 string");
         FC_ASSERT(fc::is_utf8(research_group_trait.description), "Research group description is not valid UTF-8 string");
-        FC_ASSERT(std::none_of(research_group_trait.invitees.begin(), research_group_trait.invitees.end(), [&](const invitee_type& invitee) { return invitee.account == creator; }),
-          "Research group creator should not be specified in invitees list.", ("c", creator));
-
         is_validated = true;
     }
 

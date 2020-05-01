@@ -2392,42 +2392,6 @@ annotated_signed_transaction wallet_api::contribute_to_token_sale(const std::str
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::approve_research_group_invite(const int64_t research_group_invite_id,
-                                                                       const std::string& owner,
-                                                                       const bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    approve_research_group_invite_operation op;
-
-    op.research_group_invite_id = research_group_invite_id;
-    op.owner = owner;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
-annotated_signed_transaction wallet_api::reject_research_group_invite(const int64_t research_group_invite_id,
-                                                                      const std::string &owner,
-                                                                      const bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    reject_research_group_invite_operation op;
-
-    op.research_group_invite_id = research_group_invite_id;
-    op.owner = owner;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
 annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_group(const int64_t research_id,
                                                                                     const std::string& owner,
                                                                                     const percent share,

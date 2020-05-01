@@ -22,8 +22,8 @@
 #include <deip/protocol/operations/close_nda_contract_operation.hpp>
 #include <deip/protocol/operations/create_request_by_nda_contract_operation.hpp>
 #include <deip/protocol/operations/fulfill_request_by_nda_contract_operation.hpp>
-#include <deip/protocol/operations/invite_member_operation.hpp>
-#include <deip/protocol/operations/exclude_member_operation.hpp>
+#include <deip/protocol/operations/join_research_group_operation.hpp>
+#include <deip/protocol/operations/left_research_group_operation.hpp>
 #include <deip/protocol/operations/create_research_operation.hpp>
 #include <deip/protocol/operations/create_research_content_operation.hpp>
 #include <deip/protocol/operations/create_research_token_sale_operation.hpp>
@@ -511,35 +511,21 @@ struct placeholder6_operation : public base_operation
     void validate() const;
 };
 
+struct placeholder7_operation : public base_operation
+{
+    void validate() const;
+};
+
+struct placeholder8_operation : public base_operation
+{
+    void validate() const;
+};
+
 struct contribute_to_token_sale_operation : public base_operation
 {
     int64_t research_token_sale_id;
     account_name_type owner;
     asset amount;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
-
-struct approve_research_group_invite_operation : public base_operation
-{
-    int64_t research_group_invite_id;
-    account_name_type owner;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
-
-struct reject_research_group_invite_operation : public base_operation
-{
-    int64_t research_group_invite_id;
-    account_name_type owner;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -801,10 +787,10 @@ FC_REFLECT( deip::protocol::placeholder3_operation, )
 FC_REFLECT( deip::protocol::placeholder4_operation, )
 FC_REFLECT( deip::protocol::placeholder5_operation, )
 FC_REFLECT( deip::protocol::placeholder6_operation, )
+FC_REFLECT( deip::protocol::placeholder7_operation, )
+FC_REFLECT( deip::protocol::placeholder8_operation, )
 
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_token_sale_id)(owner)(amount))
-FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner))
-FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
 FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
 FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_id)(owner)(share))
 FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds))

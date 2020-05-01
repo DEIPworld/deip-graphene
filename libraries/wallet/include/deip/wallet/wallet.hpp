@@ -997,28 +997,6 @@ public:
                                                           const bool broadcast);
 
     /**
-     * Approve research group invite
-     *
-     * @param owner The account who approves invite
-     * @param research_group_invite_id Id of invite
-     * @param broadcast
-     */
-    annotated_signed_transaction approve_research_group_invite(const int64_t research_group_invite_id,
-                                                               const std::string& owner,
-                                                               const bool broadcast);
-
-    /**
-     * Reject research group invite
-     *
-     * @param owner The account who rejects invite
-     * @param research_group_invite_id Id of invite
-     * @param broadcast
-     */
-    annotated_signed_transaction reject_research_group_invite(const int64_t research_group_invite_id,
-                                                              const std::string& owner,
-                                                              const bool broadcast);
-
-    /**
      * Transfer research tokens back to research group
      *
      * @param owner The account who transfers research tokens
@@ -1228,8 +1206,6 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (vote_for_review)
         (make_review)
         (contribute_to_token_sale)
-        (approve_research_group_invite)
-        (reject_research_group_invite)
         (transfer_research_tokens_to_research_group)
         (create_vesting_balance)
         (withdraw_vesting_balance)
