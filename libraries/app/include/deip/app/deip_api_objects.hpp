@@ -368,38 +368,89 @@ struct discipline_api_obj
     std::string name;
 };
 
+struct research_group_api_obj
+{
+    research_group_api_obj(const chain::research_group_object& rg_o, const account_api_obj& acc_o)
+        : id(rg_o.id._id)
+        , external_id(rg_o.account)
+        , creator(rg_o.creator)
+        , name(fc::to_string(rg_o.name))
+        , permlink(fc::to_string(rg_o.permlink))
+        , description(fc::to_string(rg_o.description))
+        , quorum_percent(rg_o.default_quorum)
+        , is_dao(rg_o.is_dao)
+        , is_personal(rg_o.is_personal)
+        , is_centralized(rg_o.is_centralized)
+        , account(acc_o)
+    {
+    }
+
+    research_group_api_obj(const chain::research_group_object& rg_o)
+        : id(rg_o.id._id)
+        , external_id(rg_o.account)
+        , creator(rg_o.creator)
+        , name(fc::to_string(rg_o.name))
+        , permlink(fc::to_string(rg_o.permlink))
+        , description(fc::to_string(rg_o.description))
+        , quorum_percent(rg_o.default_quorum)
+        , is_dao(rg_o.is_dao)
+        , is_personal(rg_o.is_personal)
+        , is_centralized(rg_o.is_centralized)
+    {
+    }
+
+    // because fc::variant require for temporary object
+    research_group_api_obj()
+    {
+    }
+
+    int64_t id;
+    external_id_type external_id;
+    account_name_type creator;
+    std::string name;
+    std::string permlink;
+    std::string description;
+    percent_type quorum_percent;
+    bool is_dao;
+    bool is_personal;
+    bool is_centralized;
+    fc::optional<account_api_obj> account;
+};
+
 struct research_api_obj
 {
-    research_api_obj(const chain::research_object& r,
+    research_api_obj(const chain::research_object& r_o,
                      const vector<discipline_api_obj>& disciplines,
-                     const string& group_permlink)
-        : id(r.id._id)
-        , external_id(r.external_id)
-        , research_group_id(r.research_group_id._id)
-        , title(fc::to_string(r.title))
-        , abstract(fc::to_string(r.abstract))
-        , permlink(fc::to_string(r.permlink))
-        , is_finished(r.is_finished)
-        , owned_tokens(r.owned_tokens.amount)
-        , review_share(r.review_share.amount)
-        , created_at(r.created_at)
+                     const research_group_api_obj& rg_api)
+
+        : id(r_o.id._id)
+        , external_id(r_o.external_id)
+        , research_group_id(r_o.research_group_id._id)
+        , title(fc::to_string(r_o.title))
+        , abstract(fc::to_string(r_o.abstract))
+        , permlink(fc::to_string(r_o.permlink))
+        , is_finished(r_o.is_finished)
+        , is_private(r_o.is_private)
+        , owned_tokens(r_o.owned_tokens.amount)
+        , review_share(r_o.review_share.amount)
+        , created_at(r_o.created_at)
         , disciplines(disciplines.begin(), disciplines.end())
-        , group_permlink(group_permlink)
-        , number_of_positive_reviews(r.number_of_positive_reviews)
-        , number_of_negative_reviews(r.number_of_negative_reviews)
-        , last_update_time(r.last_update_time)
-        , members(r.members.begin(), r.members.end())
-        , is_private(r.is_private)
+        , number_of_positive_reviews(r_o.number_of_positive_reviews)
+        , number_of_negative_reviews(r_o.number_of_negative_reviews)
+        , last_update_time(r_o.last_update_time)
+        , members(r_o.members.begin(), r_o.members.end())
+        , research_group(rg_api)
     {
-        for (const auto& kvp : r.eci_per_discipline) {
+        for (const auto& kvp : r_o.eci_per_discipline) 
+        {
             discipline_id_type discipline_id = kvp.first;
             share_type weight = kvp.second;
             eci_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
         }
 
-        if (r.compensation_share.valid())
+        if (r_o.compensation_share.valid())
         {
-            compensation_share = (*r.compensation_share).amount;
+            compensation_share = (*r_o.compensation_share).amount;
         }
     }
 
@@ -415,6 +466,7 @@ struct research_api_obj
     std::string abstract;
     std::string permlink;
     bool is_finished;
+    bool is_private;
     share_type owned_tokens;
     share_type review_share;
     time_point_sec created_at;
@@ -429,37 +481,38 @@ struct research_api_obj
     time_point_sec last_update_time;
 
     std::vector<account_name_type> members;
-    bool is_private;
+
+    research_group_api_obj research_group;
 };
 
 struct research_content_api_obj
 {
-    research_content_api_obj(const chain::research_content_object& rc)
-        :  id(rc.id._id)
-        ,  external_id(rc.external_id)
-        ,  research_id(rc.research_id._id)
-        ,  content_type(rc.type)
-        ,  authors(rc.authors.begin(), rc.authors.end())
-        ,  title(fc::to_string(rc.title))        
-        ,  content(fc::to_string(rc.content))
-        ,  permlink(fc::to_string(rc.permlink))
-        ,  activity_state(rc.activity_state)
-        ,  activity_window_start(rc.activity_window_start)
-        ,  activity_window_end(rc.activity_window_end)
-        ,  created_at(rc.created_at)
+    research_content_api_obj(const chain::research_content_object& rc_o)
+        : id(rc_o.id._id)
+        , external_id(rc_o.external_id)
+        , research_id(rc_o.research_id._id)
+        , content_type(rc_o.type)
+        , authors(rc_o.authors.begin(), rc_o.authors.end())
+        , title(fc::to_string(rc_o.title))
+        , content(fc::to_string(rc_o.content))
+        , permlink(fc::to_string(rc_o.permlink))
+        , activity_state(rc_o.activity_state)
+        , activity_window_start(rc_o.activity_window_start)
+        , activity_window_end(rc_o.activity_window_end)
+        , created_at(rc_o.created_at)
     {
-        for (auto reference : rc.references)
+        for (auto reference : rc_o.references)
         {
             references.insert(reference._id);
         }
 
-        for (auto& str : rc.foreign_references)
+        for (auto& str : rc_o.foreign_references)
         {
             std::string val = fc::to_string(str);
             foreign_references.insert(val);
         }
 
-        for (const auto& kvp : rc.eci_per_discipline) 
+        for (const auto& kvp : rc_o.eci_per_discipline)
         {
             discipline_id_type discipline_id = kvp.first;
             share_type weight = kvp.second;
@@ -513,23 +566,30 @@ struct expert_token_api_obj
     share_type amount;
 };
 
-
 struct proposal_api_obj
 {
-    proposal_api_obj(const chain::proposal_object& p, const chain::research_group_object& research_group)
-        : id(p.id._id)
-        , research_group_id(research_group.id._id)
-        , creation_time(p.created_at)
-        , expiration_time(p.expiration_time)
-        , creator(p.proposer)
-    {}
+    proposal_api_obj(const chain::proposal_object& p_o)
+        : id(p_o.id._id)
+        , external_id(p_o.external_id)
+        , creator(p_o.proposer)
+        , proposed_transaction(p_o.proposed_transaction)
+        , expiration_time(p_o.expiration_time)
+        , review_period_time(p_o.review_period_time)
+        , fail_reason(fc::to_string(p_o.fail_reason))
+        , created_at(p_o.created_at)
+    {
+        required_posting_approvals.insert(p_o.required_posting_approvals.begin(), p_o.required_posting_approvals.end());
+        available_posting_approvals.insert(p_o.available_posting_approvals.begin(), p_o.available_posting_approvals.end());
+        required_active_approvals.insert(p_o.required_active_approvals.begin(), p_o.required_active_approvals.end());
+        available_active_approvals.insert(p_o.available_active_approvals.begin(), p_o.available_active_approvals.end());
+        required_owner_approvals.insert(p_o.required_owner_approvals.begin(), p_o.required_owner_approvals.end());
+        available_owner_approvals.insert(p_o.available_owner_approvals.begin(), p_o.available_owner_approvals.end());
+        available_key_approvals.insert(p_o.available_key_approvals.begin(), p_o.available_key_approvals.end());
 
-    proposal_api_obj(const chain::proposal_object& p)
-        : id(p.id._id)
-        , creation_time(p.created_at)
-        , expiration_time(p.expiration_time)
-        , creator(p.proposer)
-    {}
+        voted_accounts.insert(p_o.available_posting_approvals.begin(), p_o.available_posting_approvals.end());
+        voted_accounts.insert(p_o.available_active_approvals.begin(), p_o.available_active_approvals.end());
+        voted_accounts.insert(p_o.available_owner_approvals.begin(), p_o.available_owner_approvals.end());
+    }
 
     // because fc::variant require for temporary object
     proposal_api_obj()
@@ -537,66 +597,25 @@ struct proposal_api_obj
     }
 
     int64_t id;
-    fc::optional<int64_t> research_group_id;
-    fc::time_point_sec creation_time;
-    fc::time_point_sec expiration_time;
-    std::string creator;
-    std::string data;
-    percent_type quorum_percent;
-    share_type current_votes_amount;
-    bool is_completed;
 
-    flat_set<account_name_type> voted_accounts;
-    vector<string> votes;
-};
-
-struct research_group_api_obj
-{
-    research_group_api_obj(const chain::research_group_object& rg_o, const account_api_obj& acc_o)
-        : id(rg_o.id._id)
-        , external_id(rg_o.account)
-        , creator(rg_o.creator)
-        , name(fc::to_string(rg_o.name))
-        , permlink(fc::to_string(rg_o.permlink))
-        , description(fc::to_string(rg_o.description))
-        , quorum_percent(rg_o.default_quorum)
-        , is_dao(rg_o.is_dao)
-        , is_personal(rg_o.is_personal)
-        , is_centralized(rg_o.is_centralized)
-        , account(acc_o)
-    {
-    }
-
-    research_group_api_obj(const chain::research_group_object& rg_o)
-        : id(rg_o.id._id)
-        , external_id(rg_o.account)
-        , creator(rg_o.creator)
-        , name(fc::to_string(rg_o.name))
-        , permlink(fc::to_string(rg_o.permlink))
-        , description(fc::to_string(rg_o.description))
-        , quorum_percent(rg_o.default_quorum)
-        , is_dao(rg_o.is_dao)
-        , is_personal(rg_o.is_personal)
-        , is_centralized(rg_o.is_centralized)
-    {
-    }
-
-    // because fc::variant require for temporary object
-    research_group_api_obj()
-    {
-    }
-
-    int64_t id;
-    external_id_type external_id;
+    string external_id;
     account_name_type creator;
-    std::string name;
-    std::string permlink;
-    std::string description;
-    percent_type quorum_percent;
-    bool is_dao;
-    bool is_personal;
-    bool is_centralized;
-    fc::optional<account_api_obj> account;
+    transaction proposed_transaction;
+
+    time_point_sec expiration_time;
+    optional<time_point_sec> review_period_time;
+    string fail_reason;
+    time_point_sec created_at;
+
+    set<account_name_type> required_posting_approvals;
+    set<account_name_type> available_posting_approvals;
+    set<account_name_type> required_active_approvals;
+    set<account_name_type> available_active_approvals;
+    set<account_name_type> required_owner_approvals;
+    set<account_name_type> available_owner_approvals;
+    set<public_key_type> available_key_approvals;
+
+    set<account_name_type> voted_accounts;
 };
 
 struct research_group_token_api_obj
@@ -1456,19 +1475,19 @@ FC_REFLECT( deip::app::research_api_obj,
             (abstract)
             (permlink)
             (is_finished)
+            (is_private)
             (owned_tokens)
             (review_share)
             (created_at)
             (compensation_share)
             (disciplines)
-            (group_permlink)
             (eci_per_discipline)
             (number_of_positive_reviews)
             (number_of_negative_reviews)
             (last_update_time)
             (members)
-            (is_private)
-          )
+            (research_group)
+)
 
 FC_REFLECT( deip::app::research_content_api_obj,
             (id)
@@ -1499,16 +1518,21 @@ FC_REFLECT( deip::app::expert_token_api_obj,
 
 FC_REFLECT( deip::app::proposal_api_obj,
             (id)
-            (research_group_id)
-            (creation_time)
-            (expiration_time)
+            (external_id)
             (creator)
-            (data)
-            (quorum_percent)
-            (current_votes_amount)
-            (is_completed)
+            (proposed_transaction)
+            (expiration_time)
+            (review_period_time)
+            (fail_reason)
+            (created_at)
+            (required_posting_approvals)
+            (available_posting_approvals)
+            (required_active_approvals)
+            (available_active_approvals)
+            (required_owner_approvals)
+            (available_owner_approvals)
+            (available_key_approvals)
             (voted_accounts)
-            (votes)
 )
 
 FC_REFLECT( deip::app::research_group_token_api_obj,

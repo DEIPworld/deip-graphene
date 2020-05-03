@@ -59,7 +59,7 @@ const bool dbs_proposal::proposal_exists(const external_id_type& external_id) co
     return itr != idx.end();
 }
 
-const dbs_proposal::proposal_ref_type dbs_proposal::get_proposals_by_research_group_id(const account_name_type& proposer) const
+const dbs_proposal::proposal_ref_type dbs_proposal::get_proposals_by_creator(const account_name_type& creator) const
 {
     proposal_ref_type ret;
 
@@ -67,8 +67,8 @@ const dbs_proposal::proposal_ref_type dbs_proposal::get_proposals_by_research_gr
       .get_index<proposal_index>()
       .indicies()
       .get<by_proposer>();
-      
-    auto it_pair = idx.equal_range(proposer);
+
+    auto it_pair = idx.equal_range(creator);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)

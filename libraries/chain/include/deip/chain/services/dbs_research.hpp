@@ -54,9 +54,13 @@ public:
 
     const research_object& get_research(const external_id_type& external_id) const;
 
+      const research_object& get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
+
+    const research_optional_ref_type get_research_if_exists(const research_id_type& id) const;
+
     const research_optional_ref_type get_research_if_exists(const external_id_type& external_id) const;
 
-    const research_object& get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
+    const research_optional_ref_type get_research_by_permlink_if_exists(const research_group_id_type& research_group_id, const string& permlink) const;
 
     void check_research_existence(const research_id_type& id) const;
 

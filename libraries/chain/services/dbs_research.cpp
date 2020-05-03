@@ -134,6 +134,44 @@ const research_object& dbs_research::get_research(const research_id_type& id) co
     FC_CAPTURE_AND_RETHROW((id))
 }
 
+const dbs_research::research_optional_ref_type dbs_research::get_research_if_exists(const research_id_type& id) const
+{
+    research_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<research_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr !=idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
+
+const dbs_research::research_optional_ref_type dbs_research::get_research_by_permlink_if_exists(
+  const research_group_id_type& research_group_id,
+  const string& permlink) const
+{
+    research_optional_ref_type result;
+
+    const auto& idx = db_impl()
+      .get_index<research_index>()
+      .indices()
+      .get<by_permlink>();
+
+    auto itr = idx.find(std::make_tuple(research_group_id, permlink));
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 const research_object& dbs_research::get_research(const external_id_type& external_id) const
 {
     const auto& idx = db_impl()

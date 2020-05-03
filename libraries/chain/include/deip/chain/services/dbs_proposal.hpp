@@ -51,7 +51,7 @@ public:
 
     const proposal_optional_ref_type get_proposal_if_exists(const external_id_type& external_id) const;
 
-    const proposal_ref_type get_proposals_by_research_group_id(const account_name_type& proposer) const;
+    const proposal_ref_type get_proposals_by_creator(const account_name_type& creator) const;
 
     void remove_proposal(const proposal_object& proposal);
 

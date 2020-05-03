@@ -287,7 +287,6 @@ public:
     fc::optional<research_api_obj> get_research_by_id(const research_id_type& internal_id) const;
     fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
     fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
-    vector<research_api_obj> get_researches_by_discipline_id(const uint64_t from, const uint32_t limit, const discipline_id_type& discipline_id) const;
     vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
     bool check_research_existence_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
 
@@ -313,8 +312,8 @@ public:
     ////////////////////
     // Proposal       //
     ////////////////////
-    vector<proposal_api_obj> get_proposals_by_research_group_id(const research_group_id_type& research_group_id) const;
-    fc::optional<proposal_api_obj> get_proposal(const proposal_id_type& id) const;
+    fc::optional<proposal_api_obj> get_proposal(const external_id_type& external_id) const;
+    vector<proposal_api_obj> get_proposals_by_creator(const account_name_type& creator) const;
 
     ////////////////////
     // Research group //
@@ -362,8 +361,6 @@ public:
     ///////////////////////////////////
     // Research listing              //
     ///////////////////////////////////
-
-    vector<research_listing_api_obj> get_research_listing(const discipline_id_type& discipline_id, const uint64_t& from, const uint32_t& limit) const;
     vector<research_listing_api_obj> get_all_researches_listing(const discipline_id_type& discipline_id, const uint32_t& limit) const;
 
     /////////////////////////////
@@ -612,7 +609,6 @@ FC_API(deip::app::database_api,
    (get_research)
    (get_research_by_id)
    (get_research_by_permlink)
-   (get_researches_by_discipline_id)
    (get_researches_by_research_group_id)
    (get_research_by_absolute_permlink)
    (check_research_existence_by_permlink)
@@ -634,8 +630,8 @@ FC_API(deip::app::database_api,
    (get_expert_token_by_account_name_and_discipline_id)
 
    // Proposal
-   (get_proposals_by_research_group_id)
    (get_proposal)
+   (get_proposals_by_creator)
 
    // Research group
    (get_research_group)
@@ -668,7 +664,6 @@ FC_API(deip::app::database_api,
    (get_research_group_invite_by_account_name_and_research_group_id)
 
    // Research listing
-   (get_research_listing)
    (get_all_researches_listing)
 
    // Total votes

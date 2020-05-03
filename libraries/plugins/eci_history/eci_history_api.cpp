@@ -58,17 +58,17 @@ public:
         {
             return result;
         }
-        const auto& research = app::research_api_obj(*r_itr, {}, "");
 
 
         const auto& research_groups_idx = db->get_index<research_group_index>().indices().get<by_id>();
-        auto rg_itr = research_groups_idx.find(research.research_group_id);
+        auto rg_itr = research_groups_idx.find(r_itr->research_group_id);
         if (rg_itr == research_groups_idx.end())
         {
             return result;
         }
-        const auto& research_group = app::research_group_api_obj(*rg_itr);
 
+        const auto& research_group = app::research_group_api_obj(*rg_itr);
+        const auto& research = app::research_api_obj(*r_itr, {}, research_group);
 
         const auto& reviews_idx = db->get_index<review_index>().indices().get<by_id>();
         const auto& review_votes_idx = db->get_index<review_vote_index>().indices().get<by_id>();
@@ -160,17 +160,17 @@ public:
         {
             return result;
         }
-        const auto& research = app::research_api_obj(*r_itr, {}, "");
 
 
         const auto& research_groups_idx = db->get_index<research_group_index>().indices().get<by_id>();
-        auto rg_itr = research_groups_idx.find(research.research_group_id);
+        auto rg_itr = research_groups_idx.find(r_itr->research_group_id);
         if (rg_itr == research_groups_idx.end())
         {
             return result;
         }
-        const auto& research_group = app::research_group_api_obj(*rg_itr);
 
+        const auto& research_group = app::research_group_api_obj(*rg_itr);
+        const auto& research = app::research_api_obj(*r_itr, {}, research_group);
 
         const auto& research_content_idx = db->get_index<research_content_index>().indices().get<by_id>();
         const auto& reviews_idx = db->get_index<review_index>().indices().get<by_id>();
@@ -307,12 +307,12 @@ public:
                         auto r_itr = research_idx.find(research_content_opt->research_id);
                         if (r_itr != research_idx.end())
                         {
-                            research_opt = app::research_api_obj(*r_itr, {}, "");
 
-                            auto rg_itr = research_groups_idx.find(research_opt->research_group_id);
+                            auto rg_itr = research_groups_idx.find(r_itr->research_group_id);
                             if (rg_itr != research_groups_idx.end())
                             {
                                 research_group_opt = app::research_group_api_obj(*rg_itr);
+                                research_opt = app::research_api_obj(*r_itr, {}, *research_group_opt);
                             }
                         }
                     }
@@ -335,12 +335,12 @@ public:
                             auto r_itr = research_idx.find(research_content_opt->research_id);
                             if (r_itr != research_idx.end())
                             {
-                                research_opt = app::research_api_obj(*r_itr, {}, "");
 
-                                auto rg_itr = research_groups_idx.find(research_opt->research_group_id);
+                                auto rg_itr = research_groups_idx.find(r_itr->research_group_id);
                                 if (rg_itr != research_groups_idx.end())
                                 {
                                     research_group_opt = app::research_group_api_obj(*rg_itr);
+                                    research_opt = app::research_api_obj(*r_itr, {}, *research_group_opt);
                                 }
                             }
                         }
@@ -369,12 +369,11 @@ public:
                                 auto r_itr = research_idx.find(research_content_opt->research_id);
                                 if (r_itr != research_idx.end())
                                 {
-                                    research_opt = app::research_api_obj(*r_itr, {}, "");
-
-                                    auto rg_itr = research_groups_idx.find(research_opt->research_group_id);
+                                    auto rg_itr = research_groups_idx.find(r_itr->research_group_id);
                                     if (rg_itr != research_groups_idx.end())
                                     {
                                         research_group_opt = app::research_group_api_obj(*rg_itr);
+                                        research_opt = app::research_api_obj(*r_itr, {}, *research_group_opt);
                                     }
                                 }
                             }

@@ -2191,17 +2191,15 @@ fc::optional<research_group_api_obj> wallet_api::get_research_group_by_permlink(
     return my->_remote_db->get_research_group_by_permlink({ permlink });
 }
 
-fc::optional<proposal_api_obj> wallet_api::get_proposal(const int64_t proposals_id)
+fc::optional<proposal_api_obj> wallet_api::get_proposal(const external_id_type& proposal_id)
 {
-    return my->_remote_db->get_proposal({ proposals_id });
+    return my->_remote_db->get_proposal(proposal_id);
 }
 
-vector<proposal_api_obj> wallet_api::list_research_group_proposals(const int64_t research_group_id)
+vector<proposal_api_obj> wallet_api::get_proposals_by_creator(const account_name_type& creator)
 {
     vector<proposal_api_obj> result;
-
-    result = my->_remote_db->get_proposals_by_research_group_id({ research_group_id });
-
+    result = my->_remote_db->get_proposals_by_creator(creator);
     return result;
 }
 
@@ -2245,12 +2243,6 @@ fc::optional<research_api_obj> wallet_api::get_research_by_absolute_permlink(con
     return my->_remote_db->get_research_by_absolute_permlink(research_group_permlink, research_permlink);
 }
 
-vector<research_api_obj> wallet_api::get_researches_by_discipline(const uint64_t from,
-                                                                     const uint32_t limit,
-                                                                     const int64_t discipline_id)
-{
-    return my->_remote_db->get_researches_by_discipline_id(from, limit, discipline_id);
-}
 
 vector<research_api_obj> wallet_api::get_researches_by_research_group(const int64_t research_group_id)
 {

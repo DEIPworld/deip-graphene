@@ -852,12 +852,12 @@ public:
     /**
      *  Gets proposal details
      */
-    fc::optional<proposal_api_obj> get_proposal(const int64_t proposals_id);
+    fc::optional<proposal_api_obj> get_proposal(const external_id_type& proposal_id);
 
     /**
      *  Gets the list of all proposals for research group
      */
-    vector<proposal_api_obj> list_research_group_proposals(const int64_t research_group_id);
+    vector<proposal_api_obj> get_proposals_by_creator(const account_name_type& creator);
 
     /**
      *  Gets the list of research token sale
@@ -901,12 +901,6 @@ public:
      */
     fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink,
                                                        const string& research_permlink);
-
-    /**
-     *  Gets the list of researches by discipline id
-     */
-    vector<research_api_obj>
-    get_researches_by_discipline(const uint64_t from, const uint32_t limit, const int64_t discipline_id);
 
     /**
      *  Gets the list of researches by id research group
@@ -1162,7 +1156,7 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (get_vesting_balances)
         (get_research_group_by_permlink)
         (get_proposal)
-        (list_research_group_proposals)
+        (get_proposals_by_creator)
         (list_research_token_sales)
         (get_research_content)
         (get_research_content_by_permlink)
@@ -1171,7 +1165,6 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (get_research)
         (get_research_by_permlink)
         (get_research_by_absolute_permlink)
-        (get_researches_by_discipline)
         (get_researches_by_research_group)
         (list_my_research_groups)
         (list_my_researches)
