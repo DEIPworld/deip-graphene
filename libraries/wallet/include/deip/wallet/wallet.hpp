@@ -986,7 +986,7 @@ public:
      * @param broadcast
      */
     annotated_signed_transaction contribute_to_token_sale(const std::string& contributor,
-                                                          const int64_t research_token_sale_id,
+                                                          const external_id_type& research_external_id,
                                                           const asset& amount,
                                                           const bool broadcast);
 

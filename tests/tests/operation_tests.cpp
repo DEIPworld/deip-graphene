@@ -2215,8 +2215,8 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
 
         contribute_to_token_sale_operation op;
 
-        op.research_token_sale_id = 0;
-        op.owner = "alice";
+        op.research_external_id = "";
+        op.contributor = "alice";
         op.amount = asset(600, DEIP_SYMBOL);
 
         BOOST_TEST_MESSAGE("--- Test");

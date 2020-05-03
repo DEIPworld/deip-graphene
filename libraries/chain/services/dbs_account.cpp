@@ -186,8 +186,7 @@ void dbs_account::update_acount(const account_object& account,
                                 const optional<authority>& owner,
                                 const optional<authority>& active,
                                 const optional<authority>& posting,
-                                const vector<deip::protocol::account_trait>& traits,
-                                const bool& is_user_account,
+                                const optional<vector<deip::protocol::account_trait>>& traits,
                                 const optional<time_point_sec>& now)
 {
     dbs_research_group& research_groups_service = db_impl().obtain_service<dbs_research_group>();
@@ -216,9 +215,9 @@ void dbs_account::update_acount(const account_object& account,
         });
     }
 
-    if (!is_user_account) // research group workspace
+    if (traits.valid()) // research group workspace
     {
-        const account_trait trait = traits[0];
+        const account_trait trait = (*traits)[0];
         const auto rg_trait = trait.get<research_group_v1_0_0_trait>();
         const auto& research_group = research_groups_service.get_research_group_by_account(account.name);
 

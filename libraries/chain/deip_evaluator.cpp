@@ -170,8 +170,7 @@ void update_account_evaluator::do_apply(const update_account_operation& op)
       op.owner, 
       op.active, 
       op.posting,
-      op.traits,
-      op.is_user_account());
+      op.traits);
 }
 
 /**
@@ -853,49 +852,65 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
     dbs_research_token_sale& research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
 
-    research_token_sale_service.check_research_token_sale_existence(op.research_token_sale_id);
-    account_service.check_account_existence(op.owner);
+    FC_ASSERT(research_service.research_exists(op.research_external_id), 
+      "Research ${1} does not exist",
+      ("1", op.research_external_id));
 
-    auto account_balance = account_balance_service.get_by_owner_and_asset(op.owner, op.amount.symbol);
+    FC_ASSERT(account_service.account_exists(op.contributor), 
+      "Account ${1} does not exist",
+      ("1", op.contributor));
 
-    FC_ASSERT(account_balance.amount >= op.amount.amount, "Not enough funds to contribute");
+    const auto& research = research_service.get_research(op.research_external_id);
+    const auto& research_token_sales = research_token_sale_service.get_by_research_id_and_status(research.id, research_token_sale_status::token_sale_active);
 
-    auto& research_token_sale = research_token_sale_service.get_by_id(op.research_token_sale_id);
-    FC_ASSERT(research_token_sale.status == research_token_sale_status::token_sale_active, "You cannot contribute to inactive, finished or expired token sale");
+    FC_ASSERT(research_token_sales.size() == 1, 
+      "No active research token sale found for research ${1}",
+      ("1", op.research_external_id));
+
+    const auto& research_token_sale = (*research_token_sales.begin()).get();
+    const auto& account_balance = account_balance_service.get_by_owner_and_asset(op.contributor, op.amount.symbol);
+
+    FC_ASSERT(account_balance.amount >= op.amount.amount, 
+      "Not enough funds to contribute. Available: ${1} Requested: ${2}", 
+      ("1", account_balance.amount)("2", op.amount));
 
     asset amount_to_contribute = op.amount;
     bool is_hard_cap_reached = research_token_sale.total_amount + amount_to_contribute >= research_token_sale.hard_cap;
 
-    if (is_hard_cap_reached) {
+    if (is_hard_cap_reached) 
+    {
         amount_to_contribute = research_token_sale.hard_cap - research_token_sale.total_amount;
     }
 
-    auto research_token_sale_contribution = _db._temporary_public_impl().
-            find<research_token_sale_contribution_object, by_owner_and_research_token_sale_id>(boost::make_tuple(op.owner, op.research_token_sale_id));
-
-    if (research_token_sale_contribution != nullptr) {
-        _db._temporary_public_impl().modify(*research_token_sale_contribution,
-                                            [&](research_token_sale_contribution_object &rtsc_o) { rtsc_o.amount += amount_to_contribute; });
-    } else {
+    // TODO: move to the service
+    auto research_token_sale_contribution = _db._temporary_public_impl().find<research_token_sale_contribution_object, by_owner_and_research_token_sale_id>(std::make_tuple(op.contributor, research_token_sale.id));
+    if (research_token_sale_contribution != nullptr) 
+    {
+        _db._temporary_public_impl().modify(*research_token_sale_contribution, [&](research_token_sale_contribution_object &rtsc_o) { rtsc_o.amount += amount_to_contribute; });
+    }
+    else 
+    {
         fc::time_point_sec contribution_time = _db.head_block_time();
-        research_token_sale_service.contribute(op.research_token_sale_id, op.owner,
-                                               contribution_time, amount_to_contribute);
+        research_token_sale_service.contribute(research_token_sale.id, op.contributor, contribution_time, amount_to_contribute);
     }
 
-    account_balance_service.adjust_balance(op.owner, -amount_to_contribute);
-    research_token_sale_service.increase_tokens_amount(op.research_token_sale_id, amount_to_contribute);
+    account_balance_service.adjust_balance(op.contributor, -amount_to_contribute);
+    research_token_sale_service.increase_tokens_amount(research_token_sale.id, amount_to_contribute);
 
-    if (is_hard_cap_reached) {
-        research_token_sale_service.update_status(op.research_token_sale_id, token_sale_finished);
-        research_token_sale_service.distribute_research_tokens(op.research_token_sale_id);
+    if (is_hard_cap_reached) 
+    {
+        research_token_sale_service.update_status(research_token_sale.id, token_sale_finished);
+        research_token_sale_service.distribute_research_tokens(research_token_sale.id);
     }
 
-    _db.push_virtual_operation(token_sale_contribution_to_history_operation(research_token_sale.research_id._id,
-                                                                            research_token_sale.id._id,
-                                                                            op.owner,
-                                                                            amount_to_contribute));
-
+    _db.push_virtual_operation(token_sale_contribution_to_history_operation(
+      research_token_sale.research_id._id,
+      research_token_sale.id._id,
+      op.contributor,
+      amount_to_contribute
+    ));
 }
 
 void transfer_research_tokens_to_research_group_evaluator::do_apply(const transfer_research_tokens_to_research_group_operation& op)
@@ -2420,7 +2435,7 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
           fc::to_string(ref.content))
         );
     }
-    
+
     const std::map<discipline_id_type, share_type> previous_research_content_eci = research_content_service.get_eci_evaluation(research_content.id);
     const std::map<discipline_id_type, share_type> previous_research_eci = research_service.get_eci_evaluation(research.id);
 

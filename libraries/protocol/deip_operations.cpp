@@ -145,8 +145,9 @@ void change_recovery_account_operation::validate() const
 
 void contribute_to_token_sale_operation::validate() const
 {
-    validate_account_name(owner);
-    FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Amount must be DEIP and greater than 0");
+    validate_account_name(contributor);
+    validate_160_bits_hexadecimal_string(research_external_id);
+    FC_ASSERT(amount.amount > 0, "Contribution must and greater than 0");
 }
 
 void transfer_research_tokens_to_research_group_operation::validate() const 

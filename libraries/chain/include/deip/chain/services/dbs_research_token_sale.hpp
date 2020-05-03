@@ -36,8 +36,6 @@ public:
 
     research_token_sale_refs_type get_by_research_id(const research_id_type &research_id) const;
 
-    void check_research_token_sale_existence(const research_token_sale_id_type& id) const;
-
     const research_token_sale_object& increase_tokens_amount(const research_token_sale_id_type &id,
                                                              const asset &amount);
 
@@ -45,7 +43,7 @@ public:
                                                     const research_token_sale_status& status);
 
     research_token_sale_refs_type get_by_research_id_and_status(const research_id_type& research_id,
-                                                                const research_token_sale_status status) const;
+                                                                const research_token_sale_status& status) const;
 
     //research_token_sale_contribution
 

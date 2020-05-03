@@ -141,7 +141,7 @@ struct get_impacted_account_visitor
 
     void operator()(const contribute_to_token_sale_operation& op)
     {
-        _impacted.insert(op.owner);
+        _impacted.insert(op.contributor);
     }
 
     void operator()(const transfer_research_tokens_to_research_group_operation& op)

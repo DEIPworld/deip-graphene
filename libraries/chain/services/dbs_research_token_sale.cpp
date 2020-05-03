@@ -78,12 +78,6 @@ dbs_research_token_sale::get_by_research_id(const research_id_type &research_id)
     return ret;
 }
 
-void dbs_research_token_sale::check_research_token_sale_existence(const research_token_sale_id_type& id) const
-{
-    auto research_token_sale = db_impl().find<research_token_sale_object, by_id>(id);
-    FC_ASSERT(research_token_sale != nullptr, "Research token sale with id \"${1}\" must exist.", ("1", id));
-}
-
 const research_token_sale_object& dbs_research_token_sale::increase_tokens_amount(const research_token_sale_id_type &id,
                                                                                   const asset &amount)
 {
@@ -100,9 +94,9 @@ const research_token_sale_object& dbs_research_token_sale::update_status(const r
     return research_token_sale;
 }
 
-dbs_research_token_sale::research_token_sale_refs_type
-dbs_research_token_sale::get_by_research_id_and_status(const research_id_type& research_id,
-                                                       const research_token_sale_status status) const
+dbs_research_token_sale::research_token_sale_refs_type dbs_research_token_sale::get_by_research_id_and_status(
+  const research_id_type& research_id,
+  const research_token_sale_status& status) const
 {
     research_token_sale_refs_type ret;
 

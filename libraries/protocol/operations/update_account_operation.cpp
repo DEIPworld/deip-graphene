@@ -30,18 +30,5 @@ void update_account_operation::validate() const
     }
 }
 
-bool update_account_operation::is_research_group_account() const
-{
-    return std::count_if(traits.begin(), traits.end(),
-        [&](const account_trait& trait) {
-            return trait.which() == account_trait::tag<research_group_v1_0_0_trait>::value;
-        }) != 0;
-}
-
-bool update_account_operation::is_user_account() const
-{
-    return traits.size() == 0;
-}
-
 } // namespace protocol
 } // namespace deip

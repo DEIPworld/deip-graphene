@@ -26,12 +26,9 @@ struct update_account_operation : public base_operation
     optional<authority> posting;
     optional<public_key_type> memo_key;
     optional<string> json_metadata;
-    vector<account_trait> traits;
+    optional<vector<account_trait>> traits;
 
     extensions_type extensions;
-
-    bool is_research_group_account() const;
-    bool is_user_account() const;
 
     void validate() const;
 
