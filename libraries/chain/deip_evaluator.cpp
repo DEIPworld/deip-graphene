@@ -2389,15 +2389,6 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
       "The research ${1} has been finished already",
       ("1", research.title));
 
-    flat_set<research_content_id_type> references_internal_ids;
-    flat_set<research_content_object> references;
-
-    for (external_id_type reference : op.references)
-    {
-        const auto& ref = research_content_service.get_research_content(reference);
-        references_internal_ids.insert(ref.id);
-    }
-
     for (auto& author : op.authors)
     {
         FC_ASSERT(research.members.find(author) != research.members.end(),
@@ -2413,12 +2404,13 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
       op.permlink,
       static_cast<research_content_type>(op.type),
       op.authors,
-      references_internal_ids,
+      op.references,
       op.foreign_references,
       block_time);
 
-    for (auto& ref : references)
+    for (external_id_type id : op.references)
     {
+        const auto& ref = research_content_service.get_research_content(id);
         _db.push_virtual_operation(research_content_reference_history_operation(
           research_content.id._id,
           research_content.research_id._id,
@@ -2428,6 +2420,7 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
           fc::to_string(ref.content))
         );
     }
+    
     const std::map<discipline_id_type, share_type> previous_research_content_eci = research_content_service.get_eci_evaluation(research_content.id);
     const std::map<discipline_id_type, share_type> previous_research_eci = research_service.get_eci_evaluation(research.id);
 

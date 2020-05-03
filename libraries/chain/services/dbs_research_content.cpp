@@ -22,7 +22,7 @@ const research_content_object& dbs_research_content::create_research_content(
   const std::string& permlink,
   const research_content_type& type,
   const flat_set<account_name_type>& authors,
-  const flat_set<research_content_id_type>& references,
+  const flat_set<external_id_type>& references,
   const flat_set<string>& foreign_references,
   const fc::time_point_sec& timestamp) 
 {

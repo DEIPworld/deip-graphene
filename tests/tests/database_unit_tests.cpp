@@ -122,7 +122,6 @@ public:
             d.permlink = "milestone_research_1";
             d.type = milestone_article;
             d.authors = {"alice"};
-            d.references.insert(2);
             d.activity_state = research_content_activity_state::active;
         });
 
@@ -132,7 +131,6 @@ public:
             d.permlink = "milestone_research_2";
             d.type = milestone_data;
             d.authors = {"alex"};
-            d.references.insert(1);
             d.activity_state = research_content_activity_state::active;
         });
     }
@@ -145,7 +143,6 @@ public:
             d.permlink = "milestone_research_1";
             d.type = milestone_data;
             d.authors = {"alice"};
-            d.references.insert(2);
             d.activity_state = research_content_activity_state::active;
             d.activity_round = 2;
             d.activity_window_end = db.head_block_time() + DAYS_TO_SECONDS(7);
@@ -157,7 +154,6 @@ public:
             d.permlink = "final_result_research_1";
             d.type = final_result;
             d.authors = {"alex"};
-            d.references.insert(1);
             d.activity_state = research_content_activity_state::active;
             d.activity_round = 3;
             d.activity_window_end = db.head_block_time() + DAYS_TO_SECONDS(14);
@@ -280,7 +276,6 @@ public:
             d.research_id = 2;
             d.type = final_result;
             d.authors = {"jack"};
-            d.references.insert(1);
         });
     }
 

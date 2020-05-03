@@ -411,13 +411,8 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
 
         const flat_set<string> foreign_references;
         const time_point_sec timestamp = get_genesis_time();
-        flat_set<research_content_id_type> references_ids;
-
-        for (auto& reference_external_id : research_content.references)
-        {
-            const auto& reference = research_content_service.get_research_content(reference_external_id);
-            references_ids.insert(reference.id);
-        }
+        flat_set<external_id_type> references;
+        references.insert(research_content.references.begin(), research_content.references.end());
 
         const auto& created_research_content = research_content_service.create_research_content(
           research.id,
@@ -427,7 +422,7 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
           research_content.permlink,
           static_cast<deip::chain::research_content_type>(research_content.type),
           research_content.authors,
-          references_ids,
+          references,
           foreign_references,
           timestamp
         );

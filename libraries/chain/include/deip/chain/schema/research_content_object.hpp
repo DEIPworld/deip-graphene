@@ -68,7 +68,6 @@ public:
         content(a), 
         permlink(a), 
         authors(a), 
-        references(a), 
         foreign_references(a), 
         eci_per_discipline(a)
     {
@@ -89,7 +88,7 @@ public:
     account_name_type_set authors;
     time_point_sec created_at;
 
-    research_content_id_type_set references;
+    flat_set<external_id_type> references;
     shared_string_type_set foreign_references;
 
     discipline_id_share_type_map eci_per_discipline;

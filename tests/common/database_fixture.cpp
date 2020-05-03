@@ -521,7 +521,6 @@ const research_content_object& database_fixture::research_content_create(
         fc::from_string(rc.content, content);
         rc.created_at = now;
         rc.authors.insert(authors.begin(), authors.end());
-        rc.references.insert(references.begin(), references.end());
         rc.activity_round = activity_round;
         rc.activity_state = activity_state;
         rc.activity_window_start = activity_window_start;

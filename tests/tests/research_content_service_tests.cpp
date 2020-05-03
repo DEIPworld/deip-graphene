@@ -47,7 +47,6 @@ public:
             rc.permlink = "milestone-research-one";
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(2);
             rc.foreign_references = {};
         });
 
@@ -61,7 +60,6 @@ public:
             rc.permlink = "another-milestone-research-one";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(2);
             rc.foreign_references = {};
         });
 
@@ -75,7 +73,6 @@ public:
             rc.permlink = "final-research-one";
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(2);
             rc.foreign_references = {};
         });
 
@@ -102,7 +99,6 @@ public:
             rc.permlink = "announcement-research-two";
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(1);
             rc.foreign_references = {};
         });
     }
@@ -119,7 +115,6 @@ public:
             rc.permlink = "milestone-research-one";
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(2);
             rc.foreign_references = {};
         });
 
@@ -133,7 +128,6 @@ public:
             rc.permlink = "another-milestone-research-one";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(2);
             rc.foreign_references = {};
         });
 
@@ -147,7 +141,6 @@ public:
             rc.permlink = "final-research-one";
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(2);
             rc.foreign_references = {};
         });
 
@@ -161,7 +154,6 @@ public:
             rc.permlink = "announcement-research-two";
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(1);
             rc.foreign_references = {};
         });
     }

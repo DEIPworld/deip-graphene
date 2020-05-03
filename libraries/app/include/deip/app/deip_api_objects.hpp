@@ -501,10 +501,8 @@ struct research_content_api_obj
         , activity_window_end(rc_o.activity_window_end)
         , created_at(rc_o.created_at)
     {
-        for (auto reference : rc_o.references)
-        {
-            references.insert(reference._id);
-        }
+
+        references.insert(rc_o.references.begin(), rc_o.references.end());
 
         for (auto& str : rc_o.foreign_references)
         {
@@ -539,7 +537,7 @@ struct research_content_api_obj
     fc::time_point_sec created_at;
 
     std::set<string> foreign_references;
-    std::set<int64_t> references;
+    std::set<external_id_type> references;
 
     map<int64_t, int64_t> eci_per_discipline;
 };
