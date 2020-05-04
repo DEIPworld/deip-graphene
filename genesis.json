@@ -3184,7 +3184,7 @@
       "external_id": "69263980010f9e485b116d07c66e556da060efbb",
       "research_external_id": "04f421afbed394fc6f9df36e20210559b7081692",
       "title": "Describing Myxococcus xanthus",
-      "content": "package:78f5f3d76da4f1b54c60f0f261ca6aba73cb145308fb0d51692a93285f24119e",
+      "content": "78f5f3d76da4f1b54c60f0f261ca6aba73cb145308fb0d51692a93285f24119e",
       "permlink": "describing-myxococcus-xanthus",
       "type": 3,
       "authors": [
@@ -3197,7 +3197,7 @@
       "external_id": "49b1ce7c6fc01a592c61e6c17096ecfd38840904",
       "research_external_id": "04f421afbed394fc6f9df36e20210559b7081692",
       "title": "Inter-laboratory evolution of a model organism and its epistatic effects on mutagenesis screens",
-      "content": "package:d62c2f19f0b8035660636b3e8288bced834ae35f2de02391d04ac97f2febe4cb",
+      "content": "d62c2f19f0b8035660636b3e8288bced834ae35f2de02391d04ac97f2febe4cb",
       "permlink": "inter-laboratory-evolution-of-a-model-organism-and-its-epistatic-effects-on-mutagenesis-screens",
       "type": 3,
       "authors": [
@@ -3210,7 +3210,7 @@
       "external_id": "b6856c3d2e35a9fe395ddacee34b4aa184870872",
       "research_external_id": "575ee41fa2150929eb76efc55a8abcb3a1b23b00",
       "title": "Evidence in Tissint for recent subsurface water on Mars",
-      "content": "package:400bf03066af58ce9cc3bf7e1c37215ac92203c3d8e3346b88b922d14489e449",
+      "content": "400bf03066af58ce9cc3bf7e1c37215ac92203c3d8e3346b88b922d14489e449",
       "permlink": "evidence-in-tissint-for-recent-subsurface-water-on-mars",
       "type": 9,
       "authors": [
@@ -3223,7 +3223,7 @@
       "external_id": "5b9e23013899fb5f87d8ad1681ad944852bda385",
       "research_external_id": "575ee41fa2150929eb76efc55a8abcb3a1b23b00",
       "title": "Fluor-schorl, a new member of the tourmaline supergroup, and new data on schorl from the cotype localities",
-      "content": "package:54cedd83d225ac7424a6cdac177843d479c467e14e44d245a6611218276a4141",
+      "content": "54cedd83d225ac7424a6cdac177843d479c467e14e44d245a6611218276a4141",
       "permlink": "fluor-schorl-a-new-member-of-the-tourmaline-supergroup-and-new-data-on-schorl-from-the-cotype-localities",
       "type": 3,
       "authors": [
@@ -3236,7 +3236,7 @@
       "external_id": "438cb7f11c84c1b561fe60df8e8e7d787e17a414",
       "research_external_id": "75447b1b2e142a00543c0ca5e9032b82079e5667",
       "title": "Micropolar effect on the cataclastic flow and brittle-ductile transition in high-porosity rocks",
-      "content": "package:eddcec84a9bcb8fcdb840cca72c8d6e039cf5201fdc2c788f957d362613d641c",
+      "content": "eddcec84a9bcb8fcdb840cca72c8d6e039cf5201fdc2c788f957d362613d641c",
       "permlink": "micropolar-effect-on-the-cataclastic-flow-and-brittle-ductile-transition-in-high-porosity-rocks",
       "type": 3,
       "authors": [
@@ -3249,7 +3249,7 @@
       "external_id": "014967ade0478271371068e2eeb26b83e62d6ef6",
       "research_external_id": "75447b1b2e142a00543c0ca5e9032b82079e5667",
       "title": "On the solvability of incompressible Stokes with viscoplastic rheologies in geodynamics",
-      "content": "package:57583222ce60e6f51494c006069cb042df9ea27c5aea6a1679059f74011b7b6e",
+      "content": "57583222ce60e6f51494c006069cb042df9ea27c5aea6a1679059f74011b7b6e",
       "permlink": "on-the-solvability-of-incompressible-stokes-with-viscoplastic-rheologies-in-geodynamics",
       "type": 3,
       "authors": [
@@ -3262,7 +3262,7 @@
       "external_id": "d2832fccc704b52a14517bba99442ba13ce82c86",
       "research_external_id": "75447b1b2e142a00543c0ca5e9032b82079e5667",
       "title": "Effects of spatial heterogeneity and material anisotropy on the fracture pattern and macroscopic effective toughness of Mancos Shale in Brazilian tests",
-      "content": "package:ae00650aa3665dc841d3b13e5d04bfa0e989b684bbdffa48956974bd991f316a",
+      "content": "ae00650aa3665dc841d3b13e5d04bfa0e989b684bbdffa48956974bd991f316a",
       "permlink": "effects-of-spatial-heterogeneity-and-material-anisotropy-on-the-fracture-pattern-and-macroscopic-effective-toughness-of-mancos-shale-in-brazilian-tests",
       "type": 3,
       "authors": [
@@ -3275,7 +3275,7 @@
       "external_id": "0dedde42fd67aa9a96c72550e921fd27e93c2ca9",
       "research_external_id": "75447b1b2e142a00543c0ca5e9032b82079e5667",
       "title": "TerraFERMA: The Transparent Finite Element Rapid Model Assembler for multiphysics problems in Earth sciences",
-      "content": "package:dcd36e310a50f76a778e9bb33478f197be3a814854dbe36789b6a07885500ba8",
+      "content": "dcd36e310a50f76a778e9bb33478f197be3a814854dbe36789b6a07885500ba8",
       "permlink": "terraferma-the-transparent-finite-element-rapid-model-assembler-for-multiphysics-problems-in-earth-sciences",
       "type": 3,
       "authors": [
@@ -3288,7 +3288,7 @@
       "external_id": "4e5462c102644e904f89ceb6016c8fa00efa6511",
       "research_external_id": "75447b1b2e142a00543c0ca5e9032b82079e5667",
       "title": "Geological and Geochemical Controls on Subsurface Microbial Life in the Samail Ophiolite, Oman",
-      "content": "package:f19bc193b6b51572a43e3c091f4fcc2ce49b0dc27ec39bd7f8ce6f19c3d6ee23",
+      "content": "f19bc193b6b51572a43e3c091f4fcc2ce49b0dc27ec39bd7f8ce6f19c3d6ee23",
       "permlink": "geological-and-geochemical-controls-on-subsurface-microbial-life-in-the-samail-ophiolite-oman",
       "type": 3,
       "authors": [
@@ -3301,7 +3301,7 @@
       "external_id": "edecf5680eabcb0994e00366e61c92d88c5d08d4",
       "research_external_id": "75447b1b2e142a00543c0ca5e9032b82079e5667",
       "title": "Wave propagation and strain localization in a fully saturated softening porous 2 medium under the non-isothermal conditions",
-      "content": "package:70517a7b424ace7fbe2ab6dd93cb348309eac1a502d86ac180086476f637b707",
+      "content": "70517a7b424ace7fbe2ab6dd93cb348309eac1a502d86ac180086476f637b707",
       "permlink": "wave-propagation-and-strain-localization-in-a-fully-saturated-softening-porous-2-medium-under-the-non-isothermal-conditions",
       "type": 3,
       "authors": [
@@ -3314,7 +3314,7 @@
       "external_id": "8238f2cf53b8f84ac009a08e1217974d95621d9d",
       "research_external_id": "604b41b4fb781ca055eef248f90a78d2557d14f5",
       "title": "Towards an assessment of riverine dissolved organic carbon in surface waters of the western Arctic Ocean based on remote sensing and biogeochemical modeling",
-      "content": "package:4b758af29f727d672c4e94c7780d819ca506c958a48973ac91738e30dbb5af17",
+      "content": "4b758af29f727d672c4e94c7780d819ca506c958a48973ac91738e30dbb5af17",
       "permlink": "-towards-an-assessment-of-riverine-dissolved-organic-carbon-in-surface-waters-of-the-western-arctic-ocean-based-on-remote-sensing-and-biogeochemical-modeling",
       "type": 3,
       "authors": [
@@ -3327,7 +3327,7 @@
       "external_id": "d9e3b64d41ca03e550f89d5eacb81127b7f57658",
       "research_external_id": "604b41b4fb781ca055eef248f90a78d2557d14f5",
       "title": "Dynamic Preconditioning of the Minimum September Sea-Ice Extent",
-      "content": "package:e63691c7c0177cde1b5ae29e04102b16afa443c56c4c3067ae4923f6e2a20ad2",
+      "content": "e63691c7c0177cde1b5ae29e04102b16afa443c56c4c3067ae4923f6e2a20ad2",
       "permlink": "dynamic-preconditioning-of-the-minimum-september-sea-ice-extent",
       "type": 3,
       "authors": [
@@ -3340,7 +3340,7 @@
       "external_id": "5e8811fd0ca259bff4e45c3bc66205a3f272043d",
       "research_external_id": "604b41b4fb781ca055eef248f90a78d2557d14f5",
       "title": "Increasing transnational sea-ice exchange in a changing Arctic Ocean",
-      "content": "package:3f0e595c97bd90dcc5b76606cbe79ac79be4724fbba950d79918a6575db25ea9",
+      "content": "3f0e595c97bd90dcc5b76606cbe79ac79be4724fbba950d79918a6575db25ea9",
       "permlink": "increasing-transnational-sea-ice-exchange-in-a-changing-arctic-ocean",
       "type": 3,
       "authors": [
@@ -3353,7 +3353,7 @@
       "external_id": "a96d070d3268ec5f071b620e0060edcb44c00813",
       "research_external_id": "604b41b4fb781ca055eef248f90a78d2557d14f5",
       "title": "Patterns of Sea Ice Retreat in the Transition to a Seasonally Ice-Free Arctic",
-      "content": "package:bbcf7cc5396261c2438c11efade09720e3a5d87d03b2a4d68e25d27926477dbe",
+      "content": "bbcf7cc5396261c2438c11efade09720e3a5d87d03b2a4d68e25d27926477dbe",
       "permlink": "patterns-of-sea-ice-retreat-in-the-transition-to-a-seasonally-ice-free-arctic",
       "type": 3,
       "authors": [
@@ -3366,7 +3366,7 @@
       "external_id": "20318743d51d40caec5c620b1c2d6ba0cc3d679d",
       "research_external_id": "604b41b4fb781ca055eef248f90a78d2557d14f5",
       "title": "Sea Ice Model Intercomparison Project (SIMIP): Understanding sea ice through climate-model simulations",
-      "content": "package:0e2a8ac214eda03294375b762c49068a11c87a370c8940118b191b722846ca01",
+      "content": "0e2a8ac214eda03294375b762c49068a11c87a370c8940118b191b722846ca01",
       "permlink": "sea-ice-model-intercomparison-project-(simip):-understanding-sea-ice-through-climate-model-simulations",
       "type": 3,
       "authors": [
@@ -3379,7 +3379,7 @@
       "external_id": "bee631c4bced069198aa8b3fb14a695819c68b67",
       "research_external_id": "f6ce614c7485a521bf5ba66278c97dc328d812eb",
       "title": "BMP and FGF signaling interact to pattern mesoderm by controlling basic helix-loop-helix transcription factor activity",
-      "content": "package:2bc596539d3498397e5103a039ae76f3020c52b55cfdf8062a1656c146af454c",
+      "content": "2bc596539d3498397e5103a039ae76f3020c52b55cfdf8062a1656c146af454c",
       "permlink": "bmp-and-fgf-signaling-interact-to-pattern-mesoderm-by-controlling-basic-helix-loop-helix-transcription-factor-activity",
       "type": 3,
       "authors": [
@@ -3392,7 +3392,7 @@
       "external_id": "fd545bae9d7cd097b0a23e5a6980f62b56e09808",
       "research_external_id": "f6ce614c7485a521bf5ba66278c97dc328d812eb",
       "title": "FGF and canonical Wnt signaling cooperate to induce paraxial mesoderm from tailbud neuromesodermal progenitors through regulation of a two-step epithelial to mesenchymal transition",
-      "content": "package:ff9059b048e71ea8fabc3b53c0428f1b2865f7102a703a951033895c659491a9",
+      "content": "ff9059b048e71ea8fabc3b53c0428f1b2865f7102a703a951033895c659491a9",
       "permlink": "fgf-and-canonical-wnt-signaling-cooperate-to-induce-paraxial-mesoderm-from-tailbud-neuromesodermal-progenitors-through-regulation-of-a-two-step-epithelial-to-mesenchymal-transition",
       "type": 3,
       "authors": [
@@ -3405,7 +3405,7 @@
       "external_id": "3c5cbaf63dd8f3579b911e21cf5abc4a5656294d",
       "research_external_id": "f6ce614c7485a521bf5ba66278c97dc328d812eb",
       "title": "Observing the cell in its native state: Imaging subcellular dynamics in multicellular organisms",
-      "content": "package:3f94ce6bcf99f84c4458b9058e3861cba3a40968ec385ace3690c13b904c5fc4",
+      "content": "3f94ce6bcf99f84c4458b9058e3861cba3a40968ec385ace3690c13b904c5fc4",
       "permlink": "observing-the-cell-in-its-native-state:-imaging-subcellular-dynamics-in-multicellular-organisms",
       "type": 3,
       "authors": [
@@ -3418,7 +3418,7 @@
       "external_id": "3f025e28610594c82e58d8fd2a09d90386a93c68",
       "research_external_id": "f6ce614c7485a521bf5ba66278c97dc328d812eb",
       "title": "The zebrafish tailbud contains two independent populations of midline progenitor cells that maintain long-term germ layer plasticity and differentiate in response to local signaling cues",
-      "content": "package:b7ba0c7e98e209f4dab4ad9531fa0d36b58f65c2c1ffbdddcf97183a434f9b09",
+      "content": "b7ba0c7e98e209f4dab4ad9531fa0d36b58f65c2c1ffbdddcf97183a434f9b09",
       "permlink": "the-zebrafish-tailbud-contains-two-independent-populations-of-midline-progenitor-cells-that-maintain-long-term-germ-layer-plasticity-and-differentiate-in-response-to-local-signaling-cues",
       "type": 3,
       "authors": [
@@ -3431,7 +3431,7 @@
       "external_id": "83160ecccc2fc4b231387471773a59c0be375899",
       "research_external_id": "5b21e4067b01b0b4f5e237d5fcbb697998ba4661",
       "title": "Amino acid transporter expansions associated with the evolution of obligate endosymbiosis in sap-feeding insects (Hemiptera: sternorrhyncha)",
-      "content": "package:7c4d0baaa7d86b876b0193f2f8cd4120c70a5a984240a6b16c0b682fa46df049",
+      "content": "7c4d0baaa7d86b876b0193f2f8cd4120c70a5a984240a6b16c0b682fa46df049",
       "permlink": "amino-acid-transporter-expansions-associated-with-the-evolution-of-obligate-endosymbiosis-in-sap-feeding-insects-(hemiptera:-sternorrhyncha)",
       "type": 3,
       "authors": [
@@ -3444,7 +3444,7 @@
       "external_id": "8512142fbca67a3d931f5e6dd2b84afcb8505f51",
       "research_external_id": "5b21e4067b01b0b4f5e237d5fcbb697998ba4661",
       "title": "Bats (Chiroptera: Noctilionoidea) Challenge a Recent Origin of Extant Neotropical Diversity",
-      "content": "package:37f709b0e9164f8bea1fb103e1d3e83b5e2472059cc4aa896b198e9935872da3",
+      "content": "37f709b0e9164f8bea1fb103e1d3e83b5e2472059cc4aa896b198e9935872da3",
       "permlink": "bats-(chiroptera:-noctilionoidea)-challenge-a-recent-origin-of-extant-neotropical-diversity",
       "type": 3,
       "authors": [
@@ -3457,7 +3457,7 @@
       "external_id": "ac1232aa6a6ab5604325dc1d3646937f20b8e479",
       "research_external_id": "5b21e4067b01b0b4f5e237d5fcbb697998ba4661",
       "title": "Bayesian hierarchical models suggest oldest known plant-visiting bat was omnivorous",
-      "content": "package:cd3e5952ca38e9426addd30ad92a1d7d6c249faccc9ce821edea903b88727486",
+      "content": "cd3e5952ca38e9426addd30ad92a1d7d6c249faccc9ce821edea903b88727486",
       "permlink": "bayesian-hierarchical-models-suggest-oldest-known-plant-visiting-bat-was-omnivorous",
       "type": 3,
       "authors": [
@@ -3470,7 +3470,7 @@
       "external_id": "fe2d8967dd6540b3af95dfd77d3aa88dd1fb0ea5",
       "research_external_id": "5b21e4067b01b0b4f5e237d5fcbb697998ba4661",
       "title": "From the Field to the Lab: Best Practices for Field Preservation of Bat Specimens for Molecular Analyses",
-      "content": "package:5c91d3d55d31e49ebc6b46d6296b083ca00390aee6df77a74e0a5ba4e388aa18",
+      "content": "5c91d3d55d31e49ebc6b46d6296b083ca00390aee6df77a74e0a5ba4e388aa18",
       "permlink": "from-the-field-to-the-lab:-best-practices-for-field-preservation-of-bat-specimens-for-molecular-analyses",
       "type": 3,
       "authors": [
@@ -3483,7 +3483,7 @@
       "external_id": "b09a1ad26f0933217c374d78e5ee82efae75836c",
       "research_external_id": "5b21e4067b01b0b4f5e237d5fcbb697998ba4661",
       "title": "Phylogeny and Divergence Times of Lemurs Inferred with Recent and Ancient Fossils in the Tree",
-      "content": "package:fcb12fba7a98c3efc0a30597d01f65786fcc91fb3d6ae9b01b59d77d4209dc62",
+      "content": "fcb12fba7a98c3efc0a30597d01f65786fcc91fb3d6ae9b01b59d77d4209dc62",
       "permlink": "phylogeny-and-divergence-times-of-lemurs-inferred-with-recent-and-ancient-fossils-in-the-tree",
       "type": 3,
       "authors": [
@@ -3496,7 +3496,7 @@
       "external_id": "5252d7bf2af0154a1e6213c56c48d7c171cd4401",
       "research_external_id": "5bec2e2c5bf1f3628e14a4a52cdc09c34e1ddfe0",
       "title": "Paternal Induction of Hybrid Dysgenesis in Drosophila melanogaster Is Weakly Correlated with Both P-Element and hobo Element Dosage",
-      "content": "package:8744bd2fc53016f306ccc1a790dd9a0c311486d5686eb2108eacc2b8456df436",
+      "content": "8744bd2fc53016f306ccc1a790dd9a0c311486d5686eb2108eacc2b8456df436",
       "permlink": "paternal-induction-of-hybrid-dysgenesis-in-drosophila-melanogaster-is-weakly-correlated-with-both-p-element-and-hobo-element-dosage",
       "type": 3,
       "authors": [
@@ -3509,7 +3509,7 @@
       "external_id": "55260084e809e8eab6250d688d7520a83e0643ef",
       "research_external_id": "5bec2e2c5bf1f3628e14a4a52cdc09c34e1ddfe0",
       "title": "QTL mapping of natural variation reveals that the developmental regulator bruno reduces tolerance to P-element transposition in the Drosophila female germline",
-      "content": "package:008662fe06433eac38324ba878f25a5207cf9986fa2d327d7e6caa60d42c7d89",
+      "content": "008662fe06433eac38324ba878f25a5207cf9986fa2d327d7e6caa60d42c7d89",
       "permlink": "qtl-mapping-of-natural-variation-reveals-that-the-developmental-regulator-bruno-reduces-tolerance-to-p-element-transposition-in-the-drosophila-female-germline",
       "type": 3,
       "authors": [
@@ -3522,7 +3522,7 @@
       "external_id": "a6f38b2bcef539f58665e8f48c089143c48c0d27",
       "research_external_id": "5bec2e2c5bf1f3628e14a4a52cdc09c34e1ddfe0",
       "title": "Targeted identification of TE insertions in a Drosophila genome through hemi-specific PCR",
-      "content": "package:148ee58253033c7600a8db4cd29b8716e476c51a123603149f68a98a4771f6bc",
+      "content": "148ee58253033c7600a8db4cd29b8716e476c51a123603149f68a98a4771f6bc",
       "permlink": "targeted-identification-of-te-insertions-in-a-drosophila-genome-through-hemi-specific-pcr",
       "type": 3,
       "authors": [
@@ -3535,7 +3535,7 @@
       "external_id": "33ae5c5a20d15f0c90fb885a2832428276667965",
       "research_external_id": "5bec2e2c5bf1f3628e14a4a52cdc09c34e1ddfe0",
       "title": "The Evolution of Small-RNA-Mediated Silencing of an Invading Transposable Element",
-      "content": "package:164e5b1d1075271061187da1f520f8169ecf7b5c648f03f07e4bb34a53021949",
+      "content": "164e5b1d1075271061187da1f520f8169ecf7b5c648f03f07e4bb34a53021949",
       "permlink": "the-evolution-of-small-rna-mediated-silencing-of-an-invading-transposable-element",
       "type": 3,
       "authors": [
@@ -3548,7 +3548,7 @@
       "external_id": "fa1bc216af664cdd7d0f20d1d75b17cc8e32f3b4",
       "research_external_id": "082abd3d416c44a262129cc8ad1cdfda0a80288d",
       "title": "Dynamic Preconditioning of the Minimum September Sea-Ice Extent",
-      "content": "package:e63691c7c0177cde1b5ae29e04102b16afa443c56c4c3067ae4923f6e2a20ad2",
+      "content": "e63691c7c0177cde1b5ae29e04102b16afa443c56c4c3067ae4923f6e2a20ad2",
       "permlink": "dynamic-preconditioning-of-the-minimum-september-sea-ice-extent",
       "type": 3,
       "authors": [
@@ -3561,7 +3561,7 @@
       "external_id": "233b5ef9fdb51d0de85a8afc2f0d8947d6535756",
       "research_external_id": "082abd3d416c44a262129cc8ad1cdfda0a80288d",
       "title": "Increasing transnational sea-ice exchange in a changing Arctic Ocean ",
-      "content": "package:5b82d2f2d09531ea2f666fb3b318e231aef2ad919c241d99cd7b738331f57243",
+      "content": "5b82d2f2d09531ea2f666fb3b318e231aef2ad919c241d99cd7b738331f57243",
       "permlink": "increasing-transnational-sea-ice-exchange-in-a-changing-arctic-ocean-",
       "type": 3,
       "authors": [
@@ -3574,7 +3574,7 @@
       "external_id": "7317187709d7fac676af56b3ad801367b8e80cde",
       "research_external_id": "7e3f2c7b381c7a36b597a73acc4b883738e276b7",
       "title": "Molecular origin of the weak susceptibility of kinesin velocity to loads and its relation to the collective behavior of kinesins",
-      "content": "package:287c9b9185e75ed9a74c65be76b5fdcb3e70543fddb43129e716a9807cfd79ce",
+      "content": "287c9b9185e75ed9a74c65be76b5fdcb3e70543fddb43129e716a9807cfd79ce",
       "permlink": "molecular-origin-of-the-weak-susceptibility-of-kinesin-velocity-to-loads-and-its-relation-to-the-collective-behavior-of-kinesins",
       "type": 3,
       "authors": [
@@ -3587,7 +3587,7 @@
       "external_id": "2eabffb5a43e6e680a9bccca064d030295c579af",
       "research_external_id": "a1d14aa9335429694beda2d1fb0a950119817967",
       "title": "Degassing of reduced carbon from planetary basalts",
-      "content": "package:94f104d3cee56b79317bceb21e27a232fbf20e013cd3f444c29e79c91b6db019",
+      "content": "94f104d3cee56b79317bceb21e27a232fbf20e013cd3f444c29e79c91b6db019",
       "permlink": "degassing-of-reduced-carbon-from-planetary-basalts",
       "type": 3,
       "authors": [
@@ -3600,7 +3600,7 @@
       "external_id": "2cb8f9d6106112ee16ce40c545cea2cf4f9e77a4",
       "research_external_id": "a1d14aa9335429694beda2d1fb0a950119817967",
       "title": "Optical reflectivity of solid and liquid methane: Application to spectroscopy of Titan’s hydrocarbon lakes",
-      "content": "package:4d63aad7a58494c79732e4fe392c1f251e0e9ebb5e0d061082aa6c1636bc2a7b",
+      "content": "4d63aad7a58494c79732e4fe392c1f251e0e9ebb5e0d061082aa6c1636bc2a7b",
       "permlink": "optical-reflectivity-of-solid-and-liquid-methane:-application-to-spectroscopy-of-titan’s-hydrocarbon-lakes",
       "type": 3,
       "authors": [
@@ -3613,7 +3613,7 @@
       "external_id": "eb9ee5b3eaf505279146cc280a6bd7324b566a68",
       "research_external_id": "33b951fe286584521e701c4106213698c3308ff0",
       "title": "A Comprehensive Analysis of Alternative Splicing in Paleopolyploid Maize",
-      "content": "package:09cabb016b1a12779c84df4aee4db6e3dd516fdb2f069683e6aecf60b6f745a6",
+      "content": "09cabb016b1a12779c84df4aee4db6e3dd516fdb2f069683e6aecf60b6f745a6",
       "permlink": "a-comprehensive-analysis-of-alternative-splicing-in-paleopolyploid-maize",
       "type": 3,
       "authors": [
@@ -3626,7 +3626,7 @@
       "external_id": "aae122554576cc4959dd0ea3c25e9025ae0c3daa",
       "research_external_id": "33b951fe286584521e701c4106213698c3308ff0",
       "title": "Genetic Control of Maize Shoot Apical Meristem Architecture",
-      "content": "package:1389f52e3ba5a209edcf0b64dc93280e9a0507506b1a49ca23f972f7d4987086",
+      "content": "1389f52e3ba5a209edcf0b64dc93280e9a0507506b1a49ca23f972f7d4987086",
       "permlink": "genetic-control-of-maize-shoot-apical-meristem-architecture",
       "type": 3,
       "authors": [
@@ -3639,7 +3639,7 @@
       "external_id": "9fab4b096912b4620ca1897b75c88c16aec8b4af",
       "research_external_id": "33b951fe286584521e701c4106213698c3308ff0",
       "title": "Genetic control of morphometric diversity in the maize shoot apical meristem",
-      "content": "package:75f1b857f0bba76198902b7bb20dc0604c7ecc150db48eb2b6ee238a8b48c9d4",
+      "content": "75f1b857f0bba76198902b7bb20dc0604c7ecc150db48eb2b6ee238a8b48c9d4",
       "permlink": "genetic-control-of-morphometric-diversity-in-the-maize-shoot-apical-meristem",
       "type": 3,
       "authors": [
@@ -3652,7 +3652,7 @@
       "external_id": "ddc079ff3c39a0bedd96d365c83ea6b619c76c57",
       "research_external_id": "33b951fe286584521e701c4106213698c3308ff0",
       "title": "Improving Response in Genomic Selection with a Population-Based Selection Strategy-Optimal Population Value Selection",
-      "content": "package:37d84c5d61cb50d40edd364bf358a9a4da568857a33ad1d930b15eb09cc5e05b",
+      "content": "37d84c5d61cb50d40edd364bf358a9a4da568857a33ad1d930b15eb09cc5e05b",
       "permlink": "improving-response-in-genomic-selection-with-a-population-based-selection-strategy-optimal-population-value-selection",
       "type": 3,
       "authors": [
@@ -3665,7 +3665,7 @@
       "external_id": "8042d92052b0c5fef7642df9eb5a5a13da4cda68",
       "research_external_id": "33b951fe286584521e701c4106213698c3308ff0",
       "title": "Modeling the Morphometric Evolution of the Maize Shoot Apical Meristem",
-      "content": "package:1ff8e6e0cfe7a6ef3822413ef5ffe6be93e27f2cb03420dfc80cae39de8ae9ae",
+      "content": "1ff8e6e0cfe7a6ef3822413ef5ffe6be93e27f2cb03420dfc80cae39de8ae9ae",
       "permlink": "modeling-the-morphometric-evolution-of-the-maize-shoot-apical-meristem",
       "type": 3,
       "authors": [
@@ -3678,7 +3678,7 @@
       "external_id": "bc6faaafa3fd4c5312f0477aa82f6f4afe7baf7e",
       "research_external_id": "33b951fe286584521e701c4106213698c3308ff0",
       "title": "Substantial contribution of genetic variation in the expression of transcription factors to phenotypic variation revealed by eRD-GWAS",
-      "content": "package:c4fe5702a49d1200e79dcb3a3d1ba42fc64a455e419b7bc1472c13315086ca3d",
+      "content": "c4fe5702a49d1200e79dcb3a3d1ba42fc64a455e419b7bc1472c13315086ca3d",
       "permlink": "substantial-contribution-of-genetic-variation-in-the-expression-of-transcription-factors-to-phenotypic-variation-revealed-by-erd-gwas",
       "type": 3,
       "authors": [
@@ -3691,7 +3691,7 @@
       "external_id": "035886a888126573bcb1173167e7d36b1d21406c",
       "research_external_id": "307e8a48deae4dff79849017f69f4f1b3d1590fd",
       "title": "Data Categories for Marine Planning",
-      "content": "package:c3b67c6f56208e58d0cb3e5cbae50efbc2bcc65df1e8c41ace4b864e5688c53e",
+      "content": "c3b67c6f56208e58d0cb3e5cbae50efbc2bcc65df1e8c41ace4b864e5688c53e",
       "permlink": "data-categories-for-marine-planning",
       "type": 19,
       "authors": [
@@ -3704,7 +3704,7 @@
       "external_id": "f5c9ea619cdfd00de94cd1a97276e86dcf263955",
       "research_external_id": "925a69e644e1a0fa4a41a3ebed3d11c4aef250e1",
       "title": "Anomalous density and elastic properties of basalt at high pressure: Reevaluating of the effect of melt fraction on seismic velocity in the Earth’s crust and upper mantle",
-      "content": "package:9615cb881a4bf02e2e3cb782789dd539e991dca55f4956b44e1589b0decd0cd5",
+      "content": "9615cb881a4bf02e2e3cb782789dd539e991dca55f4956b44e1589b0decd0cd5",
       "permlink": "anomalous-density-and-elastic-properties-of-basalt-at-high-pressure:-reevaluating-of-the-effect-of-melt-fraction-on-seismic-velocity-in-the-earth’s-crust-and-upper-mantle",
       "type": 3,
       "authors": [
@@ -3717,7 +3717,7 @@
       "external_id": "af76e12629fd6721457b85ab060ed3f2509ae291",
       "research_external_id": "925a69e644e1a0fa4a41a3ebed3d11c4aef250e1",
       "title": "Comparative compressibility of hydrous wadsleyite and ringwoodite: Effect of H2O and implications for detecting water in the transition zone",
-      "content": "package:f2e6558937cb299b9360abbe052cfd8037e89f3f3568931c93a3a1337da98aa5",
+      "content": "f2e6558937cb299b9360abbe052cfd8037e89f3f3568931c93a3a1337da98aa5",
       "permlink": "comparative-compressibility-of-hydrous-wadsleyite-and-ringwoodite:-effect-of-h2o-and-implications-for-detecting-water-in-the-transition-zone",
       "type": 3,
       "authors": [
@@ -3730,7 +3730,7 @@
       "external_id": "7de02f810311bf6218c41058994dd348d02df5e5",
       "research_external_id": "d74307ea6bacafb85161c6401fff23fdd75c2fc3",
       "title": "A revised model for the control of fatty acid synthesis by master regulator Spo0A in Bacillus subtilis",
-      "content": "package:f39f88721cdf6f330d4acf808025ef50d49e71300e4eddb03b5a2ed6a5f20983",
+      "content": "f39f88721cdf6f330d4acf808025ef50d49e71300e4eddb03b5a2ed6a5f20983",
       "permlink": "a-revised-model-for-the-control-of-fatty-acid-synthesis-by-master-regulator-spo0a-in-bacillus-subtilis",
       "type": 3,
       "authors": [
@@ -3743,7 +3743,7 @@
       "external_id": "a070b491f13f1e1b0a1e7fc3b7d5bb4a62e7d052",
       "research_external_id": "d74307ea6bacafb85161c6401fff23fdd75c2fc3",
       "title": "Optogenetic control of Bacillus subtilis gene expression",
-      "content": "package:3578f9101694c94659236b9c10652ebf24e01c50b6f67bfa3d5173247567b546",
+      "content": "3578f9101694c94659236b9c10652ebf24e01c50b6f67bfa3d5173247567b546",
       "permlink": "optogenetic-control-of-bacillus-subtilis-gene-expression",
       "type": 3,
       "authors": [
@@ -3756,7 +3756,7 @@
       "external_id": "edf3c9aa3980c175aaf8301b380341fa14b0058e",
       "research_external_id": "612160893bd72770cd41959673976581a1dfbe56",
       "title": "Evidence in Tissint for recent subsurface water on Mars",
-      "content": "package:400bf03066af58ce9cc3bf7e1c37215ac92203c3d8e3346b88b922d14489e449",
+      "content": "400bf03066af58ce9cc3bf7e1c37215ac92203c3d8e3346b88b922d14489e449",
       "permlink": "evidence-in-tissint-for-recent-subsurface-water-on-mars",
       "type": 3,
       "authors": [
@@ -3769,7 +3769,7 @@
       "external_id": "54396286db88d2ce31d0ae3b2f1e67cb9b23107c",
       "research_external_id": "612160893bd72770cd41959673976581a1dfbe56",
       "title": "Tissintite, (Ca,Na) AlSi2O6, a highly-defective, shock-induced, high-pressure clinopyroxene in the Tissint martian meteorite",
-      "content": "package:e8b3dbcce8d866d89ca28a4f1dd63f863399eeed4fea6204b0291da26d86f002",
+      "content": "e8b3dbcce8d866d89ca28a4f1dd63f863399eeed4fea6204b0291da26d86f002",
       "permlink": "tissintite,-(ca,na)-alsi2o6,-a-highly-defective,-shock-induced,-high-pressure-clinopyroxene-in-the-tissint-martian-meteorite",
       "type": 10,
       "authors": [
@@ -3782,7 +3782,7 @@
       "external_id": "4ddb1f115b154c58fcfc263780504eb8159995dd",
       "research_external_id": "75c2132446038608907c8a0b5fbe8dc78b9cbada",
       "title": "Defining and measuring the mean residence time of lateral surface transient storage zones in small streams",
-      "content": "package:07bd8f81cae6a3d3cf068dbcbb119646d2f266ea9b0bec5f1a060c36ca99c4c2",
+      "content": "07bd8f81cae6a3d3cf068dbcbb119646d2f266ea9b0bec5f1a060c36ca99c4c2",
       "permlink": "defining-and-measuring-the-mean-residence-time-of-lateral-surface-transient-storage-zones-in-small-streams",
       "type": 3,
       "authors": [
@@ -3795,7 +3795,7 @@
       "external_id": "aa90eb895973da4608792ffc1b83861b3fc8789e",
       "research_external_id": "75c2132446038608907c8a0b5fbe8dc78b9cbada",
       "title": "Development of a New USDA Plant Hardiness Zone Map for the United States",
-      "content": "package:e5411371221d9408eb6b907d6321a5db8360b6db41695b142424d50d287d6c7d",
+      "content": "e5411371221d9408eb6b907d6321a5db8360b6db41695b142424d50d287d6c7d",
       "permlink": "development-of-a-new-usda-plant-hardiness-zone-map-for-the-united-states",
       "type": 3,
       "authors": [
@@ -3808,7 +3808,7 @@
       "external_id": "f9c480d1224dab75c622afbc8967a42addbf0d0b",
       "research_external_id": "75c2132446038608907c8a0b5fbe8dc78b9cbada",
       "title": "Maximum entropy production: can it be used to constrain conceptual hydrological models?",
-      "content": "package:421e22073b9af9c284a1de76e1cd9c9d24af321fcdf00103034b4710530c9df5",
+      "content": "421e22073b9af9c284a1de76e1cd9c9d24af321fcdf00103034b4710530c9df5",
       "permlink": "maximum-entropy-production:-can-it-be-used-to-constrain-conceptual-hydrological-models?",
       "type": 3,
       "authors": [
@@ -3821,7 +3821,7 @@
       "external_id": "e5948f1641e67344066e74af87c44ce9fbb59286",
       "research_external_id": "a318d20d89e648c462ea0a50ab47ce9d56476b40",
       "title": "Warm-based basal sediment entrainment and far-field Pleistocene origin evidenced in central Transantarctic blue ice through stable isotopes and internal structures",
-      "content": "package:7cf4ccc8d2c67e43bb665b5ed6ede2c8acaf547874b942b903550a4c4da4d7fc",
+      "content": "7cf4ccc8d2c67e43bb665b5ed6ede2c8acaf547874b942b903550a4c4da4d7fc",
       "permlink": "warm-based-basal-sediment-entrainment-and-far-field-pleistocene-origin-evidenced-in-central-transantarctic-blue-ice-through-stable-isotopes-and-internal-structures",
       "type": 3,
       "authors": [
@@ -3834,7 +3834,7 @@
       "external_id": "074a471a3dd60d5d1ee4bcf599c10b235eec9bb4",
       "research_external_id": "858c972f97753c50908a57e2eebe3c5b3a16d366",
       "title": "A reduced-complexity model for river delta formation – Part 1: Modeling deltas with channel dynamics",
-      "content": "package:d5e1ec666225a56747fac02eae788b94140d2940fde161c30d07f643a0a6f153",
+      "content": "d5e1ec666225a56747fac02eae788b94140d2940fde161c30d07f643a0a6f153",
       "permlink": "a-reduced-complexity-model-for-river-delta-formation-–-part-1:-modeling-deltas-with-channel-dynamics",
       "type": 5,
       "authors": [
@@ -3847,7 +3847,7 @@
       "external_id": "6b2c1274f28d7016ef593cc60c01e9b869b7b4ef",
       "research_external_id": "858c972f97753c50908a57e2eebe3c5b3a16d366",
       "title": " A reduced-complexity model for river delta formation – Part 2: Assessment of the flow routing scheme",
-      "content": "package:c67a2d88e5234f47792ef0f54e72deca7b594c7492da30066837a7c611e5949e",
+      "content": "c67a2d88e5234f47792ef0f54e72deca7b594c7492da30066837a7c611e5949e",
       "permlink": "-a-reduced-complexity-model-for-river-delta-formation-–-part-2:-assessment-of-the-flow-routing-scheme",
       "type": 5,
       "authors": [
@@ -3860,7 +3860,7 @@
       "external_id": "68fc41f141748ecf0aa31e5ecd32d016374fd075",
       "research_external_id": "858c972f97753c50908a57e2eebe3c5b3a16d366",
       "title": "Quantifying the patterns and dynamics of river deltas under conditions of steady forcing and relative sea level rise",
-      "content": "package:64d5e7ee02c7f1dbef2773cff8093c6f7160d6944b90b32dd44f3cc947d20c8a",
+      "content": "64d5e7ee02c7f1dbef2773cff8093c6f7160d6944b90b32dd44f3cc947d20c8a",
       "permlink": "quantifying-the-patterns-and-dynamics-of-river-deltas-under-conditions-of-steady-forcing-and-relative-sea-level-rise",
       "type": 3,
       "authors": [
@@ -3873,7 +3873,7 @@
       "external_id": "753170d4d59ccd176f4e48b1f0c40f6319e71960",
       "research_external_id": "858c972f97753c50908a57e2eebe3c5b3a16d366",
       "title": "Testing morphodynamic controls on the location and frequency of river avulsions on fans versus deltas: Huanghe (Yellow River), China",
-      "content": "package:064e43172b198700da3bad381d596a502a74b034e7a8caf7eaff1bed5b762123",
+      "content": "064e43172b198700da3bad381d596a502a74b034e7a8caf7eaff1bed5b762123",
       "permlink": "testing-morphodynamic-controls-on-the-location-and-frequency-of-river-avulsions-on-fans-versus-deltas:-huanghe-(yellow-river),-china",
       "type": 3,
       "authors": [
@@ -3886,7 +3886,7 @@
       "external_id": "305b2102a0eefffa186c540c671bcf549c3eae33",
       "research_external_id": "9bfed7ecfbc245d0075110099155d410a0a10590",
       "title": "Depth as an Organizing Force in Pocillopora damicornis: Intra-Reef Genetic Architecture",
-      "content": "package:c48b73500c23bb8ce3166caffcbd8b4815b0a45b46eda663a5bfba1f3be2f3c2",
+      "content": "c48b73500c23bb8ce3166caffcbd8b4815b0a45b46eda663a5bfba1f3be2f3c2",
       "permlink": "depth-as-an-organizing-force-in-pocillopora-damicornis:-intra-reef-genetic-architecture",
       "type": 3,
       "authors": [
@@ -3899,7 +3899,7 @@
       "external_id": "2d71e1e9d56efd715a1d2fc9a71878bc162e7913",
       "research_external_id": "9bfed7ecfbc245d0075110099155d410a0a10590",
       "title": "Digital data collection in forest dynamics plots",
-      "content": "package:fc3c4b34fc86f5f0472248009febddd67286009a6646a482fe1be6c23b08a498",
+      "content": "fc3c4b34fc86f5f0472248009febddd67286009a6646a482fe1be6c23b08a498",
       "permlink": "digital-data-collection-in-forest-dynamics-plots",
       "type": 3,
       "authors": [
@@ -3912,7 +3912,7 @@
       "external_id": "9bd7991111a4754e99314fce471d19cc171d863c",
       "research_external_id": "9bfed7ecfbc245d0075110099155d410a0a10590",
       "title": "PROCESSING, SWITCHING AND COMMUNICATION OF KNOWLEDGE",
-      "content": "package:7d4ccad155a7d3533d0c7779a9a2a1755c49e3edd5836e428a5afb83745df58c",
+      "content": "7d4ccad155a7d3533d0c7779a9a2a1755c49e3edd5836e428a5afb83745df58c",
       "permlink": "processing,-switching-and-communication-of-knowledge",
       "type": 3,
       "authors": [
@@ -3925,7 +3925,7 @@
       "external_id": "2c19456bf43b56915e36ac826079dcd84f80ab8b",
       "research_external_id": "9bfed7ecfbc245d0075110099155d410a0a10590",
       "title": "Strategic light manipulation as a restoration strategy to reduce alien grasses and encourage native regeneration in Hawaiian mesic forests",
-      "content": "package:b2e8cd9a31af5383a4baded96a43b6de2fdf619d75f00a907c61e95601e2c7b8",
+      "content": "b2e8cd9a31af5383a4baded96a43b6de2fdf619d75f00a907c61e95601e2c7b8",
       "permlink": "strategic-light-manipulation-as-a-restoration-strategy-to-reduce-alien-grasses-and-encourage-native-regeneration-in-hawaiian-mesic-forests",
       "type": 3,
       "authors": [
@@ -3938,7 +3938,7 @@
       "external_id": "c5e40a4ab40d3f8ce4eeabe51ab7df4b3315d4eb",
       "research_external_id": "e8f51df02282eb23defcd66cc38854ec5f88befb",
       "title": "Defying Dissolution: Discovery of Deep-Sea Scleractinian Coral Reefs in the North Pacific",
-      "content": "package:1f7691411f185b6bb7be9f64c0f4ae9d5891ed8cb9ba555714402fc42b9196f4",
+      "content": "1f7691411f185b6bb7be9f64c0f4ae9d5891ed8cb9ba555714402fc42b9196f4",
       "permlink": "defying-dissolution:-discovery-of-deep-sea-scleractinian-coral-reefs-in-the-north-pacific",
       "type": 3,
       "authors": [
@@ -3951,7 +3951,7 @@
       "external_id": "0a2e732fdda620d2d41a393b7b84927b882ab8c1",
       "research_external_id": "8d621c841ce45efa29182e5478758b560ee91d83",
       "title": "Snowmelt onset hinders bromine monoxide heterogeneous recycling in the Arctic",
-      "content": "package:cd3f55efa2a8491fb8baa56a5ae79ab8a023ff86119c4d3353e2cde9eab4e12a",
+      "content": "cd3f55efa2a8491fb8baa56a5ae79ab8a023ff86119c4d3353e2cde9eab4e12a",
       "permlink": "snowmelt-onset-hinders-bromine-monoxide-heterogeneous-recycling-in-the-arctic",
       "type": 3,
       "authors": [
@@ -3964,7 +3964,7 @@
       "external_id": "6a0d9d0ce27e6cce41ab48facc02b01bb0ba549f",
       "research_external_id": "2fd9336095f58ee80660e72c8b8ef92b797e8422",
       "title": "Equation of state of Mo from shock compression experiments on preheated samples",
-      "content": "package:d7704d6d9684d5e7833407bb1a86db2137fb32186232138da9f67dce6c35afe2",
+      "content": "d7704d6d9684d5e7833407bb1a86db2137fb32186232138da9f67dce6c35afe2",
       "permlink": "equation-of-state-of-mo-from-shock-compression-experiments-on-preheated-samples",
       "type": 15,
       "authors": [
@@ -3977,7 +3977,7 @@
       "external_id": "247683f3705ac3ed8fe34806faf3be00e9a7e84c",
       "research_external_id": "2fd9336095f58ee80660e72c8b8ef92b797e8422",
       "title": "Shock synthesis of quasicrystals with implications for their origin in asteroid collisions",
-      "content": "package:1de9ad450f04d77dd1780e7631d2da54e5d13dfb71d11fa9b8b3d226c0c6d9f4",
+      "content": "1de9ad450f04d77dd1780e7631d2da54e5d13dfb71d11fa9b8b3d226c0c6d9f4",
       "permlink": "shock-synthesis-of-quasicrystals-with-implications-for-their-origin-in-asteroid-collisions",
       "type": 3,
       "authors": [
@@ -3990,7 +3990,7 @@
       "external_id": "1755432fadfa0ff36415fdea881a71d328220c44",
       "research_external_id": "e42de486d50e233ab3583660514c5d2bc54be13d",
       "title": "Rapid transport of ash and sulfate from the 2011 Puyehue-Cordón Caulle (Chile) eruption to West Antarctica",
-      "content": "package:170cd8cfc22c3ad3985b3bb803570817a9d08e4085b1b8753b3b8a444aae03de",
+      "content": "170cd8cfc22c3ad3985b3bb803570817a9d08e4085b1b8753b3b8a444aae03de",
       "permlink": "rapid-transport-of-ash-and-sulfate-from-the-2011-puyehue-cordón-caulle-(chile)-eruption-to-west-antarctica",
       "type": 3,
       "authors": [
@@ -4003,7 +4003,7 @@
       "external_id": "36c06b9088c42b4a475eef5b9d44ab39dd408f1b",
       "research_external_id": "e42de486d50e233ab3583660514c5d2bc54be13d",
       "title": "The spectral and chemical measurement of pollutants on snow near South Pole, Antarctica",
-      "content": "package:edc82db91e27bdb3a9dc47a8aa2bcb0b78761a571f6f125706efdf13d76b4319",
+      "content": "edc82db91e27bdb3a9dc47a8aa2bcb0b78761a571f6f125706efdf13d76b4319",
       "permlink": "the-spectral-and-chemical-measurement-of-pollutants-on-snow-near-south-pole,-antarctica",
       "type": 3,
       "authors": [
@@ -4016,7 +4016,7 @@
       "external_id": "e72276c1cda24c4b374d8210489bfe35174bce66",
       "research_external_id": "0fb524d769c5ed578c806889643d6e7888b07a3b",
       "title": "Estimation of dissolved organic carbon contribution from hillslope soils to a headwater stream",
-      "content": "package:708c6f988f4a45853f0ce4a5f00e233aee5215e525fc18bd4cc79e860c1d5af7",
+      "content": "708c6f988f4a45853f0ce4a5f00e233aee5215e525fc18bd4cc79e860c1d5af7",
       "permlink": "estimation-of-dissolved-organic-carbon-contribution-from-hillslope-soils-to-a-headwater-stream",
       "type": 3,
       "authors": [
@@ -4029,7 +4029,7 @@
       "external_id": "61feb8769d86bc8facf1e64aedb4c4421fa7dc36",
       "research_external_id": "0fb524d769c5ed578c806889643d6e7888b07a3b",
       "title": "Rates of soil mixing and associated carbon fluxes in a forest versus tilled agricultural field: Implications for modeling the soil carbon cycle",
-      "content": "package:72f3588a81cc8e1165a675b6c404c3d9500f2678d0fb7d50d6bab655220ae02d",
+      "content": "72f3588a81cc8e1165a675b6c404c3d9500f2678d0fb7d50d6bab655220ae02d",
       "permlink": "rates-of-soil-mixing-and-associated-carbon-fluxes-in-a-forest-versus-tilled-agricultural-field:-implications-for-modeling-the-soil-carbon-cycle",
       "type": 3,
       "authors": [
@@ -4042,7 +4042,7 @@
       "external_id": "06785a9f02bcb095a385ad06751e53d77a65c842",
       "research_external_id": "0fb524d769c5ed578c806889643d6e7888b07a3b",
       "title": "Riverine coupling of biogeochemical cycles between land, oceans, and atmosphere",
-      "content": "package:50f5e2a5ec55a78c0c2f6bb41846d51a24055dfc60b480c2672380243ca11c9d",
+      "content": "50f5e2a5ec55a78c0c2f6bb41846d51a24055dfc60b480c2672380243ca11c9d",
       "permlink": "riverine-coupling-of-biogeochemical-cycles-between-land,-oceans,-and-atmosphere",
       "type": 3,
       "authors": [
@@ -4055,7 +4055,7 @@
       "external_id": "02d9a1e7c6f793ff6991d6083754acfcbdd15fd1",
       "research_external_id": "0fb524d769c5ed578c806889643d6e7888b07a3b",
       "title": "Seawater circulation in sediments driven by interactions between seabed topography and fluid density",
-      "content": "package:f4144f66234f2ea3c5cb46e20dac4d24f7216442d6ae8f8389fc899754c9a98e",
+      "content": "f4144f66234f2ea3c5cb46e20dac4d24f7216442d6ae8f8389fc899754c9a98e",
       "permlink": "seawater-circulation-in-sediments-driven-by-interactions-between-seabed-topography-and-fluid-density",
       "type": 3,
       "authors": [
@@ -4068,7 +4068,7 @@
       "external_id": "addcf875e5bf2674ba5f92e9d6dab1238f664b9d",
       "research_external_id": "2f7a26bac08cb1806f8a42611f03f819def1d675",
       "title": "Constraints on Rift Basin Structure and Border Fault Growth in the Northern Malawi Rift from 3-D Seismic Refraction Imaging",
-      "content": "package:47caba259ce3045fe7a682cbfa4d7ef554ce882248468b130e651a2de21542e2",
+      "content": "47caba259ce3045fe7a682cbfa4d7ef554ce882248468b130e651a2de21542e2",
       "permlink": "constraints-on-rift-basin-structure-and-border-fault-growth-in-the-northern-malawi-rift-from-3-d-seismic-refraction-imaging",
       "type": 15,
       "authors": [
@@ -4081,7 +4081,7 @@
       "external_id": "bbb1baaa3a2855061ea9d19113ab820ace4327e5",
       "research_external_id": "2f7a26bac08cb1806f8a42611f03f819def1d675",
       "title": "Seismic evidence for plume- and craton-influenced upper mantle structure 2 beneath the northern Malawi rift and the Rungwe volcanic province, East 3 Africa",
-      "content": "package:5fe9caeb855bb863401b8bf7c560dcd3e7529b9d1f775c3b4dd907343e757b31",
+      "content": "5fe9caeb855bb863401b8bf7c560dcd3e7529b9d1f775c3b4dd907343e757b31",
       "permlink": "seismic-evidence-for-plume--and-craton-influenced-upper-mantle-structure-2-beneath-the-northern-malawi-rift-and-the-rungwe-volcanic-province,-east-3-africa",
       "type": 15,
       "authors": [
@@ -4094,7 +4094,7 @@
       "external_id": "96d9facdda5f1057eedada50f9bda602539ea060",
       "research_external_id": "2f7a26bac08cb1806f8a42611f03f819def1d675",
       "title": "Surface wave imaging of the weakly extended Malawi Rift from ambient-noise and teleseismic Rayleigh waves from onshore and lake-bottom seismometers",
-      "content": "package:95a93359ea96936ebb78f30f1a3dc20449867178c6045927263c735e3a17fa35",
+      "content": "95a93359ea96936ebb78f30f1a3dc20449867178c6045927263c735e3a17fa35",
       "permlink": "surface-wave-imaging-of-the-weakly-extended-malawi-rift-from-ambient-noise-and-teleseismic-rayleigh-waves-from-onshore-and-lake-bottom-seismometers",
       "type": 3,
       "authors": [
@@ -4107,7 +4107,7 @@
       "external_id": "854e5078401cf2318ee13d40a8a633210cfd0933",
       "research_external_id": "eb05fb1db4e1eaa4104bcea903d19a48d241250d",
       "title": "Development of Distributed Research Center for analysis of regional climatic and environmental changes",
-      "content": "package:fc8dd2b5041ede0b445adc60cad5c46341689d59f21f8fd3a8ea819e2cfc0144",
+      "content": "fc8dd2b5041ede0b445adc60cad5c46341689d59f21f8fd3a8ea819e2cfc0144",
       "permlink": "development-of-distributed-research-center-for-analysis-of-regional-climatic-and-environmental-changes",
       "type": 3,
       "authors": [
@@ -4120,7 +4120,7 @@
       "external_id": "6f4aa4e205973cb7cb15b9055d0b97d1d7f734ac",
       "research_external_id": "eb05fb1db4e1eaa4104bcea903d19a48d241250d",
       "title": " Environmental science applications with Rapid Integrated Mapping and analysis System (RIMS)",
-      "content": "package:27f9476f42c1bd561fecb59aba0e932d2428e2645b9610cdd0c2d5e98f2ac0bc",
+      "content": "27f9476f42c1bd561fecb59aba0e932d2428e2645b9610cdd0c2d5e98f2ac0bc",
       "permlink": "-environmental-science-applications-with-rapid-integrated-mapping-and-analysis-system-(rims)",
       "type": 3,
       "authors": [
@@ -4133,7 +4133,7 @@
       "external_id": "dd8848bf1e30117531f94c0624b023aadb509be3",
       "research_external_id": "eb05fb1db4e1eaa4104bcea903d19a48d241250d",
       "title": "Pan-Arctic river discharge: Prioritizing monitoring of future climate change hot spots",
-      "content": "package:9d130ea11857ade59c22a6c4785ac1189bf5d3a0b0ef31dc5ba3c1a133d8ad0a",
+      "content": "9d130ea11857ade59c22a6c4785ac1189bf5d3a0b0ef31dc5ba3c1a133d8ad0a",
       "permlink": "pan-arctic-river-discharge:-prioritizing-monitoring-of-future-climate-change-hot-spots",
       "type": 3,
       "authors": [
@@ -4146,7 +4146,7 @@
       "external_id": "f1b2cd759b14c2774c9ce2576f06e0ba4209c142",
       "research_external_id": "e2de9e3e04cbc57505a1426d4bd6826b4a068320",
       "title": "A magnesium-induced triplex pre-organizes the SAM-II riboswitch",
-      "content": "package:61f6e82590f4aa6c90385d8e2f89be3b0a4e61080ed529bd831b38e6353d8ba6",
+      "content": "61f6e82590f4aa6c90385d8e2f89be3b0a4e61080ed529bd831b38e6353d8ba6",
       "permlink": "a-magnesium-induced-triplex-pre-organizes-the-sam-ii-riboswitch",
       "type": 3,
       "authors": [
@@ -4159,7 +4159,7 @@
       "external_id": "62cf71b39358824e216924f2a23475f5b6eca31c",
       "research_external_id": "e2de9e3e04cbc57505a1426d4bd6826b4a068320",
       "title": "Elucidating the druggable interface of protein−protein interactions using fragment docking and coevolutionary analysis",
-      "content": "package:40a863f4bf5a3891616f01e356c30dc4c78f919a6acd68d15193e09353cd5035",
+      "content": "40a863f4bf5a3891616f01e356c30dc4c78f919a6acd68d15193e09353cd5035",
       "permlink": "elucidating-the-druggable-interface-of-protein−protein-interactions-using-fragment-docking-and-coevolutionary-analysis",
       "type": 3,
       "authors": [
@@ -4172,7 +4172,7 @@
       "external_id": "cb74fa295ce3a95a8ba431639466f795964e6399",
       "research_external_id": "e2de9e3e04cbc57505a1426d4bd6826b4a068320",
       "title": "Phylogenetic analysis of eukaryotic NEET proteins uncovers a link between a key gene duplication event and the evolution of vertebrates",
-      "content": "package:93169d6be03ad2da59bca1accb41d5af15193cdf052e8d007f33c388b557bc9b",
+      "content": "93169d6be03ad2da59bca1accb41d5af15193cdf052e8d007f33c388b557bc9b",
       "permlink": "phylogenetic-analysis-of-eukaryotic-neet-proteins-uncovers-a-link-between-a-key-gene-duplication-event-and-the-evolution-of-vertebrates",
       "type": 3,
       "authors": [
@@ -4185,7 +4185,7 @@
       "external_id": "daacd4ca4f08e906ade4953e6ff3a1865278849d",
       "research_external_id": "e2de9e3e04cbc57505a1426d4bd6826b4a068320",
       "title": "Interrogating the topological robustness of gene regulatory circuits by randomization",
-      "content": "package:4f3f42be3b3a435302a27b67db1f3210e7391c1b574e4c311dcfe2a33ea34789",
+      "content": "4f3f42be3b3a435302a27b67db1f3210e7391c1b574e4c311dcfe2a33ea34789",
       "permlink": "interrogating-the-topological-robustness-of-gene-regulatory-circuits-by-randomization",
       "type": 3,
       "authors": [
@@ -4198,7 +4198,7 @@
       "external_id": "b6e9a6ab23c59678af0215c1904d783cc75ff23f",
       "research_external_id": "6bbddb677b58c2366db15056166b95bc957b29b1",
       "title": "The Influence of Atmospheric Cloud Radiative Effects on the Large-Scale Stratospheric Circulation",
-      "content": "package:2f77a31ea3cf51f91091dca5b349e0fec195dae73d41e6713fabe121464221ad",
+      "content": "2f77a31ea3cf51f91091dca5b349e0fec195dae73d41e6713fabe121464221ad",
       "permlink": "the-influence-of-atmospheric-cloud-radiative-effects-on-the-large-scale-stratospheric-circulation",
       "type": 3,
       "authors": [
@@ -4211,7 +4211,7 @@
       "external_id": "73742fda018361653e8bf5dacb6a57c861462a50",
       "research_external_id": "6bbddb677b58c2366db15056166b95bc957b29b1",
       "title": "Thermodynamic constraint on the depth of the global tropospheric circulation",
-      "content": "package:1c6e3d93a50bfc697f79bd22f3506cce04e737db375a735d3e4db759176477fb",
+      "content": "1c6e3d93a50bfc697f79bd22f3506cce04e737db375a735d3e4db759176477fb",
       "permlink": "thermodynamic-constraint-on-the-depth-of-the-global-tropospheric-circulation",
       "type": 3,
       "authors": [
@@ -4224,7 +4224,7 @@
       "external_id": "9090ec519cba358b4bea6d319f30e9a92f5afa66",
       "research_external_id": "b77dcd01eff26c852a4a8c1ae9347e8e6baab859",
       "title": "Assessment of Wildfire Risk in Lebanon Using Geographic Object-Based Image Analysis",
-      "content": "package:d5335607b6621876cd45546c2975c175f48fc946b9b4c2ce18e0459728820d45",
+      "content": "d5335607b6621876cd45546c2975c175f48fc946b9b4c2ce18e0459728820d45",
       "permlink": "assessment-of-wildfire-risk-in-lebanon-using-geographic-object-based-image-analysis",
       "type": 3,
       "authors": [
@@ -4237,7 +4237,7 @@
       "external_id": "7641b40b08bf83864fa6a3e5431c1c6f071eebe0",
       "research_external_id": "b77dcd01eff26c852a4a8c1ae9347e8e6baab859",
       "title": "Effects of biological legacies and herbivory on fuels and flammability traits: A long-term experimental study of alternative stable states",
-      "content": "package:76caa5cc2d0239f8637e2bcdd4e0fafc7115f15fd6ee8d52f6efa94a4caebff8",
+      "content": "76caa5cc2d0239f8637e2bcdd4e0fafc7115f15fd6ee8d52f6efa94a4caebff8",
       "permlink": "effects-of-biological-legacies-and-herbivory-on-fuels-and-flammability-traits:-a-long-term-experimental-study-of-alternative-stable-states",
       "type": 3,
       "authors": [
@@ -4250,7 +4250,7 @@
       "external_id": "16520ea55290193068834467ec993c3598a59dda",
       "research_external_id": "b77dcd01eff26c852a4a8c1ae9347e8e6baab859",
       "title": "Global climate evolution during the last deglaciation",
-      "content": "package:61fee283b3c95a9e6f29d17a1daea503f8455bce83b4c7162a36c8236c3b1dce",
+      "content": "61fee283b3c95a9e6f29d17a1daea503f8455bce83b4c7162a36c8236c3b1dce",
       "permlink": "global-climate-evolution-during-the-last-deglaciation",
       "type": 3,
       "authors": [
@@ -4263,7 +4263,7 @@
       "external_id": "8893060777dc61b080b57ebc33e58246e8ea9e81",
       "research_external_id": "b77dcd01eff26c852a4a8c1ae9347e8e6baab859",
       "title": "Interpreting modern and fossil pollen data along a steep environmental gradient in northern Patagonia",
-      "content": "package:d4d4f56d9ae426955feb5f13c5166546dbca1ad43750f1b02c1b1df3401ddf17",
+      "content": "d4d4f56d9ae426955feb5f13c5166546dbca1ad43750f1b02c1b1df3401ddf17",
       "permlink": "interpreting-modern-and-fossil-pollen-data-along-a-steep-environmental-gradient-in-northern-patagonia",
       "type": 3,
       "authors": [
@@ -4276,7 +4276,7 @@
       "external_id": "df0d79c0a60c9fe17b55bf06a72a8a73e6ac07e1",
       "research_external_id": "b77dcd01eff26c852a4a8c1ae9347e8e6baab859",
       "title": "Terrestrial biosphere changes over the last 120 kyr",
-      "content": "package:b29646a7be6dec7fac57b90318e98b98d5a140b10e7271c0152b0f4d7fd43159",
+      "content": "b29646a7be6dec7fac57b90318e98b98d5a140b10e7271c0152b0f4d7fd43159",
       "permlink": "terrestrial-biosphere-changes-over-the-last-120-kyr",
       "type": 3,
       "authors": [
@@ -4289,7 +4289,7 @@
       "external_id": "bad236461c6299581be6d443a5000c6dbec95e4a",
       "research_external_id": "f3f3c178fc4e06835f2728c650e8f5df9fa19996",
       "title": "Simultaneous two-photon imaging and two-photon optogenetics of cortical circuits in three dimensions",
-      "content": "dar:ee4d523770a4f422ea411bf9074071385be3ed713e0fc93a710178c740b791c8",
+      "content": "ee4d523770a4f422ea411bf9074071385be3ed713e0fc93a710178c740b791c8",
       "permlink": "simultaneous-two-photon-imaging-and-two-photon-optogenetics-of-cortical-circuits-in-three-dimensions",
       "type": 3,
       "authors": [
