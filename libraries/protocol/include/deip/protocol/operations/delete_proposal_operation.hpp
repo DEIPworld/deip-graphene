@@ -9,7 +9,7 @@ struct delete_proposal_operation : public base_operation
 {
     external_id_type external_id;
     account_name_type account;
-    uint16_t authority_type;
+    uint16_t authority;
     extensions_type extensions;
 
     void validate() const;
@@ -27,6 +27,6 @@ struct delete_proposal_operation : public base_operation
 FC_REFLECT( deip::protocol::delete_proposal_operation,
   (external_id)
   (account)
-  (authority_type)
+  (authority)
   (extensions) 
 )

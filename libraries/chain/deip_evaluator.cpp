@@ -659,11 +659,11 @@ void delete_proposal_evaluator::do_apply(const delete_proposal_operation& op)
 
     const auto& proposal = proposals_service.get_proposal(op.external_id);
     const auto& required_approvals = 
-      op.authority_type == static_cast<uint16_t>(authority_type::owner) 
+      op.authority == static_cast<uint16_t>(authority_type::owner) 
       ? proposal.required_owner_approvals 
-      : op.authority_type == static_cast<uint16_t>(authority_type::active)
+      : op.authority == static_cast<uint16_t>(authority_type::active)
       ? proposal.required_active_approvals 
-      : op.authority_type == static_cast<uint16_t>(authority_type::posting)
+      : op.authority == static_cast<uint16_t>(authority_type::posting)
       ? proposal.required_posting_approvals
       : flat_set<account_name_type>();
 

@@ -15,7 +15,7 @@ void delete_proposal_operation::validate() const
 {
     validate_160_bits_hexadecimal_string(external_id);
     validate_account_name(account);
-    validate_enum_value_by_range(authority_type, static_cast<uint16_t>(authority_type::FIRST), static_cast<uint16_t>(authority_type::LAST));
+    validate_enum_value_by_range(authority, static_cast<uint16_t>(authority_type::FIRST), static_cast<uint16_t>(authority_type::LAST));
 }
 
 } // namespace protocol
