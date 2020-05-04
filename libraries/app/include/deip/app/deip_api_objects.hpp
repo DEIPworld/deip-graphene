@@ -472,7 +472,6 @@ struct research_api_obj
     time_point_sec created_at;
     optional<share_type> compensation_share;
     vector<discipline_api_obj> disciplines;
-    string group_permlink;
 
     map<int64_t, int64_t> eci_per_discipline;
 
