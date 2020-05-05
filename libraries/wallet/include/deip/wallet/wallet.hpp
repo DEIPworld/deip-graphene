@@ -650,17 +650,17 @@ public:
     /**
      * Transfers research tokens from one acount to another
      *
-     * @param research_id Id of research which tokens to transfer
+     * @param external_id external id of research which tokens to transfer
      * @param from The account who transfers research tokens
      * @param to The account receiving research tokens
-     * @param amount The account of research tokens to transfer
+     * @param share The account of research tokens to transfer
      * @param broadcast
      */
-    annotated_signed_transaction transfer_research_tokens(const int64_t research_id,
-                                                           const std::string& from,
-                                                           const std::string& to,
-                                                           const uint32_t amount,
-                                                           bool broadcast = false);
+    annotated_signed_transaction transfer_research_share(const external_id_type& research_external_id,
+                                                         const std::string& from,
+                                                         const std::string& to,
+                                                         const percent& share,
+                                                         bool broadcast = false);
 
     /** Signs a transaction.
      *
@@ -913,7 +913,7 @@ public:
     vector<research_group_api_obj> list_my_research_groups();
 
     /**
-     * Gets list of my researches 
+     * Gets list of my researches
      */
     vector<research_api_obj> list_my_researches();
 
@@ -991,19 +991,6 @@ public:
                                                           const bool broadcast);
 
     /**
-     * Transfer research tokens back to research group
-     *
-     * @param owner The account who transfers research tokens
-     * @param research_id Id of research which tokens to transfer
-     * @param amount Amount of research tokens to transfer
-     * @param broadcast
-     */
-    annotated_signed_transaction transfer_research_tokens_to_research_group(const int64_t research_id,
-                                                                            const std::string& owner,
-                                                                            const percent share,
-                                                                            const bool broadcast);
-
-    /**
      * Create new vesting contract
      *
      * @param creator The account who creates vesting contract
@@ -1064,7 +1051,7 @@ public:
                                                              const bool broadcast);
 
     annotated_signed_transaction approve_grant_application(const int64_t& grant_application_id,
-                                                           const std::string& approver, 
+                                                           const std::string& approver,
                                                            const bool broadcast);
 
     annotated_signed_transaction reject_grant_application(const int64_t& grant_application_id,
@@ -1186,7 +1173,7 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (transfer_to_common_tokens)
         (withdraw_common_tokens)
         (set_withdraw_common_tokens_route)
-        (transfer_research_tokens)
+        (transfer_research_share)
         (set_transaction_expiration)
         (challenge)
         (request_account_recovery)
@@ -1199,7 +1186,6 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (vote_for_review)
         (make_review)
         (contribute_to_token_sale)
-        (transfer_research_tokens_to_research_group)
         (create_vesting_balance)
         (withdraw_vesting_balance)
         (create_expertise_allocation_proposal)

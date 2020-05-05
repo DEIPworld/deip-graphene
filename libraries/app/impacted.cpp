@@ -144,11 +144,6 @@ struct get_impacted_account_visitor
         _impacted.insert(op.contributor);
     }
 
-    void operator()(const transfer_research_tokens_to_research_group_operation& op)
-    {
-        _impacted.insert(op.owner);
-    }
-
     void operator()(const create_vesting_balance_operation& op)
     {
         _impacted.insert(op.creator);
@@ -160,7 +155,7 @@ struct get_impacted_account_visitor
         _impacted.insert(op.owner);
     }
 
-    void operator()(const transfer_research_tokens_operation& op)
+    void operator()(const transfer_research_share_operation& op)
     {
         _impacted.insert(op.sender);
         _impacted.insert(op.receiver);

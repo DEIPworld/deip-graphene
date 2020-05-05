@@ -32,6 +32,7 @@
 #include <deip/protocol/operations/create_proposal_operation.hpp>
 #include <deip/protocol/operations/update_proposal_operation.hpp>
 #include <deip/protocol/operations/delete_proposal_operation.hpp>
+#include <deip/protocol/operations/transfer_research_share_operation.hpp>
 
 namespace deip {
 namespace protocol {
@@ -40,7 +41,7 @@ inline void validate_payment_number(const string& number)
 {
     const int min = 3;
     const int max = 15;
-    FC_ASSERT(number.size() >= min && number.size() <= max, 
+    FC_ASSERT(number.size() >= min && number.size() <= max,
       "Track number length should be in range of ${1} - ${2}",
       ("1", min)("2", max));
 }
@@ -49,7 +50,7 @@ inline void validate_foa_number(const string& number)
 {
     const int min = 3;
     const int max = 15;
-    FC_ASSERT(number.size() >= min && number.size() <= max, 
+    FC_ASSERT(number.size() >= min && number.size() <= max,
       "Track number length should be in range of ${1} - ${2}",
       ("1", min)("2", max));
 }
@@ -58,8 +59,8 @@ inline void validate_award_number(const string& number)
 {
     const int min = 3;
     const int max = 15;
-    FC_ASSERT(number.size() >= min && number.size() <= max, 
-      "Track number length should be in range of ${1} - ${2}", 
+    FC_ASSERT(number.size() >= min && number.size() <= max,
+      "Track number length should be in range of ${1} - ${2}",
       ("1", min)("2", max));
 }
 
@@ -76,7 +77,7 @@ inline void validate_permlink(const string& permlink)
 
 inline void validate_enum_value_by_range(uint16_t val, uint16_t first, uint16_t last)
 {
-    FC_ASSERT(val >= first && val <= last, 
+    FC_ASSERT(val >= first && val <= last,
       "Provided enum value is outside of the range: val: ${1}; FIRST: ${2}; LAST: ${3}",
       ("1", val)("2", first)("3", last));
 }
@@ -497,6 +498,11 @@ struct placeholder8_operation : public base_operation
     void validate() const;
 };
 
+struct placeholder9_operation : public base_operation
+{
+    void validate() const;
+};
+
 struct contribute_to_token_sale_operation : public base_operation
 {
     external_id_type research_external_id;
@@ -509,20 +515,6 @@ struct contribute_to_token_sale_operation : public base_operation
         a.insert(contributor);
     }
 };
-
-struct transfer_research_tokens_to_research_group_operation : public base_operation
-{
-    int64_t research_id;
-    account_name_type owner;
-    percent share;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
-
 
 struct create_vesting_balance_operation : public base_operation
 {
@@ -552,21 +544,6 @@ struct withdraw_vesting_balance_operation : public base_operation
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
         a.insert(owner);
-    }
-};
-
-struct transfer_research_tokens_operation : public base_operation
-{
-    int64_t research_id;
-    account_name_type sender;
-    account_name_type receiver;
-    uint32_t amount;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(sender);
     }
 };
 
@@ -757,13 +734,12 @@ FC_REFLECT( deip::protocol::placeholder5_operation, )
 FC_REFLECT( deip::protocol::placeholder6_operation, )
 FC_REFLECT( deip::protocol::placeholder7_operation, )
 FC_REFLECT( deip::protocol::placeholder8_operation, )
+FC_REFLECT( deip::protocol::placeholder9_operation, )
 
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_external_id)(contributor)(amount))
 FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
-FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_id)(owner)(share))
 FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds))
 FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance_id)(owner)(amount))
-FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_id)(sender)(receiver)(amount))
 FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(discipline_id))
 FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(discipline_id))
 FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (claimer)(discipline_id)(description))

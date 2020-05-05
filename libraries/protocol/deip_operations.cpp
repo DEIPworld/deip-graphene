@@ -51,6 +51,11 @@ void placeholder8_operation::validate() const
     FC_ASSERT(false, "The operation is reserved");
 };
 
+void placeholder9_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+};
+
 void vote_for_review_operation::validate() const
 {
     validate_account_name(voter);
@@ -64,7 +69,7 @@ void transfer_operation::validate() const
     {
         validate_account_name(from);
         validate_account_name(to);
-        
+
         FC_ASSERT(amount.amount > 0, "Cannot transfer a negative amount (aka: stealing)");
         FC_ASSERT(memo.size() < DEIP_MAX_MEMO_SIZE, "Memo is too large");
         FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
@@ -150,13 +155,6 @@ void contribute_to_token_sale_operation::validate() const
     FC_ASSERT(amount.amount > 0, "Contribution must and greater than 0");
 }
 
-void transfer_research_tokens_to_research_group_operation::validate() const 
-{
-    FC_ASSERT(share > percent(0) , "Transfer share must be greater than 0 %");
-    validate_account_name(owner);
-}    
-
-
 void create_vesting_balance_operation::validate() const
 {
     FC_ASSERT(balance > asset(0, DEIP_SYMBOL), "Deposit balance must be DEIP and greater than 0");
@@ -174,13 +172,6 @@ void withdraw_vesting_balance_operation::validate() const
 {
     FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Withdraw amount must be DEIP and greater than 0");
     validate_account_name(owner);
-}
-
-void transfer_research_tokens_operation::validate() const
-{
-    FC_ASSERT(amount > 0, "Transfer amount must be greater than 0");
-    validate_account_name(sender);
-    validate_account_name(receiver);
 }
 
 void delegate_expertise_operation::validate() const

@@ -913,32 +913,6 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
     ));
 }
 
-void transfer_research_tokens_to_research_group_evaluator::do_apply(const transfer_research_tokens_to_research_group_operation& op)
-{
-    dbs_research_token &research_token_service = _db.obtain_service<dbs_research_token>();
-    dbs_research &research_service = _db.obtain_service<dbs_research>();
-
-    research_token_service.check_existence_by_owner_and_research(op.owner, op.research_id);
-    research_service.check_research_existence(op.research_id);
-
-    auto& research_token = research_token_service.get_by_owner_and_research(op.owner, op.research_id);
-    auto& research = research_service.get_research(op.research_id);
-
-    FC_ASSERT(op.share > percent(DEIP_1_PERCENT * 1) && op.share <= percent(research_token.amount),
-      "Amount cannot be negative or greater than research token amount");
-
-    research_service.increase_owned_tokens(research, op.share);
-
-    if (op.share == percent(research_token.amount)) {
-        _db._temporary_public_impl().remove(research_token);
-    } else {
-        _db._temporary_public_impl().modify(research_token, [&](research_token_object &rt_o) {
-            rt_o.amount -= op.share.amount;
-        });
-    }
-}
-
-
 void create_vesting_balance_evaluator::do_apply(const create_vesting_balance_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
@@ -999,35 +973,34 @@ void withdraw_vesting_balance_evaluator::do_apply(const withdraw_vesting_balance
     }
 }
 
-void transfer_research_tokens_evaluator::do_apply(const transfer_research_tokens_operation& op)
+void transfer_research_share_evaluator::do_apply(const transfer_research_share_operation& op)
 {
-    dbs_research_token &research_token_service = _db.obtain_service<dbs_research_token>();
-    dbs_research &research_service = _db.obtain_service<dbs_research>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
+    dbs_research_token& research_token_service = _db.obtain_service<dbs_research_token>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
 
-    research_service.check_research_existence(op.research_id);
-    research_token_service.check_existence_by_owner_and_research(op.sender, op.research_id);
+    FC_ASSERT(account_service.account_exists(op.sender),
+              "Account(sender) ${1} does not exist",
+              ("1", op.sender));
 
-    auto &research_token_to_transfer = research_token_service.get_by_owner_and_research(op.sender, op.research_id);
+    FC_ASSERT(research_service.research_exists(op.research_external_id),
+              "Research with external id: ${1} does not exist",
+              ("1", op.research_external_id));
 
-    FC_ASSERT(op.amount > 0 && share_type(op.amount) <= research_token_to_transfer.amount,
-              "Amount cannot be negative or greater than total research token amount");
+    auto& research = research_service.get_research(op.research_external_id);
 
-    if (research_token_service.exists_by_owner_and_research(op.receiver, op.research_id)) {
-        auto &receiver_token = research_token_service.get_by_owner_and_research(op.receiver, op.research_id);
-        _db._temporary_public_impl().modify(receiver_token, [&](research_token_object &r_o) {
-            r_o.amount += op.amount;
-        });
-    } else {
-        research_token_service.create_research_token(op.receiver, op.research_id, op.amount, false);
-    }
+    FC_ASSERT(research_token_service.exists_by_owner_and_research(op.sender, research.id),
+              "Research token with owner: ${1} and research: ${2} does not exist",
+              ("1", op.sender)("2", research.id));
 
-    if (op.amount == research_token_to_transfer.amount) {
-        _db._temporary_public_impl().remove(research_token_to_transfer);
-    } else {
-        _db._temporary_public_impl().modify(research_token_to_transfer, [&](research_token_object &rt_o) {
-            rt_o.amount -= op.amount;
-        });
-    }
+    auto& research_token_to_transfer = research_token_service.get_by_owner_and_research(op.sender, research.id);
+
+    FC_ASSERT(op.share.amount <= research_token_to_transfer.amount,
+              "Amount cannot be greater than total research token amount. Provided value: ${1}, actual amount: ${2}.",
+              ("1", op.share.amount)("2", research_token_to_transfer.amount));
+
+    research_token_service.adjust_research_token(op.sender, research.id, -op.share.amount, false);
+    research_token_service.adjust_research_token(op.receiver, research.id, op.share.amount, false);
 }
 
 void delegate_expertise_evaluator::do_apply(const delegate_expertise_operation& op)

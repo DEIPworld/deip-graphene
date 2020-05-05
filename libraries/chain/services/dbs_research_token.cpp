@@ -28,7 +28,7 @@ const research_token_object& dbs_research_token::create_research_token(
 }
 
 
-const research_token_object& dbs_research_token::adjust_research_token(
+void dbs_research_token::adjust_research_token(
   const account_name_type& owner,
   const research_id_type& research_id,
   const share_type& delta,
@@ -44,12 +44,16 @@ const research_token_object& dbs_research_token::adjust_research_token(
     if (delta.value < 0)
     {
         FC_ASSERT(research_token.amount >= abs(delta.value),
-          "Account ${1} research share is not sufficient to decrease ${2} amount", 
+          "Account ${1} research share is not sufficient to decrease ${2} amount",
           ("1", owner)("2", delta));
     }
 
     db_impl().modify(research_token, [&](research_token_object& rt_o) { rt_o.amount += delta; });
-    return research_token;
+
+    if (research_token.amount == 0)
+    {
+        db_impl().remove(research_token);
+    }
 }
 
 const research_token_object& dbs_research_token::get(const research_token_id_type &id) const

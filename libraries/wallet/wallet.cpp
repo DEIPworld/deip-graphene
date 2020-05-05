@@ -1925,15 +1925,18 @@ annotated_signed_transaction wallet_api::set_withdraw_common_tokens_route(
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::transfer_research_tokens(const int64_t research_id, const std::string& from,
-                                                                  const std::string& to, const uint32_t amount, bool broadcast)
+annotated_signed_transaction wallet_api::transfer_research_share(const external_id_type& research_external_id,
+                                                                 const std::string& from,
+                                                                 const std::string& to,
+                                                                 const percent& share,
+                                                                 bool broadcast)
 {
     FC_ASSERT(!is_locked());
-    transfer_research_tokens_operation op;
-    op.research_id = research_id;
+    transfer_research_share_operation op;
+    op.research_external_id = research_external_id;
     op.sender = from;
     op.receiver = to;
-    op.amount = amount;
+    op.share = share;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2383,27 +2386,6 @@ annotated_signed_transaction wallet_api::contribute_to_token_sale(const std::str
 
     return my->sign_transaction(tx, broadcast);
 }
-
-annotated_signed_transaction wallet_api::transfer_research_tokens_to_research_group(const int64_t research_id,
-                                                                                    const std::string& owner,
-                                                                                    const percent share,
-                                                                                    const bool broadcast)
-{
-    FC_ASSERT(!is_locked());
-
-    transfer_research_tokens_to_research_group_operation op;
-
-    op.research_id = research_id;
-    op.owner = owner;
-    op.share = share;
-
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
-
-    return my->sign_transaction(tx, broadcast);
-}
-
 
 annotated_signed_transaction
 wallet_api::create_vesting_balance(const std::string &creator, const std::string &owner, const asset &balance,
