@@ -56,6 +56,16 @@ void placeholder9_operation::validate() const
     FC_ASSERT(false, "The operation is reserved");
 };
 
+void placeholder10_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+};
+
+void placeholder11_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+};
+
 void vote_for_review_operation::validate() const
 {
     validate_account_name(voter);
@@ -172,19 +182,6 @@ void withdraw_vesting_balance_operation::validate() const
 {
     FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Withdraw amount must be DEIP and greater than 0");
     validate_account_name(owner);
-}
-
-void delegate_expertise_operation::validate() const
-{
-    FC_ASSERT(discipline_id > 0, "Cannot use root discipline (id = 0)");
-    validate_account_name(sender);
-    validate_account_name(receiver);
-}
-
-void revoke_expertise_delegation_operation::validate() const
-{
-    validate_account_name(sender);
-    FC_ASSERT(discipline_id > 0, "Cannot use root discipline (id = 0)");
 }
 
 void create_expertise_allocation_proposal_operation::validate() const

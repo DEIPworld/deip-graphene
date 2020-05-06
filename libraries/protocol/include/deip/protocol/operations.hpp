@@ -52,12 +52,12 @@ namespace protocol {
 
                 transfer_research_share_operation,
 
-                delegate_expertise_operation,
-                revoke_expertise_delegation_operation,
-                create_expertise_allocation_proposal_operation,
-                vote_for_expertise_allocation_proposal_operation,
                 placeholder7_operation,
                 placeholder8_operation,
+                create_expertise_allocation_proposal_operation,
+                vote_for_expertise_allocation_proposal_operation,
+                placeholder9_operation,
+                placeholder10_operation,
 
                 create_grant_operation,
                 create_grant_application_operation,
@@ -82,7 +82,7 @@ namespace protocol {
                 create_research_operation,
                 create_research_content_operation,
                 create_research_token_sale_operation,
-                placeholder9_operation,
+                placeholder11_operation,
                 update_research_operation,
 
                 create_nda_contract_operation,

@@ -1073,51 +1073,6 @@ void transfer_research_share_evaluator::do_apply(const transfer_research_share_o
     research_token_service.adjust_research_token(op.receiver, research.id, op.share.amount, false);
 }
 
-void delegate_expertise_evaluator::do_apply(const delegate_expertise_operation& op)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
-
-    account_service.check_account_existence(op.sender);
-    account_service.check_account_existence(op.receiver);
-
-    FC_ASSERT(expert_token_service.expert_token_exists_by_account_and_discipline(op.sender, op.discipline_id), 
-      "Expertise token ${1} for ${2} does not exist",
-      ("1", op.sender)("2", op.discipline_id));
-
-    FC_ASSERT(expert_token_service.expert_token_exists_by_account_and_discipline(op.receiver, op.discipline_id),
-      "Expertise token ${1} for ${2} does not exist", 
-      ("1", op.receiver)("2", op.discipline_id));
-
-    auto& sender_token = expert_token_service.get_expert_token_by_account_and_discipline(op.sender, op.discipline_id);
-
-    FC_ASSERT(sender_token.proxy != op.receiver, "Proxy must change.");
-
-    auto& proxy_token = expert_token_service.get_expert_token_by_account_and_discipline(op.receiver, op.discipline_id);
-
-    expert_token_service.update_expertise_proxy(sender_token, proxy_token);
-
-}
-
-void revoke_expertise_delegation_evaluator::do_apply(const revoke_expertise_delegation_operation& op)
-{
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_expert_token& expert_token_service = _db.obtain_service<dbs_expert_token>();
-
-    account_service.check_account_existence(op.sender);
-    FC_ASSERT(expert_token_service.expert_token_exists_by_account_and_discipline(op.sender, op.discipline_id),
-      "Expertise token ${1} for ${2} does not exist", 
-      ("1", op.sender)("2", op.discipline_id));
-
-    auto& sender_token = expert_token_service.get_expert_token_by_account_and_discipline(op.sender, op.discipline_id);
-
-    FC_ASSERT(sender_token.proxy.size() != 0, "You have no proxy");
-
-    optional<expert_token_object> proxy;
-
-    expert_token_service.update_expertise_proxy(sender_token, proxy);
-}
-
 void create_expertise_allocation_proposal_evaluator::do_apply(const create_expertise_allocation_proposal_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
@@ -1151,13 +1106,10 @@ void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_e
 
     auto& expert_token = expert_token_service.get_expert_token_by_account_and_discipline(op.voter, proposal.discipline_id);
 
-    FC_ASSERT(expert_token.proxy.size() == 0, "A proxy is currently set, please clear the proxy before voting.");
-
-
     if (op.voting_power == DEIP_100_PERCENT)
-        expertise_allocation_proposal_service.upvote(proposal, op.voter, expert_token.amount + expert_token.proxied_expertise_total());
+        expertise_allocation_proposal_service.upvote(proposal, op.voter, expert_token.amount);
     else if (op.voting_power == -DEIP_100_PERCENT)
-        expertise_allocation_proposal_service.downvote(proposal, op.voter, expert_token.amount + expert_token.proxied_expertise_total());
+        expertise_allocation_proposal_service.downvote(proposal, op.voter, expert_token.amount);
 
 }
 

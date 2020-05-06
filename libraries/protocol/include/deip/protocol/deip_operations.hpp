@@ -503,6 +503,16 @@ struct placeholder9_operation : public base_operation
     void validate() const;
 };
 
+struct placeholder10_operation : public base_operation
+{
+    void validate() const;
+};
+
+struct placeholder11_operation : public base_operation
+{
+    void validate() const;
+};
+
 struct contribute_to_token_sale_operation : public base_operation
 {
     external_id_type research_external_id;
@@ -544,33 +554,6 @@ struct withdraw_vesting_balance_operation : public base_operation
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
         a.insert(owner);
-    }
-};
-
-struct delegate_expertise_operation : public base_operation
-{
-    account_name_type sender;
-    account_name_type receiver;
-    int64_t discipline_id;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(sender);
-    }
-};
-
-struct revoke_expertise_delegation_operation : public base_operation
-{
-    account_name_type sender;
-    int64_t discipline_id;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(sender);
     }
 };
 
@@ -735,13 +718,13 @@ FC_REFLECT( deip::protocol::placeholder6_operation, )
 FC_REFLECT( deip::protocol::placeholder7_operation, )
 FC_REFLECT( deip::protocol::placeholder8_operation, )
 FC_REFLECT( deip::protocol::placeholder9_operation, )
+FC_REFLECT( deip::protocol::placeholder10_operation, )
+FC_REFLECT( deip::protocol::placeholder11_operation, )
 
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_external_id)(contributor)(amount))
 FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
 FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds))
 FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance_id)(owner)(amount))
-FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(discipline_id))
-FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(discipline_id))
 FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (claimer)(discipline_id)(description))
 FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (proposal_id)(voter)(voting_power))
 FC_REFLECT( deip::protocol::create_grant_application_operation, (funding_opportunity_number)(research_id)(creator)(application_hash))
