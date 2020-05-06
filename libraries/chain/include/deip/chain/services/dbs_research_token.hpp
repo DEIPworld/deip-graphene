@@ -27,10 +27,10 @@ namespace deip {
                                                                const share_type& amount,
                                                                const bool& is_compensation);
 
-            const research_token_object& adjust_research_token(const account_name_type& owner,
-                                                               const research_id_type& research_id,
-                                                               const share_type& delta,
-                                                               const bool& is_compensation);
+            void adjust_research_token(const account_name_type& owner,
+                                       const research_id_type& research_id,
+                                       const share_type& delta,
+                                       const bool& is_compensation);
                                                                
             /* Get research token by id
              * @returns research token object by its id

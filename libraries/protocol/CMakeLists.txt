@@ -35,6 +35,7 @@ add_library( deip_protocol
              operations/create_proposal_operation.cpp
              operations/update_proposal_operation.cpp
              operations/delete_proposal_operation.cpp
+             operations/transfer_research_share_operation.cpp
              transaction.cpp
              block.cpp
              asset.cpp
