@@ -71,12 +71,30 @@ dbs_discipline_supply::discipline_supply_refs_type dbs_discipline_supply::get_di
     return ret;
 }
 
-const discipline_supply_object& dbs_discipline_supply::get_discipline_supply(discipline_supply_id_type id) const
+const discipline_supply_object& dbs_discipline_supply::get_discipline_supply(const discipline_supply_id_type id) const
 {
     try {
         return db_impl().get<discipline_supply_object>(id);
     }
     FC_CAPTURE_AND_RETHROW((id))
+}
+
+const dbs_discipline_supply::discipline_supply_optional_ref_type
+dbs_discipline_supply::get_discipline_supply_if_exists(const discipline_supply_id_type& id) const
+{
+    discipline_supply_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<discipline_supply_index>()
+            .indicies()
+            .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 const discipline_supply_object& dbs_discipline_supply::create_discipline_supply(const account_name_type &grantor,

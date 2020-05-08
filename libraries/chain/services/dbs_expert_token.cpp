@@ -60,6 +60,24 @@ const expert_token_object& dbs_expert_token::get_expert_token(const expert_token
     FC_CAPTURE_AND_RETHROW((id))
 }
 
+const dbs_expert_token::expert_token_optional_ref_type
+dbs_expert_token::get_expert_token_if_exists(const expert_token_id_type& id) const
+{
+    expert_token_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<expert_token_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 const expert_token_object& dbs_expert_token::get_expert_token_by_account_and_discipline(
         const account_name_type &account, const discipline_id_type &discipline_id) const
 {
@@ -67,6 +85,24 @@ const expert_token_object& dbs_expert_token::get_expert_token_by_account_and_dis
         return db_impl().get<expert_token_object, by_account_and_discipline>(std::make_tuple(account, discipline_id));
     }
     FC_CAPTURE_AND_RETHROW((discipline_id))
+}
+
+const dbs_expert_token::expert_token_optional_ref_type
+dbs_expert_token::get_expert_token_by_account_and_discipline_if_exists(const account_name_type &account, const discipline_id_type &discipline_id) const
+{
+    expert_token_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<expert_token_index>()
+      .indicies()
+      .get<by_account_and_discipline>();
+
+    auto itr = idx.find(std::make_tuple(account, discipline_id));
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 dbs_expert_token::expert_token_refs_type dbs_expert_token::get_expert_tokens_by_account_name(const account_name_type& account_name) const

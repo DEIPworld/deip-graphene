@@ -57,7 +57,7 @@ dbs_grant_application::get_grant_application_if_exists(const grant_application_i
 }
 
 dbs_grant_application::grant_applications_refs_type
-dbs_grant_application::get_grant_applications_by_funding_opportunity_number(const external_id_type& funding_opportunity_number)
+dbs_grant_application::get_grant_applications_by_funding_opportunity_number(const external_id_type& funding_opportunity_number) const
 {
     grant_applications_refs_type ret;
 
@@ -74,7 +74,7 @@ dbs_grant_application::get_grant_applications_by_funding_opportunity_number(cons
 }
 
 dbs_grant_application::grant_applications_refs_type
-dbs_grant_application::get_grant_applications_by_research_id(const research_id_type& research_id)
+dbs_grant_application::get_grant_applications_by_research_id(const research_id_type& research_id) const
 {
     grant_applications_refs_type ret;
 

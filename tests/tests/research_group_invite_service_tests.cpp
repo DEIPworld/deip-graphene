@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(get_research_group_invite)
     {
         create_research_invite_objects();
 
-        auto& research_group_invite = data_service.get_research_group_invite("alice", 1);
+        auto& research_group_invite = data_service.get_research_group_invite_by_account_and_research_group("alice", 1);
 
         BOOST_CHECK(research_group_invite.account_name == "alice");
         BOOST_CHECK(research_group_invite.research_group_id == 1);

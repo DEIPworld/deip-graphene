@@ -39,6 +39,24 @@ const expertise_allocation_proposal_object& dbs_expertise_allocation_proposal::g
     FC_CAPTURE_AND_RETHROW((id))
 }
 
+const dbs_expertise_allocation_proposal::expertise_allocation_proposal_optional_ref_type
+dbs_expertise_allocation_proposal::get_expertise_allocation_proposal_if_exists(const expertise_allocation_proposal_id_type& id) const
+{
+    expertise_allocation_proposal_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<expertise_allocation_proposal_index>()
+            .indicies()
+            .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 dbs_expertise_allocation_proposal::expertise_allocation_proposal_refs_type
 dbs_expertise_allocation_proposal::get_by_claimer(const account_name_type& claimer) const
 {
@@ -64,6 +82,25 @@ dbs_expertise_allocation_proposal::get_by_claimer_and_discipline(const account_n
     auto itr = idx.find(std::make_tuple(claimer, discipline_id));
 
     return *itr;
+}
+
+const dbs_expertise_allocation_proposal::expertise_allocation_proposal_optional_ref_type
+dbs_expertise_allocation_proposal::get_expertise_allocation_proposal_by_claimer_and_discipline_if_exists(const account_name_type& claimer,
+                                                                                                         const discipline_id_type& discipline_id) const
+{
+    expertise_allocation_proposal_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<expertise_allocation_proposal_index>()
+            .indicies()
+            .get<by_claimer_and_discipline>();
+
+    auto itr = idx.find(std::make_tuple(claimer, discipline_id));
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 dbs_expertise_allocation_proposal::expertise_allocation_proposal_refs_type dbs_expertise_allocation_proposal::get_by_discipline_id(const discipline_id_type& discipline_id) const
@@ -248,9 +285,27 @@ const expertise_allocation_proposal_vote_object& dbs_expertise_allocation_propos
     FC_CAPTURE_AND_RETHROW((id))
 }
 
+const dbs_expertise_allocation_proposal::expertise_allocation_proposal_vote_optional_ref_type
+dbs_expertise_allocation_proposal::get_expertise_allocation_proposal_vote_if_exists(const expertise_allocation_proposal_vote_id_type& id) const
+{
+    expertise_allocation_proposal_vote_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<expertise_allocation_proposal_vote_index>()
+            .indicies()
+            .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 const expertise_allocation_proposal_vote_object&
 dbs_expertise_allocation_proposal::get_vote_by_voter_and_expertise_allocation_proposal_id(const account_name_type &voter,
-                                                                                          const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id)
+                                                                                          const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const
 {
     try {
         return db_impl().get<expertise_allocation_proposal_vote_object, by_voter_and_expertise_allocation_proposal_id>(
@@ -259,8 +314,27 @@ dbs_expertise_allocation_proposal::get_vote_by_voter_and_expertise_allocation_pr
     FC_CAPTURE_AND_RETHROW((voter)(expertise_allocation_proposal_id))
 }
 
+const dbs_expertise_allocation_proposal::expertise_allocation_proposal_vote_optional_ref_type
+dbs_expertise_allocation_proposal::get_expertise_allocation_proposal_vote_by_voter_and_expertise_allocation_proposal_id_if_exists(const account_name_type &voter,
+                                                                                                                                  const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const
+{
+    expertise_allocation_proposal_vote_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<expertise_allocation_proposal_vote_index>()
+            .indicies()
+            .get<by_voter_and_expertise_allocation_proposal_id>();
+
+    auto itr = idx.find(std::make_tuple(voter, expertise_allocation_proposal_id));
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 dbs_expertise_allocation_proposal::expertise_allocation_proposal_vote_refs_type
-dbs_expertise_allocation_proposal::get_votes_by_expertise_allocation_proposal_id(const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id)
+dbs_expertise_allocation_proposal::get_votes_by_expertise_allocation_proposal_id(const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const
 {
     expertise_allocation_proposal_vote_refs_type ret;
 

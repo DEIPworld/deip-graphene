@@ -35,12 +35,47 @@ const discipline_object& dbs_discipline::get_discipline(const discipline_id_type
     FC_CAPTURE_AND_RETHROW((id))
 }
 
+const dbs_discipline::discipline_optional_ref_type dbs_discipline::get_discipline_if_exists(const discipline_id_type& id) const
+{
+    discipline_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<discipline_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 const discipline_object& dbs_discipline::get_discipline_by_name(const fc::string& name) const
 {
     const auto& idx = db_impl().get_index<discipline_index>().indices().get<by_discipline_name>();
     auto itr = idx.find(name, fc::strcmp_less());
     FC_ASSERT(itr != idx.end(), "Discipline: ${n} is not found", ("n", name));
     return *itr;
+}
+
+const dbs_discipline::discipline_optional_ref_type 
+dbs_discipline::get_discipline_by_name_if_exists(const fc::string& name) const
+{
+    discipline_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<discipline_index>()
+            .indicies()
+            .get<by_discipline_name>();
+
+    auto itr = idx.find(name, fc::strcmp_less());
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 void dbs_discipline::check_discipline_existence_by_name(const fc::string& name)

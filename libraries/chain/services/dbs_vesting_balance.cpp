@@ -24,7 +24,7 @@ const vesting_balance_object & dbs_vesting_balance::create(const account_name_ty
     });
 }
 
-const vesting_balance_object& dbs_vesting_balance::get(const vesting_balance_id_type& id)
+const vesting_balance_object& dbs_vesting_balance::get(const vesting_balance_id_type& id) const
 {
     try {
         return db_impl().get<vesting_balance_object, by_id>(id);
@@ -32,7 +32,25 @@ const vesting_balance_object& dbs_vesting_balance::get(const vesting_balance_id_
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-dbs_vesting_balance::vesting_balance_refs_type dbs_vesting_balance::get_by_owner(const account_name_type &owner)
+const dbs_vesting_balance::vesting_balance_optional_ref_type
+dbs_vesting_balance::get_vesting_balance_if_exists(const vesting_balance_id_type& id) const
+{
+    vesting_balance_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<vesting_balance_index>()
+            .indicies()
+            .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
+dbs_vesting_balance::vesting_balance_refs_type dbs_vesting_balance::get_by_owner(const account_name_type &owner) const
 {
     vesting_balance_refs_type ret;
 

@@ -22,6 +22,7 @@ protected:
 
 public:
     using research_token_sale_refs_type = std::vector<std::reference_wrapper<const research_token_sale_object>>;
+    using research_token_sale_optional_ref_type = fc::optional<std::reference_wrapper<const research_token_sale_object>>;
 
     const research_token_sale_object& start(const research_id_type &research_id,
                                             const fc::time_point_sec start_time,
@@ -33,6 +34,8 @@ public:
     research_token_sale_refs_type get_all() const;
 
     const research_token_sale_object& get_by_id(const research_token_sale_id_type &id) const;
+
+    const research_token_sale_optional_ref_type get_research_token_sale_if_exists(const research_token_sale_id_type& id) const;
 
     research_token_sale_refs_type get_by_research_id(const research_id_type &research_id) const;
 
@@ -48,6 +51,7 @@ public:
     //research_token_sale_contribution
 
     using research_token_sale_contribution_refs_type = std::vector<std::reference_wrapper<const research_token_sale_contribution_object>>;
+    using research_token_sale_contribution_optional_ref_type = fc::optional<std::reference_wrapper<const research_token_sale_contribution_object>>;
 
     const research_token_sale_contribution_object& contribute(const research_token_sale_id_type &research_token_sale_id,
                                                               const account_name_type &owner,
@@ -56,10 +60,16 @@ public:
 
     const research_token_sale_contribution_object& get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type& id) const;
 
+    const research_token_sale_contribution_optional_ref_type
+    get_research_token_sale_contribution_if_exists(const research_token_sale_contribution_id_type& id) const;
+
     research_token_sale_contribution_refs_type get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type& research_token_sale_id) const;
 
     const research_token_sale_contribution_object& get_research_token_sale_contribution_by_contributor_and_research_token_sale_id(const account_name_type& owner, const research_token_sale_id_type& research_token_sale_id) const;
-    
+
+    const research_token_sale_contribution_optional_ref_type
+    get_research_token_sale_contribution_by_contributor_and_research_token_sale_id_if_exists(const account_name_type& owner, const research_token_sale_id_type& research_token_sale_id) const;
+
     research_token_sale_contribution_refs_type get_research_token_sale_contributions_by_contributor(const account_name_type& owner) const;
 
     void distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id);

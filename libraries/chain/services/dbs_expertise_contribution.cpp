@@ -63,6 +63,24 @@ const expertise_contribution_object& dbs_expertise_contribution::get_expertise_c
     return *itr;
 }
 
+const dbs_expertise_contribution::expertise_contribution_optional_ref_type
+dbs_expertise_contribution::get_expertise_contribution_if_exists(const expertise_contribution_id_type& id) const
+{
+    expertise_contribution_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<expertise_contribution_index>()
+            .indicies()
+            .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 const expertise_contribution_object& dbs_expertise_contribution::get_expertise_contribution_by_research_content_and_discipline(
   const research_content_id_type& research_content_id,
   const discipline_id_type& discipline_id) const
@@ -79,6 +97,25 @@ const expertise_contribution_object& dbs_expertise_contribution::get_expertise_c
       ("1", discipline_id)("2", research_content_id));
 
     return *itr;
+}
+
+const dbs_expertise_contribution::expertise_contribution_optional_ref_type
+dbs_expertise_contribution::get_expertise_contribution_by_research_content_and_discipline_if_exists(const research_content_id_type& research_content_id,
+                                                                                                    const discipline_id_type& discipline_id) const
+{
+    expertise_contribution_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<expertise_contribution_index>()
+            .indicies()
+            .get<by_research_content_and_discipline>();
+
+    auto itr = idx.find(std::make_tuple(research_content_id, discipline_id));
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 dbs_expertise_contribution::expertise_contributions_refs_type dbs_expertise_contribution::get_expertise_contributions_by_research_and_discipline(

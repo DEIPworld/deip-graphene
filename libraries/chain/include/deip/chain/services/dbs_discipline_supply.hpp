@@ -24,6 +24,7 @@ protected:
 
 public:
     using discipline_supply_refs_type = std::vector<std::reference_wrapper<const discipline_supply_object>>;
+    using discipline_supply_optional_ref_type = fc::optional<std::reference_wrapper<const discipline_supply_object>>;
 
     /** Lists all discipline supply grantors.
      *
@@ -47,7 +48,9 @@ public:
 
     /** Get discipline supply by id
      */
-    const discipline_supply_object& get_discipline_supply(discipline_supply_id_type id) const;
+    const discipline_supply_object& get_discipline_supply(const discipline_supply_id_type id) const;
+
+    const discipline_supply_optional_ref_type get_discipline_supply_if_exists(const discipline_supply_id_type& id) const;
 
     /** Create discipline supply.
      *  The grantor has abilities for all operations (for update, close and schedule operations).

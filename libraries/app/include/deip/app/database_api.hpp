@@ -288,7 +288,6 @@ public:
     fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
     fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
     vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
-    bool check_research_existence_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
 
     //////////////////////
     // Research Content //
@@ -611,16 +610,14 @@ FC_API(deip::app::database_api,
    (get_research_by_permlink)
    (get_researches_by_research_group_id)
    (get_research_by_absolute_permlink)
-   (check_research_existence_by_permlink)
-
 
    // Research Content
    (get_research_content)
    (get_research_content_by_id)
-   (get_all_research_content)
-   (get_research_content_by_type)
    (get_research_content_by_permlink)
    (get_research_content_by_absolute_permlink)
+   (get_all_research_content)
+   (get_research_content_by_type)
 
    // Expert Tokens
    (get_expert_token)
@@ -708,16 +705,17 @@ FC_API(deip::app::database_api,
    (get_vesting_balance_by_id)
    (get_vesting_balance_by_owner)
 
+   // Grant applications
+   (get_grant_application)
+   (get_grant_applications_by_funding_opportunity_number)
+   (get_grant_applications_by_research_id)
+
    // FOA
    (get_funding_opportunity_announcement)
    (get_funding_opportunity_announcement_by_number)
    (get_funding_opportunity_announcements_by_organization)
    (get_funding_opportunity_announcements_listing)
 
-   // Grant applications
-   (get_grant_application)
-   (get_grant_applications_by_funding_opportunity_number)
-   (get_grant_applications_by_research_id)
    
    (calculate_research_eci)
    (calculate_research_content_eci)

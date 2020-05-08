@@ -28,6 +28,7 @@ class dbs_research_group : public dbs_base
     using research_group_refs_type = std::vector<std::reference_wrapper<const research_group_object>>;
     using research_group_token_refs_type = std::vector<std::reference_wrapper<const research_group_token_object>>;
     using research_group_organization_contract_refs_type = std::vector<std::reference_wrapper<const research_group_organization_contract_object>>;
+    using research_group_organization_contract_optional_refs_type = fc::optional<std::reference_wrapper<const research_group_organization_contract_object>>;
     using research_group_optional_ref_type = fc::optional<std::reference_wrapper<const research_group_object>>;
     using research_group_token_optional_ref_type = fc::optional<std::reference_wrapper<const research_group_token_object>>;
 
@@ -116,13 +117,22 @@ class dbs_research_group : public dbs_base
     const research_group_organization_contract_object& get_organizational_contract(
       const research_group_organization_contract_id_type& id) const;
 
+    const research_group_organization_contract_optional_refs_type get_organizational_contract_if_exists(const research_group_organization_contract_id_type& id) const;
+
     research_group_organization_contract_refs_type get_organizational_contracts_by_organization(
       const research_group_id_type organization_id) const;
+
+    research_group_organization_contract_refs_type get_organizational_contracts_by_research_group(
+      const research_group_id_type research_group_id) const;
 
     const research_group_organization_contract_object& get_organizational_contract(
       const research_group_id_type& organization_id,
       const research_group_id_type& research_group_id,
       const research_group_organization_contract_type& type) const;
+
+    const research_group_organization_contract_optional_refs_type get_organizational_contract_if_exists(const research_group_id_type& organization_id,
+                                                                                                        const research_group_id_type& research_group_id,
+                                                                                                        const research_group_organization_contract_type& type) const;
 
     const research_group_organization_contract_object& create_organizational_contract(
       const research_group_id_type& organization_id,

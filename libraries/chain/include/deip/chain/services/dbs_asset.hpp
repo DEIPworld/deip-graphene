@@ -15,6 +15,8 @@ protected:
     explicit dbs_asset(database &db);
 
 public:
+    using asset_optional_ref_type = fc::optional<std::reference_wrapper<const asset_object>>;
+
     const asset_object& create(const protocol::asset_symbol_type& symbol,
                                const std::string& string_symbol,
                                const uint8_t& precision,
@@ -23,6 +25,8 @@ public:
                                const string& description);
 
     const asset_object& get(const asset_id_type& id) const;
+
+    const asset_optional_ref_type get_asset_if_exists(const asset_id_type& id) const;
 
     bool exists_by_symbol(const protocol::asset_symbol_type& symbol) const;
 
@@ -33,6 +37,8 @@ public:
     void adjust_current_supply(const asset_object& asset_obj, const share_type& delta);
 
     const asset_object& get_by_string_symbol(const std::string& string_symbol) const;
+
+    const asset_optional_ref_type get_asset_by_string_symbol_if_exists(const std::string& string_symbol) const;
 };
 
 } // namespace chain

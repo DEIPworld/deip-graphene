@@ -23,6 +23,7 @@ protected:
 public:
 
     using expertise_allocation_proposal_refs_type = std::vector<std::reference_wrapper<const expertise_allocation_proposal_object>>;
+    using expertise_allocation_proposal_optional_ref_type = fc::optional<std::reference_wrapper<const expertise_allocation_proposal_object>>;
 
     const expertise_allocation_proposal_object& create(const account_name_type& claimer,
                                                        const discipline_id_type& discipline_id,
@@ -30,12 +31,17 @@ public:
 
     const expertise_allocation_proposal_object& get(const expertise_allocation_proposal_id_type& id) const;
 
+    const expertise_allocation_proposal_optional_ref_type get_expertise_allocation_proposal_if_exists(const expertise_allocation_proposal_id_type& id) const;
+
     void remove(const expertise_allocation_proposal_id_type& id);
 
     expertise_allocation_proposal_refs_type get_by_claimer(const account_name_type& claimer) const;
 
     const expertise_allocation_proposal_object& get_by_claimer_and_discipline(const account_name_type& claimer,
                                                                               const discipline_id_type& discipline_id) const;
+
+    const expertise_allocation_proposal_optional_ref_type get_expertise_allocation_proposal_by_claimer_and_discipline_if_exists(const account_name_type& claimer,
+                                                                                                                                const discipline_id_type& discipline_id) const;
 
 
     expertise_allocation_proposal_refs_type get_by_discipline_id(const discipline_id_type& discipline_id) const;
@@ -68,17 +74,24 @@ public:
     /* Expertise allocation proposal vote */
 
     using expertise_allocation_proposal_vote_refs_type = std::vector<std::reference_wrapper<const expertise_allocation_proposal_vote_object>>;
+    using expertise_allocation_proposal_vote_optional_ref_type = fc::optional<std::reference_wrapper<const expertise_allocation_proposal_vote_object>>;
 
     const expertise_allocation_proposal_vote_object& create_vote(const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id,
                                                                  const discipline_id_type& discipline_id,
                                                                  const account_name_type &voter,
                                                                  const share_type weight);
+
     const expertise_allocation_proposal_vote_object& get_vote(const expertise_allocation_proposal_vote_id_type& id) const;
 
-    const expertise_allocation_proposal_vote_object& get_vote_by_voter_and_expertise_allocation_proposal_id(const account_name_type &voter,
-                                                                                                            const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id);
+    const expertise_allocation_proposal_vote_optional_ref_type get_expertise_allocation_proposal_vote_if_exists(const expertise_allocation_proposal_vote_id_type& id) const;
 
-    expertise_allocation_proposal_vote_refs_type get_votes_by_expertise_allocation_proposal_id(const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id);
+    const expertise_allocation_proposal_vote_object& get_vote_by_voter_and_expertise_allocation_proposal_id(const account_name_type &voter,
+                                                                                                            const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const;
+
+    const expertise_allocation_proposal_vote_optional_ref_type get_expertise_allocation_proposal_vote_by_voter_and_expertise_allocation_proposal_id_if_exists(const account_name_type &voter,
+                                                                                                                                                              const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const;
+
+    expertise_allocation_proposal_vote_refs_type get_votes_by_expertise_allocation_proposal_id(const expertise_allocation_proposal_id_type& expertise_allocation_proposal_id) const;
 
     expertise_allocation_proposal_vote_refs_type get_votes_by_voter_and_discipline_id(const account_name_type& voter,
                                                                                       const discipline_id_type& discipline_id) const;

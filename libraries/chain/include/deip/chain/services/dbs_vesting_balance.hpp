@@ -21,14 +21,17 @@ protected:
 public:
 
     using vesting_balance_refs_type = std::vector<std::reference_wrapper<const vesting_balance_object>>;
+    using vesting_balance_optional_ref_type = fc::optional<std::reference_wrapper<const vesting_balance_object>>;
 
     const vesting_balance_object& create(const account_name_type &owner, const asset &balance,
                                               const uint32_t &vesting_duration_seconds, const uint32_t& period_duration_seconds,
                                               const uint32_t &vesting_cliff_seconds);
 
-    const vesting_balance_object& get(const vesting_balance_id_type& id);
+    const vesting_balance_object& get(const vesting_balance_id_type& id) const;
 
-    vesting_balance_refs_type get_by_owner(const account_name_type &owner);
+    const vesting_balance_optional_ref_type get_vesting_balance_if_exists(const vesting_balance_id_type& id) const;
+
+    vesting_balance_refs_type get_by_owner(const account_name_type &owner) const;
 
     void withdraw(const vesting_balance_id_type &id, const asset &amount);
 

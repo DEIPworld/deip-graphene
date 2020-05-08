@@ -30,11 +30,11 @@ public:
                                                                        const fc::string& encrypted_payload_hash);
 
     const nda_contract_optional_ref_type get_request_by_contract_id_and_hash_if_exists(const nda_contract_id_type& contract_id,
-                                                                                       const fc::string& encrypted_payload_hash);
+                                                                                       const fc::string& encrypted_payload_hash) const;
 
-    nda_contracts_refs_type get_by_contract_id(const nda_contract_id_type& contract_id);
+    nda_contracts_refs_type get_by_contract_id(const nda_contract_id_type& contract_id) const;
 
-    nda_contracts_refs_type get_by_requester(const account_name_type& requester);
+    nda_contracts_refs_type get_by_requester(const account_name_type& requester) const;
 
     const nda_contract_file_access_object& create_file_access_request(const nda_contract_id_type& contract_id,
                                                                     const account_name_type& requester,

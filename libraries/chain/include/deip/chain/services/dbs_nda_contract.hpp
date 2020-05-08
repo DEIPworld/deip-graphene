@@ -37,28 +37,28 @@ public:
 
     const contract_optional_ref_type get_contract_if_exists(const nda_contract_id_type& id) const;
 
-    contracts_refs_type get_by_hash(const fc::string& hash);
+    contracts_refs_type get_by_hash(const fc::string& hash) const;
 
-    contracts_refs_type get_by_creator(const account_name_type& party_a);
+    contracts_refs_type get_by_creator(const account_name_type& party_a) const;
 
-    contracts_refs_type get_by_signee(const account_name_type &party_b);
+    contracts_refs_type get_by_signee(const account_name_type &party_b) const;
 
-    contracts_refs_type get_by_creator_research_group(const research_group_id_type& research_group_id);
+    contracts_refs_type get_by_creator_research_group(const research_group_id_type& research_group_id) const;
 
-    contracts_refs_type get_by_signee_research_group(const research_group_id_type& research_group_id);
+    contracts_refs_type get_by_signee_research_group(const research_group_id_type& research_group_id) const;
 
     contracts_refs_type get_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id,
-                                                                        const fc::string& hash);
+                                                                        const fc::string& hash) const;
 
     contracts_refs_type get_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id,
-                                                                       const fc::string& hash);
+                                                                       const fc::string& hash) const;
 
     contracts_refs_type get_by_creator_research_group_and_signee_research_group(const research_group_id_type& party_a_research_group_id,
-                                                                                const research_group_id_type& party_b_research_group_id);
+                                                                                const research_group_id_type& party_b_research_group_id) const;
 
     contracts_refs_type get_by_creator_research_group_and_signee_research_group_and_contract_hash(const research_group_id_type& party_a_research_group_id,
                                                                                                   const research_group_id_type& party_b_research_group_id,
-                                                                                                  const fc::string& hash);
+                                                                                                  const fc::string& hash) const;
 
     const nda_contract_object& sign(const nda_contract_object& contract,
                                     const account_name_type& contract_signer,

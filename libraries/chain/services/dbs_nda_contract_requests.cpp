@@ -58,7 +58,7 @@ dbs_nda_contract_requests::get_by_contract_id_and_hash(const nda_contract_id_typ
 
 const dbs_nda_contract_requests::nda_contract_optional_ref_type
 dbs_nda_contract_requests::get_request_by_contract_id_and_hash_if_exists(const nda_contract_id_type& contract_id,
-                                                                         const fc::string& encrypted_payload_hash)
+                                                                         const fc::string& encrypted_payload_hash) const
 {
     nda_contract_optional_ref_type result;
 
@@ -77,7 +77,7 @@ dbs_nda_contract_requests::get_request_by_contract_id_and_hash_if_exists(const n
 }
 
 dbs_nda_contract_requests::nda_contracts_refs_type
-dbs_nda_contract_requests::get_by_contract_id(const nda_contract_id_type& contract_id)
+dbs_nda_contract_requests::get_by_contract_id(const nda_contract_id_type& contract_id) const
 {
     nda_contracts_refs_type ret;
 
@@ -94,7 +94,7 @@ dbs_nda_contract_requests::get_by_contract_id(const nda_contract_id_type& contra
 }
 
 dbs_nda_contract_requests::nda_contracts_refs_type
-dbs_nda_contract_requests::get_by_requester(const account_name_type& requester)
+dbs_nda_contract_requests::get_by_requester(const account_name_type& requester) const
 {
     nda_contracts_refs_type ret;
 

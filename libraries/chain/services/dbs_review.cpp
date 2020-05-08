@@ -61,6 +61,24 @@ const review_object& dbs_review::get(const review_id_type &id) const
     FC_CAPTURE_AND_RETHROW((id))
 }
 
+const dbs_review::review_optional_ref_type
+dbs_review::get_review_if_exists(const review_id_type &id) const
+{
+    review_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<review_index>()
+            .indicies()
+            .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 dbs_review::review_refs_type dbs_review::get_reviews_by_research_content(const research_content_id_type &research_content_id) const
 {
     review_refs_type ret;
