@@ -1418,6 +1418,21 @@ block_id_type database::head_block_id() const
     return get_dynamic_global_properties().head_block_id;
 }
 
+uint16_t database::current_trx_ref_block_num() const
+{
+    return _current_trx_ref_block_num;
+}
+
+uint32_t database::current_trx_ref_block_prefix() const
+{
+    return _current_trx_ref_block_prefix;
+}
+
+optional<transaction> database::current_proposed_trx() const
+{
+    return _current_proposed_trx;
+}
+
 node_property_object& database::node_properties()
 {
     return _node_property_object;
@@ -1503,6 +1518,7 @@ void database::initialize_indexes()
     add_index<change_recovery_account_request_index>();
     add_index<discipline_supply_index>();
     add_index<proposal_index>();
+    add_index<recent_entity_index>();
     add_index<research_group_index>();
     add_index<research_group_token_index>();
     add_index<research_group_organization_contract_index>();
@@ -1572,25 +1588,33 @@ private:
 };
 
 void database::push_proposal(const proposal_object& proposal)
-{ try {
+{
+    try
+    {        
+        try
+        {
+            push_proposal_nesting_guard guard(_push_proposal_nesting_depth, *this);
 
-   try {
-      push_proposal_nesting_guard guard( _push_proposal_nesting_depth, *this );
-      auto session = start_undo_session(true);
-      for(auto& op : proposal.proposed_transaction.operations)
-      {
-          apply_operation(op);
-      }
+            _current_proposed_trx = proposal.proposed_transaction;
+            auto session = start_undo_session(true);
+            for (auto& op : proposal.proposed_transaction.operations)
+            {
+                apply_operation(op);
+            }
+            _current_proposed_trx.reset();
 
-      remove(proposal);
-      session.squash();
-    } catch ( const fc::exception& e ) {
-      wlog( "${e}", ("e", e.to_detail_string() ) );
-      throw;
-   }
-
-} FC_CAPTURE_AND_RETHROW( (proposal) ) }
-
+            remove(proposal);
+            session.squash();
+        }
+        catch (const fc::exception& e)
+        {
+            _current_proposed_trx.reset();
+            wlog("${e}", ("e", e.to_detail_string()));
+            throw;
+        }
+    }
+    FC_CAPTURE_AND_RETHROW((proposal))
+}
 
 void database::notify_changed_objects()
 {
@@ -1753,6 +1777,7 @@ void database::_apply_block(const signed_block& next_block)
         auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
         auto& research_token_sale_service = obtain_service<dbs_research_token_sale>();
         auto& nda_contract_service = obtain_service<dbs_nda_contract>();
+        auto& dgp_service = obtain_service<dbs_dynamic_global_properties>();
 
         const witness_object& signing_witness = validate_block_header(skip, next_block);
 
@@ -1797,6 +1822,7 @@ void database::_apply_block(const signed_block& next_block)
         create_block_summary(next_block);
         clear_expired_transactions();
 
+        dgp_service.clear_expired_recent_entities(next_block);
         proposal_service.clear_expired_proposals();
         research_group_invite_service.clear_expired_invites();
         discipline_supply_service.clear_expired_discipline_supplies();
@@ -1878,6 +1904,9 @@ void database::_apply_transaction(const signed_transaction& trx)
     try
     {
         _current_trx_id = trx.id();
+        _current_trx_ref_block_num = trx.ref_block_num;
+        _current_trx_ref_block_prefix = trx.ref_block_prefix;
+
         uint32_t skip = get_node_properties().skip_flags;
 
         if (!(skip & skip_validate)) /* issue #505 explains why this skip_flag is disabled */
@@ -1919,9 +1948,9 @@ void database::_apply_transaction(const signed_transaction& trx)
                 // Verify TaPoS block summary has correct ID prefix, and that this block's time is not past the
                 // expiration
                 DEIP_ASSERT(trx.ref_block_prefix == tapos_block_summary.block_id._hash[1],
-                              transaction_tapos_exception, "",
-                              ("trx.ref_block_prefix", trx.ref_block_prefix)("tapos_block_summary",
-                                                                             tapos_block_summary.block_id._hash[1]));
+                  transaction_tapos_exception, "", 
+                  ("trx.ref_block_prefix", trx.ref_block_prefix)
+                  ("tapos_block_summary",tapos_block_summary.block_id._hash[1]));
             }
 
             fc::time_point_sec now = head_block_time();
@@ -1958,6 +1987,8 @@ void database::_apply_transaction(const signed_transaction& trx)
             FC_CAPTURE_AND_RETHROW((op));
         }
         _current_trx_id = transaction_id_type();
+        _current_trx_ref_block_num = 0;
+        _current_trx_ref_block_prefix = 0;
     }
     FC_CAPTURE_AND_RETHROW((trx))
 }

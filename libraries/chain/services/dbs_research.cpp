@@ -4,6 +4,7 @@
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_review_vote.hpp>
+#include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 
 namespace deip{
 namespace chain{
@@ -28,6 +29,7 @@ const research_object& dbs_research::create_research(
   const time_point_sec& created_at
 ) {
     auto& research_disciplines_service = db_impl().obtain_service<dbs_research_discipline_relation>();
+    auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
 
     const auto& research = db_impl().create<research_object>([&](research_object& r_o) {
         r_o.research_group_id = research_group_id;
@@ -50,6 +52,8 @@ const research_object& dbs_research::create_research(
     {
         research_disciplines_service.create_research_relation(research.id, discipline_id);
     }
+
+    dgp_service.create_recent_entity(external_id);
 
     return research;
 }

@@ -52,6 +52,25 @@ struct operation_validate_visitor
     }
 };
 
+struct operation_entity_validator
+{
+    uint16_t ref_block_num;
+    uint32_t ref_block_prefix;
+
+    operation_entity_validator(uint16_t block_num, uint32_t block_prefix)
+        : ref_block_num(block_num)
+        , ref_block_prefix(block_prefix){};
+
+    typedef void result_type;
+    template <typename T> void operator()(const T& op) const
+    {
+        if (!op.entity_id().empty() && !op.ignore_entity_id_validation())
+        {
+            op.validate_entity_id(op, ref_block_num, ref_block_prefix);
+        }
+    }
+};
+
 struct operation_get_required_auth_visitor
 {
     typedef void result_type;
@@ -80,6 +99,20 @@ struct operation_get_required_auth_visitor
         v.get_required_authorities(other);
     }
 };
+
+void entity_validate(const operation& op, uint16_t ref_block_num, uint32_t ref_block_prefix)
+{
+    op.visit(operation_entity_validator(ref_block_num, ref_block_prefix));
+
+    if (op.which() == operation::tag<deip::protocol::create_proposal_operation>::value)
+    {
+        const create_proposal_operation& proposal = op.get<create_proposal_operation>();
+        for (const auto& wrap : proposal.proposed_ops)
+        {
+            entity_validate(wrap.op, ref_block_num, ref_block_prefix);
+        }
+    }
+}
 
 void operation_validate(const operation& op)
 {

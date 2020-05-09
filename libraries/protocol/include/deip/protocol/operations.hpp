@@ -111,6 +111,8 @@ namespace protocol {
 
         void operation_validate(const operation& op);
 
+        void entity_validate(const operation& op, uint16_t ref_block_num, uint32_t ref_block_prefix);
+
         void operation_get_required_authorities(const operation& op,
                                                 flat_set<account_name_type>& active,
                                                 flat_set<account_name_type>& owner,

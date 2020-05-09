@@ -31,12 +31,13 @@
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_grant_application.hpp>
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
+#include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
 #include <boost/locale/encoding_utf.hpp>
 
-using boost::locale::conv::utf_to_utf;
+    using boost::locale::conv::utf_to_utf;
 
 std::wstring utf8_to_wstring(const std::string& str)
 {
@@ -67,6 +68,43 @@ struct strcmp_equal
         return a.size() == b.size() || std::strcmp(a.c_str(), b.c_str()) == 0;
     }
 };
+
+struct duplicated_entity_guard
+{
+    duplicated_entity_guard(const dbs_dynamic_global_properties& svc)
+        : dgp_service(svc){};
+
+    typedef void result_type;
+
+    void operator()(const create_proposal_operation& op) const
+    {
+        const auto& entity_id = op.get_entity_id();
+        FC_ASSERT(!dgp_service.entity_exists(entity_id),
+          "Duplicated entity ${1} detected. Refer other 'ref_block_num' and 'ref_block_prefix' in the "
+          "transaction or modify the payload",
+          ("1", entity_id));
+
+        for (const op_wrapper& wrap : op.proposed_ops)
+        {
+            wrap.op.visit(*this);
+        }
+    }
+
+    template <typename T> void operator()(const T& op) const
+    {
+        if (!op.entity_id().empty())
+        {
+            const auto& entity_id = op.get_entity_id();
+            FC_ASSERT(!dgp_service.entity_exists(entity_id),
+              "Duplicated entity ${1} detected. Refer other 'ref_block_num' and 'ref_block_prefix' in the transaction or modify the payload",
+              ("1", entity_id));
+        }
+    }
+
+private:
+    const dbs_dynamic_global_properties& dgp_service;
+};
+
 
 void witness_update_evaluator::do_apply(const witness_update_operation& o)
 {
@@ -102,10 +140,14 @@ void witness_update_evaluator::do_apply(const witness_update_operation& o)
 
 void create_account_evaluator::do_apply(const create_account_operation& op)
 {
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
+    auto& account_service = _db.obtain_service<dbs_account>();
+    auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
+    auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
 
-    auto creator_balance = account_balance_service.get_by_owner_and_asset(op.creator, op.fee.symbol);
+    const auto& dup_guard = duplicated_entity_guard(dgp_service);
+    dup_guard(op);
+
+    auto creator_balance  = account_balance_service.get_by_owner_and_asset(op.creator, op.fee.symbol);
     FC_ASSERT(creator_balance.amount >= op.fee.amount, 
       "Insufficient balance to create account.",
       ("creator.balance", creator_balance.amount)("required", op.fee.amount));
@@ -524,10 +566,14 @@ void change_recovery_account_evaluator::do_apply(const change_recovery_account_o
 void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
 {
     auto& proposals_service = _db.obtain_service<dbs_proposal>();
+    auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
     const auto& block_time = _db.head_block_time();
 
-    FC_ASSERT(op.expiration_time > block_time, "Proposal has already expired on creation." );
-    FC_ASSERT(op.expiration_time <= block_time + DEIP_DEFAULT_MAX_PROPOSAL_LIFETIME_SEC,
+    const auto& dup_guard = duplicated_entity_guard(dgp_service);
+    dup_guard(op);
+
+    FC_ASSERT(op.expiration_time > block_time, "Proposal has already expired on creation.");
+    FC_ASSERT(op.expiration_time <= block_time + DEIP_MAX_PROPOSAL_LIFETIME_SEC,
       "Proposal expiration time is too far in the future.");
     FC_ASSERT(!op.review_period_seconds || fc::seconds(*op.review_period_seconds) < (op.expiration_time - block_time),
       "Proposal review period must be less than its overall lifetime." );
@@ -549,8 +595,19 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
         FC_ASSERT(required_owner.size() == 0);
     }
 
+    const uint16_t ref_block_num = _db.current_proposed_trx().valid() 
+      ? _db.current_proposed_trx()->ref_block_num
+      : _db.current_trx_ref_block_num();
+
+    const uint32_t ref_block_prefix = _db.current_proposed_trx().valid() 
+      ? _db.current_proposed_trx()->ref_block_prefix
+      : _db.current_trx_ref_block_prefix();
+
     transaction proposed_trx;
     proposed_trx.expiration = op.expiration_time;
+    proposed_trx.ref_block_num = ref_block_num;
+    proposed_trx.ref_block_prefix = ref_block_prefix;
+
     for (const op_wrapper& wrap : op.proposed_ops)
     {
         proposed_trx.operations.push_back(wrap.op);
@@ -2282,6 +2339,10 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
     auto& research_groups_service = _db.obtain_service<dbs_research_group>();
     auto& research_service = _db.obtain_service<dbs_research>();
     auto& discipline_service =_db.obtain_service<dbs_discipline>();
+    auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
+
+    const auto& dup_guard = duplicated_entity_guard(dgp_service);
+    dup_guard(op);
 
     FC_ASSERT(account_service.account_exists(op.research_group),
       "Account(creator) ${1} does not exist",
@@ -2355,7 +2416,11 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
     auto& research_content_service = _db.obtain_service<dbs_research_content>();
     auto& research_discipline_relation_service = _db.obtain_service<dbs_research_discipline_relation>();
     auto& expertise_contributions_service = _db.obtain_service<dbs_expertise_contribution>();
+    auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
     const auto& block_time = _db.head_block_time();
+
+    const auto& dup_guard = duplicated_entity_guard(dgp_service);
+    dup_guard(op);
 
     FC_ASSERT(account_service.account_exists(op.research_group),
       "Account(creator) ${1} does not exist",

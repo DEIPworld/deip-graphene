@@ -1,4 +1,5 @@
 #include <deip/protocol/deip_operations.hpp>
+#include <deip/protocol/operations.hpp>
 #include <locale>
 #include <fc/log/logger.hpp>
 #include <functional>

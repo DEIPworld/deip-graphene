@@ -1,6 +1,7 @@
+#include <deip/chain/database/database.hpp>
 #include <deip/chain/services/dbs_proposal.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
-#include <deip/chain/database/database.hpp>
+#include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 
 #include <tuple>
 
@@ -91,6 +92,8 @@ const proposal_object& dbs_proposal::create_proposal(
   const flat_set<account_name_type>& required_posting
 ) 
 {
+    auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
+
     FC_ASSERT(proposed_trx.expiration == expiration_time,
       "Proposal expiration time must be equal to proposed transaction expiration time");
 
@@ -146,6 +149,8 @@ const proposal_object& dbs_proposal::create_proposal(
         p_o.required_active_approvals.insert(required_active.begin(), required_active.end());
         p_o.required_posting_approvals.insert(required_posting.begin(), required_posting.end());
     });
+
+    dgp_service.create_recent_entity(external_id);
 
     return proposal;
 }

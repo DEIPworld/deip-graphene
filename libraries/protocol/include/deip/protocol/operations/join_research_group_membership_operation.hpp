@@ -8,15 +8,14 @@ struct join_research_group_membership_operation : public base_operation
 {
     account_name_type member;
     account_name_type research_group;
-    bool is_invitation;
     percent reward_share;
     /*
-      Researches to include the member as a research participant.
-      If the list is not provided, the member will be included to all researches as a research participiant
-      If the list is empty, the member will not be included to group researches as a research participiant. He can be
+      Researches to include the member as a researcher.
+      If the list is not provided, the member will be included to all researches as a researcher
+      If the list is empty, the member will not be included to group researches as a researcher. He can be
       added later using [update_research_operation]. 
       If the list has entries, they will be validated for research group ownership.
-     */
+    */
     optional<flat_set<external_id_type>> researches;
     extensions_type extensions;
 
@@ -36,7 +35,6 @@ struct join_research_group_membership_operation : public base_operation
 FC_REFLECT(deip::protocol::join_research_group_membership_operation,
   (member)
   (research_group)
-  (is_invitation)
   (reward_share)
   (researches)
   (extensions)

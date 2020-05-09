@@ -1,10 +1,10 @@
-#include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/database/database.hpp>
-#include <deip/chain/schema/research_object.hpp>
+#include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_review_vote.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
+#include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 
 namespace deip{
 namespace chain{
@@ -26,6 +26,8 @@ const research_content_object& dbs_research_content::create_research_content(
   const flat_set<string>& foreign_references,
   const fc::time_point_sec& timestamp) 
 {
+    auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
+
     const auto& research_content = db_impl().create<research_content_object>([&](research_content_object& rc_o) {
         rc_o.research_id = research_id;
         rc_o.external_id = external_id;
@@ -62,6 +64,8 @@ const research_content_object& dbs_research_content::create_research_content(
           r_o.is_finished = true;
       }
     });
+
+    dgp_service.create_recent_entity(external_id);
 
     return research_content;
 }

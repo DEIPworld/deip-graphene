@@ -4,6 +4,7 @@
 
 #include <deip/chain/services/dbs_base_impl.hpp>
 #include <deip/protocol/operations.hpp>
+#include <deip/protocol/transaction.hpp>
 
 namespace chainbase {
 class database; // for _temporary_public_imp only
@@ -33,13 +34,19 @@ public:
 
     virtual asset get_balance(const account_object& a, const protocol::asset_symbol_type& symbol) const = 0;
 
-    virtual asset get_balance(const string& aname, const protocol::asset_symbol_type& symbol) const = 0;
+    virtual asset get_balance(const string& name, const protocol::asset_symbol_type& symbol) const = 0;
 
     virtual const dynamic_global_property_object& get_dynamic_global_properties() const = 0;
 
     virtual const witness_schedule_object& get_witness_schedule_object() const = 0;
 
     virtual time_point_sec head_block_time() const = 0;
+
+    virtual uint16_t current_trx_ref_block_num() const = 0;
+
+    virtual uint32_t current_trx_ref_block_prefix() const = 0;
+
+    virtual optional<deip::protocol::transaction> current_proposed_trx() const = 0;
 
     virtual bool has_hardfork(uint32_t hardfork) const = 0;
 

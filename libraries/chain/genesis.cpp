@@ -508,17 +508,16 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
     owner_authority.weight_threshold = 1;
 
     auto active_authority = authority();
+    active_authority.weight_threshold = 1;
+
     auto posting_authority = authority();
+    posting_authority.weight_threshold = 1;
 
     for (auto& member_name : research_group.members)
     {
         const auto& member = account_service.get_account(member_name);
-
         active_authority.add_authority(account_name_type(member.name), 1);
-        active_authority.weight_threshold += 1;
-
         posting_authority.add_authority(account_name_type(member.name), 1);
-        posting_authority.weight_threshold += 1;
     }
 
     research_group_v1_0_0_trait research_group_trait;

@@ -293,9 +293,7 @@ const research_group_token_object& dbs_research_group::add_member_to_research_gr
   const research_group_id_type& research_group_id,
   const share_type& share,
   const account_name_type& inviter)
-{
-    FC_ASSERT(share > 0, "RGT share is required");
-    
+{    
     share_type amount = 0;
 
     if (inviter != account_name_type()) // invited by individual

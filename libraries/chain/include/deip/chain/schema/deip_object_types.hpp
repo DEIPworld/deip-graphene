@@ -60,6 +60,7 @@ enum object_type
     research_discipline_relation_object_type,
     research_content_object_type,
     proposal_object_type,
+    recent_entity_object_type,
     research_group_object_type,
     research_group_token_object_type,
     research_group_organization_contract_object_type,
@@ -105,6 +106,7 @@ class block_stats_object;
 class reward_fund_object;
 class discipline_supply_object;
 class proposal_object;
+class recent_entity_object;
 class research_group_object;
 class research_group_token_object;
 class research_group_organization_contract_object;
@@ -155,6 +157,7 @@ typedef oid<block_stats_object> block_stats_id_type;
 typedef oid<reward_fund_object> reward_fund_id_type;
 typedef oid<discipline_supply_object> discipline_supply_id_type;
 typedef oid<proposal_object> proposal_id_type;
+typedef oid<recent_entity_object> recent_entity_id_type;
 typedef oid<research_group_object> research_group_id_type;
 typedef oid<research_group_token_object> research_group_token_id_type;
 typedef oid<research_group_organization_contract_object> research_group_organization_contract_id_type;
@@ -248,6 +251,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (reward_fund_object_type)
                  (discipline_supply_object_type)
                  (proposal_object_type)
+                 (recent_entity_object_type)
                  (research_group_object_type)
                  (research_group_token_object_type)
                  (research_group_organization_contract_object_type)

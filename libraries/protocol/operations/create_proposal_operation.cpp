@@ -13,13 +13,14 @@ struct proposal_nesting_guard
 {
     struct proposal_nesting_state
     {
-        uint16_t depth = 0;
+        uint16_t stage = 0;
         uint16_t nested_create_count = 0;
         uint16_t nested_update_count = 0;
         uint16_t nested_delete_count = 0;
     };
 
     std::map<external_id_type, proposal_nesting_state> nesting_state;
+    external_id_type last_stage_id;
 
     typedef void result_type;
     template <typename T> void operator()(const T& v) const
@@ -30,11 +31,14 @@ struct proposal_nesting_guard
     void operator()(const create_proposal_operation& op)
     {
         FC_ASSERT(nesting_state.find(op.external_id) == nesting_state.end(),
-          "Ambiguous proposal ${1} detected", ("1",  op.external_id));
+          "Duplicated proposal ${1} detected", ("1", op.external_id));
 
         proposal_nesting_state proposal_state;
-        proposal_state.depth = nesting_state.size() + 1;
+        proposal_state.stage = nesting_state.size() + 1;
         nesting_state[op.external_id] = proposal_state;
+        last_stage_id = op.external_id;
+
+        FC_ASSERT(proposal_state.stage <= DEIP_MAX_PROPOSAL_NESTED_STAGE, "Max proposal nesting depth reached");
 
         for (const op_wrapper& wrap : op.proposed_ops)
         {
@@ -50,21 +54,6 @@ struct proposal_nesting_guard
 
             if (wrap.op.which() == operation::tag<update_proposal_operation>().value)
             {
-                const auto& update_proposal_op = wrap.op.get<update_proposal_operation>();
-                FC_ASSERT(std::none_of(op.proposed_ops.begin(), op.proposed_ops.end(), [&](const op_wrapper& wrap) {
-                    if (wrap.op.which() == operation::tag<create_proposal_operation>().value)
-                    {
-                        const auto& create_proposal_op = wrap.op.get<create_proposal_operation>();
-                        return update_proposal_op.external_id == create_proposal_op.external_id;
-                    }
-                    if (wrap.op.which() == operation::tag<delete_proposal_operation>().value)
-                    {
-                        const auto& delete_proposal_op = wrap.op.get<delete_proposal_operation>();
-                        return update_proposal_op.external_id == delete_proposal_op.external_id;
-                    }
-                    return false;
-                }), "Nested proposal can not affect its sibling ${1} proposal", ("1", update_proposal_op.external_id));
-
                 // Do not allow more than 1 update_proposal_operation in a proposal
                 FC_ASSERT(nesting_state[op.external_id].nested_update_count == 0, 
                   "At most one proposal update can be nested in a single proposal!");
@@ -73,21 +62,6 @@ struct proposal_nesting_guard
 
             if (wrap.op.which() == operation::tag<delete_proposal_operation>().value)
             {
-                const auto& delete_proposal_op = wrap.op.get<delete_proposal_operation>();
-                FC_ASSERT(std::none_of(op.proposed_ops.begin(), op.proposed_ops.end(), [&](const op_wrapper& wrap) {
-                    if (wrap.op.which() == operation::tag<create_proposal_operation>().value)
-                    {
-                        const auto& create_proposal_op = wrap.op.get<create_proposal_operation>();
-                        return delete_proposal_op.external_id == create_proposal_op.external_id;
-                    }
-                    if (wrap.op.which() == operation::tag<update_proposal_operation>().value)
-                    {
-                        const auto& update_proposal_op = wrap.op.get<update_proposal_operation>();
-                        return delete_proposal_op.external_id == update_proposal_op.external_id;
-                    }
-                    return false;
-                }), "Nested proposal can not affect its sibling ${1} proposal", ("1", delete_proposal_op.external_id));
-
                 // Do not allow more than 1 update_proposal_operation in a proposal
                 FC_ASSERT(nesting_state[op.external_id].nested_delete_count == 0,
                   "At most one proposal delete can be nested in a single proposal!");
@@ -100,14 +74,14 @@ struct proposal_nesting_guard
 
     void operator()(const update_proposal_operation& op)
     {
-        FC_ASSERT(nesting_state.find(op.external_id) == nesting_state.end(), 
+        FC_ASSERT(last_stage_id == op.external_id || nesting_state.find(op.external_id) == nesting_state.end(), 
           "Nested proposal can not update its parent ${1} proposal",
           ("1", op.external_id));
     }
 
     void operator()(const delete_proposal_operation& op)
     {
-        FC_ASSERT(nesting_state.find(op.external_id) == nesting_state.end(), 
+        FC_ASSERT(last_stage_id == op.external_id || nesting_state.find(op.external_id) == nesting_state.end(), 
           "Nested proposal can not delete its parent ${1} proposal",
           ("1", op.external_id));
     }

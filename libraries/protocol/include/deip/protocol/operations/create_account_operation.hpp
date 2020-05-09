@@ -38,7 +38,7 @@ typedef fc::static_variant<
   account_trait;
 
 
-struct create_account_operation : public base_operation
+struct create_account_operation : public entity_operation
 {
     asset fee;
     account_name_type creator;
@@ -48,9 +48,12 @@ struct create_account_operation : public base_operation
     authority posting;
     public_key_type memo_key;
     string json_metadata;
-
     vector<account_trait> traits;
     extensions_type extensions;
+
+    string entity_id() const { return "new_account_name"; }
+    external_id_type get_entity_id() const { return new_account_name; }
+    bool ignore_entity_id_validation() const { return is_user_account(); }
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const

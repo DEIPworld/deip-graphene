@@ -37,7 +37,10 @@ void transaction::validate() const
 {
     FC_ASSERT(operations.size() > 0, "A transaction must have at least one operation", ("trx", *this));
     for (const auto& op : operations)
+    {
         operation_validate(op);
+        entity_validate(op, ref_block_num, ref_block_prefix);
+    }
 }
 
 deip::protocol::transaction_id_type deip::protocol::transaction::id() const

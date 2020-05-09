@@ -12,7 +12,7 @@ void join_research_group_membership_operation::validate() const
     validate_account_name(member);
     validate_account_name(research_group);
 
-    const auto& min_reward_share = percent(DEIP_1_PERCENT);
+    const auto& min_reward_share = percent(0);
     const auto& max_reward_share = percent(DEIP_1_PERCENT * 100);
     FC_ASSERT(reward_share >= min_reward_share && reward_share < max_reward_share,
       "Research group tokens share should be in range of ${1} - ${2}. Provided value: ${3}.",

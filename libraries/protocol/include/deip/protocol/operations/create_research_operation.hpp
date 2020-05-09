@@ -9,7 +9,7 @@ namespace protocol {
 
 using deip::protocol::percent;
 
-struct create_research_operation : public base_operation
+struct create_research_operation : public entity_operation
 {
     external_id_type external_id;
     account_name_type research_group;
@@ -27,11 +27,12 @@ struct create_research_operation : public base_operation
       If the list has entries, they will be validated for membership token existence.
      */
     optional<flat_set<account_name_type>> members;
-
     extensions_type extensions;
 
-    void validate() const;
+    string entity_id() const { return "external_id"; }
+    external_id_type get_entity_id() const { return external_id; }
 
+    void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
         a.insert(research_group);

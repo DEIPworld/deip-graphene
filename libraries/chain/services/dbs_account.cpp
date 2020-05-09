@@ -1,11 +1,11 @@
-#include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/database/database.hpp>
-
+#include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_witness.hpp>
 #include <deip/chain/services/dbs_research_group_invite.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 
 namespace deip {
 namespace chain {
@@ -95,9 +95,10 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
                                                              const vector<account_trait>& traits,
                                                              const bool& is_user_account)
 {
-    dbs_research_group& research_groups_service = db_impl().obtain_service<dbs_research_group>();
-    dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
-    dbs_research_group_invite& research_group_invites_service = db_impl().obtain_service<dbs_research_group_invite>();
+    auto& research_groups_service = db_impl().obtain_service<dbs_research_group>();
+    auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
+    auto& research_group_invites_service = db_impl().obtain_service<dbs_research_group_invite>();
+    auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
 
     FC_ASSERT(fee >= DEIP_MIN_ACCOUNT_CREATION_FEE, 
       "Insufficient fee ${1} for account creation. Min fee is ${1}", 
@@ -176,6 +177,8 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         }
     }
 
+    dgp_service.create_recent_entity(account_name);
+
     return new_account;
 }
 
@@ -221,7 +224,7 @@ void dbs_account::update_acount(const account_object& account,
         const auto rg_trait = trait.get<research_group_v1_0_0_trait>();
         const auto& research_group = research_groups_service.get_research_group_by_account(account.name);
 
-        const auto& shared_rg = research_groups_service.update_research_group(
+        research_groups_service.update_research_group(
           research_group,
           rg_trait.name, 
           rg_trait.permlink, 

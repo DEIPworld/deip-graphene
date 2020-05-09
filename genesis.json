@@ -2696,6 +2696,18 @@
         "kim"
       ],
       "subgroups": []
+    },
+    {
+      "account": "1111111111111111111111111111111111111111",
+      "creator": "alice",
+      "name": "AR3C",
+      "description": "AR3C is dedicated to educating and compelling people, communities and governments to encourage awareness and mindfulness regarding how its policies, actions, and mandates impact Social, Environmental and Economic outcomes at the local, regional and global levels.",
+      "permlink": "ar3c",
+      "members": [
+        "alice",
+        "bob"
+      ],
+      "subgroups": []
     }
   ],
 

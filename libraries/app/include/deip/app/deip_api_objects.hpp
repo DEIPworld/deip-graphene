@@ -78,6 +78,7 @@ struct account_api_obj
         , to_withdraw(a.to_withdraw)
         , withdraw_routes(a.withdraw_routes)
         , witnesses_voted_for(a.witnesses_voted_for)
+        , is_research_group(a.is_research_group)
     {
         size_t n = a.proxied_vsf_votes.size();
         proxied_vsf_votes.reserve(n);
@@ -144,6 +145,7 @@ struct account_api_obj
     vector<share_type> proxied_vsf_votes;
 
     uint16_t witnesses_voted_for;
+    bool is_research_group;
 
     share_type average_bandwidth = 0;
     share_type lifetime_bandwidth = 0;
@@ -1393,15 +1395,42 @@ struct nda_contract_file_access_api_obj
 // clang-format off
 
 FC_REFLECT( deip::app::account_api_obj,
-             (id)(name)(owner)(active)(posting)(memo_key)(threshold_overrides)(json_metadata)(proxy)(last_owner_update)(last_account_update)
-             (created)(mined)
-             (recovery_account)(last_account_recovery)
-             (lifetime_vote_count)(can_vote)
-             (common_tokens_balance)(expert_tokens_balance)(received_common_tokens)(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
-             (proxied_vsf_votes)(witnesses_voted_for)
-             (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
-             (average_market_bandwidth)(lifetime_market_bandwidth)(last_market_bandwidth_update)(balances)
-          )
+  (id)
+  (name)
+  (owner)
+  (active)
+  (posting)
+  (memo_key)
+  (threshold_overrides)
+  (json_metadata)
+  (proxy)
+  (last_owner_update)
+  (last_account_update)
+  (created)
+  (mined)
+  (recovery_account)
+  (last_account_recovery)
+  (lifetime_vote_count)
+  (can_vote)
+  (common_tokens_balance)
+  (expert_tokens_balance)
+  (received_common_tokens)
+  (common_tokens_withdraw_rate)
+  (next_common_tokens_withdrawal)
+  (withdrawn)
+  (to_withdraw)
+  (withdraw_routes)
+  (proxied_vsf_votes)
+  (witnesses_voted_for)
+  (is_research_group)
+  (average_bandwidth)
+  (lifetime_bandwidth)
+  (last_bandwidth_update)
+  (average_market_bandwidth)
+  (lifetime_market_bandwidth)
+  (last_market_bandwidth_update)
+  (balances)
+)
 
 FC_REFLECT( deip::app::owner_authority_history_api_obj,
              (id)

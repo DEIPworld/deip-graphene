@@ -17,7 +17,6 @@ using fc::time_point_sec;
 
 class proposal_object : public object<proposal_object_type, proposal_object>
 {
-    typedef deip::protocol::account_name_type account_t;
 
 public:
     template <typename Constructor, typename Allocator> proposal_object(Constructor&& c, allocator<Allocator> a) 
