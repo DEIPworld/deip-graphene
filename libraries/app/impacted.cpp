@@ -161,17 +161,6 @@ struct get_impacted_account_visitor
         _impacted.insert(op.receiver);
     }
     
-    void operator()(const delegate_expertise_operation& op)
-    {
-        _impacted.insert(op.sender);
-        _impacted.insert(op.receiver);
-    }
-
-    void operator()(const revoke_expertise_delegation_operation& op)
-    {
-        _impacted.insert(op.sender);
-    }
-    
     void operator()(const create_expertise_allocation_proposal_operation& op)
     {
         _impacted.insert(op.claimer);
