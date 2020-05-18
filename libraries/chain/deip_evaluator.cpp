@@ -219,16 +219,25 @@ void update_account_evaluator::do_apply(const update_account_operation& op)
  *  Because net_rshares is 0 there is no need to update any pending payout calculations or parent posts.
  */
 
-void transfer_evaluator::do_apply(const transfer_operation& o)
+void transfer_evaluator::do_apply(const transfer_operation& op)
 {
     dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
+    dbs_account& account_service = _db.obtain_service<dbs_account>();
 
-    auto from_balance = account_balance_service.get_by_owner_and_asset(o.from, o.amount.symbol);
+    FC_ASSERT(account_service.account_exists(op.from), 
+      "Account ${1} does not exist",
+      ("1", op.from));
 
-    FC_ASSERT(asset(from_balance.amount, from_balance.symbol) >= o.amount, "Account does not have sufficient funds for transfer.");
+    FC_ASSERT(account_service.account_exists(op.to), 
+      "Account ${1} does not exist",
+      ("1", op.to));
 
-    account_balance_service.adjust_balance(o.from, -o.amount);
-    account_balance_service.adjust_balance(o.to, o.amount);
+    const auto& from_balance = account_balance_service.get_by_owner_and_asset(op.from, op.amount.symbol);
+
+    FC_ASSERT(asset(from_balance.amount, from_balance.symbol) >= op.amount, "Account does not have sufficient funds for transfer.");
+
+    account_balance_service.adjust_balance(op.from, -op.amount);
+    account_balance_service.adjust_balance(op.to, op.amount);
 }
 
 void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_tokens_operation& o)
@@ -1037,24 +1046,28 @@ void transfer_research_share_evaluator::do_apply(const transfer_research_share_o
     dbs_research& research_service = _db.obtain_service<dbs_research>();
 
     FC_ASSERT(account_service.account_exists(op.sender),
-              "Account(sender) ${1} does not exist",
-              ("1", op.sender));
+      "Account ${1} does not exist",
+      ("1", op.sender));
+
+    FC_ASSERT(account_service.account_exists(op.receiver),
+      "Account ${1} does not exist",
+      ("1", op.receiver));
 
     FC_ASSERT(research_service.research_exists(op.research_external_id),
-              "Research with external id: ${1} does not exist",
-              ("1", op.research_external_id));
+      "Research with external id: ${1} does not exist",
+      ("1", op.research_external_id));
 
-    auto& research = research_service.get_research(op.research_external_id);
+    const auto& research = research_service.get_research(op.research_external_id);
 
     FC_ASSERT(research_token_service.exists_by_owner_and_research(op.sender, research.id),
-              "Research token with owner: ${1} and research: ${2} does not exist",
-              ("1", op.sender)("2", research.id));
+      "Research token with owner: ${1} and research: ${2} does not exist",
+      ("1", op.sender)("2", research.id));
 
-    auto& research_token_to_transfer = research_token_service.get_by_owner_and_research(op.sender, research.id);
+    const auto& shart_to_transfer = research_token_service.get_by_owner_and_research(op.sender, research.id);
 
-    FC_ASSERT(op.share.amount <= research_token_to_transfer.amount,
-              "Amount cannot be greater than total research token amount. Provided value: ${1}, actual amount: ${2}.",
-              ("1", op.share.amount)("2", research_token_to_transfer.amount));
+    FC_ASSERT(op.share.amount <= shart_to_transfer.amount,
+      "Amount cannot be greater than total research token amount. Provided value: ${1}, actual amount: ${2}.",
+      ("1", op.share.amount)("2", shart_to_transfer.amount));
 
     research_token_service.adjust_research_token(op.sender, research.id, -op.share.amount, false);
     research_token_service.adjust_research_token(op.receiver, research.id, op.share.amount, false);

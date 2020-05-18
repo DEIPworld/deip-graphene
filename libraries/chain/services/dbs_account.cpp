@@ -97,7 +97,6 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
 {
     auto& research_groups_service = db_impl().obtain_service<dbs_research_group>();
     auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
-    auto& research_group_invites_service = db_impl().obtain_service<dbs_research_group_invite>();
     auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
 
     FC_ASSERT(fee >= DEIP_MIN_ACCOUNT_CREATION_FEE, 
