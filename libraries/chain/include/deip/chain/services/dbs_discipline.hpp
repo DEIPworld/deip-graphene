@@ -23,6 +23,7 @@ protected:
 
 public:
     using discipline_ref_type = std::vector<std::reference_wrapper<const discipline_object>>;
+    using discipline_optional_ref_type = fc::optional<std::reference_wrapper<const discipline_object>>;
     /** Lists all disciplines.
     *
     * @returns a list of discipline objects
@@ -33,9 +34,13 @@ public:
     */
     const discipline_object& get_discipline(const discipline_id_type& id) const;
 
+    const discipline_optional_ref_type get_discipline_if_exists(const discipline_id_type& id) const;
+
     /** Get discipline by name
     */
     const discipline_object& get_discipline_by_name(const fc::string& name) const;
+    
+    const discipline_optional_ref_type get_discipline_by_name_if_exists(const fc::string& name) const;
 
     void check_discipline_existence_by_name(const fc::string& name);
     void check_discipline_existence(const discipline_id_type& id);

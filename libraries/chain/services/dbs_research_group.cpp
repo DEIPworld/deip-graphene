@@ -546,6 +546,24 @@ const research_group_organization_contract_object& dbs_research_group::get_organ
   return *itr;
 }
 
+const dbs_research_group::research_group_organization_contract_optional_refs_type
+dbs_research_group::get_organizational_contract_if_exists(const research_group_organization_contract_id_type& id) const
+{
+    research_group_organization_contract_optional_refs_type result;
+    const auto& idx = db_impl()
+            .get_index<research_group_organization_contract_index>()
+            .indicies()
+            .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 dbs_research_group::research_group_organization_contract_refs_type dbs_research_group::get_organizational_contracts_by_organization(
   const research_group_id_type organization_id) const
 {
@@ -568,6 +586,28 @@ dbs_research_group::research_group_organization_contract_refs_type dbs_research_
   return ret;
 }
 
+dbs_research_group::research_group_organization_contract_refs_type dbs_research_group::get_organizational_contracts_by_research_group(
+      const research_group_id_type research_group_id) const
+{
+    research_group_organization_contract_refs_type ret;
+
+    auto itr_pair = db_impl()
+            .get_index<research_group_organization_contract_index>()
+            .indicies()
+            .get<contracts_by_research_group>()
+            .equal_range(research_group_id);
+
+    auto itr = itr_pair.first;
+    const auto itr_end = itr_pair.second;
+    while (itr != itr_end)
+    {
+        ret.push_back(std::cref(*itr));
+        ++itr;
+    }
+
+    return ret;
+}
+
 
 const research_group_organization_contract_object& dbs_research_group::get_organizational_contract(
   const research_group_id_type& organization_id, 
@@ -583,6 +623,26 @@ const research_group_organization_contract_object& dbs_research_group::get_organ
   auto itr = idx.find(std::make_tuple(organization_id, research_group_id, type));
   FC_ASSERT(itr != idx.end(), "Organizational contract between organization ${o} and research group ${r} is not found", ("o", organization_id)("r", research_group_id));
   return *itr;
+}
+
+const dbs_research_group::research_group_organization_contract_optional_refs_type
+dbs_research_group::get_organizational_contract_if_exists(const research_group_id_type& organization_id,
+                                                          const research_group_id_type& research_group_id,
+                                                          const research_group_organization_contract_type& type) const
+{
+    research_group_organization_contract_optional_refs_type result;
+    const auto& idx = db_impl()
+            .get_index<research_group_organization_contract_index>()
+            .indicies()
+            .get<contract_by_organization_and_research_group_and_type>();
+
+    auto itr = idx.find(std::make_tuple(organization_id, research_group_id, static_cast<uint16_t>(type)));
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 const research_group_organization_contract_object& dbs_research_group::create_organizational_contract(

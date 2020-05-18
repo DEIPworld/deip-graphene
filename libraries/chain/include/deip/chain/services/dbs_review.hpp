@@ -23,8 +23,11 @@ protected:
 
 public:
     using review_refs_type = std::vector<std::reference_wrapper<const review_object>>;
+    using review_optional_ref_type = fc::optional<std::reference_wrapper<const review_object>>;
 
     const review_object& get(const review_id_type& id) const;
+
+    const review_optional_ref_type get_review_if_exists(const review_id_type& id) const;
 
     review_refs_type get_reviews_by_research_content(const research_content_id_type& research_content_id) const;
 

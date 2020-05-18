@@ -33,6 +33,24 @@ const account_balance_object& dbs_account_balance::get(const account_balance_id_
     return db_impl().get<account_balance_object>(id);
 }
 
+const dbs_account_balance::account_balance_optional_ref_type
+dbs_account_balance::get_account_balance_if_exists(const account_balance_id_type& id) const
+{
+    account_balance_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<account_balance_index>()
+            .indicies()
+            .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 bool dbs_account_balance::exists_by_owner_and_asset(const account_name_type& owner, const protocol::asset_symbol_type& symbol) const
 {
     const auto& idx = db_impl().get_index<account_balance_index>().indices().get<by_owner_and_asset_symbol>();
@@ -90,6 +108,24 @@ const account_balance_object& dbs_account_balance::get_by_owner_and_asset(const 
     return db_impl().get<account_balance_object, by_owner_and_asset_string_symbol>(boost::make_tuple(owner, symbol));
 }
 
+const dbs_account_balance::account_balance_optional_ref_type
+dbs_account_balance::get_account_balance_by_owner_and_asset_if_exists(const account_name_type& owner,
+                                                                      const string& symbol) const
+{
+    account_balance_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<account_balance_index>()
+            .indicies()
+            .get<by_owner_and_asset_string_symbol>();
+
+    auto itr = idx.find(boost::make_tuple(owner, symbol));
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
 
 void dbs_account_balance::adjust_balance(const account_name_type& account_name, const asset& delta)
 {

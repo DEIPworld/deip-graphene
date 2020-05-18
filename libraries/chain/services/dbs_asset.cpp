@@ -34,6 +34,24 @@ const asset_object& dbs_asset::get(const asset_id_type& id) const
     return db_impl().get<asset_object>(id);
 }
 
+const dbs_asset::asset_optional_ref_type
+dbs_asset::get_asset_if_exists(const asset_id_type& id) const
+{
+    asset_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<asset_index>()
+            .indicies()
+            .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 bool dbs_asset::exists_by_symbol(const protocol::asset_symbol_type& symbol) const
 {
     const auto& idx = db_impl().get_index<asset_index>().indices().get<by_symbol>();
@@ -64,6 +82,24 @@ const asset_object& dbs_asset::get_by_string_symbol(const std::string& string_sy
 {
     const auto& idx = db_impl().get_index<asset_index>().indices().get<by_string_symbol>();
     return *idx.find(string_symbol, fc::strcmp_less());
+}
+
+const dbs_asset::asset_optional_ref_type
+dbs_asset::get_asset_by_string_symbol_if_exists(const std::string& string_symbol) const
+{
+    asset_optional_ref_type result;
+    const auto& idx = db_impl()
+            .get_index<asset_index>()
+            .indicies()
+            .get<by_string_symbol>();
+
+    auto itr = idx.find(string_symbol, fc::strcmp_less());
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 } //namespace chain

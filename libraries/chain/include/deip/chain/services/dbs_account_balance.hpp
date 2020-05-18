@@ -16,12 +16,15 @@ protected:
 
 public:
     using account_balance_refs_type = std::vector<std::reference_wrapper<const account_balance_object>>;
+    using account_balance_optional_ref_type = fc::optional<std::reference_wrapper<const account_balance_object>>;
 
     const account_balance_object& create(const account_name_type& owner,
                                          const protocol::asset_symbol_type& symbol,
                                          const share_type& amount);
 
     const account_balance_object& get(const account_balance_id_type& id) const;
+
+    const account_balance_optional_ref_type get_account_balance_if_exists(const account_balance_id_type& id) const;
 
     bool exists_by_owner_and_asset(const account_name_type& owner,
                                       const protocol::asset_symbol_type& symbol) const;
@@ -40,6 +43,9 @@ public:
 
     const account_balance_object& get_by_owner_and_asset(const account_name_type& owner,
                                                          const string& symbol) const;
+
+    const account_balance_optional_ref_type get_account_balance_by_owner_and_asset_if_exists(const account_name_type& owner,
+                                                                                             const string& symbol) const;
 
     void adjust_balance(const account_name_type& account_name, const asset& delta);
 

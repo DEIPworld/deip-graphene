@@ -28,7 +28,7 @@ const research_group_invite_object& dbs_research_group_invite::create(const acco
     return new_research_group_invite;
 }
 
-const research_group_invite_object& dbs_research_group_invite::get_research_group_invite(const research_group_invite_id_type& research_group_invite_id)
+const research_group_invite_object& dbs_research_group_invite::get_research_group_invite(const research_group_invite_id_type& research_group_invite_id) const
 {
     const auto& idx = db_impl()
       .get_index<research_group_invite_index>()
@@ -39,6 +39,24 @@ const research_group_invite_object& dbs_research_group_invite::get_research_grou
     FC_ASSERT(itr != idx.end(), "Research group invite ${i} does not exist", ("i", research_group_invite_id));
 
     return *itr;
+}
+
+const dbs_research_group_invite::research_group_invite_optional_ref_type
+dbs_research_group_invite::get_research_group_invite_if_exists(const research_group_invite_id_type& research_group_invite_id) const
+{
+    research_group_invite_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<research_group_invite_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(research_group_invite_id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 const bool dbs_research_group_invite::research_group_invite_exists(const research_group_invite_id_type& research_group_invite_id) const
@@ -52,7 +70,8 @@ const bool dbs_research_group_invite::research_group_invite_exists(const researc
     return itr != idx.end();
 }
 
-const research_group_invite_object& dbs_research_group_invite::get_research_group_invite(const account_name_type& account_name, const research_group_id_type& research_group_id)
+const research_group_invite_object& dbs_research_group_invite::get_research_group_invite_by_account_and_research_group(const account_name_type& account_name,
+                                                                                                                       const research_group_id_type& research_group_id) const
 {
     const auto& idx = db_impl()
       .get_index<research_group_invite_index>()
@@ -65,8 +84,27 @@ const research_group_invite_object& dbs_research_group_invite::get_research_grou
     return *itr;
 }
 
+const dbs_research_group_invite::research_group_invite_optional_ref_type
+dbs_research_group_invite::get_research_group_invite_by_account_and_research_group_if_exists(const account_name_type& account_name,
+                                                                                             const research_group_id_type& research_group_id) const
+{
+    research_group_invite_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<research_group_invite_index>()
+      .indicies()
+      .get<by_account_and_research_group_id>();
+
+    auto itr = idx.find(std::make_tuple(account_name, research_group_id));
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 dbs_research_group_invite::research_group_invite_refs_type
-    dbs_research_group_invite::get_research_group_invites_by_account_name(const account_name_type& account_name)
+    dbs_research_group_invite::get_research_group_invites_by_account_name(const account_name_type& account_name) const
 {
     research_group_invite_refs_type ret;
 
@@ -83,7 +121,7 @@ dbs_research_group_invite::research_group_invite_refs_type
 }
 
 dbs_research_group_invite::research_group_invite_refs_type
-    dbs_research_group_invite::get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id)
+    dbs_research_group_invite::get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const
 {
     research_group_invite_refs_type ret;
 

@@ -41,7 +41,11 @@ public:
 
     const research_content_optional_ref_type get_research_content_if_exists(const external_id_type& external_id) const;
 
+    const research_content_optional_ref_type get_research_content_if_exists(const research_content_id_type& id) const;
+
     const research_content_object& get_by_permlink(const research_id_type &research_id, const string &permlink) const;
+
+    const research_content_optional_ref_type get_by_permlink_if_exists(const research_id_type &research_id, const string &permlink) const;
 
     research_content_refs_type get_by_research_id(const research_id_type &research_id) const;
 

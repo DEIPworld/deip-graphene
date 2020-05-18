@@ -25,6 +25,7 @@ protected:
 public:
 
     using expertise_contributions_refs_type = std::vector<std::reference_wrapper<const expertise_contribution_object>>;
+    using expertise_contribution_optional_ref_type = fc::optional<std::reference_wrapper<const expertise_contribution_object>>;
 
     const expertise_contribution_object& adjust_expertise_contribution( const discipline_id_type& discipline_id,
                                                                         const research_id_type& research_id,
@@ -33,8 +34,13 @@ public:
     
     const expertise_contribution_object& get_expertise_contribution(const expertise_contribution_id_type& id) const;
 
-    const expertise_contribution_object& get_expertise_contribution_by_research_content_and_discipline( const research_content_id_type& research_content_id, 
-                                                                                                        const discipline_id_type& discipline_id) const;
+    const expertise_contribution_optional_ref_type get_expertise_contribution_if_exists(const expertise_contribution_id_type& id) const;
+
+    const expertise_contribution_object& get_expertise_contribution_by_research_content_and_discipline(const research_content_id_type& research_content_id,
+                                                                                                       const discipline_id_type& discipline_id) const;
+
+    const expertise_contribution_optional_ref_type get_expertise_contribution_by_research_content_and_discipline_if_exists(const research_content_id_type& research_content_id,
+                                                                                                                           const discipline_id_type& discipline_id) const;
                                               
     expertise_contributions_refs_type get_expertise_contributions_by_research_and_discipline(const research_id_type& research_id,
                                                                                              const discipline_id_type& discipline_id) const;

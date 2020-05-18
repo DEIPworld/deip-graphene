@@ -21,6 +21,7 @@ namespace deip {
         public:
 
             using research_token_refs_type = std::vector<std::reference_wrapper<const research_token_object>>;
+            using research_token_optional_ref_type = fc::optional<std::reference_wrapper<const research_token_object>>;
 
             const research_token_object& create_research_token(const account_name_type& owner,
                                                                const research_id_type& research_id,
@@ -37,6 +38,8 @@ namespace deip {
             */
             const research_token_object& get(const research_token_id_type &id) const;
 
+            const research_token_optional_ref_type get_research_token_if_exists(const research_token_id_type& id) const;
+
             /* Get research tokens by account name
             * @returns a list of all research token objects for specific account
             */
@@ -52,6 +55,9 @@ namespace deip {
 
             const research_token_object& get_by_owner_and_research(const account_name_type &owner,
                                                                    const research_id_type &research_id) const;
+
+            const research_token_optional_ref_type get_research_token_by_owner_and_research_if_exists(const account_name_type &owner,
+                                                                                                      const research_id_type &research_id) const;
 
             void check_existence_by_owner_and_research( const account_name_type& owner,
                                                         const research_id_type& research_id);

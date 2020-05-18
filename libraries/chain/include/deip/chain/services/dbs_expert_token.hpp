@@ -25,6 +25,7 @@ protected:
 public:
 
     using expert_token_refs_type = std::vector<std::reference_wrapper<const expert_token_object>>;
+    using expert_token_optional_ref_type = fc::optional<std::reference_wrapper<const expert_token_object>>;
 
     const expert_token_object& create_expert_token(const account_name_type& account, 
                                                    const discipline_id_type& discipline_id,
@@ -36,11 +37,16 @@ public:
     */
     const expert_token_object& get_expert_token(const expert_token_id_type& id) const;
 
+    const expert_token_optional_ref_type get_expert_token_if_exists(const expert_token_id_type& id) const;
+
     /* Get expert token by account name & discipline
     * @returns expert token in specified discipline for account
     */
     const expert_token_object& get_expert_token_by_account_and_discipline(const account_name_type& account,
                                                                            const discipline_id_type& discipline_id) const;
+
+    const expert_token_optional_ref_type get_expert_token_by_account_and_discipline_if_exists(const account_name_type& account,
+                                                                                              const discipline_id_type& discipline_id) const;
 
     /* Get expert tokens by account name
     * @returns a list of all expert token objects for specific account

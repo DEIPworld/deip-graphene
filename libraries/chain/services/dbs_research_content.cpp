@@ -106,6 +106,25 @@ const dbs_research_content::research_content_optional_ref_type dbs_research_cont
     return result;
 }
 
+const dbs_research_content::research_content_optional_ref_type
+dbs_research_content::get_research_content_if_exists(const research_content_id_type& id) const
+{
+    research_content_optional_ref_type result;
+
+    const auto& idx = db_impl()
+            .get_index<research_content_index>()
+            .indices()
+            .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 const research_content_object& dbs_research_content::get_by_permlink(
   const research_id_type& research_id,
   const string& permlink) const
@@ -118,6 +137,25 @@ const research_content_object& dbs_research_content::get_by_permlink(
     auto itr = idx.find(std::make_tuple(research_id, permlink));
     FC_ASSERT(itr != idx.end(), "Research content by permlink ${p} is not found", ("p", permlink));
     return *itr;
+}
+
+const dbs_research_content::research_content_optional_ref_type
+dbs_research_content::get_by_permlink_if_exists(const research_id_type &research_id, const string &permlink) const
+{
+    research_content_optional_ref_type result;
+
+    const auto& idx = db_impl()
+            .get_index<research_content_index>()
+            .indices()
+            .get<by_permlink>();
+
+    auto itr = idx.find(std::make_tuple(research_id, permlink));
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 dbs_research_content::research_content_refs_type dbs_research_content::get_by_research_id(const research_id_type& research_id) const

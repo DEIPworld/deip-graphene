@@ -28,6 +28,7 @@ protected:
 public:
 
     using research_group_invite_refs_type = std::vector<std::reference_wrapper<const research_group_invite_object>>;
+    using research_group_invite_optional_ref_type = fc::optional<std::reference_wrapper<const research_group_invite_object>>;
 
     const research_group_invite_object& create(const account_name_type& account_name,
                                                const research_group_id_type& research_group_id,
@@ -36,15 +37,20 @@ public:
                                                const account_name_type& token_source,
                                                const bool& is_head);
 
-    const research_group_invite_object& get_research_group_invite(const research_group_invite_id_type& research_group_invite_id);
+    const research_group_invite_object& get_research_group_invite(const research_group_invite_id_type& research_group_invite_id) const;
 
-    const research_group_invite_object& get_research_group_invite(const account_name_type& account_name, const research_group_id_type& research_group_id);
+    const research_group_invite_optional_ref_type get_research_group_invite_if_exists(const research_group_invite_id_type& research_group_invite_id) const;
+
+    const research_group_invite_object& get_research_group_invite_by_account_and_research_group(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
+
+    const research_group_invite_optional_ref_type
+    get_research_group_invite_by_account_and_research_group_if_exists(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
 
     const bool research_group_invite_exists(const research_group_invite_id_type& research_group_invite_id) const;
 
-    research_group_invite_refs_type get_research_group_invites_by_account_name(const account_name_type& account_name);
+    research_group_invite_refs_type get_research_group_invites_by_account_name(const account_name_type& account_name) const;
 
-    research_group_invite_refs_type get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id);
+    research_group_invite_refs_type get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const;
 
     void clear_expired_invites();
 

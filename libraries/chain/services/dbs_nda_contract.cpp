@@ -81,7 +81,7 @@ const dbs_nda_contract::contract_optional_ref_type dbs_nda_contract::get_contrac
     return result;
 }
 
-dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator(const account_name_type& party_a)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator(const account_name_type& party_a) const
 {
     contracts_refs_type ret;
 
@@ -97,7 +97,7 @@ dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator(const acc
     return ret;
 }
 
-dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_signee(const account_name_type& party_b)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_signee(const account_name_type& party_b) const
 {
     contracts_refs_type ret;
 
@@ -113,7 +113,7 @@ dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_signee(const acco
     return ret;
 }
 
-dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_hash(const fc::string& hash)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_hash(const fc::string& hash) const
 {
     contracts_refs_type ret;
 
@@ -129,7 +129,7 @@ dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_hash(const fc::st
     return ret;
 }
 
-dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator_research_group(const research_group_id_type& research_group_id)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator_research_group(const research_group_id_type& research_group_id) const
 {
     contracts_refs_type ret;
 
@@ -145,7 +145,7 @@ dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator_research_
     return ret;
 }
 
-dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_signee_research_group(const research_group_id_type& research_group_id)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_signee_research_group(const research_group_id_type& research_group_id) const
 {
     contracts_refs_type ret;
 
@@ -162,7 +162,7 @@ dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_signee_research_g
     return ret;
 }
 
-dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const
 {
     contracts_refs_type ret;
 
@@ -182,7 +182,7 @@ dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator_research_
     return ret;
 }
 
-dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_signee_research_group_and_contract_hash(const research_group_id_type& research_group_id, const fc::string& hash) const
 {
     contracts_refs_type ret;
 
@@ -202,7 +202,7 @@ dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_signee_research_g
     return ret;
 }
 
-dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator_research_group_and_signee_research_group(const research_group_id_type& party_a_research_group_id, const research_group_id_type& party_b_research_group_id)
+dbs_nda_contract::contracts_refs_type dbs_nda_contract::get_by_creator_research_group_and_signee_research_group(const research_group_id_type& party_a_research_group_id, const research_group_id_type& party_b_research_group_id) const
 {
     contracts_refs_type ret;
 
@@ -226,7 +226,7 @@ dbs_nda_contract::contracts_refs_type
 dbs_nda_contract::get_by_creator_research_group_and_signee_research_group_and_contract_hash(
     const research_group_id_type& party_a_research_group_id,
     const research_group_id_type& party_b_research_group_id,
-    const fc::string& hash)
+    const fc::string& hash) const
 {
     contracts_refs_type ret;
 
