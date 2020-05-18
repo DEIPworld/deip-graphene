@@ -18,7 +18,6 @@
 #include <deip/chain/schema/deip_objects.hpp>
 #include <deip/chain/schema/global_property_object.hpp>
 #include <deip/chain/schema/nda_contract_file_access_object.hpp>
-#include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/operation_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
@@ -36,7 +35,6 @@
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_nda_contract.hpp>
 #include <deip/chain/services/dbs_proposal.hpp>
-#include <deip/chain/services/dbs_proposal_execution.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_group_invite.hpp>
@@ -47,9 +45,7 @@
 #include <deip/chain/services/dbs_review_vote.hpp>
 #include <deip/chain/services/dbs_expertise_contribution.hpp>
 #include <deip/chain/services/dbs_witness.hpp>
-#include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_grant_application.hpp>
-#include <deip/chain/services/dbs_grant_application_review.hpp>
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
 
 #include <deip/chain/util/asset.hpp>
@@ -695,6 +691,15 @@ void database::_push_transaction(const signed_transaction& trx)
     notify_on_pending_transaction(trx);
 }
 
+void database::validate_transaction(const signed_transaction& trx)
+{
+    database::with_write_lock([&]() {
+        auto session = start_undo_session(true);
+        _apply_transaction(trx);
+        session.undo();
+    });
+}
+
 signed_block database::generate_block(fc::time_point_sec when,
                                       const account_name_type& witness_owner,
                                       const fc::ecc::private_key& block_signing_private_key,
@@ -1181,7 +1186,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
     for (auto& wrap : altered_contributions)
     {
         const expertise_contribution_object& expertise_contribution = wrap.get();
-        const research_content_object& research_content = research_content_service.get(expertise_contribution.research_content_id);
+        const research_content_object& research_content = research_content_service.get_research_content(expertise_contribution.research_content_id);
         const auto& research_content_reviews = reviews_service.get_reviews_by_research_content(expertise_contribution.research_content_id);
 
         std::multimap<share_type, account_name_type, std::greater<share_type>> upvoters;
@@ -1413,6 +1418,21 @@ block_id_type database::head_block_id() const
     return get_dynamic_global_properties().head_block_id;
 }
 
+uint16_t database::current_trx_ref_block_num() const
+{
+    return _current_trx_ref_block_num;
+}
+
+uint32_t database::current_trx_ref_block_prefix() const
+{
+    return _current_trx_ref_block_prefix;
+}
+
+optional<transaction> database::current_proposed_trx() const
+{
+    return _current_proposed_trx;
+}
+
 node_property_object& database::node_properties()
 {
     return _node_property_object;
@@ -1429,33 +1449,27 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<transfer_to_common_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_common_tokens_evaluator>();
     _my->_evaluator_registry.register_evaluator<set_withdraw_common_tokens_route_evaluator>();
-    _my->_evaluator_registry.register_evaluator<account_create_evaluator>();
-    _my->_evaluator_registry.register_evaluator<account_update_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_account_evaluator>();
+    _my->_evaluator_registry.register_evaluator<update_account_evaluator>();
     _my->_evaluator_registry.register_evaluator<witness_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_witness_vote_evaluator>();
     _my->_evaluator_registry.register_evaluator<account_witness_proxy_evaluator>();
     _my->_evaluator_registry.register_evaluator<request_account_recovery_evaluator>();
     _my->_evaluator_registry.register_evaluator<recover_account_evaluator>();
     _my->_evaluator_registry.register_evaluator<change_recovery_account_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_research_group_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_proposal_evaluator>();
+    _my->_evaluator_registry.register_evaluator<update_proposal_evaluator>();
+    _my->_evaluator_registry.register_evaluator<delete_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<make_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
-    _my->_evaluator_registry.register_evaluator<approve_research_group_invite_evaluator>();
-    _my->_evaluator_registry.register_evaluator<reject_research_group_invite_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_review_evaluator>();
-    _my->_evaluator_registry.register_evaluator<transfer_research_tokens_to_research_group_evaluator>();
-    _my->_evaluator_registry.register_evaluator<research_update_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_vesting_balance_evaluator>();
     _my->_evaluator_registry.register_evaluator<withdraw_vesting_balance_evaluator>();
-    _my->_evaluator_registry.register_evaluator<vote_proposal_evaluator>();
-    _my->_evaluator_registry.register_evaluator<transfer_research_tokens_evaluator>();
+    _my->_evaluator_registry.register_evaluator<transfer_research_share_evaluator>();
     _my->_evaluator_registry.register_evaluator<delegate_expertise_evaluator>();
     _my->_evaluator_registry.register_evaluator<revoke_expertise_delegation_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_expertise_allocation_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_expertise_allocation_proposal_evaluator>();
-    _my->_evaluator_registry.register_evaluator<accept_research_token_offer_evaluator>();
-    _my->_evaluator_registry.register_evaluator<reject_research_token_offer_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_application_evaluator>();
     _my->_evaluator_registry.register_evaluator<make_review_for_application_evaluator>();
@@ -1478,6 +1492,12 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<close_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_request_by_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<fulfill_request_by_nda_contract_evaluator>();
+    _my->_evaluator_registry.register_evaluator<join_research_group_membership_evaluator>();
+    _my->_evaluator_registry.register_evaluator<left_research_group_membership_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_content_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_token_sale_evaluator>();
+    _my->_evaluator_registry.register_evaluator<update_research_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -1498,7 +1518,7 @@ void database::initialize_indexes()
     add_index<change_recovery_account_request_index>();
     add_index<discipline_supply_index>();
     add_index<proposal_index>();
-    add_index<proposal_vote_index>();
+    add_index<recent_entity_index>();
     add_index<research_group_index>();
     add_index<research_group_token_index>();
     add_index<research_group_organization_contract_index>();
@@ -1518,8 +1538,6 @@ void database::initialize_indexes()
     add_index<reward_pool_index>();
     add_index<expertise_allocation_proposal_index>();
     add_index<expertise_allocation_proposal_vote_index>();
-    add_index<offer_research_tokens_index>();
-    add_index<grant_index>();
     add_index<grant_application_index>();
     add_index<grant_application_review_index>();
     add_index<funding_opportunity_index>();
@@ -1534,13 +1552,68 @@ void database::initialize_indexes()
     _plugin_index_signal();
 }
 
-void database::validate_transaction(const signed_transaction& trx)
+
+class push_proposal_nesting_guard {
+public:
+   push_proposal_nesting_guard( uint32_t& nesting_counter, const database& db )
+      : orig_value(nesting_counter), counter(nesting_counter)
+   {
+      const witness_schedule_object& wso = db.get_witness_schedule_object();
+      vector<account_name_type> active_witnesses;
+      flat_set<witness_id_type> selected_voted;
+
+      active_witnesses.reserve(DEIP_MAX_WITNESSES);
+      selected_voted.reserve(wso.max_voted_witnesses);
+
+      const auto& widx = db.get_index<witness_index>().indices().get<by_vote_name>();
+      for (auto itr = widx.begin(); itr != widx.end() && selected_voted.size() < wso.max_voted_witnesses; ++itr)
+      {
+          if (itr->signing_key == public_key_type())
+              continue;
+          selected_voted.insert(itr->id);
+          active_witnesses.push_back(itr->owner);
+      }
+
+      FC_ASSERT( counter < active_witnesses.size() * 2, "Max proposal nesting depth exceeded!" );
+      counter++;
+   }
+   ~push_proposal_nesting_guard()
+   {
+      if( --counter != orig_value )
+         elog( "Unexpected proposal nesting count value: ${n} != ${o}", ("n",counter)("o",orig_value) );
+   }
+private:
+    const uint32_t  orig_value;
+    uint32_t& counter;
+};
+
+void database::push_proposal(const proposal_object& proposal)
 {
-    database::with_write_lock([&]() {
-        auto session = start_undo_session(true);
-        _apply_transaction(trx);
-        session.undo();
-    });
+    try
+    {        
+        try
+        {
+            push_proposal_nesting_guard guard(_push_proposal_nesting_depth, *this);
+
+            _current_proposed_trx = proposal.proposed_transaction;
+            auto session = start_undo_session(true);
+            for (auto& op : proposal.proposed_transaction.operations)
+            {
+                apply_operation(op);
+            }
+            _current_proposed_trx.reset();
+
+            remove(proposal);
+            session.squash();
+        }
+        catch (const fc::exception& e)
+        {
+            _current_proposed_trx.reset();
+            wlog("${e}", ("e", e.to_detail_string()));
+            throw;
+        }
+    }
+    FC_CAPTURE_AND_RETHROW((proposal))
 }
 
 void database::notify_changed_objects()
@@ -1704,6 +1777,7 @@ void database::_apply_block(const signed_block& next_block)
         auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
         auto& research_token_sale_service = obtain_service<dbs_research_token_sale>();
         auto& nda_contract_service = obtain_service<dbs_nda_contract>();
+        auto& dgp_service = obtain_service<dbs_dynamic_global_properties>();
 
         const witness_object& signing_witness = validate_block_header(skip, next_block);
 
@@ -1748,6 +1822,7 @@ void database::_apply_block(const signed_block& next_block)
         create_block_summary(next_block);
         clear_expired_transactions();
 
+        dgp_service.clear_expired_recent_entities(next_block);
         proposal_service.clear_expired_proposals();
         research_group_invite_service.clear_expired_invites();
         discipline_supply_service.clear_expired_discipline_supplies();
@@ -1829,6 +1904,9 @@ void database::_apply_transaction(const signed_transaction& trx)
     try
     {
         _current_trx_id = trx.id();
+        _current_trx_ref_block_num = trx.ref_block_num;
+        _current_trx_ref_block_prefix = trx.ref_block_prefix;
+
         uint32_t skip = get_node_properties().skip_flags;
 
         if (!(skip & skip_validate)) /* issue #505 explains why this skip_flag is disabled */
@@ -1837,9 +1915,8 @@ void database::_apply_transaction(const signed_transaction& trx)
         auto& trx_idx = get_index<transaction_index>();
         auto trx_id = trx.id();
         // idump((trx_id)(skip&skip_transaction_dupe_check));
-        FC_ASSERT((skip & skip_transaction_dupe_check)
-                      || trx_idx.indices().get<by_trx_id>().find(trx_id) == trx_idx.indices().get<by_trx_id>().end(),
-                  "Duplicate transaction check failed", ("trx_ix", trx_id));
+        FC_ASSERT((skip & skip_transaction_dupe_check) || trx_idx.indices().get<by_trx_id>().find(trx_id) == trx_idx.indices().get<by_trx_id>().end(),
+          "Duplicate transaction check failed", ("trx_ix", trx_id));
 
         if (!(skip & (skip_transaction_signatures | skip_authority_check)))
         {
@@ -1847,9 +1924,8 @@ void database::_apply_transaction(const signed_transaction& trx)
                 = [&](const string& name) { return authority(get<account_authority_object, by_account>(name).active); };
             auto get_owner
                 = [&](const string& name) { return authority(get<account_authority_object, by_account>(name).owner); };
-            auto get_posting = [&](const string& name) {
-                return authority(get<account_authority_object, by_account>(name).posting);
-            };
+            auto get_posting
+                = [&](const string& name) { return authority(get<account_authority_object, by_account>(name).posting); };
 
             try
             {
@@ -1872,9 +1948,9 @@ void database::_apply_transaction(const signed_transaction& trx)
                 // Verify TaPoS block summary has correct ID prefix, and that this block's time is not past the
                 // expiration
                 DEIP_ASSERT(trx.ref_block_prefix == tapos_block_summary.block_id._hash[1],
-                              transaction_tapos_exception, "",
-                              ("trx.ref_block_prefix", trx.ref_block_prefix)("tapos_block_summary",
-                                                                             tapos_block_summary.block_id._hash[1]));
+                  transaction_tapos_exception, "", 
+                  ("trx.ref_block_prefix", trx.ref_block_prefix)
+                  ("tapos_block_summary",tapos_block_summary.block_id._hash[1]));
             }
 
             fc::time_point_sec now = head_block_time();
@@ -1911,6 +1987,8 @@ void database::_apply_transaction(const signed_transaction& trx)
             FC_CAPTURE_AND_RETHROW((op));
         }
         _current_trx_id = transaction_id_type();
+        _current_trx_ref_block_num = 0;
+        _current_trx_ref_block_prefix = 0;
     }
     FC_CAPTURE_AND_RETHROW((trx))
 }
@@ -2361,8 +2439,8 @@ void database::validate_invariants() const
             total_supply += itr->balance;
         }
 
-        const auto& grant_idx = get_index<grant_index, by_id>();
-        for (auto itr = grant_idx.begin(); itr != grant_idx.end(); ++itr)
+        const auto& funding_opportunity_idx = get_index<funding_opportunity_index, by_id>();
+        for (auto itr = funding_opportunity_idx.begin(); itr != funding_opportunity_idx.end(); ++itr)
         {
             total_supply += itr->amount;
         }
@@ -2416,164 +2494,6 @@ void database::retally_witness_votes()
         }
     }
 }
-
-// void database::process_content_activity_windows()
-// {
-//     auto now = head_block_time();
-//     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
-//     dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
-//     dbs_expertise_contribution& expertise_contributions_service = obtain_service<dbs_expertise_contribution>();
-//     dbs_reward_pool& reward_pool_service = obtain_service<dbs_reward_pool>();
-
-//     const auto& research_content_by_activity_end = get_index<research_content_index, by_activity_window_end>();
-//     auto itr_by_end = research_content_by_activity_end.begin();
-
-//     std::map<discipline_id_type, share_type> expired_active_weight;
-
-//     // close activity windows for content with expired end point
-//     while (itr_by_end != research_content_by_activity_end.end() && itr_by_end->activity_window_end < now) // closed researches
-//     {
-//         modify(research_content_service.get(itr_by_end->id), [&](research_content_object& rc) {
-
-//             if (rc.type == research_content_type::announcement ||
-//                 rc.is_milestone()) {
-
-//                 switch (rc.activity_round) {
-//                     case 1: {
-//                         // the 2nd activity period for intermediate result
-//                         // starts in 2 weeks after the 1st one has ended and continues for 1 week
-//                         rc.activity_round = 2;
-//                         rc.activity_state = research_content_activity_state::pending;
-//                         rc.activity_window_start = now + DEIP_BREAK_BETWEEN_REGULAR_ACTIVITY_ROUNDS_DURATION;
-//                         rc.activity_window_end = now + DEIP_BREAK_BETWEEN_REGULAR_ACTIVITY_ROUNDS_DURATION + DEIP_REGULAR_CONTENT_ACTIVITY_WINDOW_DURATION;
-//                         break;
-//                     }
-//                     default: {
-//                         // mark intermediate result activity period as expired
-//                         // and set the bounds to max value to exclude content from future iterations
-//                         rc.activity_round = 0;
-//                         rc.activity_state = research_content_activity_state::closed;
-//                         rc.activity_window_start = fc::time_point_sec::maximum();
-//                         rc.activity_window_end = fc::time_point_sec::maximum();
-//                         break;
-//                     }
-//                 }
-
-//             } else if (rc.type == research_content_type::final_result) {
-
-//                 switch (rc.activity_round) {
-//                     case 1: {
-//                         // the 2nd activity period for final result
-//                         // starts in 2 months after the 1st one has ended and continues for 1 months
-//                         rc.activity_round = 2;
-//                         rc.activity_state = research_content_activity_state::pending;
-//                         rc.activity_window_start = now + DEIP_BREAK_BETWEEN_FINAL_ACTIVITY_ROUNDS_DURATION;
-//                         rc.activity_window_end = now + DEIP_BREAK_BETWEEN_FINAL_ACTIVITY_ROUNDS_DURATION + DEIP_FINAL_RESULT_ACTIVITY_WINDOW_DURATION;
-//                         break;
-//                     }
-//                     case 2: {
-//                         // the 3rd activity period for final result
-//                         // starts in one half of a year after the 2nd one has ended and continues for 2 weeks
-//                         rc.activity_round = 3;
-//                         rc.activity_state = research_content_activity_state::pending;
-//                         rc.activity_window_start = now + DEIP_BREAK_BETWEEN_FINAL_ACTIVITY_ROUNDS_DURATION;
-//                         rc.activity_window_end = now + DEIP_BREAK_BETWEEN_FINAL_ACTIVITY_ROUNDS_DURATION + DEIP_FINAL_RESULT_ACTIVITY_WINDOW_DURATION;
-//                         break;
-//                     }
-//                     default: {
-//                         // mark final result activity period as expired
-//                         // and set the bounds to max value to exclude content from future iterations
-//                         rc.activity_round = 0;
-//                         rc.activity_state = research_content_activity_state::closed;
-//                         rc.activity_window_start = fc::time_point_sec::maximum();
-//                         rc.activity_window_end = fc::time_point_sec::maximum();
-//                         break;
-//                     }
-//                 }
-//             }
-//         });
-
-//         // get all total votes for current content and accumulate it by discipline and type
-//         auto rc_total_votes_refs = expertise_contributions_service.get_expertise_contributions_by_research_content(itr_by_end->id);
-//         for (auto wrapper : rc_total_votes_refs) {
-//             const expertise_contribution_object& rc_total_votes = wrapper.get();
-//             if (expired_active_weight.find(rc_total_votes.discipline_id) != expired_active_weight.end()) {
-//                 expired_active_weight[rc_total_votes.discipline_id] += rc_total_votes.eci;
-//             } else {
-//                 expired_active_weight[rc_total_votes.discipline_id] = rc_total_votes.eci;
-//             }
-//         }
-
-//         //distribute content reward
-
-//         auto reward_pools = reward_pool_service.get_reward_pools_by_content_id(itr_by_end->id);
-
-//         for (const reward_pool_object& reward_pool : reward_pools)
-//         {
-//             auto used_reward = reward_research_content(itr_by_end->id,
-//                                                        reward_pool.discipline_id,
-//                                                        reward_pool.balance,
-//                                                        reward_pool.expertise);
-
-//             modify(reward_pool, [&](reward_pool_object& rcrp) {
-//                 rcrp.balance -= used_reward;
-//                 rcrp.expertise = 0;
-//             });
-
-//         }
-
-//         ++itr_by_end;
-//     }
-
-
-//     // decrease total active votes in discipline object
-//     for(auto it = expired_active_weight.begin(); it != expired_active_weight.end(); it++)
-//     {
-//         auto& discipline = discipline_service.get_discipline(it->first);
-//         modify(discipline, [&](discipline_object& d) {
-//             d.total_active_weight -= it->second;
-//         });
-//     }
-
-
-
-//     const auto& research_content_by_activity_start = get_index<research_content_index, by_activity_window_start>();
-//     auto itr_by_start = research_content_by_activity_start.begin();
-//     std::map<discipline_id_type, share_type> resumed_active_weight;
-
-//     // reopen activity windows for content with actual start point
-//     while (itr_by_start != research_content_by_activity_start.end() && itr_by_start->activity_window_start < now) // reopened
-//     {
-//         if(itr_by_start->activity_state == research_content_activity_state::pending)
-//         {
-//             auto& content = research_content_service.get(itr_by_start->id);
-//             modify(content, [&](research_content_object& rc) {
-//                     rc.activity_state = research_content_activity_state::active;
-//             });
-
-//             // get all total votes for current content and accumulate it by discipline and type
-//             auto rc_total_votes_refs = expertise_contributions_service.get_expertise_contributions_by_research_content(itr_by_start->id);
-//             for (auto wrapper : rc_total_votes_refs) {
-//                 const expertise_contribution_object& rc_total_votes = wrapper.get();
-//                 if (resumed_active_weight.find(rc_total_votes.discipline_id) != resumed_active_weight.end()) {
-//                     resumed_active_weight[rc_total_votes.discipline_id] += rc_total_votes.eci;
-//                 } else {
-//                     resumed_active_weight[rc_total_votes.discipline_id] = rc_total_votes.eci;
-//                 }
-//             }
-//         }
-//         ++itr_by_start;
-//     }
-
-//     // increase total active votes in discipline object
-//     for(auto it = resumed_active_weight.begin(); it != resumed_active_weight.end(); it++)
-//     {
-//         auto& discipline = discipline_service.get_discipline(it->first);
-//         modify(discipline, [&](discipline_object& d) {
-//             d.total_active_weight += it->second;
-//         });
-//     }
-// }
 
 } // namespace chain
 } // namespace deip

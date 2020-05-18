@@ -1,8 +1,6 @@
 #pragma once
 #include <deip/protocol/base.hpp>
-#include <deip/protocol/block_header.hpp>
 #include <deip/protocol/version.hpp>
-#include <fc/optional.hpp>
 
 namespace deip {
 namespace protocol {

@@ -1,6 +1,6 @@
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/genesis_state.hpp>
-#include <deip/chain/services/dbs_discipline_supply.hpp>
+#include <fc/io/json.hpp>
 
 #include <deip/chain/schema/account_object.hpp>
 #include <deip/chain/schema/block_summary_object.hpp>
@@ -8,21 +8,18 @@
 #include <deip/chain/schema/deip_objects.hpp>
 #include <deip/chain/schema/discipline_object.hpp>
 #include <deip/chain/schema/expert_token_object.hpp>
-#include <deip/chain/schema/offer_research_tokens_object.hpp>
 #include <deip/chain/schema/proposal_object.hpp>
-#include <deip/chain/schema/proposal_vote_object.hpp>
 #include <deip/chain/schema/research_group_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
 #include <deip/chain/schema/research_content_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/expertise_contribution_object.hpp>
-
+#include <deip/chain/schema/vesting_balance_object.hpp>
+#include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
-
-#include <fc/io/json.hpp>
-#include <deip/chain/schema/vesting_balance_object.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_research.hpp>
@@ -96,14 +93,13 @@ void database::init_genesis(const genesis_state_type& genesis_state)
         init_genesis_assets(genesis_state);
         init_genesis_account_balances(genesis_state);
         init_genesis_accounts(genesis_state);
+        init_genesis_research_groups(genesis_state);
         init_genesis_witnesses(genesis_state);
         init_genesis_witness_schedule(genesis_state);
         init_genesis_disciplines(genesis_state);
-        init_expert_tokens(genesis_state);
-        init_research_groups(genesis_state);
-        init_personal_research_groups(genesis_state);
-        init_research(genesis_state);
-        init_research_content(genesis_state);
+        init_genesis_expert_tokens(genesis_state);
+        init_genesis_research(genesis_state);
+        init_genesis_research_content(genesis_state);
         init_genesis_vesting_balances(genesis_state);
 
         // Nothing to do
@@ -165,7 +161,10 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
           owner_authority,
           owner_authority,
           owner_authority,
-          asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL));
+          DEIP_MIN_ACCOUNT_CREATION_FEE,
+          {},
+          true
+        );
     }
 }
 
@@ -226,20 +225,15 @@ void database::init_genesis_assets(const genesis_state_type& genesis_state)
 
 void database::init_genesis_account_balances(const genesis_state_type& genesis_state)
 {
-    const auto& asset_service = obtain_service<dbs_asset>();
+    const auto& assets_service = obtain_service<dbs_asset>();
+    auto& account_balances_service = obtain_service<dbs_account_balance>();
 
     const vector<genesis_state_type::account_balance_type>& account_balances = genesis_state.account_balances;
 
     for (auto& account_balance : account_balances)
     {
-        const auto& asset_obj = asset_service.get_by_string_symbol(account_balance.symbol);
-        create<account_balance_object>([&](account_balance_object& ab_o) {
-            ab_o.asset_id = asset_obj.id;
-            ab_o.symbol = asset_obj.symbol;
-            ab_o.string_symbol = asset_obj.string_symbol;
-            ab_o.owner = account_balance.owner;
-            ab_o.amount = account_balance.amount;
-        });
+        const auto& asset = assets_service.get_by_string_symbol(account_balance.symbol);
+        account_balances_service.adjust_balance(account_balance.owner, deip::protocol::asset(account_balance.amount, asset.symbol));
     }
 }
 
@@ -300,7 +294,7 @@ void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
 }
 
 
-void database::init_expert_tokens(const genesis_state_type& genesis_state)
+void database::init_genesis_expert_tokens(const genesis_state_type& genesis_state)
 {
     const vector<genesis_state_type::expert_token_type>& expert_tokens = genesis_state.expert_tokens;
 
@@ -317,14 +311,6 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
         FC_ASSERT(discipline.id._id == expert_token.discipline_id); // verify that discipline exists
 
         expert_token_service.create_expert_token(expert_token.account_name, expert_token.discipline_id, expert_token.amount, true);
-
-        // push_virtual_operation(account_eci_history_operation(expert_token.account_name,
-        //                                                      expert_token.discipline_id._id,
-        //                                                      expert_token.amount,
-        //                                                      expert_token.amount,
-        //                                                      3,
-        //                                                      -1,
-        //                                                      get_genesis_time().sec_since_epoch()));
     }
 
 
@@ -337,13 +323,6 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
         {
             if (discipline.id != 0) {
                 expert_token_service.create_expert_token("hermes", discipline.id, 10000, true);
-                // push_virtual_operation(account_eci_history_operation("hermes",
-                //                                                      discipline.id._id,
-                //                                                      10000,
-                //                                                      10000,
-                //                                                      3,
-                //                                                      -1,
-                //                                                      get_genesis_time().sec_since_epoch()));
             }
         }
     }
@@ -352,275 +331,230 @@ void database::init_expert_tokens(const genesis_state_type& genesis_state)
 
 
 
-void database::init_research(const genesis_state_type& genesis_state)
+void database::init_genesis_research(const genesis_state_type& genesis_state)
 {
+    dbs_research& research_service = obtain_service<dbs_research>();
+    dbs_research_group& research_groups_service = obtain_service<dbs_research_group>();
+
     const vector<genesis_state_type::research_type>& researches = genesis_state.researches;
     const vector<genesis_state_type::research_content_type>& research_contents = genesis_state.research_contents;
 
     for (auto& research : researches)
     {
-        FC_ASSERT(!research.title.empty(), "Research 'title' must be provided");
-        FC_ASSERT(!research.permlink.empty(),  "Research group 'permlink' must be provided");
-        FC_ASSERT(research.dropout_compensation_in_percent >= 0 && research.dropout_compensation_in_percent <= DEIP_100_PERCENT,
-                  "Dropout compensation percent should be in 0% to 100% range");
-        FC_ASSERT(research.review_share_in_percent >= 0 && research.review_share_in_percent <= 50 * DEIP_1_PERCENT,
-                  "Percent for review should be in 0% to 50% range");
+        FC_ASSERT(!research.title.empty(), "Research 'title' is required");
+        FC_ASSERT(!research.permlink.empty(), "Research 'permlink' is required");
 
-        uint16_t contents_amount = 0;
-        std::vector<account_name_type> members;
-
-        for (auto& research_content : research_contents) {
-            FC_ASSERT(!research_content.title.empty(), "Research content 'title' must be specified");
-            FC_ASSERT(!research_content.content.empty(), "Research content must be specified");
-            FC_ASSERT(research_content.authors.size() > 0, "Research group must contain at least 1 member");
-
-            for (auto& author : research_content.authors)
-                auto account = get<account_object, by_name>(author);
-
-            if (research.id == research_content.research_id) {
-                for (auto& author : research_content.authors)
-                    members.push_back(author);
-                contents_amount++;
-            }
-        }
-
-        create<research_object>([&](research_object& r){
-            r.id = research.id;
-            r.research_group_id = research.research_group_id;
-            fc::from_string(r.title, research.title);
-            fc::from_string(r.abstract, research.abstract);
-            fc::from_string(r.permlink, research.permlink);
-            r.created_at = get_genesis_time();
-            r.last_update_time = get_genesis_time();
-            r.is_finished = research.is_finished;
-            r.owned_tokens = DEIP_100_PERCENT;
-            r.review_share_in_percent = research.review_share_in_percent;
-            r.review_share_in_percent_last_update = get_genesis_time();
-            r.dropout_compensation_in_percent = research.dropout_compensation_in_percent;
-            r.contents_amount = contents_amount;
-            for (auto member : members)
-                r.members.insert(member);
-            r.is_private = research.is_private;
-        });
-
+        std::set<discipline_id_type> disciplines;
         for (auto& discipline_id : research.disciplines)
         {
-            create<research_discipline_relation_object>([&](research_discipline_relation_object& rel){
-                rel.research_id = research.id;
-                rel.discipline_id = discipline_id;
-                rel.votes_count = 0;
-            });
+            disciplines.insert(discipline_id_type(discipline_id));
         }
+
+        const time_point_sec genesis_time = get_genesis_time();
+        const bool& is_private = false;
+        const percent& review_share = percent(DEIP_1_PERCENT * 20);
+
+        optional<percent> compensation_share = optional<percent>(percent(DEIP_1_PERCENT * 5));
+        const auto& research_group = research_groups_service.get_research_group_by_account(research.account);
+
+        const auto& authors = std::accumulate(
+            research_contents.begin(), research_contents.end(), std::set<account_name_type>(),
+            [&](std::set<account_name_type> acc, const genesis_state_type::research_content_type& research_content) {
+                if (research_content.research_external_id == research.external_id)
+                {
+                    acc.insert(research_content.authors.begin(), research_content.authors.end());
+                }
+                return acc;
+            });
+
+        flat_set<account_name_type> members;
+        members.insert(authors.begin(), authors.end());
+
+        research_service.create_research(
+          research_group.id, 
+          research.external_id,
+          research.title, 
+          research.abstract, 
+          research.permlink,
+          disciplines, 
+          review_share,
+          compensation_share,
+          is_private,
+          research.is_finished,
+          percent(DEIP_100_PERCENT),
+          members,
+          genesis_time
+        );
     }
 }
 
-void database::init_research_content(const genesis_state_type& genesis_state)
+void database::init_genesis_research_content(const genesis_state_type& genesis_state)
 {
     const vector<genesis_state_type::research_content_type>& research_contents = genesis_state.research_contents;
-    dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
-    dbs_research& research_service = obtain_service<dbs_research>();
-    dbs_research_discipline_relation& research_discipline_relation_service = obtain_service<dbs_research_discipline_relation>();
+    auto& research_service = obtain_service<dbs_research>();
+    auto& research_content_service = obtain_service<dbs_research_content>();
+    auto& accounts_service = obtain_service<dbs_account>();
+    auto& research_discipline_relation_service = obtain_service<dbs_research_discipline_relation>();
 
     for (auto& research_content : research_contents)
     {
-        FC_ASSERT(!research_content.title.empty(), "Research content 'title' must be specified");
-        FC_ASSERT(!research_content.content.empty(),  "Research content must be specified");
-        FC_ASSERT(research_content.authors.size() > 0, "Research group must contain at least 1 member");
+        FC_ASSERT(!research_content.title.empty(), "Research content 'title' is required");
+        FC_ASSERT(!research_content.content.empty(), "Research content payload is require");
+        FC_ASSERT(research_content.authors.size() > 0, "Research group should contain at least 1 member");
 
         for (auto& author : research_content.authors)
         {
-            // validate for account existence
-            auto account = get<account_object, by_name>(author);
+            FC_ASSERT(accounts_service.account_exists(author), "Research content 'author' does not exist");
         }
 
-        auto research = get<research_object, by_id>(research_content.research_id);
+        const auto& research = research_service.get_research(research_content.research_external_id);
 
-        auto& c = create<research_content_object>([&](research_content_object& rc) {
-            rc.id = research_content.id;
-            rc.research_id = research_content.research_id;
-            rc.type = static_cast<deip::chain::research_content_type>(research_content.type);
-            fc::from_string(rc.title, research_content.title);
-            fc::from_string(rc.content, research_content.content);
-            fc::from_string(rc.permlink, research_content.permlink);
-            rc.authors.insert(research_content.authors.begin(), research_content.authors.end());
-            rc.references.insert(research_content.references.begin(), research_content.references.end());
-            rc.created_at = get_genesis_time();
-            rc.activity_round = 1;
-            rc.activity_state = static_cast<deip::chain::research_content_activity_state>(1);
-            rc.activity_window_start = get_genesis_time();
-            rc.activity_window_end = get_genesis_time() + DEIP_REGULAR_CONTENT_ACTIVITY_WINDOW_DURATION;
-        });
+        const flat_set<string> foreign_references;
+        const time_point_sec timestamp = get_genesis_time();
+        flat_set<external_id_type> references;
+        references.insert(research_content.references.begin(), research_content.references.end());
 
-        for (auto& reference : research_content.references)
+        const auto& created_research_content = research_content_service.create_research_content(
+          research.id,
+          research_content.external_id,
+          research_content.title,
+          research_content.content,
+          research_content.permlink,
+          static_cast<deip::chain::research_content_type>(research_content.type),
+          research_content.authors,
+          references,
+          foreign_references,
+          timestamp
+        );
+
+        for (auto& reference_external_id : research_content.references)
         {
-            auto& _content = get<research_content_object>(reference);
-            push_virtual_operation(research_content_reference_history_operation(c.id._id,
-                                                                       c.research_id._id,
-                                                                       fc::to_string(c.content),
-                                                                       _content.id._id,
-                                                                       _content.research_id._id,
-                                                                       fc::to_string(_content.content)));
+            const auto& reference = research_content_service.get_research_content(reference_external_id);
+            push_virtual_operation(research_content_reference_history_operation(
+                created_research_content.id._id, 
+                created_research_content.research_id._id,
+                fc::to_string(created_research_content.content),
+                reference.id._id, 
+                reference.research_id._id,
+                fc::to_string(reference.content)
+            ));
         }
 
-        const std::map<discipline_id_type, share_type> previous_research_content_eci = research_content_service.get_eci_evaluation(research_content.id);
+        const std::map<discipline_id_type, share_type> previous_research_content_eci = research_content_service.get_eci_evaluation(created_research_content.id);
         const std::map<discipline_id_type, share_type> previous_research_eci = research_service.get_eci_evaluation(research.id);
 
-        const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(c.id);
+        const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(created_research_content.id);
         const research_object& updated_research = research_service.update_eci_evaluation(research.id);
 
-        auto relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research_content.research_id);
+        const auto& relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
+
         for (auto& wrap : relations)
         {
             const auto& rel = wrap.get();
 
             const eci_diff research_content_eci_diff = eci_diff(
-              previous_research_content_eci.at(rel.discipline_id),
-              updated_research_content.eci_per_discipline.at(rel.discipline_id),
-              get_genesis_time(),
-              static_cast<uint16_t>(expertise_contribution_type::publication),
-              updated_research_content.id._id
+                previous_research_content_eci.at(rel.discipline_id),
+                updated_research_content.eci_per_discipline.at(rel.discipline_id),
+                timestamp,
+                static_cast<uint16_t>(expertise_contribution_type::publication),
+                updated_research_content.id._id
             );
 
             push_virtual_operation(research_content_eci_history_operation(
-              updated_research_content.id._id, 
-              rel.discipline_id._id,
-              research_content_eci_diff)
-            );
+                updated_research_content.id._id, 
+                rel.discipline_id._id, 
+                research_content_eci_diff
+            ));
 
             const eci_diff research_eci_diff = eci_diff(
-              previous_research_eci.at(rel.discipline_id),
-              updated_research.eci_per_discipline.at(rel.discipline_id),
-              get_genesis_time(),
-              static_cast<uint16_t>(expertise_contribution_type::publication),
-              updated_research_content.id._id
+                previous_research_eci.at(rel.discipline_id), 
+                updated_research.eci_per_discipline.at(rel.discipline_id),
+                timestamp, 
+                static_cast<uint16_t>(expertise_contribution_type::publication),
+                updated_research_content.id._id
             );
 
             push_virtual_operation(research_eci_history_operation(
               updated_research.id._id, 
-              rel.discipline_id._id,
-              research_eci_diff)
-            );
+              rel.discipline_id._id, 
+              research_eci_diff
+            ));
         }
     }
 }
 
-void database::init_research_groups(const genesis_state_type& genesis_state)
+void database::init_genesis_research_groups(const genesis_state_type& genesis_state)
 {
     const vector<genesis_state_type::research_group_type>& research_groups = genesis_state.research_groups;
-
     for (auto& research_group : research_groups)
     {
-        init_research_group(research_group);
+        init_genesis_research_group(research_group);
     }
 }
 
-void database::init_research_group(const genesis_state_type::research_group_type& research_group)
+void database::init_genesis_research_group(const genesis_state_type::research_group_type& research_group)
 {
+    auto& account_service = obtain_service<dbs_account>();
+    auto& research_groups_service = obtain_service<dbs_research_group>();
+
     FC_ASSERT(!research_group.name.empty(), "Research group 'name' must be specified");
     FC_ASSERT(!research_group.permlink.empty(), "Research group 'permlink' must be specified");
     FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
+    
+    const auto& creator = account_service.get_account(research_group.creator);
 
-    create<research_group_object>([&](research_group_object& rg) {
-        rg.id = research_group.id;
-        fc::from_string(rg.name, research_group.name);
-        fc::from_string(rg.description, research_group.description);
-        fc::from_string(rg.permlink, research_group.permlink);
-        rg.balance = asset(0, DEIP_SYMBOL);
+    auto owner_authority = authority();
+    owner_authority.add_authority(creator.name, 1);
+    owner_authority.weight_threshold = 1;
 
-        if (research_group.management_model_v == research_group_details::tag<dao_voting_research_group_management_model_v1_0_0_type>::value)
-        {
-            FC_ASSERT(research_group.default_quorum.valid(), "Default quorum must be specified.");
-            FC_ASSERT(*research_group.default_quorum >= DEIP_1_PERCENT && *research_group.default_quorum <= DEIP_100_PERCENT, "Quorum percent must be in 1% to 100% range");
-            rg.default_quorum = *research_group.default_quorum;
+    auto active_authority = authority();
+    active_authority.weight_threshold = 1;
 
-            std::map<research_group_quorum_action, percent_type> action_quorums;
-            for (int i = FIRST_ACTION_QUORUM_TYPE; i <= LAST_ACTION_QUORUM_TYPE; i++)
-            {
-                action_quorums.insert(std::make_pair(research_group_quorum_action(i), *research_group.default_quorum));
-            }
+    auto posting_authority = authority();
+    posting_authority.weight_threshold = 1;
 
-            rg.action_quorums.insert(action_quorums.begin(), action_quorums.end());
-            rg.is_personal = false;
-            rg.is_centralized = false;
-            rg.is_dao = true;
-        }
-        else if (research_group.management_model_v == research_group_details::tag<centralized_research_group_management_model_v1_0_0_type>::value)
-        {
-            FC_ASSERT(research_group.heads.valid(), "Heads must be specified.");
-            rg.heads.insert(research_group.heads->begin(), research_group.heads->end());
-            rg.is_personal = false;
-            rg.is_centralized = true;
-            rg.is_dao = false;
-        }
-
-        if (research_group.organization_id.valid() && research_group.organization_agents.valid())
-        {
-            rg.is_created_by_organization = true;
-            rg.has_organization = true;
-        }
-
-        rg.creator = research_group.creator;
-    });
-
-    // TODO: Check that total amount of research group tokens is 10000
-     for (auto& member : research_group.members)
-     {
-         auto account = get<account_object, by_name>(member);
-         create<research_group_token_object>([&](research_group_token_object& rgt) {
-             rgt.research_group_id = research_group.id;
-             rgt.amount = DEIP_100_PERCENT / research_group.members.size();
-             rgt.owner = account.name;
-         });
-     }
-
-     if (research_group.organization_id.valid() && research_group.organization_agents.valid())
-     {
-         create<research_group_organization_contract_object>([&](research_group_organization_contract_object& contract) {
-             contract.organization_id = *research_group.organization_id;
-             contract.research_group_id = research_group.id;
-             contract.organization_agents.insert(research_group.organization_agents->begin(), research_group.organization_agents->end());
-             contract.type = static_cast<uint16_t>(research_group_organization_contract_type::division);
-             contract.unilateral_termination_allowed = false;
-             fc::from_string(contract.notes, "");
-         });
-     }
-
-     for (auto& subgroup : research_group.subgroups)
-         init_research_group(subgroup);
-}
-
-void database::init_personal_research_groups(const genesis_state_type& genesis_state)
-{
-    const vector<genesis_state_type::account_type>& accounts = genesis_state.accounts;
-
-    for (auto& account : accounts)
+    for (auto& member_name : research_group.members)
     {
-        FC_ASSERT(!account.name.empty(), "Account 'name' should not be empty.");
-        FC_ASSERT(is_valid_account_name(account.name), "Account name ${n} is invalid", ("n", account.name));
+        const auto& member = account_service.get_account(member_name);
+        active_authority.add_authority(account_name_type(member.name), 1);
+        posting_authority.add_authority(account_name_type(member.name), 1);
+    }
 
-        std::map<research_group_quorum_action, percent_type> personal_research_group_proposal_quorums;
+    research_group_v1_0_0_trait research_group_trait;
+    research_group_trait.name = research_group.name;
+    research_group_trait.permlink = research_group.permlink;
+    research_group_trait.description = research_group.description;
 
-        for (int i = FIRST_ACTION_QUORUM_TYPE; i <= LAST_ACTION_QUORUM_TYPE; i++)
+    vector<account_trait> traits = { research_group_trait };
+
+    account_service.create_account_by_faucets(
+      research_group.account,
+      creator.name,
+      creator.memo_key,
+      "",
+      owner_authority,
+      active_authority,
+      posting_authority,
+      DEIP_MIN_ACCOUNT_CREATION_FEE,
+      traits,
+      false
+    );
+
+    const auto& rg = research_groups_service.get_research_group_by_account(research_group.account);
+
+    for (auto& member_name : research_group.members)
+    {
+        if (member_name != creator.name)
         {
-            personal_research_group_proposal_quorums.insert(std::make_pair(research_group_quorum_action(i), percent_type(DEIP_100_PERCENT)));
+            const auto& member = account_service.get_account(member_name);
+            const share_type rgt = share_type(DEIP_100_PERCENT / research_group.members.size());
+            research_groups_service.add_member_to_research_group(member.name, rg.id, rgt, creator.name);
         }
+    }
 
-        auto& research_group = create<research_group_object>([&](research_group_object& research_group) {
-            fc::from_string(research_group.name, account.name);
-            fc::from_string(research_group.permlink, account.name);
-            fc::from_string(research_group.description, account.name);
-            research_group.action_quorums.insert(personal_research_group_proposal_quorums.begin(), personal_research_group_proposal_quorums.end());
-            research_group.is_dao = false;
-            research_group.is_centralized = false;
-            research_group.is_personal = true;
-            research_group.creator = account.name;
-        });
-
-        create<research_group_token_object>([&](research_group_token_object& research_group_token) {
-            research_group_token.research_group_id = research_group.id;
-            research_group_token.amount = DEIP_100_PERCENT;
-            research_group_token.owner = account.name;
-        });
+    for (auto& subgroup : research_group.subgroups)
+    {
+        init_genesis_research_group(subgroup);
     }
 }
 

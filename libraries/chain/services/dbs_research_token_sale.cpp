@@ -78,12 +78,6 @@ dbs_research_token_sale::get_by_research_id(const research_id_type &research_id)
     return ret;
 }
 
-void dbs_research_token_sale::check_research_token_sale_existence(const research_token_sale_id_type& id) const
-{
-    auto research_token_sale = db_impl().find<research_token_sale_object, by_id>(id);
-    FC_ASSERT(research_token_sale != nullptr, "Research token sale with id \"${1}\" must exist.", ("1", id));
-}
-
 const research_token_sale_object& dbs_research_token_sale::increase_tokens_amount(const research_token_sale_id_type &id,
                                                                                   const asset &amount)
 {
@@ -100,9 +94,9 @@ const research_token_sale_object& dbs_research_token_sale::update_status(const r
     return research_token_sale;
 }
 
-dbs_research_token_sale::research_token_sale_refs_type
-dbs_research_token_sale::get_by_research_id_and_status(const research_id_type& research_id,
-                                                       const research_token_sale_status status) const
+dbs_research_token_sale::research_token_sale_refs_type dbs_research_token_sale::get_by_research_id_and_status(
+  const research_id_type& research_id,
+  const research_token_sale_status& status) const
 {
     research_token_sale_refs_type ret;
 
@@ -202,22 +196,14 @@ void dbs_research_token_sale::distribute_research_tokens(const research_token_sa
     const auto& idx = db_impl().get_index<research_token_sale_contribution_index>().indicies()
             .get<by_research_token_sale_id>()
             .equal_range(research_token_sale_id);
+
     auto it = idx.first;
     const auto it_end = idx.second;
 
     while (it != it_end)
     {
-        auto transfer_amount = (it->amount.amount * research_token_sale.balance_tokens) / research_token_sale.total_amount.amount;
-
-        if (research_token_service.exists_by_owner_and_research(it->owner, research_token_sale.research_id))
-        {
-            auto& research_token = research_token_service.get_by_owner_and_research(it->owner, research_token_sale.research_id);
-            research_token_service.increase_research_token_amount(research_token, transfer_amount);
-        }
-        else
-        {
-            research_token_service.create_research_token(it->owner, transfer_amount, research_token_sale.research_id, false);
-        }
+        const auto& research_share = (it->amount.amount * research_token_sale.balance_tokens) / research_token_sale.total_amount.amount;
+        research_token_service.adjust_research_token(it->owner, research_token_sale.research_id, research_share, false);
         auto current = it++;
         db_impl().remove(*current);
     }

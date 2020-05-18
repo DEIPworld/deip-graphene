@@ -12,31 +12,48 @@ dbs_research_token::dbs_research_token(database &db)
 }
 
 const research_token_object& dbs_research_token::create_research_token(
-  const account_name_type &owner,
-  const deip::chain::share_type amount,
-  const research_id_type &research_id,
+  const account_name_type& owner,
+  const research_id_type& research_id,
+  const share_type& amount,
   const bool& is_compensation)
 {
-    const research_token_object& new_research_token = db_impl().create<research_token_object>([&](research_token_object& research_token) {
-        research_token.account_name = owner;
-        research_token.amount = amount;
-        research_token.research_id = research_id;
-        research_token.is_compensation = is_compensation;
+    const research_token_object& research_token = db_impl().create<research_token_object>([&](research_token_object& rt_o) {
+        rt_o.account_name = owner;
+        rt_o.amount = amount;
+        rt_o.research_id = research_id;
+        rt_o.is_compensation = is_compensation;
     });
 
-    return new_research_token;
+    return research_token;
 }
 
-void dbs_research_token::increase_research_token_amount(const research_token_object& research_token, const share_type delta)
+
+void dbs_research_token::adjust_research_token(
+  const account_name_type& owner,
+  const research_id_type& research_id,
+  const share_type& delta,
+  const bool& is_compensation)
 {
-    FC_ASSERT((delta >= 0), "Cannot update research token amount (delta < 0)");
+    if (!exists_by_owner_and_research(owner, research_id))
+    {
+        create_research_token(owner, research_id, share_type(0), is_compensation);
+    }
+
+    const research_token_object& research_token = get_by_owner_and_research(owner, research_id);
+
+    if (delta.value < 0)
+    {
+        FC_ASSERT(research_token.amount >= abs(delta.value),
+          "Account ${1} research share is not sufficient to decrease ${2} amount",
+          ("1", owner)("2", delta));
+    }
+
     db_impl().modify(research_token, [&](research_token_object& rt_o) { rt_o.amount += delta; });
-}
 
-void dbs_research_token::decrease_research_token_amount(const research_token_object& research_token, const share_type delta)
-{
-    FC_ASSERT((research_token.amount - delta >= 0), "Cannot update research token amount (result amount < 0)");
-    db_impl().modify(research_token, [&](research_token_object& rt_o) { rt_o.amount -= delta; });
+    if (research_token.amount == 0)
+    {
+        db_impl().remove(research_token);
+    }
 }
 
 const research_token_object& dbs_research_token::get(const research_token_id_type &id) const
@@ -62,7 +79,7 @@ dbs_research_token::research_token_refs_type dbs_research_token::get_by_owner(co
     return ret;
 }
 
-dbs_research_token::research_token_refs_type dbs_research_token::get_by_research(const research_id_type &research_id) const
+dbs_research_token::research_token_refs_type dbs_research_token::get_by_research(const research_id_type& research_id) const
 {
     research_token_refs_type ret;
 
@@ -77,13 +94,11 @@ dbs_research_token::research_token_refs_type dbs_research_token::get_by_research
     return ret;
 }
 
-const research_token_object& dbs_research_token::get_by_owner_and_research(const account_name_type &owner,
-                                                                                         const research_id_type &research_id) const
+const research_token_object& dbs_research_token::get_by_owner_and_research(
+  const account_name_type& owner,
+  const research_id_type& research_id) const
 {
-    try {
-        return db_impl().get<research_token_object, by_account_name_and_research_id>(
-                boost::make_tuple(owner, research_id));
-    }
+    try { return db_impl().get<research_token_object, by_account_name_and_research_id>(std::make_tuple(owner, research_id)); }
     FC_CAPTURE_AND_RETHROW((owner)(research_id))
 }
 
@@ -96,12 +111,16 @@ void dbs_research_token::check_existence_by_owner_and_research(const account_nam
 
 }
 
-bool dbs_research_token::exists_by_owner_and_research(const account_name_type& owner,
-                                                                                  const research_id_type& research_id)
+const bool dbs_research_token::exists_by_owner_and_research(
+  const account_name_type& owner,
+  const research_id_type& research_id) const
 {
-    const auto& idx = db_impl().get_index<research_token_index>().indices().get<by_account_name_and_research_id>();
+    const auto& idx = db_impl()
+      .get_index<research_token_index>()
+      .indices()
+      .get<by_account_name_and_research_id>();
 
-    return idx.find(boost::make_tuple(owner, research_id)) != idx.cend();
+    return idx.find(std::make_tuple(owner, research_id)) != idx.end();
 }
 
 } //namespace chain

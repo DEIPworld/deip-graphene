@@ -8,7 +8,6 @@
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
-#include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_proposal.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
@@ -84,7 +83,7 @@ struct database_fixture
      */
     void generate_blocks(fc::time_point_sec timestamp, bool miss_intermediate_blocks = true);
 
-    const account_object& account_create(const string& name,
+    const account_object& create_account(const string& name,
                                          const string& creator,
                                          const private_key_type& creator_key,
                                          const share_type& fee,
@@ -93,9 +92,9 @@ struct database_fixture
                                          const string& json_metadata);
 
     const account_object&
-    account_create(const string& name, const public_key_type& key, const public_key_type& post_key);
+    create_account(const string& name, const public_key_type& key, const public_key_type& post_key);
 
-    const account_object& account_create(const string& name, const public_key_type& key);
+    const account_object& create_account(const string& name, const public_key_type& key);
 
     const witness_object& witness_create(const string& owner,
                                          const private_key_type& owner_key,
@@ -112,17 +111,9 @@ struct database_fixture
                                                        const string& permlink,
                                                        const string& desciption,
                                                        const share_type funds,
-                                                       const std::map<research_group_quorum_action, percent_type>& action_quorums,
                                                        const bool is_dao,
                                                        const bool is_personal);
 
-    const research_group_object& research_group_create_by_operation(const account_name_type& creator,
-                                                                    const string& name,
-                                                                    const string& permlink,
-                                                                    const string& description,
-                                                                    const percent_type& default_quorum,
-                                                                    const std::map<research_group_quorum_action, percent_type>& action_quorums,
-                                                                    const bool is_dao);
 
     const research_group_token_object& research_group_token_create(const research_group_id_type& research_group_id,
                                                                    const account_name_type& account,
@@ -133,24 +124,9 @@ struct database_fixture
                                                       const string& permlink,
                                                       const string& desciption,
                                                       const share_type funds,
-                                                      const std::map<research_group_quorum_action, percent_type> action_quorums,
                                                       const bool is_dao,
                                                       const bool is_personal,
                                                       const vector<std::pair<account_name_type, share_type>>& accounts);
-
-    const proposal_object& create_proposal(const int64_t id,
-                                           const dbs_proposal::action_t action,
-                                           const string json_data,
-                                           const account_name_type& creator,
-                                           const research_group_id_type& research_group_id,
-                                           const time_point_sec expiration_time,
-                                           const percent_type quorum);
-
-    void create_proposal_by_operation(const account_name_type& creator,
-                                      const research_group_id_type& research_group_id,
-                                      const std::string json_data,
-                                      const dbs_proposal::action_t action,
-                                      const fc::time_point_sec expiration_time);
 
     void create_disciplines();
 
@@ -159,9 +135,8 @@ struct database_fixture
                                            const string& abstract,
                                            const string& permlink,
                                            const research_group_id_type& research_group_id,
-                                           const uint16_t review_share_in_percent,
-                                           const uint16_t dropout_compensation_in_percent);
-    
+                                           const percent& review_share);
+
     const research_token_object& research_token_create(const int64_t id, 
                                                        const account_name_type& owner,
                                                        const uint16_t amount,
@@ -180,7 +155,7 @@ struct database_fixture
                                             const time_point_sec& activity_window_end,
                                             const std::vector<account_name_type>& authors,
                                             const std::vector<research_content_id_type>& references,
-                                            const std::set<string>& external_references);
+                                            const std::set<string>& foreign_references);
 
 
     const expert_token_object& expert_token_create(const int64_t id,

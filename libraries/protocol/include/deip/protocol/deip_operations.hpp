@@ -1,13 +1,12 @@
 #pragma once
-#include <deip/protocol/base.hpp>
-#include <deip/protocol/block_header.hpp>
-#include <deip/protocol/asset.hpp>
 
 #include <fc/utf8.hpp>
-#include <fc/crypto/equihash.hpp>
-#include <fc/shared_string.hpp>
 #include <fc/io/json.hpp>
-#include <deip/protocol/operations/create_research_group_operation.hpp>
+#include <deip/protocol/base.hpp>
+#include <deip/protocol/asset.hpp>
+#include <deip/protocol/percent.hpp>
+#include <deip/protocol/operations/create_account_operation.hpp>
+#include <deip/protocol/operations/update_account_operation.hpp>
 #include <deip/protocol/operations/make_review_operation.hpp>
 #include <deip/protocol/operations/create_grant_operation.hpp>
 #include <deip/protocol/operations/create_award_operation.hpp>
@@ -24,6 +23,16 @@
 #include <deip/protocol/operations/close_nda_contract_operation.hpp>
 #include <deip/protocol/operations/create_request_by_nda_contract_operation.hpp>
 #include <deip/protocol/operations/fulfill_request_by_nda_contract_operation.hpp>
+#include <deip/protocol/operations/join_research_group_membership_operation.hpp>
+#include <deip/protocol/operations/left_research_group_membership_operation.hpp>
+#include <deip/protocol/operations/create_research_operation.hpp>
+#include <deip/protocol/operations/create_research_content_operation.hpp>
+#include <deip/protocol/operations/create_research_token_sale_operation.hpp>
+#include <deip/protocol/operations/update_research_operation.hpp>
+#include <deip/protocol/operations/create_proposal_operation.hpp>
+#include <deip/protocol/operations/update_proposal_operation.hpp>
+#include <deip/protocol/operations/delete_proposal_operation.hpp>
+#include <deip/protocol/operations/transfer_research_share_operation.hpp>
 
 namespace deip {
 namespace protocol {
@@ -32,7 +41,7 @@ inline void validate_payment_number(const string& number)
 {
     const int min = 3;
     const int max = 15;
-    FC_ASSERT(number.size() >= min && number.size() <= max, 
+    FC_ASSERT(number.size() >= min && number.size() <= max,
       "Track number length should be in range of ${1} - ${2}",
       ("1", min)("2", max));
 }
@@ -41,7 +50,7 @@ inline void validate_foa_number(const string& number)
 {
     const int min = 3;
     const int max = 15;
-    FC_ASSERT(number.size() >= min && number.size() <= max, 
+    FC_ASSERT(number.size() >= min && number.size() <= max,
       "Track number length should be in range of ${1} - ${2}",
       ("1", min)("2", max));
 }
@@ -50,8 +59,8 @@ inline void validate_award_number(const string& number)
 {
     const int min = 3;
     const int max = 15;
-    FC_ASSERT(number.size() >= min && number.size() <= max, 
-      "Track number length should be in range of ${1} - ${2}", 
+    FC_ASSERT(number.size() >= min && number.size() <= max,
+      "Track number length should be in range of ${1} - ${2}",
       ("1", min)("2", max));
 }
 
@@ -66,10 +75,11 @@ inline void validate_permlink(const string& permlink)
     FC_ASSERT(fc::is_utf8(permlink), "permlink not formatted in UTF8");
 }
 
-inline void validate_enum_value_by_range(int val, int first, int last)
+inline void validate_enum_value_by_range(uint16_t val, uint16_t first, uint16_t last)
 {
-    FC_ASSERT(val >= first && val <= last, "Provided enum value is outside of the range: val = ${enum_val}, first = ${first}, last = ${last}",
-                                            ("enum_val", val)("first", first)("last", last));
+    FC_ASSERT(val >= first && val <= last,
+      "Provided enum value is outside of the range: val: ${1}; FIRST: ${2}; LAST: ${3}",
+      ("1", val)("2", first)("3", last));
 }
 
 inline void validate_520_bits_hexadecimal_string(const string& str)
@@ -86,54 +96,19 @@ inline void validate_256_bits_hexadecimal_string(const string& str)
     FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 256 bits in length");
 }
 
+inline void validate_160_bits_hexadecimal_string(const string &str)
+{
+    FC_ASSERT(((str.size() / 2) == 20), "Provided value must be a lowercase hexadecimal string 160 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 160 bits in length");
+    FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 160 bits in length");
+}
+
 inline void validate_128_bits_hexadecimal_string(const string& str)
 {
     FC_ASSERT(((str.size() / 2) == 16), "Provided value must be a lowercase hexadecimal string 128 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), ::isxdigit), "Provided value must be a lowercase hexadecimal string 128 bits in length");
     FC_ASSERT(std::all_of(str.begin(), str.end(), [](char ch) { return isdigit(ch) ? true : islower(ch); }), "Provided value must be a lowercase hexadecimal string 128 bits in length");
 }
-
-struct account_create_operation : public base_operation
-{
-    asset fee;
-    account_name_type creator;
-    account_name_type new_account_name;
-    authority owner;
-    authority active;
-    authority posting;
-    public_key_type memo_key;
-    string json_metadata;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(creator);
-    }
-};
-
-struct account_update_operation : public base_operation
-{
-    account_name_type account;
-    optional<authority> owner;
-    optional<authority> active;
-    optional<authority> posting;
-    public_key_type memo_key;
-    string json_metadata;
-
-    void validate() const;
-
-    void get_required_owner_authorities(flat_set<account_name_type>& a) const
-    {
-        if (owner)
-            a.insert(account);
-    }
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        if (!owner)
-            a.insert(account);
-    }
-};
 
 struct beneficiary_route_type
 {
@@ -164,7 +139,7 @@ struct vote_for_review_operation : public base_operation
     int16_t weight = 0;
 
     void validate() const;
-    void get_required_posting_authorities(flat_set<account_name_type>& a) const
+    void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
         a.insert(voter);
     }
@@ -271,7 +246,7 @@ struct chain_properties
      *  fee requires all accounts to have some kind of commitment to the network that includes the
      *  ability to vote and make transactions.
      */
-    asset account_creation_fee = asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL);
+    asset account_creation_fee = DEIP_MIN_ACCOUNT_CREATION_FEE;
 
     /**
      *  This witnesses vote for the maximum_block_size which is used by the network
@@ -281,7 +256,7 @@ struct chain_properties
 
     void validate() const
     {
-        FC_ASSERT(account_creation_fee.amount >= DEIP_MIN_ACCOUNT_CREATION_FEE);
+        FC_ASSERT(account_creation_fee >= DEIP_MIN_ACCOUNT_CREATION_FEE);
         FC_ASSERT(maximum_block_size >= DEIP_MIN_BLOCK_SIZE_LIMIT);
     }
 };
@@ -483,22 +458,6 @@ struct change_recovery_account_operation : public base_operation
 
 // DEIP native operations
 
-struct expertise_amount_pair_type
-{
-    expertise_amount_pair_type()
-    {
-    }
-
-    expertise_amount_pair_type(const int64_t& d, const int64_t& a)
-            : discipline_id(d)
-            , amount(a)
-    {
-    }
-
-    int64_t discipline_id;
-    int64_t amount;
-};
-
 struct placeholder1_operation : public base_operation
 {
     void validate() const;
@@ -509,98 +468,51 @@ struct placeholder2_operation : public base_operation
     void validate() const;
 };
 
-struct create_proposal_operation : public base_operation
+struct placeholder3_operation : public base_operation
 {
-    account_name_type creator;
-    int64_t research_group_id;
-    string data; ///< must be proper utf8 / JSON string.
-
-    uint16_t action;
-    time_point_sec expiration_time;
-
     void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(creator);
-    }
 };
 
-struct vote_proposal_operation : public base_operation
+struct placeholder4_operation : public base_operation
 {
-    account_name_type voter;
-    int64_t proposal_id;
-    int64_t research_group_id;
-
     void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(voter);
-    }
+};
+
+struct placeholder5_operation : public base_operation
+{
+    void validate() const;
+};
+
+struct placeholder6_operation : public base_operation
+{
+    void validate() const;
+};
+
+struct placeholder7_operation : public base_operation
+{
+    void validate() const;
+};
+
+struct placeholder8_operation : public base_operation
+{
+    void validate() const;
+};
+
+struct placeholder9_operation : public base_operation
+{
+    void validate() const;
 };
 
 struct contribute_to_token_sale_operation : public base_operation
 {
-    int64_t research_token_sale_id;
-    account_name_type owner;
+    external_id_type research_external_id;
+    account_name_type contributor;
     asset amount;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
-        a.insert(owner);
-    }
-};
-
-struct approve_research_group_invite_operation : public base_operation
-{
-    int64_t research_group_invite_id;
-    account_name_type owner;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
-
-struct reject_research_group_invite_operation : public base_operation
-{
-    int64_t research_group_invite_id;
-    account_name_type owner;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
-
-struct transfer_research_tokens_to_research_group_operation : public base_operation
-{
-    int64_t research_id;
-    account_name_type owner;
-    uint32_t amount;
-
-    void validate() const;
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
-
-struct research_update_operation : public base_operation
-{
-    int64_t research_id;
-    string title;
-    string abstract;
-    string permlink;
-    account_name_type owner;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
+        a.insert(contributor);
     }
 };
 
@@ -632,21 +544,6 @@ struct withdraw_vesting_balance_operation : public base_operation
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
         a.insert(owner);
-    }
-};
-
-struct transfer_research_tokens_operation : public base_operation
-{
-    int64_t research_id;
-    account_name_type sender;
-    account_name_type receiver;
-    uint32_t amount;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(sender);
     }
 };
 
@@ -707,35 +604,9 @@ struct vote_for_expertise_allocation_proposal_operation : public base_operation
     }
 };
 
-struct accept_research_token_offer_operation : public base_operation
-{
-    int64_t offer_research_tokens_id;
-    account_name_type buyer;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(buyer);
-    }
-};
-
-struct reject_research_token_offer_operation : public base_operation
-{
-    int64_t offer_research_tokens_id;
-    account_name_type buyer;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(buyer);
-    }
-};
-
 struct create_grant_application_operation : public base_operation
 {
-    int64_t grant_id;
+    external_id_type funding_opportunity_number;
     int64_t research_id;
     account_name_type creator;
 
@@ -839,24 +710,6 @@ struct reserve_asset_operation : public base_operation
 
 FC_REFLECT( deip::protocol::chain_properties, (account_creation_fee)(maximum_block_size) )
 
-FC_REFLECT( deip::protocol::account_create_operation,
-            (fee)
-            (creator)
-            (new_account_name)
-            (owner)
-            (active)
-            (posting)
-            (memo_key)
-            (json_metadata) )
-
-FC_REFLECT( deip::protocol::account_update_operation,
-            (account)
-            (owner)
-            (active)
-            (posting)
-            (memo_key)
-            (json_metadata) )
-
 FC_REFLECT( deip::protocol::transfer_operation, (from)(to)(amount)(memo) )
 FC_REFLECT( deip::protocol::transfer_to_common_tokens_operation, (from)(to)(amount) )
 FC_REFLECT( deip::protocol::withdraw_common_tokens_operation, (account)(total_common_tokens_amount) )
@@ -873,28 +726,25 @@ FC_REFLECT( deip::protocol::recover_account_operation, (account_to_recover)(new_
 FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) )
 
 // DEIP native operations
-FC_REFLECT( deip::protocol::expertise_amount_pair_type, (discipline_id)(amount) )
 FC_REFLECT( deip::protocol::placeholder1_operation, )
 FC_REFLECT( deip::protocol::placeholder2_operation, )
-FC_REFLECT( deip::protocol::create_proposal_operation, (creator)(research_group_id)(data)(action)(expiration_time))
-FC_REFLECT( deip::protocol::vote_proposal_operation, (voter)(proposal_id)(research_group_id))
+FC_REFLECT( deip::protocol::placeholder3_operation, )
+FC_REFLECT( deip::protocol::placeholder4_operation, )
+FC_REFLECT( deip::protocol::placeholder5_operation, )
+FC_REFLECT( deip::protocol::placeholder6_operation, )
+FC_REFLECT( deip::protocol::placeholder7_operation, )
+FC_REFLECT( deip::protocol::placeholder8_operation, )
+FC_REFLECT( deip::protocol::placeholder9_operation, )
 
-FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_token_sale_id)(owner)(amount))
-FC_REFLECT( deip::protocol::approve_research_group_invite_operation, (research_group_invite_id)(owner))
-FC_REFLECT( deip::protocol::reject_research_group_invite_operation, (research_group_invite_id)(owner))
+FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_external_id)(contributor)(amount))
 FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
-FC_REFLECT( deip::protocol::transfer_research_tokens_to_research_group_operation, (research_id)(owner)(amount))
-FC_REFLECT( deip::protocol::research_update_operation, (research_id)(title)(abstract)(permlink)(owner))
 FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds))
 FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance_id)(owner)(amount))
-FC_REFLECT( deip::protocol::transfer_research_tokens_operation, (research_id)(sender)(receiver)(amount))
 FC_REFLECT( deip::protocol::delegate_expertise_operation, (sender)(receiver)(discipline_id))
 FC_REFLECT( deip::protocol::revoke_expertise_delegation_operation, (sender)(discipline_id))
 FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (claimer)(discipline_id)(description))
 FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (proposal_id)(voter)(voting_power))
-FC_REFLECT( deip::protocol::accept_research_token_offer_operation, (offer_research_tokens_id)(buyer))
-FC_REFLECT( deip::protocol::reject_research_token_offer_operation, (offer_research_tokens_id)(buyer))
-FC_REFLECT( deip::protocol::create_grant_application_operation, (grant_id)(research_id)(creator)(application_hash))
+FC_REFLECT( deip::protocol::create_grant_application_operation, (funding_opportunity_number)(research_id)(creator)(application_hash))
 FC_REFLECT( deip::protocol::make_review_for_application_operation, (author)(grant_application_id)(content)(is_positive)(weight))
 FC_REFLECT( deip::protocol::approve_grant_application_operation, (grant_application_id)(approver))
 FC_REFLECT( deip::protocol::reject_grant_application_operation, (grant_application_id)(rejector))
@@ -902,4 +752,4 @@ FC_REFLECT( deip::protocol::create_asset_operation, (issuer)(symbol)(precision)(
 FC_REFLECT( deip::protocol::issue_asset_operation, (issuer)(amount))
 FC_REFLECT( deip::protocol::reserve_asset_operation, (owner)(amount))
 
-// clang-format on
+    // clang-format on

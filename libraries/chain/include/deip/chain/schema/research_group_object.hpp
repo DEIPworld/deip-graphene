@@ -21,7 +21,6 @@ class research_group_object : public object<research_group_object_type, research
       : name(a)
       , description(a)
       , permlink(a)
-      , action_quorums(a)
       , heads(a)
     {
       c(*this);
@@ -30,7 +29,8 @@ class research_group_object : public object<research_group_object_type, research
   public:
     research_group_id_type id;
 
-    account_name_type creator;
+    account_name_type account; // research group account_object
+    account_name_type creator; // creator account_object
 
     shared_string name;
     shared_string description;
@@ -42,7 +42,6 @@ class research_group_object : public object<research_group_object_type, research
 
     bool is_dao;
     percent_type default_quorum;
-    research_group_quorum_action_threshold_map action_quorums;
 
     bool is_centralized;
     account_name_type_set heads;
@@ -53,6 +52,8 @@ class research_group_object : public object<research_group_object_type, research
 
 
 struct by_permlink;
+struct by_account;
+
 typedef multi_index_container<research_group_object,
   indexed_by<
     ordered_unique<
@@ -61,6 +62,13 @@ typedef multi_index_container<research_group_object,
           research_group_object, 
           research_group_id_type, 
           &research_group_object::id>
+    >,
+    ordered_unique<
+      tag<by_account>, 
+        member<
+          research_group_object, 
+          account_name_type, 
+          &research_group_object::account>
     >,
     ordered_unique<
       tag<by_permlink>, 
@@ -229,6 +237,7 @@ typedef multi_index_container<research_group_organization_contract_object,
 
 FC_REFLECT(deip::chain::research_group_object,
   (id)
+  (account)
   (creator)
   (name)
   (permlink)
@@ -238,7 +247,6 @@ FC_REFLECT(deip::chain::research_group_object,
   (is_personal)
   (is_dao)
   (default_quorum)
-  (action_quorums)
   (is_centralized)
   (heads)
   (is_created_by_organization)

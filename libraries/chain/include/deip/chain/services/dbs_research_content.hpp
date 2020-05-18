@@ -22,17 +22,24 @@ protected:
 public:
 
     using research_content_refs_type = std::vector<std::reference_wrapper<const research_content_object>>;
+    using research_content_optional_ref_type = fc::optional<std::reference_wrapper<const research_content_object>>;
 
     const research_content_object& create_research_content(const research_id_type& research_id,
-                                          const research_content_type& type,
-                                          const string& title,
-                                          const string& content,
-                                          const string& permlink,
-                                          const std::vector<account_name_type>& authors,
-                                          const std::vector<research_content_id_type>& references,
-                                          const std::set<string>& external_references);
+                                                           const external_id_type& external_id,
+                                                           const std::string& title,
+                                                           const std::string& content,
+                                                           const std::string& permlink,
+                                                           const research_content_type& type,
+                                                           const flat_set<account_name_type>& authors,
+                                                           const flat_set<external_id_type>& references,
+                                                           const flat_set<string>& foreign_references,
+                                                           const fc::time_point_sec& timestamp);
 
-    const research_content_object& get(const research_content_id_type& id) const;
+    const research_content_object& get_research_content(const research_content_id_type& id) const;
+
+    const research_content_object& get_research_content(const external_id_type& external_id) const;
+
+    const research_content_optional_ref_type get_research_content_if_exists(const external_id_type& external_id) const;
 
     const research_content_object& get_by_permlink(const research_id_type &research_id, const string &permlink) const;
 
@@ -41,8 +48,6 @@ public:
     research_content_refs_type get_by_research_and_type(const research_id_type &research_id, const research_content_type &type) const;
 
     void check_research_content_existence(const research_content_id_type& research_content_id);
-
-    research_content_refs_type get_all_milestones_by_research_id(const research_id_type& research_id) const;
         
     const std::map<discipline_id_type, share_type> get_eci_evaluation(const research_content_id_type& research_content_id) const;
 

@@ -67,23 +67,6 @@ BOOST_AUTO_TEST_CASE(create)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get)
-{
-    try
-    {
-        create_reward_pools();
-        BOOST_CHECK_THROW(data_service.get(10), fc::exception);
-
-        auto& reward_pool = data_service.get(1);
-
-        BOOST_CHECK(reward_pool.id == 1);
-        BOOST_CHECK(reward_pool.research_content_id == 1);
-        BOOST_CHECK(reward_pool.discipline_id == 1);
-        BOOST_CHECK(reward_pool.balance == asset(100, DEIP_SYMBOL));
-        BOOST_CHECK(reward_pool.expertise == 100);
-    }
-    FC_LOG_AND_RETHROW()
-}
 
 BOOST_AUTO_TEST_CASE(get_by_research_content_id_and_discipline_id)
 {

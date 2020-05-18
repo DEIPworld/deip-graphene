@@ -8,7 +8,7 @@
 namespace deip{
 namespace chain{
 
-class dbs_research : public dbs_base{
+class dbs_research : public dbs_base {
 
     friend class dbservice_dbs_factory;
 
@@ -21,10 +21,30 @@ protected:
 public:
 
     using research_refs_type = std::vector<std::reference_wrapper<const research_object>>;
+    using research_optional_ref_type = fc::optional<std::reference_wrapper<const research_object>>;
 
-    const research_object& create(const string& title, const string& abstract, const string& permlink,
-                                  const research_group_id_type& research_group_id, const uint16_t review_share_in_percent,
-                                  const uint16_t dropout_compensation_in_percent, const bool is_private);
+    const research_object& create_research(const research_group_id_type& research_group_id,
+                                           const external_id_type& external_id,
+                                           const string& title,
+                                           const string& abstract,
+                                           const string& permlink,
+                                           const std::set<discipline_id_type>& disciplines,
+                                           const percent& review_share,
+                                           const optional<percent>& compensation_share,
+                                           const bool& is_private,
+                                           const bool& is_finished,
+                                           const percent& owned_tokens,
+                                           const flat_set<account_name_type>& members,
+                                           const time_point_sec& created_at);
+
+    const research_object& update_research(const research_object& research,
+                                           const string& title,
+                                           const string& abstract,
+                                           const string& permlink,
+                                           const bool& is_private,
+                                           const percent& review_share,
+                                           const optional<percent>& compensation_share,
+                                           const flat_set<account_name_type>& members);
 
     research_refs_type get_researches() const;
 
@@ -32,21 +52,29 @@ public:
 
     const research_object& get_research(const research_id_type& id) const;
 
-    const research_object& get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
+    const research_object& get_research(const external_id_type& external_id) const;
+
+      const research_object& get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
+
+    const research_optional_ref_type get_research_if_exists(const research_id_type& id) const;
+
+    const research_optional_ref_type get_research_if_exists(const external_id_type& external_id) const;
+
+    const research_optional_ref_type get_research_by_permlink_if_exists(const research_group_id_type& research_group_id, const string& permlink) const;
 
     void check_research_existence(const research_id_type& id) const;
 
-    void decrease_owned_tokens(const research_object& research, const share_type delta);
+    void decrease_owned_tokens(const research_object& research, const percent& delta);
 
-    void increase_owned_tokens(const research_object& research, const share_type delta);
-    
-    void change_research_review_share_percent(const research_id_type& research_id, const uint16_t review_share_in_percent);
+    void increase_owned_tokens(const research_object& research, const percent& delta);
 
     const std::map<discipline_id_type, share_type> get_eci_evaluation(const research_id_type& research_id) const;
 
     const research_object& update_eci_evaluation(const research_id_type& research_id);
 
     const bool research_exists(const research_id_type& research_id) const;
+
+    const bool research_exists(const external_id_type& external_id) const;
 };
 }
 }

@@ -37,10 +37,7 @@
 #include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
-#include <deip/chain/services/dbs_offer_research_tokens.hpp>
-#include <deip/chain/services/dbs_grant.hpp>
 #include <deip/chain/services/dbs_grant_application.hpp>
-#include <deip/chain/services/dbs_grant_application_review.hpp>
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
 #include <deip/chain/services/dbs_nda_contract.hpp>
 #include <deip/chain/services/dbs_nda_contract_requests.hpp>
@@ -75,8 +72,10 @@ public:
 
     // Accounts
     vector<extended_account> get_accounts(const vector<string>& names) const;
+    vector<account_api_obj> get_all_accounts() const;
     vector<account_id_type> get_account_references(account_id_type account_id) const;
     vector<optional<account_api_obj>> lookup_account_names(const vector<string>& account_names) const;
+    vector<account_api_obj> get_accounts_by_expert_discipline(const discipline_id_type& discipline_id, uint32_t from, uint32_t limit) const;
     set<string> lookup_accounts(const string& lower_bound_name, uint32_t limit) const;
     uint64_t get_account_count() const;
 
@@ -91,17 +90,28 @@ public:
     uint64_t get_witness_count() const;
 
     // Researches
-
-    fc::optional<research_api_obj> get_research_by_id(const research_id_type& research_id) const;
+    fc::optional<research_api_obj> get_research(const external_id_type& id) const;
+    fc::optional<research_api_obj> get_research_by_id(const research_id_type& internal_id) const;
     fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
     fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
+    vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
+    vector<research_listing_api_obj> get_all_researches_listing(const discipline_id_type& discipline_id, const uint32_t& limit = 0) const;
 
     // Research groups
-    fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type& research_group_id) const;
+    fc::optional<research_group_api_obj> get_research_group(const account_name_type& account) const;
+    fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type& internal_id) const;
     fc::optional<research_group_api_obj> get_research_group_by_permlink(const string& permlink) const;
 
+    vector<research_group_api_obj> get_all_research_groups(const bool& is_personal_need) const;
+    bool check_research_group_existence_by_permlink(const string& permlink) const;
+
+    // Proposals
+    fc::optional<proposal_api_obj> get_proposal(const external_id_type& external_id) const;
+    vector<proposal_api_obj> get_proposals_by_creator(const account_name_type& creator) const;
+
     // Research contents
-    fc::optional<research_content_api_obj> get_research_content_by_id(const research_content_id_type& id) const;
+    fc::optional<research_content_api_obj> get_research_content(const external_id_type& id) const;
+    fc::optional<research_content_api_obj> get_research_content_by_id(const research_content_id_type& internal_id) const;
     fc::optional<research_content_api_obj> get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
     fc::optional<research_content_api_obj> get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
 
@@ -109,12 +119,12 @@ public:
     fc::optional<discipline_api_obj> get_discipline(const discipline_id_type& id) const;
     fc::optional<discipline_api_obj> get_discipline_by_name(const string& name) const;
 
-    // Proposals
-    fc::optional<proposal_api_obj> get_proposal(const proposal_id_type id) const;
-
     // Research group tokens
-    fc::optional<research_group_token_api_obj> get_research_group_token_by_account_and_research_group_id(const account_name_type account,
-                                                                                                         const research_group_id_type& research_group_id) const;
+    fc::optional<research_group_token_api_obj> get_research_group_token_by_member(const account_name_type& account,
+                                                                                                         const research_group_id_type& internal_id) const;
+    vector<research_group_token_api_obj> get_research_group_tokens_by_account(const account_name_type& member) const; // TODO: rename this
+    vector<research_group_token_api_obj> get_research_group_tokens_by_research_group(const research_group_id_type& internal_id) const;
+    fc::optional<research_group_token_api_obj> get_research_group_token_by_account_and_research_group_id(const account_name_type& member, const research_group_id_type& internal_id) const;
 
     // Expert tokens
     fc::optional<expert_token_api_obj> get_expert_token(const expert_token_id_type id) const;
@@ -160,14 +170,6 @@ public:
     // Vesting balances
     fc::optional<vesting_balance_api_obj> get_vesting_balance_by_id(const vesting_balance_id_type& vesting_balance_id) const;
 
-    // Offer research tokens
-    fc::optional<offer_research_tokens_api_obj> get_offer(const offer_research_tokens_id_type& id) const;
-    fc::optional<offer_research_tokens_api_obj> get_offer_by_receiver_and_research_id(const account_name_type& receiver, const research_id_type& research_id) const;
-
-    // Grants
-    fc::optional<grant_api_obj> get_grant_with_announced_application_window(const grant_id_type& id) const;
-    vector<grant_api_obj> get_grants_with_announced_application_window_by_grantor(const string& grantor) const;
-
     // Funding opportunities
     fc::optional<funding_opportunity_api_obj> get_funding_opportunity_announcement(const funding_opportunity_id_type& id) const;
     fc::optional<funding_opportunity_api_obj> get_funding_opportunity_announcement_by_number(const string& number) const;
@@ -176,6 +178,11 @@ public:
 
     // Grant applications
     fc::optional<grant_application_api_obj> get_grant_application(const grant_application_id_type& id) const;
+    vector<grant_application_api_obj> get_grant_applications_by_funding_opportunity_number(const std::string& funding_opportunity_number) const;
+    vector<grant_application_api_obj> get_grant_applications_by_research_id(const research_id_type& research_id) const;
+
+    //Grant application reviews
+    vector<grant_application_review_api_obj> get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const;
 
     // Assets
     fc::optional<asset_api_obj> get_asset(const asset_id_type& id) const;
@@ -423,19 +430,25 @@ vector<extended_account> database_api::get_accounts(const vector<string>& names)
 
 vector<extended_account> database_api_impl::get_accounts(const vector<string>& names) const
 {
-    const auto& idx = _db.get_index<account_index>().indices().get<by_name>();
     const auto& vidx = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
+    const auto& accounts_service = _db.obtain_service<chain::dbs_account>();
+    const auto& account_balances_service = _db.obtain_service<chain::dbs_account_balance>();
+
     vector<extended_account> results;
 
     for (auto name : names)
     {
-        auto itr = idx.find(name);
-        if (itr != idx.end())
+        const auto& account_opt = accounts_service.get_account_if_exists(name);
+        if (account_opt.valid())
         {
-            results.push_back(extended_account(*itr, _db));
+            const auto& account = (*account_opt).get();
+            const auto& auth = accounts_service.get_account_authority(name);
+            const auto account_balances = account_balances_service.get_by_owner(name);
 
-            auto vitr = vidx.lower_bound(boost::make_tuple(itr->id, witness_id_type()));
-            while (vitr != vidx.end() && vitr->account == itr->id)
+            results.push_back(extended_account(account, auth, account_balances));
+
+            auto vitr = vidx.lower_bound(boost::make_tuple(account.id, witness_id_type()));
+            while (vitr != vidx.end() && vitr->account == account.id)
             {
                 results.back().witness_votes.insert(_db.get(vitr->witness).owner);
                 ++vitr;
@@ -475,16 +488,23 @@ vector<optional<account_api_obj>> database_api::lookup_account_names(const vecto
 
 vector<optional<account_api_obj>> database_api_impl::lookup_account_names(const vector<string>& account_names) const
 {
+    const auto& accounts_service = _db.obtain_service<chain::dbs_account>();
+    const auto& account_balances_service = _db.obtain_service<chain::dbs_account_balance>();
+
     vector<optional<account_api_obj>> result;
     result.reserve(account_names.size());
 
     for (auto& name : account_names)
     {
-        auto itr = _db.find<account_object, by_name>(name);
+        const auto& account_opt = accounts_service.get_account_if_exists(name);
 
-        if (itr)
+        if (account_opt.valid())
         {
-            result.push_back(account_api_obj(*itr, _db));
+            const auto& account = (*account_opt).get();
+            const auto& auth = accounts_service.get_account_authority(name);
+            const auto account_balances = account_balances_service.get_by_owner(name);
+
+            result.push_back(account_api_obj(account, auth, account_balances));
         }
         else
         {
@@ -519,16 +539,27 @@ uint64_t database_api::get_account_count() const
     return my->_db.with_read_lock([&]() { return my->get_account_count(); });
 }
 
+
 vector<account_api_obj> database_api::get_all_accounts() const
 {
-    vector<account_api_obj> results;
+    return my->_db.with_read_lock([&]() { return my->get_all_accounts(); });
+}
 
-    const auto& idx = my->_db.get_index<account_index>().indicies().get<by_id>();
+vector<account_api_obj> database_api_impl::get_all_accounts() const
+{
+    const auto& idx = _db.get_index<account_index>().indicies().get<by_id>();
+    const auto& accounts_service = _db.obtain_service<chain::dbs_account>();
+    const auto& account_balances_service = _db.obtain_service<chain::dbs_account_balance>();
+
+    vector<account_api_obj> results;
     auto it = idx.lower_bound(0);
     const auto it_end = idx.cend();
     while (it != it_end)
     {
-        results.push_back(account_api_obj(*it, my->_db));
+        const auto& account = *it;
+        const auto& auth = accounts_service.get_account_authority(account.name);
+        const auto account_balances = account_balances_service.get_by_owner(account.name);
+        results.push_back(account_api_obj(account, auth, account_balances));
         ++it;
     }
 
@@ -622,8 +653,7 @@ vector<withdraw_route> database_api::get_withdraw_routes(string account, withdra
     });
 }
 
-optional<account_bandwidth_api_obj> database_api::get_account_bandwidth(string account,
-                                                                        witness::bandwidth_type type) const
+optional<account_bandwidth_api_obj> database_api::get_account_bandwidth(string account, witness::bandwidth_type type) const
 {
     optional<account_bandwidth_api_obj> result;
 
@@ -640,29 +670,38 @@ optional<account_bandwidth_api_obj> database_api::get_account_bandwidth(string a
 
 vector<account_api_obj> database_api::get_accounts_by_expert_discipline(const discipline_id_type& discipline_id, uint32_t from, uint32_t limit) const
 {
-    return my->_db.with_read_lock([&]() {
-        FC_ASSERT(limit <= MAX_LIMIT && limit > 0);
-        FC_ASSERT(discipline_id > 0, "Cannot use root discipline.");
-        FC_ASSERT(from >= 0, "From must be >= 0");
+    FC_ASSERT(limit <= MAX_LIMIT && limit > 0);
+    FC_ASSERT(discipline_id > 0, "Cannot use root discipline.");
+    FC_ASSERT(from >= 0, "From must be >= 0");
 
-        vector<account_api_obj> result;
-        result.reserve(limit);
+    return my->_db.with_read_lock([&]() { return my->get_accounts_by_expert_discipline(discipline_id, from, limit); });
+}
 
-        chain::dbs_account& account_service = my->_db.obtain_service<chain::dbs_account>();
+vector<account_api_obj> database_api_impl::get_accounts_by_expert_discipline(const discipline_id_type& discipline_id, uint32_t from, uint32_t limit) const
+{
+    vector<account_api_obj> result;
+    result.reserve(limit);
 
-        auto accounts_by_expert_discipline = account_service.get_accounts_by_expert_discipline(discipline_id);
+    const auto& accounts_service = _db.obtain_service<chain::dbs_account>();
+    const auto& account_balances_service = _db.obtain_service<chain::dbs_account_balance>();
 
-        if (from >= accounts_by_expert_discipline.size())
-            return result;
+    auto accounts_by_expert_discipline = accounts_service.get_accounts_by_expert_discipline(discipline_id);
 
-        if (from + limit >= accounts_by_expert_discipline.size())
-            limit = accounts_by_expert_discipline.size() - from;
-
-        for (auto i = from; i < from + limit; i++)
-            result.push_back(account_api_obj(accounts_by_expert_discipline[i].get(), my->_db));
-
+    if (from >= accounts_by_expert_discipline.size())
         return result;
-    });
+
+    if (from + limit >= accounts_by_expert_discipline.size())
+        limit = accounts_by_expert_discipline.size() - from;
+
+    for (auto i = from; i < from + limit; i++)
+    {
+        const auto& account = accounts_by_expert_discipline[i].get();
+        const auto& auth = accounts_service.get_account_authority(account.name);
+        const auto account_balances = account_balances_service.get_by_owner(account.name);
+        result.push_back(account_api_obj(account, auth, account_balances));
+    }
+
+    return result;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -852,16 +891,16 @@ bool database_api::verify_authority(const signed_transaction& trx) const
 bool database_api_impl::verify_authority(const signed_transaction& trx) const
 {
     trx.verify_authority(get_chain_id(),
-                         [&](string account_name) {
-                             return authority(_db.get<account_authority_object, by_account>(account_name).active);
-                         },
-                         [&](string account_name) {
-                             return authority(_db.get<account_authority_object, by_account>(account_name).owner);
-                         },
-                         [&](string account_name) {
-                             return authority(_db.get<account_authority_object, by_account>(account_name).posting);
-                         },
-                         DEIP_MAX_SIG_CHECK_DEPTH);
+        [&](string account_name) {
+            return authority(_db.get<account_authority_object, by_account>(account_name).active);
+        },
+        [&](string account_name) {
+            return authority(_db.get<account_authority_object, by_account>(account_name).owner);
+        },
+        [&](string account_name) {
+            return authority(_db.get<account_authority_object, by_account>(account_name).posting);
+        },
+        DEIP_MAX_SIG_CHECK_DEPTH);
     return true;
 }
 
@@ -972,6 +1011,9 @@ state database_api::get_state(string path) const
         _state.props = get_dynamic_global_properties();
         _state.current_route = path;
 
+        dbs_account_balance& account_balances_service = my->_db.obtain_service<chain::dbs_account_balance>();
+        dbs_account& accounts_service = my->_db.obtain_service<chain::dbs_account>();
+
         try
         {
             if (path.size() && path[0] == '/')
@@ -992,7 +1034,12 @@ state database_api::get_state(string path) const
             if (part[0].size() && part[0][0] == '@')
             {
                 auto acnt = part[0].substr(1);
-                _state.accounts[acnt] = extended_account(my->_db.get_account(acnt), my->_db);
+
+                const auto& account = accounts_service.get_account(acnt);
+                const auto& auth = accounts_service.get_account_authority(acnt);
+                const auto balances = account_balances_service.get_by_owner(acnt);
+
+                _state.accounts[acnt] = extended_account(account, auth, balances);
 
                 // auto& eacnt = _state.accounts[acnt];
                 if (part[1] == "transfers")
@@ -1009,8 +1056,8 @@ state database_api::get_state(string path) const
                     //     case operation::tag<account_witness_proxy_operation>::value:
                     //         //   eacnt.vote_history[item.first] =  item.second;
                     //         break;
-                    //     case operation::tag<account_create_operation>::value:
-                    //     case operation::tag<account_update_operation>::value:
+                    //     case operation::tag<create_account_operation>::value:
+                    //     case operation::tag<update_account_operation>::value:
                     //     case operation::tag<witness_update_operation>::value:
                     //     case operation::tag<producer_reward_operation>::value:
                     //     default:
@@ -1038,7 +1085,10 @@ state database_api::get_state(string path) const
             for (const auto& a : accounts)
             {
                 _state.accounts.erase("");
-                _state.accounts[a] = extended_account(my->_db.get_account(a), my->_db);
+                const auto& account = accounts_service.get_account(a);
+                const auto& auth = accounts_service.get_account_authority(a);
+                const auto balances = account_balances_service.get_by_owner(a);
+                _state.accounts[a] = extended_account(account, auth, balances);
             }
 
             _state.witness_schedule = my->_db.get_witness_schedule_object();
@@ -1120,6 +1170,39 @@ vector<discipline_api_obj> database_api::get_disciplines_by_parent_id(const disc
     });
 }
 
+optional<research_api_obj> database_api::get_research(const external_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research(id); });
+}
+
+fc::optional<research_api_obj> database_api_impl::get_research(const external_id_type& id) const
+{
+    optional<research_api_obj> result;
+    const auto& research_service = _db.obtain_service<chain::dbs_research>();
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+    const auto& discipline_service = _db.obtain_service<chain::dbs_discipline>();
+    const auto& research_discipline_relation_service = _db.obtain_service<chain::dbs_research_discipline_relation>();
+
+    const auto& research_opt = research_service.get_research_if_exists(id);
+
+    if (research_opt.valid())
+    {
+        const auto& research = (*research_opt).get();
+        vector<discipline_api_obj> disciplines;
+        const auto& discipline_relations
+            = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
+
+        for (const chain::research_discipline_relation_object& discipline_relation : discipline_relations)
+        {
+            disciplines.push_back(discipline_service.get_discipline(discipline_relation.discipline_id));
+        }
+
+        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+        result = research_api_obj(research, disciplines, research_group_api_obj(research_group));
+    }
+
+    return result;
+}
 
 optional<research_api_obj> database_api::get_research_by_id(const research_id_type& id) const
 {
@@ -1128,31 +1211,30 @@ optional<research_api_obj> database_api::get_research_by_id(const research_id_ty
 
 fc::optional<research_api_obj> database_api_impl::get_research_by_id(const research_id_type& research_id) const
 {
-    const auto& idx = _db.get_index<research_index>().indices().get<by_id>();
-    auto itr = idx.find(research_id);
-    if (itr != idx.end()) {
-        chain::dbs_research &research_service = _db.obtain_service<chain::dbs_research>();
-        chain::dbs_discipline &discipline_service = _db.obtain_service<chain::dbs_discipline>();
+    fc::optional<research_api_obj> result;
+    const auto& research_service = _db.obtain_service<chain::dbs_research>();
+    const auto& discipline_service = _db.obtain_service<chain::dbs_discipline>();
+    const auto& research_discipline_relation_service = _db.obtain_service<chain::dbs_research_discipline_relation>();
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
 
-        auto& research = research_service.get_research(research_id);
+    const auto& research_opt = research_service.get_research_if_exists(research_id);
 
+    if (research_opt.valid())
+    {
+        const auto& research = (*research_opt).get();
         vector<discipline_api_obj> disciplines;
-        chain::dbs_research_discipline_relation& research_discipline_relation_service
-                = _db.obtain_service<chain::dbs_research_discipline_relation>();
 
-        auto research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research_id);
-
-        for (const chain::research_discipline_relation_object& research_discipline_relation : research_discipline_relations)
+        const auto& discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research_id);
+        for (const chain::research_discipline_relation_object& discipline_relation : discipline_relations)
         {
-            disciplines.push_back( discipline_service.get_discipline(research_discipline_relation.discipline_id));
+            disciplines.push_back(discipline_service.get_discipline(discipline_relation.discipline_id));
         }
 
-        optional<research_group_api_obj> research_group = get_research_group_by_id(research.research_group_id);
-
-        return research_api_obj(research, disciplines, research_group->permlink);
+        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+        result = research_api_obj(research, disciplines, research_group_api_obj(research_group));
     }
 
-    return {};
+    return result;
 }
 
 fc::optional<research_api_obj> database_api::get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const
@@ -1162,31 +1244,30 @@ fc::optional<research_api_obj> database_api::get_research_by_permlink(const rese
 
 fc::optional<research_api_obj> database_api_impl::get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const
 {
-    const auto& idx = _db.get_index<research_index>().indices().get<by_permlink>();
-    auto itr = idx.find(std::make_tuple(research_group_id, permlink));
-    if (itr != idx.end()) {
-        chain::dbs_research &research_service = _db.obtain_service<chain::dbs_research>();
-        chain::dbs_discipline &discipline_service = _db.obtain_service<chain::dbs_discipline>();
+    fc::optional<research_api_obj> result;
 
-        auto& research = research_service.get_research_by_permlink(research_group_id, permlink);
+    const auto& research_service = _db.obtain_service<chain::dbs_research>();
+    const auto& discipline_service = _db.obtain_service<chain::dbs_discipline>();
+    const auto& research_discipline_relation_service = _db.obtain_service<chain::dbs_research_discipline_relation>();
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
 
+    const auto& research_opt = research_service.get_research_by_permlink_if_exists(research_group_id, permlink);
+
+    if (research_opt.valid()) {
+
+        const auto& research = (*research_opt).get();
         vector<discipline_api_obj> disciplines;
-        chain::dbs_research_discipline_relation& research_discipline_relation_service
-                = _db.obtain_service<chain::dbs_research_discipline_relation>();
-
-        auto research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
-
-        for (const chain::research_discipline_relation_object& research_discipline_relation : research_discipline_relations)
+        const auto& discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
+        for (const chain::research_discipline_relation_object& discipline_relation : discipline_relations)
         {
-            disciplines.push_back( discipline_service.get_discipline(research_discipline_relation.discipline_id));
+            disciplines.push_back(discipline_service.get_discipline(discipline_relation.discipline_id));
         }
 
-        optional<research_group_api_obj> research_group = get_research_group_by_id(research.research_group_id);
-
-        return research_api_obj(research, disciplines, research_group->permlink);
+        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+        result = research_api_obj(research, disciplines, research_group_api_obj(research_group));
     }
 
-    return {};
+    return result;
 }
 
 fc::optional<research_api_obj> database_api::get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const
@@ -1209,58 +1290,38 @@ fc::optional<research_api_obj> database_api_impl::get_research_by_absolute_perml
     return research;
 }
 
-vector<research_api_obj> database_api::get_researches_by_discipline_id(const uint64_t from,
-                                                                       const uint32_t limit,
-                                                                       const discipline_id_type& discipline_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        FC_ASSERT(limit <= MAX_LIMIT);
-
-        vector<research_api_obj> result;
-        vector<research_id_type> researches;
-        result.reserve(limit);
-
-        const auto& rdr_idx = my->_db.get_index<research_discipline_relation_index>().indicies().get<by_discipline_id>();
-
-        auto rdr_itr = rdr_idx.find(discipline_id);
-
-        while (rdr_itr != rdr_idx.end())
-        {
-            researches.push_back(rdr_itr->research_id);
-            ++rdr_itr;
-        }
-        std::sort(researches.begin(), researches.end());
-
-        FC_ASSERT(from + limit <= researches.size(), "from + limit cannot be bigger than size ${n}", ("n", researches.size()));
-
-        for (auto i = from; i < from + limit; i++) {
-            auto& research = my->_db.get<research_object>(researches[i]);
-
-            vector<discipline_api_obj> disciplines = get_disciplines_by_research(research.id);
-            auto research_group = get_research_group_by_id(research.research_group_id);
-            result.push_back(research_api_obj(research, disciplines, research_group->permlink));
-        }
-
-        return result;
-    });
-}
 
 vector<research_api_obj> database_api::get_researches_by_research_group_id(const research_group_id_type& research_group_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<research_api_obj> results;
+    return my->_db.with_read_lock([&]() { return my->get_researches_by_research_group_id(research_group_id); });
+}
 
-        chain::dbs_research &research_service = my->_db.obtain_service<chain::dbs_research>();
-        auto researches = research_service.get_researches_by_research_group(research_group_id);
+vector<research_api_obj> database_api_impl::get_researches_by_research_group_id(const research_group_id_type& research_group_id) const
+{
+    vector<research_api_obj> results;
 
-        for (const chain::research_object &research : researches) {
-            vector<discipline_api_obj> disciplines = get_disciplines_by_research(research.id);
-            auto research_group = get_research_group_by_id(research.research_group_id);
-            results.push_back(research_api_obj(research, disciplines, research_group->permlink));
+    const auto& research_service = _db.obtain_service<chain::dbs_research>();
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+    const auto& disciplines_service = _db.obtain_service<chain::dbs_discipline>();
+    const auto& research_discipline_relation_service = _db.obtain_service<chain::dbs_research_discipline_relation>();
+
+    const auto& researches = research_service.get_researches_by_research_group(research_group_id);
+
+    for (const chain::research_object& research : researches)
+    {
+        vector<discipline_api_obj> disciplines;
+        const auto& research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
+        for (const chain::research_discipline_relation_object& research_discipline_relation : research_discipline_relations)
+        {
+            disciplines.push_back(disciplines_service.get_discipline(research_discipline_relation.discipline_id));
         }
 
-        return results;
-    });
+
+        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+        results.push_back(research_api_obj(research, disciplines, research_group_api_obj(research_group)));
+    }
+
+    return results;
 }
 
 bool database_api::check_research_existence_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const
@@ -1268,6 +1329,25 @@ bool database_api::check_research_existence_by_permlink(const research_group_id_
     const auto& idx = my->_db.get_index<research_index>().indices().get<by_permlink>();
     auto itr = idx.find(std::make_tuple(research_group_id, permlink));
     return itr != idx.end();
+}
+
+fc::optional<research_content_api_obj> database_api::get_research_content(const external_id_type& id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_content(id); });
+}
+
+fc::optional<research_content_api_obj> database_api_impl::get_research_content(const external_id_type& id) const
+{
+    fc::optional<research_content_api_obj> result;
+    const auto& research_content_service = _db.obtain_service<chain::dbs_research_content>();
+
+    const auto& research_content_opt = research_content_service.get_research_content_if_exists(id);
+    if (research_content_opt.valid())
+    {
+        const auto& research_content = (*research_content_opt).get();
+        result = research_content_api_obj(research_content);
+    }
+    return result;
 }
 
 fc::optional<research_content_api_obj> database_api::get_research_content_by_id(const research_content_id_type& id) const
@@ -1282,7 +1362,7 @@ fc::optional<research_content_api_obj> database_api_impl::get_research_content_b
 
     if (itr != idx.end()) {
         chain::dbs_research_content &research_content_service = _db.obtain_service<chain::dbs_research_content>();
-        return research_content_service.get(id);
+        return research_content_service.get_research_content(id);
     }
 
     return {};
@@ -1350,20 +1430,6 @@ vector<research_content_api_obj> database_api::get_research_content_by_type(cons
         vector<research_content_api_obj> results;
         chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
         auto contents = research_content_service.get_by_research_and_type(research_id, type);
-
-        for (const chain::research_content_object &content : contents) {
-            results.push_back(research_content_api_obj(content));
-        }
-        return results;
-    });
-}
-
-vector<research_content_api_obj> database_api::get_all_milestones_by_research_id(const research_id_type& research_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<research_content_api_obj> results;
-        chain::dbs_research_content &research_content_service = my->_db.obtain_service<chain::dbs_research_content>();
-        auto contents = research_content_service.get_all_milestones_by_research_id(research_id);
 
         for (const chain::research_content_object &content : contents) {
             results.push_back(research_content_api_obj(content));
@@ -1464,102 +1530,133 @@ fc::optional<expert_token_api_obj> database_api_impl::get_expert_token_by_accoun
     return {};
 }
 
-vector<proposal_api_obj>
-database_api::get_proposals_by_research_group_id(const research_group_id_type research_group_id) const
+fc::optional<proposal_api_obj> database_api::get_proposal(const external_id_type& external_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<proposal_api_obj> results;
-
-        chain::dbs_proposal& proposal_service = my->_db.obtain_service<chain::dbs_proposal>();
-        auto proposals = proposal_service.get_proposals_by_research_group_id(research_group_id);
-
-        for (const chain::proposal_object& proposal : proposals)
-        {
-            auto& votes = proposal_service.get_votes_for(proposal.id);
-            vector<proposal_vote_api_obj> votes_for;
-            for (const proposal_vote_object& vote : votes)
-                votes_for.push_back(vote);
-            results.push_back(proposal_api_obj(proposal, votes_for));
-        }
-
-        return results;
-    });
+    return my->_db.with_read_lock([&]() { return my->get_proposal(external_id); });
 }
 
-fc::optional<proposal_api_obj> database_api::get_proposal(const proposal_id_type id) const
+fc::optional<proposal_api_obj> database_api_impl::get_proposal(const external_id_type& external_id) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_proposal(id); });
-}
+    fc::optional<proposal_api_obj> result;
 
-fc::optional<proposal_api_obj> database_api_impl::get_proposal(const proposal_id_type id) const
-{
-    const auto& idx = _db.get_index<proposal_index>().indices().get<by_id>();
-    auto itr = idx.find(id);
+    const auto& proposals_service = _db.obtain_service<chain::dbs_proposal>();
+    const auto& proposal_opt = proposals_service.get_proposal_if_exists(external_id);
 
-    if (itr != idx.end()) {
-        chain::dbs_proposal &proposal_service = _db.obtain_service<chain::dbs_proposal>();
-        vector<proposal_vote_api_obj> votes_for;
-        auto& votes = proposal_service.get_votes_for(id);
-        for (const proposal_vote_object& vote : votes)
-            votes_for.push_back(vote);
-        return proposal_api_obj(*itr, votes_for);
+    if (proposal_opt.valid())
+    {
+        result = proposal_api_obj((*proposal_opt).get());
     }
 
-    return {};
+    return result;
 }
 
-vector<research_group_token_api_obj>
-database_api::get_research_group_tokens_by_account(const account_name_type account) const
+vector<proposal_api_obj> database_api::get_proposals_by_creator(const account_name_type& creator) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<research_group_token_api_obj> results;
-
-        chain::dbs_research_group& research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
-        auto research_group_tokens = research_group_service.get_tokens_by_account(account);
-
-        for (const chain::research_group_token_object& research_group_token : research_group_tokens)
-        {
-            results.push_back(research_group_token_api_obj(research_group_token));
-        }
-
-        return results;
-    });
+    return my->_db.with_read_lock([&]() { return my->get_proposals_by_creator(creator); });
 }
 
-vector<research_group_token_api_obj>
-database_api::get_research_group_tokens_by_research_group(const research_group_id_type& research_group_id) const
+vector<proposal_api_obj> database_api_impl::get_proposals_by_creator(const account_name_type& creator) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<research_group_token_api_obj> results;
+    vector<proposal_api_obj> results;
 
-        chain::dbs_research_group& research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
-        auto research_group_tokens = research_group_service.get_research_group_tokens(research_group_id);
+    const auto& proposal_service = _db.obtain_service<chain::dbs_proposal>();
 
-        for (const chain::research_group_token_object& research_group_token : research_group_tokens)
-        {
-            results.push_back(research_group_token_api_obj(research_group_token));
-        }
+    const auto& proposals = proposal_service.get_proposals_by_creator(creator);
+    for (const chain::proposal_object& proposal : proposals)
+    {
+        results.push_back(proposal_api_obj(proposal));
+    }
 
-        return results;
-    });
+    return results;
 }
 
-fc::optional<research_group_token_api_obj> database_api::get_research_group_token_by_account_and_research_group_id(const account_name_type account,
-                                                                                                                   const research_group_id_type& research_group_id) const
+// should be renamed
+vector<research_group_token_api_obj> database_api::get_research_group_tokens_by_account(const account_name_type& member) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_research_group_token_by_account_and_research_group_id(account, research_group_id); });
+    return my->_db.with_read_lock([&]() { return my->get_research_group_tokens_by_account(member); });
 }
 
-fc::optional<research_group_token_api_obj> database_api_impl::get_research_group_token_by_account_and_research_group_id(const account_name_type account,
-                                                                                                                        const research_group_id_type& research_group_id) const
+vector<research_group_token_api_obj> database_api_impl::get_research_group_tokens_by_account(const account_name_type& member) const
 {
-    const auto& idx = _db.get_index<research_group_token_index>().indices().get<by_owner>();
-    auto itr = idx.find(std::make_tuple(account, research_group_id));
+    vector<research_group_token_api_obj> results;
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
 
-    if (itr != idx.end())
-        return *itr;
+    const auto& rg_tokens = research_groups_service.get_research_group_tokens_by_member(member);
+    for (const chain::research_group_token_object& rgt : rg_tokens)
+    {
+        const auto& rg = research_groups_service.get_research_group(rgt.research_group_id);
+        results.push_back(research_group_token_api_obj(rgt, research_group_api_obj(rg)));
+    }
+    return results;
+}
 
-    return {};
+vector<research_group_token_api_obj> database_api::get_research_group_tokens_by_research_group(const research_group_id_type& internal_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_group_tokens_by_research_group(internal_id); });
+}
+
+vector<research_group_token_api_obj> database_api_impl::get_research_group_tokens_by_research_group(const research_group_id_type& internal_id) const
+{
+    vector<research_group_token_api_obj> results;
+
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+    const auto& rg_tokens = research_groups_service.get_research_group_tokens(internal_id);
+    const auto& rg = research_groups_service.get_research_group(internal_id);
+
+    for (const chain::research_group_token_object& rgt : rg_tokens)
+    {
+        results.push_back(research_group_token_api_obj(rgt, research_group_api_obj(rg)));
+    }
+    return results;
+}
+
+fc::optional<research_group_token_api_obj> database_api::get_research_group_token_by_account_and_research_group_id(
+  const account_name_type& member,
+  const research_group_id_type& internal_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_group_token_by_account_and_research_group_id(member, internal_id); });
+}
+
+fc::optional<research_group_token_api_obj> database_api_impl::get_research_group_token_by_account_and_research_group_id(
+  const account_name_type& member,
+  const research_group_id_type& internal_id) const
+{
+    fc::optional<research_group_token_api_obj> result;
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+    const auto& rgt_opt = research_groups_service.get_research_group_token_by_member_if_exists(member, internal_id);
+    if (rgt_opt.valid())
+    {
+        const auto& rgt = (*rgt_opt).get();
+        const auto& rg = research_groups_service.get_research_group(rgt.research_group_id);
+        result = research_group_token_api_obj(rgt, research_group_api_obj(rg));
+    }
+    return result;
+}
+
+fc::optional<research_group_api_obj> database_api::get_research_group(const account_name_type& account) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_group(account); });
+}
+
+fc::optional<research_group_api_obj> database_api_impl::get_research_group(const account_name_type& id) const
+{
+    fc::optional<research_group_api_obj> result;
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+    const auto& accounts_service = _db.obtain_service<chain::dbs_account>();
+    const auto& account_balances_service = _db.obtain_service<chain::dbs_account_balance>();
+    
+    const auto& research_group_opt = research_groups_service.get_research_group_by_account_if_exists(id);
+
+    if (research_group_opt.valid())
+    {
+        const auto& research_group = (*research_group_opt).get();
+        const auto& account = accounts_service.get_account(research_group.account);
+        const auto& auth = accounts_service.get_account_authority(account.name);
+        const auto account_balances = account_balances_service.get_by_owner(account.name);
+        result = research_group_api_obj(research_group, account_api_obj(account, auth, account_balances));
+    }
+
+    return result;
 }
 
 fc::optional<research_group_api_obj> database_api::get_research_group_by_id(const research_group_id_type research_group_id) const
@@ -1569,14 +1666,23 @@ fc::optional<research_group_api_obj> database_api::get_research_group_by_id(cons
 
 fc::optional<research_group_api_obj> database_api_impl::get_research_group_by_id(const research_group_id_type& research_group_id) const
 {
-    const auto& idx = _db.get_index<research_group_index>().indices().get<by_id>();
-    auto itr = idx.find(research_group_id);
-    if (itr != idx.end()) {
-        chain::dbs_research_group &research_group_service = _db.obtain_service<chain::dbs_research_group>();
-        return research_group_service.get_research_group(research_group_id);
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+    const auto& accounts_service = _db.obtain_service<chain::dbs_account>();
+    const auto& account_balances_service = _db.obtain_service<chain::dbs_account_balance>();
+    
+    fc::optional<research_group_api_obj> result;
+    const auto& research_group_opt = research_groups_service.get_research_group_if_exists(research_group_id);
+
+    if (research_group_opt.valid())
+    {
+        const auto& research_group = (*research_group_opt).get();
+        const auto& account = accounts_service.get_account(research_group.account);
+        const auto& auth = accounts_service.get_account_authority(account.name);
+        const auto account_balances = account_balances_service.get_by_owner(account.name);
+        result = research_group_api_obj(research_group, account_api_obj(account, auth, account_balances));
     }
 
-    return {};
+    return result;
 }
 
 fc::optional<research_group_api_obj> database_api::get_research_group_by_permlink(const string& permlink) const
@@ -1586,39 +1692,61 @@ fc::optional<research_group_api_obj> database_api::get_research_group_by_permlin
 
 fc::optional<research_group_api_obj> database_api_impl::get_research_group_by_permlink(const string& permlink) const
 {
-    const auto& idx = _db.get_index<research_group_index>().indices().get<by_permlink>();
-    auto itr = idx.find(permlink, fc::strcmp_less());
-    if (itr != idx.end())
-        return *itr;
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+    const auto& accounts_service = _db.obtain_service<chain::dbs_account>();
+    const auto& account_balances_service = _db.obtain_service<chain::dbs_account_balance>();
 
-    return {};
+    fc::optional<research_group_api_obj> result;
+    const auto& research_group_opt = research_groups_service.get_research_group_by_permlink_if_exists(permlink);
+
+    if (research_group_opt.valid())
+    {
+        const auto& research_group = (*research_group_opt).get();
+        const auto& account = accounts_service.get_account(research_group.account);
+        const auto& auth = accounts_service.get_account_authority(account.name);
+        const auto account_balances = account_balances_service.get_by_owner(account.name);
+        result = research_group_api_obj(research_group, account_api_obj(account, auth, account_balances));
+    }
+
+    return result;
 }
 
 vector<research_group_api_obj> database_api::get_all_research_groups(const bool& is_personal_need) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<research_group_api_obj> results;
-        chain::dbs_research_group &research_group_service = my->_db.obtain_service<chain::dbs_research_group>();
-        auto research_groups = research_group_service.get_all_research_groups(is_personal_need);
+    return my->_db.with_read_lock([&]() { return my->get_all_research_groups(is_personal_need); });
+}
 
-        for (const chain::research_group_object &research_group : research_groups) {
-            results.push_back(research_group_api_obj(research_group));
-        }
+vector<research_group_api_obj> database_api_impl::get_all_research_groups(const bool& is_personal_need) const
+{
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+    const auto& accounts_service = _db.obtain_service<chain::dbs_account>();
+    const auto& account_balances_service = _db.obtain_service<chain::dbs_account_balance>();
 
-        return results;
-    });
+    vector<research_group_api_obj> results;
+    const auto research_groups = research_groups_service.get_all_research_groups(is_personal_need);
+    for (const auto& wrap : research_groups) 
+    {
+        const auto& research_group = wrap.get();
+        const auto& account = accounts_service.get_account(research_group.account);
+        const auto& auth = accounts_service.get_account_authority(account.name);
+        const auto account_balances = account_balances_service.get_by_owner(account.name);
+
+        results.push_back(research_group_api_obj(research_group, account_api_obj(account, auth, account_balances)));
+    }
+
+    return results;
 }
 
 bool database_api::check_research_group_existence_by_permlink(const string& permlink) const
 {
-    const auto& idx = my->_db.get_index<research_group_index>().indices().get<by_permlink>();
-    auto itr = idx.find(permlink, fc::strcmp_less());
-    if (itr != idx.end())
-        return true;
-    else
-        return false;
+    return my->_db.with_read_lock([&]() { return my->check_research_group_existence_by_permlink(permlink); });
 }
 
+bool database_api_impl::check_research_group_existence_by_permlink(const string& permlink) const
+{
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+    return research_groups_service.research_group_exists(permlink);
+}
 
 fc::optional<research_token_sale_api_obj>
 database_api::get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const
@@ -1761,15 +1889,14 @@ database_api::get_research_token_sale_contributions_by_contributor(const account
     });
 }
 
-vector<discipline_api_obj>
-database_api::get_disciplines_by_research(const research_id_type& research_id) const
+vector<discipline_api_obj> database_api::get_disciplines_by_research(const research_id_type& research_id) const
 {
     return my->_db.with_read_lock([&]() {
         vector<discipline_api_obj> results;
         chain::dbs_research_discipline_relation& research_discipline_relation_service
                 = my->_db.obtain_service<chain::dbs_research_discipline_relation>();
 
-        auto research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research_id);
+        const auto& research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research_id);
 
         for (const chain::research_discipline_relation_object& research_discipline_relation : research_discipline_relations)
         {
@@ -1850,97 +1977,91 @@ vector<research_group_invite_api_obj> database_api::get_research_group_invites_b
     });
 }
 
-vector<research_listing_api_obj> database_api::get_research_listing(const discipline_id_type& discipline_id,
-                                                                    const uint64_t& from,
-                                                                    const uint32_t& limit = 100) const
+vector<research_listing_api_obj> database_api::get_all_researches_listing(const discipline_id_type& discipline_id, const uint32_t& limit = 0) const
 {
-    return my->_db.with_read_lock([&]() {
-        FC_ASSERT(limit <= MAX_LIMIT, "Limit of ${l} is greater than maximum allowed", ("l", limit));
-
-        vector<research_listing_api_obj> results;
-        results.reserve(limit);
-
-      chain::dbs_expertise_contribution& expertise_contribution_service = my->_db.obtain_service<dbs_expertise_contribution>();
-
-        auto researches = get_researches_by_discipline_id(from, limit, discipline_id);
-        for (auto research : researches) {
-            auto research_group_members = get_research_group_tokens_by_research_group(research.research_group_id);
-            vector<account_name_type> group_members;
-            for (auto member : research_group_members) {
-                group_members.push_back(member.owner);
-            }
-
-            auto research_group = get_research_group_by_id(research.research_group_id);
-            auto expertise_contributions = expertise_contribution_service.get_expertise_contributions_by_research(research.id);
-
-            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, *research_group, group_members, expertise_contributions.size());
-            results.push_back(listing_api_obj);
-        }
-
-        return results;
-
-    });
+    return my->_db.with_read_lock([&]() { return my->get_all_researches_listing(discipline_id, limit); });
 }
 
-vector<research_listing_api_obj> database_api::get_all_researches_listing(const discipline_id_type& discipline_id,
-                                                                          const uint32_t& limit = 0) const
+vector<research_listing_api_obj> database_api_impl::get_all_researches_listing(const discipline_id_type& discipline_id, const uint32_t& limit) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<research_listing_api_obj> results;
-        chain::dbs_expertise_contribution& expertise_contributions_service = my->_db.obtain_service<dbs_expertise_contribution>();
+    vector<research_listing_api_obj> results;
 
-        vector<research_api_obj> researches;
+    const auto& expertise_contributions_service = _db.obtain_service<dbs_expertise_contribution>();
+    const auto& research_groups_service = _db.obtain_service<dbs_research_group>();
+    const auto& discipline_service = _db.obtain_service<chain::dbs_discipline>();
+    const auto& research_discipline_relation_service = _db.obtain_service<chain::dbs_research_discipline_relation>();
 
 
-        if (discipline_id != 0) {
-            const auto& rdr_idx = my->_db.get_index<research_discipline_relation_index>().indicies().get<by_discipline_id>();
-            auto rdr_itr = rdr_idx.find(discipline_id);
-            while (rdr_itr != rdr_idx.end())
+    vector<research_api_obj> researches;
+    if (discipline_id != 0)
+    {
+        const auto& rdr_idx = _db.get_index<research_discipline_relation_index>().indicies().get<by_discipline_id>();
+        auto rdr_itr = rdr_idx.find(discipline_id);
+        while (rdr_itr != rdr_idx.end())
+        {
+            auto& research = _db.get<research_object>(rdr_itr->research_id);
+            vector<discipline_api_obj> disciplines;
+            const auto& discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
+            for (const chain::research_discipline_relation_object& discipline_relation : discipline_relations)
             {
-                auto& research = my->_db.get<research_object>(rdr_itr->research_id);
-                vector<discipline_api_obj> disciplines = get_disciplines_by_research(research.id);
-                auto research_group = get_research_group_by_id(research.research_group_id);
-                researches.push_back(research_api_obj(research, disciplines, research_group->permlink));
-                ++rdr_itr;
+                disciplines.push_back(discipline_service.get_discipline(discipline_relation.discipline_id));
             }
-        } else {
-            const auto& rdr_idx = my->_db.get_index<research_index>().indicies().get<by_id>();
-            auto rdr_itr = rdr_idx.lower_bound(0);
-            while (rdr_itr != rdr_idx.end())
+
+            const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+            researches.push_back(research_api_obj(research, disciplines, research_group_api_obj(research_group)));
+            ++rdr_itr;
+        }
+    }
+    else
+    {
+        const auto& rdr_idx = _db.get_index<research_index>().indicies().get<by_id>();
+        auto rdr_itr = rdr_idx.lower_bound(0);
+        while (rdr_itr != rdr_idx.end())
+        {
+            auto& research = *rdr_itr;
+            vector<discipline_api_obj> disciplines;
+
+            const auto& discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
+            for (const chain::research_discipline_relation_object& discipline_relation : discipline_relations)
             {
-                auto& research = *rdr_itr;
-                vector<discipline_api_obj> disciplines = get_disciplines_by_research(research.id);
-                auto research_group = get_research_group_by_id(research.research_group_id);
-                researches.push_back(research_api_obj(research, disciplines, research_group->permlink));
-                ++rdr_itr;
+                disciplines.push_back(discipline_service.get_discipline(discipline_relation.discipline_id));
+            }
+
+            const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+            researches.push_back(research_api_obj(research, disciplines, research_group_api_obj(research_group)));
+            ++rdr_itr;
+        }
+    }
+
+    for (auto research : researches)
+    {
+        auto research_group_members = get_research_group_tokens_by_research_group(research.research_group_id);
+        vector<account_name_type> group_members;
+        for (auto member : research_group_members)
+        {
+            group_members.push_back(member.owner);
+        }
+
+        auto research_group = get_research_group_by_id(research.research_group_id);
+        auto expertise_contributions
+            = expertise_contributions_service.get_expertise_contributions_by_research(research.id);
+
+        research_listing_api_obj listing_api_obj = research_listing_api_obj(research, *research_group, group_members, expertise_contributions.size());
+
+        if (limit != 0)
+        {
+            if (results.size() + 1 > limit)
+            {
+                break;
             }
         }
 
-        for (auto research : researches) {
-             auto research_group_members = get_research_group_tokens_by_research_group(research.research_group_id);
-            vector<account_name_type> group_members;
-            for (auto member : research_group_members) {
-                group_members.push_back(member.owner);
-            }
-            
-            auto research_group = get_research_group_by_id(research.research_group_id);
-            auto expertise_contributions = expertise_contributions_service.get_expertise_contributions_by_research(research.id);
+        results.push_back(listing_api_obj);
+    }
 
-            research_listing_api_obj listing_api_obj = research_listing_api_obj(research, *research_group, group_members, expertise_contributions.size());
-
-            if (limit != 0) {
-                if (results.size() + 1 > limit) {
-                    break;
-                }
-            }
-            
-            results.push_back(listing_api_obj);
-        }
-
-        return results;
-
-    });
+    return results;
 }
+
 
 vector<expertise_contribution_object_api_obj> database_api::get_expertise_contributions_by_research(const research_id_type& research_id) const
 {
@@ -2123,27 +2244,30 @@ vector<review_api_obj> database_api::get_reviews_by_author(const account_name_ty
 
 vector<grant_application_review_api_obj> database_api::get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<grant_application_review_api_obj> results;
-        chain::dbs_grant_application_review& grant_application_review_service = my->_db.obtain_service<chain::dbs_grant_application_review>();
-        auto reviews = grant_application_review_service.get_grant_application_reviews(grant_application_id);
+    return my->_db.with_read_lock([&]() { return my->get_reviews_by_grant_application(grant_application_id); });
+}
 
-        for (const chain::grant_application_review_object& review : reviews)
+vector<grant_application_review_api_obj> database_api_impl::get_reviews_by_grant_application(const grant_application_id_type& grant_application_id) const
+{
+    vector<grant_application_review_api_obj> results;
+    chain::dbs_grant_application& grant_application_service = _db.obtain_service<chain::dbs_grant_application>();
+    auto reviews = grant_application_service.get_grant_application_reviews(grant_application_id);
+
+    for (const chain::grant_application_review_object& review : reviews)
+    {
+        vector<discipline_api_obj> disciplines;
+
+        for (const auto discipline_id : review.disciplines)
         {
-            vector<discipline_api_obj> disciplines;
-
-            for (const auto discipline_id : review.disciplines)
-            {
-                auto discipline_ao = get_discipline(discipline_id);
-                disciplines.push_back(*discipline_ao);
-            }
-
-            grant_application_review_api_obj api_obj = grant_application_review_api_obj(review, disciplines);
-            results.push_back(api_obj);
+            auto discipline_ao = get_discipline(discipline_id);
+            disciplines.push_back(*discipline_ao);
         }
 
-        return results;
-    });
+        grant_application_review_api_obj api_obj = grant_application_review_api_obj(review, disciplines);
+        results.push_back(api_obj);
+    }
+
+    return results;
 }
 
 fc::optional<research_token_api_obj> database_api::get_research_token_by_id(const research_token_id_type& research_token_id) const
@@ -2424,112 +2548,6 @@ database_api::get_vesting_balance_by_owner(const account_name_type &owner) const
     });
 }
 
-fc::optional<offer_research_tokens_api_obj> database_api::get_offer(const offer_research_tokens_id_type& id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_offer(id); });
-}
-
-fc::optional<offer_research_tokens_api_obj> database_api_impl::get_offer(const offer_research_tokens_id_type& id) const
-{
-    const auto& idx = _db.get_index<offer_research_tokens_index>().indices().get<by_id>();
-    auto itr = idx.find(id);
-    if (itr != idx.end())
-        return *itr;
-
-    return {};
-}
-
-vector<offer_research_tokens_api_obj> database_api::get_offers_by_receiver(const account_name_type& receiver) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<offer_research_tokens_api_obj> results;
-        chain::dbs_offer_research_tokens& offer_service
-                = my->_db.obtain_service<chain::dbs_offer_research_tokens>();
-
-        auto offers = offer_service.get_offers_by_receiver(receiver);
-
-        for (const chain::offer_research_tokens_object& offer : offers)
-        {
-            results.push_back(offer);
-        }
-
-        return results;
-    });
-}
-
-fc::optional<offer_research_tokens_api_obj> database_api::get_offer_by_receiver_and_research_id(const account_name_type& receiver,
-                                                                                                const research_id_type& research_id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_offer_by_receiver_and_research_id(receiver, research_id); });
-}
-
-fc::optional<offer_research_tokens_api_obj> database_api_impl::get_offer_by_receiver_and_research_id(const account_name_type& receiver,
-                                                                                                     const research_id_type& research_id) const
-{
-    const auto& idx = _db.get_index<offer_research_tokens_index>().indices().get<by_receiver_and_research_id>();
-    auto itr = idx.find(std::make_tuple(receiver, research_id));
-    if (itr != idx.end())
-        return fc::optional<offer_research_tokens_api_obj>(*itr);
-
-    return {};
-}
-
-vector<offer_research_tokens_api_obj> database_api::get_offers_by_research_id(const research_id_type& research_id) const
-{
-    return my->_db.with_read_lock([&]() {
-        vector<offer_research_tokens_api_obj> results;
-        chain::dbs_offer_research_tokens& offer_service
-                = my->_db.obtain_service<chain::dbs_offer_research_tokens>();
-
-        auto offers = offer_service.get_offers_by_research_id(research_id);
-
-        for (const chain::offer_research_tokens_object& offer : offers)
-        {
-            results.push_back(offer);
-        }
-
-        return results;
-    });
-}
-
-fc::optional<grant_api_obj> database_api::get_grant_with_announced_application_window(const grant_id_type& id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_grant_with_announced_application_window(id); });
-}
-
-fc::optional<grant_api_obj> database_api_impl::get_grant_with_announced_application_window(const grant_id_type& id) const
-{
-    fc::optional<grant_api_obj> result;
-    chain::dbs_grant& grant_service = _db.obtain_service<chain::dbs_grant>();
-    const auto& opt = grant_service.get_grant_with_announced_application_window_if_exists(id);
-
-    if (opt.valid())
-    {
-        result = grant_api_obj(*opt);
-    }
-
-    return result;
-}
-
-vector<grant_api_obj> database_api::get_grants_with_announced_application_window_by_grantor(const string& grantor) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_grants_with_announced_application_window_by_grantor(grantor); });
-}
-
-vector<grant_api_obj> database_api_impl::get_grants_with_announced_application_window_by_grantor(const string& grantor) const
-{
-    vector<grant_api_obj> results;
-    chain::dbs_grant& grant_service = _db.obtain_service<chain::dbs_grant>();
-
-    auto grants = grant_service.get_grants_with_announced_application_window_by_grantor(grantor);
-    for (const chain::grant_object& grant: grants)
-    {
-        results.push_back(grant_api_obj(grant));
-    }
-
-    return results;
-}
-
 fc::optional<grant_application_api_obj> database_api::get_grant_application(const grant_application_id_type& id) const
 {
     return my->_db.with_read_lock([&]() { return my->get_grant_application(id); });
@@ -2537,42 +2555,52 @@ fc::optional<grant_application_api_obj> database_api::get_grant_application(cons
 
 fc::optional<grant_application_api_obj> database_api_impl::get_grant_application(const grant_application_id_type& id) const
 {
-    const auto& idx = _db.get_index<grant_application_index>().indices().get<by_id>();
-    auto itr = idx.find(id);
-    if (itr != idx.end())
-        return *itr;
-    else
-        return {};
+    fc::optional<grant_application_api_obj> result;
+
+    chain::dbs_grant_application& grant_application_service = _db.obtain_service<chain::dbs_grant_application>();
+    const auto& opt = grant_application_service.get_grant_application_if_exists(id);
+
+    if (opt.valid())
+    {
+        result = grant_application_api_obj(*opt);
+    }
+
+    return result;
 }
 
-vector<grant_application_api_obj> database_api::get_grant_applications_by_grant(const grant_id_type& grant_id) const
+vector<grant_application_api_obj> database_api::get_grant_applications_by_funding_opportunity_number(const std::string& funding_opportunity_number) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<grant_application_api_obj> results;
-        chain::dbs_grant_application& grant_application_service = my->_db.obtain_service<chain::dbs_grant_application>();
-        auto grant_applications = grant_application_service.get_grant_applications_by_grant(grant_id);
+    return my->_db.with_read_lock([&]() { return my->get_grant_applications_by_funding_opportunity_number(funding_opportunity_number); });
+}
 
-        for (const chain::grant_application_object& grant_application : grant_applications)
-            results.push_back(grant_application);
+vector<grant_application_api_obj> database_api_impl::get_grant_applications_by_funding_opportunity_number(const std::string& funding_opportunity_number) const
+{
+    vector<grant_application_api_obj> results;
+    chain::dbs_grant_application& grant_application_service = _db.obtain_service<chain::dbs_grant_application>();
+    auto grant_applications = grant_application_service.get_grant_applications_by_funding_opportunity_number(funding_opportunity_number);
 
-        return results;
-    });
+    for (const chain::grant_application_object& grant_application : grant_applications)
+        results.push_back(grant_application);
+
+    return results;
+}
+
+vector<grant_application_api_obj> database_api::get_grant_applications_by_research_id(const research_id_type& research_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_grant_applications_by_research_id(research_id); });
 }
 
 vector<grant_application_api_obj>
-database_api::get_grant_applications_by_research_id(const research_id_type& research_id) const
+database_api_impl::get_grant_applications_by_research_id(const research_id_type& research_id) const
 {
-    return my->_db.with_read_lock([&]() {
-        vector<grant_application_api_obj> results;
-        chain::dbs_grant_application& grant_application_service = my->_db.obtain_service<chain::dbs_grant_application>();
+    vector<grant_application_api_obj> results;
+    chain::dbs_grant_application& grant_application_service = _db.obtain_service<chain::dbs_grant_application>();
+    auto grant_applications = grant_application_service.get_grant_applications_by_research_id(research_id);
 
-        auto grant_applications = grant_application_service.get_grant_applications_by_research_id(research_id);
+    for (const chain::grant_application_object& grant_application : grant_applications)
+        results.push_back(grant_application);
 
-        for (const chain::grant_application_object& grant_application : grant_applications)
-            results.push_back(grant_application);
-
-        return results;
-    });
+    return results;
 }
 
 fc::optional<funding_opportunity_api_obj> database_api::get_funding_opportunity_announcement(const funding_opportunity_id_type& id) const
@@ -2922,7 +2950,7 @@ vector<award_api_obj> database_api_impl::get_awards_by_funding_opportunity(const
     {
         const auto& award = wrap.get();
         vector<award_recipient_api_obj> awardees_list;
-        auto awardees = awards_service.get_award_recipients_by_award(fc::to_string(award.award_number));
+        auto awardees = awards_service.get_award_recipients_by_award(award.award_number);
         for (auto& awardee_wrap : awardees)
         {
             const auto& awardee = awardee_wrap.get();

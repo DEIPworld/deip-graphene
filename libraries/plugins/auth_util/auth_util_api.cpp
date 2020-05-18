@@ -43,15 +43,19 @@ std::shared_ptr<deip::plugin::auth_util::auth_util_plugin> auth_util_api_impl::g
     return app.get_plugin<auth_util_plugin>("auth_util");
 }
 
-void auth_util_api_impl::check_authority_signature(const check_authority_signature_params& args,
-                                                   check_authority_signature_result& result)
+void auth_util_api_impl::check_authority_signature(
+  const check_authority_signature_params& args,
+  check_authority_signature_result& result)
 {
     std::shared_ptr<chain::database> db = app.chain_database();
     const chain::account_authority_object& acct
         = db->get<chain::account_authority_object, chain::by_account>(args.account_name);
+    
+    bool allow_posting = false;
     protocol::authority auth;
     if ((args.level == "posting") || (args.level == "p"))
     {
+        allow_posting = true;
         auth = protocol::authority(acct.posting);
     }
     else if ((args.level == "active") || (args.level == "a") || (args.level == ""))
@@ -74,12 +78,22 @@ void auth_util_api_impl::check_authority_signature(const check_authority_signatu
     }
 
     flat_set<protocol::public_key_type> avail;
-    protocol::sign_state ss(signing_keys,
-                            [&db](const std::string& account_name) -> const protocol::authority {
-                                return protocol::authority(
-                                    db->get<chain::account_authority_object, chain::by_account>(account_name).active);
-                            },
-                            avail);
+    protocol::sign_state ss(
+        signing_keys,
+        [&db](const std::string& account_name) -> const protocol::authority {
+            return protocol::authority(
+                db->get<chain::account_authority_object, chain::by_account>(account_name).active);
+        },
+        [&db](const std::string& account_name) -> const protocol::authority {
+            return protocol::authority(
+                db->get<chain::account_authority_object, chain::by_account>(account_name).owner);
+        },
+        [&db](const std::string& account_name) -> const protocol::authority {
+            return protocol::authority(
+              db->get<chain::account_authority_object, chain::by_account>(account_name).posting);
+        },
+        avail);
+    ss.allow_posting = allow_posting;
 
     bool has_authority = ss.check_authority(auth);
     FC_ASSERT(has_authority);

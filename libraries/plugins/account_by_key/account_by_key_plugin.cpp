@@ -52,12 +52,12 @@ struct pre_operation_visitor
     {
     }
 
-    void operator()(const account_create_operation& op) const
+    void operator()(const create_account_operation& op) const
     {
         _plugin.my->clear_cache();
     }
 
-    void operator()(const account_update_operation& op) const
+    void operator()(const update_account_operation& op) const
     {
         _plugin.my->clear_cache();
         auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.account);
@@ -99,14 +99,14 @@ struct post_operation_visitor
     {
     }
 
-    void operator()(const account_create_operation& op) const
+    void operator()(const create_account_operation& op) const
     {
         auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.new_account_name);
         if (acct_itr)
             _plugin.my->update_key_lookup(*acct_itr);
     }
 
-    void operator()(const account_update_operation& op) const
+    void operator()(const update_account_operation& op) const
     {
         auto acct_itr = _plugin.database().find<account_authority_object, by_account>(op.account);
         if (acct_itr)

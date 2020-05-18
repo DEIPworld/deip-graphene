@@ -7,7 +7,6 @@
 #include <deip/protocol/eci_diff.hpp>
 
 #include "deip_object_types.hpp"
-#include "shared_authority.hpp"
 #include "research_content_object.hpp"
 
 #include <boost/multi_index/composite_key.hpp>

@@ -57,6 +57,16 @@ void dbs_discipline::check_discipline_existence(const discipline_id_type &id)
     FC_ASSERT(idx.find(id) != idx.cend(), "Discipline with id=\"${1}\" does not exist", ("1", id));
 }
 
+const bool dbs_discipline::discipline_exists(const discipline_id_type& id) const
+{
+    const auto& idx = db_impl()
+            .get_index<discipline_index>()
+            .indices()
+            .get<by_id>();
+
+    return idx.find(id) != idx.end();
+}
+
 dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines_by_parent_id(const discipline_id_type parent_id) const
 {
     discipline_ref_type ret;

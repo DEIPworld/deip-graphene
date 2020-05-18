@@ -53,13 +53,13 @@ struct get_impacted_account_visitor
     }
 
     // ops
-    void operator()(const account_create_operation& op)
+    void operator()(const create_account_operation& op)
     {
         _impacted.insert(op.new_account_name);
         _impacted.insert(op.creator);
     }
 
-    void operator()(const account_update_operation& op)
+    void operator()(const update_account_operation& op)
     {
         _impacted.insert(op.account);
     }
@@ -129,19 +129,9 @@ struct get_impacted_account_visitor
         _impacted.insert(op.account_to_recover);
     }
 
-    void operator()(const create_research_group_operation& op)
-    {
-        _impacted.insert(op.creator);
-    }
-
     void operator()(const create_proposal_operation& op)
     {
         _impacted.insert(op.creator);
-    }
-
-    void operator()(const vote_proposal_operation& op)
-    {
-        _impacted.insert(op.voter);
     }
 
     void operator()(const make_review_operation& op)
@@ -151,27 +141,7 @@ struct get_impacted_account_visitor
 
     void operator()(const contribute_to_token_sale_operation& op)
     {
-        _impacted.insert(op.owner);
-    }
-
-    void operator()(const approve_research_group_invite_operation& op)
-    {
-        _impacted.insert(op.owner);
-    }
-
-    void operator()(const reject_research_group_invite_operation& op)
-    {
-        _impacted.insert(op.owner);
-    }
-
-    void operator()(const transfer_research_tokens_to_research_group_operation& op)
-    {
-        _impacted.insert(op.owner);
-    }
-
-    void operator()(const research_update_operation& op)
-    {
-        _impacted.insert(op.owner);
+        _impacted.insert(op.contributor);
     }
 
     void operator()(const create_vesting_balance_operation& op)
@@ -185,7 +155,7 @@ struct get_impacted_account_visitor
         _impacted.insert(op.owner);
     }
 
-    void operator()(const transfer_research_tokens_operation& op)
+    void operator()(const transfer_research_share_operation& op)
     {
         _impacted.insert(op.sender);
         _impacted.insert(op.receiver);
@@ -212,16 +182,6 @@ struct get_impacted_account_visitor
         _impacted.insert(op.voter);
     }
     
-    void operator()(const accept_research_token_offer_operation& op)
-    {
-        _impacted.insert(op.buyer);
-    }
-    
-    void operator()(const reject_research_token_offer_operation& op)
-    {
-        _impacted.insert(op.buyer);
-    }
-
     void operator()(const create_grant_operation& op)
     {
         _impacted.insert(op.grantor);

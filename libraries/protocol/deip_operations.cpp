@@ -21,38 +21,40 @@ void placeholder2_operation::validate() const
     FC_ASSERT(false, "The operation is reserved");
 }
 
-void account_create_operation::validate() const
+void placeholder3_operation::validate() const
 {
-    validate_account_name(new_account_name);
-    owner.validate();
-    active.validate();
-
-    if (json_metadata.size() > 0)
-    {
-        FC_ASSERT(fc::is_utf8(json_metadata), "JSON Metadata not formatted in UTF8");
-        FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
-    }
-    FC_ASSERT(fee >= asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL),
-              "Insufficient Fee: ${f} required, ${p} provided.",
-              ("f", asset(DEIP_MIN_ACCOUNT_CREATION_FEE, DEIP_SYMBOL))("p", fee));
+    FC_ASSERT(false, "The operation is reserved");
 }
 
-void account_update_operation::validate() const
+void placeholder4_operation::validate() const
 {
-    validate_account_name(account);
-    /*if( owner )
-       owner->validate();
-    if( active )
-       active->validate();
-    if( posting )
-       posting->validate();*/
-
-    if (json_metadata.size() > 0)
-    {
-        FC_ASSERT(fc::is_utf8(json_metadata), "JSON Metadata not formatted in UTF8");
-        FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
-    }
+    FC_ASSERT(false, "The operation is reserved");
 }
+
+void placeholder5_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+}
+
+void placeholder6_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+}
+
+void placeholder7_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+};
+
+void placeholder8_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+};
+
+void placeholder9_operation::validate() const
+{
+    FC_ASSERT(false, "The operation is reserved");
+};
 
 void vote_for_review_operation::validate() const
 {
@@ -67,7 +69,7 @@ void transfer_operation::validate() const
     {
         validate_account_name(from);
         validate_account_name(to);
-        
+
         FC_ASSERT(amount.amount > 0, "Cannot transfer a negative amount (aka: stealing)");
         FC_ASSERT(memo.size() < DEIP_MAX_MEMO_SIZE, "Memo is too large");
         FC_ASSERT(fc::is_utf8(memo), "Memo is not UTF8");
@@ -146,48 +148,11 @@ void change_recovery_account_operation::validate() const
     validate_account_name(new_recovery_account);
 }
 
-void create_proposal_operation::validate() const
-{
-    validate_enum_value_by_range(action, research_group_quorum_action::FIRST_ACTION_QUORUM_TYPE, research_group_quorum_action::LAST_ACTION_QUORUM_TYPE);
-    validate_account_name(creator);
-    FC_ASSERT(expiration_time > fc::time_point_sec());
-    FC_ASSERT(fc::is_utf8(data), "Data is not valid UTF8 string");
-}
-
-void vote_proposal_operation::validate() const
-{
-    validate_account_name(voter);
-}
-
 void contribute_to_token_sale_operation::validate() const
 {
-    validate_account_name(owner);
-    FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Amount must be DEIP and greater than 0");
-}
-
-void approve_research_group_invite_operation::validate() const
-{
-    validate_account_name(owner);
-}
-
-void reject_research_group_invite_operation::validate() const
-{
-    validate_account_name(owner);
-}
-
-void transfer_research_tokens_to_research_group_operation::validate() const 
-{
-    FC_ASSERT(amount > 0, "Transfer amount must be greater than 0");
-    validate_account_name(owner);
-}    
-
-
-void research_update_operation::validate() const
-{
-    FC_ASSERT(!title.empty(), "Title cannot be empty");
-    FC_ASSERT(!abstract.empty(), "Abstract cannot be empty");
-    FC_ASSERT(!permlink.empty(), "Permlink cannot be empty");
-    validate_account_name(owner);
+    validate_account_name(contributor);
+    validate_160_bits_hexadecimal_string(research_external_id);
+    FC_ASSERT(amount.amount > 0, "Contribution must and greater than 0");
 }
 
 void create_vesting_balance_operation::validate() const
@@ -207,13 +172,6 @@ void withdraw_vesting_balance_operation::validate() const
 {
     FC_ASSERT(amount > asset(0, DEIP_SYMBOL), "Withdraw amount must be DEIP and greater than 0");
     validate_account_name(owner);
-}
-
-void transfer_research_tokens_operation::validate() const
-{
-    FC_ASSERT(amount > 0, "Transfer amount must be greater than 0");
-    validate_account_name(sender);
-    validate_account_name(receiver);
 }
 
 void delegate_expertise_operation::validate() const
@@ -243,21 +201,11 @@ void vote_for_expertise_allocation_proposal_operation::validate() const
     FC_ASSERT(voting_power == DEIP_100_PERCENT || voting_power == -DEIP_100_PERCENT, "Voting power must be -100% or +100%");
 }
 
-void accept_research_token_offer_operation::validate() const
-{
-    validate_account_name(buyer);
-}
-
-
-void reject_research_token_offer_operation::validate() const
-{
-    validate_account_name(buyer);
-}
-
 
 void create_grant_application_operation::validate() const
 {
     validate_account_name(creator);
+    validate_160_bits_hexadecimal_string(funding_opportunity_number);
     FC_ASSERT(application_hash.size() > 0, "Application hash must be specified");
     FC_ASSERT(fc::is_utf8(application_hash), "Application hash is not valid UTF8 string");
 }

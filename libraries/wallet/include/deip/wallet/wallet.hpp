@@ -650,17 +650,17 @@ public:
     /**
      * Transfers research tokens from one acount to another
      *
-     * @param research_id Id of research which tokens to transfer
+     * @param external_id external id of research which tokens to transfer
      * @param from The account who transfers research tokens
      * @param to The account receiving research tokens
-     * @param amount The account of research tokens to transfer
+     * @param share The account of research tokens to transfer
      * @param broadcast
      */
-    annotated_signed_transaction transfer_research_tokens(const int64_t research_id,
-                                                           const std::string& from,
-                                                           const std::string& to,
-                                                           const uint32_t amount,
-                                                           bool broadcast = false);
+    annotated_signed_transaction transfer_research_share(const external_id_type& research_external_id,
+                                                         const std::string& from,
+                                                         const std::string& to,
+                                                         const percent& share,
+                                                         bool broadcast = false);
 
     /** Signs a transaction.
      *
@@ -825,16 +825,6 @@ public:
     vector<discipline_supply_api_obj> get_discipline_supplies(const std::string& account_name);
 
     /**
-     *  Gets the grant information for all my grant (list_my_accounts)
-     */
-    vector<grant_api_obj> list_my_grants();
-
-    /**
-     *  Gets the grant information for certain account
-     */
-    vector<grant_api_obj> get_grants_with_announced_application_window_by_grantor(const std::string& account_name);
-
-    /**
      *  Gets the list of all research group invites for all accounts
      */
     vector<research_group_invite_api_obj> list_my_research_group_invites();
@@ -862,12 +852,12 @@ public:
     /**
      *  Gets proposal details
      */
-    fc::optional<proposal_api_obj> get_proposal(const int64_t proposals_id);
+    fc::optional<proposal_api_obj> get_proposal(const external_id_type& proposal_id);
 
     /**
      *  Gets the list of all proposals for research group
      */
-    vector<proposal_api_obj> list_research_group_proposals(const int64_t research_group_id);
+    vector<proposal_api_obj> get_proposals_by_creator(const account_name_type& creator);
 
     /**
      *  Gets the list of research token sale
@@ -913,12 +903,6 @@ public:
                                                        const string& research_permlink);
 
     /**
-     *  Gets the list of researches by discipline id
-     */
-    vector<research_api_obj>
-    get_researches_by_discipline(const uint64_t from, const uint32_t limit, const int64_t discipline_id);
-
-    /**
      *  Gets the list of researches by id research group
      */
     vector<research_api_obj> get_researches_by_research_group(const int64_t research_group_id);
@@ -929,7 +913,7 @@ public:
     vector<research_group_api_obj> list_my_research_groups();
 
     /**
-     * Gets list of my researches 
+     * Gets list of my researches
      */
     vector<research_api_obj> list_my_researches();
 
@@ -976,127 +960,6 @@ public:
                                                  const int16_t weight,
                                                  const bool broadcast);
 
-    /**
-     * Create proposal
-     *
-     * @param creator The account who creates a proposal
-     * @param research_group_id Id of research group to create proposal for
-     * @param data Proposal data
-     * @param action Proposal action type
-     * @param expiration Seconds till expiration of proposal since creation
-     * @param broadcast
-     */
-    annotated_signed_transaction create_proposal(const std::string& creator,
-                                                 const int64_t research_group_id,
-                                                 const std::string& data,
-                                                 const uint16_t action,
-                                                 const int64_t expiration,
-                                                 const bool broadcast);
-
-    /**
-     * Propose invite member
-     *
-     * @param creator The account who creates invite
-     * @param member The account who receives invite
-     * @param research_group_id Id of research group to create invite for
-     * @param research_group_token_amount_in_percent Percent of research group tokens to give to invited member (1 to 10000)
-     * @param cover_letter Messsage for member
-     * @param broadcast
-     */
-    annotated_signed_transaction propose_invite_member(const std::string& creator,
-                                               const std::string& member,
-                                               const int64_t research_group_id,
-                                               const int64_t research_group_token_amount_in_percent,
-                                               const std::string& cover_letter,
-                                               const bool broadcast);
-
-    /**
-     * Propose exclude member
-     *
-     * @param creator The account who initiate exclude
-     * @param member The account who will be excluded
-     * @param research_group_id Id of research group
-     * @param broadcast
-     */
-    annotated_signed_transaction propose_exclude_member(const std::string& creator,
-                                                         const std::string& member,
-                                                         const int64_t research_group_id,
-                                                         const bool broadcast);
-
-
-    /**
-     * Propose create research
-     *
-     * @param creator The account who proposes to start a research
-     * @param title Title of research
-     * @param abstract Abstract of research
-     * @param permlink Permlink of research
-     * @param research_group_id Id of research group
-     * @param review_share_in_percent Percent of reward to share with reviewers
-     * @param dropout_compensation_in_percent Percent of research tokens to leave to dropped author
-     * @param disciplines List of disciplines ids (i.e. [8, 152])
-     * @param broadcast
-     */
-    annotated_signed_transaction propose_create_research(const std::string& creator,
-                                                         const std::string& title,
-                                                         const std::string& abstract,
-                                                         const std::string& permlink,
-                                                         const int64_t research_group_id,
-                                                         const uint16_t review_share_in_percent,
-                                                         const uint16_t dropout_compensation_in_percent,
-                                                         const std::vector<int64_t> disciplines,
-                                                         const bool broadcast);
-
-    /**
-     * Propose create research content
-     *
-     * @param creator The account who create a content
-     * @param research_group_id Id of research group
-     * @param research_id Research id
-     * @param type Type of content: announcement = 1, milestone = 2, final_result = 3
-     * @param title Title of research content
-     * @param content Hash of research content (hash of file)
-     * @param permlink Permlink to research content
-     * @param authors Account names content authors
-     * @param references List of ids of research contents referenced (i.e [1, 100])
-     * @param external_references List of external references as list of URLs (i.e. ["google.com", "bing.com"])
-     * @param broadcast
-     */
-    annotated_signed_transaction propose_create_research_content(const std::string& creator,
-                                                                  const int64_t research_group_id,
-                                                                  const int64_t research_id,
-                                                                  const uint16_t type,
-                                                                  const std::string& title,
-                                                                  const std::string& content,
-                                                                  const std::string& permlink,
-                                                                  const std::vector<string> authors,
-                                                                  const std::vector<int64_t> references,
-                                                                  const std::set<string>& external_references,
-                                                                  const bool broadcast);
-
-
-    /**
-     * Propose start token sale
-     *
-     * @param creator The account who create a content
-     * @param research_group_id Id of research group
-     * @param research_id Research id
-     * @param start_time token sale start time
-     * @param end_time token sale end time
-     * @param amount_for_sale tokens amount for sale
-     * @param soft_cap minimum value at which token sale will be success
-     * @param hard_cap maximum number of tokens that can be sold
-     * @param broadcast
-     */
-    annotated_signed_transaction propose_start_token_sale(const std::string& creator,
-                                                                  const int64_t research_group_id,
-                                                                  const int64_t research_id,
-                                                                  const uint32_t start_time,
-                                                                  const uint32_t end_time,
-                                                                  const int64_t amount_for_sale,
-                                                                  const asset& soft_cap,
-                                                                  const asset& hard_cap,
-                                                                  const bool broadcast);
 
     /**
      * Make review for specified research content
@@ -1123,69 +986,9 @@ public:
      * @param broadcast
      */
     annotated_signed_transaction contribute_to_token_sale(const std::string& contributor,
-                                                          const int64_t research_token_sale_id,
+                                                          const external_id_type& research_external_id,
                                                           const asset& amount,
                                                           const bool broadcast);
-
-
-    /**
-     * Create research group
-     *
-     * @param creator The account who creates research group
-     * @param name Name of the research group
-     * @param permlink Permlink to the research group
-     * @param description Description of the research group
-     * @param default_quorum Quorum percent of the research group (500 to 10000). This quorum percent will be set for all proposal types
-     * @param broadcast
-     */
-    annotated_signed_transaction create_research_group(const std::string& creator,
-                                                               const std::string& name,
-                                                               const std::string& permlink,
-                                                               const std::string& description,
-                                                               const percent_type& default_quorum,
-                                                               const bool broadcast);
-
-    /**
-     * Approve research group invite
-     *
-     * @param owner The account who approves invite
-     * @param research_group_invite_id Id of invite
-     * @param broadcast
-     */
-    annotated_signed_transaction approve_research_group_invite(const int64_t research_group_invite_id,
-                                                               const std::string& owner,
-                                                               const bool broadcast);
-
-    /**
-     * Reject research group invite
-     *
-     * @param owner The account who rejects invite
-     * @param research_group_invite_id Id of invite
-     * @param broadcast
-     */
-    annotated_signed_transaction reject_research_group_invite(const int64_t research_group_invite_id,
-                                                              const std::string& owner,
-                                                              const bool broadcast);
-
-    /**
-     * Transfer research tokens back to research group
-     *
-     * @param owner The account who transfers research tokens
-     * @param research_id Id of research which tokens to transfer
-     * @param amount Amount of research tokens to transfer
-     * @param broadcast
-     */
-    annotated_signed_transaction transfer_research_tokens_to_research_group(const int64_t research_id,
-                                                                            const std::string& owner,
-                                                                            const uint32_t amount,
-                                                                            const bool broadcast);
-
-    annotated_signed_transaction research_update(const int64_t research_id,
-                                                 const std::string& title,
-                                                 const std::string& abstract,
-                                                 const std::string& permlink,
-                                                 const std::string& owner,
-                                                 const bool broadcast);
 
     /**
      * Create new vesting contract
@@ -1215,19 +1018,6 @@ public:
                                                            const asset &amount,
                                                            const bool broadcast);
 
-    /**
-     * Vote for proposal
-     *
-     * @param voter The account who votes
-     * @param proposal_id Id of proposal to vote for
-     * @param research_group_id Id of research group which owns the proposal
-     * @param broadcast
-     */
-    annotated_signed_transaction vote_proposal(const std::string& voter,
-                                               const int64_t proposal_id,
-                                               const int64_t research_group_id,
-                                               const bool broadcast);
-
 
     annotated_signed_transaction create_expertise_allocation_proposal(const std::string &claimer, const std::string &description,
                                                                           const int64_t discipline_id, const bool broadcast);
@@ -1235,36 +1025,11 @@ public:
 
     annotated_signed_transaction vote_for_expertise_allocation_proposal(const int64_t proposal_id, const std::string &voter,
                                                                             const int64_t voting_power, const bool broadcast);
-    /**
-     * Propose offer research tokens
-     *
-     * @param sender The account who create a content
-     * @param receiver The account who can buy RT
-     * @param research_group_id Id of research group
-     * @param research_id Research id
-     * @param amount tokens amount for sale
-     * @param price
-     * @param broadcast
-     */
-    annotated_signed_transaction propose_offer_research_tokens(const std::string& sender,
-                                                               const std::string& receiver,
-                                                               const int64_t research_group_id,
-                                                               const int64_t research_id,
-                                                               const uint32_t amount,
-                                                               const asset& price,
-                                                               const bool broadcast);
-
-    annotated_signed_transaction accept_offer_research_tokens(const int64_t offer_research_tokens_id,
-                                                              const std::string& buyer,
-                                                              const bool broadcast);
-
-    annotated_signed_transaction reject_offer_research_tokens(const int64_t offer_research_tokens_id,
-                                                              const std::string& buyer,
-                                                              const bool broadcast);
 
     annotated_signed_transaction create_grant(const std::string& grantor,
                                               const asset& amount,
                                               const int64_t& target_discipline,
+                                              const std::string& funding_opportunity_number,
                                               const int64_t& review_committee_id,
                                               const uint16_t& min_number_of_positive_reviews,
                                               const uint16_t& min_number_of_applications,
@@ -1273,11 +1038,11 @@ public:
                                               const uint32_t& end_date,
                                               const bool broadcast);
 
-    annotated_signed_transaction create_grant_application(const int64_t& grant_id,
-                                                        const int64_t& research_id,
-                                                        const std::string& creator,
-                                                        const std::string& application_hash,
-                                                        const bool broadcast);
+    annotated_signed_transaction create_grant_application(const std::string& funding_opportunity_number,
+                                                          const int64_t& research_id,
+                                                          const std::string& creator,
+                                                          const std::string& application_hash,
+                                                          const bool broadcast);
 
     annotated_signed_transaction make_review_for_application(const std::string& author,
                                                              const int64_t& grant_application_id,
@@ -1286,12 +1051,12 @@ public:
                                                              const bool broadcast);
 
     annotated_signed_transaction approve_grant_application(const int64_t& grant_application_id,
-                                                           const std::string& approver, 
+                                                           const std::string& approver,
                                                            const bool broadcast);
 
     annotated_signed_transaction reject_grant_application(const int64_t& grant_application_id,
-                                                        const std::string& rejector,
-                                                        const bool broadcast);
+                                                          const std::string& rejector,
+                                                          const bool broadcast);
 
     annotated_signed_transaction create_asset(const std::string& issuer,
                                               const std::string& symbol,
@@ -1372,14 +1137,13 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (list_my_discipline_supplies)
         (list_discipline_supply_grantors)
         (get_discipline_supplies)
-        (get_grants_with_announced_application_window_by_grantor)
         (list_my_research_group_invites)
         (list_my_research_tokens)
         (list_account_research_tokens)
         (get_vesting_balances)
         (get_research_group_by_permlink)
         (get_proposal)
-        (list_research_group_proposals)
+        (get_proposals_by_creator)
         (list_research_token_sales)
         (get_research_content)
         (get_research_content_by_permlink)
@@ -1388,7 +1152,6 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (get_research)
         (get_research_by_permlink)
         (get_research_by_absolute_permlink)
-        (get_researches_by_discipline)
         (get_researches_by_research_group)
         (list_my_research_groups)
         (list_my_researches)
@@ -1410,7 +1173,7 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (transfer_to_common_tokens)
         (withdraw_common_tokens)
         (set_withdraw_common_tokens_route)
-        (transfer_research_tokens)
+        (transfer_research_share)
         (set_transaction_expiration)
         (challenge)
         (request_account_recovery)
@@ -1421,27 +1184,12 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (decrypt_memo)
         (create_discipline_supply)
         (vote_for_review)
-        (create_proposal)
-        (propose_invite_member)
-        (propose_exclude_member)
-        (propose_create_research)
-        (propose_create_research_content)
-        (propose_start_token_sale)
         (make_review)
         (contribute_to_token_sale)
-        (create_research_group)
-        (approve_research_group_invite)
-        (reject_research_group_invite)
-        (transfer_research_tokens_to_research_group)
-        (research_update)
         (create_vesting_balance)
         (withdraw_vesting_balance)
-        (vote_proposal)
         (create_expertise_allocation_proposal)
         (vote_for_expertise_allocation_proposal)
-        (propose_offer_research_tokens)
-        (accept_offer_research_tokens)
-        (reject_offer_research_tokens)
         (create_grant)
         (create_grant_application)
         (make_review_for_application)

@@ -17,7 +17,6 @@
 #include <deip/chain/schema/nda_contract_object.hpp>
 #include <deip/chain/schema/nda_contract_file_access_object.hpp>
 #include <deip/chain/schema/proposal_object.hpp>
-#include <deip/chain/schema/proposal_vote_object.hpp>
 #include <deip/chain/schema/research_content_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/research_group_invite_object.hpp>
@@ -30,10 +29,7 @@
 #include <deip/chain/schema/expertise_contribution_object.hpp>
 #include <deip/chain/schema/transaction_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
-#include <deip/chain/schema/offer_research_tokens_object.hpp>
-#include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/grant_application_object.hpp>
-#include <deip/chain/schema/grant_application_review_object.hpp>
 #include <deip/chain/schema/grant_application_review_object.hpp>
 #include <deip/chain/schema/funding_opportunity_object.hpp>
 #include <deip/chain/schema/witness_objects.hpp>
@@ -45,6 +41,8 @@ namespace app {
 
 using namespace deip::chain;
 using research_group_token_refs_type = std::vector<std::reference_wrapper<const research_group_token_object>>;
+using account_balance_refs_type = std::vector<std::reference_wrapper<const account_balance_object>>;
+
 using deip::protocol::percent_type;
 
 typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
@@ -57,7 +55,9 @@ typedef witness::account_bandwidth_object account_bandwidth_api_obj;
 
 struct account_api_obj
 {
-    account_api_obj(const chain::account_object& a, const chain::database& db)
+    account_api_obj(const chain::account_object& a,
+                    const chain::account_authority_object& auth,
+                    const account_balance_refs_type account_balances)
         : id(a.id)
         , name(a.name)
         , memo_key(a.memo_key)
@@ -78,49 +78,29 @@ struct account_api_obj
         , to_withdraw(a.to_withdraw)
         , withdraw_routes(a.withdraw_routes)
         , witnesses_voted_for(a.witnesses_voted_for)
+        , is_research_group(a.is_research_group)
     {
         size_t n = a.proxied_vsf_votes.size();
         proxied_vsf_votes.reserve(n);
         for (size_t i = 0; i < n; i++)
+        {
             proxied_vsf_votes.push_back(a.proxied_vsf_votes[i]);
+        }
 
-        const auto& auth = db.get<account_authority_object, by_account>(name);
         owner = authority(auth.owner);
         active = authority(auth.active);
         posting = authority(auth.posting);
         last_owner_update = auth.last_owner_update;
 
-        if (db.has_index<witness::account_bandwidth_index>())
+        for (auto& pair : auth.threshold_overrides)
         {
-            auto forum_bandwidth = db.find<witness::account_bandwidth_object, witness::by_account_bandwidth_type>(
-                boost::make_tuple(name, witness::bandwidth_type::forum));
-
-            if (forum_bandwidth != nullptr)
-            {
-                average_bandwidth = forum_bandwidth->average_bandwidth;
-                lifetime_bandwidth = forum_bandwidth->lifetime_bandwidth;
-                last_bandwidth_update = forum_bandwidth->last_bandwidth_update;
-            }
-
-            auto market_bandwidth = db.find<witness::account_bandwidth_object, witness::by_account_bandwidth_type>(
-                boost::make_tuple(name, witness::bandwidth_type::market));
-
-            if (market_bandwidth != nullptr)
-            {
-                average_market_bandwidth = market_bandwidth->average_bandwidth;
-                lifetime_market_bandwidth = market_bandwidth->lifetime_bandwidth;
-                last_market_bandwidth_update = market_bandwidth->last_bandwidth_update;
-            }
+            threshold_overrides.insert(std::pair<uint16_t, authority>(pair.first, authority(pair.second)));
         }
 
-        auto it_pair = db.get_index<account_balance_index>().indicies().get<by_owner>().equal_range(a.name);
-        auto it = it_pair.first;
-        const auto it_end = it_pair.second;
-        while (it != it_end)
+        for (auto& wrap : account_balances)
         {
-            const account_balance_object& account_balance = std::cref(*it).get();
+            const auto& account_balance = wrap.get();
             balances.push_back(asset(account_balance.amount, account_balance.symbol));
-            ++it;
         }
     }
 
@@ -135,6 +115,9 @@ struct account_api_obj
     authority active;
     authority posting;
     public_key_type memo_key;
+
+    std::map<uint16_t, authority> threshold_overrides;
+
     string json_metadata;
     account_name_type proxy;
 
@@ -162,6 +145,7 @@ struct account_api_obj
     vector<share_type> proxied_vsf_votes;
 
     uint16_t witnesses_voted_for;
+    bool is_research_group;
 
     share_type average_bandwidth = 0;
     share_type lifetime_bandwidth = 0;
@@ -386,32 +370,89 @@ struct discipline_api_obj
     std::string name;
 };
 
+struct research_group_api_obj
+{
+    research_group_api_obj(const chain::research_group_object& rg_o, const account_api_obj& acc_o)
+        : id(rg_o.id._id)
+        , external_id(rg_o.account)
+        , creator(rg_o.creator)
+        , name(fc::to_string(rg_o.name))
+        , permlink(fc::to_string(rg_o.permlink))
+        , description(fc::to_string(rg_o.description))
+        , quorum_percent(rg_o.default_quorum)
+        , is_dao(rg_o.is_dao)
+        , is_personal(rg_o.is_personal)
+        , is_centralized(rg_o.is_centralized)
+        , account(acc_o)
+    {
+    }
+
+    research_group_api_obj(const chain::research_group_object& rg_o)
+        : id(rg_o.id._id)
+        , external_id(rg_o.account)
+        , creator(rg_o.creator)
+        , name(fc::to_string(rg_o.name))
+        , permlink(fc::to_string(rg_o.permlink))
+        , description(fc::to_string(rg_o.description))
+        , quorum_percent(rg_o.default_quorum)
+        , is_dao(rg_o.is_dao)
+        , is_personal(rg_o.is_personal)
+        , is_centralized(rg_o.is_centralized)
+    {
+    }
+
+    // because fc::variant require for temporary object
+    research_group_api_obj()
+    {
+    }
+
+    int64_t id;
+    external_id_type external_id;
+    account_name_type creator;
+    std::string name;
+    std::string permlink;
+    std::string description;
+    percent_type quorum_percent;
+    bool is_dao;
+    bool is_personal;
+    bool is_centralized;
+    fc::optional<account_api_obj> account;
+};
+
 struct research_api_obj
 {
-    research_api_obj(const chain::research_object& r, const vector<discipline_api_obj>& disciplines, const string& group_permlink)
-        : id(r.id._id)
-        ,  research_group_id(r.research_group_id._id)
-        ,  title(fc::to_string(r.title))
-        ,  abstract(fc::to_string(r.abstract))
-        ,  permlink(fc::to_string(r.permlink))
-        ,  is_finished(r.is_finished)
-        ,  owned_tokens(r.owned_tokens)
-        ,  review_share_in_percent(r.review_share_in_percent)
-        ,  created_at(r.created_at)
-        ,  dropout_compensation_in_percent(r.dropout_compensation_in_percent)
-        ,  disciplines(disciplines.begin(), disciplines.end())
-        ,  group_permlink(group_permlink)
-        ,  number_of_positive_reviews(r.number_of_positive_reviews)
-        ,  number_of_negative_reviews(r.number_of_negative_reviews)
-        ,  last_update_time(r.last_update_time)
-        ,  contents_amount(r.contents_amount)
-        ,  members(r.members.begin(), r.members.end())
-        ,  is_private(r.is_private)
+    research_api_obj(const chain::research_object& r_o,
+                     const vector<discipline_api_obj>& disciplines,
+                     const research_group_api_obj& rg_api)
+
+        : id(r_o.id._id)
+        , external_id(r_o.external_id)
+        , research_group_id(r_o.research_group_id._id)
+        , title(fc::to_string(r_o.title))
+        , abstract(fc::to_string(r_o.abstract))
+        , permlink(fc::to_string(r_o.permlink))
+        , is_finished(r_o.is_finished)
+        , is_private(r_o.is_private)
+        , owned_tokens(r_o.owned_tokens.amount)
+        , review_share(r_o.review_share.amount)
+        , created_at(r_o.created_at)
+        , disciplines(disciplines.begin(), disciplines.end())
+        , number_of_positive_reviews(r_o.number_of_positive_reviews)
+        , number_of_negative_reviews(r_o.number_of_negative_reviews)
+        , last_update_time(r_o.last_update_time)
+        , members(r_o.members.begin(), r_o.members.end())
+        , research_group(rg_api)
     {
-        for (const auto& kvp : r.eci_per_discipline) {
+        for (const auto& kvp : r_o.eci_per_discipline) 
+        {
             discipline_id_type discipline_id = kvp.first;
             share_type weight = kvp.second;
             eci_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
+        }
+
+        if (r_o.compensation_share.valid())
+        {
+            compensation_share = (*r_o.compensation_share).amount;
         }
     }
 
@@ -421,58 +462,56 @@ struct research_api_obj
     }
 
     int64_t id;
+    external_id_type external_id;
     int64_t research_group_id;
     std::string title;
     std::string abstract;
     std::string permlink;
     bool is_finished;
+    bool is_private;
     share_type owned_tokens;
-    uint16_t review_share_in_percent;
+    share_type review_share;
     time_point_sec created_at;
-    int16_t dropout_compensation_in_percent;
+    optional<share_type> compensation_share;
     vector<discipline_api_obj> disciplines;
-    string group_permlink;
 
     map<int64_t, int64_t> eci_per_discipline;
 
     uint16_t number_of_positive_reviews;
     uint16_t number_of_negative_reviews;
-
     time_point_sec last_update_time;
-    uint16_t contents_amount;
 
     std::vector<account_name_type> members;
 
-    bool is_private;
+    research_group_api_obj research_group;
 };
 
 struct research_content_api_obj
 {
-    research_content_api_obj(const chain::research_content_object& rc)
-        : id(rc.id._id)
-        ,  research_id(rc.research_id._id)
-        ,  content_type(rc.type)
-        ,  authors(rc.authors.begin(), rc.authors.end())
-        ,  title(fc::to_string(rc.title))        
-        ,  content(fc::to_string(rc.content))
-        ,  permlink(fc::to_string(rc.permlink))
-        ,  activity_state(rc.activity_state)
-        ,  activity_window_start(rc.activity_window_start)
-        ,  activity_window_end(rc.activity_window_end)
-        ,  created_at(rc.created_at)
+    research_content_api_obj(const chain::research_content_object& rc_o)
+        : id(rc_o.id._id)
+        , external_id(rc_o.external_id)
+        , research_id(rc_o.research_id._id)
+        , content_type(rc_o.type)
+        , authors(rc_o.authors.begin(), rc_o.authors.end())
+        , title(fc::to_string(rc_o.title))
+        , content(fc::to_string(rc_o.content))
+        , permlink(fc::to_string(rc_o.permlink))
+        , activity_state(rc_o.activity_state)
+        , activity_window_start(rc_o.activity_window_start)
+        , activity_window_end(rc_o.activity_window_end)
+        , created_at(rc_o.created_at)
     {
-        for (auto reference : rc.references)
-        {
-            references.insert(reference._id);
-        }
 
-        for (auto& str : rc.external_references)
+        references.insert(rc_o.references.begin(), rc_o.references.end());
+
+        for (auto& str : rc_o.foreign_references)
         {
             std::string val = fc::to_string(str);
-            external_references.insert(val);
+            foreign_references.insert(val);
         }
 
-        for (const auto& kvp : rc.eci_per_discipline) 
+        for (const auto& kvp : rc_o.eci_per_discipline)
         {
             discipline_id_type discipline_id = kvp.first;
             share_type weight = kvp.second;
@@ -486,6 +525,7 @@ struct research_content_api_obj
     }
 
     int64_t id;
+    external_id_type external_id;
     int64_t research_id;
     research_content_type content_type;
     std::set<account_name_type> authors;
@@ -497,8 +537,8 @@ struct research_content_api_obj
     fc::time_point_sec activity_window_end;
     fc::time_point_sec created_at;
 
-    std::set<string> external_references;
-    std::set<int64_t> references;
+    std::set<string> foreign_references;
+    std::set<external_id_type> references;
 
     map<int64_t, int64_t> eci_per_discipline;
 };
@@ -525,44 +565,30 @@ struct expert_token_api_obj
     share_type amount;
 };
 
-struct proposal_vote_api_obj
-{
-    proposal_vote_api_obj(const chain::proposal_vote_object& pv)
-        : id(pv.id._id)
-        ,  proposal_id(pv.proposal_id._id)
-        ,  research_group_id(pv.research_group_id._id)
-        ,  voting_time(pv.voting_time)
-        ,  voter(pv.voter)
-    {}
-
-    // because fc::variant require for temporary object
-    proposal_vote_api_obj()
-    {
-    }
-
-    int64_t id;
-    int64_t proposal_id;
-    int64_t research_group_id;
-    fc::time_point_sec voting_time;
-    account_name_type voter;
-};
-
 struct proposal_api_obj
 {
-    proposal_api_obj(const chain::proposal_object& p, const vector<proposal_vote_api_obj>& _votes)
-        : id(p.id._id)
-        , research_group_id(p.research_group_id._id)
-        , action(p.action)
-        , creation_time(p.creation_time)
-        , expiration_time(p.expiration_time)
-        , creator(p.creator)
-        , data(fc::to_string(p.data))
-        , quorum_percent(p.quorum)
-        , current_votes_amount(p.current_votes_amount)
-        , is_completed(p.is_completed)
-        , voted_accounts(p.voted_accounts.begin(), p.voted_accounts.end())
-        , votes(_votes)
-    {}
+    proposal_api_obj(const chain::proposal_object& p_o)
+        : id(p_o.id._id)
+        , external_id(p_o.external_id)
+        , creator(p_o.proposer)
+        , proposed_transaction(p_o.proposed_transaction)
+        , expiration_time(p_o.expiration_time)
+        , review_period_time(p_o.review_period_time)
+        , fail_reason(fc::to_string(p_o.fail_reason))
+        , created_at(p_o.created_at)
+    {
+        required_posting_approvals.insert(p_o.required_posting_approvals.begin(), p_o.required_posting_approvals.end());
+        available_posting_approvals.insert(p_o.available_posting_approvals.begin(), p_o.available_posting_approvals.end());
+        required_active_approvals.insert(p_o.required_active_approvals.begin(), p_o.required_active_approvals.end());
+        available_active_approvals.insert(p_o.available_active_approvals.begin(), p_o.available_active_approvals.end());
+        required_owner_approvals.insert(p_o.required_owner_approvals.begin(), p_o.required_owner_approvals.end());
+        available_owner_approvals.insert(p_o.available_owner_approvals.begin(), p_o.available_owner_approvals.end());
+        available_key_approvals.insert(p_o.available_key_approvals.begin(), p_o.available_key_approvals.end());
+
+        voted_accounts.insert(p_o.available_posting_approvals.begin(), p_o.available_posting_approvals.end());
+        voted_accounts.insert(p_o.available_active_approvals.begin(), p_o.available_active_approvals.end());
+        voted_accounts.insert(p_o.available_owner_approvals.begin(), p_o.available_owner_approvals.end());
+    }
 
     // because fc::variant require for temporary object
     proposal_api_obj()
@@ -570,28 +596,37 @@ struct proposal_api_obj
     }
 
     int64_t id;
-    int64_t research_group_id;
-    int8_t action;
-    fc::time_point_sec creation_time;
-    fc::time_point_sec expiration_time;
-    std::string creator;
-    std::string data;
-    percent_type quorum_percent;
-    share_type current_votes_amount;
-    bool is_completed;
 
-    flat_set<account_name_type> voted_accounts;
-    vector<proposal_vote_api_obj> votes;
+    string external_id;
+    account_name_type creator;
+    transaction proposed_transaction;
+
+    time_point_sec expiration_time;
+    optional<time_point_sec> review_period_time;
+    string fail_reason;
+    time_point_sec created_at;
+
+    set<account_name_type> required_posting_approvals;
+    set<account_name_type> available_posting_approvals;
+    set<account_name_type> required_active_approvals;
+    set<account_name_type> available_active_approvals;
+    set<account_name_type> required_owner_approvals;
+    set<account_name_type> available_owner_approvals;
+    set<public_key_type> available_key_approvals;
+
+    set<account_name_type> voted_accounts;
 };
 
 struct research_group_token_api_obj
 {
-    research_group_token_api_obj(const chain::research_group_token_object& rgt)
+    research_group_token_api_obj(const chain::research_group_token_object& rgt, const research_group_api_obj& rg)
         : id(rgt.id._id)
-        ,  research_group_id(rgt.research_group_id._id)
-        ,  amount(rgt.amount.value)
-        ,  owner(rgt.owner)
-    {}
+        , research_group_id(rgt.research_group_id._id)
+        , amount(rgt.amount.value)
+        , owner(rgt.owner)
+        , research_group(rg)
+    {
+    }
 
     // because fc::variant require for temporary object
     research_group_token_api_obj()
@@ -599,44 +634,10 @@ struct research_group_token_api_obj
     }
 
     int64_t id;
-    int64_t research_group_id;
+    int64_t research_group_id; // deprecated
     uint32_t amount;
     account_name_type owner;
-};
-
-struct research_group_api_obj
-{
-    research_group_api_obj(const chain::research_group_object& rg)
-        :  id(rg.id._id)
-        ,  creator(rg.creator)
-        ,  name(fc::to_string(rg.name))
-        ,  permlink(fc::to_string(rg.permlink))
-        ,  description(fc::to_string(rg.description))
-        ,  quorum_percent(rg.default_quorum)
-        ,  is_dao(rg.is_dao)
-        ,  is_personal(rg.is_personal)
-        ,  is_centralized(rg.is_centralized)
-        ,  balance(rg.balance)
-    {
-        proposal_quorums.insert(rg.action_quorums.begin(), rg.action_quorums.end());
-    }
-
-    // because fc::variant require for temporary object
-    research_group_api_obj()
-    {
-    }
-
-    int64_t id;
-    account_name_type creator;
-    std::string name;
-    std::string permlink;
-    std::string description;
-    percent_type quorum_percent;
-    std::map<research_group_quorum_action, percent_type> proposal_quorums;
-    bool is_dao;
-    bool is_personal;
-    bool is_centralized;
-    asset balance;
+    research_group_api_obj research_group;
 };
 
 struct research_token_sale_api_obj
@@ -743,11 +744,12 @@ struct research_listing_api_obj
                              const vector<account_name_type>& group_members,
                              const int64_t& votes_count)
         : research_id(r.id)
+        , external_id(r.external_id)
         , title(r.title)
         , abstract(r.abstract)
         , permlink(r.permlink)
         , owned_tokens(r.owned_tokens)
-        , review_share_in_percent(r.review_share_in_percent)
+        , review_share(r.review_share)
         , created_at(r.created_at)
         , group_members(group_members.begin(), group_members.end())
         , disciplines(r.disciplines.begin(), r.disciplines.end())
@@ -755,7 +757,6 @@ struct research_listing_api_obj
         , group_id(rg.id)
         , group_permlink(rg.permlink)
         , last_update_time(r.last_update_time)
-        , contents_amount(r.contents_amount)
         , members(r.members.begin(), r.members.end())
         , number_of_positive_reviews(r.number_of_positive_reviews)
         , number_of_negative_reviews(r.number_of_negative_reviews)
@@ -775,11 +776,12 @@ struct research_listing_api_obj
     }
 
     int64_t research_id;
+    external_id_type external_id;
     string title;
     string abstract;
     string permlink;
     share_type owned_tokens;
-    uint16_t review_share_in_percent;
+    share_type review_share;
     time_point_sec created_at;
     vector<account_name_type> group_members;
     vector<discipline_api_obj> disciplines;
@@ -788,7 +790,6 @@ struct research_listing_api_obj
     string group_permlink;
     map<int64_t, int64_t> eci_per_discipline;
     time_point_sec last_update_time;
-    uint16_t contents_amount;
     std::vector<account_name_type> members;
     uint16_t number_of_positive_reviews;
     uint16_t number_of_negative_reviews;
@@ -994,77 +995,11 @@ struct vesting_balance_api_obj
     time_point_sec start_timestamp;
 };
 
-struct offer_research_tokens_api_obj
-{
-    offer_research_tokens_api_obj(const chain::offer_research_tokens_object& orto)
-        :  id(orto.id._id)
-        ,  sender(orto.sender)
-        ,  receiver(orto.receiver)
-        ,  research_id(orto.research_id._id)
-        ,  amount(orto.amount.value)
-        ,  price(orto.price)
-    {}
-
-    // because fc::variant require for temporary object
-    offer_research_tokens_api_obj()
-    {
-    }
-
-    int64_t id;
-    account_name_type sender;
-    account_name_type receiver;
-
-    int64_t research_id;
-    uint32_t amount;
-    asset price;
-};
-
-
-struct grant_api_obj
-{
-    grant_api_obj(const chain::grant_object& g_o)
-        : id(g_o.id._id)
-        , grantor(g_o.grantor)
-        , amount(g_o.amount)
-        , review_committee_id(g_o.review_committee_id._id)
-        , min_number_of_positive_reviews(g_o.min_number_of_positive_reviews)
-        , min_number_of_applications(g_o.min_number_of_applications)
-        , max_number_of_research_to_grant(g_o.max_number_of_research_to_grant)
-        , created_at(g_o.created_at)
-        , start_date(g_o.start_date)
-        , end_date(g_o.end_date)
-
-    {
-        target_disciplines.insert(g_o.target_disciplines.begin(), g_o.target_disciplines.end());
-    }
-    
-
-    // because fc::variant require for temporary object
-    grant_api_obj()
-    {
-    }
-
-    int64_t id;
-    account_name_type grantor;
-    asset amount;
-    int64_t review_committee_id;
-
-    uint16_t min_number_of_positive_reviews;
-    uint16_t min_number_of_applications;
-    uint16_t max_number_of_research_to_grant;
-
-    fc::time_point_sec created_at;
-    fc::time_point_sec start_date;
-    fc::time_point_sec end_date;
-
-    std::set<discipline_id_type> target_disciplines;
-};
-
 struct grant_application_api_obj
 {
     grant_application_api_obj(const chain::grant_application_object& ga_o)
         :  id(ga_o.id._id)
-        ,  grant_id(ga_o.grant_id._id)
+        ,  funding_opportunity_number(ga_o.funding_opportunity_number)
         ,  research_id(ga_o.research_id._id)
         ,  application_hash(fc::to_string(ga_o.application_hash))
         ,  creator(ga_o.creator)
@@ -1079,7 +1014,7 @@ struct grant_application_api_obj
     }
 
     int64_t id;
-    int64_t grant_id;
+    external_id_type funding_opportunity_number;
     int64_t research_id;
     std::string application_hash;
     account_name_type creator;
@@ -1123,15 +1058,19 @@ struct funding_opportunity_api_obj
         ,  review_committee_id(fo_o.review_committee_id._id)
         ,  treasury_id(fo_o.treasury_id._id)
         ,  grantor(fo_o.grantor)
-        ,  funding_opportunity_number(fc::to_string(fo_o.funding_opportunity_number))
+        ,  funding_opportunity_number(fo_o.funding_opportunity_number)
         ,  amount(fo_o.amount)
         ,  award_ceiling(fo_o.award_ceiling)
         ,  award_floor(fo_o.award_floor)
         ,  current_supply(fo_o.current_supply)
         ,  expected_number_of_awards(fo_o.expected_number_of_awards)
+        ,  min_number_of_positive_reviews(fo_o.min_number_of_positive_reviews)
+        ,  min_number_of_applications(fo_o.min_number_of_applications)
+        ,  max_number_of_research_to_grant(fo_o.max_number_of_research_to_grant)
         ,  posted_date(fo_o.posted_date)
         ,  open_date(fo_o.open_date)
         ,  close_date(fo_o.close_date)
+        ,  distribution_type(fo_o.distribution_type)
     {
         for (auto& pair : fo_o.additional_info)
         {
@@ -1159,7 +1098,7 @@ struct funding_opportunity_api_obj
     research_group_id_type treasury_id;
 
     account_name_type grantor;
-    string funding_opportunity_number;
+    external_id_type funding_opportunity_number;
 
     asset amount = asset(0, DEIP_SYMBOL);
     asset award_ceiling = asset(0, DEIP_SYMBOL);
@@ -1168,6 +1107,10 @@ struct funding_opportunity_api_obj
 
     uint16_t expected_number_of_awards;
 
+    uint16_t min_number_of_positive_reviews;
+    uint16_t min_number_of_applications;
+    uint16_t max_number_of_research_to_grant;
+
     fc::time_point_sec posted_date;
     fc::time_point_sec open_date;
     fc::time_point_sec close_date;
@@ -1175,6 +1118,8 @@ struct funding_opportunity_api_obj
     std::map<std::string, std::string> additional_info;
     std::set<int64_t> target_disciplines;
     std::set<account_name_type> officers;
+
+    uint16_t distribution_type;
 };
 
 struct asset_api_obj
@@ -1263,9 +1208,9 @@ struct award_recipient_api_obj
 {
     award_recipient_api_obj(const chain::award_recipient_object& ar_o)
         : id(ar_o.id._id)
-        , award_number(fc::to_string(ar_o.award_number))
-        , subaward_number(fc::to_string(ar_o.subaward_number))
-        , funding_opportunity_number(fc::to_string(ar_o.funding_opportunity_number))
+        , award_number(ar_o.award_number)
+        , subaward_number(ar_o.subaward_number)
+        , funding_opportunity_number(ar_o.funding_opportunity_number)
         , research_id(ar_o.research_id._id)
         , awardee(ar_o.awardee)
         , source(ar_o.source)
@@ -1281,9 +1226,9 @@ struct award_recipient_api_obj
 
     int64_t id;
 
-    string award_number;
-    string subaward_number;
-    string funding_opportunity_number;
+    external_id_type award_number;
+    external_id_type subaward_number;
+    external_id_type funding_opportunity_number;
 
     int64_t research_id;
     account_name_type awardee;
@@ -1297,8 +1242,8 @@ struct award_api_obj
 {
     award_api_obj(const chain::award_object& award, const vector<award_recipient_api_obj>& awardees_list)
         : id(award.id._id)
-        , funding_opportunity_number(fc::to_string(award.funding_opportunity_number))
-        , award_number(fc::to_string(award.award_number))
+        , funding_opportunity_number(award.funding_opportunity_number)
+        , award_number(award.award_number)
         , awardee(award.awardee)
         , creator(award.creator)
         , status(award.status)
@@ -1317,8 +1262,8 @@ struct award_api_obj
 
     int64_t id;
 
-    string funding_opportunity_number;
-    string award_number;
+    external_id_type funding_opportunity_number;
+    external_id_type award_number;
     string awardee;
     string creator;
     uint16_t status;
@@ -1333,9 +1278,9 @@ struct award_withdrawal_request_api_obj
 {
     award_withdrawal_request_api_obj(const chain::award_withdrawal_request_object& awr_o)
         : id(awr_o.id._id)
-        , award_number(fc::to_string(awr_o.award_number))
-        , subaward_number(fc::to_string(awr_o.subaward_number))
-        , payment_number(fc::to_string(awr_o.payment_number))
+        , award_number(awr_o.award_number)
+        , subaward_number(awr_o.subaward_number)
+        , payment_number(awr_o.payment_number)
         , requester(awr_o.requester)
         , amount(awr_o.amount)
         , description(fc::to_string(awr_o.description))
@@ -1352,9 +1297,9 @@ struct award_withdrawal_request_api_obj
 
     int64_t id;
 
-    string award_number;
-    string subaward_number;
-    string payment_number;
+    external_id_type award_number;
+    external_id_type subaward_number;
+    external_id_type payment_number;
 
     account_name_type requester;
 
@@ -1450,15 +1395,42 @@ struct nda_contract_file_access_api_obj
 // clang-format off
 
 FC_REFLECT( deip::app::account_api_obj,
-             (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(last_owner_update)(last_account_update)
-             (created)(mined)
-             (recovery_account)(last_account_recovery)
-             (lifetime_vote_count)(can_vote)
-             (common_tokens_balance)(expert_tokens_balance)(received_common_tokens)(common_tokens_withdraw_rate)(next_common_tokens_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
-             (proxied_vsf_votes)(witnesses_voted_for)
-             (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
-             (average_market_bandwidth)(lifetime_market_bandwidth)(last_market_bandwidth_update)(balances)
-          )
+  (id)
+  (name)
+  (owner)
+  (active)
+  (posting)
+  (memo_key)
+  (threshold_overrides)
+  (json_metadata)
+  (proxy)
+  (last_owner_update)
+  (last_account_update)
+  (created)
+  (mined)
+  (recovery_account)
+  (last_account_recovery)
+  (lifetime_vote_count)
+  (can_vote)
+  (common_tokens_balance)
+  (expert_tokens_balance)
+  (received_common_tokens)
+  (common_tokens_withdraw_rate)
+  (next_common_tokens_withdrawal)
+  (withdrawn)
+  (to_withdraw)
+  (withdraw_routes)
+  (proxied_vsf_votes)
+  (witnesses_voted_for)
+  (is_research_group)
+  (average_bandwidth)
+  (lifetime_bandwidth)
+  (last_bandwidth_update)
+  (average_market_bandwidth)
+  (lifetime_market_bandwidth)
+  (last_market_bandwidth_update)
+  (balances)
+)
 
 FC_REFLECT( deip::app::owner_authority_history_api_obj,
              (id)
@@ -1523,28 +1495,29 @@ FC_REFLECT( deip::app::discipline_api_obj,
 
 FC_REFLECT( deip::app::research_api_obj,
             (id)
+            (external_id)
             (research_group_id)
             (title)
             (abstract)
             (permlink)
             (is_finished)
+            (is_private)
             (owned_tokens)
-            (review_share_in_percent)
+            (review_share)
             (created_at)
-            (dropout_compensation_in_percent)
+            (compensation_share)
             (disciplines)
-            (group_permlink)
             (eci_per_discipline)
             (number_of_positive_reviews)
             (number_of_negative_reviews)
             (last_update_time)
-            (contents_amount)
             (members)
-            (is_private)
-          )
+            (research_group)
+)
 
 FC_REFLECT( deip::app::research_content_api_obj,
             (id)
+            (external_id)
             (research_id)
             (content_type)
             (title)
@@ -1556,7 +1529,7 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (activity_window_end)
             (created_at)
             (references)
-            (external_references)
+            (foreign_references)
             (eci_per_discipline)
           )
 
@@ -1571,25 +1544,21 @@ FC_REFLECT( deip::app::expert_token_api_obj,
 
 FC_REFLECT( deip::app::proposal_api_obj,
             (id)
-            (research_group_id)
-            (action)
-            (creation_time)
-            (expiration_time)
+            (external_id)
             (creator)
-            (data)
-            (quorum_percent)
-            (current_votes_amount)
-            (is_completed)
+            (proposed_transaction)
+            (expiration_time)
+            (review_period_time)
+            (fail_reason)
+            (created_at)
+            (required_posting_approvals)
+            (available_posting_approvals)
+            (required_active_approvals)
+            (available_active_approvals)
+            (required_owner_approvals)
+            (available_owner_approvals)
+            (available_key_approvals)
             (voted_accounts)
-            (votes)
-)
-
-FC_REFLECT( deip::app::proposal_vote_api_obj,
-            (id)
-            (proposal_id)
-            (research_group_id)
-            (voting_time)
-            (voter)
 )
 
 FC_REFLECT( deip::app::research_group_token_api_obj,
@@ -1597,20 +1566,21 @@ FC_REFLECT( deip::app::research_group_token_api_obj,
             (research_group_id)
             (amount)
             (owner)
+            (research_group)
 )
 
 FC_REFLECT( deip::app::research_group_api_obj,
             (id)
+            (external_id)
             (creator)
             (name)
             (permlink)
             (description)
             (quorum_percent)
-            (proposal_quorums)
             (is_dao)
             (is_personal)
             (is_centralized)
-            (balance)
+            (account)
 )
 
 FC_REFLECT( deip::app::research_token_sale_api_obj,
@@ -1652,11 +1622,12 @@ FC_REFLECT( deip::app::research_group_invite_api_obj,
 
 FC_REFLECT( deip::app::research_listing_api_obj,
            (research_id)
+           (external_id)
            (title)
            (abstract)
            (permlink)
            (owned_tokens)
-           (review_share_in_percent)
+           (review_share)
            (created_at)
            (group_members)
            (disciplines)
@@ -1665,7 +1636,6 @@ FC_REFLECT( deip::app::research_listing_api_obj,
            (group_permlink)
            (eci_per_discipline)
            (last_update_time)
-           (contents_amount)
            (members)
            (number_of_positive_reviews)
            (number_of_negative_reviews)
@@ -1743,33 +1713,9 @@ FC_REFLECT( deip::app::vesting_balance_api_obj,
             (start_timestamp)
 )
 
-FC_REFLECT( deip::app::offer_research_tokens_api_obj,
-            (id)
-            (sender)
-            (receiver)
-            (research_id)
-            (amount)
-            (price)
-
-)
-
-FC_REFLECT( deip::app::grant_api_obj,
-            (id)
-            (grantor)       
-            (amount)
-            (review_committee_id)
-            (min_number_of_positive_reviews)
-            (min_number_of_applications)
-            (max_number_of_research_to_grant)
-            (created_at)
-            (start_date)
-            (end_date)
-            (target_disciplines)
-)
-
 FC_REFLECT( deip::app::grant_application_api_obj,
             (id)
-            (grant_id)
+            (funding_opportunity_number)
             (research_id)
             (application_hash)
             (creator)
@@ -1799,12 +1745,16 @@ FC_REFLECT( deip::app::funding_opportunity_api_obj,
             (award_floor)
             (current_supply)
             (expected_number_of_awards)
+            (min_number_of_positive_reviews)
+            (min_number_of_applications)
+            (max_number_of_research_to_grant)
             (posted_date)
             (open_date)
             (close_date)
             (additional_info)
             (target_disciplines)
             (officers)
+            (distribution_type)
 )
 
 FC_REFLECT( deip::app::asset_api_obj,

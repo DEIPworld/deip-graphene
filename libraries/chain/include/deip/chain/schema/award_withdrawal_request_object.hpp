@@ -6,6 +6,8 @@
 namespace deip {
 namespace chain {
 
+using protocol::external_id_type;
+
 enum class award_withdrawal_request_status : uint16_t
 {
     pending = 1,
@@ -22,10 +24,7 @@ class award_withdrawal_request_object : public object<award_withdrawal_request_o
 public:
     template <typename Constructor, typename Allocator>
     award_withdrawal_request_object(Constructor&& c, allocator<Allocator> a)
-        : payment_number(a)
-        , award_number(a)
-        , subaward_number(a)
-        , description(a)
+        : description(a)
         , attachment(a)
     {
         c(*this);
@@ -33,9 +32,9 @@ public:
 
     award_withdrawal_request_id_type id;
 
-    fc::shared_string payment_number;
-    fc::shared_string award_number;
-    fc::shared_string subaward_number;
+    external_id_type payment_number;
+    external_id_type award_number;
+    external_id_type subaward_number;
 
     account_name_type requester;
     asset amount = asset(0, DEIP_SYMBOL);
@@ -67,18 +66,14 @@ typedef multi_index_container<award_withdrawal_request_object,
                 composite_key<award_withdrawal_request_object,
                   member<
                     award_withdrawal_request_object,
-                    fc::shared_string,
+                    external_id_type,
                     &award_withdrawal_request_object::award_number
                   >,
                   member<
                     award_withdrawal_request_object,
-                    fc::shared_string,
+                    external_id_type,
                     &award_withdrawal_request_object::payment_number
                   >
-                >,
-                composite_key_compare<
-                  fc::strcmp_less,
-                  fc::strcmp_less
                 >
             >,
             ordered_non_unique<
@@ -86,18 +81,14 @@ typedef multi_index_container<award_withdrawal_request_object,
                 composite_key<award_withdrawal_request_object,
                   member<
                     award_withdrawal_request_object,
-                    fc::shared_string,
+                    external_id_type,
                     &award_withdrawal_request_object::award_number
                   >,
                   member<
                     award_withdrawal_request_object,
-                    fc::shared_string,
+                    external_id_type,
                     &award_withdrawal_request_object::subaward_number
                   >
-                >,
-                composite_key_compare<
-                  fc::strcmp_less,
-                  fc::strcmp_less
                 >
             >,
             ordered_non_unique<
@@ -105,7 +96,7 @@ typedef multi_index_container<award_withdrawal_request_object,
                 composite_key<award_withdrawal_request_object,
                   member<
                     award_withdrawal_request_object,
-                    fc::shared_string,
+                    external_id_type,
                     &award_withdrawal_request_object::award_number
                   >,
                   member<
@@ -115,7 +106,7 @@ typedef multi_index_container<award_withdrawal_request_object,
                   >
                 >,
                 composite_key_compare<
-                  fc::strcmp_less,
+                  std::less<external_id_type>,
                   std::less<uint16_t>
                 >
             >,
@@ -123,7 +114,7 @@ typedef multi_index_container<award_withdrawal_request_object,
               tag<by_award_number>,
                 member<
                   award_withdrawal_request_object,
-                  fc::shared_string,
+                  external_id_type,
                   &award_withdrawal_request_object::award_number
                 >
             >

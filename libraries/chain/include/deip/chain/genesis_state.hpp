@@ -66,44 +66,37 @@ struct genesis_state_type
 
     struct research_group_type
     {
-        research_group_id_type id;
+        account_name_type account;
+        account_name_type creator;
         std::string name;
         std::string description;
         std::string permlink;
-        fc::optional<uint32_t> default_quorum;
-        std::set<std::string> members;
-        int32_t management_model_v;
-        account_name_type creator;
-        fc::optional<std::set<account_name_type>> heads;
-        fc::optional<research_group_id_type> organization_id;
-        fc::optional<std::set<account_name_type>> organization_agents;
+        std::set<account_name_type> members;
         std::vector<research_group_type> subgroups;
     };
 
     struct research_type
     {
-        research_id_type id;
-        research_group_id_type research_group_id;
+        protocol::external_id_type external_id;
+        account_name_type account;
         std::string title;
         std::string abstract;
         std::string permlink;
         bool is_finished;
-        uint16_t review_share_in_percent;
-        uint16_t dropout_compensation_in_percent;
-        std::vector<int64_t> disciplines;
         bool is_private;
+        std::set<int64_t> disciplines;
     };
 
     struct research_content_type
     {
-        research_content_id_type id;
-        research_id_type research_id;
-        uint16_t type;
+        protocol::external_id_type external_id;
+        protocol::external_id_type research_external_id;
         std::string title;
         std::string content;
         std::string permlink;
-        std::vector<std::string> authors;
-        std::vector<int64_t> references;
+        uint16_t type;
+        flat_set<account_name_type> authors;
+        flat_set<protocol::external_id_type> references;
     };
 
     struct vesting_balance_type
@@ -185,47 +178,41 @@ FC_REFLECT(deip::chain::genesis_state_type::discipline_type,
            (parent_id))
 
 FC_REFLECT(deip::chain::genesis_state_type::expert_token_type,
-           (account_name)
-           (discipline_id)
-           (amount))
+          (account_name)
+          (discipline_id)
+          (amount))
 
 FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
-           (id)
-           (name)
-           (description)
-           (permlink)
-           (default_quorum)
-           (members)
-           (management_model_v)
-           (creator)
-           (heads)
-           (organization_id)
-           (organization_agents)
-           (subgroups))
-
+          (account)
+          (creator)
+          (name)
+          (description)
+          (permlink)
+          (members)
+          (subgroups)
+)
 
 FC_REFLECT(deip::chain::genesis_state_type::research_type,
-           (id)
-           (research_group_id)
-           (title)
-           (abstract)
-           (permlink)
-           (is_finished)
-           (review_share_in_percent)
-           (dropout_compensation_in_percent)
-           (disciplines)
-           (is_private))
-
+          (external_id)
+          (account)
+          (title)
+          (abstract)
+          (permlink)
+          (is_finished)
+          (is_private)
+          (disciplines)
+)
 
 FC_REFLECT(deip::chain::genesis_state_type::research_content_type,
-           (id)
-           (research_id)
-           (type)
-           (title)
-           (permlink)
-           (content)
-           (authors)
-           (references))
+          (external_id)
+          (research_external_id)
+          (title)
+          (content)
+          (permlink)
+          (type)
+          (authors)
+          (references)
+)
 
 FC_REFLECT(deip::chain::genesis_state_type::vesting_balance_type,
            (id)

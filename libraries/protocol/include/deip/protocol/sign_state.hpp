@@ -1,7 +1,6 @@
 #pragma once
 
 #include <deip/protocol/authority.hpp>
-#include <deip/protocol/types.hpp>
 
 namespace deip {
 namespace protocol {
@@ -14,7 +13,7 @@ struct sign_state
      * produce a signature for this key, else returns false.
      */
     bool signed_by(const public_key_type& k);
-    bool check_authority(string id);
+    bool check_authority(account_name_type id);
 
     /**
      *  Checks to see if we have signatures of the active authorites of
@@ -24,14 +23,21 @@ struct sign_state
 
     bool remove_unused_signatures();
 
-    sign_state(const flat_set<public_key_type>& sigs, const authority_getter& a, const flat_set<public_key_type>& keys);
+    sign_state(const flat_set<public_key_type>& sigs,
+               const authority_getter& active_getter,
+               const authority_getter& owner_getter,
+               const authority_getter& posting_getter,
+               const flat_set<public_key_type>& keys);
 
     const authority_getter& get_active;
+    const authority_getter& get_owner;
+    const authority_getter& get_posting;
     const flat_set<public_key_type>& available_keys;
 
     flat_map<public_key_type, bool> provided_signatures;
-    flat_set<string> approved_by;
+    flat_set<account_name_type> approved_by;
     uint32_t max_recursion = DEIP_MAX_SIG_CHECK_DEPTH;
+    bool allow_posting = false;
 };
 }
 } // deip::protocol

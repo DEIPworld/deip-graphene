@@ -188,6 +188,7 @@ public:
 
     bool push_block(const signed_block& b, uint32_t skip = skip_nothing);
     void push_transaction(const signed_transaction& trx, uint32_t skip = skip_nothing);
+    void push_proposal(const proposal_object& proposal) override;
     void _maybe_warn_multiple_production(uint32_t height) const;
     bool _push_block(const signed_block& b);
     void _push_transaction(const signed_transaction& trx);
@@ -321,31 +322,13 @@ public:
      * Rewards distribution
      */
     asset distribute_reward(const asset &reward, const share_type &expertise);
-    // asset reward_researches_in_discipline(const discipline_object &discipline, const asset &reward,
-    //                                                const share_type &expertise);
-    // asset reward_research_content(const research_content_id_type &research_content_id,
-    //                               const discipline_id_type &discipline_id, const asset &reward,
-    //                               const share_type &expertise);
-    // asset reward_research_token_holders(const research_object &research,
-    //                                     const discipline_id_type &discipline_id,
-    //                                     const asset &reward);
-    // asset reward_references(const research_content_id_type &research_content_id,
-    //                                  const discipline_id_type &discipline_id, const asset &reward);
-    // asset reward_reviews(const research_content_id_type &research_content_id, const discipline_id_type &discipline_id,
-    //                               const asset &reward, const share_type &expertise_reward);
-    // asset reward_review_voters(const review_object &review,
-    //                                 const discipline_id_type &discipline_id,
-    //                                 const asset &reward);
-    // void reward_research_authors_with_expertise(const research_object &research,
-    //                                                 const research_content_object &research_content,
-    //                                                 const discipline_id_type &discipline_id,
-    //                                                 const share_type &expertise_reward);
-
-    // asset fund_review_pool(const discipline_object& discipline, const asset &amount);
 
     time_point_sec head_block_time() const override;
     uint32_t head_block_num() const;
     block_id_type head_block_id() const;
+    uint16_t current_trx_ref_block_num() const override;
+    uint32_t current_trx_ref_block_prefix() const override;
+    optional<transaction> current_proposed_trx() const override;
 
     node_property_object& node_properties();
 
@@ -445,14 +428,12 @@ protected:
     void init_genesis_witness_schedule(const genesis_state_type& genesis_state);
     void init_genesis_global_property_object(const genesis_state_type& genesis_state);
     void init_genesis_disciplines(const genesis_state_type& genesis_state);
-    void init_expert_tokens(const genesis_state_type& genesis_state);
-    void init_research(const genesis_state_type& genesis_state);
-    void init_research_content(const genesis_state_type& genesis_state);
-    void init_research_groups(const genesis_state_type& genesis_state);
-    void init_research_group(const genesis_state_type::research_group_type& research_group);
-    void init_personal_research_groups(const genesis_state_type& genesis_state);
+    void init_genesis_expert_tokens(const genesis_state_type& genesis_state);
+    void init_genesis_research(const genesis_state_type& genesis_state);
+    void init_genesis_research_content(const genesis_state_type& genesis_state);
+    void init_genesis_research_groups(const genesis_state_type& genesis_state);
+    void init_genesis_research_group(const genesis_state_type::research_group_type& research_group);
     void init_genesis_vesting_balances(const genesis_state_type& genesis_state);
-    void init_committees(const genesis_state_type& genesis_state);
 
 
 private:
@@ -471,12 +452,20 @@ private:
 
     fc::signal<void()> _plugin_index_signal;
 
+    // TODO: move these to trx_context
     transaction_id_type _current_trx_id;
+    uint16_t _current_trx_ref_block_num;
+    uint32_t _current_trx_ref_block_prefix;
+    optional<transaction> _current_proposed_trx;
+
     uint32_t _current_block_num = 0;
     uint16_t _current_trx_in_block = 0;
     uint16_t _current_op_in_trx = 0;
 
     flat_map<uint32_t, block_id_type> _checkpoints;
+
+    // Counts nested proposal updates
+    uint32_t _push_proposal_nesting_depth = 0;
 
     node_property_object _node_property_object;
 

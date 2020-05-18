@@ -5,7 +5,6 @@
 
 #include "deip_object_types.hpp"
 #include "witness_objects.hpp"
-#include "shared_authority.hpp"
 
 #include <boost/multi_index/composite_key.hpp>
 

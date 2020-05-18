@@ -5,11 +5,13 @@
 namespace deip {
 namespace chain {
 
-enum grant_application_status : uint16_t
+using protocol::external_id_type;
+
+enum class grant_application_status : uint16_t
 {
-    application_pending = 1,
-    application_approved = 2,
-    application_rejected = 3
+    pending = 1,
+    approved = 2,
+    rejected = 3
 };
 
 class grant_application_object : public object<grant_application_object_type, grant_application_object>
@@ -25,7 +27,7 @@ public:
     }
 
     grant_application_id_type id;
-    grant_id_type grant_id;
+    external_id_type funding_opportunity_number;
     research_id_type research_id;
     fc::shared_string application_hash;
 
@@ -33,10 +35,10 @@ public:
 
     fc::time_point_sec created_at;
 
-    grant_application_status status = grant_application_status::application_pending;
+    grant_application_status status = grant_application_status::pending;
 };
 
-struct by_grant_id;
+struct by_funding_opportunity_number;
 struct by_status;
 struct by_research_id;
 
@@ -45,10 +47,10 @@ typedef multi_index_container<grant_application_object,
                                                         member<grant_application_object,
                                                                 grant_application_id_type,
                                                                &grant_application_object::id>>,
-                                         ordered_non_unique<tag<by_grant_id>,
+                                         ordered_non_unique<tag<by_funding_opportunity_number>,
                                                         member<grant_application_object,
-                                                                grant_id_type,
-                                                               &grant_application_object::grant_id>>,
+                                                                external_id_type,
+                                                               &grant_application_object::funding_opportunity_number>>,
                                          ordered_non_unique<tag<by_status>,
                                                         member<grant_application_object,
                                                                 grant_application_status,
@@ -63,10 +65,10 @@ typedef multi_index_container<grant_application_object,
 }
 }
 
-FC_REFLECT_ENUM(deip::chain::grant_application_status, (application_pending)(application_approved)(application_rejected))
+FC_REFLECT_ENUM(deip::chain::grant_application_status, (pending)(approved)(rejected))
 
 FC_REFLECT( deip::chain::grant_application_object,
-             (id)(grant_id)(research_id)(application_hash)(creator)(created_at)(status)
+             (id)(funding_opportunity_number)(research_id)(application_hash)(creator)(created_at)(status)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::grant_application_object, deip::chain::grant_application_index )

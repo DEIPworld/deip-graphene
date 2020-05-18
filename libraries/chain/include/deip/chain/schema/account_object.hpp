@@ -31,7 +31,7 @@ public:
         c(*this);
     };
 
-    id_type id;
+    account_id_type id;
 
     account_name_type name;
     public_key_type memo_key;
@@ -48,13 +48,13 @@ public:
 
     bool can_vote = true;
 
-    //asset balance = asset(0, DEIP_SYMBOL); ///< total liquid shares held by this account
+    bool is_research_group;
+
     share_type expertise_tokens_balance = 0; ///< total expertise tokens held by this account
     share_type common_tokens_balance = 0; ///< total common tokens held by this account
 
     share_type common_tokens_withdraw_rate = 0; ///< at the time this is updated it can be at most common_tokens/104
-    time_point_sec next_common_tokens_withdrawal
-        = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
+    time_point_sec next_common_tokens_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
     share_type withdrawn = 0; /// Track how many shares have been withdrawn
     share_type to_withdraw = 0; /// Might be able to look this up with operation history.
     uint16_t withdraw_routes = 0;
@@ -87,6 +87,7 @@ public:
         : owner(a)
         , active(a)
         , posting(a)
+        , threshold_overrides(a)
     {
         c(*this);
     }
@@ -100,6 +101,11 @@ public:
     shared_authority posting; ///< used for voting and posting
 
     time_point_sec last_owner_update;
+
+    typedef allocator<std::pair<const uint16_t, shared_authority>> op_tag_authority_allocator_type;
+    typedef chainbase::bip::map<uint16_t, shared_authority, std::less<uint16_t>, op_tag_authority_allocator_type> op_tag_authority_map;
+
+    op_tag_authority_map threshold_overrides;
 };
 
 class owner_authority_history_object
@@ -165,69 +171,108 @@ struct by_next_common_tokens_withdrawal;
 struct by_deip_balance;
 struct by_ct_balance;
 struct by_vote_count;
+struct by_research_group;
 
 /**
  * @ingroup object_index
  */
 typedef multi_index_container<account_object,
-                              indexed_by<ordered_unique<tag<by_id>,
-                                                        member<account_object, account_id_type, &account_object::id>>,
-                                         ordered_unique<tag<by_name>,
-                                                        member<account_object,
-                                                               account_name_type,
-                                                               &account_object::name>>,
-                                         ordered_unique<tag<by_proxy>,
-                                                        composite_key<account_object,
-                                                                      member<account_object,
-                                                                             account_name_type,
-                                                                             &account_object::proxy>,
-                                                                      member<account_object,
-                                                                             account_id_type,
-                                                                             &account_object::id>> /// composite key by
-                                                                                                   /// proxy
-                                                        >,
-                                                        ordered_unique<tag<by_next_common_tokens_withdrawal>,
-                                                        composite_key<account_object,
-                                                                      member<account_object,
-                                                                             time_point_sec,
-                                                                             &account_object::next_common_tokens_withdrawal>,
-                                                                      member<account_object,
-                                                                             account_id_type,
-                                                                             &account_object::id>> /// composite key
-                                                        /// by_next_common_tokens_withdrawal
-                                                        >,
-//                                         ordered_unique<tag<by_deip_balance>,
-//                                                        composite_key<account_object,
-//                                                                      member<account_object,
-//                                                                             asset,
-//                                                                             &account_object::balance>,
-//                                                                      member<account_object,
-//                                                                             account_id_type,
-//                                                                             &account_object::id>>,
-//                                                        composite_key_compare<std::greater<asset>,
-//                                                                              std::less<account_id_type>>>,
-                                        ordered_unique<tag<by_ct_balance>,
-                                                        composite_key<account_object,
-                                                                      member<account_object,
-                                                                             share_type,
-                                                                             &account_object::common_tokens_balance>,
-                                                                      member<account_object,
-                                                                             account_id_type,
-                                                                             &account_object::id>>,
-                                                        composite_key_compare<std::greater<asset>,
-                                                                              std::less<account_id_type>>>,
-                                         ordered_unique<tag<by_vote_count>,
-                                                        composite_key<account_object,
-                                                                      member<account_object,
-                                                                             uint32_t,
-                                                                             &account_object::lifetime_vote_count>,
-                                                                      member<account_object,
-                                                                             account_id_type,
-                                                                             &account_object::id>>,
-                                                        composite_key_compare<std::greater<uint32_t>,
-                                                                              std::less<account_id_type>>>>,
-                              allocator<account_object>>
-    account_index;
+  indexed_by<
+    ordered_unique<
+      tag<by_id>,
+        member<
+          account_object, 
+          account_id_type, 
+          &account_object::id
+        >
+    >,
+    ordered_unique<
+      tag<by_name>,
+        member<
+          account_object,
+          account_name_type,
+          &account_object::name
+        >
+    >,
+    ordered_non_unique<
+      tag<by_research_group>,
+        member<
+          account_object,
+          bool,
+          &account_object::is_research_group
+        >
+    >,
+    ordered_unique<
+      tag<by_proxy>,
+        composite_key<account_object,
+          member<
+            account_object,
+            account_name_type,
+            &account_object::proxy
+          >,
+          member<
+            account_object,
+            account_id_type,
+            &account_object::id
+          >
+        >
+    >,
+    ordered_unique<
+      tag<by_next_common_tokens_withdrawal>,
+        composite_key<account_object,
+          member<
+            account_object,
+            time_point_sec,
+            &account_object::next_common_tokens_withdrawal
+          >,
+          member<
+            account_object,
+            account_id_type,
+            &account_object::id
+          >
+        >
+    >,
+    ordered_unique<
+      tag<by_ct_balance>,
+        composite_key<account_object,
+          member<
+            account_object,
+            share_type,
+            &account_object::common_tokens_balance
+          >,
+          member<
+            account_object,
+            account_id_type,
+            &account_object::id
+          >
+        >,
+        composite_key_compare<
+          std::greater<asset>,
+          std::less<account_id_type>
+        >
+    >,
+    ordered_unique<
+      tag<by_vote_count>,
+        composite_key<account_object,
+          member<
+            account_object,
+            uint32_t,
+            &account_object::lifetime_vote_count
+          >,
+          member<
+            account_object,
+            account_id_type,
+            &account_object::id
+          >
+        >,
+        composite_key_compare<
+          std::greater<uint32_t>,
+          std::less<account_id_type>
+        >
+    >
+  >,
+  allocator<account_object>>
+  account_index;
 
 struct by_account;
 struct by_last_valid;
@@ -364,7 +409,7 @@ FC_REFLECT( deip::chain::account_object,
              (id)(name)(memo_key)(json_metadata)(proxy)(last_account_update)
              (created)(mined)
              (recovery_account)(last_account_recovery)
-             (lifetime_vote_count)(can_vote)
+             (lifetime_vote_count)(can_vote)(is_research_group)
              (common_tokens_withdraw_rate)(next_common_tokens_withdrawal)
              (withdrawn)(to_withdraw)(withdraw_routes)
              (expertise_tokens_balance)
@@ -374,7 +419,7 @@ FC_REFLECT( deip::chain::account_object,
 CHAINBASE_SET_INDEX_TYPE( deip::chain::account_object, deip::chain::account_index )
 
 FC_REFLECT( deip::chain::account_authority_object,
-             (id)(account)(owner)(active)(posting)(last_owner_update)
+             (id)(account)(owner)(active)(posting)(last_owner_update)(threshold_overrides)
 )
 CHAINBASE_SET_INDEX_TYPE( deip::chain::account_authority_object, deip::chain::account_authority_index )
 

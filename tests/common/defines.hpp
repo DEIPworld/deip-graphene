@@ -98,13 +98,13 @@
 
 #define ACTOR(name)                                                                                                    \
     PREP_ACTOR(name)                                                                                                   \
-    const auto& name = account_create(BOOST_PP_STRINGIZE(name), name##_public_key, name##_post_key.get_public_key());  \
+    const auto& name = create_account(BOOST_PP_STRINGIZE(name), name##_public_key, name##_post_key.get_public_key());  \
     account_id_type name##_id = name.id;                                                                               \
     (void)name##_id;
 
 #define ACTOR_WITH_EXPERT_TOKENS(name)                                                                                 \
     PREP_ACTOR(name)                                                                                                   \
-    const auto& name = account_create(BOOST_PP_STRINGIZE(name), name##_public_key, name##_post_key.get_public_key());  \
+    const auto& name = create_account(BOOST_PP_STRINGIZE(name), name##_public_key, name##_post_key.get_public_key());  \
     generate_block();                                                                                                                   \
     create_all_discipline_expert_tokens_for_account(BOOST_PP_STRINGIZE(name));                                         \
     account_id_type name##_id = name.id;                                                                               \

@@ -10,22 +10,86 @@ dbs_research_group::dbs_research_group(database& db)
 {
 }
 
-const research_group_object& dbs_research_group::get_research_group(
-  const research_group_id_type& id) const 
+const research_group_object& dbs_research_group::get_research_group(const research_group_id_type& id) const 
 {
-  try {
-    return db_impl().get<research_group_object, by_id>(id);
-  }
+  try { return db_impl().get<research_group_object, by_id>(id); }
   FC_CAPTURE_AND_RETHROW((id))
+}
+
+const dbs_research_group::research_group_optional_ref_type dbs_research_group::get_research_group_if_exists(const research_group_id_type& id) const
+{
+    research_group_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<research_group_index>()
+      .indices()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 const research_group_object& dbs_research_group::get_research_group_by_permlink(const fc::string& permlink) const 
 {
-  const auto& idx = db_impl().get_index<research_group_index>().indices().get<by_permlink>();
-  auto itr = idx.find(permlink, fc::strcmp_less());
-  FC_ASSERT(itr != idx.end(), "Research group by permlink ${n} is not found", ("n", permlink));
-  return *itr;
+    const auto& idx = db_impl()
+      .get_index<research_group_index>()
+      .indices()
+      .get<by_permlink>();
+
+    auto itr = idx.find(permlink, fc::strcmp_less());
+    FC_ASSERT(itr != idx.end(), "Research group with permlink \"${1}\" does not exist.", ("1", permlink));
+    return *itr;
 }
+
+const dbs_research_group::research_group_optional_ref_type dbs_research_group::get_research_group_by_permlink_if_exists(const string& permlink) const
+{
+    research_group_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<research_group_index>()
+      .indices()
+      .get<by_permlink>();
+
+    auto itr = idx.find(permlink, fc::strcmp_less());
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
+const research_group_object& dbs_research_group::get_research_group_by_account(const account_name_type& account) const
+{
+    const auto& idx = db_impl()
+      .get_index<research_group_index>()
+      .indices()
+      .get<by_account>();
+
+    auto itr = idx.find(account);
+    FC_ASSERT(itr != idx.end(), "Research group account \"${1}\" does not exist.", ("1", account));
+    return *itr;
+}
+
+const dbs_research_group::research_group_optional_ref_type dbs_research_group::get_research_group_by_account_if_exists(const account_name_type& account) const
+{
+    research_group_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<research_group_index>()
+      .indices()
+      .get<by_account>();
+
+    auto itr = idx.find(account);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+    return result;
+}
+
 
 dbs_research_group::research_group_refs_type dbs_research_group::get_all_research_groups(
   const bool& is_personal_need) const
@@ -45,93 +109,63 @@ dbs_research_group::research_group_refs_type dbs_research_group::get_all_researc
   return ret;
 }
 
-const research_group_object& dbs_research_group::create_personal_research_group(
-  const account_name_type& account)
+const research_group_object& dbs_research_group::create_personal_research_group(const account_name_type& account)
 {
-  const research_group_object& personal_research_group = db_impl()
-    .create<research_group_object>([&](research_group_object& research_group) {
-      research_group.creator = account;
-      fc::from_string(research_group.name, account);
-      fc::from_string(research_group.permlink, account);
-      fc::from_string(research_group.description, account);
-      research_group.management_model_v = deip::protocol::research_group_details::tag<centralized_research_group_management_model_v1_0_0_type>::value;
-      research_group.is_personal = true;
-      research_group.is_centralized = false;
-      research_group.is_dao = false;
-      research_group.heads.insert(account);
-      research_group.is_created_by_organization = false;
-      research_group.has_organization = false;
-    });
+    const research_group_object& personal_research_group
+        = db_impl().create<research_group_object>([&](research_group_object& rg_o) {
+              rg_o.account = account;
+              rg_o.creator = account;
+              fc::from_string(rg_o.name, account);
+              fc::from_string(rg_o.permlink, account);
+              fc::from_string(rg_o.description, account);
+              rg_o.management_model_v = 2;
+              rg_o.is_personal = true;
+              rg_o.is_centralized = false;
+              rg_o.is_dao = false;
+              rg_o.heads.insert(account);
+              rg_o.is_created_by_organization = false;
+              rg_o.has_organization = false;
+          });
 
-  return personal_research_group;
+    return personal_research_group;
 }
 
-const research_group_object& dbs_research_group::create_dao_voting_research_group(
+const research_group_object& dbs_research_group::create_research_group(
+  const account_name_type& account,
   const account_name_type& creator,
   const std::string& name,
   const string& permlink,
-  const string& description,
-  const int& management_model_v,
-  const bool& is_created_by_organization,
-  const bool& has_organization,
-  const percent_type& default_quorum,
-  const std::map<research_group_quorum_action, percent_type>& action_quorums)
+  const string& description)
 {
-  const research_group_object& dao_research_group = db_impl()
-    .create<research_group_object>([&](research_group_object& research_group) {
-      research_group.creator = creator;
-      fc::from_string(research_group.name, name);
-      fc::from_string(research_group.permlink, permlink);
-      fc::from_string(research_group.description, description);
-      research_group.management_model_v = management_model_v;
-      research_group.is_personal = false;
-      research_group.is_centralized = false;
-      research_group.is_dao = true;
-      research_group.default_quorum = default_quorum;
-      research_group.action_quorums.insert(action_quorums.begin(), action_quorums.end());
-      research_group.is_created_by_organization = is_created_by_organization;
-      research_group.has_organization = has_organization;
-    });
+    const research_group_object& research_group
+        = db_impl().create<research_group_object>([&](research_group_object& rg_o) {
+              rg_o.account = account;
+              rg_o.creator = creator;
+              fc::from_string(rg_o.name, name);
+              fc::from_string(rg_o.permlink, permlink);
+              fc::from_string(rg_o.description, description);
+              rg_o.is_personal = false;
+              rg_o.is_centralized = false;
+              rg_o.is_dao = true;
+              rg_o.default_quorum = DEIP_100_PERCENT;
+          });
 
-  return dao_research_group;
+    return research_group;
 }
 
-const research_group_object& dbs_research_group::create_centralized_research_group(
-  const account_name_type& creator,
-  const std::string& name,
+const research_group_object& dbs_research_group::update_research_group(
+  const research_group_object& research_group,
+  const string& name,
   const string& permlink,
-  const string& description,
-  const int& management_model_v,
-  const bool& is_created_by_organization,
-  const bool& has_organization,
-  const std::set<account_name_type>& heads)
+  const string& description) 
 {
-  const research_group_object& dao_research_group = db_impl()
-    .create<research_group_object>([&](research_group_object& research_group) {
-      research_group.creator = creator;
-      fc::from_string(research_group.name, name);
-      fc::from_string(research_group.permlink, permlink);
-      fc::from_string(research_group.description, description);
-      research_group.management_model_v = management_model_v;
-      research_group.is_personal = false;
-      research_group.is_centralized = true;
-      research_group.is_dao = false;
-      research_group.heads.insert(heads.begin(), heads.end());
-      research_group.is_created_by_organization = is_created_by_organization;
-      research_group.has_organization = has_organization;
+    db_impl().modify(research_group, [&](research_group_object& rg_o) {
+        fc::from_string(rg_o.name, name);
+        fc::from_string(rg_o.permlink, permlink);
+        fc::from_string(rg_o.description, description);
     });
 
-  return dao_research_group;
-}
-
-void dbs_research_group::change_quorum(const percent_type quorum, const research_group_quorum_action quorum_action, const research_group_id_type& research_group_id)
-{
-  check_research_group_existence(research_group_id);
-  const research_group_object& research_group = get_research_group(research_group_id);
-
-  db_impl().modify(research_group, [&](research_group_object& rg) { 
-    rg.action_quorums[quorum_action] = quorum; 
-  });
+    return research_group;
 }
 
 void dbs_research_group::check_research_group_existence(const research_group_id_type& research_group_id) const
@@ -150,46 +184,64 @@ const bool dbs_research_group::research_group_exists(const research_group_id_typ
   return idx.find(research_group_id) != idx.end();
 }
 
-const research_group_token_object& dbs_research_group::get_research_group_token_by_id(
-  const research_group_token_id_type& id) const 
+const bool dbs_research_group::research_group_exists(const string& permlink) const
 {
-  try {
-    return db_impl().get<research_group_token_object>(id);
-  }
+  const auto& idx = db_impl()
+    .get_index<research_group_index>()
+    .indices()
+    .get<by_permlink>();
+
+  return idx.find(permlink, fc::strcmp_less()) != idx.end();
+}
+
+const bool dbs_research_group::research_group_exists(const account_name_type& account) const
+{
+    const auto& idx = db_impl()
+            .get_index<research_group_index>()
+            .indices()
+            .get<by_account>();
+
+    return idx.find(account) != idx.end();
+}
+
+const research_group_token_object& dbs_research_group::get_research_group_token_by_id(const research_group_token_id_type& id) const 
+{
+  try { return db_impl().get<research_group_token_object>(id); }
   FC_CAPTURE_AND_RETHROW((id))
 }
 
-dbs_research_group::research_group_token_refs_type dbs_research_group::get_tokens_by_account(
-  const account_name_type& account_name) const
+dbs_research_group::research_group_token_refs_type dbs_research_group::get_research_group_tokens_by_member(
+  const account_name_type& member) const
 {
   research_group_token_refs_type ret;
 
-  auto it_pair = db_impl()
-    .get_index<research_group_token_index>()
-    .indicies().get<by_owner>()
-    .equal_range(account_name);
-
-  auto it = it_pair.first;
-  const auto it_end = it_pair.second;
-  while (it != it_end)
-  {
-    ret.push_back(std::cref(*it));
-    ++it;
-  }
-
-  return ret;
-}
-
-dbs_research_group::research_group_token_refs_type dbs_research_group::get_research_group_tokens(
-  const research_group_id_type &research_group_id) const
-{
-  research_group_token_refs_type ret;
-
-  auto it_pair = db_impl()
+  const auto& idx = db_impl()
     .get_index<research_group_token_index>()
     .indicies()
-    .get<by_research_group>()
-    .equal_range(research_group_id);
+    .get<by_owner>();
+
+   auto it_pair = idx.equal_range(member);
+
+   auto it = it_pair.first;
+   const auto it_end = it_pair.second;
+   while (it != it_end)
+   {
+       ret.push_back(std::cref(*it));
+       ++it;
+  }
+
+  return ret;
+}
+
+dbs_research_group::research_group_token_refs_type dbs_research_group::get_research_group_tokens(const research_group_id_type& internal_id) const
+{
+  research_group_token_refs_type ret;
+  const auto& idx = db_impl()
+    .get_index<research_group_token_index>()
+    .indicies()
+    .get<by_research_group>();
+
+  auto it_pair = idx.equal_range(internal_id);
 
   auto it = it_pair.first;
   const auto it_end = it_pair.second;
@@ -202,14 +254,38 @@ dbs_research_group::research_group_token_refs_type dbs_research_group::get_resea
   return ret;
 }
 
-const research_group_token_object& dbs_research_group::get_research_group_token_by_account_and_research_group(
-  const account_name_type &account,
-  const research_group_id_type &research_group_id) const
+const research_group_token_object& dbs_research_group::get_research_group_token_by_member(
+  const account_name_type& member,
+  const research_group_id_type& internal_id) const
 {
-  try {
-    return db_impl().get<research_group_token_object, by_owner>(boost::make_tuple(account, research_group_id));
-  }
-  FC_CAPTURE_AND_RETHROW((account)(research_group_id))
+  const auto& idx = db_impl()
+    .get_index<research_group_token_index>()
+    .indicies()
+    .get<by_owner>();
+
+  auto itr = idx.find(std::make_tuple(member, internal_id));
+  FC_ASSERT(itr != idx.end(), "Research group ${1} token for ${2} does not exist", ("1", internal_id)("2", member));
+  return *itr;
+}
+
+
+const dbs_research_group::research_group_token_optional_ref_type dbs_research_group::get_research_group_token_by_member_if_exists(
+  const account_name_type& member,
+  const research_group_id_type& internal_id) const
+{
+    research_group_token_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<research_group_token_index>()
+      .indicies()
+      .get<by_owner>();
+
+    auto itr = idx.find(std::make_tuple(member, internal_id));
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 const research_group_token_object& dbs_research_group::add_member_to_research_group(
@@ -217,14 +293,12 @@ const research_group_token_object& dbs_research_group::add_member_to_research_gr
   const research_group_id_type& research_group_id,
   const share_type& share,
   const account_name_type& inviter)
-{
-    FC_ASSERT(share > 0, "RGT share is required");
-    
+{    
     share_type amount = 0;
 
     if (inviter != account_name_type()) // invited by individual
-    { 
-        const auto& inviter_rgt = get_research_group_token_by_account_and_research_group(inviter, research_group_id);
+    {
+        const auto& inviter_rgt = get_research_group_token_by_member(inviter, research_group_id);
         FC_ASSERT(inviter_rgt.amount - share > DEIP_1_PERCENT, 
           "Inviter ${inviter} does not have enough RGT amount to invite ${invitee}. Inviter RGT: ${inviter_rgt}. Invitee RGT ${invitee_rgt}",
           ("inviter", inviter_rgt.owner)("invitee", account)("inviter_rgt", inviter_rgt.amount)("invitee_rgt", share));
@@ -285,7 +359,7 @@ dbs_research_group::research_group_token_refs_type dbs_research_group::remove_me
   const account_name_type& account,
   const research_group_id_type& research_group_id)
   {
-      const research_group_token_object& rgt = get_research_group_token_by_account_and_research_group(account, research_group_id);
+      const research_group_token_object& rgt = get_research_group_token_by_member(account, research_group_id);
       share_type share = rgt.amount;
       db_impl().remove(rgt);
 
@@ -322,7 +396,7 @@ dbs_research_group::research_group_token_refs_type dbs_research_group::remove_me
 
       if (remainder != 0 && weakest_member_name != account_name_type()) 
       {
-          const research_group_token_object& weakest_rgt = get_research_group_token_by_account_and_research_group(weakest_member_name, research_group_id);
+          const research_group_token_object& weakest_rgt = get_research_group_token_by_member(weakest_member_name, research_group_id);
           db_impl().modify(weakest_rgt, [&](research_group_token_object& rgt_o)
           {
               rgt_o.amount += remainder;
@@ -344,15 +418,15 @@ dbs_research_group::research_group_token_refs_type dbs_research_group::remove_me
   }
 
 const bool dbs_research_group::is_research_group_member(
-  const account_name_type& account,
+  const account_name_type& member,
   const research_group_id_type& research_group_id) const
 { 
   const auto& idx = db_impl()
     .get_index<research_group_token_index>()
     .indices()
     .get<by_owner>();
-  
-  auto itr = idx.find(std::make_tuple(account, research_group_id));
+
+  auto itr = idx.find(std::make_tuple(member, research_group_id));
   return itr != idx.end();
 }
 

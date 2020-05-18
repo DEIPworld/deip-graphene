@@ -25,9 +25,6 @@
 namespace deip {
 namespace chain {
 
-using deip::protocol::research_group_quorum_action;
-using deip::protocol::percent_type;
-
 void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
 {
     private_key_type init_delegate_priv_key = private_key_type::regenerate(fc::sha256::hash(string("init_key")));
@@ -128,7 +125,7 @@ clean_database_fixture::clean_database_fixture()
         // Fill up the rest of the required miners
         for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
         {
-            account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
+            create_account(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
             fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), 1000);
         }
 
@@ -197,7 +194,7 @@ void clean_database_fixture::resize_shared_mem(uint64_t size)
     // Fill up the rest of the required miners
     for (int i = DEIP_NUM_INIT_DELEGATES; i < DEIP_MAX_WITNESSES; i++)
     {
-        account_create(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
+        create_account(TEST_INIT_DELEGATE_NAME + fc::to_string(i), init_account_pub_key);
         fund(TEST_INIT_DELEGATE_NAME + fc::to_string(i), DEIP_MIN_PRODUCER_REWARD.amount.value);
     }
 
@@ -313,7 +310,7 @@ void database_fixture::generate_blocks(fc::time_point_sec timestamp, bool miss_i
     BOOST_REQUIRE((db.head_block_time() - timestamp).to_seconds() < DEIP_BLOCK_INTERVAL);
 }
 
-const account_object& database_fixture::account_create(const string& name,
+const account_object& database_fixture::create_account(const string& name,
                                                        const string& creator,
                                                        const private_key_type& creator_key,
                                                        const share_type& fee,
@@ -324,7 +321,7 @@ const account_object& database_fixture::account_create(const string& name,
     try
     {
 
-        account_create_operation op;
+        create_account_operation op;
         op.new_account_name = name;
         op.creator = creator;
         op.fee = asset(fee, DEIP_SYMBOL);
@@ -351,11 +348,11 @@ const account_object& database_fixture::account_create(const string& name,
 }
 
 const account_object&
-database_fixture::account_create(const string& name, const public_key_type& key, const public_key_type& post_key)
+database_fixture::create_account(const string& name, const public_key_type& key, const public_key_type& post_key)
 {
     try
     {
-        return account_create(name, TEST_INIT_DELEGATE_NAME, init_account_priv_key,
+        return create_account(name, TEST_INIT_DELEGATE_NAME, init_account_priv_key,
                               std::max(db.get_witness_schedule_object().median_props.account_creation_fee.amount
                                            * DEIP_CREATE_ACCOUNT_WITH_DEIP_MODIFIER,
                                        share_type(10000)),
@@ -364,9 +361,9 @@ database_fixture::account_create(const string& name, const public_key_type& key,
     FC_CAPTURE_AND_RETHROW((name));
 }
 
-const account_object& database_fixture::account_create(const string& name, const public_key_type& key)
+const account_object& database_fixture::create_account(const string& name, const public_key_type& key)
 {
-    return account_create(name, key, key);
+    return create_account(name, key, key);
 }
 
 
@@ -416,7 +413,6 @@ database_fixture::research_group_create(const int64_t& id,
                                         const string& permlink,
                                         const string& description,
                                         const share_type funds,
-                                        const std::map<research_group_quorum_action, percent_type>& action_quorums,
                                         const bool is_dao,
                                         const bool is_personal)
 {
@@ -427,48 +423,11 @@ database_fixture::research_group_create(const int64_t& id,
               fc::from_string(rg.permlink, permlink);
               fc::from_string(rg.description, description);
               rg.balance = funds;
-              rg.action_quorums.insert(action_quorums.begin(), action_quorums.end());
               rg.is_dao = is_dao;
               rg.is_personal = is_personal;
           });
 
     return new_research_group;
-}
-
-const research_group_object& database_fixture::research_group_create_by_operation(const account_name_type& creator,
-                                                                                  const string& name,
-                                                                                  const string& permlink,
-                                                                                  const string& description,
-                                                                                  const percent_type& default_quorum,
-                                                                                  const std::map<research_group_quorum_action, percent_type>& action_quorums,
-                                                                                  const bool is_dao)
-{
-    try
-    {
-        auto cr = std::string(creator);
-        private_key_type priv_key = generate_private_key(cr);
-
-        create_research_group_operation op;
-        op.name = name;
-        op.permlink = permlink;
-        op.description = description;
-        op.creator = creator;
-
-        trx.operations.push_back(op);
-
-        trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        trx.sign(priv_key, db.get_chain_id());
-        trx.validate();
-        db.push_transaction(trx, 0);
-        trx.operations.clear();
-        trx.signatures.clear();
-
-        auto& research_group_service = db.obtain_service<dbs_research_group>();
-        const research_group_object& rg = research_group_service.get_research_group_by_permlink(permlink);
-
-        return rg;
-    }
-    FC_CAPTURE_AND_RETHROW((creator)(permlink))
 }
 
 const research_group_token_object& database_fixture::research_group_token_create(
@@ -485,12 +444,11 @@ database_fixture::setup_research_group(const int64_t& id,
                                        const string& permlink,
                                        const string& description,
                                        const share_type funds,
-                                       const std::map<research_group_quorum_action, percent_type> action_quorums,
                                        const bool is_dao,
                                        const bool is_personal,
                                        const vector<std::pair<account_name_type, share_type>>& accounts)
 {
-    const auto& research_group = research_group_create(id, name, permlink, description, funds, action_quorums, is_dao, is_personal);
+    const auto& research_group = research_group_create(id, name, permlink, description, funds, is_dao, is_personal);
 
     for (const auto& account : accounts)
     {
@@ -500,66 +458,12 @@ database_fixture::setup_research_group(const int64_t& id,
     return research_group;
 }
 
-const proposal_object& database_fixture::create_proposal(const int64_t id, const dbs_proposal::action_t action,
-                                       const std::string json_data,
-                                       const account_name_type& creator,
-                                       const research_group_id_type& research_group_id,
-                                       const fc::time_point_sec expiration_time,
-                                       const percent_type quorum)
-{
-    const proposal_object& new_proposal = db.create<proposal_object>([&](proposal_object& proposal) {
-        proposal.action = action;
-        proposal.id = id;
-        fc::from_string(proposal.data, json_data);
-        proposal.creator = creator;
-        proposal.research_group_id = research_group_id;
-        proposal.creation_time = fc::time_point_sec();
-        proposal.expiration_time = expiration_time;
-        proposal.quorum = quorum;
-    });
-
-    return new_proposal;
-}
-
-void database_fixture::create_proposal_by_operation(const account_name_type& creator,
-                                                                      const research_group_id_type& research_group_id,
-                                                                      const std::string json_data,
-                                                                      const dbs_proposal::action_t action,
-                                                                      const fc::time_point_sec expiration_time)
-{
-    try
-    {
-        auto cr = std::string(creator);
-        private_key_type priv_key = generate_private_key(cr);
-
-        create_proposal_operation op;
-        op.creator = creator;
-        op.research_group_id = research_group_id._id;
-        op.data = json_data;
-        op.action = action;
-        op.expiration_time = expiration_time;
-
-        trx.operations.push_back(op);
-
-        trx.set_expiration(db.head_block_time() + DEIP_MAX_TIME_UNTIL_EXPIRATION);
-        trx.sign(priv_key, db.get_chain_id());
-        trx.validate();
-        db.push_transaction(trx, 0);
-        trx.operations.clear();
-        trx.signatures.clear();
-
-        // generate_block();
-    }
-    FC_CAPTURE_AND_RETHROW((creator))
-}
-
 const research_object& database_fixture::research_create(const int64_t id,
-                                                         const string &title,
-                                                         const string &abstract,
-                                                         const string &permlink,
-                                                         const research_group_id_type &research_group_id,
-                                                         const uint16_t review_share_in_percent,
-                                                         const uint16_t dropout_compensation_in_percent)
+                                                         const string& title,
+                                                         const string& abstract,
+                                                         const string& permlink,
+                                                         const research_group_id_type& research_group_id,
+                                                         const percent& review_share)
 {
     const auto& new_research = db.create<research_object>([&](research_object& r) {
         r.id = id;
@@ -567,12 +471,11 @@ const research_object& database_fixture::research_create(const int64_t id,
         fc::from_string(r.abstract, abstract);
         fc::from_string(r.permlink, permlink);
         r.research_group_id = research_group_id;
-        r.review_share_in_percent = review_share_in_percent;
-        r.dropout_compensation_in_percent = dropout_compensation_in_percent;
+        r.review_share = review_share;
         r.is_finished = false;
-        r.owned_tokens = DEIP_100_PERCENT;
+        r.owned_tokens = percent(DEIP_100_PERCENT);
         r.created_at = db.head_block_time();
-        r.review_share_in_percent_last_update = db.head_block_time();
+        r.review_share_last_update = db.head_block_time();
     });
 
     return new_research;
@@ -605,7 +508,7 @@ const research_content_object& database_fixture::research_content_create(
                                 const time_point_sec& activity_window_end,
                                 const std::vector<account_name_type>& authors,
                                 const std::vector<research_content_id_type>& references,
-                                const std::set<string>& external_references)
+                                const std::set<string>& foreign_references)
 {
     const auto& new_research_content = db.create<research_content_object>([&](research_content_object& rc) {
 
@@ -618,7 +521,6 @@ const research_content_object& database_fixture::research_content_create(
         fc::from_string(rc.content, content);
         rc.created_at = now;
         rc.authors.insert(authors.begin(), authors.end());
-        rc.references.insert(references.begin(), references.end());
         rc.activity_round = activity_round;
         rc.activity_state = activity_state;
         rc.activity_window_start = activity_window_start;

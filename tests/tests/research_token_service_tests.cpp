@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(create_research_token)
 {
     try
     {
-        const research_token_object& research_token = data_service.create_research_token("john", 250, 34, false);
+        const research_token_object& research_token = data_service.create_research_token("john", 34, 250, false);
 
         BOOST_CHECK(research_token.account_name == "john");
         BOOST_CHECK(research_token.amount == 250);
@@ -140,38 +140,6 @@ BOOST_AUTO_TEST_CASE(check_research_token_existence_by_account_name_and_research
         BOOST_CHECK_NO_THROW(data_service.check_existence_by_owner_and_research("alice", 2));
         BOOST_CHECK_NO_THROW(data_service.check_existence_by_owner_and_research("bob", 3));
         BOOST_CHECK(data_service.exists_by_owner_and_research("john", 2) == false);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(increase_research_token_amount)
-{
-    try
-    {
-        create_research_tokens();
-
-        auto& research_token = db.get<research_token_object>(1);
-
-        BOOST_CHECK_NO_THROW(data_service.increase_research_token_amount(research_token, 20));
-
-        BOOST_CHECK(research_token.amount == 220);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(decrease_research_token_amount)
-{
-    try
-    {
-        create_research_tokens();
-
-        auto& research_token = db.get<research_token_object>(2);
-
-        BOOST_CHECK_NO_THROW(data_service.decrease_research_token_amount(research_token, 20));
-
-        BOOST_CHECK(research_token.amount == 80);
 
     }
     FC_LOG_AND_RETHROW()

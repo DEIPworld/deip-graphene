@@ -24,7 +24,7 @@ protected:
 public:
     using research_discipline_relation_refs_type = std::vector<std::reference_wrapper<const research_discipline_relation_object>>;
 
-    const research_discipline_relation_object& create(const research_id_type& research_id, const discipline_id_type& discipline_id);
+    const research_discipline_relation_object& create_research_relation(const research_id_type& research_id, const discipline_id_type& discipline_id);
 
     const research_discipline_relation_object& update_votes_count(const research_id_type& research_id, const discipline_id_type& discipline_id, int16_t delta);
 
@@ -34,17 +34,19 @@ public:
 
     /** Get research_discipline_relations by research_id
     */
-    research_discipline_relation_refs_type get_research_discipline_relations_by_research(const research_id_type& research_id) const;
+    const research_discipline_relation_refs_type get_research_discipline_relations_by_research(const research_id_type& research_id) const;
 
     /** Get research_discipline_relations by discipline_id
     */
-    research_discipline_relation_refs_type get_research_discipline_relations_by_discipline(const discipline_id_type& discipline_id) const;
+    const research_discipline_relation_refs_type get_research_discipline_relations_by_discipline(const discipline_id_type& discipline_id) const;
 
     /** Get research_discipline_relations by research_id & discipline_id
     */
     const research_discipline_relation_object& get_research_discipline_relation_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const;
 
     void check_existence_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const;
+
+    const bool exists_by_research_and_discipline(const research_id_type& research_id, const discipline_id_type& discipline_id) const;
 };
 } // namespace chain
 } // namespace deip

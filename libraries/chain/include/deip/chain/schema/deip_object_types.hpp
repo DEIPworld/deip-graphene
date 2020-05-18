@@ -28,7 +28,6 @@ using deip::protocol::block_id_type;
 using deip::protocol::chain_id_type;
 using deip::protocol::asset_symbol_type;
 using deip::protocol::percent_type;
-using deip::protocol::research_group_quorum_action;
 using deip::protocol::share_type;
 using deip::protocol::transaction_id_type;
 
@@ -61,10 +60,10 @@ enum object_type
     research_discipline_relation_object_type,
     research_content_object_type,
     proposal_object_type,
+    recent_entity_object_type,
     research_group_object_type,
     research_group_token_object_type,
     research_group_organization_contract_object_type,
-    proposal_vote_object_type,
     expert_token_object_type,
     research_token_object_type,
     research_token_sale_object_type,
@@ -76,8 +75,6 @@ enum object_type
     reward_pool_object_type,
     expertise_allocation_proposal_object_type,
     expertise_allocation_proposal_vote_object_type,
-    offer_research_tokens_object_type,
-    grant_object_type,
     grant_application_object_type,
     grant_application_review_object_type,
     funding_opportunity_object_type,
@@ -109,6 +106,7 @@ class block_stats_object;
 class reward_fund_object;
 class discipline_supply_object;
 class proposal_object;
+class recent_entity_object;
 class research_group_object;
 class research_group_token_object;
 class research_group_organization_contract_object;
@@ -117,7 +115,6 @@ class expertise_contribution_object;
 class research_object;
 class research_discipline_relation_object;
 class research_content_object;
-class proposal_vote_object;
 class expert_token_object;
 class research_token_object;
 class research_token_sale_object;
@@ -129,8 +126,6 @@ class vesting_balance_object;
 class reward_pool_object;
 class expertise_allocation_proposal_object;
 class expertise_allocation_proposal_vote_object;
-class offer_research_tokens_object;
-class grant_object;
 class grant_application_object;
 class grant_application_review_object;
 class funding_opportunity_object;
@@ -162,6 +157,7 @@ typedef oid<block_stats_object> block_stats_id_type;
 typedef oid<reward_fund_object> reward_fund_id_type;
 typedef oid<discipline_supply_object> discipline_supply_id_type;
 typedef oid<proposal_object> proposal_id_type;
+typedef oid<recent_entity_object> recent_entity_id_type;
 typedef oid<research_group_object> research_group_id_type;
 typedef oid<research_group_token_object> research_group_token_id_type;
 typedef oid<research_group_organization_contract_object> research_group_organization_contract_id_type;
@@ -170,7 +166,6 @@ typedef oid<expertise_contribution_object> expertise_contribution_id_type;
 typedef oid<research_object> research_id_type;
 typedef oid<research_discipline_relation_object> research_discipline_relation_id_type;
 typedef oid<research_content_object> research_content_id_type;
-typedef oid<proposal_vote_object> proposal_vote_id_type;
 typedef oid<expert_token_object> expert_token_id_type;
 typedef oid<research_token_object> research_token_id_type;
 typedef oid<research_token_sale_object> research_token_sale_id_type;
@@ -182,8 +177,6 @@ typedef oid<vesting_balance_object> vesting_balance_id_type;
 typedef oid<reward_pool_object> reward_pool_id_type;
 typedef oid<expertise_allocation_proposal_object> expertise_allocation_proposal_id_type;
 typedef oid<expertise_allocation_proposal_vote_object> expertise_allocation_proposal_vote_id_type;
-typedef oid<offer_research_tokens_object> offer_research_tokens_id_type;
-typedef oid<grant_object> grant_id_type;
 typedef oid<grant_application_object> grant_application_id_type;
 typedef oid<grant_application_review_object> grant_application_review_id_type;
 typedef oid<funding_opportunity_object> funding_opportunity_id_type;
@@ -220,9 +213,6 @@ typedef bip::map<discipline_id_type, share_type, std::less<discipline_id_type>, 
 
 typedef allocator<std::pair<const discipline_id_type, std::vector<account_name_type>>> discipline_id_account_name_allocator_type;
 typedef bip::map<discipline_id_type, std::vector<account_name_type>, std::less<discipline_id_type>, discipline_id_account_name_allocator_type> delegated_expertise_type_map;
-
-typedef allocator<std::pair<const research_group_quorum_action, percent_type>> research_group_quorum_action_threshold_allocator_type;
-typedef bip::map<research_group_quorum_action, percent_type, std::less<uint16_t>, research_group_quorum_action_threshold_allocator_type> research_group_quorum_action_threshold_map;
 
 typedef allocator<share_type> share_type_allocator_type;
 typedef bip::deque<share_type, share_type_allocator_type> share_type_deque;
@@ -261,6 +251,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (reward_fund_object_type)
                  (discipline_supply_object_type)
                  (proposal_object_type)
+                 (recent_entity_object_type)
                  (research_group_object_type)
                  (research_group_token_object_type)
                  (research_group_organization_contract_object_type)
@@ -270,7 +261,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (research_object_type)
                  (research_discipline_relation_object_type)
                  (research_content_object_type)
-                 (proposal_vote_object_type)
                  (expert_token_object_type)
                  (research_token_object_type)
                  (research_token_sale_object_type)
@@ -282,8 +272,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (reward_pool_object_type)
                  (expertise_allocation_proposal_object_type)
                  (expertise_allocation_proposal_vote_object_type)
-                 (offer_research_tokens_object_type)
-                 (grant_object_type)
                  (grant_application_object_type)
                  (grant_application_review_object_type)
                  (funding_opportunity_object_type)

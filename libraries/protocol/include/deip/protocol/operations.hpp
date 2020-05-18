@@ -1,11 +1,14 @@
 #pragma once
 
-#include <deip/protocol/operation_util.hpp>
 #include <deip/protocol/deip_operations.hpp>
 #include <deip/protocol/deip_virtual_operations.hpp>
+#include <boost/container/flat_set.hpp>
+#include <deip/protocol/authority.hpp>
+#include <fc/variant.hpp>
+#include <vector>
 
 namespace deip {
-    namespace protocol {
+namespace protocol {
 
 /** NOTE: do not change the order of any operations prior to the virtual operations
  * or it will trigger a hardfork.
@@ -17,8 +20,8 @@ namespace deip {
                 transfer_to_common_tokens_operation,
                 withdraw_common_tokens_operation,
 
-                account_create_operation,
-                account_update_operation,
+                create_account_operation,
+                update_account_operation,
 
                 witness_update_operation,
                 account_witness_vote_operation,
@@ -32,25 +35,30 @@ namespace deip {
 
                 // DEIP native operations
                 placeholder1_operation,
-                create_research_group_operation,
+                delete_proposal_operation,
                 create_proposal_operation,
-                vote_proposal_operation,
+                update_proposal_operation,
                 make_review_operation,
                 contribute_to_token_sale_operation,
-                approve_research_group_invite_operation,
-                reject_research_group_invite_operation,
-                transfer_research_tokens_to_research_group_operation,
                 placeholder2_operation,
-                research_update_operation,
+                placeholder3_operation,
+                placeholder4_operation,
+
+                placeholder5_operation,
+                placeholder6_operation,
+
                 create_vesting_balance_operation,
                 withdraw_vesting_balance_operation,
-                transfer_research_tokens_operation,
+
+                transfer_research_share_operation,
+
                 delegate_expertise_operation,
                 revoke_expertise_delegation_operation,
                 create_expertise_allocation_proposal_operation,
                 vote_for_expertise_allocation_proposal_operation,
-                accept_research_token_offer_operation,
-                reject_research_token_offer_operation,
+                placeholder7_operation,
+                placeholder8_operation,
+
                 create_grant_operation,
                 create_grant_application_operation,
                 make_review_for_application_operation,
@@ -59,6 +67,7 @@ namespace deip {
                 create_asset_operation,
                 issue_asset_operation,
                 reserve_asset_operation,
+
                 create_award_operation,
                 approve_award_operation,
                 reject_award_operation,
@@ -67,6 +76,15 @@ namespace deip {
                 approve_award_withdrawal_request_operation,
                 reject_award_withdrawal_request_operation,
                 pay_award_withdrawal_request_operation,
+
+                join_research_group_membership_operation,
+                left_research_group_membership_operation,
+                create_research_operation,
+                create_research_content_operation,
+                create_research_token_sale_operation,
+                placeholder9_operation,
+                update_research_operation,
+
                 create_nda_contract_operation,
                 sign_nda_contract_operation,
                 decline_nda_contract_operation,
@@ -86,24 +104,45 @@ namespace deip {
                 account_eci_history_operation>
                 operation;
 
-/*void operation_get_required_authorities( const operation& op,
-                                         flat_set<string>& active,
-                                         flat_set<string>& owner,
-                                         flat_set<string>& posting,
-                                         vector<authority>&  other );
-
-void operation_validate( const operation& op );*/
 
         bool is_market_operation(const operation& op);
 
         bool is_virtual_operation(const operation& op);
-    } // namespace protocol
-} // namespace deip
 
-/*namespace fc {
-    void to_variant( const deip::protocol::operation& var,  fc::variant& vo );
-    void from_variant( const fc::variant& var,  deip::protocol::operation& vo );
-}*/
+        void operation_validate(const operation& op);
 
-DECLARE_OPERATION_TYPE(deip::protocol::operation)
+        void entity_validate(const operation& op, uint16_t ref_block_num, uint32_t ref_block_prefix);
+
+        void operation_get_required_authorities(const operation& op,
+                                                flat_set<account_name_type>& active,
+                                                flat_set<account_name_type>& owner,
+                                                flat_set<account_name_type>& posting,
+                                                vector<authority>& other);
+
+        /**
+         * op_wrapper is used to get around the circular definition of operation and proposals that contain them.
+         */
+        struct op_wrapper
+        {
+            op_wrapper(const operation& op = operation())
+                : op(op)
+            {
+            }
+
+            operation op;
+        };
+
+} //  deip::protocol
+} //  deip
+
+namespace fc {
+
+using namespace deip::protocol;
+
+void to_variant(const operation&, fc::variant&);
+void from_variant(const fc::variant&, operation&);
+
+} //
+
 FC_REFLECT_TYPENAME(deip::protocol::operation)
+FC_REFLECT(deip::protocol::op_wrapper, (op))

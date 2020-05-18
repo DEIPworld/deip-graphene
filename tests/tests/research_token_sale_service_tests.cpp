@@ -214,18 +214,6 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_by_research_id)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(check_research_token_sale_existence)
-{
-    try
-    {
-        create_research_token_sales();
-
-        BOOST_CHECK_NO_THROW(data_service.check_research_token_sale_existence(2));
-        BOOST_CHECK_THROW(data_service.check_research_token_sale_existence(5), fc::assert_exception);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_CASE(increase_research_token_sale_tokens_amount)
 {
     try

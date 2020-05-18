@@ -283,22 +283,22 @@ public:
     ////////////////
     // Researches //
     ////////////////
-    fc::optional<research_api_obj> get_research_by_id(const research_id_type& id) const;
+    fc::optional<research_api_obj> get_research(const external_id_type& id) const;
+    fc::optional<research_api_obj> get_research_by_id(const research_id_type& internal_id) const;
     fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
     fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
-    vector<research_api_obj> get_researches_by_discipline_id(const uint64_t from, const uint32_t limit, const discipline_id_type& discipline_id) const;
     vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
     bool check_research_existence_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
 
     //////////////////////
     // Research Content //
     //////////////////////
-    fc::optional<research_content_api_obj> get_research_content_by_id(const research_content_id_type& id) const;
+    fc::optional<research_content_api_obj> get_research_content(const external_id_type& id) const;
+    fc::optional<research_content_api_obj> get_research_content_by_id(const research_content_id_type& internal_id) const;
     fc::optional<research_content_api_obj> get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
     fc::optional<research_content_api_obj> get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
     vector<research_content_api_obj> get_all_research_content(const research_id_type& research_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
-    vector<research_content_api_obj> get_all_milestones_by_research_id(const research_id_type& research_id) const;
 
     ///////////////////
     // Expert Tokens //
@@ -312,12 +312,13 @@ public:
     ////////////////////
     // Proposal       //
     ////////////////////
-    vector<proposal_api_obj> get_proposals_by_research_group_id(const research_group_id_type research_group_id) const;
-    fc::optional<proposal_api_obj> get_proposal(const proposal_id_type id) const;
+    fc::optional<proposal_api_obj> get_proposal(const external_id_type& external_id) const;
+    vector<proposal_api_obj> get_proposals_by_creator(const account_name_type& creator) const;
 
     ////////////////////
     // Research group //
     ////////////////////
+    fc::optional<research_group_api_obj> get_research_group(const account_name_type& account) const;
     fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type research_group_id) const;
     fc::optional<research_group_api_obj> get_research_group_by_permlink(const string& permlink) const;
     vector<research_group_api_obj> get_all_research_groups(const bool& is_personal_need) const;
@@ -326,11 +327,9 @@ public:
     /////////////////////////////////
     // Research group tokens       //
     /////////////////////////////////
-    vector<research_group_token_api_obj> get_research_group_tokens_by_account(const account_name_type account) const;
-    vector<research_group_token_api_obj> get_research_group_tokens_by_research_group(const research_group_id_type& research_group_id) const;
-    fc::optional<research_group_token_api_obj>
-    get_research_group_token_by_account_and_research_group_id(const account_name_type account,
-                                                              const research_group_id_type& research_group_id) const;
+    vector<research_group_token_api_obj> get_research_group_tokens_by_account(const account_name_type& member) const;
+    vector<research_group_token_api_obj> get_research_group_tokens_by_research_group(const research_group_id_type& internal_id) const;
+    fc::optional<research_group_token_api_obj> get_research_group_token_by_account_and_research_group_id(const account_name_type& member, const research_group_id_type& internal_id) const;
 
     /////////////////////////
     // Research token sale //
@@ -362,8 +361,6 @@ public:
     ///////////////////////////////////
     // Research listing              //
     ///////////////////////////////////
-
-    vector<research_listing_api_obj> get_research_listing(const discipline_id_type& discipline_id, const uint64_t& from, const uint32_t& limit) const;
     vector<research_listing_api_obj> get_all_researches_listing(const discipline_id_type& discipline_id, const uint32_t& limit) const;
 
     /////////////////////////////
@@ -434,29 +431,13 @@ public:
     fc::optional<vesting_balance_api_obj> get_vesting_balance_by_id(const vesting_balance_id_type& vesting_balance_id) const;
     vector<vesting_balance_api_obj> get_vesting_balance_by_owner(const account_name_type& owner) const;
 
-    ///////////////////////////
-    // Offer research tokens///
-    ///////////////////////////
-
-    fc::optional<offer_research_tokens_api_obj> get_offer(const offer_research_tokens_id_type& id) const;
-    vector<offer_research_tokens_api_obj> get_offers_by_receiver(const account_name_type& receiver) const;
-    fc::optional<offer_research_tokens_api_obj> get_offer_by_receiver_and_research_id(const account_name_type& receiver,
-                                                                                      const research_id_type& research_id) const;
-    vector<offer_research_tokens_api_obj> get_offers_by_research_id(const research_id_type& research_id) const;
-
-    ////////////
-    // Grants //
-    ////////////
-    fc::optional<grant_api_obj> get_grant_with_announced_application_window(const grant_id_type& id) const;
-    vector<grant_api_obj> get_grants_with_announced_application_window_by_grantor(const string& grantor) const;
-
 
     ////////////////////////
     // Grant applications //
     ////////////////////////
 
     fc::optional<grant_application_api_obj> get_grant_application(const grant_application_id_type& id) const;
-    vector<grant_application_api_obj> get_grant_applications_by_grant(const grant_id_type& grant_id) const;
+    vector<grant_application_api_obj> get_grant_applications_by_funding_opportunity_number(const std::string& funding_opportunity_number) const;
     vector<grant_application_api_obj> get_grant_applications_by_research_id(const research_id_type& research_id) const;
 
 
@@ -625,15 +606,16 @@ FC_API(deip::app::database_api,
    (get_disciplines_by_parent_id)
 
    // Research
+   (get_research)
    (get_research_by_id)
    (get_research_by_permlink)
-   (get_researches_by_discipline_id)
    (get_researches_by_research_group_id)
    (get_research_by_absolute_permlink)
    (check_research_existence_by_permlink)
 
 
    // Research Content
+   (get_research_content)
    (get_research_content_by_id)
    (get_all_research_content)
    (get_research_content_by_type)
@@ -648,16 +630,16 @@ FC_API(deip::app::database_api,
    (get_expert_token_by_account_name_and_discipline_id)
 
    // Proposal
-   (get_proposals_by_research_group_id)
    (get_proposal)
+   (get_proposals_by_creator)
 
    // Research group
+   (get_research_group)
    (get_research_group_by_id)
    (get_research_group_by_permlink)
    (get_all_research_groups)
    (check_research_group_existence_by_permlink)
 
-   // Research group tokens
    (get_research_group_tokens_by_account)
    (get_research_group_tokens_by_research_group)
    (get_research_group_token_by_account_and_research_group_id)
@@ -682,7 +664,6 @@ FC_API(deip::app::database_api,
    (get_research_group_invite_by_account_name_and_research_group_id)
 
    // Research listing
-   (get_research_listing)
    (get_all_researches_listing)
 
    // Total votes
@@ -727,16 +708,6 @@ FC_API(deip::app::database_api,
    (get_vesting_balance_by_id)
    (get_vesting_balance_by_owner)
 
-   // Offer research tokens
-   (get_offer)
-   (get_offers_by_receiver)
-   (get_offer_by_receiver_and_research_id)
-   (get_offers_by_research_id)
-
-   //Grants
-   (get_grant_with_announced_application_window)
-   (get_grants_with_announced_application_window_by_grantor)
-
    // FOA
    (get_funding_opportunity_announcement)
    (get_funding_opportunity_announcement_by_number)
@@ -745,7 +716,7 @@ FC_API(deip::app::database_api,
 
    // Grant applications
    (get_grant_application)
-   (get_grant_applications_by_grant)
+   (get_grant_applications_by_funding_opportunity_number)
    (get_grant_applications_by_research_id)
    
    (calculate_research_eci)

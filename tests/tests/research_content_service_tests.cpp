@@ -9,7 +9,7 @@
 
 #define RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT 10
 #define RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT 20
-#define DROPOUT_COMPENSATION_IN_PERCENT 1500
+#define COMPENSATION_IN_PERCENT 1500
 
 namespace deip {
 namespace chain {
@@ -30,12 +30,11 @@ public:
             r.title = "Research #1";
             r.permlink = "Research #1 permlink";
             r.research_group_id = 1;
-            r.review_share_in_percent = RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT;
-            r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
+            r.review_share = percent(RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT);
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for Research #1";
-            r.owned_tokens = DEIP_100_PERCENT;
+            r.owned_tokens = percent(DEIP_100_PERCENT);
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -48,8 +47,7 @@ public:
             rc.permlink = "milestone-research-one";
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(2);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -62,8 +60,7 @@ public:
             rc.permlink = "another-milestone-research-one";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(2);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -76,8 +73,7 @@ public:
             rc.permlink = "final-research-one";
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(2);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
 
         db.create<research_object>([&](research_object& r) {
@@ -86,12 +82,11 @@ public:
             r.title = "Research #2";
             r.permlink = "permlink for Research #2";
             r.research_group_id = 2;
-            r.review_share_in_percent = RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT;
-            r.dropout_compensation_in_percent = DROPOUT_COMPENSATION_IN_PERCENT;
+            r.review_share = percent(RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT);
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for research #2";
-            r.owned_tokens = DEIP_100_PERCENT;
+            r.owned_tokens = percent(DEIP_100_PERCENT);
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -104,8 +99,7 @@ public:
             rc.permlink = "announcement-research-two";
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(1);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
     }
 
@@ -121,8 +115,7 @@ public:
             rc.permlink = "milestone-research-one";
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(2);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -135,8 +128,7 @@ public:
             rc.permlink = "another-milestone-research-one";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(2);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -149,8 +141,7 @@ public:
             rc.permlink = "final-research-one";
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(2);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -163,8 +154,7 @@ public:
             rc.permlink = "announcement-research-two";
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
-            rc.references.insert(1);
-            rc.external_references = {};
+            rc.foreign_references = {};
         });
     }
 
@@ -178,7 +168,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_id)
     try
     {
         create_researches_with_content();
-        auto announcement = data_service.get(3);
+        auto announcement = data_service.get_research_content(3);
         
         std::vector<string> authors;
         for (auto author : announcement.authors)
@@ -191,17 +181,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_id)
         BOOST_CHECK(announcement.authors.size() == 1);
         BOOST_CHECK(authors[0] == "john");
         BOOST_CHECK(announcement.references.size() == 1);
-        BOOST_CHECK(announcement.external_references.size() == 2);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(get_no_content_by_non_existing_id)
-{
-    try
-    {
-        create_researches_with_content();
-        BOOST_CHECK_THROW(data_service.get(10), fc::exception);
+        BOOST_CHECK(announcement.foreign_references.size() == 2);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -227,7 +207,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                     content.authors.size() == 2 &&
                     authors[0] == "alice" && authors[1] == "bob" &&
                     content.references.size() == 1 &&
-                    content.external_references.size() == 3;
+                    content.foreign_references.size() == 3;
 
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
@@ -243,7 +223,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                     content.authors.size() == 1 && 
                     authors[0] == "alice" &&
                     content.references.size() == 1 &&
-                    content.external_references.size() == 2;
+                    content.foreign_references.size() == 2;
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
@@ -258,7 +238,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                     content.authors.size() == 1 && 
                     authors[0] == "bob" &&
                     content.references.size() == 1 &&
-                    content.external_references.size() == 3;
+                    content.foreign_references.size() == 3;
         }));
     }
     FC_LOG_AND_RETHROW()
@@ -297,7 +277,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
                     content.authors.size() == 1 && 
                     authors[0] == "john" &&
                     content.references.size() == 1 &&
-                    content.external_references.size() == 2;
+                    content.foreign_references.size() == 2;
         }));
 
     }
@@ -315,36 +295,6 @@ BOOST_AUTO_TEST_CASE(get_no_content_for_non_existing_research_by_id_and_content_
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(create_research_content)
-{
-    try
-    {
-        create_researches_with_content();
-        research_content_type type = research_content_type::milestone_data;
-
-        std::string title = "title for milestone for Research #2";
-        std::string content = "milestone for Research #2";
-
-        std::vector<account_name_type> authors = {"sam"};
-
-        std::vector<research_content_id_type> research_references;
-        research_references.push_back(1);
-        std::set<string> external_references = {"one", "two", "three"};
-
-        auto milestone = data_service.create_research_content(2, type, title, content, "permlink", authors, research_references, external_references);
-        BOOST_CHECK(milestone.research_id == 2);
-        BOOST_CHECK(milestone.type == research_content_type::milestone_data);
-        BOOST_CHECK(milestone.title == "title for milestone for Research #2");
-        BOOST_CHECK(milestone.content == "milestone for Research #2");
-        BOOST_CHECK(milestone.permlink == "permlink");
-        BOOST_CHECK(milestone.authors.size() == 1);
-        BOOST_CHECK(milestone.authors.find("sam") != milestone.authors.end());
-        BOOST_CHECK(milestone.references.size() == 1);
-        BOOST_CHECK(milestone.external_references.size() == 3);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_CASE(check_research_content_existence)
 {
     try
@@ -353,52 +303,6 @@ BOOST_AUTO_TEST_CASE(check_research_content_existence)
 
         BOOST_CHECK_NO_THROW(data_service.check_research_content_existence(1));
         BOOST_CHECK_THROW(data_service.check_research_content_existence(123), fc::assert_exception);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-
-BOOST_AUTO_TEST_CASE(get_all_milestones_by_research_id)
-{
-    try
-    {
-        create_contents();
-        auto contents = data_service.get_all_milestones_by_research_id(1);
-
-        BOOST_CHECK(contents.size() == 2);
-        BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
-            const research_content_object &content = wrapper.get();
-            std::vector<string> authors;
-            for (auto author : content.authors)
-                authors.push_back(author);
-
-            return content.id == 0 && content.research_id == 1 &&
-                    content.type == research_content_type::milestone_data &&
-                    content.title == "title for milestone for Research #1" &&
-                    content.content == "milestone for Research #1" &&
-                    content.authors.size() == 2 &&
-                    authors[0] == "alice" &&
-                    authors[1] == "bob" &&
-                    content.references.size() == 1 &&
-                    content.external_references.size() == 3;
-        }));
-
-        BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
-            const research_content_object &content = wrapper.get();
-            std::vector<string> authors;
-            for (auto author : content.authors)
-                authors.push_back(author);
-
-            return content.id == 1 && content.research_id == 1 &&
-                   content.type == research_content_type::milestone_book &&
-                   content.title =="title for milestone for Research #1" &&
-                   content.content == "milestone for Research #1" &&
-                   content.authors.size() == 1 &&
-                   authors[0] == "alice" &&
-                   content.references.size() == 1 &&
-                   content.external_references.size() == 2;
-        }));
 
     }
     FC_LOG_AND_RETHROW()

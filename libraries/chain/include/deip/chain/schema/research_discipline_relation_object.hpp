@@ -5,8 +5,6 @@
 #include <deip/protocol/authority.hpp>
 
 #include "deip_object_types.hpp"
-#include "shared_authority.hpp"
-
 #include <boost/multi_index/composite_key.hpp>
 
 #include <numeric>

@@ -42,13 +42,9 @@ add_library( deip_chain
         services/dbs_dynamic_global_properties.cpp
         services/dbs_review.cpp
         services/dbs_vesting_balance.cpp
-        services/dbs_proposal_execution.cpp
         services/dbs_reward_pool.cpp
         services/dbs_expertise_allocation_proposal.cpp
-        services/dbs_offer_research_tokens.cpp
-        services/dbs_grant.cpp
         services/dbs_grant_application.cpp
-        services/dbs_grant_application_review.cpp
         services/dbs_funding_opportunity.cpp
         services/dbs_account_balance.cpp
         services/dbs_asset.cpp
@@ -59,6 +55,7 @@ add_library( deip_chain
         deip_evaluator.cpp
         schema/deip_objects.cpp
         schema/shared_authority.cpp
+        schema/proposal_object.cpp
         block_log.cpp
 
         genesis.cpp

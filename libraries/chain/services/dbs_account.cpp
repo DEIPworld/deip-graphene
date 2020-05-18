@@ -1,10 +1,11 @@
-#include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/database/database.hpp>
-
+#include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_account_balance.hpp>
-#include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_witness.hpp>
+#include <deip/chain/services/dbs_research_group_invite.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 
 namespace deip {
 namespace chain {
@@ -21,6 +22,23 @@ const account_object& dbs_account::get_account(const account_name_type& name) co
         return db_impl().get<account_object, by_name>(name);
     }
     FC_CAPTURE_AND_RETHROW((name))
+}
+
+const dbs_account::account_optional_ref_type dbs_account::get_account_if_exists(const account_name_type& name) const
+{
+    account_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<account_index>()
+      .indicies()
+      .get<by_name>();
+
+    auto itr = idx.find(name);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
 }
 
 const account_authority_object& dbs_account::get_account_authority(const account_name_type& name) const
@@ -57,7 +75,7 @@ void dbs_account::check_account_existence(const account_name_type& name,
     }
 }
 
-void dbs_account::check_account_existence(const account_authority_map& names,
+void dbs_account::check_account_existence(const authority::account_authority_map& names,
                                           const optional<const char*>& context_type_name) const
 {
     for (const auto& a : names)
@@ -66,44 +84,100 @@ void dbs_account::check_account_existence(const account_authority_map& names,
     }
 }
 
-const account_object& dbs_account::create_account_by_faucets(const account_name_type& new_account_name,
+const account_object& dbs_account::create_account_by_faucets(const account_name_type& account_name,
                                                              const account_name_type& creator_name,
                                                              const public_key_type& memo_key,
                                                              const string& json_metadata,
                                                              const authority& owner,
                                                              const authority& active,
                                                              const authority& posting,
-                                                             const asset& fee)
+                                                             const asset& fee,
+                                                             const vector<account_trait>& traits,
+                                                             const bool& is_user_account)
 {
-    FC_ASSERT(fee.symbol == DEIP_SYMBOL, "invalid asset type (asset_id)");
-
+    auto& research_groups_service = db_impl().obtain_service<dbs_research_group>();
     auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
+    auto& research_group_invites_service = db_impl().obtain_service<dbs_research_group_invite>();
+    auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
+
+    FC_ASSERT(fee >= DEIP_MIN_ACCOUNT_CREATION_FEE, 
+      "Insufficient fee ${1} for account creation. Min fee is ${1}", 
+      ("1", fee)("2", DEIP_MIN_ACCOUNT_CREATION_FEE)
+    );
+
     const auto& props = db_impl().get_dynamic_global_properties();
     account_balance_service.adjust_balance(creator_name, -fee);
 
     const auto& new_account = db_impl().create<account_object>([&](account_object& acc) {
-        acc.name = new_account_name;
+        acc.name = account_name;
         acc.memo_key = memo_key;
         acc.created = props.time;
         acc.mined = false;
-
         acc.recovery_account = creator_name;
-
+        acc.is_research_group = !is_user_account;
 #ifndef IS_LOW_MEM
         fc::from_string(acc.json_metadata, json_metadata);
 #endif
     });
 
-    db_impl().create<account_authority_object>([&](account_authority_object& auth) {
-        auth.account = new_account_name;
+    if (!account_balance_service.exists_by_owner_and_asset(account_name, DEIP_SYMBOL)) // check for genesis
+        account_balance_service.create(account_name, DEIP_SYMBOL, 0);
+    
+    // Convert fee to Common tokens and increase account common tokens balance for throughput
+    increase_common_tokens(get_account(account_name), fee.amount);
+
+    const auto& account_auth = db_impl().create<account_authority_object>([&](account_authority_object& auth) {
+        auth.account = account_name;
         auth.owner = owner;
         auth.active = active;
         auth.posting = posting;
         auth.last_owner_update = fc::time_point_sec::min();
     });
 
-    // Convert fee to Common tokens and increase account common tokens balance
-    increase_common_tokens(get_account(new_account_name), fee.amount);
+    if (is_user_account) // user personal workspace
+    {
+        const auto& personal_rg = research_groups_service.create_personal_research_group(
+          account_name
+        );
+        research_groups_service.add_member_to_research_group(
+          account_name,
+          personal_rg.id, 
+          DEIP_100_PERCENT, 
+          account_name_type()
+        );
+    } 
+    else // research group workspace
+    {
+        const account_trait trait = traits[0];
+        const auto rg_trait = trait.get<research_group_v1_0_0_trait>();
+
+        const auto& shared_rg = research_groups_service.create_research_group(
+          account_name,
+          creator_name,
+          rg_trait.name, 
+          rg_trait.permlink, 
+          rg_trait.description
+        );
+        
+        research_groups_service.add_member_to_research_group(
+          creator_name,
+          shared_rg.id,
+          DEIP_100_PERCENT,
+          account_name_type()
+        );
+
+        for (auto& pair : rg_trait.threshold_overrides)
+        {
+            check_account_existence(pair.second.account_auths);
+            db_impl().modify(account_auth, [&](account_authority_object& auth) {
+                auth.threshold_overrides.insert(std::pair<uint16_t, shared_authority>(
+                    pair.first, shared_authority(pair.second, shared_authority::allocator_type(db_impl().get_segment_manager()))
+                ));
+            });
+        }
+    }
+
+    dgp_service.create_recent_entity(account_name);
 
     return new_account;
 }
@@ -115,8 +189,11 @@ void dbs_account::update_acount(const account_object& account,
                                 const optional<authority>& owner,
                                 const optional<authority>& active,
                                 const optional<authority>& posting,
+                                const optional<vector<deip::protocol::account_trait>>& traits,
                                 const optional<time_point_sec>& now)
 {
+    dbs_research_group& research_groups_service = db_impl().obtain_service<dbs_research_group>();
+
     _time t = _get_now(now);
 
     db_impl().modify(account, [&](account_object& acc) {
@@ -139,6 +216,20 @@ void dbs_account::update_acount(const account_object& account,
             if (posting)
                 auth.posting = *posting;
         });
+    }
+
+    if (traits.valid()) // research group workspace
+    {
+        const account_trait trait = (*traits)[0];
+        const auto rg_trait = trait.get<research_group_v1_0_0_trait>();
+        const auto& research_group = research_groups_service.get_research_group_by_account(account.name);
+
+        research_groups_service.update_research_group(
+          research_group,
+          rg_trait.name, 
+          rg_trait.permlink, 
+          rg_trait.description
+        );
     }
 }
 

@@ -4,9 +4,7 @@
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/util/reward.hpp>
 
-#include <deip/chain/schema/discipline_supply_object.hpp>
 #include <deip/chain/schema/expertise_allocation_proposal_object.hpp>
-#include <deip/chain/schema/grant_object.hpp>
 #include <deip/chain/schema/grant_application_object.hpp>
 #include <deip/chain/schema/grant_application_review_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
@@ -28,7 +26,6 @@ public:
             : account_service(db.obtain_service<dbs_account>()),
               review_votes_service(db.obtain_service<dbs_review_vote>()),
               research_content_service(db.obtain_service<dbs_research_content>()),
-              grant_service(db.obtain_service<dbs_grant>()),
               account_balance_service(db.obtain_service<dbs_account_balance>())
     {
     }
@@ -41,8 +38,8 @@ public:
             d.title = "name1";
             d.abstract = "abstract1";
             d.permlink = "permlink1";
-            d.owned_tokens = 100 * DEIP_1_PERCENT;
-            d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.owned_tokens = percent(100 * DEIP_1_PERCENT);
+            d.review_share = percent(10 * DEIP_1_PERCENT);
         });
 
         db.create<research_object>([&](research_object& d) {
@@ -51,8 +48,8 @@ public:
             d.title = "name2";
             d.abstract = "abstract2";
             d.permlink = "permlink2";
-            d.owned_tokens = 50 * DEIP_1_PERCENT;
-            d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.owned_tokens = percent(50 * DEIP_1_PERCENT);
+            d.review_share = percent(10 * DEIP_1_PERCENT);
         });
     }
 
@@ -125,7 +122,6 @@ public:
             d.permlink = "milestone_research_1";
             d.type = milestone_article;
             d.authors = {"alice"};
-            d.references.insert(2);
             d.activity_state = research_content_activity_state::active;
         });
 
@@ -135,7 +131,6 @@ public:
             d.permlink = "milestone_research_2";
             d.type = milestone_data;
             d.authors = {"alex"};
-            d.references.insert(1);
             d.activity_state = research_content_activity_state::active;
         });
     }
@@ -148,7 +143,6 @@ public:
             d.permlink = "milestone_research_1";
             d.type = milestone_data;
             d.authors = {"alice"};
-            d.references.insert(2);
             d.activity_state = research_content_activity_state::active;
             d.activity_round = 2;
             d.activity_window_end = db.head_block_time() + DAYS_TO_SECONDS(7);
@@ -160,7 +154,6 @@ public:
             d.permlink = "final_result_research_1";
             d.type = final_result;
             d.authors = {"alex"};
-            d.references.insert(1);
             d.activity_state = research_content_activity_state::active;
             d.activity_round = 3;
             d.activity_window_end = db.head_block_time() + DAYS_TO_SECONDS(14);
@@ -258,44 +251,7 @@ public:
         });
     }
 
-    void create_discipline_supplies()
-    {
-        db.create<discipline_supply_object>([&](discipline_supply_object& d) {
-            d.id = 1;
-            d.grantor = "bob";
-            d.target_discipline = 1;
-            d.balance = asset(100, DEIP_SYMBOL);
-            d.per_block = 100;
-            d.start_time = db.head_block_time();
-            d.end_time = db.head_block_time();
-            d.is_extendable = true;
-            d.content_hash = "hash";
-        });
 
-        db.create<discipline_supply_object>([&](discipline_supply_object& d) {
-            d.id = 2;
-            d.grantor = "jack";
-            d.target_discipline = 2;
-            d.balance = asset(100, DEIP_SYMBOL);
-            d.per_block = 100;
-            d.start_time = db.head_block_time();
-            d.end_time = db.head_block_time();
-            d.is_extendable = true;
-            d.content_hash = "hash";
-        });
-
-        db.create<discipline_supply_object>([&](discipline_supply_object& d) {
-            d.id = 3;
-            d.grantor = "john";
-            d.target_discipline = 4;
-            d.balance = asset(100, DEIP_SYMBOL);
-            d.per_block = 100;
-            d.start_time = db.head_block_time();
-            d.end_time = db.head_block_time();
-            d.is_extendable = false;
-            d.content_hash = "hash";
-        });
-    }
 
     void create_grant_test_case()
     {
@@ -320,7 +276,6 @@ public:
             d.research_id = 2;
             d.type = final_result;
             d.authors = {"jack"};
-            d.references.insert(1);
         });
     }
 
@@ -355,85 +310,6 @@ public:
         });
     }
 
-    void create_grants()
-    {
-        db.create<grant_object>([&](grant_object& ga) {
-            ga.id = 1;
-            ga.target_disciplines = {1};
-            ga.min_number_of_positive_reviews = 1;
-            ga.min_number_of_applications = 2;
-            ga.amount = asset(1000, DEIP_SYMBOL);
-            ga.start_date = db.head_block_time() - DAYS_TO_SECONDS(30);
-            ga.end_date = db.head_block_time() - DAYS_TO_SECONDS(1);
-            ga.grantor = "bob";
-            ga.review_committee_id = 1;
-        });
-
-        db.create<grant_object>([&](grant_object& ga) {
-            ga.id = 2;
-            ga.target_disciplines = {2};
-            ga.max_number_of_research_to_grant = 3;
-            ga.min_number_of_positive_reviews = 1;
-            ga.min_number_of_applications = 2;
-            ga.amount = asset(1000, DEIP_SYMBOL);
-            ga.start_date = db.head_block_time() - DAYS_TO_SECONDS(30);
-            ga.end_date = db.head_block_time() - DAYS_TO_SECONDS(1);
-            ga.grantor = "jack";
-            ga.review_committee_id = 1;
-        });
-    }
-
-    void create_grant_applications()
-    {
-        db.create<grant_application_object>([&](grant_application_object& ga_o) {
-            ga_o.id = 1;
-            ga_o.grant_id = 1;
-            ga_o.research_id = 1;
-            ga_o.creator = "alice";
-            ga_o.application_hash = "test1";
-        });
-
-        db.create<grant_application_object>([&](grant_application_object& ga_o) {
-            ga_o.id = 2;
-            ga_o.grant_id = 1;
-            ga_o.research_id = 2;
-            ga_o.creator = "mike";
-            ga_o.application_hash = "test2";
-        });
-
-        db.create<grant_application_object>([&](grant_application_object& ga_o) {
-            ga_o.id = 3;
-            ga_o.grant_id = 1;
-            ga_o.research_id = 3;
-            ga_o.creator = "john";
-            ga_o.application_hash = "test3";
-        });
-
-        db.create<grant_application_object>([&](grant_application_object& ga_o) {
-            ga_o.id = 4;
-            ga_o.grant_id = 2;
-            ga_o.research_id = 1;
-            ga_o.creator = "alice";
-            ga_o.application_hash = "test4";
-        });
-
-        db.create<grant_application_object>([&](grant_application_object& ga_o) {
-            ga_o.id = 5;
-            ga_o.grant_id = 2;
-            ga_o.research_id = 2;
-            ga_o.creator = "mike";
-            ga_o.application_hash = "test5";
-        });
-
-        db.create<grant_application_object>([&](grant_application_object& ga_o) {
-            ga_o.id = 6;
-            ga_o.grant_id = 2;
-            ga_o.research_id = 3;
-            ga_o.creator = "john";
-            ga_o.application_hash = "test6";
-        });
-    }
-
     void create_researches_for_grants()
     {
         db.create<research_object>([&](research_object& d) {
@@ -442,8 +318,8 @@ public:
             d.title = "name1";
             d.abstract = "abstract1";
             d.permlink = "permlink1";
-            d.owned_tokens = 100 * DEIP_1_PERCENT;
-            d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.owned_tokens = percent(100 * DEIP_1_PERCENT);
+            d.review_share = percent(10 * DEIP_1_PERCENT);
             d.number_of_positive_reviews = 10;
         });
 
@@ -453,8 +329,8 @@ public:
             d.title = "name2";
             d.abstract = "abstract2";
             d.permlink = "permlink2";
-            d.owned_tokens = 100 * DEIP_1_PERCENT;
-            d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.owned_tokens = percent(100 * DEIP_1_PERCENT);
+            d.review_share = percent(10 * DEIP_1_PERCENT);
             d.number_of_positive_reviews = 10;
         });
 
@@ -464,8 +340,8 @@ public:
             d.title = "name3";
             d.abstract = "abstract3";
             d.permlink = "permlink3";
-            d.owned_tokens = 100 * DEIP_1_PERCENT;
-            d.review_share_in_percent = 10 * DEIP_1_PERCENT;
+            d.owned_tokens = percent(100 * DEIP_1_PERCENT);
+            d.review_share = percent(10 * DEIP_1_PERCENT);
             d.number_of_positive_reviews = 10;
         });
     }
@@ -536,34 +412,11 @@ public:
     dbs_account& account_service;
     dbs_review_vote& review_votes_service;
     dbs_research_content& research_content_service;
-    dbs_grant& grant_service;
     dbs_account_balance& account_balance_service;
 };
 
 BOOST_FIXTURE_TEST_SUITE(database_unit_service, database_unit_service_fixture)
 
-BOOST_AUTO_TEST_CASE(clear_expired_proposals)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: clear_expired_proposals");
-
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        generate_block();
-
-        db.create<proposal_object>([&](proposal_object& p) {
-           p.id = 0;
-           p.is_completed = false;
-           p.expiration_time = db.head_block_time() + 60;
-        });
-
-        generate_blocks(DEIP_BLOCKS_PER_HOUR * 2);
-
-        BOOST_CHECK_THROW(db.get<proposal_object>(0), std::out_of_range);
-    }
-    FC_LOG_AND_RETHROW()
-}
 
 BOOST_AUTO_TEST_CASE(clear_expired_group_invite)
 {
@@ -584,27 +437,6 @@ BOOST_AUTO_TEST_CASE(clear_expired_group_invite)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(clear_expired_discipline_supplies)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: clear_expired_proposals");
-
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        generate_block();
-
-        db.create<discipline_supply_object>([&](discipline_supply_object& g) {
-            g.id = 0;
-            g.balance = asset(0, DEIP_SYMBOL);
-            g.end_time = db.head_block_time() - 1;
-        });
-
-        generate_block();
-        BOOST_CHECK_THROW(db.get<discipline_supply_object>(0), std::out_of_range);
-    }
-    FC_LOG_AND_RETHROW()
-}
 
 BOOST_AUTO_TEST_SUITE_END()
 

@@ -1,9 +1,7 @@
 #pragma once
 #include <deip/protocol/base.hpp>
-#include <deip/protocol/block_header.hpp>
 #include <deip/protocol/version.hpp>
 #include <deip/protocol/asset.hpp>
-#include <fc/optional.hpp>
 
 namespace deip {
 namespace protocol {
@@ -35,14 +33,16 @@ struct announced_application_window_contract_v1_0_0_type : base_grant_contract
   {
   }
 
+  external_id_type funding_opportunity_number;
+
   int64_t review_committee_id;
 
   uint16_t min_number_of_positive_reviews;
   uint16_t min_number_of_applications;
   uint16_t max_number_of_research_to_grant;
   
-  fc::time_point_sec start_date;
-  fc::time_point_sec end_date;
+  fc::time_point_sec open_date;
+  fc::time_point_sec close_date;
   flat_map<string, string> additional_info;
 };
 
@@ -57,7 +57,7 @@ struct funding_opportunity_announcement_contract_v1_0_0_type : base_grant_contra
     int64_t review_committee_id;
     int64_t treasury_id;
 
-    string funding_opportunity_number;
+    external_id_type funding_opportunity_number;
 
     asset award_ceiling;
     asset award_floor;
@@ -116,11 +116,11 @@ struct create_grant_operation : public base_operation
 }
 }
 
-#define DECLARE_GRANT_DISTRIBUTION_MODELS_TYPE(GrantDistributionModelsType)                                                  \
+#define DECLARE_GRANT_DISTRIBUTION_MODELS_TYPE(GrantDistributionModelsType)                                            \
     namespace fc {                                                                                                     \
                                                                                                                        \
-    void to_variant(const GrantDistributionModelsType&, fc::variant&);                                                    \
-    void from_variant(const fc::variant&, GrantDistributionModelsType&);                                                  \
+    void to_variant(const GrantDistributionModelsType&, fc::variant&);                                                 \
+    void from_variant(const fc::variant&, GrantDistributionModelsType&);                                               \
                                                                                                                        \
     } /* fc */
 
@@ -163,24 +163,24 @@ struct get_grant_distribution_models_type
 
 
 
-#define DEFINE_GRANT_DISTRIBUTION_MODELS_TYPE(GrantDistributionModelsType)                                                   \
+#define DEFINE_GRANT_DISTRIBUTION_MODELS_TYPE(GrantDistributionModelsType)                                             \
     namespace fc {                                                                                                     \
                                                                                                                        \
-    void to_variant(const GrantDistributionModelsType& var, fc::variant& vo)                                              \
+    void to_variant(const GrantDistributionModelsType& var, fc::variant& vo)                                           \
     {                                                                                                                  \
-        var.visit(from_grant_distribution_models_type(vo));                                                               \
+        var.visit(from_grant_distribution_models_type(vo));                                                            \
     }                                                                                                                  \
                                                                                                                        \
-    void from_variant(const fc::variant& var, GrantDistributionModelsType& vo)                                            \
+    void from_variant(const fc::variant& var, GrantDistributionModelsType& vo)                                         \
     {                                                                                                                  \
         static std::map<string, uint32_t> to_tag = []() {                                                              \
             std::map<string, uint32_t> name_map;                                                                       \
-            for (int i = 0; i < GrantDistributionModelsType::count(); ++i)                                                \
+            for (int i = 0; i < GrantDistributionModelsType::count(); ++i)                                             \
             {                                                                                                          \
-                GrantDistributionModelsType tmp;                                                                          \
+                GrantDistributionModelsType tmp;                                                                       \
                 tmp.set_which(i);                                                                                      \
                 string n;                                                                                              \
-                tmp.visit(get_grant_distribution_models_type(n));                                                         \
+                tmp.visit(get_grant_distribution_models_type(n));                                                      \
                 name_map[n] = i;                                                                                       \
             }                                                                                                          \
             return name_map;                                                                                           \
@@ -194,7 +194,7 @@ struct get_grant_distribution_models_type
         else                                                                                                           \
         {                                                                                                              \
             auto itr = to_tag.find(ar[0].as_string());                                                                 \
-            FC_ASSERT(itr != to_tag.end(), "Invalid grant contract type: ${n}", ("n", ar[0]));              \
+            FC_ASSERT(itr != to_tag.end(), "Invalid grant contract type: ${n}", ("n", ar[0]));                         \
             vo.set_which(to_tag[ar[0].as_string()]);                                                                   \
         }                                                                                                              \
         vo.visit(fc::to_static_variant(ar[1]));                                                                        \
@@ -204,7 +204,7 @@ struct get_grant_distribution_models_type
 FC_REFLECT( deip::protocol::create_grant_operation, (grantor)(amount)(target_disciplines)(distribution_model)(extensions) )
 
 FC_REFLECT( deip::protocol::base_grant_contract, (version) )
-FC_REFLECT_DERIVED( deip::protocol::announced_application_window_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (review_committee_id)(min_number_of_positive_reviews)(min_number_of_applications)(max_number_of_research_to_grant)(start_date)(end_date)(additional_info) )
+FC_REFLECT_DERIVED( deip::protocol::announced_application_window_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (funding_opportunity_number)(review_committee_id)(min_number_of_positive_reviews)(min_number_of_applications)(max_number_of_research_to_grant)(open_date)(close_date)(additional_info) )
 FC_REFLECT_DERIVED( deip::protocol::funding_opportunity_announcement_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (organization_id)(review_committee_id)(treasury_id)(funding_opportunity_number)(award_ceiling)(award_floor)(expected_number_of_awards)(open_date)(close_date)(officers)(additional_info) )
 FC_REFLECT_DERIVED( deip::protocol::discipline_supply_announcement_contract_v1_0_0_type, (deip::protocol::base_grant_contract), (start_time)(end_time)(is_extendable)(content_hash)(additional_info) )
 
