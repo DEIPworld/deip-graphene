@@ -13,7 +13,6 @@ struct create_research_content_operation : public entity_operation
     uint16_t type;
     string title;
     string content;
-    string permlink;
     flat_set<account_name_type> authors;
     flat_set<external_id_type> references;
     flat_set<string> foreign_references;
@@ -40,7 +39,6 @@ FC_REFLECT(deip::protocol::create_research_content_operation,
   (type)
   (title)
   (content)
-  (permlink)
   (authors)
   (references)
   (foreign_references)

@@ -70,7 +70,6 @@ struct genesis_state_type
         account_name_type creator;
         std::string name;
         std::string description;
-        std::string permlink;
         std::set<account_name_type> members;
         std::vector<research_group_type> subgroups;
     };
@@ -81,7 +80,6 @@ struct genesis_state_type
         account_name_type account;
         std::string title;
         std::string abstract;
-        std::string permlink;
         bool is_finished;
         bool is_private;
         std::set<int64_t> disciplines;
@@ -93,7 +91,6 @@ struct genesis_state_type
         protocol::external_id_type research_external_id;
         std::string title;
         std::string content;
-        std::string permlink;
         uint16_t type;
         flat_set<account_name_type> authors;
         flat_set<protocol::external_id_type> references;
@@ -187,7 +184,6 @@ FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
           (creator)
           (name)
           (description)
-          (permlink)
           (members)
           (subgroups)
 )
@@ -197,7 +193,6 @@ FC_REFLECT(deip::chain::genesis_state_type::research_type,
           (account)
           (title)
           (abstract)
-          (permlink)
           (is_finished)
           (is_private)
           (disciplines)
@@ -208,7 +203,6 @@ FC_REFLECT(deip::chain::genesis_state_type::research_content_type,
           (research_external_id)
           (title)
           (content)
-          (permlink)
           (type)
           (authors)
           (references)

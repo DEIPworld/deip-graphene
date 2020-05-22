@@ -81,7 +81,7 @@ public:
 
     shared_string title;
     shared_string content;
-    shared_string permlink;
+    shared_string permlink; /* [DEPRECATED] */
 
     research_content_type type;
 
@@ -168,7 +168,7 @@ typedef multi_index_container<research_content_object,
           >
         >,
         composite_key_compare<
-          std::less<research_id_type>,
+          std::less<research_id_type>, 
           fc::strcmp_less
         >
     >,

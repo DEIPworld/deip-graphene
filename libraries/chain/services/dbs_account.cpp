@@ -87,7 +87,7 @@ void dbs_account::check_account_existence(const authority::account_authority_map
 const account_object& dbs_account::create_account_by_faucets(const account_name_type& account_name,
                                                              const account_name_type& creator_name,
                                                              const public_key_type& memo_key,
-                                                             const string& json_metadata,
+                                                             const fc::optional<string>& json_metadata,
                                                              const authority& owner,
                                                              const authority& active,
                                                              const authority& posting,
@@ -115,7 +115,11 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         acc.recovery_account = creator_name;
         acc.is_research_group = !is_user_account;
 #ifndef IS_LOW_MEM
-        fc::from_string(acc.json_metadata, json_metadata);
+        if (json_metadata.valid())
+        {
+            const auto& metadata = *json_metadata;
+            fc::from_string(acc.json_metadata, metadata);
+        }
 #endif
     });
 
@@ -154,7 +158,6 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
           account_name,
           creator_name,
           rg_trait.name, 
-          rg_trait.permlink, 
           rg_trait.description
         );
         
@@ -223,10 +226,11 @@ void dbs_account::update_acount(const account_object& account,
         const auto rg_trait = trait.get<research_group_v1_0_0_trait>();
         const auto& research_group = research_groups_service.get_research_group_by_account(account.name);
 
+        FC_ASSERT(!research_group.is_personal, "Personal research group is preserved and can not be edited");
+
         research_groups_service.update_research_group(
           research_group,
           rg_trait.name, 
-          rg_trait.permlink, 
           rg_trait.description
         );
     }

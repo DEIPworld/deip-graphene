@@ -15,8 +15,7 @@ void validate_account_trait(const account_name_type& creator, const account_trai
     {
         const auto research_group_trait = trait.get<research_group_v1_0_0_trait>();
 
-        validate_permlink(research_group_trait.permlink);
-        FC_ASSERT(research_group_trait.name.size() > 0, "Research group name is required");
+        FC_ASSERT(!research_group_trait.name.empty(), "Research group name is required");
         FC_ASSERT(fc::is_utf8(research_group_trait.name), "Research group name is not valid UTF-8 string");
         FC_ASSERT(fc::is_utf8(research_group_trait.description), "Research group description is not valid UTF-8 string");
         is_validated = true;
@@ -31,10 +30,11 @@ void create_account_operation::validate() const
     owner.validate();
     active.validate();
 
-    if (json_metadata.size() > 0)
+    if (json_metadata.valid())
     {
-        FC_ASSERT(fc::is_utf8(json_metadata), "JSON Metadata not formatted in UTF8");
-        FC_ASSERT(fc::json::is_valid(json_metadata), "JSON Metadata not valid JSON");
+        const auto& metadata = *json_metadata;
+        FC_ASSERT(fc::is_utf8(metadata), "JSON Metadata not formatted in UTF8");
+        FC_ASSERT(fc::json::is_valid(metadata), "JSON Metadata not valid JSON");
     }
 
     FC_ASSERT(fee >= DEIP_MIN_ACCOUNT_CREATION_FEE,

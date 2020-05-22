@@ -27,7 +27,6 @@ struct research_group_v1_0_0_trait : base_account_trait
     }
 
     std::string name;
-    std::string permlink;
     std::string description;
     std::map<uint16_t, authority> threshold_overrides;
 };
@@ -47,7 +46,7 @@ struct create_account_operation : public entity_operation
     authority active;
     authority posting;
     public_key_type memo_key;
-    string json_metadata;
+    optional<string> json_metadata;
     vector<account_trait> traits;
     extensions_type extensions;
 
@@ -170,7 +169,6 @@ FC_REFLECT(deip::protocol::create_account_operation,
 FC_REFLECT(deip::protocol::base_account_trait, (_v))
 FC_REFLECT_DERIVED(deip::protocol::research_group_v1_0_0_trait, (deip::protocol::base_account_trait),
   (name)
-  (permlink)
   (description)
   (threshold_overrides)
 )

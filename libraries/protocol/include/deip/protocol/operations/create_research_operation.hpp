@@ -15,7 +15,6 @@ struct create_research_operation : public entity_operation
     account_name_type research_group;
     string title;
     string abstract;
-    string permlink;
     std::set<int64_t> disciplines;
     bool is_private;
     percent review_share;
@@ -48,7 +47,6 @@ FC_REFLECT(deip::protocol::create_research_operation,
   (research_group)
   (title)
   (abstract)
-  (permlink)
   (disciplines)
   (is_private)
   (review_share)

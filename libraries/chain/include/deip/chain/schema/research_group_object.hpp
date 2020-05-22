@@ -34,9 +34,9 @@ class research_group_object : public object<research_group_object_type, research
 
     shared_string name;
     shared_string description;
-    shared_string permlink;
+    shared_string permlink; /* [DEPRECATED] */
     asset balance = asset(0, DEIP_SYMBOL);
-    int32_t management_model_v;
+    int32_t management_model_v; /* [DEPRECATED] */
 
     bool is_personal;
 

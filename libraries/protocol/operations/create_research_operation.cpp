@@ -18,12 +18,6 @@ void create_research_operation::validate() const
     }), "Research cannot be related to 'common' discipline.");
 
     FC_ASSERT(!title.empty(), "Research name cannot be empty.");
-    FC_ASSERT(!abstract.empty(), "Research abstract cannot be empty.");
-
-    FC_ASSERT(fc::is_utf8(permlink), "Research permlink should be valid UTF8 string.");
-    FC_ASSERT(permlink.size() < DEIP_MAX_PERMLINK_LENGTH,
-      "Research permlink is too long. Provided permlink: ${1}.",
-      ("1", permlink));
 
     const auto& min_review_share = percent(0);
     const auto& max_review_share = percent(DEIP_1_PERCENT * 50);

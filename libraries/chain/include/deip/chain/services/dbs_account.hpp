@@ -37,7 +37,7 @@ public:
     const account_object& create_account_by_faucets(const account_name_type& new_account_name,
                                                     const account_name_type& creator_name,
                                                     const public_key_type& memo_key,
-                                                    const string& json_metadata,
+                                                    const fc::optional<string>& json_metadata,
                                                     const authority& owner,
                                                     const authority& active,
                                                     const authority& posting,

@@ -41,7 +41,7 @@ public:
     research_group_id_type research_group_id;
     shared_string title;
     shared_string abstract;
-    shared_string permlink;
+    shared_string permlink; /* [DEPRECATED] */
     time_point_sec created_at;
     time_point_sec review_share_last_update;
     time_point_sec last_update_time;

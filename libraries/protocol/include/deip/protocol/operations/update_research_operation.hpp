@@ -10,7 +10,6 @@ struct update_research_operation : public base_operation
     external_id_type external_id;
     optional<string> title;
     optional<string> abstract;
-    optional<string> permlink;
     optional<bool> is_private;
     optional<percent> review_share;
     optional<percent> compensation_share;
@@ -35,7 +34,6 @@ FC_REFLECT(deip::protocol::update_research_operation,
   (external_id)
   (title)
   (abstract)
-  (permlink)
   (is_private)
   (review_share)
   (compensation_share)

@@ -285,8 +285,8 @@ public:
     ////////////////
     fc::optional<research_api_obj> get_research(const external_id_type& id) const;
     fc::optional<research_api_obj> get_research_by_id(const research_id_type& internal_id) const;
-    fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
-    fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
+    /* [DEPRECATED] */ fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
+    /* [DEPRECATED] */ fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
     vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
 
     //////////////////////
@@ -294,8 +294,8 @@ public:
     //////////////////////
     fc::optional<research_content_api_obj> get_research_content(const external_id_type& id) const;
     fc::optional<research_content_api_obj> get_research_content_by_id(const research_content_id_type& internal_id) const;
-    fc::optional<research_content_api_obj> get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
-    fc::optional<research_content_api_obj> get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
+    /* [DEPRECATED] */ fc::optional<research_content_api_obj> get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
+    /* [DEPRECATED] */ fc::optional<research_content_api_obj> get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
     vector<research_content_api_obj> get_all_research_content(const research_id_type& research_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
 
@@ -318,10 +318,10 @@ public:
     // Research group //
     ////////////////////
     fc::optional<research_group_api_obj> get_research_group(const account_name_type& account) const;
-    fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type research_group_id) const;
-    fc::optional<research_group_api_obj> get_research_group_by_permlink(const string& permlink) const;
+    /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type research_group_id) const;
+    /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group_by_permlink(const string& permlink) const;
     vector<research_group_api_obj> get_all_research_groups(const bool& is_personal_need) const;
-    bool check_research_group_existence_by_permlink(const string& permlink) const;
+    /* [DEPRECATED] */ bool check_research_group_existence_by_permlink(const string& name) const;
 
     /////////////////////////////////
     // Research group tokens       //
@@ -352,10 +352,10 @@ public:
     // Research group invite         //
     ///////////////////////////////////
 
-    fc::optional<research_group_invite_api_obj> get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id) const;
-    fc::optional<research_group_invite_api_obj> get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
-    vector<research_group_invite_api_obj> get_research_group_invites_by_account_name(const account_name_type& account_name) const;
-    vector<research_group_invite_api_obj> get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const;
+    /* [DEPRECATED] */ fc::optional<research_group_invite_api_obj> get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id) const;
+    /* [DEPRECATED] */ fc::optional<research_group_invite_api_obj> get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
+    /* [DEPRECATED] */ vector<research_group_invite_api_obj> get_research_group_invites_by_account_name(const account_name_type& account_name) const;
+    /* [DEPRECATED] */ vector<research_group_invite_api_obj> get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const;
 
     ///////////////////////////////////
     // Research listing              //

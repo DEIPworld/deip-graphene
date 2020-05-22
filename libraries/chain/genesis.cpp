@@ -153,11 +153,13 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
         owner_authority.add_authority(account.public_key, 1);
         owner_authority.weight_threshold = 1;
 
+        fc::optional<std::string> json_metadata;
+
         account_service.create_account_by_faucets(
           account.name,
           registrar.name,
           account.public_key,
-          "",
+          json_metadata,
           owner_authority,
           owner_authority,
           owner_authority,
@@ -342,7 +344,6 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
     for (auto& research : researches)
     {
         FC_ASSERT(!research.title.empty(), "Research 'title' is required");
-        FC_ASSERT(!research.permlink.empty(), "Research 'permlink' is required");
 
         std::set<discipline_id_type> disciplines;
         for (auto& discipline_id : research.disciplines)
@@ -371,11 +372,10 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
         members.insert(authors.begin(), authors.end());
 
         research_service.create_research(
-          research_group.id, 
+          research_group, 
           research.external_id,
           research.title, 
           research.abstract, 
-          research.permlink,
           disciplines, 
           review_share,
           compensation_share,
@@ -391,6 +391,7 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
 void database::init_genesis_research_content(const genesis_state_type& genesis_state)
 {
     const vector<genesis_state_type::research_content_type>& research_contents = genesis_state.research_contents;
+    auto& research_groups_service = obtain_service<dbs_research_group>();
     auto& research_service = obtain_service<dbs_research>();
     auto& research_content_service = obtain_service<dbs_research_content>();
     auto& accounts_service = obtain_service<dbs_account>();
@@ -408,6 +409,7 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
         }
 
         const auto& research = research_service.get_research(research_content.research_external_id);
+        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
 
         const flat_set<string> foreign_references;
         const time_point_sec timestamp = get_genesis_time();
@@ -415,11 +417,11 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
         references.insert(research_content.references.begin(), research_content.references.end());
 
         const auto& created_research_content = research_content_service.create_research_content(
-          research.id,
+          research_group,
+          research,
           research_content.external_id,
           research_content.title,
           research_content.content,
-          research_content.permlink,
           static_cast<deip::chain::research_content_type>(research_content.type),
           research_content.authors,
           references,
@@ -498,7 +500,6 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
     auto& research_groups_service = obtain_service<dbs_research_group>();
 
     FC_ASSERT(!research_group.name.empty(), "Research group 'name' must be specified");
-    FC_ASSERT(!research_group.permlink.empty(), "Research group 'permlink' must be specified");
     FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
     
     const auto& creator = account_service.get_account(research_group.creator);
@@ -522,16 +523,16 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
 
     research_group_v1_0_0_trait research_group_trait;
     research_group_trait.name = research_group.name;
-    research_group_trait.permlink = research_group.permlink;
     research_group_trait.description = research_group.description;
 
     vector<account_trait> traits = { research_group_trait };
+    fc::optional<std::string> json_metadata;
 
     account_service.create_account_by_faucets(
       research_group.account,
       creator.name,
       creator.memo_key,
-      "",
+      json_metadata,
       owner_authority,
       active_authority,
       posting_authority,

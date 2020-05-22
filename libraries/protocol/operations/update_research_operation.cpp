@@ -24,12 +24,6 @@ void update_research_operation::validate() const
         FC_ASSERT(fc::is_utf8(*abstract), "Research abstract is not valid UTF-8 string");
     }
 
-    if (permlink.valid())
-    {
-        FC_ASSERT(!(*permlink).empty(), "Research permlink cannot be empty");
-        FC_ASSERT(fc::is_utf8(*permlink), "Research permlink is not valid UTF-8 string");
-    }
-
     if (review_share.valid())
     {
         const auto& share = *review_share;

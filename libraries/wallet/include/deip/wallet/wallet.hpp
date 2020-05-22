@@ -899,8 +899,7 @@ public:
     /**
      *  Gets the research by absolute permlink
      */
-    fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink,
-                                                       const string& research_permlink);
+    /* [DEPRECATED] */ fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink);
 
     /**
      *  Gets the list of researches by id research group

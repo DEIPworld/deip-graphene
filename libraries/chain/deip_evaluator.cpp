@@ -2215,7 +2215,6 @@ void join_research_group_membership_evaluator::do_apply(const join_research_grou
         research_service.update_research(research, 
           fc::to_string(research.title), 
           fc::to_string(research.abstract), 
-          fc::to_string(research.permlink),
           research.is_private,
           research.review_share,
           research.compensation_share,
@@ -2286,7 +2285,6 @@ void left_research_group_membership_evaluator::do_apply(const left_research_grou
         research_service.update_research(research, 
           fc::to_string(research.title), 
           fc::to_string(research.abstract), 
-          fc::to_string(research.permlink),
           research.is_private,
           research.review_share,
           research.compensation_share,
@@ -2357,11 +2355,10 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
     }
 
     research_service.create_research(
-      research_group.id, 
+      research_group, 
       op.external_id, 
       op.title, 
       op.abstract, 
-      op.permlink, 
       disciplines,
       op.review_share, 
       op.compensation_share, 
@@ -2415,11 +2412,11 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
     }
 
     const auto& research_content = research_content_service.create_research_content(
-      research.id,
+      research_group,
+      research,
       op.external_id,
       op.title,
       op.content,
-      op.permlink,
       static_cast<research_content_type>(op.type),
       op.authors,
       op.references,
@@ -2576,7 +2573,6 @@ void update_research_evaluator::do_apply(const update_research_operation& op)
 
     std::string title = op.title.valid() ? *op.title : fc::to_string(research.title);
     std::string abstract = op.abstract.valid() ? *op.abstract : fc::to_string(research.abstract);
-    std::string permlink = op.permlink.valid() ? *op.permlink : fc::to_string(research.permlink);
     bool is_private = op.is_private.valid() ? *op.is_private : research.is_private;
     percent review_share = op.review_share.valid() ? *op.review_share : research.review_share;
     optional<percent> compensation_share = op.compensation_share.valid() ? op.compensation_share : research.compensation_share;
@@ -2585,7 +2581,6 @@ void update_research_evaluator::do_apply(const update_research_operation& op)
     research_service.update_research(research, 
       title,
       abstract,
-      permlink,
       is_private,
       review_share,
       compensation_share,

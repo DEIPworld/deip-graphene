@@ -40,9 +40,9 @@ class dbs_research_group : public dbs_base
 
     const research_group_optional_ref_type get_research_group_by_account_if_exists(const account_name_type& account) const;
 
-    const research_group_object& get_research_group_by_permlink(const string& permlink) const;
+    /* [DEPRECATED] */ const research_group_object& get_research_group_by_permlink(const string& permlink) const;
 
-    const research_group_optional_ref_type get_research_group_by_permlink_if_exists(const string& permlink) const;
+    /* [DEPRECATED] */ const research_group_optional_ref_type get_research_group_by_permlink_if_exists(const string& permlink) const;
 
     research_group_refs_type get_all_research_groups(const bool& is_personal_need) const; // remove this
 
@@ -51,12 +51,10 @@ class dbs_research_group : public dbs_base
     const research_group_object& create_research_group(const account_name_type& account,
                                                        const account_name_type& creator,
                                                        const string& name,
-                                                       const string& permlink,
                                                        const string& description);
 
     const research_group_object& update_research_group(const research_group_object& research_group,
                                                        const string& name,
-                                                       const string& permlink,
                                                        const string& description);
 
     void check_research_group_existence(const research_group_id_type& research_group_id) const; // remove this

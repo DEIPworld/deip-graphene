@@ -178,27 +178,6 @@ BOOST_AUTO_TEST_CASE(get_research)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_research_by_permlink)
-{
-    try
-    {
-        create_researches();
-
-        auto& research = data_service.get_research_by_permlink(RESEARCH_GROUP_ID, RESEARCH_TITLE);
-
-        BOOST_CHECK(research.title == RESEARCH_TITLE);
-        BOOST_CHECK(research.permlink == RESEARCH_TITLE);
-        BOOST_CHECK(research.research_group_id == RESEARCH_GROUP_ID);
-        BOOST_CHECK(research.review_share == percent(1000));
-        BOOST_CHECK(research.is_finished == false);
-        BOOST_CHECK(research.created_at <= db.head_block_time());
-        BOOST_CHECK(research.abstract == ABSTRACT);
-        BOOST_CHECK(research.owned_tokens == percent(DEIP_100_PERCENT));
-        BOOST_CHECK(research.is_private == false);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
     
 BOOST_AUTO_TEST_CASE(decrease_owned_tokens)
 {

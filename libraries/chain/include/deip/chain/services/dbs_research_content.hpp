@@ -24,11 +24,11 @@ public:
     using research_content_refs_type = std::vector<std::reference_wrapper<const research_content_object>>;
     using research_content_optional_ref_type = fc::optional<std::reference_wrapper<const research_content_object>>;
 
-    const research_content_object& create_research_content(const research_id_type& research_id,
+    const research_content_object& create_research_content(const research_group_object& research_group,
+                                                           const research_object& research,
                                                            const external_id_type& external_id,
                                                            const std::string& title,
                                                            const std::string& content,
-                                                           const std::string& permlink,
                                                            const research_content_type& type,
                                                            const flat_set<account_name_type>& authors,
                                                            const flat_set<external_id_type>& references,
@@ -43,9 +43,13 @@ public:
 
     const research_content_optional_ref_type get_research_content_if_exists(const research_content_id_type& id) const;
 
-    const research_content_object& get_by_permlink(const research_id_type &research_id, const string &permlink) const;
+    /* [DEPRECATED] */ const research_content_object& get_research_content_by_permlink(const string& research_group_permlink,
+                                                                                       const string& research_permlink,
+                                                                                       const string& research_content_permlink) const;
 
-    const research_content_optional_ref_type get_by_permlink_if_exists(const research_id_type &research_id, const string &permlink) const;
+    /* [DEPRECATED] */ const research_content_optional_ref_type get_research_content_by_permlink_if_exists(const string& research_group_permlink,
+                                                                                                           const string& research_permlink,
+                                                                                                           const string& research_content_permlink) const;
 
     research_content_refs_type get_by_research_id(const research_id_type &research_id) const;
 

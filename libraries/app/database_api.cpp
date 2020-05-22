@@ -5,6 +5,7 @@
 #include <deip/protocol/get_config.hpp>
 
 #include <deip/chain/util/reward.hpp>
+#include <deip/chain/util/permlink.hpp>
 
 #include <fc/bloom_filter.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -98,7 +99,7 @@ public:
     // Researches
     fc::optional<research_api_obj> get_research(const external_id_type& id) const;
     fc::optional<research_api_obj> get_research_by_id(const research_id_type& internal_id) const;
-    fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
+    /* [DEPRECATED] */ fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
     fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
     vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
     vector<research_listing_api_obj> get_all_researches_listing(const discipline_id_type& discipline_id, const uint32_t& limit = 0) const;
@@ -127,7 +128,7 @@ public:
     fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type& internal_id) const;
     fc::optional<research_group_api_obj> get_research_group_by_permlink(const string& permlink) const;
     vector<research_group_api_obj> get_all_research_groups(const bool& is_personal_need) const;
-    bool check_research_group_existence_by_permlink(const string& permlink) const;
+    /* [DEPRECATED] */ bool check_research_group_existence_by_permlink(const string& name) const;
 
     // Research group tokens
     fc::optional<research_group_token_api_obj> get_research_group_token_by_member(const account_name_type& account,
@@ -147,10 +148,10 @@ public:
     vector<research_token_sale_api_obj> get_research_token_sales_by_research_id_and_status(const research_id_type& research_id, const research_token_sale_status status);
 
     // Research group invites
-    fc::optional<research_group_invite_api_obj> get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id) const;
-    fc::optional<research_group_invite_api_obj> get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
-    vector<research_group_invite_api_obj> get_research_group_invites_by_account_name(const account_name_type& account_name) const;
-    vector<research_group_invite_api_obj> get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const;
+    /* [DEPRECATED] */ fc::optional<research_group_invite_api_obj> get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id) const;
+    /* [DEPRECATED] */ fc::optional<research_group_invite_api_obj> get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
+    /* [DEPRECATED] */ vector<research_group_invite_api_obj> get_research_group_invites_by_account_name(const account_name_type& account_name) const;
+    /* [DEPRECATED] */ vector<research_group_invite_api_obj> get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const;
 
     // Total votes
     fc::optional<expertise_contribution_object_api_obj> get_expertise_contribution_by_research_content_and_discipline(const research_content_id_type& research_content_id, const discipline_id_type& discipline_id) const;
@@ -1279,10 +1280,18 @@ fc::optional<research_api_obj> database_api_impl::get_research_by_permlink(const
     const auto& research_discipline_relation_service = _db.obtain_service<chain::dbs_research_discipline_relation>();
     const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
 
-    const auto& research_opt = research_service.get_research_by_permlink_if_exists(research_group_id, permlink);
+    const auto& research_group_opt = research_groups_service.get_research_group_if_exists(research_group_id);
 
-    if (research_opt.valid()) {
+    if (!research_group_opt.valid()) 
+    {
+        return result;
+    }
 
+    const auto& research_group = (*research_group_opt).get();
+    const auto& research_opt = research_service.get_research_by_permlink_if_exists(fc::to_string(research_group.permlink), permlink);
+
+    if (research_opt.valid()) 
+    {
         const auto& research = (*research_opt).get();
         vector<discipline_api_obj> disciplines;
         const auto& discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
@@ -1291,7 +1300,6 @@ fc::optional<research_api_obj> database_api_impl::get_research_by_permlink(const
             disciplines.push_back(discipline_service.get_discipline(discipline_relation.discipline_id));
         }
 
-        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
         result = research_api_obj(research, disciplines, research_group_api_obj(research_group));
     }
 
@@ -1396,9 +1404,23 @@ fc::optional<research_content_api_obj> database_api::get_research_content_by_per
 fc::optional<research_content_api_obj> database_api_impl::get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const
 {
     fc::optional<research_content_api_obj> result;
+    const auto& research_service = _db.obtain_service<chain::dbs_research>();
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
     const auto& research_content_service = _db.obtain_service<chain::dbs_research_content>();
 
-    const auto& research_content_opt = research_content_service.get_by_permlink_if_exists(research_id, permlink);
+    const auto& research_opt = research_service.get_research_if_exists(research_id);
+    if (!research_opt.valid())
+    {
+        return result;
+    }
+
+    const auto& research = (*research_opt).get();
+    const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+
+    const auto& research_group_permlink = fc::to_string(research_group.permlink);
+    const auto& research_permlink = fc::to_string(research.permlink);
+
+    const auto& research_content_opt = research_content_service.get_research_content_by_permlink_if_exists(research_group_permlink, research_permlink, permlink);
     if (research_content_opt.valid())
     {
         const auto& research_content = (*research_content_opt).get();
@@ -1723,8 +1745,9 @@ vector<research_group_api_obj> database_api_impl::get_all_research_groups(const 
     return results;
 }
 
-bool database_api::check_research_group_existence_by_permlink(const string& permlink) const
+bool database_api::check_research_group_existence_by_permlink(const string& name) const
 {
+    std::string permlink = deip::chain::util::generate_permlink(name);
     return my->_db.with_read_lock([&]() { return my->check_research_group_existence_by_permlink(permlink); });
 }
 
