@@ -51,7 +51,7 @@ public:
                                                                                                            const string& research_permlink,
                                                                                                            const string& research_content_permlink) const;
 
-    research_content_refs_type get_by_research_id(const research_id_type &research_id) const;
+    research_content_refs_type get_research_content_by_research_id(const research_id_type& research_id) const;
 
     research_content_refs_type get_by_research_and_type(const research_id_type &research_id, const research_content_type &type) const;
 

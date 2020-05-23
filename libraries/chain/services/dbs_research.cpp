@@ -251,7 +251,7 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
     const dbs_review_vote& review_votes_service = db_impl().obtain_service<dbs_review_vote>();
 
     const research_object& research = get_research(research_id);
-    const auto& research_contents = research_content_service.get_by_research_id(research.id);
+    const auto& research_contents = research_content_service.get_research_content_by_research_id(research.id);
     const auto& research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
 
     const fc::optional<research_content_object> final_result = research.is_finished

@@ -904,7 +904,7 @@ public:
     /**
      *  Gets the list of researches by id research group
      */
-    vector<research_api_obj> get_researches_by_research_group(const int64_t research_group_id);
+    vector<research_api_obj> get_researches_by_research_group(const external_id_type& external_id) const;
 
     /**
      * Gets list of my research groups

@@ -642,8 +642,9 @@ public:
 
         /// TODO: fetch the accounts specified via other_auths as well.
 
-        auto approving_account_objects = _remote_db->get_accounts(v_approving_account_names);
-
+        set<string> names;
+        names.insert(v_approving_account_names.begin(), v_approving_account_names.end());
+        auto approving_account_objects = _remote_db->get_accounts(names);
         /// TODO: recursively check one layer deeper in the authority tree for keys
 
         FC_ASSERT(approving_account_objects.size() == v_approving_account_names.size(), "",
@@ -2246,10 +2247,9 @@ fc::optional<research_api_obj> wallet_api::get_research_by_absolute_permlink(con
     return my->_remote_db->get_research_by_absolute_permlink(research_group_permlink, research_permlink);
 }
 
-
-vector<research_api_obj> wallet_api::get_researches_by_research_group(const int64_t research_group_id)
+vector<research_api_obj> wallet_api::get_researches_by_research_group(const external_id_type& external_id) const
 {
-    return my->_remote_db->get_researches_by_research_group_id(research_group_id);
+    return my->_remote_db->get_researches_by_research_group(external_id);
 }
 
 vector<research_group_api_obj> wallet_api::list_my_research_groups()
@@ -2274,7 +2274,7 @@ vector<research_api_obj> wallet_api::list_my_researches()
     vector<research_group_api_obj> research_groups = list_my_research_groups();
     for (const auto& research_group : research_groups)
     {
-        vector<research_api_obj> r = my->_remote_db->get_researches_by_research_group_id(research_group.id);
+        vector<research_api_obj> r = my->_remote_db->get_researches_by_research_group(research_group.external_id);
         researches.insert(researches.end(), r.begin(), r.end());
     }
 

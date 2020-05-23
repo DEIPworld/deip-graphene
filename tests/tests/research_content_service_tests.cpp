@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
     try
     {
         create_researches_with_content();
-        auto contents = data_service.get_by_research_id(1);
+        auto contents = data_service.get_research_content_by_research_id(1);
 
         BOOST_CHECK(contents.size() == 3);
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
@@ -249,7 +249,7 @@ BOOST_AUTO_TEST_CASE(get_no_content_for_non_existing_research_by_id)
     try
     {
         create_researches_with_content();
-        auto contents = data_service.get_by_research_id(3);
+        auto contents = data_service.get_research_content_by_research_id(3);
         BOOST_CHECK(contents.size() == 0);
 
     }

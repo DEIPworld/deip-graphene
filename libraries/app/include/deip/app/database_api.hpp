@@ -124,7 +124,7 @@ public:
     // Accounts //
     //////////////
 
-    vector<extended_account> get_accounts(const vector<string>& names) const;
+    vector<extended_account> get_accounts(const set<string>& names) const;
 
     /**
      *  @return all accounts that referr to the key or account id in their owner or active authorities.
@@ -284,19 +284,22 @@ public:
     // Researches //
     ////////////////
     fc::optional<research_api_obj> get_research(const external_id_type& id) const;
+    vector<research_api_obj> get_researches(const set<external_id_type>& ids) const;
     fc::optional<research_api_obj> get_research_by_id(const research_id_type& internal_id) const;
     /* [DEPRECATED] */ fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
     /* [DEPRECATED] */ fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
-    vector<research_api_obj> get_researches_by_research_group_id(const research_group_id_type& research_group_id) const;
+    vector<research_api_obj> get_researches_by_research_group(const external_id_type& external_id) const;
+    vector<research_api_obj> get_researches_by_research_group_member(const account_name_type& member) const;
 
     //////////////////////
     // Research Content //
     //////////////////////
     fc::optional<research_content_api_obj> get_research_content(const external_id_type& id) const;
+    vector<research_content_api_obj> get_research_contents(const set<external_id_type>& ids) const;
     fc::optional<research_content_api_obj> get_research_content_by_id(const research_content_id_type& internal_id) const;
     /* [DEPRECATED] */ fc::optional<research_content_api_obj> get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
     /* [DEPRECATED] */ fc::optional<research_content_api_obj> get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
-    vector<research_content_api_obj> get_all_research_content(const research_id_type& research_id) const;
+    vector<research_content_api_obj> get_research_contents_by_research(const external_id_type& external_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
 
     ///////////////////
@@ -318,9 +321,10 @@ public:
     // Research group //
     ////////////////////
     fc::optional<research_group_api_obj> get_research_group(const account_name_type& account) const;
+    vector<research_group_api_obj> get_research_groups(const set<external_id_type>& ids) const;
+    vector<research_group_api_obj> get_research_groups_by_member(const account_name_type& member) const;
     /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type research_group_id) const;
     /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group_by_permlink(const string& permlink) const;
-    vector<research_group_api_obj> get_all_research_groups(const bool& is_personal_need) const;
     /* [DEPRECATED] */ bool check_research_group_existence_by_permlink(const string& name) const;
 
     /////////////////////////////////
@@ -606,17 +610,20 @@ FC_API(deip::app::database_api,
 
    // Research
    (get_research)
+   (get_researches)
    (get_research_by_id)
    (get_research_by_permlink)
-   (get_researches_by_research_group_id)
+   (get_researches_by_research_group)
+   (get_researches_by_research_group_member)
    (get_research_by_absolute_permlink)
 
    // Research Content
    (get_research_content)
+   (get_research_contents)
    (get_research_content_by_id)
    (get_research_content_by_permlink)
    (get_research_content_by_absolute_permlink)
-   (get_all_research_content)
+   (get_research_contents_by_research)
    (get_research_content_by_type)
 
    // Expert Tokens
@@ -632,9 +639,10 @@ FC_API(deip::app::database_api,
 
    // Research group
    (get_research_group)
+   (get_research_groups)
+   (get_research_groups_by_member)
    (get_research_group_by_id)
    (get_research_group_by_permlink)
-   (get_all_research_groups)
    (check_research_group_existence_by_permlink)
 
    (get_research_group_tokens_by_account)

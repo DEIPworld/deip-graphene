@@ -92,25 +92,6 @@ const dbs_research_group::research_group_optional_ref_type dbs_research_group::g
     return result;
 }
 
-
-dbs_research_group::research_group_refs_type dbs_research_group::get_all_research_groups(
-  const bool& is_personal_need) const
-{
-  research_group_refs_type ret;
-
-  const auto& idx = db_impl().get_index<research_group_index>().indicies().get<by_id>();
-  auto it = idx.lower_bound(0);
-  const auto it_end = idx.cend();
-  while (it != it_end)
-  {
-    if (!it->is_personal || is_personal_need)
-      ret.push_back(std::cref(*it));
-    ++it;
-  }
-
-  return ret;
-}
-
 const research_group_object& dbs_research_group::create_personal_research_group(const account_name_type& account)
 {
     const research_group_object& personal_research_group
@@ -213,8 +194,7 @@ const research_group_token_object& dbs_research_group::get_research_group_token_
   FC_CAPTURE_AND_RETHROW((id))
 }
 
-dbs_research_group::research_group_token_refs_type dbs_research_group::get_research_group_tokens_by_member(
-  const account_name_type& member) const
+dbs_research_group::research_group_token_refs_type dbs_research_group::get_research_group_tokens_by_member(const account_name_type& member) const
 {
   research_group_token_refs_type ret;
 

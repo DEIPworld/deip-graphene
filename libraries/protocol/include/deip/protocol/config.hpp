@@ -34,7 +34,6 @@
 
 #define DEIP_LIMIT_DISCIPLINE_SUPPLIES_PER_GRANTOR          5
 #define DEIP_LIMIT_DISCIPLINE_SUPPLIES_LIST_SIZE          DEIP_LIMIT_DISCIPLINE_SUPPLIES_PER_GRANTOR
-#define DEIP_LIMIT_API_DISCIPLINE_SUPPLIES_LIST_SIZE      DEIP_LIMIT_DISCIPLINE_SUPPLIES_PER_GRANTOR
 
 #define DEIP_HARDFORK_REQUIRED_WITNESSES      1
 
@@ -65,7 +64,6 @@
 
 #define DEIP_LIMIT_DISCIPLINE_SUPPLIES_PER_OWNER          1000
 #define DEIP_LIMIT_DISCIPLINE_SUPPLIES_LIST_SIZE          1000
-#define DEIP_LIMIT_API_DISCIPLINE_SUPPLIES_LIST_SIZE      1000
 
 #define DEIP_HARDFORK_REQUIRED_WITNESSES      17 // 17 of the 21 dpos witnesses (20 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 
@@ -228,12 +226,9 @@
 ///@{
 
 /// Represents the canonical account for specifying you will vote for directly (as opposed to a proxy)
-#define DEIP_PROXY_TO_SELF_ACCOUNT           ""
+#define DEIP_PROXY_TO_SELF_ACCOUNT            ""
 
-#define DEIP_PROXY_TO_SELF_EXPERT_TOKEN      ""
-
-#define DEIP_RESEARCH_GROUP_PROPOSAL_ACTION_MIN_LIFETIME_SEC  uint32_t(60)
-#define DEIP_RESEARCH_GROUP_PROPOSAL_ACTION_MAX_LIFETIME_SEC  uint32_t(DAYS_TO_SECONDS(10))
+#define DEIP_API_BULK_FETCH_LIMIT             10000
 
 ///@}
 

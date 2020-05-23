@@ -176,7 +176,7 @@ const dbs_research_content::research_content_optional_ref_type dbs_research_cont
     return result;
 }
 
-dbs_research_content::research_content_refs_type dbs_research_content::get_by_research_id(const research_id_type& research_id) const
+dbs_research_content::research_content_refs_type dbs_research_content::get_research_content_by_research_id(const research_id_type& research_id) const
 {
     research_content_refs_type ret;
     
