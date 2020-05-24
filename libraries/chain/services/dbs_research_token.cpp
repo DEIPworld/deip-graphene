@@ -13,14 +13,15 @@ dbs_research_token::dbs_research_token(database &db)
 
 const research_token_object& dbs_research_token::create_research_token(
   const account_name_type& owner,
-  const research_id_type& research_id,
+  const research_object& research,
   const share_type& amount,
   const bool& is_compensation)
 {
     const research_token_object& research_token = db_impl().create<research_token_object>([&](research_token_object& rt_o) {
         rt_o.account_name = owner;
         rt_o.amount = amount;
-        rt_o.research_id = research_id;
+        rt_o.research_id = research.id;
+        rt_o.research_external_id = research.external_id;
         rt_o.is_compensation = is_compensation;
     });
 
@@ -30,16 +31,16 @@ const research_token_object& dbs_research_token::create_research_token(
 
 void dbs_research_token::adjust_research_token(
   const account_name_type& owner,
-  const research_id_type& research_id,
+  const research_object& research,
   const share_type& delta,
   const bool& is_compensation)
 {
-    if (!exists_by_owner_and_research(owner, research_id))
+    if (!exists_by_owner_and_research(owner, research.id))
     {
-        create_research_token(owner, research_id, share_type(0), is_compensation);
+        create_research_token(owner, research, share_type(0), is_compensation);
     }
 
-    const research_token_object& research_token = get_by_owner_and_research(owner, research_id);
+    const research_token_object& research_token = get_by_owner_and_research(owner, research.id);
 
     if (delta.value < 0)
     {

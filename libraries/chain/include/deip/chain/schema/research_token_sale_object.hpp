@@ -18,6 +18,7 @@ namespace deip {
 namespace chain {
 
 using fc::time_point;
+using protocol::external_id_type;
 
 enum research_token_sale_status : uint16_t
 {
@@ -41,6 +42,7 @@ public:
     research_token_sale_id_type id;
 
     research_id_type research_id;
+    external_id_type research_external_id;
     time_point_sec start_time;
     time_point_sec end_time;
     protocol::asset total_amount;
@@ -127,7 +129,7 @@ typedef multi_index_container<research_token_sale_contribution_object,
 
 FC_REFLECT_ENUM(deip::chain::research_token_sale_status, (token_sale_active)(token_sale_finished)(token_sale_expired)(token_sale_inactive))
 
-FC_REFLECT(deip::chain::research_token_sale_object, (id)(research_id)(start_time)(end_time)(total_amount)(balance_tokens)(soft_cap)(hard_cap)(status))
+FC_REFLECT(deip::chain::research_token_sale_object, (id)(research_id)(research_external_id)(start_time)(end_time)(total_amount)(balance_tokens)(soft_cap)(hard_cap)(status))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_token_sale_object, deip::chain::research_token_sale_index)
 

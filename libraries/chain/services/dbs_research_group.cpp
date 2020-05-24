@@ -463,8 +463,7 @@ dbs_research_group::research_group_token_refs_type dbs_research_group::rebalance
 }
 
 
-const std::set<account_name_type> dbs_research_group::get_research_group_members(
-  const research_group_id_type& id) const
+const std::set<account_name_type> dbs_research_group::get_research_group_members(const research_group_id_type& id) const
 {
   std::set<account_name_type> ret;
 
@@ -484,218 +483,21 @@ const std::set<account_name_type> dbs_research_group::get_research_group_members
   return ret;
 }
 
-const research_group_object& dbs_research_group::add_research_group_head(
-  const account_name_type& head,
-  const research_group_object& research_group)
+const dbs_research_group::research_group_refs_type dbs_research_group::lookup_research_groups(const research_group_id_type& lower_bound, uint32_t limit) const
 {
-    FC_ASSERT(research_group.is_centralized && head != account_name_type(),
-      "Heads are allowed only for centralized research groups");
+    research_group_refs_type result;
 
-    db_impl().modify(research_group, [&](research_group_object& rg) {
-        rg.heads.insert(head);
-    });
-
-    return research_group;
-}
-
-const research_group_object& dbs_research_group::remove_research_group_head(
-  const account_name_type& head,
-  const research_group_object& research_group)
-{
-    FC_ASSERT(research_group.is_centralized && head != account_name_type(),
-      "Heads are allowed only for centralized research groups");
-
-    db_impl().modify(research_group, [&](research_group_object& rg) {
-        auto itr = rg.heads.find(head);
-        if (itr != rg.heads.end())
-        {
-            rg.heads.erase(itr);
-        }
-    });
-
-    return research_group;
-}
-
-
-const research_group_organization_contract_object& dbs_research_group::get_organizational_contract(const research_group_organization_contract_id_type& id) const 
-{
-  const auto& idx = db_impl()
-    .get_index<research_group_organization_contract_index>()
-    .indices()
-    .get<by_id>();
-
-  auto itr = idx.find(id);
-  FC_ASSERT(itr != idx.end(), "Organizational contract with id ${id} does not exist", ("id", id));
-  return *itr;
-}
-
-const dbs_research_group::research_group_organization_contract_optional_refs_type
-dbs_research_group::get_organizational_contract_if_exists(const research_group_organization_contract_id_type& id) const
-{
-    research_group_organization_contract_optional_refs_type result;
     const auto& idx = db_impl()
-            .get_index<research_group_organization_contract_index>()
-            .indicies()
-            .get<by_id>();
+      .get_index<research_group_index>()
+      .indicies()
+      .get<by_id>();
 
-    auto itr = idx.find(id);
-    if (itr != idx.end())
+    for (auto itr = idx.lower_bound(lower_bound); limit-- && itr != idx.end(); ++itr)
     {
-        result = *itr;
+        result.push_back(std::cref(*itr));
     }
 
     return result;
-}
-
-dbs_research_group::research_group_organization_contract_refs_type dbs_research_group::get_organizational_contracts_by_organization(
-  const research_group_id_type organization_id) const
-{
-  research_group_organization_contract_refs_type ret;
-
-  auto itr_pair = db_impl()
-    .get_index<research_group_organization_contract_index>()
-    .indicies()
-    .get<contracts_by_organization>()
-    .equal_range(organization_id);
-
-  auto itr = itr_pair.first;
-  const auto itr_end = itr_pair.second;
-  while (itr != itr_end)
-  {
-    ret.push_back(std::cref(*itr));
-    ++itr;
-  }
-
-  return ret;
-}
-
-dbs_research_group::research_group_organization_contract_refs_type dbs_research_group::get_organizational_contracts_by_research_group(
-      const research_group_id_type research_group_id) const
-{
-    research_group_organization_contract_refs_type ret;
-
-    auto itr_pair = db_impl()
-            .get_index<research_group_organization_contract_index>()
-            .indicies()
-            .get<contracts_by_research_group>()
-            .equal_range(research_group_id);
-
-    auto itr = itr_pair.first;
-    const auto itr_end = itr_pair.second;
-    while (itr != itr_end)
-    {
-        ret.push_back(std::cref(*itr));
-        ++itr;
-    }
-
-    return ret;
-}
-
-
-const research_group_organization_contract_object& dbs_research_group::get_organizational_contract(
-  const research_group_id_type& organization_id, 
-  const research_group_id_type& research_group_id,
-  const research_group_organization_contract_type& kind) const 
-{
-  const uint16_t type = static_cast<uint16_t>(kind);
-  const auto& idx = db_impl()
-    .get_index<research_group_organization_contract_index>()
-    .indices()
-    .get<contract_by_organization_and_research_group_and_type>();
-
-  auto itr = idx.find(std::make_tuple(organization_id, research_group_id, type));
-  FC_ASSERT(itr != idx.end(), "Organizational contract between organization ${o} and research group ${r} is not found", ("o", organization_id)("r", research_group_id));
-  return *itr;
-}
-
-const dbs_research_group::research_group_organization_contract_optional_refs_type
-dbs_research_group::get_organizational_contract_if_exists(const research_group_id_type& organization_id,
-                                                          const research_group_id_type& research_group_id,
-                                                          const research_group_organization_contract_type& type) const
-{
-    research_group_organization_contract_optional_refs_type result;
-    const auto& idx = db_impl()
-            .get_index<research_group_organization_contract_index>()
-            .indicies()
-            .get<contract_by_organization_and_research_group_and_type>();
-
-    auto itr = idx.find(std::make_tuple(organization_id, research_group_id, static_cast<uint16_t>(type)));
-    if (itr != idx.end())
-    {
-        result = *itr;
-    }
-
-    return result;
-}
-
-const research_group_organization_contract_object& dbs_research_group::create_organizational_contract(
-  const research_group_id_type& organization_id,
-  const research_group_id_type& research_group_id,
-  const std::set<account_name_type>& organization_agents,
-  research_group_organization_contract_type type,
-  const bool& unilateral_termination_allowed,
-  const string& notes)
-{
-  const research_group_organization_contract_object& organizational_contract = 
-    db_impl().create<research_group_organization_contract_object>([&](research_group_organization_contract_object& contract) {
-      contract.organization_id = organization_id;
-      contract.research_group_id = research_group_id;
-      contract.organization_agents.insert(organization_agents.begin(), organization_agents.end());
-      contract.type = static_cast<uint16_t>(type);
-      contract.unilateral_termination_allowed = unilateral_termination_allowed;
-      fc::from_string(contract.notes, notes);
-    });
-
-  return organizational_contract;
-}
-
-const research_group_organization_contract_object& dbs_research_group::get_division_contract_by_research_group(const research_group_id_type& research_group_id) const 
-{
-  FC_ASSERT(is_organization_division(research_group_id),
-    "Division contract for research group with id ${rgId} does not exist", 
-    ("rgId", research_group_id));
-
-  const uint16_t type = static_cast<uint16_t>(research_group_organization_contract_type::division);
-  const auto& itr_pair = db_impl()
-    .get_index<research_group_organization_contract_index>()
-    .indices()
-    .get<contracts_by_research_group_and_type>()
-    .equal_range(std::make_tuple(research_group_id, type));
-
-  // currently we allow only 1 division per research group
-  auto itr = itr_pair.first;
-  return *itr;
-}
-
-const bool dbs_research_group::is_organization_division(const research_group_id_type& research_group_id) const
-{
-    const uint16_t type = static_cast<uint16_t>(research_group_organization_contract_type::division);
-    const auto& itr_pair = db_impl()
-      .get_index<research_group_organization_contract_index>()
-      .indices()
-      .get<contracts_by_research_group_and_type>()
-      .equal_range(std::make_tuple(research_group_id, type));
-
-    // currently we allow only 1 division per research group
-    auto itr = itr_pair.first;
-    const auto itr_end = itr_pair.second;
-    return itr != itr_end;
-}
-
-
-const research_group_organization_contract_object& dbs_research_group::remove_organization_agent_from_division_contract(
-  const research_group_organization_contract_object& contract, 
-  const account_name_type& account) 
-{
-    db_impl().modify(contract, [&](research_group_organization_contract_object& c_o) {
-        auto itr = c_o.organization_agents.find(account);
-        if (itr != c_o.organization_agents.end())
-        {
-            c_o.organization_agents.erase(itr);
-        }
-    });
-
-    return contract;
 }
 
 

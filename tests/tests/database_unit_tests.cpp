@@ -418,26 +418,6 @@ public:
 BOOST_FIXTURE_TEST_SUITE(database_unit_service, database_unit_service_fixture)
 
 
-BOOST_AUTO_TEST_CASE(clear_expired_group_invite)
-{
-    try
-    {
-        BOOST_TEST_MESSAGE("Testing: clear_expired_group_invites");
-
-        ACTORS((alice)(alex)(jack)(bob)(john));
-
-        generate_block();
-
-        research_group_invite_create(0, "alice", 0, 0);
-
-        generate_blocks(DEIP_BLOCKS_PER_HOUR * 2);
-
-        BOOST_CHECK_THROW(db.get<research_group_invite_object>(0), std::out_of_range);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-
 BOOST_AUTO_TEST_SUITE_END()
 
 } // namespace chain

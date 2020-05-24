@@ -37,7 +37,6 @@
 #include <deip/chain/services/dbs_proposal.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
-#include <deip/chain/services/dbs_research_group_invite.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_reward_pool.hpp>
@@ -1519,7 +1518,6 @@ void database::initialize_indexes()
     add_index<recent_entity_index>();
     add_index<research_group_index>();
     add_index<research_group_token_index>();
-    add_index<research_group_organization_contract_index>();
     add_index<discipline_index>();
     add_index<research_discipline_relation_index>();
     add_index<research_index>();
@@ -1529,7 +1527,6 @@ void database::initialize_indexes()
     add_index<research_token_sale_index>();
     add_index<research_token_sale_contribution_index>();
     add_index<expertise_contribution_index>();
-    add_index<research_group_invite_index>();
     add_index<review_index>();
     add_index<review_vote_index>();
     add_index<vesting_balance_index>();
@@ -1772,7 +1769,6 @@ void database::_apply_block(const signed_block& next_block)
         auto& discipline_supply_service = obtain_service<dbs_discipline_supply>();
         auto& expertise_allocation_proposal_service = obtain_service<dbs_expertise_allocation_proposal>();
         auto& proposal_service = obtain_service<dbs_proposal>();
-        auto& research_group_invite_service = obtain_service<dbs_research_group_invite>();
         auto& research_token_sale_service = obtain_service<dbs_research_token_sale>();
         auto& nda_contract_service = obtain_service<dbs_nda_contract>();
         auto& dgp_service = obtain_service<dbs_dynamic_global_properties>();
@@ -1822,7 +1818,6 @@ void database::_apply_block(const signed_block& next_block)
 
         dgp_service.clear_expired_recent_entities(next_block);
         proposal_service.clear_expired_proposals();
-        research_group_invite_service.clear_expired_invites();
         discipline_supply_service.clear_expired_discipline_supplies();
 
         // in dbs_database_witness_schedule.cpp

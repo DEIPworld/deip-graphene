@@ -17,7 +17,6 @@
 #include <iomanip>
 #include <sstream>
 #include  <deip/chain/schema/account_balance_object.hpp>
-#include <deip/chain/schema/research_group_invite_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
 
 #include "database_fixture.hpp"
@@ -565,21 +564,6 @@ void database_fixture::create_disciplines()
     });
 }
 
-const research_group_invite_object& database_fixture::research_group_invite_create(const int64_t id,
-                                                                                   const account_name_type& account_name,
-                                                                                   const research_group_id_type& research_group_id,
-                                                                                   const share_type research_group_token_amount)
-{
-    FC_ASSERT(research_group_token_amount <= DEIP_100_PERCENT, "Amount can't be greater than 100%");
-    auto& research_group_invite = db.create<research_group_invite_object>([&](research_group_invite_object& rgi_o) {
-        rgi_o.id = id;
-        rgi_o.account_name = account_name;
-        rgi_o.research_group_id = research_group_id;
-        rgi_o.research_group_token_amount = research_group_token_amount;
-        rgi_o.expiration_time = db.head_block_time() + 60 * 60;
-    });
-    return research_group_invite;
-}
 
 const research_token_sale_object& database_fixture::research_token_sale_create(const uint32_t id,
                                                                                research_id_type research_id,

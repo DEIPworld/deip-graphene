@@ -38,7 +38,6 @@ add_library( deip_chain
         services/dbs_expert_token.cpp
         services/dbs_research_token.cpp
         services/dbs_research_token_sale.cpp
-        services/dbs_research_group_invite.cpp
         services/dbs_dynamic_global_properties.cpp
         services/dbs_review.cpp
         services/dbs_vesting_balance.cpp

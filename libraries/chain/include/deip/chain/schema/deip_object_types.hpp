@@ -63,12 +63,10 @@ enum object_type
     recent_entity_object_type,
     research_group_object_type,
     research_group_token_object_type,
-    research_group_organization_contract_object_type,
     expert_token_object_type,
     research_token_object_type,
     research_token_sale_object_type,
     research_token_sale_contribution_object_type,
-    research_group_invite_object_type,
     review_object_type,
     review_vote_object_type,
     vesting_balance_object_type,
@@ -109,7 +107,6 @@ class proposal_object;
 class recent_entity_object;
 class research_group_object;
 class research_group_token_object;
-class research_group_organization_contract_object;
 class discipline_object;
 class expertise_contribution_object;
 class research_object;
@@ -119,7 +116,6 @@ class expert_token_object;
 class research_token_object;
 class research_token_sale_object;
 class research_token_sale_contribution_object;
-class research_group_invite_object;
 class review_object;
 class review_vote_object;
 class vesting_balance_object;
@@ -160,7 +156,6 @@ typedef oid<proposal_object> proposal_id_type;
 typedef oid<recent_entity_object> recent_entity_id_type;
 typedef oid<research_group_object> research_group_id_type;
 typedef oid<research_group_token_object> research_group_token_id_type;
-typedef oid<research_group_organization_contract_object> research_group_organization_contract_id_type;
 typedef oid<discipline_object> discipline_id_type;
 typedef oid<expertise_contribution_object> expertise_contribution_id_type;
 typedef oid<research_object> research_id_type;
@@ -170,7 +165,6 @@ typedef oid<expert_token_object> expert_token_id_type;
 typedef oid<research_token_object> research_token_id_type;
 typedef oid<research_token_sale_object> research_token_sale_id_type;
 typedef oid<research_token_sale_contribution_object> research_token_sale_contribution_id_type;
-typedef oid<research_group_invite_object> research_group_invite_id_type;
 typedef oid<review_object> review_id_type;
 typedef oid<review_vote_object> review_vote_id_type;
 typedef oid<vesting_balance_object> vesting_balance_id_type;
@@ -254,7 +248,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (recent_entity_object_type)
                  (research_group_object_type)
                  (research_group_token_object_type)
-                 (research_group_organization_contract_object_type)
                  (discipline_object_type)
                  (vote_object_type)
                  (expertise_contribution_object_type)
@@ -265,7 +258,6 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (research_token_object_type)
                  (research_token_sale_object_type)
                  (research_token_sale_contribution_object_type)
-                 (research_group_invite_object_type)
                  (review_object_type)
                  (review_vote_object_type)
                  (vesting_balance_object_type)

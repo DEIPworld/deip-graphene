@@ -19,7 +19,6 @@
 #include <deip/chain/schema/proposal_object.hpp>
 #include <deip/chain/schema/research_content_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
-#include <deip/chain/schema/research_group_invite_object.hpp>
 #include <deip/chain/schema/research_group_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
@@ -642,16 +641,17 @@ struct research_group_token_api_obj
 
 struct research_token_sale_api_obj
 {
-    research_token_sale_api_obj(const chain::research_token_sale_object& rts)
-        : id(rts.id._id)
-        ,  research_id(rts.research_id._id)
-        ,  start_time(rts.start_time)
-        ,  end_time(rts.end_time)
-        ,  total_amount(rts.total_amount)
-        ,  balance_tokens(rts.balance_tokens)
-        ,  soft_cap(rts.soft_cap)
-        ,  hard_cap(rts.hard_cap)
-        ,  status(rts.status)
+    research_token_sale_api_obj(const chain::research_token_sale_object& rts_o)
+        : id(rts_o.id._id)
+        , research_id(rts_o.research_id._id)
+        , research_external_id(rts_o.research_external_id)
+        , start_time(rts_o.start_time)
+        , end_time(rts_o.end_time)
+        , total_amount(rts_o.total_amount)
+        , balance_tokens(rts_o.balance_tokens)
+        , soft_cap(rts_o.soft_cap)
+        , hard_cap(rts_o.hard_cap)
+        , status(rts_o.status)
     {}
 
     // because fc::variant require for temporary object
@@ -661,6 +661,7 @@ struct research_token_sale_api_obj
 
     int64_t id;
     int64_t research_id;
+    string research_external_id;
     time_point_sec start_time;
     time_point_sec end_time;
     asset total_amount;
@@ -711,89 +712,6 @@ struct research_discipline_relation_api_obj
     int64_t discipline_id;
     uint16_t votes_count;
     share_type research_eci;
-};
-
-struct research_group_invite_api_obj
-{
-    research_group_invite_api_obj(const chain::research_group_invite_object& invite)
-        : id(invite.id._id)
-        , account_name(invite.account_name)
-        , research_group_id(invite.research_group_id._id)
-        , research_group_token_amount(invite.research_group_token_amount)
-        , cover_letter(fc::to_string(invite.cover_letter))
-        , is_head(invite.is_head)
-    {}
-
-    // because fc::variant require for temporary object
-    research_group_invite_api_obj()
-    {
-    }
-
-    int64_t id;
-    account_name_type account_name;
-    int64_t research_group_id;
-    share_type research_group_token_amount;
-    std::string cover_letter;
-    bool is_head;
-};
-
-struct research_listing_api_obj
-{
-    research_listing_api_obj(const research_api_obj& r,
-                             const research_group_api_obj& rg,
-                             const vector<account_name_type>& group_members,
-                             const int64_t& votes_count)
-        : research_id(r.id)
-        , external_id(r.external_id)
-        , title(r.title)
-        , abstract(r.abstract)
-        , permlink(r.permlink)
-        , owned_tokens(r.owned_tokens)
-        , review_share(r.review_share)
-        , created_at(r.created_at)
-        , group_members(group_members.begin(), group_members.end())
-        , disciplines(r.disciplines.begin(), r.disciplines.end())
-        , votes_count(votes_count)
-        , group_id(rg.id)
-        , group_permlink(rg.permlink)
-        , last_update_time(r.last_update_time)
-        , members(r.members.begin(), r.members.end())
-        , number_of_positive_reviews(r.number_of_positive_reviews)
-        , number_of_negative_reviews(r.number_of_negative_reviews)
-        , is_private(r.is_private)
-    {
-        for (const auto& kvp : r.eci_per_discipline)
-        {
-            discipline_id_type discipline_id = kvp.first;
-            share_type weight = kvp.second;
-            eci_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
-        }
-    }
-
-    // because fc::variant require for temporary object
-    research_listing_api_obj()
-    {
-    }
-
-    int64_t research_id;
-    external_id_type external_id;
-    string title;
-    string abstract;
-    string permlink;
-    share_type owned_tokens;
-    share_type review_share;
-    time_point_sec created_at;
-    vector<account_name_type> group_members;
-    vector<discipline_api_obj> disciplines;
-    int64_t votes_count;
-    int64_t group_id;
-    string group_permlink;
-    map<int64_t, int64_t> eci_per_discipline;
-    time_point_sec last_update_time;
-    std::vector<account_name_type> members;
-    uint16_t number_of_positive_reviews;
-    uint16_t number_of_negative_reviews;
-    bool is_private;
 };
 
 struct expertise_contribution_object_api_obj
@@ -859,12 +777,13 @@ struct review_api_obj
 
 struct research_token_api_obj
 {
-    research_token_api_obj(const chain::research_token_object& rt)
-        : id(rt.id._id)
-        , account_name(rt.account_name)
-        , research_id(rt.research_id._id)
-        , amount(rt.amount)
-        , is_compensation(rt.is_compensation)
+    research_token_api_obj(const chain::research_token_object& rt_o)
+        : id(rt_o.id._id)
+        , account_name(rt_o.account_name)
+        , research_id(rt_o.research_id._id)
+        , research_external_id(rt_o.research_external_id)
+        , amount(rt_o.amount)
+        , is_compensation(rt_o.is_compensation)
     {}
 
     // because fc::variant require for temporary object
@@ -875,6 +794,7 @@ struct research_token_api_obj
     int64_t id;
     account_name_type account_name;
     int64_t research_id;
+    string research_external_id;
     share_type amount;
     bool is_compensation;
 };
@@ -1174,35 +1094,6 @@ struct account_balance_api_obj
     asset amount;
 };
 
-struct research_group_organization_contract_api_obj
-{
-    research_group_organization_contract_api_obj(const chain::research_group_organization_contract_object& contract)
-        : id(contract.id._id)
-        , organization_id(contract.organization_id._id)
-        , research_group_id(contract.research_group_id._id)
-        , unilateral_termination_allowed(contract.unilateral_termination_allowed)
-        , notes(fc::to_string(contract.notes))
-        , type(contract.type)
-
-    {
-        organization_agents.insert(contract.organization_agents.begin(), contract.organization_agents.end());
-    }
-
-    // because fc::variant require for temporary object
-    research_group_organization_contract_api_obj()
-    {
-    }
-
-    int64_t id;
-
-    int64_t organization_id;
-    int64_t research_group_id;
-    bool unilateral_termination_allowed;
-    string notes;
-    uint16_t type;
-
-    std::set<account_name_type> organization_agents;
-};
 
 struct award_recipient_api_obj
 {
@@ -1586,6 +1477,7 @@ FC_REFLECT( deip::app::research_group_api_obj,
 FC_REFLECT( deip::app::research_token_sale_api_obj,
             (id)
             (research_id)
+            (research_external_id)
             (start_time)
             (end_time)
             (total_amount)
@@ -1611,36 +1503,6 @@ FC_REFLECT( deip::app::research_discipline_relation_api_obj,
             (research_eci)
 )
 
-FC_REFLECT( deip::app::research_group_invite_api_obj,
-            (id)
-            (account_name)
-            (research_group_id)
-            (research_group_token_amount)
-            (cover_letter)
-            (is_head)
-)
-
-FC_REFLECT( deip::app::research_listing_api_obj,
-           (research_id)
-           (external_id)
-           (title)
-           (abstract)
-           (permlink)
-           (owned_tokens)
-           (review_share)
-           (created_at)
-           (group_members)
-           (disciplines)
-           (votes_count)
-           (group_id)
-           (group_permlink)
-           (eci_per_discipline)
-           (last_update_time)
-           (members)
-           (number_of_positive_reviews)
-           (number_of_negative_reviews)
-           (is_private)
-)
 
 FC_REFLECT( deip::app::expertise_contribution_object_api_obj,
            (id)
@@ -1667,6 +1529,7 @@ FC_REFLECT( deip::app::research_token_api_obj,
             (id)
             (account_name)
             (research_id)
+            (research_external_id)
             (amount)
             (is_compensation)
 )
@@ -1775,15 +1638,6 @@ FC_REFLECT( deip::app::account_balance_api_obj,
             (amount)
 )
 
-FC_REFLECT( deip::app::research_group_organization_contract_api_obj,
-            (id)
-            (organization_id)
-            (research_group_id)
-            (unilateral_termination_allowed)
-            (notes)
-            (type)
-            (organization_agents)
-)
 
 FC_REFLECT( deip::app::award_api_obj,
             (id)

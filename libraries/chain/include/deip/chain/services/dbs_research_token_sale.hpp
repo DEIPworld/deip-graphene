@@ -8,6 +8,7 @@
 
 #include <deip/chain/schema/deip_object_types.hpp>
 #include <deip/chain/schema/research_token_sale_object.hpp>
+#include <deip/chain/schema/research_object.hpp>
 
 namespace deip {
 namespace chain {
@@ -24,12 +25,12 @@ public:
     using research_token_sale_refs_type = std::vector<std::reference_wrapper<const research_token_sale_object>>;
     using research_token_sale_optional_ref_type = fc::optional<std::reference_wrapper<const research_token_sale_object>>;
 
-    const research_token_sale_object& start(const research_id_type &research_id,
-                                            const fc::time_point_sec start_time,
-                                            const fc::time_point_sec end_time,
-                                            const share_type& balance_tokens,
-                                            const asset& soft_cap,
-                                            const asset& hard_cap);
+    const research_token_sale_object& create_research_token_sale(const research_object &research,
+                                                                 const fc::time_point_sec start_time,
+                                                                 const fc::time_point_sec end_time,
+                                                                 const share_type& balance_tokens,
+                                                                 const asset& soft_cap,
+                                                                 const asset& hard_cap);
 
     research_token_sale_refs_type get_all() const;
 

@@ -75,6 +75,8 @@ public:
     const bool research_exists(const research_id_type& research_id) const;
 
     const bool research_exists(const external_id_type& external_id) const;
+
+    const research_refs_type lookup_researches(const research_id_type& lower_bound, uint32_t limit) const;
 };
 }
 }

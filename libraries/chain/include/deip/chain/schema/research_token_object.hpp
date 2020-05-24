@@ -9,6 +9,8 @@
 namespace deip {
 namespace chain {
 
+using protocol::external_id_type;
+
 class research_token_object : public object<research_token_object_type, research_token_object>
 {
     research_token_object() = delete;
@@ -21,6 +23,7 @@ public:
     }
 
     research_token_id_type id;
+    external_id_type research_external_id;
     account_name_type account_name;
     research_id_type research_id;
     share_type amount = 0;
@@ -57,6 +60,6 @@ typedef multi_index_container<research_token_object,
     }
 }
 
-FC_REFLECT(deip::chain::research_token_object, (id)(account_name)(research_id)(amount)(is_compensation))
+FC_REFLECT(deip::chain::research_token_object, (id)(research_external_id)(account_name)(research_id)(amount)(is_compensation))
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::research_token_object, deip::chain::research_token_index )

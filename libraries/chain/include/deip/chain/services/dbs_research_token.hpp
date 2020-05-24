@@ -6,6 +6,7 @@
 #include <functional>
 
 #include <deip/chain/schema/research_token_object.hpp>
+#include <deip/chain/schema/research_object.hpp>
 
 namespace deip {
     namespace chain {
@@ -24,12 +25,12 @@ namespace deip {
             using research_token_optional_ref_type = fc::optional<std::reference_wrapper<const research_token_object>>;
 
             const research_token_object& create_research_token(const account_name_type& owner,
-                                                               const research_id_type& research_id,
+                                                               const research_object& research,
                                                                const share_type& amount,
                                                                const bool& is_compensation);
 
             void adjust_research_token(const account_name_type& owner,
-                                       const research_id_type& research_id,
+                                       const research_object& research,
                                        const share_type& delta,
                                        const bool& is_compensation);
                                                                

@@ -13,18 +13,19 @@ dbs_research_token_sale::dbs_research_token_sale(database& db)
 {
 }
 
-const research_token_sale_object& dbs_research_token_sale::start(const research_id_type &research_id,
-                                                                 const fc::time_point_sec start_time,
-                                                                 const fc::time_point_sec end_time,
-                                                                 const share_type& balance_tokens,
-                                                                 const asset& soft_cap,
-                                                                 const asset& hard_cap)
+const research_token_sale_object& dbs_research_token_sale::create_research_token_sale(const research_object& research,
+                                                                                      const fc::time_point_sec start_time,
+                                                                                      const fc::time_point_sec end_time,
+                                                                                      const share_type& balance_tokens,
+                                                                                      const asset& soft_cap,
+                                                                                      const asset& hard_cap)
 {
     FC_ASSERT(start_time >= db_impl().head_block_time(), "Start time must be >= current time");
     FC_ASSERT(end_time > start_time, "End time must be >= start time");
     const research_token_sale_object& new_research_token_sale
         = db_impl().create<research_token_sale_object>([&](research_token_sale_object& research_token_sale) {
-              research_token_sale.research_id = research_id;
+              research_token_sale.research_id = research.id;
+              research_token_sale.research_external_id = research.external_id;
               research_token_sale.start_time = start_time;
               research_token_sale.end_time = end_time;
               research_token_sale.total_amount = asset(0, DEIP_SYMBOL);
@@ -255,15 +256,17 @@ void dbs_research_token_sale::distribute_research_tokens(const research_token_sa
     auto it = idx.first;
     const auto it_end = idx.second;
 
+    const auto& research = research_service.get_research(research_token_sale.research_id);
     while (it != it_end)
     {
         const auto& research_share = (it->amount.amount * research_token_sale.balance_tokens) / research_token_sale.total_amount.amount;
-        research_token_service.adjust_research_token(it->owner, research_token_sale.research_id, research_share, false);
+        research_token_service.adjust_research_token(it->owner, research, research_share, false);
         auto current = it++;
         db_impl().remove(*current);
     }
 
-    research_group_service.increase_research_group_balance(research_service.get_research(research_token_sale.research_id).research_group_id, research_token_sale.total_amount);
+    research_group_service.increase_research_group_balance(research.research_group_id,
+                                                           research_token_sale.total_amount);
 }
 
 void dbs_research_token_sale::refund_research_tokens(const research_token_sale_id_type research_token_sale_id)

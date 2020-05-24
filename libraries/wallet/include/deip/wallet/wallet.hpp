@@ -825,11 +825,6 @@ public:
     vector<discipline_supply_api_obj> get_discipline_supplies(const std::string& account_name);
 
     /**
-     *  Gets the list of all research group invites for all accounts
-     */
-    vector<research_group_invite_api_obj> list_my_research_group_invites();
-
-    /**
      *  Gets the list of all research tokens for all accounts
      */
     vector<research_token_api_obj> list_my_research_tokens();
@@ -1136,7 +1131,6 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
         (list_my_discipline_supplies)
         (list_discipline_supply_grantors)
         (get_discipline_supplies)
-        (list_my_research_group_invites)
         (list_my_research_tokens)
         (list_account_research_tokens)
         (get_vesting_balances)

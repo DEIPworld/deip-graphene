@@ -24,7 +24,6 @@
 #include <deip/chain/services/dbs_review_vote.hpp>
 #include <deip/chain/services/dbs_expertise_contribution.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
-#include <deip/chain/services/dbs_research_group_invite.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>
@@ -1069,8 +1068,8 @@ void transfer_research_share_evaluator::do_apply(const transfer_research_share_o
       "Amount cannot be greater than total research token amount. Provided value: ${1}, actual amount: ${2}.",
       ("1", op.share.amount)("2", shart_to_transfer.amount));
 
-    research_token_service.adjust_research_token(op.sender, research.id, -op.share.amount, false);
-    research_token_service.adjust_research_token(op.receiver, research.id, op.share.amount, false);
+    research_token_service.adjust_research_token(op.sender, research, -op.share.amount, false);
+    research_token_service.adjust_research_token(op.receiver, research, op.share.amount, false);
 }
 
 void create_expertise_allocation_proposal_evaluator::do_apply(const create_expertise_allocation_proposal_operation& op)
@@ -2266,7 +2265,7 @@ void left_research_group_membership_evaluator::do_apply(const left_research_grou
                 const auto& compensation_share = *research.compensation_share;
                 const auto& compensation = research.owned_tokens.amount * (rgt.amount * compensation_share.amount / DEIP_100_PERCENT) / DEIP_100_PERCENT;
                 research_service.decrease_owned_tokens(research, percent(compensation));
-                research_token_service.adjust_research_token(op.member, research.id, compensation, true);
+                research_token_service.adjust_research_token(op.member, research, compensation, true);
             }
         }
     }
@@ -2522,8 +2521,8 @@ void create_research_token_sale_evaluator::do_apply(const create_research_token_
       ("1", op.share)("2", percent(research.owned_tokens)));
 
     research_service.decrease_owned_tokens(research, op.share);
-    research_token_sale_service.start(
-      research.id,
+    research_token_sale_service.create_research_token_sale(
+      research,
       op.start_time,
       op.end_time,
       op.share.amount,

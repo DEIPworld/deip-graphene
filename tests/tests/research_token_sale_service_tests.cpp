@@ -102,24 +102,6 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(research_token_sale_service_tests, research_token_sale_fixture)
 
-BOOST_AUTO_TEST_CASE(create_research_token_sale)
-{
-    try
-    {
-        auto& research_token_sale = data_service.start(RESEARCH_ID, START_TIME, END_TIME, BALANCE_TOKENS, asset(SOFT_CAP, DEIP_SYMBOL),
-            asset(HARD_CAP, DEIP_SYMBOL));
-
-        BOOST_CHECK(research_token_sale.research_id == RESEARCH_ID);
-        BOOST_CHECK(research_token_sale.start_time == START_TIME);
-        BOOST_CHECK(research_token_sale.end_time == END_TIME);
-        BOOST_CHECK(research_token_sale.total_amount == asset(0, DEIP_SYMBOL));
-        BOOST_CHECK(research_token_sale.balance_tokens == BALANCE_TOKENS);
-        BOOST_CHECK(research_token_sale.soft_cap == asset(SOFT_CAP, DEIP_SYMBOL));
-        BOOST_CHECK(research_token_sale.hard_cap == asset(HARD_CAP, DEIP_SYMBOL));
-    }
-    FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_CASE(get_all_research_token_sales)
 {
     create_research_token_sales();

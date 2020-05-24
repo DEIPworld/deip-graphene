@@ -27,8 +27,6 @@ class dbs_research_group : public dbs_base
   public:
     using research_group_refs_type = std::vector<std::reference_wrapper<const research_group_object>>;
     using research_group_token_refs_type = std::vector<std::reference_wrapper<const research_group_token_object>>;
-    using research_group_organization_contract_refs_type = std::vector<std::reference_wrapper<const research_group_organization_contract_object>>;
-    using research_group_organization_contract_optional_refs_type = fc::optional<std::reference_wrapper<const research_group_organization_contract_object>>;
     using research_group_optional_ref_type = fc::optional<std::reference_wrapper<const research_group_object>>;
     using research_group_token_optional_ref_type = fc::optional<std::reference_wrapper<const research_group_token_object>>;
 
@@ -77,72 +75,27 @@ class dbs_research_group : public dbs_base
     
     const bool is_research_group_member(const account_name_type& member, const research_group_id_type& research_group_id) const;
 
-    const research_group_object& increase_research_group_balance(
-      const research_group_id_type &research_group_id, 
-      const asset &deips);
+    const research_group_object& increase_research_group_balance(const research_group_id_type& research_group_id,
+                                                                 const asset& deips);
 
-    const research_group_object& decrease_research_group_balance(
-      const research_group_id_type &research_group_id, 
-      const asset &deips);
+    const research_group_object& decrease_research_group_balance(const research_group_id_type& research_group_id,
+                                                                 const asset& deips);
 
-    const research_group_token_object& add_member_to_research_group(
-      const account_name_type& account,
-      const research_group_id_type& research_group_id,
-      const share_type& share,
-      const account_name_type& inviter);
+    const research_group_token_object& add_member_to_research_group(const account_name_type& account,
+                                                                    const research_group_id_type& research_group_id,
+                                                                    const share_type& share,
+                                                                    const account_name_type& inviter);
 
-    research_group_token_refs_type remove_member_from_research_group(
-      const account_name_type& account,
-      const research_group_id_type& research_group_id);
+    research_group_token_refs_type remove_member_from_research_group(const account_name_type& account,
+                                                                     const research_group_id_type& research_group_id);
 
-    research_group_token_refs_type rebalance_research_group_tokens(
-      const research_group_id_type& research_group_id,
-      const std::map<account_name_type, share_type> shares);
+    research_group_token_refs_type rebalance_research_group_tokens(const research_group_id_type& research_group_id,
+                                                                   const std::map<account_name_type, share_type> shares);
 
-    const std::set<account_name_type> get_research_group_members(
-      const research_group_id_type& id) const;
+    const std::set<account_name_type> get_research_group_members(const research_group_id_type& id) const;
 
-    const research_group_object& add_research_group_head(
-      const account_name_type& head,
-      const research_group_object& research_group);
-
-    const research_group_object& remove_research_group_head(
-      const account_name_type& head,
-      const research_group_object& research_group);
-
-    const research_group_organization_contract_object& get_organizational_contract(
-      const research_group_organization_contract_id_type& id) const;
-
-    const research_group_organization_contract_optional_refs_type get_organizational_contract_if_exists(const research_group_organization_contract_id_type& id) const;
-
-    research_group_organization_contract_refs_type get_organizational_contracts_by_organization(
-      const research_group_id_type organization_id) const;
-
-    research_group_organization_contract_refs_type get_organizational_contracts_by_research_group(
-      const research_group_id_type research_group_id) const;
-
-    const research_group_organization_contract_object& get_organizational_contract(
-      const research_group_id_type& organization_id,
-      const research_group_id_type& research_group_id,
-      const research_group_organization_contract_type& type) const;
-
-    const research_group_organization_contract_optional_refs_type get_organizational_contract_if_exists(const research_group_id_type& organization_id,
-                                                                                                        const research_group_id_type& research_group_id,
-                                                                                                        const research_group_organization_contract_type& type) const;
-
-    const research_group_organization_contract_object& create_organizational_contract(
-      const research_group_id_type& organization_id,
-      const research_group_id_type& research_group_id,
-      const std::set<account_name_type>& organization_agents,
-      research_group_organization_contract_type type,
-      const bool& unilateral_termination_allowed,
-      const std::string& notes);
-
-    const research_group_organization_contract_object& remove_organization_agent_from_division_contract(const research_group_organization_contract_object& contract, const account_name_type& account);
-
-    const research_group_organization_contract_object& get_division_contract_by_research_group(const research_group_id_type& research_group_id) const;
-
-    const bool is_organization_division(const research_group_id_type& research_group_id) const;
+    const research_group_refs_type lookup_research_groups(const research_group_id_type& lower_bound,
+                                                          uint32_t limit) const;
 };
 
 } // namespace chain

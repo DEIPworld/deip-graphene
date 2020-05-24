@@ -12,7 +12,6 @@
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
-#include <deip/chain/services/dbs_research_group_invite.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
 #include <deip/chain/services/dbs_review_vote.hpp>
@@ -162,11 +161,6 @@ struct database_fixture
                                                    const account_name_type& account,
                                                    const discipline_id_type& discipline_id,
                                                    const share_type& amount);
-
-    const research_group_invite_object& research_group_invite_create(const int64_t id,
-                                                                     const account_name_type& account_name,
-                                                                     const research_group_id_type& research_group_id,
-                                                                     const share_type research_group_token_amount);
 
     const research_token_sale_object& research_token_sale_create(const uint32_t id,
                                                                  research_id_type research_id,

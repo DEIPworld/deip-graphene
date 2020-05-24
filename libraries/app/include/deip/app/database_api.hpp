@@ -280,6 +280,17 @@ public:
     fc::optional<discipline_api_obj> get_discipline_by_name(const string& name) const;
     vector<discipline_api_obj> get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
 
+    ////////////////////
+    // Research group //
+    ////////////////////
+    fc::optional<research_group_api_obj> get_research_group(const account_name_type& account) const;
+    vector<research_group_api_obj> get_research_groups(const set<external_id_type>& ids) const;
+    vector<research_group_api_obj> get_research_groups_by_member(const account_name_type& member) const;
+    /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type research_group_id) const;
+    /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group_by_permlink(const string& permlink) const;
+    /* [DEPRECATED] */ bool check_research_group_existence_by_permlink(const string& name) const;
+    vector<research_group_api_obj> lookup_research_groups(const research_group_id_type& lower_bound, uint32_t limit) const;
+
     ////////////////
     // Researches //
     ////////////////
@@ -290,6 +301,7 @@ public:
     /* [DEPRECATED] */ fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
     vector<research_api_obj> get_researches_by_research_group(const external_id_type& external_id) const;
     vector<research_api_obj> get_researches_by_research_group_member(const account_name_type& member) const;
+    vector<research_api_obj> lookup_researches(const research_id_type& lower_bound, uint32_t limit) const;
 
     //////////////////////
     // Research Content //
@@ -317,15 +329,6 @@ public:
     fc::optional<proposal_api_obj> get_proposal(const external_id_type& external_id) const;
     vector<proposal_api_obj> get_proposals_by_creator(const account_name_type& creator) const;
 
-    ////////////////////
-    // Research group //
-    ////////////////////
-    fc::optional<research_group_api_obj> get_research_group(const account_name_type& account) const;
-    vector<research_group_api_obj> get_research_groups(const set<external_id_type>& ids) const;
-    vector<research_group_api_obj> get_research_groups_by_member(const account_name_type& member) const;
-    /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group_by_id(const research_group_id_type research_group_id) const;
-    /* [DEPRECATED] */ fc::optional<research_group_api_obj> get_research_group_by_permlink(const string& permlink) const;
-    /* [DEPRECATED] */ bool check_research_group_existence_by_permlink(const string& name) const;
 
     /////////////////////////////////
     // Research group tokens       //
@@ -351,20 +354,6 @@ public:
     ///////////////////////////////////
 
     vector<discipline_api_obj> get_disciplines_by_research(const research_id_type& research_id) const;
-
-    ///////////////////////////////////
-    // Research group invite         //
-    ///////////////////////////////////
-
-    /* [DEPRECATED] */ fc::optional<research_group_invite_api_obj> get_research_group_invite_by_id(const research_group_invite_id_type& research_group_invite_id) const;
-    /* [DEPRECATED] */ fc::optional<research_group_invite_api_obj> get_research_group_invite_by_account_name_and_research_group_id(const account_name_type& account_name, const research_group_id_type& research_group_id) const;
-    /* [DEPRECATED] */ vector<research_group_invite_api_obj> get_research_group_invites_by_account_name(const account_name_type& account_name) const;
-    /* [DEPRECATED] */ vector<research_group_invite_api_obj> get_research_group_invites_by_research_group_id(const research_group_id_type& research_group_id) const;
-
-    ///////////////////////////////////
-    // Research listing              //
-    ///////////////////////////////////
-    vector<research_listing_api_obj> get_all_researches_listing(const discipline_id_type& discipline_id, const uint32_t& limit) const;
 
     /////////////////////////////
     // Expertise contributions //
@@ -474,14 +463,6 @@ public:
     vector<account_balance_api_obj> get_account_balances_by_owner(const account_name_type& owner) const;
     fc::optional<account_balance_api_obj> get_account_balance_by_owner_and_asset_symbol(const account_name_type& owner, const string& symbol) const;
 
-    //////////////////////////////
-    // Organizational contracts //
-    //////////////////////////////
-
-    fc::optional<research_group_organization_contract_api_obj> get_organizational_contract(const research_group_organization_contract_id_type& id) const;
-    fc::optional<research_group_organization_contract_api_obj> get_organizational_contract_by_organization_and_research_group_and_type(const research_group_id_type& organization_id, const research_group_id_type& research_group_id, const uint16_t& type) const;
-    vector<research_group_organization_contract_api_obj> get_organizational_contracts_by_research_group(const research_group_id_type& research_group_id) const;
-    vector<research_group_organization_contract_api_obj> get_organizational_contracts_by_organization(const research_group_id_type& organization_id) const;
 
     //////////////////////////
     // Discipline supplies //
@@ -608,6 +589,15 @@ FC_API(deip::app::database_api,
    (get_discipline_by_name)
    (get_disciplines_by_parent_id)
 
+   // Research group
+   (get_research_group)
+   (get_research_groups)
+   (get_research_groups_by_member)
+   (get_research_group_by_id)
+   (get_research_group_by_permlink)
+   (check_research_group_existence_by_permlink)
+   (lookup_research_groups)
+
    // Research
    (get_research)
    (get_researches)
@@ -616,6 +606,7 @@ FC_API(deip::app::database_api,
    (get_researches_by_research_group)
    (get_researches_by_research_group_member)
    (get_research_by_absolute_permlink)
+   (lookup_researches)
 
    // Research Content
    (get_research_content)
@@ -637,14 +628,6 @@ FC_API(deip::app::database_api,
    (get_proposal)
    (get_proposals_by_creator)
 
-   // Research group
-   (get_research_group)
-   (get_research_groups)
-   (get_research_groups_by_member)
-   (get_research_group_by_id)
-   (get_research_group_by_permlink)
-   (check_research_group_existence_by_permlink)
-
    (get_research_group_tokens_by_account)
    (get_research_group_tokens_by_research_group)
    (get_research_group_token_by_account_and_research_group_id)
@@ -661,15 +644,6 @@ FC_API(deip::app::database_api,
 
    // Research discipline relation
    (get_disciplines_by_research)
-
-   // Research group invite
-   (get_research_group_invite_by_id)
-   (get_research_group_invites_by_account_name)
-   (get_research_group_invites_by_research_group_id)
-   (get_research_group_invite_by_account_name_and_research_group_id)
-
-   // Research listing
-   (get_all_researches_listing)
 
    // Total votes
    (get_expertise_contributions_by_research)
@@ -735,11 +709,6 @@ FC_API(deip::app::database_api,
    (get_account_balance)
    (get_account_balances_by_owner)
    (get_account_balance_by_owner_and_asset_symbol)
-
-   (get_organizational_contract)
-   (get_organizational_contract_by_organization_and_research_group_and_type)
-   (get_organizational_contracts_by_organization)
-   (get_organizational_contracts_by_research_group)
 
    (get_discipline_supply)
 
