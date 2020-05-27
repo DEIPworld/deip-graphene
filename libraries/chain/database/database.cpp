@@ -1432,6 +1432,11 @@ optional<transaction> database::current_proposed_trx() const
     return _current_proposed_trx;
 }
 
+void database::reset_current_proposed_trx()
+{
+    _current_proposed_trx.reset();
+}
+
 node_property_object& database::node_properties()
 {
     return _node_property_object;

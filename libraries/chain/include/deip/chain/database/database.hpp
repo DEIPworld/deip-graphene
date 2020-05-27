@@ -329,6 +329,7 @@ public:
     uint16_t current_trx_ref_block_num() const override;
     uint32_t current_trx_ref_block_prefix() const override;
     optional<transaction> current_proposed_trx() const override;
+    void reset_current_proposed_trx() override;
 
     node_property_object& node_properties();
 

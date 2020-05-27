@@ -48,6 +48,8 @@ public:
 
     virtual optional<deip::protocol::transaction> current_proposed_trx() const = 0;
 
+    virtual void reset_current_proposed_trx() = 0;
+
     virtual bool has_hardfork(uint32_t hardfork) const = 0;
 
     virtual fc::time_point_sec get_genesis_time() const = 0;

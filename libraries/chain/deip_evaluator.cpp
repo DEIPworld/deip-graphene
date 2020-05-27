@@ -706,6 +706,7 @@ void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
             _db.push_proposal(proposal);
         } 
         catch(fc::exception& e) {
+            _db.reset_current_proposed_trx();
             db.modify(proposal, [&e](proposal_object& p) {
                 fc::from_string(p.fail_reason, e.to_string(fc::log_level(fc::log_level::all)));
             });

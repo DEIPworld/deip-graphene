@@ -216,6 +216,7 @@ void dbs_proposal::clear_expired_proposals()
         }
         catch (const fc::exception& e)
         {
+            db_impl().reset_current_proposed_trx();
             elog("Failed to apply proposed transaction on its expiration. Deleting it.\n${proposal}\n${error}",
                  ("proposal", proposal)("error", e.to_detail_string()));
         }
