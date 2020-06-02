@@ -86,8 +86,7 @@ public:
     account_authority_object(Constructor&& c, allocator<Allocator> a)
         : owner(a)
         , active(a)
-        , posting(a)
-        , threshold_overrides(a)
+        , active_overrides(a)
     {
         c(*this);
     }
@@ -97,15 +96,14 @@ public:
     account_name_type account;
 
     shared_authority owner; ///< used for backup control, can set owner or active
-    shared_authority active; ///< used for all monetary operations, can set active or posting
-    shared_authority posting; ///< used for voting and posting
+    shared_authority active; ///< used for all monetary operations, can set active
 
     time_point_sec last_owner_update;
 
     typedef allocator<std::pair<const uint16_t, shared_authority>> op_tag_authority_allocator_type;
     typedef chainbase::bip::map<uint16_t, shared_authority, std::less<uint16_t>, op_tag_authority_allocator_type> op_tag_authority_map;
 
-    op_tag_authority_map threshold_overrides;
+    op_tag_authority_map active_overrides;
 };
 
 class owner_authority_history_object
@@ -419,7 +417,7 @@ FC_REFLECT( deip::chain::account_object,
 CHAINBASE_SET_INDEX_TYPE( deip::chain::account_object, deip::chain::account_index )
 
 FC_REFLECT( deip::chain::account_authority_object,
-             (id)(account)(owner)(active)(posting)(last_owner_update)(threshold_overrides)
+             (id)(account)(owner)(active)(last_owner_update)(active_overrides)
 )
 CHAINBASE_SET_INDEX_TYPE( deip::chain::account_authority_object, deip::chain::account_authority_index )
 

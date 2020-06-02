@@ -1,5 +1,6 @@
 
 #include <deip/protocol/deip_operations.hpp>
+#include <deip/protocol/operations.hpp>
 #include <locale>
 #include <fc/log/logger.hpp>
 #include <functional>
@@ -16,8 +17,6 @@ void update_account_operation::validate() const
         owner->validate();
     if (active.valid())
         active->validate();
-    if (posting.valid())
-        posting->validate();
 
     if (json_metadata.valid())
     {
@@ -26,6 +25,21 @@ void update_account_operation::validate() const
         {
             FC_ASSERT(fc::is_utf8(json), "JSON Metadata not formatted in UTF8");
             FC_ASSERT(fc::json::is_valid(json), "JSON Metadata not valid JSON");
+        }
+    }
+
+    if (active_overrides.valid())
+    {
+        const auto& auth_overrides = *active_overrides;
+        for (const auto& active_override : auth_overrides)
+        {
+            FC_ASSERT(active_override.first < operation::count());
+            if (active_override.second.valid())
+            {
+                const auto& auth_override = *active_override.second;
+                auth_override.validate();
+                FC_ASSERT(auth_override.key_auths.size() == 0); // disabled for now
+            }
         }
     }
 }

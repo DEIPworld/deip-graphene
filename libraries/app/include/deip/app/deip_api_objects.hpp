@@ -88,12 +88,11 @@ struct account_api_obj
 
         owner = authority(auth.owner);
         active = authority(auth.active);
-        posting = authority(auth.posting);
         last_owner_update = auth.last_owner_update;
 
-        for (auto& pair : auth.threshold_overrides)
+        for (auto& pair : auth.active_overrides)
         {
-            threshold_overrides.insert(std::pair<uint16_t, authority>(pair.first, authority(pair.second)));
+            active_overrides.insert(std::pair<uint16_t, authority>(pair.first, authority(pair.second)));
         }
 
         for (auto& wrap : account_balances)
@@ -112,10 +111,9 @@ struct account_api_obj
     account_name_type name;
     authority owner;
     authority active;
-    authority posting;
     public_key_type memo_key;
 
-    std::map<uint16_t, authority> threshold_overrides;
+    std::map<uint16_t, authority> active_overrides;
 
     string json_metadata;
     account_name_type proxy;
@@ -576,15 +574,12 @@ struct proposal_api_obj
         , fail_reason(fc::to_string(p_o.fail_reason))
         , created_at(p_o.created_at)
     {
-        required_posting_approvals.insert(p_o.required_posting_approvals.begin(), p_o.required_posting_approvals.end());
-        available_posting_approvals.insert(p_o.available_posting_approvals.begin(), p_o.available_posting_approvals.end());
         required_active_approvals.insert(p_o.required_active_approvals.begin(), p_o.required_active_approvals.end());
         available_active_approvals.insert(p_o.available_active_approvals.begin(), p_o.available_active_approvals.end());
         required_owner_approvals.insert(p_o.required_owner_approvals.begin(), p_o.required_owner_approvals.end());
         available_owner_approvals.insert(p_o.available_owner_approvals.begin(), p_o.available_owner_approvals.end());
         available_key_approvals.insert(p_o.available_key_approvals.begin(), p_o.available_key_approvals.end());
 
-        voted_accounts.insert(p_o.available_posting_approvals.begin(), p_o.available_posting_approvals.end());
         voted_accounts.insert(p_o.available_active_approvals.begin(), p_o.available_active_approvals.end());
         voted_accounts.insert(p_o.available_owner_approvals.begin(), p_o.available_owner_approvals.end());
     }
@@ -605,8 +600,6 @@ struct proposal_api_obj
     string fail_reason;
     time_point_sec created_at;
 
-    set<account_name_type> required_posting_approvals;
-    set<account_name_type> available_posting_approvals;
     set<account_name_type> required_active_approvals;
     set<account_name_type> available_active_approvals;
     set<account_name_type> required_owner_approvals;
@@ -1290,9 +1283,8 @@ FC_REFLECT( deip::app::account_api_obj,
   (name)
   (owner)
   (active)
-  (posting)
   (memo_key)
-  (threshold_overrides)
+  (active_overrides)
   (json_metadata)
   (proxy)
   (last_owner_update)
@@ -1442,8 +1434,6 @@ FC_REFLECT( deip::app::proposal_api_obj,
             (review_period_time)
             (fail_reason)
             (created_at)
-            (required_posting_approvals)
-            (available_posting_approvals)
             (required_active_approvals)
             (available_active_approvals)
             (required_owner_approvals)

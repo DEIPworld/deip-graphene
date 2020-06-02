@@ -88,8 +88,7 @@ const proposal_object& dbs_proposal::create_proposal(
   const account_name_type& proposer,
   const fc::optional<uint32_t>& review_period_seconds,
   const flat_set<account_name_type>& required_owner,
-  const flat_set<account_name_type>& required_active,
-  const flat_set<account_name_type>& required_posting
+  const flat_set<account_name_type>& required_active
 ) 
 {
     auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
@@ -98,40 +97,16 @@ const proposal_object& dbs_proposal::create_proposal(
       "Proposal expiration time must be equal to proposed transaction expiration time");
 
     std::vector<account_name_type> owner_active_diff;
-    std::vector<account_name_type> owner_posting_diff;
-    std::vector<account_name_type> active_posting_diff;
 
     std::set_intersection(
       required_owner.begin(), required_owner.end(), 
       required_active.begin(), required_active.end(),
       std::inserter(owner_active_diff, owner_active_diff.begin()));
 
-    std::set_intersection(
-      required_owner.begin(), required_owner.end(), 
-      required_posting.begin(), required_posting.end(),
-      std::inserter(owner_posting_diff, owner_posting_diff.begin()));
-
-    std::set_intersection(
-      required_active.begin(), required_active.end(), 
-      required_posting.begin(), required_posting.end(),
-      std::inserter(active_posting_diff, active_posting_diff.begin()));
-
     FC_ASSERT(owner_active_diff.size() == 0,
       "Ambiguous owner and active authorities detected", 
       ("owner", required_owner)
       ("active", required_active)
-    );
-
-    FC_ASSERT(owner_posting_diff.size() == 0,
-      "Ambiguous owner and posting authorities detected", 
-      ("owner", required_owner)
-      ("posting", required_posting)
-    );
-
-    FC_ASSERT(active_posting_diff.size() == 0,
-      "Ambiguous active and posting authorities detected", 
-      ("active", required_active)
-      ("posting", required_posting)
     );
 
     const proposal_object& proposal = db_impl().create<proposal_object>([&](proposal_object& p_o) {
@@ -147,7 +122,6 @@ const proposal_object& dbs_proposal::create_proposal(
 
         p_o.required_owner_approvals.insert(required_owner.begin(), required_owner.end());
         p_o.required_active_approvals.insert(required_active.begin(), required_active.end());
-        p_o.required_posting_approvals.insert(required_posting.begin(), required_posting.end());
     });
 
     dgp_service.create_recent_entity(external_id);
@@ -160,10 +134,8 @@ const proposal_object& dbs_proposal::update_proposal(
   const proposal_object& proposal,
   const flat_set<account_name_type>& owner_approvals_to_add,
   const flat_set<account_name_type>& active_approvals_to_add,
-  const flat_set<account_name_type>& posting_approvals_to_add,
   const flat_set<account_name_type>& owner_approvals_to_remove,
   const flat_set<account_name_type>& active_approvals_to_remove,
-  const flat_set<account_name_type>& posting_approvals_to_remove,
   const flat_set<public_key_type>& key_approvals_to_add,
   const flat_set<public_key_type>& key_approvals_to_remove 
 )
@@ -171,14 +143,11 @@ const proposal_object& dbs_proposal::update_proposal(
     db_impl().modify(proposal, [&](proposal_object& p_o) {
         p_o.available_owner_approvals.insert(owner_approvals_to_add.begin(), owner_approvals_to_add.end());
         p_o.available_active_approvals.insert(active_approvals_to_add.begin(), active_approvals_to_add.end());
-        p_o.available_posting_approvals.insert(posting_approvals_to_add.begin(), posting_approvals_to_add.end());
 
         for (account_name_type account : owner_approvals_to_remove)
             p_o.available_owner_approvals.erase(account);
         for (account_name_type account : active_approvals_to_remove)
             p_o.available_active_approvals.erase(account);
-        for (account_name_type account : posting_approvals_to_remove)
-            p_o.available_posting_approvals.erase(account);
 
         for (const auto& key : key_approvals_to_add)
             p_o.available_key_approvals.insert(key);

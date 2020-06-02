@@ -137,8 +137,6 @@ void account_by_key_plugin_impl::cache_auths(const account_authority_object& a)
         cached_keys.insert(item.first);
     for (const auto& item : a.active.key_auths)
         cached_keys.insert(item.first);
-    for (const auto& item : a.posting.key_auths)
-        cached_keys.insert(item.first);
 }
 
 void account_by_key_plugin_impl::update_key_lookup(const account_authority_object& a)
@@ -150,8 +148,6 @@ void account_by_key_plugin_impl::update_key_lookup(const account_authority_objec
     for (const auto& item : a.owner.key_auths)
         new_keys.insert(item.first);
     for (const auto& item : a.active.key_auths)
-        new_keys.insert(item.first);
-    for (const auto& item : a.posting.key_auths)
         new_keys.insert(item.first);
 
     // For each key that needs a lookup

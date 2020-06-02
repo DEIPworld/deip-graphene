@@ -40,9 +40,9 @@ public:
                                                     const fc::optional<string>& json_metadata,
                                                     const authority& owner,
                                                     const authority& active,
-                                                    const authority& posting,
+                                                    const flat_map<uint16_t, authority>& active_overrides,
                                                     const asset& fee_in_deips,
-                                                    const vector<deip::protocol::account_trait>& traits = {},
+                                                    const flat_set<deip::protocol::account_trait>& traits,
                                                     const bool& is_user_account = true);
 
     void update_acount(const account_object& account,
@@ -51,8 +51,8 @@ public:
                        const string& json_metadata,
                        const optional<authority>& owner,
                        const optional<authority>& active,
-                       const optional<authority>& posting,
-                       const optional<vector<deip::protocol::account_trait>>& traits,
+                       const optional<flat_map<uint16_t, optional<authority>>>& active_overrides,
+                       const optional<flat_set<deip::protocol::account_trait>>& traits,
                        const optional<time_point_sec>& now = optional<time_point_sec>());
 
     void update_withdraw(const account_object& account,

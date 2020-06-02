@@ -621,10 +621,9 @@ public:
     {
         flat_set<account_name_type> req_active_approvals;
         flat_set<account_name_type> req_owner_approvals;
-        flat_set<account_name_type> req_posting_approvals;
         vector<authority> other_auths;
 
-        tx.get_required_authorities(req_active_approvals, req_owner_approvals, req_posting_approvals, other_auths);
+        tx.get_required_authorities(req_active_approvals, req_owner_approvals, other_auths);
 
         for (const auto& auth : other_auths)
             for (const auto& a : auth.account_auths)
@@ -636,9 +635,6 @@ public:
         vector<string> v_approving_account_names;
         std::merge(req_active_approvals.begin(), req_active_approvals.end(), req_owner_approvals.begin(),
                    req_owner_approvals.end(), std::back_inserter(v_approving_account_names));
-
-        for (const auto& a : req_posting_approvals)
-            v_approving_account_names.push_back(a);
 
         /// TODO: fetch the accounts specified via other_auths as well.
 
@@ -673,21 +669,6 @@ public:
                 continue;
             const account_api_obj& acct = it->second;
             vector<public_key_type> v_approving_keys = acct.active.get_keys();
-            wdump((v_approving_keys));
-            for (const public_key_type& approving_key : v_approving_keys)
-            {
-                wdump((approving_key));
-                approving_key_set.insert(approving_key);
-            }
-        }
-
-        for (account_name_type& acct_name : req_posting_approvals)
-        {
-            const auto it = approving_account_lut.find(acct_name);
-            if (it == approving_account_lut.end())
-                continue;
-            const account_api_obj& acct = it->second;
-            vector<public_key_type> v_approving_keys = acct.posting.get_keys();
             wdump((v_approving_keys));
             for (const public_key_type& approving_key : v_approving_keys)
             {
@@ -746,12 +727,22 @@ public:
 
         auto minimal_signing_keys = tx.minimize_required_signatures(
             _chain_id, available_keys,
-            [&](const string& account_name) -> const authority& { return (get_account_from_lut(account_name).active); },
-            [&](const string& account_name) -> const authority& { return (get_account_from_lut(account_name).owner); },
-            [&](const string& account_name) -> const authority& {
-                return (get_account_from_lut(account_name).posting);
+            [&](const string& account_name) -> const deip::protocol::authority {
+                return (get_account_from_lut(account_name).active);
             },
-            DEIP_MAX_SIG_CHECK_DEPTH);
+            [&](const string& account_name) -> const deip::protocol::authority {
+                return (get_account_from_lut(account_name).owner);
+            },
+            [&](const string& account_name, const uint16_t& op_tag) {
+                fc::optional<deip::protocol::authority> result;
+                const auto& account = get_account_from_lut(account_name);
+                if (account.active_overrides.find(op_tag) != account.active_overrides.end())
+                {
+                    result = account.active_overrides.at(op_tag);
+                    return result;
+                }
+                return result;
+            });
 
         for (const public_key_type& k : minimal_signing_keys)
         {
@@ -1315,7 +1306,6 @@ annotated_signed_transaction wallet_api::create_account_with_keys(const std::str
                                                                   const std::string& json_meta,
                                                                   const public_key_type& owner,
                                                                   const public_key_type& active,
-                                                                  const public_key_type& posting,
                                                                   const public_key_type& memo,
                                                                   const share_type& fee,
                                                                   bool broadcast) const
@@ -1328,7 +1318,6 @@ annotated_signed_transaction wallet_api::create_account_with_keys(const std::str
         op.new_account_name = newname;
         op.owner = authority(1, owner, 1);
         op.active = authority(1, active, 1);
-        op.posting = authority(1, posting, 1);
         op.memo_key = memo;
         op.json_metadata = json_meta;
         op.fee = fee;
@@ -1404,7 +1393,6 @@ annotated_signed_transaction wallet_api::update_account(const std::string& accou
                                                         const std::string& json_meta,
                                                         const public_key_type& owner,
                                                         const public_key_type& active,
-                                                        const public_key_type& posting,
                                                         const public_key_type& memo,
                                                         bool broadcast) const
 {
@@ -1416,7 +1404,6 @@ annotated_signed_transaction wallet_api::update_account(const std::string& accou
         op.account = account_name;
         op.owner = authority(1, owner, 1);
         op.active = authority(1, active, 1);
-        op.posting = authority(1, posting, 1);
         op.memo_key = memo;
         op.json_metadata = json_meta;
 
@@ -1456,9 +1443,6 @@ annotated_signed_transaction wallet_api::update_account_auth_key(const std::stri
     case (active):
         new_auth = accounts[0].active;
         break;
-    case (posting):
-        new_auth = accounts[0].posting;
-        break;
     }
 
     if (weight == 0) // Remove the key
@@ -1487,9 +1471,6 @@ annotated_signed_transaction wallet_api::update_account_auth_key(const std::stri
         break;
     case (active):
         op.active = new_auth;
-        break;
-    case (posting):
-        op.posting = new_auth;
         break;
     }
 
@@ -1527,9 +1508,6 @@ annotated_signed_transaction wallet_api::update_account_auth_account(const std::
     case (active):
         new_auth = accounts[0].active;
         break;
-    case (posting):
-        new_auth = accounts[0].posting;
-        break;
     }
 
     if (weight == 0) // Remove the key
@@ -1558,9 +1536,6 @@ annotated_signed_transaction wallet_api::update_account_auth_account(const std::
         break;
     case (active):
         op.active = new_auth;
-        break;
-    case (posting):
-        op.posting = new_auth;
         break;
     }
 
@@ -1598,9 +1573,6 @@ annotated_signed_transaction wallet_api::update_account_auth_threshold(const std
     case (active):
         new_auth = accounts[0].active;
         break;
-    case (posting):
-        new_auth = accounts[0].posting;
-        break;
     }
 
     new_auth.weight_threshold = threshold;
@@ -1622,9 +1594,6 @@ annotated_signed_transaction wallet_api::update_account_auth_threshold(const std
         break;
     case (active):
         op.active = new_auth;
-        break;
-    case (posting):
-        op.posting = new_auth;
         break;
     }
 
@@ -1692,14 +1661,11 @@ annotated_signed_transaction wallet_api::create_account(const std::string& creat
         FC_ASSERT(!is_locked());
         auto owner = suggest_brain_key();
         auto active = suggest_brain_key();
-        auto posting = suggest_brain_key();
         auto memo = suggest_brain_key();
         import_key(owner.wif_priv_key);
         import_key(active.wif_priv_key);
-        import_key(posting.wif_priv_key);
         import_key(memo.wif_priv_key);
-        return create_account_with_keys(creator, newname, json_meta, owner.pub_key, active.pub_key, posting.pub_key,
-                                        memo.pub_key, fee, broadcast);
+        return create_account_with_keys(creator, newname, json_meta, owner.pub_key, active.pub_key, memo.pub_key, fee, broadcast);
     }
     FC_CAPTURE_AND_RETHROW((creator)(newname)(json_meta))
 }
@@ -1785,10 +1751,6 @@ void wallet_api::check_memo(const string& memo, const account_api_obj& account) 
     auto active_secret = fc::sha256::hash(active_seed.c_str(), active_seed.size());
     keys.push_back(fc::ecc::private_key::regenerate(active_secret).get_public_key());
 
-    string posting_seed = account.name + "posting" + memo;
-    auto posting_secret = fc::sha256::hash(posting_seed.c_str(), posting_seed.size());
-    keys.push_back(fc::ecc::private_key::regenerate(posting_secret).get_public_key());
-
     // Check keys against public keys in authorites
     for (auto& key_weight_pair : account.owner.key_auths)
     {
@@ -1802,13 +1764,6 @@ void wallet_api::check_memo(const string& memo, const account_api_obj& account) 
         for (auto& key : keys)
             FC_ASSERT(key_weight_pair.first != key,
                       "Detected private active key in memo field. Cancelling transaction.");
-    }
-
-    for (auto& key_weight_pair : account.posting.key_auths)
-    {
-        for (auto& key : keys)
-            FC_ASSERT(key_weight_pair.first != key,
-                      "Detected private posting key in memo field. Cancelling transaction.");
     }
 
     const auto& memo_key = account.memo_key;

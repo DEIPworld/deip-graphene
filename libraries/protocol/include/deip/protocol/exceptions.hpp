@@ -18,8 +18,6 @@ FC_DECLARE_DERIVED_EXCEPTION(
 FC_DECLARE_DERIVED_EXCEPTION(
     tx_missing_owner_auth, deip::protocol::transaction_exception, 3020000, "missing required owner authority")
 FC_DECLARE_DERIVED_EXCEPTION(
-    tx_missing_posting_auth, deip::protocol::transaction_exception, 3030000, "missing required posting authority")
-FC_DECLARE_DERIVED_EXCEPTION(
     tx_missing_other_auth, deip::protocol::transaction_exception, 3040000, "missing required other authority")
 FC_DECLARE_DERIVED_EXCEPTION(
     tx_irrelevant_sig, deip::protocol::transaction_exception, 3050000, "irrelevant signature included")

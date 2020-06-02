@@ -161,10 +161,9 @@ enum class authority_type : uint16_t
     unknown = 0,
     owner = 1,
     active = 2,
-    posting = 3,
 
     FIRST = owner,
-    LAST = posting
+    LAST = active
 };
 
 typedef uint32_t percent_type;
@@ -196,5 +195,4 @@ FC_REFLECT_ENUM(deip::protocol::authority_type,
   (unknown)
   (owner)
   (active)
-  (posting)
 )

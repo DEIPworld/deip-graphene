@@ -89,9 +89,9 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
                                                              const fc::optional<string>& json_metadata,
                                                              const authority& owner,
                                                              const authority& active,
-                                                             const authority& posting,
+                                                             const flat_map<uint16_t, authority>& active_overrides,
                                                              const asset& fee,
-                                                             const vector<account_trait>& traits,
+                                                             const flat_set<account_trait>& traits,
                                                              const bool& is_user_account)
 {
     auto& research_groups_service = db_impl().obtain_service<dbs_research_group>();
@@ -128,12 +128,16 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
     // Convert fee to Common tokens and increase account common tokens balance for throughput
     increase_common_tokens(get_account(account_name), fee.amount);
 
-    const auto& account_auth = db_impl().create<account_authority_object>([&](account_authority_object& auth) {
+    db_impl().create<account_authority_object>([&](account_authority_object& auth) {
         auth.account = account_name;
         auth.owner = owner;
         auth.active = active;
-        auth.posting = posting;
         auth.last_owner_update = fc::time_point_sec::min();
+
+        for (const auto& override : active_overrides)
+        {
+            auth.active_overrides.insert(std::pair<uint16_t, shared_authority>(override.first, shared_authority(override.second, shared_authority::allocator_type(db_impl().get_segment_manager()))));
+        }
     });
 
     if (is_user_account) // user personal workspace
@@ -147,11 +151,11 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
           DEIP_100_PERCENT, 
           account_name_type()
         );
-    } 
+    }
     else // research group workspace
     {
-        const account_trait trait = traits[0];
-        const auto rg_trait = trait.get<research_group_v1_0_0_trait>();
+        const account_trait trait = *traits.begin();
+        const auto rg_trait = trait.get<research_group_trait>();
 
         const auto& shared_rg = research_groups_service.create_research_group(
           account_name,
@@ -166,16 +170,6 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
           DEIP_100_PERCENT,
           account_name_type()
         );
-
-        for (auto& pair : rg_trait.threshold_overrides)
-        {
-            check_account_existence(pair.second.account_auths);
-            db_impl().modify(account_auth, [&](account_authority_object& auth) {
-                auth.threshold_overrides.insert(std::pair<uint16_t, shared_authority>(
-                    pair.first, shared_authority(pair.second, shared_authority::allocator_type(db_impl().get_segment_manager()))
-                ));
-            });
-        }
     }
 
     dgp_service.create_recent_entity(account_name);
@@ -189,8 +183,8 @@ void dbs_account::update_acount(const account_object& account,
                                 const string& json_metadata,
                                 const optional<authority>& owner,
                                 const optional<authority>& active,
-                                const optional<authority>& posting,
-                                const optional<vector<deip::protocol::account_trait>>& traits,
+                                const optional<flat_map<uint16_t, optional<authority>>>& active_overrides,
+                                const optional<flat_set<deip::protocol::account_trait>>& traits,
                                 const optional<time_point_sec>& now)
 {
     dbs_research_group& research_groups_service = db_impl().obtain_service<dbs_research_group>();
@@ -209,20 +203,40 @@ void dbs_account::update_acount(const account_object& account,
 #endif
     });
 
-    if (active || posting)
+    if (active.valid() || active_overrides.valid())
     {
         db_impl().modify(account_authority, [&](account_authority_object& auth) {
-            if (active)
+            
+            if (active.valid())
+            {
                 auth.active = *active;
-            if (posting)
-                auth.posting = *posting;
+            }
+
+            if (active_overrides.valid())
+            {
+                const auto& auth_overrides = *active_overrides;
+                for (const auto& active_override : auth_overrides)
+                {
+                    auto itr = auth.active_overrides.find(active_override.first);
+                    if (itr != auth.active_overrides.end())
+                    {
+                        auth.active_overrides.erase(itr);
+                    }
+
+                    if (active_override.second.valid())
+                    {
+                        const auto& auth_override = *active_override.second;
+                        auth.active_overrides.insert(std::pair<uint16_t, shared_authority>(active_override.first, shared_authority(auth_override, shared_authority::allocator_type(db_impl().get_segment_manager()))));
+                    }
+                }
+            }
         });
     }
 
-    if (traits.valid()) // research group workspace
+    if (account.is_research_group && traits.valid() && traits->size() == 1) // research group workspace
     {
-        const account_trait trait = (*traits)[0];
-        const auto rg_trait = trait.get<research_group_v1_0_0_trait>();
+        const account_trait trait = *traits->begin();
+        const auto rg_trait = trait.get<research_group_trait>();
         const auto& research_group = research_groups_service.get_research_group_by_account(account.name);
 
         FC_ASSERT(!research_group.is_personal, "Personal research group is preserved and can not be edited");

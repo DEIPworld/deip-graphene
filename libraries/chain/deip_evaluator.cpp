@@ -158,25 +158,28 @@ void create_account_evaluator::do_apply(const create_account_operation& op)
     // check accounts existence
     account_service.check_account_existence(op.owner.account_auths);
     account_service.check_account_existence(op.active.account_auths);
-    account_service.check_account_existence(op.posting.account_auths);
+
+    for (const auto& override : op.active_overrides)
+    {
+        account_service.check_account_existence(override.second.account_auths);
+    }
 
     account_service.create_account_by_faucets(
       op.new_account_name, 
       op.creator, 
       op.memo_key, 
       op.json_metadata, 
-      op.owner, 
+      op.owner,
       op.active, 
-      op.posting, 
-      op.fee,
+      op.active_overrides, 
+      op.fee, 
       op.traits,
-      op.is_user_account());
+      op.is_user_account()
+    );
 }
 
 void update_account_evaluator::do_apply(const update_account_operation& op)
 {
-    if (op.posting)
-        op.posting->validate();
 
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
@@ -194,11 +197,18 @@ void update_account_evaluator::do_apply(const update_account_operation& op)
         account_service.check_account_existence(op.active->account_auths);
     }
 
-    if (op.posting)
+    if (op.active_overrides.valid())
     {
-        account_service.check_account_existence(op.posting->account_auths);
+        const auto& active_overrides = *op.active_overrides;
+        for (const auto& active_override : active_overrides)
+        {
+            if (active_override.second.valid())
+            {
+                const auto& auth_override = *active_override.second;
+                account_service.check_account_existence(auth_override.account_auths);
+            }
+        }
     }
-
 
     std::string json_metadata = op.json_metadata.valid() ? *op.json_metadata : fc::to_string(account.json_metadata);
     public_key_type memo_key = op.memo_key.valid() ? *op.memo_key : account.memo_key;
@@ -210,7 +220,7 @@ void update_account_evaluator::do_apply(const update_account_operation& op)
       json_metadata, 
       op.owner, 
       op.active, 
-      op.posting,
+      op.active_overrides,
       op.traits);
 }
 
@@ -586,22 +596,16 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
     FC_ASSERT(!op.review_period_seconds || fc::seconds(*op.review_period_seconds) < (op.expiration_time - block_time),
       "Proposal review period must be less than its overall lifetime." );
 
-    flat_set<account_name_type> required_posting;
     flat_set<account_name_type> required_active;
     flat_set<account_name_type> required_owner;
     vector<authority> other;
 
     for( auto& wrap : op.proposed_ops )
     {
-        operation_get_required_authorities(wrap.op, required_active, required_owner, required_posting, other);
+        operation_get_required_authorities(wrap.op, required_active, required_owner, other);
     }
 
     FC_ASSERT(other.size() == 0); // TODO: what about other??? 
-    if (required_posting.size() != 0) // Transactions with operations required posting authority cannot be combined with transactions requiring active or owner authority
-    {
-        FC_ASSERT(required_active.size() == 0);
-        FC_ASSERT(required_owner.size() == 0);
-    }
 
     const uint16_t ref_block_num = _db.current_proposed_trx().valid() 
       ? _db.current_proposed_trx()->ref_block_num
@@ -625,7 +629,6 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
 
     // All accounts which must provide both owner and active authority should be omitted from the active authority set;
     // owner authority approval implies active authority approval.
-    // Posting authority can not be combined with owner/active authorities
     flat_set<account_name_type> remaining_active;
     std::set_difference(
       required_active.begin(), required_active.end(),
@@ -640,8 +643,7 @@ void create_proposal_evaluator::do_apply(const create_proposal_operation& op)
       op.creator,
       op.review_period_seconds,
       required_owner,
-      remaining_active,
-      required_posting
+      remaining_active
     );
 }
 
@@ -661,7 +663,6 @@ void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
         FC_ASSERT(
           op.owner_approvals_to_add.empty() && 
           op.active_approvals_to_add.empty() && 
-          op.posting_approvals_to_add.empty() && 
           op.key_approvals_to_add.empty(), 
           "This proposal is in its review period. No new approvals may be added."
         );
@@ -677,19 +678,12 @@ void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
         FC_ASSERT(proposal.available_active_approvals.find(account) != proposal.available_active_approvals.end(),
           "", ("account", account)("available", proposal.available_active_approvals));
     }
-    for (account_name_type account : op.posting_approvals_to_remove)
-    {
-        FC_ASSERT(proposal.available_posting_approvals.find(account) != proposal.available_posting_approvals.end(),
-          "", ("account", account)("available", proposal.available_posting_approvals));
-    }
 
     proposals_service.update_proposal(proposal, 
       op.owner_approvals_to_add,
       op.active_approvals_to_add,
-      op.posting_approvals_to_add,
       op.owner_approvals_to_remove,
       op.active_approvals_to_remove,
-      op.posting_approvals_to_remove,
       op.key_approvals_to_add,
       op.key_approvals_to_remove
     );
@@ -729,8 +723,6 @@ void delete_proposal_evaluator::do_apply(const delete_proposal_operation& op)
       ? proposal.required_owner_approvals 
       : op.authority == static_cast<uint16_t>(authority_type::active)
       ? proposal.required_active_approvals 
-      : op.authority == static_cast<uint16_t>(authority_type::posting)
-      ? proposal.required_posting_approvals
       : flat_set<account_name_type>();
 
     FC_ASSERT(required_approvals.find(op.account) != required_approvals.end(),

@@ -20,7 +20,7 @@ bool sign_state::signed_by(const public_key_type& k)
 bool sign_state::check_authority(account_name_type id)
 {
     if (approved_by.find(id) != approved_by.end()) return true;
-    return (allow_posting && check_authority(get_posting(id))) || check_authority(get_active(id)) || check_authority(get_owner(id));
+    return check_authority(get_active(id)) || check_authority(get_owner(id));
 }
 
 bool sign_state::check_authority(const authority& auth, uint32_t depth)
@@ -42,7 +42,7 @@ bool sign_state::check_authority(const authority& auth, uint32_t depth)
         {
             if (depth == max_recursion)
                 continue;
-            if ((allow_posting && check_authority(get_posting(a.first), depth + 1)) || check_authority(get_active(a.first), depth + 1) || check_authority(get_owner(a.first), depth + 1))
+            if (check_authority(get_active(a.first), depth + 1) || check_authority(get_owner(a.first), depth + 1))
             {
                 approved_by.insert(a.first);
                 total_weight += a.second;
@@ -76,11 +76,9 @@ bool sign_state::remove_unused_signatures()
 sign_state::sign_state(const flat_set<public_key_type>& sigs,
                        const authority_getter& active_getter,
                        const authority_getter& owner_getter,
-                       const authority_getter& posting_getter,
                        const flat_set<public_key_type>& keys)
     : get_active(active_getter)
     , get_owner(owner_getter)
-    , get_posting(posting_getter)
     , available_keys(keys)
 {
     for (const auto& key : sigs)

@@ -141,7 +141,6 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
         auth.owner.add_authority(registrar.public_key, 1);
         auth.owner.weight_threshold = 1;
         auth.active = auth.owner;
-        auth.posting = auth.active;
     });
 
     for (auto& account : accounts)
@@ -154,6 +153,8 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
         owner_authority.weight_threshold = 1;
 
         fc::optional<std::string> json_metadata;
+        flat_map<uint16_t, authority> active_authority_overrides;
+        flat_set<account_trait> traits;
 
         account_service.create_account_by_faucets(
           account.name,
@@ -162,9 +163,9 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
           json_metadata,
           owner_authority,
           owner_authority,
-          owner_authority,
+          active_authority_overrides,
           DEIP_MIN_ACCOUNT_CREATION_FEE,
-          {},
+          traits,
           true
         );
     }
@@ -511,22 +512,21 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
     auto active_authority = authority();
     active_authority.weight_threshold = 1;
 
-    auto posting_authority = authority();
-    posting_authority.weight_threshold = 1;
-
     for (auto& member_name : research_group.members)
     {
         const auto& member = account_service.get_account(member_name);
         active_authority.add_authority(account_name_type(member.name), 1);
-        posting_authority.add_authority(account_name_type(member.name), 1);
     }
 
-    research_group_v1_0_0_trait research_group_trait;
-    research_group_trait.name = research_group.name;
-    research_group_trait.description = research_group.description;
+    research_group_trait rg_trait;
+    rg_trait.name = research_group.name;
+    rg_trait.description = research_group.description;
 
-    vector<account_trait> traits = { research_group_trait };
+    flat_set<account_trait> traits;
+    traits.insert(rg_trait);
+
     fc::optional<std::string> json_metadata;
+    flat_map<uint16_t, authority> active_authority_overrides;
 
     account_service.create_account_by_faucets(
       research_group.account,
@@ -535,7 +535,7 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
       json_metadata,
       owner_authority,
       active_authority,
-      posting_authority,
+      active_authority_overrides,
       DEIP_MIN_ACCOUNT_CREATION_FEE,
       traits,
       false

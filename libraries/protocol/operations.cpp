@@ -77,16 +77,13 @@ struct operation_get_required_auth_visitor
 
     flat_set<account_name_type>& active;
     flat_set<account_name_type>& owner;
-    flat_set<account_name_type>& posting;
     std::vector<authority>& other;
 
     operation_get_required_auth_visitor(flat_set<account_name_type>& a,
                                         flat_set<account_name_type>& own,
-                                        flat_set<account_name_type>& post,
                                         std::vector<authority>& oth)
         : active(a)
         , owner(own)
-        , posting(post)
         , other(oth)
     {
     }
@@ -95,7 +92,6 @@ struct operation_get_required_auth_visitor
     {
         v.get_required_active_authorities(active);
         v.get_required_owner_authorities(owner);
-        v.get_required_posting_authorities(posting);
         v.get_required_authorities(other);
     }
 };
@@ -122,10 +118,9 @@ void operation_validate(const operation& op)
 void operation_get_required_authorities(const operation& op,
                                         flat_set<account_name_type>& active,
                                         flat_set<account_name_type>& owner,
-                                        flat_set<account_name_type>& posting,
                                         std::vector<authority>& other)
 {
-    op.visit(deip::protocol::operation_get_required_auth_visitor(active, owner, posting, other));
+    op.visit(deip::protocol::operation_get_required_auth_visitor(active, owner, other));
 }
 
 

@@ -326,7 +326,6 @@ const account_object& database_fixture::create_account(const string& name,
         op.fee = asset(fee, DEIP_SYMBOL);
         op.owner = authority(1, key, 1);
         op.active = authority(1, key, 1);
-        op.posting = authority(1, post_key, 1);
         op.memo_key = key;
         op.json_metadata = json_metadata;
 

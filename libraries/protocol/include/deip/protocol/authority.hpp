@@ -13,8 +13,7 @@ struct authority
     {
         owner = 0,
         active = 1,
-        key = 2,
-        posting = 3
+        key = 2
     };
 
     template <class... Args>
@@ -96,4 +95,4 @@ bool operator==(const authority& a, const authority& b);
 FC_REFLECT_TYPENAME(deip::protocol::authority::account_authority_map)
 FC_REFLECT_TYPENAME(deip::protocol::authority::key_authority_map)
 FC_REFLECT(deip::protocol::authority, (weight_threshold)(account_auths)(key_auths))
-FC_REFLECT_ENUM(deip::protocol::authority::classification, (owner)(active)(key)(posting))
+FC_REFLECT_ENUM(deip::protocol::authority::classification, (owner)(active)(key))

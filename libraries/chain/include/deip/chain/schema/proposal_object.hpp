@@ -33,8 +33,6 @@ public:
       time_point_sec                  expiration_time;
       optional<time_point_sec>        review_period_time;
       transaction                     proposed_transaction;
-      flat_set<account_name_type>     required_posting_approvals;
-      flat_set<account_name_type>     available_posting_approvals;
       flat_set<account_name_type>     required_active_approvals;
       flat_set<account_name_type>     available_active_approvals;
       flat_set<account_name_type>     required_owner_approvals;
@@ -113,8 +111,6 @@ FC_REFLECT(deip::chain::proposal_object,
   (expiration_time)
   (review_period_time)
   (proposed_transaction)
-  (required_posting_approvals)
-  (available_posting_approvals)
   (required_active_approvals)
   (available_active_approvals)
   (required_owner_approvals)

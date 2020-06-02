@@ -81,74 +81,48 @@ void transaction::set_reference_block(const block_id_type& reference_block)
 
 void transaction::get_required_authorities(flat_set<account_name_type>& active,
                                            flat_set<account_name_type>& owner,
-                                           flat_set<account_name_type>& posting,
                                            vector<authority>& other) const
 {
     for (const auto& op : operations)
-        operation_get_required_authorities(op, active, owner, posting, other);
+        operation_get_required_authorities(op, active, owner, other);
 }
 
 void verify_authority(const vector<operation>& ops,
                       const flat_set<public_key_type>& sigs,
                       const authority_getter& get_active,
                       const authority_getter& get_owner,
-                      const authority_getter& get_posting,
-                      uint32_t max_recursion_depth,
+                      const override_authority_getter& get_active_overrides,
                       const flat_set<account_name_type>& active_approvals,
-                      const flat_set<account_name_type>& owner_approvals,
-                      const flat_set<account_name_type>& posting_approvals)
+                      const flat_set<account_name_type>& owner_approvals)
 {
     try
     {
         flat_set<account_name_type> required_active;
         flat_set<account_name_type> required_owner;
-        flat_set<account_name_type> required_posting;
         vector<authority> other;
+        vector<std::pair<account_name_type, authority>> active_overrides;
 
         for (const auto& op : ops)
-            operation_get_required_authorities(op, required_active, required_owner, required_posting, other);
-
-        /**
-         *  Transactions with operations required posting authority cannot be combined
-         *  with transactions requiring active or owner authority. This is for ease of
-         *  implementation. Future versions of authority verification may be able to
-         *  check for the merged authority of active and posting.
-         */
-        if (required_posting.size())
         {
-            FC_ASSERT(required_active.size() == 0);
-            FC_ASSERT(required_owner.size() == 0);
-            FC_ASSERT(other.size() == 0);
-
-            flat_set<public_key_type> avail;
-            sign_state s(sigs, get_active, get_owner, get_posting, avail);
-            s.max_recursion = max_recursion_depth;
-            s.allow_posting = true;
-
-            for (auto& id : posting_approvals)
-                s.approved_by.insert(id);
-
-            for (auto id : required_posting)
+            operation_get_required_authorities(op, required_active, required_owner, other);
+            
+            for (auto itr = required_active.begin(); itr != required_active.end();)
             {
-                DEIP_ASSERT(
-                  s.check_authority(id) || 
-                  s.check_authority(get_active(id)) || 
-                  s.check_authority(get_owner(id)), 
-                  tx_missing_posting_auth, 
-                  "Missing Posting Authority ${id}", 
-                  ("id", id)
-                  ("posting", get_posting(id))
-                  ("active", get_active(id))
-                  ("owner", get_owner(id))
-                );
+                const auto& auth_opt = get_active_overrides(*itr, (uint16_t)op.which());
+                if (auth_opt.valid())
+                {
+                    active_overrides.push_back(std::make_pair(*itr, *auth_opt));
+                    itr = required_active.erase(itr);
+                }
+                else
+                {
+                    ++itr;
+                }
             }
-            DEIP_ASSERT(!s.remove_unused_signatures(), tx_irrelevant_sig, "Unnecessary signature(s) detected");
-            return;
         }
 
         flat_set<public_key_type> avail;
-        sign_state s(sigs, get_active, get_owner, get_posting, avail);
-        s.max_recursion = max_recursion_depth;
+        sign_state s(sigs, get_active, get_owner, avail);
 
         for (auto& id : active_approvals)
             s.approved_by.insert(id);
@@ -166,9 +140,24 @@ void verify_authority(const vector<operation>& ops,
             );
         }
 
+        for (const auto& pair : active_overrides)
+        {
+            DEIP_ASSERT(
+              s.check_authority(pair.second) ||
+              s.check_authority(get_owner(pair.first)), 
+              tx_missing_other_auth, 
+              "Missing Overridden Authority", 
+              ("id", pair.first)
+              ("auth", pair.second)
+              ("sigs", sigs)
+            );
+        }
+
         for (auto id : required_active)
         {
             DEIP_ASSERT(
+              active_approvals.find(id) != active_approvals.end() ||
+              owner_approvals.find(id) != owner_approvals.end() ||
               s.check_authority(id) || 
               s.check_authority(get_owner(id)), 
               tx_missing_active_auth,
@@ -221,43 +210,15 @@ set<public_key_type> signed_transaction::get_required_signatures(const chain_id_
                                                                  const flat_set<public_key_type>& available_keys,
                                                                  const authority_getter& get_active,
                                                                  const authority_getter& get_owner,
-                                                                 const authority_getter& get_posting,
-                                                                 uint32_t max_recursion_depth) const
+                                                                 const override_authority_getter& get_active_overrides) const
 {
     flat_set<account_name_type> required_active;
     flat_set<account_name_type> required_owner;
-    flat_set<account_name_type> required_posting;
     vector<authority> other;
     
-    get_required_authorities(required_active, required_owner, required_posting, other);
+    get_required_authorities(required_active, required_owner, other);
 
-    /** posting authority cannot be mixed with active authority in same transaction */
-    if (required_posting.size())
-    {
-        FC_ASSERT(required_owner.size() == 0);
-        FC_ASSERT(required_active.size() == 0);
-        FC_ASSERT(other.size() == 0);
-
-        sign_state s(get_signature_keys(chain_id), get_active, get_owner, get_posting, available_keys);
-        s.max_recursion = max_recursion_depth;
-        s.allow_posting = true;
-
-        for (auto& posting : required_posting)
-            s.check_authority(posting);
-
-        s.remove_unused_signatures();
-
-        set<public_key_type> result;
-
-        for (auto& provided_sig : s.provided_signatures)
-            if (available_keys.find(provided_sig.first) != available_keys.end())
-                result.insert(provided_sig.first);
-
-        return result;
-    }
-
-    sign_state s(get_signature_keys(chain_id), get_active, get_owner, get_posting, available_keys);
-    s.max_recursion = max_recursion_depth;
+    sign_state s(get_signature_keys(chain_id), get_active, get_owner, available_keys);
 
     for (const auto& auth : other)
         s.check_authority(auth);
@@ -277,15 +238,14 @@ set<public_key_type> signed_transaction::get_required_signatures(const chain_id_
     return result;
 }
 
-set<public_key_type> signed_transaction::minimize_required_signatures(const chain_id_type& chain_id,
-                                                                      const flat_set<public_key_type>& available_keys,
-                                                                      const authority_getter& get_active,
-                                                                      const authority_getter& get_owner,
-                                                                      const authority_getter& get_posting,
-                                                                      uint32_t max_recursion) const
+set<public_key_type>
+signed_transaction::minimize_required_signatures(const chain_id_type& chain_id,
+                                                 const flat_set<public_key_type>& available_keys,
+                                                 const authority_getter& get_active,
+                                                 const authority_getter& get_owner,
+                                                 const override_authority_getter& get_active_overrides) const
 {
-    set<public_key_type> s
-        = get_required_signatures(chain_id, available_keys, get_active, get_owner, get_posting, max_recursion);
+    set<public_key_type> s = get_required_signatures(chain_id, available_keys, get_active, get_owner, get_active_overrides);
     flat_set<public_key_type> result(s.begin(), s.end());
 
     for (const public_key_type& k : s)
@@ -293,16 +253,13 @@ set<public_key_type> signed_transaction::minimize_required_signatures(const chai
         result.erase(k);
         try
         {
-            deip::protocol::verify_authority(operations, result, get_active, get_owner, get_posting, max_recursion);
+            deip::protocol::verify_authority(operations, result, get_active, get_owner, get_active_overrides);
             continue; // element stays erased if verify_authority is ok
         }
         catch (const tx_missing_owner_auth& e)
         {
         }
         catch (const tx_missing_active_auth& e)
-        {
-        }
-        catch (const tx_missing_posting_auth& e)
         {
         }
         catch (const tx_missing_other_auth& e)
@@ -316,12 +273,17 @@ set<public_key_type> signed_transaction::minimize_required_signatures(const chai
 void signed_transaction::verify_authority(const chain_id_type& chain_id,
                                           const authority_getter& get_active,
                                           const authority_getter& get_owner,
-                                          const authority_getter& get_posting,
-                                          uint32_t max_recursion) const
+                                          const override_authority_getter& get_active_overrides) const
 {
     try
     {
-        deip::protocol::verify_authority(operations, get_signature_keys(chain_id), get_active, get_owner, get_posting, max_recursion);
+        deip::protocol::verify_authority(
+          operations, 
+          get_signature_keys(chain_id), 
+          get_active, 
+          get_owner,
+          get_active_overrides
+        );
     }
     FC_CAPTURE_AND_RETHROW((*this))
 }

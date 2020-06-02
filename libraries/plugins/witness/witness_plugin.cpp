@@ -117,10 +117,6 @@ void check_memo(const string& memo, const account_object& account, const account
     auto active_secret = fc::sha256::hash(active_seed.c_str(), active_seed.size());
     keys.push_back(fc::ecc::private_key::regenerate(active_secret).get_public_key());
 
-    string posting_seed = account.name + "posting" + memo;
-    auto posting_secret = fc::sha256::hash(posting_seed.c_str(), posting_seed.size());
-    keys.push_back(fc::ecc::private_key::regenerate(posting_secret).get_public_key());
-
     // Check keys against public keys in authorites
     for (auto& key_weight_pair : auth.owner.key_auths)
     {
@@ -134,13 +130,6 @@ void check_memo(const string& memo, const account_object& account, const account
         for (auto& key : keys)
             DEIP_ASSERT(key_weight_pair.first != key, chain::plugin_exception,
                           "Detected private active key in memo field. You should change your active keys.");
-    }
-
-    for (auto& key_weight_pair : auth.posting.key_auths)
-    {
-        for (auto& key : keys)
-            DEIP_ASSERT(key_weight_pair.first != key, chain::plugin_exception,
-                          "Detected private posting key in memo field. You should change your posting keys.");
     }
 
     const auto& memo_key = account.memo_key;
@@ -177,7 +166,7 @@ void witness_plugin_impl::pre_transaction(const signed_transaction& trx)
     const auto& _db = _self.database();
     flat_set<account_name_type> required;
     vector<authority> other;
-    trx.get_required_authorities(required, required, required, other);
+    trx.get_required_authorities(required, required, other);
 
     auto trx_size = fc::raw::pack_size(trx);
 

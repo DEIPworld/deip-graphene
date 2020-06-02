@@ -60,22 +60,6 @@ BOOST_AUTO_TEST_CASE(there_is_no_owner_authority)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(there_is_no_posting_authority)
-{
-    try
-    {
-        create_account_operation op;
-        op.creator = "alice";
-        op.new_account_name = "bob";
-
-        flat_set<account_name_type> authorities;
-
-        op.get_required_posting_authorities(authorities);
-
-        BOOST_CHECK(authorities.empty() == true);
-    }
-    FC_LOG_AND_RETHROW()
-}
 
 BOOST_AUTO_TEST_CASE(creator_have_active_authority)
 {
@@ -496,9 +480,9 @@ BOOST_AUTO_TEST_CASE(account_update_validate)
 
        update_account_operation op;
        op.account = "alice";
-       op.posting = authority();
-       op.posting->weight_threshold = 1;
-       op.posting->add_authorities("abcdefghijklmnopq", 1);
+       op.active = authority();
+       op.active->weight_threshold = 1;
+       op.active->add_authorities("abcdefghijklmnopq", 1);
 
        try
        {
@@ -658,9 +642,9 @@ BOOST_AUTO_TEST_CASE(account_update_apply)
        tx.clear();
        op = update_account_operation();
        op.account = "alice";
-       op.posting = authority();
-       op.posting->weight_threshold = 1;
-       op.posting->add_authorities("dave", 1);
+       op.active = authority();
+       op.active->weight_threshold = 1;
+       op.active->add_authorities("dave", 1);
        tx.operations.push_back(op);
        tx.sign(new_private_key, db.get_chain_id());
        DEIP_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
@@ -1573,7 +1557,6 @@ BOOST_AUTO_TEST_CASE(account_recovery)
        acc_create.new_account_name = "bob";
        acc_create.owner = authority(1, generate_private_key("bob_owner").get_public_key(), 1);
        acc_create.active = authority(1, generate_private_key("bob_active").get_public_key(), 1);
-       acc_create.posting = authority(1, generate_private_key("bob_posting").get_public_key(), 1);
        acc_create.memo_key = generate_private_key("bob_memo").get_public_key();
        acc_create.json_metadata = "";
 

@@ -5,7 +5,8 @@
 namespace deip {
 namespace protocol {
 
-typedef std::function<authority(const string&)> authority_getter;
+typedef std::function<authority(const string& account)> authority_getter;
+typedef std::function<fc::optional<authority>(const string& account, const uint16_t& op_tag)> override_authority_getter;
 
 struct sign_state
 {
@@ -26,18 +27,15 @@ struct sign_state
     sign_state(const flat_set<public_key_type>& sigs,
                const authority_getter& active_getter,
                const authority_getter& owner_getter,
-               const authority_getter& posting_getter,
                const flat_set<public_key_type>& keys);
 
     const authority_getter& get_active;
     const authority_getter& get_owner;
-    const authority_getter& get_posting;
     const flat_set<public_key_type>& available_keys;
 
     flat_map<public_key_type, bool> provided_signatures;
     flat_set<account_name_type> approved_by;
     uint32_t max_recursion = DEIP_MAX_SIG_CHECK_DEPTH;
-    bool allow_posting = false;
 };
 }
 } // deip::protocol

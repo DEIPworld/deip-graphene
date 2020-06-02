@@ -78,8 +78,7 @@ struct wallet_data
 enum authority_type
 {
     owner,
-    active,
-    posting
+    active
 };
 
 namespace detail {
@@ -240,7 +239,7 @@ public:
 
     /**
      *  @param account
-     *  @param role - active | owner | posting | memo
+     *  @param role - active | owner | memo
      *  @param password
      */
     pair<public_key_type, string> get_private_key_from_password(const std::string& account,
@@ -407,7 +406,6 @@ public:
      * @param json_meta JSON Metadata associated with the new account
      * @param owner public owner key of the new account
      * @param active public active key of the new account
-     * @param posting public posting key of the new account
      * @param memo public memo key of the new account
      * @param fee The fee to paid for account creation. It is converted to Common tokens for new account
      * @param broadcast true if you wish to broadcast the transaction
@@ -417,7 +415,6 @@ public:
                                                           const std::string& json_meta,
                                                           const public_key_type& owner,
                                                           const public_key_type& active,
-                                                          const public_key_type& posting,
                                                           const public_key_type& memo,
                                                           const share_type& fee,
                                                           bool broadcast) const;
@@ -429,7 +426,6 @@ public:
      * @param json_meta New JSON Metadata to be associated with the account
      * @param owner New public owner key for the account
      * @param active New public active key for the account
-     * @param posting New public posting key for the account
      * @param memo New public memo key for the account
      * @param broadcast true if you wish to broadcast the transaction
      */
@@ -437,7 +433,6 @@ public:
                                                 const std::string& json_meta,
                                                 const public_key_type& owner,
                                                 const public_key_type& active,
-                                                const public_key_type& posting,
                                                 const public_key_type& memo,
                                                 bool broadcast) const;
 
@@ -445,10 +440,10 @@ public:
      * This method updates the key of an authority for an exisiting account.
      * Warning: You can create impossible authorities using this method. The method
      * will fail if you create an impossible owner authority, but will allow impossible
-     * active and posting authorities.
+     * active authorities.
      *
      * @param account_name The name of the account whose authority you wish to update
-     * @param type The authority type. e.g. owner, active, or posting
+     * @param type The authority type. e.g. owner or active
      * @param key The public key to add to the authority
      * @param weight The weight the key should have in the authority. A weight of 0 indicates the removal of the key.
      * @param broadcast true if you wish to broadcast the transaction.
@@ -463,10 +458,10 @@ public:
      * This method updates the account of an authority for an exisiting account.
      * Warning: You can create impossible authorities using this method. The method
      * will fail if you create an impossible owner authority, but will allow impossible
-     * active and posting authorities.
+     * active authorities.
      *
      * @param account_name The name of the account whose authority you wish to update
-     * @param type The authority type. e.g. owner, active, or posting
+     * @param type The authority type. e.g. owner or active
      * @param auth_account The account to add the the authority
      * @param weight The weight the account should have in the authority. A weight of 0 indicates the removal of the
      * account.
@@ -483,10 +478,10 @@ public:
      * Warning: You can create impossible authorities using this method as well
      * as implicitly met authorities. The method will fail if you create an implicitly
      * true authority and if you create an impossible owner authoroty, but will allow
-     * impossible active and posting authorities.
+     * impossible active authorities.
      *
      * @param account_name The name of the account whose authority you wish to update
-     * @param type The authority type. e.g. owner, active, or posting
+     * @param type The authority type. e.g. owner or active
      * @param threshold The weight threshold required for the authority to be met
      * @param broadcast true if you wish to broadcast the transaction
      */
@@ -700,7 +695,7 @@ public:
 
     /**
      * Challenge a user's authority. The challenger pays a fee to the challenged which is depositted as
-     * Deip Power. Until the challenged proves their active key, all posting rights are revoked.
+     * Deip Power. Until the challenged proves their active key, all rights are revoked.
      *
      * @param challenger The account issuing the challenge
      * @param challenged The account being challenged
@@ -1094,7 +1089,7 @@ FC_REFLECT( deip::wallet::brain_key_info, (brain_priv_key)(wif_priv_key) (pub_ke
 
 FC_REFLECT( deip::wallet::plain_keys, (checksum)(keys) )
 
-FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active)(posting) )
+FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active) )
 
               FC_API( deip::wallet::wallet_api,
         /// wallet api

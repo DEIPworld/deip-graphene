@@ -32,16 +32,13 @@ public:
                                            const account_name_type& proposer,
                                            const fc::optional<uint32_t>& review_period_seconds,
                                            const flat_set<account_name_type>& required_owner,
-                                           const flat_set<account_name_type>& required_active,
-                                           const flat_set<account_name_type>& required_posting);
+                                           const flat_set<account_name_type>& required_active);
 
     const proposal_object& update_proposal( const proposal_object& proposal,
                                             const flat_set<account_name_type>& owner_approvals_to_add,
                                             const flat_set<account_name_type>& active_approvals_to_add,
-                                            const flat_set<account_name_type>& posting_approvals_to_add,
                                             const flat_set<account_name_type>& owner_approvals_to_remove,
                                             const flat_set<account_name_type>& active_approvals_to_remove,
-                                            const flat_set<account_name_type>& posting_approvals_to_remove,
                                             const flat_set<public_key_type>& key_approvals_to_add,
                                             const flat_set<public_key_type>& key_approvals_to_remove);
 

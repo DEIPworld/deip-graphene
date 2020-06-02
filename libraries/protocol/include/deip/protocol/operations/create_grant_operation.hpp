@@ -194,7 +194,7 @@ struct get_grant_distribution_models_type
         else                                                                                                           \
         {                                                                                                              \
             auto itr = to_tag.find(ar[0].as_string());                                                                 \
-            FC_ASSERT(itr != to_tag.end(), "Invalid grant contract type: ${n}", ("n", ar[0]));                         \
+            FC_ASSERT(itr != to_tag.end(), "Invalid account trait type: ${n}", ("n", ar[0]));                         \
             vo.set_which(to_tag[ar[0].as_string()]);                                                                   \
         }                                                                                                              \
         vo.visit(fc::to_static_variant(ar[1]));                                                                        \

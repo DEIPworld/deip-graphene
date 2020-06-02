@@ -251,8 +251,6 @@ public:
 
     // Authority / validation
     std::string get_transaction_hex(const signed_transaction& trx) const;
-    set<public_key_type> get_required_signatures(const signed_transaction& trx, const flat_set<public_key_type>& available_keys) const;
-    set<public_key_type> get_potential_signatures(const signed_transaction& trx) const;
     bool verify_authority(const signed_transaction& trx) const;
     bool verify_account_authority(const string& name_or_id, const flat_set<public_key_type>& signers) const;
 
@@ -835,67 +833,6 @@ std::string database_api_impl::get_transaction_hex(const signed_transaction& trx
     return fc::to_hex(fc::raw::pack(trx));
 }
 
-set<public_key_type> database_api::get_required_signatures(const signed_transaction& trx,
-                                                           const flat_set<public_key_type>& available_keys) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_required_signatures(trx, available_keys); });
-}
-
-set<public_key_type> database_api_impl::get_required_signatures(const signed_transaction& trx,
-                                                                const flat_set<public_key_type>& available_keys) const
-{
-    //   wdump((trx)(available_keys));
-    auto result = trx.get_required_signatures(
-        get_chain_id(), available_keys,
-        [&](string account_name) {
-            return authority(_db.get<account_authority_object, by_account>(account_name).active);
-        },
-        [&](string account_name) {
-            return authority(_db.get<account_authority_object, by_account>(account_name).owner);
-        },
-        [&](string account_name) {
-            return authority(_db.get<account_authority_object, by_account>(account_name).posting);
-        },
-        DEIP_MAX_SIG_CHECK_DEPTH);
-    //   wdump((result));
-    return result;
-}
-
-set<public_key_type> database_api::get_potential_signatures(const signed_transaction& trx) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_potential_signatures(trx); });
-}
-
-set<public_key_type> database_api_impl::get_potential_signatures(const signed_transaction& trx) const
-{
-    //   wdump((trx));
-    set<public_key_type> result;
-    trx.get_required_signatures(
-        get_chain_id(), flat_set<public_key_type>(),
-        [&](account_name_type account_name) {
-            const auto& auth = _db.get<account_authority_object, by_account>(account_name).active;
-            for (const auto& k : auth.get_keys())
-                result.insert(k);
-            return authority(auth);
-        },
-        [&](account_name_type account_name) {
-            const auto& auth = _db.get<account_authority_object, by_account>(account_name).owner;
-            for (const auto& k : auth.get_keys())
-                result.insert(k);
-            return authority(auth);
-        },
-        [&](account_name_type account_name) {
-            const auto& auth = _db.get<account_authority_object, by_account>(account_name).posting;
-            for (const auto& k : auth.get_keys())
-                result.insert(k);
-            return authority(auth);
-        },
-        DEIP_MAX_SIG_CHECK_DEPTH);
-
-    //   wdump((result));
-    return result;
-}
-
 bool database_api::verify_authority(const signed_transaction& trx) const
 {
     return my->_db.with_read_lock([&]() { return my->verify_authority(trx); });
@@ -904,16 +841,21 @@ bool database_api::verify_authority(const signed_transaction& trx) const
 bool database_api_impl::verify_authority(const signed_transaction& trx) const
 {
     trx.verify_authority(get_chain_id(),
-        [&](string account_name) {
+        [&](const string& account_name) {
             return authority(_db.get<account_authority_object, by_account>(account_name).active);
         },
-        [&](string account_name) {
+        [&](const string& account_name) {
             return authority(_db.get<account_authority_object, by_account>(account_name).owner);
         },
-        [&](string account_name) {
-            return authority(_db.get<account_authority_object, by_account>(account_name).posting);
-        },
-        DEIP_MAX_SIG_CHECK_DEPTH);
+        [&](const string& account_name, const uint16_t& op_tag) {
+            fc::optional<authority> result;
+            const auto& auth = _db.get<account_authority_object, by_account>(account_name);
+            if (auth.active_overrides.find(op_tag) != auth.active_overrides.end())
+            {
+                result = auth.active_overrides.at(op_tag);
+            }
+            return result;
+        });
     return true;
 }
 
@@ -928,7 +870,6 @@ bool database_api_impl::verify_account_authority(const string& name, const flat_
     auto account = _db.find<account_object, by_name>(name);
     FC_ASSERT(account, "no such account");
 
-    /// reuse trx.verify_authority by creating a dummy transfer
     signed_transaction trx;
     transfer_operation op;
     op.from = account->name;
