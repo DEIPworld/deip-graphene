@@ -2285,7 +2285,7 @@ annotated_signed_transaction wallet_api::vote_for_review(const std::string& vote
 }
 
 
-annotated_signed_transaction wallet_api::make_review(const std::string& author,
+annotated_signed_transaction wallet_api::create_review(const std::string& author,
                                                      const int64_t research_content_id,
                                                      const bool is_positive,
                                                      const std::string& content,
@@ -2293,7 +2293,7 @@ annotated_signed_transaction wallet_api::make_review(const std::string& author,
 {
     FC_ASSERT(!is_locked());
 
-    make_review_operation op;
+    create_review_operation op;
 
     op.author = author;
     op.research_content_id = research_content_id;
@@ -2466,15 +2466,15 @@ annotated_signed_transaction wallet_api::create_grant_application(const std::str
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::make_review_for_application(const std::string& author,
-                                                                     const int64_t& grant_application_id,
-                                                                     const bool& is_positive,
-                                                                     const std::string& content,
-                                                                     const bool broadcast)
+annotated_signed_transaction wallet_api::create_review_for_application(const std::string& author,
+                                                                       const int64_t& grant_application_id,
+                                                                       const bool& is_positive,
+                                                                       const std::string& content,
+                                                                       const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
-    make_review_for_application_operation op;
+    create_review_for_application_operation op;
 
     op.author = author;
     op.grant_application_id = grant_application_id;

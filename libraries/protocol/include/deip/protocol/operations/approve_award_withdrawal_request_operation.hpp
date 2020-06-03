@@ -10,8 +10,9 @@ struct approve_award_withdrawal_request_operation : public base_operation
     external_id_type payment_number;
     external_id_type award_number;
     fc::optional<external_id_type> subaward_number;
-
     account_name_type approver;
+
+    extensions_type extensions;
 
     void validate() const;
 
@@ -30,5 +31,6 @@ FC_REFLECT( deip::protocol::approve_award_withdrawal_request_operation,
   (payment_number)
   (award_number)
   (subaward_number)
-  (approver) 
+  (approver)
+  (extensions)
 )

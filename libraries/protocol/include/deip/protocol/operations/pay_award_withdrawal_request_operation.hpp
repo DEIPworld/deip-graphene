@@ -10,8 +10,9 @@ struct pay_award_withdrawal_request_operation : public base_operation
     external_id_type payment_number;
     external_id_type award_number;
     fc::optional<external_id_type> subaward_number;
-    
     account_name_type payer;
+
+    extensions_type extensions;
 
     void validate() const;
 
@@ -19,7 +20,6 @@ struct pay_award_withdrawal_request_operation : public base_operation
     {
         a.insert(payer);
     }
-
 };
 
 
@@ -31,4 +31,5 @@ FC_REFLECT( deip::protocol::pay_award_withdrawal_request_operation,
   (award_number) 
   (subaward_number)
   (payer)
+  (extensions)
 )

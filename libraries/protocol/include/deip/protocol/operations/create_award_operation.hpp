@@ -43,15 +43,14 @@ struct create_award_operation : public base_operation
 {
     external_id_type funding_opportunity_number;
     external_id_type award_number;
-
     asset award;
     account_name_type awardee;
     int64_t research_id;
     int64_t university_id;
     uint32_t university_overhead;
     vector<subawardee_type> subawardees;
-    
     account_name_type creator;
+    
     extensions_type extensions;
 
     void validate() const;

@@ -17,6 +17,7 @@ struct join_research_group_membership_operation : public base_operation
       If the list has entries, they will be validated for research group ownership.
     */
     optional<flat_set<external_id_type>> researches;
+    
     extensions_type extensions;
 
     void validate() const;

@@ -84,11 +84,11 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_FIXTURE_TEST_SUITE(operation_tests, clean_database_fixture)
 
-BOOST_AUTO_TEST_CASE(make_review_apply)
+BOOST_AUTO_TEST_CASE(create_review_apply)
 {
     try
     {
-        BOOST_TEST_MESSAGE("Testing: make_review_research_apply");
+        BOOST_TEST_MESSAGE("Testing: create_review_research_apply");
 
         ACTORS_WITH_EXPERT_TOKENS((alice)(bob)(john)(rachel)(dorothy));
 
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
 
         private_key_type priv_key = generate_private_key("john");
 
-        make_review_operation op;
+        create_review_operation op;
 
         std::vector<int64_t> references {1};
         op.author = "john";
@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
 
         BOOST_TEST_MESSAGE("--- Test review creation with scores model");
 
-        make_review_operation op2;
+        create_review_operation op2;
 
         op2.author = "rachel";
         op2.research_content_id = 1;
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         tx2.validate();
         db.push_transaction(tx2, 0);
 
-        make_review_operation op3;
+        create_review_operation op3;
 
         op3.author = "dorothy";
         op3.research_content_id = 1;
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         tx3.validate();
         BOOST_CHECK_THROW(db.push_transaction(tx3, 0), fc::assert_exception);
 
-        make_review_operation op4;
+        create_review_operation op4;
 
         op4.author = "dorothy";
         op4.research_content_id = 1;
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE(make_review_apply)
         tx4.validate();
         BOOST_CHECK_THROW(db.push_transaction(tx4, 0), fc::assert_exception);
 
-        make_review_operation op5;
+        create_review_operation op5;
 
         op5.author = "dorothy";
         op5.research_content_id = 1;
@@ -2305,7 +2305,7 @@ BOOST_AUTO_TEST_CASE(create_discipline_supply_execute_test)
 BOOST_AUTO_TEST_CASE(vote_for_negative_review)
 {
     try {
-        BOOST_TEST_MESSAGE("Testing: make_review_research_apply");
+        BOOST_TEST_MESSAGE("Testing: create_review_research_apply");
 
         ACTORS_WITH_EXPERT_TOKENS((alice));
 
@@ -2332,7 +2332,7 @@ BOOST_AUTO_TEST_CASE(vote_for_negative_review)
 
         private_key_type priv_key = generate_private_key("alice");
 
-        make_review_operation op;
+        create_review_operation op;
 
         std::vector<int64_t> references{1};
         op.author = "alice";
@@ -2540,7 +2540,7 @@ BOOST_AUTO_TEST_CASE(calculate_eci_test_case)
         private_key_type rachel_priv_key = generate_private_key("rachel");
         private_key_type john_priv_key = generate_private_key("john");
 
-        make_review_operation op;
+        create_review_operation op;
 
         std::vector<int64_t> references {1};
         op.author = "bob";
@@ -2594,7 +2594,7 @@ BOOST_AUTO_TEST_CASE(calculate_eci_test_case)
 
         auto eci2 = db.get<research_object>(1).eci_per_discipline.at(1);
 
-        make_review_operation op4;
+        create_review_operation op4;
 
         op4.author = "bob";
         op4.research_content_id = 2;

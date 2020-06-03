@@ -43,7 +43,7 @@ void validate_assessment_model(const assessment_models& assessment_model)
     FC_ASSERT(is_validated, "Assessment model is not valid.");
 }
 
-void make_review_operation::validate() const
+void create_review_operation::validate() const
 {
     validate_account_name(author);
     FC_ASSERT(research_content_id >= 0, "Id cant be less than a 0");

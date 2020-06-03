@@ -12,6 +12,8 @@ struct create_request_by_nda_contract_operation : public base_operation
 
     int64_t contract_id;
 
+    extensions_type extensions;
+
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -29,4 +31,5 @@ FC_REFLECT( deip::protocol::create_request_by_nda_contract_operation,
     (encrypted_payload_hash)
     (encrypted_payload_iv)
     (contract_id)
+    (extensions)
 )

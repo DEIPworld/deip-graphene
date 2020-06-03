@@ -11,61 +11,6 @@ bool inline is_asset_type(asset asset, asset_symbol_type symbol)
     return asset.symbol == symbol;
 }
 
-void placeholder1_operation::validate() const
-{
-    FC_ASSERT(false, "The operation is reserved");
-}
-
-void placeholder2_operation::validate() const
-{
-    FC_ASSERT(false, "The operation is reserved");
-}
-
-void placeholder3_operation::validate() const
-{
-    FC_ASSERT(false, "The operation is reserved");
-}
-
-void placeholder4_operation::validate() const
-{
-    FC_ASSERT(false, "The operation is reserved");
-}
-
-void placeholder5_operation::validate() const
-{
-    FC_ASSERT(false, "The operation is reserved");
-}
-
-void placeholder6_operation::validate() const
-{
-    FC_ASSERT(false, "The operation is reserved");
-}
-
-void placeholder7_operation::validate() const
-{
-    FC_ASSERT(false, "The operation is reserved");
-};
-
-void placeholder8_operation::validate() const
-{
-    FC_ASSERT(false, "The operation is reserved");
-};
-
-void placeholder9_operation::validate() const
-{
-    FC_ASSERT(false, "The operation is reserved");
-};
-
-void placeholder10_operation::validate() const
-{
-    FC_ASSERT(false, "The operation is reserved");
-};
-
-void placeholder11_operation::validate() const
-{
-    FC_ASSERT(false, "The operation is reserved");
-};
-
 void vote_for_review_operation::validate() const
 {
     validate_account_name(voter);
@@ -207,7 +152,7 @@ void create_grant_application_operation::validate() const
     FC_ASSERT(fc::is_utf8(application_hash), "Application hash is not valid UTF8 string");
 }
 
-void make_review_for_application_operation::validate() const
+void create_review_for_application_operation::validate() const
 {
     validate_account_name(author);
     FC_ASSERT(grant_application_id >= 0, "Id cant be less than a 0");

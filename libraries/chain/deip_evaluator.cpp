@@ -732,7 +732,7 @@ void delete_proposal_evaluator::do_apply(const delete_proposal_operation& op)
     proposals_service.remove_proposal(proposal);
 }
 
-void make_review_evaluator::do_apply(const make_review_operation& op)
+void create_review_evaluator::do_apply(const create_review_operation& op)
 {
     dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();
@@ -1261,7 +1261,7 @@ void create_grant_application_evaluator::do_apply(const create_grant_application
     grant_application_service.create_grant_application(op.funding_opportunity_number, op.research_id, op.application_hash, op.creator);
 }
 
-void make_review_for_application_evaluator::do_apply(const make_review_for_application_operation& op)
+void create_review_for_application_evaluator::do_apply(const create_review_for_application_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_expert_token& expertise_token_service = _db.obtain_service<dbs_expert_token>();

@@ -7,7 +7,7 @@
 #include <deip/protocol/percent.hpp>
 #include <deip/protocol/operations/create_account_operation.hpp>
 #include <deip/protocol/operations/update_account_operation.hpp>
-#include <deip/protocol/operations/make_review_operation.hpp>
+#include <deip/protocol/operations/create_review_operation.hpp>
 #include <deip/protocol/operations/create_grant_operation.hpp>
 #include <deip/protocol/operations/create_award_operation.hpp>
 #include <deip/protocol/operations/approve_award_operation.hpp>
@@ -138,6 +138,8 @@ struct vote_for_review_operation : public base_operation
     int64_t discipline_id;
     int16_t weight = 0;
 
+    extensions_type extensions;
+
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
@@ -157,10 +159,11 @@ struct transfer_operation : public base_operation
     account_name_type to;
     /// The amount of asset to transfer from @ref from to @ref to
     asset amount;
-
     /// The memo is plain-text, any encryption on the memo is up to
     /// a higher level protocol.
     string memo;
+
+    extensions_type extensions;
 
     void validate() const;
 
@@ -181,6 +184,8 @@ struct transfer_to_common_tokens_operation : public base_operation
     account_name_type from;
     account_name_type to; ///< if null, then same as from
     asset amount; ///< must be DEIP
+
+    extensions_type extensions;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -204,6 +209,8 @@ struct withdraw_common_tokens_operation : public base_operation
 {
     account_name_type account;
     share_type total_common_tokens_amount;
+    
+    extensions_type extensions;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -225,6 +232,8 @@ struct set_withdraw_common_tokens_route_operation : public base_operation
     account_name_type to_account;
     uint16_t percent = 0;
     bool auto_common_token = false;
+
+    extensions_type extensions;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -282,7 +291,9 @@ struct witness_update_operation : public base_operation
     public_key_type block_signing_key;
     chain_properties props;
     asset fee; ///< the fee paid to register a new witness, should be 10x current block production pay
-
+    
+    extensions_type extensions;
+    
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
@@ -301,6 +312,8 @@ struct account_witness_vote_operation : public base_operation
     account_name_type witness;
     bool approve = true;
 
+    extensions_type extensions;
+
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
@@ -312,6 +325,8 @@ struct account_witness_proxy_operation : public base_operation
 {
     account_name_type account;
     account_name_type proxy;
+
+    extensions_type extensions;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -349,12 +364,8 @@ struct account_witness_proxy_operation : public base_operation
  */
 struct request_account_recovery_operation : public base_operation
 {
-    account_name_type
-        recovery_account; ///< The recovery account is listed as the recovery account on the account to recover.
-
-    account_name_type
-        account_to_recover; ///< The account to recover. This is likely due to a compromised owner authority.
-
+    account_name_type recovery_account; ///< The recovery account is listed as the recovery account on the account to recover.
+    account_name_type account_to_recover; ///< The account to recover. This is likely due to a compromised owner authority.
     authority new_owner_authority; ///< The new owner authority the account to recover wishes to have. This is secret
     ///< known by the account to recover and will be confirmed in a recover_account_operation
 
@@ -447,6 +458,7 @@ struct change_recovery_account_operation : public base_operation
 {
     account_name_type account_to_recover; ///< The account that would be recovered in case of compromise
     account_name_type new_recovery_account; ///< The account that creates the recover request
+
     extensions_type extensions; ///< Extensions. Not currently used.
 
     void get_required_owner_authorities(flat_set<account_name_type>& a) const
@@ -458,66 +470,13 @@ struct change_recovery_account_operation : public base_operation
 
 // DEIP native operations
 
-struct placeholder1_operation : public base_operation
-{
-    void validate() const;
-};
-
-struct placeholder2_operation : public base_operation
-{
-    void validate() const;
-};
-
-struct placeholder3_operation : public base_operation
-{
-    void validate() const;
-};
-
-struct placeholder4_operation : public base_operation
-{
-    void validate() const;
-};
-
-struct placeholder5_operation : public base_operation
-{
-    void validate() const;
-};
-
-struct placeholder6_operation : public base_operation
-{
-    void validate() const;
-};
-
-struct placeholder7_operation : public base_operation
-{
-    void validate() const;
-};
-
-struct placeholder8_operation : public base_operation
-{
-    void validate() const;
-};
-
-struct placeholder9_operation : public base_operation
-{
-    void validate() const;
-};
-
-struct placeholder10_operation : public base_operation
-{
-    void validate() const;
-};
-
-struct placeholder11_operation : public base_operation
-{
-    void validate() const;
-};
-
 struct contribute_to_token_sale_operation : public base_operation
 {
     external_id_type research_external_id;
     account_name_type contributor;
     asset amount;
+
+    extensions_type extensions; ///< Extensions. Not currently used.
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -535,6 +494,8 @@ struct create_vesting_balance_operation : public base_operation
     uint32_t vesting_cliff_seconds;
     uint32_t period_duration_seconds;
 
+    extensions_type extensions;
+
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -549,6 +510,8 @@ struct withdraw_vesting_balance_operation : public base_operation
     account_name_type owner;
     asset amount;
 
+    extensions_type extensions;
+
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -561,8 +524,9 @@ struct create_expertise_allocation_proposal_operation : public base_operation
 {
     account_name_type claimer;
     int64_t discipline_id;
-
     string description;
+
+    extensions_type extensions;
 
     void validate() const;
 
@@ -574,10 +538,11 @@ struct create_expertise_allocation_proposal_operation : public base_operation
 
 struct vote_for_expertise_allocation_proposal_operation : public base_operation
 {
-
     int64_t proposal_id;
     account_name_type voter;
     share_type voting_power;
+
+    extensions_type extensions;
 
     void validate() const;
 
@@ -592,8 +557,9 @@ struct create_grant_application_operation : public base_operation
     external_id_type funding_opportunity_number;
     int64_t research_id;
     account_name_type creator;
-
     string application_hash;
+
+    extensions_type extensions;
 
     void validate() const;
 
@@ -603,13 +569,15 @@ struct create_grant_application_operation : public base_operation
     }
 };
 
-struct make_review_for_application_operation : public base_operation
+struct create_review_for_application_operation : public base_operation
 {
     account_name_type author;
     int64_t grant_application_id;
     bool is_positive;
     std::string content;
     uint16_t weight;
+
+    extensions_type extensions;
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -623,6 +591,8 @@ struct approve_grant_application_operation : public base_operation
     int64_t grant_application_id;
     account_name_type approver;
 
+    extensions_type extensions;
+
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -635,6 +605,8 @@ struct reject_grant_application_operation : public base_operation
 {
     int64_t grant_application_id;
     account_name_type rejector;
+
+    extensions_type extensions;
 
     void validate() const;
 
@@ -652,6 +624,8 @@ struct create_asset_operation : public base_operation
     string name;
     string description;
 
+    extensions_type extensions;
+
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -665,6 +639,8 @@ struct issue_asset_operation : public base_operation
     account_name_type issuer;
     asset amount;
 
+    extensions_type extensions;
+
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -677,6 +653,8 @@ struct reserve_asset_operation : public base_operation
 {
     account_name_type owner;
     asset amount;
+
+    extensions_type extensions;
 
     void validate() const;
 
@@ -693,13 +671,13 @@ struct reserve_asset_operation : public base_operation
 
 FC_REFLECT( deip::protocol::chain_properties, (account_creation_fee)(maximum_block_size) )
 
-FC_REFLECT( deip::protocol::transfer_operation, (from)(to)(amount)(memo) )
-FC_REFLECT( deip::protocol::transfer_to_common_tokens_operation, (from)(to)(amount) )
-FC_REFLECT( deip::protocol::withdraw_common_tokens_operation, (account)(total_common_tokens_amount) )
-FC_REFLECT( deip::protocol::set_withdraw_common_tokens_route_operation, (from_account)(to_account)(percent)(auto_common_token) )
-FC_REFLECT( deip::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
-FC_REFLECT( deip::protocol::account_witness_vote_operation, (account)(witness)(approve) )
-FC_REFLECT( deip::protocol::account_witness_proxy_operation, (account)(proxy) )
+FC_REFLECT( deip::protocol::transfer_operation, (from)(to)(amount)(memo)(extensions) )
+FC_REFLECT( deip::protocol::transfer_to_common_tokens_operation, (from)(to)(amount)(extensions) )
+FC_REFLECT( deip::protocol::withdraw_common_tokens_operation, (account)(total_common_tokens_amount)(extensions) )
+FC_REFLECT( deip::protocol::set_withdraw_common_tokens_route_operation, (from_account)(to_account)(percent)(auto_common_token)(extensions) )
+FC_REFLECT( deip::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee)(extensions) )
+FC_REFLECT( deip::protocol::account_witness_vote_operation, (account)(witness)(approve)(extensions) )
+FC_REFLECT( deip::protocol::account_witness_proxy_operation, (account)(proxy)(extensions) )
 
 
 FC_REFLECT( deip::protocol::beneficiary_route_type, (account)(weight) )
@@ -709,30 +687,18 @@ FC_REFLECT( deip::protocol::recover_account_operation, (account_to_recover)(new_
 FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) )
 
 // DEIP native operations
-FC_REFLECT( deip::protocol::placeholder1_operation, )
-FC_REFLECT( deip::protocol::placeholder2_operation, )
-FC_REFLECT( deip::protocol::placeholder3_operation, )
-FC_REFLECT( deip::protocol::placeholder4_operation, )
-FC_REFLECT( deip::protocol::placeholder5_operation, )
-FC_REFLECT( deip::protocol::placeholder6_operation, )
-FC_REFLECT( deip::protocol::placeholder7_operation, )
-FC_REFLECT( deip::protocol::placeholder8_operation, )
-FC_REFLECT( deip::protocol::placeholder9_operation, )
-FC_REFLECT( deip::protocol::placeholder10_operation, )
-FC_REFLECT( deip::protocol::placeholder11_operation, )
+FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_external_id)(contributor)(amount)(extensions))
+FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight)(extensions))
+FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds)(extensions))
+FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance_id)(owner)(amount)(extensions))
+FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (claimer)(discipline_id)(description)(extensions))
+FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (proposal_id)(voter)(voting_power)(extensions))
+FC_REFLECT( deip::protocol::create_grant_application_operation, (funding_opportunity_number)(research_id)(creator)(application_hash)(extensions))
+FC_REFLECT( deip::protocol::create_review_for_application_operation, (author)(grant_application_id)(content)(is_positive)(weight)(extensions))
+FC_REFLECT( deip::protocol::approve_grant_application_operation, (grant_application_id)(approver)(extensions))
+FC_REFLECT( deip::protocol::reject_grant_application_operation, (grant_application_id)(rejector)(extensions))
+FC_REFLECT( deip::protocol::create_asset_operation, (issuer)(symbol)(precision)(name)(description)(extensions))
+FC_REFLECT( deip::protocol::issue_asset_operation, (issuer)(amount)(extensions))
+FC_REFLECT( deip::protocol::reserve_asset_operation, (owner)(amount)(extensions))
 
-FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_external_id)(contributor)(amount))
-FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight))
-FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds))
-FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance_id)(owner)(amount))
-FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (claimer)(discipline_id)(description))
-FC_REFLECT( deip::protocol::vote_for_expertise_allocation_proposal_operation, (proposal_id)(voter)(voting_power))
-FC_REFLECT( deip::protocol::create_grant_application_operation, (funding_opportunity_number)(research_id)(creator)(application_hash))
-FC_REFLECT( deip::protocol::make_review_for_application_operation, (author)(grant_application_id)(content)(is_positive)(weight))
-FC_REFLECT( deip::protocol::approve_grant_application_operation, (grant_application_id)(approver))
-FC_REFLECT( deip::protocol::reject_grant_application_operation, (grant_application_id)(rejector))
-FC_REFLECT( deip::protocol::create_asset_operation, (issuer)(symbol)(precision)(name)(description))
-FC_REFLECT( deip::protocol::issue_asset_operation, (issuer)(amount))
-FC_REFLECT( deip::protocol::reserve_asset_operation, (owner)(amount))
-
-    // clang-format on
+// clang-format on

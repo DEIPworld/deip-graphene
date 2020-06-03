@@ -133,7 +133,7 @@ struct get_impacted_account_visitor
         _impacted.insert(op.creator);
     }
 
-    void operator()(const make_review_operation& op)
+    void operator()(const create_review_operation& op)
     {
         _impacted.insert(op.author);
     }

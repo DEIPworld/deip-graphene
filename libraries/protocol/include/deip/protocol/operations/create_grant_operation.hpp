@@ -102,6 +102,7 @@ struct create_grant_operation : public base_operation
     asset amount;
     std::set<int64_t> target_disciplines;
     grant_distribution_models distribution_model;
+    
     extensions_type extensions;
 
     void validate() const;

@@ -16,6 +16,8 @@ struct create_award_withdrawal_request_operation : public base_operation
     string description;
     string attachment;
 
+    extensions_type extensions;
+
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -35,4 +37,5 @@ FC_REFLECT( deip::protocol::create_award_withdrawal_request_operation,
   (amount)
   (description)
   (attachment)
+  (extensions)
 )

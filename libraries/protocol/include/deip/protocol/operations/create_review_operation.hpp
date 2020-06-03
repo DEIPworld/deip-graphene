@@ -63,7 +63,7 @@ typedef fc::static_variant<
         >
         assessment_models;
 
-struct make_review_operation : public base_operation
+struct create_review_operation : public base_operation
 {
     account_name_type author;
     int64_t research_content_id;
@@ -169,7 +169,7 @@ struct get_assessment_model_type
     } /* fc */
 
 
-FC_REFLECT( deip::protocol::make_review_operation, (author)(research_content_id)(content)(weight)(assessment_model)(extensions) )
+FC_REFLECT( deip::protocol::create_review_operation, (author)(research_content_id)(content)(weight)(assessment_model)(extensions) )
 
 FC_REFLECT( deip::protocol::base_assessment_model, (version) )
 FC_REFLECT_DERIVED( deip::protocol::binary_scoring_assessment_model_v1_0_0_type, (deip::protocol::base_assessment_model), (is_positive) )

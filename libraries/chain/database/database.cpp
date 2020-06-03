@@ -1464,7 +1464,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<update_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<delete_proposal_evaluator>();
-    _my->_evaluator_registry.register_evaluator<make_review_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<contribute_to_token_sale_evaluator>();
     _my->_evaluator_registry.register_evaluator<vote_for_review_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_vesting_balance_evaluator>();
@@ -1474,7 +1474,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<vote_for_expertise_allocation_proposal_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_grant_application_evaluator>();
-    _my->_evaluator_registry.register_evaluator<make_review_for_application_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_review_for_application_evaluator>();
     _my->_evaluator_registry.register_evaluator<approve_grant_application_evaluator>();
     _my->_evaluator_registry.register_evaluator<reject_grant_application_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_asset_evaluator>();

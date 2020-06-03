@@ -26,6 +26,7 @@ struct create_research_operation : public entity_operation
       If the list has entries, they will be validated for membership token existence.
      */
     optional<flat_set<account_name_type>> members;
+    
     extensions_type extensions;
 
     string entity_id() const { return "external_id"; }

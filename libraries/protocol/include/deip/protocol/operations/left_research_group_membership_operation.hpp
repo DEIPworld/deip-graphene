@@ -9,6 +9,7 @@ struct left_research_group_membership_operation : public base_operation
     account_name_type member;
     account_name_type research_group;
     bool is_exclusion;
+    
     extensions_type extensions;
 
     void validate() const;

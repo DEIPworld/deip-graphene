@@ -959,11 +959,11 @@ public:
      * @param content Review text
      * @param broadcast
      */
-    annotated_signed_transaction make_review(const std::string& author,
-                                             const int64_t research_content_id,
-                                             const bool is_positive,
-                                             const std::string& content,
-                                             const bool broadcast);
+    annotated_signed_transaction create_review(const std::string& author,
+                                               const int64_t research_content_id,
+                                               const bool is_positive,
+                                               const std::string& content,
+                                               const bool broadcast);
 
     /**
      * Participate in token sale and make your contribution
@@ -1033,11 +1033,11 @@ public:
                                                           const std::string& application_hash,
                                                           const bool broadcast);
 
-    annotated_signed_transaction make_review_for_application(const std::string& author,
-                                                             const int64_t& grant_application_id,
-                                                             const bool& is_positive,
-                                                             const std::string& content,
-                                                             const bool broadcast);
+    annotated_signed_transaction create_review_for_application(const std::string& author,
+                                                               const int64_t& grant_application_id,
+                                                               const bool& is_positive,
+                                                               const std::string& content,
+                                                               const bool broadcast);
 
     annotated_signed_transaction approve_grant_application(const int64_t& grant_application_id,
                                                            const std::string& approver,
@@ -1172,7 +1172,7 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active) )
         (decrypt_memo)
         (create_discipline_supply)
         (vote_for_review)
-        (make_review)
+        (create_review)
         (contribute_to_token_sale)
         (create_vesting_balance)
         (withdraw_vesting_balance)
@@ -1180,7 +1180,7 @@ FC_REFLECT_ENUM( deip::wallet::authority_type, (owner)(active) )
         (vote_for_expertise_allocation_proposal)
         (create_grant)
         (create_grant_application)
-        (make_review_for_application)
+        (create_review_for_application)
         (approve_grant_application)
         (reject_grant_application)
         (create_asset)

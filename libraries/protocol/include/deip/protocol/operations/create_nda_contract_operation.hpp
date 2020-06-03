@@ -23,6 +23,8 @@ struct create_nda_contract_operation : public base_operation
     optional<fc::time_point_sec> start_date;
     fc::time_point_sec end_date;
 
+    extensions_type extensions;
+
     void validate() const;
 
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -46,4 +48,5 @@ FC_REFLECT( deip::protocol::create_nda_contract_operation,
     (contract_hash)
     (start_date)
     (end_date)
+    (extensions)
 )

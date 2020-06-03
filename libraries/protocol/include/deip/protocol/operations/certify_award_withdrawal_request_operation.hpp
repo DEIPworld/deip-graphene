@@ -10,8 +10,9 @@ struct certify_award_withdrawal_request_operation : public base_operation
     external_id_type payment_number;
     external_id_type award_number;
     fc::optional<external_id_type> subaward_number;
-
     account_name_type certifier;
+
+    extensions_type extensions;
 
     void validate() const;
 
@@ -30,4 +31,5 @@ FC_REFLECT( deip::protocol::certify_award_withdrawal_request_operation,
   (award_number)
   (subaward_number)
   (certifier)
+  (extensions)
 )
