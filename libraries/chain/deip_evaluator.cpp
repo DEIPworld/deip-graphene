@@ -1127,86 +1127,96 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
       ("g", op.grantor)("ga", op.amount)("ba", grantor_balance.amount));
 
 
-    if (op.distribution_model.which() == grant_distribution_models::tag<announced_application_window_contract_v1_0_0_type>::value)
+    if (op.distribution_model.which() == grant_distribution_models::tag<announced_application_window_contract_type>::value)
     {
-        const auto announced_application_window_contract = op.distribution_model.get<announced_application_window_contract_v1_0_0_type>();
-        FC_ASSERT(research_group_service.research_group_exists(announced_application_window_contract.review_committee_id), 
+        const auto contract = op.distribution_model.get<announced_application_window_contract_type>();
+        
+        FC_ASSERT(research_group_service.research_group_exists(contract.review_committee_id), 
           "Review committee ${rg} does not exists", 
-          ("rg", announced_application_window_contract.review_committee_id));
+          ("rg", contract.review_committee_id));
           
-        FC_ASSERT(announced_application_window_contract.open_date >= _db.head_block_time(), "Start date must be greater than now");
-        FC_ASSERT(announced_application_window_contract.open_date < announced_application_window_contract.close_date, "Open date must be earlier than close date");
+        FC_ASSERT(contract.open_date >= _db.head_block_time(), "Start date must be greater than now");
+        FC_ASSERT(contract.open_date < contract.close_date, "Open date must be earlier than close date");
+
+        const auto& review_committee = research_group_service.get_research_group_by_account(contract.review_committee_id);
 
         funding_opportunities_service.create_grant_with_eci_evaluation_distribution(
           op.grantor,
           op.amount,
           target_disciplines,
-          announced_application_window_contract.funding_opportunity_number,
-          announced_application_window_contract.additional_info,
-          announced_application_window_contract.review_committee_id,
-          announced_application_window_contract.min_number_of_positive_reviews,
-          announced_application_window_contract.min_number_of_applications,
-          announced_application_window_contract.max_number_of_research_to_grant,
-          announced_application_window_contract.open_date,
-          announced_application_window_contract.close_date);
+          op.external_id,
+          contract.additional_info,
+          review_committee.id,
+          contract.min_number_of_positive_reviews,
+          contract.min_number_of_applications,
+          contract.max_number_of_research_to_grant,
+          contract.open_date,
+          contract.close_date);
     }
  
-    else if (op.distribution_model.which() == grant_distribution_models::tag<funding_opportunity_announcement_contract_v1_0_0_type>::value)
+    else if (op.distribution_model.which() == grant_distribution_models::tag<funding_opportunity_announcement_contract_type>::value)
     {
-        const auto foa_contract = op.distribution_model.get<funding_opportunity_announcement_contract_v1_0_0_type>();
-        FC_ASSERT(research_group_service.research_group_exists(foa_contract.organization_id), 
+        const auto contract = op.distribution_model.get<funding_opportunity_announcement_contract_type>();
+        
+        FC_ASSERT(research_group_service.research_group_exists(contract.organization_id), 
           "Organization ${1} does not exists", 
-          ("1", foa_contract.organization_id));
+          ("1", contract.organization_id));
 
-        FC_ASSERT(research_group_service.research_group_exists(foa_contract.review_committee_id), 
+        FC_ASSERT(research_group_service.research_group_exists(contract.review_committee_id), 
           "Review committee ${1} does not exists", 
-          ("1", foa_contract.review_committee_id));
+          ("1", contract.review_committee_id));
 
-        FC_ASSERT(research_group_service.research_group_exists(foa_contract.treasury_id), 
+        FC_ASSERT(research_group_service.research_group_exists(contract.treasury_id), 
           "Treasury ${1} does not exists", 
-          ("1", foa_contract.treasury_id));
+          ("1", contract.treasury_id));
 
-        for (auto& officer : foa_contract.officers)
+        const auto& organization = research_group_service.get_research_group_by_account(contract.organization_id);
+        const auto& review_committee = research_group_service.get_research_group_by_account(contract.review_committee_id);
+        const auto& treasury = research_group_service.get_research_group_by_account(contract.treasury_id);
+        
+        for (auto& officer : contract.officers)
         {
-            FC_ASSERT(research_group_service.is_research_group_member(officer, foa_contract.organization_id),
+            FC_ASSERT(research_group_service.is_research_group_member(officer, organization.id),
               "Account ${1} is not a member of ${2} organization and can not be programm officer",
-              ("1", officer)("2", foa_contract.organization_id));
+              ("1", officer)("2", contract.organization_id));
         }
 
-        FC_ASSERT(foa_contract.open_date >= _db.head_block_time(), "Open date must be greater than now");
-        FC_ASSERT(foa_contract.open_date < foa_contract.close_date, "Open date must be earlier than close date");
+        FC_ASSERT(contract.open_date >= _db.head_block_time(), "Open date must be greater than now");
+        FC_ASSERT(contract.open_date < contract.close_date, "Open date must be earlier than close date");
+
+
 
         funding_opportunities_service.create_grant_with_officer_evaluation_distribution(
-          foa_contract.organization_id, 
-          foa_contract.review_committee_id,
-          foa_contract.treasury_id,
+          organization.id, 
+          review_committee.id,
+          treasury.id,
           op.grantor,
-          foa_contract.funding_opportunity_number,
-          foa_contract.additional_info,
+          op.external_id,
+          contract.additional_info,
           target_disciplines,
           op.amount,
-          foa_contract.award_ceiling,
-          foa_contract.award_floor,
-          foa_contract.expected_number_of_awards,
-          foa_contract.officers,
-          foa_contract.open_date,
-          foa_contract.close_date);
+          contract.award_ceiling,
+          contract.award_floor,
+          contract.expected_number_of_awards,
+          contract.officers,
+          contract.open_date,
+          contract.close_date);
     }
 
-    else if (op.distribution_model.which() == grant_distribution_models::tag<discipline_supply_announcement_contract_v1_0_0_type>::value)
+    else if (op.distribution_model.which() == grant_distribution_models::tag<discipline_supply_announcement_contract_type>::value)
     {
-        const auto discipline_supply_announcement_contract = op.distribution_model.get<discipline_supply_announcement_contract_v1_0_0_type>();
+        const auto contract = op.distribution_model.get<discipline_supply_announcement_contract_type>();
 
         int64_t target_discipline = *op.target_disciplines.begin();
         discipline_supply_service.create_discipline_supply(
           op.grantor,
           op.amount,
-          discipline_supply_announcement_contract.start_time,
-          discipline_supply_announcement_contract.end_time,
+          contract.start_time,
+          contract.end_time,
           target_discipline,
-          discipline_supply_announcement_contract.is_extendable,
-          discipline_supply_announcement_contract.content_hash,
-          discipline_supply_announcement_contract.additional_info);
+          contract.is_extendable,
+          contract.content_hash,
+          contract.additional_info);
     }
 
     else 
@@ -1425,13 +1435,13 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       "Account ${1} does not exist",
       ("1", op.awardee));
 
-    FC_ASSERT(research_service.research_exists(op.research_id),
+    FC_ASSERT(research_service.research_exists(op.research_external_id),
       "Research ID:${1} does not exist",
-      ("1", op.research_id));
+      ("1", op.research_external_id));
 
-    FC_ASSERT(research_group_service.research_group_exists(op.university_id),
+    FC_ASSERT(research_group_service.research_group_exists(op.university_external_id),
       "University with ID:${1} does not exist",
-      ("1", op.university_id));
+      ("1", op.university_external_id));
 
     FC_ASSERT(funding_opportunity_service.funding_opportunity_exists(op.funding_opportunity_number),
       "Funding opportunity with ID ${1} does not exist", 
@@ -1453,9 +1463,9 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       "${1} is not a member of FOA organization ${2}", 
       ("1", op.creator)("2", foa_organization.id));
 
-    FC_ASSERT(research_group_id_type(op.university_id) != foa_organization.id,
+    FC_ASSERT(op.university_external_id != foa_organization.account,
       "Funding opportunity agency ${1} is not allowed as intermediary",
-      ("1", op.university_id));
+      ("1", op.university_external_id));
 
     FC_ASSERT(op.award.symbol == foa.amount.symbol,
       "Award asset ${1} does not match funding opportunity asset ${2}.",
@@ -1465,7 +1475,11 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       "Account balance for ${1} for asset ${2} does not exist", 
       ("1", op.creator)("2", op.award.symbol_name()));
 
-    const asset university_fee = asset(((op.award.amount * share_type(op.university_overhead))) / DEIP_100_PERCENT, op.award.symbol);
+    const auto& university = research_group_service.get_research_group_by_account(op.university_external_id);
+    const auto& research = research_service.get_research(op.research_external_id);
+
+    const asset university_fee = asset((op.award.amount * op.university_overhead.amount) / DEIP_100_PERCENT, op.award.symbol);
+
     const asset top_subawards_amount = std::accumulate(
         op.subawardees.begin(), op.subawardees.end(), asset(0, op.award.symbol),
         [&](asset acc, const subawardee_type& s) { return s.source == op.awardee ? acc + s.subaward : acc; });
@@ -1487,7 +1501,7 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       op.award_number, 
       op.awardee,
       op.award, 
-      op.university_id,
+      university.id,
       op.university_overhead,
       op.creator,
       award_status::pending);
@@ -1499,7 +1513,7 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       award.awardee,
       account_name_type(),
       awards_map[award.awardee],
-      op.research_id,
+      research.id,
       award_recipient_status::unconfirmed);
 
     for (auto& subaward : op.subawardees)
@@ -1508,11 +1522,11 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
           "Account ${1} does not exist",
           ("1", subaward.subawardee));
 
-        FC_ASSERT(research_service.research_exists(subaward.research_id),
+        FC_ASSERT(research_service.research_exists(subaward.research_external_id),
           "Research ID:${1} does not exist",
-          ("1", subaward.research_id));
+          ("1", subaward.research_external_id));
 
-        const auto& research = research_service.get_research(subaward.research_id);
+        const auto& research = research_service.get_research(subaward.research_external_id);
 
         FC_ASSERT(research_group_service.is_research_group_member(subaward.subawardee, research.research_group_id),
           "Awardee ${1} is not a member of research group ID:{2}",
@@ -1525,7 +1539,7 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
           subaward.subawardee,
           subaward.source,
           awards_map[subaward.subawardee],
-          subaward.research_id,
+          research.id,
           award_recipient_status::unconfirmed);
     }
 }
@@ -1559,7 +1573,7 @@ void approve_award_evaluator::do_apply(const approve_award_operation& op)
       ("1", award.status));
 
     const auto& university = research_group_service.get_research_group(award.university_id);
-    const asset university_fee = asset(((award.amount.amount * share_type(award.university_overhead)) / DEIP_100_PERCENT), award.amount.symbol);
+    const asset university_fee = asset(((award.amount.amount * share_type(award.university_overhead.amount)) / DEIP_100_PERCENT), award.amount.symbol);
     account_balance_service.adjust_balance(university.creator, university_fee);
 
     auto awardees = award_service.get_award_recipients_by_award(op.award_number);

@@ -1136,7 +1136,7 @@ struct award_api_obj
         , university_overhead(award.university_overhead)
     {
         awardees.insert(awardees.end(), awardees_list.begin(), awardees_list.end());
-        university_fee = asset(((award.amount.amount * share_type(award.university_overhead))) / DEIP_100_PERCENT, award.amount.symbol);
+        university_fee = asset(((award.amount.amount * share_type(award.university_overhead.amount))) / DEIP_100_PERCENT, award.amount.symbol);
     }
 
     // because fc::variant require for temporary object
@@ -1153,7 +1153,7 @@ struct award_api_obj
     uint16_t status;
     asset amount;
     int64_t university_id;
-    percent_type university_overhead;
+    percent university_overhead;
     asset university_fee;
     vector<award_recipient_api_obj> awardees;
 };

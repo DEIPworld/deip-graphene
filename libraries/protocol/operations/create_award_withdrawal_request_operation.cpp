@@ -9,11 +9,11 @@ namespace protocol {
 
 void create_award_withdrawal_request_operation::validate() const
 {
-    validate_160_bits_hexadecimal_string(award_number);
-    validate_160_bits_hexadecimal_string(payment_number);
+    // validate_160_bits_hexadecimal_string(award_number);
+    // validate_160_bits_hexadecimal_string(payment_number);
     if (subaward_number.valid())
     {
-        validate_160_bits_hexadecimal_string(*subaward_number);
+        // validate_160_bits_hexadecimal_string(*subaward_number);
     }
     validate_account_name(requester);
     FC_ASSERT(amount.amount > 0, "Amount must be greater than 0");

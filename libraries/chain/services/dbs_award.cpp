@@ -11,15 +11,14 @@ dbs_award::dbs_award(database &db)
 {
 }
 
-const award_object& dbs_award::create_award(
-  const external_id_type& funding_opportunity_number,
-  const external_id_type& award_number,
-  const account_name_type& awardee,
-  const asset& amount, 
-  const research_group_id_type& university_id,
-  const percent_type& university_overhead,
-  const account_name_type& creator,
-  const award_status& status)
+const award_object& dbs_award::create_award(const external_id_type& funding_opportunity_number,
+                                            const external_id_type& award_number,
+                                            const account_name_type& awardee,
+                                            const asset& amount,
+                                            const research_group_id_type& university_id,
+                                            const percent& university_overhead,
+                                            const account_name_type& creator,
+                                            const award_status& status)
 {
     const award_object& award = db_impl().create<award_object>([&](award_object& award) {
         award.funding_opportunity_number = funding_opportunity_number;

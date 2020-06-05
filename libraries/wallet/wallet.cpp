@@ -2247,13 +2247,13 @@ annotated_signed_transaction wallet_api::create_discipline_supply(const std::str
     op.amount = amount;
     op.target_disciplines = { target_discipline };
 
-    discipline_supply_announcement_contract_v1_0_0_type discipline_supply_announcement;
-    discipline_supply_announcement.start_time = fc::time_point_sec(start_time);
-    discipline_supply_announcement.end_time = fc::time_point_sec(end_time);
-    discipline_supply_announcement.content_hash = content_hash;
-    discipline_supply_announcement.is_extendable = is_extendable;
+    discipline_supply_announcement_contract_type contract;
+    contract.start_time = fc::time_point_sec(start_time);
+    contract.end_time = fc::time_point_sec(end_time);
+    contract.content_hash = content_hash;
+    contract.is_extendable = is_extendable;
 
-    op.distribution_model = discipline_supply_announcement;
+    op.distribution_model = contract;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2411,7 +2411,7 @@ annotated_signed_transaction wallet_api::create_grant(const std::string& grantor
                                                       const asset& amount,
                                                       const int64_t& target_discipline,
                                                       const std::string& funding_opportunity_number,
-                                                      const int64_t& review_committee_id,
+                                                      const external_id_type& review_committee_id,
                                                       const uint16_t& min_number_of_positive_reviews,
                                                       const uint16_t& min_number_of_applications,
                                                       const uint16_t& max_number_of_research_to_grant,
@@ -2427,15 +2427,15 @@ annotated_signed_transaction wallet_api::create_grant(const std::string& grantor
     op.amount = amount;
     op.target_disciplines = { target_discipline };
 
-    announced_application_window_contract_v1_0_0_type announced_application_window_contract;
-    announced_application_window_contract.funding_opportunity_number = funding_opportunity_number;
-    announced_application_window_contract.review_committee_id = review_committee_id;
-    announced_application_window_contract.min_number_of_positive_reviews = min_number_of_positive_reviews;
-    announced_application_window_contract.min_number_of_applications = min_number_of_applications;
-    announced_application_window_contract.max_number_of_research_to_grant = max_number_of_research_to_grant;
-    announced_application_window_contract.open_date = fc::time_point_sec(open_date);
-    announced_application_window_contract.close_date = fc::time_point_sec(close_date);
-    op.distribution_model = announced_application_window_contract;
+    announced_application_window_contract_type contract;
+    op.external_id = funding_opportunity_number;
+    contract.review_committee_id = review_committee_id;
+    contract.min_number_of_positive_reviews = min_number_of_positive_reviews;
+    contract.min_number_of_applications = min_number_of_applications;
+    contract.max_number_of_research_to_grant = max_number_of_research_to_grant;
+    contract.open_date = fc::time_point_sec(open_date);
+    contract.close_date = fc::time_point_sec(close_date);
+    op.distribution_model = contract;
 
     signed_transaction tx;
     tx.operations.push_back(op);

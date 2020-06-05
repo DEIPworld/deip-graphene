@@ -14,53 +14,54 @@ void inline validate_distribution_model(const grant_distribution_models distribu
 {  
   bool is_validated = false;
 
-  if (distribution_model.which() == grant_distribution_models::tag<announced_application_window_contract_v1_0_0_type>::value) 
+  if (distribution_model.which() == grant_distribution_models::tag<announced_application_window_contract_type>::value) 
   {
-      const auto announced_application_window_contract = distribution_model.get<announced_application_window_contract_v1_0_0_type>();
-      validate_160_bits_hexadecimal_string(announced_application_window_contract.funding_opportunity_number);
+      const auto contract = distribution_model.get<announced_application_window_contract_type>();
 
-      FC_ASSERT(announced_application_window_contract.min_number_of_positive_reviews >= 0, "Min number of positive reviews must be equal or greater than 0");
-      FC_ASSERT(announced_application_window_contract.min_number_of_applications > 0, "Min number of grant applications must be greater than 0");
-      FC_ASSERT(announced_application_window_contract.min_number_of_applications >= announced_application_window_contract.max_number_of_research_to_grant, "Min number of grant applications must be equal or greater than max number of research");
-      FC_ASSERT(announced_application_window_contract.max_number_of_research_to_grant > 0, "Max number of research must be greater than 0");
-      FC_ASSERT(announced_application_window_contract.open_date > announced_application_window_contract.close_date, "Grant applications apply period is not valid");
+      validate_160_bits_hexadecimal_string(contract.review_committee_id);
+
+      FC_ASSERT(contract.min_number_of_positive_reviews >= 0, "Min number of positive reviews must be equal or greater than 0");
+      FC_ASSERT(contract.min_number_of_applications > 0, "Min number of grant applications must be greater than 0");
+      FC_ASSERT(contract.min_number_of_applications >= contract.max_number_of_research_to_grant, "Min number of grant applications must be equal or greater than max number of research");
+      FC_ASSERT(contract.max_number_of_research_to_grant > 0, "Max number of research must be greater than 0");
+      FC_ASSERT(contract.open_date > contract.close_date, "Grant applications apply period is not valid");
 
       is_validated = true;
   }
 
-  else if (distribution_model.which() == grant_distribution_models::tag<funding_opportunity_announcement_contract_v1_0_0_type>::value) 
+  else if (distribution_model.which() == grant_distribution_models::tag<funding_opportunity_announcement_contract_type>::value) 
   {
-      const auto funding_opportunity_announcement_contract = distribution_model.get<funding_opportunity_announcement_contract_v1_0_0_type>();
+      const auto contract = distribution_model.get<funding_opportunity_announcement_contract_type>();
 
-      validate_160_bits_hexadecimal_string(funding_opportunity_announcement_contract.funding_opportunity_number);
+      validate_160_bits_hexadecimal_string(contract.organization_id);
+      validate_160_bits_hexadecimal_string(contract.review_committee_id);
+      validate_160_bits_hexadecimal_string(contract.treasury_id);
 
-      for (auto& pair : funding_opportunity_announcement_contract.additional_info)
+      for (auto& pair : contract.additional_info)
       {
           FC_ASSERT(fc::is_utf8(pair.first), "Info key ${1} is not valid UTF-8 string", ("1", pair.first));
           FC_ASSERT(fc::is_utf8(pair.second), "Info value ${1} is not valid UTF-8 string", ("1", pair.second));
       }
 
-      FC_ASSERT(funding_opportunity_announcement_contract.officers.count(grantor) != 0,
-                "Funding opportunity officers list should include the grantor ${1}", ("1", grantor));
-
-      FC_ASSERT(funding_opportunity_announcement_contract.award_ceiling <= amount, "Award ceiling amount must be less than total amount");
-      FC_ASSERT(funding_opportunity_announcement_contract.award_floor <= funding_opportunity_announcement_contract.award_ceiling, "Award floor must be less than total amount");
-      FC_ASSERT(funding_opportunity_announcement_contract.expected_number_of_awards > 0, "Expected number of awards must be specified");
-      FC_ASSERT(funding_opportunity_announcement_contract.close_date > funding_opportunity_announcement_contract.open_date, "Close date must be greater than open date");
+      FC_ASSERT(contract.officers.count(grantor) != 0, "Funding opportunity officers list should include the grantor ${1}", ("1", grantor));
+      FC_ASSERT(contract.award_ceiling <= amount, "Award ceiling amount must be less than total amount");
+      FC_ASSERT(contract.award_floor <= contract.award_ceiling, "Award floor must be less than total amount");
+      FC_ASSERT(contract.expected_number_of_awards > 0, "Expected number of awards must be specified");
+      FC_ASSERT(contract.close_date > contract.open_date, "Close date must be greater than open date");
 
       is_validated = true;
   }
 
-  else if (distribution_model.which() == grant_distribution_models::tag<discipline_supply_announcement_contract_v1_0_0_type>::value)
+  else if (distribution_model.which() == grant_distribution_models::tag<discipline_supply_announcement_contract_type>::value)
   {
-    const auto discipline_supply_announcement_contract = distribution_model.get<discipline_supply_announcement_contract_v1_0_0_type>();
+    const auto contract = distribution_model.get<discipline_supply_announcement_contract_type>();
 
     FC_ASSERT(target_disciplines.size() == 1, "Must be only 1 target discipline in discipline supply.");
-    FC_ASSERT(discipline_supply_announcement_contract.end_time > discipline_supply_announcement_contract.start_time, "Invalid discipline supply duration.");
-    FC_ASSERT(discipline_supply_announcement_contract.content_hash.size() > 0, "Content hash must be specified");
-    FC_ASSERT(fc::is_utf8(discipline_supply_announcement_contract.content_hash), "Content hash is not valid UTF8 string");
+    FC_ASSERT(contract.end_time > contract.start_time, "Invalid discipline supply duration.");
+    FC_ASSERT(contract.content_hash.size() > 0, "Content hash must be specified");
+    FC_ASSERT(fc::is_utf8(contract.content_hash), "Content hash is not valid UTF8 string");
 
-    for (auto& pair : discipline_supply_announcement_contract.additional_info)
+    for (auto& pair : contract.additional_info)
     {
         FC_ASSERT(fc::is_utf8(pair.first), "Info key ${key} is not valid UTF-8 string", ("key", pair.first));
         FC_ASSERT(fc::is_utf8(pair.second), "Info value ${val} is not valid UTF-8 string", ("val", pair.second));

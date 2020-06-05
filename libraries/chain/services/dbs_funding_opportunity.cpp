@@ -353,7 +353,7 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
                                                      research_group.account,
                                                      research_reward,
                                                      research.research_group_id,
-                                                     0,
+                                                     percent(0),
                                                      account_name_type(),
                                                      award_status::approved);
 

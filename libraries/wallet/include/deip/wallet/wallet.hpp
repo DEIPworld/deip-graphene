@@ -645,7 +645,7 @@ public:
     /**
      * Transfers research tokens from one acount to another
      *
-     * @param external_id external id of research which tokens to transfer
+     * @param research_external_id external id of research which tokens to transfer
      * @param from The account who transfers research tokens
      * @param to The account receiving research tokens
      * @param share The account of research tokens to transfer
@@ -970,7 +970,7 @@ public:
      *
 
      * @param contributor The account who is participating in token sale
-     * @param research_token_sale_id Id of research token sale
+     * @param research_external_id Id of research token sale
      * @param amount Amount of DEIP tokens to contribute to token sale (ex. "1.000 DEIP")
      * @param broadcast
      */
@@ -1019,7 +1019,7 @@ public:
                                               const asset& amount,
                                               const int64_t& target_discipline,
                                               const std::string& funding_opportunity_number,
-                                              const int64_t& review_committee_id,
+                                              const external_id_type& review_committee_id,
                                               const uint16_t& min_number_of_positive_reviews,
                                               const uint16_t& min_number_of_applications,
                                               const uint16_t& max_number_of_research_to_grant,

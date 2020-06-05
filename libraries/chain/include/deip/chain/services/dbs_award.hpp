@@ -4,6 +4,7 @@
 #include <deip/chain/schema/award_object.hpp>
 #include <deip/chain/schema/award_recipient_object.hpp>
 #include <deip/chain/schema/award_withdrawal_request_object.hpp>
+#include <deip/protocol/percent.hpp>
 #include <vector>
 
 namespace deip{
@@ -33,7 +34,7 @@ public:
                                      const account_name_type& awardee,
                                      const asset& amount,
                                      const research_group_id_type& university_id,
-                                     const percent_type& university_overhead,
+                                     const percent& university_overhead,
                                      const account_name_type& creator,
                                      const award_status& status);
 

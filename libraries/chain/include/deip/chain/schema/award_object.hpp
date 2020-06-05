@@ -2,6 +2,7 @@
 
 #include "deip_object_types.hpp"
 #include <boost/multi_index/composite_key.hpp>
+#include <deip/protocol/percent.hpp>
 
 namespace deip {
 namespace chain {
@@ -15,6 +16,7 @@ enum class award_status : uint16_t
 
 using protocol::external_id_type;
 using deip::protocol::asset;
+using deip::protocol::percent;
 
 class award_object : public object<award_object_type, award_object>
 {
@@ -35,7 +37,7 @@ public:
     account_name_type awardee;
 
     research_group_id_type university_id;
-    percent_type university_overhead;
+    percent university_overhead;
 
     account_name_type creator;
     uint16_t status = static_cast<uint16_t>(award_status::pending);
