@@ -544,10 +544,11 @@ struct expert_token_api_obj
 {
     expert_token_api_obj(const chain::expert_token_object& d, const string& discipline_name)
         : id(d.id._id)
-        ,  account_name(d.account_name)
-        ,  discipline_id(d.discipline_id._id)
-        ,  discipline_name(discipline_name)
-        ,  amount(d.amount)
+        , account_name(d.account_name)
+        , discipline_id(d.discipline_id._id)
+        , discipline_external_id(d.discipline_external_id)
+        , discipline_name(discipline_name)
+        , amount(d.amount)
     {}
 
     // because fc::variant require for temporary object
@@ -558,6 +559,7 @@ struct expert_token_api_obj
     int64_t id;
     string account_name;
     int64_t discipline_id;
+    string discipline_external_id;
     string discipline_name;
     share_type amount;
 };
@@ -1420,6 +1422,7 @@ FC_REFLECT( deip::app::expert_token_api_obj,
             (id)
             (account_name)
             (discipline_id)
+            (discipline_external_id)
             (discipline_name)
             (amount)
 )

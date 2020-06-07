@@ -263,13 +263,6 @@ public:
             d.name = "Test Discipline For Grant With Weight";
         });
 
-//        db.create<expertise_contribution_object>([&](expertise_contribution_object& d) {
-//            d.id = 3;
-//            d.discipline_id = db.get<discipline_object, by_discipline_name>("Test Discipline For Grant With Weight").id;
-//            d.research_id = 3;
-//            d.research_content_id = 3;
-//            d.total_weight = 50;
-//        });
 
         db.create<research_content_object>([&](research_content_object& d) {
             d.id = 3;

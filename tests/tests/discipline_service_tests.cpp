@@ -44,48 +44,11 @@ BOOST_AUTO_TEST_CASE(get_discipline)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_discipline_by_name)
-{
-    try
-    {
-        const discipline_object& discipline = data_service.get_discipline_by_name("Physics");
-
-        BOOST_CHECK(discipline.name == "Physics");
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(check_discipline_existence_by_name)
-{
-    try
-    {
-        BOOST_CHECK_THROW(data_service.check_discipline_existence_by_name("NonExistentDiscipline"), fc::assert_exception);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_CASE(check_discipline_existence)
 {
     try
     {
         BOOST_CHECK_THROW(data_service.check_discipline_existence(1000000), fc::assert_exception);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(get_disciplines_by_parent_id)
-{
-    try
-    {
-        vector<discipline_object> discipline_objects;
-
-        auto disciplines = data_service.get_disciplines_by_parent_id(1);
-        for (const chain::discipline_object& discipline : disciplines)
-        {
-            discipline_objects.push_back(discipline);
-        }
-
-        BOOST_CHECK(discipline_objects.size() == 2 && discipline_objects[0].id == 7);
     }
     FC_LOG_AND_RETHROW()
 }

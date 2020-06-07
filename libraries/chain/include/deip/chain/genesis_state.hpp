@@ -51,17 +51,16 @@ struct genesis_state_type
 
     struct discipline_type
     {
-        discipline_id_type id;
         std::string name;
-        share_type votes_in_last_ten_weeks;
-        discipline_id_type parent_id;
+        protocol::external_id_type external_id;
+        protocol::external_id_type parent_external_id;
     };
 
     struct expert_token_type
     {
-        std::string account_name;
-        discipline_id_type discipline_id;
+        std::string account;
         uint32_t amount;
+        protocol::external_id_type discipline_external_id;
     };
 
     struct research_group_type
@@ -82,7 +81,7 @@ struct genesis_state_type
         std::string abstract;
         bool is_finished;
         bool is_private;
-        std::set<int64_t> disciplines;
+        std::set<protocol::external_id_type> disciplines;
     };
 
     struct research_content_type
@@ -169,15 +168,14 @@ FC_REFLECT(deip::chain::genesis_state_type::witness_type,
            (block_signing_key))
 
 FC_REFLECT(deip::chain::genesis_state_type::discipline_type,
-           (id)
            (name)
-           (votes_in_last_ten_weeks)
-           (parent_id))
+           (external_id)
+           (parent_external_id))
 
 FC_REFLECT(deip::chain::genesis_state_type::expert_token_type,
-          (account_name)
-          (discipline_id)
-          (amount))
+          (account)
+          (amount)
+          (discipline_external_id))
 
 FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
           (account)

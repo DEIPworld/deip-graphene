@@ -41,21 +41,20 @@ void create_initdelegate_for_genesis_state(genesis_state_type& genesis_state)
 
 void create_initdelegate_expert_tokens_for_genesis_state(genesis_state_type& genesis_state)
 {
-    genesis_state.expert_tokens.push_back({ "initdelegate", 1, 10000 });
+  genesis_state.expert_tokens.push_back({ "initdelegate", 10000, "12345" });
 }
 
 void create_disciplines_for_genesis_state(genesis_state_type& genesis_state)
 {
-    genesis_state.disciplines.push_back({ 0, "Common", 0, 0 });
-    genesis_state.disciplines.push_back({ 1, "Mathematics", 0, 0 });
-    genesis_state.disciplines.push_back({ 2, "Physics", 0, 0 });
-    genesis_state.disciplines.push_back({ 3, "Chemistry", 0, 0 });
-    genesis_state.disciplines.push_back({ 4, "Biology", 0, 0 });
-    genesis_state.disciplines.push_back({ 5, "Computer Science", 0, 0 });
-    genesis_state.disciplines.push_back({ 6, "Medicine", 0, 0 });
-    genesis_state.disciplines.push_back({ 7, "Pure Mathematics", 0, 1 });
-    genesis_state.disciplines.push_back({ 8, "Applied Mathematics", 0, 1 });
-    genesis_state.disciplines.push_back({ 9, "Law", 0, 0 });
+    genesis_state.disciplines.push_back({ "Common", "6c4bb3bcf1a88e3b51de88576d592f1f980c5bbb", "" });
+    genesis_state.disciplines.push_back({ "Mathematics", "d0710fa4fe2665e09cb0ee8caab54ef1223b126e", ""});
+    genesis_state.disciplines.push_back({ "Physics", "9f0224709d86e02b9625b5ebf2786b80ba6bed17", "" });
+    genesis_state.disciplines.push_back({ "Chemistry", "6a8b20f002a7dedf7b873dbc86e0b0051d4fa898", "" });
+    genesis_state.disciplines.push_back({ "Biology", "7c3d37cbfea2513a7e03e674448bbeee8ae3d862", "" });
+    genesis_state.disciplines.push_back({ "Computer Science", "e606abac5cff95d3ec1bc151bf24d3f0796d1dc7", "" });
+    genesis_state.disciplines.push_back({ "Medicine", "721e75eb0535e152669b0c3fbbb9e21675483553", "" });
+    genesis_state.disciplines.push_back({ "Pure Mathematics", "d0710fa4fe2665e09cb0ee8caab54ef1223b126e", "" });
+    genesis_state.disciplines.push_back({ "Mathematical logic", "c0eef9067616b3b53c266b392f2420cde03efb0b", "d0710fa4fe2665e09cb0ee8caab54ef1223b126e" });
 }
 
 database_fixture::database_fixture()

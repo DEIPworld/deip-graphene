@@ -16,6 +16,7 @@
 #include <deip/chain/schema/expertise_contribution_object.hpp>
 #include <deip/chain/schema/vesting_balance_object.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
+#include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
@@ -29,7 +30,7 @@
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
 #define DEIP_DEFAULT_INIT_SUPPLY (1000000u)
 
-namespace deip {
+    namespace deip {
 namespace chain {
 namespace utils {
 
@@ -282,17 +283,31 @@ void database::init_genesis_global_property_object(const genesis_state_type& gen
 
 void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
 {
+    dbs_discipline& disciplines_service = obtain_service<dbs_discipline>();
     const vector<genesis_state_type::discipline_type>& disciplines = genesis_state.disciplines;
 
     for (auto& discipline : disciplines)
     {
         FC_ASSERT(!discipline.name.empty(), "Discipline 'name' should not be empty.");
 
-        create<discipline_object>([&](discipline_object& d) {
-            d.id = discipline.id;
-            fc::from_string(d.name, discipline.name);
-            d.parent_id = discipline.parent_id;
-        });
+        if (discipline.parent_external_id != "")
+        {
+            const auto& parent_discipline = disciplines_service.get_discipline(discipline.parent_external_id); // verify that discipline exists
+
+            create<discipline_object>([&](discipline_object& d_o) {
+                d_o.external_id = discipline.external_id;
+                fc::from_string(d_o.name, discipline.name);
+                d_o.parent_external_id = parent_discipline.external_id;
+                d_o.parent_id = parent_discipline.id;
+            });
+        } 
+        else 
+        {
+            create<discipline_object>([&](discipline_object& d_o) {
+                d_o.external_id = discipline.external_id;
+                fc::from_string(d_o.name, discipline.name);
+            });
+        }
     }
 }
 
@@ -302,30 +317,38 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
     const vector<genesis_state_type::expert_token_type>& expert_tokens = genesis_state.expert_tokens;
 
     dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
+    dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
+    dbs_account& accounts_service = obtain_service<dbs_account>();
+
     for (auto& expert_token : expert_tokens)
     {
-        FC_ASSERT(!expert_token.account_name.empty(), "Expertise token 'account_name' must not be empty ${1}.", ("1", expert_token.discipline_id));
+        FC_ASSERT(!expert_token.account.empty(), "Expertise token 'account' must not be empty ${1}.", ("1", expert_token.discipline_external_id));
         FC_ASSERT(expert_token.amount != 0,  "Expertise token 'amount' must not be equal to 0 for genesis state.");
 
-        auto account = get<account_object, by_name>(expert_token.account_name);
-        FC_ASSERT(account.name == expert_token.account_name); // verify that account exists
+        const auto& account = accounts_service.get_account(expert_token.account); // verify that account exists
+        const auto& discipline = discipline_service.get_discipline(expert_token.discipline_external_id);
 
-        auto& discipline = get<discipline_object, by_id>(expert_token.discipline_id); // verify that discipline exists
-        FC_ASSERT(discipline.id._id == expert_token.discipline_id); // verify that discipline exists
-
-        expert_token_service.create_expert_token(expert_token.account_name, expert_token.discipline_id, expert_token.amount, true);
+        expert_token_service.create_expert_token(
+          expert_token.account, 
+          discipline.id,
+          expert_token.amount, 
+          true);
     }
 
 
 #ifdef IS_TEST_NET
     if (find<account_object, by_name>("hermes") != nullptr) {
         // Init 'hermes' user with tokens in every discipline
-        const vector<genesis_state_type::discipline_type>& disciplines = genesis_state.disciplines;
+        const auto& disciplines = discipline_service.get_disciplines();
 
-        for (auto& discipline : disciplines)
+        for (const discipline_object& discipline : disciplines)
         {
             if (discipline.id != 0) {
-                expert_token_service.create_expert_token("hermes", discipline.id, 10000, true);
+                expert_token_service.create_expert_token(
+                  "hermes", 
+                  discipline.id, 
+                  10000, 
+                  true);
             }
         }
     }
@@ -338,6 +361,7 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
 {
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_group& research_groups_service = obtain_service<dbs_research_group>();
+    dbs_discipline& disciplines_service = obtain_service<dbs_discipline>();
 
     const vector<genesis_state_type::research_type>& researches = genesis_state.researches;
     const vector<genesis_state_type::research_content_type>& research_contents = genesis_state.research_contents;
@@ -347,9 +371,10 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
         FC_ASSERT(!research.title.empty(), "Research 'title' is required");
 
         std::set<discipline_id_type> disciplines;
-        for (auto& discipline_id : research.disciplines)
+        for (auto& discipline_external_id : research.disciplines)
         {
-            disciplines.insert(discipline_id_type(discipline_id));
+            const auto& discipline = disciplines_service.get_discipline(discipline_external_id);
+            disciplines.insert(discipline_id_type(discipline.id));
         }
 
         const time_point_sec genesis_time = get_genesis_time();

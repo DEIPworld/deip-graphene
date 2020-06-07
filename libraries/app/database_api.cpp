@@ -91,7 +91,6 @@ public:
     // Disciplines
     vector<discipline_api_obj> get_all_disciplines() const;
     fc::optional<discipline_api_obj> get_discipline(const discipline_id_type& id) const;
-    fc::optional<discipline_api_obj> get_discipline_by_name(const string& name) const;
     vector<discipline_api_obj> get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
 
     // Research groups
@@ -1074,25 +1073,6 @@ fc::optional<discipline_api_obj> database_api_impl::get_discipline(const discipl
     const auto& discipline_service = _db.obtain_service<chain::dbs_discipline>();
 
     const auto& discipline_opt = discipline_service.get_discipline_if_exists(id);
-    if (discipline_opt.valid())
-    {
-        const auto& discipline = (*discipline_opt).get();
-        result = discipline_api_obj(discipline);
-    }
-    return result;
-}
-
-fc::optional<discipline_api_obj> database_api::get_discipline_by_name(const string& name) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_discipline_by_name(name); });
-}
-
-fc::optional<discipline_api_obj> database_api_impl::get_discipline_by_name(const string& name) const
-{
-    fc::optional<discipline_api_obj> result;
-    const auto& discipline_service = _db.obtain_service<chain::dbs_discipline>();
-
-    const auto& discipline_opt = discipline_service.get_discipline_by_name_if_exists(name);
     if (discipline_opt.valid())
     {
         const auto& discipline = (*discipline_opt).get();

@@ -21,15 +21,20 @@ const expert_token_object& dbs_expert_token::create_expert_token(
   const bool& create_parent = true)
 {
     auto& account_service = db_impl().obtain_service<dbs_account>();
+    const auto& discipline_service = db_impl().obtain_service<dbs_discipline>();
+
     const auto& props = db_impl().get_dynamic_global_properties();
     const auto& account = account_service.get_account(name);
 
     FC_ASSERT(discipline_id != 0, "Expertise token can not be created for the common discipline");
 
+    const auto& discipline = discipline_service.get_discipline(discipline_id);
+
     const auto& exp = db_impl().create<expert_token_object>([&](expert_token_object& exp_o) {
         exp_o.account_name = name;
         exp_o.discipline_id = discipline_id;
         exp_o.amount = amount;
+        exp_o.discipline_external_id = discipline.external_id;
         if (exp_o.amount < 0) 
         {
             exp_o.amount = 0;

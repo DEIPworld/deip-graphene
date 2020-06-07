@@ -63,25 +63,5 @@ BOOST_AUTO_TEST_CASE(check_initial_supply)
     BOOST_CHECK(genesis_state.init_supply == 1000000);
 }
 
-BOOST_AUTO_TEST_CASE(check_discipline_fields)
-{
-    const std::string genesis_str = "{\"disciplines\":[{"
-                                    "\"id\":10,"
-                                    "\"name\":\"physics\","
-                                    "\"parent_id\":5,"
-                                    "\"votes_in_last_ten_weeks\":100"
-                                    "}]}";
-
-    const sc::genesis_state_type genesis_state = fc::json::from_string(genesis_str, fc::json::relaxed_parser).as<sc::genesis_state_type>();
-
-    BOOST_REQUIRE(genesis_state.disciplines.size() == 1);
-
-    sc::genesis_state_type::discipline_type discipline = genesis_state.disciplines.front();
-
-    BOOST_CHECK(discipline.id == 10);
-    BOOST_CHECK(discipline.name == "physics");
-    BOOST_CHECK(discipline.parent_id == 5);
-    BOOST_CHECK(discipline.votes_in_last_ten_weeks == 100);
-}
 
 BOOST_AUTO_TEST_SUITE_END()
