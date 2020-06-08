@@ -245,7 +245,6 @@ public:
         dbs_discipline& discipline_service = db.obtain_service<dbs_discipline>();
 
         db.create<discipline_object>([&](discipline_object& d) {
-            d.id = discipline_service.get_disciplines().size();
             d.parent_id = 1;
             d.name = "Test Discipline With Weight";
         });
@@ -258,7 +257,6 @@ public:
         dbs_discipline& discipline_service = db.obtain_service<dbs_discipline>();
 
         db.create<discipline_object>([&](discipline_object& d) {
-            d.id = discipline_service.get_disciplines().size();
             d.parent_id = 1;
             d.name = "Test Discipline For Grant With Weight";
         });

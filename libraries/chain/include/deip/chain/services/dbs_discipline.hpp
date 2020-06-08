@@ -24,14 +24,8 @@ protected:
 public:
     using discipline_ref_type = std::vector<std::reference_wrapper<const discipline_object>>;
     using discipline_optional_ref_type = fc::optional<std::reference_wrapper<const discipline_object>>;
-    /** Lists all disciplines.
-    *
-    * @returns a list of discipline objects
-    */
-    discipline_ref_type get_disciplines() const;
 
-    /** Get discipline by id
-    */
+
     const discipline_object& get_discipline(const discipline_id_type& id) const;
 
     const discipline_object& get_discipline(const external_id_type& external_id) const;
@@ -40,14 +34,13 @@ public:
 
     const discipline_optional_ref_type get_discipline_if_exists(const external_id_type& id) const;
 
-    void check_discipline_existence(const discipline_id_type& id);
-
     const bool discipline_exists(const discipline_id_type& id) const;
 
-    /** Get discipline by parent_id
-    */
-    discipline_ref_type get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
-    
+    const bool discipline_exists(const external_id_type& external_id) const;
+
+    const discipline_ref_type get_disciplines_by_parent(const external_id_type& parent_external_id) const;
+
+    const discipline_ref_type lookup_disciplines(const discipline_id_type& lower_bound, uint32_t limit) const;
 };
 } // namespace chain
 } // namespace deip

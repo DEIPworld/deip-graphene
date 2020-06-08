@@ -8,6 +8,7 @@ namespace deip {
 namespace protocol {
 
 using deip::protocol::percent;
+using deip::protocol::external_id_type;
 
 struct create_research_operation : public entity_operation
 {
@@ -15,7 +16,7 @@ struct create_research_operation : public entity_operation
     account_name_type research_group;
     string title;
     string abstract;
-    std::set<int64_t> disciplines;
+    flat_set<external_id_type> disciplines;
     bool is_private;
     percent review_share;
     optional<percent> compensation_share;

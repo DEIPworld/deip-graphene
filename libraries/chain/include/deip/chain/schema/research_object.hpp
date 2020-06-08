@@ -19,7 +19,7 @@ namespace chain {
 
 using fc::shared_string;
 using protocol::external_id_type;
-using deip::protocol::percent;
+using protocol::percent;
 
 class research_object : public object<research_object_type, research_object>
 { 

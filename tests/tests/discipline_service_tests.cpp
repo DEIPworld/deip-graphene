@@ -22,16 +22,7 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(discipline_service, discipline_service_fixture)
 
-BOOST_AUTO_TEST_CASE(get_all_disciplines)
-{
-    try
-    {
-        auto disciplines = data_service.get_disciplines();
 
-        BOOST_CHECK(disciplines.size() == 10);
-    }
-    FC_LOG_AND_RETHROW()
-}
 
 BOOST_AUTO_TEST_CASE(get_discipline)
 {
@@ -40,15 +31,6 @@ BOOST_AUTO_TEST_CASE(get_discipline)
         const discipline_object& discipline = data_service.get_discipline(2);
 
         BOOST_CHECK(discipline.id == 2 && discipline.name == "Physics");
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(check_discipline_existence)
-{
-    try
-    {
-        BOOST_CHECK_THROW(data_service.check_discipline_existence(1000000), fc::assert_exception);
     }
     FC_LOG_AND_RETHROW()
 }

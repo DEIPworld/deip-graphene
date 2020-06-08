@@ -5,42 +5,18 @@
 namespace deip {
 namespace protocol {
 
-struct base_assessment_model
+using deip::protocol::external_id_type;
+
+struct binary_scoring_assessment_model_type
 {
-    std::string version;
-
-    base_assessment_model(string v = "1.0.0")
-    {
-        version = v;
-    }
-
-    deip::protocol::version get_version() const
-    {
-        fc::variant v_str(version);
-        deip::protocol::version v;
-        fc::from_variant(v_str, v);
-        return v;
-    }
-};
-
-struct binary_scoring_assessment_model_v1_0_0_type : base_assessment_model
-{
-    binary_scoring_assessment_model_v1_0_0_type(string v = "1.0.0")
-        : base_assessment_model(v)
-    {
-    }
-
     bool is_positive;
+    extensions_type extensions;
 };
 
-struct multicriteria_scoring_assessment_model_v1_0_0_type : base_assessment_model
+struct multicriteria_scoring_assessment_model_type
 {
-    multicriteria_scoring_assessment_model_v1_0_0_type(string v = "1.0.0")
-        : base_assessment_model(v)
-    {
-    }
-
-    std::map<uint16_t, uint16_t> scores;
+    flat_map<uint16_t, uint16_t> scores;
+    extensions_type extensions;
 };
 
 enum class assessment_criteria : uint16_t
@@ -58,19 +34,24 @@ enum class assessment_criteria : uint16_t
 };
 
 typedef fc::static_variant<
-        binary_scoring_assessment_model_v1_0_0_type,
-        multicriteria_scoring_assessment_model_v1_0_0_type
-        >
-        assessment_models;
+    binary_scoring_assessment_model_type,
+    multicriteria_scoring_assessment_model_type
+    >
+    assessment_models;
 
-struct create_review_operation : public base_operation
+struct create_review_operation : public entity_operation
 {
+    external_id_type external_id;
     account_name_type author;
-    int64_t research_content_id;
+    external_id_type research_content_external_id;
     std::string content;
-    uint16_t weight;
+    percent weight;
     assessment_models assessment_model;
+    flat_set<external_id_type> disciplines;
     extensions_type extensions;
+
+    string entity_id() const { return "external_id"; }
+    external_id_type get_entity_id() const { return external_id; }
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -168,12 +149,18 @@ struct get_assessment_model_type
     }                                                                                                                  \
     } /* fc */
 
+FC_REFLECT(deip::protocol::create_review_operation,
+           (external_id)
+           (author)
+           (research_content_external_id)
+           (content)
+           (weight)
+           (assessment_model)
+           (disciplines)
+           (extensions))
 
-FC_REFLECT( deip::protocol::create_review_operation, (author)(research_content_id)(content)(weight)(assessment_model)(extensions) )
-
-FC_REFLECT( deip::protocol::base_assessment_model, (version) )
-FC_REFLECT_DERIVED( deip::protocol::binary_scoring_assessment_model_v1_0_0_type, (deip::protocol::base_assessment_model), (is_positive) )
-FC_REFLECT_DERIVED( deip::protocol::multicriteria_scoring_assessment_model_v1_0_0_type, (deip::protocol::base_assessment_model), (scores) )
+FC_REFLECT( deip::protocol::binary_scoring_assessment_model_type, (is_positive)(extensions) )
+FC_REFLECT( deip::protocol::multicriteria_scoring_assessment_model_type, (scores)(extensions) )
 
 FC_REFLECT_ENUM( deip::protocol::assessment_criteria, (unknown)
                                                       (novelty)

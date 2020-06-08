@@ -578,7 +578,7 @@ dbs_account::accounts_refs_type dbs_account::get_accounts_by_expert_discipline(c
     dbs_expert_token& expert_token_service = db_impl().obtain_service<dbs_expert_token>();
 
     accounts_refs_type ret;
-    auto expert_tokens = expert_token_service.get_expert_tokens_by_discipline_id(discipline_id);
+    auto expert_tokens = expert_token_service.get_expert_tokens_by_discipline(discipline_id);
 
     for (auto expert_token : expert_tokens)
     {

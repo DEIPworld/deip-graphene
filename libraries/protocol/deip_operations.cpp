@@ -14,8 +14,11 @@ bool inline is_asset_type(asset asset, asset_symbol_type symbol)
 void vote_for_review_operation::validate() const
 {
     validate_account_name(voter);
-    FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
-    FC_ASSERT(discipline_id != 0, "You cannot vote with common token");
+    FC_ASSERT(weight.amount > 0 && weight.amount <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
+
+    validate_160_bits_hexadecimal_string(external_id);
+    validate_160_bits_hexadecimal_string(review_external_id);
+    validate_160_bits_hexadecimal_string(discipline_external_id);
 }
 
 void transfer_operation::validate() const

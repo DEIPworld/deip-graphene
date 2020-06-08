@@ -56,10 +56,11 @@ public:
     /* Get expert tokens by discipline id
      * @returns a list of all expert token objects for specific discipline
     */
-    expert_token_refs_type get_expert_tokens_by_discipline_id(const discipline_id_type& discipline_id) const;
+    const expert_token_refs_type get_expert_tokens_by_discipline(const discipline_id_type& discipline_id) const;
 
-    const bool expert_token_exists_by_account_and_discipline(const account_name_type& account,
-                                                       const discipline_id_type& discipline_id) const;
+    const expert_token_refs_type get_expert_tokens_by_discipline(const external_id_type& discipline_external_id) const;
+
+    const bool expert_token_exists_by_account_and_discipline(const account_name_type& account, const discipline_id_type& discipline_id) const;
 
     const std::tuple<share_type, share_type> adjust_expert_token( const account_name_type& account,
                                                                   const discipline_id_type& discipline_id,

@@ -13,19 +13,20 @@ void validate_assessment_model(const assessment_models& assessment_model)
 
     const std::set<int>& assessment_models =
     {
-        assessment_models::tag<binary_scoring_assessment_model_v1_0_0_type>::value,
-        assessment_models::tag<multicriteria_scoring_assessment_model_v1_0_0_type>::value
+        assessment_models::tag<binary_scoring_assessment_model_type>::value,
+        assessment_models::tag<multicriteria_scoring_assessment_model_type>::value
     };
 
     FC_ASSERT(std::find(assessment_models.begin(), assessment_models.end(), assessment_model.which()) != assessment_models.end(), "Provided assessment model is not defined.");
 
-    if (assessment_model.which() == assessment_models::tag<binary_scoring_assessment_model_v1_0_0_type>::value)
+    if (assessment_model.which() == assessment_models::tag<binary_scoring_assessment_model_type>::value)
     {
         is_validated = true;
     }
-    else if (assessment_model.which() == assessment_models::tag<multicriteria_scoring_assessment_model_v1_0_0_type>::value)
+
+    else if (assessment_model.which() == assessment_models::tag<multicriteria_scoring_assessment_model_type>::value)
     {
-        const auto model = assessment_model.get<multicriteria_scoring_assessment_model_v1_0_0_type>();
+        const auto model = assessment_model.get<multicriteria_scoring_assessment_model_type>();
         FC_ASSERT(model.scores.size() >= DEIP_MIN_NUMBER_OF_REVIEW_CRITERIAS, "Must be at least ${num} review criterias", ("num", DEIP_MIN_NUMBER_OF_REVIEW_CRITERIAS));
 
         FC_ASSERT(std::find_if(model.scores.begin(), model.scores.end(),
@@ -46,10 +47,18 @@ void validate_assessment_model(const assessment_models& assessment_model)
 void create_review_operation::validate() const
 {
     validate_account_name(author);
-    FC_ASSERT(research_content_id >= 0, "Id cant be less than a 0");
+    validate_160_bits_hexadecimal_string(external_id);
+    validate_160_bits_hexadecimal_string(research_content_external_id);
     FC_ASSERT(!content.empty(), "Content cannot be empty");
-    FC_ASSERT(weight > 0 && weight <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
+    FC_ASSERT(weight.amount > 0 && weight.amount <= DEIP_100_PERCENT, "Weight should be in 1% to 100% range");
+    FC_ASSERT(disciplines.size() != 0, "Disciplines list must include entries");
+
     validate_assessment_model(assessment_model);
+
+    for (const auto& id : disciplines)
+    {
+        validate_160_bits_hexadecimal_string(id);
+    }
 }
 
 } /* deip::protocol */

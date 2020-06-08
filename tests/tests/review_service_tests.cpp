@@ -52,47 +52,6 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(review_service, review_service_fixture)
 
-BOOST_AUTO_TEST_CASE(create)
-{
-    try
-    {
-        fc::optional<std::map<assessment_criteria, uint16_t>> scores;
-        auto& review = data_service.create(1, "content", true, "alice", { 1, 2 }, std::map<discipline_id_type, share_type>(), 0, scores);
-
-        std::vector<discipline_id_type> disciplines;
-        for (auto discipline : review.disciplines)
-            disciplines.push_back(discipline);
-
-        BOOST_CHECK(review.research_content_id == 1);
-        BOOST_CHECK(review.content == "content");
-        BOOST_CHECK(review.is_positive == true);
-        BOOST_CHECK(review.author == "alice");
-        BOOST_CHECK(disciplines.size() == 2);
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(get)
-{
-    try
-    {
-        create_reviews();
-
-        auto& review = data_service.get(1);
-
-        std::vector<discipline_id_type> disciplines;
-        for (auto discipline : review.disciplines)
-            disciplines.push_back(discipline);
-
-        BOOST_CHECK(review.research_content_id == 1);
-        BOOST_CHECK(review.content == "Content 1");
-        BOOST_CHECK(review.is_positive == true);
-        BOOST_CHECK(review.author == "alice");
-        BOOST_CHECK(disciplines.size() == 3);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
 
 BOOST_AUTO_TEST_CASE(get_research_reviews)
 {

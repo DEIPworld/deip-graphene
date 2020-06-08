@@ -1,3 +1,4 @@
+#include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/database/database.hpp>
 
@@ -11,11 +12,15 @@ dbs_research_discipline_relation::dbs_research_discipline_relation(database &db)
 
 const research_discipline_relation_object& dbs_research_discipline_relation::create_research_relation(const research_id_type& research_id, const discipline_id_type& discipline_id)
 {
+    const auto& discipline_service = db_impl().obtain_service<dbs_discipline>();
+
     FC_ASSERT(discipline_id != 0, "Research cannot be in root discipline");
 
+    const auto& discipline = discipline_service.get_discipline(discipline_id);
     const auto& new_relation = db_impl().create<research_discipline_relation_object>([&](research_discipline_relation_object& r) {
         r.research_id = research_id;
         r.discipline_id = discipline_id;
+        r.discipline_external_id = discipline.external_id;
     });
 
     return new_relation;

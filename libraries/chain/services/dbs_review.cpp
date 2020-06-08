@@ -18,29 +18,45 @@ dbs_review::dbs_review(database &db)
 {
 }
 
-const review_object&
-dbs_review::create(const research_content_id_type& research_content_id,
-                   const string& content,
-                   bool is_positive,
-                   const account_name_type& author,
-                   const std::set<discipline_id_type>& disciplines,
-                   const std::map<discipline_id_type, share_type> used_expertise,
-                   const int32_t& assessment_model_v,
-                   const fc::optional<std::map<assessment_criteria, assessment_criteria_value>> scores)
+const review_object& dbs_review::create_review( const external_id_type& external_id,
+                                                const external_id_type& research_external_id,
+                                                const external_id_type& research_content_external_id,
+                                                const research_content_id_type& research_content_id,
+                                                const string& content,
+                                                const bool& is_positive,
+                                                const account_name_type& author,
+                                                const std::set<discipline_id_type>& disciplines,
+                                                const std::map<discipline_id_type, share_type>& used_expertise,
+                                                const int32_t& assessment_model_v,
+                                                const fc::optional<std::map<assessment_criteria, assessment_criteria_value>>& scores)
 {
-    const auto& new_review = db_impl().create<review_object>([&](review_object& r) {
-        const auto now = db_impl().head_block_time();
+    auto& disciplines_service = db_impl().obtain_service<dbs_discipline>();
 
+    flat_set<external_id_type> disciplines_external_ids;
+
+    for (auto& discipline_id : disciplines)
+    {
+        const auto& disipline = disciplines_service.get_discipline(discipline_id);
+        disciplines_external_ids.insert(disipline.external_id);
+    }
+
+    const auto now = db_impl().head_block_time();
+
+    const auto& new_review = db_impl().create<review_object>([&](review_object& r) {
+        r.external_id = external_id;
+        r.research_external_id = research_external_id; 
+        r.research_content_external_id = research_content_external_id;
         r.research_content_id = research_content_id;
         fc::from_string(r.content, content);
         r.author = author;
         r.is_positive = is_positive;
         r.created_at = now;
         r.disciplines.insert(disciplines.begin(), disciplines.end());
+        r.disciplines_external_ids.insert(disciplines_external_ids.begin(), disciplines_external_ids.end());
         r.expertise_tokens_amount_by_discipline.insert(used_expertise.begin(), used_expertise.end());
         r.assessment_model_v = assessment_model_v;
 
-        if (scores.valid()) 
+        if (scores.valid())
         {
             for (auto& score : *scores)
             {
@@ -52,7 +68,7 @@ dbs_review::create(const research_content_id_type& research_content_id,
     return new_review;
 }
 
-const review_object& dbs_review::get(const review_id_type &id) const
+const review_object& dbs_review::get_review(const review_id_type &id) const
 {
     try
     {
@@ -61,14 +77,22 @@ const review_object& dbs_review::get(const review_id_type &id) const
     FC_CAPTURE_AND_RETHROW((id))
 }
 
-const dbs_review::review_optional_ref_type
-dbs_review::get_review_if_exists(const review_id_type &id) const
+const review_object& dbs_review::get_review(const external_id_type& external_id) const
+{
+    try
+    {
+        return db_impl().get<review_object, by_external_id>(external_id);
+    }
+    FC_CAPTURE_AND_RETHROW((external_id))
+}
+
+const dbs_review::review_optional_ref_type dbs_review::get_review_if_exists(const review_id_type &id) const
 {
     review_optional_ref_type result;
     const auto& idx = db_impl()
-            .get_index<review_index>()
-            .indicies()
-            .get<by_id>();
+      .get_index<review_index>()
+      .indicies()
+      .get<by_id>();
 
     auto itr = idx.find(id);
     if (itr != idx.end())
@@ -79,11 +103,33 @@ dbs_review::get_review_if_exists(const review_id_type &id) const
     return result;
 }
 
-dbs_review::review_refs_type dbs_review::get_reviews_by_research_content(const research_content_id_type &research_content_id) const
+const dbs_review::review_optional_ref_type dbs_review::get_review_if_exists(const external_id_type& external_id) const
+{
+    review_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<review_index>()
+      .indicies()
+      .get<by_external_id>();
+
+    auto itr = idx.find(external_id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
+dbs_review::review_refs_type dbs_review::get_reviews_by_research_content(const research_content_id_type& research_content_id) const
 {
     review_refs_type ret;
 
-    auto it_pair = db_impl().get_index<review_index>().indicies().get<by_research_content>().equal_range(research_content_id);
+    const auto& idx = db_impl()
+      .get_index<review_index>()
+      .indicies()
+      .get<by_research_content>();
+
+    auto it_pair = idx.equal_range(research_content_id);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
@@ -95,7 +141,50 @@ dbs_review::review_refs_type dbs_review::get_reviews_by_research_content(const r
     return ret;
 }
 
-dbs_review::review_refs_type dbs_review::get_author_reviews(const account_name_type &author) const
+dbs_review::review_refs_type dbs_review::get_reviews_by_research_content(const external_id_type& research_content_external_id) const
+{
+    review_refs_type ret;
+
+    const auto& idx = db_impl()
+      .get_index<review_index>()
+      .indicies()
+      .get<by_research_content_external_id>();
+
+    auto it_pair = idx.equal_range(research_content_external_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+
+dbs_review::review_refs_type dbs_review::get_reviews_by_research(const external_id_type& research_external_id) const
+{
+    review_refs_type ret;
+
+    const auto& idx = db_impl()
+      .get_index<review_index>()
+      .indicies()
+      .get<by_research_external_id>();
+
+    auto it_pair = idx.equal_range(research_external_id);
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+dbs_review::review_refs_type dbs_review::get_author_reviews(const account_name_type& author) const
 {
     review_refs_type ret;
 
@@ -115,7 +204,7 @@ const std::map<discipline_id_type, share_type> dbs_review::get_eci_weight(const 
 {
     const dbs_review_vote& review_votes_service = db_impl().obtain_service<dbs_review_vote>();
 
-    const review_object& review = get(review_id);
+    const review_object& review = get_review(review_id);
     const auto& research_content_reviews = get_reviews_by_research_content(review.research_content_id);
     const auto& research_content_reviews_votes = review_votes_service.get_review_votes_by_researh_content(review.research_content_id);
 

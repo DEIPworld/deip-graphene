@@ -14,6 +14,8 @@
 namespace deip{
 namespace chain{
 
+using protocol::external_id_type;
+
 class research_discipline_relation_object
         : public object<research_discipline_relation_object_type, research_discipline_relation_object>
 {
@@ -31,6 +33,7 @@ public:
     research_discipline_relation_id_type id;
     research_id_type research_id;
     discipline_id_type discipline_id;
+    external_id_type discipline_external_id;
     uint16_t votes_count;
     share_type research_eci = 0;
 };
@@ -71,7 +74,6 @@ typedef multi_index_container<research_discipline_relation_object,
 }
 
 FC_REFLECT(deip::chain::research_discipline_relation_object,
-           (id)(research_id)(discipline_id)(votes_count)(research_eci)
-)
+           (id)(research_id)(discipline_id)(discipline_external_id)(votes_count)(research_eci))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_discipline_relation_object, deip::chain::research_discipline_relation_index)

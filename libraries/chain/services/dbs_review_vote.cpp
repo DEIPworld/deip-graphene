@@ -11,21 +11,25 @@ dbs_review_vote::dbs_review_vote(database &db)
 {
 }
 
-const review_vote_object& dbs_review_vote::create_review_vote(
-  const account_name_type& voter,
-  const review_id_type& review_id,
-  const discipline_id_type& discipline_id,
-  const uint64_t& weight,
-  const time_point_sec& voting_time,
-  const time_point_sec& review_time,
-  const research_content_id_type& research_content_id,
-  const research_id_type& research_id)
+const review_vote_object& dbs_review_vote::create_review_vote(const external_id_type& external_id,
+                                                              const account_name_type& voter,
+                                                              const external_id_type& review_external_id,
+                                                              const review_id_type& review_id,
+                                                              const external_id_type& discipline_external_id,
+                                                              const discipline_id_type& discipline_id,
+                                                              const uint64_t& weight,
+                                                              const time_point_sec& voting_time,
+                                                              const time_point_sec& review_time,
+                                                              const research_content_id_type& research_content_id,
+                                                              const research_id_type& research_id)
 {
     uint64_t max_vote_weight = 0;
-    const review_vote_object& review_vote = db_impl()
-      .create<review_vote_object>([&](review_vote_object& v) {
+    const review_vote_object& review_vote = db_impl().create<review_vote_object>([&](review_vote_object& v) {
+        v.external_id = external_id; 
         v.voter = voter;
+        v.review_external_id = review_external_id;
         v.review_id = review_id;
+        v.discipline_external_id = discipline_external_id;
         v.discipline_id = discipline_id;
         v.weight = weight;
         v.voting_time = voting_time;
@@ -52,7 +56,34 @@ dbs_review_vote::review_vote_refs_type dbs_review_vote::get_review_votes(const r
 {
     review_vote_refs_type ret;
 
-    auto it_pair = db_impl().get_index<review_vote_index>().indicies().get<by_review_id>().equal_range(review_id);
+    const auto& idx = db_impl()
+      .get_index<review_vote_index>()
+      .indicies()
+      .get<by_review_id>();
+
+    auto it_pair = idx.equal_range(review_id);
+
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+    return ret;
+}
+
+dbs_review_vote::review_vote_refs_type dbs_review_vote::get_review_votes(const external_id_type& review_external_id) const
+{
+    review_vote_refs_type ret;
+
+    const auto& idx = db_impl()
+      .get_index<review_vote_index>()
+      .indicies()
+      .get<by_review_external_id>();
+
+    auto it_pair = idx.equal_range(review_external_id);
+
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)

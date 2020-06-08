@@ -943,12 +943,12 @@ public:
      * @param weight Weight of vote from 0 to 10000
      * @param broadcast
      */
-    annotated_signed_transaction vote_for_review(const std::string& voter,
-                                                 const int64_t review_id,
-                                                 const int64_t discipline_id,
-                                                 const int16_t weight,
+    annotated_signed_transaction vote_for_review(const external_id_type& external_id,
+                                                 const std::string& voter,
+                                                 const external_id_type& review_external_id,
+                                                 const external_id_type& discipline_external_id,
+                                                 const percent& weight,
                                                  const bool broadcast);
-
 
     /**
      * Make review for specified research content
@@ -959,9 +959,10 @@ public:
      * @param content Review text
      * @param broadcast
      */
-    annotated_signed_transaction create_review(const std::string& author,
-                                               const int64_t research_content_id,
-                                               const bool is_positive,
+    annotated_signed_transaction create_review(const external_id_type& external_id,
+                                               const std::string& author,
+                                               const external_id_type& research_content_id,
+                                               const bool& is_positive,
                                                const std::string& content,
                                                const bool broadcast);
 

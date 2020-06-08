@@ -131,14 +131,18 @@ struct beneficiary_route_type
     }
 };
 
-struct vote_for_review_operation : public base_operation
+struct vote_for_review_operation : public entity_operation
 {
+    external_id_type external_id;
     account_name_type voter;
-    int64_t review_id;
-    int64_t discipline_id;
-    int16_t weight = 0;
+    external_id_type review_external_id;
+    external_id_type discipline_external_id;
+    percent weight;
 
     extensions_type extensions;
+
+    string entity_id() const { return "external_id"; }
+    external_id_type get_entity_id() const { return external_id; }
 
     void validate() const;
     void get_required_active_authorities(flat_set<account_name_type>& a) const
@@ -688,7 +692,7 @@ FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recov
 
 // DEIP native operations
 FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_external_id)(contributor)(amount)(extensions))
-FC_REFLECT( deip::protocol::vote_for_review_operation, (voter)(review_id)(discipline_id)(weight)(extensions))
+FC_REFLECT( deip::protocol::vote_for_review_operation, (external_id)(voter)(review_external_id)(discipline_external_id)(weight)(extensions))
 FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds)(extensions))
 FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance_id)(owner)(amount)(extensions))
 FC_REFLECT( deip::protocol::create_expertise_allocation_proposal_operation, (claimer)(discipline_id)(description)(extensions))

@@ -2225,7 +2225,7 @@ vector<discipline_api_obj> wallet_api::list_all_disciplines()
 {
     vector<discipline_api_obj> result;
 
-    result = my->_remote_db->get_all_disciplines();
+    result = my->_remote_db->lookup_disciplines(discipline_id_type(1), 10000);
 
     return result;
 }
@@ -2262,10 +2262,11 @@ annotated_signed_transaction wallet_api::create_discipline_supply(const std::str
     return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::vote_for_review(const std::string& voter,
-                                                         const int64_t review_id,
-                                                         const int64_t discipline_id,
-                                                         const int16_t weight,
+annotated_signed_transaction wallet_api::vote_for_review(const external_id_type& external_id,
+                                                         const std::string& voter,
+                                                         const external_id_type& review_external_id,
+                                                         const external_id_type& discipline_external_id,
+                                                         const percent& weight,
                                                          const bool broadcast)
 {
     FC_ASSERT(!is_locked());
@@ -2273,8 +2274,9 @@ annotated_signed_transaction wallet_api::vote_for_review(const std::string& vote
     vote_for_review_operation op;
 
     op.voter = voter;
-    op.review_id = review_id;
-    op.discipline_id = discipline_id;
+    op.external_id = external_id;
+    op.review_external_id = review_external_id;
+    op.discipline_external_id = discipline_external_id;
     op.weight = weight;
 
     signed_transaction tx;
@@ -2284,21 +2286,22 @@ annotated_signed_transaction wallet_api::vote_for_review(const std::string& vote
     return my->sign_transaction(tx, broadcast);
 }
 
-
-annotated_signed_transaction wallet_api::create_review(const std::string& author,
-                                                     const int64_t research_content_id,
-                                                     const bool is_positive,
-                                                     const std::string& content,
-                                                     const bool broadcast)
+annotated_signed_transaction wallet_api::create_review(const external_id_type& external_id,
+                                                       const std::string& author,
+                                                       const external_id_type& research_content_external_id,
+                                                       const bool& is_positive,
+                                                       const std::string& content,
+                                                       const bool broadcast)
 {
     FC_ASSERT(!is_locked());
 
     create_review_operation op;
 
+    op.external_id = external_id; 
     op.author = author;
-    op.research_content_id = research_content_id;
+    op.research_content_external_id = research_content_external_id;
     op.content = content;
-    op.weight = DEIP_100_PERCENT;
+    op.weight = percent(10);
 
     signed_transaction tx;
     tx.operations.push_back(op);

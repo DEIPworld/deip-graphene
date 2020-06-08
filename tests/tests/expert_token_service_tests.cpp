@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(get_expert_tokens_vector_by_discipline_id)
     try
     {
         create_expert_tokens();
-        auto expert_tokens = data_service.get_expert_tokens_by_discipline_id(1);
+        const auto& expert_tokens = data_service.get_expert_tokens_by_discipline(1);
 
         BOOST_CHECK(expert_tokens.size() == 23);
         BOOST_CHECK(std::any_of(expert_tokens.begin(), expert_tokens.end(), [](std::reference_wrapper<const expert_token_object> wrapper){
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(get_empty_expert_tokens_vector_by_discipline_id)
     try
     {
         create_expert_tokens();
-        auto expert_tokens = data_service.get_expert_tokens_by_discipline_id(1212);
+        const auto& expert_tokens = data_service.get_expert_tokens_by_discipline(1212);
 
         BOOST_CHECK(expert_tokens.size() == 0);
 

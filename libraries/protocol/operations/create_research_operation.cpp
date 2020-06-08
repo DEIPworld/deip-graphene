@@ -13,9 +13,10 @@ void create_research_operation::validate() const
     validate_160_bits_hexadecimal_string(external_id);
 
     FC_ASSERT(disciplines.size() != 0, "Research must be related to one or several disciplines.");
-    FC_ASSERT(!std::any_of(disciplines.begin(), disciplines.end(), [](int64_t discipline_id){
-        return discipline_id == 0;
-    }), "Research cannot be related to 'common' discipline.");
+    for (const auto& external_id : disciplines)
+    {
+        validate_160_bits_hexadecimal_string(external_id);
+    }
 
     FC_ASSERT(!title.empty(), "Research name cannot be empty.");
 

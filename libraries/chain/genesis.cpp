@@ -339,7 +339,7 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
 #ifdef IS_TEST_NET
     if (find<account_object, by_name>("hermes") != nullptr) {
         // Init 'hermes' user with tokens in every discipline
-        const auto& disciplines = discipline_service.get_disciplines();
+        const auto& disciplines = discipline_service.lookup_disciplines(discipline_id_type(1), 10000);
 
         for (const discipline_object& discipline : disciplines)
         {

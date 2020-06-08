@@ -26,8 +26,11 @@ public:
 
     using review_vote_refs_type = std::vector<std::reference_wrapper<const review_vote_object>>;
 
-    const review_vote_object& create_review_vote(const account_name_type& voter,
+    const review_vote_object& create_review_vote(const external_id_type& external_id,
+                                                 const account_name_type& voter,
+                                                 const external_id_type& review_external_id,
                                                  const review_id_type& review_id,
+                                                 const external_id_type& discipline_external_id,
                                                  const discipline_id_type& discipline_id,
                                                  const uint64_t& weight,
                                                  const time_point_sec& voting_time,
@@ -36,6 +39,8 @@ public:
                                                  const research_id_type& research_id);
 
     review_vote_refs_type get_review_votes(const review_id_type& review_id) const;
+
+    review_vote_refs_type get_review_votes(const external_id_type& review_external_id) const;
 
     review_vote_refs_type get_review_votes_by_voter(const account_name_type& voter) const;
 

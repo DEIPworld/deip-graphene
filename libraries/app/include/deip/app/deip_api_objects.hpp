@@ -353,8 +353,10 @@ struct discipline_api_obj
 {
     discipline_api_obj(const chain::discipline_object& d)
         : id(d.id._id)
-        ,  parent_id(d.parent_id._id)
-        ,  name(fc::to_string(d.name))
+        , external_id(d.external_id)
+        , parent_id(d.parent_id._id)
+        , parent_external_id(d.parent_external_id)
+        , name(fc::to_string(d.name))
     {}
 
     // because fc::variant require for temporary object
@@ -363,7 +365,9 @@ struct discipline_api_obj
     }
 
     int64_t id;
+    string external_id;
     int64_t parent_id;
+    string parent_external_id;
     std::string name;
 };
 
@@ -735,14 +739,16 @@ struct expertise_contribution_object_api_obj
 struct review_api_obj
 {
     review_api_obj(const chain::review_object& r, const vector<discipline_api_obj>& disciplines)
-            : id(r.id._id)
-            , research_content_id(r.research_content_id._id)
-            , content(fc::to_string(r.content))
-            , is_positive(r.is_positive)
-            , author(r.author)
-            , created_at(r.created_at)
-            , assessment_model_v(r.assessment_model_v)
-            , scores(r.scores.begin(), r.scores.end())
+        : id(r.id._id)
+        , external_id(r.external_id)
+        , research_content_id(r.research_content_id._id)
+        , research_content_external_id(r.research_content_external_id)
+        , content(fc::to_string(r.content))
+        , is_positive(r.is_positive)
+        , author(r.author)
+        , created_at(r.created_at)
+        , assessment_model_v(r.assessment_model_v)
+        , scores(r.scores.begin(), r.scores.end())
     {
         this->disciplines = disciplines;
 
@@ -759,7 +765,9 @@ struct review_api_obj
     }
 
     int64_t id;
+    string external_id;
     int64_t research_content_id;
+    string research_content_external_id;
     string content;
     bool is_positive;
     account_name_type author;
@@ -797,12 +805,15 @@ struct research_token_api_obj
 struct review_vote_api_obj
 {
     review_vote_api_obj(const chain::review_vote_object& rvo)
-            : id(rvo.id._id)
-            , discipline_id(rvo.discipline_id._id)
-            , voter(rvo.voter)
-            , review_id(rvo.review_id._id)
-            , weight(rvo.weight)
-            , voting_time(rvo.voting_time)
+        : id(rvo.id._id)
+        , external_id(rvo.external_id)
+        , discipline_id(rvo.discipline_id._id)
+        , discipline_external_id(rvo.discipline_external_id)
+        , voter(rvo.voter)
+        , review_id(rvo.review_id._id)
+        , review_external_id(rvo.review_external_id)
+        , weight(rvo.weight)
+        , voting_time(rvo.voting_time)
     {}
 
     // because fc::variant require for temporary object
@@ -811,10 +822,12 @@ struct review_vote_api_obj
     }
 
     int64_t id;
+    string external_id;
     int64_t discipline_id;
+    string discipline_external_id;
     account_name_type voter;
     int64_t review_id;
-
+    string review_external_id;
     int64_t weight;
     time_point_sec voting_time;
 
@@ -1373,9 +1386,10 @@ FC_REFLECT( deip::app::discipline_supply_api_obj,
 
 FC_REFLECT( deip::app::discipline_api_obj,
             (id)
+            (external_id)
             (parent_id)
-            (name)
-)
+            (parent_external_id)
+            (name))
 
 
 FC_REFLECT( deip::app::research_api_obj,
@@ -1507,7 +1521,9 @@ FC_REFLECT( deip::app::expertise_contribution_object_api_obj,
 
 FC_REFLECT( deip::app::review_api_obj,
             (id)
+            (external_id)
             (research_content_id)
+            (research_content_external_id)
             (content)
             (is_positive)
             (author)
@@ -1529,9 +1545,12 @@ FC_REFLECT( deip::app::research_token_api_obj,
 
 FC_REFLECT( deip::app::review_vote_api_obj,
             (id)
+            (external_id)
             (discipline_id)
+            (discipline_external_id)
             (voter)
             (review_id)
+            (review_external_id)
             (weight)
             (voting_time)
 

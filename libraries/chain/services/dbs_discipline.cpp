@@ -11,22 +11,6 @@ dbs_discipline::dbs_discipline(database &db)
 {
 }
 
-dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines() const
-{
-    discipline_ref_type ret;
-
-    const auto& idx = db_impl().get_index<discipline_index>().indicies().get<by_id>();
-    auto it = idx.lower_bound(0);
-    const auto it_end = idx.cend();
-    while (it != it_end)
-    {
-        ret.push_back(std::cref(*it));
-        ++it;
-    }
-
-    return ret;
-}
-
 const discipline_object& dbs_discipline::get_discipline(const discipline_id_type& id) const
 {
     try
@@ -81,28 +65,36 @@ const dbs_discipline::discipline_optional_ref_type dbs_discipline::get_disciplin
 }
 
 
-void dbs_discipline::check_discipline_existence(const discipline_id_type &id)
-{
-    const auto& idx = db_impl().get_index<discipline_index>().indices().get<by_id>();
-
-    FC_ASSERT(idx.find(id) != idx.cend(), "Discipline with id=\"${1}\" does not exist", ("1", id));
-}
-
 const bool dbs_discipline::discipline_exists(const discipline_id_type& id) const
 {
     const auto& idx = db_impl()
-            .get_index<discipline_index>()
-            .indices()
-            .get<by_id>();
+      .get_index<discipline_index>()
+      .indices()
+      .get<by_id>();
 
     return idx.find(id) != idx.end();
 }
 
-dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines_by_parent_id(const discipline_id_type parent_id) const
+const bool dbs_discipline::discipline_exists(const external_id_type& external_id) const
+{
+    const auto& idx = db_impl()
+      .get_index<discipline_index>()
+      .indices()
+      .get<by_external_id>();
+
+    return idx.find(external_id) != idx.end();
+}
+
+const dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines_by_parent(const external_id_type& parent_external_id) const
 {
     discipline_ref_type ret;
 
-    auto it_pair = db_impl().get_index<discipline_index>().indicies().get<by_parent_id>().equal_range(parent_id);
+    const auto& idx = db_impl()
+      .get_index<discipline_index>()
+      .indicies()
+      .get<by_parent_external_id>();
+
+    auto it_pair = idx.equal_range(parent_external_id);
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
     while (it != it_end)
@@ -112,6 +104,23 @@ dbs_discipline::discipline_ref_type dbs_discipline::get_disciplines_by_parent_id
     }
 
     return ret;
+}
+
+const dbs_discipline::discipline_ref_type dbs_discipline::lookup_disciplines(const discipline_id_type& lower_bound, uint32_t limit) const
+{
+    discipline_ref_type result;
+
+    const auto& idx = db_impl()
+      .get_index<discipline_index>()
+      .indicies()
+      .get<by_id>();
+
+    for (auto itr = idx.lower_bound(lower_bound); limit-- && itr != idx.end(); ++itr)
+    {
+        result.push_back(std::cref(*itr));
+    }
+
+    return result;
 }
 
 } //namespace chain

@@ -258,9 +258,9 @@ public:
     /////////////////
     // Disciplines //
     /////////////////
-    vector<discipline_api_obj> get_all_disciplines() const;
-    fc::optional<discipline_api_obj> get_discipline(const discipline_id_type& id) const;
-    vector<discipline_api_obj> get_disciplines_by_parent_id(const discipline_id_type parent_id) const;
+    vector<discipline_api_obj> lookup_disciplines(const discipline_id_type& lower_bound, uint32_t limit) const;
+    fc::optional<discipline_api_obj> get_discipline(const external_id_type& external_id) const;
+    vector<discipline_api_obj> get_disciplines_by_parent(const external_id_type& parent_external_id) const;
 
     ////////////////////
     // Research group //
@@ -300,10 +300,9 @@ public:
     // Expert Tokens //
     ///////////////////
     fc::optional<expert_token_api_obj> get_expert_token(const expert_token_id_type id) const;
-    vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_name_type account_name) const;
-    vector<expert_token_api_obj> get_expert_tokens_by_discipline_id(const discipline_id_type discipline_id) const;
+    vector<expert_token_api_obj> get_expert_tokens_by_account_name(const account_name_type account) const;
+    vector<expert_token_api_obj> get_expert_tokens_by_discipline(const external_id_type& discipline_external_id) const;
     fc::optional<expert_token_api_obj> get_common_token_by_account_name(const account_name_type account_name) const;
-    fc::optional<expert_token_api_obj> get_expert_token_by_account_name_and_discipline_id(const account_name_type account_name, const discipline_id_type discipline_id) const;
 
     ////////////////////
     // Proposal       //
@@ -334,7 +333,6 @@ public:
     ///////////////////////////////////
     // Research discipline relation  //
     ///////////////////////////////////
-
     vector<discipline_api_obj> get_disciplines_by_research(const research_id_type& research_id) const;
 
     /////////////////////////////
@@ -348,9 +346,10 @@ public:
     ///////////////////////////////
     // Research Reviews          //
     ///////////////////////////////
+    fc::optional<review_api_obj> get_review(const external_id_type& external_id) const;
     fc::optional<review_api_obj> get_review_by_id(const review_id_type& review_id) const;
-    vector<review_api_obj> get_reviews_by_research(const research_id_type& research_id) const;
-    vector<review_api_obj> get_reviews_by_content(const research_content_id_type& research_content_id) const;
+    vector<review_api_obj> get_reviews_by_research(const external_id_type& research_external_id) const;
+    vector<review_api_obj> get_reviews_by_research_content(const external_id_type& research_content_external_id) const;
     vector<review_api_obj> get_reviews_by_author(const account_name_type& author) const;
 
     ///////////////////////////////
@@ -372,8 +371,9 @@ public:
     // Review vote object ///
     /////////////////////////
 
-    vector<review_vote_api_obj> get_review_votes_by_voter(const account_name_type &voter) const;
-    vector<review_vote_api_obj> get_review_votes_by_review_id(const review_id_type &review_id) const;
+    vector<review_vote_api_obj> get_review_votes_by_voter(const account_name_type& voter) const;
+    vector<review_vote_api_obj> get_review_votes_by_review_id(const review_id_type& review_id) const;
+    vector<review_vote_api_obj> get_review_votes_by_review(const external_id_type& review_external_id) const;
 
     //////////////////////////////////////////
     // Expertise allocation proposal object///
@@ -564,9 +564,9 @@ FC_API(deip::app::database_api,
    (lookup_discipline_supply_grantors)
 
    // Disciplines
-   (get_all_disciplines)
+   (lookup_disciplines)
    (get_discipline)
-   (get_disciplines_by_parent_id)
+   (get_disciplines_by_parent)
 
    // Research group
    (get_research_group)
@@ -599,9 +599,8 @@ FC_API(deip::app::database_api,
    // Expert Tokens
    (get_expert_token)
    (get_expert_tokens_by_account_name)
-   (get_expert_tokens_by_discipline_id)
+   (get_expert_tokens_by_discipline)
    (get_common_token_by_account_name)
-   (get_expert_token_by_account_name_and_discipline_id)
 
    // Proposal
    (get_proposal)
@@ -631,9 +630,10 @@ FC_API(deip::app::database_api,
    (get_expertise_contribution_by_research_content_and_discipline)
 
    // Reviews
+   (get_review)
    (get_review_by_id)
    (get_reviews_by_research)
-   (get_reviews_by_content)
+   (get_reviews_by_research_content)
    (get_reviews_by_author)
 
    // Grant Application Reviews
@@ -648,6 +648,7 @@ FC_API(deip::app::database_api,
    // Review votes
    (get_review_votes_by_voter)
    (get_review_votes_by_review_id)
+   (get_review_votes_by_review)
 
    // Expertise allocation proposal
    (get_expertise_allocation_proposal_by_id)
