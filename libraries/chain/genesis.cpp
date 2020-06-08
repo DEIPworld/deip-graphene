@@ -531,7 +531,6 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
     const auto& creator = account_service.get_account(research_group.creator);
 
     auto owner_authority = authority();
-    owner_authority.add_authority(creator.name, 1);
     owner_authority.weight_threshold = 1;
 
     auto active_authority = authority();
@@ -540,6 +539,7 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
     for (auto& member_name : research_group.members)
     {
         const auto& member = account_service.get_account(member_name);
+        owner_authority.add_authority(account_name_type(member.name), 1);
         active_authority.add_authority(account_name_type(member.name), 1);
     }
 
