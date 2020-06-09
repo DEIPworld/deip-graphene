@@ -75,6 +75,7 @@ typedef multi_index_container<discipline_object,
 
 FC_REFLECT( deip::chain::discipline_object,
   (id)
+  (parent_id)
   (external_id)
   (parent_external_id)
   (name)
