@@ -929,7 +929,7 @@ public:
                                                           const asset& amount,
                                                           const uint32_t start_time,
                                                           const uint32_t end_time,
-                                                          const int64_t& target_discipline,
+                                                          const external_id_type& target_discipline,
                                                           const std::string& content_hash,
                                                           const bool is_extendable,
                                                           const bool broadcast);
@@ -1018,7 +1018,7 @@ public:
 
     annotated_signed_transaction create_grant(const std::string& grantor,
                                               const asset& amount,
-                                              const int64_t& target_discipline,
+                                              const external_id_type& target_discipline,
                                               const std::string& funding_opportunity_number,
                                               const external_id_type& review_committee_id,
                                               const uint16_t& min_number_of_positive_reviews,

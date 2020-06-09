@@ -61,7 +61,7 @@ struct create_grant_operation : public base_operation
     external_id_type external_id;
     account_name_type grantor;
     asset amount;
-    std::set<int64_t> target_disciplines;
+    flat_set<external_id_type> target_disciplines;
     grant_distribution_models distribution_model;
     
     extensions_type extensions;

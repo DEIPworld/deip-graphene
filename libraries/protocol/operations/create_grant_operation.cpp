@@ -10,7 +10,7 @@ namespace protocol {
 void inline validate_distribution_model(const grant_distribution_models distribution_model,
                                         const asset& amount,
                                         const account_name_type& grantor,
-                                        const std::set<int64_t>& target_disciplines)
+                                        const flat_set<external_id_type>& target_disciplines)
 {  
   bool is_validated = false;
 
@@ -78,7 +78,7 @@ void create_grant_operation::validate() const
 {
     validate_account_name(grantor);
     FC_ASSERT(amount > asset(0, amount.symbol), "Amount is required");
-    FC_ASSERT(target_disciplines.size() != 0 && target_disciplines.count(0) == 0, "Disciplines list is required and should not contain 0");
+    FC_ASSERT(target_disciplines.size() != 0, "Disciplines list is required");
 
     validate_distribution_model(distribution_model, amount, grantor, target_disciplines);
 }

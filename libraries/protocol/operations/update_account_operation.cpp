@@ -42,6 +42,7 @@ void update_account_operation::validate() const
             }
         }
     }
+    
 }
 
 } // namespace protocol

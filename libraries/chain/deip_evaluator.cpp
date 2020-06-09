@@ -146,14 +146,14 @@ void create_account_evaluator::do_apply(const create_account_operation& op)
     const auto& dup_guard = duplicated_entity_guard(dgp_service);
     dup_guard(op);
 
-    auto creator_balance  = account_balance_service.get_by_owner_and_asset(op.creator, op.fee.symbol);
+    const auto& creator_balance = account_balance_service.get_by_owner_and_asset(op.creator, op.fee.symbol);
     FC_ASSERT(creator_balance.amount >= op.fee.amount, 
       "Insufficient balance to create account.",
       ("creator.balance", creator_balance.amount)("required", op.fee.amount));
 
     FC_ASSERT(op.fee >= DEIP_MIN_ACCOUNT_CREATION_FEE,
-      "Insufficient Fee: ${f} required, ${p} provided.",
-      ("f", DEIP_MIN_ACCOUNT_CREATION_FEE)("p", op.fee));
+      "Insufficient Fee: ${1} required, ${2} provided.",
+      ("1", DEIP_MIN_ACCOUNT_CREATION_FEE)("2", op.fee));
 
     // check accounts existence
     account_service.check_account_existence(op.owner.account_auths);
@@ -1133,18 +1133,24 @@ void vote_for_expertise_allocation_proposal_evaluator::do_apply(const vote_for_e
 
 void create_grant_evaluator::do_apply(const create_grant_operation& op)
 {
-    const dbs_account& accounts_service = _db.obtain_service<dbs_account>();
-    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
-    const dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
-    dbs_funding_opportunity& funding_opportunities_service = _db.obtain_service<dbs_funding_opportunity>();
-    const dbs_asset& assets_service = _db.obtain_service<dbs_asset>();
-    dbs_discipline_supply& discipline_supply_service = _db.obtain_service<dbs_discipline_supply>();
+    const auto& accounts_service = _db.obtain_service<dbs_account>();
+    auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
+    const auto& research_group_service = _db.obtain_service<dbs_research_group>();
+    auto& funding_opportunities_service = _db.obtain_service<dbs_funding_opportunity>();
+    const auto& assets_service = _db.obtain_service<dbs_asset>();
+    auto& discipline_supply_service = _db.obtain_service<dbs_discipline_supply>();
+    auto& discipline_service = _db.obtain_service<dbs_discipline>();
 
     FC_ASSERT(accounts_service.account_exists(op.grantor), "Account ${a} does not exists", ("a", op.grantor));
     FC_ASSERT(assets_service.exists_by_symbol(op.amount.symbol), "Asset ${s} does not exists", ("s", op.amount.symbol));
 
     std::set<discipline_id_type> target_disciplines;
-    target_disciplines.insert(op.target_disciplines.begin(), op.target_disciplines.end());
+    for (const auto& external_id : op.target_disciplines)
+    {
+        const auto& discipline = discipline_service.get_discipline(external_id);
+        target_disciplines.insert(discipline.id);
+    }
+
     FC_ASSERT(target_disciplines.size() != 0, "Grant target disciplines are not specified");
 
     const account_balance_object& grantor_balance = account_balance_service.get_by_owner_and_asset(op.grantor, op.amount.symbol);
@@ -1233,7 +1239,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
     {
         const auto contract = op.distribution_model.get<discipline_supply_announcement_contract_type>();
 
-        int64_t target_discipline = *op.target_disciplines.begin();
+        int64_t target_discipline = (*target_disciplines.begin())._id;
         discipline_supply_service.create_discipline_supply(
           op.grantor,
           op.amount,

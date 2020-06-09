@@ -21,11 +21,15 @@ void update_proposal_operation::validate() const
         FC_ASSERT(owner_approvals_to_remove.find(a) == owner_approvals_to_remove.end(),
                   "Cannot add and remove approval at the same time.");
     }
-    for( auto a : key_approvals_to_add )
-    {
-        FC_ASSERT(key_approvals_to_remove.find(a) == key_approvals_to_remove.end(),
-                  "Cannot add and remove approval at the same time.");
-    }
+
+    FC_ASSERT(key_approvals_to_add.size() == 0, "Not supported currently"); // key approvals not supported currently
+    FC_ASSERT(key_approvals_to_remove.size() == 0, "Not supported currently");
+    
+    // for( auto a : key_approvals_to_add )
+    // {
+    //     FC_ASSERT(key_approvals_to_remove.find(a) == key_approvals_to_remove.end(),
+    //               "Cannot add and remove approval at the same time.");
+    // }
 }
 
 } /* deip::protocol */

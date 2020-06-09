@@ -19,6 +19,8 @@ void create_research_operation::validate() const
     }
 
     FC_ASSERT(!title.empty(), "Research name cannot be empty.");
+    FC_ASSERT(title.size() <= DEIP_MAX_TITLE_SIZE);
+    FC_ASSERT(abstract.size() <= DEIP_MAX_MEMO_SIZE);
 
     const auto& min_review_share = percent(0);
     const auto& max_review_share = percent(DEIP_1_PERCENT * 50);

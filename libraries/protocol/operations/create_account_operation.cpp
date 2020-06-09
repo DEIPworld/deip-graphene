@@ -16,6 +16,9 @@ void validate_account_trait(const account_name_type& creator, const account_trai
         const auto rg_trait = trait.get<research_group_trait>();
 
         FC_ASSERT(!rg_trait.name.empty(), "Research group name is required");
+        FC_ASSERT(rg_trait.name.size() <= DEIP_MAX_TITLE_SIZE);
+        FC_ASSERT(rg_trait.description.size() <= DEIP_MAX_MEMO_SIZE);
+
         FC_ASSERT(fc::is_utf8(rg_trait.name), "Research group name is not valid UTF-8 string");
         FC_ASSERT(fc::is_utf8(rg_trait.description), "Research group description is not valid UTF-8 string");
         is_validated = true;
