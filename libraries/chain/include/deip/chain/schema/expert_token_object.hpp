@@ -93,7 +93,13 @@ typedef multi_index_container<expert_token_object,
 }
 
 FC_REFLECT( deip::chain::expert_token_object,
-            (id)(account_name)(discipline_id)(amount)(voting_power)(last_vote_time)
+  (id)
+  (account_name)
+  (discipline_id)
+  (discipline_external_id)
+  (amount)
+  (voting_power)
+  (last_vote_time)
 )
 
 CHAINBASE_SET_INDEX_TYPE( deip::chain::expert_token_object, deip::chain::expert_token_index )
