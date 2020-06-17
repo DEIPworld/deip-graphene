@@ -63,7 +63,7 @@
 
 #endif
 
-#define DEIP_MIN_ACCOUNT_CREATION_FEE        asset( 10000, DEIP_SYMBOL )
+#define DEIP_MIN_ACCOUNT_CREATION_FEE        asset( 0, DEIP_SYMBOL )
 #define DEIP_MIN_DISCIPLINE_SUPPLY_PER_BLOCK 1
 
 #define DEIP_BLOCK_INTERVAL                  3
