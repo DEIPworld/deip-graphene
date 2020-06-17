@@ -327,7 +327,7 @@ void witness_plugin_impl::update_account_bandwidth(const account_object& account
         auto account_common_tokens_bandwidth = (common_tokens_bandwidth * common_tokens_balance) / total_common_tokens_amount;
         auto account_expertise_tokens_bandwidth = (expertise_tokens_bandwidth * expertise_tokens_balance) / total_expertise_tokens_amount;
 
-        has_bandwidth = account_common_tokens_bandwidth + account_expertise_tokens_bandwidth > account_average_bandwidth;
+        has_bandwidth = DEIP_BANDWIDTH_CHECK_DISABLED || account_common_tokens_bandwidth + account_expertise_tokens_bandwidth > account_average_bandwidth;
 
         if (_db.is_producing())
             DEIP_ASSERT(has_bandwidth, chain::plugin_exception,
