@@ -435,7 +435,6 @@ struct research_api_obj
         , is_finished(r_o.is_finished)
         , is_private(r_o.is_private)
         , owned_tokens(r_o.owned_tokens.amount)
-        , review_share(r_o.review_share.amount)
         , created_at(r_o.created_at)
         , disciplines(disciplines.begin(), disciplines.end())
         , number_of_positive_reviews(r_o.number_of_positive_reviews)
@@ -451,6 +450,11 @@ struct research_api_obj
             eci_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
         }
 
+        if (r_o.review_share.valid())
+        {
+            review_share = (*r_o.review_share).amount;
+        }
+        
         if (r_o.compensation_share.valid())
         {
             compensation_share = (*r_o.compensation_share).amount;
@@ -471,8 +475,8 @@ struct research_api_obj
     bool is_finished;
     bool is_private;
     share_type owned_tokens;
-    share_type review_share;
     time_point_sec created_at;
+    optional<share_type> review_share;
     optional<share_type> compensation_share;
     vector<discipline_api_obj> disciplines;
 
@@ -506,12 +510,6 @@ struct research_content_api_obj
 
         references.insert(rc_o.references.begin(), rc_o.references.end());
 
-        for (auto& str : rc_o.foreign_references)
-        {
-            std::string val = fc::to_string(str);
-            foreign_references.insert(val);
-        }
-
         for (const auto& kvp : rc_o.eci_per_discipline)
         {
             discipline_id_type discipline_id = kvp.first;
@@ -537,8 +535,6 @@ struct research_content_api_obj
     fc::time_point_sec activity_window_start;
     fc::time_point_sec activity_window_end;
     fc::time_point_sec created_at;
-
-    std::set<string> foreign_references;
     std::set<external_id_type> references;
 
     map<int64_t, int64_t> eci_per_discipline;
@@ -1402,8 +1398,8 @@ FC_REFLECT( deip::app::research_api_obj,
             (is_finished)
             (is_private)
             (owned_tokens)
-            (review_share)
             (created_at)
+            (review_share)
             (compensation_share)
             (disciplines)
             (eci_per_discipline)
@@ -1428,7 +1424,6 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (activity_window_end)
             (created_at)
             (references)
-            (foreign_references)
             (eci_per_discipline)
           )
 

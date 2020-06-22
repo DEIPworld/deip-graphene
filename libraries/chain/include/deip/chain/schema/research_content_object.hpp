@@ -68,7 +68,6 @@ public:
         content(a), 
         permlink(a), 
         authors(a), 
-        foreign_references(a), 
         eci_per_discipline(a)
     {
         c(*this);
@@ -89,7 +88,6 @@ public:
     time_point_sec created_at;
 
     flat_set<external_id_type> references;
-    shared_string_type_set foreign_references;
 
     discipline_id_share_type_map eci_per_discipline;
 
@@ -241,7 +239,6 @@ FC_REFLECT(deip::chain::research_content_object,
   (authors)
   (created_at)
   (references)
-  (foreign_references)
   (activity_round)
   (activity_state)
   (activity_window_start)

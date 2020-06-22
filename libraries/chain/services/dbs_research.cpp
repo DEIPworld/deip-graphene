@@ -15,20 +15,19 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 {
 }
 
-const research_object& dbs_research::create_research(
-  const research_group_object& research_group,
-  const external_id_type& external_id,
-  const string& title, 
-  const string& abstract, 
-  const std::set<discipline_id_type>& disciplines,
-  const percent& review_share,
-  const optional<percent>& compensation_share, 
-  const bool& is_private,
-  const bool& is_finished,
-  const percent& owned_tokens,
-  const flat_set<account_name_type>& members,
-  const time_point_sec& created_at
-) {
+const research_object& dbs_research::create_research(const research_group_object& research_group,
+                                                     const external_id_type& external_id,
+                                                     const string& title,
+                                                     const string& abstract,
+                                                     const std::set<discipline_id_type>& disciplines,
+                                                     const optional<percent>& review_share,
+                                                     const optional<percent>& compensation_share,
+                                                     const bool& is_private,
+                                                     const bool& is_finished,
+                                                     const percent& owned_tokens,
+                                                     const flat_set<account_name_type>& members,
+                                                     const time_point_sec& created_at)
+{
     auto& research_disciplines_service = db_impl().obtain_service<dbs_research_discipline_relation>();
     auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
 
@@ -60,15 +59,14 @@ const research_object& dbs_research::create_research(
     return research;
 }
 
-const research_object& dbs_research::update_research(
-  const research_object& research,
-  const string& title,
-  const string& abstract,
-  const bool& is_private,
-  const percent& review_share,
-  const optional<percent>& compensation_share,
-  const flat_set<account_name_type>& members
-) {
+const research_object& dbs_research::update_research(const research_object& research,
+                                                     const string& title,
+                                                     const string& abstract,
+                                                     const bool& is_private,
+                                                     const optional<percent>& review_share,
+                                                     const optional<percent>& compensation_share,
+                                                     const flat_set<account_name_type>& members)
+{
 
     const auto& block_time = db_impl().head_block_time();
     const auto& research_permlink = deip::chain::util::generate_permlink(title);

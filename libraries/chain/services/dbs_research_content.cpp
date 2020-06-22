@@ -25,7 +25,6 @@ const research_content_object& dbs_research_content::create_research_content(
   const research_content_type& type,
   const flat_set<account_name_type>& authors,
   const flat_set<external_id_type>& references,
-  const flat_set<string>& foreign_references,
   const fc::time_point_sec& timestamp) 
 {
     auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
@@ -41,16 +40,6 @@ const research_content_object& dbs_research_content::create_research_content(
         rc_o.authors.insert(authors.begin(), authors.end());
         rc_o.references.insert(references.begin(), references.end());   
         rc_o.created_at = timestamp;
-
-        for (auto& str : foreign_references)
-        {
-            int val_length = str.length();
-            char val_array[val_length + 1];
-            strcpy(val_array, str.c_str());
-            rc_o.foreign_references.insert(
-              fc::shared_string(val_array, basic_string_allocator(db_impl().get_segment_manager()))
-            );
-        }
 
         // deprecated
         rc_o.activity_round = 1;

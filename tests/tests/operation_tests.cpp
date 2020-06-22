@@ -1857,7 +1857,6 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
             fc::from_string(r.abstract, "abstract");
             fc::from_string(r.permlink, "permlink");
             r.research_group_id = 31;
-            r.review_share = percent(1500);
             r.is_finished = false;
             r.owned_tokens = percent(DEIP_100_PERCENT);
             r.created_at = db.head_block_time();

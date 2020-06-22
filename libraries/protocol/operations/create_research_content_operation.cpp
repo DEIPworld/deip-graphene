@@ -27,12 +27,6 @@ void create_research_content_operation::validate() const
     {
         validate_160_bits_hexadecimal_string(ref_id);
     }
-
-    for (auto& ref : foreign_references)
-    {
-        FC_ASSERT(!ref.empty(), "Foreign reference link cannot be empty");
-        FC_ASSERT(fc::is_utf8(ref), "Foreign reference link is not valid UTF8 string");
-    }
 }
 
 } /* deip::protocol */

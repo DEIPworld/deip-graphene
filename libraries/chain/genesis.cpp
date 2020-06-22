@@ -379,9 +379,10 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
 
         const time_point_sec genesis_time = get_genesis_time();
         const bool& is_private = false;
-        const percent& review_share = percent(DEIP_1_PERCENT * 20);
+        
+        const optional<percent>& review_share = optional<percent>(percent(0));
+        const optional<percent>& compensation_share = optional<percent>(percent(0));
 
-        optional<percent> compensation_share = optional<percent>(percent(DEIP_1_PERCENT * 5));
         const auto& research_group = research_groups_service.get_research_group_by_account(research.account);
 
         const auto& authors = std::accumulate(
@@ -437,7 +438,6 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
         const auto& research = research_service.get_research(research_content.research_external_id);
         const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
 
-        const flat_set<string> foreign_references;
         const time_point_sec timestamp = get_genesis_time();
         flat_set<external_id_type> references;
         references.insert(research_content.references.begin(), research_content.references.end());
@@ -451,7 +451,6 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
           static_cast<deip::chain::research_content_type>(research_content.type),
           research_content.authors,
           references,
-          foreign_references,
           timestamp
         );
 

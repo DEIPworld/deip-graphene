@@ -31,7 +31,6 @@ public:
             r.title = RESEARCH_TITLE;
             r.permlink = RESEARCH_TITLE;
             r.research_group_id = RESEARCH_GROUP_ID;
-            r.review_share = percent(1000);
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = ABSTRACT;
@@ -43,7 +42,6 @@ public:
             r.id = 2;
             r.permlink = "Second";
             r.research_group_id = 2;
-            r.review_share = percent(1000);
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = ABSTRACT;
@@ -55,7 +53,6 @@ public:
             r.id = 3;
             r.permlink = "Third";
             r.research_group_id = 2;
-            r.review_share = percent(1000);
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = ABSTRACT;
@@ -84,7 +81,6 @@ BOOST_AUTO_TEST_CASE(get_researches)
             return  research.id == 1 &&
                     research.permlink == RESEARCH_TITLE &&
                     research.research_group_id == RESEARCH_GROUP_ID &&
-                    research.review_share == percent(1000) &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
                     research.owned_tokens == percent(DEIP_100_PERCENT) &&
@@ -96,7 +92,6 @@ BOOST_AUTO_TEST_CASE(get_researches)
             return  research.id == 2 &&
                     research.permlink == "Second" &&
                     research.research_group_id == 2 &&
-                    research.review_share == percent(1000) &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
                     research.owned_tokens == percent(DEIP_100_PERCENT) &&
@@ -108,7 +103,6 @@ BOOST_AUTO_TEST_CASE(get_researches)
             return  research.id == 3 &&
                     research.permlink == "Third" &&
                     research.research_group_id == 2 &&
-                    research.review_share == percent(1000) &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
                     research.owned_tokens == percent(DEIP_100_PERCENT) &&
@@ -133,7 +127,6 @@ BOOST_AUTO_TEST_CASE(get_researches_by_research_group)
             return  research.id == 2 &&
                     research.permlink == "Second" &&
                     research.research_group_id == 2 &&
-                    research.review_share == percent(1000) &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
                     research.owned_tokens == percent(DEIP_100_PERCENT) &&
@@ -145,7 +138,6 @@ BOOST_AUTO_TEST_CASE(get_researches_by_research_group)
             return  research.id == 3 &&
                     research.permlink == "Third" &&
                     research.research_group_id == 2 &&
-                    research.review_share == percent(1000) &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
                     research.owned_tokens == percent(DEIP_100_PERCENT) &&
@@ -167,7 +159,6 @@ BOOST_AUTO_TEST_CASE(get_research)
         BOOST_CHECK(research.title == RESEARCH_TITLE);
         BOOST_CHECK(research.permlink == RESEARCH_TITLE);
         BOOST_CHECK(research.research_group_id == RESEARCH_GROUP_ID);
-        BOOST_CHECK(research.review_share == percent(1000));
         BOOST_CHECK(research.is_finished == false);
         BOOST_CHECK(research.created_at <= db.head_block_time());
         BOOST_CHECK(research.abstract == ABSTRACT);

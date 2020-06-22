@@ -14,7 +14,6 @@ struct create_research_content_operation : public entity_operation
     string content;
     flat_set<account_name_type> authors;
     flat_set<external_id_type> references;
-    flat_set<string> foreign_references;
     
     extensions_type extensions;
 
@@ -41,6 +40,5 @@ FC_REFLECT(deip::protocol::create_research_content_operation,
   (content)
   (authors)
   (references)
-  (foreign_references)
   (extensions)
 )

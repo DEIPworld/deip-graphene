@@ -30,7 +30,6 @@ public:
             r.title = "Research #1";
             r.permlink = "Research #1 permlink";
             r.research_group_id = 1;
-            r.review_share = percent(RESEARCH_ID_1_REVIEW_SHARE_IN_PERCENT);
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for Research #1";
@@ -47,7 +46,6 @@ public:
             rc.permlink = "milestone-research-one";
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
-            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -60,7 +58,6 @@ public:
             rc.permlink = "another-milestone-research-one";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
-            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -73,7 +70,6 @@ public:
             rc.permlink = "final-research-one";
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
-            rc.foreign_references = {};
         });
 
         db.create<research_object>([&](research_object& r) {
@@ -82,7 +78,6 @@ public:
             r.title = "Research #2";
             r.permlink = "permlink for Research #2";
             r.research_group_id = 2;
-            r.review_share = percent(RESEARCH_ID_2_REVIEW_SHARE_IN_PERCENT);
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for research #2";
@@ -99,7 +94,6 @@ public:
             rc.permlink = "announcement-research-two";
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
-            rc.foreign_references = {};
         });
     }
 
@@ -115,7 +109,6 @@ public:
             rc.permlink = "milestone-research-one";
             rc.authors = {"alice", "bob"};
             rc.created_at = db.head_block_time();
-            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -128,7 +121,6 @@ public:
             rc.permlink = "another-milestone-research-one";
             rc.authors = {"alice"};
             rc.created_at = db.head_block_time();
-            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -141,7 +133,6 @@ public:
             rc.permlink = "final-research-one";
             rc.authors = {"bob"};
             rc.created_at = db.head_block_time();
-            rc.foreign_references = {};
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -154,7 +145,6 @@ public:
             rc.permlink = "announcement-research-two";
             rc.authors = {"john"};
             rc.created_at = db.head_block_time();
-            rc.foreign_references = {};
         });
     }
 
@@ -181,7 +171,6 @@ BOOST_AUTO_TEST_CASE(get_content_by_id)
         BOOST_CHECK(announcement.authors.size() == 1);
         BOOST_CHECK(authors[0] == "john");
         BOOST_CHECK(announcement.references.size() == 1);
-        BOOST_CHECK(announcement.foreign_references.size() == 2);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -206,9 +195,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                     content.content == "milestone for Research #1" &&
                     content.authors.size() == 2 &&
                     authors[0] == "alice" && authors[1] == "bob" &&
-                    content.references.size() == 1 &&
-                    content.foreign_references.size() == 3;
-
+                    content.references.size() == 1;
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
@@ -222,8 +209,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                     content.content == "milestone for Research #1" &&
                     content.authors.size() == 1 && 
                     authors[0] == "alice" &&
-                    content.references.size() == 1 &&
-                    content.foreign_references.size() == 2;
+                    content.references.size() == 1;
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
@@ -237,8 +223,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
                     content.content == "final result for Research #1" &&
                     content.authors.size() == 1 && 
                     authors[0] == "bob" &&
-                    content.references.size() == 1 &&
-                    content.foreign_references.size() == 3;
+                    content.references.size() == 1;
         }));
     }
     FC_LOG_AND_RETHROW()
@@ -276,8 +261,7 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
                     content.content == "announcement for Research #2" &&
                     content.authors.size() == 1 && 
                     authors[0] == "john" &&
-                    content.references.size() == 1 &&
-                    content.foreign_references.size() == 2;
+                    content.references.size() == 1;
         }));
 
     }

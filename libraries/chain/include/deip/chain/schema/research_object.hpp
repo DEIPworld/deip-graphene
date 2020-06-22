@@ -48,7 +48,7 @@ public:
     
     bool is_finished;
     percent owned_tokens;
-    percent review_share;
+    optional<percent> review_share;
     optional<percent> compensation_share;
 
     discipline_id_share_type_map eci_per_discipline;

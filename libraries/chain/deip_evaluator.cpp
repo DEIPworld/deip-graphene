@@ -2457,7 +2457,6 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
       static_cast<research_content_type>(op.type),
       op.authors,
       op.references,
-      op.foreign_references,
       block_time);
 
     for (external_id_type id : op.references)
@@ -2611,7 +2610,7 @@ void update_research_evaluator::do_apply(const update_research_operation& op)
     std::string title = op.title.valid() ? *op.title : fc::to_string(research.title);
     std::string abstract = op.abstract.valid() ? *op.abstract : fc::to_string(research.abstract);
     bool is_private = op.is_private.valid() ? *op.is_private : research.is_private;
-    percent review_share = op.review_share.valid() ? *op.review_share : research.review_share;
+    optional<percent> review_share = op.review_share.valid() ? op.review_share : research.review_share;
     optional<percent> compensation_share = op.compensation_share.valid() ? op.compensation_share : research.compensation_share;
     flat_set<account_name_type> members = op.members.valid() ? *op.members : research.members;
 

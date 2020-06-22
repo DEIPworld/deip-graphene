@@ -28,7 +28,7 @@ public:
                                            const string& title,
                                            const string& abstract,
                                            const std::set<discipline_id_type>& disciplines,
-                                           const percent& review_share,
+                                           const optional<percent>& review_share,
                                            const optional<percent>& compensation_share,
                                            const bool& is_private,
                                            const bool& is_finished,
@@ -40,7 +40,7 @@ public:
                                            const string& title,
                                            const string& abstract,
                                            const bool& is_private,
-                                           const percent& review_share,
+                                           const optional<percent>& review_share,
                                            const optional<percent>& compensation_share,
                                            const flat_set<account_name_type>& members);
 

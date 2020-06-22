@@ -133,8 +133,7 @@ struct database_fixture
                                            const string& title,
                                            const string& abstract,
                                            const string& permlink,
-                                           const research_group_id_type& research_group_id,
-                                           const percent& review_share);
+                                           const research_group_id_type& research_group_id);
 
     const research_token_object& research_token_create(const int64_t id, 
                                                        const account_name_type& owner,
@@ -153,8 +152,7 @@ struct database_fixture
                                             const time_point_sec& activity_window_start,
                                             const time_point_sec& activity_window_end,
                                             const std::vector<account_name_type>& authors,
-                                            const std::vector<research_content_id_type>& references,
-                                            const std::set<string>& foreign_references);
+                                            const std::vector<research_content_id_type>& references);
 
 
     const expert_token_object& expert_token_create(const int64_t id,

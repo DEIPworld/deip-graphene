@@ -22,11 +22,15 @@ void create_research_operation::validate() const
     FC_ASSERT(title.size() <= DEIP_MAX_TITLE_SIZE);
     FC_ASSERT(abstract.size() <= DEIP_MAX_MEMO_SIZE);
 
-    const auto& min_review_share = percent(0);
-    const auto& max_review_share = percent(DEIP_1_PERCENT * 50);
-    FC_ASSERT(review_share >= min_review_share && review_share <= max_review_share,
-      "Percent for review should be in ${1} to ${2} range. Provided value: ${3}",
-      ("1", min_review_share)("2", max_review_share)("3", review_share));
+    if (review_share.valid())
+    {
+        const auto& share = *review_share;
+        const auto& min_review_share = percent(0);
+        const auto& max_review_share = percent(DEIP_1_PERCENT * 50);
+        FC_ASSERT(share >= min_review_share && share <= max_review_share,
+          "Percent for review should be in ${1} to ${2} range. Provided value: ${3}",
+          ("1", min_review_share)("2", max_review_share)("3", share));
+    }
 
     if (compensation_share.valid())
     {

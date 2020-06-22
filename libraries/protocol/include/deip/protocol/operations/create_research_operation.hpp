@@ -18,7 +18,7 @@ struct create_research_operation : public entity_operation
     string abstract;
     flat_set<external_id_type> disciplines;
     bool is_private;
-    percent review_share;
+    optional<percent> review_share;
     optional<percent> compensation_share;
     /*
       Research participants.

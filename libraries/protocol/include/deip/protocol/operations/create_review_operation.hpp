@@ -44,7 +44,7 @@ struct create_review_operation : public entity_operation
     external_id_type external_id;
     account_name_type author;
     external_id_type research_content_external_id;
-    std::string content;
+    string content;
     percent weight;
     assessment_models assessment_model;
     flat_set<external_id_type> disciplines;
