@@ -407,7 +407,7 @@ public:
     {
         auto accounts = _remote_db->get_accounts({ account_name });
         FC_ASSERT(!accounts.empty(), "Unknown account");
-        return accounts.front();
+        return *(accounts.front());
     }
 
     string get_wallet_filename() const
@@ -1063,7 +1063,7 @@ vector<account_api_obj> wallet_api::list_my_accounts()
     return result;
 }
 
-set<string> wallet_api::list_accounts(const string& lowerbound, uint32_t limit)
+vector<account_api_obj> wallet_api::list_accounts(const string& lowerbound, uint32_t limit)
 {
     return my->_remote_db->lookup_accounts(lowerbound, limit);
 }
@@ -1426,22 +1426,22 @@ annotated_signed_transaction wallet_api::update_account_auth_key(const std::stri
 
     auto accounts = my->_remote_db->get_accounts({ account_name });
     FC_ASSERT(accounts.size() == 1, "Account does not exist");
-    FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
+    FC_ASSERT(account_name == (*accounts.front()).name, "Account name doesn't match?");
 
     update_account_operation op;
     op.account = account_name;
-    op.memo_key = accounts[0].memo_key;
-    op.json_metadata = accounts[0].json_metadata;
+    op.memo_key = (*accounts.front()).memo_key;
+    op.json_metadata = (*accounts.front()).json_metadata;
 
     authority new_auth;
 
     switch (type)
     {
     case (owner):
-        new_auth = accounts[0].owner;
+        new_auth = (*accounts.front()).owner;
         break;
     case (active):
-        new_auth = accounts[0].active;
+        new_auth = (*accounts.front()).active;
         break;
     }
 
@@ -1491,22 +1491,22 @@ annotated_signed_transaction wallet_api::update_account_auth_account(const std::
 
     auto accounts = my->_remote_db->get_accounts({ account_name });
     FC_ASSERT(accounts.size() == 1, "Account does not exist");
-    FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
+    FC_ASSERT(account_name == (*accounts.front()).name, "Account name doesn't match?");
 
     update_account_operation op;
     op.account = account_name;
-    op.memo_key = accounts[0].memo_key;
-    op.json_metadata = accounts[0].json_metadata;
+    op.memo_key = (*accounts.front()).memo_key;
+    op.json_metadata = (*accounts.front()).json_metadata;
 
     authority new_auth;
 
     switch (type)
     {
     case (owner):
-        new_auth = accounts[0].owner;
+        new_auth = (*accounts.front()).owner;
         break;
     case (active):
-        new_auth = accounts[0].active;
+        new_auth = (*accounts.front()).active;
         break;
     }
 
@@ -1555,23 +1555,23 @@ annotated_signed_transaction wallet_api::update_account_auth_threshold(const std
 
     auto accounts = my->_remote_db->get_accounts({ account_name });
     FC_ASSERT(accounts.size() == 1, "Account does not exist");
-    FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
+    FC_ASSERT(account_name == (*accounts.front()).name, "Account name doesn't match?");
     FC_ASSERT(threshold != 0, "Authority is implicitly satisfied");
 
     update_account_operation op;
     op.account = account_name;
-    op.memo_key = accounts[0].memo_key;
-    op.json_metadata = accounts[0].json_metadata;
+    op.memo_key = (*accounts.front()).memo_key;
+    op.json_metadata = (*accounts.front()).json_metadata;
 
     authority new_auth;
 
     switch (type)
     {
     case (owner):
-        new_auth = accounts[0].owner;
+        new_auth = (*accounts.front()).owner;
         break;
     case (active):
-        new_auth = accounts[0].active;
+        new_auth = (*accounts.front()).active;
         break;
     }
 
@@ -1611,11 +1611,11 @@ wallet_api::update_account_meta(const std::string& account_name, const std::stri
 
     auto accounts = my->_remote_db->get_accounts({ account_name });
     FC_ASSERT(accounts.size() == 1, "Account does not exist");
-    FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
+    FC_ASSERT(account_name == (*accounts.front()).name, "Account name doesn't match?");
 
     update_account_operation op;
     op.account = account_name;
-    op.memo_key = accounts[0].memo_key;
+    op.memo_key = (*accounts.front()).memo_key;
     op.json_metadata = json_meta;
 
     signed_transaction tx;
@@ -1632,12 +1632,12 @@ wallet_api::update_account_memo_key(const std::string& account_name, const publi
 
     auto accounts = my->_remote_db->get_accounts({ account_name });
     FC_ASSERT(accounts.size() == 1, "Account does not exist");
-    FC_ASSERT(account_name == accounts[0].name, "Account name doesn't match?");
+    FC_ASSERT(account_name == (*accounts.front()).name, "Account name doesn't match?");
 
     update_account_operation op;
     op.account = account_name;
     op.memo_key = key;
-    op.json_metadata = accounts[0].json_metadata;
+    op.json_metadata = (*accounts.front()).json_metadata;
 
     signed_transaction tx;
     tx.operations.push_back(op);

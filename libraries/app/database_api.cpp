@@ -70,12 +70,9 @@ public:
     vector<set<string>> get_key_references(vector<public_key_type> key) const;
 
     // Accounts
-    vector<extended_account> get_accounts(const set<string>& names) const;
-    vector<account_api_obj> get_all_accounts() const;
-    vector<account_id_type> get_account_references(account_id_type account_id) const;
-    vector<optional<account_api_obj>> lookup_account_names(const vector<string>& account_names) const;
+    vector<optional<account_api_obj>> get_accounts(const set<string>& names) const;
+    vector<account_api_obj> lookup_accounts(const string& lower_bound_name, uint32_t limit) const;
     vector<account_api_obj> get_accounts_by_expert_discipline(const discipline_id_type& discipline_id, uint32_t from, uint32_t limit) const;
-    set<string> lookup_accounts(const string& lower_bound_name, uint32_t limit) const;
     uint64_t get_account_count() const;
 
     // discipline_supplies
@@ -433,113 +430,62 @@ vector<set<string>> database_api_impl::get_key_references(vector<public_key_type
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-vector<extended_account> database_api::get_accounts(const set<string>& names) const
+vector<optional<account_api_obj>> database_api::get_accounts(const set<string>& names) const
 {
     FC_ASSERT(names.size() <= DEIP_API_BULK_FETCH_LIMIT);
     return my->_db.with_read_lock([&]() { return my->get_accounts(names); });
 }
 
-vector<extended_account> database_api_impl::get_accounts(const set<string>& names) const
+vector<optional<account_api_obj>> database_api_impl::get_accounts(const set<string>& names) const
 {
-    const auto& vidx = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
     const auto& accounts_service = _db.obtain_service<chain::dbs_account>();
     const auto& account_balances_service = _db.obtain_service<chain::dbs_account_balance>();
 
-    vector<extended_account> results;
+    vector<optional<account_api_obj>> results;
+    results.reserve(names.size());
 
     for (auto name : names)
     {
+        optional<account_api_obj> result;
         const auto& account_opt = accounts_service.get_account_if_exists(name);
+        
         if (account_opt.valid())
         {
             const auto& account = (*account_opt).get();
             const auto& auth = accounts_service.get_account_authority(name);
-            const auto account_balances = account_balances_service.get_by_owner(name);
+            const auto& account_balances = account_balances_service.get_by_owner(name);
 
-            results.push_back(extended_account(account, auth, account_balances));
-
-            auto vitr = vidx.lower_bound(boost::make_tuple(account.id, witness_id_type()));
-            while (vitr != vidx.end() && vitr->account == account.id)
-            {
-                results.back().witness_votes.insert(_db.get(vitr->witness).owner);
-                ++vitr;
-            }
+            result = account_api_obj(account, auth, account_balances);
         }
+
+        results.push_back(result);
     }
 
     return results;
 }
 
-vector<account_id_type> database_api::get_account_references(account_id_type account_id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_account_references(account_id); });
-}
-
-vector<account_id_type> database_api_impl::get_account_references(account_id_type account_id) const
-{
-    /*const auto& idx = _db.get_index<account_index>();
-    const auto& aidx = dynamic_cast<const primary_index<account_index>&>(idx);
-    const auto& refs = aidx.get_secondary_index<deip::chain::account_member_index>();
-    auto itr = refs.account_to_account_memberships.find(account_id);
-    vector<account_id_type> result;
-
-    if( itr != refs.account_to_account_memberships.end() )
-    {
-       result.reserve( itr->second.size() );
-       for( auto item : itr->second ) result.push_back(item);
-    }
-    return result;*/
-    FC_ASSERT(false, "database_api::get_account_references --- Needs to be refactored for deip.");
-}
-
-vector<optional<account_api_obj>> database_api::lookup_account_names(const vector<string>& account_names) const
-{
-    return my->_db.with_read_lock([&]() { return my->lookup_account_names(account_names); });
-}
-
-vector<optional<account_api_obj>> database_api_impl::lookup_account_names(const vector<string>& account_names) const
-{
-    const auto& accounts_service = _db.obtain_service<chain::dbs_account>();
-    const auto& account_balances_service = _db.obtain_service<chain::dbs_account_balance>();
-
-    vector<optional<account_api_obj>> result;
-    result.reserve(account_names.size());
-
-    for (auto& name : account_names)
-    {
-        const auto& account_opt = accounts_service.get_account_if_exists(name);
-
-        if (account_opt.valid())
-        {
-            const auto& account = (*account_opt).get();
-            const auto& auth = accounts_service.get_account_authority(name);
-            const auto account_balances = account_balances_service.get_by_owner(name);
-
-            result.push_back(account_api_obj(account, auth, account_balances));
-        }
-        else
-        {
-            result.push_back(optional<account_api_obj>());
-        }
-    }
-
-    return result;
-}
-
-set<string> database_api::lookup_accounts(const string& lower_bound_name, uint32_t limit) const
+vector<account_api_obj> database_api::lookup_accounts(const string& lower_bound_name, uint32_t limit) const
 {
     FC_ASSERT(limit <= DEIP_API_BULK_FETCH_LIMIT);
     return my->_db.with_read_lock([&]() { return my->lookup_accounts(lower_bound_name, limit); });
 }
 
-set<string> database_api_impl::lookup_accounts(const string& lower_bound_name, uint32_t limit) const
+vector<account_api_obj> database_api_impl::lookup_accounts(const string& lower_bound_name, uint32_t limit) const
 {
+    const auto& accounts_service = _db.obtain_service<chain::dbs_account>();
+    const auto& account_balances_service = _db.obtain_service<chain::dbs_account_balance>();
+
+    vector<account_api_obj> result;
+
     const auto& accounts_by_name = _db.get_index<account_index>().indices().get<by_name>();
-    set<string> result;
 
     for (auto itr = accounts_by_name.lower_bound(lower_bound_name); limit-- && itr != accounts_by_name.end(); ++itr)
     {
-        result.insert(itr->name);
+        const auto& account = accounts_service.get_account(itr->name);
+        const auto& auth = accounts_service.get_account_authority(itr->name);
+        const auto& account_balances = account_balances_service.get_by_owner(itr->name);
+
+        result.push_back(account_api_obj(account, auth, account_balances));
     }
 
     return result;
@@ -548,33 +494,6 @@ set<string> database_api_impl::lookup_accounts(const string& lower_bound_name, u
 uint64_t database_api::get_account_count() const
 {
     return my->_db.with_read_lock([&]() { return my->get_account_count(); });
-}
-
-
-vector<account_api_obj> database_api::get_all_accounts() const
-{
-    return my->_db.with_read_lock([&]() { return my->get_all_accounts(); });
-}
-
-vector<account_api_obj> database_api_impl::get_all_accounts() const
-{
-    const auto& idx = _db.get_index<account_index>().indicies().get<by_id>();
-    const auto& accounts_service = _db.obtain_service<chain::dbs_account>();
-    const auto& account_balances_service = _db.obtain_service<chain::dbs_account_balance>();
-
-    vector<account_api_obj> results;
-    auto it = idx.lower_bound(0);
-    const auto it_end = idx.cend();
-    while (it != it_end)
-    {
-        const auto& account = *it;
-        const auto& auth = accounts_service.get_account_authority(account.name);
-        const auto account_balances = account_balances_service.get_by_owner(account.name);
-        results.push_back(account_api_obj(account, auth, account_balances));
-        ++it;
-    }
-
-    return results;
 }
 
 uint64_t database_api_impl::get_account_count() const
@@ -982,7 +901,7 @@ state database_api::get_state(string path) const
                 const auto& auth = accounts_service.get_account_authority(acnt);
                 const auto balances = account_balances_service.get_by_owner(acnt);
 
-                _state.accounts[acnt] = extended_account(account, auth, balances);
+                _state.accounts[acnt] = account_api_obj(account, auth, balances);
 
                 // auto& eacnt = _state.accounts[acnt];
                 if (part[1] == "transfers")
@@ -1031,7 +950,7 @@ state database_api::get_state(string path) const
                 const auto& account = accounts_service.get_account(a);
                 const auto& auth = accounts_service.get_account_authority(a);
                 const auto balances = account_balances_service.get_by_owner(a);
-                _state.accounts[a] = extended_account(account, auth, balances);
+                _state.accounts[a] = account_api_obj(account, auth, balances);
             }
 
             _state.witness_schedule = my->_db.get_witness_schedule_object();

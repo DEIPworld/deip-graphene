@@ -42,23 +42,6 @@ struct account_vote
     time_point_sec time;
 };
 
-struct extended_account : public account_api_obj
-{
-    extended_account() {}
-    extended_account(const account_object& a, const account_authority_object& auth, const account_balance_refs_type account_balances)
-      : account_api_obj(a, auth, account_balances)
-    {
-    }
-
-    // map<uint64_t, applied_operation> transfer_history; /// transfer to/from common tokens
-    // map<uint64_t, applied_operation> post_history;
-    // map<uint64_t, applied_operation> vote_history;
-    // map<uint64_t, applied_operation> other_history;
-    set<string> witness_votes;
-
-    optional<vector<string>> recent_replies; /// blog posts for this user
-};
-
 /**
  *  This struct is designed
  */
@@ -76,7 +59,7 @@ struct state
     /**
      *  map from account/slug to full nested discussion
      */
-    map<string, extended_account> accounts;
+    map<string, account_api_obj> accounts;
 
     /**
      * The list of block producers
@@ -89,11 +72,6 @@ struct state
 }
 
 // clang-format off
-
-FC_REFLECT_DERIVED( deip::app::extended_account,
-                   (deip::app::account_api_obj),
-                   (witness_votes)(recent_replies) )
-
 
 FC_REFLECT( deip::app::vote_state, (voter)(weight)(rshares)(percent)(time) )
 FC_REFLECT( deip::app::account_vote, (authorperm)(weight)(rshares)(percent)(time) )

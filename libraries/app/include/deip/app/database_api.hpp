@@ -124,21 +124,14 @@ public:
     // Accounts //
     //////////////
 
-    vector<extended_account> get_accounts(const set<string>& names) const;
-
-    /**
-     *  @return all accounts that referr to the key or account id in their owner or active authorities.
-     */
-    vector<account_id_type> get_account_references(account_id_type account_id) const;
-
     /**
      * @brief Get a list of accounts by name
-     * @param account_names Names of the accounts to retrieve
+     * @param names Names of the accounts to retrieve
      * @return The accounts holding the provided names
      *
      * This function has semantics identical to @ref get_objects
      */
-    vector<optional<account_api_obj>> lookup_account_names(const vector<string>& account_names) const;
+    vector<optional<account_api_obj>> get_accounts(const set<string>& names) const;
 
     /**
      * @brief Get names and IDs for registered accounts
@@ -146,14 +139,12 @@ public:
      * @param limit Maximum number of results to return -- must not exceed 1000
      * @return Map of account names to corresponding IDs
      */
-    set<string> lookup_accounts(const string& lower_bound_name, uint32_t limit) const;
+    vector<account_api_obj> lookup_accounts(const string& lower_bound_name, uint32_t limit) const;
 
     /**
      * @brief Get the total number of accounts registered with the blockchain
      */
     uint64_t get_account_count() const;
-
-    vector<account_api_obj> get_all_accounts() const;
 
     vector<discipline_supply_api_obj> get_discipline_supplies(const set<string>& account_names) const;
 
@@ -535,11 +526,8 @@ FC_API(deip::app::database_api,
 
    // Accounts
    (get_accounts)
-   (get_account_references)
-   (lookup_account_names)
    (lookup_accounts)
    (get_account_count)
-   (get_all_accounts)
    (get_owner_history)
    (get_recovery_request)
    (get_withdraw_routes)

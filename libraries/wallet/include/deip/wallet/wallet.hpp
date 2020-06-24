@@ -205,7 +205,7 @@ public:
      * @param limit the maximum number of accounts to return (max: 1000)
      * @returns a list of accounts mapping account names to account ids
      */
-    set<string> list_accounts(const std::string& lowerbound, uint32_t limit);
+    vector<account_api_obj> list_accounts(const string& lowerbound, uint32_t limit);
 
     /** Returns the block chain's rapidly-changing properties.
      * The returned object contains information that changes every block interval
