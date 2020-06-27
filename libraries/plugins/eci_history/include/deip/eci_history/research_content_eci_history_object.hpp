@@ -31,9 +31,9 @@ public:
     share_type eci;
     share_type delta;
 
-    uint16_t alteration_source_type;
-    int64_t alteration_source_id;
-    
+    uint16_t contribution_type;
+    int64_t contribution_id;
+
     fc::time_point_sec timestamp;
 };
 
@@ -85,8 +85,8 @@ FC_REFLECT(deip::eci_history::research_content_eci_history_object,
   (discipline_id)
   (eci)
   (delta)
-  (alteration_source_type)
-  (alteration_source_id)
+  (contribution_type)
+  (contribution_id)
   (timestamp)
 )
 

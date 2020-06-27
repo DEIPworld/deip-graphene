@@ -6,16 +6,16 @@ namespace protocol {
 struct eci_diff
 {
     eci_diff(){}
-    eci_diff(const share_type& _old, 
-            const share_type& _new, 
-            const fc::time_point_sec& timestamp,
-            const uint16_t& alteration_source_type,
-            const int64_t& alteration_source_id)
-    : _old(_old)
-    , _new(_new)
-    , timestamp(timestamp)
-    , alteration_source_type(alteration_source_type)
-    , alteration_source_id(alteration_source_id)
+    eci_diff(const share_type& _old,
+             const share_type& _new,
+             const fc::time_point_sec& timestamp,
+             const uint16_t& contribution_type,
+             const int64_t& contribution_id)
+        : _old(_old)
+        , _new(_new)
+        , timestamp(timestamp)
+        , contribution_type(contribution_type)
+        , contribution_id(contribution_id)
 
     {
     }
@@ -24,8 +24,8 @@ struct eci_diff
     share_type _new;
     fc::time_point_sec timestamp;
 
-    uint16_t alteration_source_type;
-    int64_t alteration_source_id;
+    uint16_t contribution_type;
+    int64_t contribution_id;
 
     share_type current() const
     {
@@ -46,4 +46,10 @@ struct eci_diff
 } // namespace protocol
 } // namespace deip
 
-FC_REFLECT(deip::protocol::eci_diff, (_old)(_new)(timestamp)(alteration_source_type)(alteration_source_id))
+FC_REFLECT(deip::protocol::eci_diff, 
+  (_old)
+  (_new)
+  (timestamp)
+  (contribution_type)
+  (contribution_id)
+)

@@ -9,7 +9,7 @@ struct research_content_eci_history_api_obj
     research_content_eci_history_api_obj(){};
     research_content_eci_history_api_obj(const int64_t& id,
                                          const int64_t& discipline_id,
-                                         const uint16_t alteration_source_type,
+                                         const uint16_t contribution_type,
                                          const chain::share_type& eci,
                                          const chain::share_type& delta,
                                          const fc::time_point_sec& timestamp,
@@ -20,7 +20,7 @@ struct research_content_eci_history_api_obj
                                          const fc::optional<app::review_vote_api_obj>& review_vote_opt)
         : id(id)
         , discipline_id(discipline_id)
-        , alteration_source_type(alteration_source_type)
+        , contribution_type(contribution_type)
         , eci(eci)
         , delta(delta)
         , timestamp(timestamp)
@@ -40,7 +40,7 @@ struct research_content_eci_history_api_obj
 
     int64_t id;
     int64_t discipline_id;
-    uint16_t alteration_source_type;
+    uint16_t contribution_type;
 
     chain::share_type eci;
     chain::share_type delta;
@@ -61,7 +61,7 @@ struct research_eci_history_api_obj
     research_eci_history_api_obj(){};
     research_eci_history_api_obj(const int64_t& id,
                                  const int64_t& discipline_id,
-                                 const uint16_t alteration_source_type,
+                                 const uint16_t contribution_type,
                                  const chain::share_type& eci,
                                  const chain::share_type& delta,
                                  const fc::time_point_sec& timestamp,
@@ -72,7 +72,7 @@ struct research_eci_history_api_obj
                                  const fc::optional<app::review_vote_api_obj>& review_vote_opt)
         : id(id)
         , discipline_id(discipline_id)
-        , alteration_source_type(alteration_source_type)
+        , contribution_type(contribution_type)
         , eci(eci)
         , delta(delta)
         , timestamp(timestamp)
@@ -98,7 +98,7 @@ struct research_eci_history_api_obj
 
     int64_t id;
     int64_t discipline_id;
-    uint16_t alteration_source_type;
+    uint16_t contribution_type;
 
     chain::share_type eci;
     chain::share_type delta;
@@ -119,7 +119,7 @@ struct account_eci_history_api_obj
     account_eci_history_api_obj(const int64_t& id,
                                 const int64_t& discipline_id,
                                 const std::string& account,
-                                const uint16_t alteration_source_type,
+                                const uint16_t contribution_type,
                                 const chain::share_type& eci,
                                 const chain::share_type& delta,
                                 const fc::time_point_sec& timestamp,
@@ -131,7 +131,7 @@ struct account_eci_history_api_obj
         : id(id)
         , discipline_id(discipline_id)
         , account(account)
-        , alteration_source_type(alteration_source_type)
+        , contribution_type(contribution_type)
         , eci(eci)
         , delta(delta)
         , timestamp(timestamp)
@@ -165,7 +165,7 @@ struct account_eci_history_api_obj
     int64_t id;
     int64_t discipline_id;
     std::string account;
-    uint16_t alteration_source_type;
+    uint16_t contribution_type;
 
     chain::share_type eci;
     chain::share_type delta;
@@ -187,7 +187,7 @@ struct account_eci_history_api_obj
 FC_REFLECT(deip::eci_history::research_content_eci_history_api_obj, 
   (id)
   (discipline_id)
-  (alteration_source_type)
+  (contribution_type)
   (eci)
   (delta)
   (timestamp)
@@ -201,7 +201,7 @@ FC_REFLECT(deip::eci_history::research_content_eci_history_api_obj,
 FC_REFLECT(deip::eci_history::research_eci_history_api_obj, 
   (id)
   (discipline_id)
-  (alteration_source_type)
+  (contribution_type)
   (eci)
   (delta)
   (timestamp)
@@ -216,7 +216,7 @@ FC_REFLECT(deip::eci_history::account_eci_history_api_obj,
   (id)
   (discipline_id)
   (account)
-  (alteration_source_type)
+  (contribution_type)
   (eci)
   (delta)
   (timestamp)

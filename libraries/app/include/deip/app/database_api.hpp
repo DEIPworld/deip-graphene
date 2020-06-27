@@ -137,7 +137,7 @@ public:
      * @brief Get names and IDs for registered accounts
      * @param lower_bound_name Lower bound of the first name to return
      * @param limit Maximum number of results to return -- must not exceed 1000
-     * @return Map of account names to corresponding IDs
+     * @return Vector of accounts
      */
     vector<account_api_obj> lookup_accounts(const string& lower_bound_name, uint32_t limit) const;
 

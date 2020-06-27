@@ -80,12 +80,12 @@ public:
         while (itr != itr_end)
         {
             const auto& hist = *itr;
-            const expertise_contribution_type alteration_source_type = static_cast<expertise_contribution_type>(hist.alteration_source_type);
+            const expertise_contribution_type contribution_type = static_cast<expertise_contribution_type>(hist.contribution_type);
 
             fc::optional<app::review_api_obj> review_opt;
             fc::optional<app::review_vote_api_obj> review_vote_opt;
 
-            switch (alteration_source_type)
+            switch (contribution_type)
             {
                 case expertise_contribution_type::publication: {
 
@@ -94,7 +94,7 @@ public:
 
                 case expertise_contribution_type::review: {
 
-                    auto rw_itr = reviews_idx.find(hist.alteration_source_id);
+                    auto rw_itr = reviews_idx.find(hist.contribution_id);
                     if (rw_itr != reviews_idx.end())
                     {
                         review_opt = app::review_api_obj(*rw_itr, {});
@@ -105,7 +105,7 @@ public:
 
                 case expertise_contribution_type::review_support: {
 
-                    auto rw_v_itr = review_votes_idx.find(hist.alteration_source_id);
+                    auto rw_v_itr = review_votes_idx.find(hist.contribution_id);
                     if (rw_v_itr != review_votes_idx.end())
                     {
                         review_vote_opt = app::review_vote_api_obj(*rw_v_itr);
@@ -127,7 +127,7 @@ public:
             result.push_back(research_content_eci_history_api_obj(
               hist.id._id, 
               hist.discipline_id._id,
-              hist.alteration_source_type,
+              hist.contribution_type,
               hist.eci,
               hist.delta,
               hist.timestamp,
@@ -183,17 +183,17 @@ public:
         while (itr != itr_end)
         {
             const auto& hist = *itr;
-            const expertise_contribution_type alteration_source_type = static_cast<expertise_contribution_type>(hist.alteration_source_type);
+            const expertise_contribution_type contribution_type = static_cast<expertise_contribution_type>(hist.contribution_type);
 
             fc::optional<app::research_content_api_obj> research_content_opt;
             fc::optional<app::review_api_obj> review_opt;
             fc::optional<app::review_vote_api_obj> review_vote_opt;
 
-            switch (alteration_source_type)
+            switch (contribution_type)
             {
                 case expertise_contribution_type::publication: {
 
-                    auto rc_itr = research_content_idx.find(hist.alteration_source_id);
+                    auto rc_itr = research_content_idx.find(hist.contribution_id);
                     if (rc_itr != research_content_idx.end())
                     {
                         research_content_opt = app::research_content_api_obj(*rc_itr);
@@ -204,7 +204,7 @@ public:
 
                 case expertise_contribution_type::review: {
 
-                    auto rw_itr = reviews_idx.find(hist.alteration_source_id);
+                    auto rw_itr = reviews_idx.find(hist.contribution_id);
                     if (rw_itr != reviews_idx.end())
                     {
                         review_opt = app::review_api_obj(*rw_itr, {});
@@ -221,7 +221,7 @@ public:
 
                 case expertise_contribution_type::review_support: {
 
-                    auto rw_v_itr = review_votes_idx.find(hist.alteration_source_id);
+                    auto rw_v_itr = review_votes_idx.find(hist.contribution_id);
                     if (rw_v_itr != review_votes_idx.end())
                     {
                         review_vote_opt = app::review_vote_api_obj(*rw_v_itr);
@@ -249,7 +249,7 @@ public:
             result.push_back(research_eci_history_api_obj(
               hist.id._id, 
               hist.discipline_id._id,
-              hist.alteration_source_type,
+              hist.contribution_type,
               hist.eci,
               hist.delta,
               hist.timestamp,
@@ -287,7 +287,7 @@ public:
         while (itr != itr_end)
         {
             const auto& hist = *itr;
-            const expertise_contribution_type alteration_source_type = static_cast<expertise_contribution_type>(hist.alteration_source_type);
+            const expertise_contribution_type contribution_type = static_cast<expertise_contribution_type>(hist.contribution_type);
 
             fc::optional<app::research_content_api_obj> research_content_opt;
             fc::optional<app::research_api_obj> research_opt;
@@ -295,11 +295,11 @@ public:
             fc::optional<app::review_api_obj> review_opt;
             fc::optional<app::review_vote_api_obj> review_vote_opt;
 
-            switch (alteration_source_type)
+            switch (contribution_type)
             {
                 case expertise_contribution_type::publication: {
 
-                    auto rc_itr = research_content_idx.find(hist.alteration_source_id);
+                    auto rc_itr = research_content_idx.find(hist.contribution_id);
                     if (rc_itr != research_content_idx.end())
                     {
                         research_content_opt = app::research_content_api_obj(*rc_itr);
@@ -322,7 +322,7 @@ public:
 
                 case expertise_contribution_type::review: {
 
-                    auto rw_itr = reviews_idx.find(hist.alteration_source_id);
+                    auto rw_itr = reviews_idx.find(hist.contribution_id);
                     if (rw_itr != reviews_idx.end())
                     {
                         review_opt = app::review_api_obj(*rw_itr, {});
@@ -351,7 +351,7 @@ public:
 
                 case expertise_contribution_type::review_support: {
 
-                    auto rw_v_itr = review_votes_idx.find(hist.alteration_source_id);
+                    auto rw_v_itr = review_votes_idx.find(hist.contribution_id);
                     if (rw_v_itr != review_votes_idx.end())
                     {
                         review_vote_opt = app::review_vote_api_obj(*rw_v_itr);
@@ -392,7 +392,7 @@ public:
               hist.id._id, 
               hist.discipline_id._id,
               hist.account,
-              hist.alteration_source_type,
+              hist.contribution_type,
               hist.eci,
               hist.delta,
               hist.timestamp,

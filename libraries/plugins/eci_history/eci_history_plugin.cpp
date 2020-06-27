@@ -28,13 +28,8 @@ public:
     eci_history_plugin_impl(eci_history_plugin& _plugin)
         : _self(_plugin)
     {
-        chain::database& db = database();
-
-        db.add_plugin_index<account_eci_history_index>();
-        db.add_plugin_index<research_eci_history_index>();
-        db.add_plugin_index<research_content_eci_history_index>();
-        db.pre_apply_operation.connect([&](const operation_notification& note) { on_operation(note); });
     }
+
     virtual ~eci_history_plugin_impl()
     {
     }
@@ -44,57 +39,74 @@ public:
         return _self.database();
     }
 
-    void on_operation(const operation_notification& note);
+    void pre_operation(const operation_notification& op_obj);
+    void post_operation(const operation_notification& op_obj);
 
     eci_history_plugin& _self;
 };
 
-
-void eci_history_plugin_impl::on_operation(const operation_notification& note)
+struct post_operation_visitor
 {
-    deip::chain::database& db = database();
+    eci_history_plugin& _plugin;
 
-    if (note.op.which() == operation::tag<research_content_eci_history_operation>::value)
+    post_operation_visitor(eci_history_plugin& plugin)
+        : _plugin(plugin)
     {
-        research_content_eci_history_operation op = note.op.get<research_content_eci_history_operation>();
-        db.create<research_content_eci_history_object>([&](research_content_eci_history_object& hist_o) {
+    }
+
+    typedef void result_type;
+
+    template <typename T> void operator()(const T&) const
+    {
+    }
+
+    void operator()(const research_content_eci_history_operation& op) const
+    {
+        _plugin.database().create<research_content_eci_history_object>([&](research_content_eci_history_object& hist_o) {
             hist_o.research_content_id = op.research_content_id;
             hist_o.discipline_id = op.discipline_id;
             hist_o.eci = op.diff.current();
             hist_o.delta = op.diff.diff();
-            hist_o.alteration_source_type = op.diff.alteration_source_type;
-            hist_o.alteration_source_id = op.diff.alteration_source_id;
+            hist_o.contribution_type = op.diff.contribution_type;
+            hist_o.contribution_id = op.diff.contribution_id;
             hist_o.timestamp = op.diff.timestamp;
         });
     }
 
-    else if (note.op.which() == operation::tag<research_eci_history_operation>::value)
+    void operator()(const research_eci_history_operation& op) const
     {
-        research_eci_history_operation op = note.op.get<research_eci_history_operation>();
-        db.create<research_eci_history_object>([&](research_eci_history_object& hist_o) {
+        _plugin.database().create<research_eci_history_object>([&](research_eci_history_object& hist_o) {
             hist_o.research_id = op.research_id;
             hist_o.discipline_id = op.discipline_id;
             hist_o.eci = op.diff.current();
             hist_o.delta = op.diff.diff();
-            hist_o.alteration_source_type = op.diff.alteration_source_type;
-            hist_o.alteration_source_id = op.diff.alteration_source_id;
+            hist_o.contribution_type = op.diff.contribution_type;
+            hist_o.contribution_id = op.diff.contribution_id;
             hist_o.timestamp = op.diff.timestamp;
         });
     }
 
-    else if (note.op.which() == operation::tag<account_eci_history_operation>::value)
+    void operator()(const account_eci_history_operation& op) const
     {
-        account_eci_history_operation op = note.op.get<account_eci_history_operation>();
-        db.create<account_eci_history_object>([&](account_eci_history_object& hist_o) {
+        _plugin.database().create<account_eci_history_object>([&](account_eci_history_object& hist_o) {
             hist_o.account = op.account;
             hist_o.discipline_id = op.discipline_id;
             hist_o.eci = op.diff.current();
             hist_o.delta = op.diff.diff();
-            hist_o.alteration_source_type = op.diff.alteration_source_type;
-            hist_o.alteration_source_id = op.diff.alteration_source_id;
+            hist_o.contribution_type = op.diff.contribution_type;
+            hist_o.contribution_id = op.diff.contribution_id;
             hist_o.timestamp = op.diff.timestamp;
         });
     }
+};
+
+void eci_history_plugin_impl::pre_operation(const operation_notification& note)
+{
+}
+
+void eci_history_plugin_impl::post_operation(const operation_notification& note)
+{
+    note.op.visit(post_operation_visitor(_self));
 }
 
 } // end namespace detail
@@ -123,6 +135,15 @@ void eci_history_plugin::plugin_set_program_options(boost::program_options::opti
 void eci_history_plugin::plugin_initialize(const boost::program_options::variables_map& options)
 {
     ilog("Intializing ECI history plugin");
+
+    chain::database& db = database();
+
+    db.add_plugin_index<account_eci_history_index>();
+    db.add_plugin_index<research_eci_history_index>();
+    db.add_plugin_index<research_content_eci_history_index>();
+
+    db.pre_apply_operation.connect([&](const operation_notification& note) { my->pre_operation(note); });
+    db.post_apply_operation.connect([&](const operation_notification& note) { my->post_operation(note); });
 }
 
 void eci_history_plugin::plugin_startup()
