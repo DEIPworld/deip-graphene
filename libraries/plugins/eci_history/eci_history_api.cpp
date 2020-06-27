@@ -31,9 +31,8 @@ public:
     {
     }
 
-    std::vector<research_content_eci_history_api_obj> get_eci_history_by_research_content_and_discipline(
-      const research_content_id_type& research_content_id,
-      const discipline_id_type& discipline_id) const
+    std::vector<research_content_eci_history_api_obj> get_eci_history_by_research_content_and_discipline(const research_content_id_type& research_content_id,
+                                                                                                         const discipline_id_type& discipline_id) const
     {
         std::vector<research_content_eci_history_api_obj> result;
 
@@ -123,9 +122,8 @@ public:
         return result;
     }
 
-    std::vector<research_eci_history_api_obj> get_eci_history_by_research_and_discipline(
-      const research_id_type& research_id,
-      const discipline_id_type& discipline_id) const
+    std::vector<research_eci_history_api_obj> get_eci_history_by_research_and_discipline(const research_id_type& research_id,
+                                                                                         const discipline_id_type& discipline_id) const
     {
         std::vector<research_eci_history_api_obj> result;
 
@@ -223,9 +221,8 @@ public:
         return result;
     }
 
-    std::vector<account_eci_history_api_obj> get_eci_history_by_account_and_discipline(
-      const account_name_type& account,
-      const discipline_id_type& discipline_id) const
+    std::vector<account_eci_history_api_obj> get_eci_history_by_account_and_discipline(const account_name_type& account,
+                                                                                       const discipline_id_type& discipline_id) const
     {
         std::vector<account_eci_history_api_obj> result;
 
@@ -355,9 +352,8 @@ void eci_history_api::on_api_startup()
 {
 }
 
-std::vector<research_content_eci_history_api_obj> eci_history_api::get_eci_history_by_research_content_and_discipline(
-  const research_content_id_type& research_content_id,
-  const discipline_id_type& discipline_id) const
+std::vector<research_content_eci_history_api_obj> eci_history_api::get_eci_history_by_research_content_and_discipline(const research_content_id_type& research_content_id,
+                                                                                                                      const discipline_id_type& discipline_id) const
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock([&]() {
@@ -365,9 +361,8 @@ std::vector<research_content_eci_history_api_obj> eci_history_api::get_eci_histo
     });
 }
 
-std::vector<research_eci_history_api_obj> eci_history_api::get_eci_history_by_research_and_discipline(
-  const research_id_type& research_id,
-  const discipline_id_type& discipline_id) const
+std::vector<research_eci_history_api_obj> eci_history_api::get_eci_history_by_research_and_discipline(const research_id_type& research_id,
+                                                                                                      const discipline_id_type& discipline_id) const
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock([&]() { 
@@ -375,9 +370,8 @@ std::vector<research_eci_history_api_obj> eci_history_api::get_eci_history_by_re
     });
 }
 
-std::vector<account_eci_history_api_obj> eci_history_api::get_eci_history_by_account_and_discipline(
-  const account_name_type& account,
-  const discipline_id_type& discipline_id) const
+std::vector<account_eci_history_api_obj> eci_history_api::get_eci_history_by_account_and_discipline(const account_name_type& account,
+                                                                                                    const discipline_id_type& discipline_id) const
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock([&]() { 
