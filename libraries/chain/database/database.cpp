@@ -1179,7 +1179,6 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
     dbs_review& reviews_service = obtain_service<dbs_review>();
     dbs_expert_token& expert_tokens_service = obtain_service<dbs_expert_token>();
     const fc::time_point_sec now = head_block_time();
-    vector<account_eci_history_operation> account_eci_v_ops;
 
     const auto& altered_contributions = expertise_contributions_service.get_altered_expertise_contributions_in_block();
 
@@ -1239,10 +1238,11 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       std::get<1>(exp_token_diff),
                       now,
                       diff.contribution_type,
-                      diff.contribution_id
+                      diff.contribution_id,
+                      diff.assessment_criterias
                     );
 
-                    account_eci_v_ops.push_back(account_eci_history_operation(
+                    push_virtual_operation(account_eci_history_operation(
                         upvoter.second, 
                         expertise_contribution.discipline_id._id,
                         upvoter_eci_diff)
@@ -1266,10 +1266,11 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       std::get<1>(exp_token_diff),
                       now,
                       diff.contribution_type,
-                      diff.contribution_id
+                      diff.contribution_id,
+                      diff.assessment_criterias
                     );
 
-                    account_eci_v_ops.push_back(account_eci_history_operation(
+                    push_virtual_operation(account_eci_history_operation(
                         downvoter.second, 
                         expertise_contribution.discipline_id._id,
                         downvoter_eci_diff)
@@ -1294,10 +1295,11 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       std::get<1>(exp_token_diff),
                       now,
                       diff.contribution_type,
-                      diff.contribution_id
+                      diff.contribution_id,
+                      diff.assessment_criterias
                     );
 
-                    account_eci_v_ops.push_back(account_eci_history_operation(
+                    push_virtual_operation(account_eci_history_operation(
                         author, 
                         expertise_contribution.discipline_id._id,
                         author_eci_diff)
@@ -1327,10 +1329,11 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       std::get<1>(exp_token_diff),
                       now,
                       diff.contribution_type,
-                      diff.contribution_id
+                      diff.contribution_id,
+                      diff.assessment_criterias
                     );
 
-                    account_eci_v_ops.push_back(account_eci_history_operation(
+                    push_virtual_operation(account_eci_history_operation(
                         upvoter.second, 
                         expertise_contribution.discipline_id._id,
                         upvoter_eci_diff)
@@ -1354,10 +1357,11 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       std::get<1>(exp_token_diff),
                       now,
                       diff.contribution_type,
-                      diff.contribution_id
+                      diff.contribution_id,
+                      diff.assessment_criterias
                     );
 
-                    account_eci_v_ops.push_back(account_eci_history_operation(
+                    push_virtual_operation(account_eci_history_operation(
                         downvoter.second, 
                         expertise_contribution.discipline_id._id,
                         downvoter_eci_diff)
@@ -1381,10 +1385,11 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       std::get<1>(exp_token_diff),
                       now,
                       diff.contribution_type,
-                      diff.contribution_id
+                      diff.contribution_id,
+                      diff.assessment_criterias
                     );
 
-                    account_eci_v_ops.push_back(account_eci_history_operation(
+                    push_virtual_operation(account_eci_history_operation(
                         author, 
                         expertise_contribution.discipline_id._id,
                         author_eci_diff)
@@ -1393,10 +1398,6 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
             }
         }
 
-        for (const auto& v_op : account_eci_v_ops)
-        {
-            push_virtual_operation(v_op);
-        }
 
         modify(expertise_contribution, [&](expertise_contribution_object& ec_o) { 
           ec_o.eci_current_block_delta = 0;

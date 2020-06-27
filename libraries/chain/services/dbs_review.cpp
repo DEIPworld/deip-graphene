@@ -18,17 +18,17 @@ dbs_review::dbs_review(database &db)
 {
 }
 
-const review_object& dbs_review::create_review( const external_id_type& external_id,
-                                                const external_id_type& research_external_id,
-                                                const external_id_type& research_content_external_id,
-                                                const research_content_id_type& research_content_id,
-                                                const string& content,
-                                                const bool& is_positive,
-                                                const account_name_type& author,
-                                                const std::set<discipline_id_type>& disciplines,
-                                                const std::map<discipline_id_type, share_type>& used_expertise,
-                                                const int32_t& assessment_model_v,
-                                                const fc::optional<std::map<assessment_criteria, assessment_criteria_value>>& scores)
+const review_object& dbs_review::create_review(const external_id_type& external_id,
+                                               const external_id_type& research_external_id,
+                                               const external_id_type& research_content_external_id,
+                                               const research_content_id_type& research_content_id,
+                                               const string& content,
+                                               const bool& is_positive,
+                                               const account_name_type& author,
+                                               const std::set<discipline_id_type>& disciplines,
+                                               const std::map<discipline_id_type, share_type>& used_expertise,
+                                               const int32_t& assessment_model_v,
+                                               const flat_map<uint16_t, assessment_criteria_value>& assessment_criterias)
 {
     auto& disciplines_service = db_impl().obtain_service<dbs_discipline>();
 
@@ -56,12 +56,9 @@ const review_object& dbs_review::create_review( const external_id_type& external
         r.expertise_tokens_amount_by_discipline.insert(used_expertise.begin(), used_expertise.end());
         r.assessment_model_v = assessment_model_v;
 
-        if (scores.valid())
+        for (auto& score : assessment_criterias)
         {
-            for (auto& score : *scores)
-            {
-                r.scores.insert(std::make_pair(static_cast<uint16_t>(score.first), score.second));
-            }
+            r.assessment_criterias.insert(std::make_pair(score.first, score.second));
         }
     });
 

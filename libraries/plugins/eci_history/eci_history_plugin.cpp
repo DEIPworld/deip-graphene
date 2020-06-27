@@ -70,6 +70,11 @@ struct post_operation_visitor
             hist_o.contribution_type = op.diff.contribution_type;
             hist_o.contribution_id = op.diff.contribution_id;
             hist_o.timestamp = op.diff.timestamp;
+
+            for (const auto& criteria : op.diff.assessment_criterias)
+            {
+                hist_o.assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
+            }
         });
     }
 
@@ -83,6 +88,11 @@ struct post_operation_visitor
             hist_o.contribution_type = op.diff.contribution_type;
             hist_o.contribution_id = op.diff.contribution_id;
             hist_o.timestamp = op.diff.timestamp;
+
+            for (const auto& criteria : op.diff.assessment_criterias)
+            {
+                hist_o.assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
+            }
         });
     }
 
@@ -96,6 +106,11 @@ struct post_operation_visitor
             hist_o.contribution_type = op.diff.contribution_type;
             hist_o.contribution_id = op.diff.contribution_id;
             hist_o.timestamp = op.diff.timestamp;
+
+            for (const auto& criteria : op.diff.assessment_criterias)
+            {
+                hist_o.assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
+            }
         });
     }
 };

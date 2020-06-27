@@ -26,6 +26,12 @@ const expertise_contribution_object& dbs_expertise_contribution::adjust_expertis
             ec_o.eci = diff.current();
             ec_o.eci_current_block_diffs.push_back(diff);
             ec_o.has_eci_current_block_diffs = true;
+
+            for (const auto& criteria : diff.assessment_criterias)
+            {
+                uint16_t score = diff.is_increased() ? criteria.second : -criteria.second;
+                ec_o.assessment_criterias.insert(std::make_pair(criteria.first, score));
+            }
         });
 
         return expertise_contribution;
@@ -42,6 +48,20 @@ const expertise_contribution_object& dbs_expertise_contribution::adjust_expertis
                   ec_o.eci = diff.current();
                   ec_o.eci_current_block_diffs.push_back(diff);
                   ec_o.has_eci_current_block_diffs = true;
+
+                  for (const auto& criteria : diff.assessment_criterias)
+                  {
+                      if (ec_o.assessment_criterias.find(criteria.first) != ec_o.assessment_criterias.end())
+                      {
+                          uint16_t score = diff.is_increased() ? criteria.second : -criteria.second;
+                          ec_o.assessment_criterias.at(criteria.first) += score;
+                      } 
+                      else 
+                      {
+                          uint16_t score = diff.is_increased() ? criteria.second : -criteria.second;
+                          ec_o.assessment_criterias.insert(std::make_pair(criteria.first, score));
+                      }
+                  }
               });
 
         return expertise_contribution;

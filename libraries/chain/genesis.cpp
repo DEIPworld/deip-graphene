@@ -479,12 +479,15 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
         {
             const auto& rel = wrap.get();
 
+            flat_map<uint16_t, uint16_t> assessment_criterias;
+
             const eci_diff research_content_eci_diff = eci_diff(
                 previous_research_content_eci.at(rel.discipline_id),
                 updated_research_content.eci_per_discipline.at(rel.discipline_id),
                 timestamp,
                 static_cast<uint16_t>(expertise_contribution_type::publication),
-                updated_research_content.id._id
+                updated_research_content.id._id,
+                assessment_criterias
             );
 
             push_virtual_operation(research_content_eci_history_operation(
@@ -498,7 +501,8 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
                 updated_research.eci_per_discipline.at(rel.discipline_id),
                 timestamp, 
                 static_cast<uint16_t>(expertise_contribution_type::publication),
-                updated_research_content.id._id
+                updated_research_content.id._id,
+                assessment_criterias
             );
 
             push_virtual_operation(research_eci_history_operation(

@@ -744,7 +744,7 @@ struct review_api_obj
         , author(r.author)
         , created_at(r.created_at)
         , assessment_model_v(r.assessment_model_v)
-        , scores(r.scores.begin(), r.scores.end())
+        , scores(r.assessment_criterias.begin(), r.assessment_criterias.end())
     {
         this->disciplines = disciplines;
 

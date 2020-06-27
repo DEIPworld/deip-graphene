@@ -25,6 +25,7 @@ protected:
 public:
 
     using review_vote_refs_type = std::vector<std::reference_wrapper<const review_vote_object>>;
+    using review_vote_optional_ref_type = fc::optional<std::reference_wrapper<const review_vote_object>>;
 
     const review_vote_object& create_review_vote(const external_id_type& external_id,
                                                  const account_name_type& voter,
@@ -37,6 +38,10 @@ public:
                                                  const time_point_sec& review_time,
                                                  const research_content_id_type& research_content_id,
                                                  const research_id_type& research_id);
+
+    const review_vote_object& get_review_vote(const review_vote_id_type& review_vote_id) const;
+
+    const review_vote_optional_ref_type get_review_vote_if_exists(const review_vote_id_type& review_vote_id) const;
 
     review_vote_refs_type get_review_votes(const review_id_type& review_id) const;
 

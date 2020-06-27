@@ -211,9 +211,6 @@ typedef bip::map<discipline_id_type, std::vector<account_name_type>, std::less<d
 typedef allocator<share_type> share_type_allocator_type;
 typedef bip::deque<share_type, share_type_allocator_type> share_type_deque;
 
-typedef allocator<std::pair<const uint16_t, uint16_t>> assessment_criterias_allocator_type;
-typedef bip::map<uint16_t, uint16_t, std::less<uint16_t>, assessment_criterias_allocator_type> assessment_criterias_map;
-
 enum bandwidth_type
 {
     post, ///< Rate limiting posting reward eligibility over time

@@ -32,7 +32,6 @@ public:
     review_object(Constructor &&c, allocator<Allocator> a) : content(a)
             , disciplines(a)
             , expertise_tokens_amount_by_discipline(a)
-            , scores(a)
     {
         c(*this);
     }
@@ -53,7 +52,7 @@ public:
     discipline_id_share_type_map expertise_tokens_amount_by_discipline;
 
     int32_t assessment_model_v;
-    assessment_criterias_map scores;
+    flat_map<uint16_t, uint16_t> assessment_criterias;
 };
 
 struct by_external_id;
@@ -125,7 +124,7 @@ FC_REFLECT(deip::chain::review_object,
            (disciplines_external_ids)
            (expertise_tokens_amount_by_discipline)
            (assessment_model_v)
-           (scores)
+           (assessment_criterias)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::review_object, deip::chain::review_index)

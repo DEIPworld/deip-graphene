@@ -513,12 +513,19 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& op)
     const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(research_content.id);
     const research_object& updated_research = research_service.update_eci_evaluation(research.id);
 
+    flat_map<uint16_t, uint16_t> assessment_criterias;
+    for (const auto& criteria : review.assessment_criterias)
+    {
+        assessment_criterias.insert(std::make_pair(criteria.first, uint16_t(1)));
+    }
+
     const eci_diff research_content_eci_diff = eci_diff(
       previous_research_content_eci.at(discipline.id),
       updated_research_content.eci_per_discipline.at(discipline.id),
       now,
       static_cast<uint16_t>(expertise_contribution_type::review_support),
-      review_vote.id._id
+      review_vote.id._id,
+      assessment_criterias
     );
 
     expertise_contributions_service.adjust_expertise_contribution(
@@ -539,7 +546,8 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& op)
       updated_research.eci_per_discipline.at(discipline.id),
       now,
       static_cast<uint16_t>(expertise_contribution_type::review_support),
-      review_vote.id._id
+      review_vote.id._id,
+      assessment_criterias
     );
 
     _db.push_virtual_operation(research_eci_history_operation(
@@ -838,7 +846,7 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
         });
 
     bool is_positive;
-    fc::optional<std::map<assessment_criteria, uint16_t>> scores;
+    flat_map<uint16_t, uint16_t> assessment_criterias;
 
     if (op.assessment_model.which() == assessment_models::tag<binary_scoring_assessment_model_type>::value)
     {
@@ -854,14 +862,10 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
 
         is_positive = total_score >= DEIP_MIN_POSITIVE_REVIEW_MARK;
 
-        std::map<assessment_criteria, uint16_t> temp_scores;
         for (const auto& score : model.scores)
         {
-            const assessment_criteria criteria = static_cast<assessment_criteria>(score.first);
-            temp_scores.insert(std::make_pair(criteria, score.second));
+            assessment_criterias.insert(std::make_pair(score.first, score.second));
         }
-
-        scores = temp_scores;
     } 
     else
     {
@@ -882,7 +886,7 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
       review_disciplines,
       review_used_expertise_by_disciplines,
       op.assessment_model.which(),
-      scores);
+      assessment_criterias);
 
     const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(research_content.id);
     const research_object& updated_research = research_service.update_eci_evaluation(research.id);
@@ -894,7 +898,8 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
           updated_research_content.eci_per_discipline.at(review_discipline_id),
           now,
           static_cast<uint16_t>(expertise_contribution_type::review),
-          review.id._id
+          review.id._id,
+          assessment_criterias
         );
 
         expertise_contributions_service.adjust_expertise_contribution(
@@ -915,7 +920,8 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
           updated_research.eci_per_discipline.at(review_discipline_id),
           now,
           static_cast<uint16_t>(expertise_contribution_type::review),
-          review.id._id
+          review.id._id,
+          assessment_criterias
         );
 
         _db.push_virtual_operation(research_eci_history_operation(
@@ -2483,12 +2489,15 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
     {
         const auto& rel = wrap.get();
 
+        flat_map<uint16_t, uint16_t> assessment_criterias;
+
         const eci_diff research_content_eci_diff = eci_diff(
           previous_research_content_eci.at(rel.discipline_id),
           updated_research_content.eci_per_discipline.at(rel.discipline_id),
           block_time,
           static_cast<uint16_t>(expertise_contribution_type::publication),
-          updated_research_content.id._id
+          updated_research_content.id._id,
+          assessment_criterias
         );
 
         expertise_contributions_service.adjust_expertise_contribution(
@@ -2509,7 +2518,8 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
           updated_research.eci_per_discipline.at(rel.discipline_id),
           block_time,
           static_cast<uint16_t>(expertise_contribution_type::publication),
-          updated_research_content.id._id
+          updated_research_content.id._id,
+          assessment_criterias
         );
 
         _db.push_virtual_operation(research_eci_history_operation(

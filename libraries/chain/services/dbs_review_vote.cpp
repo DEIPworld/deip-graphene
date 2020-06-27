@@ -52,6 +52,32 @@ const review_vote_object& dbs_review_vote::create_review_vote(const external_id_
     return review_vote;
 }
 
+const review_vote_object& dbs_review_vote::get_review_vote(const review_vote_id_type& id) const
+{
+    try
+    {
+        return db_impl().get<review_vote_object, by_id>(id);
+    }
+    FC_CAPTURE_AND_RETHROW((id))
+}
+
+const dbs_review_vote::review_vote_optional_ref_type dbs_review_vote::get_review_vote_if_exists(const review_vote_id_type& id) const
+{
+    review_vote_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<review_vote_index>()
+      .indicies()
+      .get<by_id>();
+
+    auto itr = idx.find(id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
 dbs_review_vote::review_vote_refs_type dbs_review_vote::get_review_votes(const review_id_type& review_id) const
 {
     review_vote_refs_type ret;

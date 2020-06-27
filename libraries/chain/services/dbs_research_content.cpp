@@ -97,8 +97,7 @@ const dbs_research_content::research_content_optional_ref_type dbs_research_cont
     return result;
 }
 
-const dbs_research_content::research_content_optional_ref_type
-dbs_research_content::get_research_content_if_exists(const research_content_id_type& id) const
+const dbs_research_content::research_content_optional_ref_type dbs_research_content::get_research_content_if_exists(const research_content_id_type& id) const
 {
     research_content_optional_ref_type result;
 

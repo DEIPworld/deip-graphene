@@ -55,6 +55,7 @@ public:
     bool has_eci_current_block_diffs;
     share_type eci_current_block_delta;
     eci_diff_type_vector eci_current_block_diffs;
+    flat_map<uint16_t, uint16_t> assessment_criterias;
 };
 
 struct by_discipline_id;
@@ -165,6 +166,7 @@ FC_REFLECT( deip::chain::expertise_contribution_object,
   (has_eci_current_block_diffs)
   (eci_current_block_delta)
   (eci_current_block_diffs)
+  (assessment_criterias)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::expertise_contribution_object, deip::chain::expertise_contribution_index)
