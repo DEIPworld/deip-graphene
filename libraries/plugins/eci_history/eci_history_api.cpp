@@ -392,18 +392,13 @@ public:
             {
                 for (const account_object& acc : accounts)
                 {
-                    const auto& expertise_tokens = expertise_tokens_service.get_expert_tokens_by_account_name(acc.name);
-
-                    if (expertise_tokens.size() == 0)
-                    {
-                        continue;
-                    }
-
                     result.insert(std::make_pair(acc.name, account_eci_stats_api_obj()));
                     auto& stats = result[acc.name];
 
                     stats.account = acc.name;
                     stats.discipline_external_id = discipline.external_id;
+
+                    const auto& expertise_tokens = expertise_tokens_service.get_expert_tokens_by_account_name(acc.name);
 
                     share_type total_eci_score;
                     for (const expert_token_object& expert_token : expertise_tokens)
