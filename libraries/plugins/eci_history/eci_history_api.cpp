@@ -2,10 +2,12 @@
 #include <deip/app/application.hpp>
 #include <deip/chain/services/dbs_expertise_contribution.hpp>
 #include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_review_vote.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/eci_history/eci_history_api.hpp>
 #include <deip/eci_history/eci_history_plugin.hpp>
@@ -13,7 +15,7 @@
 #include <deip/eci_history/research_content_eci_history_object.hpp>
 #include <deip/eci_history/account_eci_history_object.hpp>
 
-namespace deip {
+    namespace deip {
 namespace eci_history {
 
 using deip::chain::expertise_contribution_type;
@@ -38,7 +40,6 @@ public:
 
         const auto& db = _app.chain_database();
         const auto& research_content_hist_idx = db->get_index<research_content_eci_history_index>().indices().get<by_research_content_and_discipline>();
-
         const auto& research_service = db->obtain_service<chain::dbs_research>();
         const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
         const auto& research_groups_service = db->obtain_service<chain::dbs_research_group>();
@@ -129,7 +130,6 @@ public:
 
         const auto& db = _app.chain_database();
         const auto& research_hist_idx = db->get_index<research_eci_history_index>().indices().get<by_research_and_discipline>();
-
         const auto& research_service = db->obtain_service<chain::dbs_research>();
         const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
         const auto& research_groups_service = db->obtain_service<chain::dbs_research_group>();
@@ -228,7 +228,6 @@ public:
 
         const auto& db = _app.chain_database();
         const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account_and_discipline>();
-
         const auto& accounts_service = db->obtain_service<chain::dbs_account>();
         const auto& research_service = db->obtain_service<chain::dbs_research>();
         const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
@@ -336,79 +335,78 @@ public:
         return result;
     }
 
-    fc::optional<account_eci_stats_api_obj> get_account_eci_stats(const account_name_type& account, const discipline_id_type& discipline_id) const
+    std::map<account_name_type, account_eci_stats_api_obj> get_accounts_eci_stats(const external_id_type& discipline_external_id) const
     {
-        fc::optional<account_eci_stats_api_obj> result;
-
         const auto& db = _app.chain_database();
         const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account_and_discipline>();
         const auto& accounts_service = db->obtain_service<chain::dbs_account>();
+        const auto& expertise_tokens_service = db->obtain_service<chain::dbs_expert_token>();
+        const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
-        if (discipline_id != discipline_id_type(0))
+        std::map<account_name_type, account_eci_stats_api_obj> result;
+
+        const auto& discipline = disciplines_service.get_discipline(discipline_external_id);
+        const auto& accounts = accounts_service.lookup_user_accounts(account_name_type("a"), DEIP_API_BULK_FETCH_LIMIT);
+
+        std::vector<chain::share_type> eci_scores;
+
+        for (const account_object& acc : accounts)
         {
-            auto itr_pair = account_hist_idx.equal_range(std::make_tuple(account, discipline_id));
-            auto itr = itr_pair.first;
-            auto itr_end = itr_pair.second;
+            result.insert(std::make_pair(acc.name, account_eci_stats_api_obj()));
+            auto& stats = result[acc.name];
 
-            if (itr == itr_end)
+            stats.account = acc.name;
+            stats.discipline_external_id = discipline.external_id;
+
+            if (discipline.id != discipline_id_type(0))
             {
-                return result;
+                auto itr_pair = account_hist_idx.equal_range(std::make_tuple(acc.name, discipline.id));
+                auto& itr = itr_pair.first;
+                const auto& itr_end = itr_pair.second;
+
+                while (itr != itr_end)
+                {
+                    const auto& hist = *itr;
+
+                    if (true /* add filter */)
+                    {
+                        stats.eci = hist.eci;
+                        stats.timestamp = hist.timestamp;
+                        stats.researches.insert(hist.researches.begin(), hist.researches.end());
+                        stats.contributions.insert(std::make_pair(hist.contribution_id, hist.contribution_type));
+                        eci_scores.push_back(stats.eci);
+                    }
+
+                    ++itr;
+                }
+            } 
+            else
+            {
+
             }
 
-            std::set<std::pair<int64_t, uint16_t>> contributions;
-            while (itr != itr_end)
-            {
-                contributions.insert(std::make_pair(itr->contribution_id, itr->contribution_type));
-                ++itr;
-            }
+        }
 
-            const auto& last_hist = *(--itr_end);
-
-            /*  
+        for (auto& pair : result)
+        {
+            auto& stats = pair.second;
+            /*
                 Percentile Rank = [(M + (0.5 * R)) / Y] * 100
                 M = Number of Ranks below x
                 R = Number of Ranks equals x
                 Y = Total Number of Ranks
             */
-            const auto& accounts = accounts_service.lookup_user_accounts(account_name_type("a"), DEIP_API_BULK_FETCH_LIMIT);
-            std::vector<chain::share_type> eci_scores;
-            for (const account_object& acc : accounts)
-            {
-                auto acc_itr_pair = account_hist_idx.equal_range(std::make_tuple(acc.name, discipline_id));
-                if (acc_itr_pair.first != acc_itr_pair.second)
-                {
-                    const auto& acc_last_hist = *(--acc_itr_pair.second);
-                    eci_scores.push_back(acc_last_hist.eci);
-                }
-            }
             std::sort(eci_scores.begin(), eci_scores.end());
-
-            const auto& x_itr = std::find(eci_scores.begin(), eci_scores.end(), last_hist.eci);
+            const auto& x_itr = std::find(eci_scores.begin(), eci_scores.end(), stats.eci);
             const int M = std::distance(eci_scores.begin(), x_itr);
-            const int R = std::count_if(eci_scores.begin(), eci_scores.end(), [&](const chain::share_type& eci_score) {
-                return eci_score == last_hist.eci;
-            });
+            const int R = std::count_if(eci_scores.begin(), eci_scores.end(),
+                [&](const chain::share_type& eci_score) { return eci_score == stats.eci; });
             const int Y = eci_scores.size();
-            const chain::share_type percentile_rank = share_type(std::round(( ( double(M) + (double(0.5) * double(R)) ) / double(Y) ) * double(100)));
-
+            const chain::share_type percentile_rank = share_type(std::round(((double(M) + (double(0.5) * double(R))) / double(Y)) * double(100) * DEIP_1_PERCENT));
+            stats.percentile_rank = percent(percentile_rank);
 
             const chain::share_type growth_rate = share_type(0);
-
-            result = account_eci_stats_api_obj(
-              last_hist.discipline_id._id, 
-              last_hist.account, 
-              last_hist.eci, 
-              percent(DEIP_1_PERCENT * percentile_rank),
-              percent(growth_rate), 
-              contributions.size(), 
-              last_hist.researches.size(),
-              last_hist.timestamp
-            );
-
-        }
-        else 
-        {
-
+            stats.growth_rate = percent(DEIP_1_PERCENT * growth_rate);
         }
 
         return result;
@@ -456,12 +454,11 @@ std::vector<account_eci_history_api_obj> eci_history_api::get_eci_history_by_acc
     });
 }
 
-fc::optional<account_eci_stats_api_obj> eci_history_api::get_account_eci_stats(const account_name_type& account,
-                                                                              const discipline_id_type& discipline_id) const
+std::map<account_name_type, account_eci_stats_api_obj> eci_history_api::get_accounts_eci_stats(const external_id_type& discipline_external_id) const
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock([&]() { 
-        return _impl->get_account_eci_stats(account, discipline_id); 
+        return _impl->get_accounts_eci_stats(discipline_external_id); 
     });
 }
 

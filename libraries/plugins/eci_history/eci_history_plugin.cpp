@@ -117,7 +117,7 @@ struct post_operation_visitor
 
             for (const research_object& research : researches)
             {
-                hist_o.researches.insert(research.id._id);
+                hist_o.researches.insert(research.external_id);
             }
         });
     }

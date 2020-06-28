@@ -183,34 +183,32 @@ struct account_eci_history_api_obj
 struct account_eci_stats_api_obj
 {
     account_eci_stats_api_obj(){};
-    account_eci_stats_api_obj(const int64_t& discipline_id,
-                              const std::string& account,
+    account_eci_stats_api_obj(const external_id_type& discipline_external_id,
+                              const account_name_type& account,
                               const chain::share_type& eci,
-                              const chain::percent& percentile_rank,
-                              const chain::percent& growth_rate,
-                              const uint16_t& contributions_count,
-                              const uint16_t& projects_count,
+                              const percent& percentile_rank,
+                              const percent& growth_rate,
+                              const std::set<std::pair<int64_t, uint16_t>>& contributions_list,
+                              const std::set<external_id_type>& researches_list,
                               const fc::time_point_sec& timestamp)
-        : discipline_id(discipline_id)
+        : discipline_external_id(discipline_external_id)
         , account(account)
         , eci(eci)
         , percentile_rank(percentile_rank)
         , growth_rate(growth_rate)
-        , contributions_count(contributions_count)
-        , projects_count(projects_count)
         , timestamp(timestamp)
     {
-
+        contributions.insert(contributions_list.begin(), contributions_list.end());
+        researches.insert(researches_list.begin(), researches_list.end());
     }
 
-    int64_t discipline_id;
-    std::string account;
+    external_id_type discipline_external_id;
+    account_name_type account;
     chain::share_type eci;
-    chain::percent percentile_rank;
-    chain::percent growth_rate;
-    uint16_t contributions_count;
-    uint16_t projects_count;
-
+    percent percentile_rank;
+    percent growth_rate;
+    std::set<std::pair<int64_t, uint16_t>> contributions;
+    std::set<external_id_type> researches;
     fc::time_point_sec timestamp;
 };
 
@@ -263,12 +261,12 @@ FC_REFLECT(deip::eci_history::account_eci_history_api_obj,
 )
 
 FC_REFLECT(deip::eci_history::account_eci_stats_api_obj, 
-  (discipline_id)
+  (discipline_external_id)
   (account)
   (eci)
   (percentile_rank)
   (growth_rate)
-  (contributions_count)
-  (projects_count)
+  (contributions)
+  (researches)
   (timestamp)
 )
