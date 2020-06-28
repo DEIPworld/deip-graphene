@@ -90,27 +90,7 @@ const research_object& dbs_research::update_research(const research_object& rese
     return research;
 }
 
-dbs_research::research_refs_type dbs_research::get_researches() const
-{
-    research_refs_type ret;
-
-    const auto& idx = db_impl()
-      .get_index<research_index>()
-      .indicies()
-      .get<by_id>();
-    
-    auto it = idx.lower_bound(0);
-    const auto it_end = idx.cend();
-    while (it != it_end)
-    {
-        ret.push_back(std::cref(*it));
-        ++it;
-    }
-
-    return ret;
-}
-
-dbs_research::research_refs_type dbs_research::get_researches_by_research_group(const research_group_id_type& research_group_id) const
+const dbs_research::research_refs_type dbs_research::get_researches_by_research_group(const research_group_id_type& research_group_id) const
 {
     research_refs_type ret;
 
@@ -425,6 +405,28 @@ const dbs_research::research_refs_type dbs_research::lookup_researches(const res
     }
 
     return result;
+}
+
+const dbs_research::research_refs_type dbs_research::get_researches_by_member(const account_name_type& member) const
+{
+    const auto& research_groups_service = db_impl().obtain_service<dbs_research_group>();
+
+    research_refs_type ret;
+
+    const auto& rgt_list = research_groups_service.get_research_group_tokens_by_member(member);
+    for (const research_group_token_object& rgt : rgt_list)
+    {
+        const auto& research_list = get_researches_by_research_group(rgt.research_group_id);
+        for (const research_object& research : research_list)
+        {
+            if (research.members.find(member) != research.members.end())
+            {
+                ret.push_back(research);
+            }
+        }
+    }
+
+    return ret;
 }
 
 }

@@ -1239,7 +1239,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       now,
                       diff.contribution_type,
                       diff.contribution_id,
-                      diff.assessment_criterias
+                      expertise_contribution.assessment_criterias
                     );
 
                     push_virtual_operation(account_eci_history_operation(
@@ -1267,7 +1267,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       now,
                       diff.contribution_type,
                       diff.contribution_id,
-                      diff.assessment_criterias
+                      expertise_contribution.assessment_criterias
                     );
 
                     push_virtual_operation(account_eci_history_operation(
@@ -1296,7 +1296,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       now,
                       diff.contribution_type,
                       diff.contribution_id,
-                      diff.assessment_criterias
+                      expertise_contribution.assessment_criterias
                     );
 
                     push_virtual_operation(account_eci_history_operation(
@@ -1330,7 +1330,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       now,
                       diff.contribution_type,
                       diff.contribution_id,
-                      diff.assessment_criterias
+                      expertise_contribution.assessment_criterias
                     );
 
                     push_virtual_operation(account_eci_history_operation(
@@ -1358,7 +1358,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       now,
                       diff.contribution_type,
                       diff.contribution_id,
-                      diff.assessment_criterias
+                      expertise_contribution.assessment_criterias
                     );
 
                     push_virtual_operation(account_eci_history_operation(
@@ -1386,7 +1386,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       now,
                       diff.contribution_type,
                       diff.contribution_id,
-                      diff.assessment_criterias
+                      expertise_contribution.assessment_criterias
                     );
 
                     push_virtual_operation(account_eci_history_operation(

@@ -29,7 +29,7 @@ const expertise_contribution_object& dbs_expertise_contribution::adjust_expertis
 
             for (const auto& criteria : diff.assessment_criterias)
             {
-                uint16_t score = diff.is_increased() ? criteria.second : -criteria.second;
+                uint16_t score = diff.is_increased() ? criteria.second : -(DEIP_MAX_REVIEW_CRITERIA_SCORE - criteria.second);
                 ec_o.assessment_criterias.insert(std::make_pair(criteria.first, score));
             }
         });
@@ -53,12 +53,12 @@ const expertise_contribution_object& dbs_expertise_contribution::adjust_expertis
                   {
                       if (ec_o.assessment_criterias.find(criteria.first) != ec_o.assessment_criterias.end())
                       {
-                          uint16_t score = diff.is_increased() ? criteria.second : -criteria.second;
+                          uint16_t score = diff.is_increased() ? criteria.second : -(DEIP_MAX_REVIEW_CRITERIA_SCORE - criteria.second);
                           ec_o.assessment_criterias.at(criteria.first) += score;
                       } 
                       else 
                       {
-                          uint16_t score = diff.is_increased() ? criteria.second : -criteria.second;
+                          uint16_t score = diff.is_increased() ? criteria.second : -(DEIP_MAX_REVIEW_CRITERIA_SCORE - criteria.second);
                           ec_o.assessment_criterias.insert(std::make_pair(criteria.first, score));
                       }
                   }

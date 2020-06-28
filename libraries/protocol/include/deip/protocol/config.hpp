@@ -215,9 +215,9 @@
 #define DEIP_REGISTRAR_ACCOUNT_NAME           "regacc"
 
 #define DEIP_MIN_NUMBER_OF_REVIEW_CRITERIAS   3
-#define DEIP_MIN_REVIEW_MARK                  1
-#define DEIP_MAX_REVIEW_MARK                  5
-#define DEIP_MIN_POSITIVE_REVIEW_MARK         8
+#define DEIP_MIN_REVIEW_CRITERIA_SCORE        1
+#define DEIP_MAX_REVIEW_CRITERIA_SCORE        5
+#define DEIP_MIN_POSITIVE_REVIEW_SCORE        8
 
 /**
  *  Reserved Account IDs with special meaning

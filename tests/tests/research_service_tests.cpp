@@ -66,51 +66,6 @@ public:
 
 BOOST_FIXTURE_TEST_SUITE(research_service_tests, research_service_fixture)
 
-BOOST_AUTO_TEST_CASE(get_researches)
-{
-    try
-    {
-        create_researches();
-
-        const auto& researches = data_service.get_researches();
-
-        BOOST_CHECK(researches.size() == 3);
-
-        BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
-            const research_object &research = wrapper.get();
-            return  research.id == 1 &&
-                    research.permlink == RESEARCH_TITLE &&
-                    research.research_group_id == RESEARCH_GROUP_ID &&
-                    research.is_finished == false &&
-                    research.abstract == ABSTRACT &&
-                    research.owned_tokens == percent(DEIP_100_PERCENT) &&
-                    research.is_private == false;
-        }));
-
-        BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
-            const research_object &research = wrapper.get();
-            return  research.id == 2 &&
-                    research.permlink == "Second" &&
-                    research.research_group_id == 2 &&
-                    research.is_finished == false &&
-                    research.abstract == ABSTRACT &&
-                    research.owned_tokens == percent(DEIP_100_PERCENT) &&
-                    research.is_private == false;
-        }));
-
-        BOOST_CHECK(std::any_of(researches.begin(), researches.end(), [](std::reference_wrapper<const research_object> wrapper){
-            const research_object &research = wrapper.get();
-            return  research.id == 3 &&
-                    research.permlink == "Third" &&
-                    research.research_group_id == 2 &&
-                    research.is_finished == false &&
-                    research.abstract == ABSTRACT &&
-                    research.owned_tokens == percent(DEIP_100_PERCENT) &&
-                    research.is_private == false;
-        }));
-    }
-    FC_LOG_AND_RETHROW()
-}
 
 BOOST_AUTO_TEST_CASE(get_researches_by_research_group)
 {

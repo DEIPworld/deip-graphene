@@ -44,9 +44,7 @@ public:
                                            const optional<percent>& compensation_share,
                                            const flat_set<account_name_type>& members);
 
-    research_refs_type get_researches() const;
-
-    research_refs_type get_researches_by_research_group(const research_group_id_type& research_group_id) const;
+    const research_refs_type get_researches_by_research_group(const research_group_id_type& research_group_id) const;
 
     const research_object& get_research(const research_id_type& id) const;
 
@@ -77,6 +75,8 @@ public:
     const bool research_exists(const external_id_type& external_id) const;
 
     const research_refs_type lookup_researches(const research_id_type& lower_bound, uint32_t limit) const;
+
+    const research_refs_type get_researches_by_member(const account_name_type& member) const;
 };
 }
 }

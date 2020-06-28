@@ -860,7 +860,7 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
         const uint16_t total_score = std::accumulate(std::begin(model.scores), std::end(model.scores), 0,
             [&](uint16_t total, const std::map<uint16_t, uint16_t>::value_type& m) { return total + m.second; });
 
-        is_positive = total_score >= DEIP_MIN_POSITIVE_REVIEW_MARK;
+        is_positive = total_score >= DEIP_MIN_POSITIVE_REVIEW_SCORE;
 
         for (const auto& score : model.scores)
         {

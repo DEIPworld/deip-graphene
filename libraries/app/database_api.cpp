@@ -1237,22 +1237,18 @@ vector<research_api_obj> database_api_impl::get_researches_by_research_group_mem
 
     vector<research_api_obj> result;
 
-    const auto& rgt_list = research_groups_service.get_research_group_tokens_by_member(member);
-    for (const research_group_token_object& rgt : rgt_list)
+    const auto& researches = research_service.get_researches_by_member(member);
+    for (const research_object& research : researches)
     {
-        const auto& researches = research_service.get_researches_by_research_group(rgt.research_group_id);
-        for (const research_object& research : researches)
+        vector<discipline_api_obj> disciplines;
+        const auto& research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
+        for (const research_discipline_relation_object& research_discipline_relation : research_discipline_relations)
         {
-            vector<discipline_api_obj> disciplines;
-            const auto& research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
-            for (const research_discipline_relation_object& research_discipline_relation : research_discipline_relations)
-            {
-                disciplines.push_back(disciplines_service.get_discipline(research_discipline_relation.discipline_external_id));
-            }
-
-            const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
-            result.push_back(research_api_obj(research, disciplines, research_group_api_obj(research_group)));
+            disciplines.push_back(disciplines_service.get_discipline(research_discipline_relation.discipline_external_id));
         }
+
+        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+        result.push_back(research_api_obj(research, disciplines, research_group_api_obj(research_group)));
     }
 
     return result;

@@ -35,7 +35,7 @@ void validate_assessment_model(const assessment_models& assessment_model)
                     return criteria <assessment_criteria::FIRST || criteria > assessment_criteria::LAST; }) == model.scores.end(),
                         "Invalid criteria.");
         FC_ASSERT(std::find_if(model.scores.begin(), model.scores.end(),
-                [&](const std::pair<uint16_t, uint16_t>& score) {return score.second < DEIP_MIN_REVIEW_MARK || score.second > DEIP_MAX_REVIEW_MARK; }) == model.scores.end(),
+                [&](const std::pair<uint16_t, uint16_t>& score) {return score.second < DEIP_MIN_REVIEW_CRITERIA_SCORE || score.second > DEIP_MAX_REVIEW_CRITERIA_SCORE; }) == model.scores.end(),
                         "Invalid score.");
 
         is_validated = true;

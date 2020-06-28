@@ -1,10 +1,10 @@
 #include <deip/protocol/config.hpp>
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/operation_notification.hpp>
-
+#include <deip/chain/services/dbs_expertise_contribution.hpp>
+#include <deip/chain/services/dbs_research.hpp>
 #include <deip/eci_history/eci_history_api.hpp>
 #include <deip/eci_history/eci_history_plugin.hpp>
-
 #include <deip/eci_history/research_eci_history_object.hpp>
 #include <deip/eci_history/research_content_eci_history_object.hpp>
 #include <deip/eci_history/account_eci_history_object.hpp>
@@ -98,6 +98,9 @@ struct post_operation_visitor
 
     void operator()(const account_eci_history_operation& op) const
     {
+        const auto& research_service = _plugin.database().obtain_service<chain::dbs_research>();
+        const auto& researches = research_service.get_researches_by_member(op.account);
+
         _plugin.database().create<account_eci_history_object>([&](account_eci_history_object& hist_o) {
             hist_o.account = op.account;
             hist_o.discipline_id = op.discipline_id;
@@ -110,6 +113,11 @@ struct post_operation_visitor
             for (const auto& criteria : op.diff.assessment_criterias)
             {
                 hist_o.assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
+            }
+
+            for (const research_object& research : researches)
+            {
+                hist_o.researches.insert(research.id._id);
             }
         });
     }
