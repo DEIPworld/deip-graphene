@@ -477,14 +477,12 @@ vector<account_api_obj> database_api_impl::lookup_accounts(const string& lower_b
 
     vector<account_api_obj> result;
 
-    const auto& accounts_by_name = _db.get_index<account_index>().indices().get<by_name>();
+    const auto& accounts = accounts_service.lookup_accounts(lower_bound_name, limit);
 
-    for (auto itr = accounts_by_name.lower_bound(lower_bound_name); limit-- && itr != accounts_by_name.end(); ++itr)
+    for (const account_object& account : accounts)
     {
-        const auto& account = accounts_service.get_account(itr->name);
-        const auto& auth = accounts_service.get_account_authority(itr->name);
-        const auto& account_balances = account_balances_service.get_by_owner(itr->name);
-
+        const auto& auth = accounts_service.get_account_authority(account.name);
+        const auto& account_balances = account_balances_service.get_by_owner(account.name);
         result.push_back(account_api_obj(account, auth, account_balances));
     }
 

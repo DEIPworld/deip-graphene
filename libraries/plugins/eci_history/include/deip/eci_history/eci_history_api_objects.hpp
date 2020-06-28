@@ -180,6 +180,41 @@ struct account_eci_history_api_obj
 };
 
 
+struct account_eci_stats_api_obj
+{
+    account_eci_stats_api_obj(){};
+    account_eci_stats_api_obj(const int64_t& discipline_id,
+                              const std::string& account,
+                              const chain::share_type& eci,
+                              const chain::percent& percentile_rank,
+                              const chain::percent& growth_rate,
+                              const uint16_t& contributions_count,
+                              const uint16_t& projects_count,
+                              const fc::time_point_sec& timestamp)
+        : discipline_id(discipline_id)
+        , account(account)
+        , eci(eci)
+        , percentile_rank(percentile_rank)
+        , growth_rate(growth_rate)
+        , contributions_count(contributions_count)
+        , projects_count(projects_count)
+        , timestamp(timestamp)
+    {
+
+    }
+
+    int64_t discipline_id;
+    std::string account;
+    chain::share_type eci;
+    chain::percent percentile_rank;
+    chain::percent growth_rate;
+    uint16_t contributions_count;
+    uint16_t projects_count;
+
+    fc::time_point_sec timestamp;
+};
+
+
 }
 }
 
@@ -225,4 +260,15 @@ FC_REFLECT(deip::eci_history::account_eci_history_api_obj,
   (research_content)
   (review)
   (review_vote)
+)
+
+FC_REFLECT(deip::eci_history::account_eci_stats_api_obj, 
+  (discipline_id)
+  (account)
+  (eci)
+  (percentile_rank)
+  (growth_rate)
+  (contributions_count)
+  (projects_count)
+  (timestamp)
 )

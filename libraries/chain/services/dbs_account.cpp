@@ -626,5 +626,54 @@ void dbs_account::process_account_recovery()
     }
 }
 
+const dbs_account::accounts_refs_type dbs_account::lookup_accounts(const string& lower_bound_name, uint32_t limit) const
+{
+    accounts_refs_type results;
+
+    const auto& accounts_by_name = db_impl().get_index<account_index>().indices().get<by_name>();
+
+    for (auto itr = accounts_by_name.lower_bound(lower_bound_name); limit-- && itr != accounts_by_name.end(); ++itr)
+    {
+        results.push_back(std::cref(*itr));
+    }
+
+    return results;
+}
+
+const dbs_account::accounts_refs_type dbs_account::lookup_user_accounts(const string& lower_bound_name, uint32_t limit) const
+{
+    accounts_refs_type results;
+
+    const auto& accounts_by_name = db_impl().get_index<account_index>().indices().get<by_name>();
+
+    for (auto itr = accounts_by_name.lower_bound(lower_bound_name); limit-- && itr != accounts_by_name.end(); ++itr)
+    {
+        if (!itr->is_research_group)
+        {
+            results.push_back(std::cref(*itr));
+        }
+    }
+
+    return results;
+}
+
+
+const dbs_account::accounts_refs_type dbs_account::lookup_research_group_accounts(const string& lower_bound_name, uint32_t limit) const
+{
+    accounts_refs_type results;
+
+    const auto& accounts_by_name = db_impl().get_index<account_index>().indices().get<by_name>();
+
+    for (auto itr = accounts_by_name.lower_bound(lower_bound_name); limit-- && itr != accounts_by_name.end(); ++itr)
+    {
+        if (itr->is_research_group)
+        {
+            results.push_back(std::cref(*itr));
+        }
+    }
+
+    return results;
+}
+
 }
 }

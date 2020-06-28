@@ -319,6 +319,7 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
     dbs_expert_token& expert_token_service = obtain_service<dbs_expert_token>();
     dbs_discipline& discipline_service = obtain_service<dbs_discipline>();
     dbs_account& accounts_service = obtain_service<dbs_account>();
+    const time_point_sec timestamp = get_genesis_time();
 
     for (auto& expert_token : expert_tokens)
     {
@@ -333,22 +334,58 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
           discipline.id,
           expert_token.amount, 
           true);
+
+        flat_map<uint16_t, uint16_t> assessment_criterias;
+        const eci_diff account_eci_diff = eci_diff(
+          share_type(0), 
+          share_type(expert_token.amount),
+          timestamp, 
+          static_cast<uint16_t>(expertise_contribution_type::unknown),
+          0,
+          assessment_criterias
+        );
+
+        push_virtual_operation(account_eci_history_operation(
+            expert_token.account, 
+            discipline.id._id, 
+            account_eci_diff)
+        );
     }
 
 
 #ifdef IS_TEST_NET
-    if (find<account_object, by_name>("hermes") != nullptr) {
+    const account_name_type& test_user = account_name_type("hermes");
+
+    if (find<account_object, by_name>(test_user) != nullptr) {
         // Init 'hermes' user with tokens in every discipline
+        const share_type test_user_expertise = share_type(10000);
         const auto& disciplines = discipline_service.lookup_disciplines(discipline_id_type(1), 10000);
 
         for (const discipline_object& discipline : disciplines)
         {
-            if (discipline.id != 0) {
+            if (discipline.id != 0) 
+            {
                 expert_token_service.create_expert_token(
-                  "hermes", 
+                  test_user, 
                   discipline.id, 
-                  10000, 
+                  test_user_expertise, 
                   true);
+
+                flat_map<uint16_t, uint16_t> assessment_criterias;
+                const eci_diff account_eci_diff = eci_diff(
+                  share_type(0), 
+                  share_type(test_user_expertise),
+                  timestamp, 
+                  static_cast<uint16_t>(expertise_contribution_type::unknown),
+                  0,
+                  assessment_criterias
+                );
+
+                push_virtual_operation(account_eci_history_operation(
+                    test_user, 
+                    discipline.id._id, 
+                    account_eci_diff)
+                );
             }
         }
     }
@@ -510,6 +547,25 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
               rel.discipline_id._id, 
               research_eci_diff
             ));
+
+            for (const auto& author : updated_research_content.authors)
+            {
+                const eci_diff account_eci_diff = eci_diff(
+                  share_type(0), 
+                  share_type(0),
+                  timestamp, 
+                  static_cast<uint16_t>(expertise_contribution_type::publication),
+                  updated_research_content.id._id,
+                  assessment_criterias
+                );
+
+                push_virtual_operation(account_eci_history_operation(
+                    author, 
+                    rel.discipline_id._id, 
+                    account_eci_diff)
+                );
+            }
+            
         }
     }
 }
