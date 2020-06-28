@@ -352,6 +352,11 @@ public:
 
         for (const account_object& acc : accounts)
         {
+            if (!expertise_tokens_service.expert_token_exists_by_account_and_discipline(acc.name, discipline.id))
+            {
+                continue;
+            }
+
             result.insert(std::make_pair(acc.name, account_eci_stats_api_obj()));
             auto& stats = result[acc.name];
 
@@ -364,27 +369,75 @@ public:
                 auto& itr = itr_pair.first;
                 const auto& itr_end = itr_pair.second;
 
+                share_type exp_eci_score;
                 while (itr != itr_end)
                 {
                     const auto& hist = *itr;
 
                     if (true /* add filter */)
                     {
-                        stats.eci = hist.eci;
+                        exp_eci_score += hist.delta;
                         stats.timestamp = hist.timestamp;
                         stats.researches.insert(hist.researches.begin(), hist.researches.end());
                         stats.contributions.insert(std::make_pair(hist.contribution_id, hist.contribution_type));
-                        eci_scores.push_back(stats.eci);
                     }
 
                     ++itr;
                 }
+
+                stats.eci = exp_eci_score;
+                eci_scores.push_back(stats.eci);
             } 
             else
             {
+                for (const account_object& acc : accounts)
+                {
+                    const auto& expertise_tokens = expertise_tokens_service.get_expert_tokens_by_account_name(acc.name);
 
+                    if (expertise_tokens.size() == 0)
+                    {
+                        continue;
+                    }
+
+                    result.insert(std::make_pair(acc.name, account_eci_stats_api_obj()));
+                    auto& stats = result[acc.name];
+
+                    stats.account = acc.name;
+                    stats.discipline_external_id = discipline.external_id;
+
+                    share_type total_eci_score;
+                    for (const expert_token_object& expert_token : expertise_tokens)
+                    {
+                        auto itr_pair = account_hist_idx.equal_range(std::make_tuple(acc.name, expert_token.discipline_id));
+                        auto& itr = itr_pair.first;
+                        const auto& itr_end = itr_pair.second;
+
+                        share_type exp_eci_score;
+                        while (itr != itr_end)
+                        {
+                            const auto& hist = *itr;
+
+                            if (true /* add filter */)
+                            {
+                                exp_eci_score += hist.delta;
+                                if (stats.timestamp < hist.timestamp)
+                                {
+                                    stats.timestamp = hist.timestamp;
+                                }
+                                stats.researches.insert(hist.researches.begin(), hist.researches.end());
+                                stats.contributions.insert(std::make_pair(hist.contribution_id, hist.contribution_type));
+                            }
+
+                            ++itr;
+                        }
+
+                        total_eci_score += exp_eci_score;
+                    }
+
+                    stats.eci = total_eci_score;
+                    eci_scores.push_back(stats.eci);
+                }
             }
-
         }
 
         for (auto& pair : result)
