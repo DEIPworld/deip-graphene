@@ -144,15 +144,18 @@ struct account_eci_history_operation : public virtual_operation
     account_eci_history_operation() {}
     account_eci_history_operation(const account_name_type& account,
                                   const int64_t& discipline_id,
+                                  const uint16_t& recipient_type,
                                   const eci_diff& diff)
         : account(account)
         , discipline_id(discipline_id)
+        , recipient_type(recipient_type)
         , diff(diff)
     {
     }
 
     account_name_type account;
     int64_t discipline_id;
+    uint16_t recipient_type;
     eci_diff diff;
 };
 
@@ -167,4 +170,4 @@ FC_REFLECT(deip::protocol::token_sale_contribution_to_history_operation, (resear
 FC_REFLECT(deip::protocol::research_content_reference_history_operation, (research_content_id)(research_id)(content)(research_content_reference_id)(research_reference_id)(content_reference))
 FC_REFLECT(deip::protocol::research_content_eci_history_operation, (research_content_id)(discipline_id)(diff))
 FC_REFLECT(deip::protocol::research_eci_history_operation, (research_id)(discipline_id)(diff))
-FC_REFLECT(deip::protocol::account_eci_history_operation, (account)(discipline_id)(diff))
+FC_REFLECT(deip::protocol::account_eci_history_operation, (account)(discipline_id)(recipient_type)(diff))

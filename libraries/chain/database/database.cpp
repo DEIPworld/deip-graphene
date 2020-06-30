@@ -1258,6 +1258,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                     push_virtual_operation(account_eci_history_operation(
                         upvoter.second, 
                         expertise_contribution.discipline_id._id,
+                        static_cast<uint16_t>(reward_recipient_type::reviewer),
                         upvoter_eci_diff)
                     );
                 }
@@ -1285,6 +1286,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                     push_virtual_operation(account_eci_history_operation(
                         downvoter.second, 
                         expertise_contribution.discipline_id._id,
+                        static_cast<uint16_t>(reward_recipient_type::reviewer),
                         downvoter_eci_diff)
                     );
                 }
@@ -1314,6 +1316,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                     push_virtual_operation(account_eci_history_operation(
                         author, 
                         expertise_contribution.discipline_id._id,
+                        static_cast<uint16_t>(reward_recipient_type::author),
                         author_eci_diff)
                     );
                 }
@@ -1358,6 +1361,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                     push_virtual_operation(account_eci_history_operation(
                       upvoter_supporter.first, 
                       expertise_contribution.discipline_id._id,
+                      static_cast<uint16_t>(reward_recipient_type::review_supporter),
                       upvoter_supporter_eci_diff)
                     );
                 }
@@ -1402,6 +1406,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                     push_virtual_operation(account_eci_history_operation(
                       downvoter_supporter.first, 
                       expertise_contribution.discipline_id._id,
+                      static_cast<uint16_t>(reward_recipient_type::review_supporter),
                       downvoter_supporter_eci_diff)
                     );
                 }
@@ -1436,6 +1441,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                     push_virtual_operation(account_eci_history_operation(
                         upvoter.second, 
                         expertise_contribution.discipline_id._id,
+                        static_cast<uint16_t>(reward_recipient_type::reviewer),
                         upvoter_eci_diff)
                     );
                 }
@@ -1464,6 +1470,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                     push_virtual_operation(account_eci_history_operation(
                         downvoter.second, 
                         expertise_contribution.discipline_id._id,
+                        static_cast<uint16_t>(reward_recipient_type::reviewer),
                         downvoter_eci_diff)
                     );
                 }
@@ -1492,6 +1499,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                     push_virtual_operation(account_eci_history_operation(
                         author, 
                         expertise_contribution.discipline_id._id,
+                        static_cast<uint16_t>(reward_recipient_type::author),
                         author_eci_diff)
                     );
                 }
@@ -1536,6 +1544,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                     push_virtual_operation(account_eci_history_operation(
                       upvoter_supporter.first, 
                       expertise_contribution.discipline_id._id,
+                      static_cast<uint16_t>(reward_recipient_type::review_supporter),
                       upvoter_supporter_eci_diff)
                     );
                 }
@@ -1580,6 +1589,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                     push_virtual_operation(account_eci_history_operation(
                       downvoter_supporter.first, 
                       expertise_contribution.discipline_id._id,
+                      static_cast<uint16_t>(reward_recipient_type::review_supporter),
                       downvoter_supporter_eci_diff)
                     );
                 }
@@ -1607,6 +1617,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                         push_virtual_operation(account_eci_history_operation(
                           author, 
                           expertise_contribution.discipline_id._id,
+                          static_cast<uint16_t>(reward_recipient_type::author),
                           author_eci_diff)
                         );
                     }

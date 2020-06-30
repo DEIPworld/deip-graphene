@@ -348,6 +348,7 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
         push_virtual_operation(account_eci_history_operation(
             expert_token.account, 
             discipline.id._id, 
+            static_cast<uint16_t>(reward_recipient_type::unknown),
             account_eci_diff)
         );
     }
@@ -384,6 +385,7 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
                 push_virtual_operation(account_eci_history_operation(
                     test_user, 
                     discipline.id._id, 
+                    static_cast<uint16_t>(reward_recipient_type::unknown),
                     account_eci_diff)
                 );
             }
@@ -565,6 +567,7 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
                 push_virtual_operation(account_eci_history_operation(
                     author, 
                     rel.discipline_id._id, 
+                    static_cast<uint16_t>(reward_recipient_type::author),
                     account_eci_diff)
                 );
             }

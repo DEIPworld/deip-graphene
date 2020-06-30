@@ -111,79 +111,118 @@ struct post_operation_visitor
         int64_t contribution_id = event_contribution_id;
 
         const auto event_type = static_cast<expertise_contribution_type>(event_contribution_type);
-        switch (event_type)
+        const auto recipient_type = static_cast<reward_recipient_type>(op.recipient_type);
+
+        switch (recipient_type)
         {
-            case expertise_contribution_type::review: 
+            case reward_recipient_type::author: 
             {
-                const auto& review = reviews_service.get_review(review_id_type(event_contribution_id));
-                const auto& research = research_service.get_research(review.research_external_id);
-                const auto& research_content_reviews = reviews_service.get_reviews_by_research_content(review.research_content_id);
-                const auto& research_content_reviews_votes = review_votes_service.get_review_votes_by_researh_content(review.research_content_id);
-
-                if (research.members.find(op.account) != research.members.end()) // rewarded account is research author
+                switch (event_type)
                 {
-                    contribution_type = static_cast<uint16_t>(expertise_contribution_type::publication);
-                    contribution_id = review.research_content_id._id;
+                    case expertise_contribution_type::review: // reward author
+                    {
+                        const auto& review = reviews_service.get_review(review_id_type(event_contribution_id));
+                        
+                        contribution_type = static_cast<uint16_t>(expertise_contribution_type::publication);
+                        contribution_id = review.research_content_id._id;
+                    
+                        break;
+                    }
 
-                    break;
+                    case expertise_contribution_type::review_support: // reward author
+                    {
+                        const auto& review_vote = review_votes_service.get_review_vote(review_vote_id_type(event_contribution_id));
+                        const auto& review = reviews_service.get_review(review_vote.review_id);
+
+                        contribution_type = static_cast<uint16_t>(expertise_contribution_type::publication);
+                        contribution_id = review.research_content_id._id;
+
+                        break;
+                    }
+
+                    default: 
+                    {
+                        break;
+                    }
                 }
 
-
-                const auto& review_itr = std::find_if(research_content_reviews.begin(), research_content_reviews.end(),
-                  [&](const review_object& rw) { return rw.author == op.account && rw.author != review.author; });
-
-                if (review_itr != research_content_reviews.end()) // rewarded account is other reviewer of the same research content
+                break;
+            }
+            case reward_recipient_type::reviewer: 
+            {
+                switch (event_type)
                 {
-                    const review_object& research_content_review = *review_itr;
-                    contribution_type = static_cast<uint16_t>(expertise_contribution_type::review);
-                    contribution_id = research_content_review.id._id;
+                    case expertise_contribution_type::review:  // reward reviewer of the same research content
+                    {
+                        const auto& review = reviews_service.get_review(review_id_type(event_contribution_id));
+                        const auto& research_content_reviews = reviews_service.get_reviews_by_research_content(review.research_content_id);
 
-                    break;
-                }
+                        const auto& review_itr = std::find_if(research_content_reviews.begin(), research_content_reviews.end(), // rewarded account is other reviewer of the same research content
+                          [&](const review_object& rw) { return rw.id != review.id; });
 
+                        if (review_itr != research_content_reviews.end())
+                        {
+                            const review_object& research_content_review = *review_itr;
+                            contribution_type = static_cast<uint16_t>(expertise_contribution_type::review);
+                            contribution_id = research_content_review.id._id;
 
-                const auto& review_vote_itr = std::find_if(research_content_reviews_votes.begin(), research_content_reviews_votes.end(),
-                  [&](const review_vote_object& vote) { return (vote.voter == op.account && vote.voter != review.author) || (vote.voter == op.account && vote.review_id != review.id); });
+                            break;
+                        }
+                    
+                        break;
+                    }
 
-                if (review_vote_itr != research_content_reviews_votes.end()) // rewarded account is review voter
-                {
-                    const review_vote_object& research_content_review_vote = *review_vote_itr;
-                    contribution_type = static_cast<uint16_t>(expertise_contribution_type::review_support);
-                    contribution_id = research_content_review_vote.id._id;
+                    case expertise_contribution_type::review_support: // rewarded reviewer
+                    {
+                        const auto& review_vote = review_votes_service.get_review_vote(review_vote_id_type(event_contribution_id));
+                        const auto& review = reviews_service.get_review(review_vote.review_id);
 
-                    break;
+                        contribution_type = static_cast<uint16_t>(expertise_contribution_type::review);
+                        contribution_id = review.id._id;
+
+                        break;
+                    }
+
+                    default: 
+                    {
+                        break;
+                    }
                 }
 
                 break;
             }
 
-            case expertise_contribution_type::review_support: 
+            case reward_recipient_type::review_supporter: 
             {
-                const auto& review_vote = review_votes_service.get_review_vote(review_vote_id_type(event_contribution_id));
-                const auto& review = reviews_service.get_review(review_vote.review_id);
-                const auto& research = research_service.get_research(review.research_external_id);
-                const auto& review_votes = review_votes_service.get_review_votes(review.id);
-
-                if (research.members.find(op.account) != research.members.end()) // rewarded account is research author
+                switch (event_type)
                 {
-                    contribution_type = static_cast<uint16_t>(expertise_contribution_type::publication);
-                    contribution_id = review.research_content_id._id;
+                    case expertise_contribution_type::review: // reward review voter of any review of the same research content
+                    {
+                        const auto& review = reviews_service.get_review(review_id_type(event_contribution_id));
+                        const auto& research_content_reviews_votes = review_votes_service.get_review_votes_by_researh_content(review.research_content_id);
 
-                    break;
+                        const auto& review_vote_itr = std::find_if(research_content_reviews_votes.begin(), research_content_reviews_votes.end(),
+                            [&](const review_vote_object& vote) { return vote.voter == op.account; });
+
+                        if (review_vote_itr != research_content_reviews_votes.end())
+                        {
+                            const review_vote_object& research_content_review_vote = *review_vote_itr;
+                            contribution_type = static_cast<uint16_t>(expertise_contribution_type::review_support);
+                            contribution_id = research_content_review_vote.id._id; // bug, as votes can be left for multiple reviews within the same research content
+
+                            break;
+                        }
+
+                        break;
+                    }
+
+                    default: 
+                    {
+                        break;
+                    }
                 }
-
-                if (review.author == op.account) // rewarded account is reviewer
-                {
-                    contribution_type = static_cast<uint16_t>(expertise_contribution_type::review);
-                    contribution_id = review.id._id;
-
-                    break;
-                }
-
-                break;
             }
-
-            default: 
+            default:
             {
                 break;
             }

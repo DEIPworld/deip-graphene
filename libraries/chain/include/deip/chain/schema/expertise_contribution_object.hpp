@@ -31,6 +31,14 @@ enum class expertise_contribution_type : uint16_t
     LAST = review_support
 };
 
+enum class reward_recipient_type : uint16_t
+{
+    unknown = 0,
+    author = 1,
+    reviewer = 2,
+    review_supporter = 3,
+};
+
 typedef allocator<eci_diff> eci_diff_allocator_type;
 typedef bip::vector<eci_diff, eci_diff_allocator_type> eci_diff_type_vector;
 
@@ -155,6 +163,14 @@ FC_REFLECT_ENUM(deip::chain::expertise_contribution_type,
   (publication)
   (review)
   (review_support)
+)
+
+
+FC_REFLECT_ENUM(deip::chain::reward_recipient_type,
+  (unknown)
+  (author)
+  (reviewer)
+  (review_supporter)
 )
 
 FC_REFLECT( deip::chain::expertise_contribution_object,
