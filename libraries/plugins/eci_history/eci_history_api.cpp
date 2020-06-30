@@ -355,11 +355,6 @@ public:
 
         for (const account_object& acc : accounts)
         {
-            if (!expertise_tokens_service.expert_token_exists_by_account_and_discipline(acc.name, discipline.id))
-            {
-                continue;
-            }
-
             result.insert(std::make_pair(acc.name, account_eci_stats_api_obj()));
             auto& stats = result[acc.name];
 
@@ -368,6 +363,11 @@ public:
 
             if (discipline.id != discipline_id_type(0))
             {
+                if (!expertise_tokens_service.expert_token_exists_by_account_and_discipline(acc.name, discipline.id))
+                {
+                    continue;
+                }
+                
                 auto itr_pair = account_hist_idx.equal_range(std::make_tuple(acc.name, discipline.id));
                 auto& itr = itr_pair.first;
                 const auto& itr_end = itr_pair.second;
