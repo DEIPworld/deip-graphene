@@ -36,7 +36,7 @@ public:
 
     std::map<account_name_type, account_eci_stats_api_obj> get_accounts_eci_stats(const fc::optional<external_id_type> discipline_filter,
                                                                                   const fc::optional<uint16_t> contribution_type_filter,
-                                                                                  const fc::optional<uint16_t> assessment_criterias_filter) const;
+                                                                                  const fc::optional<uint16_t> assessment_criteria_type_filter) const;
 
 private:
     std::unique_ptr<detail::eci_history_api_impl> _impl;

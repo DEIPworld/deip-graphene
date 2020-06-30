@@ -199,6 +199,7 @@ struct account_eci_stats_api_obj
                               const chain::share_type& eci,
                               const percent& percentile_rank,
                               const percent& growth_rate,
+                              const share_type& assessment_criteria_sum_weight,
                               const std::set<std::pair<int64_t, uint16_t>>& contributions_list,
                               const std::set<external_id_type>& researches_list,
                               const fc::time_point_sec& timestamp)
@@ -207,6 +208,7 @@ struct account_eci_stats_api_obj
         , eci(eci)
         , percentile_rank(percentile_rank)
         , growth_rate(growth_rate)
+        , assessment_criteria_sum_weight(assessment_criteria_sum_weight)
         , timestamp(timestamp)
     {
         contributions.insert(contributions_list.begin(), contributions_list.end());
@@ -215,9 +217,10 @@ struct account_eci_stats_api_obj
 
     external_id_type discipline_external_id;
     account_name_type account;
-    chain::share_type eci;
+    share_type eci = share_type(0);
     percent percentile_rank;
     percent growth_rate;
+    share_type assessment_criteria_sum_weight = 0;
     std::set<std::pair<int64_t, uint16_t>> contributions;
     std::set<external_id_type> researches;
     fc::time_point_sec timestamp;
@@ -280,6 +283,7 @@ FC_REFLECT(deip::eci_history::account_eci_stats_api_obj,
   (eci)
   (percentile_rank)
   (growth_rate)
+  (assessment_criteria_sum_weight)
   (contributions)
   (researches)
   (timestamp)
