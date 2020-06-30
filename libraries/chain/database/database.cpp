@@ -1177,14 +1177,14 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
     dbs_expertise_contribution& expertise_contributions_service = obtain_service<dbs_expertise_contribution>();
     dbs_research_content& research_content_service = obtain_service<dbs_research_content>();
     dbs_review& reviews_service = obtain_service<dbs_review>();
+    dbs_review_vote& review_votes_service = obtain_service<dbs_review_vote>();
     dbs_expert_token& expert_tokens_service = obtain_service<dbs_expert_token>();
     const fc::time_point_sec now = head_block_time();
 
     const auto& altered_contributions = expertise_contributions_service.get_altered_expertise_contributions_in_block();
 
-    for (auto& wrap : altered_contributions)
+    for (const expertise_contribution_object& expertise_contribution : altered_contributions)
     {
-        const expertise_contribution_object& expertise_contribution = wrap.get();
         const research_content_object& research_content = research_content_service.get_research_content(expertise_contribution.research_content_id);
         const auto& research_content_reviews = reviews_service.get_reviews_by_research_content(expertise_contribution.research_content_id);
 
@@ -1193,21 +1193,35 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
         std::multimap<share_type, account_name_type, std::greater<share_type>> downvoters;
         share_type downvoters_total_expertise = 0;
 
-        for (auto& review_wrap : research_content_reviews)
+        std::vector<std::pair<account_name_type, review_vote_id_type>> upvoters_supporters;
+        std::vector<std::pair<account_name_type, review_vote_id_type>> downvoters_supporters;
+
+        for (const review_object& review : research_content_reviews)
         {
-            const review_object& review = review_wrap.get();
             if (review.expertise_tokens_amount_by_discipline.count(expertise_contribution.discipline_id) != 0)
             {
+                const auto& review_votes = review_votes_service.get_review_votes_by_review_and_discipline(review.id, expertise_contribution.discipline_id);
+
                 const share_type review_expertise = review.expertise_tokens_amount_by_discipline.at(expertise_contribution.discipline_id);
                 if (review.is_positive)
                 {
                     upvoters.insert(std::make_pair(review_expertise, review.author));
                     upvoters_total_expertise += review_expertise;
+
+                    for (const review_vote_object& review_vote : review_votes)
+                    {
+                        upvoters_supporters.push_back(std::make_pair(review_vote.voter, review_vote.id));
+                    }
                 }
                 else
                 {
                     downvoters.insert(std::make_pair(review_expertise, review.author));
                     downvoters_total_expertise += review_expertise;
+
+                    for (const review_vote_object& review_vote : review_votes)
+                    {
+                        downvoters_supporters.push_back(std::make_pair(review_vote.voter, review_vote.id));
+                    }
                 }
             }
         }
@@ -1219,8 +1233,8 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
             if (delta > 0) // reward for upvoters, penalty for downvoters
             {
                 const share_type reviewers_expertise_reward = util::calculate_share(delta.value, DEIP_1_PERCENT * 30);
-                const share_type researchers_expertise_reward = delta.value - reviewers_expertise_reward;
-
+                const share_type researchers_expertise_reward = util::calculate_share(delta.value, DEIP_1_PERCENT * 70);
+                
                 for (auto& upvoter : upvoters)
                 {
                     const share_type reviewer_expertise_reward = util::calculate_share(
@@ -1239,8 +1253,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       now,
                       diff.contribution_type,
                       diff.contribution_id,
-                      expertise_contribution.assessment_criterias
-                    );
+                      expertise_contribution.assessment_criterias);
 
                     push_virtual_operation(account_eci_history_operation(
                         upvoter.second, 
@@ -1267,8 +1280,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                       now,
                       diff.contribution_type,
                       diff.contribution_id,
-                      expertise_contribution.assessment_criterias
-                    );
+                      expertise_contribution.assessment_criterias);
 
                     push_virtual_operation(account_eci_history_operation(
                         downvoter.second, 
@@ -1305,12 +1317,100 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                         author_eci_diff)
                     );
                 }
+
+                for (auto& upvoter_supporter : upvoters_supporters)
+                {
+                    if (diff.contribution_type == static_cast<uint16_t>(expertise_contribution_type::review_support))
+                    {
+                        if (review_vote_id_type(diff.contribution_id) != upvoter_supporter.second) // Initial zero ECI for review supporter
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (diff.contribution_type == static_cast<uint16_t>(expertise_contribution_type::review))
+                    {
+                        const auto& review = reviews_service.get_review(review_id_type(diff.contribution_id));
+                        if (review.author == upvoter_supporter.first) // Exclude review author if he supported another review previously
+                        {
+                            continue;
+                        }
+                    }
+
+                    const share_type review_supporter_expertise_reward
+                        = diff.contribution_type == static_cast<uint16_t>(expertise_contribution_type::review_support)
+                        ? share_type(0)
+                        : share_type(DEIP_CURATOR_INFLUENCE_BONUS);
+
+                    const auto& exp_token_diff = expert_tokens_service.adjust_expert_token(
+                      upvoter_supporter.first,
+                      expertise_contribution.discipline_id, 
+                      review_supporter_expertise_reward);
+
+                    const eci_diff upvoter_supporter_eci_diff = eci_diff(
+                      std::get<0>(exp_token_diff),
+                      std::get<1>(exp_token_diff),
+                      now,
+                      diff.contribution_type,
+                      diff.contribution_id,
+                      expertise_contribution.assessment_criterias);
+
+                    push_virtual_operation(account_eci_history_operation(
+                      upvoter_supporter.first, 
+                      expertise_contribution.discipline_id._id,
+                      upvoter_supporter_eci_diff)
+                    );
+                }
+
+                for (auto& downvoter_supporter : downvoters_supporters)
+                {
+                    if (diff.contribution_type == static_cast<uint16_t>(expertise_contribution_type::review_support))
+                    {
+                        if (review_vote_id_type(diff.contribution_id) != downvoter_supporter.second) // Initial zero ECI for review supporter
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (diff.contribution_type == static_cast<uint16_t>(expertise_contribution_type::review))
+                    {
+                        const auto& review = reviews_service.get_review(review_id_type(diff.contribution_id));
+                        if (review.author == downvoter_supporter.first) // Exclude review author if he supported another review previously
+                        {
+                            continue;
+                        }
+                    }
+
+                    const share_type review_supporter_expertise_penalty
+                        = diff.contribution_type == static_cast<uint16_t>(expertise_contribution_type::review_support)
+                        ? share_type(0)
+                        : share_type(DEIP_CURATOR_INFLUENCE_BONUS);
+
+                    const auto& exp_token_diff = expert_tokens_service.adjust_expert_token(
+                      downvoter_supporter.first,
+                      expertise_contribution.discipline_id, 
+                      -review_supporter_expertise_penalty);
+
+                    const eci_diff downvoter_supporter_eci_diff = eci_diff(
+                      std::get<0>(exp_token_diff),
+                      std::get<1>(exp_token_diff),
+                      now,
+                      diff.contribution_type,
+                      diff.contribution_id,
+                      expertise_contribution.assessment_criterias);
+
+                    push_virtual_operation(account_eci_history_operation(
+                      downvoter_supporter.first, 
+                      expertise_contribution.discipline_id._id,
+                      downvoter_supporter_eci_diff)
+                    );
+                }
             }
 
             else if (delta < 0) // reward for downvoters, penalty for upvoters
             {
                 const share_type reviewers_expertise_reward = util::calculate_share(abs(delta.value), DEIP_1_PERCENT * 30);
-                const share_type researchers_expertise_reward = abs(delta.value) - reviewers_expertise_reward;
+                const share_type researchers_expertise_reward = util::calculate_share(abs(delta.value), DEIP_1_PERCENT * 70);
 
                 for (auto& upvoter : upvoters)
                 {
@@ -1394,6 +1494,122 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                         expertise_contribution.discipline_id._id,
                         author_eci_diff)
                     );
+                }
+
+                for (auto& upvoter_supporter : upvoters_supporters)
+                {
+                    if (diff.contribution_type == static_cast<uint16_t>(expertise_contribution_type::review_support))
+                    {
+                        if (review_vote_id_type(diff.contribution_id) != upvoter_supporter.second) // Initial zero ECI for review supporter
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (diff.contribution_type == static_cast<uint16_t>(expertise_contribution_type::review))
+                    {
+                        const auto& review = reviews_service.get_review(review_id_type(diff.contribution_id));
+                        if (review.author == upvoter_supporter.first) // Exclude review author if he supported another review previously
+                        {
+                            continue;
+                        }
+                    }
+
+                    const share_type review_supporter_expertise_penalty
+                        = diff.contribution_type == static_cast<uint16_t>(expertise_contribution_type::review_support)
+                        ? share_type(0)
+                        : share_type(DEIP_CURATOR_INFLUENCE_BONUS);
+
+                    const auto& exp_token_diff = expert_tokens_service.adjust_expert_token(
+                      upvoter_supporter.first,
+                      expertise_contribution.discipline_id, 
+                      -review_supporter_expertise_penalty);
+
+                    const eci_diff upvoter_supporter_eci_diff = eci_diff(
+                      std::get<0>(exp_token_diff),
+                      std::get<1>(exp_token_diff),
+                      now,
+                      diff.contribution_type,
+                      diff.contribution_id,
+                      expertise_contribution.assessment_criterias);
+
+                    push_virtual_operation(account_eci_history_operation(
+                      upvoter_supporter.first, 
+                      expertise_contribution.discipline_id._id,
+                      upvoter_supporter_eci_diff)
+                    );
+                }
+
+                for (auto& downvoter_supporter : downvoters_supporters)
+                {
+                    if (diff.contribution_type == static_cast<uint16_t>(expertise_contribution_type::review_support))
+                    {
+                        if (review_vote_id_type(diff.contribution_id) != downvoter_supporter.second) // Initial zero ECI for review supporter
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (diff.contribution_type == static_cast<uint16_t>(expertise_contribution_type::review))
+                    {
+                        const auto& review = reviews_service.get_review(review_id_type(diff.contribution_id));
+                        if (review.author == downvoter_supporter.first) // Exclude review author if he supported another review previously
+                        {
+                            continue;
+                        }
+                    }
+
+                    const share_type review_supporter_expertise_reward
+                        = diff.contribution_type == static_cast<uint16_t>(expertise_contribution_type::review_support)
+                        ? share_type(0)
+                        : share_type(DEIP_CURATOR_INFLUENCE_BONUS);
+
+                    const auto& exp_token_diff = expert_tokens_service.adjust_expert_token(
+                      downvoter_supporter.first,
+                      expertise_contribution.discipline_id, 
+                      review_supporter_expertise_reward);
+
+                    const eci_diff downvoter_supporter_eci_diff = eci_diff(
+                      std::get<0>(exp_token_diff),
+                      std::get<1>(exp_token_diff),
+                      now,
+                      diff.contribution_type,
+                      diff.contribution_id,
+                      expertise_contribution.assessment_criterias);
+
+                    push_virtual_operation(account_eci_history_operation(
+                      downvoter_supporter.first, 
+                      expertise_contribution.discipline_id._id,
+                      downvoter_supporter_eci_diff)
+                    );
+                }
+            }
+            else
+            {
+                if (diff.contribution_type == static_cast<uint16_t>(expertise_contribution_type::publication))
+                {
+                    for (auto& author : research_content.authors)
+                    {
+                        const auto& exp_token_diff = expert_tokens_service.adjust_expert_token(
+                          author, 
+                          expertise_contribution.discipline_id,
+                          share_type(0));
+
+                        const eci_diff author_eci_diff = eci_diff(
+                          std::get<0>(exp_token_diff),
+                          std::get<1>(exp_token_diff),
+                          now,
+                          diff.contribution_type,
+                          diff.contribution_id,
+                          expertise_contribution.assessment_criterias
+                        );
+
+                        push_virtual_operation(account_eci_history_operation(
+                          author, 
+                          expertise_contribution.discipline_id._id,
+                          author_eci_diff)
+                        );
+                    }
                 }
             }
         }

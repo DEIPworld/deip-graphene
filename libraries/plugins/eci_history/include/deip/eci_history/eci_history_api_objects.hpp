@@ -120,6 +120,9 @@ struct account_eci_history_api_obj
                                 const int64_t& discipline_id,
                                 const std::string& account,
                                 const uint16_t contribution_type,
+                                const int64_t contribution_id,
+                                const uint16_t event_contribution_type,
+                                const int64_t event_contribution_id,
                                 const chain::share_type& eci,
                                 const chain::share_type& delta,
                                 const fc::time_point_sec& timestamp,
@@ -132,6 +135,9 @@ struct account_eci_history_api_obj
         , discipline_id(discipline_id)
         , account(account)
         , contribution_type(contribution_type)
+        , contribution_id(contribution_id)
+        , event_contribution_type(event_contribution_type)
+        , event_contribution_id(event_contribution_id)
         , eci(eci)
         , delta(delta)
         , timestamp(timestamp)
@@ -165,7 +171,12 @@ struct account_eci_history_api_obj
     int64_t id;
     int64_t discipline_id;
     std::string account;
+
     uint16_t contribution_type;
+    uint16_t contribution_id;
+
+    uint16_t event_contribution_type;
+    int64_t event_contribution_id;
 
     chain::share_type eci;
     chain::share_type delta;
@@ -250,6 +261,9 @@ FC_REFLECT(deip::eci_history::account_eci_history_api_obj,
   (discipline_id)
   (account)
   (contribution_type)
+  (contribution_id)
+  (event_contribution_type)
+  (event_contribution_id)
   (eci)
   (delta)
   (timestamp)

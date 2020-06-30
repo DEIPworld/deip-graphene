@@ -3,6 +3,8 @@
 #include <deip/chain/operation_notification.hpp>
 #include <deip/chain/services/dbs_expertise_contribution.hpp>
 #include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_review.hpp>
+#include <deip/chain/services/dbs_review_vote.hpp>
 #include <deip/eci_history/eci_history_api.hpp>
 #include <deip/eci_history/eci_history_plugin.hpp>
 #include <deip/eci_history/research_eci_history_object.hpp>
@@ -99,6 +101,94 @@ struct post_operation_visitor
     void operator()(const account_eci_history_operation& op) const
     {
         const auto& research_service = _plugin.database().obtain_service<chain::dbs_research>();
+        const auto& reviews_service = _plugin.database().obtain_service<chain::dbs_review>();
+        const auto& review_votes_service = _plugin.database().obtain_service<chain::dbs_review_vote>();
+
+        const uint16_t event_contribution_type = op.diff.contribution_type;
+        const uint16_t event_contribution_id = op.diff.contribution_id;
+
+        uint16_t contribution_type = event_contribution_type;
+        int64_t contribution_id = event_contribution_id;
+
+        const auto event_type = static_cast<expertise_contribution_type>(event_contribution_type);
+        switch (event_type)
+        {
+            case expertise_contribution_type::review: 
+            {
+                const auto& review = reviews_service.get_review(review_id_type(event_contribution_id));
+                const auto& research = research_service.get_research(review.research_external_id);
+                const auto& research_content_reviews = reviews_service.get_reviews_by_research_content(review.research_content_id);
+                const auto& research_content_reviews_votes = review_votes_service.get_review_votes_by_researh_content(review.research_content_id);
+
+                if (research.members.find(op.account) != research.members.end()) // rewarded account is research author
+                {
+                    contribution_type = static_cast<uint16_t>(expertise_contribution_type::publication);
+                    contribution_id = review.research_content_id._id;
+
+                    break;
+                }
+
+
+                const auto& review_itr = std::find_if(research_content_reviews.begin(), research_content_reviews.end(),
+                  [&](const review_object& rw) { return rw.author == op.account && rw.author != review.author; });
+
+                if (review_itr != research_content_reviews.end()) // rewarded account is other reviewer of the same research content
+                {
+                    const review_object& research_content_review = *review_itr;
+                    contribution_type = static_cast<uint16_t>(expertise_contribution_type::review);
+                    contribution_id = research_content_review.id._id;
+
+                    break;
+                }
+
+
+                const auto& review_vote_itr = std::find_if(research_content_reviews_votes.begin(), research_content_reviews_votes.end(),
+                  [&](const review_vote_object& vote) { return (vote.voter == op.account && vote.voter != review.author) || (vote.voter == op.account && vote.review_id != review.id); });
+
+                if (review_vote_itr != research_content_reviews_votes.end()) // rewarded account is review voter
+                {
+                    const review_vote_object& research_content_review_vote = *review_vote_itr;
+                    contribution_type = static_cast<uint16_t>(expertise_contribution_type::review_support);
+                    contribution_id = research_content_review_vote.id._id;
+
+                    break;
+                }
+
+                break;
+            }
+
+            case expertise_contribution_type::review_support: 
+            {
+                const auto& review_vote = review_votes_service.get_review_vote(review_vote_id_type(event_contribution_id));
+                const auto& review = reviews_service.get_review(review_vote.review_id);
+                const auto& research = research_service.get_research(review.research_external_id);
+                const auto& review_votes = review_votes_service.get_review_votes(review.id);
+
+                if (research.members.find(op.account) != research.members.end()) // rewarded account is research author
+                {
+                    contribution_type = static_cast<uint16_t>(expertise_contribution_type::publication);
+                    contribution_id = review.research_content_id._id;
+
+                    break;
+                }
+
+                if (review.author == op.account) // rewarded account is reviewer
+                {
+                    contribution_type = static_cast<uint16_t>(expertise_contribution_type::review);
+                    contribution_id = review.id._id;
+
+                    break;
+                }
+
+                break;
+            }
+
+            default: 
+            {
+                break;
+            }
+        }
+
         const auto& researches = research_service.get_researches_by_member(op.account);
 
         _plugin.database().create<account_eci_history_object>([&](account_eci_history_object& hist_o) {
@@ -106,8 +196,11 @@ struct post_operation_visitor
             hist_o.discipline_id = op.discipline_id;
             hist_o.eci = op.diff.current();
             hist_o.delta = op.diff.diff();
-            hist_o.contribution_type = op.diff.contribution_type;
-            hist_o.contribution_id = op.diff.contribution_id;
+            hist_o.contribution_type = contribution_type;
+            hist_o.contribution_id = contribution_id;
+            hist_o.event_contribution_type = event_contribution_type;
+            hist_o.event_contribution_id = event_contribution_id;
+
             hist_o.timestamp = op.diff.timestamp;
 
             for (const auto& criteria : op.diff.assessment_criterias)

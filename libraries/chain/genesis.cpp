@@ -456,6 +456,7 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
 {
     const vector<genesis_state_type::research_content_type>& research_contents = genesis_state.research_contents;
     auto& research_groups_service = obtain_service<dbs_research_group>();
+    auto& expert_tokens_service = obtain_service<dbs_expert_token>();
     auto& research_service = obtain_service<dbs_research>();
     auto& research_content_service = obtain_service<dbs_research_content>();
     auto& accounts_service = obtain_service<dbs_account>();
@@ -550,9 +551,11 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
 
             for (const auto& author : updated_research_content.authors)
             {
+                const auto& expert_token_opt = expert_tokens_service.get_expert_token_by_account_and_discipline_if_exists(author, rel.discipline_id._id);
+                const auto& exp = expert_token_opt.valid() ? (*expert_token_opt).get().amount : share_type(0);
                 const eci_diff account_eci_diff = eci_diff(
-                  share_type(0), 
-                  share_type(0),
+                  exp, 
+                  exp,
                   timestamp, 
                   static_cast<uint16_t>(expertise_contribution_type::publication),
                   updated_research_content.id._id,

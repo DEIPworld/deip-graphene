@@ -31,8 +31,12 @@ public:
     share_type eci;
     share_type delta;
 
-    uint16_t contribution_type;
+    uint16_t contribution_type; // Initial contribution that the account is being rewarded with ECI
     int64_t contribution_id;
+
+    uint16_t event_contribution_type; // Contribution that affected the initial contribution
+    int64_t event_contribution_id;
+
     flat_map<uint16_t, uint16_t> assessment_criterias;
     flat_set<external_id_type> researches;
 
@@ -90,6 +94,8 @@ FC_REFLECT(deip::eci_history::account_eci_history_object,
   (delta)
   (contribution_type)
   (contribution_id)
+  (event_contribution_type)
+  (event_contribution_id)
   (assessment_criterias)
   (researches)
   (timestamp)
