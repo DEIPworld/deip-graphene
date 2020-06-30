@@ -338,7 +338,9 @@ public:
         return result;
     }
 
-    std::map<account_name_type, account_eci_stats_api_obj> get_accounts_eci_stats(const external_id_type& discipline_external_id) const
+    std::map<account_name_type, account_eci_stats_api_obj>get_accounts_eci_stats(const fc::optional<external_id_type> discipline_filter,
+                                                                                 const fc::optional<uint16_t> contribution_type_filter,
+                                                                                 const fc::optional<uint16_t> assessment_criterias_filter) const
     {
         const auto& db = _app.chain_database();
         const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account_and_discipline>();
@@ -348,13 +350,45 @@ public:
 
         std::map<account_name_type, account_eci_stats_api_obj> result;
 
-        const auto& discipline = disciplines_service.get_discipline(discipline_external_id);
+        if (discipline_filter.valid() && !disciplines_service.discipline_exists(*discipline_filter))
+        {
+            return result;
+        }
+
+        const discipline_object& discipline = discipline_filter.valid() 
+          ? disciplines_service.get_discipline(*discipline_filter) 
+          : disciplines_service.get_discipline(discipline_id_type(0));
+
         const auto& accounts = accounts_service.lookup_user_accounts(account_name_type("a"), DEIP_API_BULK_FETCH_LIMIT);
+
+        auto filter = [&](const account_eci_history_object& hist) -> bool { 
+          
+          if (contribution_type_filter.valid())
+          {
+              const uint16_t& contribution_type = *contribution_type_filter;
+              if (contribution_type != hist.contribution_type)
+              {
+                  return false;
+              }
+          }
+
+          if (assessment_criterias_filter.valid())
+          {
+
+          }
+
+          return true;
+        };
 
         std::vector<chain::share_type> eci_scores;
 
         for (const account_object& acc : accounts)
         {
+            if (discipline.id != discipline_id_type(0) && !expertise_tokens_service.expert_token_exists_by_account_and_discipline(acc.name, discipline.id))
+            {
+                continue;
+            }
+
             result.insert(std::make_pair(acc.name, account_eci_stats_api_obj()));
             auto& stats = result[acc.name];
 
@@ -363,11 +397,7 @@ public:
 
             if (discipline.id != discipline_id_type(0))
             {
-                if (!expertise_tokens_service.expert_token_exists_by_account_and_discipline(acc.name, discipline.id))
-                {
-                    continue;
-                }
-                
+
                 auto itr_pair = account_hist_idx.equal_range(std::make_tuple(acc.name, discipline.id));
                 auto& itr = itr_pair.first;
                 const auto& itr_end = itr_pair.second;
@@ -377,7 +407,7 @@ public:
                 {
                     const auto& hist = *itr;
 
-                    if (true /* add filter */)
+                    if (filter(hist))
                     {
                         exp_eci_score += hist.delta;
                         stats.timestamp = hist.timestamp;
@@ -415,7 +445,7 @@ public:
                         {
                             const auto& hist = *itr;
 
-                            if (true /* add filter */)
+                            if (filter(hist))
                             {
                                 exp_eci_score += hist.delta;
                                 if (stats.timestamp < hist.timestamp)
@@ -505,12 +535,13 @@ std::vector<account_eci_history_api_obj> eci_history_api::get_eci_history_by_acc
     });
 }
 
-std::map<account_name_type, account_eci_stats_api_obj> eci_history_api::get_accounts_eci_stats(const external_id_type& discipline_external_id) const
+std::map<account_name_type, account_eci_stats_api_obj> eci_history_api::get_accounts_eci_stats(const fc::optional<external_id_type> discipline_filter,
+                                                                                               const fc::optional<uint16_t> contribution_type_filter,
+                                                                                               const fc::optional<uint16_t> assessment_criterias_filter) const
 {
     const auto db = _impl->_app.chain_database();
-    return db->with_read_lock([&]() { 
-        return _impl->get_accounts_eci_stats(discipline_external_id); 
-    });
+    return db->with_read_lock(
+        [&]() { return _impl->get_accounts_eci_stats(discipline_filter, contribution_type_filter, assessment_criterias_filter); });
 }
 
 

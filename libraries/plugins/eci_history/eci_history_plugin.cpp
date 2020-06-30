@@ -119,7 +119,12 @@ struct post_operation_visitor
             {
                 switch (event_type)
                 {
-                    case expertise_contribution_type::review: // reward author
+                    case expertise_contribution_type::publication: 
+                    {
+                        break; // rewarded account is author of research content
+                    }
+
+                    case expertise_contribution_type::review: // rewarded account is author of research content
                     {
                         const auto& review = reviews_service.get_review(review_id_type(event_contribution_id));
                         
@@ -129,7 +134,7 @@ struct post_operation_visitor
                         break;
                     }
 
-                    case expertise_contribution_type::review_support: // reward author
+                    case expertise_contribution_type::review_support: // rewarded account is author of research content
                     {
                         const auto& review_vote = review_votes_service.get_review_vote(review_vote_id_type(event_contribution_id));
                         const auto& review = reviews_service.get_review(review_vote.review_id);
@@ -152,15 +157,20 @@ struct post_operation_visitor
             {
                 switch (event_type)
                 {
-                    case expertise_contribution_type::review:  // reward reviewer of the same research content
+                    case expertise_contribution_type::review:
                     {
                         const auto& review = reviews_service.get_review(review_id_type(event_contribution_id));
+
+                        if (review.author == op.account) // rewarded account is review author
+                        {
+                            break;
+                        }
+
                         const auto& research_content_reviews = reviews_service.get_reviews_by_research_content(review.research_content_id);
+                        const auto& review_itr = std::find_if(research_content_reviews.begin(), research_content_reviews.end(),
+                          [&](const review_object& rw) { return rw.author == op.account && rw.id != review.id; });
 
-                        const auto& review_itr = std::find_if(research_content_reviews.begin(), research_content_reviews.end(), // rewarded account is other reviewer of the same research content
-                          [&](const review_object& rw) { return rw.id != review.id; });
-
-                        if (review_itr != research_content_reviews.end())
+                        if (review_itr != research_content_reviews.end()) // rewarded account is author of another review for the same research content
                         {
                             const review_object& research_content_review = *review_itr;
                             contribution_type = static_cast<uint16_t>(expertise_contribution_type::review);
@@ -172,14 +182,33 @@ struct post_operation_visitor
                         break;
                     }
 
-                    case expertise_contribution_type::review_support: // rewarded reviewer
+                    case expertise_contribution_type::review_support:
                     {
                         const auto& review_vote = review_votes_service.get_review_vote(review_vote_id_type(event_contribution_id));
                         const auto& review = reviews_service.get_review(review_vote.review_id);
 
-                        contribution_type = static_cast<uint16_t>(expertise_contribution_type::review);
-                        contribution_id = review.id._id;
+                        if (review.author == op.account) // rewarded account is author of review that has been supported
+                        {
+                            contribution_type = static_cast<uint16_t>(expertise_contribution_type::review);
+                            contribution_id = review.id._id;
 
+                            break;
+                        }
+
+
+                        const auto& research_content_reviews = reviews_service.get_reviews_by_research_content(review.research_content_id);
+                        const auto& review_itr = std::find_if(research_content_reviews.begin(), research_content_reviews.end(),
+                          [&](const review_object& rw) { return rw.author == op.account && rw.id != review.id; });
+
+                        if (review_itr != research_content_reviews.end()) // rewarded account is author of another review for the same research content
+                        {
+                            const review_object& research_content_review = *review_itr;
+                            contribution_type = static_cast<uint16_t>(expertise_contribution_type::review);
+                            contribution_id = research_content_review.id._id;
+
+                            break;
+                        }
+                        
                         break;
                     }
 
@@ -196,7 +225,7 @@ struct post_operation_visitor
             {
                 switch (event_type)
                 {
-                    case expertise_contribution_type::review: // reward review voter of any review of the same research content
+                    case expertise_contribution_type::review:
                     {
                         const auto& review = reviews_service.get_review(review_id_type(event_contribution_id));
                         const auto& research_content_reviews_votes = review_votes_service.get_review_votes_by_researh_content(review.research_content_id);
@@ -204,7 +233,7 @@ struct post_operation_visitor
                         const auto& review_vote_itr = std::find_if(research_content_reviews_votes.begin(), research_content_reviews_votes.end(),
                             [&](const review_vote_object& vote) { return vote.voter == op.account; });
 
-                        if (review_vote_itr != research_content_reviews_votes.end())
+                        if (review_vote_itr != research_content_reviews_votes.end()) // rewarded account is review supporter of any review within the same research content
                         {
                             const review_vote_object& research_content_review_vote = *review_vote_itr;
                             contribution_type = static_cast<uint16_t>(expertise_contribution_type::review_support);
@@ -214,6 +243,11 @@ struct post_operation_visitor
                         }
 
                         break;
+                    }
+
+                    case expertise_contribution_type::review_support: 
+                    {
+                        break; // rewarded account is review supporter
                     }
 
                     default: 
