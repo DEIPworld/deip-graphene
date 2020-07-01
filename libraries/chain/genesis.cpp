@@ -392,6 +392,8 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
         }
     }
 #endif
+
+    push_virtual_operation(disciplines_eci_history_operation(true, timestamp));
 }
 
 

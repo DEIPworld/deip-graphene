@@ -1,22 +1,25 @@
 #include <deip/protocol/config.hpp>
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/operation_notification.hpp>
-#include <deip/chain/services/dbs_expertise_contribution.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_review_vote.hpp>
+#include <deip/chain/services/dbs_discipline.hpp>
+#include <deip/chain/services/dbs_expert_token.hpp>
+#include <deip/chain/services/dbs_expertise_contribution.hpp>
 #include <deip/eci_history/eci_history_api.hpp>
 #include <deip/eci_history/eci_history_plugin.hpp>
 #include <deip/eci_history/research_eci_history_object.hpp>
 #include <deip/eci_history/research_content_eci_history_object.hpp>
 #include <deip/eci_history/account_eci_history_object.hpp>
+#include <deip/eci_history/discipline_eci_history_object.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/thread/thread.hpp>
 
 #include <boost/algorithm/string.hpp>
 
-namespace deip {
+    namespace deip {
 namespace eci_history {
 
 using namespace deip::protocol;
@@ -287,6 +290,91 @@ struct post_operation_visitor
             }
         });
     }
+
+    void operator()(const disciplines_eci_history_operation& op) const
+    {
+        const auto& disciplines_service = _plugin.database().obtain_service<chain::dbs_discipline>();
+        const auto& expert_tokens_service = _plugin.database().obtain_service<chain::dbs_expert_token>();
+        const auto& expertise_contribution_service = _plugin.database().obtain_service<chain::dbs_expertise_contribution>();
+
+        const auto& disciplines = disciplines_service.lookup_disciplines(discipline_id_type(1), DEIP_API_BULK_FETCH_LIMIT);
+
+        std::map<discipline_eci_history_id_type, share_type> disciplines_stats;
+        share_type total_expertise = share_type(0);
+
+        if (!op.is_initial)
+        {
+            for (const discipline_object& discipline : disciplines)
+            {
+                const auto& expertise_contributions = expertise_contribution_service.get_expertise_contributions_by_discipline(discipline.id);
+                share_type total_eci = share_type(0);
+                flat_map<uint16_t, uint16_t> total_assessment_criterias;
+
+                for (const expertise_contribution_object& exp_contribution : expertise_contributions)
+                {
+                    total_eci += exp_contribution.eci;
+                    for (const auto& criteria : exp_contribution.assessment_criterias)
+                    {
+                        if (total_assessment_criterias.find(criteria.first) == total_assessment_criterias.end())
+                        {
+                            total_assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
+                        }
+                        else
+                        {
+                            total_assessment_criterias.at(criteria.first) += criteria.second;
+                        }
+                    }
+                }
+
+                const auto& hist = _plugin.database().create<discipline_eci_history_object>([&](discipline_eci_history_object& hist_o) {
+                    hist_o.discipline_id = discipline.id;
+                    hist_o.eci = total_eci;
+                    hist_o.timestamp = op.timestamp;
+
+                    for (const auto& criteria : total_assessment_criterias)
+                    {
+                        hist_o.assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
+                    }
+                });
+
+                disciplines_stats.insert(std::make_pair(hist.id, total_eci));
+                total_expertise += total_eci;
+            }
+        }
+        else
+        {
+            for (const discipline_object& discipline : disciplines)
+            {
+                const auto& expert_tokens = expert_tokens_service.get_expert_tokens_by_discipline(discipline.id);
+                share_type total_eci = share_type(0);
+                for (const expert_token_object& exp_token : expert_tokens)
+                {
+                    total_eci += exp_token.amount;
+                }
+
+                 const auto& hist = _plugin.database().create<discipline_eci_history_object>([&](discipline_eci_history_object& hist_o) {
+                    hist_o.discipline_id = discipline.id;
+                    hist_o.eci = total_eci;
+                    hist_o.timestamp = op.timestamp;
+                });
+
+                disciplines_stats.insert(std::make_pair(hist.id, total_eci));
+                total_expertise += total_eci;
+            }
+        }
+
+        for (const auto& stat : disciplines_stats)
+        {
+            const auto& expertise = stat.second;
+            const auto& share = (double(expertise.value) / double(total_expertise.value)) * double(100);
+            const auto& hist = _plugin.database().get<discipline_eci_history_object, by_id>(stat.first);
+
+            _plugin.database().modify(hist, [&](discipline_eci_history_object& hist_o) {
+                hist_o.share = percent(share_type(std::round(share)));
+                hist_o.total_eci = total_expertise;
+            });
+        }
+    }
 };
 
 void eci_history_plugin_impl::pre_operation(const operation_notification& note)
@@ -330,6 +418,7 @@ void eci_history_plugin::plugin_initialize(const boost::program_options::variabl
     db.add_plugin_index<account_eci_history_index>();
     db.add_plugin_index<research_eci_history_index>();
     db.add_plugin_index<research_content_eci_history_index>();
+    db.add_plugin_index<discipline_eci_history_index>();
 
     db.pre_apply_operation.connect([&](const operation_notification& note) { my->pre_operation(note); });
     db.post_apply_operation.connect([&](const operation_notification& note) { my->post_operation(note); });

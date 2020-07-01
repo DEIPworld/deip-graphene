@@ -14,8 +14,9 @@
 #include <deip/eci_history/research_eci_history_object.hpp>
 #include <deip/eci_history/research_content_eci_history_object.hpp>
 #include <deip/eci_history/account_eci_history_object.hpp>
+#include <deip/eci_history/discipline_eci_history_object.hpp>
 
-    namespace deip {
+namespace deip {
 namespace eci_history {
 
 using deip::chain::expertise_contribution_type;
@@ -385,35 +386,37 @@ public:
         };
 
         std::vector<chain::share_type> eci_scores;
-        share_type assessment_criteria_factor = share_type(0);
 
         for (const account_object& acc : accounts)
         {
-            if (discipline.id != discipline_id_type(0) && !expertise_tokens_service.expert_token_exists_by_account_and_discipline(acc.name, discipline.id))
-            {
-                continue;
-            }
-
-            result.insert(std::make_pair(acc.name, account_eci_stats_api_obj()));
-            auto& stats = result[acc.name];
-
-            stats.account = acc.name;
-            stats.discipline_external_id = discipline.external_id;
-
             if (discipline.id != discipline_id_type(0))
             {
+                if (!expertise_tokens_service.expert_token_exists_by_account_and_discipline(acc.name, discipline.id))
+                {
+                    continue;
+                }
+
                 auto itr_pair = account_hist_idx.equal_range(std::make_tuple(acc.name, discipline.id));
                 auto& itr = itr_pair.first;
                 const auto& itr_end = itr_pair.second;
 
-                share_type exp_eci_score;
                 while (itr != itr_end)
                 {
                     const auto& hist = *itr;
 
                     if (filter(hist))
                     {
-                        exp_eci_score += hist.delta;
+                        if (result.find(acc.name) == result.end())
+                        {
+                            auto stats = account_eci_stats_api_obj();
+                            stats.account = acc.name;
+                            stats.discipline_external_id = discipline.external_id;
+                            result.insert(std::make_pair(acc.name, stats));
+                        }
+
+                        auto& stats = result[acc.name];
+
+                        stats.eci += hist.delta;
                         stats.timestamp = hist.timestamp;
                         stats.researches.insert(hist.researches.begin(), hist.researches.end());
                         stats.contributions.insert(std::make_pair(hist.contribution_id, hist.contribution_type));
@@ -422,7 +425,6 @@ public:
                         {
                             const uint16_t& criteria_type = *assessment_criteria_type_filter;
                             stats.assessment_criteria_sum_weight += share_type(hist.assessment_criterias.at(criteria_type));
-                            assessment_criteria_factor = stats.assessment_criteria_sum_weight;
                         }
                         else
                         {
@@ -436,36 +438,45 @@ public:
                     ++itr;
                 }
 
-                stats.eci = exp_eci_score;
-                eci_scores.push_back(stats.eci + assessment_criteria_factor);
+                if (result.find(acc.name) != result.end())
+                {
+                    const auto& stats = result[acc.name];
+                    share_type eci_score = assessment_criteria_type_filter.valid()
+                        ? (stats.eci + stats.assessment_criteria_sum_weight)
+                        : stats.eci;
+
+                    eci_scores.push_back(eci_score);
+                }
             } 
             else
             {
                 for (const account_object& acc : accounts)
                 {
-                    result.insert(std::make_pair(acc.name, account_eci_stats_api_obj()));
-                    auto& stats = result[acc.name];
-
-                    stats.account = acc.name;
-                    stats.discipline_external_id = discipline.external_id;
-
                     const auto& expertise_tokens = expertise_tokens_service.get_expert_tokens_by_account_name(acc.name);
 
-                    share_type total_eci_score;
                     for (const expert_token_object& expert_token : expertise_tokens)
                     {
                         auto itr_pair = account_hist_idx.equal_range(std::make_tuple(acc.name, expert_token.discipline_id));
                         auto& itr = itr_pair.first;
                         const auto& itr_end = itr_pair.second;
 
-                        share_type exp_eci_score;
                         while (itr != itr_end)
                         {
                             const auto& hist = *itr;
 
                             if (filter(hist))
                             {
-                                exp_eci_score += hist.delta;
+                                if (result.find(acc.name) == result.end())
+                                {
+                                    auto stats = account_eci_stats_api_obj();
+                                    stats.account = acc.name;
+                                    stats.discipline_external_id = discipline.external_id;
+                                    result.insert(std::make_pair(acc.name, stats));
+                                }
+
+                                auto& stats = result[acc.name];
+
+                                stats.eci += hist.delta;
                                 if (stats.timestamp < hist.timestamp)
                                 {
                                     stats.timestamp = hist.timestamp;
@@ -477,7 +488,6 @@ public:
                                 {
                                     const uint16_t& criteria_type = *assessment_criteria_type_filter;
                                     stats.assessment_criteria_sum_weight += share_type(hist.assessment_criterias.at(criteria_type));
-                                    assessment_criteria_factor = stats.assessment_criteria_sum_weight;
                                 }
                                 else 
                                 {
@@ -490,12 +500,17 @@ public:
 
                             ++itr;
                         }
-
-                        total_eci_score += exp_eci_score;
                     }
 
-                    stats.eci = total_eci_score;
-                    eci_scores.push_back(stats.eci + assessment_criteria_factor);
+                    if (result.find(acc.name) != result.end())
+                    {
+                        const auto& stats = result[acc.name];
+                        share_type eci_score = assessment_criteria_type_filter.valid()
+                            ? (stats.eci + stats.assessment_criteria_sum_weight)
+                            : stats.eci;
+
+                        eci_scores.push_back(eci_score);
+                    }
                 }
             }
         }

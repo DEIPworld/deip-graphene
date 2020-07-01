@@ -159,6 +159,21 @@ struct account_eci_history_operation : public virtual_operation
     eci_diff diff;
 };
 
+struct disciplines_eci_history_operation : public virtual_operation
+{
+    disciplines_eci_history_operation(){}
+    disciplines_eci_history_operation(const bool& is_initial,
+                                      const fc::time_point_sec& timestamp)
+        : is_initial(is_initial)
+        , timestamp(timestamp)
+    {
+    }
+
+    bool is_initial;
+    fc::time_point_sec timestamp;
+};
+
+
 }
 } // deip::protocol
 
@@ -171,3 +186,4 @@ FC_REFLECT(deip::protocol::research_content_reference_history_operation, (resear
 FC_REFLECT(deip::protocol::research_content_eci_history_operation, (research_content_id)(discipline_id)(diff))
 FC_REFLECT(deip::protocol::research_eci_history_operation, (research_id)(discipline_id)(diff))
 FC_REFLECT(deip::protocol::account_eci_history_operation, (account)(discipline_id)(recipient_type)(diff))
+FC_REFLECT(deip::protocol::disciplines_eci_history_operation, (is_initial)(timestamp))
