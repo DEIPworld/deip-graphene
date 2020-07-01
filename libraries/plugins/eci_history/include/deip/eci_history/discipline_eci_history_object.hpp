@@ -31,13 +31,7 @@ public:
 
     share_type total_eci;
 
-    // share_type delta;
-
-    uint16_t contribution_type;
-    int64_t contribution_id;
-
     flat_map<uint16_t, uint16_t> assessment_criterias;
-    // flat_set<external_id_type> researches;
 
     fc::time_point_sec timestamp;
 };
@@ -76,11 +70,7 @@ FC_REFLECT(deip::eci_history::discipline_eci_history_object,
   (eci)
   (share)
   (total_eci)
-  // (delta)
-  (contribution_type)
-  (contribution_id)
   (assessment_criterias)
-  // (researches)
   (timestamp)
 )
 
