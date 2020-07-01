@@ -549,6 +549,101 @@ public:
 
         return result;
     }
+
+    std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> get_disciplines_eci_stats_history() const
+    {
+        const auto& db = _app.chain_database();
+        const auto& discipline_hist_idx = db->get_index<discipline_eci_history_index>().indices().get<by_discipline>();
+        const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
+
+        std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> result;
+
+        const auto& disciplines = disciplines_service.lookup_disciplines(discipline_id_type(1), DEIP_API_BULK_FETCH_LIMIT);
+        for (const discipline_object& discipline : disciplines)
+        {
+            std::vector<discipline_eci_stats_api_obj> records;
+
+            auto itr_pair = discipline_hist_idx.equal_range(discipline.id);
+            auto itr = itr_pair.first;
+            const auto itr_end = itr_pair.second;
+            while (itr != itr_end)
+            {
+                const discipline_eci_history_object& hist = *itr;
+
+                std::map<uint16_t, uint16_t> assessment_criterias;
+                for (uint16_t i = static_cast<uint16_t>(assessment_criteria::FIRST); i <= static_cast<uint16_t>(assessment_criteria::LAST); i++)
+                {
+                    if (hist.assessment_criterias.find(i) != hist.assessment_criterias.end())
+                    {
+                        assessment_criterias.insert(std::make_pair(i, hist.assessment_criterias.at(i)));
+                    }
+                    else
+                    {
+                        assessment_criterias.insert(std::make_pair(i, uint16_t(0)));
+                    }
+                }
+
+                records.push_back(discipline_eci_stats_api_obj(
+                    discipline.external_id,
+                    fc::to_string(discipline.name),
+                    hist.eci,
+                    hist.total_eci,
+                    hist.share,
+                    assessment_criterias,
+                    hist.timestamp
+                  ));
+
+                ++itr;
+            }
+
+            result.insert(std::make_pair(discipline.external_id, records));
+        }
+
+        return result;
+    }
+
+
+    std::map<external_id_type, discipline_eci_stats_api_obj> get_disciplines_eci_stats() const
+    {
+        const auto& db = _app.chain_database();
+        const auto& discipline_hist_idx = db->get_index<discipline_eci_history_index>().indices().get<by_discipline>();
+        const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
+
+        std::map<external_id_type, discipline_eci_stats_api_obj> result;
+
+        const auto& disciplines = disciplines_service.lookup_disciplines(discipline_id_type(1), DEIP_API_BULK_FETCH_LIMIT);
+        for (const discipline_object& discipline : disciplines)
+        {
+            auto itr_pair = discipline_hist_idx.equal_range(discipline.id);
+            const discipline_eci_history_object& hist = *(--itr_pair.second);
+
+            std::map<uint16_t, uint16_t> assessment_criterias;
+            for (uint16_t i = static_cast<uint16_t>(assessment_criteria::FIRST); i <= static_cast<uint16_t>(assessment_criteria::LAST); i++)
+            {
+                if (hist.assessment_criterias.find(i) != hist.assessment_criterias.end())
+                {
+                    assessment_criterias.insert(std::make_pair(i, hist.assessment_criterias.at(i)));
+                }
+                else
+                {
+                    assessment_criterias.insert(std::make_pair(i, uint16_t(0)));
+                }
+            }
+
+            result.insert(std::make_pair(discipline.external_id, discipline_eci_stats_api_obj(
+                discipline.external_id,
+                fc::to_string(discipline.name),
+                hist.eci,
+                hist.total_eci,
+                hist.share,
+                assessment_criterias,
+                hist.timestamp
+            )));
+        }
+
+        return result;
+    }
+
 };
 } // namespace detail
 
@@ -599,6 +694,18 @@ std::map<account_name_type, account_eci_stats_api_obj> eci_history_api::get_acco
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock(
         [&]() { return _impl->get_accounts_eci_stats(discipline_filter, contribution_type_filter, assessment_criteria_type_filter); });
+}
+
+std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> eci_history_api::get_disciplines_eci_stats_history() const
+{
+    const auto db = _impl->_app.chain_database();
+    return db->with_read_lock([&]() { return _impl->get_disciplines_eci_stats_history(); });
+}
+
+std::map<external_id_type, discipline_eci_stats_api_obj> eci_history_api::get_disciplines_eci_stats() const
+{
+    const auto db = _impl->_app.chain_database();
+    return db->with_read_lock([&]() { return _impl->get_disciplines_eci_stats(); });
 }
 
 

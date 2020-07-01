@@ -366,7 +366,7 @@ struct post_operation_visitor
         for (const auto& stat : disciplines_stats)
         {
             const auto& expertise = stat.second;
-            const auto& share = (double(expertise.value) / double(total_expertise.value)) * double(100);
+            const auto& share = ((double(expertise.value) / double(total_expertise.value)) * double(100)) * DEIP_1_PERCENT;
             const auto& hist = _plugin.database().get<discipline_eci_history_object, by_id>(stat.first);
 
             _plugin.database().modify(hist, [&](discipline_eci_history_object& hist_o) {

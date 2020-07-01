@@ -38,6 +38,10 @@ public:
                                                                                   const fc::optional<uint16_t> contribution_type_filter,
                                                                                   const fc::optional<uint16_t> assessment_criteria_type_filter) const;
 
+    std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> get_disciplines_eci_stats_history() const;
+
+    std::map<external_id_type, discipline_eci_stats_api_obj> get_disciplines_eci_stats() const;
+
 private:
     std::unique_ptr<detail::eci_history_api_impl> _impl;
 };
@@ -50,5 +54,7 @@ FC_API(deip::eci_history::eci_history_api,
   (get_eci_history_by_research_and_discipline)
   (get_eci_history_by_account_and_discipline)
   (get_accounts_eci_stats)
+  (get_disciplines_eci_stats_history)
+  (get_disciplines_eci_stats)
 
 )

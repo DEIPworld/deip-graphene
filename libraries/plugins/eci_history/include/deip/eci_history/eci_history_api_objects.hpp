@@ -227,6 +227,36 @@ struct account_eci_stats_api_obj
 };
 
 
+struct discipline_eci_stats_api_obj
+{
+    discipline_eci_stats_api_obj(){};
+    discipline_eci_stats_api_obj(const external_id_type& discipline_external_id,
+                                 const string& discipline_name,
+                                 const share_type& eci,
+                                 const share_type& total_eci,
+                                 const percent& share,
+                                 std::map<uint16_t, uint16_t> criterias,
+                                 const fc::time_point_sec& timestamp)
+        : discipline_external_id(discipline_external_id)
+        , discipline_name(discipline_name)
+        , eci(eci)
+        , total_eci(total_eci)
+        , share(share)
+        , timestamp(timestamp)
+    {
+        assessment_criterias.insert(criterias.begin(), criterias.end());
+    }
+
+    external_id_type discipline_external_id;
+    string discipline_name;
+    share_type eci = share_type(0);
+    share_type total_eci = share_type(0);
+    percent share;
+    fc::time_point_sec timestamp;
+    std::map<uint16_t, uint16_t> assessment_criterias;
+};
+
+
 }
 }
 
@@ -287,4 +317,15 @@ FC_REFLECT(deip::eci_history::account_eci_stats_api_obj,
   (contributions)
   (researches)
   (timestamp)
+)
+
+
+FC_REFLECT(deip::eci_history::discipline_eci_stats_api_obj, 
+  (discipline_external_id)
+  (discipline_name)
+  (eci)
+  (total_eci)
+  (share)
+  (timestamp)
+  (assessment_criterias)
 )
