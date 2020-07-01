@@ -309,6 +309,8 @@ void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
             });
         }
     }
+
+    // push_virtual_operation(disciplines_eci_history_operation(true, get_genesis_time()));
 }
 
 
@@ -392,8 +394,6 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
         }
     }
 #endif
-
-    push_virtual_operation(disciplines_eci_history_operation(true, timestamp));
 }
 
 

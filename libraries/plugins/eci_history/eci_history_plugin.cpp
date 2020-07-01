@@ -345,21 +345,13 @@ struct post_operation_visitor
         {
             for (const discipline_object& discipline : disciplines)
             {
-                const auto& expert_tokens = expert_tokens_service.get_expert_tokens_by_discipline(discipline.id);
-                share_type total_eci = share_type(0);
-                for (const expert_token_object& exp_token : expert_tokens)
-                {
-                    total_eci += exp_token.amount;
-                }
-
-                 const auto& hist = _plugin.database().create<discipline_eci_history_object>([&](discipline_eci_history_object& hist_o) {
+                const auto& hist = _plugin.database().create<discipline_eci_history_object>([&](discipline_eci_history_object& hist_o) {
                     hist_o.discipline_id = discipline.id;
-                    hist_o.eci = total_eci;
+                    hist_o.eci = share_type(0);
                     hist_o.timestamp = op.timestamp;
                 });
 
-                disciplines_stats.insert(std::make_pair(hist.id, total_eci));
-                total_expertise += total_eci;
+                disciplines_stats.insert(std::make_pair(hist.id, share_type(0)));
             }
         }
 

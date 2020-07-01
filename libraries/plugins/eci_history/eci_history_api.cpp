@@ -416,6 +416,9 @@ public:
 
                         auto& stats = result[acc.name];
 
+                        stats.past_eci = stats.eci;
+                        stats.past_assessment_criteria_sum_weight = stats.assessment_criteria_sum_weight;
+
                         stats.eci += hist.delta;
                         stats.timestamp = hist.timestamp;
                         stats.researches.insert(hist.researches.begin(), hist.researches.end());
@@ -440,12 +443,22 @@ public:
 
                 if (result.find(acc.name) != result.end())
                 {
-                    const auto& stats = result[acc.name];
+                    auto& stats = result[acc.name];
                     share_type eci_score = assessment_criteria_type_filter.valid()
                         ? (stats.eci + stats.assessment_criteria_sum_weight)
                         : stats.eci;
 
                     eci_scores.push_back(eci_score);
+
+                    share_type past_eci_score = assessment_criteria_type_filter.valid()
+                        ? (stats.past_eci + stats.past_assessment_criteria_sum_weight)
+                        : stats.past_eci;
+
+                    if (past_eci_score != share_type(0))
+                    {
+                        const share_type growth_rate = share_type( std::round( ((double(eci_score.value) - double(past_eci_score.value)) / double(past_eci_score.value)) * DEIP_1_PERCENT));
+                        stats.growth_rate = percent(growth_rate);
+                    }
                 }
             } 
             else
@@ -476,6 +489,9 @@ public:
 
                                 auto& stats = result[acc.name];
 
+                                stats.past_eci = stats.eci;
+                                stats.past_assessment_criteria_sum_weight = stats.assessment_criteria_sum_weight;
+
                                 stats.eci += hist.delta;
                                 if (stats.timestamp < hist.timestamp)
                                 {
@@ -504,12 +520,22 @@ public:
 
                     if (result.find(acc.name) != result.end())
                     {
-                        const auto& stats = result[acc.name];
+                        auto& stats = result[acc.name];
                         share_type eci_score = assessment_criteria_type_filter.valid()
                             ? (stats.eci + stats.assessment_criteria_sum_weight)
                             : stats.eci;
 
                         eci_scores.push_back(eci_score);
+
+                        share_type past_eci_score = assessment_criteria_type_filter.valid()
+                            ? (stats.past_eci + stats.past_assessment_criteria_sum_weight)
+                            : stats.past_eci;
+
+                        if (past_eci_score != share_type(0))
+                        {
+                            const share_type growth_rate = share_type( std::round( ((double(eci_score.value) - double(past_eci_score.value)) / double(past_eci_score.value)) * DEIP_1_PERCENT ));
+                            stats.growth_rate = percent(growth_rate);
+                        }
                     }
                 }
             }
@@ -542,9 +568,6 @@ public:
             const int Y = eci_scores.size();
             const chain::share_type percentile_rank = share_type(std::round(((double(M) + (double(0.5) * double(R))) / double(Y)) * double(100) * DEIP_1_PERCENT));
             stats.percentile_rank = percent(percentile_rank);
-
-            const chain::share_type growth_rate = share_type(0);
-            stats.growth_rate = percent(DEIP_1_PERCENT * growth_rate);
         }
 
         return result;
