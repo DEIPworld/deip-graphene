@@ -310,7 +310,8 @@ void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
         }
     }
 
-    // push_virtual_operation(disciplines_eci_history_operation(true, get_genesis_time()));
+    const time_point_sec& timestamp = get_genesis_time();
+    push_virtual_operation(disciplines_eci_history_operation(true, timestamp));
 }
 
 
@@ -354,46 +355,6 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
             account_eci_diff)
         );
     }
-
-
-#ifdef IS_TEST_NET
-    const account_name_type& test_user = account_name_type("hermes");
-
-    if (find<account_object, by_name>(test_user) != nullptr) {
-        // Init 'hermes' user with tokens in every discipline
-        const share_type test_user_expertise = share_type(10000);
-        const auto& disciplines = discipline_service.lookup_disciplines(discipline_id_type(1), 10000);
-
-        for (const discipline_object& discipline : disciplines)
-        {
-            if (discipline.id != 0) 
-            {
-                expert_token_service.create_expert_token(
-                  test_user, 
-                  discipline.id, 
-                  test_user_expertise, 
-                  true);
-
-                flat_map<uint16_t, uint16_t> assessment_criterias;
-                const eci_diff account_eci_diff = eci_diff(
-                  share_type(0), 
-                  share_type(test_user_expertise),
-                  timestamp, 
-                  static_cast<uint16_t>(expertise_contribution_type::unknown),
-                  0,
-                  assessment_criterias
-                );
-
-                push_virtual_operation(account_eci_history_operation(
-                    test_user, 
-                    discipline.id._id, 
-                    static_cast<uint16_t>(reward_recipient_type::unknown),
-                    account_eci_diff)
-                );
-            }
-        }
-    }
-#endif
 }
 
 
@@ -437,7 +398,14 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
             });
 
         flat_set<account_name_type> members;
-        members.insert(authors.begin(), authors.end());
+        if (authors.size() != 0)
+        {
+            members.insert(authors.begin(), authors.end());
+        }
+        else 
+        {
+            members.insert(research_group.creator);
+        }
 
         research_service.create_research(
           research_group, 

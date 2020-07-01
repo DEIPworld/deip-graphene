@@ -358,11 +358,14 @@ struct post_operation_visitor
         for (const auto& stat : disciplines_stats)
         {
             const auto& expertise = stat.second;
-            const auto& share = ((double(expertise.value) / double(total_expertise.value)) * double(100)) * DEIP_1_PERCENT;
+            const auto& share = total_expertise.value != 0
+                ? share_type(std::round( (((double(expertise.value) / double(total_expertise.value)) * double(100)) * DEIP_1_PERCENT) ))
+                : share_type(0);
+
             const auto& hist = _plugin.database().get<discipline_eci_history_object, by_id>(stat.first);
 
             _plugin.database().modify(hist, [&](discipline_eci_history_object& hist_o) {
-                hist_o.share = percent(share_type(std::round(share)));
+                hist_o.share = percent(share);
                 hist_o.total_eci = total_expertise;
             });
         }

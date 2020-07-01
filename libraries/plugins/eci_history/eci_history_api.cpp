@@ -638,6 +638,11 @@ public:
         for (const discipline_object& discipline : disciplines)
         {
             auto itr_pair = discipline_hist_idx.equal_range(discipline.id);
+            if (itr_pair.first == itr_pair.second) 
+            {
+                continue;
+            }
+
             const discipline_eci_history_object& hist = *(--itr_pair.second);
 
             std::map<uint16_t, uint16_t> assessment_criterias;
