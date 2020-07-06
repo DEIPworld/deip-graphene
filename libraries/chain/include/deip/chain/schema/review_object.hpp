@@ -29,9 +29,8 @@ class review_object : public object<review_object_type, review_object>
 public:
 
     template <typename Constructor, typename Allocator>
-    review_object(Constructor &&c, allocator<Allocator> a) : content(a)
-            , disciplines(a)
-            , expertise_tokens_amount_by_discipline(a)
+    review_object(Constructor &&c, allocator<Allocator> a) 
+      : content(a)
     {
         c(*this);
     }
@@ -47,9 +46,9 @@ public:
     bool is_positive = true;
     account_name_type author;
     time_point_sec created_at;
-    discipline_id_type_set disciplines;
+    flat_set<discipline_id_type> disciplines;
     flat_set<external_id_type> disciplines_external_ids;
-    discipline_id_share_type_map expertise_tokens_amount_by_discipline;
+    flat_map<discipline_id_type, share_type> expertise_tokens_amount_by_discipline;
 
     int32_t assessment_model_v;
     flat_map<uint16_t, uint16_t> assessment_criterias;

@@ -35,10 +35,6 @@ const expert_token_object& dbs_expert_token::create_expert_token(
         exp_o.discipline_id = discipline_id;
         exp_o.amount = amount;
         exp_o.discipline_external_id = discipline.external_id;
-        if (exp_o.amount < 0) 
-        {
-            exp_o.amount = 0;
-        }
         exp_o.last_vote_time = props.time;
     });
 
@@ -196,10 +192,6 @@ const std::tuple<share_type, share_type> dbs_expert_token::adjust_expert_token(
         share_type previous = exp.amount;
         db_impl().modify(exp, [&](expert_token_object& exp_o) {
             exp_o.amount += delta;
-            if (exp_o.amount < 0)
-            {
-                exp_o.amount = 0;
-            }
         });
 
         accounts_service.adjust_expertise_tokens_throughput(account, delta);

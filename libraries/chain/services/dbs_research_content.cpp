@@ -229,17 +229,15 @@ const std::map<discipline_id_type, share_type> dbs_research_content::get_eci_eva
     const auto& research_discipline_relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
 
     std::map<review_id_type, std::map<discipline_id_type, share_type>> reviews_weights;
-    for (auto& wrap: research_content_reviews) 
+    for (const review_object& review : research_content_reviews)
     {
-        const review_object& review = wrap.get();
         const auto review_weight_by_discipline = review_service.get_eci_weight(review.id);
         reviews_weights[review.id] = review_weight_by_discipline;
     }
 
     std::map<discipline_id_type, share_type> research_content_eci_by_discipline;
-    for (auto& wrap: research_discipline_relations) 
+    for (const research_discipline_relation_object& relation : research_discipline_relations)
     {
-        const research_discipline_relation_object& relation = wrap.get();
         const discipline_id_type discipline_id = relation.discipline_id;
 
         const share_type Sdp = std::accumulate(reviews_weights.begin(), reviews_weights.end(), share_type(0), 
@@ -249,7 +247,7 @@ const std::map<discipline_id_type, share_type> dbs_research_content::get_eci_eva
                     : acc;
             });
 
-        research_content_eci_by_discipline[discipline_id] = Sdp > 0 ? Sdp : 0;
+        research_content_eci_by_discipline[discipline_id] = Sdp;
     }
 
     return research_content_eci_by_discipline;
@@ -261,7 +259,7 @@ const research_content_object& dbs_research_content::update_eci_evaluation(const
     const auto& eci_evaluation = get_eci_evaluation(research_content_id);
 
     db_impl().modify(research_content, [&](research_content_object& rc_o) {
-        for (auto& entry : eci_evaluation)
+        for (const auto& entry : eci_evaluation)
         {
             rc_o.eci_per_discipline[entry.first] = entry.second;
         }

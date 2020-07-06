@@ -31,7 +31,6 @@ public:
         : title(a)
         , abstract(a)
         , permlink(a)
-        , eci_per_discipline(a)
     {
         c(*this);
     }
@@ -51,7 +50,7 @@ public:
     optional<percent> review_share;
     optional<percent> compensation_share;
 
-    discipline_id_share_type_map eci_per_discipline;
+    flat_map<discipline_id_type, share_type> eci_per_discipline;
 
     uint16_t number_of_positive_reviews = 0;
     uint16_t number_of_negative_reviews = 0;

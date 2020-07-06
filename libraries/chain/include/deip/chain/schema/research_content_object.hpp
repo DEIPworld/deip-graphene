@@ -66,9 +66,7 @@ public:
     research_content_object(Constructor &&c, allocator<Allocator> a) 
       : title(a), 
         content(a), 
-        permlink(a), 
-        authors(a), 
-        eci_per_discipline(a)
+        permlink(a)
     {
         c(*this);
     }
@@ -84,12 +82,12 @@ public:
 
     research_content_type type;
 
-    account_name_type_set authors;
+    flat_set<account_name_type> authors;
     time_point_sec created_at;
 
     flat_set<external_id_type> references;
 
-    discipline_id_share_type_map eci_per_discipline;
+    flat_map<discipline_id_type, share_type> eci_per_discipline;
 
     // deprecated
     uint16_t activity_round;

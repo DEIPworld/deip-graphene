@@ -184,26 +184,11 @@ typedef oid<nda_contract_file_access_object> nda_contract_file_access_id_type;
 
 typedef bip::allocator<fc::shared_string, bip::managed_mapped_file::segment_manager> basic_string_allocator;
 
-typedef allocator<account_name_type> account_name_allocator_type;
-typedef bip::set<account_name_type, std::less<account_name_type>, account_name_allocator_type> account_name_type_set;
-
-typedef allocator<research_id_type> research_id_allocator_type;
-typedef bip::set<research_id_type, std::less<research_id_type>, research_id_allocator_type> research_id_type_set;
-
-typedef allocator<research_content_id_type> research_content_id_allocator_type;
-typedef bip::set<research_content_id_type, std::less<research_content_id_type>, research_content_id_allocator_type> research_content_id_type_set;
-
 typedef allocator<fc::shared_string> shared_string_set_allocator_type;
 typedef bip::set<fc::shared_string, std::less<fc::shared_string>, shared_string_set_allocator_type> shared_string_type_set;
 
 typedef allocator<std::pair<const fc::shared_string, fc::shared_string>> shared_string_map_allocator_type;
 typedef bip::map<fc::shared_string, fc::shared_string, std::less<fc::shared_string>, shared_string_map_allocator_type> shared_string_type_map;
-
-typedef allocator<discipline_id_type> discipline_id_allocator_type;    
-typedef bip::set<discipline_id_type, std::less<discipline_id_type>, discipline_id_allocator_type> discipline_id_type_set;
-
-typedef allocator<std::pair<const discipline_id_type, share_type>> discipline_id_share_type_allocator_type;
-typedef bip::map<discipline_id_type, share_type, std::less<discipline_id_type>, discipline_id_share_type_allocator_type> discipline_id_share_type_map;
 
 typedef allocator<std::pair<const discipline_id_type, std::vector<account_name_type>>> discipline_id_account_name_allocator_type;
 typedef bip::map<discipline_id_type, std::vector<account_name_type>, std::less<discipline_id_type>, discipline_id_account_name_allocator_type> delegated_expertise_type_map;

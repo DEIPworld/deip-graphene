@@ -477,8 +477,8 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
             ));
         }
 
-        const std::map<discipline_id_type, share_type> previous_research_content_eci = research_content_service.get_eci_evaluation(created_research_content.id);
-        const std::map<discipline_id_type, share_type> previous_research_eci = research_service.get_eci_evaluation(research.id);
+        const auto previous_research_content_eci = research_content_service.get_eci_evaluation(created_research_content.id);
+        const auto previous_research_eci = research_service.get_eci_evaluation(research.id);
 
         const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(created_research_content.id);
         const research_object& updated_research = research_service.update_eci_evaluation(research.id);

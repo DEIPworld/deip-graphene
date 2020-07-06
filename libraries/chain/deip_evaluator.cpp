@@ -493,8 +493,8 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& op)
         t.last_vote_time = now;
     });
 
-    const discipline_id_share_type_map previous_research_content_eci = research_content.eci_per_discipline;
-    const discipline_id_share_type_map previous_research_eci = research.eci_per_discipline;
+    const auto previous_research_content_eci = research_content.eci_per_discipline;
+    const auto previous_research_eci = research.eci_per_discipline;
 
     const review_vote_object& review_vote = review_votes_service.create_review_vote(
       op.external_id,
@@ -872,8 +872,8 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
         FC_ASSERT(false, "Review assessment model is not specified");
     }
 
-    const discipline_id_share_type_map previous_research_content_eci = research_content.eci_per_discipline;
-    const discipline_id_share_type_map previous_research_eci = research.eci_per_discipline;
+    const auto previous_research_content_eci = research_content.eci_per_discipline;
+    const auto previous_research_eci = research.eci_per_discipline;
 
     const auto& review = review_service.create_review(
       op.external_id,
@@ -930,11 +930,6 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
             research_eci_diff)
         );
     }
-
-    _db._temporary_public_impl().modify(research, [&](research_object& r_o) {
-        r_o.number_of_positive_reviews += review.is_positive ? 1 : 0;
-        r_o.number_of_negative_reviews += review.is_positive ? 0 : 1;
-    });
 }
 
 void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)
@@ -2478,8 +2473,8 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
         );
     }
 
-    const std::map<discipline_id_type, share_type> previous_research_content_eci = research_content_service.get_eci_evaluation(research_content.id);
-    const std::map<discipline_id_type, share_type> previous_research_eci = research_service.get_eci_evaluation(research.id);
+    const auto previous_research_content_eci = research_content_service.get_eci_evaluation(research_content.id);
+    const auto previous_research_eci = research_service.get_eci_evaluation(research.id);
 
     const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(research_content.id);
     const research_object& updated_research = research_service.update_eci_evaluation(research.id);

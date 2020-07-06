@@ -105,7 +105,6 @@ const research_group_object& dbs_research_group::create_personal_research_group(
               rg_o.is_personal = true;
               rg_o.is_centralized = false;
               rg_o.is_dao = false;
-              rg_o.heads.insert(account);
               rg_o.is_created_by_organization = false;
               rg_o.has_organization = false;
           });

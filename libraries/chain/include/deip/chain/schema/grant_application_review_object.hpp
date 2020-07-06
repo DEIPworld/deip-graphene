@@ -26,8 +26,6 @@ public:
     template <typename Constructor, typename Allocator>
     grant_application_review_object(Constructor&& c, allocator<Allocator> a)
         : content(a)
-        , disciplines(a)
-        , references(a)
     {
         c(*this);
     }
@@ -38,8 +36,7 @@ public:
     bool is_positive = true;
     account_name_type author;
     time_point_sec created_at;
-    discipline_id_type_set disciplines;
-    research_content_id_type_set references;
+    flat_set<discipline_id_type> disciplines;
 };
 
 struct by_author;
@@ -74,6 +71,6 @@ typedef multi_index_container<
 } // namespace deip
 
 FC_REFLECT(deip::chain::grant_application_review_object,
-           (id)(grant_application_id)(content)(is_positive)(author)(created_at)(disciplines)(references))
+           (id)(grant_application_id)(content)(is_positive)(author)(created_at)(disciplines))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::grant_application_review_object, deip::chain::grant_application_review_index)

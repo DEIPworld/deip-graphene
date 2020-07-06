@@ -26,7 +26,11 @@ class nda_contract_object : public object<nda_contract_object_type, nda_contract
 public:
 
     template <typename Constructor, typename Allocator>
-    nda_contract_object(Constructor&& c, allocator<Allocator> a) : title(a), disclosing_party(a), party_a_signature(a), party_b_signature(a), contract_hash(a)
+    nda_contract_object(Constructor&& c, allocator<Allocator> a) 
+      : title(a), 
+      party_a_signature(a), 
+      party_b_signature(a), 
+      contract_hash(a)
     {
         c(*this);
     }
@@ -39,7 +43,7 @@ public:
     account_name_type party_a;
     account_name_type party_b;
 
-    account_name_type_set disclosing_party;
+    flat_set<account_name_type> disclosing_party;
 
     research_group_id_type party_a_research_group_id;
     research_group_id_type party_b_research_group_id;

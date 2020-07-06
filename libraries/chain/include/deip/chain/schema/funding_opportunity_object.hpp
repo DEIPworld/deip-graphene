@@ -24,8 +24,6 @@ public:
     template <typename Constructor, typename Allocator>
     funding_opportunity_object(Constructor&& c, allocator<Allocator> a)
         : additional_info(a)
-        , target_disciplines(a)
-        , officers(a)
     {
         c(*this);
     }
@@ -41,7 +39,7 @@ public:
 
     shared_string_type_map additional_info;
 
-    discipline_id_type_set target_disciplines;
+    flat_set<discipline_id_type> target_disciplines;
 
     asset amount = asset(0, DEIP_SYMBOL);
     asset award_ceiling = asset(0, DEIP_SYMBOL);
@@ -54,7 +52,7 @@ public:
 
     uint16_t expected_number_of_awards;
 
-    account_name_type_set officers;
+    flat_set<account_name_type> officers;
 
     fc::time_point_sec open_date;
     fc::time_point_sec close_date;

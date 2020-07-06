@@ -31,6 +31,7 @@ const review_object& dbs_review::create_review(const external_id_type& external_
                                                const flat_map<uint16_t, assessment_criteria_value>& assessment_criterias)
 {
     auto& disciplines_service = db_impl().obtain_service<dbs_discipline>();
+    const auto& research_service = db_impl().obtain_service<dbs_research>();
 
     flat_set<external_id_type> disciplines_external_ids;
 
@@ -42,7 +43,7 @@ const review_object& dbs_review::create_review(const external_id_type& external_
 
     const auto now = db_impl().head_block_time();
 
-    const auto& new_review = db_impl().create<review_object>([&](review_object& r) {
+    const auto& review = db_impl().create<review_object>([&](review_object& r) {
         r.external_id = external_id;
         r.research_external_id = research_external_id; 
         r.research_content_external_id = research_content_external_id;
@@ -62,7 +63,14 @@ const review_object& dbs_review::create_review(const external_id_type& external_
         }
     });
 
-    return new_review;
+    const auto& research = research_service.get_research(research_external_id);
+
+    db_impl().modify(research, [&](research_object& r_o) {
+        r_o.number_of_positive_reviews += review.is_positive ? 1 : 0;
+        r_o.number_of_negative_reviews += review.is_positive ? 0 : 1;
+    });
+
+    return review;
 }
 
 const review_object& dbs_review::get_review(const review_id_type &id) const

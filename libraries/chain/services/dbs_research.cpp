@@ -254,25 +254,23 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
         : std::map<discipline_id_type, share_type>();
 
     std::map<discipline_id_type, std::map<account_name_type, std::pair<share_type, share_type>>> max_and_min_reviewer_weight_by_discipline;
-    for (auto& wrap : research_contents)
+    for (const research_content_object& research_content : research_contents)
     {
-        const research_content_object& research_content = wrap.get();
         if (research.is_finished && research_content.id == final_result->id) {
             continue;
         }
 
         const auto& milestone_reviews = review_service.get_reviews_by_research_content(research_content.id);
 
-        for (auto& rw_wrap: milestone_reviews)
+        for (const review_object& milestone_review : milestone_reviews)
         {
-            const review_object& milestone_review = rw_wrap.get();
             if (final_result_reviewers.find(milestone_review.author) != final_result_reviewers.end()) {
                 continue;
             }
 
             for (discipline_id_type discipline_id: milestone_review.disciplines)
             {
-                auto milestone_review_votes = review_votes_service.get_review_votes(milestone_review.id);
+                const auto& milestone_review_votes = review_votes_service.get_review_votes(milestone_review.id);
                 const double milestone_review_votes_count = (double)std::count_if(
                     milestone_review_votes.begin(), milestone_review_votes.end(),
                     [&](const review_vote_object& rw_vote) {
@@ -306,9 +304,8 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
     }
 
     std::map<discipline_id_type, share_type> research_eci_by_discipline;
-    for (auto& wrap: research_discipline_relations)
+    for (const research_discipline_relation_object& relation : research_discipline_relations)
     {
-        const research_discipline_relation_object& relation = wrap.get();
         const discipline_id_type discipline_id = relation.discipline_id;
 
         const auto authors_weights = max_and_min_reviewer_weight_by_discipline.find(discipline_id) != max_and_min_reviewer_weight_by_discipline.end()
@@ -326,17 +323,9 @@ const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(
             ? final_result_weight.at(discipline_id)
             : share_type(0);
 
-        /*
-
-        Original Formula
-
         const share_type Sdfr = Vdp + Sdp;
 
-        */
-
-        const share_type Sdfr = Vdp + Sdp;
-
-        research_eci_by_discipline[discipline_id] = Sdfr > 0 ? Sdfr : 0;
+        research_eci_by_discipline[discipline_id] = Sdfr;
     }
 
     return research_eci_by_discipline;
@@ -350,7 +339,7 @@ const research_object& dbs_research::update_eci_evaluation(const research_id_typ
     const auto& eci_evaluation = get_eci_evaluation(research_id);
 
     db_impl().modify(research, [&](research_object& r_o) {
-        for (auto& entry : eci_evaluation)
+        for (const auto& entry : eci_evaluation)
         {
             r_o.eci_per_discipline[entry.first] = entry.second;
         }
