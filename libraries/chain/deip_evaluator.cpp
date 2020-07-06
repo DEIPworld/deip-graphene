@@ -513,10 +513,10 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& op)
     const research_content_object& updated_research_content = research_content_service.update_eci_evaluation(research_content.id);
     const research_object& updated_research = research_service.update_eci_evaluation(research.id);
 
-    flat_map<uint16_t, uint16_t> assessment_criterias;
+    flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
     for (const auto& criteria : review.assessment_criterias)
     {
-        assessment_criterias.insert(std::make_pair(criteria.first, uint16_t(1)));
+        assessment_criterias.insert(std::make_pair(criteria.first, assessment_criteria_value(1)));
     }
 
     const eci_diff research_content_eci_diff = eci_diff(
@@ -846,7 +846,7 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
         });
 
     bool is_positive;
-    flat_map<uint16_t, uint16_t> assessment_criterias;
+    flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
 
     if (op.assessment_model.which() == assessment_models::tag<binary_scoring_assessment_model_type>::value)
     {
@@ -857,14 +857,14 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
     {
         const auto model = op.assessment_model.get<multicriteria_scoring_assessment_model_type>();
 
-        const uint16_t total_score = std::accumulate(std::begin(model.scores), std::end(model.scores), 0,
-            [&](uint16_t total, const std::map<uint16_t, uint16_t>::value_type& m) { return total + m.second; });
+        const assessment_criteria_value total_score = std::accumulate(std::begin(model.scores), std::end(model.scores), assessment_criteria_value(0),
+            [&](assessment_criteria_value total, const std::map<uint16_t, uint16_t>::value_type& m) { return total + assessment_criteria_value(m.second); });
 
-        is_positive = total_score >= DEIP_MIN_POSITIVE_REVIEW_SCORE;
+        is_positive = total_score >= (assessment_criteria_value) DEIP_MIN_POSITIVE_REVIEW_SCORE;
 
         for (const auto& score : model.scores)
         {
-            assessment_criterias.insert(std::make_pair(score.first, score.second));
+            assessment_criterias.insert(std::make_pair(score.first, assessment_criteria_value(score.second)));
         }
     } 
     else
@@ -2484,7 +2484,7 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
     {
         const auto& rel = wrap.get();
 
-        flat_map<uint16_t, uint16_t> assessment_criterias;
+        flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
 
         const eci_diff research_content_eci_diff = eci_diff(
           previous_research_content_eci.at(rel.discipline_id),

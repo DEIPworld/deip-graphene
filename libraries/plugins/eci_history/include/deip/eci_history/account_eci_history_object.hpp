@@ -37,7 +37,7 @@ public:
     uint16_t event_contribution_type; // Contribution that affected the initial contribution
     int64_t event_contribution_id;
 
-    flat_map<uint16_t, uint16_t> assessment_criterias;
+    flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
     flat_set<external_id_type> researches;
 
     fc::time_point_sec timestamp;

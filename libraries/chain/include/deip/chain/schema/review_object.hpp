@@ -19,8 +19,6 @@ namespace chain{
 
 using protocol::external_id_type;
 
-typedef uint16_t assessment_criteria_value;
-
 class review_object : public object<review_object_type, review_object>
 {
 
@@ -51,7 +49,7 @@ public:
     flat_map<discipline_id_type, share_type> expertise_tokens_amount_by_discipline;
 
     int32_t assessment_model_v;
-    flat_map<uint16_t, uint16_t> assessment_criterias;
+    flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
 };
 
 struct by_external_id;

@@ -80,6 +80,7 @@ typedef fc::ecc::compact_signature signature_type;
 typedef safe<int64_t> share_type;
 typedef uint16_t weight_type;
 typedef uint64_t asset_symbol_type;
+typedef int64_t assessment_criteria_value;
 
 struct public_key_type
 {

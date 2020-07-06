@@ -515,7 +515,7 @@ public:
             {
                 const discipline_eci_history_object& hist = *itr;
 
-                std::map<uint16_t, uint16_t> assessment_criterias;
+                std::map<uint16_t, assessment_criteria_value> assessment_criterias;
                 for (uint16_t i = static_cast<uint16_t>(assessment_criteria::FIRST); i <= static_cast<uint16_t>(assessment_criteria::LAST); i++)
                 {
                     if (hist.assessment_criterias.find(i) != hist.assessment_criterias.end())
@@ -524,7 +524,7 @@ public:
                     }
                     else
                     {
-                        assessment_criterias.insert(std::make_pair(i, uint16_t(0)));
+                        assessment_criterias.insert(std::make_pair(i, assessment_criteria_value(0)));
                     }
                 }
 
@@ -567,7 +567,7 @@ public:
 
             const discipline_eci_history_object& hist = *(--itr_pair.second);
 
-            std::map<uint16_t, uint16_t> assessment_criterias;
+            std::map<uint16_t, assessment_criteria_value> assessment_criterias;
             for (uint16_t i = static_cast<uint16_t>(assessment_criteria::FIRST); i <= static_cast<uint16_t>(assessment_criteria::LAST); i++)
             {
                 if (hist.assessment_criterias.find(i) != hist.assessment_criterias.end())
@@ -576,7 +576,7 @@ public:
                 }
                 else
                 {
-                    assessment_criterias.insert(std::make_pair(i, uint16_t(0)));
+                    assessment_criterias.insert(std::make_pair(i, assessment_criteria_value(0)));
                 }
             }
 

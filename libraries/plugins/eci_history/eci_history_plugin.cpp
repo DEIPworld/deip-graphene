@@ -308,7 +308,7 @@ struct post_operation_visitor
             {
                 const auto& expertise_contributions = expertise_contribution_service.get_expertise_contributions_by_discipline(discipline.id);
                 share_type total_eci = share_type(0);
-                flat_map<uint16_t, uint16_t> total_assessment_criterias;
+                flat_map<uint16_t, assessment_criteria_value> total_assessment_criterias;
 
                 for (const expertise_contribution_object& exp_contribution : expertise_contributions)
                 {

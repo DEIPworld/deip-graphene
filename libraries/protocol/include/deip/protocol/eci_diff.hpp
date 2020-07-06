@@ -11,7 +11,7 @@ struct eci_diff
              const fc::time_point_sec& timestamp,
              const uint16_t& contribution_type,
              const int64_t& contribution_id,
-             const flat_map<uint16_t, uint16_t>& criterias)
+             const flat_map<uint16_t, assessment_criteria_value>& criterias)
         : _old(_old)
         , _new(_new)
         , timestamp(timestamp)
@@ -28,7 +28,7 @@ struct eci_diff
     uint16_t contribution_type;
     int64_t contribution_id;
 
-    flat_map<uint16_t, uint16_t> assessment_criterias;
+    flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
 
     share_type current() const
     {

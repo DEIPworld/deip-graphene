@@ -19,6 +19,7 @@ namespace chain {
 namespace bip = chainbase::bip;
 using deip::protocol::asset;
 using deip::protocol::eci_diff;
+using deip::protocol::assessment_criteria_value;
 
 enum class expertise_contribution_type : uint16_t
 {
@@ -63,7 +64,7 @@ public:
     bool has_eci_current_block_diffs;
     share_type eci_current_block_delta;
     eci_diff_type_vector eci_current_block_diffs;
-    flat_map<uint16_t, uint16_t> assessment_criterias;
+    flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
 };
 
 struct by_discipline_id;

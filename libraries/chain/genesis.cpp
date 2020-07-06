@@ -338,7 +338,7 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
           expert_token.amount, 
           true);
 
-        flat_map<uint16_t, uint16_t> assessment_criterias;
+        flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
         const eci_diff account_eci_diff = eci_diff(
           share_type(0), 
           share_type(expert_token.amount),
@@ -489,7 +489,7 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
         {
             const auto& rel = wrap.get();
 
-            flat_map<uint16_t, uint16_t> assessment_criterias;
+            flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
 
             const eci_diff research_content_eci_diff = eci_diff(
                 previous_research_content_eci.at(rel.discipline_id),

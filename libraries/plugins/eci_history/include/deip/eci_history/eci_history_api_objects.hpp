@@ -245,7 +245,7 @@ struct discipline_eci_stats_api_obj
                                  const share_type& eci,
                                  const share_type& total_eci,
                                  const percent& share,
-                                 std::map<uint16_t, uint16_t> criterias,
+                                 std::map<uint16_t, assessment_criteria_value> criterias,
                                  const fc::time_point_sec& timestamp)
         : discipline_external_id(discipline_external_id)
         , discipline_name(discipline_name)
@@ -263,7 +263,7 @@ struct discipline_eci_stats_api_obj
     share_type total_eci = share_type(0);
     percent share;
     fc::time_point_sec timestamp;
-    std::map<uint16_t, uint16_t> assessment_criterias;
+    std::map<uint16_t, assessment_criteria_value> assessment_criterias;
 };
 
 
