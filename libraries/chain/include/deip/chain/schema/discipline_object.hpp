@@ -34,6 +34,10 @@ public:
     external_id_type external_id;
     external_id_type parent_external_id;
     fc::shared_string name;
+
+    const bool is_common() const {
+        return id == discipline_id_type(0);
+    }
 };
 
 struct by_name;

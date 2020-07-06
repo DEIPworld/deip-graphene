@@ -228,7 +228,7 @@ public:
         std::vector<account_eci_history_api_obj> result;
 
         const auto& db = _app.chain_database();
-        const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account_and_discipline>();
+        const auto& account_discipline_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account_and_discipline>();
         const auto& accounts_service = db->obtain_service<chain::dbs_account>();
         const auto& research_service = db->obtain_service<chain::dbs_research>();
         const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
@@ -242,7 +242,7 @@ public:
             return result;
         }
 
-        auto itr_pair = account_hist_idx.equal_range(std::make_tuple(account, discipline_id));
+        auto itr_pair = account_discipline_hist_idx.equal_range(std::make_tuple(account, discipline_id));
         auto itr = itr_pair.first;
         const auto itr_end = itr_pair.second;
         while (itr != itr_end)
@@ -344,7 +344,8 @@ public:
                                                                                  const fc::optional<uint16_t> assessment_criteria_type_filter) const
     {
         const auto& db = _app.chain_database();
-        const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account_and_discipline>();
+        const auto& account_discipline_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account_and_discipline>();
+        const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account>();
         const auto& accounts_service = db->obtain_service<chain::dbs_account>();
         const auto& expertise_tokens_service = db->obtain_service<chain::dbs_expert_token>();
         const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
@@ -364,210 +365,133 @@ public:
 
         auto filter = [&](const account_eci_history_object& hist) -> bool {
 
-          if (contribution_type_filter.valid())
-          {
-              const uint16_t& contribution_type = *contribution_type_filter;
-              if (contribution_type != hist.contribution_type)
-              {
-                  return false;
-              }
-          }
+            if (contribution_type_filter.valid())
+            {
+                const uint16_t& contribution_type = *contribution_type_filter;
+                if (contribution_type != hist.contribution_type)
+                {
+                    return false;
+                }
+            }
 
-          if (assessment_criteria_type_filter.valid())
-          {
-              const uint16_t& assessment_criteria_type = *assessment_criteria_type_filter;
-              if (hist.assessment_criterias.find(assessment_criteria_type) == hist.assessment_criterias.end())
-              {
-                  return false;
-              }
-          }
+            if (assessment_criteria_type_filter.valid())
+            {
+                const uint16_t& assessment_criteria_type = *assessment_criteria_type_filter;
+                if (hist.assessment_criterias.find(assessment_criteria_type) == hist.assessment_criterias.end())
+                {
+                    return false;
+                }
+            }
 
-          return true;
+            if (discipline_filter.valid())
+            {
+                if (discipline.id != hist.discipline_id && !discipline.is_common())
+                {
+                    return false;
+                }
+            }
+
+            return true;
         };
 
         std::vector<chain::share_type> eci_scores;
 
         for (const account_object& acc : accounts)
         {
-            if (discipline.id != discipline_id_type(0))
+            auto itr_pair = account_hist_idx.equal_range(acc.name);
+            auto& itr = itr_pair.first;
+            const auto& itr_end = itr_pair.second;
+
+            while (itr != itr_end)
             {
-                if (!expertise_tokens_service.expert_token_exists_by_account_and_discipline(acc.name, discipline.id))
+                const auto& hist = *itr;
+
+                if (filter(hist))
                 {
-                    continue;
-                }
-
-                auto itr_pair = account_hist_idx.equal_range(std::make_tuple(acc.name, discipline.id));
-                auto& itr = itr_pair.first;
-                const auto& itr_end = itr_pair.second;
-
-                while (itr != itr_end)
-                {
-                    const auto& hist = *itr;
-
-                    if (filter(hist))
+                    if (result.find(acc.name) == result.end())
                     {
-                        if (result.find(acc.name) == result.end())
-                        {
-                            auto stats = account_eci_stats_api_obj();
-                            stats.account = acc.name;
-                            stats.discipline_external_id = discipline.external_id;
-                            result.insert(std::make_pair(acc.name, stats));
-                        }
-
-                        auto& stats = result[acc.name];
-
-                        stats.past_eci = stats.eci;
-                        stats.past_assessment_criteria_sum_weight = stats.assessment_criteria_sum_weight;
-
-                        stats.eci += hist.delta;
-                        stats.timestamp = hist.timestamp;
-                        stats.researches.insert(hist.researches.begin(), hist.researches.end());
-                        stats.contributions.insert(std::make_pair(hist.contribution_id, hist.contribution_type));
-
-                        if (assessment_criteria_type_filter.valid())
-                        {
-                            const uint16_t& criteria_type = *assessment_criteria_type_filter;
-                            stats.assessment_criteria_sum_weight += share_type(hist.assessment_criterias.at(criteria_type));
-                        }
-                        else
-                        {
-                            for (const auto& assessment_criteria : hist.assessment_criterias)
-                            {
-                                stats.assessment_criteria_sum_weight += share_type(assessment_criteria.second);
-                            }
-                        }
+                        auto stats = account_eci_stats_api_obj();
+                        stats.account = acc.name;
+                        stats.discipline_external_id = discipline.external_id;
+                        result.insert(std::make_pair(acc.name, stats));
                     }
 
-                    ++itr;
-                }
-
-                if (result.find(acc.name) != result.end())
-                {
                     auto& stats = result[acc.name];
-                    share_type eci_score = assessment_criteria_type_filter.valid()
-                        ? (stats.eci + stats.assessment_criteria_sum_weight)
-                        : stats.eci;
 
-                    eci_scores.push_back(eci_score);
+                    stats.past_eci = stats.eci;
+                    stats.past_assessment_criteria_sum_weight = stats.assessment_criteria_sum_weight;
 
-                    share_type past_eci_score = assessment_criteria_type_filter.valid()
-                        ? (stats.past_eci + stats.past_assessment_criteria_sum_weight)
-                        : stats.past_eci;
+                    stats.eci += hist.delta;
+                    stats.timestamp = hist.timestamp;
+                    stats.researches.insert(hist.researches.begin(), hist.researches.end());
+                    stats.contributions.insert(std::make_pair(hist.contribution_id, hist.contribution_type));
 
-                    if (past_eci_score != share_type(0))
+                    if (assessment_criteria_type_filter.valid())
                     {
-                        const share_type growth_rate = share_type( std::round( ((double(eci_score.value) - double(past_eci_score.value)) / double(past_eci_score.value)) * DEIP_1_PERCENT));
-                        stats.growth_rate = percent(growth_rate);
+                        const uint16_t& criteria_type = *assessment_criteria_type_filter;
+                        stats.assessment_criteria_sum_weight += share_type(hist.assessment_criterias.at(criteria_type));
+                    }
+                    else
+                    {
+                        for (const auto& assessment_criteria : hist.assessment_criterias)
+                        {
+                            stats.assessment_criteria_sum_weight += share_type(assessment_criteria.second);
+                        }
                     }
                 }
-            } 
-            else
+
+                ++itr;
+            }
+
+            if (result.find(acc.name) != result.end())
             {
-                for (const account_object& acc : accounts)
-                {
-                    const auto& expertise_tokens = expertise_tokens_service.get_expert_tokens_by_account_name(acc.name);
+                const auto& stats = result[acc.name];
 
-                    for (const expert_token_object& expert_token : expertise_tokens)
-                    {
-                        auto itr_pair = account_hist_idx.equal_range(std::make_tuple(acc.name, expert_token.discipline_id));
-                        auto& itr = itr_pair.first;
-                        const auto& itr_end = itr_pair.second;
+                share_type eci_score = assessment_criteria_type_filter.valid()
+                    ? (stats.eci + stats.assessment_criteria_sum_weight)
+                    : stats.eci;
 
-                        while (itr != itr_end)
-                        {
-                            const auto& hist = *itr;
-
-                            if (filter(hist))
-                            {
-                                if (result.find(acc.name) == result.end())
-                                {
-                                    auto stats = account_eci_stats_api_obj();
-                                    stats.account = acc.name;
-                                    stats.discipline_external_id = discipline.external_id;
-                                    result.insert(std::make_pair(acc.name, stats));
-                                }
-
-                                auto& stats = result[acc.name];
-
-                                stats.past_eci = stats.eci;
-                                stats.past_assessment_criteria_sum_weight = stats.assessment_criteria_sum_weight;
-
-                                stats.eci += hist.delta;
-                                if (stats.timestamp < hist.timestamp)
-                                {
-                                    stats.timestamp = hist.timestamp;
-                                }
-                                stats.researches.insert(hist.researches.begin(), hist.researches.end());
-                                stats.contributions.insert(std::make_pair(hist.contribution_id, hist.contribution_type));
-
-                                if (assessment_criteria_type_filter.valid())
-                                {
-                                    const uint16_t& criteria_type = *assessment_criteria_type_filter;
-                                    stats.assessment_criteria_sum_weight += share_type(hist.assessment_criterias.at(criteria_type));
-                                }
-                                else 
-                                {
-                                    for (const auto& assessment_criteria : hist.assessment_criterias)
-                                    {
-                                        stats.assessment_criteria_sum_weight += share_type(assessment_criteria.second);
-                                    }
-                                }
-                            }
-
-                            ++itr;
-                        }
-                    }
-
-                    if (result.find(acc.name) != result.end())
-                    {
-                        auto& stats = result[acc.name];
-                        share_type eci_score = assessment_criteria_type_filter.valid()
-                            ? (stats.eci + stats.assessment_criteria_sum_weight)
-                            : stats.eci;
-
-                        eci_scores.push_back(eci_score);
-
-                        share_type past_eci_score = assessment_criteria_type_filter.valid()
-                            ? (stats.past_eci + stats.past_assessment_criteria_sum_weight)
-                            : stats.past_eci;
-
-                        if (past_eci_score != share_type(0))
-                        {
-                            const share_type growth_rate = share_type( std::round( ((double(eci_score.value) - double(past_eci_score.value)) / double(past_eci_score.value)) * DEIP_1_PERCENT ));
-                            stats.growth_rate = percent(growth_rate);
-                        }
-                    }
-                }
+                eci_scores.push_back(eci_score);
             }
         }
-
+        
         for (auto& pair : result)
         {
             auto& stats = pair.second;
+
             /*
                 Percentile Rank = [(M + (0.5 * R)) / Y] * 100
                 M = Number of Ranks below x
                 R = Number of Ranks equals x
                 Y = Total Number of Ranks
             */
-            const share_type x = assessment_criteria_type_filter.valid() ? (stats.eci + stats.assessment_criteria_sum_weight) : stats.eci;
+            const share_type x_score = assessment_criteria_type_filter.valid() ? (stats.eci + stats.assessment_criteria_sum_weight) : stats.eci;
             std::sort(eci_scores.begin(), eci_scores.end());
-            const auto& x_itr = std::find(eci_scores.begin(), eci_scores.end(), x);
-            const int M = std::distance(eci_scores.begin(), x_itr);
-            const int R = std::count_if(eci_scores.begin(), eci_scores.end(), [&](const chain::share_type& eci_score) { 
-              if (assessment_criteria_type_filter.valid())
-              {
-                  const share_type x_score = stats.eci + stats.assessment_criteria_sum_weight;
-                  return eci_score == x_score;
-              } 
-              else 
-              {
-                  return eci_score == stats.eci;
-              }
+            const auto& x_score_itr = std::find(eci_scores.begin(), eci_scores.end(), x_score);
+            const int M = std::distance(eci_scores.begin(), x_score_itr);
+            const int R = std::count_if(eci_scores.begin(), eci_scores.end(), [&](const share_type& eci_score) { 
+              return eci_score == x_score;
             });
             const int Y = eci_scores.size();
-            const chain::share_type percentile_rank = share_type(std::round(((double(M) + (double(0.5) * double(R))) / double(Y)) * double(100) * DEIP_1_PERCENT));
+            const share_type percentile_rank = share_type(std::round(((double(M) + (double(0.5) * double(R))) / double(Y)) * double(100) * DEIP_1_PERCENT));
             stats.percentile_rank = percent(percentile_rank);
+
+
+            /*
+                Growth Rate = [(Vpresent - Vpast) / Vpast] * 100
+                Vpresent = present value
+                VPast = past value
+            */
+            share_type present_eci_score = x_score;
+            share_type past_eci_score = assessment_criteria_type_filter.valid()
+                ? (stats.past_eci + stats.past_assessment_criteria_sum_weight)
+                : stats.past_eci;
+
+            if (past_eci_score != share_type(0))
+            {
+                const share_type growth_rate = share_type( std::round( ((double(present_eci_score.value) - double(past_eci_score.value)) / double(past_eci_score.value)) * DEIP_1_PERCENT ));
+                stats.growth_rate = percent(growth_rate);
+            }
         }
 
         return result;
