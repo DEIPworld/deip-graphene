@@ -483,9 +483,7 @@ public:
                 VPast = past value
             */
             share_type present_eci_score = x_score;
-            share_type past_eci_score = assessment_criteria_type_filter.valid()
-                ? (stats.past_eci + stats.past_assessment_criteria_sum_weight)
-                : stats.past_eci;
+            share_type past_eci_score = assessment_criteria_type_filter.valid() ? (stats.past_eci + stats.past_assessment_criteria_sum_weight) : stats.past_eci;
 
             if (past_eci_score != share_type(0))
             {
