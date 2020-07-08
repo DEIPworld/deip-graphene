@@ -40,6 +40,8 @@ public:
                                                                                        const fc::optional<uint16_t> assessment_criteria_type_filter) const;
 
     std::map<account_name_type, account_eci_stats_api_obj> get_accounts_eci_stats(const fc::optional<external_id_type> discipline_filter,
+                                                                                  const fc::optional<fc::time_point_sec> from_filter,
+                                                                                  const fc::optional<fc::time_point_sec> to_filter,
                                                                                   const fc::optional<uint16_t> contribution_type_filter,
                                                                                   const fc::optional<uint16_t> assessment_criteria_type_filter) const;
 

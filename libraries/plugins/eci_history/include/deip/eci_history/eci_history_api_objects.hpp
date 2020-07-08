@@ -218,7 +218,6 @@ struct account_eci_stats_api_obj
 
         contributions.insert(contributions_list.begin(), contributions_list.end());
         researches.insert(researches_list.begin(), researches_list.end());
-        history_records.insert(history_records.end(), records_list.begin(), records_list.end());
     }
 
     external_id_type discipline_external_id;
@@ -230,7 +229,6 @@ struct account_eci_stats_api_obj
     std::set<std::pair<int64_t, uint16_t>> contributions;
     std::set<external_id_type> researches;
     fc::time_point_sec timestamp;
-    std::vector<account_eci_history_api_obj> history_records;
 };
 
 
@@ -325,7 +323,6 @@ FC_REFLECT(deip::eci_history::account_eci_stats_api_obj,
   (contributions)
   (researches)
   (timestamp)
-  (history_records)
 )
 
 

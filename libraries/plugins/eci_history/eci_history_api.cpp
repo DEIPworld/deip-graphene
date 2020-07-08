@@ -403,6 +403,8 @@ public:
     }
 
     std::map<account_name_type, account_eci_stats_api_obj>get_accounts_eci_stats(const fc::optional<external_id_type> discipline_filter,
+                                                                                 const fc::optional<fc::time_point_sec> from_filter,
+                                                                                 const fc::optional<fc::time_point_sec> to_filter,
                                                                                  const fc::optional<uint16_t> contribution_type_filter,
                                                                                  const fc::optional<uint16_t> assessment_criteria_type_filter) const
     {
@@ -426,6 +428,24 @@ public:
         const auto& accounts = accounts_service.lookup_user_accounts(account_name_type("a"), DEIP_API_BULK_FETCH_LIMIT);
 
         auto filter = [&](const account_eci_history_object& hist) -> bool {
+            
+            if (from_filter.valid())
+            {
+                const fc::time_point_sec& from = *from_filter;
+                if (hist.timestamp < from)
+                {
+                    return false;
+                }
+            }
+
+            if (to_filter.valid())
+            {
+                const fc::time_point_sec& to = *to_filter;
+                if (hist.timestamp > to)
+                {
+                    return false;
+                }
+            }
 
             if (contribution_type_filter.valid())
             {
@@ -486,12 +506,6 @@ public:
                     stats.timestamp = hist.timestamp;
                     stats.researches.insert(hist.researches.begin(), hist.researches.end());
                     stats.contributions.insert(std::make_pair(hist.contribution_id, hist.contribution_type));
-
-                    stats.history_records.push_back(account_eci_history_api_obj(
-                      stats.eci, 
-                      delta, 
-                      hist
-                    ));
                 }
 
                 ++itr;
@@ -719,12 +733,14 @@ std::vector<account_eci_history_api_obj> eci_history_api::get_eci_history_by_acc
 }
 
 std::map<account_name_type, account_eci_stats_api_obj> eci_history_api::get_accounts_eci_stats(const fc::optional<external_id_type> discipline_filter,
+                                                                                               const fc::optional<fc::time_point_sec> from_filter,
+                                                                                               const fc::optional<fc::time_point_sec> to_filter,
                                                                                                const fc::optional<uint16_t> contribution_type_filter,
                                                                                                const fc::optional<uint16_t> assessment_criteria_type_filter) const
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock(
-        [&]() { return _impl->get_accounts_eci_stats(discipline_filter, contribution_type_filter, assessment_criteria_type_filter); });
+        [&]() { return _impl->get_accounts_eci_stats(discipline_filter, from_filter, to_filter, contribution_type_filter, assessment_criteria_type_filter); });
 }
 
 std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> eci_history_api::get_disciplines_eci_stats_history() const
