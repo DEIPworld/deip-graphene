@@ -118,7 +118,9 @@ struct research_eci_history_api_obj
 struct account_eci_history_api_obj
 {
     account_eci_history_api_obj(){};
-    account_eci_history_api_obj(const account_eci_history_object& hist,
+    account_eci_history_api_obj(const share_type& eci,
+                                const share_type& delta,
+                                const account_eci_history_object& hist,
                                 const fc::optional<app::research_content_api_obj> research_content_opt = {},
                                 const fc::optional<app::research_api_obj> research_opt = {},
                                 const fc::optional<app::research_group_api_obj> research_group_opt = {},
@@ -131,8 +133,8 @@ struct account_eci_history_api_obj
         , contribution_id(hist.contribution_id)
         , event_contribution_type(hist.event_contribution_type)
         , event_contribution_id(hist.event_contribution_id)
-        , eci(hist.eci)
-        , delta(hist.delta)
+        , eci(eci)
+        , delta(delta)
         , timestamp(hist.timestamp)
     {
         for (const auto& criteria : hist.assessment_criterias)
@@ -198,8 +200,6 @@ struct account_eci_stats_api_obj
                               const share_type& past_eci,
                               const percent& percentile_rank,
                               const fc::optional<percent>& growth_rate_opt,
-                              const share_type& assessment_criteria_sum_weight,
-                              const share_type& past_assessment_criteria_sum_weight,
                               const std::set<std::pair<int64_t, uint16_t>>& contributions_list,
                               const std::set<external_id_type>& researches_list,
                               const fc::time_point_sec& timestamp,
@@ -209,8 +209,6 @@ struct account_eci_stats_api_obj
         , eci(eci)
         , past_eci(past_eci)
         , percentile_rank(percentile_rank)
-        , assessment_criteria_sum_weight(assessment_criteria_sum_weight)
-        , past_assessment_criteria_sum_weight(past_assessment_criteria_sum_weight)
         , timestamp(timestamp)
     {
         if (growth_rate_opt.valid())
@@ -229,8 +227,6 @@ struct account_eci_stats_api_obj
     share_type past_eci = 0;
     percent percentile_rank;
     fc::optional<percent> growth_rate;
-    share_type assessment_criteria_sum_weight = 0;
-    share_type past_assessment_criteria_sum_weight = 0;
     std::set<std::pair<int64_t, uint16_t>> contributions;
     std::set<external_id_type> researches;
     fc::time_point_sec timestamp;
@@ -326,8 +322,6 @@ FC_REFLECT(deip::eci_history::account_eci_stats_api_obj,
   (past_eci)
   (percentile_rank)
   (growth_rate)
-  (assessment_criteria_sum_weight)
-  (past_assessment_criteria_sum_weight)
   (contributions)
   (researches)
   (timestamp)
