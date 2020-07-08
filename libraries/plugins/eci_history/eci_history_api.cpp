@@ -223,7 +223,7 @@ public:
     }
 
     std::vector<account_eci_history_api_obj> get_eci_history_by_account_and_discipline(const account_name_type& account,
-                                                                                       const external_id_type& discipline_external_id,
+                                                                                       const fc::optional<external_id_type> discipline_filter,
                                                                                        const fc::optional<fc::time_point_sec> from_filter,
                                                                                        const fc::optional<fc::time_point_sec> to_filter,
                                                                                        const fc::optional<uint16_t> contribution_type_filter,
@@ -232,7 +232,7 @@ public:
         std::vector<account_eci_history_api_obj> result;
 
         const auto& db = _app.chain_database();
-        const auto& account_discipline_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account_and_discipline>();
+        const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account>();
         const auto& accounts_service = db->obtain_service<chain::dbs_account>();
         const auto& research_service = db->obtain_service<chain::dbs_research>();
         const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
@@ -246,13 +246,14 @@ public:
             return result;
         }
 
-        const auto& discipline_opt = disciplines_service.get_discipline_if_exists(discipline_external_id);
-        if (!discipline_opt.valid())
+        if (discipline_filter.valid() && !disciplines_service.discipline_exists(*discipline_filter))
         {
             return result;
         }
 
-        const discipline_object& discipline = *discipline_opt;
+        const discipline_object& discipline = discipline_filter.valid()
+            ? disciplines_service.get_discipline(*discipline_filter)
+            : disciplines_service.get_discipline(discipline_id_type(0));
 
         auto filter = [&](const account_eci_history_object& hist) -> bool {
 
@@ -291,11 +292,19 @@ public:
                     return false;
                 }
             }
-            
+
+            if (discipline_filter.valid())
+            {
+                if (discipline.id != hist.discipline_id && !discipline.is_common())
+                {
+                    return false;
+                }
+            }
+
             return true;
         };
 
-        auto itr_pair = account_discipline_hist_idx.equal_range(std::make_tuple(account, discipline.id));
+        auto itr_pair = account_hist_idx.equal_range(account);
         auto itr = itr_pair.first;
         const auto itr_end = itr_pair.second;
         while (itr != itr_end)
@@ -398,7 +407,6 @@ public:
                                                                                  const fc::optional<uint16_t> assessment_criteria_type_filter) const
     {
         const auto& db = _app.chain_database();
-        const auto& account_discipline_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account_and_discipline>();
         const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account>();
         const auto& accounts_service = db->obtain_service<chain::dbs_account>();
         const auto& expertise_tokens_service = db->obtain_service<chain::dbs_expert_token>();
@@ -693,7 +701,7 @@ std::vector<research_eci_history_api_obj> eci_history_api::get_eci_history_by_re
 }
 
 std::vector<account_eci_history_api_obj> eci_history_api::get_eci_history_by_account_and_discipline(const account_name_type& account,
-                                                                                                    const external_id_type& discipline_external_id,
+                                                                                                    const fc::optional<external_id_type> discipline_filter,
                                                                                                     const fc::optional<fc::time_point_sec> from_filter,
                                                                                                     const fc::optional<fc::time_point_sec> to_filter,
                                                                                                     const fc::optional<uint16_t> contribution_type_filter,
@@ -702,7 +710,7 @@ std::vector<account_eci_history_api_obj> eci_history_api::get_eci_history_by_acc
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock(
         [&]() { return _impl->get_eci_history_by_account_and_discipline(account, 
-                                                                        discipline_external_id, 
+                                                                        discipline_filter, 
                                                                         from_filter, 
                                                                         to_filter, 
                                                                         contribution_type_filter, 
