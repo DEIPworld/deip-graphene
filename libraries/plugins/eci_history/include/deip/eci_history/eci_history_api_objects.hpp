@@ -1,5 +1,7 @@
 #pragma once
 #include <deip/app/deip_api_objects.hpp>
+#include <deip/eci_history/eci_history_objects.hpp>
+#include <deip/eci_history/account_eci_history_object.hpp>
 
 namespace deip {
 namespace eci_history {
@@ -116,32 +118,28 @@ struct research_eci_history_api_obj
 struct account_eci_history_api_obj
 {
     account_eci_history_api_obj(){};
-    account_eci_history_api_obj(const int64_t& id,
-                                const int64_t& discipline_id,
-                                const std::string& account,
-                                const uint16_t contribution_type,
-                                const int64_t contribution_id,
-                                const uint16_t event_contribution_type,
-                                const int64_t event_contribution_id,
-                                const chain::share_type& eci,
-                                const chain::share_type& delta,
-                                const fc::time_point_sec& timestamp,
-                                const fc::optional<app::research_content_api_obj> research_content_opt,
-                                const fc::optional<app::research_api_obj> research_opt,
-                                const fc::optional<app::research_group_api_obj> research_group_opt,
-                                const fc::optional<app::review_api_obj>& review_opt,
-                                const fc::optional<app::review_vote_api_obj>& review_vote_opt)
-        : id(id)
-        , discipline_id(discipline_id)
-        , account(account)
-        , contribution_type(contribution_type)
-        , contribution_id(contribution_id)
-        , event_contribution_type(event_contribution_type)
-        , event_contribution_id(event_contribution_id)
-        , eci(eci)
-        , delta(delta)
-        , timestamp(timestamp)
+    account_eci_history_api_obj(const account_eci_history_object& hist,
+                                const fc::optional<app::research_content_api_obj> research_content_opt = {},
+                                const fc::optional<app::research_api_obj> research_opt = {},
+                                const fc::optional<app::research_group_api_obj> research_group_opt = {},
+                                const fc::optional<app::review_api_obj>& review_opt = {},
+                                const fc::optional<app::review_vote_api_obj>& review_vote_opt = {})
+        : id(hist.id._id)
+        , discipline_id(hist.discipline_id._id)
+        , account(hist.account)
+        , contribution_type(hist.contribution_type)
+        , contribution_id(hist.contribution_id)
+        , event_contribution_type(hist.event_contribution_type)
+        , event_contribution_id(hist.event_contribution_id)
+        , eci(hist.eci)
+        , delta(hist.delta)
+        , timestamp(hist.timestamp)
     {
+        for (const auto& criteria : hist.assessment_criterias)
+        {
+            assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
+        }
+
         if (research_content_opt.valid())
         {
             research_content = *research_content_opt;
@@ -178,9 +176,9 @@ struct account_eci_history_api_obj
     uint16_t event_contribution_type;
     int64_t event_contribution_id;
 
-    chain::share_type eci;
-    chain::share_type delta;
-
+    share_type eci = 0;
+    share_type delta = 0;
+    std::map<uint16_t, assessment_criteria_value> assessment_criterias;
     fc::time_point_sec timestamp;
 
     fc::optional<app::research_content_api_obj> research_content;
@@ -204,7 +202,8 @@ struct account_eci_stats_api_obj
                               const share_type& past_assessment_criteria_sum_weight,
                               const std::set<std::pair<int64_t, uint16_t>>& contributions_list,
                               const std::set<external_id_type>& researches_list,
-                              const fc::time_point_sec& timestamp)
+                              const fc::time_point_sec& timestamp,
+                              const std::vector<account_eci_history_api_obj>& records_list)
         : discipline_external_id(discipline_external_id)
         , account(account)
         , eci(eci)
@@ -221,6 +220,7 @@ struct account_eci_stats_api_obj
 
         contributions.insert(contributions_list.begin(), contributions_list.end());
         researches.insert(researches_list.begin(), researches_list.end());
+        history_records.insert(history_records.end(), records_list.begin(), records_list.end());
     }
 
     external_id_type discipline_external_id;
@@ -234,6 +234,7 @@ struct account_eci_stats_api_obj
     std::set<std::pair<int64_t, uint16_t>> contributions;
     std::set<external_id_type> researches;
     fc::time_point_sec timestamp;
+    std::vector<account_eci_history_api_obj> history_records;
 };
 
 
@@ -309,6 +310,7 @@ FC_REFLECT(deip::eci_history::account_eci_history_api_obj,
   (event_contribution_id)
   (eci)
   (delta)
+  (assessment_criterias)
   (timestamp)
   (research)
   (research_group)
@@ -329,6 +331,7 @@ FC_REFLECT(deip::eci_history::account_eci_stats_api_obj,
   (contributions)
   (researches)
   (timestamp)
+  (history_records)
 )
 
 

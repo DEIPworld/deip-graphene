@@ -19,7 +19,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-    namespace deip {
+namespace deip {
 namespace eci_history {
 
 using namespace deip::protocol;
