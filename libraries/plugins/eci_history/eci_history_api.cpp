@@ -648,9 +648,9 @@ private:
                 const assessment_criteria_value val = hist.assessment_criterias.at(assessment_criteria_type);
                 const share_type factor = val > 0 ? share_type(1) : share_type(-1);
                 const std::string str("0." + std::to_string(abs(val)));
-                const double d = std::stod(str);
-                const double modifier = abs(double(val)) - (abs(double(val)) * d);
-                const share_type delta = share_type(std::round(modifier)) * factor;
+                const double modifier = std::stod(str);
+                const double modified = abs(double(hist.delta.value)) - (abs(double(hist.delta.value)) * modifier);
+                const share_type delta = share_type(std::round(modified)) * factor;
                 return delta;
             }
         }
