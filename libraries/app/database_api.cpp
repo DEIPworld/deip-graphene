@@ -104,6 +104,7 @@ public:
     vector<research_api_obj> get_researches(const set<external_id_type>& ids) const;
     fc::optional<research_api_obj> get_research_by_id(const research_id_type& internal_id) const;
     /* [DEPRECATED] */ fc::optional<research_api_obj> get_research_by_permlink(const research_group_id_type& research_group_id, const string& permlink) const;
+    /* [DEPRECATED] */ bool check_research_existence_by_permlink(const external_id_type& research_group_external_id, const string& title) const;
     fc::optional<research_api_obj> get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const;
     vector<research_api_obj> get_researches_by_research_group(const external_id_type& external_id) const;
     vector<research_api_obj> get_researches_by_research_group_member(const account_name_type& member) const;
@@ -113,8 +114,9 @@ public:
     fc::optional<research_content_api_obj> get_research_content(const external_id_type& id) const;
     vector<research_content_api_obj> get_research_contents(const set<external_id_type>& ids) const;
     fc::optional<research_content_api_obj> get_research_content_by_id(const research_content_id_type& internal_id) const;
-    fc::optional<research_content_api_obj> get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
-    fc::optional<research_content_api_obj> get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
+    /* [DEPRECATED] */ fc::optional<research_content_api_obj> get_research_content_by_permlink(const research_id_type& research_id, const string& permlink) const;
+    /* [DEPRECATED] */ fc::optional<research_content_api_obj> get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const;
+    /* [DEPRECATED] */ bool check_research_content_existence_by_permlink(const external_id_type& research_external_id, const string& title) const;
     vector<research_content_api_obj> get_research_contents_by_research(const external_id_type& external_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
 
@@ -1164,6 +1166,23 @@ fc::optional<research_api_obj> database_api_impl::get_research_by_permlink(const
     return result;
 }
 
+bool database_api::check_research_existence_by_permlink(const external_id_type& research_group_external_id, const string& title) const
+{
+    std::string permlink = deip::chain::util::generate_permlink(title);
+    return my->_db.with_read_lock([&]() { return my->check_research_existence_by_permlink(research_group_external_id, permlink); });
+}
+
+bool database_api_impl::check_research_existence_by_permlink(const external_id_type& research_group_external_id, const string& permlink) const
+{
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+    const auto& research_service = _db.obtain_service<chain::dbs_research>();
+    const auto& research_group = research_groups_service.get_research_group_by_account(research_group_external_id);
+
+    const auto& research_opt = research_service.get_research_by_permlink_if_exists(fc::to_string(research_group.permlink), permlink);
+    return research_opt.valid();
+}
+
+
 fc::optional<research_api_obj> database_api::get_research_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink) const
 {
     return my->_db.with_read_lock([&]() { return my->get_research_by_absolute_permlink(research_group_permlink, research_permlink); });
@@ -1387,8 +1406,7 @@ fc::optional<research_content_api_obj> database_api::get_research_content_by_abs
     return my->_db.with_read_lock([&]() { return my->get_research_content_by_absolute_permlink(research_group_permlink, research_permlink, research_content_permlink); });
 }
 
-fc::optional<research_content_api_obj>
-database_api_impl::get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const
+fc::optional<research_content_api_obj> database_api_impl::get_research_content_by_absolute_permlink(const string& research_group_permlink, const string& research_permlink, const string& research_content_permlink) const
 {
     fc::optional<research_content_api_obj> research_content;
     fc::optional<research_group_api_obj> research_group_opt = get_research_group_by_permlink(research_group_permlink);
@@ -1405,6 +1423,27 @@ database_api_impl::get_research_content_by_absolute_permlink(const string& resea
 
     return research_content;
 }
+
+
+bool database_api::check_research_content_existence_by_permlink(const external_id_type& research_external_id, const string& title) const
+{
+    std::string permlink = deip::chain::util::generate_permlink(title);
+    return my->_db.with_read_lock([&]() { return my->check_research_content_existence_by_permlink(research_external_id, permlink); });
+}
+
+bool database_api_impl::check_research_content_existence_by_permlink(const external_id_type& research_external_id, const string& permlink) const
+{
+    const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
+    const auto& research_service = _db.obtain_service<chain::dbs_research>();
+    const auto& research_content_service = _db.obtain_service<chain::dbs_research_content>();
+
+    const auto& research = research_service.get_research(research_external_id);
+    const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+
+    const auto& research_content_opt = research_content_service.get_research_content_by_permlink_if_exists(fc::to_string(research_group.permlink), fc::to_string(research.permlink), permlink);
+    return research_content_opt.valid();
+}
+
 
 vector<research_content_api_obj> database_api::get_research_contents_by_research(const external_id_type& external_id) const
 {
@@ -1698,7 +1737,8 @@ bool database_api::check_research_group_existence_by_permlink(const string& name
 bool database_api_impl::check_research_group_existence_by_permlink(const string& permlink) const
 {
     const auto& research_groups_service = _db.obtain_service<chain::dbs_research_group>();
-    return research_groups_service.research_group_exists(permlink);
+    const auto& research_group_opt = research_groups_service.get_research_group_by_permlink_if_exists(permlink);
+    return research_group_opt.valid();
 }
 
 vector<research_group_api_obj> database_api::get_research_groups_by_member(const account_name_type& member) const
