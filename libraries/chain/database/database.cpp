@@ -1635,7 +1635,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
 
     if (altered_contributions.size() != 0)
     {
-        push_virtual_operation(disciplines_eci_history_operation(false, head_block_time()));
+        push_virtual_operation(disciplines_eci_history_operation(head_block_time()));
     }
 
     return reward;

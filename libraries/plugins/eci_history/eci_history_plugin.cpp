@@ -302,58 +302,43 @@ struct post_operation_visitor
         std::map<discipline_eci_history_id_type, share_type> disciplines_stats;
         share_type total_expertise = share_type(0);
 
-        if (!op.is_initial)
+        for (const discipline_object& discipline : disciplines)
         {
-            for (const discipline_object& discipline : disciplines)
-            {
-                const auto& expertise_contributions = expertise_contribution_service.get_expertise_contributions_by_discipline(discipline.id);
-                share_type total_eci = share_type(0);
-                flat_map<uint16_t, assessment_criteria_value> total_assessment_criterias;
+            const auto& expertise_contributions = expertise_contribution_service.get_expertise_contributions_by_discipline(discipline.id);
+            share_type total_eci = share_type(0);
+            flat_map<uint16_t, assessment_criteria_value> total_assessment_criterias;
 
-                for (const expertise_contribution_object& exp_contribution : expertise_contributions)
+            for (const expertise_contribution_object& exp_contribution : expertise_contributions)
+            {
+                total_eci += exp_contribution.eci;
+                for (const auto& criteria : exp_contribution.assessment_criterias)
                 {
-                    total_eci += exp_contribution.eci;
-                    for (const auto& criteria : exp_contribution.assessment_criterias)
+                    if (total_assessment_criterias.find(criteria.first) == total_assessment_criterias.end())
                     {
-                        if (total_assessment_criterias.find(criteria.first) == total_assessment_criterias.end())
-                        {
-                            total_assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
-                        }
-                        else
-                        {
-                            total_assessment_criterias.at(criteria.first) += criteria.second;
-                        }
+                        total_assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
+                    }
+                    else
+                    {
+                        total_assessment_criterias.at(criteria.first) += criteria.second;
                     }
                 }
-
-                const auto& hist = _plugin.database().create<discipline_eci_history_object>([&](discipline_eci_history_object& hist_o) {
-                    hist_o.discipline_id = discipline.id;
-                    hist_o.eci = total_eci;
-                    hist_o.timestamp = op.timestamp;
-
-                    for (const auto& criteria : total_assessment_criterias)
-                    {
-                        hist_o.assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
-                    }
-                });
-
-                disciplines_stats.insert(std::make_pair(hist.id, total_eci));
-                total_expertise += total_eci;
             }
-        }
-        else
-        {
-            for (const discipline_object& discipline : disciplines)
-            {
-                const auto& hist = _plugin.database().create<discipline_eci_history_object>([&](discipline_eci_history_object& hist_o) {
-                    hist_o.discipline_id = discipline.id;
-                    hist_o.eci = share_type(0);
-                    hist_o.timestamp = op.timestamp;
-                });
 
-                disciplines_stats.insert(std::make_pair(hist.id, share_type(0)));
-            }
+            const auto& hist = _plugin.database().create<discipline_eci_history_object>([&](discipline_eci_history_object& hist_o) {
+                hist_o.discipline_id = discipline.id;
+                hist_o.eci = total_eci;
+                hist_o.timestamp = op.timestamp;
+
+                for (const auto& criteria : total_assessment_criterias)
+                {
+                    hist_o.assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
+                }
+            });
+
+            disciplines_stats.insert(std::make_pair(hist.id, total_eci));
+            total_expertise += total_eci;
         }
+
 
         for (const auto& stat : disciplines_stats)
         {

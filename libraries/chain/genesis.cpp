@@ -311,7 +311,7 @@ void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
     }
 
     const time_point_sec& timestamp = get_genesis_time();
-    push_virtual_operation(disciplines_eci_history_operation(true, timestamp));
+    push_virtual_operation(disciplines_eci_history_operation(timestamp));
 }
 
 
