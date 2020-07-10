@@ -15,11 +15,13 @@
 #include <deip/eci_history/research_content_eci_history_object.hpp>
 #include <deip/eci_history/account_eci_history_object.hpp>
 #include <deip/eci_history/discipline_eci_history_object.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 namespace deip {
 namespace eci_history {
 
 using deip::chain::expertise_contribution_type;
+using namespace boost::gregorian;
 
 namespace detail {
   
@@ -222,12 +224,12 @@ public:
         return result;
     }
 
-    std::vector<account_eci_history_api_obj> get_eci_history_by_account_and_discipline(const account_name_type& account,
-                                                                                       const fc::optional<external_id_type> discipline_filter,
-                                                                                       const fc::optional<fc::time_point_sec> from_filter,
-                                                                                       const fc::optional<fc::time_point_sec> to_filter,
-                                                                                       const fc::optional<uint16_t> contribution_type_filter,
-                                                                                       const fc::optional<uint16_t> assessment_criteria_type_filter) const
+    std::vector<account_eci_history_api_obj> get_account_eci_history(const account_name_type& account,
+                                                                     const fc::optional<external_id_type> discipline_filter,
+                                                                     const fc::optional<fc::time_point_sec> from_filter,
+                                                                     const fc::optional<fc::time_point_sec> to_filter,
+                                                                     const fc::optional<uint16_t> contribution_type_filter,
+                                                                     const fc::optional<uint16_t> assessment_criteria_type_filter) const
     {
         std::vector<account_eci_history_api_obj> result;
 
@@ -558,7 +560,9 @@ public:
         return result;
     }
 
-    std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> get_disciplines_eci_stats_history() const
+    std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> get_disciplines_eci_stats_history(const fc::optional<fc::time_point_sec> from_filter,
+                                                                                                            const fc::optional<fc::time_point_sec> to_filter,
+                                                                                                            const fc::optional<uint16_t> step_filter) const
     {
         const auto& db = _app.chain_database();
         const auto& discipline_hist_idx = db->get_index<discipline_eci_history_index>().indices().get<by_discipline>();
@@ -566,7 +570,65 @@ public:
 
         std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> result;
 
+        std::multimap<discipline_id_type, date> selection;
+        eci_stat_period_step step = step_filter.valid() ? static_cast<eci_stat_period_step>(*step_filter) : eci_stat_period_step::unknown;
+
+        auto filter = [&](const discipline_eci_history_object& hist) -> bool {
+            if (from_filter.valid())
+            {
+                const fc::time_point_sec& from = *from_filter;
+                if (hist.timestamp < from)
+                {
+                    return false;
+                }
+            }
+
+            if (to_filter.valid())
+            {
+                const fc::time_point_sec& to = *to_filter;
+                if (hist.timestamp > to)
+                {
+                    return false;
+                }
+            }
+
+            if (step != eci_stat_period_step::unknown)
+            {
+                const string& hist_timestamp = hist.timestamp.to_non_delimited_iso_string();
+                date hist_date = date_from_iso_string(string(hist_timestamp.substr(0, hist_timestamp.find("T"))));
+
+                auto entries_pair = selection.equal_range(hist.discipline_id);
+                if (entries_pair.first != entries_pair.second)
+                {
+                    auto& last_entry = *(--entries_pair.second);
+                    date bound = step == eci_stat_period_step::day 
+                      ? last_entry.second + days(1)
+                      : step == eci_stat_period_step::month
+                        ? last_entry.second.end_of_month()
+                        : last_entry.second;
+
+                    if (hist_date > bound)
+                    {
+                        selection.insert(std::make_pair(hist.discipline_id, hist_date));
+                        return true;
+                    } 
+                    else
+                    {
+                       return false;
+                    }
+                }
+                else
+                {
+                    selection.insert(std::make_pair(hist.discipline_id, hist_date));
+                    return true;
+                }
+            }
+
+            return true;
+        };
+
         const auto& disciplines = disciplines_service.lookup_disciplines(discipline_id_type(1), DEIP_API_BULK_FETCH_LIMIT);
+
         for (const discipline_object& discipline : disciplines)
         {
             std::vector<discipline_eci_stats_api_obj> records;
@@ -578,28 +640,31 @@ public:
             {
                 const discipline_eci_history_object& hist = *itr;
 
-                std::map<uint16_t, assessment_criteria_value> assessment_criterias;
-                for (uint16_t i = static_cast<uint16_t>(assessment_criteria::FIRST); i <= static_cast<uint16_t>(assessment_criteria::LAST); i++)
+                if (filter(hist))
                 {
-                    if (hist.assessment_criterias.find(i) != hist.assessment_criterias.end())
+                    std::map<uint16_t, assessment_criteria_value> assessment_criterias;
+                    for (uint16_t i = static_cast<uint16_t>(assessment_criteria::FIRST); i <= static_cast<uint16_t>(assessment_criteria::LAST); i++)
                     {
-                        assessment_criterias.insert(std::make_pair(i, hist.assessment_criterias.at(i)));
+                        if (hist.assessment_criterias.find(i) != hist.assessment_criterias.end())
+                        {
+                            assessment_criterias.insert(std::make_pair(i, hist.assessment_criterias.at(i)));
+                        }
+                        else
+                        {
+                            assessment_criterias.insert(std::make_pair(i, assessment_criteria_value(0)));
+                        }
                     }
-                    else
-                    {
-                        assessment_criterias.insert(std::make_pair(i, assessment_criteria_value(0)));
-                    }
-                }
 
-                records.push_back(discipline_eci_stats_api_obj(
-                    discipline.external_id,
-                    fc::to_string(discipline.name),
-                    hist.eci,
-                    hist.total_eci,
-                    hist.share,
-                    assessment_criterias,
-                    hist.timestamp
-                  ));
+                    records.push_back(discipline_eci_stats_api_obj(
+                        discipline.external_id,
+                        fc::to_string(discipline.name),
+                        hist.eci,
+                        hist.total_eci,
+                        hist.share,
+                        assessment_criterias,
+                        hist.timestamp
+                    ));
+                }
 
                 ++itr;
             }
@@ -714,7 +779,7 @@ std::vector<research_eci_history_api_obj> eci_history_api::get_eci_history_by_re
     });
 }
 
-std::vector<account_eci_history_api_obj> eci_history_api::get_eci_history_by_account_and_discipline(const account_name_type& account,
+std::vector<account_eci_history_api_obj> eci_history_api::get_account_eci_history(const account_name_type& account,
                                                                                                     const fc::optional<external_id_type> discipline_filter,
                                                                                                     const fc::optional<fc::time_point_sec> from_filter,
                                                                                                     const fc::optional<fc::time_point_sec> to_filter,
@@ -723,12 +788,12 @@ std::vector<account_eci_history_api_obj> eci_history_api::get_eci_history_by_acc
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock(
-        [&]() { return _impl->get_eci_history_by_account_and_discipline(account, 
-                                                                        discipline_filter, 
-                                                                        from_filter, 
-                                                                        to_filter, 
-                                                                        contribution_type_filter, 
-                                                                        assessment_criteria_type_filter);
+        [&]() { return _impl->get_account_eci_history(account, 
+                                                      discipline_filter, 
+                                                      from_filter, 
+                                                      to_filter, 
+                                                      contribution_type_filter, 
+                                                      assessment_criteria_type_filter);
         });
 }
 
@@ -743,10 +808,12 @@ std::map<account_name_type, account_eci_stats_api_obj> eci_history_api::get_acco
         [&]() { return _impl->get_accounts_eci_stats(discipline_filter, from_filter, to_filter, contribution_type_filter, assessment_criteria_type_filter); });
 }
 
-std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> eci_history_api::get_disciplines_eci_stats_history() const
+std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> eci_history_api::get_disciplines_eci_stats_history(const fc::optional<fc::time_point_sec> from_filter,
+                                                                                                                         const fc::optional<fc::time_point_sec> to_filter,
+                                                                                                                         const fc::optional<uint16_t> step_filter) const
 {
     const auto db = _impl->_app.chain_database();
-    return db->with_read_lock([&]() { return _impl->get_disciplines_eci_stats_history(); });
+    return db->with_read_lock([&]() { return _impl->get_disciplines_eci_stats_history(from_filter, to_filter, step_filter); });
 }
 
 std::map<external_id_type, discipline_eci_stats_api_obj> eci_history_api::get_disciplines_eci_stats() const
