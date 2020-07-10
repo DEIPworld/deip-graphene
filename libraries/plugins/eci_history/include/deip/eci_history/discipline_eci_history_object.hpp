@@ -27,7 +27,7 @@ public:
     discipline_id_type discipline_id;
 
     share_type eci;
-    percent share;
+    percent percentage;
 
     share_type total_eci;
 
@@ -68,7 +68,7 @@ FC_REFLECT(deip::eci_history::discipline_eci_history_object,
   (id)
   (discipline_id)
   (eci)
-  (share)
+  (percentage)
   (total_eci)
   (assessment_criterias)
   (timestamp)

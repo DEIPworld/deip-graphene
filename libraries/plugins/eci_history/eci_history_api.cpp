@@ -552,8 +552,8 @@ public:
 
             if (past_eci_score != share_type(0))
             {
-                const share_type growth_rate = share_type( std::round( ((double(present_eci_score.value) - double(past_eci_score.value)) / double(past_eci_score.value)) * DEIP_1_PERCENT ));
-                stats.growth_rate = percent(growth_rate);
+                const share_type growth = share_type( std::round( ((double(present_eci_score.value) - double(past_eci_score.value)) / double(past_eci_score.value)) * double(100) * DEIP_1_PERCENT ));
+                stats.growth_rate = percent(growth);
             }
         }
 
@@ -568,7 +568,7 @@ public:
         const auto& discipline_hist_idx = db->get_index<discipline_eci_history_index>().indices().get<by_discipline>();
         const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
-        std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> result;
+        std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> results;
 
         std::multimap<discipline_id_type, date> selection;
         eci_stat_period_step step = step_filter.valid() ? static_cast<eci_stat_period_step>(*step_filter) : eci_stat_period_step::unknown;
@@ -655,12 +655,14 @@ public:
                         }
                     }
 
+                    fc::optional<percent> growth_rate;
                     records.push_back(discipline_eci_stats_api_obj(
                         discipline.external_id,
                         fc::to_string(discipline.name),
                         hist.eci,
                         hist.total_eci,
-                        hist.share,
+                        hist.percentage,
+                        growth_rate,
                         assessment_criterias,
                         hist.timestamp
                     ));
@@ -669,10 +671,33 @@ public:
                 ++itr;
             }
 
-            result.insert(std::make_pair(discipline.external_id, records));
+            results.insert(std::make_pair(discipline.external_id, records));
         }
 
-        return result;
+        for (auto& result : results)
+        {
+            auto& records = result.second;
+            for (auto i = 0; i < records.size(); i++)
+            {
+                if (i == 0) continue;
+
+                const auto& past = records[i - 1];
+                auto& present = records[i];
+
+                /*
+                    Growth Rate = [(Vpresent - Vpast) / Vpast] * 100
+                    Vpresent = present value
+                    VPast = past value
+                */
+                if (past.eci != share_type(0))
+                {
+                    const share_type growth = share_type( std::round( ((double(present.eci.value) - double(past.eci.value)) / double(past.eci.value)) * double(100) * DEIP_1_PERCENT ));
+                    present.growth_rate = percent(growth);
+                }
+            }
+        }
+
+        return results;
     }
 
 
@@ -687,6 +712,8 @@ public:
         const auto& disciplines = disciplines_service.lookup_disciplines(discipline_id_type(1), DEIP_API_BULK_FETCH_LIMIT);
         for (const discipline_object& discipline : disciplines)
         {
+            fc::optional<percent> growth_rate;
+
             auto itr_pair = discipline_hist_idx.equal_range(discipline.id);
             if (itr_pair.first == itr_pair.second) 
             {
@@ -694,6 +721,21 @@ public:
             }
 
             const discipline_eci_history_object& hist = *(--itr_pair.second);
+            if (itr_pair.second != itr_pair.first) 
+            {
+                const discipline_eci_history_object& past = *(--itr_pair.second);
+
+                /*
+                    Growth Rate = [(Vpresent - Vpast) / Vpast] * 100
+                    Vpresent = present value
+                    VPast = past value
+                */
+                if (past.eci != share_type(0))
+                {
+                    const share_type growth = share_type( std::round( ((double(hist.eci.value) - double(past.eci.value)) / double(past.eci.value)) * double(100) * DEIP_1_PERCENT ));
+                    growth_rate = percent(growth);
+                }
+            }
 
             std::map<uint16_t, assessment_criteria_value> assessment_criterias;
             for (uint16_t i = static_cast<uint16_t>(assessment_criteria::FIRST); i <= static_cast<uint16_t>(assessment_criteria::LAST); i++)
@@ -713,7 +755,8 @@ public:
                 fc::to_string(discipline.name),
                 hist.eci,
                 hist.total_eci,
-                hist.share,
+                hist.percentage,
+                growth_rate,
                 assessment_criterias,
                 hist.timestamp
             )));

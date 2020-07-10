@@ -239,16 +239,21 @@ struct discipline_eci_stats_api_obj
                                  const string& discipline_name,
                                  const share_type& eci,
                                  const share_type& total_eci,
-                                 const percent& share,
+                                 const percent& percentage,
+                                 const fc::optional<percent>& growth_rate_opt,
                                  std::map<uint16_t, assessment_criteria_value> criterias,
                                  const fc::time_point_sec& timestamp)
         : discipline_external_id(discipline_external_id)
         , discipline_name(discipline_name)
         , eci(eci)
         , total_eci(total_eci)
-        , share(share)
+        , percentage(percentage)
         , timestamp(timestamp)
     {
+        if (growth_rate_opt.valid())
+        {
+            growth_rate = *growth_rate_opt;
+        }
         assessment_criterias.insert(criterias.begin(), criterias.end());
     }
 
@@ -256,9 +261,10 @@ struct discipline_eci_stats_api_obj
     string discipline_name;
     share_type eci = share_type(0);
     share_type total_eci = share_type(0);
-    percent share;
-    fc::time_point_sec timestamp;
+    percent percentage;
+    fc::optional<percent> growth_rate;
     std::map<uint16_t, assessment_criteria_value> assessment_criterias;
+    fc::time_point_sec timestamp;
 };
 
 
@@ -331,7 +337,8 @@ FC_REFLECT(deip::eci_history::discipline_eci_stats_api_obj,
   (discipline_name)
   (eci)
   (total_eci)
-  (share)
-  (timestamp)
+  (percentage)
+  (growth_rate)
   (assessment_criterias)
+  (timestamp)
 )
