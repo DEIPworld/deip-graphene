@@ -12,15 +12,14 @@ using chainbase::allocator;
 
 class discipline_eci_history_object : public object<discipline_eci_history_object_type, discipline_eci_history_object>
 {
+    discipline_eci_history_object() = delete;
+
 public:
     template <typename Constructor, typename Allocator>
     discipline_eci_history_object(Constructor&& c, allocator<Allocator> a)
+        : contributions(a)
     {
         c(*this);
-    }
-
-    discipline_eci_history_object()
-    {
     }
 
     discipline_eci_history_id_type id;
@@ -32,6 +31,7 @@ public:
     share_type total_eci;
 
     flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
+    eci_diff_type_vector contributions;
 
     fc::time_point_sec timestamp;
 };
@@ -71,6 +71,7 @@ FC_REFLECT(deip::eci_history::discipline_eci_history_object,
   (percentage)
   (total_eci)
   (assessment_criterias)
+  (contributions)
   (timestamp)
 )
 

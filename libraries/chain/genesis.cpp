@@ -310,8 +310,9 @@ void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
         }
     }
 
+    flat_map<int64_t, std::vector<eci_diff>> contributions;
     const time_point_sec& timestamp = get_genesis_time();
-    push_virtual_operation(disciplines_eci_history_operation(timestamp));
+    push_virtual_operation(disciplines_eci_history_operation(contributions, timestamp));
 }
 
 

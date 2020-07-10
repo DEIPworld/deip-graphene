@@ -329,6 +329,15 @@ struct post_operation_visitor
                 hist_o.eci = total_eci;
                 hist_o.timestamp = op.timestamp;
 
+                if (op.contributions.find(hist_o.discipline_id._id) != op.contributions.end())
+                {
+                    const auto& contributions = op.contributions.at(hist_o.discipline_id._id);
+                    for (auto& contribution : contributions)
+                    {
+                        hist_o.contributions.push_back(contribution);
+                    }
+                }
+
                 for (const auto& criteria : total_assessment_criterias)
                 {
                     hist_o.assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));

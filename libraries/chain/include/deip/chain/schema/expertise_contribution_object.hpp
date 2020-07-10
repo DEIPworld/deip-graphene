@@ -37,7 +37,7 @@ enum class reward_recipient_type : uint16_t
     unknown = 0,
     author = 1,
     reviewer = 2,
-    review_supporter = 3,
+    review_supporter = 3
 };
 
 typedef allocator<eci_diff> eci_diff_allocator_type;

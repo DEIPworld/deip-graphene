@@ -162,11 +162,16 @@ struct account_eci_history_operation : public virtual_operation
 struct disciplines_eci_history_operation : public virtual_operation
 {
     disciplines_eci_history_operation(){}
-    disciplines_eci_history_operation(const fc::time_point_sec& timestamp)
+    disciplines_eci_history_operation(const flat_map<int64_t, vector<eci_diff>>& contributions_map, const fc::time_point_sec& timestamp)
         : timestamp(timestamp)
     {
+        for (const auto& pair : contributions_map)
+        {
+            contributions.insert(pair);
+        }
     }
 
+    flat_map<int64_t, vector<eci_diff>> contributions;
     fc::time_point_sec timestamp;
 };
 
@@ -183,4 +188,4 @@ FC_REFLECT(deip::protocol::research_content_reference_history_operation, (resear
 FC_REFLECT(deip::protocol::research_content_eci_history_operation, (research_content_id)(discipline_id)(diff))
 FC_REFLECT(deip::protocol::research_eci_history_operation, (research_id)(discipline_id)(diff))
 FC_REFLECT(deip::protocol::account_eci_history_operation, (account)(discipline_id)(recipient_type)(diff))
-FC_REFLECT(deip::protocol::disciplines_eci_history_operation, (timestamp))
+FC_REFLECT(deip::protocol::disciplines_eci_history_operation, (contributions)(timestamp))

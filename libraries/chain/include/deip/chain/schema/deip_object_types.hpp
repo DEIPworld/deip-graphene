@@ -190,9 +190,6 @@ typedef bip::set<fc::shared_string, std::less<fc::shared_string>, shared_string_
 typedef allocator<std::pair<const fc::shared_string, fc::shared_string>> shared_string_map_allocator_type;
 typedef bip::map<fc::shared_string, fc::shared_string, std::less<fc::shared_string>, shared_string_map_allocator_type> shared_string_type_map;
 
-typedef allocator<std::pair<const discipline_id_type, std::vector<account_name_type>>> discipline_id_account_name_allocator_type;
-typedef bip::map<discipline_id_type, std::vector<account_name_type>, std::less<discipline_id_type>, discipline_id_account_name_allocator_type> delegated_expertise_type_map;
-
 typedef allocator<share_type> share_type_allocator_type;
 typedef bip::deque<share_type, share_type_allocator_type> share_type_deque;
 
