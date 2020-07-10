@@ -59,7 +59,7 @@ public:
                                                                                                             const fc::optional<fc::time_point_sec> to_filter,
                                                                                                             const fc::optional<uint16_t> step_filter) const;
 
-    std::map<external_id_type, discipline_eci_stats_api_obj> get_disciplines_eci_stats() const;
+    std::map<external_id_type, discipline_eci_stats_api_obj> get_disciplines_eci_last_stats() const;
 
 private:
     std::unique_ptr<detail::eci_history_api_impl> _impl;
@@ -82,6 +82,6 @@ FC_API(deip::eci_history::eci_history_api,
   (get_account_eci_history)
   (get_accounts_eci_stats)
   (get_disciplines_eci_stats_history)
-  (get_disciplines_eci_stats)
+  (get_disciplines_eci_last_stats)
 
 )

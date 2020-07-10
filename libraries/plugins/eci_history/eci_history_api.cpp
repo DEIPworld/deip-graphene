@@ -701,7 +701,7 @@ public:
     }
 
 
-    std::map<external_id_type, discipline_eci_stats_api_obj> get_disciplines_eci_stats() const
+    std::map<external_id_type, discipline_eci_stats_api_obj> get_disciplines_eci_last_stats() const
     {
         const auto& db = _app.chain_database();
         const auto& discipline_hist_idx = db->get_index<discipline_eci_history_index>().indices().get<by_discipline>();
@@ -859,10 +859,10 @@ std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> eci_histor
     return db->with_read_lock([&]() { return _impl->get_disciplines_eci_stats_history(from_filter, to_filter, step_filter); });
 }
 
-std::map<external_id_type, discipline_eci_stats_api_obj> eci_history_api::get_disciplines_eci_stats() const
+std::map<external_id_type, discipline_eci_stats_api_obj> eci_history_api::get_disciplines_eci_last_stats() const
 {
     const auto db = _impl->_app.chain_database();
-    return db->with_read_lock([&]() { return _impl->get_disciplines_eci_stats(); });
+    return db->with_read_lock([&]() { return _impl->get_disciplines_eci_last_stats(); });
 }
 
 
