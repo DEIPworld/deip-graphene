@@ -602,7 +602,7 @@ public:
                 {
                     auto& last_entry = *(--entries_pair.second);
                     date bound = step == eci_stat_period_step::day 
-                      ? last_entry.second + days(1)
+                      ? last_entry.second
                       : step == eci_stat_period_step::month
                         ? last_entry.second.end_of_month()
                         : last_entry.second;
