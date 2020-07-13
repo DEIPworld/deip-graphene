@@ -40,6 +40,7 @@ public:
 
 struct by_research_id;
 struct by_research_and_discipline;
+struct by_research_and_cursor;
 
 typedef chainbase::shared_multi_index_container<research_eci_history_object,
   indexed_by<
@@ -71,6 +72,21 @@ typedef chainbase::shared_multi_index_container<research_eci_history_object,
             research_eci_history_object,
             discipline_id_type,
             &research_eci_history_object::discipline_id
+          >
+        >
+    >,
+    ordered_non_unique<
+      tag<by_research_and_cursor>,
+        composite_key<research_eci_history_object,
+          member<
+            research_eci_history_object,
+            research_id_type,
+            &research_eci_history_object::research_id
+          >,
+          member<
+            research_eci_history_object,
+            research_eci_history_id_type,
+            &research_eci_history_object::id
           >
         >
     >>

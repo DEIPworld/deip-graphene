@@ -2,6 +2,8 @@
 #include <deip/app/deip_api_objects.hpp>
 #include <deip/eci_history/eci_history_objects.hpp>
 #include <deip/eci_history/account_eci_history_object.hpp>
+#include <deip/eci_history/research_eci_history_object.hpp>
+#include <deip/eci_history/research_content_eci_history_object.hpp>
 
 namespace deip {
 namespace eci_history {
@@ -9,31 +11,35 @@ namespace eci_history {
 struct research_content_eci_history_api_obj
 {
     research_content_eci_history_api_obj(){};
-    research_content_eci_history_api_obj(const int64_t& id,
-                                         const int64_t& discipline_id,
-                                         const uint16_t contribution_type,
-                                         const chain::share_type& eci,
-                                         const chain::share_type& delta,
-                                         const fc::time_point_sec& timestamp,
-                                         const app::research_content_api_obj research_content,
-                                         const app::research_api_obj research,
-                                         const app::research_group_api_obj research_group,
-                                         const fc::optional<app::review_api_obj>& review_opt,
-                                         const fc::optional<app::review_vote_api_obj>& review_vote_opt)
-        : id(id)
-        , discipline_id(discipline_id)
-        , contribution_type(contribution_type)
+    research_content_eci_history_api_obj(const share_type& eci,
+                                         const share_type& delta,
+                                         const research_content_eci_history_object& hist,
+                                         const app::research_content_api_obj& research_content,
+                                         const app::research_api_obj& research,
+                                         const app::research_group_api_obj& research_group,
+                                         const fc::optional<app::review_api_obj>& review_opt = {},
+                                         const fc::optional<app::review_vote_api_obj>& review_vote_opt = {})
+        : id(hist.id._id)
+        , discipline_id(hist.discipline_id._id)
+        , contribution_type(hist.contribution_type)
+        , contribution_id(hist.contribution_id)
         , eci(eci)
         , delta(delta)
-        , timestamp(timestamp)
+        , timestamp(hist.timestamp)
         , research_content(research_content)
         , research(research)
         , research_group(research_group)
     {
+        for (const auto& criteria : hist.assessment_criterias)
+        {
+            assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
+        }
+
         if (review_opt.valid())
         {
             review = *review_opt;
         }
+
         if (review_vote_opt.valid())
         {
             review_vote = *review_vote_opt;
@@ -43,10 +49,12 @@ struct research_content_eci_history_api_obj
     int64_t id;
     int64_t discipline_id;
     uint16_t contribution_type;
+    uint16_t contribution_id;
 
     share_type eci;
     share_type delta;
 
+    std::map<uint16_t, assessment_criteria_value> assessment_criterias;
     fc::time_point_sec timestamp;
 
     app::research_content_api_obj research_content;
@@ -61,26 +69,28 @@ struct research_content_eci_history_api_obj
 struct research_eci_history_api_obj
 {
     research_eci_history_api_obj(){};
-    research_eci_history_api_obj(const int64_t& id,
-                                 const int64_t& discipline_id,
-                                 const uint16_t contribution_type,
-                                 const chain::share_type& eci,
-                                 const chain::share_type& delta,
-                                 const fc::time_point_sec& timestamp,
-                                 const app::research_api_obj research,
-                                 const app::research_group_api_obj research_group,
-                                 const fc::optional<app::research_content_api_obj> research_content_opt,
-                                 const fc::optional<app::review_api_obj>& review_opt,
-                                 const fc::optional<app::review_vote_api_obj>& review_vote_opt)
-        : id(id)
-        , discipline_id(discipline_id)
-        , contribution_type(contribution_type)
+    research_eci_history_api_obj(const share_type& eci,
+                                 const share_type& delta,
+                                 const research_eci_history_object& hist,
+                                 const app::research_api_obj& research,
+                                 const app::research_group_api_obj& research_group,
+                                 const fc::optional<app::research_content_api_obj>& research_content_opt = {},
+                                 const fc::optional<app::review_api_obj>& review_opt = {},
+                                 const fc::optional<app::review_vote_api_obj>& review_vote_opt = {})
+        : id(hist.id._id)
+        , discipline_id(hist.discipline_id._id)
+        , contribution_type(hist.contribution_type)
+        , contribution_id(hist.contribution_id)
         , eci(eci)
         , delta(delta)
-        , timestamp(timestamp)
+        , timestamp(hist.timestamp)
         , research(research)
         , research_group(research_group)
     {
+        for (const auto& criteria : hist.assessment_criterias)
+        {
+            assessment_criterias.insert(std::make_pair(criteria.first, criteria.second));
+        }
 
         if (research_content_opt.valid())
         {
@@ -101,10 +111,12 @@ struct research_eci_history_api_obj
     int64_t id;
     int64_t discipline_id;
     uint16_t contribution_type;
+    uint16_t contribution_id;
 
     share_type eci;
     share_type delta;
 
+    std::map<uint16_t, assessment_criteria_value> assessment_criterias;
     fc::time_point_sec timestamp;
 
     app::research_api_obj research;
@@ -121,9 +133,9 @@ struct account_eci_history_api_obj
     account_eci_history_api_obj(const share_type& eci,
                                 const share_type& delta,
                                 const account_eci_history_object& hist,
-                                const fc::optional<app::research_content_api_obj> research_content_opt = {},
-                                const fc::optional<app::research_api_obj> research_opt = {},
-                                const fc::optional<app::research_group_api_obj> research_group_opt = {},
+                                const fc::optional<app::research_content_api_obj>& research_content_opt = {},
+                                const fc::optional<app::research_api_obj>& research_opt = {},
+                                const fc::optional<app::research_group_api_obj>& research_group_opt = {},
                                 const fc::optional<app::review_api_obj>& review_opt = {},
                                 const fc::optional<app::review_vote_api_obj>& review_vote_opt = {})
         : id(hist.id._id)
@@ -341,8 +353,10 @@ FC_REFLECT(deip::eci_history::research_content_eci_history_api_obj,
   (id)
   (discipline_id)
   (contribution_type)
+  (contribution_id)
   (eci)
   (delta)
+  (assessment_criterias)
   (timestamp)
   (research_content)
   (research)
@@ -355,8 +369,10 @@ FC_REFLECT(deip::eci_history::research_eci_history_api_obj,
   (id)
   (discipline_id)
   (contribution_type)
+  (contribution_id)
   (eci)
   (delta)
+  (assessment_criterias)
   (timestamp)
   (research)
   (research_group)
