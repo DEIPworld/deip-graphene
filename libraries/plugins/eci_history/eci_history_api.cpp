@@ -624,6 +624,8 @@ public:
             auto& itr = itr_pair.first;
             const auto& itr_end = itr_pair.second;
 
+            vector<account_eci_stats_api_obj> history;
+
             while (itr != itr_end)
             {
                 const auto& hist = *itr;
@@ -640,12 +642,14 @@ public:
 
                     auto& stats = result[acc.name];
 
-                    stats.past_eci = stats.eci;
+                    stats.previous_eci = stats.eci;
                     const auto& delta = get_modified_eci_delta(hist.delta, hist.assessment_criterias, assessment_criteria_type_filter);
                     stats.eci += delta;
                     stats.timestamp = hist.timestamp;
                     stats.researches.insert(hist.researches.begin(), hist.researches.end());
                     stats.contributions.insert(std::make_pair(hist.contribution_id, hist.contribution_type));
+
+                    history.push_back(stats);
                 }
 
                 ++itr;
@@ -653,8 +657,25 @@ public:
 
             if (result.find(acc.name) != result.end())
             {
-                const auto& stats = result[acc.name];
+                auto& stats = result[acc.name];
                 eci_scores.push_back(stats.eci);
+
+                const auto& last_growth = get_growth_rate(stats.previous_eci, stats.eci);
+                if (last_growth.valid())
+                {
+                    stats.last_growth_rate = *last_growth;
+                }
+
+                const auto& start_point_itr = std::find_if(history.begin(), history.end(),
+                  [&](const account_eci_stats_api_obj& hist) { return hist.eci != share_type(0); });
+
+                if (start_point_itr != history.end())
+                {
+                    const auto& start_point = *start_point_itr;
+                    const auto& growth_rate = get_growth_rate(start_point.eci, stats.eci);
+                    stats.growth_rate = *growth_rate;
+                    stats.starting_eci = start_point.eci;
+                }
             }
         }
         
@@ -673,26 +694,11 @@ public:
             const auto& x_score_itr = std::find(eci_scores.begin(), eci_scores.end(), x_score);
             const int M = std::distance(eci_scores.begin(), x_score_itr);
             const int R = std::count_if(eci_scores.begin(), eci_scores.end(), [&](const share_type& eci_score) { 
-              return eci_score == x_score;
+                return eci_score == x_score;
             });
             const int Y = eci_scores.size();
             const share_type percentile_rank = share_type(std::round(((double(M) + (double(0.5) * double(R))) / double(Y)) * double(100) * DEIP_1_PERCENT));
             stats.percentile_rank = percent(percentile_rank);
-
-
-            /*
-                Growth Rate = [(Vpresent - Vpast) / Vpast] * 100
-                Vpresent = present value
-                VPast = past value
-            */
-            const share_type present_eci_score = x_score;
-            const share_type past_eci_score = stats.past_eci;
-
-            if (past_eci_score != share_type(0))
-            {
-                const share_type growth = share_type( std::round( ((double(present_eci_score.value) - double(past_eci_score.value)) / double(past_eci_score.value)) * double(100) * DEIP_1_PERCENT ));
-                stats.growth_rate = percent(growth);
-            }
         }
 
         return result;
@@ -766,7 +772,6 @@ std::vector<discipline_eci_history_api_obj> get_discipline_eci_history(const fc:
         {
             for (const auto& diff : hist.contributions)
             {
-
                 if (assessment_criteria_type_filter.valid())
                 {
                     const uint16_t& assessment_criteria_type = *assessment_criteria_type_filter;
@@ -877,8 +882,8 @@ std::vector<discipline_eci_history_api_obj> get_discipline_eci_history(const fc:
 }
 
 std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> get_disciplines_eci_stats_history(const fc::optional<fc::time_point_sec> from_filter,
-                                                                                                            const fc::optional<fc::time_point_sec> to_filter,
-                                                                                                            const fc::optional<uint16_t> step_filter) const
+                                                                                                        const fc::optional<fc::time_point_sec> to_filter,
+                                                                                                        const fc::optional<uint16_t> step_filter) const
     {
         const auto& db = _app.chain_database();
         const auto& discipline_hist_idx = db->get_index<discipline_eci_history_index>().indices().get<by_discipline>();
@@ -958,27 +963,17 @@ std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> get_discip
 
                 if (filter(hist))
                 {
-                    std::map<uint16_t, assessment_criteria_value> assessment_criterias;
-                    for (uint16_t i = static_cast<uint16_t>(assessment_criteria::FIRST); i <= static_cast<uint16_t>(assessment_criteria::LAST); i++)
-                    {
-                        if (hist.assessment_criterias.find(i) != hist.assessment_criterias.end())
-                        {
-                            assessment_criterias.insert(std::make_pair(i, hist.assessment_criterias.at(i)));
-                        }
-                        else
-                        {
-                            assessment_criterias.insert(std::make_pair(i, assessment_criteria_value(0)));
-                        }
-                    }
-
-                    fc::optional<percent> growth_rate;
+                    std::map<uint16_t, assessment_criteria_value> assessment_criterias = extract_assessment_criterias(hist.assessment_criterias);
                     records.push_back(discipline_eci_stats_api_obj(
                         discipline.external_id,
                         fc::to_string(discipline.name),
                         hist.eci,
+                        share_type(0),
+                        share_type(0),
                         hist.total_eci,
                         hist.percentage,
-                        growth_rate,
+                        {}, 
+                        {},
                         assessment_criterias,
                         hist.timestamp
                     ));
@@ -990,25 +985,38 @@ std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> get_discip
             result.insert(std::make_pair(discipline.external_id, records));
         }
 
-        for (auto& result : result)
+        for (auto& res : result)
         {
-            auto& records = result.second;
+            auto& records = res.second;
+            const auto& start_point_itr = std::find_if(records.begin(), records.end(),
+                [&](const discipline_eci_stats_api_obj& hist) { return hist.eci != share_type(0); });
+
+            fc::optional<discipline_eci_stats_api_obj> start_point_opt;
+            if (start_point_itr != records.end())
+            {
+                start_point_opt = *start_point_itr;
+            }
+
             for (auto i = 0; i < records.size(); i++)
             {
                 if (i == 0) continue;
 
-                const auto& past = records[i - 1];
-                auto& present = records[i];
+                const auto& previous = records[i - 1];
+                auto& current = records[i];
 
-                /*
-                    Growth Rate = [(Vpresent - Vpast) / Vpast] * 100
-                    Vpresent = present value
-                    VPast = past value
-                */
-                if (past.eci != share_type(0))
+                const auto& last_growth_rate = get_growth_rate(previous.eci, current.eci);
+                if (last_growth_rate.valid())
                 {
-                    const share_type growth = share_type( std::round( ((double(present.eci.value) - double(past.eci.value)) / double(past.eci.value)) * double(100) * DEIP_1_PERCENT ));
-                    present.growth_rate = percent(growth);
+                    current.last_growth_rate = *last_growth_rate;
+                    current.previous_eci = previous.eci;
+                }
+
+                if (start_point_opt.valid())
+                {
+                    const auto& start_point = *start_point_opt;
+                    const auto& growth_rate = get_growth_rate(start_point.eci, current.eci);
+                    current.growth_rate = *growth_rate;
+                    current.starting_eci = start_point.eci;
                 }
             }
         }
@@ -1028,7 +1036,8 @@ std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> get_discip
         const auto& disciplines = disciplines_service.lookup_disciplines(discipline_id_type(1), DEIP_API_BULK_FETCH_LIMIT);
         for (const discipline_object& discipline : disciplines)
         {
-            fc::optional<percent> growth_rate;
+            fc::optional<percent> last_growth_rate;
+            share_type previous_eci = share_type(0);
 
             auto itr_pair = discipline_hist_idx.equal_range(discipline.id);
             if (itr_pair.first == itr_pair.second) 
@@ -1039,40 +1048,26 @@ std::map<external_id_type, std::vector<discipline_eci_stats_api_obj>> get_discip
             const discipline_eci_history_object& hist = *(--itr_pair.second);
             if (itr_pair.second != itr_pair.first) 
             {
-                const discipline_eci_history_object& past = *(--itr_pair.second);
-
-                /*
-                    Growth Rate = [(Vpresent - Vpast) / Vpast] * 100
-                    Vpresent = present value
-                    VPast = past value
-                */
-                if (past.eci != share_type(0))
+                const discipline_eci_history_object& previous = *(--itr_pair.second);
+                const auto& last_growth = get_growth_rate(previous.eci, hist.eci);
+                if (last_growth.valid())
                 {
-                    const share_type growth = share_type( std::round( ((double(hist.eci.value) - double(past.eci.value)) / double(past.eci.value)) * double(100) * DEIP_1_PERCENT ));
-                    growth_rate = percent(growth);
+                    last_growth_rate = *last_growth;
+                    previous_eci = previous.eci;
                 }
             }
 
-            std::map<uint16_t, assessment_criteria_value> assessment_criterias;
-            for (uint16_t i = static_cast<uint16_t>(assessment_criteria::FIRST); i <= static_cast<uint16_t>(assessment_criteria::LAST); i++)
-            {
-                if (hist.assessment_criterias.find(i) != hist.assessment_criterias.end())
-                {
-                    assessment_criterias.insert(std::make_pair(i, hist.assessment_criterias.at(i)));
-                }
-                else
-                {
-                    assessment_criterias.insert(std::make_pair(i, assessment_criteria_value(0)));
-                }
-            }
-
+            std::map<uint16_t, assessment_criteria_value> assessment_criterias = extract_assessment_criterias(hist.assessment_criterias);
             result.insert(std::make_pair(discipline.external_id, discipline_eci_stats_api_obj(
                 discipline.external_id,
                 fc::to_string(discipline.name),
                 hist.eci,
+                previous_eci,
+                previous_eci,
                 hist.total_eci,
                 hist.percentage,
-                growth_rate,
+                last_growth_rate,
+                last_growth_rate,
                 assessment_criterias,
                 hist.timestamp
             )));
@@ -1103,6 +1098,46 @@ private:
 
         return delta;
     }
+
+    const fc::optional<percent> get_growth_rate(const share_type& past, const share_type& present) const
+    {
+       
+        /*
+            Growth Rate = [(Vpresent - Vpast) / Vpast] * 100
+            Vpresent = present value
+            VPast = past value
+        */
+
+        fc::optional<percent> result;
+        if (past != share_type(0))
+        {
+            const share_type growth_rate = share_type(std::round(((double(present.value) - double(past.value)) / double(past.value)) * double(100) * DEIP_1_PERCENT));
+            result = percent(growth_rate);
+        }
+
+        return result;
+    }
+
+    const std::map<uint16_t, assessment_criteria_value> extract_assessment_criterias(const flat_map<uint16_t, assessment_criteria_value> assessment_criterias) const
+    {
+        std::map<uint16_t, assessment_criteria_value> result;
+        for (uint16_t i = static_cast<uint16_t>(assessment_criteria::FIRST); i <= static_cast<uint16_t>(assessment_criteria::LAST); i++)
+        {
+            if (assessment_criterias.find(i) != assessment_criterias.end())
+            {
+                result.insert(std::make_pair(i, assessment_criterias.at(i)));
+            }
+            else
+            {
+                result.insert(std::make_pair(i, assessment_criteria_value(0)));
+            }
+        }
+
+        return result;
+    }
+
+
+       
 };
 } // namespace detail
 

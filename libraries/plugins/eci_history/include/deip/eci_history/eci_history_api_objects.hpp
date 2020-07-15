@@ -209,9 +209,11 @@ struct account_eci_stats_api_obj
     account_eci_stats_api_obj(const external_id_type& discipline_external_id,
                               const account_name_type& account,
                               const share_type& eci,
-                              const share_type& past_eci,
+                              const share_type& previous_eci,
+                              const share_type& starting_eci,
                               const percent& percentile_rank,
                               const fc::optional<percent>& growth_rate_opt,
+                              const fc::optional<percent>& last_growth_rate_opt,
                               const std::set<std::pair<int64_t, uint16_t>>& contributions_list,
                               const std::set<external_id_type>& researches_list,
                               const fc::time_point_sec& timestamp,
@@ -219,13 +221,19 @@ struct account_eci_stats_api_obj
         : discipline_external_id(discipline_external_id)
         , account(account)
         , eci(eci)
-        , past_eci(past_eci)
+        , previous_eci(previous_eci)
+        , starting_eci(starting_eci)
         , percentile_rank(percentile_rank)
         , timestamp(timestamp)
     {
         if (growth_rate_opt.valid())
         {
             growth_rate = *growth_rate_opt;
+        }
+
+        if (last_growth_rate_opt.valid())
+        {
+            last_growth_rate = *growth_rate_opt;
         }
 
         contributions.insert(contributions_list.begin(), contributions_list.end());
@@ -235,9 +243,11 @@ struct account_eci_stats_api_obj
     external_id_type discipline_external_id;
     account_name_type account;
     share_type eci;
-    share_type past_eci;
+    share_type previous_eci;
+    share_type starting_eci;
     percent percentile_rank;
     fc::optional<percent> growth_rate;
+    fc::optional<percent> last_growth_rate;
     std::set<std::pair<int64_t, uint16_t>> contributions;
     std::set<external_id_type> researches;
     fc::time_point_sec timestamp;
@@ -315,14 +325,19 @@ struct discipline_eci_stats_api_obj
     discipline_eci_stats_api_obj(const external_id_type& discipline_external_id,
                                  const string& discipline_name,
                                  const share_type& eci,
+                                 const share_type& previous_eci,
+                                 const share_type& starting_eci,
                                  const share_type& total_eci,
                                  const percent& percentage,
                                  const fc::optional<percent>& growth_rate_opt,
-                                 std::map<uint16_t, assessment_criteria_value> criterias,
+                                 const fc::optional<percent>& last_growth_rate_opt,
+                                 const std::map<uint16_t, assessment_criteria_value> criterias,
                                  const fc::time_point_sec& timestamp)
         : discipline_external_id(discipline_external_id)
         , discipline_name(discipline_name)
         , eci(eci)
+        , previous_eci(previous_eci)
+        , starting_eci(starting_eci)
         , total_eci(total_eci)
         , percentage(percentage)
         , timestamp(timestamp)
@@ -331,15 +346,24 @@ struct discipline_eci_stats_api_obj
         {
             growth_rate = *growth_rate_opt;
         }
+
+        if (last_growth_rate_opt.valid())
+        {
+            last_growth_rate = *last_growth_rate_opt;
+        }
+
         assessment_criterias.insert(criterias.begin(), criterias.end());
     }
 
     external_id_type discipline_external_id;
     string discipline_name;
     share_type eci;
+    share_type previous_eci;
+    share_type starting_eci;
     share_type total_eci;
     percent percentage;
     fc::optional<percent> growth_rate;
+    fc::optional<percent> last_growth_rate;
     std::map<uint16_t, assessment_criteria_value> assessment_criterias;
     fc::time_point_sec timestamp;
 };
@@ -400,31 +424,32 @@ FC_REFLECT(deip::eci_history::account_eci_history_api_obj,
   (review_vote)
 )
 
-FC_REFLECT(deip::eci_history::account_eci_stats_api_obj, 
+FC_REFLECT(deip::eci_history::account_eci_stats_api_obj,
   (discipline_external_id)
   (account)
   (eci)
-  (past_eci)
+  (previous_eci)
+  (starting_eci)
   (percentile_rank)
   (growth_rate)
+  (last_growth_rate)
   (contributions)
   (researches)
   (timestamp)
 )
 
-
 FC_REFLECT(deip::eci_history::discipline_eci_history_api_obj, 
-    (discipline_external_id)
-    (eci)
-    (delta)
-    (contribution_type)
-    (contribution_id)
-    (timestamp)
-    (research_content)
-    (research)
-    (research_group)
-    (review)
-    (review_vote)
+  (discipline_external_id)
+  (eci)
+  (delta)
+  (contribution_type)
+  (contribution_id)
+  (timestamp)
+  (research_content)
+  (research)
+  (research_group)
+  (review)
+  (review_vote)
 )
 
 
@@ -432,9 +457,12 @@ FC_REFLECT(deip::eci_history::discipline_eci_stats_api_obj,
   (discipline_external_id)
   (discipline_name)
   (eci)
+  (previous_eci)
+  (starting_eci)
   (total_eci)
   (percentage)
   (growth_rate)
+  (last_growth_rate)
   (assessment_criterias)
   (timestamp)
 )
