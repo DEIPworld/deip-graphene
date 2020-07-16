@@ -25,6 +25,7 @@
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
+#include <deip/chain/services/dbs_expertise_contribution.hpp>
 
 #define DEIP_DEFAULT_INIT_PUBLIC_KEY "STM5omawYzkrPdcEEcFiwLdEu7a3znoJDSmerNgf96J2zaHZMTpWs"
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
@@ -309,10 +310,6 @@ void database::init_genesis_disciplines(const genesis_state_type& genesis_state)
             });
         }
     }
-
-    flat_map<int64_t, std::vector<eci_diff>> contributions;
-    const time_point_sec& timestamp = get_genesis_time();
-    push_virtual_operation(disciplines_eci_history_operation(contributions, timestamp));
 }
 
 
@@ -434,6 +431,10 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
     auto& research_content_service = obtain_service<dbs_research_content>();
     auto& accounts_service = obtain_service<dbs_account>();
     auto& research_discipline_relation_service = obtain_service<dbs_research_discipline_relation>();
+    auto& expertise_contributions_service = obtain_service<dbs_expertise_contribution>();
+
+    flat_map<int64_t, std::vector<eci_diff>> disciplines_contributions;
+    const time_point_sec timestamp = get_genesis_time();
 
     for (auto& research_content : research_contents)
     {
@@ -448,8 +449,7 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
 
         const auto& research = research_service.get_research(research_content.research_external_id);
         const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
-
-        const time_point_sec timestamp = get_genesis_time();
+        
         flat_set<external_id_type> references;
         references.insert(research_content.references.begin(), research_content.references.end());
 
@@ -486,10 +486,8 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
 
         const auto& relations = research_discipline_relation_service.get_research_discipline_relations_by_research(research.id);
 
-        for (auto& wrap : relations)
+        for (const research_discipline_relation_object& rel : relations)
         {
-            const auto& rel = wrap.get();
-
             flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
 
             const eci_diff research_content_eci_diff = eci_diff(
@@ -499,6 +497,13 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
                 static_cast<uint16_t>(expertise_contribution_type::publication),
                 updated_research_content.id._id,
                 assessment_criterias
+            );
+
+            const auto& expertise_contribution = expertise_contributions_service.adjust_expertise_contribution(
+                rel.discipline_id, 
+                updated_research_content.research_id, 
+                updated_research_content.id,
+                research_content_eci_diff
             );
 
             push_virtual_operation(research_content_eci_history_operation(
@@ -517,9 +522,9 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
             );
 
             push_virtual_operation(research_eci_history_operation(
-              updated_research.id._id, 
-              rel.discipline_id._id, 
-              research_eci_diff
+                updated_research.id._id, 
+                rel.discipline_id._id, 
+                research_eci_diff
             ));
 
             for (const auto& author : updated_research_content.authors)
@@ -542,9 +547,22 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
                     account_eci_diff)
                 );
             }
-            
+
+            if (disciplines_contributions.find(expertise_contribution.discipline_id._id) != disciplines_contributions.end())
+            {
+                auto& v = disciplines_contributions.at(expertise_contribution.discipline_id._id);
+                v.push_back(research_content_eci_diff);
+            }
+            else
+            {
+                std::vector<eci_diff> v;
+                v.push_back(research_content_eci_diff);
+                disciplines_contributions.insert(std::make_pair(expertise_contribution.discipline_id._id, v));
+            }
         }
     }
+
+    push_virtual_operation(disciplines_eci_history_operation(disciplines_contributions, timestamp));
 }
 
 void database::init_genesis_research_groups(const genesis_state_type& genesis_state)

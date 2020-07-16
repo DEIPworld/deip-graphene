@@ -1182,7 +1182,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
     const fc::time_point_sec now = head_block_time();
 
     const auto& altered_contributions = expertise_contributions_service.get_altered_expertise_contributions_in_block();
-    flat_map<int64_t, std::vector<eci_diff>> contributions;
+    flat_map<int64_t, std::vector<eci_diff>> disciplines_contributions;
 
     for (const expertise_contribution_object& expertise_contribution : altered_contributions)
     {
@@ -1625,16 +1625,16 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
                 }
             }
 
-            if (contributions.find(expertise_contribution.discipline_id._id) != contributions.end())
+            if (disciplines_contributions.find(expertise_contribution.discipline_id._id) != disciplines_contributions.end())
             {
-                auto& v = contributions.at(expertise_contribution.discipline_id._id);
+                auto& v = disciplines_contributions.at(expertise_contribution.discipline_id._id);
                 v.push_back(diff);
             } 
             else
             {
                 std::vector<eci_diff> v;
                 v.push_back(diff);
-                contributions.insert(std::make_pair(expertise_contribution.discipline_id._id, v));
+                disciplines_contributions.insert(std::make_pair(expertise_contribution.discipline_id._id, v));
             }
         }
 
@@ -1648,7 +1648,7 @@ asset database::distribute_reward(const asset& reward, const share_type& experti
 
     if (altered_contributions.size() != 0)
     {
-        push_virtual_operation(disciplines_eci_history_operation(contributions, head_block_time()));
+        push_virtual_operation(disciplines_eci_history_operation(disciplines_contributions, head_block_time()));
     }
 
     return reward;

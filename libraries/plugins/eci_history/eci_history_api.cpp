@@ -137,7 +137,7 @@ public:
                 fc::optional<app::research_group_api_obj> research_group_api_opt;
                 fc::optional<app::review_api_obj> review_api_opt;
                 fc::optional<app::review_vote_api_obj> review_vote_api_opt;
-                extract_optional_objects(hist.contribution_type, hist.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
+                extract_contribution_optional_objects(hist.contribution_type, hist.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
 
                 const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : share_type(0);
                 const auto& delta = get_modified_eci_delta(hist.delta, hist.assessment_criterias, assessment_criteria_type_filter);
@@ -260,7 +260,7 @@ public:
                 fc::optional<app::research_group_api_obj> research_group_api_opt;
                 fc::optional<app::review_api_obj> review_api_opt;
                 fc::optional<app::review_vote_api_obj> review_vote_api_opt;
-                extract_optional_objects(hist.contribution_type, hist.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
+                extract_contribution_optional_objects(hist.contribution_type, hist.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
 
                 const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : share_type(0);
                 const auto& delta = get_modified_eci_delta(hist.delta, hist.assessment_criterias, assessment_criteria_type_filter);
@@ -377,7 +377,7 @@ public:
                 fc::optional<app::research_group_api_obj> research_group_api_opt;
                 fc::optional<app::review_api_obj> review_api_opt;
                 fc::optional<app::review_vote_api_obj> review_vote_api_opt;
-                extract_optional_objects(hist.contribution_type, hist.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
+                extract_contribution_optional_objects(hist.contribution_type, hist.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
 
                 const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : share_type(0);
                 const auto& delta = get_modified_eci_delta(hist.delta, hist.assessment_criterias, assessment_criteria_type_filter);
@@ -647,7 +647,7 @@ std::vector<discipline_eci_history_api_obj> get_discipline_eci_history(const fc:
                 fc::optional<app::research_group_api_obj> research_group_api_opt;
                 fc::optional<app::review_api_obj> review_api_opt;
                 fc::optional<app::review_vote_api_obj> review_vote_api_opt;
-                extract_optional_objects(diff.contribution_type, diff.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
+                extract_contribution_optional_objects(diff.contribution_type, diff.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
 
                 const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : share_type(0);
                 const auto& delta = get_modified_eci_delta(diff.diff(), diff.assessment_criterias, assessment_criteria_type_filter);
@@ -893,7 +893,6 @@ private:
 
     const fc::optional<percent> get_growth_rate(const share_type& past, const share_type& present) const
     {
-       
         /*
             Growth Rate = [(Vpresent - Vpast) / Vpast] * 100
             Vpresent = present value
@@ -928,13 +927,13 @@ private:
         return result;
     }
 
-    const void extract_optional_objects(const uint16_t& type,
-                                        const int64_t& contribution_id,
-                                        fc::optional<app::research_content_api_obj>& research_content_api_opt,
-                                        fc::optional<app::research_api_obj>& research_api_opt,
-                                        fc::optional<app::research_group_api_obj>& research_group_api_opt,
-                                        fc::optional<app::review_api_obj>& review_api_opt,
-                                        fc::optional<app::review_vote_api_obj>& review_vote_api_opt) const
+    const void extract_contribution_optional_objects(const uint16_t& type,
+                                                     const int64_t& contribution_id,
+                                                     fc::optional<app::research_content_api_obj>& research_content_api_opt,
+                                                     fc::optional<app::research_api_obj>& research_api_opt,
+                                                     fc::optional<app::research_group_api_obj>& research_group_api_opt,
+                                                     fc::optional<app::review_api_obj>& review_api_opt,
+                                                     fc::optional<app::review_vote_api_obj>& review_vote_api_opt) const
     {
         const auto& db = _app.chain_database();
         const auto& research_service = db->obtain_service<chain::dbs_research>();
@@ -1065,11 +1064,11 @@ std::vector<research_eci_history_api_obj> eci_history_api::get_research_eci_hist
 }
 
 std::vector<account_eci_history_api_obj> eci_history_api::get_account_eci_history(const account_name_type& account,
-                                                                                                    const fc::optional<external_id_type> discipline_filter,
-                                                                                                    const fc::optional<fc::time_point_sec> from_filter,
-                                                                                                    const fc::optional<fc::time_point_sec> to_filter,
-                                                                                                    const fc::optional<uint16_t> contribution_type_filter,
-                                                                                                    const fc::optional<uint16_t> assessment_criteria_type_filter) const
+                                                                                  const fc::optional<external_id_type> discipline_filter,
+                                                                                  const fc::optional<fc::time_point_sec> from_filter,
+                                                                                  const fc::optional<fc::time_point_sec> to_filter,
+                                                                                  const fc::optional<uint16_t> contribution_type_filter,
+                                                                                  const fc::optional<uint16_t> assessment_criteria_type_filter) const
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock(
