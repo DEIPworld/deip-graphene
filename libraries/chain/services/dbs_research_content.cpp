@@ -268,5 +268,22 @@ const research_content_object& dbs_research_content::update_eci_evaluation(const
     return research_content;
 }
 
+const dbs_research_content::research_content_refs_type dbs_research_content::lookup_research_contents(const research_content_id_type& lower_bound, uint32_t limit) const
+{
+    research_content_refs_type result;
+
+    const auto& idx = db_impl()
+      .get_index<research_content_index>()
+      .indicies()
+      .get<by_id>();
+
+    for (auto itr = idx.lower_bound(lower_bound); limit-- && itr != idx.end(); ++itr)
+    {
+        result.push_back(std::cref(*itr));
+    }
+
+    return result;
+}
+
 }
 }

@@ -378,8 +378,7 @@ const bool dbs_research::research_exists(const external_id_type& external_id) co
     return itr != idx.end();
 }
 
-const dbs_research::research_refs_type dbs_research::lookup_researches(const research_id_type& lower_bound,
-                                                                      uint32_t limit) const
+const dbs_research::research_refs_type dbs_research::lookup_researches(const research_id_type& lower_bound, uint32_t limit) const
 {
     research_refs_type result;
 

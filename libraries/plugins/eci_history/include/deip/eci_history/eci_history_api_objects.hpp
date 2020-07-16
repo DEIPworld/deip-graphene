@@ -4,6 +4,7 @@
 #include <deip/eci_history/account_eci_history_object.hpp>
 #include <deip/eci_history/research_eci_history_object.hpp>
 #include <deip/eci_history/research_content_eci_history_object.hpp>
+#include <deip/eci_history/discipline_eci_history_object.hpp>
 
 namespace deip {
 namespace eci_history {
@@ -63,8 +64,52 @@ struct research_content_eci_history_api_obj
 
     fc::optional<app::review_api_obj> review;
     fc::optional<app::review_vote_api_obj> review_vote;
-
 };
+
+
+struct research_content_eci_stats_api_obj
+{
+    research_content_eci_stats_api_obj(){};
+    research_content_eci_stats_api_obj(const external_id_type& research_content_external_id,
+                                       const share_type& eci,
+                                       const share_type& previous_eci,
+                                       const share_type& starting_eci,
+                                       const percent& percentile_rank,
+                                       const fc::optional<percent>& growth_rate_opt,
+                                       const fc::optional<percent>& last_growth_rate_opt,
+                                       const std::set<std::pair<int64_t, uint16_t>>& contributions_list,
+                                       const fc::time_point_sec& timestamp)
+        : research_content_external_id(research_content_external_id)
+        , eci(eci)
+        , previous_eci(previous_eci)
+        , starting_eci(starting_eci)
+        , percentile_rank(percentile_rank)
+        , timestamp(timestamp)
+    {
+        if (growth_rate_opt.valid())
+        {
+            growth_rate = *growth_rate_opt;
+        }
+
+        if (last_growth_rate_opt.valid())
+        {
+            last_growth_rate = *growth_rate_opt;
+        }
+
+        contributions.insert(contributions_list.begin(), contributions_list.end());
+    }
+
+    external_id_type research_content_external_id;
+    share_type eci;
+    share_type previous_eci;
+    share_type starting_eci;
+    percent percentile_rank;
+    fc::optional<percent> growth_rate;
+    fc::optional<percent> last_growth_rate;
+    std::set<std::pair<int64_t, uint16_t>> contributions;
+    fc::time_point_sec timestamp;
+};
+
 
 struct research_eci_history_api_obj
 {
@@ -126,6 +171,51 @@ struct research_eci_history_api_obj
     fc::optional<app::review_api_obj> review;
     fc::optional<app::review_vote_api_obj> review_vote;
 };
+
+
+struct research_eci_stats_api_obj
+{
+    research_eci_stats_api_obj(){};
+    research_eci_stats_api_obj(const external_id_type& research_external_id,
+                               const share_type& eci,
+                               const share_type& previous_eci,
+                               const share_type& starting_eci,
+                               const percent& percentile_rank,
+                               const fc::optional<percent>& growth_rate_opt,
+                               const fc::optional<percent>& last_growth_rate_opt,
+                               const std::set<std::pair<int64_t, uint16_t>>& contributions_list,
+                               const fc::time_point_sec& timestamp)
+        : research_external_id(research_external_id)
+        , eci(eci)
+        , previous_eci(previous_eci)
+        , starting_eci(starting_eci)
+        , percentile_rank(percentile_rank)
+        , timestamp(timestamp)
+    {
+        if (growth_rate_opt.valid())
+        {
+            growth_rate = *growth_rate_opt;
+        }
+
+        if (last_growth_rate_opt.valid())
+        {
+            last_growth_rate = *growth_rate_opt;
+        }
+
+        contributions.insert(contributions_list.begin(), contributions_list.end());
+    }
+
+    external_id_type research_external_id;
+    share_type eci;
+    share_type previous_eci;
+    share_type starting_eci;
+    percent percentile_rank;
+    fc::optional<percent> growth_rate;
+    fc::optional<percent> last_growth_rate;
+    std::set<std::pair<int64_t, uint16_t>> contributions;
+    fc::time_point_sec timestamp;
+};
+
 
 struct account_eci_history_api_obj
 {
@@ -216,8 +306,7 @@ struct account_eci_stats_api_obj
                               const fc::optional<percent>& last_growth_rate_opt,
                               const std::set<std::pair<int64_t, uint16_t>>& contributions_list,
                               const std::set<external_id_type>& researches_list,
-                              const fc::time_point_sec& timestamp,
-                              const std::vector<account_eci_history_api_obj>& records_list)
+                              const fc::time_point_sec& timestamp)
         : discipline_external_id(discipline_external_id)
         , account(account)
         , eci(eci)
@@ -258,22 +347,23 @@ struct discipline_eci_history_api_obj
 {
     discipline_eci_history_api_obj(){};
     discipline_eci_history_api_obj(const external_id_type& discipline_external_id,
+                                   const discipline_eci_history_object& hist,
                                    const share_type& eci,
                                    const share_type& delta,
                                    const uint16_t& contribution_type,
                                    const int64_t& contribution_id,
-                                   const fc::time_point_sec& timestamp,
                                    const fc::optional<app::research_content_api_obj> research_content_opt = {},
                                    const fc::optional<app::research_api_obj> research_opt = {},
                                    const fc::optional<app::research_group_api_obj> research_group_opt = {},
                                    const fc::optional<app::review_api_obj>& review_opt = {},
                                    const fc::optional<app::review_vote_api_obj>& review_vote_opt = {})
-        : discipline_external_id(discipline_external_id)
+        : id(hist.id._id)
+        , discipline_external_id(discipline_external_id)
         , eci(eci)
         , delta(delta)
         , contribution_type(contribution_type)
         , contribution_id(contribution_id)
-        , timestamp(timestamp)
+        , timestamp(hist.timestamp)
     {
 
         if (research_content_opt.valid())
@@ -302,6 +392,7 @@ struct discipline_eci_history_api_obj
         }
     }
 
+    int64_t id;
     external_id_type discipline_external_id;
     share_type eci;
     share_type delta;
@@ -389,6 +480,18 @@ FC_REFLECT(deip::eci_history::research_content_eci_history_api_obj,
   (review_vote)
 )
 
+FC_REFLECT(deip::eci_history::research_content_eci_stats_api_obj, 
+  (research_content_external_id)
+  (eci)
+  (previous_eci)
+  (starting_eci)
+  (percentile_rank)
+  (growth_rate)
+  (last_growth_rate)
+  (contributions)
+  (timestamp)
+)
+
 FC_REFLECT(deip::eci_history::research_eci_history_api_obj, 
   (id)
   (discipline_id)
@@ -403,6 +506,18 @@ FC_REFLECT(deip::eci_history::research_eci_history_api_obj,
   (research_content)
   (review)
   (review_vote)
+)
+
+FC_REFLECT(deip::eci_history::research_eci_stats_api_obj, 
+  (research_external_id)
+  (eci)
+  (previous_eci)
+  (starting_eci)
+  (percentile_rank)
+  (growth_rate)
+  (last_growth_rate)
+  (contributions)
+  (timestamp)
 )
 
 FC_REFLECT(deip::eci_history::account_eci_history_api_obj, 
@@ -439,6 +554,7 @@ FC_REFLECT(deip::eci_history::account_eci_stats_api_obj,
 )
 
 FC_REFLECT(deip::eci_history::discipline_eci_history_api_obj, 
+  (id)
   (discipline_external_id)
   (eci)
   (delta)
@@ -451,7 +567,6 @@ FC_REFLECT(deip::eci_history::discipline_eci_history_api_obj,
   (review)
   (review_vote)
 )
-
 
 FC_REFLECT(deip::eci_history::discipline_eci_stats_api_obj, 
   (discipline_external_id)

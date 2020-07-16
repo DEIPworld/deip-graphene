@@ -59,6 +59,8 @@ public:
     const std::map<discipline_id_type, share_type> get_eci_evaluation(const research_content_id_type& research_content_id) const;
 
     const research_content_object& update_eci_evaluation(const research_content_id_type& research_content_id);
+
+    const research_content_refs_type lookup_research_contents(const research_content_id_type& lower_bound, uint32_t limit) const;
 };
 }
 }
