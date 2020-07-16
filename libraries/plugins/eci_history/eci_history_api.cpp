@@ -139,7 +139,7 @@ public:
                 fc::optional<app::review_vote_api_obj> review_vote_api_opt;
                 extract_optional_objects(hist.contribution_type, hist.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
 
-                const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : hist.eci;
+                const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : share_type(0);
                 const auto& delta = get_modified_eci_delta(hist.delta, hist.assessment_criterias, assessment_criteria_type_filter);
                 const auto& eci = previous_eci + delta;
 
@@ -262,7 +262,7 @@ public:
                 fc::optional<app::review_vote_api_obj> review_vote_api_opt;
                 extract_optional_objects(hist.contribution_type, hist.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
 
-                const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : hist.eci;
+                const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : share_type(0);
                 const auto& delta = get_modified_eci_delta(hist.delta, hist.assessment_criterias, assessment_criteria_type_filter);
                 const auto& eci = previous_eci + delta;
 
@@ -379,7 +379,7 @@ public:
                 fc::optional<app::review_vote_api_obj> review_vote_api_opt;
                 extract_optional_objects(hist.contribution_type, hist.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
 
-                const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : hist.eci;
+                const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : share_type(0);
                 const auto& delta = get_modified_eci_delta(hist.delta, hist.assessment_criterias, assessment_criteria_type_filter);
                 const auto& eci = previous_eci + delta;
 
@@ -649,7 +649,7 @@ std::vector<discipline_eci_history_api_obj> get_discipline_eci_history(const fc:
                 fc::optional<app::review_vote_api_obj> review_vote_api_opt;
                 extract_optional_objects(diff.contribution_type, diff.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
 
-                const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : hist.eci;
+                const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : share_type(0);
                 const auto& delta = get_modified_eci_delta(diff.diff(), diff.assessment_criterias, assessment_criteria_type_filter);
                 const auto& eci = previous_eci + delta;
 
