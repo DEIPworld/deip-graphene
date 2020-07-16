@@ -81,6 +81,7 @@ public:
                                                                                     const fc::optional<uint16_t> assessment_criteria_type_filter) const;
 
     std::vector<account_eci_history_api_obj> get_account_eci_history(const account_name_type& account,
+                                                                     const account_eci_history_id_type& cursor,
                                                                      const fc::optional<external_id_type> discipline_filter,
                                                                      const fc::optional<fc::time_point_sec> from_filter,
                                                                      const fc::optional<fc::time_point_sec> to_filter,

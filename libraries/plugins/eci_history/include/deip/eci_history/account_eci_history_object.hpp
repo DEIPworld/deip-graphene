@@ -45,6 +45,7 @@ public:
 
 struct by_account;
 struct by_account_and_discipline;
+struct by_account_and_cursor;
 
 typedef chainbase::shared_multi_index_container<account_eci_history_object,
   indexed_by<
@@ -76,6 +77,21 @@ typedef chainbase::shared_multi_index_container<account_eci_history_object,
             account_eci_history_object,
             discipline_id_type,
             &account_eci_history_object::discipline_id
+          >
+        >
+    >,
+    ordered_non_unique<
+      tag<by_account_and_cursor>,
+        composite_key<account_eci_history_object,
+          member<
+            account_eci_history_object,
+            account_name_type,
+            &account_eci_history_object::account
+          >,
+          member<
+            account_eci_history_object,
+            account_eci_history_id_type,
+            &account_eci_history_object::id
           >
         >
     >>

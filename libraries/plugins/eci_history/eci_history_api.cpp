@@ -634,6 +634,7 @@ public:
 
 
     std::vector<account_eci_history_api_obj> get_account_eci_history(const account_name_type& account,
+                                                                     const account_eci_history_id_type& cursor,
                                                                      const fc::optional<external_id_type> discipline_filter,
                                                                      const fc::optional<fc::time_point_sec> from_filter,
                                                                      const fc::optional<fc::time_point_sec> to_filter,
@@ -643,7 +644,7 @@ public:
         std::vector<account_eci_history_api_obj> result;
 
         const auto& db = _app.chain_database();
-        const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account>();
+        const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account_and_cursor>();
         const auto& accounts_service = db->obtain_service<chain::dbs_account>();
         const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
@@ -710,10 +711,8 @@ public:
             return true;
         };
 
-        auto itr_pair = account_hist_idx.equal_range(account);
-        auto itr = itr_pair.first;
-        const auto itr_end = itr_pair.second;
-        while (itr != itr_end)
+        uint32_t limit = DEIP_API_BULK_FETCH_LIMIT;
+        for (auto itr = account_hist_idx.lower_bound(std::make_tuple(account, cursor)); limit-- && itr != account_hist_idx.end() && itr->account == account; ++itr)
         {
             const auto& hist = *itr;
 
@@ -741,8 +740,10 @@ public:
                   review_vote_api_opt
                 ));
             }
-
-            ++itr;
+            else
+            {
+                limit++;
+            }
         }
 
         return result;
@@ -1527,6 +1528,7 @@ std::map<external_id_type, research_eci_stats_api_obj> eci_history_api::get_rese
 
 
 std::vector<account_eci_history_api_obj> eci_history_api::get_account_eci_history(const account_name_type& account,
+                                                                                  const account_eci_history_id_type& cursor,
                                                                                   const fc::optional<external_id_type> discipline_filter,
                                                                                   const fc::optional<fc::time_point_sec> from_filter,
                                                                                   const fc::optional<fc::time_point_sec> to_filter,
@@ -1537,6 +1539,7 @@ std::vector<account_eci_history_api_obj> eci_history_api::get_account_eci_histor
     return db->with_read_lock([&]() { 
         return _impl->get_account_eci_history(
             account, 
+            cursor,
             discipline_filter, 
             from_filter, 
             to_filter, 
@@ -1569,10 +1572,10 @@ fc::optional<account_eci_stats_api_obj> eci_history_api::get_account_eci_stats(c
 
 
 std::map<account_name_type, account_eci_stats_api_obj> eci_history_api::get_accounts_eci_stats(const fc::optional<external_id_type> discipline_filter,
-                                                                                                       const fc::optional<fc::time_point_sec> from_filter,
-                                                                                                       const fc::optional<fc::time_point_sec> to_filter,
-                                                                                                       const fc::optional<uint16_t> contribution_type_filter,
-                                                                                                       const fc::optional<uint16_t> assessment_criteria_type_filter) const
+                                                                                               const fc::optional<fc::time_point_sec> from_filter,
+                                                                                               const fc::optional<fc::time_point_sec> to_filter,
+                                                                                               const fc::optional<uint16_t> contribution_type_filter,
+                                                                                               const fc::optional<uint16_t> assessment_criteria_type_filter) const
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock([&]() { 
