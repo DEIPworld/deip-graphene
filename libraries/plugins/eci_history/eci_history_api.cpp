@@ -51,8 +51,6 @@ public:
         const auto& research_service = db->obtain_service<chain::dbs_research>();
         const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
         const auto& research_groups_service = db->obtain_service<chain::dbs_research_group>();
-        const auto& reviews_service = db->obtain_service<chain::dbs_review>();
-        const auto& review_votes_service = db->obtain_service<chain::dbs_review_vote>();
         const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
         const auto& research_content_opt = research_content_service.get_research_content_if_exists(research_content_external_id);
@@ -134,43 +132,12 @@ public:
 
             if (filter(hist))
             {
-                const auto& hist = *itr;
-                const expertise_contribution_type contribution_type = static_cast<expertise_contribution_type>(hist.contribution_type);
-
+                fc::optional<app::research_content_api_obj> research_content_api_opt;
+                fc::optional<app::research_api_obj> research_api_opt;
+                fc::optional<app::research_group_api_obj> research_group_api_opt;
                 fc::optional<app::review_api_obj> review_api_opt;
                 fc::optional<app::review_vote_api_obj> review_vote_api_opt;
-
-                switch (contribution_type)
-                {
-                    case expertise_contribution_type::publication: 
-                    {
-                        break;
-                    }
-
-                    case expertise_contribution_type::review: 
-                    {
-                        const auto& review = reviews_service.get_review(review_id_type(hist.contribution_id));
-                        review_api_opt = app::review_api_obj(review, {});
-
-                        break;
-                    }
-
-                    case expertise_contribution_type::review_support: 
-                    {
-                        const auto& review_vote = review_votes_service.get_review_vote(review_vote_id_type(hist.contribution_id));
-                        review_vote_api_opt = app::review_vote_api_obj(review_vote);
-
-                        const auto& review = reviews_service.get_review(review_vote.review_id);
-                        review_api_opt = app::review_api_obj(review, {});
-
-                        break;
-                    }
-
-                    default: 
-                    {
-                        break;
-                    }
-                }
+                extract_optional_objects(hist.contribution_type, hist.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
 
                 const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : hist.eci;
                 const auto& delta = get_modified_eci_delta(hist.delta, hist.assessment_criterias, assessment_criteria_type_filter);
@@ -209,10 +176,7 @@ public:
         const auto& db = _app.chain_database();
         const auto& research_hist_idx = db->get_index<research_eci_history_index>().indices().get<by_research_and_cursor>();
         const auto& research_service = db->obtain_service<chain::dbs_research>();
-        const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
         const auto& research_groups_service = db->obtain_service<chain::dbs_research_group>();
-        const auto& reviews_service = db->obtain_service<chain::dbs_review>();
-        const auto& review_votes_service = db->obtain_service<chain::dbs_review_vote>();
         const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
         const auto& research_opt = research_service.get_research_if_exists(research_external_id);
@@ -291,52 +255,12 @@ public:
 
             if (filter(hist))
             {
-                const expertise_contribution_type contribution_type = static_cast<expertise_contribution_type>(hist.contribution_type);
-
                 fc::optional<app::research_content_api_obj> research_content_api_opt;
+                fc::optional<app::research_api_obj> research_api_opt;
+                fc::optional<app::research_group_api_obj> research_group_api_opt;
                 fc::optional<app::review_api_obj> review_api_opt;
                 fc::optional<app::review_vote_api_obj> review_vote_api_opt;
-
-                switch (contribution_type)
-                {
-                    case expertise_contribution_type::publication: 
-                    {
-                        const auto& research_content = research_content_service.get_research_content(research_content_id_type(hist.contribution_id));
-                        research_content_api_opt = app::research_content_api_obj(research_content);
-
-                        break;
-                    }
-
-                    case expertise_contribution_type::review: 
-                    {
-                        const auto& review = reviews_service.get_review(review_id_type(hist.contribution_id));
-                        review_api_opt = app::review_api_obj(review, {});
-
-                        const auto& research_content = research_content_service.get_research_content(review.research_content_id);
-                        research_content_api_opt = app::research_content_api_obj(research_content);
-
-                        break;
-                    }
-
-                    case expertise_contribution_type::review_support: 
-                    {
-                        const auto& review_vote = review_votes_service.get_review_vote(review_vote_id_type(hist.contribution_id));
-                        review_vote_api_opt = app::review_vote_api_obj(review_vote);
-
-                        const auto& review = reviews_service.get_review(review_vote.review_id);
-                        review_api_opt = app::review_api_obj(review, {});
-
-                        const auto& research_content = research_content_service.get_research_content(review.research_content_id);
-                        research_content_api_opt = app::research_content_api_obj(research_content);
-
-                        break;
-                    }
-
-                    default: 
-                    {
-                        break;
-                    }
-                }
+                extract_optional_objects(hist.contribution_type, hist.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
 
                 const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : hist.eci;
                 const auto& delta = get_modified_eci_delta(hist.delta, hist.assessment_criterias, assessment_criteria_type_filter);
@@ -374,11 +298,6 @@ public:
         const auto& db = _app.chain_database();
         const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account>();
         const auto& accounts_service = db->obtain_service<chain::dbs_account>();
-        const auto& research_service = db->obtain_service<chain::dbs_research>();
-        const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
-        const auto& research_groups_service = db->obtain_service<chain::dbs_research_group>();
-        const auto& reviews_service = db->obtain_service<chain::dbs_review>();
-        const auto& review_votes_service = db->obtain_service<chain::dbs_review_vote>();
         const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
         if (!accounts_service.account_exists(account))
@@ -453,72 +372,12 @@ public:
 
             if (filter(hist))
             {
-                const expertise_contribution_type contribution_type = static_cast<expertise_contribution_type>(hist.contribution_type);
-
                 fc::optional<app::research_content_api_obj> research_content_api_opt;
                 fc::optional<app::research_api_obj> research_api_opt;
                 fc::optional<app::research_group_api_obj> research_group_api_opt;
                 fc::optional<app::review_api_obj> review_api_opt;
                 fc::optional<app::review_vote_api_obj> review_vote_api_opt;
-
-                switch (contribution_type)
-                {
-                    case expertise_contribution_type::publication: 
-                    {
-                        const auto& research_content = research_content_service.get_research_content(research_content_id_type(hist.contribution_id));
-                        research_content_api_opt = app::research_content_api_obj(research_content);
-
-                        const auto& research = research_service.get_research(research_content.research_id);
-                        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
-
-                        research_api_opt = app::research_api_obj(research, {}, research_group);
-                        research_group_api_opt = app::research_group_api_obj(research_group);
-
-                        break;
-                    }
-
-                    case expertise_contribution_type::review: 
-                    {
-                        const auto& review = reviews_service.get_review(review_id_type(hist.contribution_id));
-                        review_api_opt = app::review_api_obj(review, {});
-
-                        const auto& research_content = research_content_service.get_research_content(review.research_content_id);
-                        research_content_api_opt = app::research_content_api_obj(research_content);
-                        
-                        const auto& research = research_service.get_research(research_content.research_id);
-                        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
-
-                        research_api_opt = app::research_api_obj(research, {}, research_group);
-                        research_group_api_opt = app::research_group_api_obj(research_group);
-
-                        break;
-                    }
-
-                    case expertise_contribution_type::review_support: 
-                    {
-                        const auto& review_vote = review_votes_service.get_review_vote(review_vote_id_type(hist.contribution_id));
-                        review_vote_api_opt = app::review_vote_api_obj(review_vote);
-
-                        const auto& review = reviews_service.get_review(review_vote.review_id);
-                        review_api_opt = app::review_api_obj(review, {});
-
-                        const auto& research_content = research_content_service.get_research_content(review.research_content_id);
-                        research_content_api_opt = app::research_content_api_obj(research_content);
-
-                        const auto& research = research_service.get_research(research_content.research_id);
-                        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
-
-                        research_api_opt = app::research_api_obj(research, {}, research_group);
-                        research_group_api_opt = app::research_group_api_obj(research_group);
-
-                        break;
-                    }
-
-                    default: 
-                    {
-                        break;
-                    }
-                }
+                extract_optional_objects(hist.contribution_type, hist.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
 
                 const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : hist.eci;
                 const auto& delta = get_modified_eci_delta(hist.delta, hist.assessment_criterias, assessment_criteria_type_filter);
@@ -551,7 +410,6 @@ public:
         const auto& db = _app.chain_database();
         const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account>();
         const auto& accounts_service = db->obtain_service<chain::dbs_account>();
-        const auto& expertise_tokens_service = db->obtain_service<chain::dbs_expert_token>();
         const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
         std::map<account_name_type, account_eci_stats_api_obj> result;
@@ -714,13 +572,7 @@ std::vector<discipline_eci_history_api_obj> get_discipline_eci_history(const fc:
 
     const auto& db = _app.chain_database();
     const auto& discipline_hist_idx = db->get_index<discipline_eci_history_index>().indices().get<by_id>();
-    const auto& research_service = db->obtain_service<chain::dbs_research>();
-    const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
-    const auto& research_groups_service = db->obtain_service<chain::dbs_research_group>();
-    const auto& reviews_service = db->obtain_service<chain::dbs_review>();
-    const auto& review_votes_service = db->obtain_service<chain::dbs_review_vote>();
     const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
-
 
     if (discipline_filter.valid() && !disciplines_service.discipline_exists(*discipline_filter))
     {
@@ -790,72 +642,12 @@ std::vector<discipline_eci_history_api_obj> get_discipline_eci_history(const fc:
                     }
                 }
 
-                const expertise_contribution_type contribution_type = static_cast<expertise_contribution_type>(diff.contribution_type);
-
                 fc::optional<app::research_content_api_obj> research_content_api_opt;
                 fc::optional<app::research_api_obj> research_api_opt;
                 fc::optional<app::research_group_api_obj> research_group_api_opt;
                 fc::optional<app::review_api_obj> review_api_opt;
                 fc::optional<app::review_vote_api_obj> review_vote_api_opt;
-
-                switch (contribution_type)
-                {
-                    case expertise_contribution_type::publication: 
-                    {
-                        const auto& research_content = research_content_service.get_research_content(research_content_id_type(diff.contribution_id));
-                        research_content_api_opt = app::research_content_api_obj(research_content);
-
-                        const auto& research = research_service.get_research(research_content.research_id);
-                        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
-
-                        research_api_opt = app::research_api_obj(research, {}, research_group);
-                        research_group_api_opt = app::research_group_api_obj(research_group);
-
-                        break;
-                    }
-
-                    case expertise_contribution_type::review: 
-                    {
-                        const auto& review = reviews_service.get_review(review_id_type(diff.contribution_id));
-                        review_api_opt = app::review_api_obj(review, {});
-
-                        const auto& research_content = research_content_service.get_research_content(review.research_content_id);
-                        research_content_api_opt = app::research_content_api_obj(research_content);
-                        
-                        const auto& research = research_service.get_research(research_content.research_id);
-                        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
-
-                        research_api_opt = app::research_api_obj(research, {}, research_group);
-                        research_group_api_opt = app::research_group_api_obj(research_group);
-
-                        break;
-                    }
-
-                    case expertise_contribution_type::review_support: 
-                    {
-                        const auto& review_vote = review_votes_service.get_review_vote(review_vote_id_type(diff.contribution_id));
-                        review_vote_api_opt = app::review_vote_api_obj(review_vote);
-
-                        const auto& review = reviews_service.get_review(review_vote.review_id);
-                        review_api_opt = app::review_api_obj(review, {});
-
-                        const auto& research_content = research_content_service.get_research_content(review.research_content_id);
-                        research_content_api_opt = app::research_content_api_obj(research_content);
-
-                        const auto& research = research_service.get_research(research_content.research_id);
-                        const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
-
-                        research_api_opt = app::research_api_obj(research, {}, research_group);
-                        research_group_api_opt = app::research_group_api_obj(research_group);
-
-                        break;
-                    }
-
-                    default: 
-                    {
-                        break;
-                    }
-                }
+                extract_optional_objects(diff.contribution_type, diff.contribution_id, research_content_api_opt, research_api_opt, research_group_api_opt, review_api_opt, review_vote_api_opt);
 
                 const auto& previous_eci = result.size() > 0 ? result[result.size() - 1].eci : hist.eci;
                 const auto& delta = get_modified_eci_delta(diff.diff(), diff.assessment_criterias, assessment_criteria_type_filter);
@@ -1136,8 +928,82 @@ private:
         return result;
     }
 
+    const void extract_optional_objects(const uint16_t& type,
+                                        const int64_t& contribution_id,
+                                        fc::optional<app::research_content_api_obj>& research_content_api_opt,
+                                        fc::optional<app::research_api_obj>& research_api_opt,
+                                        fc::optional<app::research_group_api_obj>& research_group_api_opt,
+                                        fc::optional<app::review_api_obj>& review_api_opt,
+                                        fc::optional<app::review_vote_api_obj>& review_vote_api_opt) const
+    {
+        const auto& db = _app.chain_database();
+        const auto& research_service = db->obtain_service<chain::dbs_research>();
+        const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
+        const auto& research_groups_service = db->obtain_service<chain::dbs_research_group>();
+        const auto& reviews_service = db->obtain_service<chain::dbs_review>();
+        const auto& review_votes_service = db->obtain_service<chain::dbs_review_vote>();
 
-       
+        const expertise_contribution_type& contribution_type = static_cast<expertise_contribution_type>(type);
+
+        switch (contribution_type)
+        {
+            case expertise_contribution_type::publication: 
+            {
+                const auto& research_content = research_content_service.get_research_content(research_content_id_type(contribution_id));
+                research_content_api_opt = app::research_content_api_obj(research_content);
+
+                const auto& research = research_service.get_research(research_content.research_id);
+                const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+
+                research_api_opt = app::research_api_obj(research, {}, research_group);
+                research_group_api_opt = app::research_group_api_obj(research_group);
+
+                break;
+            }
+
+            case expertise_contribution_type::review: 
+            {
+                const auto& review = reviews_service.get_review(review_id_type(contribution_id));
+                review_api_opt = app::review_api_obj(review, {});
+
+                const auto& research_content = research_content_service.get_research_content(review.research_content_id);
+                research_content_api_opt = app::research_content_api_obj(research_content);
+                
+                const auto& research = research_service.get_research(research_content.research_id);
+                const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+
+                research_api_opt = app::research_api_obj(research, {}, research_group);
+                research_group_api_opt = app::research_group_api_obj(research_group);
+
+                break;
+            }
+
+            case expertise_contribution_type::review_support: 
+            {
+                const auto& review_vote = review_votes_service.get_review_vote(review_vote_id_type(contribution_id));
+                review_vote_api_opt = app::review_vote_api_obj(review_vote);
+
+                const auto& review = reviews_service.get_review(review_vote.review_id);
+                review_api_opt = app::review_api_obj(review, {});
+
+                const auto& research_content = research_content_service.get_research_content(review.research_content_id);
+                research_content_api_opt = app::research_content_api_obj(research_content);
+
+                const auto& research = research_service.get_research(research_content.research_id);
+                const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
+
+                research_api_opt = app::research_api_obj(research, {}, research_group);
+                research_group_api_opt = app::research_group_api_obj(research_group);
+
+                break;
+            }
+
+            default: 
+            {
+                break;
+            }
+        }
+    }
 };
 } // namespace detail
 
@@ -1207,13 +1073,15 @@ std::vector<account_eci_history_api_obj> eci_history_api::get_account_eci_histor
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock(
-        [&]() { return _impl->get_account_eci_history(account, 
-                                                      discipline_filter, 
-                                                      from_filter, 
-                                                      to_filter, 
-                                                      contribution_type_filter, 
-                                                      assessment_criteria_type_filter);
-        });
+        [&]() { return _impl->get_account_eci_history(
+            account, 
+            discipline_filter, 
+            from_filter, 
+            to_filter, 
+            contribution_type_filter, 
+            assessment_criteria_type_filter
+        );
+    });
 }
 
 std::map<account_name_type, account_eci_stats_api_obj> eci_history_api::get_accounts_eci_stats(const fc::optional<external_id_type> discipline_filter,

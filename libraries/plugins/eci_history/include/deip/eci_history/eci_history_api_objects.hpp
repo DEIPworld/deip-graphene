@@ -49,7 +49,7 @@ struct research_content_eci_history_api_obj
     int64_t id;
     int64_t discipline_id;
     uint16_t contribution_type;
-    uint16_t contribution_id;
+    int64_t contribution_id;
 
     share_type eci;
     share_type delta;
@@ -111,7 +111,7 @@ struct research_eci_history_api_obj
     int64_t id;
     int64_t discipline_id;
     uint16_t contribution_type;
-    uint16_t contribution_id;
+    int64_t contribution_id;
 
     share_type eci;
     share_type delta;
@@ -185,7 +185,7 @@ struct account_eci_history_api_obj
     std::string account;
 
     uint16_t contribution_type;
-    uint16_t contribution_id;
+    int64_t contribution_id;
 
     uint16_t event_contribution_type;
     int64_t event_contribution_id;
@@ -261,7 +261,7 @@ struct discipline_eci_history_api_obj
                                    const share_type& eci,
                                    const share_type& delta,
                                    const uint16_t& contribution_type,
-                                   const uint16_t& contribution_id,
+                                   const int64_t& contribution_id,
                                    const fc::time_point_sec& timestamp,
                                    const fc::optional<app::research_content_api_obj> research_content_opt = {},
                                    const fc::optional<app::research_api_obj> research_opt = {},
@@ -307,7 +307,7 @@ struct discipline_eci_history_api_obj
     share_type delta;
 
     uint16_t contribution_type;
-    uint16_t contribution_id;
+    int64_t contribution_id;
 
     fc::time_point_sec timestamp;
 
