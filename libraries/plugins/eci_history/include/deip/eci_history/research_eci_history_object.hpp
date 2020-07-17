@@ -27,6 +27,7 @@ public:
 
     research_id_type research_id;
     discipline_id_type discipline_id;
+    external_id_type discipline_external_id;
 
     share_type eci;
     share_type delta;
@@ -100,6 +101,7 @@ FC_REFLECT(deip::eci_history::research_eci_history_object,
   (id)
   (research_id)
   (discipline_id)
+  (discipline_external_id)
   (eci)
   (delta)
   (contribution_type)

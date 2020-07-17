@@ -24,6 +24,7 @@ public:
 
     discipline_eci_history_id_type id;
     discipline_id_type discipline_id;
+    external_id_type discipline_external_id;
 
     share_type eci;
     percent percentage;
@@ -67,6 +68,7 @@ typedef chainbase::shared_multi_index_container<discipline_eci_history_object,
 FC_REFLECT(deip::eci_history::discipline_eci_history_object,
   (id)
   (discipline_id)
+  (discipline_external_id)
   (eci)
   (percentage)
   (total_eci)

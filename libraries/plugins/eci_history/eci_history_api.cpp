@@ -47,7 +47,6 @@ public:
         const auto& research_service = db->obtain_service<chain::dbs_research>();
         const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
         const auto& research_groups_service = db->obtain_service<chain::dbs_research_group>();
-        const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
         const auto& research_content_opt = research_content_service.get_research_content_if_exists(research_content_external_id);
         if (!research_content_opt.valid())
@@ -55,16 +54,7 @@ public:
             return result;
         }
 
-        if (filter.discipline.valid() && !disciplines_service.discipline_exists(*filter.discipline))
-        {
-            return result;
-        }
-
         const research_content_object& research_content = *research_content_opt;
-
-        const discipline_object& discipline = filter.discipline.valid()
-            ? disciplines_service.get_discipline(*filter.discipline)
-            : disciplines_service.get_discipline(discipline_id_type(0));
 
         const auto& research = research_service.get_research(research_content.research_id);
         const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
@@ -78,7 +68,7 @@ public:
         {
             const auto& hist = *itr;
 
-            if (filter_record(filter, discipline, hist.timestamp, hist.contribution_type, hist.assessment_criterias))
+            if (filter_record(filter, hist.discipline_external_id, hist.timestamp, hist.contribution_type, hist.assessment_criterias))
             {
                 fc::optional<app::research_content_api_obj> research_content_api_opt;
                 fc::optional<app::research_api_obj> research_api_opt;
@@ -141,18 +131,8 @@ public:
         const auto& db = _app.chain_database();
         const auto& research_content_hist_idx = db->get_index<research_content_eci_history_index>().indices().get<by_research_content_id>();
         const auto& research_content_service = db->obtain_service<chain::dbs_research_content>();
-        const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
         std::map<external_id_type, research_content_eci_stats_api_obj> result;
-
-        if (filter.discipline.valid() && !disciplines_service.discipline_exists(*filter.discipline))
-        {
-            return result;
-        }
-
-        const discipline_object& discipline = filter.discipline.valid()
-            ? disciplines_service.get_discipline(*filter.discipline)
-            : disciplines_service.get_discipline(discipline_id_type(0));
 
         const auto& research_contents = research_content_service.lookup_research_contents(research_content_id_type(0), DEIP_API_BULK_FETCH_LIMIT);
         std::vector<share_type> eci_scores;
@@ -169,7 +149,7 @@ public:
             {
                 const auto& hist = *itr;
 
-                if (filter_record(filter, discipline, hist.timestamp, hist.contribution_type, hist.assessment_criterias))
+                if (filter_record(filter, hist.discipline_external_id, hist.timestamp, hist.contribution_type, hist.assessment_criterias))
                 {
                     if (result.find(research_content.external_id) == result.end())
                     {
@@ -236,23 +216,14 @@ public:
         const auto& research_hist_idx = db->get_index<research_eci_history_index>().indices().get<by_research_and_cursor>();
         const auto& research_service = db->obtain_service<chain::dbs_research>();
         const auto& research_groups_service = db->obtain_service<chain::dbs_research_group>();
-        const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
         const auto& research_opt = research_service.get_research_if_exists(research_external_id);
         if (!research_opt.valid())
         {
             return result;
         }
-        if (filter.discipline.valid() && !disciplines_service.discipline_exists(*filter.discipline))
-        {
-            return result;
-        }
 
         const research_object& research = *research_opt;
-
-        const discipline_object& discipline = filter.discipline.valid()
-            ? disciplines_service.get_discipline(*filter.discipline)
-            : disciplines_service.get_discipline(discipline_id_type(0));
 
         const auto& research_group = research_groups_service.get_research_group(research.research_group_id);
         const auto& research_group_api = app::research_group_api_obj(research_group);
@@ -263,7 +234,7 @@ public:
         {
             const auto& hist = *itr;
 
-            if (filter_record(filter, discipline, hist.timestamp, hist.contribution_type, hist.assessment_criterias))
+            if (filter_record(filter, hist.discipline_external_id, hist.timestamp, hist.contribution_type, hist.assessment_criterias))
             {
                 fc::optional<app::research_content_api_obj> research_content_api_opt;
                 fc::optional<app::research_api_obj> research_api_opt;
@@ -326,18 +297,8 @@ public:
         const auto& db = _app.chain_database();
         const auto& research_hist_idx = db->get_index<research_eci_history_index>().indices().get<by_research_id>();
         const auto& research_service = db->obtain_service<chain::dbs_research>();
-        const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
         std::map<external_id_type, research_eci_stats_api_obj> result;
-
-        if (filter.discipline.valid() && !disciplines_service.discipline_exists(*filter.discipline))
-        {
-            return result;
-        }
-
-        const discipline_object& discipline = filter.discipline.valid()
-            ? disciplines_service.get_discipline(*filter.discipline)
-            : disciplines_service.get_discipline(discipline_id_type(0));
 
         const auto& researches = research_service.lookup_researches(research_id_type(0), DEIP_API_BULK_FETCH_LIMIT);
         std::vector<share_type> eci_scores;
@@ -354,7 +315,7 @@ public:
             {
                 const auto& hist = *itr;
 
-                if (filter_record(filter, discipline, hist.timestamp, hist.contribution_type, hist.assessment_criterias))
+                if (filter_record(filter, hist.discipline_external_id, hist.timestamp, hist.contribution_type, hist.assessment_criterias))
                 {
                     if (result.find(research.external_id) == result.end())
                     {
@@ -420,28 +381,18 @@ public:
         const auto& db = _app.chain_database();
         const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account_and_cursor>();
         const auto& accounts_service = db->obtain_service<chain::dbs_account>();
-        const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
         if (!accounts_service.account_exists(account))
         {
             return result;
         }
 
-        if (filter.discipline.valid() && !disciplines_service.discipline_exists(*filter.discipline))
-        {
-            return result;
-        }
-
-        const discipline_object& discipline = filter.discipline.valid()
-            ? disciplines_service.get_discipline(*filter.discipline)
-            : disciplines_service.get_discipline(discipline_id_type(0));
-
         uint32_t limit = DEIP_API_BULK_FETCH_LIMIT;
         for (auto itr = account_hist_idx.lower_bound(std::make_tuple(account, cursor)); limit-- && itr != account_hist_idx.end() && itr->account == account; ++itr)
         {
             const auto& hist = *itr;
 
-            if (filter_record(filter, discipline, hist.timestamp, hist.contribution_type, hist.assessment_criterias))
+            if (filter_record(filter, hist.discipline_external_id, hist.timestamp, hist.contribution_type, hist.assessment_criterias))
             {
                 fc::optional<app::research_content_api_obj> research_content_api_opt;
                 fc::optional<app::research_api_obj> research_api_opt;
@@ -503,18 +454,8 @@ public:
         const auto& db = _app.chain_database();
         const auto& account_hist_idx = db->get_index<account_eci_history_index>().indices().get<by_account>();
         const auto& accounts_service = db->obtain_service<chain::dbs_account>();
-        const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
         std::map<account_name_type, account_eci_stats_api_obj> result;
-
-        if (filter.discipline.valid() && !disciplines_service.discipline_exists(*filter.discipline))
-        {
-            return result;
-        }
-
-        const discipline_object& discipline = filter.discipline.valid()
-            ? disciplines_service.get_discipline(*filter.discipline)
-            : disciplines_service.get_discipline(discipline_id_type(0));
 
         const auto& accounts = accounts_service.lookup_user_accounts(account_name_type("a"), DEIP_API_BULK_FETCH_LIMIT);
         std::vector<share_type> eci_scores;
@@ -531,13 +472,13 @@ public:
             {
                 const auto& hist = *itr;
 
-                if (filter_record(filter, discipline, hist.timestamp, hist.contribution_type, hist.assessment_criterias))
+                if (filter_record(filter, hist.discipline_external_id, hist.timestamp, hist.contribution_type, hist.assessment_criterias))
                 {
                     if (result.find(acc.name) == result.end())
                     {
                         auto stats = account_eci_stats_api_obj();
                         stats.account = acc.name;
-                        stats.discipline_external_id = discipline.external_id;
+                        stats.discipline_external_id = hist.discipline_external_id;
                         result.insert(std::make_pair(acc.name, stats));
                     }
 
@@ -598,22 +539,12 @@ public:
         const auto& discipline_hist_idx = db->get_index<discipline_eci_history_index>().indices().get<by_id>();
         const auto& disciplines_service = db->obtain_service<chain::dbs_discipline>();
 
-        if (filter.discipline.valid() && !disciplines_service.discipline_exists(*filter.discipline))
-        {
-            return result;
-        }
-
-        const discipline_object& discipline = filter.discipline.valid()
-            ? disciplines_service.get_discipline(*filter.discipline)
-            : disciplines_service.get_discipline(discipline_id_type(0));
-
         uint32_t limit = DEIP_API_BULK_FETCH_LIMIT;
-
         for (auto itr = discipline_hist_idx.lower_bound(discipline_eci_history_id_type(0)); limit-- && itr != discipline_hist_idx.end(); ++itr)
         {
             const discipline_eci_history_object& hist = *itr;
 
-            if (filter_record(filter, discipline, hist.timestamp, 0, {}))
+            if (filter_record(filter, hist.discipline_external_id, hist.timestamp, 0, {}))
             {
                 for (const auto& diff : hist.contributions)
                 {
@@ -647,7 +578,7 @@ public:
                     const auto& eci = previous_eci + delta;
 
                     result.push_back(discipline_eci_history_api_obj(
-                      discipline.external_id,
+                      hist.discipline_external_id,
                       hist,
                       eci,
                       delta,
@@ -924,7 +855,7 @@ private:
     }
 
     const bool filter_record(const eci_filter& filter,
-                             const discipline_object& discipline,
+                             const external_id_type& discipline,
                              const fc::time_point_sec& timestamp,
                              const uint16_t& contribution_type,
                              const flat_map<uint16_t, assessment_criteria_value>& assessment_criterias) const
@@ -932,7 +863,7 @@ private:
         if (filter.discipline.valid())
         {
             const external_id_type& filter_discipline = *filter.discipline;
-            if (discipline.external_id != filter_discipline && !discipline.is_common())
+            if (discipline != filter_discipline)
             {
                 return false;
             }

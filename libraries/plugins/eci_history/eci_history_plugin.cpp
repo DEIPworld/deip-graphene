@@ -67,9 +67,14 @@ struct post_operation_visitor
 
     void operator()(const research_content_eci_history_operation& op) const
     {
+        const auto& disciplines_service = _plugin.database().obtain_service<chain::dbs_discipline>();
+
+        const auto& discipline = disciplines_service.get_discipline(op.discipline_id);
+
         _plugin.database().create<research_content_eci_history_object>([&](research_content_eci_history_object& hist_o) {
             hist_o.research_content_id = op.research_content_id;
             hist_o.discipline_id = op.discipline_id;
+            hist_o.discipline_external_id = discipline.external_id;
             hist_o.eci = op.diff.current();
             hist_o.delta = op.diff.diff();
             hist_o.contribution_type = op.diff.contribution_type;
@@ -85,9 +90,14 @@ struct post_operation_visitor
 
     void operator()(const research_eci_history_operation& op) const
     {
+        const auto& disciplines_service = _plugin.database().obtain_service<chain::dbs_discipline>();
+
+        const auto& discipline = disciplines_service.get_discipline(op.discipline_id);
+
         _plugin.database().create<research_eci_history_object>([&](research_eci_history_object& hist_o) {
             hist_o.research_id = op.research_id;
             hist_o.discipline_id = op.discipline_id;
+            hist_o.discipline_external_id = discipline.external_id;
             hist_o.eci = op.diff.current();
             hist_o.delta = op.diff.diff();
             hist_o.contribution_type = op.diff.contribution_type;
@@ -106,6 +116,7 @@ struct post_operation_visitor
         const auto& research_service = _plugin.database().obtain_service<chain::dbs_research>();
         const auto& reviews_service = _plugin.database().obtain_service<chain::dbs_review>();
         const auto& review_votes_service = _plugin.database().obtain_service<chain::dbs_review_vote>();
+        const auto& disciplines_service = _plugin.database().obtain_service<chain::dbs_discipline>();
 
         const uint16_t event_contribution_type = op.diff.contribution_type;
         const uint16_t event_contribution_id = op.diff.contribution_id;
@@ -266,10 +277,12 @@ struct post_operation_visitor
         }
 
         const auto& researches = research_service.get_researches_by_member(op.account);
+        const auto& discipline = disciplines_service.get_discipline(op.discipline_id);
 
         _plugin.database().create<account_eci_history_object>([&](account_eci_history_object& hist_o) {
             hist_o.account = op.account;
             hist_o.discipline_id = op.discipline_id;
+            hist_o.discipline_external_id = discipline.external_id;
             hist_o.eci = op.diff.current();
             hist_o.delta = op.diff.diff();
             hist_o.contribution_type = contribution_type;
@@ -326,6 +339,7 @@ struct post_operation_visitor
 
             const auto& hist = _plugin.database().create<discipline_eci_history_object>([&](discipline_eci_history_object& hist_o) {
                 hist_o.discipline_id = discipline.id;
+                hist_o.discipline_external_id = discipline.external_id;
                 hist_o.eci = total_eci;
                 hist_o.timestamp = op.timestamp;
 

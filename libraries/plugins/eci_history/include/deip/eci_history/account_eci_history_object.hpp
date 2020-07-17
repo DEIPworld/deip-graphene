@@ -27,6 +27,7 @@ public:
 
     account_name_type account;
     discipline_id_type discipline_id;
+    external_id_type discipline_external_id;
 
     share_type eci;
     share_type delta;
@@ -106,6 +107,7 @@ FC_REFLECT(deip::eci_history::account_eci_history_object,
   (id)
   (account)
   (discipline_id)
+  (discipline_external_id)
   (eci)
   (delta)
   (contribution_type)
