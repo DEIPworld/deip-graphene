@@ -174,8 +174,8 @@ FC_REFLECT_ENUM(deip::eci_history::eci_stat_period_step,
 FC_API(deip::eci_history::eci_history_api,
 
   (get_research_content_eci_history)
-  (get_research_contents_eci_stats)
   (get_research_content_eci_stats)
+  (get_research_contents_eci_stats)
   (get_research_eci_history)
   (get_research_eci_stats)
   (get_researches_eci_stats)
