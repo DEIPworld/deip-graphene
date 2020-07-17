@@ -30,6 +30,50 @@ enum class eci_stat_period_step : uint16_t
     LAST = month
 };
 
+struct eci_filter
+{
+    eci_filter()
+    {
+    }
+    eci_filter(const fc::optional<external_id_type> discipline_filter,
+               const fc::optional<fc::time_point_sec> from_filter,
+               const fc::optional<fc::time_point_sec> to_filter,
+               const fc::optional<uint16_t> contribution_type_filter,
+               const fc::optional<uint16_t> assessment_criteria_type_filter)
+    {
+        if (discipline_filter.valid())
+        {
+            discipline = *discipline_filter;
+        }
+
+        if (from_filter.valid())
+        {
+            from = *from_filter;
+        }
+
+        if (to_filter.valid())
+        {
+            to = *to_filter;
+        }
+
+        if (contribution_type_filter.valid())
+        {
+            contribution_type = *contribution_type_filter;
+        }
+
+        if (assessment_criteria_type_filter.valid())
+        {
+            assessment_criteria_type = *assessment_criteria_type_filter;
+        }
+    }
+
+    fc::optional<external_id_type> discipline;
+    fc::optional<fc::time_point_sec> from;
+    fc::optional<fc::time_point_sec> to;
+    fc::optional<uint16_t> contribution_type;
+    fc::optional<uint16_t> assessment_criteria_type;
+};
+
 class eci_history_api
 {
 public:
