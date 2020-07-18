@@ -189,9 +189,13 @@ public:
                 if (start_point_itr != history.end())
                 {
                     const auto& start_point = *start_point_itr;
-                    const auto& growth_rate = calculate_growth_rate(start_point.eci, stats.eci);
-                    stats.growth_rate = *growth_rate;
                     stats.starting_eci = start_point.eci;
+
+                    const auto& growth_rate = calculate_growth_rate(start_point.eci, stats.eci);
+                    if (growth_rate.valid())
+                    {
+                        stats.growth_rate = *growth_rate;
+                    }
                 }
             }
         }
@@ -355,9 +359,13 @@ public:
                 if (start_point_itr != history.end())
                 {
                     const auto& start_point = *start_point_itr;
-                    const auto& growth_rate = calculate_growth_rate(start_point.eci, stats.eci);
-                    stats.growth_rate = *growth_rate;
                     stats.starting_eci = start_point.eci;
+
+                    const auto& growth_rate = calculate_growth_rate(start_point.eci, stats.eci);
+                    if (growth_rate.valid())
+                    {
+                        stats.growth_rate = *growth_rate;
+                    }
                 }
             }
         }
@@ -514,9 +522,13 @@ public:
                 if (start_point_itr != history.end())
                 {
                     const auto& start_point = *start_point_itr;
-                    const auto& growth_rate = calculate_growth_rate(start_point.eci, stats.eci);
-                    stats.growth_rate = *growth_rate;
                     stats.starting_eci = start_point.eci;
+
+                    const auto& growth_rate = calculate_growth_rate(start_point.eci, stats.eci);
+                    if (growth_rate.valid())
+                    {
+                        stats.growth_rate = *growth_rate;
+                    }
                 }
             }
         }
@@ -731,9 +743,13 @@ public:
                 if (start_point_opt.valid())
                 {
                     const auto& start_point = *start_point_opt;
-                    const auto& growth_rate = calculate_growth_rate(start_point.eci, current.eci);
-                    current.growth_rate = *growth_rate;
                     current.starting_eci = start_point.eci;
+
+                    const auto& growth_rate = calculate_growth_rate(start_point.eci, current.eci);
+                    if (growth_rate.valid())
+                    {
+                        current.growth_rate = *growth_rate;
+                    }
                 }
             }
         }
