@@ -724,11 +724,12 @@ public:
                 const auto& previous = records[i - 1];
                 auto& current = records[i];
 
-                const auto& last_growth_rate = calculate_growth_rate(previous.eci, current.eci);
+                current.previous_eci = previous.eci;
+                const auto& last_growth_rate = calculate_growth_rate(current.previous_eci, current.eci);
+
                 if (last_growth_rate.valid())
                 {
                     current.last_growth_rate = *last_growth_rate;
-                    current.previous_eci = previous.eci;
                 }
 
                 const auto& start_point_itr = std::find_if(records.begin(), records.end(),
