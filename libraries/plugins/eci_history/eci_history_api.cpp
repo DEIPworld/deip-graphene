@@ -777,11 +777,12 @@ public:
             if (itr_pair.second != itr_pair.first) 
             {
                 const discipline_eci_history_object& previous = *(--itr_pair.second);
+                
+                previous_eci = previous.eci;
                 const auto& last_growth = calculate_growth_rate(previous.eci, hist.eci);
                 if (last_growth.valid())
                 {
                     last_growth_rate = *last_growth;
-                    previous_eci = previous.eci;
                 }
             }
 
