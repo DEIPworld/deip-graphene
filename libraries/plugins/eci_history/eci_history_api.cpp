@@ -717,15 +717,6 @@ public:
         for (auto& res : result)
         {
             auto& records = res.second;
-            const auto& start_point_itr = std::find_if(records.begin(), records.end(),
-                [&](const discipline_eci_stats_api_obj& hist) { return hist.eci != share_type(0); });
-
-            fc::optional<discipline_eci_stats_api_obj> start_point_opt;
-            if (start_point_itr != records.end())
-            {
-                start_point_opt = *start_point_itr;
-            }
-
             for (auto i = 0; i < records.size(); i++)
             {
                 if (i == 0) continue;
@@ -740,9 +731,12 @@ public:
                     current.previous_eci = previous.eci;
                 }
 
-                if (start_point_opt.valid())
+                const auto& start_point_itr = std::find_if(records.begin(), records.end(),
+                    [&](const discipline_eci_stats_api_obj& hist) { return hist.eci != share_type(0); });
+
+                if (start_point_itr != records.end() && std::distance(records.begin(), start_point_itr) < i)
                 {
-                    const auto& start_point = *start_point_opt;
+                    const auto& start_point = *start_point_itr;
                     current.starting_eci = start_point.eci;
 
                     const auto& growth_rate = calculate_growth_rate(start_point.eci, current.eci);
