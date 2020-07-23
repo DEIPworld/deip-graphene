@@ -179,7 +179,90 @@ void to_variant(const deip::protocol::extended_public_key_type& var, fc::variant
 void from_variant(const fc::variant& var, deip::protocol::extended_public_key_type& vo);
 void to_variant(const deip::protocol::extended_private_key_type& var, fc::variant& vo);
 void from_variant(const fc::variant& var, deip::protocol::extended_private_key_type& vo);
+
+std::string static_variant_name_from_type(const std::string& type_name);
+
+struct from_static_variant_type
+{
+    variant& var;
+    from_static_variant_type(variant& dv)
+        : var(dv)
+    {
+    }
+
+    typedef void result_type;
+    template <typename T> void operator()(const T& v) const
+    {
+        auto name = static_variant_name_from_type(fc::get_typename<T>::name());
+        var = variant(std::make_pair(name, v));
+    }
+};
+
+struct get_static_variant_type
+{
+    string& name;
+    get_static_variant_type(string& dv)
+        : name(dv)
+    {
+    }
+
+    typedef void result_type;
+    template <typename T> void operator()(const T& v) const
+    {
+        name = static_variant_name_from_type(fc::get_typename<T>::name());
+    }
+};
+
 } // namespace fc
+
+
+#define DECLARE_STATIC_VARIANT_TYPE(StaticVariantType)                                                                 \
+    namespace fc {                                                                                                     \
+                                                                                                                       \
+    void to_variant(const StaticVariantType&, fc::variant&);                                                           \
+    void from_variant(const fc::variant&, StaticVariantType&);                                                         \
+                                                                                                                       \
+    } /* fc */
+
+
+#define DEFINE_STATIC_VARIANT_TYPE(StaticVariantType)                                                                  \
+    namespace fc {                                                                                                     \
+                                                                                                                       \
+    void to_variant(const StaticVariantType& var, fc::variant& vo)                                                     \
+    {                                                                                                                  \
+        var.visit(from_static_variant_type(vo));                                                                       \
+    }                                                                                                                  \
+                                                                                                                       \
+    void from_variant(const fc::variant& var, StaticVariantType& vo)                                                   \
+    {                                                                                                                  \
+        static std::map<string, uint32_t> to_tag = []() {                                                              \
+            std::map<string, uint32_t> name_map;                                                                       \
+            for (int i = 0; i < StaticVariantType::count(); ++i)                                                       \
+            {                                                                                                          \
+                StaticVariantType tmp;                                                                                 \
+                tmp.set_which(i);                                                                                      \
+                string n;                                                                                              \
+                tmp.visit(get_static_variant_type(n));                                                                 \
+                name_map[n] = i;                                                                                       \
+            }                                                                                                          \
+            return name_map;                                                                                           \
+        }();                                                                                                           \
+                                                                                                                       \
+        auto ar = var.get_array();                                                                                     \
+        if (ar.size() < 2)                                                                                             \
+            return;                                                                                                    \
+        if (ar[0].is_uint64())                                                                                         \
+            vo.set_which(ar[0].as_uint64());                                                                           \
+        else                                                                                                           \
+        {                                                                                                              \
+            auto itr = to_tag.find(ar[0].as_string());                                                                 \
+            FC_ASSERT(itr != to_tag.end(), "Invalid static variant type: ${n}", ("n", ar[0]));                         \
+            vo.set_which(to_tag[ar[0].as_string()]);                                                                   \
+        }                                                                                                              \
+        vo.visit(fc::to_static_variant(ar[1]));                                                                        \
+    }                                                                                                                  \
+    } /* fc */
+
 
 FC_REFLECT(deip::protocol::public_key_type, (key_data))
 FC_REFLECT(deip::protocol::public_key_type::binary_key, (data)(check))

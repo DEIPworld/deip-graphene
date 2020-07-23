@@ -64,16 +64,4 @@ void create_review_operation::validate() const
 } /* deip::protocol */
 } /* protocol */
 
-namespace fc {
-
-  std::string assessment_model_name_from_type(const std::string& type_name)
-  {
-    auto start = type_name.find_last_of(':') + 1;
-    auto end = type_name.find_last_of('_');
-    auto result = type_name.substr(start, end - start);
-    return result;
-  }
-
-}
-
-DEFINE_ASSESSMENT_MODELS_TYPE(deip::protocol::assessment_models)
+DEFINE_STATIC_VARIANT_TYPE(deip::protocol::assessment_models)

@@ -120,14 +120,6 @@ struct op_wrapper
 } // namespace protocol
 } // namespace deip
 
-namespace fc {
-
-using namespace deip::protocol;
-
-void to_variant(const operation&, fc::variant&);
-void from_variant(const fc::variant&, operation&);
-
-} // namespace fc
-
+DECLARE_STATIC_VARIANT_TYPE(deip::protocol::operation)
 FC_REFLECT_TYPENAME(deip::protocol::operation)
 FC_REFLECT(deip::protocol::op_wrapper, (op))

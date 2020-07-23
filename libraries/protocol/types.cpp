@@ -210,4 +210,13 @@ void from_variant(const fc::variant& var, deip::protocol::extended_private_key_t
 {
     vo = deip::protocol::extended_private_key_type(var.as_string());
 }
+
+string static_variant_name_from_type(const string& type_name)
+{
+    auto start = type_name.find_last_of(':') + 1;
+    auto end = type_name.find_last_of('_');
+    auto result = type_name.substr(start, end - start);
+    return result;
+}
+
 } // fc

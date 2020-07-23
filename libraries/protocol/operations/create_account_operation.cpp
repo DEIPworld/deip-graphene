@@ -73,16 +73,4 @@ bool create_account_operation::is_user_account() const
 } // namespace protocol
 } // namespace deip
 
-namespace fc {
-
-std::string account_trait_name_from_type(const std::string& type_name)
-{
-    auto start = type_name.find_last_of(':') + 1;
-    auto end = type_name.find_last_of('_');
-    auto result = type_name.substr(start, end - start);
-    return result;
-}
-
-} // namespace fc
-
-DEFINE_ACCOUNT_TRAIT_TYPE(deip::protocol::account_trait)
+DEFINE_STATIC_VARIANT_TYPE(deip::protocol::account_trait)

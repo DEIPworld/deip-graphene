@@ -63,92 +63,6 @@ struct create_review_operation : public entity_operation
 }
 }
 
-#define DECLARE_ASSESSMENT_MODEL_TYPE(AssessmentModelType)                                                             \
-    namespace fc {                                                                                                     \
-                                                                                                                       \
-    void to_variant(const AssessmentModelType&, fc::variant&);                                                         \
-    void from_variant(const fc::variant&, AssessmentModelType&);                                                       \
-                                                                                                                       \
-    } /* fc */
-
-
-namespace fc {
-using namespace deip::protocol;
-
-std::string assessment_model_name_from_type(const std::string& type_name);
-
-struct from_assessment_model_type
-{
-    variant& var;
-    from_assessment_model_type(variant& dv)
-        : var(dv)
-    {
-    }
-
-    typedef void result_type;
-    template <typename T> void operator()(const T& v) const
-    {
-        auto name = assessment_model_name_from_type(fc::get_typename<T>::name());
-        var = variant(std::make_pair(name, v));
-    }
-};
-
-struct get_assessment_model_type
-{
-  string& name;
-    get_assessment_model_type(string& dv)
-    : name(dv)
-  {
-  }
-
-  typedef void result_type;
-  template <typename T> void operator()(const T& v) const
-  {
-    name = assessment_model_name_from_type(fc::get_typename<T>::name());
-  }
-};
-} // namespace fc
-
-
-
-#define DEFINE_ASSESSMENT_MODELS_TYPE(AssessmentModelType)                                                             \
-    namespace fc {                                                                                                     \
-                                                                                                                       \
-    void to_variant(const AssessmentModelType& var, fc::variant& vo)                                                   \
-    {                                                                                                                  \
-        var.visit(from_assessment_model_type(vo));                                                                     \
-    }                                                                                                                  \
-                                                                                                                       \
-    void from_variant(const fc::variant& var, AssessmentModelType& vo)                                                 \
-    {                                                                                                                  \
-        static std::map<string, uint32_t> to_tag = []() {                                                              \
-            std::map<string, uint32_t> name_map;                                                                       \
-            for (int i = 0; i < AssessmentModelType::count(); ++i)                                                     \
-            {                                                                                                          \
-                AssessmentModelType tmp;                                                                               \
-                tmp.set_which(i);                                                                                      \
-                string n;                                                                                              \
-                tmp.visit(get_assessment_model_type(n));                                                               \
-                name_map[n] = i;                                                                                       \
-            }                                                                                                          \
-            return name_map;                                                                                           \
-        }();                                                                                                           \
-                                                                                                                       \
-        auto ar = var.get_array();                                                                                     \
-        if (ar.size() < 2)                                                                                             \
-            return;                                                                                                    \
-        if (ar[0].is_uint64())                                                                                         \
-            vo.set_which(ar[0].as_uint64());                                                                           \
-        else                                                                                                           \
-        {                                                                                                              \
-            auto itr = to_tag.find(ar[0].as_string());                                                                 \
-            FC_ASSERT(itr != to_tag.end(), "Invalid assessment model type: ${n}", ("n", ar[0]));                       \
-            vo.set_which(to_tag[ar[0].as_string()]);                                                                   \
-        }                                                                                                              \
-        vo.visit(fc::to_static_variant(ar[1]));                                                                        \
-    }                                                                                                                  \
-    } /* fc */
-
 FC_REFLECT(deip::protocol::create_review_operation,
            (external_id)
            (author)
@@ -171,7 +85,5 @@ FC_REFLECT_ENUM( deip::protocol::assessment_criteria, (unknown)
                                                       (replication)
 )
 
-
-
-DECLARE_ASSESSMENT_MODEL_TYPE(deip::protocol::assessment_models)
+DECLARE_STATIC_VARIANT_TYPE(deip::protocol::assessment_models)
 FC_REFLECT_TYPENAME(deip::protocol::assessment_models)

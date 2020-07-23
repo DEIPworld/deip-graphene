@@ -87,17 +87,4 @@ void create_grant_operation::validate() const
 } /* deip::protocol */
 } /* protocol */
 
-namespace fc {
-
-  std::string grant_distribution_model_name_from_type(const std::string& type_name)
-  {
-    auto start = type_name.find_last_of(':') + 1;
-    auto end = type_name.find_last_of('_');
-    auto result = type_name.substr(start, end - start);
-    return result;
-  }
-
-}
-
-
-DEFINE_GRANT_DISTRIBUTION_MODELS_TYPE(deip::protocol::grant_distribution_models)
+DEFINE_STATIC_VARIANT_TYPE(deip::protocol::grant_distribution_models)

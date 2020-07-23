@@ -78,88 +78,6 @@ struct create_grant_operation : public base_operation
 }
 }
 
-#define DECLARE_GRANT_DISTRIBUTION_MODELS_TYPE(GrantDistributionModelsType)                                            \
-    namespace fc {                                                                                                     \
-                                                                                                                       \
-    void to_variant(const GrantDistributionModelsType&, fc::variant&);                                                 \
-    void from_variant(const fc::variant&, GrantDistributionModelsType&);                                               \
-                                                                                                                       \
-    } /* fc */
-
-    namespace fc {
-using namespace deip::protocol;
-
-std::string grant_distribution_model_name_from_type(const std::string& type_name);
-
-struct from_grant_distribution_models_type
-{
-    variant& var;
-    from_grant_distribution_models_type(variant& dv)
-        : var(dv)
-    {
-    }
-
-    typedef void result_type;
-    template <typename T> void operator()(const T& v) const
-    {
-        auto name = grant_distribution_model_name_from_type(fc::get_typename<T>::name());
-        var = variant(std::make_pair(name, v));
-    }
-};
-
-struct get_grant_distribution_models_type
-{
-  string& name;
-  get_grant_distribution_models_type(string& dv)
-    : name(dv)
-  {
-  }
-
-  typedef void result_type;
-  template <typename T> void operator()(const T& v) const
-  {
-      name = grant_distribution_model_name_from_type(fc::get_typename<T>::name());
-  }
-};
-} // namespace fc
-
-#define DEFINE_GRANT_DISTRIBUTION_MODELS_TYPE(GrantDistributionModelsType)                                             \
-    namespace fc {                                                                                                     \
-                                                                                                                       \
-    void to_variant(const GrantDistributionModelsType& var, fc::variant& vo)                                           \
-    {                                                                                                                  \
-        var.visit(from_grant_distribution_models_type(vo));                                                            \
-    }                                                                                                                  \
-                                                                                                                       \
-    void from_variant(const fc::variant& var, GrantDistributionModelsType& vo)                                         \
-    {                                                                                                                  \
-        static std::map<string, uint32_t> to_tag = []() {                                                              \
-            std::map<string, uint32_t> name_map;                                                                       \
-            for (int i = 0; i < GrantDistributionModelsType::count(); ++i)                                             \
-            {                                                                                                          \
-                GrantDistributionModelsType tmp;                                                                       \
-                tmp.set_which(i);                                                                                      \
-                string n;                                                                                              \
-                tmp.visit(get_grant_distribution_models_type(n));                                                      \
-                name_map[n] = i;                                                                                       \
-            }                                                                                                          \
-            return name_map;                                                                                           \
-        }();                                                                                                           \
-                                                                                                                       \
-        auto ar = var.get_array();                                                                                     \
-        if (ar.size() < 2)                                                                                             \
-            return;                                                                                                    \
-        if (ar[0].is_uint64())                                                                                         \
-            vo.set_which(ar[0].as_uint64());                                                                           \
-        else                                                                                                           \
-        {                                                                                                              \
-            auto itr = to_tag.find(ar[0].as_string());                                                                 \
-            FC_ASSERT(itr != to_tag.end(), "Invalid account trait type: ${n}", ("n", ar[0]));                          \
-            vo.set_which(to_tag[ar[0].as_string()]);                                                                   \
-        }                                                                                                              \
-        vo.visit(fc::to_static_variant(ar[1]));                                                                        \
-    }                                                                                                                  \
-    } /* fc */
 
 FC_REFLECT( deip::protocol::create_grant_operation, (external_id)(grantor)(amount)(target_disciplines)(distribution_model)(extensions) )
 
@@ -167,5 +85,5 @@ FC_REFLECT( deip::protocol::announced_application_window_contract_type, (review_
 FC_REFLECT( deip::protocol::funding_opportunity_announcement_contract_type, (organization_id)(review_committee_id)(treasury_id)(award_ceiling)(award_floor)(expected_number_of_awards)(open_date)(close_date)(officers)(additional_info)(extensions) )
 FC_REFLECT( deip::protocol::discipline_supply_announcement_contract_type, (start_time)(end_time)(is_extendable)(content_hash)(additional_info)(extensions) )
 
-DECLARE_GRANT_DISTRIBUTION_MODELS_TYPE(deip::protocol::grant_distribution_models)
+DECLARE_STATIC_VARIANT_TYPE(deip::protocol::grant_distribution_models)
 FC_REFLECT_TYPENAME(deip::protocol::grant_distribution_models)

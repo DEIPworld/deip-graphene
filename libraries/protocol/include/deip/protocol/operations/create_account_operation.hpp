@@ -54,90 +54,6 @@ struct create_account_operation : public entity_operation
 } // namespace protocol
 } // namespace deip
 
-#define DECLARE_ACCOUNT_TRAIT_TYPE(AccountTraitType)                                                                   \
-    namespace fc {                                                                                                     \
-                                                                                                                       \
-    void to_variant(const AccountTraitType&, fc::variant&);                                                            \
-    void from_variant(const fc::variant&, AccountTraitType&);                                                          \
-                                                                                                                       \
-    } /* fc */
-
-namespace fc {
-using namespace deip::protocol;
-
-std::string account_trait_name_from_type(const std::string& type_name);
-
-struct from_account_trait_type
-{
-    variant& var;
-    from_account_trait_type(variant& dv)
-        : var(dv)
-    {
-    }
-
-    typedef void result_type;
-    template <typename T> void operator()(const T& v) const
-    {
-        auto name = account_trait_name_from_type(fc::get_typename<T>::name());
-        var = variant(std::make_pair(name, v));
-    }
-};
-
-struct get_account_trait_type
-{
-    string& name;
-    get_account_trait_type(string& dv)
-        : name(dv)
-    {
-    }
-
-    typedef void result_type;
-    template <typename T> void operator()(const T& v) const
-    {
-        name = account_trait_name_from_type(fc::get_typename<T>::name());
-    }
-};
-} // namespace fc
-
-#define DEFINE_ACCOUNT_TRAIT_TYPE(AccountTraitType)                                                                    \
-    namespace fc {                                                                                                     \
-                                                                                                                       \
-    void to_variant(const AccountTraitType& var, fc::variant& vo)                                                      \
-    {                                                                                                                  \
-        var.visit(from_account_trait_type(vo));                                                                        \
-    }                                                                                                                  \
-                                                                                                                       \
-    void from_variant(const fc::variant& var, AccountTraitType& vo)                                                    \
-    {                                                                                                                  \
-        static std::map<string, uint32_t> to_tag = []() {                                                              \
-            std::map<string, uint32_t> name_map;                                                                       \
-            for (int i = 0; i < AccountTraitType::count(); ++i)                                                        \
-            {                                                                                                          \
-                AccountTraitType tmp;                                                                                  \
-                tmp.set_which(i);                                                                                      \
-                string n;                                                                                              \
-                tmp.visit(get_account_trait_type(n));                                                                  \
-                name_map[n] = i;                                                                                       \
-            }                                                                                                          \
-            return name_map;                                                                                           \
-        }();                                                                                                           \
-                                                                                                                       \
-        auto ar = var.get_array();                                                                                     \
-        if (ar.size() < 2)                                                                                             \
-            return;                                                                                                    \
-        if (ar[0].is_uint64())                                                                                         \
-            vo.set_which(ar[0].as_uint64());                                                                           \
-        else                                                                                                           \
-        {                                                                                                              \
-            auto itr = to_tag.find(ar[0].as_string());                                                                 \
-            FC_ASSERT(itr != to_tag.end(), "Invalid account trait type: ${n}", ("n", ar[0]));                         \
-            vo.set_which(to_tag[ar[0].as_string()]);                                                                   \
-        }                                                                                                              \
-        vo.visit(fc::to_static_variant(ar[1]));                                                                        \
-    }                                                                                                                  \
-    } /* fc */
-
-
 FC_REFLECT(deip::protocol::create_account_operation,
   (fee)
   (creator)
@@ -153,6 +69,5 @@ FC_REFLECT(deip::protocol::create_account_operation,
 
 FC_REFLECT(deip::protocol::research_group_trait, (name)(description)(extensions))
 
-DECLARE_ACCOUNT_TRAIT_TYPE(deip::protocol::account_trait)
+DECLARE_STATIC_VARIANT_TYPE(deip::protocol::account_trait)
 FC_REFLECT_TYPENAME(deip::protocol::account_trait)
-
