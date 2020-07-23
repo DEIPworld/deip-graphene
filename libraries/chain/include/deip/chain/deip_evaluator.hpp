@@ -60,5 +60,6 @@ DEFINE_EVALUATOR(create_research)
 DEFINE_EVALUATOR(create_research_content)
 DEFINE_EVALUATOR(create_research_token_sale)
 DEFINE_EVALUATOR(update_research)
+DEFINE_EVALUATOR(create_assessment)
 }
 } // deip::chain
