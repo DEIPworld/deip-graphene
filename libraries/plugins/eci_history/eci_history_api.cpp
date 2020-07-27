@@ -556,28 +556,10 @@ public:
         {
             const discipline_eci_history_object& hist = *itr;
 
-            if (filter_record(filter, hist.discipline_external_id, hist.timestamp, 0, {}))
+            for (const auto& diff : hist.contributions)
             {
-                for (const auto& diff : hist.contributions)
+                if (filter_record(filter, hist.discipline_external_id, hist.timestamp, diff.contribution_type, diff.assessment_criterias))
                 {
-                    if (filter.assessment_criteria_type.valid())
-                    {
-                        const uint16_t& assessment_criteria_type = *filter.assessment_criteria_type;
-                        if (diff.assessment_criterias.find(assessment_criteria_type) == diff.assessment_criterias.end())
-                        {
-                            continue;
-                        }
-                    }
-
-                    if (filter.contribution_type.valid())
-                    {
-                        const uint16_t& contribution_type = *filter.contribution_type;
-                        if (contribution_type != diff.contribution_type)
-                        {
-                            continue;
-                        }
-                    }
-
                     fc::optional<app::research_content_api_obj> research_content_api_opt;
                     fc::optional<app::research_api_obj> research_api_opt;
                     fc::optional<app::research_group_api_obj> research_group_api_opt;
@@ -590,19 +572,19 @@ public:
                     const auto& eci = previous_eci + delta;
 
                     result.push_back(discipline_eci_history_api_obj(
-                      hist.discipline_external_id,
-                      hist,
-                      eci,
-                      delta,
-                      diff.contribution_type,
-                      diff.contribution_id,
-                      research_content_api_opt,
-                      research_api_opt,
-                      research_group_api_opt,
-                      review_api_opt,
-                      review_vote_api_opt
-                    ));
-                }          
+                        hist.discipline_external_id, 
+                        hist, 
+                        eci, 
+                        delta, 
+                        diff.contribution_type, 
+                        diff.contribution_id,
+                        research_content_api_opt, 
+                        research_api_opt, 
+                        research_group_api_opt, 
+                        review_api_opt,
+                        review_vote_api_opt)
+                    );
+                }
             }
         }
 
