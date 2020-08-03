@@ -14,30 +14,34 @@ struct stage_phase
     time_point_sec end_time;
 };
 
-struct blank_opt1 
+struct guard_fn
 {
-    uint16_t a;
+    uint16_t fn_type;
+    fc::optional<string> fn; // char*
+    fc::optional<string> fn_args; // char*
+    extensions_type extensions;
 };
 
-struct blank_opt2
+
+struct create_application_rule 
 {
-    uint16_t b;
+    guard_fn guard;
 };
 
-struct blank_opt3
+struct update_application_rule
 {
-    uint16_t c;
+    guard_fn guard;
 };
 
-struct blank_opt4
+struct delete_application_rule
 {
-    uint16_t d;
+    guard_fn guard;
 };
-
-// ------------------------------
 
 typedef fc::static_variant<
-  blank_opt1
+  create_application_rule,
+  update_application_rule,
+  delete_application_rule
   >
   apply_phase_option;
 
@@ -47,10 +51,15 @@ struct apply_phase_type : stage_phase
     extensions_type extensions;
 };
 
-// ------------------------------
+
+
+struct await_review_rule
+{
+    extensions_type extensions;
+};
 
 typedef fc::static_variant<
-  blank_opt2
+  await_review_rule
   > 
   await_review_phase_option;
 
@@ -60,10 +69,39 @@ struct await_review_phase_type : stage_phase
     extensions_type extensions;
 };
 
-// ------------------------------
+
+
+struct create_review_rule
+{
+    guard_fn guard;
+};
+
+struct update_review_rule
+{
+    guard_fn guard;
+};
+
+struct delete_review_rule
+{
+    guard_fn guard;
+};
+
+struct create_curation_rule
+{
+    guard_fn guard;
+};
+
+struct delete_curation_rule
+{
+    guard_fn guard;
+};
 
 typedef fc::static_variant<
-  blank_opt3
+  create_review_rule,
+  update_review_rule,
+  delete_review_rule,
+  create_curation_rule,
+  delete_curation_rule
   > 
   review_phase_option;
 
@@ -73,10 +111,21 @@ struct review_phase_type : stage_phase
     extensions_type extensions;
 };
 
-// ------------------------------
+
+
+struct auto_decision_making_rule
+{
+    guard_fn guard;
+};
+
+struct manual_decision_making_rule
+{
+    extensions_type extensions;
+};
 
 typedef fc::static_variant<
-  blank_opt4
+  auto_decision_making_rule,
+  manual_decision_making_rule
   > 
   decision_phase_option;
 
@@ -86,7 +135,6 @@ struct decision_phase_type : stage_phase
     extensions_type extensions;
 };
 
-// ------------------------------
 
 typedef fc::static_variant<
   apply_phase_type,
@@ -165,10 +213,23 @@ FC_REFLECT(deip::protocol::stage_phase,
   (end_time)
 )
 
-FC_REFLECT(deip::protocol::blank_opt1, (a))
-FC_REFLECT(deip::protocol::blank_opt2, (b))
-FC_REFLECT(deip::protocol::blank_opt3, (c))
-FC_REFLECT(deip::protocol::blank_opt4, (d))
+
+FC_REFLECT(deip::protocol::guard_fn, (fn_type)(fn)(fn_args)(extensions))
+
+FC_REFLECT(deip::protocol::create_application_rule, (guard))
+FC_REFLECT(deip::protocol::update_application_rule, (guard))
+FC_REFLECT(deip::protocol::delete_application_rule, (guard))
+
+FC_REFLECT(deip::protocol::await_review_rule, (extensions))
+
+FC_REFLECT(deip::protocol::create_review_rule, (guard))
+FC_REFLECT(deip::protocol::update_review_rule, (guard))
+FC_REFLECT(deip::protocol::delete_review_rule, (guard))
+FC_REFLECT(deip::protocol::create_curation_rule, (guard))
+FC_REFLECT(deip::protocol::delete_curation_rule, (guard))
+
+FC_REFLECT(deip::protocol::auto_decision_making_rule, (guard))
+FC_REFLECT(deip::protocol::manual_decision_making_rule, (extensions))
 
 
 DECLARE_STATIC_VARIANT_TYPE(deip::protocol::apply_phase_option)
