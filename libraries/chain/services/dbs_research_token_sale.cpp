@@ -28,7 +28,7 @@ const research_token_sale_object& dbs_research_token_sale::create_research_token
               research_token_sale.research_external_id = research.external_id;
               research_token_sale.start_time = start_time;
               research_token_sale.end_time = end_time;
-              research_token_sale.total_amount = asset(0, DEIP_SYMBOL);
+              research_token_sale.total_amount = asset(0, soft_cap.symbol);
               research_token_sale.balance_tokens = balance_tokens;
               research_token_sale.soft_cap = soft_cap;
               research_token_sale.hard_cap = hard_cap;
