@@ -16,10 +16,10 @@
 #include <deip/chain/schema/global_property_object.hpp>
 #include <deip/chain/schema/operation_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
-#include <deip/chain/schema/research_token_object.hpp>
 #include <deip/chain/schema/transaction_object.hpp>
 #include <deip/chain/schema/assessment_object.hpp>
 #include <deip/chain/schema/assessment_stage_object.hpp>
+#include <deip/chain/schema/assessment_stage_phase_object.hpp>
 
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_account_balance.hpp>
@@ -33,9 +33,10 @@
 #include <deip/chain/services/dbs_nda_contract.hpp>
 #include <deip/chain/services/dbs_nda_contract_requests.hpp>
 #include <deip/chain/services/dbs_proposal.hpp>
+#include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
-#include <deip/chain/services/dbs_research_group.hpp>
+#include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_reward_pool.hpp>
@@ -1802,6 +1803,7 @@ void database::initialize_indexes()
     add_index<nda_contract_file_access_index>();
     add_index<assessment_index>();
     add_index<assessment_stage_index>();
+    add_index<assessment_stage_phase_index>();
 
     _plugin_index_signal();
 }
