@@ -38,6 +38,12 @@ enum class phase_rules : uint32_t
     auto_decision_rule = 1 << 9
 };
 
+struct fn_rule {
+    uint16_t fn_type;
+    fc::optional<fc::shared_string> fn;
+    fc::optional<fc::shared_string> fn_args;
+};
+
 class assessment_stage_phase_object : public object<assessment_stage_phase_object_type, assessment_stage_phase_object>
 {
     assessment_stage_phase_object() = delete;
@@ -59,8 +65,8 @@ public:
 
     uint8_t type;
 
-    typedef allocator<std::pair<const uint32_t, fc::shared_string>> rules_impl_map_allocator_type;
-    typedef chainbase::bip::map<uint32_t, fc::shared_string, std::less<uint32_t>, rules_impl_map_allocator_type> rules_impl_map_type;
+    typedef allocator<std::pair<const uint32_t, fn_rule>> rules_impl_map_allocator_type;
+    typedef chainbase::bip::map<uint32_t, fn_rule, std::less<uint32_t>, rules_impl_map_allocator_type> rules_impl_map_type;
 
     uint32_t rules;
     rules_impl_map_type rules_impl;
