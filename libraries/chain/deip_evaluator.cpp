@@ -2630,7 +2630,7 @@ void update_research_evaluator::do_apply(const update_research_operation& op)
 
 void create_assessment_evaluator::do_apply(const create_assessment_operation& op)
 {
-
+    
 }
 
 } // namespace chain

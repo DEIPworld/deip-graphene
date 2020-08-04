@@ -10,31 +10,29 @@
 #include <deip/chain/operation_notification.hpp>
 #include <deip/chain/shared_db_merkle.hpp>
 
-#include <deip/chain/schema/award_object.hpp>
-#include <deip/chain/schema/award_recipient_object.hpp>
-#include <deip/chain/schema/award_withdrawal_request_object.hpp>
 #include <deip/chain/schema/block_summary_object.hpp>
 #include <deip/chain/schema/chain_property_object.hpp>
 #include <deip/chain/schema/deip_objects.hpp>
 #include <deip/chain/schema/global_property_object.hpp>
-#include <deip/chain/schema/nda_contract_file_access_object.hpp>
 #include <deip/chain/schema/operation_object.hpp>
 #include <deip/chain/schema/research_discipline_relation_object.hpp>
-#include <deip/chain/schema/research_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
-#include <deip/chain/schema/expertise_contribution_object.hpp>
 #include <deip/chain/schema/transaction_object.hpp>
+#include <deip/chain/schema/assessment_object.hpp>
 
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
+#include <deip/chain/services/dbs_award.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_expertise_allocation_proposal.hpp>
 #include <deip/chain/services/dbs_nda_contract.hpp>
+#include <deip/chain/services/dbs_nda_contract_requests.hpp>
 #include <deip/chain/services/dbs_proposal.hpp>
+#include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
@@ -74,7 +72,7 @@
 #endif
 #define DEFAULT_LOGGER "db_all"
 
-namespace deip {
+    namespace deip {
 namespace chain {
 
 struct object_schema_repr
@@ -1752,6 +1750,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_research_content_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_token_sale_evaluator>();
     _my->_evaluator_registry.register_evaluator<update_research_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_assessment_evaluator>();
 }
 
 void database::initialize_indexes()
@@ -1800,6 +1799,7 @@ void database::initialize_indexes()
     add_index<award_withdrawal_request_index>();
     add_index<nda_contract_index>();
     add_index<nda_contract_file_access_index>();
+    add_index<assessment_index>();
 
     _plugin_index_signal();
 }
