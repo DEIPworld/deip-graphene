@@ -23,6 +23,9 @@ public:
     external_id_type external_id;
 
     assessment_id_type assessment_id;
+
+    time_point_sec start_time;
+    time_point_sec end_time;
 };
 
 struct by_external_id;
@@ -64,6 +67,8 @@ FC_REFLECT( deip::chain::assessment_stage_object,
   (id)
   (external_id)
   (assessment_id)
+  (start_time)
+  (end_time)
 )
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::assessment_stage_object, deip::chain::assessment_stage_index)
