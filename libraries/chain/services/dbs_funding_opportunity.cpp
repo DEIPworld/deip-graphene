@@ -305,6 +305,7 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
     dbs_grant_application& grant_application_service = db_impl().obtain_service<dbs_grant_application>();
     dbs_research_discipline_relation& rdr_service = db_impl().obtain_service<dbs_research_discipline_relation>();
     dbs_research_group& research_group_service = db_impl().obtain_service<dbs_research_group>();
+    dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
 
     auto& dgpo = db_impl().get_dynamic_global_properties();
 
@@ -378,7 +379,7 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
                 max_eci = research_eci.first;
             }
 
-            research_group_service.increase_research_group_balance(research.research_group_id, research_reward);
+            account_balance_service.adjust_balance(research_group.account, research_reward);
             award_service.adjust_expenses(award_recipient.id._id, research_reward);
 
             used_funding_opportunity += research_reward;
@@ -391,10 +392,11 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
         if (used_funding_opportunity < funding_opportunity.current_supply)
         {
             asset remainder = funding_opportunity.current_supply - used_funding_opportunity;
-            auto& award = award_service.get_award(max_award_id);
-            auto& award_recipient = award_service.get_award_recipient(max_award_recipient_id);
+            const auto& award = award_service.get_award(max_award_id);
+            const auto& award_recipient = award_service.get_award_recipient(max_award_recipient_id);
 
-            research_group_service.increase_research_group_balance(research_group_with_max_award_id, remainder);
+            const auto& research_group = research_group_service.get_research_group(research_group_with_max_award_id);
+            account_balance_service.adjust_balance(research_group.account, remainder);
 
             db_impl().modify(award, [&](award_object& a_o) {
                 a_o.amount += remainder;

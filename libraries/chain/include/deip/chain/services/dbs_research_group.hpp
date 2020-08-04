@@ -75,12 +75,6 @@ class dbs_research_group : public dbs_base
     
     const bool is_research_group_member(const account_name_type& member, const research_group_id_type& research_group_id) const;
 
-    const research_group_object& increase_research_group_balance(const research_group_id_type& research_group_id,
-                                                                 const asset& deips);
-
-    const research_group_object& decrease_research_group_balance(const research_group_id_type& research_group_id,
-                                                                 const asset& deips);
-
     const research_group_token_object& add_member_to_research_group(const account_name_type& account,
                                                                     const research_group_id_type& research_group_id,
                                                                     const share_type& share,
