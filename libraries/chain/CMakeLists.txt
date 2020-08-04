@@ -50,6 +50,7 @@ add_library( deip_chain
         services/dbs_award.cpp
         services/dbs_nda_contract.cpp
         services/dbs_nda_contract_requests.cpp
+        services/dbs_assessment.cpp
 
         deip_evaluator.cpp
         schema/deip_objects.cpp

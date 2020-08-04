@@ -15,15 +15,12 @@
 #include <deip/chain/schema/deip_objects.hpp>
 #include <deip/chain/schema/global_property_object.hpp>
 #include <deip/chain/schema/operation_object.hpp>
-#include <deip/chain/schema/research_discipline_relation_object.hpp>
 #include <deip/chain/schema/transaction_object.hpp>
-#include <deip/chain/schema/assessment_object.hpp>
-#include <deip/chain/schema/assessment_stage_object.hpp>
-#include <deip/chain/schema/assessment_stage_phase_object.hpp>
 
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
+#include <deip/chain/services/dbs_assessment.hpp>
 #include <deip/chain/services/dbs_award.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_discipline_supply.hpp>
@@ -38,6 +35,7 @@
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
+#include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_review.hpp>
 #include <deip/chain/services/dbs_reward_pool.hpp>
 #include <deip/chain/services/dbs_vesting_balance.hpp>

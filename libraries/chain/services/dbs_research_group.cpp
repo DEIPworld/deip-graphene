@@ -150,39 +150,33 @@ const research_group_object& dbs_research_group::update_research_group(
     return research_group;
 }
 
-void dbs_research_group::check_research_group_existence(const research_group_id_type& research_group_id) const
-{
-  const auto& idx = db_impl().get_index<research_group_index>().indices().get<by_id>();
-  FC_ASSERT(idx.find(research_group_id) != idx.cend(), "Group \"${1}\" does not exist.", ("1", research_group_id));
-}
-
 const bool dbs_research_group::research_group_exists(const research_group_id_type& research_group_id) const
 {
-  const auto& idx = db_impl()
-    .get_index<research_group_index>()
-    .indices()
-    .get<by_id>();
+    const auto& idx = db_impl()
+      .get_index<research_group_index>()
+      .indices()
+      .get<by_id>();
 
-  return idx.find(research_group_id) != idx.end();
+    return idx.find(research_group_id) != idx.end();
 }
 
 /* [DEPRECATED] */
 const bool dbs_research_group::research_group_exists(const string& permlink) const
 {
-  const auto& idx = db_impl()
-    .get_index<research_group_index>()
-    .indices()
-    .get<by_permlink>();
+    const auto& idx = db_impl()
+      .get_index<research_group_index>()
+      .indices()
+      .get<by_permlink>();
 
-  return idx.find(permlink, fc::strcmp_less()) != idx.end();
+    return idx.find(permlink, fc::strcmp_less()) != idx.end();
 }
 
 const bool dbs_research_group::research_group_exists(const account_name_type& account) const
 {
     const auto& idx = db_impl()
-            .get_index<research_group_index>()
-            .indices()
-            .get<by_account>();
+      .get_index<research_group_index>()
+      .indices()
+      .get<by_account>();
 
     return idx.find(account) != idx.end();
 }

@@ -53,8 +53,6 @@ class dbs_research_group : public dbs_base
                                                        const string& name,
                                                        const string& description);
 
-    void check_research_group_existence(const research_group_id_type& research_group_id) const; // remove this
-
     const bool research_group_exists(const research_group_id_type& research_group_id) const;
 
     const bool research_group_exists(const string& permlink) const;

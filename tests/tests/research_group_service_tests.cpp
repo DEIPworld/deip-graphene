@@ -130,20 +130,6 @@ BOOST_AUTO_TEST_CASE(get_research_group_by_id_test)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(check_research_group_existence_test)
-{
-    try
-    {
-        create_research_groups();
-
-        BOOST_CHECK_NO_THROW(data_service.check_research_group_existence(21));
-        BOOST_CHECK_THROW(data_service.check_research_group_existence(432), fc::assert_exception);
-        BOOST_CHECK_THROW(data_service.check_research_group_existence(251), fc::assert_exception);
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_CASE(get_research_group_token_by_id_test)
 {
     try
