@@ -19,6 +19,7 @@
 #include <deip/chain/schema/research_token_object.hpp>
 #include <deip/chain/schema/transaction_object.hpp>
 #include <deip/chain/schema/assessment_object.hpp>
+#include <deip/chain/schema/assessment_stage_object.hpp>
 
 #include <deip/chain/services/dbs_account.hpp>
 #include <deip/chain/services/dbs_account_balance.hpp>
@@ -1800,6 +1801,7 @@ void database::initialize_indexes()
     add_index<nda_contract_index>();
     add_index<nda_contract_file_access_index>();
     add_index<assessment_index>();
+    add_index<assessment_stage_index>();
 
     _plugin_index_signal();
 }
