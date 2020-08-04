@@ -246,12 +246,15 @@ void dbs_research_token_sale::distribute_research_tokens(const research_token_sa
     dbs_research& research_service = db_impl().obtain_service<dbs_research>();
     dbs_research_group& research_group_service = db_impl().obtain_service<dbs_research_group>();
     dbs_research_token& research_token_service = db_impl().obtain_service<dbs_research_token>();
+    dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
 
     auto& research_token_sale = get_by_id(research_token_sale_id);
 
-    const auto& idx = db_impl().get_index<research_token_sale_contribution_index>().indicies()
-            .get<by_research_token_sale_id>()
-            .equal_range(research_token_sale_id);
+    const auto& idx = db_impl()
+      .get_index<research_token_sale_contribution_index>()
+      .indicies()
+      .get<by_research_token_sale_id>()
+      .equal_range(research_token_sale_id);
 
     auto it = idx.first;
     const auto it_end = idx.second;
@@ -265,8 +268,8 @@ void dbs_research_token_sale::distribute_research_tokens(const research_token_sa
         db_impl().remove(*current);
     }
 
-    research_group_service.increase_research_group_balance(research.research_group_id,
-                                                           research_token_sale.total_amount);
+    const auto& research_group = research_group_service.get_research_group(research.research_group_id);
+    account_balance_service.adjust_balance(research_group.account, research_token_sale.total_amount);
 }
 
 void dbs_research_token_sale::refund_research_tokens(const research_token_sale_id_type research_token_sale_id)

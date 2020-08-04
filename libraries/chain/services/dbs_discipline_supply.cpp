@@ -222,6 +222,7 @@ share_type dbs_discipline_supply::supply_researches_in_discipline(const discipli
     dbs_expertise_contribution& expertise_contribution_service = db_impl().obtain_service<dbs_expertise_contribution>();
     dbs_research& research_service = db_impl().obtain_service<dbs_research>();
     dbs_research_group& research_group_service = db_impl().obtain_service<dbs_research_group>();
+    dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
 
     auto expertise_contributions = expertise_contribution_service.get_expertise_contributions_by_discipline(discipline_id);
     share_type total_eci_amount = std::accumulate(expertise_contributions.begin(), expertise_contributions.end(), share_type(0),
@@ -258,13 +259,15 @@ share_type dbs_discipline_supply::supply_researches_in_discipline(const discipli
         auto& expertise_contribution = wrap.get();
         const auto& research_content = research_content_service.get_research_content(expertise_contribution.research_content_id);
 
-        if (research_content.type != research_content_type::final_result
-            && research_content.activity_state == research_content_activity_state::active
-            && expertise_contribution.eci != 0)
+        if (research_content.type != research_content_type::final_result && 
+            research_content.activity_state == research_content_activity_state::active && 
+            expertise_contribution.eci != 0)
         {
-            auto share = util::calculate_share(grant, expertise_contribution.eci, total_research_weight);
-            auto& research = research_service.get_research(expertise_contribution.research_id);
-            research_group_service.increase_research_group_balance(research.research_group_id, asset(share, DEIP_SYMBOL));
+            const auto share = util::calculate_share(grant, expertise_contribution.eci, total_research_weight);
+            const auto& research = research_service.get_research(expertise_contribution.research_id);
+            const auto& research_group = research_group_service.get_research_group(research.research_group_id);
+            account_balance_service.adjust_balance(research_group.account, asset(share, DEIP_SYMBOL));
+
             used_grant += share;
         }
     }

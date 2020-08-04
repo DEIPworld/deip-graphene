@@ -412,29 +412,6 @@ const bool dbs_research_group::is_research_group_member(
   return itr != idx.end();
 }
 
-const research_group_object& dbs_research_group::increase_research_group_balance(
-  const research_group_id_type& research_group_id,
-  const asset &deips)
-{
-  const research_group_object& research_group = get_research_group(research_group_id);
-  db_impl().modify(research_group, [&](research_group_object& rg) {
-    rg.balance += deips;
-  });
-  return research_group;
-}
-
-const research_group_object& dbs_research_group::decrease_research_group_balance(
-  const research_group_id_type& research_group_id,
-  const asset &deips)
-{
-  const research_group_object& research_group = get_research_group(research_group_id);
-  FC_ASSERT(research_group.balance >= deips, "Not enough funds");
-  db_impl().modify(research_group, [&](research_group_object& rg) {
-    rg.balance -= deips;
-  });
-  return research_group;
-}
-
 dbs_research_group::research_group_token_refs_type dbs_research_group::rebalance_research_group_tokens(
   const research_group_id_type& research_group_id,
   const std::map<account_name_type, share_type> shares)
