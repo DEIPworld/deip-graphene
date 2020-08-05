@@ -120,6 +120,7 @@ struct auto_decision_making_rule
 
 struct manual_decision_making_rule
 {
+    flat_set<account_name_type> decision_makers;
     extensions_type extensions;
 };
 
@@ -229,7 +230,7 @@ FC_REFLECT(deip::protocol::create_curation_rule, (guard))
 FC_REFLECT(deip::protocol::delete_curation_rule, (guard))
 
 FC_REFLECT(deip::protocol::auto_decision_making_rule, (guard))
-FC_REFLECT(deip::protocol::manual_decision_making_rule, (extensions))
+FC_REFLECT(deip::protocol::manual_decision_making_rule, (decision_makers)(extensions))
 
 
 DECLARE_STATIC_VARIANT_TYPE(deip::protocol::apply_phase_option)

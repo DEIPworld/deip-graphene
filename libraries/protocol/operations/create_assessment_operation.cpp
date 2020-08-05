@@ -9,9 +9,52 @@
 namespace deip {
 namespace protocol {
 
+struct stage_validator
+{
+    typedef void result_type;
+    template <typename T> void operator()(const T& v) const
+    {
+    }
+
+    void operator()(const assessment_stage& stage) const
+    {
+        for (const assessment_stage_phase& phase : stage.phases)
+        {
+            phase.visit(*this);
+        }
+    }
+
+    void operator()(const apply_phase_type& apply_phase) const
+    {
+        // fc::variants args = fc::json::variants_from_string(fn_args, fc::json::parse_type::strict_parser);
+    }
+
+    void operator()(const await_review_phase_type& await_review_phase) const
+    {
+
+    }
+
+    void operator()(const review_phase_type& review_phase) const
+    {
+
+    }
+
+    void operator()(const decision_phase_type& decision_phase) const
+    {
+
+    }
+};
+
+
 void create_assessment_operation::validate() const
 {
-    // fc::variants args = fc::json::variants_from_string(fn_args, fc::json::parse_type::strict_parser);
+    FC_ASSERT(stages.size() != 0, "Assessment should have at least 1 stage");
+    stage_validator s_validator;
+
+    for (const auto& stage : stages)
+    {
+        s_validator(stage);
+    }
 }
 
 } // namespace protocol
