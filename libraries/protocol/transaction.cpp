@@ -102,23 +102,74 @@ void verify_authority(const vector<operation>& ops,
         vector<authority> other;
         vector<std::pair<account_name_type, authority>> active_overrides;
 
+        flat_map<account_name_type, authority_pack> new_accounts;
+        vector<std::pair<account_name_type, authority>> required_new_active;
+        vector<std::pair<account_name_type, authority>> required_new_owner;
+
+        extract_new_accounts(ops, new_accounts);
+
         for (const auto& op : ops)
         {
-            operation_get_required_authorities(op, required_active, required_owner, other);
-            
-            for (auto itr = required_active.begin(); itr != required_active.end();)
+            flat_set<account_name_type> op_required_active;
+            flat_set<account_name_type> op_required_owner;
+
+            operation_get_required_authorities(op, op_required_active, op_required_owner, other);
+
+            for (auto itr = op_required_active.begin(); itr != op_required_active.end();)
             {
-                const auto& auth_opt = get_active_overrides(*itr, (uint16_t)op.which());
-                if (auth_opt.valid())
+                if (new_accounts.find(*itr) != new_accounts.end())
                 {
-                    active_overrides.push_back(std::make_pair(*itr, *auth_opt));
-                    itr = required_active.erase(itr);
+                    auto auths_pack = new_accounts.at(*itr);
+                    uint16_t op_tag = (uint16_t)op.which();
+                    if (auths_pack.active_overrides.find(op_tag) != auths_pack.active_overrides.end())
+                    {
+                        auto active_override = auths_pack.active_overrides.at(op_tag);
+                        required_new_active.push_back(std::make_pair(*itr, active_override));
+                    } 
+                    else 
+                    {
+                        required_new_active.push_back(std::make_pair(*itr, auths_pack.active));
+                    } 
+
+                    itr = op_required_active.erase(itr);
                 }
                 else
                 {
                     ++itr;
                 }
             }
+
+            for (auto itr = op_required_active.begin(); itr != op_required_active.end();)
+            {
+                uint16_t op_tag = (uint16_t)op.which();
+                const auto& auth_opt = get_active_overrides(*itr, op_tag);
+                if (auth_opt.valid())
+                {
+                    active_overrides.push_back(std::make_pair(*itr, *auth_opt)); // TODO: remove duplicates
+                    itr = op_required_active.erase(itr);
+                }
+                else
+                {
+                    ++itr;
+                }
+            }
+
+            for (auto itr = op_required_owner.begin(); itr != op_required_owner.end();)
+            {
+                if (new_accounts.find(*itr) != new_accounts.end())
+                {
+                    auto auths_pack = new_accounts.at(*itr);
+                    required_new_owner.push_back(std::make_pair(*itr, auths_pack.owner));
+                    itr = op_required_owner.erase(itr);
+                }
+                else
+                {
+                    ++itr;
+                }
+            }
+
+            required_active.insert(op_required_active.begin(), op_required_active.end());
+            required_owner.insert(op_required_owner.begin(), op_required_owner.end());
         }
 
         flat_set<public_key_type> avail;
@@ -147,6 +198,31 @@ void verify_authority(const vector<operation>& ops,
               s.check_authority(get_owner(pair.first)), 
               tx_missing_other_auth, 
               "Missing Overridden Authority", 
+              ("id", pair.first)
+              ("auth", pair.second)
+              ("sigs", sigs)
+            );
+        }
+
+        for (const auto& pair : required_new_active)
+        {
+            DEIP_ASSERT(
+              s.check_authority(pair.second) ||
+              s.check_authority(new_accounts.at(pair.first).owner), 
+              tx_missing_other_auth, 
+              "Missing New Account Active Authority", 
+              ("id", pair.first)
+              ("auth", pair.second)
+              ("sigs", sigs)
+            );
+        }
+
+        for (const auto& pair : required_new_owner)
+        {
+            DEIP_ASSERT(
+              s.check_authority(pair.second), 
+              tx_missing_other_auth, 
+              "Missing New Account Owner Authority", 
               ("id", pair.first)
               ("auth", pair.second)
               ("sigs", sigs)

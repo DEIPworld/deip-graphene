@@ -123,6 +123,72 @@ void operation_get_required_authorities(const operation& op,
     op.visit(deip::protocol::operation_get_required_auth_visitor(active, owner, other));
 }
 
+struct new_account_authority_extractor
+{
+    typedef void result_type;
+
+    new_account_authority_extractor(flat_map<account_name_type, authority_pack>& accounts_auths)
+        : new_accounts_auths(accounts_auths){};
+
+    template <typename T> void operator()(const T&) const
+    {
+    }
+
+    void operator()(const create_account_operation& op) const
+    {
+        authority_pack auths;
+
+        auths.owner = op.owner;
+        auths.active = op.active;
+        auths.active_overrides.insert(op.active_overrides.begin(), op.active_overrides.end());
+
+        new_accounts_auths.insert(std::make_pair(op.new_account_name, auths));
+    }
+
+    void operator()(const update_account_operation& op) const
+    {
+        if (new_accounts_auths.find(op.account) != new_accounts_auths.end())
+        {
+            FC_ASSERT(false, "Not supported currently");
+        }
+    }
+
+    void operator()(const request_account_recovery_operation& op) const
+    {
+        if (new_accounts_auths.find(op.account_to_recover) != new_accounts_auths.end())
+        {
+            FC_ASSERT(false, "Not supported currently");
+        }
+    }
+
+    void operator()(const recover_account_operation& op) const
+    {
+        if (new_accounts_auths.find(op.account_to_recover) != new_accounts_auths.end())
+        {
+            FC_ASSERT(false, "Not supported currently");
+        }
+    }
+
+    void operator()(const change_recovery_account_operation& op) const
+    {
+        if (new_accounts_auths.find(op.account_to_recover) != new_accounts_auths.end())
+        {
+            FC_ASSERT(false, "Not supported currently");
+        }
+    }
+
+    private:
+        flat_map<account_name_type, authority_pack>& new_accounts_auths;
+};
+
+void extract_new_accounts(const vector<operation>& ops, flat_map<account_name_type, authority_pack>& accounts_auths)
+{
+    const auto& extractor = new_account_authority_extractor(accounts_auths);
+    for (const auto& op : ops)
+    {
+        op.visit(extractor);
+    }
+}
 
 }
 } // deip::protocol

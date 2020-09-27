@@ -106,6 +106,15 @@ void operation_get_required_authorities(const operation& op,
                                         flat_set<account_name_type>& owner,
                                         vector<authority>& other);
 
+struct authority_pack
+{
+    authority owner;
+    authority active;
+    flat_map<uint16_t, authority> active_overrides;
+};
+
+void extract_new_accounts(const vector<operation>& ops, flat_map<account_name_type, authority_pack>& accounts_auth);
+
 /**
  * op_wrapper is used to get around the circular definition of operation and proposals that contain them.
  */
