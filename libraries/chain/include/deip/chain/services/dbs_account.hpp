@@ -73,6 +73,13 @@ public:
     void update_active_overrides_authorities(const account_object& account,
                                              const flat_map<uint16_t, optional<authority>>& auth_overrides);
 
+    void add_to_active_authority(const account_object& account,
+                                 const account_name_type& member,
+                                 const weight_type& weight = DEIP_MIN_AUTH_THRESHOLD);
+
+    void remove_from_active_authority(const account_object& account,
+                                      const account_name_type& member);
+
     void create_account_recovery(const account_name_type& account_to_recover_name,
                                  const authority& new_owner_authority,
                                  const optional<time_point_sec>& now = optional<time_point_sec>());

@@ -308,6 +308,7 @@ public:
     // Research group tokens       //
     /////////////////////////////////
     vector<research_group_token_api_obj> get_research_group_tokens_by_account(const account_name_type& member) const;
+    vector<research_group_token_api_obj> get_research_group_membership_tokens(const external_id_type& external_id) const;
     vector<research_group_token_api_obj> get_research_group_tokens_by_research_group(const research_group_id_type& internal_id) const;
     fc::optional<research_group_token_api_obj> get_research_group_token_by_account_and_research_group_id(const account_name_type& member, const research_group_id_type& internal_id) const;
 
@@ -599,6 +600,7 @@ FC_API(deip::app::database_api,
    (get_proposals_by_creator)
 
    (get_research_group_tokens_by_account)
+   (get_research_group_membership_tokens)
    (get_research_group_tokens_by_research_group)
    (get_research_group_token_by_account_and_research_group_id)
 

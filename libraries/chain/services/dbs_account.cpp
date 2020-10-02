@@ -247,6 +247,28 @@ void dbs_account::update_active_authority(const account_object& account,
         });
 }
 
+void dbs_account::add_to_active_authority(const account_object& account,
+                                          const account_name_type& member,
+                                          const weight_type& weight)
+{
+    db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
+        [&](account_authority_object& auth) {
+            if (auth.active.account_auths.find(member) == auth.active.account_auths.end()) {
+                auth.active.account_auths.insert(std::make_pair(member, weight_type(weight)));
+            }
+        });
+}
+
+void dbs_account::remove_from_active_authority(const account_object& account,
+                                               const account_name_type& member)
+{
+    db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
+        [&](account_authority_object& auth) {
+            if (auth.active.account_auths.find(member) != auth.active.account_auths.end()) {
+                auth.active.account_auths.erase(auth.active.account_auths.find(member));
+            }
+        });
+}
 
 void dbs_account::update_active_overrides_authorities(const account_object& account,
                                                       const flat_map<uint16_t, optional<authority>>& auth_overrides)

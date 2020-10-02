@@ -2210,6 +2210,7 @@ void join_research_group_membership_evaluator::do_apply(const join_research_grou
       "Research group ${1} does not exist",
       ("1", op.research_group));
 
+    const auto& account = account_service.get_account(op.member);
     const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
 
     FC_ASSERT(!research_group.is_personal, 
@@ -2241,9 +2242,8 @@ void join_research_group_membership_evaluator::do_apply(const join_research_grou
         researches.insert(researches.end(), all_researches.begin(), all_researches.end());
     }
 
-    for (auto& wrap : researches)
+    for (const research_object& research : researches)
     {
-        const auto& research = wrap.get();
         flat_set<account_name_type> updated_members;
         updated_members.insert(research.members.begin(), research.members.end());
         updated_members.insert(op.member);
@@ -2262,6 +2262,8 @@ void join_research_group_membership_evaluator::do_apply(const join_research_grou
       research_group.id,
       op.reward_share.amount,
       account_name_type());
+
+    account_service.add_to_active_authority(account, op.member);
 }
 
 void left_research_group_membership_evaluator::do_apply(const left_research_group_membership_operation& op)
@@ -2279,6 +2281,7 @@ void left_research_group_membership_evaluator::do_apply(const left_research_grou
       "Research group ${1} does not exist", 
       ("1", op.research_group));
 
+    const auto& account = account_service.get_account(op.member);
     const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
 
     FC_ASSERT(!research_group.is_personal, 
@@ -2330,6 +2333,8 @@ void left_research_group_membership_evaluator::do_apply(const left_research_grou
     research_groups_service.remove_member_from_research_group(
       op.member, 
       research_group.id);
+
+    account_service.remove_from_active_authority(account, op.member);
 }
 
 void create_research_evaluator::do_apply(const create_research_operation& op)

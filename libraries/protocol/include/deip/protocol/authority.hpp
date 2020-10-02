@@ -44,7 +44,7 @@ struct authority
     typedef flat_map<account_name_type, weight_type> account_authority_map;
     typedef flat_map<public_key_type, weight_type> key_authority_map;
 
-    uint32_t weight_threshold = 0;
+    uint32_t weight_threshold = DEIP_MIN_AUTH_THRESHOLD;
     account_authority_map account_auths;
     key_authority_map key_auths;
 };

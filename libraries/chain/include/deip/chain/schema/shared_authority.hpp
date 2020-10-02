@@ -96,7 +96,7 @@ public:
     typedef bip::flat_map<public_key_type, weight_type, std::less<public_key_type>, key_pair_allocator_type>
         key_authority_map;
 
-    uint32_t weight_threshold = 0;
+    uint32_t weight_threshold = DEIP_MIN_AUTH_THRESHOLD;
     account_authority_map account_auths;
     key_authority_map key_auths;
 };

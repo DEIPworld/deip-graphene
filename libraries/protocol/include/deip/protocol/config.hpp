@@ -12,6 +12,7 @@
 #define DEIP_BLOCKCHAIN_HARDFORK_VERSION     ( hardfork_version( DEIP_BLOCKCHAIN_VERSION ) )
 
 #define DEIP_ADDRESS_PREFIX                  "DEIP"
+#define DEIP_MIN_AUTH_THRESHOLD               uint16_t(1)
 
 #ifdef IS_TEST_NET
 #define DEIP_SYMBOL  (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< DEIP with 3 digits of precision

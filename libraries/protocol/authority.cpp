@@ -47,6 +47,9 @@ void authority::clear()
 
 void authority::validate() const
 {
+    FC_ASSERT(!is_impossible());
+    FC_ASSERT(weight_threshold >= DEIP_MIN_AUTH_THRESHOLD);
+
     for (const auto& item : account_auths)
     {
         FC_ASSERT(is_valid_account_name(item.first));
