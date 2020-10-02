@@ -24,7 +24,7 @@
 #include <deip/protocol/operations/create_request_by_nda_contract_operation.hpp>
 #include <deip/protocol/operations/fulfill_request_by_nda_contract_operation.hpp>
 #include <deip/protocol/operations/join_research_group_membership_operation.hpp>
-#include <deip/protocol/operations/left_research_group_membership_operation.hpp>
+#include <deip/protocol/operations/leave_research_group_membership_operation.hpp>
 #include <deip/protocol/operations/create_research_operation.hpp>
 #include <deip/protocol/operations/create_research_content_operation.hpp>
 #include <deip/protocol/operations/create_research_token_sale_operation.hpp>

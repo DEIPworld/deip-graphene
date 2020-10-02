@@ -2210,7 +2210,7 @@ void join_research_group_membership_evaluator::do_apply(const join_research_grou
       "Research group ${1} does not exist",
       ("1", op.research_group));
 
-    const auto& account = account_service.get_account(op.member);
+    const auto& research_group_account = account_service.get_account(op.research_group);
     const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
 
     FC_ASSERT(!research_group.is_personal, 
@@ -2263,10 +2263,10 @@ void join_research_group_membership_evaluator::do_apply(const join_research_grou
       op.reward_share.amount,
       account_name_type());
 
-    account_service.add_to_active_authority(account, op.member);
+    account_service.add_to_active_authority(research_group_account, op.member);
 }
 
-void left_research_group_membership_evaluator::do_apply(const left_research_group_membership_operation& op)
+void leave_research_group_membership_evaluator::do_apply(const leave_research_group_membership_operation& op)
 {
     auto& account_service = _db.obtain_service<dbs_account>();
     auto& research_groups_service = _db.obtain_service<dbs_research_group>();
@@ -2281,7 +2281,7 @@ void left_research_group_membership_evaluator::do_apply(const left_research_grou
       "Research group ${1} does not exist", 
       ("1", op.research_group));
 
-    const auto& account = account_service.get_account(op.member);
+    const auto& research_group_account = account_service.get_account(op.research_group);
     const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
 
     FC_ASSERT(!research_group.is_personal, 
@@ -2334,7 +2334,7 @@ void left_research_group_membership_evaluator::do_apply(const left_research_grou
       op.member, 
       research_group.id);
 
-    account_service.remove_from_active_authority(account, op.member);
+    account_service.remove_from_active_authority(research_group_account, op.member);
 }
 
 void create_research_evaluator::do_apply(const create_research_operation& op)

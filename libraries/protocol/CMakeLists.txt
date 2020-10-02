@@ -27,7 +27,7 @@ add_library( deip_protocol
              operations/create_request_by_nda_contract_operation.cpp
              operations/fulfill_request_by_nda_contract_operation.cpp
              operations/join_research_group_membership_operation.cpp
-             operations/left_research_group_membership_operation.cpp
+             operations/leave_research_group_membership_operation.cpp
              operations/create_research_operation.cpp
              operations/create_research_content_operation.cpp
              operations/create_research_token_sale_operation.cpp

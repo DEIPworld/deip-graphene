@@ -30,7 +30,7 @@ typedef fc::static_variant<create_account_operation, // 0
                            change_recovery_account_operation, // 11
 
                            join_research_group_membership_operation, // 12
-                           left_research_group_membership_operation, // 13
+                           leave_research_group_membership_operation, // 13
                            create_research_operation, // 14
                            update_research_operation, // 15
                            create_research_content_operation, // 16

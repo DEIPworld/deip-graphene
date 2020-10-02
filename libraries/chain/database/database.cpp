@@ -1745,7 +1745,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_request_by_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<fulfill_request_by_nda_contract_evaluator>();
     _my->_evaluator_registry.register_evaluator<join_research_group_membership_evaluator>();
-    _my->_evaluator_registry.register_evaluator<left_research_group_membership_evaluator>();
+    _my->_evaluator_registry.register_evaluator<leave_research_group_membership_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_content_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_token_sale_evaluator>();
