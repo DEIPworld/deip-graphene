@@ -87,7 +87,7 @@ void transaction::get_required_authorities(flat_set<account_name_type>& active,
         operation_get_required_authorities(op, active, owner, other);
 }
 
-void verify_authority(const vector<operation>& ops,
+void verify_authority(const vector<operation>& tx_ops,
                       const flat_set<public_key_type>& sigs,
                       const authority_getter& get_active,
                       const authority_getter& get_owner,
@@ -106,9 +106,9 @@ void verify_authority(const vector<operation>& ops,
         vector<std::pair<account_name_type, authority>> required_new_active;
         vector<std::pair<account_name_type, authority>> required_new_owner;
 
-        extract_new_accounts(ops, new_accounts);
+        extract_new_accounts(tx_ops, new_accounts);
 
-        for (const auto& op : ops)
+        for (const auto& op : tx_ops)
         {
             flat_set<account_name_type> op_required_active;
             flat_set<account_name_type> op_required_owner;
@@ -263,7 +263,7 @@ void verify_authority(const vector<operation>& ops,
           "Unnecessary signature(s) detected"
         );
     }
-    FC_CAPTURE_AND_RETHROW((ops)(sigs))
+    FC_CAPTURE_AND_RETHROW((tx_ops)(sigs))
 }
 
 flat_set<public_key_type> signed_transaction::get_signature_keys(const chain_id_type& chain_id) const

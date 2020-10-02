@@ -178,12 +178,8 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
 }
 
 void dbs_account::update_acount(const account_object& account,
-                                const account_authority_object& account_authority,
                                 const public_key_type& memo_key,
                                 const string& json_metadata,
-                                const optional<authority>& owner,
-                                const optional<authority>& active,
-                                const optional<flat_map<uint16_t, optional<authority>>>& active_overrides,
                                 const optional<flat_set<deip::protocol::account_trait>>& traits,
                                 const optional<time_point_sec>& now)
 {
@@ -195,43 +191,13 @@ void dbs_account::update_acount(const account_object& account,
         if (memo_key != public_key_type())
             acc.memo_key = memo_key;
 
-        acc.last_account_update = t;
+            acc.last_account_update = t;
 
 #ifndef IS_LOW_MEM
         if (json_metadata.size() > 0)
             fc::from_string(acc.json_metadata, json_metadata);
 #endif
     });
-
-    if (active.valid() || active_overrides.valid())
-    {
-        db_impl().modify(account_authority, [&](account_authority_object& auth) {
-            
-            if (active.valid())
-            {
-                auth.active = *active;
-            }
-
-            if (active_overrides.valid())
-            {
-                const auto& auth_overrides = *active_overrides;
-                for (const auto& active_override : auth_overrides)
-                {
-                    auto itr = auth.active_overrides.find(active_override.first);
-                    if (itr != auth.active_overrides.end())
-                    {
-                        auth.active_overrides.erase(itr);
-                    }
-
-                    if (active_override.second.valid())
-                    {
-                        const auto& auth_override = *active_override.second;
-                        auth.active_overrides.insert(std::pair<uint16_t, shared_authority>(active_override.first, shared_authority(auth_override, shared_authority::allocator_type(db_impl().get_segment_manager()))));
-                    }
-                }
-            }
-        });
-    }
 
     if (account.is_research_group && traits.valid() && traits->size() == 1) // research group workspace
     {
@@ -265,11 +231,50 @@ void dbs_account::update_owner_authority(const account_object& account,
     }
 
     db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
-                     [&](account_authority_object& auth) {
-                         auth.owner = owner_authority;
-                         auth.last_owner_update = t;
-                     });
+        [&](account_authority_object& auth) {
+            auth.owner = owner_authority;
+            auth.last_owner_update = t;
+        });
 }
+
+
+void dbs_account::update_active_authority(const account_object& account,
+                                          const authority& active_authority)
+{
+    db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
+        [&](account_authority_object& auth) {
+            auth.active = active_authority;
+        });
+}
+
+
+void dbs_account::update_active_overrides_authorities(const account_object& account,
+                                                      const flat_map<uint16_t, optional<authority>>& auth_overrides)
+{
+    db_impl().modify(db_impl().get<account_authority_object, by_account>(account.name),
+        [&](account_authority_object& auth) {
+            for (const auto& active_override : auth_overrides)
+            {
+                auto itr = auth.active_overrides.find(active_override.first);
+                if (itr != auth.active_overrides.end())
+                {
+                    auth.active_overrides.erase(itr);
+                }
+
+                if (active_override.second.valid())
+                {
+                    const auto& auth_override = *active_override.second;
+                    auth.active_overrides.insert(
+                      std::pair<uint16_t, shared_authority>(
+                        active_override.first,
+                        shared_authority(auth_override, shared_authority::allocator_type(db_impl().get_segment_manager()))
+                      )
+                    );
+                }
+            }
+        });
+}
+
 
 void dbs_account::update_withdraw(const account_object& account,
                                   const share_type& common_tokens_withdraw_rate,

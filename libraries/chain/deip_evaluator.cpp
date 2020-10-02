@@ -184,17 +184,17 @@ void update_account_evaluator::do_apply(const update_account_operation& op)
     dbs_account& account_service = _db.obtain_service<dbs_account>();
 
     const auto& account = account_service.get_account(op.account);
-    const auto& account_auth = account_service.get_account_authority(op.account);
 
-    if (op.owner)
+    if (op.owner.valid())
     {
         account_service.check_account_existence(op.owner->account_auths);
         account_service.update_owner_authority(account, *op.owner);
     }
 
-    if (op.active)
+    if (op.active.valid())
     {
         account_service.check_account_existence(op.active->account_auths);
+        account_service.update_active_authority(account, *op.active);
     }
 
     if (op.active_overrides.valid())
@@ -208,6 +208,7 @@ void update_account_evaluator::do_apply(const update_account_operation& op)
                 account_service.check_account_existence(auth_override.account_auths);
             }
         }
+        account_service.update_active_overrides_authorities(account, *op.active_overrides);
     }
 
     std::string json_metadata = op.json_metadata.valid() ? *op.json_metadata : fc::to_string(account.json_metadata);
@@ -215,12 +216,8 @@ void update_account_evaluator::do_apply(const update_account_operation& op)
 
     account_service.update_acount(
       account, 
-      account_auth, 
       memo_key,
       json_metadata, 
-      op.owner, 
-      op.active, 
-      op.active_overrides,
       op.traits);
 }
 
