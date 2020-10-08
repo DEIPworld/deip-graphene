@@ -55,6 +55,8 @@ public:
     uint16_t number_of_positive_reviews = 0;
     uint16_t number_of_negative_reviews = 0;
 
+    uint16_t number_of_research_contents = 0;
+
     flat_set<account_name_type> members;
 
     bool is_private;
@@ -147,6 +149,7 @@ FC_REFLECT(deip::chain::research_object,
   (eci_per_discipline)
   (number_of_positive_reviews)
   (number_of_negative_reviews)
+  (number_of_research_contents)
   (members)
   (is_private)
 )

@@ -439,6 +439,7 @@ struct research_api_obj
         , disciplines(disciplines.begin(), disciplines.end())
         , number_of_positive_reviews(r_o.number_of_positive_reviews)
         , number_of_negative_reviews(r_o.number_of_negative_reviews)
+        , number_of_research_contents(r_o.number_of_research_contents)
         , last_update_time(r_o.last_update_time)
         , members(r_o.members.begin(), r_o.members.end())
         , research_group(rg_api)
@@ -484,6 +485,7 @@ struct research_api_obj
 
     uint16_t number_of_positive_reviews;
     uint16_t number_of_negative_reviews;
+    uint16_t number_of_research_contents;
     time_point_sec last_update_time;
 
     std::vector<account_name_type> members;
@@ -1405,6 +1407,7 @@ FC_REFLECT( deip::app::research_api_obj,
             (eci_per_discipline)
             (number_of_positive_reviews)
             (number_of_negative_reviews)
+            (number_of_research_contents)
             (last_update_time)
             (members)
             (research_group)

@@ -60,6 +60,48 @@ public:
 
         return result;
     }
+
+    template <typename history_object_type>
+    std::vector<applied_tsc_operation> get_contributions_history_by_research(const research_id_type& research_id) const
+    {
+        std::vector<applied_tsc_operation> result;
+
+        const auto db = _app.chain_database();
+
+        const auto& idx = db->get_index<tsc_operations_full_history_index>().indices().get<by_research>().equal_range(research_id);
+
+        auto it = idx.first;
+        const auto it_end = idx.second;
+        while (it != it_end)
+        {
+            result.push_back(db->get(it->op));
+            ++it;
+        }
+
+        return result;
+    }
+
+
+    template <typename history_object_type>
+    std::vector<applied_tsc_operation> get_contributions_history_by_token_sale(const research_token_sale_id_type& research_token_sale_id) const
+    {
+        std::vector<applied_tsc_operation> result;
+
+        const auto db = _app.chain_database();
+
+        const auto& idx = db->get_index<tsc_operations_full_history_index>().indices().get<by_token_sale>().equal_range(research_token_sale_id);
+
+        auto it = idx.first;
+        const auto it_end = idx.second;
+        while (it != it_end)
+        {
+            result.push_back(db->get(it->op));
+            ++it;
+        }
+
+        return result;
+    }
+
 };
 } // namespace detail
 
@@ -89,6 +131,25 @@ tsc_history_api::get_contributions_history_by_contributor_and_research(const acc
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock([&]() {
         return _impl->get_contributions_history_by_contributor_and_research<all_tsc_operations_history_object>(contributor, research_id);
+    });
+}
+
+
+std::vector<applied_tsc_operation>
+tsc_history_api::get_contributions_history_by_research(const research_id_type& research_id) const
+{
+    const auto db = _impl->_app.chain_database();
+    return db->with_read_lock([&]() {
+        return _impl->get_contributions_history_by_research<all_tsc_operations_history_object>(research_id);
+    });
+}
+
+std::vector<applied_tsc_operation> 
+tsc_history_api::get_contributions_history_by_token_sale(const research_token_sale_id_type& research_token_sale_id) const
+{
+    const auto db = _impl->_app.chain_database();
+    return db->with_read_lock([&]() {
+        return _impl->get_contributions_history_by_token_sale<all_tsc_operations_history_object>(research_token_sale_id);
     });
 }
 

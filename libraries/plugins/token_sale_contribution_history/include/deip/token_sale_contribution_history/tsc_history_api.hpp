@@ -30,6 +30,11 @@ public:
     std::vector<applied_tsc_operation>
     get_contributions_history_by_contributor_and_research(const account_name_type& contributor, const research_id_type& research_id) const;
 
+    std::vector<applied_tsc_operation>
+    get_contributions_history_by_research(const research_id_type& research_id) const;
+
+    std::vector<applied_tsc_operation>
+    get_contributions_history_by_token_sale(const research_token_sale_id_type& research_token_sale_id) const;
 
 private:
     std::unique_ptr<detail::tsc_history_api_impl> _impl;

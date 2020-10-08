@@ -23,24 +23,34 @@ template <uint16_t TSCHistoryType> struct tsc_history_object : public object<TSC
 
 struct by_account_and_research;
 struct by_account;
+struct by_research;
+struct by_token_sale;
 
 template <typename tsc_history_object_t>
 using tsc_history_index
     = chainbase::shared_multi_index_container<tsc_history_object_t,
                                    indexed_by<ordered_unique<tag<by_id>,
-                                                             member<tsc_history_object_t,
+                                                              member<tsc_history_object_t,
                                                                     typename tsc_history_object_t::id_type,
                                                                     &tsc_history_object_t::id>>,
+                                              ordered_non_unique<tag<by_research>,
+                                                              member<tsc_history_object_t,
+                                                                    research_id_type,
+                                                                    &tsc_history_object_t::research_id>>,
+                                              ordered_non_unique<tag<by_token_sale>,
+                                                              member<tsc_history_object_t,
+                                                                    research_token_sale_id_type,
+                                                                    &tsc_history_object_t::research_token_sale_id>>,
                                               ordered_non_unique<tag<by_account_and_research>,
                                               composite_key<tsc_history_object_t,
-                                                             member<tsc_history_object_t,
+                                                              member<tsc_history_object_t,
                                                                     account_name_type,
                                                                     &tsc_history_object_t::contributor>,
-                                                             member<tsc_history_object_t,
+                                                              member<tsc_history_object_t,
                                                                      research_id_type,
                                                                     &tsc_history_object_t::research_id>>>,
                                               ordered_non_unique<tag<by_account>,
-                                                             member<tsc_history_object_t,
+                                                              member<tsc_history_object_t,
                                                                      account_name_type,
                                                                     &tsc_history_object_t::contributor>>>>;
 
