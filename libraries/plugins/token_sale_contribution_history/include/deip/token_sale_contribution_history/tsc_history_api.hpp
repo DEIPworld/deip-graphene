@@ -43,4 +43,8 @@ private:
 } // namespace deip
 
 FC_API(deip::tsc_history::tsc_history_api,
-       (get_contributions_history_by_contributor)(get_contributions_history_by_contributor_and_research))
+      (get_contributions_history_by_contributor)
+      (get_contributions_history_by_contributor_and_research)
+      (get_contributions_history_by_research)
+      (get_contributions_history_by_token_sale)
+)
