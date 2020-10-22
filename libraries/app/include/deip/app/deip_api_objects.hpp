@@ -446,9 +446,12 @@ struct research_api_obj
     {
         for (const auto& kvp : r_o.eci_per_discipline) 
         {
-            discipline_id_type discipline_id = kvp.first;
-            share_type weight = kvp.second;
-            eci_per_discipline.emplace(std::make_pair(discipline_id._id, weight.value));
+            eci_per_discipline.emplace(std::make_pair(kvp.first._id, kvp.second.value));
+        }
+
+        for (const auto& st : r_o.security_tokens)
+        {
+            security_tokens.emplace(std::make_pair(st.first, st.second));
         }
 
         if (r_o.review_share.valid())
@@ -482,6 +485,7 @@ struct research_api_obj
     vector<discipline_api_obj> disciplines;
 
     map<int64_t, int64_t> eci_per_discipline;
+    map<external_id_type, uint64_t> security_tokens;
 
     uint16_t number_of_positive_reviews;
     uint16_t number_of_negative_reviews;
@@ -1405,6 +1409,7 @@ FC_REFLECT( deip::app::research_api_obj,
             (compensation_share)
             (disciplines)
             (eci_per_discipline)
+            (security_tokens)
             (number_of_positive_reviews)
             (number_of_negative_reviews)
             (number_of_research_contents)
