@@ -45,8 +45,8 @@ struct create_security_token_operation : public entity_operation
 
 FC_REFLECT(deip::protocol::create_security_token_operation,
   (external_id)
-  (research_group)
   (research_external_id)
+  (research_group)
   (amount)
   (distribution_model)
   (extensions)
