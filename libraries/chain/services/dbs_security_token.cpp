@@ -15,7 +15,7 @@ dbs_security_token::dbs_security_token(database &db)
 
 const security_token_object& dbs_security_token::create_security_token(const research_object& research,
                                                                        const external_id_type& security_token_external_id,
-                                                                       const uint64_t amount)
+                                                                       const uint64_t& amount)
 {
     const auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
     const auto& research_group = research_group_service.get_research_group(research.research_group_id);
@@ -49,8 +49,7 @@ void dbs_security_token::transfer_security_token(const account_name_type& from,
     const security_token_object& from_security_token = *from_security_token_opt;
     const auto& research = research_service.get_research(from_security_token.research_external_id);
 
-    FC_ASSERT(from_security_token.amount >= amount,
-      "Security token ${1} balance for account ${2} is not enough (${3} units) to transfer ${4} units",
+    FC_ASSERT(from_security_token.amount >= amount, "Security token ${1} balance for account ${2} is not enough (${3} units) to transfer ${4} units",
       ("1", security_token_external_id)("2", from)("3", from_security_token.amount)("4", amount));
     
     const auto& to_security_token_opt = get_security_token_by_owner_if_exists(to, security_token_external_id);
@@ -90,7 +89,8 @@ void dbs_security_token::transfer_security_token(const account_name_type& from,
 
     const uint64_t issued_amount = research.security_tokens.at(security_token_external_id);
 
-    FC_ASSERT(total_amount == issued_amount, "Total amount ${1} is more than issued amount ${2} for security token ${3}", ("1", total_amount)("2", issued_amount)("3", security_token_external_id));        
+    FC_ASSERT(total_amount == issued_amount, "Total amount ${1} is more than issued amount ${2} for security token ${3}", 
+      ("1", total_amount)("2", issued_amount)("3", security_token_external_id));        
 }
 
 const security_token_object& dbs_security_token::get_security_token(const security_token_id_type& id) const

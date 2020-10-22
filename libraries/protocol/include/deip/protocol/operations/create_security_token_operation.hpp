@@ -18,7 +18,7 @@ typedef fc::static_variant<
   tokenization_condition_models;
 
 
-struct tokenize_research_operation : public base_operation
+struct create_security_token_operation : public entity_operation
 {
     external_id_type external_id;
     external_id_type research_external_id;
@@ -30,6 +30,9 @@ struct tokenize_research_operation : public base_operation
 
     void validate() const;
 
+    string entity_id() const { return "external_id"; }
+    external_id_type get_entity_id() const { return external_id; }
+
     void get_required_active_authorities(flat_set<account_name_type>& a) const
     {
         a.insert(research_group);
@@ -40,7 +43,7 @@ struct tokenize_research_operation : public base_operation
 }
 }
 
-FC_REFLECT(deip::protocol::tokenize_research_operation,
+FC_REFLECT(deip::protocol::create_security_token_operation,
   (external_id)
   (research_group)
   (research_external_id)

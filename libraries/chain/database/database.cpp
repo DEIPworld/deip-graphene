@@ -1752,7 +1752,8 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_research_token_sale_evaluator>();
     _my->_evaluator_registry.register_evaluator<update_research_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_assessment_evaluator>();
-    _my->_evaluator_registry.register_evaluator<tokenize_research_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_security_token_evaluator>();
+    _my->_evaluator_registry.register_evaluator<transfer_security_token_evaluator>();
 }
 
 void database::initialize_indexes()

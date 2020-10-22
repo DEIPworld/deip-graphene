@@ -24,7 +24,9 @@ namespace chain {
         using security_token_refs_type = std::vector<std::reference_wrapper<const security_token_object>>;
         using security_token_optional_ref_type = fc::optional<std::reference_wrapper<const security_token_object>>;
 
-        const security_token_object& create_security_token(const research_object& research, const external_id_type& security_token_external_id, const uint64_t amount);
+        const security_token_object& create_security_token(const research_object& research,
+                                                           const external_id_type& security_token_external_id,
+                                                           const uint64_t& amount);
 
         void transfer_security_token(const account_name_type& from,
                                      const account_name_type& to,
