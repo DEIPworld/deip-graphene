@@ -22,6 +22,7 @@
 #include <deip/chain/schema/research_group_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
+#include <deip/chain/schema/security_token_object.hpp>
 #include <deip/chain/schema/research_token_sale_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/review_vote_object.hpp>
@@ -804,6 +805,29 @@ struct research_token_api_obj
     bool is_compensation;
 };
 
+struct security_token_api_obj
+{
+    security_token_api_obj(const chain::security_token_object& st_o)
+        : id(st_o.id._id)
+        , owner(st_o.owner)
+        , security_token_external_id(st_o.security_token_external_id)
+        , research_external_id(st_o.research_external_id)
+        , amount(st_o.amount)
+    {
+    }
+
+    // because fc::variant require for temporary object
+    security_token_api_obj()
+    {
+    }
+
+    int64_t id;
+    account_name_type owner;
+    external_id_type security_token_external_id;
+    external_id_type research_external_id;
+    uint64_t amount;
+};
+
 struct review_vote_api_obj
 {
     review_vote_api_obj(const chain::review_vote_object& rvo)
@@ -1546,6 +1570,16 @@ FC_REFLECT( deip::app::research_token_api_obj,
             (is_compensation)
 )
 
+
+FC_REFLECT( deip::app::security_token_api_obj,
+            (id)
+            (owner)
+            (security_token_external_id)
+            (research_external_id)
+            (amount)
+)
+
+
 FC_REFLECT( deip::app::review_vote_api_obj,
             (id)
             (external_id)
@@ -1725,4 +1759,4 @@ FC_REFLECT( deip::app::nda_contract_file_access_api_obj,
             (proof_of_encrypted_payload_encryption_key)
 )
 
-// clang-format on
+    // clang-format on

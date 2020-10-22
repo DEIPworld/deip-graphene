@@ -354,12 +354,16 @@ public:
     /////////////////////
     // Research token ///
     /////////////////////
-
     fc::optional<research_token_api_obj> get_research_token_by_id(const research_token_id_type& research_token_id) const;
     vector<research_token_api_obj> get_research_tokens_by_account_name(const account_name_type &account_name) const;
     vector<research_token_api_obj> get_research_tokens_by_research_id(const research_id_type &research_id) const;
-    fc::optional<research_token_api_obj> get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
-                                                                                            const research_id_type &research_id) const;
+    fc::optional<research_token_api_obj> get_research_token_by_account_name_and_research_id(const account_name_type &account_name, const research_id_type &research_id) const;
+
+
+    fc::optional<security_token_api_obj> get_security_token_by_owner(const account_name_type& owner, const external_id_type& security_token_external_id) const;
+    vector<security_token_api_obj> get_security_tokens_by_owner(const account_name_type& owner) const;
+    vector<security_token_api_obj> get_security_tokens_by_research(const external_id_type& research_external_id) const;
+    vector<security_token_api_obj> get_security_tokens(const external_id_type& security_token_external_id) const;
 
     /////////////////////////
     // Review vote object ///
@@ -638,6 +642,11 @@ FC_API(deip::app::database_api,
    (get_research_tokens_by_account_name)
    (get_research_tokens_by_research_id)
    (get_research_token_by_account_name_and_research_id)
+
+   (get_security_token_by_owner)
+   (get_security_tokens_by_owner)
+   (get_security_tokens_by_research)
+   (get_security_tokens)
 
    // Review votes
    (get_review_votes_by_voter)

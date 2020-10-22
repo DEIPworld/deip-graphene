@@ -35,11 +35,11 @@ namespace chain {
 
         const security_token_object& get_security_token(const security_token_id_type& id) const;
 
-        security_token_refs_type get_security_tokens(const external_id_type& security_token_external_id) const;
+        const security_token_refs_type get_security_tokens(const external_id_type& security_token_external_id) const;
 
-        security_token_refs_type get_security_tokens_by_owner(const account_name_type& owner) const;
+        const security_token_refs_type get_security_tokens_by_owner(const account_name_type& owner) const;
 
-        security_token_refs_type get_security_tokens_by_research(const external_id_type& research_external_id) const;
+        const security_token_refs_type get_security_tokens_by_research(const external_id_type& research_external_id) const;
 
         const security_token_object& get_security_token_by_owner(const account_name_type& owner, const external_id_type& security_token_external_id) const;
 

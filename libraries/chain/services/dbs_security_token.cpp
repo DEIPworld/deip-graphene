@@ -103,7 +103,7 @@ const security_token_object& dbs_security_token::get_security_token(const securi
 }
 
 
-dbs_security_token::security_token_refs_type
+const dbs_security_token::security_token_refs_type
 dbs_security_token::get_security_tokens(const external_id_type& security_token_external_id) const
 {
     security_token_refs_type ret;
@@ -120,7 +120,7 @@ dbs_security_token::get_security_tokens(const external_id_type& security_token_e
 }
 
 
-dbs_security_token::security_token_refs_type
+const dbs_security_token::security_token_refs_type
 dbs_security_token::get_security_tokens_by_owner(const account_name_type& owner) const
 {
     security_token_refs_type ret;
@@ -137,7 +137,7 @@ dbs_security_token::get_security_tokens_by_owner(const account_name_type& owner)
 }
 
 
-dbs_security_token::security_token_refs_type
+const dbs_security_token::security_token_refs_type
 dbs_security_token::get_security_tokens_by_research(const external_id_type& research_external_id) const
 {
     security_token_refs_type ret;
