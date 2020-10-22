@@ -2649,7 +2649,7 @@ void create_security_token_evaluator::do_apply(const create_security_token_opera
     const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
     const auto& research = research_service.get_research(op.research_external_id);
 
-    FC_ASSERT(research_group.account == research.external_id, "Research ${1} is not own by ${2} research group", ("1", research.external_id)("2", research_group.account));
+    FC_ASSERT(research_group.id == research.research_group_id, "Research ${1} is not owned by ${2} research group", ("1", research.external_id)("2", research_group.account));
 
     security_tokens_service.create_security_token(research, op.external_id, op.amount);
 }
@@ -2661,7 +2661,7 @@ void transfer_security_token_evaluator::do_apply(const transfer_security_token_o
 
     FC_ASSERT(account_service.account_exists(op.from), "Account ${1} does not exist", ("1", op.from));
     FC_ASSERT(account_service.account_exists(op.to), "Account ${1} does not exist", ("1", op.to));
-    
+
     security_tokens_service.transfer_security_token(op.from, op.to, op.security_token_external_id, op.amount);
 }
 
