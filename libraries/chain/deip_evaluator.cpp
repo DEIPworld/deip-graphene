@@ -2635,5 +2635,11 @@ void create_assessment_evaluator::do_apply(const create_assessment_operation& op
     
 }
 
+
+void tokenize_research_evaluator::do_apply(const tokenize_research_operation& op)
+{
+  
+}
+
 } // namespace chain
 } // namespace deip

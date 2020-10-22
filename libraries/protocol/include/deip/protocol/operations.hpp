@@ -78,6 +78,7 @@ typedef fc::static_variant<create_account_operation, // 0
                            fulfill_request_by_nda_contract_operation, // 50
 
                            create_assessment_operation, // 51
+                           tokenize_research_operation,
 
                            // virtual operations
                            fill_common_tokens_withdraw_operation,

@@ -34,6 +34,7 @@
 #include <deip/protocol/operations/delete_proposal_operation.hpp>
 #include <deip/protocol/operations/transfer_research_share_operation.hpp>
 #include <deip/protocol/operations/create_assessment_operation.hpp>
+#include <deip/protocol/operations/tokenize_research_operation.hpp>
 
 namespace deip {
 namespace protocol {
