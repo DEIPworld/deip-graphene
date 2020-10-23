@@ -26,12 +26,12 @@ namespace chain {
 
         const security_token_object& create_security_token(const research_object& research,
                                                            const external_id_type& security_token_external_id,
-                                                           const uint64_t& amount);
+                                                           const uint32_t& amount);
 
         void transfer_security_token(const account_name_type& from,
                                      const account_name_type& to,
                                      const external_id_type& security_token_external_id,
-                                     const uint64_t& amount);
+                                     const uint32_t& amount);
 
         const security_token_object& get_security_token(const security_token_id_type& id) const;
 

@@ -16,7 +16,7 @@ dbs_security_token::dbs_security_token(database &db)
 
 const security_token_object& dbs_security_token::create_security_token(const research_object& research,
                                                                        const external_id_type& security_token_external_id,
-                                                                       const uint64_t& amount)
+                                                                       const uint32_t& amount)
 {
     const auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
     const auto& research_group = research_group_service.get_research_group(research.research_group_id);
@@ -42,7 +42,7 @@ const security_token_object& dbs_security_token::create_security_token(const res
 void dbs_security_token::transfer_security_token(const account_name_type& from,
                                                  const account_name_type& to,
                                                  const external_id_type& security_token_external_id,
-                                                 const uint64_t& amount)
+                                                 const uint32_t& amount)
 {
     const auto& research_service = db_impl().obtain_service<dbs_research>();
 
@@ -85,13 +85,13 @@ void dbs_security_token::transfer_security_token(const account_name_type& from,
     }
 
     const auto& security_tokens = get_security_tokens_by_research(research.external_id);
-    const uint64_t total_amount = std::accumulate(
-      security_tokens.begin(), security_tokens.end(), uint64_t(0),
-      [&](uint64_t acc, const security_token_object& security_token) {
+    const uint32_t total_amount = std::accumulate(
+      security_tokens.begin(), security_tokens.end(), uint32_t(0),
+      [&](uint32_t acc, const security_token_object& security_token) {
         return acc + security_token.amount;
       });
 
-    const uint64_t issued_amount = research.security_tokens.at(security_token_external_id);
+    const uint32_t issued_amount = research.security_tokens.at(security_token_external_id);
 
     FC_ASSERT(total_amount == issued_amount, "Total amount ${1} is more than issued amount ${2} for security token ${3}", 
       ("1", total_amount)("2", issued_amount)("3", security_token_external_id));        

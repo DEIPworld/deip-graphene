@@ -52,7 +52,7 @@ public:
     optional<percent> compensation_share;
 
     flat_map<discipline_id_type, share_type> eci_per_discipline;
-    flat_map<external_id_type, uint64_t> security_tokens; // TODO: move to a separate 'security_token_terms' object
+    flat_map<external_id_type, uint32_t> security_tokens; // TODO: move to a separate 'security_token_terms' object
 
     uint16_t number_of_positive_reviews = 0;
     uint16_t number_of_negative_reviews = 0;

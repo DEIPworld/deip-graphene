@@ -486,7 +486,7 @@ struct research_api_obj
     vector<discipline_api_obj> disciplines;
 
     map<int64_t, int64_t> eci_per_discipline;
-    map<external_id_type, uint64_t> security_tokens;
+    map<external_id_type, uint32_t> security_tokens;
 
     uint16_t number_of_positive_reviews;
     uint16_t number_of_negative_reviews;
@@ -825,7 +825,7 @@ struct security_token_api_obj
     account_name_type owner;
     external_id_type security_token_external_id;
     external_id_type research_external_id;
-    uint64_t amount;
+    uint32_t amount;
 };
 
 struct review_vote_api_obj

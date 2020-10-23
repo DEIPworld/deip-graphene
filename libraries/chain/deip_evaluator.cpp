@@ -32,6 +32,7 @@
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 #include <deip/chain/services/dbs_security_token.hpp>
+#include <deip/chain/services/dbs_research_license.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -2667,7 +2668,77 @@ void transfer_security_token_evaluator::do_apply(const transfer_security_token_o
 
 void create_research_license_evaluator::do_apply(const create_research_license_operation& op)
 {
+    auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
+    auto& research_service = _db.obtain_service<dbs_research>();
+    auto& research_groups_service = _db.obtain_service<dbs_research_group>();
+    auto& security_tokens_service = _db.obtain_service<dbs_security_token>();
+    auto& research_license_service = _db.obtain_service<dbs_research_license>();
+    auto& account_service = _db.obtain_service<dbs_account>();
+    auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
 
+    const auto& dup_guard = duplicated_entity_guard(dgp_service);
+    dup_guard(op);
+
+    FC_ASSERT(account_service.account_exists(op.research_group), "Account ${1} does not exist", ("1", op.research_group));
+    FC_ASSERT(account_service.account_exists(op.licensee), "Account ${1} does not exist", ("1", op.licensee));
+
+    const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
+    const auto& research = research_service.get_research(op.research_external_id);
+
+    FC_ASSERT(research_group.account == research.research_group, "Research ${1} is not owned by ${2} research group", ("1", research.external_id)("2", research_group.account));
+
+    if (op.license_conditions.which() == license_agreement_types::tag<licensing_fee_type>::value)
+    {
+        FC_ASSERT(research.security_tokens.size() > 0, "Research ${1} is not tokenized yet. Tokenize it at first to collect licensee fee", ("1", research.external_id));
+
+        const auto& fee_model = op.license_conditions.get<licensing_fee_type>();
+        const auto& research_license = research_license_service.create_research_license(research, op.external_id, op.licensee, fee_model.terms, fee_model.expiration_time, fee_model.fee);
+
+        if (fee_model.expiration_time.valid())
+        {
+            const auto& now = _db.head_block_time();
+            const auto& expiration_time = *fee_model.expiration_time;
+            FC_ASSERT(now < expiration_time, "Research license is expired on creation");
+        }
+
+        if (research_license.fee.valid())
+        {
+            const auto& fee = *research_license.fee;
+
+            const auto& licensee_balance = account_balance_service.get_by_owner_and_asset(op.licensee, fee.symbol);
+            FC_ASSERT(asset(licensee_balance.amount, licensee_balance.symbol) >= fee, "Account ${1} balance is not enough.", ("1", op.licensee));
+
+            const auto& research_security_tokens = security_tokens_service.get_security_tokens_by_research(research.external_id);
+
+            // TODO: We should support more advanced models of revenue distribution between security token holders
+            const share_type total_amount = std::accumulate(
+                research_security_tokens.begin(), research_security_tokens.end(), share_type(0),
+                [&](share_type acc, const security_token_object& security_token) { return acc + share_type(security_token.amount); });
+
+            asset total_revenue = asset(0, fee.symbol);
+            for (const security_token_object& security_token : research_security_tokens)
+            {
+                const share_type holder_amount = share_type(security_token.amount);
+                const asset revenue = util::calculate_share(fee, holder_amount, total_amount);
+                account_balance_service.adjust_balance(security_token.owner, revenue);
+                total_revenue += revenue;
+            }
+
+            FC_ASSERT(total_revenue <= fee, "Total revenue amount is more than fee amount");
+
+            if (total_revenue < fee)
+            {
+                const asset rest = fee - total_revenue;
+                account_balance_service.adjust_balance(research.research_group, rest);
+            }
+
+            account_balance_service.adjust_balance(op.licensee, -fee);
+        }
+    }
+    else 
+    {
+        FC_ASSERT(false, "Unknown research license type");
+    }
 }
 
 } // namespace chain

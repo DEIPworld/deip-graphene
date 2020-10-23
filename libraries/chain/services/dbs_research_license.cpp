@@ -14,7 +14,7 @@ const research_license_object& dbs_research_license::create_research_license(con
                                                                              const external_id_type& external_id,
                                                                              const account_name_type& licensee,
                                                                              const string& terms,
-                                                                             const time_point_sec& expiration_time,
+                                                                             const optional<time_point_sec>& expiration_time_opt,
                                                                              const optional<asset>& fee_opt)
 {
     auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
@@ -29,7 +29,15 @@ const research_license_object& dbs_research_license::create_research_license(con
         fc::from_string(rl_o.terms, terms);
 
         rl_o.created_at = now;
-        rl_o.expiration_time = expiration_time;
+
+        if (expiration_time_opt.valid())
+        {
+            rl_o.expiration_time = *expiration_time_opt;
+        }
+        else
+        {
+            rl_o.expiration_time = time_point_sec::maximum();
+        }
 
         if (rl_o.created_at <= rl_o.expiration_time)
         {

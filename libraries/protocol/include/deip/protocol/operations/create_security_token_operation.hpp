@@ -22,7 +22,7 @@ struct create_security_token_operation : public entity_operation
     external_id_type external_id;
     external_id_type research_external_id;
     account_name_type research_group;
-    uint64_t amount;
+    uint32_t amount;
 
     tokenization_options options;
     extensions_type extensions;

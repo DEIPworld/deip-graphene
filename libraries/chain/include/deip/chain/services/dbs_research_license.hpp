@@ -27,7 +27,7 @@ public:
                                                            const external_id_type& external_id,
                                                            const account_name_type& licensee,
                                                            const string& terms,
-                                                           const time_point_sec& expiration_time,
+                                                           const optional<time_point_sec>& expiration_time,
                                                            const optional<asset>& fee);
 
     const research_license_refs_type get_research_licenses_by_research_group(const account_name_type& research_group) const;

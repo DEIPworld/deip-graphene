@@ -27,7 +27,7 @@ public:
     account_name_type owner;
     external_id_type security_token_external_id;
     external_id_type research_external_id;
-    uint64_t amount;
+    uint32_t amount;
 };
 
 struct by_owner;

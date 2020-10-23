@@ -13,7 +13,7 @@ using deip::protocol::asset;
 struct licensing_fee_type
 {
     string terms;
-    asset fee;
+    optional<asset> fee;
     optional<time_point_sec> expiration_time;
 };
 
@@ -45,7 +45,7 @@ struct create_research_license_operation : public entity_operation
         if (license_conditions.which() == license_agreement_types::tag<licensing_fee_type>::value)
         {
             const auto fee_model = license_conditions.get<licensing_fee_type>();
-            if (fee_model.fee > asset(0, fee_model.fee.symbol))
+            if (fee_model.fee.valid())
             {
                 a.insert(licensee);
             }

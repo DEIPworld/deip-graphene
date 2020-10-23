@@ -12,7 +12,7 @@ struct transfer_security_token_operation : public base_operation
     account_name_type from;
     account_name_type to;
     external_id_type security_token_external_id;
-    uint64_t amount;
+    uint32_t amount;
 
     extensions_type extensions;
 

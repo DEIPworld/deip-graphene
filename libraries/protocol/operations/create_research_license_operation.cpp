@@ -17,7 +17,11 @@ struct license_conditions_validator
     void operator()(const licensing_fee_type& fee_model) const
     {
         FC_ASSERT(fee_model.terms.size() != 0, "Terms are not specified for research license");
-        FC_ASSERT(fee_model.fee >= asset(0, fee_model.fee.symbol), "Licensing fee can not be negative");
+        if (fee_model.fee.valid()) 
+        {
+            const auto& fee = *fee_model.fee;
+            FC_ASSERT(fee > asset(0, fee.symbol), "Licensing fee is specified but its value is not positive ${1}", ("1", fee));
+        }
     }
 };
 
