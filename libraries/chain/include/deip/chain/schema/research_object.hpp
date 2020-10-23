@@ -38,6 +38,7 @@ public:
     research_id_type id;
     external_id_type external_id;
     research_group_id_type research_group_id;
+    account_name_type research_group;
     shared_string title;
     shared_string abstract;
     shared_string permlink; /* [DEPRECATED] */
@@ -65,6 +66,7 @@ public:
 
 struct by_permlink;
 struct is_finished;
+struct by_research_group_id;
 struct by_research_group;
 struct by_external_id;
 
@@ -120,6 +122,15 @@ typedef multi_index_container<research_object,
 
     ordered_non_unique<
       tag<by_research_group>,
+        member<
+          research_object,
+          account_name_type,
+          &research_object::research_group
+        >
+    >,
+
+    ordered_non_unique<
+      tag<by_research_group_id>,
         member<
           research_object,
           research_group_id_type,

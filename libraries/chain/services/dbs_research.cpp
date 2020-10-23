@@ -34,6 +34,7 @@ const research_object& dbs_research::create_research(const research_group_object
     const auto& research_permlink = deip::chain::util::generate_permlink(title);
     const auto& research = db_impl().create<research_object>([&](research_object& r_o) {
         r_o.research_group_id = research_group.id;
+        r_o.research_group = research_group.account;
         r_o.external_id = external_id;
         fc::from_string(r_o.title, title);
         fc::from_string(r_o.abstract, abstract);
@@ -97,9 +98,32 @@ const dbs_research::research_refs_type dbs_research::get_researches_by_research_
     const auto& idx = db_impl()
       .get_index<research_index>()
       .indicies()
-      .get<by_research_group>();
+      .get<by_research_group_id>();
 
     auto it_pair = idx.equal_range(research_group_id);
+
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+
+const dbs_research::research_refs_type dbs_research::get_researches_by_research_group(const account_name_type& research_group) const
+{
+    research_refs_type ret;
+
+    const auto& idx = db_impl()
+      .get_index<research_index>()
+      .indicies()
+      .get<by_research_group>();
+
+    auto it_pair = idx.equal_range(research_group);
 
     auto it = it_pair.first;
     const auto it_end = it_pair.second;

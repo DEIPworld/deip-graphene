@@ -2649,7 +2649,7 @@ void create_security_token_evaluator::do_apply(const create_security_token_opera
     const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
     const auto& research = research_service.get_research(op.research_external_id);
 
-    FC_ASSERT(research_group.id == research.research_group_id, "Research ${1} is not owned by ${2} research group", ("1", research.external_id)("2", research_group.account));
+    FC_ASSERT(research_group.account == research.research_group, "Research ${1} is not owned by ${2} research group", ("1", research.external_id)("2", research_group.account));
 
     security_tokens_service.create_security_token(research, op.external_id, op.amount);
 }

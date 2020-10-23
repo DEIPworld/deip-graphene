@@ -46,6 +46,8 @@ public:
 
     const research_refs_type get_researches_by_research_group(const research_group_id_type& research_group_id) const;
 
+    const research_refs_type get_researches_by_research_group(const account_name_type& research_group) const;
+
     const research_object& get_research(const research_id_type& id) const;
 
     const research_object& get_research(const external_id_type& external_id) const;

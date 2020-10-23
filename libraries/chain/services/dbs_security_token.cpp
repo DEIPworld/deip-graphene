@@ -1,6 +1,7 @@
 #include <deip/chain/services/dbs_security_token.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 #include <deip/chain/database/database.hpp>
 
 #include <tuple>
@@ -19,6 +20,7 @@ const security_token_object& dbs_security_token::create_security_token(const res
 {
     const auto& research_group_service = db_impl().obtain_service<dbs_research_group>();
     const auto& research_group = research_group_service.get_research_group(research.research_group_id);
+    auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
 
     const security_token_object& security_token
         = db_impl().create<security_token_object>([&](security_token_object& st_o) {
@@ -31,6 +33,8 @@ const security_token_object& dbs_security_token::create_security_token(const res
     db_impl().modify(research, [&](research_object& r_o) {
         r_o.security_tokens.insert(std::make_pair(security_token_external_id, amount));
     });
+
+    dgp_service.create_recent_entity(security_token_external_id);
 
     return security_token;
 }

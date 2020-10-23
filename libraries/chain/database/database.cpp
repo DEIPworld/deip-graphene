@@ -45,6 +45,7 @@
 #include <deip/chain/services/dbs_grant_application.hpp>
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
 #include <deip/chain/services/dbs_security_token.hpp>
+#include <deip/chain/services/dbs_research_license.hpp>
 
 #include <deip/chain/util/asset.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -1807,6 +1808,7 @@ void database::initialize_indexes()
     add_index<assessment_stage_index>();
     add_index<assessment_stage_phase_index>();
     add_index<security_token_index>();
+    add_index<research_license_index>();
 
     _plugin_index_signal();
 }
