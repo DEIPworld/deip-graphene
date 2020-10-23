@@ -7,15 +7,14 @@
 namespace deip {
 namespace protocol {
 
-struct tokenization_agreement_type
+struct basic_tokenization_type
 {
-    string terms;
 };
 
 typedef fc::static_variant<
-  tokenization_agreement_type
+  basic_tokenization_type
   >
-  tokenization_condition_models;
+  tokenization_options;
 
 
 struct create_security_token_operation : public entity_operation
@@ -25,7 +24,7 @@ struct create_security_token_operation : public entity_operation
     account_name_type research_group;
     uint64_t amount;
 
-    optional<tokenization_condition_models> distribution_model;
+    tokenization_options options;
     extensions_type extensions;
 
     void validate() const;
@@ -48,11 +47,11 @@ FC_REFLECT(deip::protocol::create_security_token_operation,
   (research_external_id)
   (research_group)
   (amount)
-  (distribution_model)
+  (options)
   (extensions)
 )
 
-FC_REFLECT( deip::protocol::tokenization_agreement_type, (terms) )
+FC_REFLECT(deip::protocol::basic_tokenization_type, )
 
-DECLARE_STATIC_VARIANT_TYPE(deip::protocol::tokenization_condition_models)
-FC_REFLECT_TYPENAME(deip::protocol::tokenization_condition_models)
+DECLARE_STATIC_VARIANT_TYPE(deip::protocol::tokenization_options)
+FC_REFLECT_TYPENAME(deip::protocol::tokenization_options)

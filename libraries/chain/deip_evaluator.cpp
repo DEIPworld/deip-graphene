@@ -2665,5 +2665,10 @@ void transfer_security_token_evaluator::do_apply(const transfer_security_token_o
     security_tokens_service.transfer_security_token(op.from, op.to, op.security_token_external_id, op.amount);
 }
 
+void create_research_license_evaluator::do_apply(const create_research_license_operation& op)
+{
+
+}
+
 } // namespace chain
 } // namespace deip

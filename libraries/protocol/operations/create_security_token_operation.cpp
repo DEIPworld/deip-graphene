@@ -12,10 +12,11 @@ void create_security_token_operation::validate() const
     validate_account_name(research_group);
     validate_160_bits_hexadecimal_string(external_id);
     validate_160_bits_hexadecimal_string(research_external_id);
-    FC_ASSERT(amount > 0, "Amount is not be specified");
+    FC_ASSERT(amount > 0, "Amount is not specified");
 }
 
 } // namespace protocol
 } // namespace deip
 
-DEFINE_STATIC_VARIANT_TYPE(deip::protocol::tokenization_condition_models)
+
+DEFINE_STATIC_VARIANT_TYPE(deip::protocol::tokenization_options)

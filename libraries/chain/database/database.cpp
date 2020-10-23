@@ -1754,6 +1754,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_assessment_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_security_token_evaluator>();
     _my->_evaluator_registry.register_evaluator<transfer_security_token_evaluator>();
+    _my->_evaluator_registry.register_evaluator<create_research_license_evaluator>();
 }
 
 void database::initialize_indexes()

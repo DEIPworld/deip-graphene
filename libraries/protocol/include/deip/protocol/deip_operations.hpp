@@ -36,6 +36,7 @@
 #include <deip/protocol/operations/create_assessment_operation.hpp>
 #include <deip/protocol/operations/create_security_token_operation.hpp>
 #include <deip/protocol/operations/transfer_security_token_operation.hpp>
+#include <deip/protocol/operations/create_research_license_operation.hpp>
 
 namespace deip {
 namespace protocol {
