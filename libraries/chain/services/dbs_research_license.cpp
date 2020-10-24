@@ -23,7 +23,7 @@ const research_license_object& dbs_research_license::create_research_license(con
     const auto& research_license = db_impl().create<research_license_object>([&](research_license_object& rl_o) {
         rl_o.external_id = external_id;
         rl_o.research_external_id = research.external_id;
-        rl_o.research_group = research.research_group;
+        rl_o.licenser = research.research_group;
         rl_o.licensee = licensee;
 
         fc::from_string(rl_o.terms, terms);
@@ -59,16 +59,16 @@ const research_license_object& dbs_research_license::create_research_license(con
     return research_license;
 }
 
-const dbs_research_license::research_license_refs_type dbs_research_license::get_research_licenses_by_research_group(const account_name_type& research_group) const
+const dbs_research_license::research_license_refs_type dbs_research_license::get_research_licenses_by_licenser(const account_name_type& licenser) const
 {
     research_license_refs_type ret;
 
     const auto& idx = db_impl()
       .get_index<research_license_index>()
       .indicies()
-      .get<by_research_group>();
+      .get<by_licenser>();
 
-    auto it_pair = idx.equal_range(research_group);
+    auto it_pair = idx.equal_range(licenser);
 
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
@@ -184,16 +184,16 @@ const dbs_research_license::research_license_refs_type dbs_research_license::get
     return ret;
 }
 
-const dbs_research_license::research_license_refs_type dbs_research_license::get_research_licenses_by_licensee_and_research_group(const account_name_type& licensee, const account_name_type& research_group) const
+const dbs_research_license::research_license_refs_type dbs_research_license::get_research_licenses_by_licensee_and_licenser(const account_name_type& licensee, const account_name_type& licenser) const
 {
     research_license_refs_type ret;
 
     const auto& idx = db_impl()
       .get_index<research_license_index>()
       .indicies()
-      .get<by_licensee_and_research_group>();
+      .get<by_licensee_and_licenser>();
 
-    auto it_pair = idx.equal_range(boost::make_tuple(licensee, research_group));
+    auto it_pair = idx.equal_range(boost::make_tuple(licensee, licenser));
 
     auto it = it_pair.first;
     const auto it_end = it_pair.second;

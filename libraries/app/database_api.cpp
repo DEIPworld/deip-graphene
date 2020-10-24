@@ -42,6 +42,7 @@
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
 #include <deip/chain/services/dbs_nda_contract.hpp>
 #include <deip/chain/services/dbs_nda_contract_requests.hpp>
+#include <deip/chain/services/dbs_research_license.hpp>
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
@@ -120,6 +121,14 @@ public:
     /* [DEPRECATED] */ bool check_research_content_existence_by_permlink(const external_id_type& research_external_id, const string& title) const;
     vector<research_content_api_obj> get_research_contents_by_research(const external_id_type& external_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
+
+    // Research license
+    fc::optional<research_license_api_obj> get_research_license(const external_id_type& external_id) const;
+    vector<research_license_api_obj> get_research_licenses_by_licensee(const account_name_type& licensee) const;
+    vector<research_license_api_obj> get_research_licenses_by_licenser(const account_name_type& licenser) const;
+    vector<research_license_api_obj> get_research_licenses_by_research(const external_id_type& research_external_id) const;
+    vector<research_license_api_obj> get_research_licenses_by_licensee_and_research(const account_name_type& licensee, const external_id_type& research_external_id) const;
+    vector<research_license_api_obj> get_research_licenses_by_licensee_and_licenser(const account_name_type& licensee, const account_name_type& licenser) const;
 
     // Expert tokens
     fc::optional<expert_token_api_obj> get_expert_token(const expert_token_id_type id) const;
@@ -1312,6 +1321,126 @@ vector<research_api_obj> database_api_impl::lookup_researches(const research_id_
     }
 
     return result;
+}
+
+
+fc::optional<research_license_api_obj> database_api::get_research_license(const external_id_type& external_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_license(external_id); });
+}
+
+fc::optional<research_license_api_obj> database_api_impl::get_research_license(const external_id_type& external_id) const
+{
+    fc::optional<research_license_api_obj> result;
+    const auto& research_license_service = _db.obtain_service<chain::dbs_research_license>();
+
+    const auto& research_license_opt = research_license_service.get_research_license_if_exists(external_id);
+    if (research_license_opt.valid())
+    {
+        const research_license_object& research_license = *research_license_opt;
+        result = research_license_api_obj(research_license);
+    }
+    return result;
+}
+
+
+vector<research_license_api_obj> database_api::get_research_licenses_by_licensee(const account_name_type& licensee) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_licenses_by_licensee(licensee); });
+}
+
+vector<research_license_api_obj> database_api_impl::get_research_licenses_by_licensee(const account_name_type& licensee) const
+{
+    vector<research_license_api_obj> results;
+    const auto& research_license_service = _db.obtain_service<chain::dbs_research_license>();
+
+    const auto& research_licenses = research_license_service.get_research_licenses_by_licensee(licensee);
+    for (const auto& research_license : research_licenses)
+    {
+        results.push_back(research_license_api_obj(research_license));
+    }
+
+    return results;
+}
+
+
+vector<research_license_api_obj> database_api::get_research_licenses_by_licenser(const account_name_type& licenser) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_licenses_by_licenser(licenser); });
+}
+
+vector<research_license_api_obj> database_api_impl::get_research_licenses_by_licenser(const account_name_type& licenser) const
+{
+    vector<research_license_api_obj> results;
+    const auto& research_license_service = _db.obtain_service<chain::dbs_research_license>();
+
+    const auto& research_licenses = research_license_service.get_research_licenses_by_licenser(licenser);
+    for (const auto& research_license : research_licenses)
+    {
+        results.push_back(research_license_api_obj(research_license));
+    }
+
+    return results;
+}
+
+
+vector<research_license_api_obj> database_api::get_research_licenses_by_research(const external_id_type& research_external_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_licenses_by_research(research_external_id); });
+}
+
+vector<research_license_api_obj> database_api_impl::get_research_licenses_by_research(const external_id_type& research_external_id) const
+{
+    vector<research_license_api_obj> results;
+    const auto& research_license_service = _db.obtain_service<chain::dbs_research_license>();
+
+    const auto& research_licenses = research_license_service.get_research_licenses_by_research(research_external_id);
+    for (const auto& research_license : research_licenses)
+    {
+        results.push_back(research_license_api_obj(research_license));
+    }
+
+    return results;
+}
+
+
+vector<research_license_api_obj> database_api::get_research_licenses_by_licensee_and_research(const account_name_type& licensee, const external_id_type& research_external_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_licenses_by_licensee_and_research(licensee, research_external_id); });
+}
+
+vector<research_license_api_obj> database_api_impl::get_research_licenses_by_licensee_and_research(const account_name_type& licensee, const external_id_type& research_external_id) const
+{
+    vector<research_license_api_obj> results;
+    const auto& research_license_service = _db.obtain_service<chain::dbs_research_license>();
+
+    const auto& research_licenses = research_license_service.get_research_licenses_by_licensee_and_research(licensee, research_external_id);
+    for (const auto& research_license : research_licenses)
+    {
+        results.push_back(research_license_api_obj(research_license));
+    }
+
+    return results;
+}
+
+
+vector<research_license_api_obj> database_api::get_research_licenses_by_licensee_and_licenser(const account_name_type& licensee, const account_name_type& licenser) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_licenses_by_licensee_and_licenser(licensee, licenser); });
+}
+
+vector<research_license_api_obj> database_api_impl::get_research_licenses_by_licensee_and_licenser(const account_name_type& licensee, const account_name_type& licenser) const
+{
+    vector<research_license_api_obj> results;
+    const auto& research_license_service = _db.obtain_service<chain::dbs_research_license>();
+
+    const auto& research_licenses = research_license_service.get_research_licenses_by_licensee_and_licenser(licensee, licenser);
+    for (const auto& research_license : research_licenses)
+    {
+        results.push_back(research_license_api_obj(research_license));
+    }
+
+    return results;
 }
 
 

@@ -289,6 +289,16 @@ public:
     vector<research_content_api_obj> get_research_contents_by_research(const external_id_type& external_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
 
+    ///////////////////////
+    // Research licenses //
+    ///////////////////////
+    fc::optional<research_license_api_obj> get_research_license(const external_id_type& external_id) const;
+    vector<research_license_api_obj> get_research_licenses_by_licensee(const account_name_type& licensee) const;
+    vector<research_license_api_obj> get_research_licenses_by_licenser(const account_name_type& licenser) const;
+    vector<research_license_api_obj> get_research_licenses_by_research(const external_id_type& research_external_id) const;
+    vector<research_license_api_obj> get_research_licenses_by_licensee_and_research(const account_name_type& licensee, const external_id_type& research_external_id) const;
+    vector<research_license_api_obj> get_research_licenses_by_licensee_and_licenser(const account_name_type& licensee, const account_name_type& licenser) const;
+
     ///////////////////
     // Expert Tokens //
     ///////////////////
@@ -592,6 +602,14 @@ FC_API(deip::app::database_api,
    (check_research_content_existence_by_permlink)
    (get_research_contents_by_research)
    (get_research_content_by_type)
+
+   // Research license
+   (get_research_license)
+   (get_research_licenses_by_licensee)
+   (get_research_licenses_by_licenser)
+   (get_research_licenses_by_research)
+   (get_research_licenses_by_licensee_and_research)
+   (get_research_licenses_by_licensee_and_licenser)
 
    // Expert Tokens
    (get_expert_token)

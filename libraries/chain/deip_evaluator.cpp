@@ -2679,10 +2679,10 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
     const auto& dup_guard = duplicated_entity_guard(dgp_service);
     dup_guard(op);
 
-    FC_ASSERT(account_service.account_exists(op.research_group), "Account ${1} does not exist", ("1", op.research_group));
+    FC_ASSERT(account_service.account_exists(op.licenser), "Account ${1} does not exist", ("1", op.licenser));
     FC_ASSERT(account_service.account_exists(op.licensee), "Account ${1} does not exist", ("1", op.licensee));
 
-    const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
+    const auto& research_group = research_groups_service.get_research_group_by_account(op.licenser);
     const auto& research = research_service.get_research(op.research_external_id);
 
     FC_ASSERT(research_group.account == research.research_group, "Research ${1} is not owned by ${2} research group", ("1", research.external_id)("2", research_group.account));

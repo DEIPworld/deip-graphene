@@ -32,6 +32,7 @@
 #include <deip/chain/schema/grant_application_object.hpp>
 #include <deip/chain/schema/grant_application_review_object.hpp>
 #include <deip/chain/schema/funding_opportunity_object.hpp>
+#include <deip/chain/schema/research_license_object.hpp>
 #include <deip/chain/schema/witness_objects.hpp>
 #include <deip/witness/witness_objects.hpp>
 #include <deip/chain/database/database.hpp>
@@ -546,6 +547,50 @@ struct research_content_api_obj
 
     map<int64_t, int64_t> eci_per_discipline;
 };
+
+
+struct research_license_api_obj
+{
+    research_license_api_obj(const chain::research_license_object& rl_o)
+
+        : id(rl_o.id._id)
+        , external_id(rl_o.external_id)
+        , licenser(rl_o.licenser)
+        , licensee(rl_o.licensee)
+        , terms(fc::to_string(rl_o.terms))
+        , status(rl_o.status)
+        , expiration_time(rl_o.expiration_time)
+        , created_at(rl_o.created_at)
+
+    {
+        if (rl_o.fee.valid())
+        {
+            fee = *rl_o.fee;
+        }
+    }
+
+    // because fc::variant require for temporary object
+    research_license_api_obj()
+    {
+    }
+
+    int64_t id;
+    string external_id;
+
+    external_id_type research_external_id;
+
+    account_name_type licenser;
+    account_name_type licensee;
+
+    string terms;
+    uint16_t status;
+
+    time_point_sec expiration_time;
+    time_point_sec created_at;
+
+    optional<asset> fee;
+};
+
 
 struct expert_token_api_obj
 {
@@ -1458,6 +1503,21 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (references)
             (eci_per_discipline)
           )
+
+
+FC_REFLECT( deip::app::research_license_api_obj,
+            (id)
+            (external_id)
+            (research_external_id)
+            (licenser)
+            (licensee)
+            (terms)
+            (status)
+            (expiration_time)
+            (created_at)
+            (fee)
+)
+
 
 FC_REFLECT( deip::app::expert_token_api_obj,
             (id)

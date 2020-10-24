@@ -42,7 +42,7 @@ public:
     research_license_id_type id;
     external_id_type external_id;
 
-    account_name_type research_group;
+    account_name_type licenser;
     external_id_type research_external_id;
 
     account_name_type licensee;
@@ -58,11 +58,11 @@ public:
 
 struct by_external_id;
 struct by_research;
-struct by_research_group;
+struct by_licenser;
 struct by_licensee;
 
 struct by_licensee_and_research;
-struct by_licensee_and_research_group;
+struct by_licensee_and_licenser;
 
 
 typedef multi_index_container<research_license_object,
@@ -103,7 +103,7 @@ typedef multi_index_container<research_license_object,
     >,
 
     ordered_non_unique<
-      tag<by_licensee_and_research_group>,
+      tag<by_licensee_and_licenser>,
         composite_key<research_license_object,
           member<
             research_license_object,
@@ -113,7 +113,7 @@ typedef multi_index_container<research_license_object,
           member<
             research_license_object,
             account_name_type,
-            &research_license_object::research_group
+            &research_license_object::licenser
           >
         >
     >,
@@ -137,11 +137,11 @@ typedef multi_index_container<research_license_object,
     >,
 
     ordered_non_unique<
-      tag<by_research_group>,
+      tag<by_licenser>,
         member<
           research_license_object,
           account_name_type,
-          &research_license_object::research_group
+          &research_license_object::licenser
         >
     >
   >,
@@ -155,7 +155,7 @@ typedef multi_index_container<research_license_object,
 FC_REFLECT(deip::chain::research_license_object,
   (id)
   (external_id)
-  (research_group)
+  (licenser)
   (research_external_id)
   (licensee)
   (terms)

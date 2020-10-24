@@ -30,9 +30,9 @@ public:
                                                            const optional<time_point_sec>& expiration_time,
                                                            const optional<asset>& fee);
 
-    const research_license_refs_type get_research_licenses_by_research_group(const account_name_type& research_group) const;
-
     const research_license_object& get_research_license(const external_id_type& external_id) const;
+
+    const research_license_refs_type get_research_licenses_by_licenser(const account_name_type& licenser) const;
 
     const research_license_optional_ref_type get_research_license_if_exists(const external_id_type& external_id) const;
 
@@ -44,7 +44,7 @@ public:
 
     const research_license_refs_type get_research_licenses_by_licensee_and_research(const account_name_type& licensee, const external_id_type& research_external_id) const;
 
-    const research_license_refs_type get_research_licenses_by_licensee_and_research_group(const account_name_type& licensee, const account_name_type& research_group) const;
+    const research_license_refs_type get_research_licenses_by_licensee_and_licenser(const account_name_type& licensee, const account_name_type& licenser) const;
 };
 }
 }
