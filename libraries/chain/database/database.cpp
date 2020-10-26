@@ -1808,6 +1808,7 @@ void database::initialize_indexes()
     add_index<assessment_stage_index>();
     add_index<assessment_stage_phase_index>();
     add_index<security_token_index>();
+    add_index<security_token_balance_index>();
     add_index<research_license_index>();
 
     _plugin_index_signal();

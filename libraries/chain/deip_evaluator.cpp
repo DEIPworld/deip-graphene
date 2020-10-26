@@ -2708,19 +2708,19 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
             const auto& licensee_balance = account_balance_service.get_by_owner_and_asset(op.licensee, fee.symbol);
             FC_ASSERT(asset(licensee_balance.amount, licensee_balance.symbol) >= fee, "Account ${1} balance is not enough.", ("1", op.licensee));
 
-            const auto& research_security_tokens = security_tokens_service.get_security_tokens_by_research(research.external_id);
-
+            const auto& research_security_token_balances = security_tokens_service.get_security_token_balances_by_research(research.external_id);
+            
             // TODO: We should support more advanced models of revenue distribution between security token holders
             const share_type total_amount = std::accumulate(
-                research_security_tokens.begin(), research_security_tokens.end(), share_type(0),
-                [&](share_type acc, const security_token_object& security_token) { return acc + share_type(security_token.amount); });
+                research_security_token_balances.begin(), research_security_token_balances.end(), share_type(0),
+                [&](share_type acc, const security_token_balance_object& security_token) { return acc + share_type(security_token.amount); });
 
             asset total_revenue = asset(0, fee.symbol);
-            for (const security_token_object& security_token : research_security_tokens)
+            for (const security_token_balance_object& security_token_balance : research_security_token_balances)
             {
-                const share_type holder_amount = share_type(security_token.amount);
+                const share_type holder_amount = share_type(security_token_balance.amount);
                 const asset revenue = util::calculate_share(fee, holder_amount, total_amount);
-                account_balance_service.adjust_balance(security_token.owner, revenue);
+                account_balance_service.adjust_balance(security_token_balance.owner, revenue);
                 total_revenue += revenue;
             }
 

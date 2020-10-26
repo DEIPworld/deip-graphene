@@ -66,6 +66,7 @@ enum object_type
     expert_token_object_type,
     research_token_object_type,
     security_token_object_type,
+    security_token_balance_object_type,
     research_token_sale_object_type,
     research_token_sale_contribution_object_type,
     review_object_type,
@@ -141,6 +142,7 @@ class assessment_object;
 class assessment_stage_object;
 class assessment_stage_phase_object;
 class security_token_object;
+class security_token_balance_object;
 class research_license_object;
 
 typedef oid<dynamic_global_property_object> dynamic_global_property_id_type;
@@ -194,6 +196,7 @@ typedef oid<assessment_object> assessment_id_type;
 typedef oid<assessment_stage_object> assessment_stage_id_type;
 typedef oid<assessment_stage_phase_object> assessment_stage_phase_id_type;
 typedef oid<security_token_object> security_token_id_type;
+typedef oid<security_token_balance_object> security_token_balance_id_type;
 typedef oid<research_license_object> research_license_id_type;
 
 typedef bip::allocator<fc::shared_string, bip::managed_mapped_file::segment_manager> basic_string_allocator;
@@ -271,6 +274,7 @@ FC_REFLECT_ENUM( deip::chain::object_type,
                  (assessment_stage_object_type)
                  (assessment_stage_phase_object_type)
                  (security_token_object_type)
+                 (security_token_balance_object_type)
                  (research_license_object_type)
 )
 
