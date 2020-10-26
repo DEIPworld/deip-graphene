@@ -47,8 +47,7 @@ public:
     const account_balance_optional_ref_type get_account_balance_by_owner_and_asset_if_exists(const account_name_type& owner,
                                                                                              const string& symbol) const;
 
-    void adjust_balance(const account_name_type& account_name, const asset& delta);
-
+    const account_balance_object& adjust_balance(const account_name_type& account_name, const asset& delta);
 };
 
 } // namespace chain

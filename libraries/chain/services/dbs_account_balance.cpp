@@ -127,7 +127,8 @@ dbs_account_balance::get_account_balance_by_owner_and_asset_if_exists(const acco
     return result;
 }
 
-void dbs_account_balance::adjust_balance(const account_name_type& account_name, const asset& delta)
+const account_balance_object& dbs_account_balance::adjust_balance(const account_name_type& account_name,
+                                                                  const asset& delta)
 {
     if (!exists_by_owner_and_asset(account_name, delta.symbol))
     {
@@ -144,6 +145,8 @@ void dbs_account_balance::adjust_balance(const account_name_type& account_name, 
     }
 
     db_impl().modify(balance, [&](account_balance_object& ab_o) { ab_o.amount += delta.amount; });
+
+    return balance;
 }
 
 } //namespace chain

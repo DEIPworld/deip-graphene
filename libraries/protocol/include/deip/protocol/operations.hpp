@@ -92,7 +92,8 @@ typedef fc::static_variant<create_account_operation, // 0
                            research_content_eci_history_operation,
                            research_eci_history_operation,
                            account_eci_history_operation,
-                           disciplines_eci_history_operation>
+                           disciplines_eci_history_operation,
+                           account_revenue_income_history_operation>
 
     operation;
 

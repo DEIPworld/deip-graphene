@@ -24,6 +24,7 @@
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_security_token.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_expertise_contribution.hpp>
 
@@ -361,6 +362,8 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
 {
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_group& research_groups_service = obtain_service<dbs_research_group>();
+    dbs_security_token& security_tokens_service = obtain_service<dbs_security_token>();
+
     dbs_discipline& disciplines_service = obtain_service<dbs_discipline>();
 
     const vector<genesis_state_type::research_type>& researches = genesis_state.researches;
@@ -405,7 +408,7 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
             members.insert(research_group.creator);
         }
 
-        research_service.create_research(
+        const auto& created_research = research_service.create_research(
           research_group, 
           research.external_id,
           research.title, 
@@ -419,6 +422,10 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
           members,
           genesis_time
         );
+
+        const auto& security_token_external_id = external_id_type((string)fc::ripemd160::hash((string)created_research.external_id));
+        const uint32_t security_token_amount = 10000;
+        security_tokens_service.create_security_token(created_research, security_token_external_id, security_token_amount);
     }
 }
 

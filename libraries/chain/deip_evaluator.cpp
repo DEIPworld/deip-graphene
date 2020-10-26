@@ -2684,6 +2684,7 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
 
     const auto& research_group = research_groups_service.get_research_group_by_account(op.licenser);
     const auto& research = research_service.get_research(op.research_external_id);
+    const auto& now = _db.head_block_time();
 
     FC_ASSERT(research_group.account == research.research_group, "Research ${1} is not owned by ${2} research group", ("1", research.external_id)("2", research_group.account));
 
@@ -2696,7 +2697,6 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
 
         if (fee_model.expiration_time.valid())
         {
-            const auto& now = _db.head_block_time();
             const auto& expiration_time = *fee_model.expiration_time;
             FC_ASSERT(now < expiration_time, "Research license is expired on creation");
         }
@@ -2720,7 +2720,17 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
             {
                 const share_type holder_amount = share_type(security_token_balance.amount);
                 const asset revenue = util::calculate_share(fee, holder_amount, total_amount);
-                account_balance_service.adjust_balance(security_token_balance.owner, revenue);
+                const auto& asset_balance = account_balance_service.adjust_balance(security_token_balance.owner, revenue);
+                
+                _db.push_virtual_operation(account_revenue_income_history_operation(
+                    asset_balance.owner, 
+                    security_token_balance.security_token_external_id,
+                    security_token_balance.amount,
+                    asset_balance.to_asset(),
+                    revenue,
+                    now)
+                );
+
                 total_revenue += revenue;
             }
 

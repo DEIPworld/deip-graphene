@@ -176,6 +176,33 @@ struct disciplines_eci_history_operation : public virtual_operation
 };
 
 
+struct account_revenue_income_history_operation : public virtual_operation
+{
+    account_revenue_income_history_operation() {}
+    account_revenue_income_history_operation(const account_name_type& account,
+                                             const external_id_type& security_token,
+                                             const uint32_t& security_token_units,
+                                             const asset& balance,
+                                             const asset& revenue,
+                                             const fc::time_point_sec& timestamp)
+        : account(account)
+        , security_token(security_token)
+        , security_token_units(security_token_units)
+        , balance(balance)
+        , revenue(revenue)
+        , timestamp(timestamp)
+    {
+    }
+
+    account_name_type account;
+    external_id_type security_token;
+    uint32_t security_token_units;
+    asset balance;
+    asset revenue;
+    fc::time_point_sec timestamp;
+};
+
+
 }
 } // deip::protocol
 
@@ -189,3 +216,4 @@ FC_REFLECT(deip::protocol::research_content_eci_history_operation, (research_con
 FC_REFLECT(deip::protocol::research_eci_history_operation, (research_id)(discipline_id)(diff))
 FC_REFLECT(deip::protocol::account_eci_history_operation, (account)(discipline_id)(recipient_type)(diff))
 FC_REFLECT(deip::protocol::disciplines_eci_history_operation, (contributions)(timestamp))
+FC_REFLECT(deip::protocol::account_revenue_income_history_operation, (account)(security_token)(security_token_units)(balance)(revenue)(timestamp))

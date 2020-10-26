@@ -6,6 +6,7 @@ namespace deip {
 namespace chain {
 
 using fc::shared_string;
+using deip::protocol::asset;
 
 class account_balance_object : public object<account_balance_object_type, account_balance_object>
 {
@@ -27,6 +28,11 @@ public:
 
     account_name_type owner;
     share_type amount = 0;
+
+    const asset to_asset() const 
+    {
+        return asset(amount, symbol);
+    }
 };
 
 struct by_owner;
