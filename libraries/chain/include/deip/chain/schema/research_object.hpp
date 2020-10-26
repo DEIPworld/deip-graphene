@@ -149,6 +149,7 @@ FC_REFLECT(deip::chain::research_object,
   (external_id)
   (title)
   (research_group_id)
+  (research_group)
   (permlink)
   (abstract)
   (created_at)
