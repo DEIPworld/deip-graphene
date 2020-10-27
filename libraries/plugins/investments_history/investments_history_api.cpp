@@ -43,7 +43,13 @@ public:
 
         const auto& security_token_service = db->obtain_service<chain::dbs_security_token>();
 
-        const auto& security_token = security_token_service.get_security_token(security_token_external_id);
+        const auto& security_token_opt = security_token_service.get_security_token_if_exists(security_token_external_id);
+        if (!security_token_opt.valid())
+        {
+            return results;
+        }
+
+        const auto& security_token = *security_token_opt;
         const auto& security_token_api = app::security_token_api_obj(security_token);
 
         std::multimap<time_point_sec, asset> revenue_by_step;
@@ -123,7 +129,13 @@ public:
 
         const auto& security_token_service = db->obtain_service<chain::dbs_security_token>();
 
-        const auto& security_token = security_token_service.get_security_token(security_token_external_id);
+        const auto& security_token_opt = security_token_service.get_security_token_if_exists(security_token_external_id);
+        if (!security_token_opt.valid())
+        {
+           return results;
+        }
+
+        const auto& security_token = *security_token_opt;
         const auto& security_token_api = app::security_token_api_obj(security_token);
 
         uint32_t limit = DEIP_API_BULK_FETCH_LIMIT;

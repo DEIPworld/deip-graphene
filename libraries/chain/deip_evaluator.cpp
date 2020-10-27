@@ -2666,6 +2666,7 @@ void transfer_security_token_evaluator::do_apply(const transfer_security_token_o
     security_tokens_service.transfer_security_token(op.from, op.to, op.security_token_external_id, op.amount);
 }
 
+
 void create_research_license_evaluator::do_apply(const create_research_license_operation& op)
 {
     auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
@@ -2690,10 +2691,14 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
 
     if (op.license_conditions.which() == license_agreement_types::tag<licensing_fee_type>::value)
     {
-        FC_ASSERT(research.security_tokens.size() > 0, "Research ${1} is not tokenized yet. Tokenize it at first to collect licensee fee", ("1", research.external_id));
-
         const auto& fee_model = op.license_conditions.get<licensing_fee_type>();
         const auto& research_license = research_license_service.create_research_license(research, op.external_id, op.licensee, fee_model.terms, fee_model.expiration_time, fee_model.fee);
+
+        for (const auto& beneficiary_share : fee_model.beneficiaries)
+        {
+            const auto& security_token = beneficiary_share.first;
+            FC_ASSERT(research.security_tokens.find(security_token) != research.security_tokens.end(), "Research ${1} is not tokenized with ${2} security token.", ("1", research.external_id)("2", security_token));
+        }
 
         if (fee_model.expiration_time.valid())
         {
@@ -2704,37 +2709,46 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
         if (research_license.fee.valid())
         {
             const auto& fee = *research_license.fee;
+            asset total_revenue = asset(0, fee.symbol);
 
             const auto& licensee_balance = account_balance_service.get_by_owner_and_asset(op.licensee, fee.symbol);
-            FC_ASSERT(asset(licensee_balance.amount, licensee_balance.symbol) >= fee, "Account ${1} balance is not enough.", ("1", op.licensee));
+            FC_ASSERT(licensee_balance.to_asset() >= fee, "Account ${1} balance is not enough.", ("1", op.licensee));
 
-            const auto& research_security_token_balances = security_tokens_service.get_security_token_balances_by_research(research.external_id);
-            
-            // TODO: We should support more advanced models of revenue distribution between security token holders
-            const share_type total_amount = std::accumulate(
-                research_security_token_balances.begin(), research_security_token_balances.end(), share_type(0),
-                [&](share_type acc, const security_token_balance_object& security_token) { return acc + share_type(security_token.amount); });
-
-            asset total_revenue = asset(0, fee.symbol);
-            for (const security_token_balance_object& security_token_balance : research_security_token_balances)
+            std::map<external_id_type, asset> beneficiary_shares;
+            for (const auto& beneficiary_share : fee_model.beneficiaries)
             {
-                const share_type holder_amount = share_type(security_token_balance.amount);
-                const asset revenue = util::calculate_share(fee, holder_amount, total_amount);
-                const auto& asset_balance = account_balance_service.adjust_balance(security_token_balance.owner, revenue);
-                
-                _db.push_virtual_operation(account_revenue_income_history_operation(
-                    asset_balance.owner, 
-                    security_token_balance.security_token_external_id,
-                    security_token_balance.amount,
-                    asset_balance.to_asset(),
-                    revenue,
-                    now)
-                );
-
-                total_revenue += revenue;
+                const auto precision = beneficiary_share.second.precision(beneficiary_share.second.decimals);
+                const percent full_share = percent(100 * precision, beneficiary_share.second.decimals);
+                const asset share = util::calculate_share(fee, beneficiary_share.second.amount, full_share.amount);
+                beneficiary_shares.insert(std::make_pair(beneficiary_share.first, share));
             }
 
-            FC_ASSERT(total_revenue <= fee, "Total revenue amount is more than fee amount");
+            for (const auto& beneficiary_share : beneficiary_shares)
+            {
+                const auto& security_token = security_tokens_service.get_security_token(beneficiary_share.first);
+                const auto& security_token_balances = security_tokens_service.get_security_token_balances(security_token.external_id);
+                const auto& beneficiary_revenue = beneficiary_share.second;
+
+                for (const security_token_balance_object& security_token_balance : security_token_balances)
+                {
+                    const share_type holder_amount = share_type(security_token_balance.amount);
+                    const asset revenue = util::calculate_share(beneficiary_revenue, holder_amount, security_token.total_amount);
+                    const auto& asset_balance = account_balance_service.adjust_balance(security_token_balance.owner, revenue);
+                    
+                    _db.push_virtual_operation(account_revenue_income_history_operation(
+                        asset_balance.owner, 
+                        security_token_balance.security_token_external_id,
+                        security_token_balance.amount,
+                        asset_balance.to_asset(),
+                        revenue,
+                        now)
+                    );
+
+                    total_revenue += revenue;
+                }
+            }
+
+            FC_ASSERT(total_revenue <= fee, "Total revenue amount ${1} is more than fee amount ${2}", ("1", total_revenue)("2", fee));
 
             if (total_revenue < fee)
             {
