@@ -25,10 +25,11 @@ public:
     using research_token_sale_refs_type = std::vector<std::reference_wrapper<const research_token_sale_object>>;
     using research_token_sale_optional_ref_type = fc::optional<std::reference_wrapper<const research_token_sale_object>>;
 
-    const research_token_sale_object& create_research_token_sale(const research_object &research,
-                                                                 const fc::time_point_sec start_time,
-                                                                 const fc::time_point_sec end_time,
-                                                                 const share_type& balance_tokens,
+    const research_token_sale_object& create_research_token_sale(const external_id_type& external_id,
+                                                                 const research_object& research,
+                                                                 const flat_map<external_id_type, security_token_amount_type>& security_tokens_on_sale,
+                                                                 const fc::time_point_sec& start_time,
+                                                                 const fc::time_point_sec& end_time,
                                                                  const asset& soft_cap,
                                                                  const asset& hard_cap);
 
@@ -36,12 +37,15 @@ public:
 
     const research_token_sale_object& get_by_id(const research_token_sale_id_type &id) const;
 
+    const research_token_sale_object& get_research_token_sale(const external_id_type& external_id) const;
+
+    const research_token_sale_optional_ref_type get_research_token_sale_if_exists(const external_id_type& external_id) const;
+
     const research_token_sale_optional_ref_type get_research_token_sale_if_exists(const research_token_sale_id_type& id) const;
 
     research_token_sale_refs_type get_by_research_id(const research_id_type &research_id) const;
 
-    const research_token_sale_object& increase_tokens_amount(const research_token_sale_id_type &id,
-                                                             const asset &amount);
+    const research_token_sale_object& collect(const research_token_sale_id_type& id, const asset& amount);
 
     const research_token_sale_object& update_status(const research_token_sale_id_type &id,
                                                     const research_token_sale_status& status);
@@ -49,15 +53,14 @@ public:
     research_token_sale_refs_type get_by_research_id_and_status(const research_id_type& research_id,
                                                                 const research_token_sale_status& status) const;
 
-    //research_token_sale_contribution
 
     using research_token_sale_contribution_refs_type = std::vector<std::reference_wrapper<const research_token_sale_contribution_object>>;
     using research_token_sale_contribution_optional_ref_type = fc::optional<std::reference_wrapper<const research_token_sale_contribution_object>>;
 
-    const research_token_sale_contribution_object& contribute(const research_token_sale_id_type &research_token_sale_id,
-                                                              const account_name_type &owner,
-                                                              const fc::time_point_sec contribution_time,
-                                                              const asset amount);
+    const research_token_sale_contribution_object& contribute(const research_token_sale_id_type& research_token_sale_id,
+                                                              const account_name_type& owner,
+                                                              const fc::time_point_sec& contribution_time,
+                                                              const asset& amount);
 
     const research_token_sale_contribution_object& get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type& id) const;
 

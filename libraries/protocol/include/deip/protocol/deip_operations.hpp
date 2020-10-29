@@ -480,6 +480,7 @@ struct change_recovery_account_operation : public base_operation
 
 struct contribute_to_token_sale_operation : public base_operation
 {
+    external_id_type token_sale_external_id;
     external_id_type research_external_id;
     account_name_type contributor;
     asset amount;
@@ -695,7 +696,7 @@ FC_REFLECT( deip::protocol::recover_account_operation, (account_to_recover)(new_
 FC_REFLECT( deip::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) )
 
 // DEIP native operations
-FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (research_external_id)(contributor)(amount)(extensions))
+FC_REFLECT( deip::protocol::contribute_to_token_sale_operation, (token_sale_external_id)(research_external_id)(contributor)(amount)(extensions))
 FC_REFLECT( deip::protocol::vote_for_review_operation, (external_id)(voter)(review_external_id)(discipline_external_id)(weight)(extensions))
 FC_REFLECT( deip::protocol::create_vesting_balance_operation, (creator)(owner)(balance)(vesting_duration_seconds)(vesting_cliff_seconds)(period_duration_seconds)(extensions))
 FC_REFLECT( deip::protocol::withdraw_vesting_balance_operation, (vesting_balance_id)(owner)(amount)(extensions))

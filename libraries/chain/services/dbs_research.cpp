@@ -233,18 +233,6 @@ void dbs_research::check_research_existence(const research_id_type& id) const
     FC_ASSERT(research != nullptr, "Research with id \"${1}\" must exist.", ("1", id));
 }
 
-void dbs_research::decrease_owned_tokens(const research_object& research, const percent& delta)
-{
-    FC_ASSERT((research.owned_tokens - delta > percent(0)), "Cannot update research owned tokens (result amount < 0)");
-    db_impl().modify(research, [&](research_object& r_o) { r_o.owned_tokens -= delta; });
-}
-
-void dbs_research::increase_owned_tokens(const research_object& research, const percent& delta)
-{
-    FC_ASSERT(delta >= percent(0), "Cannot update research owned tokens (delta < 0)");
-    db_impl().modify(research, [&](research_object& r_o) { r_o.owned_tokens += delta; });
-}
-
 const std::map<discipline_id_type, share_type> dbs_research::get_eci_evaluation(const research_id_type& research_id) const
 {
     const dbs_research_content& research_content_service = db_impl().obtain_service<dbs_research_content>();

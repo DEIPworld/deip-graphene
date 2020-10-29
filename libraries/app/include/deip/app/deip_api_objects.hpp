@@ -691,6 +691,7 @@ struct research_token_sale_api_obj
 {
     research_token_sale_api_obj(const chain::research_token_sale_object& rts_o)
         : id(rts_o.id._id)
+        , external_id(rts_o.external_id)
         , research_id(rts_o.research_id._id)
         , research_external_id(rts_o.research_external_id)
         , start_time(rts_o.start_time)
@@ -700,7 +701,12 @@ struct research_token_sale_api_obj
         , soft_cap(rts_o.soft_cap)
         , hard_cap(rts_o.hard_cap)
         , status(rts_o.status)
-    {}
+    {
+        for (const auto& security_token_on_sale : rts_o.security_tokens_on_sale)
+        {
+            security_tokens_on_sale.emplace(std::make_pair(security_token_on_sale.first, security_token_on_sale.second));
+        }
+    }
 
     // because fc::variant require for temporary object
     research_token_sale_api_obj()
@@ -708,8 +714,10 @@ struct research_token_sale_api_obj
     }
 
     int64_t id;
+    string external_id;
     int64_t research_id;
     string research_external_id;
+    std::map<external_id_type, security_token_amount_type> security_tokens_on_sale;
     time_point_sec start_time;
     time_point_sec end_time;
     asset total_amount;
@@ -1593,8 +1601,10 @@ FC_REFLECT( deip::app::research_group_api_obj,
 
 FC_REFLECT( deip::app::research_token_sale_api_obj,
             (id)
+            (external_id)
             (research_id)
             (research_external_id)
+            (security_tokens_on_sale)
             (start_time)
             (end_time)
             (total_amount)

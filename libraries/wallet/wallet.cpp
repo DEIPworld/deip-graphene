@@ -2149,7 +2149,7 @@ vector<proposal_api_obj> wallet_api::get_proposals_by_creator(const account_name
 
 vector<research_token_sale_api_obj> wallet_api::list_research_token_sales(const uint32_t& from = 0, uint32_t limit = 100)
 {
-    return my->_remote_db->get_research_token_sale(from, limit);
+    return my->_remote_db->get_research_token_sales(from, limit);
 }
 
 fc::optional<research_content_api_obj> wallet_api::get_research_content(const int64_t id)

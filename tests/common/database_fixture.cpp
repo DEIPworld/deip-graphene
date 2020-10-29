@@ -578,7 +578,7 @@ const research_token_sale_object& database_fixture::research_token_sale_create(c
         rts_o.balance_tokens = balance_tokens;
         rts_o.soft_cap = soft_cap;
         rts_o.hard_cap = hard_cap;
-        rts_o.status = research_token_sale_status ::token_sale_active;
+        rts_o.status = static_cast<uint16_t>(research_token_sale_status::active);
     });
     return research_token_sale;
 }

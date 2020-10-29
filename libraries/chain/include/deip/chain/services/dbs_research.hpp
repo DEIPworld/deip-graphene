@@ -64,10 +64,6 @@ public:
 
     void check_research_existence(const research_id_type& id) const;
 
-    void decrease_owned_tokens(const research_object& research, const percent& delta);
-
-    void increase_owned_tokens(const research_object& research, const percent& delta);
-
     const std::map<discipline_id_type, share_type> get_eci_evaluation(const research_id_type& research_id) const;
 
     const research_object& update_eci_evaluation(const research_id_type& research_id);

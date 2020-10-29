@@ -124,34 +124,6 @@ BOOST_AUTO_TEST_CASE(get_research)
     FC_LOG_AND_RETHROW()
 }
 
-    
-BOOST_AUTO_TEST_CASE(decrease_owned_tokens)
-{
-    try
-    {
-        create_researches();
-
-        auto& research = db.get<research_object, by_id>(1);
-        BOOST_CHECK_NO_THROW(data_service.decrease_owned_tokens(research, percent(200)));
-        BOOST_CHECK(research.owned_tokens == percent(9800));
-
-    }
-    FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE(increase_owned_tokens)
-{
-    try
-    {
-        create_researches();
-
-        auto& research = db.get<research_object, by_id>(1);
-        BOOST_CHECK_NO_THROW(data_service.increase_owned_tokens(research, percent(200)));
-        BOOST_CHECK(research.owned_tokens == percent(10200));
-
-    }
-    FC_LOG_AND_RETHROW()
-}
 
 BOOST_AUTO_TEST_SUITE_END()
 

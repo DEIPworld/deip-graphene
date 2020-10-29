@@ -19,13 +19,14 @@ namespace chain {
 
 using fc::time_point;
 using protocol::external_id_type;
+using protocol::security_token_amount_type;
 
-enum research_token_sale_status : uint16_t
+enum class research_token_sale_status : uint16_t
 {
-    token_sale_active = 1,
-    token_sale_finished = 2,
-    token_sale_expired = 3,
-    token_sale_inactive = 4
+    active = 1,
+    finished = 2,
+    expired = 3,
+    inactive = 4
 };
 
 class research_token_sale_object : public object<research_token_sale_object_type, research_token_sale_object>
@@ -40,16 +41,18 @@ public:
     }
 
     research_token_sale_id_type id;
+    external_id_type external_id;
 
     research_id_type research_id;
     external_id_type research_external_id;
+    flat_map<external_id_type, security_token_amount_type> security_tokens_on_sale;
     time_point_sec start_time;
     time_point_sec end_time;
     protocol::asset total_amount;
     share_type balance_tokens;
     protocol::asset soft_cap;
     protocol::asset hard_cap;
-    research_token_sale_status status;
+    uint16_t status;
 };
 
 class research_token_sale_contribution_object : public object<research_token_sale_contribution_object_type, research_token_sale_contribution_object>
@@ -68,6 +71,7 @@ public:
     fc::time_point_sec contribution_time;
 };
 
+struct by_external_id;
 struct by_research_id;
 struct by_end_time;
 struct by_research_id_and_status;
@@ -77,6 +81,10 @@ typedef multi_index_container<research_token_sale_object,
                 member<research_token_sale_object,
                         research_token_sale_id_type,
                         &research_token_sale_object::id>>,
+                ordered_unique<tag<by_external_id>,
+                        member<research_token_sale_object,
+                                external_id_type,
+                                &research_token_sale_object::external_id>>,
                 ordered_non_unique<tag<by_research_id>,
                         member<research_token_sale_object,
                                 research_id_type,
@@ -91,7 +99,7 @@ typedef multi_index_container<research_token_sale_object,
                                research_id_type,
                                &research_token_sale_object::research_id>,
                         member<research_token_sale_object,
-                               research_token_sale_status,
+                               uint16_t,
                                &research_token_sale_object::status>>>>,
         allocator<research_token_sale_object>>
         research_token_sale_index;
@@ -127,9 +135,14 @@ typedef multi_index_container<research_token_sale_contribution_object,
 } // namespace chain
 } // namespace deip
 
-FC_REFLECT_ENUM(deip::chain::research_token_sale_status, (token_sale_active)(token_sale_finished)(token_sale_expired)(token_sale_inactive))
+FC_REFLECT_ENUM(deip::chain::research_token_sale_status, 
+  (active)
+  (finished)
+  (expired)
+  (inactive)
+)
 
-FC_REFLECT(deip::chain::research_token_sale_object, (id)(research_id)(research_external_id)(start_time)(end_time)(total_amount)(balance_tokens)(soft_cap)(hard_cap)(status))
+FC_REFLECT(deip::chain::research_token_sale_object, (id)(external_id)(research_id)(research_external_id)(security_tokens_on_sale)(start_time)(end_time)(total_amount)(balance_tokens)(soft_cap)(hard_cap)(status))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::research_token_sale_object, deip::chain::research_token_sale_index)
 

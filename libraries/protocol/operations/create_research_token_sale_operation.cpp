@@ -10,9 +10,16 @@ namespace protocol {
 void create_research_token_sale_operation::validate() const
 {
     validate_account_name(research_group);
+    validate_160_bits_hexadecimal_string(external_id);
     validate_160_bits_hexadecimal_string(research_external_id);
 
-    FC_ASSERT(share > percent(1 * DEIP_1_PERCENT) && share < percent(DEIP_1_PERCENT * 100), "Research tokens share for sale is invalid", ("1", share));
+    FC_ASSERT(security_tokens_on_sale.size() > 0, "Security tokens on sale are not specified");
+
+    for (const auto& security_token_on_sale : security_tokens_on_sale)
+    {
+        validate_160_bits_hexadecimal_string(security_token_on_sale.first);
+        FC_ASSERT(security_token_on_sale.second > 0, "Security token amount is not specified for ${1} entry", ("1", security_token_on_sale.first));
+    }
 
     FC_ASSERT(soft_cap.amount > 0,
       "Soft cap should be > 0. Provided amount: ${1}.",

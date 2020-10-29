@@ -5,17 +5,23 @@
 namespace deip {
 namespace protocol {
 
-struct create_research_token_sale_operation : public base_operation
+using deip::protocol::external_id_type;
+
+struct create_research_token_sale_operation : public entity_operation
 {
+    external_id_type external_id;
     account_name_type research_group;
     external_id_type research_external_id;
     time_point_sec start_time;
     time_point_sec end_time;
-    percent share;
+    flat_map<external_id_type, security_token_amount_type> security_tokens_on_sale;
     asset soft_cap;
     asset hard_cap;
-
+    
     extensions_type extensions;
+
+    string entity_id() const { return "external_id"; }
+    external_id_type get_entity_id() const { return external_id; }
 
     void validate() const;
 
@@ -30,11 +36,12 @@ struct create_research_token_sale_operation : public base_operation
 }
 
 FC_REFLECT(deip::protocol::create_research_token_sale_operation,
+  (external_id)
   (research_group)
   (research_external_id)
   (start_time)
   (end_time)
-  (share)
+  (security_tokens_on_sale)
   (soft_cap)
   (hard_cap)
   (extensions)

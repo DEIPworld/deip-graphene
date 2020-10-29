@@ -32,7 +32,7 @@ public:
             ts.balance_tokens = BALANCE_TOKENS;
             ts.soft_cap = asset(SOFT_CAP, DEIP_SYMBOL);
             ts.hard_cap = asset(HARD_CAP, DEIP_SYMBOL);
-            ts.status = token_sale_active;
+            ts.status = static_cast<uint16_t>(research_token_sale_status::active);;
         });
 
         db.create<research_token_sale_object>([&](research_token_sale_object& ts) {
@@ -42,7 +42,7 @@ public:
             ts.balance_tokens = 200;
             ts.soft_cap = asset(SOFT_CAP, DEIP_SYMBOL);
             ts.hard_cap = asset(HARD_CAP, DEIP_SYMBOL);
-            ts.status = token_sale_active;
+            ts.status = static_cast<uint16_t>(research_token_sale_status::active);
         });
 
         db.create<research_token_sale_object>([&](research_token_sale_object& ts) {
@@ -52,7 +52,7 @@ public:
             ts.balance_tokens = 90;
             ts.soft_cap = asset(60, DEIP_SYMBOL);
             ts.hard_cap = asset(90, DEIP_SYMBOL);
-            ts.status = token_sale_active;
+            ts.status = static_cast<uint16_t>(research_token_sale_status::active);
         });
     }
 
@@ -65,7 +65,7 @@ public:
             ts.balance_tokens = BALANCE_TOKENS;
             ts.soft_cap = asset(SOFT_CAP, DEIP_SYMBOL);
             ts.hard_cap = asset(HARD_CAP, DEIP_SYMBOL);
-            ts.status = token_sale_expired;
+            ts.status = static_cast<uint16_t>(research_token_sale_status::expired);
         });
 
         db.create<research_token_sale_object>([&](research_token_sale_object& ts) {
@@ -76,7 +76,7 @@ public:
             ts.balance_tokens = BALANCE_TOKENS;
             ts.soft_cap = asset(SOFT_CAP, DEIP_SYMBOL);
             ts.hard_cap = asset(HARD_CAP, DEIP_SYMBOL);
-            ts.status = token_sale_expired;
+            ts.status = static_cast<uint16_t>(research_token_sale_status::expired);
         });
     }
 
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(increase_research_token_sale_tokens_amount)
     {
         create_research_token_sales();
 
-        data_service.increase_tokens_amount(2, asset(50, DEIP_SYMBOL));
+        data_service.collect(2, asset(50, DEIP_SYMBOL));
         auto& research_token_sale = db.get<research_token_sale_object>(2);
 
         BOOST_CHECK(research_token_sale.total_amount == asset(50, DEIP_SYMBOL));
@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_contributions_by_research_id_and_st
     {
         create_inactive_research_token_sales();
 
-        auto research_token_sales = data_service.get_by_research_id_and_status(1, token_sale_expired);
+        auto research_token_sales = data_service.get_by_research_id_and_status(1, research_token_sale_status::expired);
 
         BOOST_CHECK(research_token_sales.size() == 2);
 
@@ -315,7 +315,7 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_contributions_by_research_id_and_st
                                            && research_token_sale.balance_tokens == BALANCE_TOKENS
                                            && research_token_sale.soft_cap == asset(SOFT_CAP, DEIP_SYMBOL)
                                            && research_token_sale.hard_cap == asset(HARD_CAP, DEIP_SYMBOL)
-                                           && research_token_sale.status == token_sale_expired;
+                                           && research_token_sale.status == static_cast<uint16_t>(research_token_sale_status::expired);
                                 }));
 
         BOOST_CHECK(std::any_of(research_token_sales.begin(), research_token_sales.end(),
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE(get_research_token_sale_contributions_by_research_id_and_st
                                            && research_token_sale.balance_tokens == BALANCE_TOKENS
                                            && research_token_sale.soft_cap == asset(SOFT_CAP, DEIP_SYMBOL)
                                            && research_token_sale.hard_cap == asset(HARD_CAP, DEIP_SYMBOL)
-                                           && research_token_sale.status == token_sale_expired;
+                                           && research_token_sale.status == static_cast<uint16_t>(research_token_sale_status::expired);
                                 }));
 
 

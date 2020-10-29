@@ -3,6 +3,7 @@
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
+#include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 #include <deip/chain/database/database.hpp>
 
 namespace deip {
@@ -13,27 +14,37 @@ dbs_research_token_sale::dbs_research_token_sale(database& db)
 {
 }
 
-const research_token_sale_object& dbs_research_token_sale::create_research_token_sale(const research_object& research,
-                                                                                      const fc::time_point_sec start_time,
-                                                                                      const fc::time_point_sec end_time,
-                                                                                      const share_type& balance_tokens,
+const research_token_sale_object& dbs_research_token_sale::create_research_token_sale(const external_id_type& external_id,
+                                                                                      const research_object& research,
+                                                                                      const flat_map<external_id_type, security_token_amount_type>& security_tokens_on_sale,
+                                                                                      const fc::time_point_sec& start_time,
+                                                                                      const fc::time_point_sec& end_time,
                                                                                       const asset& soft_cap,
                                                                                       const asset& hard_cap)
 {
+    auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
+
     FC_ASSERT(start_time >= db_impl().head_block_time(), "Start time must be >= current time");
     FC_ASSERT(end_time > start_time, "End time must be >= start time");
     const research_token_sale_object& new_research_token_sale
         = db_impl().create<research_token_sale_object>([&](research_token_sale_object& research_token_sale) {
+              
+              research_token_sale.external_id = external_id;
+              for (const auto& security_token_on_sale : security_tokens_on_sale)
+              {
+                  research_token_sale.security_tokens_on_sale.insert(std::make_pair(security_token_on_sale.first, security_token_on_sale.second));
+              }
               research_token_sale.research_id = research.id;
               research_token_sale.research_external_id = research.external_id;
               research_token_sale.start_time = start_time;
               research_token_sale.end_time = end_time;
               research_token_sale.total_amount = asset(0, soft_cap.symbol);
-              research_token_sale.balance_tokens = balance_tokens;
               research_token_sale.soft_cap = soft_cap;
               research_token_sale.hard_cap = hard_cap;
-              research_token_sale.status = research_token_sale_status::token_sale_inactive;
+              research_token_sale.status = static_cast<uint16_t>(research_token_sale_status::inactive);
           });
+
+    dgp_service.create_recent_entity(external_id);
 
     return new_research_token_sale;
 }
@@ -62,6 +73,15 @@ const research_token_sale_object& dbs_research_token_sale::get_by_id(const resea
     FC_CAPTURE_AND_RETHROW((id))
 }
 
+const research_token_sale_object& dbs_research_token_sale::get_research_token_sale(const external_id_type& external_id) const
+{
+    try
+    {
+        return db_impl().get<research_token_sale_object, by_external_id>(external_id);
+    }
+    FC_CAPTURE_AND_RETHROW((external_id))
+}
+
 const dbs_research_token_sale::research_token_sale_optional_ref_type
 dbs_research_token_sale::get_research_token_sale_if_exists(const research_token_sale_id_type& id) const
 {
@@ -80,6 +100,25 @@ dbs_research_token_sale::get_research_token_sale_if_exists(const research_token_
     return result;
 }
 
+const dbs_research_token_sale::research_token_sale_optional_ref_type
+dbs_research_token_sale::get_research_token_sale_if_exists(const external_id_type& external_id) const
+{
+    research_token_sale_optional_ref_type result;
+    const auto& idx = db_impl()
+      .get_index<research_token_sale_index>()
+      .indicies()
+      .get<by_external_id>();
+
+    auto itr = idx.find(external_id);
+    if (itr != idx.end())
+    {
+        result = *itr;
+    }
+
+    return result;
+}
+
+
 dbs_research_token_sale::research_token_sale_refs_type
 dbs_research_token_sale::get_by_research_id(const research_id_type &research_id) const
 {
@@ -97,8 +136,8 @@ dbs_research_token_sale::get_by_research_id(const research_id_type &research_id)
     return ret;
 }
 
-const research_token_sale_object& dbs_research_token_sale::increase_tokens_amount(const research_token_sale_id_type &id,
-                                                                                  const asset &amount)
+const research_token_sale_object& dbs_research_token_sale::collect(const research_token_sale_id_type &id,
+                                                                   const asset &amount)
 {
     const research_token_sale_object& research_token_sale = get_by_id(id);
     db_impl().modify(research_token_sale, [&](research_token_sale_object& rts) { rts.total_amount += amount; });
@@ -109,7 +148,7 @@ const research_token_sale_object& dbs_research_token_sale::update_status(const r
                                                                          const research_token_sale_status& status)
 {
     const research_token_sale_object& research_token_sale = get_by_id(id);
-    db_impl().modify(research_token_sale, [&](research_token_sale_object& rts) { rts.status = status; });
+    db_impl().modify(research_token_sale, [&](research_token_sale_object& rts) { rts.status = static_cast<uint16_t>(status); });
     return research_token_sale;
 }
 
@@ -120,8 +159,8 @@ dbs_research_token_sale::research_token_sale_refs_type dbs_research_token_sale::
     research_token_sale_refs_type ret;
 
     auto it_pair = db_impl().get_index<research_token_sale_index>().indicies()
-                            .get<by_research_id_and_status>()
-                            .equal_range(boost::make_tuple(research_id, status));
+        .get<by_research_id_and_status>()
+        .equal_range(boost::make_tuple(research_id, static_cast<uint16_t>(status)));
 
     auto it = it_pair.first;
     const auto it_end = it_pair.second;
@@ -134,21 +173,40 @@ dbs_research_token_sale::research_token_sale_refs_type dbs_research_token_sale::
     return ret;
 }
 
-const research_token_sale_contribution_object&
-    dbs_research_token_sale::contribute(const research_token_sale_id_type &research_token_sale_id,
-                                        const account_name_type &owner,
-                                        const fc::time_point_sec contribution_time,
-                                        const asset amount)
+const research_token_sale_contribution_object& dbs_research_token_sale::contribute(const research_token_sale_id_type& research_token_sale_id,
+                                                                                   const account_name_type& owner,
+                                                                                   const fc::time_point_sec& contribution_time,
+                                                                                   const asset& amount)
 {
-    const auto& new_research_token_sale_contribution
-            = db_impl().create<research_token_sale_contribution_object>([&](research_token_sale_contribution_object& research_token_sale_contribution) {
-                research_token_sale_contribution.research_token_sale_id = research_token_sale_id;
-                research_token_sale_contribution.owner = owner;
-                research_token_sale_contribution.contribution_time = contribution_time;
-                research_token_sale_contribution.amount = amount;
-            });
+    const auto& idx = db_impl()
+      .get_index<research_token_sale_contribution_index>()
+      .indicies()
+      .get<by_owner_and_research_token_sale_id>();
 
-    return new_research_token_sale_contribution;
+    auto itr = idx.find(std::make_tuple(owner, research_token_sale_id));
+
+    if (itr != idx.end())
+    {
+        const research_token_sale_contribution_object& existing_research_token_sale_contribution = *itr;
+        db_impl().modify(existing_research_token_sale_contribution, [&](research_token_sale_contribution_object& rtsc_o) {
+            rtsc_o.amount += amount;
+        });
+
+        return existing_research_token_sale_contribution;
+    }
+    else
+    {
+        const research_token_sale_contribution_object& new_research_token_sale_contribution
+            = db_impl().create<research_token_sale_contribution_object>(
+                [&](research_token_sale_contribution_object& research_token_sale_contribution) {
+                    research_token_sale_contribution.research_token_sale_id = research_token_sale_id;
+                    research_token_sale_contribution.owner = owner;
+                    research_token_sale_contribution.contribution_time = contribution_time;
+                    research_token_sale_contribution.amount = amount;
+                });
+
+        return new_research_token_sale_contribution;
+    }
 }
 
 const research_token_sale_contribution_object&
@@ -248,7 +306,8 @@ void dbs_research_token_sale::distribute_research_tokens(const research_token_sa
     dbs_research_token& research_token_service = db_impl().obtain_service<dbs_research_token>();
     dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
 
-    auto& research_token_sale = get_by_id(research_token_sale_id);
+    const auto& research_token_sale = get_by_id(research_token_sale_id);
+    const auto& research = research_service.get_research(research_token_sale.research_id);
 
     const auto& idx = db_impl()
       .get_index<research_token_sale_contribution_index>()
@@ -259,7 +318,6 @@ void dbs_research_token_sale::distribute_research_tokens(const research_token_sa
     auto it = idx.first;
     const auto it_end = idx.second;
 
-    const auto& research = research_service.get_research(research_token_sale.research_id);
     while (it != it_end)
     {
         const auto& research_share = (it->amount.amount * research_token_sale.balance_tokens) / research_token_sale.total_amount.amount;
@@ -309,24 +367,24 @@ void dbs_research_token_sale::process_research_token_sales()
 
     while (itr != idx.end()) // TODO add index by status to decrease iteration time
     {
-        if (itr->end_time <= now && itr->status == research_token_sale_status::token_sale_active)
+        if (itr->end_time <= now && itr->status == static_cast<uint16_t>(research_token_sale_status::active))
         {
             if (itr->total_amount < itr->soft_cap)
             {
-                update_status(itr->id, research_token_sale_status::token_sale_expired);
+                update_status(itr->id, research_token_sale_status::expired);
                 refund_research_tokens(itr->id);
             }
             else if (itr->total_amount >= itr->soft_cap)
             {
-                update_status(itr->id, research_token_sale_status::token_sale_finished);
+                update_status(itr->id, research_token_sale_status::finished);
                 distribute_research_tokens(itr->id);
             }
         }
         else if (itr->end_time > now)
         {
-            if (now >= itr->start_time && itr->status == research_token_sale_status::token_sale_inactive)
+            if (now >= itr->start_time && itr->status == static_cast<uint16_t>(research_token_sale_status::inactive))
             {
-                update_status(itr->id, research_token_sale_status::token_sale_active);
+                update_status(itr->id, research_token_sale_status::active);
             }
         }
 
