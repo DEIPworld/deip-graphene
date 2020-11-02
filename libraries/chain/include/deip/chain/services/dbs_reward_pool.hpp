@@ -33,8 +33,6 @@ public:
 
     reward_pool_refs_type get_reward_pools_by_content_id(const research_content_id_type &research_content_id) const;
 
-    reward_pool_refs_type get_all() const;
-
     bool is_research_reward_pool_exists_by_research_content_id_and_discipline_id(const research_content_id_type& research_content_id,
                                                                                  const discipline_id_type& discipline_id);
 

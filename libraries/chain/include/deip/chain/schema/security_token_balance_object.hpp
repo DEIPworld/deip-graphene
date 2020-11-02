@@ -22,6 +22,7 @@ public:
     external_id_type research_external_id;
     account_name_type owner;
     uint32_t amount = 0;
+    uint32_t frozen_amount = 0;
 };
 
 struct by_owner;
@@ -71,6 +72,6 @@ typedef multi_index_container<security_token_balance_object,
 }
 
 
-FC_REFLECT(deip::chain::security_token_balance_object, (id)(security_token_external_id)(research_external_id)(owner)(amount))
+FC_REFLECT(deip::chain::security_token_balance_object, (id)(security_token_external_id)(research_external_id)(owner)(amount)(frozen_amount))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::security_token_balance_object, deip::chain::security_token_balance_index)

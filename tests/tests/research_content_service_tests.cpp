@@ -33,7 +33,6 @@ public:
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for Research #1";
-            r.owned_tokens = percent(DEIP_100_PERCENT);
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {
@@ -81,7 +80,6 @@ public:
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = "abstract for research #2";
-            r.owned_tokens = percent(DEIP_100_PERCENT);
         });
 
         db.create<research_content_object>([&](research_content_object& rc) {

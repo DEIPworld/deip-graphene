@@ -2311,7 +2311,7 @@ annotated_signed_transaction wallet_api::create_review(const external_id_type& e
 }
 
 annotated_signed_transaction wallet_api::contribute_to_token_sale(const std::string& contributor,
-                                                                  const external_id_type& research_external_id,
+                                                                  const external_id_type& token_sale_external_id,
                                                                   const asset& amount,
                                                                   const bool broadcast)
 {
@@ -2319,7 +2319,7 @@ annotated_signed_transaction wallet_api::contribute_to_token_sale(const std::str
 
     contribute_to_token_sale_operation op;
 
-    op.research_external_id = research_external_id;
+    op.token_sale_external_id = token_sale_external_id;
     op.contributor = contributor;
     op.amount = amount;
 

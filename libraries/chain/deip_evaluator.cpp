@@ -937,17 +937,12 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
     dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
     dbs_research_token_sale& research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
     dbs_research& research_service = _db.obtain_service<dbs_research>();
-
-    FC_ASSERT(research_service.research_exists(op.research_external_id), 
-      "Research ${1} does not exist",
-      ("1", op.research_external_id));
+    const auto& block_time = _db.head_block_time();
 
     FC_ASSERT(account_service.account_exists(op.contributor), 
       "Account ${1} does not exist",
       ("1", op.contributor));
 
-    const auto& block_time = _db.head_block_time();
-    const auto& research = research_service.get_research(op.research_external_id);
     const auto& research_token_sale_opt = research_token_sale_service.get_research_token_sale_if_exists(op.token_sale_external_id);
 
     FC_ASSERT(research_token_sale_opt.valid(), 
@@ -955,10 +950,11 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
       ("1", op.token_sale_external_id));
 
     const research_token_sale_object& research_token_sale = *research_token_sale_opt;
+    const auto& research = research_service.get_research(research_token_sale.research_external_id);
 
-    FC_ASSERT(research_token_sale.status == static_cast<uint16_t>(research_token_sale_status::active), 
-      "Research token sale ${1} does not exist",
-      ("1", op.token_sale_external_id));
+    FC_ASSERT(research_token_sale.status == static_cast<uint16_t>(research_token_sale_status::active),
+      "Research token sale ${1} is in ${2} status",
+      ("1", op.token_sale_external_id)("2", research_token_sale.status));
 
     const auto& account_balance = account_balance_service.get_by_owner_and_asset(op.contributor, op.amount.symbol);
 
@@ -967,7 +963,7 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
       ("1", account_balance.amount)("2", op.amount));
 
     asset amount_to_contribute = op.amount;
-    bool is_hard_cap_reached = research_token_sale.total_amount + amount_to_contribute >= research_token_sale.hard_cap;
+    const bool is_hard_cap_reached = research_token_sale.total_amount + amount_to_contribute >= research_token_sale.hard_cap;
 
     if (is_hard_cap_reached) 
     {
@@ -977,12 +973,12 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
     const auto& research_token_sale_contribution = research_token_sale_service.contribute(research_token_sale.id, op.contributor, block_time, amount_to_contribute);
 
     account_balance_service.adjust_balance(op.contributor, -amount_to_contribute);
-    research_token_sale_service.collect(research_token_sale.id, amount_to_contribute);
+    research_token_sale_service.collect_funds(research_token_sale.id, amount_to_contribute);
 
     if (is_hard_cap_reached)
     {
         research_token_sale_service.update_status(research_token_sale.id, research_token_sale_status::finished);
-        research_token_sale_service.distribute_research_tokens(research_token_sale.id);
+        research_token_sale_service.finish_research_token_sale(research_token_sale.id);
     }
 
     _db.push_virtual_operation(token_sale_contribution_to_history_operation(
@@ -1055,36 +1051,7 @@ void withdraw_vesting_balance_evaluator::do_apply(const withdraw_vesting_balance
 
 void transfer_research_share_evaluator::do_apply(const transfer_research_share_operation& op)
 {
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_research_token& research_token_service = _db.obtain_service<dbs_research_token>();
-    dbs_research& research_service = _db.obtain_service<dbs_research>();
 
-    FC_ASSERT(account_service.account_exists(op.sender),
-      "Account ${1} does not exist",
-      ("1", op.sender));
-
-    FC_ASSERT(account_service.account_exists(op.receiver),
-      "Account ${1} does not exist",
-      ("1", op.receiver));
-
-    FC_ASSERT(research_service.research_exists(op.research_external_id),
-      "Research with external id: ${1} does not exist",
-      ("1", op.research_external_id));
-
-    const auto& research = research_service.get_research(op.research_external_id);
-
-    FC_ASSERT(research_token_service.exists_by_owner_and_research(op.sender, research.id),
-      "Research token with owner: ${1} and research: ${2} does not exist",
-      ("1", op.sender)("2", research.id));
-
-    const auto& shart_to_transfer = research_token_service.get_by_owner_and_research(op.sender, research.id);
-
-    FC_ASSERT(op.share.amount <= shart_to_transfer.amount,
-      "Amount cannot be greater than total research token amount. Provided value: ${1}, actual amount: ${2}.",
-      ("1", op.share.amount)("2", shart_to_transfer.amount));
-
-    research_token_service.adjust_research_token(op.sender, research, -op.share.amount, false);
-    research_token_service.adjust_research_token(op.receiver, research, op.share.amount, false);
 }
 
 void create_expertise_allocation_proposal_evaluator::do_apply(const create_expertise_allocation_proposal_operation& op)
@@ -2270,6 +2237,8 @@ void leave_research_group_membership_evaluator::do_apply(const leave_research_gr
     auto& research_groups_service = _db.obtain_service<dbs_research_group>();
     auto& research_service = _db.obtain_service<dbs_research>();
     auto& research_token_service = _db.obtain_service<dbs_research_token>();
+    auto& security_token_token_service = _db.obtain_service<dbs_security_token>();
+    auto& research_content_service = _db.obtain_service<dbs_research_content>();
 
     FC_ASSERT(account_service.account_exists(op.member), 
       "Account ${1} does not exist", 
@@ -2290,27 +2259,38 @@ void leave_research_group_membership_evaluator::do_apply(const leave_research_gr
       "Account ${1} is not a member of ${2} research group.",
       ("1", op.member)("2", research_group.account));
 
-    const auto& rgt = research_groups_service.get_research_group_token_by_member(op.member, research_group.id);
-    const auto& all_researches = research_service.get_researches_by_research_group(research_group.id);
+    const auto& researches = research_service.get_researches_by_research_group(research_group.id);
 
     if (op.is_exclusion)
     {
-        for (auto& wrap : all_researches)
+        for (const research_object& research : researches)
         {
-            const auto& research = wrap.get();
-            if (research.compensation_share.valid() && research.members.find(op.member) != research.members.end())
+            if (research.compensation_share.valid())
             {
                 const auto& compensation_share = *research.compensation_share;
-                const auto& compensation = research.owned_tokens.amount * (rgt.amount * compensation_share.amount / DEIP_100_PERCENT) / DEIP_100_PERCENT;
-                // research_service.decrease_owned_tokens(research, percent(compensation));
-                research_token_service.adjust_research_token(op.member, research, compensation, true);
+                const auto& research_contents = research_content_service.get_research_content_by_research_id(research.id);
+                const auto& authors = std::accumulate(
+                    research_contents.begin(), research_contents.end(), std::set<account_name_type>(),
+                    [&](std::set<account_name_type> acc, const research_content_object& research_content) {
+                      acc.insert(research_content.authors.begin(), research_content.authors.end());
+                      return acc; 
+                    });
+
+                if (authors.find(op.member) != authors.end())
+                {
+                    const auto& security_tokens_balances = security_token_token_service.get_security_token_balances_by_owner_and_research(research.research_group, research.external_id);
+                    for (const security_token_balance_object& security_tokens_balance : security_tokens_balances)
+                    {
+                        const auto& compensation = util::calculate_share(share_type(security_tokens_balance.amount), compensation_share);
+                        security_token_token_service.transfer_security_token(research.research_group, op.member, security_tokens_balance.security_token_external_id, uint32_t(compensation.value));
+                    }
+                }
             }
         }
     }
 
-    for (auto& wrap : all_researches)
+    for (const research_object& research : researches)
     {
-        const auto& research = wrap.get();
         flat_set<account_name_type> updated_members;
 
         for (auto& member : research.members)
@@ -2402,7 +2382,6 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
       op.compensation_share, 
       op.is_private,
       is_finished,
-      percent(DEIP_100_PERCENT), 
       members,
       block_time
     );
@@ -2539,6 +2518,7 @@ void create_research_token_sale_evaluator::do_apply(const create_research_token_
     dup_guard(op);
 
     const auto& block_time = _db.head_block_time();
+    FC_ASSERT(op.start_time >= block_time);
 
     FC_ASSERT(account_service.account_exists(op.research_group),
       "Account ${1} does not exist",
@@ -2565,15 +2545,18 @@ void create_research_token_sale_evaluator::do_apply(const create_research_token_
       "Research ${1} does not belong to research group ${2}",
       ("1", op.research_external_id)("2", research_group.name));
 
-    const auto& research_token_sales = research_token_sale_service.get_by_research_id_and_status(research.id, research_token_sale_status::active);
+    const auto& active_research_token_sales = research_token_sale_service.get_by_research_id_and_status(research.id, research_token_sale_status::active);
+    const auto& inactive_research_token_sales = research_token_sale_service.get_by_research_id_and_status(research.id, research_token_sale_status::inactive);
 
-    FC_ASSERT(research_token_sales.size() == 0, 
-      "Research ${1} token sale is in progress", 
+    FC_ASSERT(inactive_research_token_sales.size() == 0 && active_research_token_sales.size() == 0, 
+      "Research ${1} has scheduled token sales already", 
       ("1", op.research_external_id));
 
-    FC_ASSERT(op.start_time >= block_time);
+    for (const auto& security_token_on_sale : op.security_tokens_on_sale)
+    {
+        security_token_service.freeze_security_token(research.research_group, security_token_on_sale.first, security_token_on_sale.second);
+    }
 
-    // research_service.decrease_owned_tokens(research, op.share);
     research_token_sale_service.create_research_token_sale(
       op.external_id,
       research,

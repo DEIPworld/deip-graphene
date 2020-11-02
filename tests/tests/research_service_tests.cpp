@@ -34,7 +34,6 @@ public:
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = ABSTRACT;
-            r.owned_tokens = percent(DEIP_100_PERCENT);
             r.is_private = false;
         });
 
@@ -45,7 +44,6 @@ public:
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = ABSTRACT;
-            r.owned_tokens = percent(DEIP_100_PERCENT);
             r.is_private = false;
         });
 
@@ -56,7 +54,6 @@ public:
             r.is_finished = false;
             r.created_at = db.head_block_time();
             r.abstract = ABSTRACT;
-            r.owned_tokens = percent(DEIP_100_PERCENT);
             r.is_private = false;
         });
     }
@@ -84,7 +81,6 @@ BOOST_AUTO_TEST_CASE(get_researches_by_research_group)
                     research.research_group_id == 2 &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
-                    research.owned_tokens == percent(DEIP_100_PERCENT) &&
                     research.is_private == false;
         }));
 
@@ -95,7 +91,6 @@ BOOST_AUTO_TEST_CASE(get_researches_by_research_group)
                     research.research_group_id == 2 &&
                     research.is_finished == false &&
                     research.abstract == ABSTRACT &&
-                    research.owned_tokens == percent(DEIP_100_PERCENT) &&
                     research.is_private == false;
         }));
     }
@@ -117,7 +112,6 @@ BOOST_AUTO_TEST_CASE(get_research)
         BOOST_CHECK(research.is_finished == false);
         BOOST_CHECK(research.created_at <= db.head_block_time());
         BOOST_CHECK(research.abstract == ABSTRACT);
-        BOOST_CHECK(research.owned_tokens == percent(DEIP_100_PERCENT));
         BOOST_CHECK(research.is_private == false);
 
     }

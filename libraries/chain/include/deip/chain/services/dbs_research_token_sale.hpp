@@ -33,19 +33,19 @@ public:
                                                                  const asset& soft_cap,
                                                                  const asset& hard_cap);
 
-    research_token_sale_refs_type get_all() const;
-
-    const research_token_sale_object& get_by_id(const research_token_sale_id_type &id) const;
+    const research_token_sale_object& get_research_token_sale_by_id(const research_token_sale_id_type& id) const;
 
     const research_token_sale_object& get_research_token_sale(const external_id_type& external_id) const;
+
+    const research_token_sale_refs_type get_research_token_sales_by_research(const external_id_type& research_external_id) const;
 
     const research_token_sale_optional_ref_type get_research_token_sale_if_exists(const external_id_type& external_id) const;
 
     const research_token_sale_optional_ref_type get_research_token_sale_if_exists(const research_token_sale_id_type& id) const;
 
-    research_token_sale_refs_type get_by_research_id(const research_id_type &research_id) const;
+    const research_token_sale_refs_type get_by_research_id(const research_id_type &research_id) const;
 
-    const research_token_sale_object& collect(const research_token_sale_id_type& id, const asset& amount);
+    const research_token_sale_object& collect_funds(const research_token_sale_id_type& id, const asset& amount);
 
     const research_token_sale_object& update_status(const research_token_sale_id_type &id,
                                                     const research_token_sale_status& status);
@@ -62,23 +62,21 @@ public:
                                                               const fc::time_point_sec& contribution_time,
                                                               const asset& amount);
 
-    const research_token_sale_contribution_object& get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type& id) const;
+    const research_token_sale_contribution_optional_ref_type get_research_token_sale_contribution_if_exists(const research_token_sale_contribution_id_type& id) const;
 
-    const research_token_sale_contribution_optional_ref_type
-    get_research_token_sale_contribution_if_exists(const research_token_sale_contribution_id_type& id) const;
+    const research_token_sale_contribution_refs_type get_research_token_sale_contributions_by_research_token_sale(const external_id_type& token_sale_external_id) const;
 
-    research_token_sale_contribution_refs_type get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type& research_token_sale_id) const;
+    const research_token_sale_contribution_refs_type get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type& research_token_sale_id) const;
 
     const research_token_sale_contribution_object& get_research_token_sale_contribution_by_contributor_and_research_token_sale_id(const account_name_type& owner, const research_token_sale_id_type& research_token_sale_id) const;
 
-    const research_token_sale_contribution_optional_ref_type
-    get_research_token_sale_contribution_by_contributor_and_research_token_sale_id_if_exists(const account_name_type& owner, const research_token_sale_id_type& research_token_sale_id) const;
+    const research_token_sale_contribution_optional_ref_type get_research_token_sale_contribution_by_contributor_and_research_token_sale_id_if_exists(const account_name_type& owner, const research_token_sale_id_type& research_token_sale_id) const;
 
-    research_token_sale_contribution_refs_type get_research_token_sale_contributions_by_contributor(const account_name_type& owner) const;
+    const research_token_sale_contribution_refs_type get_research_token_sale_contributions_by_contributor(const account_name_type& owner) const;
 
-    void distribute_research_tokens(const research_token_sale_id_type& research_token_sale_id);
+    void finish_research_token_sale(const research_token_sale_id_type& research_token_sale_id);
 
-    void refund_research_tokens(const research_token_sale_id_type research_token_sale_id);
+    void refund_research_token_sale(const research_token_sale_id_type research_token_sale_id);
 
     void process_research_token_sales();
 };

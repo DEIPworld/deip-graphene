@@ -24,7 +24,6 @@ const research_object& dbs_research::create_research(const research_group_object
                                                      const optional<percent>& compensation_share,
                                                      const bool& is_private,
                                                      const bool& is_finished,
-                                                     const percent& owned_tokens,
                                                      const flat_set<account_name_type>& members,
                                                      const time_point_sec& created_at)
 {
@@ -43,7 +42,6 @@ const research_object& dbs_research::create_research(const research_group_object
         r_o.compensation_share = compensation_share;
         r_o.is_private = is_private;
         r_o.is_finished = is_finished;
-        r_o.owned_tokens = owned_tokens;
         r_o.members = members;
         r_o.created_at = created_at;
         r_o.last_update_time = created_at;

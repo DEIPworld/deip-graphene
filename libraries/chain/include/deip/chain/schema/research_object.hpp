@@ -47,7 +47,6 @@ public:
     time_point_sec last_update_time;
     
     bool is_finished;
-    percent owned_tokens;
     optional<percent> review_share;
     optional<percent> compensation_share;
 
@@ -156,7 +155,6 @@ FC_REFLECT(deip::chain::research_object,
   (review_share_last_update)
   (last_update_time)
   (is_finished)
-  (owned_tokens)
   (review_share)
   (compensation_share)
   (eci_per_discipline)

@@ -165,7 +165,6 @@ struct database_fixture
                                                                  fc::time_point_sec start_time,
                                                                  fc::time_point_sec end_time,
                                                                  share_type total_amount,
-                                                                 share_type balance_tokens,
                                                                  share_type soft_cap,
                                                                  share_type hard_cap);
 

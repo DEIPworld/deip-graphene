@@ -150,14 +150,13 @@ public:
 
     // Research token sales
     fc::optional<research_token_sale_api_obj> get_research_token_sale(const external_id_type& external_id) const;
-    fc::optional<research_token_sale_api_obj> get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const;
+    fc::optional<research_token_sale_api_obj> get_research_token_sale_by_id(const research_token_sale_id_type& token_sale_id) const;
     vector<research_token_sale_api_obj> get_research_token_sales_by_research_id(const research_id_type& research_id) const;
+    vector<research_token_sale_api_obj> get_research_token_sales_by_research(const external_id_type& research_external_id) const;
     vector<research_token_sale_api_obj> get_research_token_sales(const uint32_t& from, uint32_t limit) const;
-    fc::optional<research_token_sale_contribution_api_obj> get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type research_token_sale_contribution_id) const;
-    vector<research_token_sale_contribution_api_obj> get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type research_token_sale_id) const;
-    fc::optional<research_token_sale_contribution_api_obj> get_research_token_sale_contribution_by_contributor_and_research_token_sale_id(const account_name_type owner, const research_token_sale_id_type research_token_sale_id) const;
-    vector<research_token_sale_contribution_api_obj> get_research_token_sale_contributions_by_contributor(const account_name_type owner) const;
-    vector<research_token_sale_api_obj> get_research_token_sales_by_research_id_and_status(const research_id_type& research_id, const uint16_t status);
+    vector<research_token_sale_contribution_api_obj> get_research_token_sale_contributions_by_research_token_sale(const external_id_type& token_sale_external_id) const;
+    vector<research_token_sale_contribution_api_obj> get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type& token_sale_id) const;
+    vector<research_token_sale_contribution_api_obj> get_research_token_sale_contributions_by_contributor(const account_name_type& owner) const;
 
     // Total votes
     fc::optional<expertise_contribution_object_api_obj> get_expertise_contribution_by_research_content_and_discipline(const research_content_id_type& research_content_id, const discipline_id_type& discipline_id) const;
@@ -2037,19 +2036,39 @@ database_api_impl::get_research_token_sale(const external_id_type& external_id) 
     return result;
 }
 
-fc::optional<research_token_sale_api_obj>
-database_api::get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const
+vector<research_token_sale_api_obj>
+database_api::get_research_token_sales_by_research(const external_id_type& research_external_id) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_research_token_sale_by_id(research_token_sale_id); });
+    return my->_db.with_read_lock([&]() { return my->get_research_token_sales_by_research(research_external_id); });
+}
+
+vector<research_token_sale_api_obj> database_api_impl::get_research_token_sales_by_research(const external_id_type& research_external_id) const
+{
+    vector<research_token_sale_api_obj> results;
+    const auto& research_token_sale_service = _db.obtain_service<chain::dbs_research_token_sale>();
+
+    const auto& research_token_sales = research_token_sale_service.get_research_token_sales_by_research(research_external_id);
+    for (const research_token_sale_object& research_token_sale : research_token_sales)
+    {
+        results.push_back(research_token_sale);
+    }
+
+    return results;
 }
 
 fc::optional<research_token_sale_api_obj>
-database_api_impl::get_research_token_sale_by_id(const research_token_sale_id_type research_token_sale_id) const
+database_api::get_research_token_sale_by_id(const research_token_sale_id_type& token_sale_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_token_sale_by_id(token_sale_id); });
+}
+
+fc::optional<research_token_sale_api_obj>
+database_api_impl::get_research_token_sale_by_id(const research_token_sale_id_type& token_sale_id) const
 {
     fc::optional<research_token_sale_api_obj> result;
 
     const auto& research_token_sale_service = _db.obtain_service<chain::dbs_research_token_sale>();
-    const auto& research_token_sale_opt = research_token_sale_service.get_research_token_sale_if_exists(research_token_sale_id);
+    const auto& research_token_sale_opt = research_token_sale_service.get_research_token_sale_if_exists(token_sale_id);
 
     if (research_token_sale_opt.valid())
     {
@@ -2091,7 +2110,7 @@ database_api_impl::get_research_token_sales_by_research_id(const research_id_typ
     vector<research_token_sale_api_obj> results;
     const auto& research_token_sale_service = _db.obtain_service<chain::dbs_research_token_sale>();
 
-    auto research_token_sales = research_token_sale_service.get_by_research_id(research_id);
+    const auto& research_token_sales = research_token_sale_service.get_by_research_id(research_id);
 
     for (const chain::research_token_sale_object& research_token_sale : research_token_sales)
     {
@@ -2101,63 +2120,41 @@ database_api_impl::get_research_token_sales_by_research_id(const research_id_typ
     return results;
 }
 
-vector<research_token_sale_api_obj>
-database_api::get_research_token_sales_by_research_id_and_status(const research_id_type& research_id, const uint16_t status)
+vector<research_token_sale_contribution_api_obj>
+database_api::get_research_token_sale_contributions_by_research_token_sale(const external_id_type& token_sale_external_id) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_research_token_sales_by_research_id_and_status(research_id, status); });
-}
-
-vector<research_token_sale_api_obj>
-database_api_impl::get_research_token_sales_by_research_id_and_status(const research_id_type& research_id, const uint16_t status)
-{
-    vector<research_token_sale_api_obj> results;
-    const auto& research_token_sale_service = _db.obtain_service<chain::dbs_research_token_sale>();
-
-    auto research_token_sales = research_token_sale_service.get_by_research_id_and_status(research_id, static_cast<research_token_sale_status>(status));
-
-    for (const chain::research_token_sale_object& research_token_sale : research_token_sales)
-    {
-        results.push_back(research_token_sale);
-    }
-
-    return results;
-}
-
-fc::optional<research_token_sale_contribution_api_obj>
-database_api::get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type research_token_sale_contribution_id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_research_token_sale_contribution_by_id(research_token_sale_contribution_id); });
-}
-
-fc::optional<research_token_sale_contribution_api_obj>
-database_api_impl::get_research_token_sale_contribution_by_id(const research_token_sale_contribution_id_type research_token_sale_contribution_id) const
-{
-    fc::optional<research_token_sale_contribution_api_obj> result;
-
-    const auto& research_token_sale_service = _db.obtain_service<chain::dbs_research_token_sale>();
-    const auto& research_token_sale_contribution_opt = research_token_sale_service.get_research_token_sale_contribution_if_exists(research_token_sale_contribution_id);
-
-    if (research_token_sale_contribution_opt.valid())
-    {
-        result = research_token_sale_contribution_api_obj((*research_token_sale_contribution_opt).get());
-    }
-
-    return result;
+    return my->_db.with_read_lock([&]() { return my->get_research_token_sale_contributions_by_research_token_sale(token_sale_external_id); });
 }
 
 vector<research_token_sale_contribution_api_obj>
-database_api::get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type research_token_sale_id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_research_token_sale_contributions_by_research_token_sale_id(research_token_sale_id); });
-}
-
-vector<research_token_sale_contribution_api_obj>
-database_api_impl::get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type research_token_sale_id) const
+database_api_impl::get_research_token_sale_contributions_by_research_token_sale(const external_id_type& token_sale_external_id) const
 {
     vector<research_token_sale_contribution_api_obj> results;
     const auto& research_token_sale_service = _db.obtain_service<chain::dbs_research_token_sale>();
 
-    auto research_token_sale_contributions = research_token_sale_service.get_research_token_sale_contributions_by_research_token_sale_id(research_token_sale_id);
+    const auto& research_token_sale_contributions = research_token_sale_service.get_research_token_sale_contributions_by_research_token_sale(token_sale_external_id);
+    for (const research_token_sale_contribution_object& research_token_sale_contribution : research_token_sale_contributions)
+    {
+        results.push_back(research_token_sale_contribution);
+    }
+
+    return results;
+}
+
+
+vector<research_token_sale_contribution_api_obj>
+database_api::get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type& token_sale_id) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_research_token_sale_contributions_by_research_token_sale_id(token_sale_id); });
+}
+
+vector<research_token_sale_contribution_api_obj>
+database_api_impl::get_research_token_sale_contributions_by_research_token_sale_id(const research_token_sale_id_type& token_sale_id) const
+{
+    vector<research_token_sale_contribution_api_obj> results;
+    const auto& research_token_sale_service = _db.obtain_service<chain::dbs_research_token_sale>();
+
+    const auto& research_token_sale_contributions = research_token_sale_service.get_research_token_sale_contributions_by_research_token_sale_id(token_sale_id);
 
     for (const chain::research_token_sale_contribution_object& research_token_sale_contribution : research_token_sale_contributions)
     {
@@ -2167,36 +2164,15 @@ database_api_impl::get_research_token_sale_contributions_by_research_token_sale_
     return results;
 }
 
-fc::optional<research_token_sale_contribution_api_obj>
-database_api::get_research_token_sale_contribution_by_contributor_and_research_token_sale_id(const account_name_type owner, const research_token_sale_id_type research_token_sale_id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_research_token_sale_contribution_by_contributor_and_research_token_sale_id(owner, research_token_sale_id); });
-}
-
-fc::optional<research_token_sale_contribution_api_obj>
-database_api_impl::get_research_token_sale_contribution_by_contributor_and_research_token_sale_id(const account_name_type owner, const research_token_sale_id_type research_token_sale_id) const
-{
-    fc::optional<research_token_sale_contribution_api_obj> result;
-
-    const auto& research_token_sale_service = _db.obtain_service<chain::dbs_research_token_sale>();
-    const auto& research_token_sale_contribution_opt = research_token_sale_service.get_research_token_sale_contribution_by_contributor_and_research_token_sale_id_if_exists(owner, research_token_sale_id);
-
-    if (research_token_sale_contribution_opt.valid())
-    {
-        result = research_token_sale_contribution_api_obj((*research_token_sale_contribution_opt).get());
-    }
-
-    return result;
-}
 
 vector<research_token_sale_contribution_api_obj>
-database_api::get_research_token_sale_contributions_by_contributor(const account_name_type owner) const
+database_api::get_research_token_sale_contributions_by_contributor(const account_name_type& owner) const
 {
     return my->_db.with_read_lock([&]() { return my->get_research_token_sale_contributions_by_contributor(owner); });
 }
 
 vector<research_token_sale_contribution_api_obj>
-database_api_impl::get_research_token_sale_contributions_by_contributor(const account_name_type owner) const
+database_api_impl::get_research_token_sale_contributions_by_contributor(const account_name_type& owner) const
 {
     vector<research_token_sale_contribution_api_obj> results;
     const auto& research_token_sale_service = _db.obtain_service<chain::dbs_research_token_sale>();

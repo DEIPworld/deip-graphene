@@ -109,7 +109,7 @@ void change_recovery_account_operation::validate() const
 void contribute_to_token_sale_operation::validate() const
 {
     validate_account_name(contributor);
-    validate_160_bits_hexadecimal_string(research_external_id);
+    validate_160_bits_hexadecimal_string(token_sale_external_id);
     FC_ASSERT(amount.amount > 0, "Contribution must and greater than 0");
 }
 

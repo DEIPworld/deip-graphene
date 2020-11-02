@@ -1858,18 +1858,17 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
             fc::from_string(r.permlink, "permlink");
             r.research_group_id = 31;
             r.is_finished = false;
-            r.owned_tokens = percent(DEIP_100_PERCENT);
             r.created_at = db.head_block_time();
             r.last_update_time = db.head_block_time();
             r.review_share_last_update = fc::time_point_sec(db.head_block_time().sec_since_epoch() - DAYS_TO_SECONDS(100));
         });
 
-        research_token_sale_create(0, 1, db.head_block_time() - 60 * 60 * 5, db.head_block_time() + 60 * 60 * 5, 200, 1000, 100, 400);
+        research_token_sale_create(0, 1, db.head_block_time() - 60 * 60 * 5, db.head_block_time() + 60 * 60 * 5, 200, 1000, 100);
         research_token_sale_contribution_create(0, 0, "bob", 200, db.head_block_time());
 
         contribute_to_token_sale_operation op;
 
-        op.research_external_id = "";
+        op.token_sale_external_id = "";
         op.contributor = "alice";
         op.amount = asset(600, DEIP_SYMBOL);
 

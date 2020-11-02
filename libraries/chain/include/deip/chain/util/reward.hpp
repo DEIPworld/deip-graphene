@@ -18,6 +18,7 @@ namespace util {
 using deip::protocol::asset;
 using deip::protocol::price;
 using deip::protocol::share_type;
+using deip::protocol::percent;
 
 using fc::uint128_t;
 
@@ -27,6 +28,7 @@ asset calculate_share(const asset &amount, const share_type &share_percent);
 asset calculate_share(const asset &amount, const share_type &weight, const share_type &total_weight);
 share_type calculate_share(const share_type &amount, const share_type &share_percent);
 share_type calculate_share(const share_type &amount, const share_type &weight, const share_type &total_weight);
+share_type calculate_share(const share_type& amount, const percent& share);
 
 uint32_t evaluate_review_weigh_modifier(const research_content_id_type& research_content_id);
 

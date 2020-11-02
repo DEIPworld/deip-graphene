@@ -12,6 +12,8 @@
 namespace deip {
 namespace chain {
 
+    using protocol::security_token_amount_type;
+
     class dbs_security_token : public dbs_base
     {
         friend class dbservice_dbs_factory;
@@ -39,7 +41,15 @@ namespace chain {
         void transfer_security_token(const account_name_type& from,
                                      const account_name_type& to,
                                      const external_id_type& security_token_external_id,
-                                     const uint32_t& amount);
+                                     const security_token_amount_type& amount);
+
+        const security_token_balance_object& freeze_security_token(const account_name_type& account,
+                                                                   const external_id_type& security_token_external_id,
+                                                                   const security_token_amount_type& amount);
+
+        const security_token_balance_object& unfreeze_security_token(const account_name_type& account,
+                                                                     const external_id_type& security_token_external_id,
+                                                                     const security_token_amount_type& amount);
 
         const security_token_object& get_security_token(const external_id_type& external_id) const;
 

@@ -43,7 +43,7 @@ const security_token_balance_object&
 dbs_security_token::create_security_token_balance(const external_id_type& security_token_external_id,
                                                   const external_id_type& research_external_id,
                                                   const account_name_type& owner,
-                                                  const uint32_t& amount)
+                                                  const security_token_amount_type& amount)
 {
     FC_ASSERT(amount >= 0, "Security token amount can not be negative");
     const security_token_balance_object& security_token_balance
@@ -61,7 +61,7 @@ dbs_security_token::create_security_token_balance(const external_id_type& securi
 void dbs_security_token::transfer_security_token(const account_name_type& from,
                                                  const account_name_type& to,
                                                  const external_id_type& security_token_external_id,
-                                                 const uint32_t& amount)
+                                                 const security_token_amount_type& amount)
 {
     const auto& research_service = db_impl().obtain_service<dbs_research>();
     const auto& security_token_opt = get_security_token_if_exists(security_token_external_id);
@@ -113,7 +113,6 @@ void dbs_security_token::transfer_security_token(const account_name_type& from,
     FC_ASSERT(total_amount == issued_amount, "Total amount ${1} is more than issued amount ${2} for security token ${3}", 
       ("1", total_amount)("2", issued_amount)("3", security_token_external_id));        
 }
-
 
 const security_token_object& dbs_security_token::get_security_token(const external_id_type& external_id) const
 {
@@ -284,6 +283,41 @@ dbs_security_token::get_security_token_balances_by_owner_and_research(const acco
     }
     return ret;
 }
+
+
+const security_token_balance_object& dbs_security_token::freeze_security_token(const account_name_type& account, const external_id_type& security_token_external_id, const security_token_amount_type& amount)
+{
+    const security_token_balance_object& balance = get_security_token_balance(account, security_token_external_id);
+
+    FC_ASSERT(balance.amount >= amount, "Security token ${1} balance for account ${2} is not enough (${3} units) to freeze ${4} units",
+      ("1", security_token_external_id)("2", account)("3", balance.amount)("4", amount));
+
+    db_impl().modify(balance, [&](security_token_balance_object& stb_o) {
+        stb_o.amount -= amount;
+        stb_o.frozen_amount += amount;
+    });
+
+    return balance;
+}
+
+const security_token_balance_object& dbs_security_token::unfreeze_security_token(const account_name_type& account,
+                                                                                 const external_id_type& security_token_external_id,
+                                                                                 const security_token_amount_type& amount)
+{
+    const security_token_balance_object& balance = get_security_token_balance(account, security_token_external_id);
+
+    FC_ASSERT(balance.frozen_amount >= amount,
+              "Security token ${1} frozen balance for account ${2} is not enough (${3} units) to unfreeze ${4} units",
+              ("1", security_token_external_id)("2", account)("3", balance.frozen_amount)("4", amount));
+
+    db_impl().modify(balance, [&](security_token_balance_object& stb_o) {
+        stb_o.amount += amount;
+        stb_o.frozen_amount -= amount;
+    });
+
+    return balance;
+}
+
 
 } //namespace chain
 } //namespace deip

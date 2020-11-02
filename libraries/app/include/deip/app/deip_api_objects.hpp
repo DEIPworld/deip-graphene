@@ -437,7 +437,6 @@ struct research_api_obj
         , permlink(fc::to_string(r_o.permlink))
         , is_finished(r_o.is_finished)
         , is_private(r_o.is_private)
-        , owned_tokens(r_o.owned_tokens.amount)
         , created_at(r_o.created_at)
         , disciplines(disciplines.begin(), disciplines.end())
         , number_of_positive_reviews(r_o.number_of_positive_reviews)
@@ -481,7 +480,6 @@ struct research_api_obj
     std::string permlink;
     bool is_finished;
     bool is_private;
-    share_type owned_tokens;
     time_point_sec created_at;
     optional<share_type> review_share;
     optional<share_type> compensation_share;
@@ -697,7 +695,6 @@ struct research_token_sale_api_obj
         , start_time(rts_o.start_time)
         , end_time(rts_o.end_time)
         , total_amount(rts_o.total_amount)
-        , balance_tokens(rts_o.balance_tokens)
         , soft_cap(rts_o.soft_cap)
         , hard_cap(rts_o.hard_cap)
         , status(rts_o.status)
@@ -721,7 +718,6 @@ struct research_token_sale_api_obj
     time_point_sec start_time;
     time_point_sec end_time;
     asset total_amount;
-    share_type balance_tokens;
     asset soft_cap;
     asset hard_cap;
     uint16_t status;
@@ -731,10 +727,11 @@ struct research_token_sale_contribution_api_obj
 {
     research_token_sale_contribution_api_obj(const chain::research_token_sale_contribution_object& co)
         : id(co.id._id)
-        ,  research_token_sale_id(co.research_token_sale_id._id)
-        ,  owner(co.owner)
-        ,  amount(co.amount)
-        ,  contribution_time(co.contribution_time)
+        , research_token_sale(co.research_token_sale)
+        , research_token_sale_id(co.research_token_sale_id._id)
+        , owner(co.owner)
+        , amount(co.amount)
+        , contribution_time(co.contribution_time)
     {}
 
     // because fc::variant require for temporary object
@@ -743,6 +740,7 @@ struct research_token_sale_contribution_api_obj
     }
 
     int64_t id;
+    string research_token_sale;
     int64_t research_token_sale_id;
     account_name_type owner;
     asset amount;
@@ -889,6 +887,7 @@ struct security_token_balance_api_obj
         , research_external_id(stb_o.research_external_id)
         , owner(stb_o.owner)
         , amount(stb_o.amount)
+        , frozen_amount(stb_o.frozen_amount)
     {
     }
 
@@ -902,6 +901,7 @@ struct security_token_balance_api_obj
     external_id_type research_external_id;
     account_name_type owner;
     uint32_t amount;
+    uint32_t frozen_amount;
 };
 
 struct review_vote_api_obj
@@ -1503,7 +1503,6 @@ FC_REFLECT( deip::app::research_api_obj,
             (permlink)
             (is_finished)
             (is_private)
-            (owned_tokens)
             (created_at)
             (review_share)
             (compensation_share)
@@ -1608,7 +1607,6 @@ FC_REFLECT( deip::app::research_token_sale_api_obj,
             (start_time)
             (end_time)
             (total_amount)
-            (balance_tokens)
             (soft_cap)
             (hard_cap)
             (status)
@@ -1616,6 +1614,7 @@ FC_REFLECT( deip::app::research_token_sale_api_obj,
 
 FC_REFLECT( deip::app::research_token_sale_contribution_api_obj,
             (id)
+            (research_token_sale)
             (research_token_sale_id)
             (owner)
             (amount)
@@ -1677,6 +1676,7 @@ FC_REFLECT( deip::app::security_token_balance_api_obj,
             (research_external_id)
             (owner)
             (amount)
+            (frozen_amount)
 )
 
 

@@ -32,7 +32,6 @@ public:
                                            const optional<percent>& compensation_share,
                                            const bool& is_private,
                                            const bool& is_finished,
-                                           const percent& owned_tokens,
                                            const flat_set<account_name_type>& members,
                                            const time_point_sec& created_at);
 

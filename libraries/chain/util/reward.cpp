@@ -84,6 +84,13 @@ share_type calculate_share(const share_type &amount, const share_type &weight, c
     return (amount * weight) / total_weight;
 }
 
+share_type calculate_share(const share_type& from_amount, const percent& share)
+{
+    const percent full_share = percent(100 * share.precision(share.decimals), share.decimals);
+    FC_ASSERT(full_share.amount != 0, "Dividing by zero is restricted");
+    return (from_amount * share.amount) / full_share.amount;
+}
+
 }
 }
 } // deip::chain::util

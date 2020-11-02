@@ -468,7 +468,6 @@ const research_object& database_fixture::research_create(const int64_t id,
         fc::from_string(r.permlink, permlink);
         r.research_group_id = research_group_id;
         r.is_finished = false;
-        r.owned_tokens = percent(DEIP_100_PERCENT);
         r.created_at = db.head_block_time();
         r.review_share_last_update = db.head_block_time();
     });
@@ -565,7 +564,6 @@ const research_token_sale_object& database_fixture::research_token_sale_create(c
                                                                                fc::time_point_sec start_time,
                                                                                fc::time_point_sec end_time,
                                                                                share_type total_amount,
-                                                                               share_type balance_tokens,
                                                                                share_type soft_cap,
                                                                                share_type hard_cap)
 {
@@ -575,7 +573,6 @@ const research_token_sale_object& database_fixture::research_token_sale_create(c
         rts_o.start_time = start_time;
         rts_o.end_time = end_time;
         rts_o.total_amount = total_amount;
-        rts_o.balance_tokens = balance_tokens;
         rts_o.soft_cap = soft_cap;
         rts_o.hard_cap = hard_cap;
         rts_o.status = static_cast<uint16_t>(research_token_sale_status::active);

@@ -418,7 +418,6 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
           compensation_share,
           is_private,
           research.is_finished,
-          percent(DEIP_100_PERCENT),
           members,
           genesis_time
         );
