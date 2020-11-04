@@ -153,11 +153,18 @@ struct operation_visitor
     {
     }
 
-    void operator()(const transfer_operation& o) const
+    void operator()(const transfer_operation& op) const
     {
-        if (o.memo.length() > 0)
-            check_memo(o.memo, _db.get<account_object, chain::by_name>(o.from),
-                       _db.get<account_authority_object, chain::by_account>(o.from));
+        if (op.memo.length() > 0)
+            check_memo(op.memo, _db.get<account_object, chain::by_name>(op.from),
+                       _db.get<account_authority_object, chain::by_account>(op.from));
+    }
+
+    void operator()(const transfer_security_token_operation& op) const
+    {
+        if (op.memo.length() > 0)
+            check_memo(op.memo, _db.get<account_object, chain::by_name>(op.from),
+                       _db.get<account_authority_object, chain::by_account>(op.from));
     }
 };
 

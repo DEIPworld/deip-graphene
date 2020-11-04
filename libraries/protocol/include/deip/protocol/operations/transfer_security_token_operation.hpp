@@ -13,6 +13,7 @@ struct transfer_security_token_operation : public base_operation
     account_name_type to;
     external_id_type security_token_external_id;
     uint32_t amount;
+    string memo;
 
     extensions_type extensions;
 
@@ -33,5 +34,6 @@ FC_REFLECT(deip::protocol::transfer_security_token_operation,
   (to)
   (security_token_external_id)
   (amount)
+  (memo)
   (extensions)
 )

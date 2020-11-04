@@ -367,7 +367,6 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
     dbs_discipline& disciplines_service = obtain_service<dbs_discipline>();
 
     const vector<genesis_state_type::research_type>& researches = genesis_state.researches;
-    const vector<genesis_state_type::research_content_type>& research_contents = genesis_state.research_contents;
 
     for (auto& research : researches)
     {
@@ -387,25 +386,13 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
         const optional<percent>& compensation_share = optional<percent>(percent(0));
 
         const auto& research_group = research_groups_service.get_research_group_by_account(research.account);
-
-        const auto& authors = std::accumulate(
-            research_contents.begin(), research_contents.end(), std::set<account_name_type>(),
-            [&](std::set<account_name_type> acc, const genesis_state_type::research_content_type& research_content) {
-                if (research_content.research_external_id == research.external_id)
-                {
-                    acc.insert(research_content.authors.begin(), research_content.authors.end());
-                }
-                return acc;
-            });
+        const auto& rg_tokens = research_groups_service.get_research_group_tokens(research_group.id);
 
         flat_set<account_name_type> members;
-        if (authors.size() != 0)
+        for (const auto& member : research.members)
         {
-            members.insert(authors.begin(), authors.end());
-        }
-        else 
-        {
-            members.insert(research_group.creator);
+           FC_ASSERT(std::count_if(rg_tokens.begin(), rg_tokens.end(), [&](const research_group_token_object& rgt) { return rgt.owner == member; }) != 0, "User ${1} is not research group ${2} member", ("1", member)("2", research_group.account));
+           members.insert(member);
         }
 
         const auto& created_research = research_service.create_research(

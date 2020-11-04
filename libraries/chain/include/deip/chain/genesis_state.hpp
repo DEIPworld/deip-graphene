@@ -81,6 +81,7 @@ struct genesis_state_type
         std::string abstract;
         bool is_finished;
         bool is_private;
+        std::set<account_name_type> members;
         std::set<protocol::external_id_type> disciplines;
     };
 
@@ -193,6 +194,7 @@ FC_REFLECT(deip::chain::genesis_state_type::research_type,
           (abstract)
           (is_finished)
           (is_private)
+          (members)
           (disciplines)
 )
 
