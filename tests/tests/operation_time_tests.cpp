@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdrawals)
         BOOST_REQUIRE(db.get_account("alice").common_tokens_balance
                       == common_tokens_amount - withdraw_rate);
         BOOST_REQUIRE(withdraw_rate
-                          - account_balance_service.get_by_owner_and_asset("alice", DEIP_SYMBOL).amount.value
+                          - account_balance_service.get_account_balance_by_owner_and_asset("alice", DEIP_SYMBOL).amount.value
                       <= 1); // Check a range due to differences in the share price
         BOOST_REQUIRE(fill_op.from_account == "alice");
         BOOST_REQUIRE(fill_op.to_account == "alice");
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdrawals)
         BOOST_TEST_MESSAGE("Generating the rest of the blocks in the withdrawal");
 
         common_tokens_amount = db.get_account("alice").common_tokens_balance;
-        auto balance = asset(account_balance_service.get_by_owner_and_asset("alice", DEIP_SYMBOL).amount, DEIP_SYMBOL);
+        auto balance = asset(account_balance_service.get_account_balance_by_owner_and_asset("alice", DEIP_SYMBOL).amount, DEIP_SYMBOL);
         auto old_next_common_tokens_w = db.get_account("alice").next_common_tokens_withdrawal;
 
         for (int i = 1; i < DEIP_COMMON_TOKENS_WITHDRAW_INTERVALS - 1; i++)
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdrawals)
 
             BOOST_REQUIRE(alice.common_tokens_balance == common_tokens_amount - withdraw_rate);
             BOOST_REQUIRE(balance.amount.value + withdraw_rate
-                              - account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount.value
+                              - account_balance_service.get_account_balance_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount.value
                           <= 1);
             BOOST_REQUIRE(fill_op.from_account == "alice");
             BOOST_REQUIRE(fill_op.to_account == "alice");
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdrawals)
             validate_database();
 
             common_tokens_amount = alice.common_tokens_balance;
-            balance = asset(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
+            balance = asset(account_balance_service.get_account_balance_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
             old_next_common_tokens_w = alice.next_common_tokens_withdrawal;
         }
 
@@ -215,11 +215,11 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdraw_route)
         BOOST_TEST_MESSAGE("Setting up first withdraw");
 
         auto common_tokens_withdraw_rate = new_alice.common_tokens_withdraw_rate;
-        auto old_alice_balance = asset(account_balance_service.get_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
+        auto old_alice_balance = asset(account_balance_service.get_account_balance_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
         auto old_alice_common_tokens = new_alice.common_tokens_balance;
-        auto old_bob_balance = asset(account_balance_service.get_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
+        auto old_bob_balance = asset(account_balance_service.get_account_balance_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
         auto old_bob_common_tokens = new_bob.common_tokens_balance;
-        auto old_sam_balance = asset(account_balance_service.get_by_owner_and_asset(new_sam.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
+        auto old_sam_balance = asset(account_balance_service.get_account_balance_by_owner_and_asset(new_sam.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
         auto old_sam_common_tokens = new_sam.common_tokens_balance;
         generate_blocks(new_alice.next_common_tokens_withdrawal, true);
 
@@ -230,25 +230,25 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdraw_route)
 
             BOOST_REQUIRE(alice.common_tokens_balance == old_alice_common_tokens - common_tokens_withdraw_rate);
             BOOST_REQUIRE(
-                asset(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount, DEIP_SYMBOL)
+                asset(account_balance_service.get_account_balance_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount, DEIP_SYMBOL)
                 == old_alice_balance
                     + asset((common_tokens_withdraw_rate * DEIP_1_PERCENT * 20) / DEIP_100_PERCENT, DEIP_SYMBOL));
             BOOST_REQUIRE(
                 bob.common_tokens_balance
                 == old_bob_common_tokens
                     + ((common_tokens_withdraw_rate * DEIP_1_PERCENT * 50) / DEIP_100_PERCENT));
-            BOOST_REQUIRE(asset(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount, DEIP_SYMBOL) == old_bob_balance);
+            BOOST_REQUIRE(asset(account_balance_service.get_account_balance_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount, DEIP_SYMBOL) == old_bob_balance);
             BOOST_REQUIRE(sam.common_tokens_balance == old_sam_common_tokens);
             BOOST_REQUIRE(
-                asset(account_balance_service.get_by_owner_and_asset(sam.name, DEIP_SYMBOL).amount, DEIP_SYMBOL)
+                asset(account_balance_service.get_account_balance_by_owner_and_asset(sam.name, DEIP_SYMBOL).amount, DEIP_SYMBOL)
                 == old_sam_balance
                     + asset((common_tokens_withdraw_rate * DEIP_1_PERCENT * 30) / DEIP_100_PERCENT, DEIP_SYMBOL));
 
-            old_alice_balance = asset(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
+            old_alice_balance = asset(account_balance_service.get_account_balance_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
             old_alice_common_tokens = alice.common_tokens_balance;
-            old_bob_balance = asset(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
+            old_bob_balance = asset(account_balance_service.get_account_balance_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
             old_bob_common_tokens = bob.common_tokens_balance;
-            old_sam_balance = asset(account_balance_service.get_by_owner_and_asset(sam.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
+            old_sam_balance = asset(account_balance_service.get_account_balance_by_owner_and_asset(sam.name, DEIP_SYMBOL).amount, DEIP_SYMBOL);
             old_sam_common_tokens = sam.common_tokens_balance;
         }
 
@@ -282,15 +282,15 @@ BOOST_AUTO_TEST_CASE(common_tokens_withdraw_route)
             const auto& sam = db.get_account("sam");
 
             BOOST_REQUIRE(alice.common_tokens_balance == old_alice_common_tokens - common_tokens_withdraw_rate);
-            BOOST_REQUIRE(asset(account_balance_service.get_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount, DEIP_SYMBOL)== old_alice_balance);
+            BOOST_REQUIRE(asset(account_balance_service.get_account_balance_by_owner_and_asset(alice.name, DEIP_SYMBOL).amount, DEIP_SYMBOL)== old_alice_balance);
             BOOST_REQUIRE(
                 bob.common_tokens_balance
                 == old_bob_common_tokens
                     + (common_tokens_withdraw_rate * DEIP_1_PERCENT * 50) / DEIP_100_PERCENT);
-            BOOST_REQUIRE(asset(account_balance_service.get_by_owner_and_asset(bob.name, DEIP_SYMBOL).amount, DEIP_SYMBOL) == old_bob_balance);
+            BOOST_REQUIRE(asset(account_balance_service.get_get_account_balance_by_owner_and_assetby_owner_and_asset(bob.name, DEIP_SYMBOL).amount, DEIP_SYMBOL) == old_bob_balance);
             BOOST_REQUIRE(sam.common_tokens_balance == old_sam_common_tokens);
             BOOST_REQUIRE(
-                asset(account_balance_service.get_by_owner_and_asset(sam.name, DEIP_SYMBOL).amount, DEIP_SYMBOL)
+                asset(account_balance_service.get_account_balance_by_owner_and_asset(sam.name, DEIP_SYMBOL).amount, DEIP_SYMBOL)
                 == old_sam_balance
                     + asset((common_tokens_withdraw_rate * DEIP_1_PERCENT * 50) / DEIP_100_PERCENT, DEIP_SYMBOL));
         }

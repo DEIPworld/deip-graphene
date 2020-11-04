@@ -476,7 +476,7 @@ void database::pay_fee(const account_object& account, asset fee)
 
     auto& account_balance_service = obtain_service<dbs_account_balance>();
 
-    account_balance_service.adjust_balance(account.name, -fee);
+    account_balance_service.adjust_account_balance(account.name, -fee);
     adjust_supply(-fee);
 }
 
@@ -1054,7 +1054,7 @@ void database::process_common_tokens_withdrawals()
 
                 if (to_deposit > 0)
                 {
-                    auto& account_balance = account_balance_service.get_by_owner_and_asset(to_account.name, DEIP_SYMBOL);
+                    auto& account_balance = account_balance_service.get_account_balance_by_owner_and_asset(to_account.name, DEIP_SYMBOL);
                     modify(account_balance, [&](account_balance_object& ab_o) { ab_o.amount += converted_deip; });
 
                     modify(cprops, [&](dynamic_global_property_object& o) {
@@ -1073,7 +1073,7 @@ void database::process_common_tokens_withdrawals()
 
         share_type converted_deip = to_convert;
 
-        auto& from_account_balance = account_balance_service.get_by_owner_and_asset(from_account.name, DEIP_SYMBOL);
+        auto& from_account_balance = account_balance_service.get_account_balance_by_owner_and_asset(from_account.name, DEIP_SYMBOL);
         modify(from_account_balance, [&](account_balance_object& ab_o) { ab_o.amount += converted_deip; });
 
         modify(from_account, [&](account_object& a) {
@@ -2501,19 +2501,6 @@ void database::adjust_supply(const asset& delta, bool adjust_common_token)
     });
 }
 
-asset database::get_balance(const account_object& a,const protocol::asset_symbol_type& symbol) const
-{
-    dbs_asset& asset_service = obtain_service<dbs_asset>();
-    dbs_account_balance& account_balance_service = obtain_service<dbs_account_balance>();
-
-    asset_service.check_existence(symbol);
-    account_balance_service.check_existence_by_owner_and_asset(a.name, symbol);
-
-    auto& balance = account_balance_service.get_by_owner_and_asset(a.name, symbol);
-
-    return asset(balance.amount, balance.symbol);
-}
-
 void database::init_hardforks(time_point_sec genesis_time)
 {
     _hardfork_times[0] = genesis_time;
@@ -2668,7 +2655,7 @@ void database::validate_invariants() const
 
         for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr)
         {
-            auto& balance = account_balance_service.get_by_owner_and_asset(itr->name, DEIP_SYMBOL);
+            auto& balance = account_balance_service.get_account_balance_by_owner_and_asset(itr->name, DEIP_SYMBOL);
             total_supply += asset(balance.amount, balance.symbol);
             total_common_tokens_amount += itr->common_tokens_balance;
             total_expert_tokens_amount += itr->expertise_tokens_balance;

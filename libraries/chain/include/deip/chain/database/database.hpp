@@ -309,12 +309,6 @@ public:
 
     void adjust_supply(const asset& delta, bool adjust_common_token = false);
 
-    asset get_balance(const account_object& a, const protocol::asset_symbol_type& symbol) const override;
-    asset get_balance(const string& aname, const protocol::asset_symbol_type& symbol) const override
-    {
-        return get_balance(get_account(aname), symbol);
-    }
-
     void process_common_tokens_withdrawals();
     void process_funds();
 

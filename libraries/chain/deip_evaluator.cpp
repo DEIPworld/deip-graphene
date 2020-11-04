@@ -148,7 +148,7 @@ void create_account_evaluator::do_apply(const create_account_operation& op)
     const auto& dup_guard = duplicated_entity_guard(dgp_service);
     dup_guard(op);
 
-    const auto& creator_balance = account_balance_service.get_by_owner_and_asset(op.creator, op.fee.symbol);
+    const auto& creator_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.creator, op.fee.symbol);
     FC_ASSERT(creator_balance.amount >= op.fee.amount, 
       "Insufficient balance to create account.",
       ("creator.balance", creator_balance.amount)("required", op.fee.amount));
@@ -240,12 +240,12 @@ void transfer_evaluator::do_apply(const transfer_operation& op)
       "Account ${1} does not exist",
       ("1", op.to));
 
-    const auto& from_balance = account_balance_service.get_by_owner_and_asset(op.from, op.amount.symbol);
+    const auto& from_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.from, op.amount.symbol);
 
     FC_ASSERT(asset(from_balance.amount, from_balance.symbol) >= op.amount, "Account does not have sufficient funds for transfer.");
 
-    account_balance_service.adjust_balance(op.from, -op.amount);
-    account_balance_service.adjust_balance(op.to, op.amount);
+    account_balance_service.adjust_account_balance(op.from, -op.amount);
+    account_balance_service.adjust_account_balance(op.to, op.amount);
 }
 
 void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_tokens_operation& o)
@@ -253,14 +253,14 @@ void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_toke
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
 
-    auto from_balance = account_balance_service.get_by_owner_and_asset(o.from, o.amount.symbol);
+    auto from_balance = account_balance_service.get_account_balance_by_owner_and_asset(o.from, o.amount.symbol);
 
     const auto& from_account = account_service.get_account(o.from);
     const auto& to_account = o.to.size() ? account_service.get_account(o.to) : from_account;
 
     FC_ASSERT(from_balance.amount >= o.amount.amount, "Account does not have sufficient DEIP for transfer.");
 
-    account_balance_service.adjust_balance(o.from, -o.amount);
+    account_balance_service.adjust_account_balance(o.from, -o.amount);
     account_service.increase_common_tokens(to_account, o.amount.amount);
 }
 
@@ -956,7 +956,8 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
       "Research token sale ${1} is in ${2} status",
       ("1", op.token_sale_external_id)("2", research_token_sale.status));
 
-    const auto& account_balance = account_balance_service.get_by_owner_and_asset(op.contributor, op.amount.symbol);
+    const auto& account_balance
+        = account_balance_service.get_account_balance_by_owner_and_asset(op.contributor, op.amount.symbol);
 
     FC_ASSERT(account_balance.amount >= op.amount.amount, 
       "Not enough funds to contribute. Available: ${1} Requested: ${2}", 
@@ -972,7 +973,7 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
 
     const auto& research_token_sale_contribution = research_token_sale_service.contribute(research_token_sale.id, op.contributor, block_time, amount_to_contribute);
 
-    account_balance_service.adjust_balance(op.contributor, -amount_to_contribute);
+    account_balance_service.adjust_account_balance(op.contributor, -amount_to_contribute);
     research_token_sale_service.collect_funds(research_token_sale.id, amount_to_contribute);
 
     if (is_hard_cap_reached)
@@ -998,11 +999,11 @@ void create_vesting_balance_evaluator::do_apply(const create_vesting_balance_ope
     account_service.check_account_existence(op.creator);
     account_service.check_account_existence(op.owner);
 
-    auto account_balance = account_balance_service.get_by_owner_and_asset(op.creator, op.balance.symbol);
+    auto account_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.creator, op.balance.symbol);
 
     FC_ASSERT(account_balance.amount >= op.balance.amount, "Not enough funds to create vesting contract");
 
-    account_balance_service.adjust_balance(op.creator, -op.balance);
+    account_balance_service.adjust_account_balance(op.creator, -op.balance);
     vesting_balance_service.create(op.owner, op.balance, op.vesting_duration_seconds, op.period_duration_seconds, op.vesting_cliff_seconds);
 
 }
@@ -1044,7 +1045,7 @@ void withdraw_vesting_balance_evaluator::do_apply(const withdraw_vesting_balance
                     ("a", asset(allowed_withdraw, DEIP_SYMBOL))("r", op.amount));
 
             vesting_balance_service.withdraw(vco.id, op.amount);
-            account_balance_service.adjust_balance(op.owner, op.amount);
+            account_balance_service.adjust_account_balance(op.owner, op.amount);
         }
     }
 }
@@ -1105,7 +1106,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
     auto& discipline_service = _db.obtain_service<dbs_discipline>();
 
     FC_ASSERT(accounts_service.account_exists(op.grantor), "Account ${a} does not exists", ("a", op.grantor));
-    FC_ASSERT(assets_service.exists_by_symbol(op.amount.symbol), "Asset ${s} does not exists", ("s", op.amount.symbol));
+    FC_ASSERT(assets_service.asset_exists_by_symbol(op.amount.symbol), "Asset ${s} does not exists", ("s", op.amount.symbol));
 
     std::set<discipline_id_type> target_disciplines;
     for (const auto& external_id : op.target_disciplines)
@@ -1116,7 +1117,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
 
     FC_ASSERT(target_disciplines.size() != 0, "Grant target disciplines are not specified");
 
-    const account_balance_object& grantor_balance = account_balance_service.get_by_owner_and_asset(op.grantor, op.amount.symbol);
+    const account_balance_object& grantor_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.grantor, op.amount.symbol);
     FC_ASSERT(grantor_balance.amount >= op.amount.amount, 
       "Grantor ${g} does not have enough funds. Requested: ${ga} Actual: ${ba}", 
       ("g", op.grantor)("ga", op.amount)("ba", grantor_balance.amount));
@@ -1372,13 +1373,14 @@ void create_asset_evaluator::do_apply(const create_asset_operation& op)
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
 
-    account_service.check_account_existence(op.issuer);
-
     int p = std::pow(10, op.precision);
     std::string string_asset = "0." + fc::to_string(p).erase(0, 1) + " " + op.symbol;
-    asset new_asset = asset::from_string(string_asset);
+    const asset new_asset = asset::from_string(string_asset);
 
-    asset_service.create(new_asset.symbol, op.symbol, op.precision, op.issuer, op.name, op.description);
+    FC_ASSERT(account_service.account_exists(op.issuer), "Account ${1} does not exist", ("1", op.issuer));
+    FC_ASSERT(!asset_service.asset_exists_by_symbol(new_asset.symbol), "Asset ${1} exist already", ("1", op.symbol));
+
+    asset_service.create_asset(op.issuer, new_asset.symbol, op.symbol, op.precision, share_type(0), op.max_supply, op.description);
 }
 
 void issue_asset_evaluator::do_apply(const issue_asset_operation& op)
@@ -1387,13 +1389,14 @@ void issue_asset_evaluator::do_apply(const issue_asset_operation& op)
     dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
     dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
 
-    account_service.check_account_existence(op.issuer);
-    account_balance_service.adjust_balance(op.issuer, op.amount);
-    asset_service.check_existence(op.amount.symbol);
+    FC_ASSERT(account_service.account_exists(op.issuer), "Account ${1} does not exist", ("1", op.issuer));
+    FC_ASSERT(account_service.account_exists(op.recipient), "Account ${1} does not exist", ("1", op.recipient));
+    FC_ASSERT(asset_service.asset_exists_by_symbol(op.amount.symbol), "Asset ${1} does not exist", ("1", op.amount.symbol));
 
-    auto& asset_obj = asset_service.get_by_symbol(op.amount.symbol);
+    account_balance_service.adjust_account_balance(op.recipient, op.amount);
 
-    asset_service.adjust_current_supply(asset_obj, op.amount.amount);
+    const auto& asset_o = asset_service.get_asset_by_symbol(op.amount.symbol);
+    asset_service.adjust_asset_current_supply(asset_o, op.amount.amount);
 }
 
 void reserve_asset_evaluator::do_apply(const reserve_asset_operation& op)
@@ -1402,15 +1405,14 @@ void reserve_asset_evaluator::do_apply(const reserve_asset_operation& op)
     dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
     dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
 
-    account_service.check_account_existence(op.owner);
+    FC_ASSERT(account_service.account_exists(op.owner), "Account ${1} does not exist", ("1", op.owner));
+    FC_ASSERT(asset_service.asset_exists_by_symbol(op.amount.symbol), "Asset ${1} does not exist", ("1", op.amount.symbol));
+    FC_ASSERT(account_balance_service.account_balance_exists_by_owner_and_asset(op.owner, op.amount.symbol), "Asset ${1} balance does not exist for ${2} account", ("1", op.amount.symbol)("2", op.owner));
 
-    FC_ASSERT(asset_service.exists_by_symbol(op.amount.symbol), "Asset does not exist");
-    auto& _asset_obj = asset_service.get_by_symbol(op.amount.symbol);
+    account_balance_service.adjust_account_balance(op.owner, -op.amount);
 
-    account_balance_service.check_existence_by_owner_and_asset(op.owner, op.amount.symbol);
-    account_balance_service.adjust_balance(op.owner, -op.amount);
-
-    asset_service.adjust_current_supply(_asset_obj, -op.amount.amount);
+    const auto& asset_o = asset_service.get_asset_by_symbol(op.amount.symbol);
+    asset_service.adjust_asset_current_supply(asset_o, -op.amount.amount);
 }
 
 void create_award_evaluator::do_apply(const create_award_operation& op)
@@ -1466,9 +1468,8 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       "Award asset ${1} does not match funding opportunity asset ${2}.",
       ("1", op.award.symbol_name())("2", foa.amount.symbol_name()));
 
-    FC_ASSERT(account_balance_service.exists_by_owner_and_asset(op.creator, op.award.symbol),
-      "Account balance for ${1} for asset ${2} does not exist", 
-      ("1", op.creator)("2", op.award.symbol_name()));
+    FC_ASSERT(account_balance_service.account_balance_exists_by_owner_and_asset(op.creator, op.award.symbol),
+              "Account balance for ${1} for asset ${2} does not exist", ("1", op.creator)("2", op.award.symbol_name()));
 
     const auto& university = research_group_service.get_research_group_by_account(op.university_external_id);
     const auto& research = research_service.get_research(op.research_external_id);
@@ -1569,14 +1570,14 @@ void approve_award_evaluator::do_apply(const approve_award_operation& op)
 
     const auto& university = research_group_service.get_research_group(award.university_id);
     const asset university_fee = asset(((award.amount.amount * share_type(award.university_overhead.amount)) / DEIP_100_PERCENT), award.amount.symbol);
-    account_balance_service.adjust_balance(university.creator, university_fee);
+    account_balance_service.adjust_account_balance(university.creator, university_fee);
 
     auto awardees = award_service.get_award_recipients_by_award(op.award_number);
 
     for (auto& wrap : awardees)
     {
         const award_recipient_object& award_recipient = wrap.get();
-        account_balance_service.adjust_balance(award_recipient.awardee, award_recipient.total_amount);
+        account_balance_service.adjust_account_balance(award_recipient.awardee, award_recipient.total_amount);
         award_service.update_award_recipient_status(award_recipient, award_recipient_status::confirmed);
     }
 
@@ -1855,16 +1856,16 @@ void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal
       "Not enough funds to process the payment. Requested ${1}, Available: ${2} ", 
       ("1", withdrawal.amount)("2", award_recipient.total_amount - award_recipient.total_expenses));
 
-    const auto& grant_asset = asset_service.get_by_symbol(withdrawal.amount.symbol);
+    const auto& grant_asset = asset_service.get_asset_by_symbol(withdrawal.amount.symbol);
 
     award_service.adjust_expenses(award_recipient.id, withdrawal.amount);
-    asset_service.adjust_current_supply(grant_asset, -withdrawal.amount.amount); // burn grant tokens
+    asset_service.adjust_asset_current_supply(grant_asset, -withdrawal.amount.amount); // burn grant tokens
 
     const price rate = price(asset(1, DEIP_USD_SYMBOL), asset(1, withdrawal.amount.symbol));
     const asset payout = withdrawal.amount * rate;
 
-    account_balance_service.adjust_balance(withdrawal.requester, payout); // imitation of acquiring api call
-    account_balance_service.adjust_balance(treasury.creator, -payout); // imitation of acquiring api call
+    account_balance_service.adjust_account_balance(withdrawal.requester, payout); // imitation of acquiring api call
+    account_balance_service.adjust_account_balance(treasury.creator, -payout); // imitation of acquiring api call
 
     award_service.update_award_withdrawal_request(withdrawal, award_withdrawal_request_status::paid);
 }
@@ -2702,7 +2703,7 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
             const auto& fee = *research_license.fee;
             asset total_revenue = asset(0, fee.symbol);
 
-            const auto& licensee_balance = account_balance_service.get_by_owner_and_asset(op.licensee, fee.symbol);
+            const auto& licensee_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.licensee, fee.symbol);
             FC_ASSERT(licensee_balance.to_asset() >= fee, "Account ${1} balance is not enough.", ("1", op.licensee));
 
             std::map<external_id_type, asset> beneficiary_shares;
@@ -2724,7 +2725,7 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
                 {
                     const share_type holder_amount = share_type(security_token_balance.amount);
                     const asset revenue = util::calculate_share(beneficiary_revenue, holder_amount, security_token.total_amount);
-                    const auto& asset_balance = account_balance_service.adjust_balance(security_token_balance.owner, revenue);
+                    const auto& asset_balance = account_balance_service.adjust_account_balance(security_token_balance.owner, revenue);
                     
                     _db.push_virtual_operation(account_revenue_income_history_operation(
                         asset_balance.owner, 
@@ -2744,10 +2745,10 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
             if (total_revenue < fee)
             {
                 const asset rest = fee - total_revenue;
-                account_balance_service.adjust_balance(research.research_group, rest);
+                account_balance_service.adjust_account_balance(research.research_group, rest);
             }
 
-            account_balance_service.adjust_balance(op.licensee, -fee);
+            account_balance_service.adjust_account_balance(op.licensee, -fee);
         }
     }
     else 

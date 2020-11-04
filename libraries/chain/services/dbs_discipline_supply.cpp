@@ -112,7 +112,7 @@ const discipline_supply_object& dbs_discipline_supply::create_discipline_supply(
     // clang-format on
 
     auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
-    account_balance_service.adjust_balance(grantor, -balance);
+    account_balance_service.adjust_account_balance(grantor, -balance);
 
     const dynamic_global_property_object& props = db_impl().get_dynamic_global_properties();
     auto head_block_time = db_impl().head_block_time();
@@ -199,7 +199,7 @@ void dbs_discipline_supply::clear_expired_discipline_supplies()
             if (discipline_supply.balance.amount != 0)
             {
                 auto& grantor = db_impl().get_account(discipline_supply.grantor);
-                account_balance_service.adjust_balance(grantor.name, discipline_supply.balance);
+                account_balance_service.adjust_account_balance(grantor.name, discipline_supply.balance);
                 db_impl().modify(discipline_supply, [&](discipline_supply_object& g) {
                     g.balance = asset(0, DEIP_SYMBOL);
                 });
@@ -266,7 +266,7 @@ share_type dbs_discipline_supply::supply_researches_in_discipline(const discipli
             const auto share = util::calculate_share(grant, expertise_contribution.eci, total_research_weight);
             const auto& research = research_service.get_research(expertise_contribution.research_id);
             const auto& research_group = research_group_service.get_research_group(research.research_group_id);
-            account_balance_service.adjust_balance(research_group.account, asset(share, DEIP_SYMBOL));
+            account_balance_service.adjust_account_balance(research_group.account, asset(share, DEIP_SYMBOL));
 
             used_grant += share;
         }

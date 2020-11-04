@@ -6,6 +6,8 @@
 namespace deip {
 namespace chain {
 
+using protocol::asset_symbol_type;
+
 class dbs_account_balance : public dbs_base {
     friend class dbservice_dbs_factory;
 
@@ -18,36 +20,33 @@ public:
     using account_balance_refs_type = std::vector<std::reference_wrapper<const account_balance_object>>;
     using account_balance_optional_ref_type = fc::optional<std::reference_wrapper<const account_balance_object>>;
 
-    const account_balance_object& create(const account_name_type& owner,
-                                         const protocol::asset_symbol_type& symbol,
-                                         const share_type& amount);
+    const account_balance_object& create_account_balance(const account_name_type& owner,
+                                                         const protocol::asset_symbol_type& symbol,
+                                                         const share_type& amount);
 
-    const account_balance_object& get(const account_balance_id_type& id) const;
+    const account_balance_object& get_account_balance(const account_balance_id_type& id) const;
 
     const account_balance_optional_ref_type get_account_balance_if_exists(const account_balance_id_type& id) const;
 
-    bool exists_by_owner_and_asset(const account_name_type& owner,
-                                      const protocol::asset_symbol_type& symbol) const;
+    const bool account_balance_exists_by_owner_and_asset(const account_name_type& owner, const asset_symbol_type& symbol) const;
 
-    const account_balance_refs_type get_by_owner(const account_name_type& owner) const;
+    const account_balance_refs_type get_account_balance_by_owner(const account_name_type& owner) const;
 
-    void check_existence(const account_balance_id_type &id) const;
+    const account_balance_object& get_account_balance_by_owner_and_asset(const account_name_type& owner,
+                                                                         const asset_symbol_type& symbol) const;
 
-    void check_existence_by_owner_and_asset(const account_name_type& owner,
-                                            const protocol::asset_symbol_type& symbol) const;
+    const account_balance_object& get_account_balance_by_owner_and_asset(const account_name_type& owner,
+                                                                         const string& symbol) const;
 
-    void remove(const account_balance_object& asset_backed_token);
-
-    const account_balance_object& get_by_owner_and_asset(const account_name_type& owner,
-                                                         const protocol::asset_symbol_type& symbol) const;
-
-    const account_balance_object& get_by_owner_and_asset(const account_name_type& owner,
-                                                         const string& symbol) const;
-
+    const account_balance_optional_ref_type get_account_balance_by_owner_and_asset_if_exists(const account_name_type& owner,
+                                                                                             const asset_symbol_type& symbol) const;
+                                                                                             
     const account_balance_optional_ref_type get_account_balance_by_owner_and_asset_if_exists(const account_name_type& owner,
                                                                                              const string& symbol) const;
 
-    const account_balance_object& adjust_balance(const account_name_type& account_name, const asset& delta);
+    const account_balance_object& adjust_account_balance(const account_name_type& owner, const asset& delta);
+
+    void remove_account_balance(const account_balance_object& balance);
 };
 
 } // namespace chain

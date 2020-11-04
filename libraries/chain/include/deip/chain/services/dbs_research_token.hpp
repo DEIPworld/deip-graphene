@@ -39,7 +39,7 @@ namespace deip {
             /* Get research tokens by account name
             * @returns a list of all research token objects for specific account
             */
-            research_token_refs_type get_by_owner(const account_name_type &owner) const;
+            research_token_refs_type get_account_balance_by_owner(const account_name_type& owner) const;
 
             /* Get research tokens by research id
              * @returns a list of all research token objects for specific discipline

@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        private_key_type priv_key = generate_private_key("alice");
 
        auto& account_balance_service = db.obtain_service<dbs_account_balance>();
-       asset init_starting_balance = asset(account_balance_service.get_by_owner_and_asset(TEST_INIT_DELEGATE_NAME, DEIP_SYMBOL).amount, DEIP_SYMBOL);
+       asset init_starting_balance = asset(account_balance_service.get_account_balance_by_owner_and_asset(TEST_INIT_DELEGATE_NAME, DEIP_SYMBOL).amount, DEIP_SYMBOL);
 
        create_account_operation op;
 
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        BOOST_REQUIRE(acct.memo_key == priv_key.get_public_key());
        BOOST_REQUIRE(acct.proxy == "");
        BOOST_REQUIRE(acct.created == db.head_block_time());
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset("alice", DEIP_SYMBOL).amount == 0);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset("alice", DEIP_SYMBOL).amount == 0);
        BOOST_REQUIRE(acct.id._id == acct_auth.id._id);
 
        /// because init_witness has created vesting shares and blocks have been produced, 100 DEIP is worth less than
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        BOOST_REQUIRE(acct.common_tokens_balance == op.fee.amount);
        BOOST_REQUIRE(acct.common_tokens_withdraw_rate == 0);
        BOOST_REQUIRE(acct.proxied_vsf_votes_total() == 0);
-       BOOST_REQUIRE((init_starting_balance - asset(30000, DEIP_SYMBOL)).amount.value == asset(account_balance_service.get_by_owner_and_asset(TEST_INIT_DELEGATE_NAME, DEIP_SYMBOL).amount, DEIP_SYMBOL).amount.value);
+       BOOST_REQUIRE((init_starting_balance - asset(30000, DEIP_SYMBOL)).amount.value == asset(account_balance_service.get_account_balance_by_owner_and_asset(TEST_INIT_DELEGATE_NAME, DEIP_SYMBOL).amount, DEIP_SYMBOL).amount.value);
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Test failure of duplicate account creation");
@@ -146,11 +146,11 @@ BOOST_AUTO_TEST_CASE(account_create_apply)
        BOOST_REQUIRE(acct.memo_key == priv_key.get_public_key());
        BOOST_REQUIRE(acct.proxy == "");
        BOOST_REQUIRE(acct.created == db.head_block_time());
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset("alice", DEIP_SYMBOL).amount == 0);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset("alice", DEIP_SYMBOL).amount == 0);
        BOOST_REQUIRE(acct.common_tokens_balance == op.fee.amount);
        BOOST_REQUIRE(acct.common_tokens_withdraw_rate == 0);
        BOOST_REQUIRE(acct.proxied_vsf_votes_total().value == 0);
-       BOOST_REQUIRE((init_starting_balance - asset(30000, DEIP_SYMBOL)).amount.value == asset(account_balance_service.get_by_owner_and_asset(TEST_INIT_DELEGATE_NAME, DEIP_SYMBOL).amount, DEIP_SYMBOL).amount.value);
+       BOOST_REQUIRE((init_starting_balance - asset(30000, DEIP_SYMBOL)).amount.value == asset(account_balance_service.get_account_balance_by_owner_and_asset(TEST_INIT_DELEGATE_NAME, DEIP_SYMBOL).amount, DEIP_SYMBOL).amount.value);
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Test failure when creator cannot cover fee");
@@ -512,8 +512,9 @@ BOOST_AUTO_TEST_CASE(transfer_apply)
        const auto& new_alice = db.get_account("alice");
        const auto& new_bob = db.get_account("bob");
 
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 10000);
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount == 0);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 10000);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount
+                     == 0);
 
        signed_transaction tx;
        transfer_operation op;
@@ -528,15 +529,15 @@ BOOST_AUTO_TEST_CASE(transfer_apply)
        tx.sign(alice_private_key, db.get_chain_id());
        db.push_transaction(tx, 0);
 
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 5000);
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount == 5000);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 5000);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount == 5000);
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Generating a block");
        generate_block();
 
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 5000);
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount == 5000);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 5000);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount == 5000);
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Test emptying an account");
@@ -547,8 +548,8 @@ BOOST_AUTO_TEST_CASE(transfer_apply)
        tx.sign(alice_private_key, db.get_chain_id());
        db.push_transaction(tx, database::skip_transaction_dupe_check);
 
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 0);
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount == 10000);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 0);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount == 10000);
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Test transferring non-existent funds");
@@ -559,8 +560,8 @@ BOOST_AUTO_TEST_CASE(transfer_apply)
        tx.sign(alice_private_key, db.get_chain_id());
        DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
 
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 0);
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount == 10000);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 0);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount == 10000);
        validate_database();
    }
    FC_LOG_AND_RETHROW()
@@ -638,7 +639,7 @@ BOOST_AUTO_TEST_CASE(transfer_to_common_tokens_apply)
 
        const auto& gpo = db.get_dynamic_global_properties();
 
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 10000);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 10000);
 
        share_type shares = gpo.total_common_tokens_amount;
        share_type alice_common_tokens = new_alice.common_tokens_balance;
@@ -659,7 +660,7 @@ BOOST_AUTO_TEST_CASE(transfer_to_common_tokens_apply)
        shares += new_vest;
        alice_common_tokens += new_vest;
 
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 2500);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 2500);
        BOOST_REQUIRE(new_alice.common_tokens_balance == alice_common_tokens);
        BOOST_REQUIRE(gpo.total_common_tokens_amount == shares);
        validate_database();
@@ -677,18 +678,18 @@ BOOST_AUTO_TEST_CASE(transfer_to_common_tokens_apply)
        shares += new_vest;
        bob_common_tokens += new_vest;
 
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 500);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 500);
        BOOST_REQUIRE(new_alice.common_tokens_balance == alice_common_tokens);
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount == 0);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount == 0);
        BOOST_REQUIRE(new_bob.common_tokens_balance == bob_common_tokens);
        BOOST_REQUIRE(gpo.total_common_tokens_amount == shares);
        validate_database();
 
        DEIP_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
 
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 500);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 500);
        BOOST_REQUIRE(new_alice.common_tokens_balance == alice_common_tokens);
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount == 0);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_bob.name, DEIP_SYMBOL).amount == 0);
        BOOST_REQUIRE(new_bob.common_tokens_balance == bob_common_tokens);
        BOOST_REQUIRE(gpo.total_common_tokens_amount == shares);
        validate_database();
@@ -988,7 +989,7 @@ BOOST_AUTO_TEST_CASE(witness_update_apply)
        BOOST_REQUIRE(alice_witness.virtual_last_update == 0);
        BOOST_REQUIRE(alice_witness.virtual_position == 0);
        BOOST_REQUIRE(alice_witness.virtual_scheduled_time == fc::uint128_t::max_value());
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 10000); // No fee
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 10000); // No fee
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Test updating a witness");
@@ -1014,7 +1015,7 @@ BOOST_AUTO_TEST_CASE(witness_update_apply)
        BOOST_REQUIRE(alice_witness.virtual_last_update == 0);
        BOOST_REQUIRE(alice_witness.virtual_position == 0);
        BOOST_REQUIRE(alice_witness.virtual_scheduled_time == fc::uint128_t::max_value());
-       BOOST_REQUIRE(account_balance_service.get_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 10000);
+       BOOST_REQUIRE(account_balance_service.get_account_balance_by_owner_and_asset(new_alice.name, DEIP_SYMBOL).amount == 10000);
        validate_database();
 
        BOOST_TEST_MESSAGE("--- Test failure when upgrading a non-existent account");
@@ -1882,7 +1883,7 @@ BOOST_AUTO_TEST_CASE(contribute_to_token_sale_apply)
 
         auto& alice_account = db.get_account("alice");
 
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(alice_account.name, DEIP_SYMBOL).amount == 800);
+        BOOST_CHECK(account_balance_service.get_account_balance_by_owner_and_asset(alice_account.name, DEIP_SYMBOL).amount == 800);
 
         auto& alice_research_token = db.get<research_token_object, by_account_name_and_research_id>(std::make_tuple("alice", 1));
         auto& bob_research_token = db.get<research_token_object, by_account_name_and_research_id>(std::make_tuple("bob", 1));
@@ -1974,7 +1975,7 @@ BOOST_AUTO_TEST_CASE(withdraw_from_vesting_balance_apply)
 
         auto bob_acc = db.get_account("bob");
 
-        BOOST_CHECK(account_balance_service.get_by_owner_and_asset(bob_acc.name, DEIP_SYMBOL).amount == 500);
+        BOOST_CHECK(account_balance_service.get_account_balance_by_owner_and_asset(bob_acc.name, DEIP_SYMBOL).amount == 500);
     }
     FC_LOG_AND_RETHROW()
 }
@@ -2154,7 +2155,7 @@ BOOST_AUTO_TEST_CASE(create_asset_test)
         db.push_transaction(tx, 0);
 
         dbs_asset& asset_service = db.obtain_service<dbs_asset>();
-        auto& asset_obj = asset_service.get_by_string_symbol("TEST");
+        auto& asset_obj = asset_service.get_asset_by_string_symbol("TEST");
 
         BOOST_CHECK(asset_obj.string_symbol == "TEST");
         BOOST_CHECK(asset_obj.issuer == "alice");

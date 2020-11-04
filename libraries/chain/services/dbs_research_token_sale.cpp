@@ -358,7 +358,7 @@ void dbs_research_token_sale::finish_research_token_sale(const research_token_sa
         db_impl().remove(*current);
     }
 
-    account_balance_service.adjust_balance(research_group.account, research_token_sale.total_amount);
+    account_balance_service.adjust_account_balance(research_group.account, research_token_sale.total_amount);
 }
 
 void dbs_research_token_sale::refund_research_token_sale(const research_token_sale_id_type research_token_sale_id)
@@ -386,7 +386,7 @@ void dbs_research_token_sale::refund_research_token_sale(const research_token_sa
 
     while (itr != itr_end)
     {
-        account_balance_service.adjust_balance(itr->owner, itr->amount);
+        account_balance_service.adjust_account_balance(itr->owner, itr->amount);
 
         auto current = itr++;
         db_impl().remove(*current);

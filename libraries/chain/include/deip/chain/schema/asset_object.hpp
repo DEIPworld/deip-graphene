@@ -17,7 +17,7 @@ class asset_object : public object<asset_object_type, asset_object>
 public:
 
     template <typename Constructor, typename Allocator>
-    asset_object(Constructor&& c, allocator<Allocator> a) : string_symbol(a), name(a), description(a)
+    asset_object(Constructor&& c, allocator<Allocator> a) : string_symbol(a), description(a)
     {
         c(*this);
     }
@@ -29,10 +29,10 @@ public:
     uint8_t precision;
 
     account_name_type issuer;
-    fc::shared_string name;
     fc::shared_string description;
-
-    share_type current_supply = 0;
+    
+    share_type max_supply;
+    share_type current_supply;
 };
 
 struct by_symbol;
@@ -61,5 +61,5 @@ typedef multi_index_container<asset_object,
     }
 }
 
-FC_REFLECT( deip::chain::asset_object, (id)(symbol)(string_symbol)(precision)(issuer)(name)(description)(current_supply))
+FC_REFLECT( deip::chain::asset_object, (id)(symbol)(string_symbol)(precision)(issuer)(description)(max_supply)(current_supply))
 CHAINBASE_SET_INDEX_TYPE( deip::chain::asset_object, deip::chain::asset_index )

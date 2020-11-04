@@ -2531,7 +2531,6 @@ annotated_signed_transaction wallet_api::reject_grant_application(const int64_t&
 annotated_signed_transaction wallet_api::create_asset(const std::string& issuer,
                                                       const std::string& symbol,
                                                       const uint8_t& precision,
-                                                      const std::string& name,
                                                       const std::string& description,
                                                       const bool broadcast)
 {
@@ -2542,8 +2541,8 @@ annotated_signed_transaction wallet_api::create_asset(const std::string& issuer,
     op.issuer = issuer;
     op.symbol = symbol;
     op.precision = precision;
-    op.name = name;
     op.description = description;
+    op.max_supply = DEIP_MAX_SHARE_SUPPLY;
 
     signed_transaction tx;
     tx.operations.push_back(op);

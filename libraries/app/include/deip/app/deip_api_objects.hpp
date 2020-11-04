@@ -1160,7 +1160,6 @@ struct asset_api_obj
         ,  string_symbol(fc::to_string(a_o.string_symbol))
         ,  precision(a_o.precision)
         ,  issuer(a_o.issuer)
-        ,  name(fc::to_string(a_o.name))
         ,  description(fc::to_string(a_o.description))
         ,  current_supply(a_o.current_supply)
 
@@ -1177,7 +1176,6 @@ struct asset_api_obj
     std::string string_symbol;
     uint8_t precision;
     account_name_type issuer;
-    std::string name;
     std::string description;
 
     share_type current_supply;
@@ -1775,7 +1773,6 @@ FC_REFLECT( deip::app::asset_api_obj,
             (string_symbol)
             (precision)
             (issuer)
-            (name)
             (description)
             (current_supply)
 )

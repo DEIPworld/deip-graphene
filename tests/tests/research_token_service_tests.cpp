@@ -76,18 +76,6 @@ BOOST_AUTO_TEST_CASE(get_research_token_by_id)
      FC_LOG_AND_RETHROW()
  }
 
-BOOST_AUTO_TEST_CASE(get_research_tokens_by_account_name)
-{
-     try
-     {
-         create_research_tokens();
-         auto research_tokens = data_service.get_by_owner("alice");
-
-         BOOST_CHECK(research_tokens.size() == 3);
-
-     }
-     FC_LOG_AND_RETHROW()
- }
 
 BOOST_AUTO_TEST_CASE(get_research_tokens_by_research_id)
 {

@@ -6,6 +6,8 @@
 namespace deip {
 namespace chain {
 
+using protocol::asset_symbol_type;
+
 class dbs_asset : public dbs_base {
     friend class dbservice_dbs_factory;
 
@@ -17,28 +19,30 @@ protected:
 public:
     using asset_optional_ref_type = fc::optional<std::reference_wrapper<const asset_object>>;
 
-    const asset_object& create(const protocol::asset_symbol_type& symbol,
-                               const std::string& string_symbol,
-                               const uint8_t& precision,
-                               const account_name_type& issuer,
-                               const string& name,
-                               const string& description);
+    const asset_object& create_asset(const account_name_type& issuer,
+                                     const asset_symbol_type& symbol,
+                                     const string& string_symbol,
+                                     const uint8_t& precision,
+                                     const share_type& current_supply,
+                                     const share_type& max_supply,
+                                     const string& description);
 
-    const asset_object& get(const asset_id_type& id) const;
+    const asset_object& get_asset(const asset_id_type& id) const;
 
     const asset_optional_ref_type get_asset_if_exists(const asset_id_type& id) const;
 
-    bool exists_by_symbol(const protocol::asset_symbol_type& symbol) const;
+    const asset_object& get_asset_by_symbol(const asset_symbol_type& symbol) const;
 
-    void check_existence(const protocol::asset_symbol_type& symbol) const;
+    const asset_optional_ref_type get_asset_by_symbol_if_exists(const asset_symbol_type& symbol) const;
 
-    const asset_object& get_by_symbol(const protocol::asset_symbol_type& symbol) const;
+    const asset_object& get_asset_by_string_symbol(const string& string_symbol) const;
 
-    void adjust_current_supply(const asset_object& asset_obj, const share_type& delta);
+    const asset_optional_ref_type get_asset_by_string_symbol_if_exists(const string& string_symbol) const;
 
-    const asset_object& get_by_string_symbol(const std::string& string_symbol) const;
+    const bool asset_exists_by_symbol(const asset_symbol_type& symbol) const;
 
-    const asset_optional_ref_type get_asset_by_string_symbol_if_exists(const std::string& string_symbol) const;
+    const asset_object& adjust_asset_current_supply(const asset_object& asset_o, const share_type& delta);
+
 };
 
 } // namespace chain

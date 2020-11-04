@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(get_vesting_balance_get_by_receiver)
     try
     {
         create_vesting_balances();
-        auto vesting_balances = data_service.get_by_owner("bob");
+        auto vesting_balances = data_service.get_vesting_balance_by_owner("bob");
 
         BOOST_CHECK(vesting_balances.size() == 2);
         BOOST_CHECK(std::any_of(vesting_balances.begin(), vesting_balances.end(), [](std::reference_wrapper<const vesting_balance_object> wrapper){

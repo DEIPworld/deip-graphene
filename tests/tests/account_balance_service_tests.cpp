@@ -99,24 +99,24 @@ BOOST_AUTO_TEST_CASE(get)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(exists_by_owner_and_asset)
+BOOST_AUTO_TEST_CASE(account_balance_exists_by_owner_and_asset)
 {
     try
     {
         create_account_balances();
 
-        BOOST_CHECK(data_service.exists_by_owner_and_asset("alice", (uint64_t(2) | (uint64_t('U') << 8) | (uint64_t('S') << 16) | (uint64_t('D') << 24))) == true);
-        BOOST_CHECK(data_service.exists_by_owner_and_asset("bob", (uint64_t(2) | (uint64_t('E') << 8) | (uint64_t('U') << 16) | (uint64_t('R') << 24))) == false);
+        BOOST_CHECK(data_service.account_balance_exists_by_owner_and_asset("alice", (uint64_t(2) | (uint64_t('U') << 8) | (uint64_t('S') << 16) | (uint64_t('D') << 24))) == true);
+        BOOST_CHECK(data_service.account_balance_exists_by_owner_and_asset("bob", (uint64_t(2) | (uint64_t('E') << 8) | (uint64_t('U') << 16) | (uint64_t('R') << 24))) == false);
     }
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_by_owner)
+BOOST_AUTO_TEST_CASE(get_account_balance_by_owner)
 {
     try
     {
         create_account_balances();
-        auto account_balances = data_service.get_by_owner("alice");
+        auto account_balances = data_service.get_account_balance_by_owner("alice");
 
         BOOST_CHECK(account_balances.size() == 2);
         BOOST_CHECK(std::any_of(account_balances.begin(), account_balances.end(), [=](std::reference_wrapper<const account_balance_object> wrapper){
@@ -166,13 +166,13 @@ BOOST_AUTO_TEST_CASE(remove)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_by_owner_and_asset)
+BOOST_AUTO_TEST_CASE(get_account_balance_by_owner_and_asset)
 {
     try
     {
         create_account_balances();
 
-        auto& account_balance = data_service.get_by_owner_and_asset("alice", (uint64_t(2) | (uint64_t('U') << 8) | (uint64_t('S') << 16) | (uint64_t('D') << 24)));
+        auto& account_balance = data_service.get_account_balance_by_owner_and_asset("alice", (uint64_t(2) | (uint64_t('U') << 8) | (uint64_t('S') << 16) | (uint64_t('D') << 24)));
 
         BOOST_CHECK(account_balance.id == 30);
         BOOST_CHECK(account_balance.owner == "alice");

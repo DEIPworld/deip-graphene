@@ -706,7 +706,7 @@ void database_fixture::proxy(const string& account, const string& proxy)
 const asset database_fixture::get_balance(const string& account_name) const
 {
     const auto& account_balance_service = db.obtain_service<dbs_account_balance>();
-    const auto& account_balance = account_balance_service.get_by_owner_and_asset(account_name, DEIP_SYMBOL);
+    const auto& account_balance = account_balance_service.get_account_balance_by_owner_and_asset(account_name, DEIP_SYMBOL);
     return asset(account_balance.amount, account_balance.symbol);
 }
 

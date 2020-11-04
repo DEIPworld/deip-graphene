@@ -6,10 +6,6 @@
 namespace deip {
 namespace protocol {
 
-bool inline is_asset_type(asset asset, asset_symbol_type symbol)
-{
-    return asset.symbol == symbol;
-}
 
 void vote_for_review_operation::validate() const
 {
@@ -48,7 +44,6 @@ void withdraw_common_tokens_operation::validate() const
     validate_account_name(account);
 
     // TODO Add Common token validation
-    // FC_ASSERT(is_asset_type(vesting_shares, VESTS_SYMBOL), "Amount must be VESTS");
 }
 
 void set_withdraw_common_tokens_route_operation::validate() const
@@ -163,25 +158,6 @@ void create_review_for_application_operation::validate() const
     FC_ASSERT(!content.empty(), "Content cannot be empty");
 }
 
-void create_asset_operation::validate() const
-{
-    validate_account_name(issuer);
-    FC_ASSERT(symbol.size() > 0 && symbol.size() < 7, "Asset symbol must be specified");
-    FC_ASSERT(fc::is_utf8(symbol), "Asset symbol is not valid UTF8 string");
-    FC_ASSERT(precision < 15, "Precision must be less than 15.");
-    FC_ASSERT(name.size() > 0, "Name must be specified");
-    FC_ASSERT(fc::is_utf8(name), "Name is not valid UTF8 string");
-    FC_ASSERT(description.size() > 0, "Description must be specified");
-    FC_ASSERT(fc::is_utf8(description), "Description is not valid UTF8 string");
-}
-
-void issue_asset_operation::validate() const
-{
-    validate_account_name(issuer);
-    FC_ASSERT(!is_asset_type(amount, DEIP_SYMBOL), "You cannot issue DEIP tokens manually.");
-    FC_ASSERT(amount.amount > 0, "Amount to issue must be greater than 0");
-}
-
 void approve_grant_application_operation::validate() const
 {
     FC_ASSERT(grant_application_id >= 0, "Application id cant be less than a 0");
@@ -192,13 +168,6 @@ void reject_grant_application_operation::validate() const
 {
     FC_ASSERT(grant_application_id >= 0, "Application id cant be less than a 0");
     validate_account_name(rejector);
-}
-
-void reserve_asset_operation::validate() const
-{
-    validate_account_name(owner);
-    FC_ASSERT(!is_asset_type(amount, DEIP_SYMBOL), "You cannot reserve DEIP tokens manually.");
-    FC_ASSERT(amount.amount > 0, "Amount to reserve must be greater than 0");
 }
 
 } // namespace deip::protocol

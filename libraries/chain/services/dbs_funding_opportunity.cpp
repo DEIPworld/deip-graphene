@@ -34,7 +34,7 @@ const funding_opportunity_object& dbs_funding_opportunity::create_grant_with_off
                                                                                                              const fc::time_point_sec& close_date)
 {
     dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
-    account_balance_service.adjust_balance(grantor, -amount);
+    account_balance_service.adjust_account_balance(grantor, -amount);
 
     const auto now = db_impl().head_block_time();
     const funding_opportunity_object& foa = db_impl().create<funding_opportunity_object>([&](funding_opportunity_object& funding_opportunity) {
@@ -91,7 +91,7 @@ const funding_opportunity_object& dbs_funding_opportunity::create_grant_with_eci
                                                                                                          const fc::time_point_sec& close_date)
 {
     auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
-    account_balance_service.adjust_balance(grantor, -amount);
+    account_balance_service.adjust_account_balance(grantor, -amount);
 
     const auto now = db_impl().head_block_time();
     const funding_opportunity_object& funding_opportunity = db_impl().create<funding_opportunity_object>([&](funding_opportunity_object& funding_opportunity) {
@@ -281,7 +281,7 @@ dbs_funding_opportunity::funding_opportunity_refs_type dbs_funding_opportunity::
 void dbs_funding_opportunity::remove_funding_opportunity(const funding_opportunity_object& funding_opportunity)
 {
     dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
-    account_balance_service.adjust_balance(funding_opportunity.grantor, funding_opportunity.amount);
+    account_balance_service.adjust_account_balance(funding_opportunity.grantor, funding_opportunity.amount);
 
     db_impl().remove(funding_opportunity);
 }
@@ -379,7 +379,7 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
                 max_eci = research_eci.first;
             }
 
-            account_balance_service.adjust_balance(research_group.account, research_reward);
+            account_balance_service.adjust_account_balance(research_group.account, research_reward);
             award_service.adjust_expenses(award_recipient.id._id, research_reward);
 
             used_funding_opportunity += research_reward;
@@ -396,7 +396,7 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
             const auto& award_recipient = award_service.get_award_recipient(max_award_recipient_id);
 
             const auto& research_group = research_group_service.get_research_group(research_group_with_max_award_id);
-            account_balance_service.adjust_balance(research_group.account, remainder);
+            account_balance_service.adjust_account_balance(research_group.account, remainder);
 
             db_impl().modify(award, [&](award_object& a_o) {
                 a_o.amount += remainder;

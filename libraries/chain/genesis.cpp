@@ -177,6 +177,8 @@ void database::init_genesis_accounts(const genesis_state_type& genesis_state)
 
 void database::init_genesis_assets(const genesis_state_type& genesis_state)
 {
+    auto& asset_service = obtain_service<dbs_asset>();
+
     const vector<genesis_state_type::asset_type>& assets = genesis_state.assets;
     const vector<genesis_state_type::account_balance_type>& account_balances = genesis_state.account_balances;
     const genesis_state_type::registrar_account_type& registrar = genesis_state.registrar_account;
@@ -193,16 +195,11 @@ void database::init_genesis_assets(const genesis_state_type& genesis_state)
       "Total supply (${total}) is not equal to inited supply (${inited}) for ${s} asset",
       ("total", liquid_total_supply.value)("inited", genesis_state.init_supply)("s", asset(0, DEIP_SYMBOL).symbol_name()));
 
-    create<asset_object>([&](asset_object& a_o) {
-        const protocol::asset a = asset(0, DEIP_SYMBOL);
 
-        a_o.symbol = a.symbol;
-        fc::from_string(a_o.string_symbol, a.symbol_name());
-        a_o.precision = a.decimals();
-        a_o.current_supply = genesis_state.init_supply;
-    });
+    const protocol::asset core_asset = asset(0, DEIP_SYMBOL);
+    asset_service.create_asset(account_name_type(), core_asset.symbol, core_asset.symbol_name(), core_asset.decimals(), genesis_state.init_supply, DEIP_MAX_SHARE_SUPPLY, "");
 
-    for (auto& asset : assets)
+    for (const auto& asset : assets)
     {
         const int p = std::pow(10, asset.precision);
         const std::string string_asset = "0." + fc::to_string(p).erase(0, 1) + " " + asset.symbol;
@@ -220,12 +217,7 @@ void database::init_genesis_assets(const genesis_state_type& genesis_state)
           "Total supply (${total}) is not equal to inited supply (${inited}) for ${s} asset",
           ("total", asset_total_supply.value)("inited", asset.current_supply)("s", a.symbol_name()));
 
-        create<asset_object>([&](asset_object& a_o) {
-          a_o.symbol = a.symbol;
-          fc::from_string(a_o.string_symbol, a.symbol_name());
-          a_o.precision = a.decimals();
-          a_o.current_supply = asset.current_supply;
-        });
+        asset_service.create_asset(account_name_type(), a.symbol, a.symbol_name(), a.decimals(), asset.current_supply, DEIP_MAX_SHARE_SUPPLY, "");
     }
 }
 
@@ -238,8 +230,8 @@ void database::init_genesis_account_balances(const genesis_state_type& genesis_s
 
     for (auto& account_balance : account_balances)
     {
-        const auto& asset = assets_service.get_by_string_symbol(account_balance.symbol);
-        account_balances_service.adjust_balance(account_balance.owner, deip::protocol::asset(account_balance.amount, asset.symbol));
+        const auto& asset_o = assets_service.get_asset_by_string_symbol(account_balance.symbol);
+        account_balances_service.adjust_account_balance(account_balance.owner, asset(account_balance.amount, asset_o.symbol));
     }
 }
 

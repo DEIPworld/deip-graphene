@@ -31,7 +31,7 @@ public:
 
     const vesting_balance_optional_ref_type get_vesting_balance_if_exists(const vesting_balance_id_type& id) const;
 
-    vesting_balance_refs_type get_by_owner(const account_name_type &owner) const;
+    vesting_balance_refs_type get_vesting_balance_by_owner(const account_name_type& owner) const;
 
     void withdraw(const vesting_balance_id_type &id, const asset &amount);
 

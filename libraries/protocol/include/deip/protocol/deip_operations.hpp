@@ -37,6 +37,9 @@
 #include <deip/protocol/operations/create_security_token_operation.hpp>
 #include <deip/protocol/operations/transfer_security_token_operation.hpp>
 #include <deip/protocol/operations/create_research_license_operation.hpp>
+#include <deip/protocol/operations/create_asset_operation.hpp>
+#include <deip/protocol/operations/issue_asset_operation.hpp>
+#include <deip/protocol/operations/reserve_asset_operation.hpp>
 
 namespace deip {
 namespace protocol {
@@ -624,54 +627,6 @@ struct reject_grant_application_operation : public base_operation
     }
 };
 
-struct create_asset_operation : public base_operation
-{
-    account_name_type issuer;
-    string symbol;
-    uint8_t precision;
-    string name;
-    string description;
-
-    extensions_type extensions;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(issuer);
-    }
-};
-
-struct issue_asset_operation : public base_operation
-{
-    account_name_type issuer;
-    asset amount;
-
-    extensions_type extensions;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(issuer);
-    }
-};
-
-struct reserve_asset_operation : public base_operation
-{
-    account_name_type owner;
-    asset amount;
-
-    extensions_type extensions;
-
-    void validate() const;
-
-    void get_required_active_authorities(flat_set<account_name_type>& a) const
-    {
-        a.insert(owner);
-    }
-};
-
 } // namespace protocol
 } // namespace deip
 
@@ -705,8 +660,5 @@ FC_REFLECT( deip::protocol::create_grant_application_operation, (funding_opportu
 FC_REFLECT( deip::protocol::create_review_for_application_operation, (author)(grant_application_id)(content)(is_positive)(weight)(extensions))
 FC_REFLECT( deip::protocol::approve_grant_application_operation, (grant_application_id)(approver)(extensions))
 FC_REFLECT( deip::protocol::reject_grant_application_operation, (grant_application_id)(rejector)(extensions))
-FC_REFLECT( deip::protocol::create_asset_operation, (issuer)(symbol)(precision)(name)(description)(extensions))
-FC_REFLECT( deip::protocol::issue_asset_operation, (issuer)(amount)(extensions))
-FC_REFLECT( deip::protocol::reserve_asset_operation, (owner)(amount)(extensions))
 
 // clang-format on

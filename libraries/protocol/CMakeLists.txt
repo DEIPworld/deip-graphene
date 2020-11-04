@@ -40,6 +40,9 @@ add_library( deip_protocol
              operations/create_security_token_operation.cpp
              operations/transfer_security_token_operation.cpp
              operations/create_research_license_operation.cpp
+             operations/create_asset_operation.cpp
+             operations/issue_asset_operation.cpp
+             operations/reserve_asset_operation.cpp
              transaction.cpp
              block.cpp
              asset.cpp

@@ -55,7 +55,7 @@ dbs_research_token::get_research_token_if_exists(const research_token_id_type& i
     return result;
 }
 
-dbs_research_token::research_token_refs_type dbs_research_token::get_by_owner(const account_name_type &owner) const
+dbs_research_token::research_token_refs_type dbs_research_token::get_account_balance_by_owner(const account_name_type &owner) const
 {
     research_token_refs_type ret;
 

@@ -104,7 +104,7 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
     );
 
     const auto& props = db_impl().get_dynamic_global_properties();
-    account_balance_service.adjust_balance(creator_name, -fee);
+    account_balance_service.adjust_account_balance(creator_name, -fee);
 
     const auto& new_account = db_impl().create<account_object>([&](account_object& acc) {
         acc.name = account_name;
@@ -122,9 +122,9 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
 #endif
     });
 
-    if (!account_balance_service.exists_by_owner_and_asset(account_name, DEIP_SYMBOL)) // check for genesis
-        account_balance_service.create(account_name, DEIP_SYMBOL, 0);
-    
+    if (!account_balance_service.account_balance_exists_by_owner_and_asset(account_name, DEIP_SYMBOL)) // check for genesis
+        account_balance_service.create_account_balance(account_name, DEIP_SYMBOL, 0);
+
     // Convert fee to Common tokens and increase account common tokens balance for throughput
     increase_common_tokens(get_account(account_name), fee.amount);
 

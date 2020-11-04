@@ -1051,7 +1051,6 @@ public:
     annotated_signed_transaction create_asset(const std::string& issuer,
                                               const std::string& symbol,
                                               const uint8_t& precision,
-                                              const std::string& name,
                                               const std::string& description,
                                               const bool broadcast);
 

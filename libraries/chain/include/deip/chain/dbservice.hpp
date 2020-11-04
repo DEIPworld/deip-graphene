@@ -32,10 +32,6 @@ public:
 
     virtual const account_object& get_account(const account_name_type& name) const = 0;
 
-    virtual asset get_balance(const account_object& a, const protocol::asset_symbol_type& symbol) const = 0;
-
-    virtual asset get_balance(const string& name, const protocol::asset_symbol_type& symbol) const = 0;
-
     virtual const dynamic_global_property_object& get_dynamic_global_properties() const = 0;
 
     virtual const witness_schedule_object& get_witness_schedule_object() const = 0;

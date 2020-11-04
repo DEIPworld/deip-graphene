@@ -50,7 +50,7 @@ dbs_vesting_balance::get_vesting_balance_if_exists(const vesting_balance_id_type
     return result;
 }
 
-dbs_vesting_balance::vesting_balance_refs_type dbs_vesting_balance::get_by_owner(const account_name_type &owner) const
+dbs_vesting_balance::vesting_balance_refs_type dbs_vesting_balance::get_vesting_balance_by_owner(const account_name_type &owner) const
 {
     vesting_balance_refs_type ret;
 
