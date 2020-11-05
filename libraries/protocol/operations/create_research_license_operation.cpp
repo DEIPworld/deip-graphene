@@ -32,7 +32,7 @@ struct license_conditions_validator
 
         const std::set<uint8_t>& all_decimals = std::accumulate(
             fee_model.beneficiaries.begin(), fee_model.beneficiaries.end(), std::set<uint8_t>(),
-            [](std::set<uint8_t> acc, const std::pair<external_id_type, percent>& beneficiary) {
+            [](std::set<uint8_t> acc, const std::pair<string, percent>& beneficiary) {
                 acc.insert(beneficiary.second.decimals);
                 return acc;
             });
@@ -43,7 +43,7 @@ struct license_conditions_validator
 
         const percent& total_share = std::accumulate(
             fee_model.beneficiaries.begin(), fee_model.beneficiaries.end(), percent(0, decimals),
-            [](percent acc, const std::pair<external_id_type, percent>& beneficiary) {
+            [](percent acc, const std::pair<string, percent>& beneficiary) {
                 return acc + beneficiary.second;
             });
 

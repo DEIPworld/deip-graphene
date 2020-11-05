@@ -370,15 +370,6 @@ public:
     fc::optional<research_token_api_obj> get_research_token_by_account_name_and_research_id(const account_name_type &account_name, const research_id_type &research_id) const;
 
 
-    fc::optional<security_token_api_obj> get_security_token(const external_id_type& security_token_external_id) const;
-    vector<security_token_api_obj> get_security_tokens_by_research(const external_id_type& research_external_id) const;
-
-    fc::optional<security_token_balance_api_obj> get_security_token_balance(const account_name_type& owner, const external_id_type& security_token_external_id) const;
-    vector<security_token_balance_api_obj> get_security_token_balances(const external_id_type& security_token_external_id) const;
-    vector<security_token_balance_api_obj> get_security_token_balances_by_owner(const account_name_type& owner) const;
-    vector<security_token_balance_api_obj> get_security_token_balances_by_research(const external_id_type& research_external_id) const;
-    vector<security_token_balance_api_obj> get_security_token_balances_by_owner_and_research(const account_name_type& owner, const external_id_type& research_external_id) const;
-
     /////////////////////////
     // Review vote object ///
     /////////////////////////
@@ -447,16 +438,16 @@ public:
     ////////////
 
     fc::optional<asset_api_obj> get_asset(const asset_id_type& id) const;
-    fc::optional<asset_api_obj> get_asset_by_string_symbol(const std::string& string_symbol) const;
+    fc::optional<asset_api_obj> get_asset_by_symbol(const string& symbol) const;
+    vector<asset_api_obj> get_assets_by_issuer(const account_name_type& issuer) const;
 
     //////////////////////
     // Account balances //
     //////////////////////
 
-    fc::optional<account_balance_api_obj> get_account_balance(const account_balance_id_type& id) const;
-    vector<account_balance_api_obj> get_account_balances_by_owner(const account_name_type& owner) const;
-    fc::optional<account_balance_api_obj> get_account_balance_by_owner_and_asset_symbol(const account_name_type& owner, const string& symbol) const;
-
+    fc::optional<account_balance_api_obj> get_account_asset_balance(const account_name_type& owner, const string& symbol) const;
+    vector<account_balance_api_obj> get_account_assets_balances(const account_name_type& owner) const;
+    vector<account_balance_api_obj> get_accounts_asset_balances_by_asset(const string& symbol) const;
 
     //////////////////////////
     // Discipline supplies //
@@ -665,15 +656,6 @@ FC_API(deip::app::database_api,
    (get_research_tokens_by_research_id)
    (get_research_token_by_account_name_and_research_id)
 
-   (get_security_token)
-   (get_security_tokens_by_research)
-
-   (get_security_token_balance)
-   (get_security_token_balances)
-   (get_security_token_balances_by_owner)
-   (get_security_token_balances_by_research)
-   (get_security_token_balances_by_owner_and_research)
-
    // Review votes
    (get_review_votes_by_voter)
    (get_review_votes_by_review_id)
@@ -713,11 +695,12 @@ FC_API(deip::app::database_api,
    (calculate_review_weight)
 
    (get_asset)
-   (get_asset_by_string_symbol)
+   (get_asset_by_symbol)
+   (get_assets_by_issuer)
 
-   (get_account_balance)
-   (get_account_balances_by_owner)
-   (get_account_balance_by_owner_and_asset_symbol)
+   (get_account_asset_balance)
+   (get_account_assets_balances)
+   (get_accounts_asset_balances_by_asset)
 
    (get_discipline_supply)
 

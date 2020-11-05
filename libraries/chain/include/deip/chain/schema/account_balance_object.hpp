@@ -7,6 +7,7 @@ namespace chain {
 
 using fc::shared_string;
 using deip::protocol::asset;
+using deip::protocol::external_id_type;
 
 class account_balance_object : public object<account_balance_object_type, account_balance_object>
 {
@@ -28,6 +29,9 @@ public:
 
     account_name_type owner;
     share_type amount = 0;
+    share_type frozen_amount = 0;
+
+    optional<external_id_type> tokenized_research;
 
     const asset to_asset() const 
     {
@@ -36,18 +40,34 @@ public:
 };
 
 struct by_owner;
+struct by_symbol;
+struct by_string_symbol;
 struct by_owner_and_asset_symbol;
 struct by_owner_and_asset_string_symbol;
 
 typedef multi_index_container<account_balance_object,
-            indexed_by<ordered_unique<tag<by_id>,
+            indexed_by<
+            
+            ordered_unique<tag<by_id>,
                     member<account_balance_object,
                             account_balance_id_type,
                            &account_balance_object::id>>,
+
             ordered_non_unique<tag<by_owner>,
                     member<account_balance_object,
                            account_name_type,
                            &account_balance_object::owner>>,
+
+            ordered_non_unique<tag<by_symbol>,
+                    member<account_balance_object,
+                           asset_symbol_type,
+                           &account_balance_object::symbol>>,
+
+            ordered_non_unique<tag<by_string_symbol>,
+                    member<account_balance_object,
+                           shared_string,
+                           &account_balance_object::string_symbol>>,
+
             ordered_unique<tag<by_owner_and_asset_symbol>,
                     composite_key<account_balance_object,
                             member<account_balance_object,
@@ -56,6 +76,7 @@ typedef multi_index_container<account_balance_object,
                             member<account_balance_object,
                                     asset_symbol_type,
                                     &account_balance_object::symbol>>>,
+
             ordered_unique<tag<by_owner_and_asset_string_symbol>,
                     composite_key<account_balance_object,
                             member<account_balance_object,
@@ -72,5 +93,5 @@ typedef multi_index_container<account_balance_object,
     }
 }
 
-FC_REFLECT(deip::chain::account_balance_object, (id)(asset_id)(symbol)(string_symbol)(owner)(amount))
+FC_REFLECT(deip::chain::account_balance_object, (id)(asset_id)(symbol)(string_symbol)(owner)(amount)(frozen_amount)(tokenized_research))
 CHAINBASE_SET_INDEX_TYPE( deip::chain::account_balance_object, deip::chain::account_balance_index )

@@ -31,7 +31,6 @@
 #include <deip/chain/services/dbs_grant_application.hpp>
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
-#include <deip/chain/services/dbs_security_token.hpp>
 #include <deip/chain/services/dbs_research_license.hpp>
 
 #ifndef IS_LOW_MEM
@@ -933,10 +932,11 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
 
 void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale_operation& op)
 {
-    dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
-    dbs_research_token_sale& research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
-    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    auto& account_service = _db.obtain_service<dbs_account>();
+    auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
+    auto& research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
+    auto& research_service = _db.obtain_service<dbs_research>();
+    auto& asset_service = _db.obtain_service<dbs_asset>();
     const auto& block_time = _db.head_block_time();
 
     FC_ASSERT(account_service.account_exists(op.contributor), 
@@ -956,8 +956,7 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
       "Research token sale ${1} is in ${2} status",
       ("1", op.token_sale_external_id)("2", research_token_sale.status));
 
-    const auto& account_balance
-        = account_balance_service.get_account_balance_by_owner_and_asset(op.contributor, op.amount.symbol);
+    const auto& account_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.contributor, op.amount.symbol);
 
     FC_ASSERT(account_balance.amount >= op.amount.amount, 
       "Not enough funds to contribute. Available: ${1} Requested: ${2}", 
@@ -1372,6 +1371,8 @@ void create_asset_evaluator::do_apply(const create_asset_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
+    dbs_research& research_service = _db.obtain_service<dbs_research>();
+    dbs_research_group& research_group_service = _db.obtain_service<dbs_research_group>();
 
     int p = std::pow(10, op.precision);
     std::string string_asset = "0." + fc::to_string(p).erase(0, 1) + " " + op.symbol;
@@ -1380,7 +1381,23 @@ void create_asset_evaluator::do_apply(const create_asset_operation& op)
     FC_ASSERT(account_service.account_exists(op.issuer), "Account ${1} does not exist", ("1", op.issuer));
     FC_ASSERT(!asset_service.asset_exists_by_symbol(new_asset.symbol), "Asset ${1} exist already", ("1", op.symbol));
 
-    asset_service.create_asset(op.issuer, new_asset.symbol, op.symbol, op.precision, share_type(0), op.max_supply, op.description);
+    optional<std::reference_wrapper<const research_object>> tokenized_research;
+
+    for (const auto& asset_trait : op.traits)
+    {
+        if (asset_trait.which() == asset_trait_type::tag<research_security_token_trait>::value)
+        {
+            const auto& security_token_trait = asset_trait.get<research_security_token_trait>();
+
+            const auto& research = research_service.get_research(security_token_trait.research_external_id);
+            const auto& research_group = research_group_service.get_research_group_by_account(security_token_trait.research_group);
+
+            FC_ASSERT(research_group.account == research.research_group, "Research ${1} is not owned by ${2} research group", ("1", research.external_id)("2", research_group.account));
+            tokenized_research = research;
+        }
+    }
+
+    asset_service.create_asset(op.issuer, new_asset.symbol, op.symbol, op.precision, share_type(0), op.max_supply, op.description, tokenized_research);
 }
 
 void issue_asset_evaluator::do_apply(const issue_asset_operation& op)
@@ -1391,12 +1408,12 @@ void issue_asset_evaluator::do_apply(const issue_asset_operation& op)
 
     FC_ASSERT(account_service.account_exists(op.issuer), "Account ${1} does not exist", ("1", op.issuer));
     FC_ASSERT(account_service.account_exists(op.recipient), "Account ${1} does not exist", ("1", op.recipient));
-    FC_ASSERT(asset_service.asset_exists_by_symbol(op.amount.symbol), "Asset ${1} does not exist", ("1", op.amount.symbol));
-
-    account_balance_service.adjust_account_balance(op.recipient, op.amount);
+    FC_ASSERT(asset_service.asset_exists_by_symbol(op.amount.symbol), "Asset ${1} does not exist", ("1", op.amount.symbol_name()));
 
     const auto& asset_o = asset_service.get_asset_by_symbol(op.amount.symbol);
-    asset_service.adjust_asset_current_supply(asset_o, op.amount.amount);
+    FC_ASSERT(op.issuer == asset_o.issuer, "Account ${1} is not ${2} asset issuer", ("1", op.issuer)("2", op.amount.symbol_name()));
+
+    asset_service.issue_asset(asset_o, op.recipient, op.amount);
 }
 
 void reserve_asset_evaluator::do_apply(const reserve_asset_operation& op)
@@ -1406,13 +1423,12 @@ void reserve_asset_evaluator::do_apply(const reserve_asset_operation& op)
     dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
 
     FC_ASSERT(account_service.account_exists(op.owner), "Account ${1} does not exist", ("1", op.owner));
-    FC_ASSERT(asset_service.asset_exists_by_symbol(op.amount.symbol), "Asset ${1} does not exist", ("1", op.amount.symbol));
-    FC_ASSERT(account_balance_service.account_balance_exists_by_owner_and_asset(op.owner, op.amount.symbol), "Asset ${1} balance does not exist for ${2} account", ("1", op.amount.symbol)("2", op.owner));
-
-    account_balance_service.adjust_account_balance(op.owner, -op.amount);
+    FC_ASSERT(asset_service.asset_exists_by_symbol(op.amount.symbol), "Asset ${1} does not exist", ("1", op.amount.symbol_name()));
+    FC_ASSERT(account_balance_service.account_balance_exists_by_owner_and_asset(op.owner, op.amount.symbol), "Asset ${1} balance does not exist for ${2} account", ("1", op.amount.symbol_name())("2", op.owner));
 
     const auto& asset_o = asset_service.get_asset_by_symbol(op.amount.symbol);
-    asset_service.adjust_asset_current_supply(asset_o, -op.amount.amount);
+
+    asset_service.reserve_asset(asset_o, op.owner, op.amount);
 }
 
 void create_award_evaluator::do_apply(const create_award_operation& op)
@@ -1859,7 +1875,7 @@ void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal
     const auto& grant_asset = asset_service.get_asset_by_symbol(withdrawal.amount.symbol);
 
     award_service.adjust_expenses(award_recipient.id, withdrawal.amount);
-    asset_service.adjust_asset_current_supply(grant_asset, -withdrawal.amount.amount); // burn grant tokens
+    asset_service.adjust_asset_current_supply(grant_asset, -withdrawal.amount); // burn grant tokens
 
     const price rate = price(asset(1, DEIP_USD_SYMBOL), asset(1, withdrawal.amount.symbol));
     const asset payout = withdrawal.amount * rate;
@@ -2238,7 +2254,6 @@ void leave_research_group_membership_evaluator::do_apply(const leave_research_gr
     auto& research_groups_service = _db.obtain_service<dbs_research_group>();
     auto& research_service = _db.obtain_service<dbs_research>();
     auto& research_token_service = _db.obtain_service<dbs_research_token>();
-    auto& security_token_token_service = _db.obtain_service<dbs_security_token>();
     auto& research_content_service = _db.obtain_service<dbs_research_content>();
 
     FC_ASSERT(account_service.account_exists(op.member), 
@@ -2279,12 +2294,12 @@ void leave_research_group_membership_evaluator::do_apply(const leave_research_gr
 
                 if (authors.find(op.member) != authors.end())
                 {
-                    const auto& security_tokens_balances = security_token_token_service.get_security_token_balances_by_owner_and_research(research.research_group, research.external_id);
-                    for (const security_token_balance_object& security_tokens_balance : security_tokens_balances)
-                    {
-                        const auto& compensation = util::calculate_share(share_type(security_tokens_balance.amount), compensation_share);
-                        security_token_token_service.transfer_security_token(research.research_group, op.member, security_tokens_balance.security_token_external_id, uint32_t(compensation.value));
-                    }
+                    // const auto& security_tokens_balances = security_token_token_service.get_security_token_balances_by_owner_and_research(research.research_group, research.external_id);
+                    // for (const security_token_balance_object& security_tokens_balance : security_tokens_balances)
+                    // {
+                    //     const auto& compensation = util::calculate_share(share_type(security_tokens_balance.amount), compensation_share);
+                    //     security_token_token_service.transfer_security_token(research.research_group, op.member, security_tokens_balance.security_token_external_id, uint32_t(compensation.value));
+                    // }
                 }
             }
         }
@@ -2512,7 +2527,8 @@ void create_research_token_sale_evaluator::do_apply(const create_research_token_
     auto& research_service = _db.obtain_service<dbs_research>();
     auto& research_group_service = _db.obtain_service<dbs_research_group>();
     auto& research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
-    auto& security_token_service = _db.obtain_service<dbs_security_token>();
+    auto& asset_service = _db.obtain_service<dbs_asset>();
+    auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
     auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
 
     const auto& dup_guard = duplicated_entity_guard(dgp_service);
@@ -2535,27 +2551,32 @@ void create_research_token_sale_evaluator::do_apply(const create_research_token_
 
     for (const auto& security_token_on_sale : op.security_tokens_on_sale)
     {
-        FC_ASSERT(research.security_tokens.find(security_token_on_sale.first) != research.security_tokens.end(), "Research ${1} is not tokenized with ${2} security token", ("1", research.external_id)("2", security_token_on_sale.first));
-        const auto& security_token_balance_opt = security_token_service.get_security_token_balance_if_exists(research.research_group, security_token_on_sale.first);
-        FC_ASSERT(security_token_balance_opt.valid(), "Research group ${1} does not have balance for security token ${2} ", ("1", research.research_group)("2", security_token_on_sale.first));
-        const security_token_balance_object& security_token_balance = *security_token_balance_opt;
-        FC_ASSERT(security_token_balance.amount >= security_token_on_sale.second, "Research group ${1} security token balance ${2} is not enough ${3} ", ("1", research.research_group)("2", security_token_on_sale.first)("3", security_token_on_sale.second));
+        const auto& asset_o = asset_service.get_asset_by_symbol(security_token_on_sale.symbol);
+        FC_ASSERT(static_cast<asset_type>(asset_o.type) == asset_type::research_security_token, "Asset ${1} is not a research security token",
+            ("1", security_token_on_sale.symbol_name()));
+
+        FC_ASSERT(std::count_if(research.security_tokens.begin(), research.security_tokens.end(),
+            [&](const asset& a) { return a.symbol == security_token_on_sale.symbol; }) != 0, "Research ${1} is not tokenized with ${2} security token", ("1", research.external_id)("2", security_token_on_sale.symbol_name()));
+
+        const auto& security_token_balance_opt = account_balance_service.get_account_balance_by_owner_and_asset_if_exists(research.research_group, security_token_on_sale.symbol);
+        FC_ASSERT(security_token_balance_opt.valid(), "Research group ${1} does not have balance for security token ${2} ", ("1", research.research_group)("2", security_token_on_sale.symbol_name()));
+
+        const account_balance_object& security_token_balance = *security_token_balance_opt;
+        FC_ASSERT(security_token_balance.to_asset() >= security_token_on_sale, "Research group ${1} security token balance (${2}) is not enough", ("1", research.research_group)("2", security_token_balance.to_asset()));
     }
 
-    FC_ASSERT(research.research_group_id == research_group.id,
-      "Research ${1} does not belong to research group ${2}",
+    FC_ASSERT(research.research_group_id == research_group.id, "Research ${1} does not belong to research group ${2}",
       ("1", op.research_external_id)("2", research_group.name));
 
     const auto& active_research_token_sales = research_token_sale_service.get_by_research_id_and_status(research.id, research_token_sale_status::active);
     const auto& inactive_research_token_sales = research_token_sale_service.get_by_research_id_and_status(research.id, research_token_sale_status::inactive);
 
-    FC_ASSERT(inactive_research_token_sales.size() == 0 && active_research_token_sales.size() == 0, 
-      "Research ${1} has scheduled token sales already", 
+    FC_ASSERT(inactive_research_token_sales.size() == 0 && active_research_token_sales.size() == 0, "Research ${1} has a scheduled token sale already", 
       ("1", op.research_external_id));
 
     for (const auto& security_token_on_sale : op.security_tokens_on_sale)
     {
-        security_token_service.freeze_security_token(research.research_group, security_token_on_sale.first, security_token_on_sale.second);
+        account_balance_service.freeze_account_balance(research.research_group, security_token_on_sale);
     }
 
     research_token_sale_service.create_research_token_sale(
@@ -2629,42 +2650,12 @@ void create_assessment_evaluator::do_apply(const create_assessment_operation& op
     
 }
 
-void create_security_token_evaluator::do_apply(const create_security_token_operation& op)
-{
-    auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
-    auto& research_service = _db.obtain_service<dbs_research>();
-    auto& research_groups_service = _db.obtain_service<dbs_research_group>();
-    auto& security_tokens_service = _db.obtain_service<dbs_security_token>();
-
-    const auto& dup_guard = duplicated_entity_guard(dgp_service);
-    dup_guard(op);
-
-    const auto& research_group = research_groups_service.get_research_group_by_account(op.research_group);
-    const auto& research = research_service.get_research(op.research_external_id);
-
-    FC_ASSERT(research_group.account == research.research_group, "Research ${1} is not owned by ${2} research group", ("1", research.external_id)("2", research_group.account));
-
-    security_tokens_service.create_security_token(research, op.external_id, op.amount);
-}
-
-void transfer_security_token_evaluator::do_apply(const transfer_security_token_operation& op)
-{
-    auto& account_service = _db.obtain_service<dbs_account>();
-    auto& security_tokens_service = _db.obtain_service<dbs_security_token>();
-
-    FC_ASSERT(account_service.account_exists(op.from), "Account ${1} does not exist", ("1", op.from));
-    FC_ASSERT(account_service.account_exists(op.to), "Account ${1} does not exist", ("1", op.to));
-
-    security_tokens_service.transfer_security_token(op.from, op.to, op.security_token_external_id, op.amount);
-}
-
-
 void create_research_license_evaluator::do_apply(const create_research_license_operation& op)
 {
     auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
     auto& research_service = _db.obtain_service<dbs_research>();
     auto& research_groups_service = _db.obtain_service<dbs_research_group>();
-    auto& security_tokens_service = _db.obtain_service<dbs_security_token>();
+    auto& asset_service = _db.obtain_service<dbs_asset>();
     auto& research_license_service = _db.obtain_service<dbs_research_license>();
     auto& account_service = _db.obtain_service<dbs_account>();
     auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
@@ -2688,8 +2679,16 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
 
         for (const auto& beneficiary_share : fee_model.beneficiaries)
         {
-            const auto& security_token = beneficiary_share.first;
-            FC_ASSERT(research.security_tokens.find(security_token) != research.security_tokens.end(), "Research ${1} is not tokenized with ${2} security token.", ("1", research.external_id)("2", security_token));
+            const auto& asset_o = asset_service.get_asset_by_string_symbol(beneficiary_share.first);
+
+            FC_ASSERT(static_cast<asset_type>(asset_o.type) == asset_type::research_security_token, 
+              "Asset ${1} is not a research security token", 
+              ("1", asset_o.string_symbol));
+
+            FC_ASSERT(std::count_if(research.security_tokens.begin(), research.security_tokens.end(),
+                [&](const asset& a) { return a.symbol == asset_o.symbol; }) != 0, 
+                "Research ${1} is not tokenized with ${2} security token",
+                ("1", research.external_id)("2", asset_o.string_symbol));
         }
 
         if (fee_model.expiration_time.valid())
@@ -2706,32 +2705,27 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
             const auto& licensee_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.licensee, fee.symbol);
             FC_ASSERT(licensee_balance.to_asset() >= fee, "Account ${1} balance is not enough.", ("1", op.licensee));
 
-            std::map<external_id_type, asset> beneficiary_shares;
+            std::map<string, asset> beneficiary_shares;
             for (const auto& beneficiary_share : fee_model.beneficiaries)
             {
-                const auto precision = beneficiary_share.second.precision(beneficiary_share.second.decimals);
-                const percent full_share = percent(100 * precision, beneficiary_share.second.decimals);
-                const asset share = util::calculate_share(fee, beneficiary_share.second.amount, full_share.amount);
+                const asset share = util::calculate_share(fee, beneficiary_share.second);
                 beneficiary_shares.insert(std::make_pair(beneficiary_share.first, share));
             }
 
             for (const auto& beneficiary_share : beneficiary_shares)
             {
-                const auto& security_token = security_tokens_service.get_security_token(beneficiary_share.first);
-                const auto& security_token_balances = security_tokens_service.get_security_token_balances(security_token.external_id);
+                const auto& security_token = asset_service.get_asset_by_string_symbol(beneficiary_share.first);
+                const auto& security_token_balances = account_balance_service.get_accounts_balances_by_symbol(security_token.symbol);
                 const auto& beneficiary_revenue = beneficiary_share.second;
 
-                for (const security_token_balance_object& security_token_balance : security_token_balances)
+                for (const account_balance_object& security_token_balance : security_token_balances)
                 {
-                    const share_type holder_amount = share_type(security_token_balance.amount);
-                    const asset revenue = util::calculate_share(beneficiary_revenue, holder_amount, security_token.total_amount);
-                    const auto& asset_balance = account_balance_service.adjust_account_balance(security_token_balance.owner, revenue);
+                    const asset revenue = util::calculate_share(beneficiary_revenue, security_token_balance.amount, security_token.current_supply);
+                    const auto& account_revenue_balance = account_balance_service.adjust_account_balance(security_token_balance.owner, revenue);
                     
                     _db.push_virtual_operation(account_revenue_income_history_operation(
-                        asset_balance.owner, 
-                        security_token_balance.security_token_external_id,
-                        security_token_balance.amount,
-                        asset_balance.to_asset(),
+                        security_token_balance.owner, 
+                        security_token_balance.to_asset(),
                         revenue,
                         now)
                     );

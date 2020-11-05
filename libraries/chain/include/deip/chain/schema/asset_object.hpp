@@ -9,6 +9,14 @@ namespace chain {
 
 using deip::protocol::asset_symbol_type;
 using deip::protocol::asset;
+using deip::protocol::external_id_type;
+using fc::shared_string;
+
+enum class asset_type : uint8_t
+{
+    basic = 1,
+    research_security_token = 2
+};
 
 class asset_object : public object<asset_object_type, asset_object>
 {
@@ -25,14 +33,17 @@ public:
     asset_id_type id;
 
     asset_symbol_type symbol;
-    fc::shared_string string_symbol;
+    shared_string string_symbol;
     uint8_t precision;
 
     account_name_type issuer;
-    fc::shared_string description;
-    
-    share_type max_supply;
-    share_type current_supply;
+    shared_string description;
+
+    uint8_t type = static_cast<uint8_t>(asset_type::basic);
+    optional<external_id_type> tokenized_research;
+
+    share_type max_supply = DEIP_MAX_SHARE_SUPPLY;
+    share_type current_supply = 0;
 };
 
 struct by_symbol;
@@ -61,5 +72,10 @@ typedef multi_index_container<asset_object,
     }
 }
 
-FC_REFLECT( deip::chain::asset_object, (id)(symbol)(string_symbol)(precision)(issuer)(description)(max_supply)(current_supply))
+FC_REFLECT( deip::chain::asset_object, (id)(symbol)(string_symbol)(precision)(issuer)(description)(type)(tokenized_research)(max_supply)(current_supply))
 CHAINBASE_SET_INDEX_TYPE( deip::chain::asset_object, deip::chain::asset_index )
+
+FC_REFLECT_ENUM(deip::chain::asset_type,
+  (basic)
+  (research_security_token)
+)

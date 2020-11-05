@@ -91,6 +91,14 @@ share_type calculate_share(const share_type& from_amount, const percent& share)
     return (from_amount * share.amount) / full_share.amount;
 }
 
+asset calculate_share(const asset& from_amount, const percent& share)
+{
+    const percent full_share = percent(100 * share.precision(share.decimals), share.decimals);
+    FC_ASSERT(full_share.amount != 0, "Dividing by zero is restricted");
+    share_type value = (from_amount.amount * share.amount) / full_share.amount;
+    return asset(value, from_amount.symbol);
+}
+
 }
 }
 } // deip::chain::util

@@ -29,6 +29,7 @@ asset calculate_share(const asset &amount, const share_type &weight, const share
 share_type calculate_share(const share_type &amount, const share_type &share_percent);
 share_type calculate_share(const share_type &amount, const share_type &weight, const share_type &total_weight);
 share_type calculate_share(const share_type& amount, const percent& share);
+asset calculate_share(const asset& amount, const percent& share);
 
 uint32_t evaluate_review_weigh_modifier(const research_content_id_type& research_content_id);
 

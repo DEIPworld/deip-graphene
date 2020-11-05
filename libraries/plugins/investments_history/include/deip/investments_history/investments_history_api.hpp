@@ -38,21 +38,19 @@ public:
 
     void on_api_startup();
 
-    std::vector<account_revenue_income_history_api_obj>
-    get_account_revenue_history_by_security_token(const account_name_type& account,
-                                                  const external_id_type& security_token_external_id,
-                                                  const account_revenue_income_history_id_type& cursor,
-                                                  const fc::optional<uint16_t> step) const;
+    std::vector<account_revenue_income_history_api_obj> get_account_revenue_history_by_security_token(const account_name_type& account,
+                                                                                                      const string& security_token_symbol,
+                                                                                                      const account_revenue_income_history_id_type& cursor,
+                                                                                                      const fc::optional<uint16_t> step) const;
 
-    std::vector<account_revenue_income_history_api_obj>
-    get_account_revenue_history(const account_name_type& account,
-                                const account_revenue_income_history_id_type& cursor) const;
+    std::vector<account_revenue_income_history_api_obj> get_account_revenue_history(const account_name_type& account, 
+                                                                                    const account_revenue_income_history_id_type& cursor) const;
 
-    std::vector<account_revenue_income_history_api_obj>
-    get_security_token_revenue_history(const external_id_type& security_token_external_id,
-                                       const account_revenue_income_history_id_type& cursor) const;
+    std::vector<account_revenue_income_history_api_obj> get_security_token_revenue_history(const string& security_token_symbol,
+                                                                                           const account_revenue_income_history_id_type& cursor) const;
 
-private : std::unique_ptr<detail::investments_history_api_impl> _impl;
+private: 
+    std::unique_ptr<detail::investments_history_api_impl> _impl;
 
 };
 } // namespace investments_history

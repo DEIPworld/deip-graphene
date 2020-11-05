@@ -14,7 +14,7 @@ using deip::protocol::percent;
 struct licensing_fee_type
 {
     string terms;
-    flat_map<external_id_type, percent> beneficiaries;
+    flat_map<string, percent> beneficiaries;
     optional<asset> fee;
     optional<time_point_sec> expiration_time;
 };

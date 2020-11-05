@@ -17,8 +17,7 @@ void create_research_token_sale_operation::validate() const
 
     for (const auto& security_token_on_sale : security_tokens_on_sale)
     {
-        validate_160_bits_hexadecimal_string(security_token_on_sale.first);
-        FC_ASSERT(security_token_on_sale.second > 0, "Security token amount is not specified for ${1} entry", ("1", security_token_on_sale.first));
+        FC_ASSERT(security_token_on_sale.amount > 0, "Security token amount is not specified ${1}", ("1", security_token_on_sale));
     }
 
     FC_ASSERT(soft_cap.amount > 0,

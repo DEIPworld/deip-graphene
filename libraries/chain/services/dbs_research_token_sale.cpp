@@ -1,9 +1,9 @@
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_research.hpp>
+#include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_research_token.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
-#include <deip/chain/services/dbs_security_token.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/util/reward.hpp>
@@ -18,7 +18,7 @@ dbs_research_token_sale::dbs_research_token_sale(database& db)
 
 const research_token_sale_object& dbs_research_token_sale::create_research_token_sale(const external_id_type& external_id,
                                                                                       const research_object& research,
-                                                                                      const flat_map<external_id_type, security_token_amount_type>& security_tokens_on_sale,
+                                                                                      const flat_set<asset>& security_tokens_on_sale,
                                                                                       const fc::time_point_sec& start_time,
                                                                                       const fc::time_point_sec& end_time,
                                                                                       const asset& soft_cap,
@@ -35,7 +35,7 @@ const research_token_sale_object& dbs_research_token_sale::create_research_token
               research_token_sale.external_id = external_id;
               for (const auto& security_token_on_sale : security_tokens_on_sale)
               {
-                  research_token_sale.security_tokens_on_sale.insert(std::make_pair(security_token_on_sale.first, security_token_on_sale.second));
+                  research_token_sale.security_tokens_on_sale.insert(security_token_on_sale);
               }
               research_token_sale.research_id = research.id;
               research_token_sale.research_external_id = research.external_id;
@@ -323,7 +323,7 @@ void dbs_research_token_sale::finish_research_token_sale(const research_token_sa
     dbs_research& research_service = db_impl().obtain_service<dbs_research>();
     dbs_research_group& research_group_service = db_impl().obtain_service<dbs_research_group>();
     dbs_research_token& research_token_service = db_impl().obtain_service<dbs_research_token>();
-    dbs_security_token& security_token_service = db_impl().obtain_service<dbs_security_token>();
+    dbs_asset& asset_service = db_impl().obtain_service<dbs_asset>();
     dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
 
     const auto& idx = db_impl()
@@ -338,7 +338,7 @@ void dbs_research_token_sale::finish_research_token_sale(const research_token_sa
 
     for (const auto& security_token_on_sale : research_token_sale.security_tokens_on_sale)
     {
-        security_token_service.unfreeze_security_token(research.research_group, security_token_on_sale.first, security_token_on_sale.second);
+        account_balance_service.unfreeze_account_balance(research.research_group, security_token_on_sale);
     }
 
     auto itr = idx.first;
@@ -348,10 +348,12 @@ void dbs_research_token_sale::finish_research_token_sale(const research_token_sa
     {
         for (const auto& security_token_on_sale : research_token_sale.security_tokens_on_sale)
         {
-            const auto& security_token = security_token_service.get_security_token(security_token_on_sale.first);
+            const auto& security_token = asset_service.get_asset_by_symbol(security_token_on_sale.symbol);
             const auto& percent_share = percent(share_type(std::round((((double(itr->amount.amount.value) / double(research_token_sale.total_amount.amount.value)) * double(100)) * DEIP_1_PERCENT))));
-            const auto& units = util::calculate_share(share_type(security_token_on_sale.second), percent_share);
-            security_token_service.transfer_security_token(research.research_group, itr->owner, security_token_on_sale.first, uint32_t(units.value));
+            const auto& security_token_amount = util::calculate_share(security_token_on_sale, percent_share);
+
+            account_balance_service.adjust_account_balance(research.research_group, -security_token_amount);
+            account_balance_service.adjust_account_balance(itr->owner, security_token_amount);
         }
 
         auto current = itr++;
@@ -365,7 +367,6 @@ void dbs_research_token_sale::refund_research_token_sale(const research_token_sa
 {
     dbs_account_balance& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
     dbs_research& research_service = db_impl().obtain_service<dbs_research>();
-    dbs_security_token& security_token_service = db_impl().obtain_service<dbs_security_token>();
 
     const auto& research_token_sale = get_research_token_sale_by_id(research_token_sale_id);
     const auto& research = research_service.get_research(research_token_sale.research_id);
@@ -378,7 +379,7 @@ void dbs_research_token_sale::refund_research_token_sale(const research_token_sa
 
     for (const auto& security_token_on_sale : research_token_sale.security_tokens_on_sale)
     {
-        security_token_service.unfreeze_security_token(research.research_group, security_token_on_sale.first, security_token_on_sale.second);
+        account_balance_service.unfreeze_account_balance(research.research_group, security_token_on_sale);
     }
 
     auto itr = idx.first;

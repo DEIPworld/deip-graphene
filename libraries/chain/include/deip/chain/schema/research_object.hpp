@@ -19,6 +19,7 @@ namespace chain {
 
 using fc::shared_string;
 using protocol::external_id_type;
+using protocol::asset_symbol_type;
 using protocol::percent;
 
 class research_object : public object<research_object_type, research_object>
@@ -51,7 +52,7 @@ public:
     optional<percent> compensation_share;
 
     flat_map<discipline_id_type, share_type> eci_per_discipline;
-    flat_map<external_id_type, uint32_t> security_tokens; // TODO: move to a separate 'security_token_terms' object
+    flat_set<asset> security_tokens; // TODO: move to a separate 'security_token_terms' object
 
     uint16_t number_of_positive_reviews = 0;
     uint16_t number_of_negative_reviews = 0;

@@ -44,7 +44,6 @@
 #include <deip/chain/services/dbs_witness.hpp>
 #include <deip/chain/services/dbs_grant_application.hpp>
 #include <deip/chain/services/dbs_funding_opportunity.hpp>
-#include <deip/chain/services/dbs_security_token.hpp>
 #include <deip/chain/services/dbs_research_license.hpp>
 
 #include <deip/chain/util/asset.hpp>
@@ -1753,8 +1752,6 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<create_research_token_sale_evaluator>();
     _my->_evaluator_registry.register_evaluator<update_research_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_assessment_evaluator>();
-    _my->_evaluator_registry.register_evaluator<create_security_token_evaluator>();
-    _my->_evaluator_registry.register_evaluator<transfer_security_token_evaluator>();
     _my->_evaluator_registry.register_evaluator<create_research_license_evaluator>();
 }
 
@@ -1807,8 +1804,6 @@ void database::initialize_indexes()
     add_index<assessment_index>();
     add_index<assessment_stage_index>();
     add_index<assessment_stage_phase_index>();
-    add_index<security_token_index>();
-    add_index<security_token_balance_index>();
     add_index<research_license_index>();
 
     _plugin_index_signal();

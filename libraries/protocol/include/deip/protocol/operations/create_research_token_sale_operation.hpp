@@ -14,7 +14,7 @@ struct create_research_token_sale_operation : public entity_operation
     external_id_type research_external_id;
     time_point_sec start_time;
     time_point_sec end_time;
-    flat_map<external_id_type, security_token_amount_type> security_tokens_on_sale;
+    flat_set<asset> security_tokens_on_sale;
     asset soft_cap;
     asset hard_cap;
     

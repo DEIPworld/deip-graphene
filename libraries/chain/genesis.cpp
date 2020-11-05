@@ -24,7 +24,6 @@
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_research_discipline_relation.hpp>
 #include <deip/chain/services/dbs_research.hpp>
-#include <deip/chain/services/dbs_security_token.hpp>
 #include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_expertise_contribution.hpp>
 
@@ -349,12 +348,11 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
 }
 
 
-
 void database::init_genesis_research(const genesis_state_type& genesis_state)
 {
     dbs_research& research_service = obtain_service<dbs_research>();
     dbs_research_group& research_groups_service = obtain_service<dbs_research_group>();
-    dbs_security_token& security_tokens_service = obtain_service<dbs_security_token>();
+    dbs_asset& asset_service = obtain_service<dbs_asset>();
 
     dbs_discipline& disciplines_service = obtain_service<dbs_discipline>();
 
@@ -401,9 +399,57 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
           genesis_time
         );
 
-        const auto& security_token_external_id = external_id_type((string)fc::ripemd160::hash((string)created_research.external_id));
-        const uint32_t security_token_amount = 10000;
-        security_tokens_service.create_security_token(created_research, security_token_external_id, security_token_amount);
+        const share_type SECURITY_TOKEN_MAX_SUPPLY = 10000;
+        const int SECURITY_TOKEN_SYMBOL_MAX_SIZE = 6;
+        const int SECURITY_TOKEN_SYMBOL_MIN_SIZE = 3;
+        std::string SECURITY_TOKEN_SYMBOL;
+
+        for (int i = 0; (i < (research.title.size() - 1) && SECURITY_TOKEN_SYMBOL.size() < SECURITY_TOKEN_SYMBOL_MAX_SIZE); i++)
+        {
+            const char& ch = research.title[i];
+            if (SECURITY_TOKEN_SYMBOL.size() == 0 && isalpha(ch))
+            {
+                SECURITY_TOKEN_SYMBOL.push_back(char(std::toupper(ch)));
+            }
+            if (isblank(ch))
+            {
+                const char& ch2 = research.title[i + 1];
+                if (isalpha(ch2))
+                {
+                    SECURITY_TOKEN_SYMBOL.push_back(char(std::toupper(ch2)));
+                }
+            }
+        }
+
+        if (!fc::is_utf8(SECURITY_TOKEN_SYMBOL) || SECURITY_TOKEN_SYMBOL.size() < SECURITY_TOKEN_SYMBOL_MIN_SIZE)
+        {
+            SECURITY_TOKEN_SYMBOL = std::string();
+
+            const int MAX = 26;
+            char alphabet[MAX] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                                   'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+
+            for (int i = 0; i < SECURITY_TOKEN_SYMBOL_MAX_SIZE; i++)
+            {
+                SECURITY_TOKEN_SYMBOL.push_back(alphabet[rand() % MAX]);
+            }
+        }
+
+        optional<std::reference_wrapper<const research_object>> tokenized_research;
+        tokenized_research = created_research;
+
+        std::string str_asset = std::to_string(SECURITY_TOKEN_MAX_SUPPLY.value) + " " + SECURITY_TOKEN_SYMBOL;
+        const asset security_token = asset::from_string(str_asset);
+        const auto& asset_o = asset_service.create_asset(research_group.account, 
+                                                         security_token.symbol,
+                                                         security_token.symbol_name(), 
+                                                         security_token.decimals(), 
+                                                         0,
+                                                         SECURITY_TOKEN_MAX_SUPPLY, 
+                                                         "", 
+                                                         tokenized_research);
+
+        asset_service.issue_asset(asset_o, research_group.account, security_token);
     }
 }
 

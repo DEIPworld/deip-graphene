@@ -19,7 +19,7 @@ namespace chain {
 
 using fc::time_point;
 using protocol::external_id_type;
-using protocol::security_token_amount_type;
+using protocol::asset_symbol_type;
 
 enum class research_token_sale_status : uint16_t
 {
@@ -45,7 +45,7 @@ public:
 
     research_id_type research_id;
     external_id_type research_external_id;
-    flat_map<external_id_type, security_token_amount_type> security_tokens_on_sale;
+    flat_set<asset> security_tokens_on_sale;
     time_point_sec start_time;
     time_point_sec end_time;
     protocol::asset total_amount;

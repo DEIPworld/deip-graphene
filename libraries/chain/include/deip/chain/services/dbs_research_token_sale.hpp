@@ -27,7 +27,7 @@ public:
 
     const research_token_sale_object& create_research_token_sale(const external_id_type& external_id,
                                                                  const research_object& research,
-                                                                 const flat_map<external_id_type, security_token_amount_type>& security_tokens_on_sale,
+                                                                 const flat_set<asset>& security_tokens_on_sale,
                                                                  const fc::time_point_sec& start_time,
                                                                  const fc::time_point_sec& end_time,
                                                                  const asset& soft_cap,

@@ -159,13 +159,6 @@ struct operation_visitor
             check_memo(op.memo, _db.get<account_object, chain::by_name>(op.from),
                        _db.get<account_authority_object, chain::by_account>(op.from));
     }
-
-    void operator()(const transfer_security_token_operation& op) const
-    {
-        if (op.memo.length() > 0)
-            check_memo(op.memo, _db.get<account_object, chain::by_name>(op.from),
-                       _db.get<account_authority_object, chain::by_account>(op.from));
-    }
 };
 
 void witness_plugin_impl::pre_transaction(const signed_transaction& trx)

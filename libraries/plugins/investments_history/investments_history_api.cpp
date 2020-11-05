@@ -1,9 +1,9 @@
 #include <deip/app/api_context.hpp>
 #include <deip/app/application.hpp>
 #include <deip/chain/services/dbs_account.hpp>
+#include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_research.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
-#include <deip/chain/services/dbs_security_token.hpp>
 #include <deip/investments_history/investments_history_api.hpp>
 #include <deip/investments_history/investments_history_plugin.hpp>
 #include <deip/investments_history/account_revenue_income_history_object.hpp>
@@ -28,34 +28,38 @@ public:
     }
 
     std::vector<account_revenue_income_history_api_obj> get_account_revenue_history_by_security_token(const account_name_type& account,
-                                                                                                      const external_id_type& security_token_external_id,
+                                                                                                      const string& security_token_symbol,
                                                                                                       const account_revenue_income_history_id_type& cursor,
                                                                                                       const fc::optional<uint16_t> step_opt) const
     {
         std::vector<account_revenue_income_history_api_obj> results;
 
         const auto& db = _app.chain_database();
+        const auto& asset_service = db->obtain_service<chain::dbs_asset>();
         const auto& account_revenue_income_hist_idx = db->get_index<account_revenue_income_history_index>()
             .indices()
             .get<by_account_and_security_token_and_cursor>();
 
         const revenue_period_step step = step_opt.valid() ? static_cast<revenue_period_step>(*step_opt) : revenue_period_step::unknown;
 
-        const auto& security_token_service = db->obtain_service<chain::dbs_security_token>();
-
-        const auto& security_token_opt = security_token_service.get_security_token_if_exists(security_token_external_id);
+        const auto& security_token_opt = asset_service.get_asset_by_string_symbol_if_exists(security_token_symbol);
         if (!security_token_opt.valid())
         {
             return results;
         }
 
-        const auto& security_token = *security_token_opt;
-        const auto& security_token_api = app::security_token_api_obj(security_token);
+        const asset_object& security_token = *security_token_opt;
+        if (static_cast<asset_type>(security_token.type) != asset_type::research_security_token)
+        {
+            return results;
+        }
+
+        const auto& security_token_api = app::asset_api_obj(security_token);
 
         std::multimap<time_point_sec, asset> revenue_by_step;
 
         uint32_t limit = DEIP_API_BULK_FETCH_LIMIT;
-        for (auto itr = account_revenue_income_hist_idx.lower_bound(std::make_tuple(account, security_token_external_id, cursor)); limit-- && itr != account_revenue_income_hist_idx.end() && itr->account == account && itr->security_token == security_token_external_id; ++itr)
+        for (auto itr = account_revenue_income_hist_idx.lower_bound(std::make_tuple(account, security_token.symbol, cursor)); limit-- && itr != account_revenue_income_hist_idx.end() && itr->account == account && itr->security_token_symbol == security_token.symbol; ++itr)
         {
             const auto& hist = *itr;
             if (step == revenue_period_step::unknown)
@@ -96,19 +100,19 @@ public:
         std::vector<account_revenue_income_history_api_obj> results;
 
         const auto& db = _app.chain_database();
+        const auto& asset_service = db->obtain_service<chain::dbs_asset>();
+
         const auto& account_revenue_income_hist_idx = db->get_index<account_revenue_income_history_index>()
             .indices()
             .get<by_account_and_cursor>();
-
-        const auto& security_token_service = db->obtain_service<chain::dbs_security_token>();
 
         uint32_t limit = DEIP_API_BULK_FETCH_LIMIT;
         for (auto itr = account_revenue_income_hist_idx.lower_bound(std::make_tuple(account, cursor)); limit-- && itr != account_revenue_income_hist_idx.end() && itr->account == account; ++itr)
         {
             const auto& hist = *itr;
+            const auto& security_token = asset_service.get_asset_by_symbol(hist.security_token_symbol);
 
-            const auto& security_token = security_token_service.get_security_token(hist.security_token);
-            const auto& security_token_api = app::security_token_api_obj(security_token);
+            const auto& security_token_api = app::asset_api_obj(security_token);
 
             results.push_back(account_revenue_income_history_api_obj(account, security_token_api, hist.revenue, hist.timestamp));
         }
@@ -117,29 +121,34 @@ public:
     }
 
 
-    std::vector<account_revenue_income_history_api_obj> get_security_token_revenue_history(const external_id_type& security_token_external_id,
+    std::vector<account_revenue_income_history_api_obj> get_security_token_revenue_history(const string& security_token_symbol,
                                                                                            const account_revenue_income_history_id_type& cursor) const
     {
         std::vector<account_revenue_income_history_api_obj> results;
 
         const auto& db = _app.chain_database();
+        const auto& asset_service = db->obtain_service<chain::dbs_asset>();
+
         const auto& account_revenue_income_hist_idx = db->get_index<account_revenue_income_history_index>()
             .indices()
             .get<by_security_token_and_cursor>();
 
-        const auto& security_token_service = db->obtain_service<chain::dbs_security_token>();
-
-        const auto& security_token_opt = security_token_service.get_security_token_if_exists(security_token_external_id);
+        const auto& security_token_opt = asset_service.get_asset_by_string_symbol_if_exists(security_token_symbol);
         if (!security_token_opt.valid())
         {
-           return results;
+            return results;
         }
 
-        const auto& security_token = *security_token_opt;
-        const auto& security_token_api = app::security_token_api_obj(security_token);
+        const asset_object& security_token = *security_token_opt;
+        if (static_cast<asset_type>(security_token.type) != asset_type::research_security_token)
+        {
+            return results;
+        }
+
+        const auto& security_token_api = app::asset_api_obj(security_token);
 
         uint32_t limit = DEIP_API_BULK_FETCH_LIMIT;
-        for (auto itr = account_revenue_income_hist_idx.lower_bound(std::make_tuple(security_token_external_id, cursor)); limit-- && itr != account_revenue_income_hist_idx.end() && itr->security_token == security_token_external_id; ++itr)
+        for (auto itr = account_revenue_income_hist_idx.lower_bound(std::make_tuple(security_token.symbol, cursor)); limit-- && itr != account_revenue_income_hist_idx.end() && itr->security_token_symbol == security_token.symbol; ++itr)
         {
             const auto& hist = *itr;
             results.push_back(account_revenue_income_history_api_obj(hist.account, security_token_api, hist.revenue, hist.timestamp));
@@ -167,13 +176,13 @@ void investments_history_api::on_api_startup()
 std::vector<account_revenue_income_history_api_obj>
 investments_history_api::get_account_revenue_history_by_security_token(
     const account_name_type& account,
-    const external_id_type& security_token_external_id,
+    const string& security_token_symbol,
     const account_revenue_income_history_id_type& cursor,
     const fc::optional<uint16_t> step) const
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock([&]() {
-        return _impl->get_account_revenue_history_by_security_token(account, security_token_external_id, cursor, step);
+        return _impl->get_account_revenue_history_by_security_token(account, security_token_symbol, cursor, step);
     });
 }
 
@@ -187,12 +196,12 @@ investments_history_api::get_account_revenue_history(const account_name_type& ac
 }
 
 std::vector<account_revenue_income_history_api_obj>
-investments_history_api::get_security_token_revenue_history(const external_id_type& security_token_external_id,
+investments_history_api::get_security_token_revenue_history(const string& security_token_symbol,
                                                             const account_revenue_income_history_id_type& cursor) const
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock(
-        [&]() { return _impl->get_security_token_revenue_history(security_token_external_id, cursor); });
+        [&]() { return _impl->get_security_token_revenue_history(security_token_symbol, cursor); });
 }
 
 

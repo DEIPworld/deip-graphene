@@ -12,6 +12,8 @@ using chainbase::allocator;
 
 using deip::protocol::asset;
 using deip::protocol::external_id_type;
+using deip::protocol::asset_symbol_type;
+using fc::shared_string;
 
 class account_revenue_income_history_object
     : public object<account_revenue_income_history_object_type, account_revenue_income_history_object>
@@ -30,10 +32,9 @@ public:
     account_revenue_income_history_id_type id;
 
     account_name_type account;
-    external_id_type security_token;
-    uint32_t security_token_units;
+    asset_symbol_type security_token_symbol;
 
-    asset balance;
+    asset security_token;
     asset revenue;
 
     fc::time_point_sec timestamp;
@@ -67,8 +68,8 @@ typedef chainbase::shared_multi_index_container<
                ordered_non_unique<tag<by_security_token_and_cursor>,
                                   composite_key<account_revenue_income_history_object,
                                                 member<account_revenue_income_history_object,
-                                                       external_id_type,
-                                                       &account_revenue_income_history_object::security_token>,
+                                                       asset_symbol_type,
+                                                       &account_revenue_income_history_object::security_token_symbol>,
                                                 member<account_revenue_income_history_object,
                                                        account_revenue_income_history_id_type,
                                                        &account_revenue_income_history_object::id>>>,
@@ -79,8 +80,8 @@ typedef chainbase::shared_multi_index_container<
                                                        account_name_type,
                                                        &account_revenue_income_history_object::account>,
                                                 member<account_revenue_income_history_object,
-                                                       external_id_type,
-                                                       &account_revenue_income_history_object::security_token>,
+                                                       asset_symbol_type,
+                                                       &account_revenue_income_history_object::security_token_symbol>,
                                                 member<account_revenue_income_history_object,
                                                        account_revenue_income_history_id_type,
                                                        &account_revenue_income_history_object::id>>>
@@ -96,9 +97,8 @@ typedef chainbase::shared_multi_index_container<
 FC_REFLECT(deip::investments_history::account_revenue_income_history_object,
           (id)
           (account)
+          (security_token_symbol)
           (security_token)
-          (security_token_units)
-          (balance)
           (revenue)
           (timestamp)
 )

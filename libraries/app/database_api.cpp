@@ -25,7 +25,6 @@
 #include <deip/chain/services/dbs_discipline_supply.hpp>
 #include <deip/chain/services/dbs_discipline.hpp>
 #include <deip/chain/services/dbs_research.hpp>
-#include <deip/chain/services/dbs_security_token.hpp>
 #include <deip/chain/services/dbs_research_content.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_research_token_sale.hpp>
@@ -181,16 +180,6 @@ public:
     fc::optional<research_token_api_obj> get_research_token_by_account_name_and_research_id(const account_name_type &account_name,
                                                                                             const research_id_type &research_id) const;
 
-
-    fc::optional<security_token_api_obj> get_security_token(const external_id_type& security_token_external_id) const;
-    vector<security_token_api_obj> get_security_tokens_by_research(const external_id_type& research_external_id) const;
-
-    fc::optional<security_token_balance_api_obj> get_security_token_balance(const account_name_type& owner, const external_id_type& security_token_external_id) const;
-    vector<security_token_balance_api_obj> get_security_token_balances(const external_id_type& security_token_external_id) const;
-    vector<security_token_balance_api_obj> get_security_token_balances_by_owner(const account_name_type& owner) const;
-    vector<security_token_balance_api_obj> get_security_token_balances_by_research(const external_id_type& research_external_id) const;
-    vector<security_token_balance_api_obj> get_security_token_balances_by_owner_and_research(const account_name_type& owner, const external_id_type& research_external_id_type) const;
-
     // Review vote object
     vector<review_vote_api_obj> get_review_votes_by_voter(const account_name_type& voter) const;
     vector<review_vote_api_obj> get_review_votes_by_review_id(const review_id_type& review_id) const;
@@ -226,12 +215,13 @@ public:
 
     // Assets
     fc::optional<asset_api_obj> get_asset(const asset_id_type& id) const;
-    fc::optional<asset_api_obj> get_asset_by_string_symbol(const std::string& string_symbol) const;
+    fc::optional<asset_api_obj> get_asset_by_symbol(const string& symbol) const;
+    vector<asset_api_obj> get_assets_by_issuer(const account_name_type& issuer) const;
 
     // Account balances
-    fc::optional<account_balance_api_obj> get_account_balance(const account_balance_id_type& id) const;
-    vector<account_balance_api_obj> get_account_balances_by_owner(const account_name_type& owner) const;
-    fc::optional<account_balance_api_obj> get_account_balance_by_owner_and_asset_symbol(const account_name_type& owner, const string& symbol) const;
+    fc::optional<account_balance_api_obj> get_account_asset_balance(const account_name_type& owner, const string& symbol) const;
+    vector<account_balance_api_obj> get_account_assets_balances(const account_name_type& owner) const;
+    vector<account_balance_api_obj> get_accounts_asset_balances_by_asset(const string& symbol) const;
 
     // Discipline supplies
     fc::optional<discipline_supply_api_obj> get_discipline_supply(const discipline_supply_id_type& id) const;
@@ -2492,138 +2482,6 @@ vector<research_token_api_obj> database_api_impl::get_research_tokens_by_account
 }
 
 
-fc::optional<security_token_api_obj> database_api::get_security_token(const external_id_type& security_token_external_id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_security_token(security_token_external_id); });
-}
-
-fc::optional<security_token_api_obj> database_api_impl::get_security_token(const external_id_type& security_token_external_id) const
-{
-    fc::optional<security_token_api_obj> result;
-
-    const auto& security_token_service = _db.obtain_service<chain::dbs_security_token>();
-    const auto& security_token_opt = security_token_service.get_security_token_if_exists(security_token_external_id);
-
-    if (security_token_opt.valid())
-    {
-        result = security_token_api_obj(*security_token_opt);
-    }
-
-    return result;
-}
-
-
-vector<security_token_api_obj> database_api::get_security_tokens_by_research(const external_id_type& research_external_id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_security_tokens_by_research(research_external_id); });
-}
-
-vector<security_token_api_obj> database_api_impl::get_security_tokens_by_research(const external_id_type& research_external_id) const
-{
-    vector<security_token_api_obj> results;
-    const auto& security_token_service = _db.obtain_service<chain::dbs_security_token>();
-
-    const auto& security_tokens = security_token_service.get_security_tokens_by_research(research_external_id);
-
-    for (const chain::security_token_object& security_token : security_tokens)
-        results.push_back(security_token);
-
-    return results;
-}
-
-fc::optional<security_token_balance_api_obj> database_api::get_security_token_balance(const account_name_type& owner, const external_id_type& security_token_external_id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_security_token_balance(owner, security_token_external_id); });
-}
-
-fc::optional<security_token_balance_api_obj> database_api_impl::get_security_token_balance(const account_name_type& owner, const external_id_type& security_token_external_id) const
-{
-    fc::optional<security_token_balance_api_obj> result;
-    const auto& security_token_service = _db.obtain_service<chain::dbs_security_token>();
-
-    const auto& security_token_balance_opt = security_token_service.get_security_token_balance_if_exists(owner, security_token_external_id);
-
-    if (security_token_balance_opt.valid())
-    {
-        result = security_token_balance_api_obj(*security_token_balance_opt);
-    }
-
-    return result;
-}
-
-
-vector<security_token_balance_api_obj> database_api::get_security_token_balances(const external_id_type& security_token_external_id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_security_token_balances(security_token_external_id); });
-}
-
-vector<security_token_balance_api_obj> database_api_impl::get_security_token_balances(const external_id_type& security_token_external_id) const
-{
-    vector<security_token_balance_api_obj> results;
-    const auto& security_token_service = _db.obtain_service<chain::dbs_security_token>();
-
-    const auto& security_token_balances = security_token_service.get_security_token_balances(security_token_external_id);
-
-    for (const chain::security_token_balance_object& security_token_balance : security_token_balances)
-        results.push_back(security_token_balance);
-
-    return results;
-}
-
-vector<security_token_balance_api_obj> database_api::get_security_token_balances_by_owner(const account_name_type& owner) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_security_token_balances_by_owner(owner); });
-}
-
-vector<security_token_balance_api_obj> database_api_impl::get_security_token_balances_by_owner(const account_name_type& owner) const
-{
-    vector<security_token_balance_api_obj> results;
-    const auto& security_token_service = _db.obtain_service<chain::dbs_security_token>();
-
-    const auto& security_token_balances = security_token_service.get_security_token_balances_by_owner(owner);
-
-    for (const chain::security_token_balance_object& security_token_balance : security_token_balances)
-        results.push_back(security_token_balance);
-
-    return results;
-}
-
-vector<security_token_balance_api_obj> database_api::get_security_token_balances_by_research(const external_id_type& research_external_id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_security_token_balances_by_research(research_external_id); });
-}
-
-vector<security_token_balance_api_obj> database_api_impl::get_security_token_balances_by_research(const external_id_type& research_external_id) const
-{
-    vector<security_token_balance_api_obj> results;
-    const auto& security_token_service = _db.obtain_service<chain::dbs_security_token>();
-
-    const auto& security_token_balances = security_token_service.get_security_token_balances_by_research(research_external_id);
-
-    for (const chain::security_token_balance_object& security_token_balance : security_token_balances)
-        results.push_back(security_token_balance);
-
-    return results;
-}
-
-vector<security_token_balance_api_obj> database_api::get_security_token_balances_by_owner_and_research(const account_name_type& owner, const external_id_type& research_external_id) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_security_token_balances_by_owner_and_research(owner, research_external_id); });
-}
-
-vector<security_token_balance_api_obj> database_api_impl::get_security_token_balances_by_owner_and_research(const account_name_type& owner, const external_id_type& research_external_id) const
-{
-    vector<security_token_balance_api_obj> results;
-    const auto& security_token_service = _db.obtain_service<chain::dbs_security_token>();
-
-    const auto& security_token_balances = security_token_service.get_security_token_balances_by_owner_and_research(owner, research_external_id);
-
-    for (const chain::security_token_balance_object& security_token_balance : security_token_balances)
-        results.push_back(security_token_balance);
-
-    return results;
-}
-
 vector<research_token_api_obj> database_api::get_research_tokens_by_research_id(const research_id_type &research_id) const
 {
     return my->_db.with_read_lock([&]() { return my->get_research_tokens_by_research_id(research_id); });
@@ -3118,17 +2976,17 @@ fc::optional<asset_api_obj> database_api_impl::get_asset(const asset_id_type& id
     return result;
 }
 
-fc::optional<asset_api_obj> database_api::get_asset_by_string_symbol(const std::string& string_symbol) const
+fc::optional<asset_api_obj> database_api::get_asset_by_symbol(const std::string& symbol) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_asset_by_string_symbol(string_symbol); });
+    return my->_db.with_read_lock([&]() { return my->get_asset_by_symbol(symbol); });
 }
 
-fc::optional<asset_api_obj> database_api_impl::get_asset_by_string_symbol(const std::string& string_symbol) const
+fc::optional<asset_api_obj> database_api_impl::get_asset_by_symbol(const std::string& symbol) const
 {
     fc::optional<asset_api_obj> result;
 
     const auto& asset_service = _db.obtain_service<chain::dbs_asset>();
-    const auto& opt = asset_service.get_asset_by_string_symbol_if_exists(string_symbol);
+    const auto& opt = asset_service.get_asset_by_string_symbol_if_exists(symbol);
 
     if (opt.valid())
     {
@@ -3138,32 +2996,32 @@ fc::optional<asset_api_obj> database_api_impl::get_asset_by_string_symbol(const 
     return result;
 }
 
-fc::optional<account_balance_api_obj> database_api::get_account_balance(const account_balance_id_type& id) const
+vector<asset_api_obj> database_api::get_assets_by_issuer(const account_name_type& issuer) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_account_balance(id); });
+    return my->_db.with_read_lock([&]() { return my->get_assets_by_issuer(issuer); });
 }
 
-fc::optional<account_balance_api_obj> database_api_impl::get_account_balance(const account_balance_id_type& id) const
+vector<asset_api_obj> database_api_impl::get_assets_by_issuer(const account_name_type& issuer) const
 {
-    fc::optional<account_balance_api_obj> result;
+    vector<asset_api_obj> results;
 
-    const auto& account_balance_service = _db.obtain_service<chain::dbs_account_balance>();
-    const auto& opt = account_balance_service.get_account_balance_if_exists(id);
+    const auto& asset_service = _db.obtain_service<chain::dbs_asset>();
+    const auto& assets = asset_service.get_assets_by_issuer(issuer);
 
-    if (opt.valid())
+    for (auto& asset_o : assets)
     {
-        result = account_balance_api_obj(*opt);
+        results.push_back(asset_api_obj(asset_o));
     }
 
-    return result;
+    return results;
 }
 
-vector<account_balance_api_obj> database_api::get_account_balances_by_owner(const account_name_type& owner) const
+vector<account_balance_api_obj> database_api::get_account_assets_balances(const account_name_type& owner) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_account_balances_by_owner(owner); });
+    return my->_db.with_read_lock([&]() { return my->get_account_assets_balances(owner); });
 }
 
-vector<account_balance_api_obj> database_api_impl::get_account_balances_by_owner(const account_name_type& owner) const
+vector<account_balance_api_obj> database_api_impl::get_account_assets_balances(const account_name_type& owner) const
 {
     vector<account_balance_api_obj> results;
     const auto& account_balance_service = _db.obtain_service<chain::dbs_account_balance>();
@@ -3176,12 +3034,31 @@ vector<account_balance_api_obj> database_api_impl::get_account_balances_by_owner
     return results;
 }
 
-fc::optional<account_balance_api_obj> database_api::get_account_balance_by_owner_and_asset_symbol(const account_name_type& owner, const string& symbol) const
+vector<account_balance_api_obj> database_api::get_accounts_asset_balances_by_asset(const string& symbol) const
 {
-    return my->_db.with_read_lock([&]() { return my->get_account_balance_by_owner_and_asset_symbol(owner, symbol); });
+    return my->_db.with_read_lock([&]() { return my->get_accounts_asset_balances_by_asset(symbol); });
 }
 
-fc::optional<account_balance_api_obj> database_api_impl::get_account_balance_by_owner_and_asset_symbol(const account_name_type& owner, const string& symbol) const
+vector<account_balance_api_obj> database_api_impl::get_accounts_asset_balances_by_asset(const string& symbol) const
+{
+    vector<account_balance_api_obj> results;
+    const auto& account_balance_service = _db.obtain_service<chain::dbs_account_balance>();
+
+    auto account_balances = account_balance_service.get_accounts_balances_by_symbol(symbol);
+
+    for (const chain::account_balance_object& account_balance : account_balances)
+        results.push_back(account_balance);
+
+    return results;
+}
+
+
+fc::optional<account_balance_api_obj> database_api::get_account_asset_balance(const account_name_type& owner, const string& symbol) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_account_asset_balance(owner, symbol); });
+}
+
+fc::optional<account_balance_api_obj> database_api_impl::get_account_asset_balance(const account_name_type& owner, const string& symbol) const
 {
     fc::optional<account_balance_api_obj> result;
 

@@ -2,7 +2,6 @@
 #include <deip/chain/database/database.hpp>
 #include <deip/chain/operation_notification.hpp>
 #include <deip/chain/services/dbs_research.hpp>
-#include <deip/chain/services/dbs_security_token.hpp>
 #include <deip/investments_history/investments_history_api.hpp>
 #include <deip/investments_history/investments_history_plugin.hpp>
 #include <deip/investments_history/account_revenue_income_history_object.hpp>
@@ -63,9 +62,8 @@ struct post_operation_visitor
     {
         _plugin.database().create<account_revenue_income_history_object>([&](account_revenue_income_history_object& hist_o) {
                hist_o.account = op.account;
+               hist_o.security_token_symbol = op.security_token.symbol;
                hist_o.security_token = op.security_token;
-               hist_o.security_token_units = op.security_token_units;
-               hist_o.balance = op.balance;
                hist_o.revenue = op.revenue;
                hist_o.timestamp = op.timestamp;
         });

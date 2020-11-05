@@ -61,8 +61,6 @@ DEFINE_EVALUATOR(create_research_content)
 DEFINE_EVALUATOR(create_research_token_sale)
 DEFINE_EVALUATOR(update_research)
 DEFINE_EVALUATOR(create_assessment)
-DEFINE_EVALUATOR(create_security_token)
-DEFINE_EVALUATOR(transfer_security_token)
 DEFINE_EVALUATOR(create_research_license)
 
 }

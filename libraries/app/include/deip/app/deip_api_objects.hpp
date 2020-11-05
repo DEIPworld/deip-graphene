@@ -22,8 +22,6 @@
 #include <deip/chain/schema/research_group_object.hpp>
 #include <deip/chain/schema/research_object.hpp>
 #include <deip/chain/schema/research_token_object.hpp>
-#include <deip/chain/schema/security_token_object.hpp>
-#include <deip/chain/schema/security_token_balance_object.hpp>
 #include <deip/chain/schema/research_token_sale_object.hpp>
 #include <deip/chain/schema/review_object.hpp>
 #include <deip/chain/schema/review_vote_object.hpp>
@@ -46,6 +44,8 @@ using research_group_token_refs_type = std::vector<std::reference_wrapper<const 
 using account_balance_refs_type = std::vector<std::reference_wrapper<const account_balance_object>>;
 
 using deip::protocol::percent_type;
+using deip::protocol::asset_symbol_type;
+using deip::protocol::external_id_type;
 
 typedef chain::change_recovery_account_request_object change_recovery_account_request_api_obj;
 typedef chain::block_summary_object block_summary_api_obj;
@@ -54,6 +54,7 @@ typedef chain::witness_vote_object witness_vote_api_obj;
 typedef chain::witness_schedule_object witness_schedule_api_obj;
 typedef chain::reward_fund_object reward_fund_api_obj;
 typedef witness::account_bandwidth_object account_bandwidth_api_obj;
+
 
 struct account_api_obj
 {
@@ -453,7 +454,7 @@ struct research_api_obj
 
         for (const auto& st : r_o.security_tokens)
         {
-            security_tokens.emplace(std::make_pair(st.first, st.second));
+            security_tokens.insert(st);
         }
 
         if (r_o.review_share.valid())
@@ -486,7 +487,7 @@ struct research_api_obj
     vector<discipline_api_obj> disciplines;
 
     map<int64_t, int64_t> eci_per_discipline;
-    map<external_id_type, uint32_t> security_tokens;
+    set<asset> security_tokens;
 
     uint16_t number_of_positive_reviews;
     uint16_t number_of_negative_reviews;
@@ -701,7 +702,7 @@ struct research_token_sale_api_obj
     {
         for (const auto& security_token_on_sale : rts_o.security_tokens_on_sale)
         {
-            security_tokens_on_sale.emplace(std::make_pair(security_token_on_sale.first, security_token_on_sale.second));
+            security_tokens_on_sale.insert(security_token_on_sale);
         }
     }
 
@@ -714,7 +715,7 @@ struct research_token_sale_api_obj
     string external_id;
     int64_t research_id;
     string research_external_id;
-    std::map<external_id_type, security_token_amount_type> security_tokens_on_sale;
+    std::set<asset> security_tokens_on_sale;
     time_point_sec start_time;
     time_point_sec end_time;
     asset total_amount;
@@ -855,53 +856,6 @@ struct research_token_api_obj
     string research_external_id;
     share_type amount;
     bool is_compensation;
-};
-
-struct security_token_api_obj
-{
-    security_token_api_obj(const chain::security_token_object& st_o)
-        : id(st_o.id._id)
-        , external_id(st_o.external_id)
-        , research_external_id(st_o.research_external_id)
-        , total_amount(st_o.total_amount)
-    {
-    }
-
-    // because fc::variant require for temporary object
-    security_token_api_obj()
-    {
-    }
-
-    int64_t id;
-    external_id_type external_id;
-    external_id_type research_external_id;
-    uint32_t total_amount;
-};
-
-
-struct security_token_balance_api_obj
-{
-    security_token_balance_api_obj(const chain::security_token_balance_object& stb_o)
-        : id(stb_o.id._id)
-        , security_token_external_id(stb_o.security_token_external_id)
-        , research_external_id(stb_o.research_external_id)
-        , owner(stb_o.owner)
-        , amount(stb_o.amount)
-        , frozen_amount(stb_o.frozen_amount)
-    {
-    }
-
-    // because fc::variant require for temporary object
-    security_token_balance_api_obj()
-    {
-    }
-
-    int64_t id;
-    external_id_type security_token_external_id;
-    external_id_type research_external_id;
-    account_name_type owner;
-    uint32_t amount;
-    uint32_t frozen_amount;
 };
 
 struct review_vote_api_obj
@@ -1155,15 +1109,21 @@ struct funding_opportunity_api_obj
 struct asset_api_obj
 {
     asset_api_obj(const chain::asset_object& a_o)
-        :  id(a_o.id._id)
-        ,  symbol(a_o.symbol)
-        ,  string_symbol(fc::to_string(a_o.string_symbol))
-        ,  precision(a_o.precision)
-        ,  issuer(a_o.issuer)
-        ,  description(fc::to_string(a_o.description))
-        ,  current_supply(a_o.current_supply)
-
-    {}
+        : id(a_o.id._id)
+        , symbol(a_o.symbol)
+        , string_symbol(fc::to_string(a_o.string_symbol))
+        , precision(a_o.precision)
+        , issuer(a_o.issuer)
+        , description(fc::to_string(a_o.description))
+        , current_supply(a_o.current_supply)
+        , max_supply(a_o.max_supply)
+        , type(a_o.type)
+    {
+        if (a_o.tokenized_research.valid())
+        {
+            tokenized_research = *a_o.tokenized_research;
+        }
+    }
 
     // because fc::variant require for temporary object
     asset_api_obj()
@@ -1177,8 +1137,10 @@ struct asset_api_obj
     uint8_t precision;
     account_name_type issuer;
     std::string description;
-
     share_type current_supply;
+    share_type max_supply;
+    uint8_t type;
+    optional<external_id_type> tokenized_research;
 };
 
 struct account_balance_api_obj
@@ -1186,9 +1148,15 @@ struct account_balance_api_obj
     account_balance_api_obj(const chain::account_balance_object& ab_o)
         : id(ab_o.id._id)
         , asset_id(ab_o.asset_id._id)
+        , asset_symbol(fc::to_string(ab_o.string_symbol))
         , owner(ab_o.owner)
-        , amount(asset(ab_o.amount, ab_o.symbol))
-    {}
+        , amount(ab_o.to_asset())
+    {
+        if (ab_o.tokenized_research.valid())
+        {
+            tokenized_research = *ab_o.tokenized_research;
+        }
+    }
 
     // because fc::variant require for temporary object
     account_balance_api_obj()
@@ -1196,10 +1164,11 @@ struct account_balance_api_obj
     }
 
     int64_t id;
-
     int64_t asset_id;
+    string asset_symbol;
     account_name_type owner;
     asset amount;
+    optional<external_id_type> tokenized_research;
 };
 
 
@@ -1661,23 +1630,6 @@ FC_REFLECT( deip::app::research_token_api_obj,
 )
 
 
-FC_REFLECT( deip::app::security_token_api_obj,
-            (id)
-            (external_id)
-            (research_external_id)
-            (total_amount)
-)
-
-FC_REFLECT( deip::app::security_token_balance_api_obj,
-            (id)
-            (security_token_external_id)
-            (research_external_id)
-            (owner)
-            (amount)
-            (frozen_amount)
-)
-
-
 FC_REFLECT( deip::app::review_vote_api_obj,
             (id)
             (external_id)
@@ -1775,13 +1727,18 @@ FC_REFLECT( deip::app::asset_api_obj,
             (issuer)
             (description)
             (current_supply)
+            (max_supply)
+            (type)
+            (tokenized_research)
 )
 
 FC_REFLECT( deip::app::account_balance_api_obj,
             (id)
             (asset_id)
+            (asset_symbol)
             (owner)
             (amount)
+            (tokenized_research)
 )
 
 

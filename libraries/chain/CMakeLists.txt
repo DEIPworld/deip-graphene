@@ -51,7 +51,6 @@ add_library( deip_chain
         services/dbs_nda_contract.cpp
         services/dbs_nda_contract_requests.cpp
         services/dbs_assessment.cpp
-        services/dbs_security_token.cpp
         services/dbs_research_license.cpp
 
         deip_evaluator.cpp

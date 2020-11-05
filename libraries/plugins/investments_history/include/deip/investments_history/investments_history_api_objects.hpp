@@ -10,7 +10,7 @@ struct account_revenue_income_history_api_obj
 {
     account_revenue_income_history_api_obj(){};
     account_revenue_income_history_api_obj(const account_name_type& account,
-                                           const app::security_token_api_obj& security_token,
+                                           const app::asset_api_obj& security_token,
                                            const asset& revenue,
                                            const fc::time_point_sec& timestamp)
         : account(account)
@@ -20,7 +20,7 @@ struct account_revenue_income_history_api_obj
     {}
 
     account_name_type account;
-    app::security_token_api_obj security_token;
+    app::asset_api_obj security_token;
     asset revenue;
     fc::time_point_sec timestamp;  
 };

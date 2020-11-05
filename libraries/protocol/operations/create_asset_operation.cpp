@@ -14,7 +14,7 @@ struct asset_trait_validator
     {
     }
 
-    void operator()(const security_token_trait& trait) const
+    void operator()(const research_security_token_trait& trait) const
     {
         validate_account_name(trait.research_group);
         validate_160_bits_hexadecimal_string(trait.research_external_id);
@@ -45,4 +45,4 @@ void create_asset_operation::validate() const
 } // namespace deip
 
 
-DEFINE_STATIC_VARIANT_TYPE(deip::protocol::asset_trait)
+DEFINE_STATIC_VARIANT_TYPE(deip::protocol::asset_trait_type)
