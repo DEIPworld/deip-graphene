@@ -936,7 +936,6 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
     auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
     auto& research_token_sale_service = _db.obtain_service<dbs_research_token_sale>();
     auto& research_service = _db.obtain_service<dbs_research>();
-    auto& asset_service = _db.obtain_service<dbs_asset>();
     const auto& block_time = _db.head_block_time();
 
     FC_ASSERT(account_service.account_exists(op.contributor), 
@@ -1403,7 +1402,6 @@ void create_asset_evaluator::do_apply(const create_asset_operation& op)
 void issue_asset_evaluator::do_apply(const issue_asset_operation& op)
 {
     dbs_account& account_service = _db.obtain_service<dbs_account>();
-    dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
     dbs_asset& asset_service = _db.obtain_service<dbs_asset>();
 
     FC_ASSERT(account_service.account_exists(op.issuer), "Account ${1} does not exist", ("1", op.issuer));

@@ -439,7 +439,9 @@ public:
 
     fc::optional<asset_api_obj> get_asset(const asset_id_type& id) const;
     fc::optional<asset_api_obj> get_asset_by_symbol(const string& symbol) const;
+    vector<asset_api_obj> get_assets_by_type(const uint8_t& type) const;
     vector<asset_api_obj> get_assets_by_issuer(const account_name_type& issuer) const;
+    vector<asset_api_obj> lookup_assets(const string& lower_bound_symbol, uint32_t limit) const;
 
     //////////////////////
     // Account balances //
@@ -696,7 +698,9 @@ FC_API(deip::app::database_api,
 
    (get_asset)
    (get_asset_by_symbol)
+   (get_assets_by_type)
    (get_assets_by_issuer)
+   (lookup_assets)
 
    (get_account_asset_balance)
    (get_account_assets_balances)

@@ -48,6 +48,7 @@ public:
 
 struct by_symbol;
 struct by_string_symbol;
+struct by_type;
 struct by_issuer;
 
 typedef multi_index_container<asset_object,
@@ -63,6 +64,10 @@ typedef multi_index_container<asset_object,
                     member<asset_object,
                             fc::shared_string,
                            &asset_object::string_symbol>>,
+            ordered_non_unique<tag<by_type>,
+                    member<asset_object,
+                           uint8_t,
+                           &asset_object::type>>,
             ordered_non_unique<tag<by_issuer>,
                     member<asset_object,
                             account_name_type,

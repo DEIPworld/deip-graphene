@@ -30,7 +30,8 @@ public:
     std::vector<account_revenue_income_history_api_obj> get_account_revenue_history_by_security_token(const account_name_type& account,
                                                                                                       const string& security_token_symbol,
                                                                                                       const account_revenue_income_history_id_type& cursor,
-                                                                                                      const fc::optional<uint16_t> step_opt) const
+                                                                                                      const fc::optional<uint16_t> step_opt,
+                                                                                                      const fc::optional<string> target_asset_symbol_opt) const
     {
         std::vector<account_revenue_income_history_api_obj> results;
 
@@ -41,6 +42,13 @@ public:
             .get<by_account_and_security_token_and_cursor>();
 
         const revenue_period_step step = step_opt.valid() ? static_cast<revenue_period_step>(*step_opt) : revenue_period_step::unknown;
+
+        asset_symbol_type target_asset_symbol = DEIP_USD_SYMBOL;
+        if (target_asset_symbol_opt.valid())
+        {
+            const auto& target_asset = asset_service.get_asset_by_string_symbol(*target_asset_symbol_opt);
+            target_asset_symbol = target_asset.symbol;
+        }
 
         const auto& security_token_opt = asset_service.get_asset_by_string_symbol_if_exists(security_token_symbol);
         if (!security_token_opt.valid())
@@ -62,9 +70,13 @@ public:
         for (auto itr = account_revenue_income_hist_idx.lower_bound(std::make_tuple(account, security_token.symbol, cursor)); limit-- && itr != account_revenue_income_hist_idx.end() && itr->account == account && itr->security_token_symbol == security_token.symbol; ++itr)
         {
             const auto& hist = *itr;
+
+            const price rate = price(asset(1, target_asset_symbol), asset(1, hist.revenue.symbol));
+            const asset converted_revenue = hist.revenue * rate;
+
             if (step == revenue_period_step::unknown)
             {
-                revenue_by_step.insert(std::make_pair(hist.timestamp, hist.revenue));
+                revenue_by_step.insert(std::make_pair(hist.timestamp, converted_revenue));
             }
             else
             {
@@ -76,11 +88,11 @@ public:
                 const auto& entry_itr = revenue_by_step.find(timestamp);
                 if (entry_itr != revenue_by_step.end())
                 {
-                    entry_itr->second += hist.revenue;
+                    entry_itr->second += converted_revenue;
                 }
                 else
                 {
-                    revenue_by_step.insert(std::make_pair(timestamp, hist.revenue));
+                    revenue_by_step.insert(std::make_pair(timestamp, converted_revenue));
                 }
             }
         }
@@ -178,11 +190,12 @@ investments_history_api::get_account_revenue_history_by_security_token(
     const account_name_type& account,
     const string& security_token_symbol,
     const account_revenue_income_history_id_type& cursor,
-    const fc::optional<uint16_t> step) const
+    const fc::optional<uint16_t> step,
+    const fc::optional<string> target_asset_symbol) const
 {
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock([&]() {
-        return _impl->get_account_revenue_history_by_security_token(account, security_token_symbol, cursor, step);
+        return _impl->get_account_revenue_history_by_security_token(account, security_token_symbol, cursor, step, target_asset_symbol);
     });
 }
 

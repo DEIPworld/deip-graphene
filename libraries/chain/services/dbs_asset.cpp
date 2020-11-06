@@ -225,5 +225,45 @@ const dbs_asset::asset_refs_type dbs_asset::get_assets_by_issuer(const account_n
     return ret;
 }
 
+const dbs_asset::asset_refs_type dbs_asset::lookup_assets(const string& lower_bound_symbol, uint32_t limit) const
+{
+    asset_refs_type ret;
+
+    const auto& assets_by_symbol = db_impl()
+      .get_index<asset_index>()
+      .indices()
+      .get<by_string_symbol>();
+
+    for (auto itr = assets_by_symbol.lower_bound(lower_bound_symbol, fc::strcmp_less()); limit-- && itr != assets_by_symbol.end(); ++itr)
+    {
+        ret.push_back(std::cref(*itr));
+    }
+
+    return ret;
+}
+
+const dbs_asset::asset_refs_type dbs_asset::get_assets_by_type(const asset_type& type) const
+{
+    asset_refs_type ret;
+
+    const uint8_t num_val = static_cast<uint8_t>(type);
+
+    auto it_pair = db_impl()
+      .get_index<asset_index>()
+      .indicies()
+      .get<by_type>()
+      .equal_range(num_val);
+
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
 } //namespace chain
 } //namespace deip

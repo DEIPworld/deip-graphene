@@ -216,7 +216,9 @@ public:
     // Assets
     fc::optional<asset_api_obj> get_asset(const asset_id_type& id) const;
     fc::optional<asset_api_obj> get_asset_by_symbol(const string& symbol) const;
+    vector<asset_api_obj> get_assets_by_type(const uint8_t& type) const;
     vector<asset_api_obj> get_assets_by_issuer(const account_name_type& issuer) const;
+    vector<asset_api_obj> lookup_assets(const string& lower_bound_symbol, uint32_t limit) const;
 
     // Account balances
     fc::optional<account_balance_api_obj> get_account_asset_balance(const account_name_type& owner, const string& symbol) const;
@@ -3014,6 +3016,49 @@ vector<asset_api_obj> database_api_impl::get_assets_by_issuer(const account_name
     }
 
     return results;
+}
+
+vector<asset_api_obj> database_api::lookup_assets(const string& lower_bound_symbol, uint32_t limit) const
+{
+    FC_ASSERT(limit <= DEIP_API_BULK_FETCH_LIMIT);
+    return my->_db.with_read_lock([&]() { return my->lookup_assets(lower_bound_symbol, limit); });
+}
+
+vector<asset_api_obj> database_api_impl::lookup_assets(const string& lower_bound_symbol, uint32_t limit) const
+{
+    const auto& assets_service = _db.obtain_service<chain::dbs_asset>();
+
+    vector<asset_api_obj> result;
+    const auto& assets = assets_service.lookup_assets(lower_bound_symbol, limit);
+
+    for (const asset_object& asset : assets)
+    {
+        result.push_back(asset_api_obj(asset));
+    }
+
+    return result;
+}
+
+vector<asset_api_obj> database_api::get_assets_by_type(const uint8_t& type) const
+{
+    return my->_db.with_read_lock([&]() { return my->get_assets_by_type(type); });
+}
+
+vector<asset_api_obj> database_api_impl::get_assets_by_type(const uint8_t& type) const
+{
+    const auto& assets_service = _db.obtain_service<chain::dbs_asset>();
+
+    const asset_type enum_val = static_cast<asset_type>(type);
+
+    vector<asset_api_obj> result;
+    const auto& assets = assets_service.get_assets_by_type(enum_val);
+
+    for (const asset_object& asset : assets)
+    {
+        result.push_back(asset_api_obj(asset));
+    }
+
+    return result;
 }
 
 vector<account_balance_api_obj> database_api::get_account_assets_balances(const account_name_type& owner) const

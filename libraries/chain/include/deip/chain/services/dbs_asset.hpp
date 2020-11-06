@@ -53,6 +53,10 @@ public:
 
     const asset_object& adjust_asset_current_supply(const asset_object& asset_o, const asset& delta);
 
+    const asset_refs_type lookup_assets(const string& lower_bound_symbol, uint32_t limit) const;
+
+    const asset_refs_type get_assets_by_type(const asset_type& type) const;
+
 };
 
 } // namespace chain

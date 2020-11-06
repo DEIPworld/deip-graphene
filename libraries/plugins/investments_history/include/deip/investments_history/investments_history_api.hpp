@@ -41,7 +41,8 @@ public:
     std::vector<account_revenue_income_history_api_obj> get_account_revenue_history_by_security_token(const account_name_type& account,
                                                                                                       const string& security_token_symbol,
                                                                                                       const account_revenue_income_history_id_type& cursor,
-                                                                                                      const fc::optional<uint16_t> step) const;
+                                                                                                      const fc::optional<uint16_t> step,
+                                                                                                      const fc::optional<string> target_asset_symbol) const;
 
     std::vector<account_revenue_income_history_api_obj> get_account_revenue_history(const account_name_type& account, 
                                                                                     const account_revenue_income_history_id_type& cursor) const;
