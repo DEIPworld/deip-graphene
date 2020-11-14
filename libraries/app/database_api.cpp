@@ -67,9 +67,6 @@ public:
     dynamic_global_property_api_obj get_dynamic_global_properties() const;
     chain_id_type get_chain_id() const;
 
-    // Keys
-    vector<set<string>> get_key_references(vector<public_key_type> key) const;
-
     // Accounts
     vector<optional<account_api_obj>> get_accounts(const set<string>& names) const;
     vector<account_api_obj> lookup_accounts(const string& lower_bound_name, uint32_t limit) const;
@@ -416,28 +413,6 @@ scheduled_hardfork database_api::get_next_scheduled_hardfork() const
     });
 }
 
-//////////////////////////////////////////////////////////////////////
-//                                                                  //
-// Keys                                                             //
-//                                                                  //
-//////////////////////////////////////////////////////////////////////
-
-vector<set<string>> database_api::get_key_references(vector<public_key_type> key) const
-{
-    return my->_db.with_read_lock([&]() { return my->get_key_references(key); });
-}
-
-/**
- *  @return all accounts that referr to the key or account id in their owner or active authorities.
- */
-vector<set<string>> database_api_impl::get_key_references(vector<public_key_type> keys) const
-{
-    FC_ASSERT(false,
-              "database_api::get_key_references has been deprecated. Please use "
-              "account_by_key_api::get_key_references instead.");
-    vector<set<string>> final_result;
-    return final_result;
-}
 
 //////////////////////////////////////////////////////////////////////
 //                                                                  //

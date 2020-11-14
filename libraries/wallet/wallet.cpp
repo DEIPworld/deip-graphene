@@ -1050,11 +1050,11 @@ vector<account_api_obj> wallet_api::list_my_accounts()
     for (const auto& item : my->_keys)
         pub_keys.push_back(item.first);
 
-    auto refs = (*my->_remote_account_by_key_api)->get_key_references(pub_keys);
+    auto refs = (*my->_remote_account_by_key_api)->get_key_references(pub_keys, false);
     set<string> names;
     for (const auto& item : refs)
-        for (const auto& name : item)
-            names.insert(name);
+        for (const auto& ref : item)
+            names.insert(ref.account);
 
     result.reserve(names.size());
     for (const auto& name : names)
@@ -2076,11 +2076,11 @@ vector<discipline_supply_api_obj> wallet_api::list_my_discipline_supplies()
     for (const auto& item : my->_keys)
         pub_keys.push_back(item.first);
 
-    auto refs = (*my->_remote_account_by_key_api)->get_key_references(pub_keys);
+    auto refs = (*my->_remote_account_by_key_api)->get_key_references(pub_keys, false);
     set<string> names;
     for (const auto& item : refs)
-        for (const auto& name : item)
-            names.insert(name);
+        for (const auto& ref : item)
+            names.insert(ref.account);
 
     return my->_remote_db->get_discipline_supplies(names);
 }

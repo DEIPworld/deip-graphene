@@ -14,27 +14,43 @@ public:
     {
     }
 
-    vector<vector<account_name_type>> get_key_references(vector<public_key_type>& keys) const;
+    vector<vector<key_reference>> get_key_references(const vector<public_key_type>& keys, const bool& full_history) const;
 
     deip::app::application& _app;
 };
 
-vector<vector<account_name_type>> account_by_key_api_impl::get_key_references(vector<public_key_type>& keys) const
+vector<vector<key_reference>> account_by_key_api_impl::get_key_references(const vector<public_key_type>& keys, const bool& full_history) const
 {
-    vector<vector<account_name_type>> final_result;
+    vector<vector<key_reference>> final_result;
     final_result.reserve(keys.size());
 
     const auto& key_idx = _app.chain_database()->get_index<key_lookup_index>().indices().get<by_key>();
 
     for (auto& key : keys)
     {
-        vector<account_name_type> result;
+        vector<key_reference> result;
         auto lookup_itr = key_idx.lower_bound(key);
 
-        while (lookup_itr != key_idx.end() && lookup_itr->key == key)
+        for (auto lookup_itr = key_idx.lower_bound(key); lookup_itr != key_idx.end() && lookup_itr->key == key; ++lookup_itr)
         {
-            result.push_back(lookup_itr->account);
-            ++lookup_itr;
+            const key_lookup_object& key_lookup = *lookup_itr;
+
+            key_reference key_ref;
+            key_ref.account = key_lookup.account;
+            key_ref.key = key_lookup.key;
+            key_ref.deactivation_time = key_lookup.deactivation_time;
+
+            if (full_history)
+            {
+                result.push_back(key_ref);
+            }
+            else
+            {
+                if (key_lookup.deactivation_time == fc::time_point_sec::maximum())
+                {
+                    result.push_back(key_ref);
+                }
+            }
         }
 
         final_result.emplace_back(std::move(result));
@@ -54,9 +70,9 @@ void account_by_key_api::on_api_startup()
 {
 }
 
-vector<vector<account_name_type>> account_by_key_api::get_key_references(vector<public_key_type> keys) const
+vector<vector<key_reference>> account_by_key_api::get_key_references(const vector<public_key_type>& keys, const bool& full_history) const
 {
-    return my->_app.chain_database()->with_read_lock([&]() { return my->get_key_references(keys); });
+    return my->_app.chain_database()->with_read_lock([&]() { return my->get_key_references(keys, full_history); });
 }
 }
 } // deip::account_by_key

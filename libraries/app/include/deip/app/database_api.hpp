@@ -114,11 +114,6 @@ public:
     hardfork_version get_hardfork_version() const;
     scheduled_hardfork get_next_scheduled_hardfork() const;
 
-    //////////
-    // Keys //
-    //////////
-
-    vector<set<string>> get_key_references(vector<public_key_type> key) const;
 
     //////////////
     // Accounts //
@@ -534,9 +529,6 @@ FC_API(deip::app::database_api,
    (get_witness_schedule)
    (get_hardfork_version)
    (get_next_scheduled_hardfork)
-
-   // Keys
-   (get_key_references)
 
    // Accounts
    (get_accounts)

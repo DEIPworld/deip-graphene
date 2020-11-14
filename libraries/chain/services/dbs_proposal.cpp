@@ -182,6 +182,8 @@ void dbs_proposal::clear_expired_proposals()
                 // TODO: Do something with result so plugins can process it.
                 continue;
             }
+
+            // expired_proposals.push_back(proposal.external_id);
         }
         catch (const fc::exception& e)
         {

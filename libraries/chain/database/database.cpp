@@ -1862,11 +1862,15 @@ void database::push_proposal(const proposal_object& proposal)
 
             remove(proposal);
             session.squash();
+
+            // emit approved proposal
         }
-        catch (const fc::exception& e)
+        catch (const fc::exception& e) 
         {
             _current_proposed_trx.reset();
             wlog("${e}", ("e", e.to_detail_string()));
+            // emit approved proposal
+
             throw;
         }
     }

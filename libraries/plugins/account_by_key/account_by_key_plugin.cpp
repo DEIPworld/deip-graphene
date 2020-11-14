@@ -142,6 +142,12 @@ void account_by_key_plugin_impl::cache_auths(const account_authority_object& a)
 void account_by_key_plugin_impl::update_key_lookup(const account_authority_object& a)
 {
     auto& db = database();
+    const auto& now = db.head_block_time();
+    
+    const auto& key_lookup_idx = db.get_index<key_lookup_index>()
+      .indices()
+      .get<by_key_deactivation_time>();
+
     flat_set<public_key_type> new_keys;
 
     // Construct the set of keys in the account's authority
@@ -156,19 +162,19 @@ void account_by_key_plugin_impl::update_key_lookup(const account_authority_objec
         // If the key was not in the authority, add it to the lookup
         if (cached_keys.find(key) == cached_keys.end())
         {
-            auto lookup_itr = db.find<key_lookup_object, by_key>(std::make_tuple(key, a.account));
-
-            if (lookup_itr == nullptr)
+            const auto& lookup_itr = key_lookup_idx.find(std::make_tuple(key, a.account, fc::time_point_sec::maximum()));
+            if (lookup_itr == key_lookup_idx.end())
             {
                 db.create<key_lookup_object>([&](key_lookup_object& o) {
                     o.key = key;
                     o.account = a.account;
+                    o.deactivation_time = fc::time_point_sec::maximum();
                 });
             }
         }
         else
         {
-            // If the key was already in the auths, remove it from the set so we don't delete it
+            // If the key was already in the auths, remove it from the set so we don't deactivate it
             cached_keys.erase(key);
         }
     }
@@ -176,11 +182,10 @@ void account_by_key_plugin_impl::update_key_lookup(const account_authority_objec
     // Loop over the keys that were in authority but are no longer and remove them from the lookup
     for (const auto& key : cached_keys)
     {
-        auto lookup_itr = db.find<key_lookup_object, by_key>(std::make_tuple(key, a.account));
-
-        if (lookup_itr != nullptr)
+        const auto& lookup_itr = key_lookup_idx.find(std::make_tuple(key, a.account, fc::time_point_sec::maximum()));
+        if (lookup_itr == key_lookup_idx.end())
         {
-            db.remove(*lookup_itr);
+            db.modify(*lookup_itr, [&](key_lookup_object& o) { o.deactivation_time = now; });
         }
     }
 

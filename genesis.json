@@ -613,6 +613,50 @@
         "rick"
       ],
       "subgroups": []
+    },
+    {
+      "account": "58e3bfd753fcb860a66b82635e43524b285ab708",
+      "creator": "alice",
+      "name": "The National Science Foundation",
+      "description": "The National Science Foundation (NSF) is an independent federal agency created by Congress in 1950 to promote the progress of science; to advance the national health, prosperity, and welfare; to secure the national defense.",
+      "members": [
+        "alice",
+        "peter",
+        "thomas"
+      ],
+      "subgroups": []
+    },
+    {
+      "account": "c8657fa6cbaee3917ac4e2ed6ada9d0a55a15ac5",
+      "creator": "mike",
+      "name": "NSF Grants Review Committee",
+      "description": "The Grant Review Committee is established to evaluate applications for funding from NSF Grants Program.",
+      "members": [
+        "mike",
+        "rick"
+      ],
+      "subgroups": []
+    },
+    {
+      "account": "c8a87b12c23f53866acd397f43b591fd4e631419",
+      "creator": "rachel",
+      "name": "Massachusetts Institute of Technology",
+      "description": "Founded to accelerate the nation’s industrial revolution, MIT is profoundly American. With ingenuity and drive, our graduates have invented fundamental technologies, launched new industries, and created millions of American jobs.",
+      "members": [
+        "rachel",
+        "david"
+      ],
+      "subgroups": []
+    },
+    {
+      "account": "1169d704f8a908016033efe8cce6df93f618a265",
+      "creator": "kim",
+      "name": "United States Department of the Treasury",
+      "description": "The Department of the Treasury (USDT) is an executive department and the treasury of the United States federal government. Established by an Act of Congress in 1789 to manage government revenue,[3] the Treasury prints all paper currency and mints all coins in circulation through the Bureau of Engraving and Printing and the United States Mint, respectively; collects all federal taxes through the Internal Revenue Service; manages U.S. government debt instruments; licenses and supervises banks and thrift institutions; and advises the legislative and executive branches on matters of fiscal policy.",
+      "members": [
+        "kim"
+      ],
+      "subgroups": []
     }
   ],
   "researches": [
