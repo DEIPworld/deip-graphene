@@ -183,7 +183,7 @@ void account_by_key_plugin_impl::update_key_lookup(const account_authority_objec
     for (const auto& key : cached_keys)
     {
         const auto& lookup_itr = key_lookup_idx.find(std::make_tuple(key, a.account, fc::time_point_sec::maximum()));
-        if (lookup_itr == key_lookup_idx.end())
+        if (lookup_itr != key_lookup_idx.end())
         {
             db.modify(*lookup_itr, [&](key_lookup_object& o) { o.deactivation_time = now; });
         }

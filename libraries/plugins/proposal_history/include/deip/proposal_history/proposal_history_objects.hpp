@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef PROPOSAL_HISTORY_SPACE_ID
-#define PROPOSAL_HISTORY_SPACE_ID 17
+#define PROPOSAL_HISTORY_SPACE_ID 18
 #endif
 
 using namespace deip::chain;

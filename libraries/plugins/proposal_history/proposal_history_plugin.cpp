@@ -7,6 +7,10 @@
 #include <deip/proposal_history/proposal_history_plugin.hpp>
 #include <deip/proposal_history/proposal_state_object.hpp>
 
+#include <deip/app/api.hpp>
+#include <deip/account_by_key/account_by_key_api.hpp>
+#include <deip/account_by_key/account_by_key_plugin.hpp>
+
 #include <fc/shared_buffer.hpp>
 
 
@@ -16,12 +20,15 @@ namespace proposal_history {
 using namespace deip::protocol;
 using namespace deip::chain;
 using namespace deip::app;
+using namespace deip::account_by_key::detail;
 
 namespace detail {
 
 class proposal_history_plugin_impl
 {
 public:
+
+    std::shared_ptr<account_by_key_api_impl> account_by_key_api_impl1;
 
     proposal_history_plugin_impl(proposal_history_plugin& _plugin)
         : _self(_plugin)
@@ -107,6 +114,14 @@ struct post_operation_visitor
 
         const auto& signature_keys = signed_trx.get_signature_keys(db.get_chain_id());
 
+        vector<public_key_type> request;
+        for (const auto& signature_key : signature_keys)
+        {
+            request.push_back(signature_key);
+        }
+
+        const auto& keyysss = _plugin.my->account_by_key_api_impl1->get_key_references(request, false);
+
         const auto& prop_itr = proposal_state_idx.find(op.external_id);
         FC_ASSERT(prop_itr != proposal_state_idx.end());
 
@@ -189,6 +204,8 @@ void proposal_history_plugin::plugin_initialize(const boost::program_options::va
 
     db.add_plugin_index<proposal_history_index>();
 
+    my->account_by_key_api_impl1 = std::make_shared<account_by_key_api_impl>(account_by_key_api_impl(app()));
+    
     db.pre_apply_operation.connect([&](const operation_notification& note) { my->pre_operation(note); });
     db.post_apply_operation.connect([&](const operation_notification& note) { my->post_operation(note); });
 }

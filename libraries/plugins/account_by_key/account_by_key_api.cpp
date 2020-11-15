@@ -6,19 +6,6 @@ namespace account_by_key {
 
 namespace detail {
 
-class account_by_key_api_impl
-{
-public:
-    account_by_key_api_impl(deip::app::application& app)
-        : _app(app)
-    {
-    }
-
-    vector<vector<key_reference>> get_key_references(const vector<public_key_type>& keys, const bool& full_history) const;
-
-    deip::app::application& _app;
-};
-
 vector<vector<key_reference>> account_by_key_api_impl::get_key_references(const vector<public_key_type>& keys, const bool& full_history) const
 {
     vector<vector<key_reference>> final_result;
@@ -29,7 +16,6 @@ vector<vector<key_reference>> account_by_key_api_impl::get_key_references(const 
     for (auto& key : keys)
     {
         vector<key_reference> result;
-        auto lookup_itr = key_idx.lower_bound(key);
 
         for (auto lookup_itr = key_idx.lower_bound(key); lookup_itr != key_idx.end() && lookup_itr->key == key; ++lookup_itr)
         {
