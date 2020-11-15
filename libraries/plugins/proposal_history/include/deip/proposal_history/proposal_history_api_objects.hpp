@@ -24,9 +24,16 @@ struct proposal_state_api_obj
             required_approvals.insert(required_approval);
         }
 
-        for (const auto& key : proposal.approvals)
+        for (const auto& approval : proposal.approvals)
         {
-            approvals.insert(key);
+            approvals.insert(approval);
+        }
+
+        rejectors.insert(proposal.rejector);
+
+        for (const auto& key : proposal.signers)
+        {
+            signers.insert(key);
         }
 
         if (proposal.review_period_time.valid())
@@ -47,7 +54,10 @@ struct proposal_state_api_obj
     string fail_reason;
 
     flat_set<account_name_type> required_approvals;
-    flat_set<public_key_type> approvals; 
+    flat_set<account_name_type> approvals;
+    flat_set<account_name_type> rejectors;
+
+    flat_set<public_key_type> signers;
     transaction proposed_transaction;
     optional<time_point_sec> review_period_time;
 
@@ -67,6 +77,8 @@ FC_REFLECT(deip::proposal_history::proposal_state_api_obj,
   (fail_reason)
   (required_approvals)
   (approvals)
+  (rejectors)
+  (signers)
   (proposed_transaction)
   (review_period_time)
 )

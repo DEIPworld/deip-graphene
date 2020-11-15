@@ -111,9 +111,38 @@ struct post_operation_visitor
         FC_ASSERT(prop_itr != proposal_state_idx.end());
 
         db.modify(*prop_itr, [&](proposal_state_object& ps_o) {
+            
             for (const auto& signature_key : signature_keys)
             {
-                ps_o.approvals.insert(signature_key);
+                ps_o.signers.insert(signature_key);
+            }
+
+            for (const auto& approver : op.active_approvals_to_add)
+            {
+                ps_o.approvals.insert(approver);
+            }
+
+            for (const auto& approver : op.owner_approvals_to_add)
+            {
+                ps_o.approvals.insert(approver);
+            }
+
+            for (const auto& revoker : op.active_approvals_to_remove)
+            {
+                const auto& itr = ps_o.approvals.find(revoker);
+                if (itr != ps_o.approvals.end())
+                {
+                    ps_o.approvals.erase(itr);
+                }
+            }
+
+            for (const auto& revoker : op.owner_approvals_to_remove)
+            {
+                const auto& itr = ps_o.approvals.find(revoker);
+                if (itr != ps_o.approvals.end())
+                {
+                    ps_o.approvals.erase(itr);
+                }
             }
         });
     }

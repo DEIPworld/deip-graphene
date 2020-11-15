@@ -42,10 +42,12 @@ public:
     uint8_t status;
 
     flat_set<account_name_type> required_approvals;
-    flat_set<public_key_type> approvals;
+    flat_set<account_name_type> approvals;
+    account_name_type rejector;
+
+    flat_set<public_key_type> signers;
 
     transaction proposed_transaction;
-
     shared_string fail_reason;
     time_point_sec expiration_time;
     optional<time_point_sec> review_period_time;
@@ -94,6 +96,8 @@ FC_REFLECT(deip::proposal_history::proposal_state_object,
           (status)
           (required_approvals)
           (approvals)
+          (rejector)
+          (signers)
           (proposed_transaction)
           (fail_reason)
           (expiration_time)
