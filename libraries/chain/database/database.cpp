@@ -1847,7 +1847,9 @@ private:
 void database::push_proposal(const proposal_object& proposal)
 {
     try
-    {        
+    {
+        const external_id_type proposal_id = proposal.external_id;
+
         try
         {
             push_proposal_nesting_guard guard(_push_proposal_nesting_depth, *this);
@@ -1863,13 +1865,13 @@ void database::push_proposal(const proposal_object& proposal)
             remove(proposal);
             session.squash();
 
-            // emit approved proposal
+            push_virtual_operation(proposal_status_changed_operation(proposal_id, static_cast<uint8_t>(proposal_status::approved)));
         }
         catch (const fc::exception& e) 
         {
             _current_proposed_trx.reset();
             wlog("${e}", ("e", e.to_detail_string()));
-            // emit approved proposal
+            push_virtual_operation(proposal_status_changed_operation(proposal_id, static_cast<uint8_t>(proposal_status::failed)));
 
             throw;
         }

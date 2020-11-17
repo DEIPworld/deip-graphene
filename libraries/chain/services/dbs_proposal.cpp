@@ -174,6 +174,7 @@ void dbs_proposal::clear_expired_proposals()
     while (!idx.empty() && idx.begin()->expiration_time <= block_time)
     {
         const proposal_object& proposal = *idx.begin();
+        const external_id_type proposal_id = proposal.external_id;
         try
         {
             if (proposal.is_authorized_to_execute(db_impl()))
@@ -182,8 +183,10 @@ void dbs_proposal::clear_expired_proposals()
                 // TODO: Do something with result so plugins can process it.
                 continue;
             }
-
-            // expired_proposals.push_back(proposal.external_id);
+            else 
+            {
+                db_impl().push_virtual_operation(proposal_status_changed_operation(proposal_id, static_cast<uint8_t>(proposal_status::expired)));
+            }
         }
         catch (const fc::exception& e)
         {

@@ -7,10 +7,6 @@
 #include <deip/proposal_history/proposal_history_plugin.hpp>
 #include <deip/proposal_history/proposal_state_object.hpp>
 
-#include <deip/app/api.hpp>
-#include <deip/account_by_key/account_by_key_api.hpp>
-#include <deip/account_by_key/account_by_key_plugin.hpp>
-
 #include <fc/shared_buffer.hpp>
 
 
@@ -45,7 +41,6 @@ public:
     void post_operation(const operation_notification& op_obj);
 
     proposal_history_plugin& _self;
-    std::shared_ptr<deip::account_by_key::detail::account_by_key_api_impl> account_by_key_api_impl;
 };
 
 struct post_operation_visitor
@@ -102,61 +97,97 @@ struct post_operation_visitor
     void operator()(const update_proposal_operation& op) const
     {
         auto& db = _plugin.database();
+        const auto& block_time = db.head_block_time();
+        const auto& block_num = db.head_block_num();
+
         const auto& transactions_idx = db.get_index<transaction_index>().indices().get<by_trx_id>();
         auto& proposal_state_idx = db.get_index<proposal_history_index>().indices().get<by_external_id>();
 
-        auto trx_itr = transactions_idx.find(note.trx_id);
+        const auto& trx_itr = transactions_idx.find(note.trx_id);
         FC_ASSERT(trx_itr != transactions_idx.end());
-        signed_transaction signed_trx;
-        fc::raw::unpack(trx_itr->packed_trx, signed_trx);
+        signed_transaction trx;
+        fc::raw::unpack(trx_itr->packed_trx, trx);
 
-        const auto& signature_keys = signed_trx.get_signature_keys(db.get_chain_id());
+        const auto& prop_state_itr = proposal_state_idx.find(op.external_id);
+        FC_ASSERT(prop_state_itr != proposal_state_idx.end());
 
-        vector<public_key_type> request;
-        for (const auto& signature_key : signature_keys)
+        db.modify(*prop_state_itr, [&](proposal_state_object& ps_o) {
+            flat_set<account_name_type> approvers;
+            approvers.insert(op.active_approvals_to_add.begin(), op.active_approvals_to_add.end());
+            approvers.insert(op.owner_approvals_to_add.begin(), op.owner_approvals_to_add.end());
+
+            for (const auto& approver : approvers)
+            {
+                tx_info signer_info;
+                signer_info.trx_id = trx.id();
+                signer_info.block_num = block_num;
+                signer_info.timestamp = block_time;
+
+                ps_o.approvals.insert(std::make_pair(approver, signer_info));
+            }
+
+            flat_set<account_name_type> revokers;
+            revokers.insert(op.active_approvals_to_remove.begin(), op.active_approvals_to_remove.end());
+            revokers.insert(op.owner_approvals_to_remove.begin(), op.owner_approvals_to_remove.end());
+
+            for (const auto& revoker : revokers)
+            {
+                const auto& itr = ps_o.approvals.find(revoker);
+                if (itr != ps_o.approvals.end())
+                {
+                    ps_o.approvals.erase(itr);
+                }
+            }
+        });
+    }
+
+    void operator()(const delete_proposal_operation& op) const
+    {
+        auto& db = _plugin.database();
+        const auto& block_time = db.head_block_time();
+        const auto& block_num = db.head_block_num();
+
+        const auto& transactions_idx = db.get_index<transaction_index>().indices().get<by_trx_id>();
+        auto& proposal_state_idx = db.get_index<proposal_history_index>().indices().get<by_external_id>();
+
+        const auto& trx_itr = transactions_idx.find(note.trx_id);
+        FC_ASSERT(trx_itr != transactions_idx.end());
+        signed_transaction trx;
+        fc::raw::unpack(trx_itr->packed_trx, trx);
+
+        const auto& prop_state_itr = proposal_state_idx.find(op.external_id);
+        FC_ASSERT(prop_state_itr != proposal_state_idx.end());
+
+        db.modify(*prop_state_itr, [&](proposal_state_object& ps_o) {
+            tx_info signer_info;
+            signer_info.trx_id = trx.id();
+            signer_info.block_num = block_num;
+            signer_info.timestamp = block_time;
+            ps_o.rejectors.insert(std::make_pair(op.account, signer_info));
+
+            ps_o.status = static_cast<uint8_t>(proposal_status::rejected);
+        });
+    }
+
+    void operator()(const proposal_status_changed_operation& op) const
+    {
+        auto& db = _plugin.database();
+        const auto& proposals_service = db.obtain_service<chain::dbs_proposal>();
+        auto& proposal_state_idx = db.get_index<proposal_history_index>().indices().get<by_external_id>();
+
+        const auto& prop_state_itr = proposal_state_idx.find(op.external_id);
+        FC_ASSERT(prop_state_itr != proposal_state_idx.end());
+
+        string fail_reason;
+        if (op.status == static_cast<uint8_t>(proposal_status::failed))
         {
-            request.push_back(signature_key);
+            const auto& proposal = proposals_service.get_proposal(op.external_id);
+            fail_reason = fc::to_string(proposal.fail_reason);
         }
 
-        const auto& keyysss = _plugin.my->account_by_key_api_impl->get_key_references(request, false);
-
-        const auto& prop_itr = proposal_state_idx.find(op.external_id);
-        FC_ASSERT(prop_itr != proposal_state_idx.end());
-
-        db.modify(*prop_itr, [&](proposal_state_object& ps_o) {
-            
-            for (const auto& signature_key : signature_keys)
-            {
-                ps_o.signers.insert(signature_key);
-            }
-
-            for (const auto& approver : op.active_approvals_to_add)
-            {
-                ps_o.approvals.insert(approver);
-            }
-
-            for (const auto& approver : op.owner_approvals_to_add)
-            {
-                ps_o.approvals.insert(approver);
-            }
-
-            for (const auto& revoker : op.active_approvals_to_remove)
-            {
-                const auto& itr = ps_o.approvals.find(revoker);
-                if (itr != ps_o.approvals.end())
-                {
-                    ps_o.approvals.erase(itr);
-                }
-            }
-
-            for (const auto& revoker : op.owner_approvals_to_remove)
-            {
-                const auto& itr = ps_o.approvals.find(revoker);
-                if (itr != ps_o.approvals.end())
-                {
-                    ps_o.approvals.erase(itr);
-                }
-            }
+        db.modify(*prop_state_itr, [&](proposal_state_object& ps_o) {
+            ps_o.status = op.status;
+            fc::from_string(ps_o.fail_reason, fail_reason);
         });
     }
 };
@@ -200,8 +231,6 @@ void proposal_history_plugin::plugin_initialize(const boost::program_options::va
 
     chain::database& db = database();
     db.add_plugin_index<proposal_history_index>();
-
-    my->account_by_key_api_impl = std::make_shared<deip::account_by_key::detail::account_by_key_api_impl>(deip::account_by_key::detail::account_by_key_api_impl(app()));
     
     db.pre_apply_operation.connect([&](const operation_notification& note) { my->pre_operation(note); });
     db.post_apply_operation.connect([&](const operation_notification& note) { my->post_operation(note); });

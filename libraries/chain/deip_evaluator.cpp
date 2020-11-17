@@ -681,12 +681,24 @@ void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
         );
     }
 
-    for (account_name_type account : op.owner_approvals_to_remove)
+    for (const account_name_type& account : op.owner_approvals_to_add)
+    {
+        FC_ASSERT(proposal.available_owner_approvals.find(account) == proposal.available_owner_approvals.end(), 
+        "", ("account", account)("available", proposal.available_owner_approvals));
+    }
+
+    for (const account_name_type& account : op.active_approvals_to_add)
+    {
+        FC_ASSERT(proposal.available_active_approvals.find(account) == proposal.available_active_approvals.end(), 
+        "", ("account", account)("available", proposal.available_active_approvals));
+    }
+
+    for (const account_name_type& account : op.owner_approvals_to_remove)
     {
         FC_ASSERT(proposal.available_owner_approvals.find(account) != proposal.available_owner_approvals.end(), 
         "", ("account", account)("available", proposal.available_owner_approvals));
     }
-    for (account_name_type account : op.active_approvals_to_remove)
+    for (const account_name_type& account : op.active_approvals_to_remove)
     {
         FC_ASSERT(proposal.available_active_approvals.find(account) != proposal.available_active_approvals.end(),
           "", ("account", account)("available", proposal.available_active_approvals));

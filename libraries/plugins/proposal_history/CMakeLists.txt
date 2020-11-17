@@ -6,7 +6,6 @@ add_library( deip_proposal_history
            )
 
 target_link_libraries( deip_proposal_history
-                       deip_account_by_key
                        deip_chain
                        deip_protocol
                        deip_app )

@@ -15,13 +15,11 @@ using deip::protocol::external_id_type;
 using deip::protocol::asset_symbol_type;
 using fc::shared_string;
 
-enum class proposal_status : uint8_t
+struct tx_info
 {
-    pending = 1,
-    approved = 2,
-    rejected = 3,
-    failed = 4,
-    expired = 5
+    transaction_id_type trx_id;
+    uint32_t block_num;
+    time_point_sec timestamp;
 };
 
 class proposal_state_object : public object<proposal_state_object_type, proposal_state_object>
@@ -42,10 +40,9 @@ public:
     uint8_t status;
 
     flat_set<account_name_type> required_approvals;
-    flat_set<account_name_type> approvals;
-    account_name_type rejector;
-
-    flat_set<public_key_type> signers;
+    
+    flat_map<account_name_type, tx_info> approvals;
+    flat_map<account_name_type, tx_info> rejectors;
 
     transaction proposed_transaction;
     shared_string fail_reason;
@@ -96,8 +93,7 @@ FC_REFLECT(deip::proposal_history::proposal_state_object,
           (status)
           (required_approvals)
           (approvals)
-          (rejector)
-          (signers)
+          (rejectors)
           (proposed_transaction)
           (fail_reason)
           (expiration_time)
@@ -105,6 +101,10 @@ FC_REFLECT(deip::proposal_history::proposal_state_object,
           (created_at)
 )
 
-FC_REFLECT_ENUM(deip::proposal_history::proposal_status, (pending)(approved)(rejected)(failed)(expired))
+FC_REFLECT(deip::proposal_history::tx_info,
+          (trx_id)
+          (block_num)
+          (timestamp)
+)
 
 CHAINBASE_SET_INDEX_TYPE(deip::proposal_history::proposal_state_object, deip::proposal_history::proposal_history_index)

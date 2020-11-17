@@ -196,6 +196,21 @@ struct account_revenue_income_history_operation : public virtual_operation
     fc::time_point_sec timestamp;
 };
 
+struct proposal_status_changed_operation : public virtual_operation
+{
+    proposal_status_changed_operation()
+    {
+    }
+    proposal_status_changed_operation(const external_id_type& external_id,
+                                      const uint8_t& status)
+        : external_id(external_id)
+        , status(status)
+    {
+    }
+
+    external_id_type external_id;
+    uint8_t status;
+};
 
 }
 } // deip::protocol
@@ -211,3 +226,4 @@ FC_REFLECT(deip::protocol::research_eci_history_operation, (research_id)(discipl
 FC_REFLECT(deip::protocol::account_eci_history_operation, (account)(discipline_id)(recipient_type)(diff))
 FC_REFLECT(deip::protocol::disciplines_eci_history_operation, (contributions)(timestamp))
 FC_REFLECT(deip::protocol::account_revenue_income_history_operation, (account)(security_token)(revenue)(timestamp))
+FC_REFLECT(deip::protocol::proposal_status_changed_operation, (external_id)(status))

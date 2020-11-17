@@ -14,6 +14,14 @@ namespace chain {
 using fc::shared_string;
 using fc::time_point_sec;
 
+enum class proposal_status : uint8_t
+{
+    pending = 1,
+    approved = 2,
+    rejected = 3,
+    failed = 4,
+    expired = 5
+};
 
 class proposal_object : public object<proposal_object_type, proposal_object>
 {
@@ -120,5 +128,7 @@ FC_REFLECT(deip::chain::proposal_object,
   (fail_reason)
   (created_at)
 )
+
+FC_REFLECT_ENUM(deip::chain::proposal_status, (pending)(approved)(rejected)(failed)(expired))
 
 CHAINBASE_SET_INDEX_TYPE(deip::chain::proposal_object, deip::chain::proposal_index)

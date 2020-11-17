@@ -6,6 +6,20 @@ namespace account_by_key {
 
 namespace detail {
 
+class account_by_key_api_impl
+{
+public:
+    account_by_key_api_impl(deip::app::application& app)
+        : _app(app)
+    {
+    }
+
+    vector<vector<key_reference>> get_key_references(const vector<public_key_type>& keys,
+                                                     const bool& full_history) const;
+
+    deip::app::application& _app;
+};
+
 vector<vector<key_reference>> account_by_key_api_impl::get_key_references(const vector<public_key_type>& keys, const bool& full_history) const
 {
     vector<vector<key_reference>> final_result;
