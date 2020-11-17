@@ -28,11 +28,9 @@ public:
 
     void on_api_startup();
 
-    // std::vector<account_revenue_income_history_api_obj> get_account_revenue_history_by_security_token(const account_name_type& account,
-    //                                                                                                   const string& security_token_symbol,
-    //                                                                                                   const account_revenue_income_history_id_type& cursor,
-    //                                                                                                   const fc::optional<uint16_t> step,
-    //                                                                                                   const fc::optional<string> target_asset_symbol) const;
+    std::vector<proposal_state_api_obj> get_proposals_by_signer(const account_name_type& account) const;
+
+    std::vector<proposal_state_api_obj> get_proposals_by_signers(const flat_set<account_name_type>& accounts) const;
 
 private: 
     std::unique_ptr<detail::proposal_history_api_impl> _impl;
@@ -44,6 +42,7 @@ private:
 
 
 FC_API(deip::proposal_history::proposal_history_api,
-  // (get_account_revenue_history_by_security_token)
+  (get_proposals_by_signer)
+  (get_proposals_by_signers)  
 )
 

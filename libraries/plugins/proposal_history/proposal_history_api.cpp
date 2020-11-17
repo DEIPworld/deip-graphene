@@ -27,17 +27,48 @@ public:
     {
     }
 
-    // std::vector<account_revenue_income_history_api_obj> get_account_revenue_history_by_security_token(const account_name_type& account,
-    //                                                                                                   const string& security_token_symbol,
-    //                                                                                                   const account_revenue_income_history_id_type& cursor,
-    //                                                                                                   const fc::optional<uint16_t> step_opt,
-    //                                                                                                   const fc::optional<string> target_asset_symbol_opt) const
-    // {
-    //     std::vector<account_revenue_income_history_api_obj> results;
+    std::vector<proposal_state_api_obj> get_proposals_by_signer(const account_name_type& account) const
+    {
+        std::vector<proposal_state_api_obj> results;
 
-    //     return results;
-    // }
+        const auto& db = _app.chain_database();
+        const auto& proposal_state_idx = db->get_index<proposal_history_index>().indices().get<by_external_id>();
+        const auto& proposal_lookup_idx = db->get_index<proposal_lookup_index>().indices().get<lookup_by_account>();
 
+        uint32_t limit = DEIP_API_BULK_FETCH_LIMIT;
+        for (auto itr = proposal_lookup_idx.lower_bound(account); limit-- && itr != proposal_lookup_idx.end() && itr->account == account; ++itr)
+        {
+            const auto& lookup = *itr;
+            const auto& proposal_state_itr = proposal_state_idx.find(lookup.proposal);
+            const auto& proposal_state_api = proposal_state_api_obj(*proposal_state_itr);
+            results.push_back(proposal_state_api);
+        }
+
+        return results;
+    }
+
+    std::vector<proposal_state_api_obj> get_proposals_by_signers(const flat_set<account_name_type>& accounts) const
+    {
+        std::vector<proposal_state_api_obj> results;
+
+        const auto& db = _app.chain_database();
+        const auto& proposal_state_idx = db->get_index<proposal_history_index>().indices().get<by_external_id>();
+        const auto& proposal_lookup_idx = db->get_index<proposal_lookup_index>().indices().get<lookup_by_account>();
+
+        for (const auto& account : accounts)
+        {
+            uint32_t limit = DEIP_API_BULK_FETCH_LIMIT;
+            for (auto itr = proposal_lookup_idx.lower_bound(account); limit-- && itr != proposal_lookup_idx.end() && itr->account == account; ++itr)
+            {
+                const auto& lookup = *itr;
+                const auto& proposal_state_itr = proposal_state_idx.find(lookup.proposal);
+                const auto& proposal_state_api = proposal_state_api_obj(*proposal_state_itr);
+                results.push_back(proposal_state_api);
+            }
+        }
+
+        return results;
+    }
 
 };
 } // namespace detail
@@ -55,18 +86,17 @@ void proposal_history_api::on_api_startup()
 {
 }
 
-// std::vector<account_revenue_income_history_api_obj> proposal_history_api::get_account_revenue_history_by_security_token(
-//     const account_name_type& account,
-//     const string& security_token_symbol,
-//     const account_revenue_income_history_id_type& cursor,
-//     const fc::optional<uint16_t> step,
-//     const fc::optional<string> target_asset_symbol) const
-// {
-//     const auto db = _impl->_app.chain_database();
-//     return db->with_read_lock([&]() {
-//         return _impl->get_account_revenue_history_by_security_token(account, security_token_symbol, cursor, step, target_asset_symbol);
-//     });
-// }
+std::vector<proposal_state_api_obj> proposal_history_api::get_proposals_by_signer(const account_name_type& account) const
+{
+    const auto db = _impl->_app.chain_database();
+    return db->with_read_lock([&]() { return _impl->get_proposals_by_signer(account); });
+}
+
+std::vector<proposal_state_api_obj> proposal_history_api::get_proposals_by_signers(const flat_set<account_name_type>& accounts) const
+{
+    const auto db = _impl->_app.chain_database();
+    return db->with_read_lock([&]() { return _impl->get_proposals_by_signers(accounts); });
+}
 
 } // namespace proposal_history
 } // namespace deip
