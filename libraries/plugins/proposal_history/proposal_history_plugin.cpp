@@ -239,7 +239,8 @@ void proposal_history_plugin::plugin_initialize(const boost::program_options::va
 
     chain::database& db = database();
     db.add_plugin_index<proposal_history_index>();
-    
+    db.add_plugin_index<proposal_lookup_index>();
+
     db.pre_apply_operation.connect([&](const operation_notification& note) { my->pre_operation(note); });
     db.post_apply_operation.connect([&](const operation_notification& note) { my->post_operation(note); });
 }
