@@ -108,13 +108,7 @@ struct post_operation_visitor
         const auto& block_time = db.head_block_time();
         const auto& block_num = db.head_block_num();
 
-        const auto& transactions_idx = db.get_index<transaction_index>().indices().get<by_trx_id>();
         auto& proposal_state_idx = db.get_index<proposal_history_index>().indices().get<by_external_id>();
-
-        const auto& trx_itr = transactions_idx.find(note.trx_id);
-        FC_ASSERT(trx_itr != transactions_idx.end());
-        signed_transaction trx;
-        fc::raw::unpack(trx_itr->packed_trx, trx);
 
         const auto& prop_state_itr = proposal_state_idx.find(op.external_id);
         FC_ASSERT(prop_state_itr != proposal_state_idx.end());
@@ -127,7 +121,7 @@ struct post_operation_visitor
             for (const auto& approver : approvers)
             {
                 tx_info signer_info;
-                signer_info.trx_id = trx.id();
+                signer_info.trx_id = note.trx_id;
                 signer_info.block_num = block_num;
                 signer_info.timestamp = block_time;
 
@@ -155,20 +149,14 @@ struct post_operation_visitor
         const auto& block_time = db.head_block_time();
         const auto& block_num = db.head_block_num();
 
-        const auto& transactions_idx = db.get_index<transaction_index>().indices().get<by_trx_id>();
         auto& proposal_state_idx = db.get_index<proposal_history_index>().indices().get<by_external_id>();
-
-        const auto& trx_itr = transactions_idx.find(note.trx_id);
-        FC_ASSERT(trx_itr != transactions_idx.end());
-        signed_transaction trx;
-        fc::raw::unpack(trx_itr->packed_trx, trx);
 
         const auto& prop_state_itr = proposal_state_idx.find(op.external_id);
         FC_ASSERT(prop_state_itr != proposal_state_idx.end());
 
         db.modify(*prop_state_itr, [&](proposal_state_object& ps_o) {
             tx_info signer_info;
-            signer_info.trx_id = trx.id();
+            signer_info.trx_id = note.trx_id;
             signer_info.block_num = block_num;
             signer_info.timestamp = block_time;
             ps_o.rejectors.insert(std::make_pair(op.account, signer_info));
