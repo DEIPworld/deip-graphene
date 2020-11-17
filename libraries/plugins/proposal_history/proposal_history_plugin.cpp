@@ -68,7 +68,7 @@ struct post_operation_visitor
 
         const auto& proposal = proposals_service.get_proposal(op.external_id);
 
-        _plugin.database().create<proposal_state_object>([&](proposal_state_object& ps_o) {
+        const auto& proposal_state = _plugin.database().create<proposal_state_object>([&](proposal_state_object& ps_o) {
             ps_o.external_id = proposal.external_id;
             ps_o.proposer = proposal.proposer;
             ps_o.status = static_cast<uint8_t>(proposal_status::pending);
@@ -92,6 +92,14 @@ struct post_operation_visitor
                 ps_o.review_period_time = *proposal.review_period_time;
             }
         });
+
+        for (const account_name_type& approver : proposal_state.required_approvals)
+        {
+            _plugin.database().create<proposal_lookup_object>([&](proposal_lookup_object& pl_o) {
+                pl_o.proposal = proposal.external_id;
+                pl_o.account = approver;
+            });
+        }
     }
 
     void operator()(const update_proposal_operation& op) const

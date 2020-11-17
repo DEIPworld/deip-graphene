@@ -51,10 +51,10 @@ public:
     time_point_sec created_at;
 };
 
+
 struct by_external_id;
 struct by_proposer;
 struct by_status;
-
 
 typedef chainbase::shared_multi_index_container<
     proposal_state_object,
@@ -79,9 +79,56 @@ typedef chainbase::shared_multi_index_container<
                                          &proposal_state_object::status>>
 
                >
-    // , allocator<account_revenue_income_history_object>
     >
     proposal_history_index;
+
+
+class proposal_lookup_object : public object<proposal_lookup_object_type, proposal_lookup_object>
+{
+public:
+    template <typename Constructor, typename Allocator> proposal_lookup_object(Constructor&& c, allocator<Allocator> a)
+    {
+        c(*this);
+    }
+
+    proposal_lookup_object_id_type id;
+    external_id_type proposal;
+    account_name_type account;
+};
+
+struct lookup_by_proposal;
+struct lookup_by_account;
+struct lookup_by_account_and_proposal;
+
+typedef chainbase::shared_multi_index_container<
+    proposal_lookup_object,
+          indexed_by<ordered_unique<tag<by_id>,
+                                  member<proposal_lookup_object,
+                                        proposal_lookup_object_id_type,
+                                        &proposal_lookup_object::id>>,
+
+               ordered_non_unique<tag<lookup_by_proposal>,
+                                  member<proposal_lookup_object,
+                                        external_id_type,
+                                        &proposal_lookup_object::proposal>>,
+                
+               ordered_non_unique<tag<lookup_by_account>,
+                                  member<proposal_lookup_object,
+                                        account_name_type,
+                                        &proposal_lookup_object::account>>,
+
+               ordered_unique<tag<lookup_by_account_and_proposal>,
+                                  composite_key<proposal_lookup_object,
+                                                member<proposal_lookup_object,
+                                                       external_id_type,
+                                                       &proposal_lookup_object::proposal>,
+                                                member<proposal_lookup_object,
+                                                       account_name_type,
+                                                       &proposal_lookup_object::account>>>
+               >
+    >
+    proposal_lookup_index;
+
 
 } // namespace proposal_history
 } // namespace deip
@@ -107,4 +154,11 @@ FC_REFLECT(deip::proposal_history::tx_info,
           (timestamp)
 )
 
+FC_REFLECT(deip::proposal_history::proposal_lookup_object,
+          (id)
+          (proposal)
+          (account)
+)
+
 CHAINBASE_SET_INDEX_TYPE(deip::proposal_history::proposal_state_object, deip::proposal_history::proposal_history_index)
+CHAINBASE_SET_INDEX_TYPE(deip::proposal_history::proposal_lookup_object, deip::proposal_history::proposal_lookup_index)
