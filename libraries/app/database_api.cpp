@@ -443,7 +443,7 @@ vector<optional<account_api_obj>> database_api_impl::get_accounts(const set<stri
         {
             const auto& account = (*account_opt).get();
             const auto& auth = accounts_service.get_account_authority(name);
-            const auto& account_balances = account_balances_service.get_account_balance_by_owner(name);
+            const auto& account_balances = account_balances_service.get_account_balances_by_owner(name);
 
             result = account_api_obj(account, auth, account_balances);
         }
@@ -472,7 +472,7 @@ vector<account_api_obj> database_api_impl::lookup_accounts(const string& lower_b
     for (const account_object& account : accounts)
     {
         const auto& auth = accounts_service.get_account_authority(account.name);
-        const auto& account_balances = account_balances_service.get_account_balance_by_owner(account.name);
+        const auto& account_balances = account_balances_service.get_account_balances_by_owner(account.name);
         result.push_back(account_api_obj(account, auth, account_balances));
     }
 
@@ -615,7 +615,7 @@ vector<account_api_obj> database_api_impl::get_accounts_by_expert_discipline(con
     {
         const auto& account = accounts_by_expert_discipline[i].get();
         const auto& auth = accounts_service.get_account_authority(account.name);
-        const auto account_balances = account_balances_service.get_account_balance_by_owner(account.name);
+        const auto account_balances = account_balances_service.get_account_balances_by_owner(account.name);
         result.push_back(account_api_obj(account, auth, account_balances));
     }
 
@@ -887,7 +887,7 @@ state database_api::get_state(string path) const
 
                 const auto& account = accounts_service.get_account(acnt);
                 const auto& auth = accounts_service.get_account_authority(acnt);
-                const auto balances = account_balances_service.get_account_balance_by_owner(acnt);
+                const auto balances = account_balances_service.get_account_balances_by_owner(acnt);
 
                 _state.accounts[acnt] = account_api_obj(account, auth, balances);
 
@@ -937,7 +937,7 @@ state database_api::get_state(string path) const
                 _state.accounts.erase("");
                 const auto& account = accounts_service.get_account(a);
                 const auto& auth = accounts_service.get_account_authority(a);
-                const auto balances = account_balances_service.get_account_balance_by_owner(a);
+                const auto balances = account_balances_service.get_account_balances_by_owner(a);
                 _state.accounts[a] = account_api_obj(account, auth, balances);
             }
 
@@ -1748,7 +1748,7 @@ fc::optional<research_group_api_obj> database_api_impl::get_research_group(const
         const auto& research_group = (*research_group_opt).get();
         const auto& account = accounts_service.get_account(research_group.account);
         const auto& auth = accounts_service.get_account_authority(account.name);
-        const auto account_balances = account_balances_service.get_account_balance_by_owner(account.name);
+        const auto account_balances = account_balances_service.get_account_balances_by_owner(account.name);
         result = research_group_api_obj(research_group, account_api_obj(account, auth, account_balances));
     }
 
@@ -1776,7 +1776,7 @@ vector<research_group_api_obj> database_api_impl::get_research_groups(const set<
             const auto& research_group = (*research_group_opt).get();
             const auto& account = accounts_service.get_account(research_group.account);
             const auto& auth = accounts_service.get_account_authority(account.name);
-            const auto account_balances = account_balances_service.get_account_balance_by_owner(account.name);
+            const auto account_balances = account_balances_service.get_account_balances_by_owner(account.name);
             result.push_back(research_group_api_obj(research_group, account_api_obj(account, auth, account_balances)));
         }
     }
@@ -1803,7 +1803,7 @@ fc::optional<research_group_api_obj> database_api_impl::get_research_group_by_id
         const auto& research_group = (*research_group_opt).get();
         const auto& account = accounts_service.get_account(research_group.account);
         const auto& auth = accounts_service.get_account_authority(account.name);
-        const auto account_balances = account_balances_service.get_account_balance_by_owner(account.name);
+        const auto account_balances = account_balances_service.get_account_balances_by_owner(account.name);
         result = research_group_api_obj(research_group, account_api_obj(account, auth, account_balances));
     }
 
@@ -1829,7 +1829,7 @@ fc::optional<research_group_api_obj> database_api_impl::get_research_group_by_pe
         const auto& research_group = (*research_group_opt).get();
         const auto& account = accounts_service.get_account(research_group.account);
         const auto& auth = accounts_service.get_account_authority(account.name);
-        const auto account_balances = account_balances_service.get_account_balance_by_owner(account.name);
+        const auto account_balances = account_balances_service.get_account_balances_by_owner(account.name);
         result = research_group_api_obj(research_group, account_api_obj(account, auth, account_balances));
     }
 
@@ -1890,7 +1890,7 @@ vector<research_group_api_obj> database_api_impl::lookup_research_groups(const r
     {
         const auto& account = accounts_service.get_account(research_group.account);
         const auto& auth = accounts_service.get_account_authority(account.name);
-        const auto account_balances = account_balances_service.get_account_balance_by_owner(account.name);
+        const auto account_balances = account_balances_service.get_account_balances_by_owner(account.name);
         results.push_back(research_group_api_obj(research_group, account_api_obj(account, auth, account_balances)));
     }
 
@@ -2450,7 +2450,7 @@ vector<research_token_api_obj> database_api_impl::get_research_tokens_by_account
     vector<research_token_api_obj> results;
     const auto& research_token_service = _db.obtain_service<chain::dbs_research_token>();
 
-    auto research_tokens = research_token_service.get_account_balance_by_owner(account_name);
+    auto research_tokens = research_token_service.get_account_balances_by_owner(account_name);
 
     for (const chain::research_token_object& research_token : research_tokens)
         results.push_back(research_token);
@@ -3046,7 +3046,7 @@ vector<account_balance_api_obj> database_api_impl::get_account_assets_balances(c
     vector<account_balance_api_obj> results;
     const auto& account_balance_service = _db.obtain_service<chain::dbs_account_balance>();
 
-    auto account_balances = account_balance_service.get_account_balance_by_owner(owner);
+    auto account_balances = account_balance_service.get_account_balances_by_owner(owner);
 
     for (const chain::account_balance_object& account_balance : account_balances)
         results.push_back(account_balance);

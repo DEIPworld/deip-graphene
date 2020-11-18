@@ -726,11 +726,11 @@ void update_proposal_evaluator::do_apply(const update_proposal_operation& op)
         } 
         catch(fc::exception& e) {
             _db.reset_current_proposed_trx();
-            db.modify(proposal, [&e](proposal_object& p) {
+            _db._temporary_public_impl().modify(proposal, [&e](proposal_object& p) {
                 fc::from_string(p.fail_reason, e.to_string(fc::log_level(fc::log_level::all)));
             });
-            wlog("Proposed transaction ${id} failed to apply once approved with exception:\n----\n${reason}\n----\nWill try again when it expires.",
-                ("id", proposal.external_id)("reason", e.to_detail_string()));
+            wlog("Proposed transaction ${id} failed to apply once approved with exception:\n----\n${reason}\n----\nWill try again when it expires.", ("id", proposal.external_id)("reason", e.to_detail_string()));
+            _db.push_virtual_operation(proposal_status_changed_operation(proposal.external_id, static_cast<uint8_t>(proposal_status::failed)));
         }
     }
 }

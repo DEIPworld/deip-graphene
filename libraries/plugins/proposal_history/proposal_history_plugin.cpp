@@ -100,6 +100,14 @@ struct post_operation_visitor
                 pl_o.account = approver;
             });
         }
+
+        if (proposal_state.required_approvals.find(proposal.proposer) == proposal_state.required_approvals.end())
+        {
+            _plugin.database().create<proposal_lookup_object>([&](proposal_lookup_object& pl_o) {
+                pl_o.proposal = proposal.external_id;
+                pl_o.account = proposal.proposer;
+            });
+        }
     }
 
     void operator()(const update_proposal_operation& op) const

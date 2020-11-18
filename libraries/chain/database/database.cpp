@@ -1848,8 +1848,6 @@ void database::push_proposal(const proposal_object& proposal)
 {
     try
     {
-        const external_id_type proposal_id = proposal.external_id;
-
         try
         {
             push_proposal_nesting_guard guard(_push_proposal_nesting_depth, *this);
@@ -1861,17 +1859,19 @@ void database::push_proposal(const proposal_object& proposal)
                 apply_operation(op);
             }
             _current_proposed_trx.reset();
+            push_virtual_operation(proposal_status_changed_operation(proposal.external_id, static_cast<uint8_t>(proposal_status::approved)));
 
             remove(proposal);
             session.squash();
-
-            push_virtual_operation(proposal_status_changed_operation(proposal_id, static_cast<uint8_t>(proposal_status::approved)));
         }
         catch (const fc::exception& e) 
-        {
+        { 
             _current_proposed_trx.reset();
+            modify(proposal, [&e](proposal_object& p) {
+                fc::from_string(p.fail_reason, e.to_string(fc::log_level(fc::log_level::all)));
+            });
             wlog("${e}", ("e", e.to_detail_string()));
-            push_virtual_operation(proposal_status_changed_operation(proposal_id, static_cast<uint8_t>(proposal_status::failed)));
+            push_virtual_operation(proposal_status_changed_operation(proposal.external_id, static_cast<uint8_t>(proposal_status::failed)));
 
             throw;
         }

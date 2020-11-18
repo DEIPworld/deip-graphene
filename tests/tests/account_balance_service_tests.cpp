@@ -111,12 +111,12 @@ BOOST_AUTO_TEST_CASE(account_balance_exists_by_owner_and_asset)
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE(get_account_balance_by_owner)
+BOOST_AUTO_TEST_CASE(get_account_balances_by_owner)
 {
     try
     {
         create_account_balances();
-        auto account_balances = data_service.get_account_balance_by_owner("alice");
+        auto account_balances = data_service.get_account_balances_by_owner("alice");
 
         BOOST_CHECK(account_balances.size() == 2);
         BOOST_CHECK(std::any_of(account_balances.begin(), account_balances.end(), [=](std::reference_wrapper<const account_balance_object> wrapper){

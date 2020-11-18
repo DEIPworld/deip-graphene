@@ -36,30 +36,8 @@ const account_balance_object& dbs_account_balance::create_account_balance(const 
     return account_balance;
 }
 
-const account_balance_object& dbs_account_balance::get_account_balance(const account_balance_id_type& id) const
-{
-    return db_impl().get<account_balance_object>(id);
-}
 
-const dbs_account_balance::account_balance_optional_ref_type dbs_account_balance::get_account_balance_if_exists(const account_balance_id_type& id) const
-{
-    account_balance_optional_ref_type result;
-    const auto& idx = db_impl()
-      .get_index<account_balance_index>()
-      .indicies()
-      .get<by_id>();
-
-    auto itr = idx.find(id);
-    if (itr != idx.end())
-    {
-        result = *itr;
-    }
-
-    return result;
-}
-
-
-const dbs_account_balance::account_balance_refs_type dbs_account_balance::get_account_balance_by_owner(const account_name_type& owner) const
+const dbs_account_balance::account_balance_refs_type dbs_account_balance::get_account_balances_by_owner(const account_name_type& owner) const
 {
     account_balance_refs_type ret;
 
@@ -131,21 +109,28 @@ const bool dbs_account_balance::account_balance_exists_by_owner_and_asset(const 
     return idx.find(std::make_tuple(owner, symbol)) != idx.cend();
 }
 
+const bool dbs_account_balance::account_balance_exists_by_owner_and_asset(const account_name_type& owner,
+                                                                          const string& symbol) const
+{
+    const auto& idx = db_impl().get_index<account_balance_index>().indices().get<by_owner_and_asset_string_symbol>();
+    return idx.find(std::make_tuple(owner, symbol)) != idx.cend();
+}
+
 void dbs_account_balance::remove_account_balance(const account_balance_object& account_balance)
 {
     db_impl().remove(account_balance);
 }
 
-const account_balance_object& dbs_account_balance::get_account_balance_by_owner_and_asset(const account_name_type& owner,
-                                                                                          const asset_symbol_type& symbol) const
+const account_balance_object& dbs_account_balance::get_account_balance_by_owner_and_asset(const account_name_type& owner, const asset_symbol_type& symbol)
 {
-    return db_impl().get<account_balance_object, by_owner_and_asset_symbol>(boost::make_tuple(owner, symbol));
-}
-
-const account_balance_object& dbs_account_balance::get_account_balance_by_owner_and_asset(const account_name_type& owner,
-                                                                                          const string& symbol) const
-{
-    return db_impl().get<account_balance_object, by_owner_and_asset_string_symbol>(boost::make_tuple(owner, symbol));
+    if (account_balance_exists_by_owner_and_asset(owner, symbol))
+    {   // TODO: remove this from pure const method
+        return db_impl().get<account_balance_object, by_owner_and_asset_symbol>(boost::make_tuple(owner, symbol));
+    } 
+    else 
+    {
+        return create_account_balance(owner, symbol, 0);
+    }
 }
 
 const dbs_account_balance::account_balance_optional_ref_type dbs_account_balance::get_account_balance_by_owner_and_asset_if_exists(const account_name_type& owner, const string& symbol) const
