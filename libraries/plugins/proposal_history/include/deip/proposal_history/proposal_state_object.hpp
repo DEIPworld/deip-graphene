@@ -63,7 +63,7 @@ typedef chainbase::shared_multi_index_container<
                                         proposal_state_id_type,
                                         &proposal_state_object::id>>,
 
-               ordered_non_unique<tag<by_external_id>,
+               ordered_unique<tag<by_external_id>,
                                   member<proposal_state_object,
                                         external_id_type,
                                         &proposal_state_object::external_id>>,

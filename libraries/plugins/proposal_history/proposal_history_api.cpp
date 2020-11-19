@@ -70,6 +70,24 @@ public:
         return results;
     }
 
+    fc::optional<proposal_state_api_obj> get_proposal_state(const external_id_type& external_id) const
+    {
+        fc::optional<proposal_state_api_obj> result;
+
+        const auto& db = _app.chain_database();
+        const auto& proposal_state_idx = db->get_index<proposal_history_index>()
+          .indices()
+          .get<by_external_id>();
+
+        const auto& proposal_state_itr = proposal_state_idx.find(external_id);
+        if (proposal_state_itr != proposal_state_idx.end())
+        {
+            result = *proposal_state_itr;
+        }
+
+        return result;
+    }
+
 };
 } // namespace detail
 
@@ -97,6 +115,13 @@ std::vector<proposal_state_api_obj> proposal_history_api::get_proposals_by_signe
     const auto db = _impl->_app.chain_database();
     return db->with_read_lock([&]() { return _impl->get_proposals_by_signers(accounts); });
 }
+
+fc::optional<proposal_state_api_obj> proposal_history_api::get_proposal_state(const external_id_type& external_id) const
+{
+    const auto db = _impl->_app.chain_database();
+    return db->with_read_lock([&]() { return _impl->get_proposal_state(external_id); });
+}
+
 
 } // namespace proposal_history
 } // namespace deip
