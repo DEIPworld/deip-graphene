@@ -46,25 +46,22 @@ struct proposal_nesting_guard
 
             if (wrap.op.which() == operation::tag<create_proposal_operation>().value)
             {
-                // Do not allow more than 1 create_proposal_operation in a proposal
-                FC_ASSERT(nesting_state[op.external_id].nested_create_count == 1,
-                  "At most two create_proposal can be nested in a single proposal!");
+                // FC_ASSERT(nesting_state[op.external_id].nested_create_count == 1,
+                //   "At most two create_proposal can be nested in a single proposal!");
                 nesting_state[op.external_id].nested_create_count++;
             }
 
             if (wrap.op.which() == operation::tag<update_proposal_operation>().value)
             {
-                // Do not allow more than 1 update_proposal_operation in a proposal
-                FC_ASSERT(nesting_state[op.external_id].nested_update_count == 1, 
-                  "At most two update_proposal can be nested in a single proposal!");
+                // FC_ASSERT(nesting_state[op.external_id].nested_update_count == 1, 
+                //   "At most two update_proposal can be nested in a single proposal!");
                 nesting_state[op.external_id].nested_update_count++;
             }
 
             if (wrap.op.which() == operation::tag<delete_proposal_operation>().value)
             {
-                // Do not allow more than 1 update_proposal_operation in a proposal
-                FC_ASSERT(nesting_state[op.external_id].nested_delete_count == 1,
-                  "At most two delete_proposal can be nested in a single proposal!");
+                // FC_ASSERT(nesting_state[op.external_id].nested_delete_count == 1,
+                //   "At most two delete_proposal can be nested in a single proposal!");
                 nesting_state[op.external_id].nested_delete_count++;
             }
 
