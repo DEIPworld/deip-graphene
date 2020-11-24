@@ -38,7 +38,7 @@ struct proposal_nesting_guard
         nesting_state[op.external_id] = proposal_state;
         last_stage_id = op.external_id;
 
-        FC_ASSERT(proposal_state.stage <= DEIP_MAX_PROPOSAL_NESTED_STAGE, "Max proposal nesting depth reached");
+        // FC_ASSERT(proposal_state.stage <= DEIP_MAX_PROPOSAL_NESTED_STAGE, "Max proposal nesting depth reached");
 
         for (const op_wrapper& wrap : op.proposed_ops)
         {
