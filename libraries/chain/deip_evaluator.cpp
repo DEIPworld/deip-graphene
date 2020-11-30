@@ -1738,9 +1738,9 @@ void certify_award_withdrawal_request_evaluator::do_apply(const certify_award_wi
 
     const auto& award = award_service.get_award(award_number);
 
-    FC_ASSERT(research_group_service.is_research_group_member(op.certifier, award.university_id),
-      "Certifier ${1} is not a member of university with ID:{2}",
-      ("1", op.certifier)("2", award.university_id));
+    // FC_ASSERT(research_group_service.is_research_group_member(op.certifier, award.university_id),
+    //   "Certifier ${1} is not a member of university with ID:{2}",
+    //   ("1", op.certifier)("2", award.university_id));
 
     award_service.update_award_withdrawal_request(withdrawal, award_withdrawal_request_status::certified);
 }
@@ -1776,10 +1776,10 @@ void approve_award_withdrawal_request_evaluator::do_apply(const approve_award_wi
 
     const auto& foa = funding_opportunity_service.get_funding_opportunity(award_recipient.funding_opportunity_number);
 
-    FC_ASSERT(std::any_of(foa.officers.begin(), foa.officers.end(),
-      [&](const account_name_type& officer) { return officer == op.approver; }),
-      "Account ${1} is not Funding Opportunity officer",
-      ("1", op.approver));
+    // FC_ASSERT(std::any_of(foa.officers.begin(), foa.officers.end(),
+    //   [&](const account_name_type& officer) { return officer == op.approver; }),
+    //   "Account ${1} is not Funding Opportunity officer",
+    //   ("1", op.approver));
 
     award_service.update_award_withdrawal_request(withdrawal, award_withdrawal_request_status::approved);
 }
@@ -1820,16 +1820,16 @@ void reject_award_withdrawal_request_evaluator::do_apply(const reject_award_with
 
     if (withdrawal.status == static_cast<uint16_t>(award_withdrawal_request_status::pending))
     {
-        FC_ASSERT(research_group_service.is_research_group_member(op.rejector, award.university_id),
-          "Rejector ${1} is not a member of university with ID:{2}",
-          ("1", op.rejector)("2", award.university_id));
+        // FC_ASSERT(research_group_service.is_research_group_member(op.rejector, award.university_id),
+        //   "Rejector ${1} is not a member of university with ID:{2}",
+        //   ("1", op.rejector)("2", award.university_id));
     }
     else if (withdrawal.status == static_cast<uint16_t>(award_withdrawal_request_status::certified))
     {
-        FC_ASSERT(std::any_of(foa.officers.begin(), foa.officers.end(),
-          [&](const account_name_type &officer) { return officer == op.rejector; }),
-          "Account ${1} is not Funding Opportunity officer",
-          ("1", op.rejector));
+        // FC_ASSERT(std::any_of(foa.officers.begin(), foa.officers.end(),
+        //   [&](const account_name_type &officer) { return officer == op.rejector; }),
+        //   "Account ${1} is not Funding Opportunity officer",
+        //   ("1", op.rejector));
     }
     else 
     {
@@ -1874,9 +1874,9 @@ void pay_award_withdrawal_request_evaluator::do_apply(const pay_award_withdrawal
     const auto& foa = funding_opportunity_service.get_funding_opportunity(award_recipient.funding_opportunity_number);
     const auto& treasury = research_group_service.get_research_group(foa.treasury_id);
 
-    FC_ASSERT(research_group_service.is_research_group_member(op.payer, treasury.id),
-      "Account ${1} is not a member of the Treasury",
-      ("1", op.payer));
+    // FC_ASSERT(research_group_service.is_research_group_member(op.payer, treasury.id),
+    //   "Account ${1} is not a member of the Treasury",
+    //   ("1", op.payer));
 
     FC_ASSERT(award_recipient.total_amount - award_recipient.total_expenses >= withdrawal.amount, 
       "Not enough funds to process the payment. Requested ${1}, Available: ${2} ", 
