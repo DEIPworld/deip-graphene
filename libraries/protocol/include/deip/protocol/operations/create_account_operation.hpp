@@ -12,7 +12,6 @@ using deip::protocol::authority;
 
 struct research_group_trait
 {
-    std::string name;
     std::string description;
     extensions_type extensions;
 };
@@ -67,7 +66,7 @@ FC_REFLECT(deip::protocol::create_account_operation,
   (extensions)
 )
 
-FC_REFLECT(deip::protocol::research_group_trait, (name)(description)(extensions))
+FC_REFLECT(deip::protocol::research_group_trait, (description)(extensions))
 
 DECLARE_STATIC_VARIANT_TYPE(deip::protocol::account_trait)
 FC_REFLECT_TYPENAME(deip::protocol::account_trait)

@@ -610,7 +610,6 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
     auto& account_service = obtain_service<dbs_account>();
     auto& research_groups_service = obtain_service<dbs_research_group>();
 
-    FC_ASSERT(!research_group.name.empty(), "Research group 'name' must be specified");
     FC_ASSERT(research_group.members.size() > 0, "Research group must contain at least 1 member");
     
     const auto& creator = account_service.get_account(research_group.creator);
@@ -629,7 +628,6 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
     }
 
     research_group_trait rg_trait;
-    rg_trait.name = research_group.name;
     rg_trait.description = research_group.description;
 
     flat_set<account_trait> traits;
@@ -661,11 +659,6 @@ void database::init_genesis_research_group(const genesis_state_type::research_gr
             const share_type rgt = share_type(DEIP_100_PERCENT / research_group.members.size());
             research_groups_service.add_member_to_research_group(member.name, rg.id, rgt, creator.name);
         }
-    }
-
-    for (auto& subgroup : research_group.subgroups)
-    {
-        init_genesis_research_group(subgroup);
     }
 }
 

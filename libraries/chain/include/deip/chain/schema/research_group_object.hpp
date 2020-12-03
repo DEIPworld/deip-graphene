@@ -18,8 +18,7 @@ class research_group_object : public object<research_group_object_type, research
   public:
     template <typename Constructor, typename Allocator>
     research_group_object(Constructor&& c, allocator<Allocator> a)
-      : name(a)
-      , description(a)
+      : description(a)
       , permlink(a)
     {
       c(*this);
@@ -31,7 +30,6 @@ class research_group_object : public object<research_group_object_type, research
     account_name_type account; // research group account_object
     account_name_type creator; // creator account_object
 
-    shared_string name;
     shared_string description;
     shared_string permlink; /* [DEPRECATED] */
     asset balance = asset(0, DEIP_SYMBOL);
@@ -140,7 +138,6 @@ FC_REFLECT(deip::chain::research_group_object,
   (id)
   (account)
   (creator)
-  (name)
   (permlink)
   (description)
   (balance)

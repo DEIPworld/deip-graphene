@@ -160,7 +160,6 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         const auto& shared_rg = research_groups_service.create_research_group(
           account_name,
           creator_name,
-          rg_trait.name, 
           rg_trait.description
         );
         
@@ -209,7 +208,6 @@ void dbs_account::update_acount(const account_object& account,
 
         research_groups_service.update_research_group(
           research_group,
-          rg_trait.name, 
           rg_trait.description
         );
     }

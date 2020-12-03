@@ -67,10 +67,8 @@ struct genesis_state_type
     {
         account_name_type account;
         account_name_type creator;
-        std::string name;
         std::string description;
         std::set<account_name_type> members;
-        std::vector<research_group_type> subgroups;
     };
 
     struct research_type
@@ -181,10 +179,8 @@ FC_REFLECT(deip::chain::genesis_state_type::expert_token_type,
 FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
           (account)
           (creator)
-          (name)
           (description)
           (members)
-          (subgroups)
 )
 
 FC_REFLECT(deip::chain::genesis_state_type::research_type,

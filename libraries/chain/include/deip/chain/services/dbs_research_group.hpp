@@ -46,11 +46,9 @@ class dbs_research_group : public dbs_base
 
     const research_group_object& create_research_group(const account_name_type& account,
                                                        const account_name_type& creator,
-                                                       const string& name,
                                                        const string& description);
 
     const research_group_object& update_research_group(const research_group_object& research_group,
-                                                       const string& name,
                                                        const string& description);
 
     const bool research_group_exists(const research_group_id_type& research_group_id) const;

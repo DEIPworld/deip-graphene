@@ -381,7 +381,6 @@ struct research_group_api_obj
         : id(rg_o.id._id)
         , external_id(rg_o.account)
         , creator(rg_o.creator)
-        , name(fc::to_string(rg_o.name))
         , permlink(fc::to_string(rg_o.permlink))
         , description(fc::to_string(rg_o.description))
         , quorum_percent(rg_o.default_quorum)
@@ -396,7 +395,6 @@ struct research_group_api_obj
         : id(rg_o.id._id)
         , external_id(rg_o.account)
         , creator(rg_o.creator)
-        , name(fc::to_string(rg_o.name))
         , permlink(fc::to_string(rg_o.permlink))
         , description(fc::to_string(rg_o.description))
         , quorum_percent(rg_o.default_quorum)
@@ -414,7 +412,6 @@ struct research_group_api_obj
     int64_t id;
     external_id_type external_id;
     account_name_type creator;
-    std::string name;
     std::string permlink;
     std::string description;
     percent_type quorum_percent;
@@ -1555,7 +1552,6 @@ FC_REFLECT( deip::app::research_group_api_obj,
             (id)
             (external_id)
             (creator)
-            (name)
             (permlink)
             (description)
             (quorum_percent)

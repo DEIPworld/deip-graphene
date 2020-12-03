@@ -98,7 +98,6 @@ const research_group_object& dbs_research_group::create_personal_research_group(
         = db_impl().create<research_group_object>([&](research_group_object& rg_o) {
               rg_o.account = account;
               rg_o.creator = account;
-              fc::from_string(rg_o.name, account);
               fc::from_string(rg_o.permlink, account);
               fc::from_string(rg_o.description, account);
               rg_o.management_model_v = 2;
@@ -115,15 +114,13 @@ const research_group_object& dbs_research_group::create_personal_research_group(
 const research_group_object& dbs_research_group::create_research_group(
   const account_name_type& account,
   const account_name_type& creator,
-  const std::string& name,
   const string& description)
 {
-    const auto& research_group_permlink = deip::chain::util::generate_permlink(name);
+    const auto& research_group_permlink = deip::chain::util::generate_permlink(description);
     const research_group_object& research_group
         = db_impl().create<research_group_object>([&](research_group_object& rg_o) {
               rg_o.account = account;
               rg_o.creator = creator;
-              fc::from_string(rg_o.name, name);
               fc::from_string(rg_o.description, description);
               fc::from_string(rg_o.permlink, research_group_permlink);
               rg_o.is_personal = false;
@@ -137,12 +134,10 @@ const research_group_object& dbs_research_group::create_research_group(
 
 const research_group_object& dbs_research_group::update_research_group(
   const research_group_object& research_group,
-  const string& name,
   const string& description) 
 {
-    const auto& research_group_permlink = deip::chain::util::generate_permlink(name);
+    const auto& research_group_permlink = deip::chain::util::generate_permlink(description);
     db_impl().modify(research_group, [&](research_group_object& rg_o) {
-        fc::from_string(rg_o.name, name);
         fc::from_string(rg_o.description, description);
         fc::from_string(rg_o.permlink, research_group_permlink);
     });

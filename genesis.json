@@ -546,117 +546,97 @@
     {
       "account": "0000000000000000000000000000000000000000",
       "creator": "alice",
-      "name": "DEIP",
-      "description": "DEIP official",
+      "description": "94c70f3ca2398ac96f730c505ca6f8737c264f86c9a3e25c27ede7b127d2d702",
       "members": [
         "alice",
         "bob"
-      ],
-      "subgroups": []
+      ]
     },
     {
       "account": "a6d1a54f8ebbe1afe800feb65934c30194cd8576",
       "creator": "bob",
-      "name": "Chimera: Modeling social identity and group membership for use in digital media such as videogames and social media team",
-      "description": "",
+      "description": "479e1e6124bb060e1266cb4f96925f3f38ed98fd27e18a9cecb7e8b002b56b49",
       "members": [
         "bob",
         "alex",
         "nick"
-      ],
-      "subgroups": []
+      ]
     },
     {
       "account": "1b82cf477e7669f29f69f06656467d1a674d2d43",
       "creator": "bob",
-      "name": "Efficient and reliable transmission of sparse signals in wireless sensor networks team",
-      "description": "",
+      "description": "45c0fa4a8be25e48176a94ea6682c7ae7d9fe81464f466b4eec5daf164fea6c9",
       "members": [
         "bob",
         "anastasia",
         "irene"
-      ],
-      "subgroups": []
+      ]
     },
     {
       "account": "63c44a2ca40aab336c643fafc079c300a5b186bf",
       "creator": "bob",
-      "name": "Enhanced flow boiling heat transfer in microchannels with structured surfaces team",
-      "description": "",
+      "description": "5c07bf7f53067ecb69825ff550ff7d0e327d84e757e3ec3e04838c26756fdfc2",
       "members": [
         "bob",
         "alex",
         "carla"
-      ],
-      "subgroups": []
+      ]
     },
     {
       "account": "15f1ecc9beaca01cb5d826b0dac3c06d4d31b7c5",
       "creator": "bob",
-      "name": "Long-circulating Theranostics Agents for Highly Metastatic Tumors team",
-      "description": "",
+      "description": "e3290d9d8ad9c6c850eb398be795572c5a0c1ee148bf4ad66fac27b327c8e052",
       "members": [
         "bob",
         "dorothy",
         "james"
-      ],
-      "subgroups": []
+      ]
     },
     {
       "account": "b883480f95ad3eec2909288d7127ae7cf1126263",
       "creator": "bob",
-      "name": "Obstetric Quality of Recovery-10 scoring tool team",
-      "description": "",
+      "description": "79485522b31951c5d7ead3cd2459c9f533f70f794e21a28fd9279754fb0082a8",
       "members": [
         "bob",
         "mike",
         "rick"
-      ],
-      "subgroups": []
+      ]
     },
     {
       "account": "58e3bfd753fcb860a66b82635e43524b285ab708",
       "creator": "alice",
-      "name": "The National Science Foundation",
-      "description": "The National Science Foundation (NSF) is an independent federal agency created by Congress in 1950 to promote the progress of science; to advance the national health, prosperity, and welfare; to secure the national defense.",
+      "description": "a7dc26b52119d2a68d27692ace9b3a256dcfa6a2ed862327f95876d41c5c55a8",
       "members": [
         "alice",
         "peter",
         "thomas"
-      ],
-      "subgroups": []
+      ]
     },
     {
       "account": "c8657fa6cbaee3917ac4e2ed6ada9d0a55a15ac5",
       "creator": "mike",
-      "name": "NSF Grants Review Committee",
-      "description": "The Grant Review Committee is established to evaluate applications for funding from NSF Grants Program.",
+      "description": "5f0ddd30dae95ba55876bd3d323a75e3ac7cdae600934d58b9965cc0c8b8ca64",
       "members": [
         "mike",
         "rick"
-      ],
-      "subgroups": []
+      ]
     },
     {
       "account": "c8a87b12c23f53866acd397f43b591fd4e631419",
       "creator": "rachel",
-      "name": "Massachusetts Institute of Technology",
-      "description": "Founded to accelerate the nation’s industrial revolution, MIT is profoundly American. With ingenuity and drive, our graduates have invented fundamental technologies, launched new industries, and created millions of American jobs.",
+      "description": "90a373f15c0d7652bd21e7f0f8d6cbda1e795ff637535272d84d10e1aa44a467",
       "members": [
         "rachel",
         "david"
-      ],
-      "subgroups": []
+      ]
     },
     {
       "account": "1169d704f8a908016033efe8cce6df93f618a265",
       "creator": "kim",
-      "name": "United States Department of the Treasury",
-      "description": "The Department of the Treasury (USDT) is an executive department and the treasury of the United States federal government. Established by an Act of Congress in 1789 to manage government revenue,[3] the Treasury prints all paper currency and mints all coins in circulation through the Bureau of Engraving and Printing and the United States Mint, respectively; collects all federal taxes through the Internal Revenue Service; manages U.S. government debt instruments; licenses and supervises banks and thrift institutions; and advises the legislative and executive branches on matters of fiscal policy.",
+      "description": "6dfd366f0e402dfcefcb0aee1d9f249cc69f5f5740f6c6829e13f6740ca9d4c8",
       "members": [
         "kim"
-      ],
-      "subgroups": []
+      ]
     }
   ],
   "researches": [

@@ -2576,7 +2576,7 @@ void create_research_token_sale_evaluator::do_apply(const create_research_token_
     }
 
     FC_ASSERT(research.research_group_id == research_group.id, "Research ${1} does not belong to research group ${2}",
-      ("1", op.research_external_id)("2", research_group.name));
+      ("1", op.research_external_id)("2", research_group.account));
 
     const auto& active_research_token_sales = research_token_sale_service.get_by_research_id_and_status(research.id, research_token_sale_status::active);
     const auto& inactive_research_token_sales = research_token_sale_service.get_by_research_id_and_status(research.id, research_token_sale_status::inactive);
