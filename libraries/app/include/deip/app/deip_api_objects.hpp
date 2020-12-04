@@ -500,6 +500,7 @@ struct research_content_api_obj
         : id(rc_o.id._id)
         , external_id(rc_o.external_id)
         , research_id(rc_o.research_id._id)
+        , research_external_id(rc_o.research_external_id)
         , content_type(rc_o.type)
         , authors(rc_o.authors.begin(), rc_o.authors.end())
         , title(fc::to_string(rc_o.title))
@@ -529,6 +530,7 @@ struct research_content_api_obj
     int64_t id;
     external_id_type external_id;
     int64_t research_id;
+    external_id_type research_external_id;
     research_content_type content_type;
     std::set<account_name_type> authors;
     std::string title;
@@ -1482,6 +1484,7 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (id)
             (external_id)
             (research_id)
+            (research_external_id)
             (content_type)
             (title)
             (content)

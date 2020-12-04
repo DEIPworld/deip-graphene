@@ -32,6 +32,7 @@ const research_content_object& dbs_research_content::create_research_content(
     const auto& research_content_permlink = deip::chain::util::generate_permlink(title);
     const auto& research_content = db_impl().create<research_content_object>([&](research_content_object& rc_o) {
         rc_o.research_id = research.id;
+        rc_o.research_external_id = research.external_id;
         rc_o.external_id = external_id;
         fc::from_string(rc_o.title, title);
         fc::from_string(rc_o.content, content);

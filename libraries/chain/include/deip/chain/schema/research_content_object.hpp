@@ -75,6 +75,7 @@ public:
     external_id_type external_id;
 
     research_id_type research_id;
+    external_id_type research_external_id;
 
     shared_string title;
     shared_string content;
@@ -230,6 +231,7 @@ FC_REFLECT(deip::chain::research_content_object,
   (id)
   (external_id)
   (research_id)
+  (research_external_id)
   (type)
   (title)
   (content)
