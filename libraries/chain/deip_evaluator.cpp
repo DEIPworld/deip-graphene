@@ -2241,8 +2241,7 @@ void join_research_group_membership_evaluator::do_apply(const join_research_grou
         updated_members.insert(op.member);
 
         research_service.update_research(research, 
-          fc::to_string(research.title), 
-          fc::to_string(research.abstract), 
+          fc::to_string(research.description), 
           research.is_private,
           research.review_share,
           research.compensation_share,
@@ -2326,8 +2325,7 @@ void leave_research_group_membership_evaluator::do_apply(const leave_research_gr
         }
 
         research_service.update_research(research, 
-          fc::to_string(research.title), 
-          fc::to_string(research.abstract), 
+          fc::to_string(research.description), 
           research.is_private,
           research.review_share,
           research.compensation_share,
@@ -2401,8 +2399,7 @@ void create_research_evaluator::do_apply(const create_research_operation& op)
     research_service.create_research(
       research_group, 
       op.external_id, 
-      op.title, 
-      op.abstract, 
+      op.description, 
       disciplines,
       op.review_share, 
       op.compensation_share, 
@@ -2445,7 +2442,7 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
 
     FC_ASSERT(!research.is_finished,
       "The research ${1} has been finished already",
-      ("1", research.title));
+      ("1", research.description));
 
     for (auto& author : op.authors)
     {
@@ -2639,16 +2636,14 @@ void update_research_evaluator::do_apply(const update_research_operation& op)
         }
     }
 
-    std::string title = op.title.valid() ? *op.title : fc::to_string(research.title);
-    std::string abstract = op.abstract.valid() ? *op.abstract : fc::to_string(research.abstract);
+    std::string description = op.description.valid() ? *op.description : fc::to_string(research.description);
     bool is_private = op.is_private.valid() ? *op.is_private : research.is_private;
     optional<percent> review_share = op.review_share.valid() ? op.review_share : research.review_share;
     optional<percent> compensation_share = op.compensation_share.valid() ? op.compensation_share : research.compensation_share;
     flat_set<account_name_type> members = op.members.valid() ? *op.members : research.members;
 
     research_service.update_research(research, 
-      title,
-      abstract,
+      description,
       is_private,
       review_share,
       compensation_share,

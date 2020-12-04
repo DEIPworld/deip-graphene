@@ -14,8 +14,7 @@ struct create_research_operation : public entity_operation
 {
     external_id_type external_id;
     account_name_type research_group;
-    string title;
-    string abstract;
+    string description;
     flat_set<external_id_type> disciplines;
     bool is_private;
     optional<percent> review_share;
@@ -47,8 +46,7 @@ struct create_research_operation : public entity_operation
 FC_REFLECT(deip::protocol::create_research_operation,
   (external_id)
   (research_group)
-  (title)
-  (abstract)
+  (description)
   (disciplines)
   (is_private)
   (review_share)

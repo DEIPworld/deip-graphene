@@ -430,8 +430,7 @@ struct research_api_obj
         : id(r_o.id._id)
         , external_id(r_o.external_id)
         , research_group_id(r_o.research_group_id._id)
-        , title(fc::to_string(r_o.title))
-        , abstract(fc::to_string(r_o.abstract))
+        , description(fc::to_string(r_o.description))
         , permlink(fc::to_string(r_o.permlink))
         , is_finished(r_o.is_finished)
         , is_private(r_o.is_private)
@@ -473,8 +472,7 @@ struct research_api_obj
     int64_t id;
     external_id_type external_id;
     int64_t research_group_id;
-    std::string title;
-    std::string abstract;
+    std::string description;
     std::string permlink;
     bool is_finished;
     bool is_private;
@@ -1462,8 +1460,7 @@ FC_REFLECT( deip::app::research_api_obj,
             (id)
             (external_id)
             (research_group_id)
-            (title)
-            (abstract)
+            (description)
             (permlink)
             (is_finished)
             (is_private)

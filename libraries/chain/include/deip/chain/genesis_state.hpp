@@ -75,8 +75,7 @@ struct genesis_state_type
     {
         protocol::external_id_type external_id;
         account_name_type account;
-        std::string title;
-        std::string abstract;
+        std::string description;
         bool is_finished;
         bool is_private;
         std::set<account_name_type> members;
@@ -186,8 +185,7 @@ FC_REFLECT(deip::chain::genesis_state_type::research_group_type,
 FC_REFLECT(deip::chain::genesis_state_type::research_type,
           (external_id)
           (account)
-          (title)
-          (abstract)
+          (description)
           (is_finished)
           (is_private)
           (members)

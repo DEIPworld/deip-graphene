@@ -17,8 +17,7 @@ dbs_research::dbs_research(database &db) : _base_type(db)
 
 const research_object& dbs_research::create_research(const research_group_object& research_group,
                                                      const external_id_type& external_id,
-                                                     const string& title,
-                                                     const string& abstract,
+                                                     const string& description,
                                                      const std::set<discipline_id_type>& disciplines,
                                                      const optional<percent>& review_share,
                                                      const optional<percent>& compensation_share,
@@ -30,13 +29,12 @@ const research_object& dbs_research::create_research(const research_group_object
     auto& research_disciplines_service = db_impl().obtain_service<dbs_research_discipline_relation>();
     auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
 
-    const auto& research_permlink = deip::chain::util::generate_permlink(title);
+    const auto& research_permlink = deip::chain::util::generate_permlink(description);
     const auto& research = db_impl().create<research_object>([&](research_object& r_o) {
         r_o.research_group_id = research_group.id;
         r_o.research_group = research_group.account;
         r_o.external_id = external_id;
-        fc::from_string(r_o.title, title);
-        fc::from_string(r_o.abstract, abstract);
+        fc::from_string(r_o.description, description);
         fc::from_string(r_o.permlink, research_permlink);
         r_o.review_share = review_share;
         r_o.compensation_share = compensation_share;
@@ -59,8 +57,7 @@ const research_object& dbs_research::create_research(const research_group_object
 }
 
 const research_object& dbs_research::update_research(const research_object& research,
-                                                     const string& title,
-                                                     const string& abstract,
+                                                     const string& description,
                                                      const bool& is_private,
                                                      const optional<percent>& review_share,
                                                      const optional<percent>& compensation_share,
@@ -68,11 +65,10 @@ const research_object& dbs_research::update_research(const research_object& rese
 {
 
     const auto& block_time = db_impl().head_block_time();
-    const auto& research_permlink = deip::chain::util::generate_permlink(title);
+    const auto& research_permlink = deip::chain::util::generate_permlink(description);
     const auto updated_members = members;
     db_impl().modify(research, [&](research_object& r_o) {
-        fc::from_string(r_o.title, title);
-        fc::from_string(r_o.abstract, abstract);
+        fc::from_string(r_o.description, description);
         fc::from_string(r_o.permlink, research_permlink);
         r_o.is_private = is_private;
         if (r_o.review_share != review_share)

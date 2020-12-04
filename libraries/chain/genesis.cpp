@@ -360,7 +360,7 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
 
     for (auto& research : researches)
     {
-        FC_ASSERT(!research.title.empty(), "Research 'title' is required");
+        FC_ASSERT(!research.description.empty(), "Research 'title' is required");
 
         std::set<discipline_id_type> disciplines;
         for (auto& discipline_external_id : research.disciplines)
@@ -388,8 +388,7 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
         const auto& created_research = research_service.create_research(
           research_group, 
           research.external_id,
-          research.title, 
-          research.abstract, 
+          research.description, 
           disciplines, 
           review_share,
           compensation_share,
@@ -404,16 +403,16 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
         const int SECURITY_TOKEN_SYMBOL_MIN_SIZE = 3;
         std::string SECURITY_TOKEN_SYMBOL;
 
-        for (int i = 0; (i < (research.title.size() - 1) && SECURITY_TOKEN_SYMBOL.size() < SECURITY_TOKEN_SYMBOL_MAX_SIZE); i++)
+        for (int i = 0; (i < (research.description.size() - 1) && SECURITY_TOKEN_SYMBOL.size() < SECURITY_TOKEN_SYMBOL_MAX_SIZE); i++)
         {
-            const char& ch = research.title[i];
+            const char& ch = research.description[i];
             if (SECURITY_TOKEN_SYMBOL.size() == 0 && isalpha(ch))
             {
                 SECURITY_TOKEN_SYMBOL.push_back(char(std::toupper(ch)));
             }
             if (isblank(ch))
             {
-                const char& ch2 = research.title[i + 1];
+                const char& ch2 = research.description[i + 1];
                 if (isalpha(ch2))
                 {
                     SECURITY_TOKEN_SYMBOL.push_back(char(std::toupper(ch2)));

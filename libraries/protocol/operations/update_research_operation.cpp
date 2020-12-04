@@ -12,16 +12,10 @@ void update_research_operation::validate() const
     validate_account_name(research_group);
     validate_160_bits_hexadecimal_string(external_id);
 
-    if (title.valid())
+    if (description.valid())
     {
-        FC_ASSERT(!(*title).empty(), "Research title cannot be empty");
-        FC_ASSERT(fc::is_utf8(*title), "Research title is not valid UTF-8 string");
-    }
-
-    if (abstract.valid())
-    {
-        FC_ASSERT(!(*abstract).empty(), "Research abstract cannot be empty");
-        FC_ASSERT(fc::is_utf8(*abstract), "Research abstract is not valid UTF-8 string");
+        FC_ASSERT(!(*description).empty(), "Research description cannot be empty");
+        FC_ASSERT(fc::is_utf8(*description), "Research description is not valid UTF-8 string");
     }
 
     if (review_share.valid())

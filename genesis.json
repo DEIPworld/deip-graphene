@@ -643,8 +643,7 @@
     {
       "external_id": "f8e05f75e352227162fb949d22bace7addffdaee",
       "account": "a6d1a54f8ebbe1afe800feb65934c30194cd8576",
-      "title": "Chimera: Modeling social identity and group membership for use in digital media such as videogames and social media",
-      "abstract": "<p><span style=\"background-color: transparent; color: rgb(34, 34, 34);\">Chimera supports authoring narratives of group membership in any social identity domain through a data-driven approach. It models identities (avatars, characters, profiles, and accounts) in two primary ways: (1) by modeling the underlying structure of social categories and related phenomena with the Chimeria engine, which mathematically models users’ degrees of membership across multiple categories; and (2) by enabling users to build their own creative applications involving social characterization, such as videogames and social media.</span></p><p><span style=\"background-color: transparent; color: rgb(34, 34, 34);\">Important models are those of category membership and naturalization trajectories. In modeling categories, Chimera develops and implements a notion of abstract and concrete categories that can encompass multiple worldviews. To computationally model category gradience, Chimeria computes a closeness value corresponding to the degree to which an actor deviates from a prototypical member of a category, who is defined via a set of features. The degree of membership fluctuates throughout a narrative by actions and choices made by the user. Attributes are added/removed for discrete features (e.g. acquired skillsets) or modified numerically for continuous features (e.g. height), which creates fluctuating degree of membership and naturalization trajectory for the user.</span></p>",
+      "description": "59f7b677ed3fd749ee1bd8176f47c472533985b8c31ef3715c932c15149d15ea",
       "is_finished": false,
       "is_private": false,
       "members": [
@@ -659,8 +658,7 @@
     {
       "external_id": "edfcc10e012c556aa0ed935f28f60a07dcfdf9e5",
       "account": "1b82cf477e7669f29f69f06656467d1a674d2d43",
-      "title": "Efficient and reliable transmission of sparse signals in wireless sensor networks",
-      "abstract": "<p><span style=\"background-color: transparent; color: rgb(0, 0, 0);\">T</span><span style=\"color: rgb(34, 34, 34);\">he invention is a low complexity architecture for communicating captured sparse signals in WSNs. The application-independent physical layer design leverages sparsity existing in many physical signals to parsimoniously represent them. By preserving the relative bit importance during transmission, it achieves graceful tradeoffs between distortion and channel SNR, resulting in increased robustness against channel errors across a wide range of SNR values in a rateless fashion. The invention was proved to be optimal in terms of distortion in the high SNR regime in point-to-point links and can efficiently serve multicast scenarios. The device is applicable to a wide range of applications and performs close to an idealized layered transmission scheme in terms of reliability and end-to-end distortion.</span></p>",
+      "description": "fb3c7e88f0736074ebc9e90763b14c9eb8ade2cf6b8098cdf5c0a98656e7d108",
       "is_finished": false,
       "is_private": false,
       "members": [
@@ -676,8 +674,7 @@
     {
       "external_id": "b632e082649d7b7e441fa68ce2758b897c110147",
       "account": "63c44a2ca40aab336c643fafc079c300a5b186bf",
-      "title": "Enhanced flow boiling heat transfer in microchannels with structured surfaces",
-      "abstract": "<p><span style=\"background-color: transparent; color: rgb(34, 34, 34);\">The two-phase microchannel consists of channels filled with micropillars, fabricated out of a Si wafer using deep reactive ion etching (DRIE) and a Pyrex glass wafer with inlet and outlet holes. The fabricated microchannels were 500µm x 500µm x 10mm with micropillar arrays (heights of ~25µm, diameters of 5-10µm and pitches of 10-40µm) on the bottom channel wall, where heat is applied. This design suggests that two-phase heat transfer and fluid flow behavior can be decoupled allowing the overall heat flux to increase. Bubbles are generated via the less hydrophilic sidewalls while the superhydrophilic microstructures at the bottom of the channel enhance the capillary wicking capability to prevent dryout.</span></p>",
+      "description": "ca7c6af425fc2fb2b030f0d3782450c7620c792613c158129ed73b4afc5fe3a2",
       "is_finished": false,
       "is_private": false,
       "members": [
@@ -693,8 +690,7 @@
     {
       "external_id": "f627fdc834b314e3c653f638389cf745e6a72046",
       "account": "15f1ecc9beaca01cb5d826b0dac3c06d4d31b7c5",
-      "title": "Long-circulating Theranostics Agents for Highly Metastatic Tumors",
-      "abstract": "<p><span style=\"color: rgb(51, 51, 51);\">Researchers have developed a theranostic template targeting highly metastatic tumors. This three-component template contains a peptide targeting sequence, a long-circulating dye, and a radionuclide. The peptide targeting sequence TMTP1 shows high affinity for a series of metastatic tumor cells, making it a versatile targeting component. The dye and radionuclide are used for PET imaging of tumor regions, with the ability to substitute various radionuclides for diagnosis or treatment. In vivo studies with metastatic 143B osteosarcoma bearing mice show 6.5% tumor uptake 8 hours after injection. This uptake level is maintained through 48 hours after injection demonstrating the long-circulating properties of the theranostic.</span></p>",
+      "description": "a531e7268805f859e70f6262fce90a6514dd32b3f87a49c76360ecd71f60439d",
       "is_finished": false,
       "is_private": false,
       "members": [
@@ -710,8 +706,7 @@
     {
       "external_id": "79f3b7b3e8b97a3cf5ab2938ea32d0e1773c1253",
       "account": "b883480f95ad3eec2909288d7127ae7cf1126263",
-      "title": "Obstetric Quality of Recovery-10 scoring tool",
-      "abstract": "<p><span style=\"color: rgb(51, 51, 51);\">Researchers have developed a validated scoring tool that can be used to quantitatively assess quality of recovery following childbirth. The scoring tool, abbreviated ObsQoR-10, is a patient-reported outcome measure that can be used to assess quality of recovery following all delivery modes. Clinically it can be used as a follow-up tool after obstetric anesthesia and surgical intervention, or to facilitate readiness for hospital discharge. Currently, there are few adequately validated scoring tools for assessing quality of recovery. This new 10-item scoring tool is derived from an 11-item scoring tool previously developed by Dr. Pervez Sultan and amended based on patient feedback. It has been utilized in several studies (including a study in the UK validating it after vaginal delivery and in the U.S. validating it after vaginal and cesarean delivery). A translated Hebrew version of ObsQoR-10 has also been reported following all delivery modes.</span></p>",
+      "description": "7caef8a9ff14574d9e8da9616b23027e9328e1c2f98a85b039c5575866791e78",
       "is_finished": false,
       "is_private": false,
       "members": [

@@ -25,8 +25,7 @@ public:
 
     const research_object& create_research(const research_group_object& research_group,
                                            const external_id_type& external_id,
-                                           const string& title,
-                                           const string& abstract,
+                                           const string& description,
                                            const std::set<discipline_id_type>& disciplines,
                                            const optional<percent>& review_share,
                                            const optional<percent>& compensation_share,
@@ -36,8 +35,7 @@ public:
                                            const time_point_sec& created_at);
 
     const research_object& update_research(const research_object& research,
-                                           const string& title,
-                                           const string& abstract,
+                                           const string& description,
                                            const bool& is_private,
                                            const optional<percent>& review_share,
                                            const optional<percent>& compensation_share,

@@ -29,8 +29,7 @@ class research_object : public object<research_object_type, research_object>
 public:
     template <typename Constructor, typename Allocator>
     research_object(Constructor&& c, allocator<Allocator> a)
-        : title(a)
-        , abstract(a)
+        : description(a)
         , permlink(a)
     {
         c(*this);
@@ -40,8 +39,7 @@ public:
     external_id_type external_id;
     research_group_id_type research_group_id;
     account_name_type research_group;
-    shared_string title;
-    shared_string abstract;
+    shared_string description;
     shared_string permlink; /* [DEPRECATED] */
     time_point_sec created_at;
     time_point_sec review_share_last_update;
@@ -147,11 +145,10 @@ typedef multi_index_container<research_object,
 FC_REFLECT(deip::chain::research_object,
   (id)
   (external_id)
-  (title)
+  (description)
+  (permlink)
   (research_group_id)
   (research_group)
-  (permlink)
-  (abstract)
   (created_at)
   (review_share_last_update)
   (last_update_time)

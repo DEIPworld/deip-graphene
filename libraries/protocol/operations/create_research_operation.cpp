@@ -18,9 +18,8 @@ void create_research_operation::validate() const
         validate_160_bits_hexadecimal_string(external_id);
     }
 
-    FC_ASSERT(!title.empty(), "Research name cannot be empty.");
-    FC_ASSERT(title.size() <= DEIP_MAX_TITLE_SIZE);
-    FC_ASSERT(abstract.size() <= DEIP_MAX_MEMO_SIZE);
+    FC_ASSERT(!description.empty(), "Research description cannot be empty.");
+    FC_ASSERT(description.size() <= DEIP_MAX_MEMO_SIZE);
 
     if (review_share.valid())
     {
