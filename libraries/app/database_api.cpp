@@ -117,6 +117,7 @@ public:
     /* [DEPRECATED] */ bool check_research_content_existence_by_permlink(const external_id_type& research_external_id, const string& title) const;
     vector<research_content_api_obj> get_research_contents_by_research(const external_id_type& external_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
+    vector<research_content_api_obj> lookup_research_contents(const research_content_id_type& lower_bound, uint32_t limit) const;
 
     // Research license
     fc::optional<research_license_api_obj> get_research_license(const external_id_type& external_id) const;
@@ -1597,6 +1598,26 @@ vector<research_content_api_obj> database_api_impl::get_research_content_by_type
     for (const chain::research_content_object &content : contents) {
         results.push_back(research_content_api_obj(content));
     }
+    return results;
+}
+
+vector<research_content_api_obj> database_api::lookup_research_contents(const research_content_id_type& lower_bound, uint32_t limit) const
+{
+    FC_ASSERT(limit <= DEIP_API_BULK_FETCH_LIMIT);
+    return my->_db.with_read_lock([&]() { return my->lookup_research_contents(lower_bound, limit); });
+}
+
+vector<research_content_api_obj> database_api_impl::lookup_research_contents(const research_content_id_type& lower_bound, uint32_t limit) const
+{
+    vector<research_content_api_obj> results;
+    const auto& research_content_service = _db.obtain_service<chain::dbs_research_content>();
+    const auto& contents = research_content_service.lookup_research_contents(lower_bound, limit);
+
+    for (const chain::research_content_object &content : contents) 
+    {
+        results.push_back(research_content_api_obj(content));
+    }
+
     return results;
 }
 

@@ -35,16 +35,14 @@ public:
         db.create<research_object>([&](research_object& d) {
             d.id = 1;
             d.research_group_id = 31;
-            d.title = "name1";
-            d.abstract = "abstract1";
+            d.description = "name1";
             d.permlink = "permlink1";
         });
 
         db.create<research_object>([&](research_object& d) {
             d.id = 2;
             d.research_group_id = 32;
-            d.title = "name2";
-            d.abstract = "abstract2";
+            d.description = "name2";
             d.permlink = "permlink2";
         });
     }
@@ -302,8 +300,7 @@ public:
         db.create<research_object>([&](research_object& d) {
             d.id = 1;
             d.research_group_id = 31;
-            d.title = "name1";
-            d.abstract = "abstract1";
+            d.description = "name1";
             d.permlink = "permlink1";
             d.number_of_positive_reviews = 10;
         });
@@ -311,8 +308,7 @@ public:
         db.create<research_object>([&](research_object& d) {
             d.id = 2;
             d.research_group_id = 32;
-            d.title = "name2";
-            d.abstract = "abstract2";
+            d.description = "name2";
             d.permlink = "permlink2";
             d.number_of_positive_reviews = 10;
         });
@@ -320,8 +316,7 @@ public:
         db.create<research_object>([&](research_object& d) {
             d.id = 3;
             d.research_group_id = 33;
-            d.title = "name3";
-            d.abstract = "abstract3";
+            d.description = "name3";
             d.permlink = "permlink3";
             d.number_of_positive_reviews = 10;
         });

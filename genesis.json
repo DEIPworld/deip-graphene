@@ -724,7 +724,7 @@
     {
       "external_id": "283a978080feed34527c8203edfdf740f4933622",
       "research_external_id": "f8e05f75e352227162fb949d22bace7addffdaee",
-      "title": "The Chimeria System Architecture",
+      "description": "4dc429e82b36588e88901c7076c3d2b6c5461b889184bd6ce8e831f6fcaa6133",
       "content": "4860a10e70df6c670aa29d8e1b2232467a429114d565c90533e4b36794ef7b54",
       "type": 9,
       "authors": [
@@ -735,7 +735,7 @@
     {
       "external_id": "2b9864ba3954eff897c62794dcbb2c091e88b72c",
       "research_external_id": "f8e05f75e352227162fb949d22bace7addffdaee",
-      "title": "Comparison between Chimeria & Polanyi’s models of Conversational Narrative",
+      "description": "9e4042b49a77a1f36b2528c3dcea6e39f64c679085e80cc3dfb9f86d3b31f57e",
       "content": "9770448e27f7b484aea22959a24766f0785ee8c0dfae19f99d3e92e531024624",
       "type": 11,
       "authors": [
@@ -746,7 +746,7 @@
     {
       "external_id": "34a98276181c21f5860c0cfa44f24e5321251fd7",
       "research_external_id": "b632e082649d7b7e441fa68ce2758b897c110147",
-      "title": "Schematic of the microchannel heat sink design with micropillars",
+      "description": "c024f55e4d3c177231e2ef8db596f64e51b380a44bf101e8ea0d29d70796b73f",
       "content": "9bb39530a72b155360e3acbf0d0ade22e10948e828316170ce25be304f8e5bb0",
       "type": 10,
       "authors": [
@@ -757,7 +757,7 @@
     {
       "external_id": "abf9f33f10efd53176d31767aaf10b9f90e99868",
       "research_external_id": "b632e082649d7b7e441fa68ce2758b897c110147",
-      "title": "Design and fabrication process of the microchannel device",
+      "description": "7ae56aea343c7d5405d110d97aa0dab25dfaa8a9f70dd6f89419c817224f9b3a",
       "content": "9caf9c4ba327f34d07481164d23926e14f5b70388eadfc413ba4f739e84a08fe",
       "type": 11,
       "authors": [
@@ -768,7 +768,7 @@
     {
       "external_id": "20b01c5927e2d5dc74dcc8e41450486b26c62aa9",
       "research_external_id": "b632e082649d7b7e441fa68ce2758b897c110147",
-      "title": "Images of a representative fabricated microchannel with micropillar arrays",
+      "description": "0ede00a89737939eb6dff3b957969e32588fd05eef4c0303fdc46302e8770163",
       "content": "1467c83e3d5970e43d9b027d3ba2094a1b7b9ef47dc1b8f67415fbee55dce476",
       "type": 9,
       "authors": [
@@ -779,7 +779,7 @@
     {
       "external_id": "00fad87a91eba2becc43579d0cd6662ca54e9ac8",
       "research_external_id": "f627fdc834b314e3c653f638389cf745e6a72046",
-      "title": "Representative whole-body coronal microPET/CT images",
+      "description": "5b645e9754ca18f44f1e03fecb458e1f38898d77ad862f9d891d1d0e654512b1",
       "content": "214e56893b19c2da7580dbcc14c751f469317c4fbd2aca337ac7ad612526826e",
       "type": 10,
       "authors": [
@@ -790,7 +790,7 @@
     {
       "external_id": "a6d71d91863eb41016902b8cd27713572aac2f0c",
       "research_external_id": "f627fdc834b314e3c653f638389cf745e6a72046",
-      "title": "Biodistribution",
+      "description": "feb68c6d2c376544f3f1e9cf9a8685b54149800c476fe54f39c97e2a8cd04abb",
       "content": "a55698e66ffa6872310d3fcf78d82c6bffcaa3e9712aee803641b8459dfddedc",
       "type": 12,
       "authors": [
@@ -801,7 +801,7 @@
     {
       "external_id": "203009b7d1b0fde58517adb9c91f914b1d29b00c",
       "research_external_id": "79f3b7b3e8b97a3cf5ab2938ea32d0e1773c1253",
-      "title": "Patient, obstetric, and clinical characteristics of the study group",
+      "description": "5f67f2e1b1a95820d7a3273864795ba07197094b1a73a3602d447d49c6f0a1d9",
       "content": "0e63e1d582612bd76cf734932f71f765f8755ceb27ca9e2515c2bb0ed62be504",
       "type": 9,
       "authors": [

@@ -283,6 +283,7 @@ public:
     /* [DEPRECATED] */ bool check_research_content_existence_by_permlink(const external_id_type& research_external_id, const string& title) const;
     vector<research_content_api_obj> get_research_contents_by_research(const external_id_type& external_id) const;
     vector<research_content_api_obj> get_research_content_by_type(const research_id_type& research_id, const research_content_type& type) const;
+    vector<research_content_api_obj> lookup_research_contents(const research_content_id_type& lower_bound, uint32_t limit) const;
 
     ///////////////////////
     // Research licenses //
@@ -591,6 +592,7 @@ FC_API(deip::app::database_api,
    (check_research_content_existence_by_permlink)
    (get_research_contents_by_research)
    (get_research_content_by_type)
+   (lookup_research_contents)
 
    // Research license
    (get_research_license)

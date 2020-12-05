@@ -360,7 +360,7 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
 
     for (auto& research : researches)
     {
-        FC_ASSERT(!research.description.empty(), "Research 'title' is required");
+        FC_ASSERT(!research.description.empty(), "Research 'description' is required");
 
         std::set<discipline_id_type> disciplines;
         for (auto& discipline_external_id : research.disciplines)
@@ -468,7 +468,7 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
 
     for (auto& research_content : research_contents)
     {
-        FC_ASSERT(!research_content.title.empty(), "Research content 'title' is required");
+        FC_ASSERT(!research_content.description.empty(), "Research content 'description' is required");
         FC_ASSERT(!research_content.content.empty(), "Research content payload is require");
         FC_ASSERT(research_content.authors.size() > 0, "Research group should contain at least 1 member");
 
@@ -487,7 +487,7 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
           research_group,
           research,
           research_content.external_id,
-          research_content.title,
+          research_content.description,
           research_content.content,
           static_cast<deip::chain::research_content_type>(research_content.type),
           research_content.authors,

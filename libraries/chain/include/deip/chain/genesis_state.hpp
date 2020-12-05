@@ -86,7 +86,7 @@ struct genesis_state_type
     {
         protocol::external_id_type external_id;
         protocol::external_id_type research_external_id;
-        std::string title;
+        std::string description;
         std::string content;
         uint16_t type;
         flat_set<account_name_type> authors;
@@ -195,7 +195,7 @@ FC_REFLECT(deip::chain::genesis_state_type::research_type,
 FC_REFLECT(deip::chain::genesis_state_type::research_content_type,
           (external_id)
           (research_external_id)
-          (title)
+          (description)
           (content)
           (type)
           (authors)

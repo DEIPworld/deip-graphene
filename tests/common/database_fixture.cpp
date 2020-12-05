@@ -463,8 +463,7 @@ const research_object& database_fixture::research_create(const int64_t id,
 {
     const auto& new_research = db.create<research_object>([&](research_object& r) {
         r.id = id;
-        fc::from_string(r.title, title);
-        fc::from_string(r.abstract, abstract);
+        fc::from_string(r.description, description);
         fc::from_string(r.permlink, permlink);
         r.research_group_id = research_group_id;
         r.is_finished = false;
@@ -510,7 +509,7 @@ const research_content_object& database_fixture::research_content_create(
         rc.id = id;
         rc.research_id = research_id;
         rc.type = type;
-        fc::from_string(rc.title, title);
+        fc::from_string(rc.description, description);
         fc::from_string(rc.content, content);
         rc.created_at = now;
         rc.authors.insert(authors.begin(), authors.end());

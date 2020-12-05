@@ -28,7 +28,7 @@ public:
     void create_researches() {
         db.create<research_object>([&](research_object& r) {
             r.id = 1;
-            r.title = RESEARCH_TITLE;
+            r.description = RESEARCH_TITLE;
             r.permlink = RESEARCH_TITLE;
             r.research_group_id = RESEARCH_GROUP_ID;
             r.is_finished = false;
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(get_research)
         auto& research = data_service.get_research(1);
 
         BOOST_CHECK(research.id == 1);
-        BOOST_CHECK(research.title == RESEARCH_TITLE);
+        BOOST_CHECK(research.description == RESEARCH_TITLE);
         BOOST_CHECK(research.permlink == RESEARCH_TITLE);
         BOOST_CHECK(research.research_group_id == RESEARCH_GROUP_ID);
         BOOST_CHECK(research.is_finished == false);

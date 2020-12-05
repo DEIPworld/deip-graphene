@@ -27,7 +27,7 @@ public:
     {
         db.create<research_object>([&](research_object& r) {
             r.id = 1;
-            r.title = "Research #1";
+            r.description = "Research #1";
             r.permlink = "Research #1 permlink";
             r.research_group_id = 1;
             r.is_finished = false;
@@ -40,7 +40,7 @@ public:
             rc.id = 0; // id of the first element in index is 0
             rc.research_id = 1;
             rc.type = research_content_type::milestone_data;
-            rc.title = "title for milestone for Research #1";
+            rc.description = "title for milestone for Research #1";
             rc.content = "milestone for Research #1";
             rc.permlink = "milestone-research-one";
             rc.authors = {"alice", "bob"};
@@ -52,7 +52,7 @@ public:
             rc.id = 1;
             rc.research_id = 1;
             rc.type = research_content_type::milestone_data;
-            rc.title = "title for milestone for Research #1";
+            rc.description = "title for milestone for Research #1";
             rc.content = "milestone for Research #1";
             rc.permlink = "another-milestone-research-one";
             rc.authors = {"alice"};
@@ -64,7 +64,7 @@ public:
             rc.id = 2;
             rc.research_id = 1;
             rc.type = research_content_type::final_result;
-            rc.title = "title for final result for Research #1";
+            rc.description = "title for final result for Research #1";
             rc.content = "final result for Research #1";
             rc.permlink = "final-research-one";
             rc.authors = {"bob"};
@@ -74,7 +74,7 @@ public:
         db.create<research_object>([&](research_object& r) {
 
             r.id = 2;
-            r.title = "Research #2";
+            r.description = "Research #2";
             r.permlink = "permlink for Research #2";
             r.research_group_id = 2;
             r.is_finished = false;
@@ -87,7 +87,7 @@ public:
             rc.id = 3;
             rc.research_id = 2;
             rc.type = research_content_type::announcement;
-            rc.title = "title for announcement for Research #2";
+            rc.description = "title for announcement for Research #2";
             rc.content = "announcement for Research #2";
             rc.permlink = "announcement-research-two";
             rc.authors = {"john"};
@@ -102,7 +102,7 @@ public:
             rc.id = 0; // id of the first element in index is 0
             rc.research_id = 1;
             rc.type = research_content_type::milestone_data;
-            rc.title = "title for milestone for Research #1";
+            rc.description = "title for milestone for Research #1";
             rc.content = "milestone for Research #1";
             rc.permlink = "milestone-research-one";
             rc.authors = {"alice", "bob"};
@@ -114,7 +114,7 @@ public:
             rc.id = 1;
             rc.research_id = 1;
             rc.type = research_content_type::milestone_book;
-            rc.title = "title for milestone for Research #1";
+            rc.description = "title for milestone for Research #1";
             rc.content = "milestone for Research #1";
             rc.permlink = "another-milestone-research-one";
             rc.authors = {"alice"};
@@ -126,7 +126,7 @@ public:
             rc.id = 2;
             rc.research_id = 1;
             rc.type = research_content_type::final_result;
-            rc.title = "title for final result for Research #1";
+            rc.description = "title for final result for Research #1";
             rc.content = "final result for Research #1";
             rc.permlink = "final-research-one";
             rc.authors = {"bob"};
@@ -138,7 +138,7 @@ public:
             rc.id = 3;
             rc.research_id = 2;
             rc.type = research_content_type::announcement;
-            rc.title = "title for announcement for Research #2";
+            rc.description = "title for announcement for Research #2";
             rc.content = "announcement for Research #2";
             rc.permlink = "announcement-research-two";
             rc.authors = {"john"};
@@ -187,13 +187,10 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
             for (auto author : content.authors)
                 authors.push_back(author);
 
-            return content.id == 0 && content.research_id == 1 && 
-                    content.type == research_content_type::milestone_data &&
-                    content.title == "title for milestone for Research #1" &&
-                    content.content == "milestone for Research #1" &&
-                    content.authors.size() == 2 &&
-                    authors[0] == "alice" && authors[1] == "bob" &&
-                    content.references.size() == 1;
+            return content.id == 0 && content.research_id == 1 && content.type == research_content_type::milestone_data
+                && content.description == "title for milestone for Research #1"
+                && content.content == "milestone for Research #1" && content.authors.size() == 2
+                && authors[0] == "alice" && authors[1] == "bob" && content.references.size() == 1;
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
@@ -201,13 +198,10 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
             for (auto author : content.authors)
                 authors.push_back(author);
 
-            return content.id == 1 && content.research_id == 1 && 
-                    content.type == research_content_type::milestone_data &&
-                    content.title == "title for milestone for Research #1" &&
-                    content.content == "milestone for Research #1" &&
-                    content.authors.size() == 1 && 
-                    authors[0] == "alice" &&
-                    content.references.size() == 1;
+            return content.id == 1 && content.research_id == 1 && content.type == research_content_type::milestone_data
+                && content.description == "title for milestone for Research #1"
+                && content.content == "milestone for Research #1" && content.authors.size() == 1
+                && authors[0] == "alice" && content.references.size() == 1;
         }));
         BOOST_CHECK(std::any_of(contents.begin(), contents.end(), [](std::reference_wrapper<const research_content_object> wrapper){
             const research_content_object &content = wrapper.get();
@@ -215,13 +209,10 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id)
             for (auto author : content.authors)
                 authors.push_back(author);
 
-            return content.id == 2 && content.research_id == 1 && 
-                    content.type == research_content_type::final_result && 
-                    content.title == "title for final result for Research #1" && 
-                    content.content == "final result for Research #1" &&
-                    content.authors.size() == 1 && 
-                    authors[0] == "bob" &&
-                    content.references.size() == 1;
+            return content.id == 2 && content.research_id == 1 && content.type == research_content_type::final_result
+                && content.description == "title for final result for Research #1"
+                && content.content == "final result for Research #1" && content.authors.size() == 1
+                && authors[0] == "bob" && content.references.size() == 1;
         }));
     }
     FC_LOG_AND_RETHROW()
@@ -253,13 +244,10 @@ BOOST_AUTO_TEST_CASE(get_content_by_research_id_and_content_type)
             for (auto author : content.authors)
                 authors.push_back(author);
 
-            return content.id == 3 && content.research_id == 2 &&
-                    content.type == research_content_type::announcement &&
-                    content.title == "title for announcement for Research #2" &&
-                    content.content == "announcement for Research #2" &&
-                    content.authors.size() == 1 && 
-                    authors[0] == "john" &&
-                    content.references.size() == 1;
+            return content.id == 3 && content.research_id == 2 && content.type == research_content_type::announcement
+                && content.description == "title for announcement for Research #2"
+                && content.content == "announcement for Research #2" && content.authors.size() == 1
+                && authors[0] == "john" && content.references.size() == 1;
         }));
 
     }
