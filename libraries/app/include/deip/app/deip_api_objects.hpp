@@ -503,7 +503,7 @@ struct research_content_api_obj
         , research_external_id(rc_o.research_external_id)
         , content_type(rc_o.type)
         , authors(rc_o.authors.begin(), rc_o.authors.end())
-        , title(fc::to_string(rc_o.title))
+        , description(fc::to_string(rc_o.description))
         , content(fc::to_string(rc_o.content))
         , permlink(fc::to_string(rc_o.permlink))
         , activity_state(rc_o.activity_state)
@@ -533,7 +533,7 @@ struct research_content_api_obj
     external_id_type research_external_id;
     research_content_type content_type;
     std::set<account_name_type> authors;
-    std::string title;
+    std::string description;
     std::string content;
     std::string permlink;
     research_content_activity_state activity_state;
@@ -1486,7 +1486,7 @@ FC_REFLECT( deip::app::research_content_api_obj,
             (research_id)
             (research_external_id)
             (content_type)
-            (title)
+            (description)
             (content)
             (permlink)
             (authors)

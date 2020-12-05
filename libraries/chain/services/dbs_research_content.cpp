@@ -20,7 +20,7 @@ const research_content_object& dbs_research_content::create_research_content(
   const research_group_object& research_group,
   const research_object& research,
   const external_id_type& external_id,
-  const std::string& title,
+  const std::string& description,
   const std::string& content,
   const research_content_type& type,
   const flat_set<account_name_type>& authors,
@@ -29,12 +29,12 @@ const research_content_object& dbs_research_content::create_research_content(
 {
     auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
 
-    const auto& research_content_permlink = deip::chain::util::generate_permlink(title);
+    const auto& research_content_permlink = deip::chain::util::generate_permlink(description);
     const auto& research_content = db_impl().create<research_content_object>([&](research_content_object& rc_o) {
         rc_o.research_id = research.id;
         rc_o.research_external_id = research.external_id;
         rc_o.external_id = external_id;
-        fc::from_string(rc_o.title, title);
+        fc::from_string(rc_o.description, description);
         fc::from_string(rc_o.content, content);
         fc::from_string(rc_o.permlink, research_content_permlink);
         rc_o.type = type;

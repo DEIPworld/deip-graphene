@@ -2455,7 +2455,7 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
       research_group,
       research,
       op.external_id,
-      op.title,
+      op.description,
       op.content,
       static_cast<research_content_type>(op.type),
       op.authors,

@@ -10,7 +10,7 @@ struct create_research_content_operation : public entity_operation
     external_id_type research_external_id;
     account_name_type research_group;
     uint16_t type;
-    string title;
+    string description;
     string content;
     flat_set<account_name_type> authors;
     flat_set<external_id_type> references;
@@ -36,7 +36,7 @@ FC_REFLECT(deip::protocol::create_research_content_operation,
   (research_external_id)
   (research_group)
   (type)
-  (title)
+  (description)
   (content)
   (authors)
   (references)

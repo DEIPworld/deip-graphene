@@ -64,7 +64,7 @@ public:
 
     template <typename Constructor, typename Allocator>
     research_content_object(Constructor &&c, allocator<Allocator> a) 
-      : title(a), 
+      : description(a), 
         content(a), 
         permlink(a)
     {
@@ -77,7 +77,7 @@ public:
     research_id_type research_id;
     external_id_type research_external_id;
 
-    shared_string title;
+    shared_string description;
     shared_string content;
     shared_string permlink; /* [DEPRECATED] */
 
@@ -233,7 +233,7 @@ FC_REFLECT(deip::chain::research_content_object,
   (research_id)
   (research_external_id)
   (type)
-  (title)
+  (description)
   (content)
   (permlink)
   (authors)

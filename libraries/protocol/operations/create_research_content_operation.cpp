@@ -14,7 +14,7 @@ void create_research_content_operation::validate() const
     validate_160_bits_hexadecimal_string(research_external_id);
 
     FC_ASSERT(!content.empty(), "Content is required.");
-    FC_ASSERT(title.size() <= DEIP_MAX_TITLE_SIZE);
+    FC_ASSERT(description.size() <= DEIP_MAX_TITLE_SIZE);
     FC_ASSERT(content.size() <= DEIP_MAX_MEMO_SIZE);
     
     FC_ASSERT(!authors.empty(), "Content author(s) are required.");
