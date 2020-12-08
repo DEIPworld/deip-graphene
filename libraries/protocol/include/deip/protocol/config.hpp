@@ -206,6 +206,7 @@
 #define DEIP_MAX_UNDO_HISTORY                10000
 
 #define DEIP_EXPERTISE_CLAIM_AMOUNT          5000
+#define DEIP_DEFAULT_EXPERTISE_AMOUNT        int64_t(1)
 
 #define DEIP_MIN_TRANSACTION_EXPIRATION_LIMIT (DEIP_BLOCK_INTERVAL * 5) // 5 transactions per block
 
@@ -219,6 +220,8 @@
 #define DEIP_MIN_REVIEW_CRITERIA_SCORE        1
 #define DEIP_MAX_REVIEW_CRITERIA_SCORE        5
 #define DEIP_MIN_POSITIVE_REVIEW_SCORE        8
+
+#define DEIP_COMMON_DISCIPLINE_ID             "6c4bb3bcf1a88e3b51de88576d592f1f980c5bbb"
 
 /**
  *  Reserved Account IDs with special meaning

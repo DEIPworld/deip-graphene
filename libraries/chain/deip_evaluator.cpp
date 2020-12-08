@@ -143,6 +143,10 @@ void create_account_evaluator::do_apply(const create_account_operation& op)
     auto& account_service = _db.obtain_service<dbs_account>();
     auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
     auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
+    auto& discipline_service = _db.obtain_service<dbs_discipline>();
+    auto& expert_token_service = _db.obtain_service<dbs_expert_token>();
+
+    const time_point_sec block_time = _db.get_genesis_time();
 
     const auto& dup_guard = duplicated_entity_guard(dgp_service);
     dup_guard(op);
@@ -177,6 +181,45 @@ void create_account_evaluator::do_apply(const create_account_operation& op)
       op.traits,
       op.is_user_account()
     );
+
+
+    const auto& accounts = account_service.lookup_user_accounts(account_name_type("a"), DEIP_API_BULK_FETCH_LIMIT);
+    for (const account_object& account : accounts)
+    {
+        const auto& disciplines = discipline_service.lookup_disciplines(discipline_id_type(0), DEIP_API_BULK_FETCH_LIMIT);
+        for (const discipline_object& discipline : disciplines)
+        {
+            if (discipline.external_id == DEIP_COMMON_DISCIPLINE_ID)
+            {
+                continue;
+            }
+
+            const share_type& amount = share_type(DEIP_DEFAULT_EXPERTISE_AMOUNT);
+
+            expert_token_service.create_expert_token(
+              account.name, 
+              discipline.id,
+              amount, 
+              true);
+
+            flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
+            const eci_diff account_eci_diff = eci_diff(
+              share_type(0), 
+              amount,
+              block_time, 
+              static_cast<uint16_t>(expertise_contribution_type::unknown),
+              0,
+              assessment_criterias
+            );
+
+            _db.push_virtual_operation(account_eci_history_operation(
+                account.name,
+                discipline.id._id, 
+                static_cast<uint16_t>(reward_recipient_type::unknown),
+                account_eci_diff)
+            );
+        }
+    }
 }
 
 void update_account_evaluator::do_apply(const update_account_operation& op)

@@ -314,36 +314,47 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
     dbs_account& accounts_service = obtain_service<dbs_account>();
     const time_point_sec timestamp = get_genesis_time();
 
-    for (auto& expert_token : expert_tokens)
+    const auto& accounts = accounts_service.lookup_user_accounts(account_name_type("a"), DEIP_API_BULK_FETCH_LIMIT);
+    for (const account_object& account : accounts)
     {
-        FC_ASSERT(!expert_token.account.empty(), "Expertise token 'account' must not be empty ${1}.", ("1", expert_token.discipline_external_id));
-        FC_ASSERT(expert_token.amount != 0,  "Expertise token 'amount' must not be equal to 0 for genesis state.");
+        const auto& disciplines = discipline_service.lookup_disciplines(discipline_id_type(0), DEIP_API_BULK_FETCH_LIMIT);
+        for (const discipline_object& discipline : disciplines)
+        {
+            if (discipline.external_id == DEIP_COMMON_DISCIPLINE_ID)
+            {
+                continue;
+            }
 
-        const auto& account = accounts_service.get_account(expert_token.account); // verify that account exists
-        const auto& discipline = discipline_service.get_discipline(expert_token.discipline_external_id);
+            const auto& exp_itr = std::find_if(expert_tokens.begin(), expert_tokens.end(),
+              [&](const genesis_state_type::expert_token_type& exp) { return exp.discipline_external_id == discipline.external_id; });
 
-        expert_token_service.create_expert_token(
-          expert_token.account, 
-          discipline.id,
-          expert_token.amount, 
-          true);
+            const share_type& amount = exp_itr != expert_tokens.end()
+              ? share_type((*exp_itr).amount)
+              : share_type(DEIP_DEFAULT_EXPERTISE_AMOUNT);
 
-        flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
-        const eci_diff account_eci_diff = eci_diff(
-          share_type(0), 
-          share_type(expert_token.amount),
-          timestamp, 
-          static_cast<uint16_t>(expertise_contribution_type::unknown),
-          0,
-          assessment_criterias
-        );
+            expert_token_service.create_expert_token(
+              account.name, 
+              discipline.id,
+              amount, 
+              true);
 
-        push_virtual_operation(account_eci_history_operation(
-            expert_token.account, 
-            discipline.id._id, 
-            static_cast<uint16_t>(reward_recipient_type::unknown),
-            account_eci_diff)
-        );
+            flat_map<uint16_t, assessment_criteria_value> assessment_criterias;
+            const eci_diff account_eci_diff = eci_diff(
+              share_type(0), 
+              amount,
+              timestamp, 
+              static_cast<uint16_t>(expertise_contribution_type::unknown),
+              0,
+              assessment_criterias
+            );
+
+            push_virtual_operation(account_eci_history_operation(
+                account.name,
+                discipline.id._id, 
+                static_cast<uint16_t>(reward_recipient_type::unknown),
+                account_eci_diff)
+            );
+        }
     }
 }
 

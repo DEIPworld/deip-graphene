@@ -28,9 +28,10 @@ enum class assessment_criteria : uint16_t
     impact = 4,
     rationality = 5,
     replication = 6,
+    commercialization = 7,
 
     FIRST = novelty,
-    LAST = replication
+    LAST = commercialization
 };
 
 typedef fc::static_variant<
@@ -83,6 +84,7 @@ FC_REFLECT_ENUM( deip::protocol::assessment_criteria, (unknown)
                                                       (impact)
                                                       (rationality)
                                                       (replication)
+                                                      (commercialization)
 )
 
 DECLARE_STATIC_VARIANT_TYPE(deip::protocol::assessment_models)

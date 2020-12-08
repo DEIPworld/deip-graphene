@@ -59,7 +59,7 @@ struct genesis_state_type
     struct expert_token_type
     {
         std::string account;
-        uint32_t amount;
+        int64_t amount;
         protocol::external_id_type discipline_external_id;
     };
 
