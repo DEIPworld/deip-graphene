@@ -15,7 +15,17 @@ struct research_security_token_trait
     extensions_type extensions;
 };
 
-typedef fc::static_variant<research_security_token_trait> asset_trait_type;
+struct research_license_revenue_trait
+{
+    percent holders_share;
+    extensions_type extensions;
+};
+
+typedef fc::static_variant<
+  research_security_token_trait,
+  research_license_revenue_trait
+  > 
+  asset_trait_type;
 
 
 struct asset_trait_auth_extractor
@@ -69,6 +79,7 @@ struct create_asset_operation : public base_operation
 FC_REFLECT(deip::protocol::create_asset_operation, (issuer)(symbol)(precision)(description)(max_supply)(traits)(extensions))
 
 FC_REFLECT(deip::protocol::research_security_token_trait, (research_external_id)(research_group)(extensions))
+FC_REFLECT(deip::protocol::research_license_revenue_trait, (holders_share)(extensions))
 
 DECLARE_STATIC_VARIANT_TYPE(deip::protocol::asset_trait_type)
 FC_REFLECT_TYPENAME(deip::protocol::asset_trait_type)

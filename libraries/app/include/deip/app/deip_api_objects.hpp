@@ -1120,6 +1120,11 @@ struct asset_api_obj
         {
             tokenized_research = *a_o.tokenized_research;
         }
+
+        if (a_o.license_revenue_holders_share.valid())
+        {
+            license_revenue_holders_share = *a_o.license_revenue_holders_share;
+        }
     }
 
     // because fc::variant require for temporary object
@@ -1138,6 +1143,7 @@ struct asset_api_obj
     share_type max_supply;
     uint8_t type;
     optional<external_id_type> tokenized_research;
+    optional<percent> license_revenue_holders_share;
 };
 
 struct account_balance_api_obj
@@ -1726,6 +1732,7 @@ FC_REFLECT( deip::app::asset_api_obj,
             (max_supply)
             (type)
             (tokenized_research)
+            (license_revenue_holders_share)
 )
 
 FC_REFLECT( deip::app::account_balance_api_obj,

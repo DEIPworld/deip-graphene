@@ -1393,6 +1393,7 @@ void create_asset_evaluator::do_apply(const create_asset_operation& op)
     FC_ASSERT(!asset_service.asset_exists_by_symbol(new_asset.symbol), "Asset ${1} exist already", ("1", op.symbol));
 
     optional<std::reference_wrapper<const research_object>> tokenized_research;
+    optional<percent> license_revenue_holders_share;
 
     for (const auto& asset_trait : op.traits)
     {
@@ -1406,9 +1407,15 @@ void create_asset_evaluator::do_apply(const create_asset_operation& op)
             FC_ASSERT(research_group.account == research.research_group, "Research ${1} is not owned by ${2} research group", ("1", research.external_id)("2", research_group.account));
             tokenized_research = research;
         }
-    }
 
-    asset_service.create_asset(op.issuer, new_asset.symbol, op.symbol, op.precision, share_type(0), op.max_supply, op.description, tokenized_research);
+        if (asset_trait.which() == asset_trait_type::tag<research_license_revenue_trait>::value)
+        {
+            const auto& license_revenue_trait = asset_trait.get<research_license_revenue_trait>();
+            license_revenue_holders_share = license_revenue_trait.holders_share;
+        }
+    }
+    
+    asset_service.create_asset(op.issuer, new_asset.symbol, op.symbol, op.precision, share_type(0), op.max_supply, op.description, tokenized_research, license_revenue_holders_share);
 }
 
 void issue_asset_evaluator::do_apply(const issue_asset_operation& op)
@@ -2682,20 +2689,6 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
         const auto& fee_model = op.license_conditions.get<licensing_fee_type>();
         const auto& research_license = research_license_service.create_research_license(research, op.external_id, op.licensee, fee_model.terms, fee_model.expiration_time, fee_model.fee);
 
-        for (const auto& beneficiary_share : fee_model.beneficiaries)
-        {
-            const auto& asset_o = asset_service.get_asset_by_string_symbol(beneficiary_share.first);
-
-            FC_ASSERT(static_cast<asset_type>(asset_o.type) == asset_type::research_security_token, 
-              "Asset ${1} is not a research security token", 
-              ("1", asset_o.string_symbol));
-
-            FC_ASSERT(std::count_if(research.security_tokens.begin(), research.security_tokens.end(),
-                [&](const asset& a) { return a.symbol == asset_o.symbol; }) != 0, 
-                "Research ${1} is not tokenized with ${2} security token",
-                ("1", research.external_id)("2", asset_o.string_symbol));
-        }
-
         if (fee_model.expiration_time.valid())
         {
             const auto& expiration_time = *fee_model.expiration_time;
@@ -2709,12 +2702,22 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
 
             const auto& licensee_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.licensee, fee.symbol);
             FC_ASSERT(licensee_balance.to_asset() >= fee, "Account ${1} balance is not enough.", ("1", op.licensee));
+            
+            optional<external_id_type> tokenized_research;
+            tokenized_research = op.research_external_id;
+
+            const auto& beneficiary_tokens = asset_service.get_assets_by_tokenize_research(tokenized_research);
 
             std::map<string, asset> beneficiary_shares;
-            for (const auto& beneficiary_share : fee_model.beneficiaries)
+            for (const asset_object& beneficiary_token : beneficiary_tokens)
             {
-                const asset share = util::calculate_share(fee, beneficiary_share.second);
-                beneficiary_shares.insert(std::make_pair(beneficiary_share.first, share));
+                const auto& share_percent = beneficiary_token.license_revenue_holders_share.valid() 
+                  ? *beneficiary_token.license_revenue_holders_share
+                  : percent(0);
+
+                const asset share = util::calculate_share(fee, share_percent);
+                const string sym = fc::to_string(beneficiary_token.string_symbol);
+                beneficiary_shares.insert(std::make_pair(sym, share));
             }
 
             for (const auto& beneficiary_share : beneficiary_shares)

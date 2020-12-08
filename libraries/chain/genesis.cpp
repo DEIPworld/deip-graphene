@@ -437,6 +437,9 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
         optional<std::reference_wrapper<const research_object>> tokenized_research;
         tokenized_research = created_research;
 
+        optional<percent> license_revenue_holders_share;
+        license_revenue_holders_share = percent(DEIP_100_PERCENT);
+
         std::string str_asset = std::to_string(SECURITY_TOKEN_MAX_SUPPLY.value) + " " + SECURITY_TOKEN_SYMBOL;
         const asset security_token = asset::from_string(str_asset);
         const auto& asset_o = asset_service.create_asset(research_group.account, 
@@ -446,7 +449,8 @@ void database::init_genesis_research(const genesis_state_type& genesis_state)
                                                          0,
                                                          SECURITY_TOKEN_MAX_SUPPLY, 
                                                          "", 
-                                                         tokenized_research);
+                                                         tokenized_research,
+                                                         license_revenue_holders_share);
 
         asset_service.issue_asset(asset_o, research_group.account, security_token);
     }

@@ -29,7 +29,8 @@ public:
                                      const share_type& current_supply,
                                      const share_type& max_supply,
                                      const string& description,
-                                     const optional<std::reference_wrapper<const research_object>>& tokenized_research = {});
+                                     const optional<std::reference_wrapper<const research_object>>& tokenized_research = {},
+                                     const optional<percent>& license_revenue_holders_share = {});
 
     const asset_object& issue_asset(const asset_object& asset_o, const account_name_type& recipient, const asset& amount);
 
@@ -57,6 +58,7 @@ public:
 
     const asset_refs_type get_assets_by_type(const asset_type& type) const;
 
+    const asset_refs_type get_assets_by_tokenize_research(const optional<external_id_type>& tokenized_research) const;
 };
 
 } // namespace chain

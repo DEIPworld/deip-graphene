@@ -14,7 +14,6 @@ using deip::protocol::percent;
 struct licensing_fee_type
 {
     string terms;
-    flat_map<string, percent> beneficiaries;
     optional<asset> fee;
     optional<time_point_sec> expiration_time;
 };
@@ -69,7 +68,7 @@ FC_REFLECT(deip::protocol::create_research_license_operation,
   (extensions)
 )
 
-FC_REFLECT(deip::protocol::licensing_fee_type, (terms)(beneficiaries)(fee)(expiration_time))
+FC_REFLECT(deip::protocol::licensing_fee_type, (terms)(fee)(expiration_time))
 
 DECLARE_STATIC_VARIANT_TYPE(deip::protocol::license_agreement_types)
 FC_REFLECT_TYPENAME(deip::protocol::license_agreement_types)

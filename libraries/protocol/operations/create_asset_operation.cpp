@@ -19,6 +19,14 @@ struct asset_trait_validator
         validate_account_name(trait.research_group);
         validate_160_bits_hexadecimal_string(trait.research_external_id);
     }
+
+    void operator()(const research_license_revenue_trait& trait) const
+    {
+        const auto precision = trait.holders_share.precision(trait.holders_share.decimals);
+        const percent full_share = percent(100 * precision, trait.holders_share.decimals);
+        // Currently we allow 100% of revenue per asset only
+        FC_ASSERT(trait.holders_share == full_share, "Total revenue share ${1} is not equal to full share ${2}", ("1", trait.holders_share)("2", full_share));
+    }
 };
 
 void create_asset_operation::validate() const

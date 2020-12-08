@@ -10,6 +10,7 @@ namespace chain {
 using deip::protocol::asset_symbol_type;
 using deip::protocol::asset;
 using deip::protocol::external_id_type;
+using deip::protocol::percent;
 using fc::shared_string;
 
 enum class asset_type : uint8_t
@@ -40,7 +41,9 @@ public:
     shared_string description;
 
     uint8_t type = static_cast<uint8_t>(asset_type::basic);
+
     optional<external_id_type> tokenized_research;
+    optional<percent> license_revenue_holders_share;
 
     share_type max_supply = DEIP_MAX_SHARE_SUPPLY;
     share_type current_supply = 0;
@@ -50,6 +53,7 @@ struct by_symbol;
 struct by_string_symbol;
 struct by_type;
 struct by_issuer;
+struct by_tokenized_research;
 
 typedef multi_index_container<asset_object,
             indexed_by<ordered_unique<tag<by_id>,
@@ -68,6 +72,10 @@ typedef multi_index_container<asset_object,
                     member<asset_object,
                            uint8_t,
                            &asset_object::type>>,
+            ordered_non_unique<tag<by_tokenized_research>,
+                    member<asset_object,
+                           fc::optional<external_id_type>,
+                           &asset_object::tokenized_research>>,
             ordered_non_unique<tag<by_issuer>,
                     member<asset_object,
                             account_name_type,
@@ -77,7 +85,7 @@ typedef multi_index_container<asset_object,
     }
 }
 
-FC_REFLECT( deip::chain::asset_object, (id)(symbol)(string_symbol)(precision)(issuer)(description)(type)(tokenized_research)(max_supply)(current_supply))
+FC_REFLECT( deip::chain::asset_object, (id)(symbol)(string_symbol)(precision)(issuer)(description)(type)(tokenized_research)(license_revenue_holders_share)(max_supply)(current_supply))
 CHAINBASE_SET_INDEX_TYPE( deip::chain::asset_object, deip::chain::asset_index )
 
 FC_REFLECT_ENUM(deip::chain::asset_type,
