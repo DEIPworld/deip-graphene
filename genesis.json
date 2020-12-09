@@ -423,6 +423,11 @@
       "name": "Medicine and health",
       "external_id": "721e75eb0535e152669b0c3fbbb9e21675483553",
       "external_parent_id": ""
+    },
+    {
+      "name": "Aquaculture",
+      "external_id": "2519ef55e1b69f1a7e13275e3273950cce7e26a8",
+      "external_parent_id": ""
     }
   ],
   "expert_tokens": [

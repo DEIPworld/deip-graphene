@@ -182,9 +182,7 @@ void create_account_evaluator::do_apply(const create_account_operation& op)
       op.is_user_account()
     );
 
-
-    const auto& accounts = account_service.lookup_user_accounts(account_name_type("a"), DEIP_API_BULK_FETCH_LIMIT);
-    for (const account_object& account : accounts)
+    if (op.is_user_account())
     {
         const auto& disciplines = discipline_service.lookup_disciplines(discipline_id_type(0), DEIP_API_BULK_FETCH_LIMIT);
         for (const discipline_object& discipline : disciplines)
@@ -197,7 +195,7 @@ void create_account_evaluator::do_apply(const create_account_operation& op)
             const share_type& amount = share_type(DEIP_DEFAULT_EXPERTISE_AMOUNT);
 
             expert_token_service.create_expert_token(
-              account.name, 
+              op.new_account_name, 
               discipline.id,
               amount, 
               true);
@@ -213,7 +211,7 @@ void create_account_evaluator::do_apply(const create_account_operation& op)
             );
 
             _db.push_virtual_operation(account_eci_history_operation(
-                account.name,
+                op.new_account_name,
                 discipline.id._id, 
                 static_cast<uint16_t>(reward_recipient_type::unknown),
                 account_eci_diff)

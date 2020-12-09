@@ -326,7 +326,9 @@ void database::init_genesis_expert_tokens(const genesis_state_type& genesis_stat
             }
 
             const auto& exp_itr = std::find_if(expert_tokens.begin(), expert_tokens.end(),
-              [&](const genesis_state_type::expert_token_type& exp) { return exp.discipline_external_id == discipline.external_id; });
+              [&](const genesis_state_type::expert_token_type& exp) { 
+                  return exp.account == account.name && exp.discipline_external_id == discipline.external_id; 
+            });
 
             const share_type& amount = exp_itr != expert_tokens.end()
               ? share_type((*exp_itr).amount)
