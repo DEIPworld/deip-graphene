@@ -340,22 +340,46 @@ void dbs_research_token_sale::finish_research_token_sale(const research_token_sa
     {
         account_balance_service.unfreeze_account_balance(research.research_group, security_token_on_sale);
     }
+    
+    for (const auto& security_token_on_sale : research_token_sale.security_tokens_on_sale)
+    {
+        share_type total_security_token_amount = 0;
+
+        auto itr = idx.first;
+        const auto itr_end = idx.second;
+
+        while (itr != itr_end)
+        {
+            const account_name_type contributor = itr->owner;
+            const asset contribution = itr->amount;
+
+            const auto& security_token = asset_service.get_asset_by_symbol(security_token_on_sale.symbol);
+            const auto& percent_share = percent(share_type(std::round((((double(contribution.amount.value) / double(research_token_sale.total_amount.amount.value)) * double(100)) * DEIP_1_PERCENT))));
+            const auto& security_token_amount = util::calculate_share(security_token_on_sale, percent_share);
+
+            const auto& rg_balance = account_balance_service.adjust_account_balance(research.research_group, -security_token_amount);
+            account_balance_service.adjust_account_balance(contributor, security_token_amount);
+
+            total_security_token_amount += security_token_amount.amount;
+
+            auto current = itr++;
+            if (itr == itr_end)
+            {
+                const asset& rest = asset(security_token_on_sale.amount - total_security_token_amount, security_token_on_sale.symbol);
+                if (rest.amount != share_type(0)) // precision
+                {
+                    account_balance_service.adjust_account_balance(contributor, rest);
+                    account_balance_service.adjust_account_balance(research.research_group, -rest);
+                }
+            }
+        }
+    }
 
     auto itr = idx.first;
     const auto itr_end = idx.second;
-    
+
     while (itr != itr_end)
     {
-        for (const auto& security_token_on_sale : research_token_sale.security_tokens_on_sale)
-        {
-            const auto& security_token = asset_service.get_asset_by_symbol(security_token_on_sale.symbol);
-            const auto& percent_share = percent(share_type(std::round((((double(itr->amount.amount.value) / double(research_token_sale.total_amount.amount.value)) * double(100)) * DEIP_1_PERCENT))));
-            const auto& security_token_amount = util::calculate_share(security_token_on_sale, percent_share);
-
-            account_balance_service.adjust_account_balance(research.research_group, -security_token_amount);
-            account_balance_service.adjust_account_balance(itr->owner, security_token_amount);
-        }
-
         auto current = itr++;
         db_impl().remove(*current);
     }
