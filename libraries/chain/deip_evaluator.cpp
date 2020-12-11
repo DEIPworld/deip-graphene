@@ -141,6 +141,7 @@ void witness_update_evaluator::do_apply(const witness_update_operation& o)
 void create_account_evaluator::do_apply(const create_account_operation& op)
 {
     auto& account_service = _db.obtain_service<dbs_account>();
+    auto& asset_service = _db.obtain_service<dbs_asset>();
     auto& account_balance_service = _db.obtain_service<dbs_account_balance>();
     auto& dgp_service = _db.obtain_service<dbs_dynamic_global_properties>();
     auto& discipline_service = _db.obtain_service<dbs_discipline>();
@@ -151,14 +152,19 @@ void create_account_evaluator::do_apply(const create_account_operation& op)
     const auto& dup_guard = duplicated_entity_guard(dgp_service);
     dup_guard(op);
 
-    const auto& creator_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.creator, op.fee.symbol);
-    FC_ASSERT(creator_balance.amount >= op.fee.amount, 
-      "Insufficient balance to create account.",
-      ("creator.balance", creator_balance.amount)("required", op.fee.amount));
-
     FC_ASSERT(op.fee >= DEIP_MIN_ACCOUNT_CREATION_FEE,
       "Insufficient Fee: ${1} required, ${2} provided.",
       ("1", DEIP_MIN_ACCOUNT_CREATION_FEE)("2", op.fee));
+
+    if (op.fee != asset(0, op.fee.symbol))
+    {
+        FC_ASSERT(account_balance_service.account_balance_exists_by_owner_and_asset(op.creator, op.fee.symbol), "${1} asset balance does not exist for ${2} account", ("1", op.fee.symbol_name())("2", op.creator));
+        const auto& creator_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.creator, op.fee.symbol); 
+        
+        FC_ASSERT(creator_balance.amount >= op.fee.amount, 
+          "Insufficient balance to create account.",
+          ("creator.balance", creator_balance.amount)("required", op.fee.amount));
+    }
 
     // check accounts existence
     account_service.check_account_existence(op.owner.account_auths);
@@ -280,6 +286,7 @@ void transfer_evaluator::do_apply(const transfer_operation& op)
       "Account ${1} does not exist",
       ("1", op.to));
 
+    FC_ASSERT(account_balance_service.account_balance_exists_by_owner_and_asset(op.from, op.amount.symbol), "${1} asset balance does not exist for ${2} account", ("1", op.amount.symbol_name())("2", op.from));
     const auto& from_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.from, op.amount.symbol);
 
     FC_ASSERT(asset(from_balance.amount, from_balance.symbol) >= op.amount, "Account does not have sufficient funds for transfer.");
@@ -293,7 +300,8 @@ void transfer_to_common_tokens_evaluator::do_apply(const transfer_to_common_toke
     dbs_account& account_service = _db.obtain_service<dbs_account>();
     dbs_account_balance& account_balance_service = _db.obtain_service<dbs_account_balance>();
 
-    auto from_balance = account_balance_service.get_account_balance_by_owner_and_asset(o.from, o.amount.symbol);
+    FC_ASSERT(account_balance_service.account_balance_exists_by_owner_and_asset(o.from, o.amount.symbol), "${1} asset balance does not exist for ${2} account", ("1", o.amount.symbol_name())("2", o.from));
+    const auto& from_balance = account_balance_service.get_account_balance_by_owner_and_asset(o.from, o.amount.symbol);
 
     const auto& from_account = account_service.get_account(o.from);
     const auto& to_account = o.to.size() ? account_service.get_account(o.to) : from_account;
@@ -1008,6 +1016,7 @@ void contribute_to_token_sale_evaluator::do_apply(const contribute_to_token_sale
       "Research token sale ${1} is in ${2} status",
       ("1", op.token_sale_external_id)("2", research_token_sale.status));
 
+    FC_ASSERT(account_balance_service.account_balance_exists_by_owner_and_asset(op.contributor, op.amount.symbol), "${1} asset balance does not exist for ${2} account", ("1", op.amount.symbol_name())("2", op.contributor));
     const auto& account_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.contributor, op.amount.symbol);
 
     FC_ASSERT(account_balance.amount >= op.amount.amount, 
@@ -1050,7 +1059,8 @@ void create_vesting_balance_evaluator::do_apply(const create_vesting_balance_ope
     account_service.check_account_existence(op.creator);
     account_service.check_account_existence(op.owner);
 
-    auto account_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.creator, op.balance.symbol);
+    FC_ASSERT(account_balance_service.account_balance_exists_by_owner_and_asset(op.creator, op.balance.symbol), "${1} asset balance does not exist for ${2} account", ("1", op.balance.symbol_name())("2", op.creator));
+    const auto& account_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.creator, op.balance.symbol);
 
     FC_ASSERT(account_balance.amount >= op.balance.amount, "Not enough funds to create vesting contract");
 
@@ -1168,11 +1178,13 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
 
     FC_ASSERT(target_disciplines.size() != 0, "Grant target disciplines are not specified");
 
+    FC_ASSERT(account_balance_service.account_balance_exists_by_owner_and_asset(op.grantor, op.amount.symbol),
+              "${1} asset balance does not exist for ${2} account", ("1", op.amount.symbol_name())("2", op.grantor));
     const account_balance_object& grantor_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.grantor, op.amount.symbol);
+    
     FC_ASSERT(grantor_balance.amount >= op.amount.amount, 
       "Grantor ${g} does not have enough funds. Requested: ${ga} Actual: ${ba}", 
       ("g", op.grantor)("ga", op.amount)("ba", grantor_balance.amount));
-
 
     if (op.distribution_model.which() == grant_distribution_models::tag<announced_application_window_contract_type>::value)
     {
@@ -1456,7 +1468,17 @@ void create_asset_evaluator::do_apply(const create_asset_operation& op)
         }
     }
     
-    asset_service.create_asset(op.issuer, new_asset.symbol, op.symbol, op.precision, share_type(0), op.max_supply, op.description, tokenized_research, license_revenue_holders_share);
+    asset_service.create_asset(
+      op.issuer, 
+      new_asset.symbol, 
+      op.symbol, 
+      op.precision, 
+      share_type(0), 
+      op.max_supply, 
+      op.description, 
+      tokenized_research, 
+      license_revenue_holders_share
+    );
 }
 
 void issue_asset_evaluator::do_apply(const issue_asset_operation& op)
@@ -2741,6 +2763,7 @@ void create_research_license_evaluator::do_apply(const create_research_license_o
             const auto& fee = *research_license.fee;
             asset total_revenue = asset(0, fee.symbol);
 
+            FC_ASSERT(account_balance_service.account_balance_exists_by_owner_and_asset(op.licensee, fee.symbol), "${1} asset balance does not exist for ${2} account", ("1", fee.symbol_name())("2", op.licensee));
             const auto& licensee_balance = account_balance_service.get_account_balance_by_owner_and_asset(op.licensee, fee.symbol);
             FC_ASSERT(licensee_balance.to_asset() >= fee, "Account ${1} balance is not enough.", ("1", op.licensee));
             

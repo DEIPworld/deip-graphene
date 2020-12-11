@@ -215,6 +215,7 @@
 #define VIRTUAL_SCHEDULE_LAP_LENGTH ( fc::uint128::max_value() )
 
 #define DEIP_REGISTRAR_ACCOUNT_NAME           "regacc"
+#define DEIP_INITIAL_DELEGATE_ACCOUNT_NAME    "initdelegate"
 
 #define DEIP_MIN_NUMBER_OF_REVIEW_CRITERIAS   3
 #define DEIP_MIN_REVIEW_CRITERIA_SCORE        1

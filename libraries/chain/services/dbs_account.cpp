@@ -3,6 +3,7 @@
 #include <deip/chain/services/dbs_account_balance.hpp>
 #include <deip/chain/services/dbs_expert_token.hpp>
 #include <deip/chain/services/dbs_witness.hpp>
+#include <deip/chain/services/dbs_asset.hpp>
 #include <deip/chain/services/dbs_research_group.hpp>
 #include <deip/chain/services/dbs_dynamic_global_properties.hpp>
 
@@ -96,15 +97,20 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
 {
     auto& research_groups_service = db_impl().obtain_service<dbs_research_group>();
     auto& account_balance_service = db_impl().obtain_service<dbs_account_balance>();
+    auto& asset_service = db_impl().obtain_service<dbs_asset>();
+
     auto& dgp_service = db_impl().obtain_service<dbs_dynamic_global_properties>();
+    const auto& props = db_impl().get_dynamic_global_properties();
 
     FC_ASSERT(fee >= DEIP_MIN_ACCOUNT_CREATION_FEE, 
       "Insufficient fee ${1} for account creation. Min fee is ${1}", 
       ("1", fee)("2", DEIP_MIN_ACCOUNT_CREATION_FEE)
     );
 
-    const auto& props = db_impl().get_dynamic_global_properties();
-    account_balance_service.adjust_account_balance(creator_name, -fee);
+    if (fee != asset(0, fee.symbol))
+    {
+        account_balance_service.adjust_account_balance(creator_name, -fee);
+    }
 
     const auto& new_account = db_impl().create<account_object>([&](account_object& acc) {
         acc.name = account_name;
@@ -121,9 +127,6 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
         }
 #endif
     });
-
-    if (!account_balance_service.account_balance_exists_by_owner_and_asset(account_name, DEIP_SYMBOL)) // check for genesis
-        account_balance_service.create_account_balance(account_name, DEIP_SYMBOL, 0);
 
     // Convert fee to Common tokens and increase account common tokens balance for throughput
     increase_common_tokens(get_account(account_name), fee.amount);
@@ -142,9 +145,7 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
 
     if (is_user_account) // user personal workspace
     {
-        const auto& personal_rg = research_groups_service.create_personal_research_group(
-          account_name
-        );
+        const auto& personal_rg = research_groups_service.create_personal_research_group(account_name);
         research_groups_service.add_member_to_research_group(
           account_name,
           personal_rg.id, 
@@ -169,6 +170,12 @@ const account_object& dbs_account::create_account_by_faucets(const account_name_
           DEIP_100_PERCENT,
           account_name_type()
         );
+    }
+
+    const auto& default_assets = asset_service.get_default_assets();
+    for (const asset_object& default_asset : default_assets)
+    {
+        account_balance_service.create_account_balance(account_name, default_asset.symbol, 0);
     }
 
     dgp_service.create_recent_entity(account_name);
@@ -673,7 +680,7 @@ const dbs_account::accounts_refs_type dbs_account::lookup_user_accounts(const st
 
     for (auto itr = accounts_by_name.lower_bound(lower_bound_name); limit-- && itr != accounts_by_name.end(); ++itr)
     {
-        if (!itr->is_research_group)
+        if (!itr->is_research_group && itr->name != DEIP_INITIAL_DELEGATE_ACCOUNT_NAME && itr->name != DEIP_REGISTRAR_ACCOUNT_NAME)
         {
             results.push_back(std::cref(*itr));
         }

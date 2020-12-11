@@ -2656,16 +2656,22 @@ void database::validate_invariants() const
 
         for (auto itr = account_idx.begin(); itr != account_idx.end(); ++itr)
         {
-            auto& balance = account_balance_service.get_account_balance_by_owner_and_asset(itr->name, DEIP_SYMBOL);
-            total_supply += asset(balance.amount, balance.symbol);
             total_common_tokens_amount += itr->common_tokens_balance;
             total_expert_tokens_amount += itr->expertise_tokens_balance;
-            
             total_vsf_votes += (itr->proxy == DEIP_PROXY_TO_SELF_ACCOUNT
                                     ? itr->witness_vote_weight()
                                     : (DEIP_MAX_PROXY_RECURSION_DEPTH > 0
                                            ? itr->proxied_vsf_votes[DEIP_MAX_PROXY_RECURSION_DEPTH - 1]
                                            : itr->expertise_tokens_balance));
+
+            const auto& balance_opt = account_balance_service.get_account_balance_by_owner_and_asset_if_exists(itr->name, DEIP_SYMBOL);
+            if (!balance_opt.valid())
+            {
+                continue;
+            }
+
+            const account_balance_object& balance = *balance_opt;
+            total_supply += asset(balance.amount, balance.symbol);
         }
 
         const auto& research_group_idx = get_index<research_group_index, by_id>();

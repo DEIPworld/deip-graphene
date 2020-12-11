@@ -21,7 +21,8 @@ const asset_object& dbs_asset::create_asset(const account_name_type& issuer,
                                             const share_type& max_supply,
                                             const string& description,
                                             const optional<std::reference_wrapper<const research_object>>& tokenized_research,
-                                            const optional<percent>& license_revenue_holders_share)
+                                            const optional<percent>& license_revenue_holders_share,
+                                            const bool& is_default)
 {
 
     FC_ASSERT(current_supply <= max_supply, "Current supply can not be greater than Max supply");
@@ -35,6 +36,7 @@ const asset_object& dbs_asset::create_asset(const account_name_type& issuer,
         fc::from_string(asset.string_symbol, string_symbol);
         fc::from_string(asset.description, description);
         asset.type = static_cast<uint8_t>(asset_type::basic);
+        asset.is_default = is_default;
 
         if (tokenized_research.valid())
         {
@@ -277,6 +279,28 @@ const dbs_asset::asset_refs_type dbs_asset::get_assets_by_tokenize_research(cons
       .indicies()
       .get<by_tokenized_research>()
       .equal_range(tokenized_research);
+
+    auto it = it_pair.first;
+    const auto it_end = it_pair.second;
+    while (it != it_end)
+    {
+        ret.push_back(std::cref(*it));
+        ++it;
+    }
+
+    return ret;
+}
+
+
+const dbs_asset::asset_refs_type dbs_asset::get_default_assets() const
+{
+    asset_refs_type ret;
+
+    auto it_pair = db_impl()
+      .get_index<asset_index>()
+      .indicies()
+      .get<by_default_asset>()
+      .equal_range(true);
 
     auto it = it_pair.first;
     const auto it_end = it_pair.second;

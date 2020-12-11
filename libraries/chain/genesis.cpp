@@ -31,7 +31,7 @@
 #define DEIP_DEFAULT_GENESIS_TIME fc::time_point_sec(1508331600);
 #define DEIP_DEFAULT_INIT_SUPPLY (1000000u)
 
-    namespace deip {
+namespace deip {
 namespace chain {
 namespace utils {
 
@@ -93,8 +93,8 @@ void database::init_genesis(const genesis_state_type& genesis_state)
 
         init_genesis_global_property_object(genesis_state);
         init_genesis_assets(genesis_state);
-        init_genesis_account_balances(genesis_state);
         init_genesis_accounts(genesis_state);
+        init_genesis_account_balances(genesis_state);
         init_genesis_research_groups(genesis_state);
         init_genesis_witnesses(genesis_state);
         init_genesis_witness_schedule(genesis_state);
@@ -196,7 +196,15 @@ void database::init_genesis_assets(const genesis_state_type& genesis_state)
 
 
     const protocol::asset core_asset = asset(0, DEIP_SYMBOL);
-    asset_service.create_asset(account_name_type(), core_asset.symbol, core_asset.symbol_name(), core_asset.decimals(), genesis_state.init_supply, DEIP_MAX_SHARE_SUPPLY, "");
+    asset_service.create_asset(
+      DEIP_REGISTRAR_ACCOUNT_NAME, 
+      core_asset.symbol, 
+      core_asset.symbol_name(), 
+      core_asset.decimals(), 
+      genesis_state.init_supply, 
+      DEIP_MAX_SHARE_SUPPLY, 
+      ""
+    );
 
     for (const auto& asset : assets)
     {
@@ -216,7 +224,19 @@ void database::init_genesis_assets(const genesis_state_type& genesis_state)
           "Total supply (${total}) is not equal to inited supply (${inited}) for ${s} asset",
           ("total", asset_total_supply.value)("inited", asset.current_supply)("s", a.symbol_name()));
 
-        asset_service.create_asset(account_name_type(), a.symbol, a.symbol_name(), a.decimals(), asset.current_supply, DEIP_MAX_SHARE_SUPPLY, "");
+        const bool& is_default = true;
+        asset_service.create_asset(
+          DEIP_REGISTRAR_ACCOUNT_NAME, 
+          a.symbol, 
+          a.symbol_name(), 
+          a.decimals(), 
+          asset.current_supply, 
+          DEIP_MAX_SHARE_SUPPLY, 
+          "",
+          {}, 
+          {},
+          is_default
+        );
     }
 }
 
@@ -226,8 +246,7 @@ void database::init_genesis_account_balances(const genesis_state_type& genesis_s
     auto& account_balances_service = obtain_service<dbs_account_balance>();
 
     const vector<genesis_state_type::account_balance_type>& account_balances = genesis_state.account_balances;
-
-    for (auto& account_balance : account_balances)
+    for (const auto& account_balance : account_balances)
     {
         const auto& asset_o = assets_service.get_asset_by_string_symbol(account_balance.symbol);
         account_balances_service.adjust_account_balance(account_balance.owner, asset(account_balance.amount, asset_o.symbol));

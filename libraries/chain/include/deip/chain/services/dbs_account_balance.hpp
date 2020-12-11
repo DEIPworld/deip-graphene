@@ -30,7 +30,7 @@ public:
 
     const account_balance_refs_type get_account_balances_by_owner(const account_name_type& owner) const;
 
-    const account_balance_object& get_account_balance_by_owner_and_asset(const account_name_type& owner, const asset_symbol_type& symbol);
+    const account_balance_object& get_account_balance_by_owner_and_asset(const account_name_type& owner, const asset_symbol_type& symbol) const;
 
     const account_balance_optional_ref_type get_account_balance_by_owner_and_asset_if_exists(const account_name_type& owner,
                                                                                              const asset_symbol_type& symbol) const;

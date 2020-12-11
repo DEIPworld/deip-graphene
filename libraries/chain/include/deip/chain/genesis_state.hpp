@@ -19,7 +19,7 @@ struct genesis_state_type
         std::string name;
         std::string recovery_account;
         protocol::public_key_type public_key;
-        share_type common_tokens_amount;
+        share_type common_tokens_amount = 0;
     };
 
     struct account_type

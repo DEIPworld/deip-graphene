@@ -47,6 +47,7 @@ public:
 
     share_type max_supply = DEIP_MAX_SHARE_SUPPLY;
     share_type current_supply = 0;
+    bool is_default = false;
 };
 
 struct by_symbol;
@@ -54,6 +55,7 @@ struct by_string_symbol;
 struct by_type;
 struct by_issuer;
 struct by_tokenized_research;
+struct by_default_asset;
 
 typedef multi_index_container<asset_object,
             indexed_by<ordered_unique<tag<by_id>,
@@ -76,16 +78,20 @@ typedef multi_index_container<asset_object,
                     member<asset_object,
                            fc::optional<external_id_type>,
                            &asset_object::tokenized_research>>,
+            ordered_non_unique<tag<by_default_asset>,
+                    member<asset_object,
+                           bool,
+                           &asset_object::is_default>>,
             ordered_non_unique<tag<by_issuer>,
                     member<asset_object,
                             account_name_type,
                            &asset_object::issuer>>>,
             allocator<asset_object>>
     asset_index;
-    }
+}
 }
 
-FC_REFLECT( deip::chain::asset_object, (id)(symbol)(string_symbol)(precision)(issuer)(description)(type)(tokenized_research)(license_revenue_holders_share)(max_supply)(current_supply))
+FC_REFLECT( deip::chain::asset_object, (id)(symbol)(string_symbol)(precision)(issuer)(description)(type)(tokenized_research)(license_revenue_holders_share)(max_supply)(current_supply)(is_default))
 CHAINBASE_SET_INDEX_TYPE( deip::chain::asset_object, deip::chain::asset_index )
 
 FC_REFLECT_ENUM(deip::chain::asset_type,

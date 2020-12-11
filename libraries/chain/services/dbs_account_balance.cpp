@@ -121,16 +121,9 @@ void dbs_account_balance::remove_account_balance(const account_balance_object& a
     db_impl().remove(account_balance);
 }
 
-const account_balance_object& dbs_account_balance::get_account_balance_by_owner_and_asset(const account_name_type& owner, const asset_symbol_type& symbol)
+const account_balance_object& dbs_account_balance::get_account_balance_by_owner_and_asset(const account_name_type& owner, const asset_symbol_type& symbol) const
 {
-    if (account_balance_exists_by_owner_and_asset(owner, symbol))
-    {   // TODO: remove this from pure const method
-        return db_impl().get<account_balance_object, by_owner_and_asset_symbol>(boost::make_tuple(owner, symbol));
-    } 
-    else 
-    {
-        return create_account_balance(owner, symbol, 0);
-    }
+    return db_impl().get<account_balance_object, by_owner_and_asset_symbol>(boost::make_tuple(owner, symbol));
 }
 
 const dbs_account_balance::account_balance_optional_ref_type dbs_account_balance::get_account_balance_by_owner_and_asset_if_exists(const account_name_type& owner, const string& symbol) const
