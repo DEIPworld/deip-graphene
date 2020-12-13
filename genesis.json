@@ -13,14 +13,19 @@
       "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ"
     },
     {
-      "name": "alice",
+      "name": "ruzena-stemberkova",
       "recovery_account": "",
-      "public_key": "DEIP52Xh45F7F7xZqC5ZQAteFCNrDtys12exDo4TMqvQrJW2GLNT83"
+      "public_key": "DEIP5EHjiSafT24BGi5H1bKsQ9qWLmbScufGNRMGLaGPd1WMjxQsWf"
     },
     {
-      "name": "bob",
+      "name": "veronika-trajerova",
       "recovery_account": "",
-      "public_key": "DEIP5SKiHdSzMGPpPfTGKMWg4YFGKbevp6AeGScP9VvPmn27bxcUdi"
+      "public_key": "DEIP6rFzLAbTDDLCgnsDarRfpSAkER4avN9nuWpbvBAwYhrbML5K3W"
+    },
+    {
+      "name": "deip-jcu",
+      "recovery_account": "",
+      "public_key": "DEIP8Ac5k2omGyZ9mVDXnzkYuxrNve4B2Zg2tV8GW2nvWbs4Rfy3QF"
     }
   ],
   "assets": [
@@ -102,12 +107,13 @@
   "expert_tokens": [],
   "research_groups": [
     {
-      "account": "0000000000000000000000000000000000000000",
-      "creator": "alice",
-      "description": "94c70f3ca2398ac96f730c505ca6f8737c264f86c9a3e25c27ede7b127d2d702",
+      "account": "fa81a9ab079d34b383db5935ce18cafc96f36dc5",
+      "creator": "ruzena-stemberkova",
+      "description": "0c79b8be838e08ba3cde3e23213bced805ad80e4fdaaa1e50418d7f1778426eb",
       "members": [
-        "alice",
-        "bob"
+        "ruzena-stemberkova",
+        "veronika-trajerova",
+        "deip-jcu"
       ]
     }
   ],
