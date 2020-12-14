@@ -522,18 +522,18 @@ void vote_for_review_evaluator::do_apply(const vote_for_review_operation& op)
     const int64_t elapsed_seconds = (now - expert_token.last_vote_time).to_seconds();
     const int64_t regenerated_power_percent = (DEIP_100_PERCENT * elapsed_seconds) / DEIP_VOTE_REGENERATION_SECONDS;
     const int64_t current_power_percent = std::min(int64_t(expert_token.voting_power + regenerated_power_percent), int64_t(DEIP_100_PERCENT));
-    FC_ASSERT(current_power_percent > 0, 
-      "${1} does not have power for ${2} expertise currently to vote for the review. The available power is ${3} %", 
-      ("1", voter.name)("2", expert_token.discipline_id)("3", current_power_percent / DEIP_1_PERCENT));
+    // FC_ASSERT(current_power_percent > 0, 
+    //   "${1} does not have power for ${2} expertise currently to vote for the review. The available power is ${3} %", 
+    //   ("1", voter.name)("2", expert_token.discipline_id)("3", current_power_percent / DEIP_1_PERCENT));
 
     const int64_t vote_applied_power_percent = abs(op.weight.amount.value);
     const int64_t used_power_percent = (current_power_percent * vote_applied_power_percent) / DEIP_100_PERCENT;
-    FC_ASSERT(used_power_percent <= current_power_percent,
-      "${1} does not have enough power for ${2} expertise to vote for the review with ${3} % of power. The available power is ${4} %",
-      ("1", voter.name)("2", expert_token.discipline_id)("3", vote_applied_power_percent / DEIP_1_PERCENT)("4", current_power_percent / DEIP_1_PERCENT));
+    // FC_ASSERT(used_power_percent <= current_power_percent,
+    //   "${1} does not have enough power for ${2} expertise to vote for the review with ${3} % of power. The available power is ${4} %",
+    //   ("1", voter.name)("2", expert_token.discipline_id)("3", vote_applied_power_percent / DEIP_1_PERCENT)("4", current_power_percent / DEIP_1_PERCENT));
 
     const uint64_t used_expert_token_amount = ((uint128_t(expert_token.amount.value) * used_power_percent) / (DEIP_100_PERCENT)).to_uint64();
-    FC_ASSERT(used_expert_token_amount > 0, "Account does not have enough power to vote for review.");
+    // FC_ASSERT(used_expert_token_amount > 0, "Account does not have enough power to vote for review.");
 
     _db._temporary_public_impl().modify(expert_token, [&](expert_token_object& t) {
         t.voting_power = current_power_percent - (DEIP_REVIEW_VOTE_SPREAD_DENOMINATOR != 0 ? (used_power_percent / DEIP_REVIEW_VOTE_SPREAD_DENOMINATOR) : 0);
@@ -872,18 +872,18 @@ void create_review_evaluator::do_apply(const create_review_operation& op)
             const int64_t elapsed_seconds = (now - expert_token.last_vote_time).to_seconds();
             const int64_t regenerated_power_percent = (DEIP_100_PERCENT * elapsed_seconds) / DEIP_VOTE_REGENERATION_SECONDS;
             const int64_t current_power_percent = std::min(int64_t(expert_token.voting_power + regenerated_power_percent), int64_t(DEIP_100_PERCENT));
-            FC_ASSERT(current_power_percent > 0, 
-                    "${1} does not have power for ${2} expertise currently to make the review. The available power is ${3} %", 
-                    ("1", op.author)("2", expert_token.discipline_id)("3", current_power_percent / DEIP_1_PERCENT));
+            // FC_ASSERT(current_power_percent > 0, 
+            //         "${1} does not have power for ${2} expertise currently to make the review. The available power is ${3} %", 
+            //         ("1", op.author)("2", expert_token.discipline_id)("3", current_power_percent / DEIP_1_PERCENT));
 
             const int64_t review_applied_power_percent = op.weight.amount.value;
             const int64_t used_power_percent = (DEIP_REVIEW_REQUIRED_POWER_PERCENT * review_applied_power_percent) / DEIP_100_PERCENT;
-            FC_ASSERT(used_power_percent <= current_power_percent,
-                    "${1} does not have enough power for ${2} expertise to make the review with ${3} % of power. The available power is ${4} %",
-                    ("1", op.author)("2", expert_token.discipline_id)("3", review_applied_power_percent / DEIP_1_PERCENT)("4", current_power_percent / DEIP_1_PERCENT));
+            // FC_ASSERT(used_power_percent <= current_power_percent,
+            //         "${1} does not have enough power for ${2} expertise to make the review with ${3} % of power. The available power is ${4} %",
+            //         ("1", op.author)("2", expert_token.discipline_id)("3", review_applied_power_percent / DEIP_1_PERCENT)("4", current_power_percent / DEIP_1_PERCENT));
 
             const uint64_t used_expert_token_amount = ((uint128_t(expert_token.amount.value) * current_power_percent) / (DEIP_100_PERCENT)).to_uint64();
-            FC_ASSERT(used_expert_token_amount > 0, "Account does not have enough power to make the review.");
+            // FC_ASSERT(used_expert_token_amount > 0, "Account does not have enough power to make the review.");
 
             _db._temporary_public_impl().modify(expert_token, [&](expert_token_object& exp) {
                 exp.voting_power = current_power_percent - used_power_percent;
