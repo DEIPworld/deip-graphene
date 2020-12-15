@@ -4,13 +4,13 @@
   "registrar_account": {
     "name": "regacc",
     "recovery_account": "",
-    "public_key": "DEIP7jYZtDq39GUoHafoLg72myPhGN8a9QKWJE2GgnAuYjQnhp9mTa"
+    "public_key": "DEIP63MgAcycxUVnw5xTgCnX8GSXteQoS4yHYBVrYXZwfQqDRKLnse"
   },
   "accounts": [
     {
       "name": "initdelegate",
       "recovery_account": "",
-      "public_key": "DEIP65oa2rotvjpJH8FLPEvVGEzHhErqM4A1e5GuQVHuVP7iy7nwFJ"
+      "public_key": "DEIP4z5NTaN98MX6wXSqM4hTCxFwRcVQZ3BZA29xeauUXGwDXTZmZU"
     },
     {
       "name": "ruzena-stemberkova",
