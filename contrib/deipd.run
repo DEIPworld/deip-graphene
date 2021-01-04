@@ -51,7 +51,7 @@ chown deipd:deipd $HOME/config.ini
 if [[ ! -z "$RESYNC_BLOCKCHAIN" ]]; then
     ARGS+=" --resync-blockchain"
 fi
-g
+
 if [[ ! -z "$REPLAY_BLOCKCHAIN" ]]; then
     ARGS+=" --replay-blockchain"
 fi
