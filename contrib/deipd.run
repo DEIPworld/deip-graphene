@@ -56,6 +56,9 @@ if [[ ! -z "$REPLAY_BLOCKCHAIN" ]]; then
     ARGS+=" --replay-blockchain"
 fi
 
+if [[ ! -z "$TENANT_ID" ]]; then
+    ARGS+=" --tenant=$TENANT_ID"
+fi
 
 if [[ ! -d $HOME/blockchain ]]; then
     if [[ -e /var/cache/deipd/blocks.tbz2 ]]; then
