@@ -51,13 +51,13 @@ chown deipd:deipd $HOME/config.ini
 if [[ ! -z "$RESYNC_BLOCKCHAIN" ]]; then
     ARGS+=" --resync-blockchain"
 fi
-
+g
 if [[ ! -z "$REPLAY_BLOCKCHAIN" ]]; then
     ARGS+=" --replay-blockchain"
 fi
 
-if [[ ! -z "$TENANT_ID" ]]; then
-    ARGS+=" --tenant=$TENANT_ID"
+if [[ ! -z "$TENANT" ]]; then
+    ARGS+=" --tenant=$TENANT"
 fi
 
 if [[ ! -d $HOME/blockchain ]]; then
