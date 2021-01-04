@@ -491,6 +491,17 @@ void database::add_checkpoints(const flat_map<uint32_t, block_id_type>& checkpts
         _checkpoints[i.first] = i.second;
 }
 
+void database::set_tenant(const string& tenant)
+{
+    if (tenant.size() != 0)
+        _tenant = (external_id_type) tenant;
+}
+
+fc::optional<external_id_type> database::get_tenant()
+{
+   return _tenant;
+}
+
 bool database::before_last_checkpoint() const
 {
     return (_checkpoints.size() > 0) && (_checkpoints.rbegin()->first >= head_block_num());
@@ -2160,6 +2171,36 @@ void database::apply_transaction(const signed_transaction& trx, uint32_t skip)
     notify_on_applied_transaction(trx);
 }
 
+struct transaction_extension_guard
+{
+    transaction_extension_guard(const optional<external_id_type>& tenant)
+    {
+        if (tenant.valid())
+        {
+            _tenant = *tenant;
+        }
+    }
+
+    typedef void result_type;
+    template <typename T> void operator()(const T& v) const
+    {
+    }
+
+    void operator()(const transaction_extension_type& ext) const
+    {
+        if (ext.which() == transaction_extension_type::tag<tenant_marker_type>::value)
+        {
+            // TODO: Remove this assert after merging to global network
+            const tenant_marker_type& tenant_ext = ext.get<tenant_marker_type>();
+            FC_ASSERT(!_tenant.valid() || tenant_ext.tenant == (*_tenant), "Unexpected Tenant ID: ${1}", ("1", tenant_ext.tenant));
+        }
+    }
+
+private:
+    optional<external_id_type> _tenant;
+};
+
+
 void database::_apply_transaction(const signed_transaction& trx)
 {
     try
@@ -2169,6 +2210,12 @@ void database::_apply_transaction(const signed_transaction& trx)
         _current_trx_ref_block_prefix = trx.ref_block_prefix;
 
         uint32_t skip = get_node_properties().skip_flags;
+
+        transaction_extension_guard trx_ext_guard(_tenant);
+        for (const transaction_extension_type& ext : trx.extensions)
+        {
+            trx_ext_guard(ext);
+        }
 
         if (!(skip & skip_validate)) /* issue #505 explains why this skip_flag is disabled */
             trx.validate();

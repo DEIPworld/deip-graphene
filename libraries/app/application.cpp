@@ -311,6 +311,12 @@ public:
             bool read_only = _options->count("read-only");
             register_builtin_apis();
 
+            if (_options->count("tenant"))
+                _chain_db->set_tenant(_options->at("tenant").as<std::string>());
+
+            if (_chain_db->get_tenant().valid())
+                ilog("This node is set for Tenant ${1}", ("1", *(_chain_db->get_tenant())));
+
             if (_options->count("check-locks"))
                 _chain_db->set_require_locking(true);
 
@@ -1081,7 +1087,8 @@ void application::set_program_options(boost::program_options::options_descriptio
          ("enable-plugin", bpo::value< vector<string> >()->composing()->default_value(default_plugins, str_default_plugins), "Plugin(s) to enable, may be specified multiple times")
          ("max-block-age", bpo::value< int32_t >()->default_value(200), "Maximum age of head block when broadcasting tx via API")
          ("flush", bpo::value< uint32_t >()->default_value(100000), "Flush shared memory file to disk this many blocks")
-         ("genesis-json,g", bpo::value<boost::filesystem::path>(), "File to read genesis state from");
+         ("genesis-json,g", bpo::value<boost::filesystem::path>(), "File to read genesis state from")
+         ("tenant", bpo::value<string>()->default_value(""), "Tenant marker for transactions");
     command_line_options.add(configuration_file_options);
     command_line_options.add_options()
          ("replay-blockchain", "Rebuild object graph by replaying all blocks")

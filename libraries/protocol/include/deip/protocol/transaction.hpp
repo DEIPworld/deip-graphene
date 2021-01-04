@@ -8,6 +8,14 @@
 namespace deip {
 namespace protocol {
 
+struct tenant_marker_type
+{
+    external_id_type tenant;
+    extensions_type extensions;
+};
+
+typedef fc::static_variant<tenant_marker_type> transaction_extension_type;
+
 struct transaction
 {
     uint16_t ref_block_num = 0;
@@ -16,7 +24,7 @@ struct transaction
     fc::time_point_sec expiration;
 
     vector<operation> operations;
-    extensions_type extensions;
+    flat_set<transaction_extension_type> extensions;
 
     digest_type digest() const;
     transaction_id_type id() const;
@@ -117,3 +125,8 @@ FC_REFLECT(deip::protocol::transaction, (ref_block_num)(ref_block_prefix)(expira
 FC_REFLECT_DERIVED(deip::protocol::signed_transaction, (deip::protocol::transaction), (signatures))
 FC_REFLECT_DERIVED(deip::protocol::annotated_signed_transaction, (deip::protocol::signed_transaction),
     (transaction_id)(block_num)(transaction_num));
+
+FC_REFLECT(deip::protocol::tenant_marker_type, (tenant)(extensions))
+
+DECLARE_STATIC_VARIANT_TYPE(deip::protocol::transaction_extension_type)
+FC_REFLECT_TYPENAME(deip::protocol::transaction_extension_type)

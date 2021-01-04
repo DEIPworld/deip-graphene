@@ -363,5 +363,9 @@ void signed_transaction::verify_authority(const chain_id_type& chain_id,
     }
     FC_CAPTURE_AND_RETHROW((*this))
 }
+
+
 }
 } // deip::protocol
+
+DEFINE_STATIC_VARIANT_TYPE(deip::protocol::transaction_extension_type)

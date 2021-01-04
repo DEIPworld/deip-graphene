@@ -180,6 +180,9 @@ public:
     uint32_t witness_participation_rate() const;
 
     void add_checkpoints(const flat_map<uint32_t, block_id_type>& checkpts);
+    void set_tenant(const string& tenant);
+    fc::optional<external_id_type> get_tenant();
+
     const flat_map<uint32_t, block_id_type> get_checkpoints() const
     {
         return _checkpoints;
@@ -458,6 +461,7 @@ private:
     uint16_t _current_op_in_trx = 0;
 
     flat_map<uint32_t, block_id_type> _checkpoints;
+    fc::optional<external_id_type> _tenant;
 
     // Counts nested proposal updates
     uint32_t _push_proposal_nesting_depth = 0;
