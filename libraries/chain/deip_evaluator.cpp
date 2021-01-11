@@ -2318,10 +2318,13 @@ void join_research_group_membership_evaluator::do_apply(const join_research_grou
           updated_members);
     }
 
+    const auto& members_rgt = research_groups_service.get_research_group_tokens(research_group.id);
+    const share_type rgt_share = share_type(DEIP_100_PERCENT / (members_rgt.size() + 1));
+
     research_groups_service.add_member_to_research_group(
       op.member,
       research_group.id,
-      op.reward_share.amount,
+      rgt_share,
       account_name_type());
 
     account_service.add_to_active_authority(research_group_account, op.member);
