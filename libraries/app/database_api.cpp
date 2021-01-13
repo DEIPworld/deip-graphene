@@ -163,6 +163,7 @@ public:
 
     // Reviews
     fc::optional<review_api_obj> get_review(const external_id_type& external_id) const;
+    vector<review_api_obj> get_reviews(const set<external_id_type>& ids) const;
     fc::optional<review_api_obj> get_review_by_id(const review_id_type& review_id) const;
     vector<review_api_obj> get_reviews_by_research(const external_id_type& research_external_id) const;
     vector<review_api_obj> get_reviews_by_research_content(const external_id_type& research_content_external_id) const;
@@ -2293,14 +2294,44 @@ fc::optional<review_api_obj> database_api_impl::get_review(const external_id_typ
     if (review_opt.valid())
     {
         vector<discipline_api_obj> disciplines;
-
-        for (const auto discipline_id : (*review_opt).get().disciplines_external_ids)
+        for (const auto& discipline_id : (*review_opt).get().disciplines_external_ids)
         {
-            auto discipline = get_discipline(discipline_id);
+            const auto& discipline = get_discipline(discipline_id);
             disciplines.push_back(*discipline);
         }
 
         result = review_api_obj(*review_opt, disciplines);
+    }
+
+    return result;
+}
+
+vector<review_api_obj> database_api::get_reviews(const set<external_id_type>& ids) const
+{
+    FC_ASSERT(ids.size() <= DEIP_API_BULK_FETCH_LIMIT);
+    return my->_db.with_read_lock([&]() { return my->get_reviews(ids); });
+}
+
+vector<review_api_obj> database_api_impl::get_reviews(const set<external_id_type>& ids) const
+{
+    vector<review_api_obj> result;
+    const auto& review_service = _db.obtain_service<chain::dbs_review>();
+
+    for (const auto& external_id : ids)
+    {
+        const auto& review_opt = review_service.get_review_if_exists(external_id);
+        if (review_opt.valid())
+        {
+            const review_object& review = *review_opt;
+            vector<discipline_api_obj> disciplines;
+            for (const auto& discipline_id : review.disciplines_external_ids)
+            {
+                const auto& discipline = get_discipline(discipline_id);
+                disciplines.push_back(*discipline);
+            }
+
+            result.push_back(review_api_obj(review, disciplines));
+        }
     }
 
     return result;
