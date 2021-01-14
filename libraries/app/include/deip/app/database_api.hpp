@@ -347,6 +347,7 @@ public:
     // Research Reviews          //
     ///////////////////////////////
     fc::optional<review_api_obj> get_review(const external_id_type& external_id) const;
+    vector<review_api_obj> get_reviews(const set<external_id_type>& ids) const;
     fc::optional<review_api_obj> get_review_by_id(const review_id_type& review_id) const;
     vector<review_api_obj> get_reviews_by_research(const external_id_type& research_external_id) const;
     vector<review_api_obj> get_reviews_by_research_content(const external_id_type& research_content_external_id) const;
@@ -638,6 +639,7 @@ FC_API(deip::app::database_api,
 
    // Reviews
    (get_review)
+   (get_reviews)
    (get_review_by_id)
    (get_reviews_by_research)
    (get_reviews_by_research_content)

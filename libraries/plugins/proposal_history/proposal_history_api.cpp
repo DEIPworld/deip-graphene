@@ -88,6 +88,25 @@ public:
         return result;
     }
 
+    std::vector<proposal_state_api_obj> get_proposals_states(const flat_set<external_id_type>& external_ids) const
+    {
+        vector<proposal_state_api_obj> result;
+
+        const auto& db = _app.chain_database();
+        const auto& proposal_state_idx = db->get_index<proposal_history_index>().indices().get<by_external_id>();
+
+        for (const auto& external_id : external_ids)
+        {
+            const auto& proposal_state_itr = proposal_state_idx.find(external_id);
+            if (proposal_state_itr != proposal_state_idx.end())
+            {
+                result.push_back(*proposal_state_itr);
+            }
+        }
+
+        return result;
+    }
+
 };
 } // namespace detail
 
@@ -122,6 +141,11 @@ fc::optional<proposal_state_api_obj> proposal_history_api::get_proposal_state(co
     return db->with_read_lock([&]() { return _impl->get_proposal_state(external_id); });
 }
 
+std::vector<proposal_state_api_obj> proposal_history_api::get_proposals_states(const flat_set<external_id_type>& external_ids) const
+{
+    const auto db = _impl->_app.chain_database();
+    return db->with_read_lock([&]() { return _impl->get_proposals_states(external_ids); });
+}
 
 } // namespace proposal_history
 } // namespace deip

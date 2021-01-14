@@ -34,6 +34,8 @@ public:
 
     fc::optional<proposal_state_api_obj> get_proposal_state(const external_id_type& external_id) const;
 
+    std::vector<proposal_state_api_obj> get_proposals_states(const flat_set<external_id_type>& external_ids) const;
+
 private: 
     std::unique_ptr<detail::proposal_history_api_impl> _impl;
 
@@ -47,5 +49,6 @@ FC_API(deip::proposal_history::proposal_history_api,
   (get_proposals_by_signer)
   (get_proposals_by_signers)
   (get_proposal_state)
+  (get_proposals_states)
 )
 
