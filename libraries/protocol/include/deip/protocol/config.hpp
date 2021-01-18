@@ -206,7 +206,7 @@
 #define DEIP_MAX_UNDO_HISTORY                10000
 
 #define DEIP_EXPERTISE_CLAIM_AMOUNT          5000
-#define DEIP_DEFAULT_EXPERTISE_AMOUNT        int64_t(2500)
+#define DEIP_DEFAULT_EXPERTISE_AMOUNT        int64_t(5000)
 
 #define DEIP_MIN_TRANSACTION_EXPIRATION_LIMIT (DEIP_BLOCK_INTERVAL * 5) // 5 transactions per block
 
