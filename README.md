@@ -1,19 +1,3 @@
-# Introducing DEIP
-
-DEIP is a decentralized research platoform and blockchain with Delegated Proof of Stake consensus
-algorithm.
-
-  - Currency symbol DEIP
-  - Fixed supply, first 20 years of emission starting from 8% and going down to 0.8% with step of 0.4% per years
-  - Expertise tokens emission goes forever, but after 20 years corresponding amount to cryptocurrency will be fixed
-  - Fisrt 20 years delegates receive reward from emission, and after transfers of research tokens will be charging a fee, which goes to delegates as reward
-
-# Public Announcement & Discussion
-
-Deip was announced on the
-[ADD_LINK_HERE](the_link) prior to
-the start of any mining.
-
 # No Support & No Warranty
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
