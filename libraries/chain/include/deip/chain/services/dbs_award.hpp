@@ -34,6 +34,7 @@ public:
                                      const account_name_type& awardee,
                                      const asset& amount,
                                      const research_group_id_type& university_id,
+                                     const external_id_type& university_external_id,
                                      const percent& university_overhead,
                                      const account_name_type& creator,
                                      const award_status& status);
@@ -64,6 +65,7 @@ public:
       const account_name_type& source,
       const asset& total_amount,
       const research_id_type& research_id,
+      const external_id_type& research_external_id,
       const award_recipient_status& status);
 
     const award_recipient_object& get_award_recipient(const award_recipient_id_type& id) const;

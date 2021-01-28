@@ -19,8 +19,11 @@ dbs_funding_opportunity::dbs_funding_opportunity(database &db)
 }
 
 const funding_opportunity_object& dbs_funding_opportunity::create_grant_with_officer_evaluation_distribution(const research_group_id_type& organization_id,
+                                                                                                             const external_id_type& organization_external_id,
                                                                                                              const research_group_id_type& review_committee_id,
+                                                                                                             const external_id_type& review_committee_external_id,
                                                                                                              const research_group_id_type& treasury_id,
+                                                                                                             const external_id_type& treasury_external_id,
                                                                                                              const account_name_type& grantor,
                                                                                                              const external_id_type& funding_opportunity_number,
                                                                                                              const flat_map<string, string>& additional_info,
@@ -39,8 +42,11 @@ const funding_opportunity_object& dbs_funding_opportunity::create_grant_with_off
     const auto now = db_impl().head_block_time();
     const funding_opportunity_object& foa = db_impl().create<funding_opportunity_object>([&](funding_opportunity_object& funding_opportunity) {
         funding_opportunity.organization_id = organization_id;
+        funding_opportunity.organization_external_id = organization_external_id;
         funding_opportunity.review_committee_id = review_committee_id;
+        funding_opportunity.review_committee_external_id = review_committee_external_id;
         funding_opportunity.treasury_id = treasury_id;
+        funding_opportunity.treasury_external_id = treasury_external_id;
         funding_opportunity.grantor = grantor;
         funding_opportunity.funding_opportunity_number = funding_opportunity_number;
         
@@ -84,6 +90,7 @@ const funding_opportunity_object& dbs_funding_opportunity::create_grant_with_eci
                                                                                                          const external_id_type& funding_opportunity_number,
                                                                                                          const flat_map<string, string>& additional_info,
                                                                                                          const research_group_id_type& review_committee_id,
+                                                                                                         const external_id_type& review_committee_external_id,
                                                                                                          const uint16_t& min_number_of_positive_reviews,
                                                                                                          const uint16_t& min_number_of_applications,
                                                                                                          const uint16_t& max_number_of_research_to_grant,
@@ -120,6 +127,7 @@ const funding_opportunity_object& dbs_funding_opportunity::create_grant_with_eci
         }
 
         funding_opportunity.review_committee_id = review_committee_id;
+        funding_opportunity.review_committee_external_id = review_committee_external_id;
         funding_opportunity.min_number_of_positive_reviews = min_number_of_positive_reviews;
         funding_opportunity.min_number_of_applications = min_number_of_applications;
         funding_opportunity.max_number_of_research_to_grant = max_number_of_research_to_grant;
@@ -354,6 +362,7 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
                                                      research_group.account,
                                                      research_reward,
                                                      research.research_group_id,
+                                                     research.research_group,
                                                      percent(0),
                                                      account_name_type(),
                                                      award_status::approved);
@@ -370,6 +379,7 @@ void dbs_funding_opportunity::distribute_funding_opportunity(const funding_oppor
                                                                          account_name_type(),
                                                                          research_reward,
                                                                          research.id._id,
+                                                                         research.external_id,
                                                                          award_recipient_status::confirmed);
 
             if (research_eci.first > max_eci) {

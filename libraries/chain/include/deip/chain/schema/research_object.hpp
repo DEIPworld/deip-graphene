@@ -38,7 +38,7 @@ public:
     research_id_type id;
     external_id_type external_id;
     research_group_id_type research_group_id;
-    account_name_type research_group;
+    external_id_type research_group;
     shared_string description;
     shared_string permlink; /* [DEPRECATED] */
     time_point_sec created_at;

@@ -16,6 +16,7 @@ const award_object& dbs_award::create_award(const external_id_type& funding_oppo
                                             const account_name_type& awardee,
                                             const asset& amount,
                                             const research_group_id_type& university_id,
+                                            const external_id_type& university_external_id,
                                             const percent& university_overhead,
                                             const account_name_type& creator,
                                             const award_status& status)
@@ -26,6 +27,7 @@ const award_object& dbs_award::create_award(const external_id_type& funding_oppo
         award.awardee = awardee;
         award.amount = amount;
         award.university_id = university_id;
+        award.university_external_id = university_external_id;
         award.university_overhead = university_overhead;
         award.creator = creator;
         award.status = static_cast<uint16_t>(status);
@@ -123,6 +125,7 @@ const award_recipient_object& dbs_award::create_award_recipient(
   const account_name_type& source,
   const asset& total_amount,
   const research_id_type& research_id,
+  const external_id_type& research_external_id,
   const award_recipient_status& status)
 {
     const award_recipient_object& award_recipient = 
@@ -135,6 +138,7 @@ const award_recipient_object& dbs_award::create_award_recipient(
         ar_o.total_amount = total_amount;
         ar_o.total_expenses = asset(0, total_amount.symbol);
         ar_o.research_id = research_id;
+        ar_o.research_external_id = research_external_id;
         ar_o.status = static_cast<uint16_t>(status);
     });
 

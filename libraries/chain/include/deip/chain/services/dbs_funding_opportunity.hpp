@@ -19,8 +19,11 @@ public:
     using funding_opportunity_refs_type = std::vector<std::reference_wrapper<const funding_opportunity_object>>;
 
     const funding_opportunity_object& create_grant_with_officer_evaluation_distribution(const research_group_id_type& organization_id,
+                                                                                        const external_id_type& organization_external_id,
                                                                                         const research_group_id_type& review_committee_id,
+                                                                                        const external_id_type& review_committee_external_id,
                                                                                         const research_group_id_type& treasury_id,
+                                                                                        const external_id_type& treasury_external_id,
                                                                                         const account_name_type& grantor,
                                                                                         const external_id_type& funding_opportunity_number,
                                                                                         const flat_map<string, string>& additional_info,
@@ -39,6 +42,7 @@ public:
                                                                                     const external_id_type& funding_opportunity_number,
                                                                                     const flat_map<string, string>& additional_info,
                                                                                     const research_group_id_type& review_committee_id,
+                                                                                    const external_id_type& review_committee_external_id,
                                                                                     const uint16_t& min_number_of_positive_reviews,
                                                                                     const uint16_t& min_number_of_applications,
                                                                                     const uint16_t& max_number_of_research_to_grant,

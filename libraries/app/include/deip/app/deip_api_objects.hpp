@@ -1034,24 +1034,27 @@ struct grant_application_review_api_obj
 struct funding_opportunity_api_obj
 {
     funding_opportunity_api_obj(const chain::funding_opportunity_object& fo_o)
-        :  id(fo_o.id._id)
-        ,  organization_id(fo_o.organization_id._id)
-        ,  review_committee_id(fo_o.review_committee_id._id)
-        ,  treasury_id(fo_o.treasury_id._id)
-        ,  grantor(fo_o.grantor)
-        ,  funding_opportunity_number(fo_o.funding_opportunity_number)
-        ,  amount(fo_o.amount)
-        ,  award_ceiling(fo_o.award_ceiling)
-        ,  award_floor(fo_o.award_floor)
-        ,  current_supply(fo_o.current_supply)
-        ,  expected_number_of_awards(fo_o.expected_number_of_awards)
-        ,  min_number_of_positive_reviews(fo_o.min_number_of_positive_reviews)
-        ,  min_number_of_applications(fo_o.min_number_of_applications)
-        ,  max_number_of_research_to_grant(fo_o.max_number_of_research_to_grant)
-        ,  posted_date(fo_o.posted_date)
-        ,  open_date(fo_o.open_date)
-        ,  close_date(fo_o.close_date)
-        ,  distribution_type(fo_o.distribution_type)
+        : id(fo_o.id._id)
+        , organization_id(fo_o.organization_id._id)
+        , organization_external_id(fo_o.organization_external_id)
+        , review_committee_id(fo_o.review_committee_id._id)
+        , review_committee_external_id(fo_o.review_committee_external_id)
+        , treasury_id(fo_o.treasury_id._id)
+        , treasury_external_id(fo_o.treasury_external_id)
+        , grantor(fo_o.grantor)
+        , funding_opportunity_number(fo_o.funding_opportunity_number)
+        , amount(fo_o.amount)
+        , award_ceiling(fo_o.award_ceiling)
+        , award_floor(fo_o.award_floor)
+        , current_supply(fo_o.current_supply)
+        , expected_number_of_awards(fo_o.expected_number_of_awards)
+        , min_number_of_positive_reviews(fo_o.min_number_of_positive_reviews)
+        , min_number_of_applications(fo_o.min_number_of_applications)
+        , max_number_of_research_to_grant(fo_o.max_number_of_research_to_grant)
+        , posted_date(fo_o.posted_date)
+        , open_date(fo_o.open_date)
+        , close_date(fo_o.close_date)
+        , distribution_type(fo_o.distribution_type)
     {
         for (auto& pair : fo_o.additional_info)
         {
@@ -1075,8 +1078,11 @@ struct funding_opportunity_api_obj
 
     int64_t id;
     research_group_id_type organization_id;
+    external_id_type organization_external_id;
     research_group_id_type review_committee_id;
+    external_id_type review_committee_external_id;
     research_group_id_type treasury_id;
+    external_id_type treasury_external_id;
 
     account_name_type grantor;
     external_id_type funding_opportunity_number;
@@ -1183,6 +1189,7 @@ struct award_recipient_api_obj
         , subaward_number(ar_o.subaward_number)
         , funding_opportunity_number(ar_o.funding_opportunity_number)
         , research_id(ar_o.research_id._id)
+        , research_external_id(ar_o.research_external_id)
         , awardee(ar_o.awardee)
         , source(ar_o.source)
         , total_amount(ar_o.total_amount)
@@ -1202,6 +1209,7 @@ struct award_recipient_api_obj
     external_id_type funding_opportunity_number;
 
     int64_t research_id;
+    external_id_type research_external_id;
     account_name_type awardee;
     account_name_type source;
     asset total_amount;
@@ -1220,6 +1228,7 @@ struct award_api_obj
         , status(award.status)
         , amount(award.amount)
         , university_id(award.university_id._id)
+        , university_external_id(award.university_external_id)
         , university_overhead(award.university_overhead)
     {
         awardees.insert(awardees.end(), awardees_list.begin(), awardees_list.end());
@@ -1240,6 +1249,7 @@ struct award_api_obj
     uint16_t status;
     asset amount;
     int64_t university_id;
+    external_id_type university_external_id;
     percent university_overhead;
     asset university_fee;
     vector<award_recipient_api_obj> awardees;
@@ -1700,8 +1710,11 @@ FC_REFLECT( deip::app::grant_application_review_api_obj,
 FC_REFLECT( deip::app::funding_opportunity_api_obj,
             (id)
             (organization_id)
+            (organization_external_id)
             (review_committee_id)
+            (review_committee_external_id)
             (treasury_id)
+            (treasury_external_id)
             (grantor)
             (funding_opportunity_number)
             (amount)
@@ -1754,6 +1767,7 @@ FC_REFLECT( deip::app::award_api_obj,
             (status)
             (amount)
             (university_id)
+            (university_external_id)
             (university_overhead)
             (university_fee)
             (awardees)
@@ -1765,6 +1779,7 @@ FC_REFLECT( deip::app::award_recipient_api_obj,
             (subaward_number)
             (funding_opportunity_number)
             (research_id)
+            (research_external_id)
             (awardee)
             (source)
             (total_amount)

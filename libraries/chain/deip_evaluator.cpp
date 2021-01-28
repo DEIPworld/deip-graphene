@@ -1206,6 +1206,7 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
           op.external_id,
           contract.additional_info,
           review_committee.id,
+          review_committee.account,
           contract.min_number_of_positive_reviews,
           contract.min_number_of_applications,
           contract.max_number_of_research_to_grant,
@@ -1246,9 +1247,12 @@ void create_grant_evaluator::do_apply(const create_grant_operation& op)
 
 
         funding_opportunities_service.create_grant_with_officer_evaluation_distribution(
-          organization.id, 
+          organization.id,
+          organization.account,
           review_committee.id,
+          review_committee.account,
           treasury.id,
+          treasury.account,
           op.grantor,
           op.external_id,
           contract.additional_info,
@@ -1594,6 +1598,7 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       op.awardee,
       op.award, 
       university.id,
+      university.account,
       op.university_overhead,
       op.creator,
       award_status::pending);
@@ -1606,6 +1611,7 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
       account_name_type(),
       awards_map[award.awardee],
       research.id,
+      research.external_id,
       award_recipient_status::unconfirmed);
 
     for (auto& subaward : op.subawardees)
@@ -1632,6 +1638,7 @@ void create_award_evaluator::do_apply(const create_award_operation& op)
           subaward.source,
           awards_map[subaward.subawardee],
           research.id,
+          research.external_id,
           award_recipient_status::unconfirmed);
     }
 }

@@ -609,21 +609,19 @@
     },
     {
       "account": "58e3bfd753fcb860a66b82635e43524b285ab708",
-      "creator": "alice",
+      "creator": "peter",
       "description": "a7dc26b52119d2a68d27692ace9b3a256dcfa6a2ed862327f95876d41c5c55a8",
       "members": [
-        "alice",
         "peter",
         "thomas"
       ]
     },
     {
       "account": "c8657fa6cbaee3917ac4e2ed6ada9d0a55a15ac5",
-      "creator": "mike",
+      "creator": "greg",
       "description": "5f0ddd30dae95ba55876bd3d323a75e3ac7cdae600934d58b9965cc0c8b8ca64",
       "members": [
-        "mike",
-        "rick"
+        "greg"
       ]
     },
     {
