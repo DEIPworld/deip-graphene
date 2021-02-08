@@ -2547,10 +2547,14 @@ void create_research_content_evaluator::do_apply(const create_research_content_o
         const auto& ref = research_content_service.get_research_content(id);
         _db.push_virtual_operation(research_content_reference_history_operation(
           research_content.id._id,
+          research_content.external_id,
           research_content.research_id._id,
+          research_content.research_external_id,
           fc::to_string(research_content.content),
           ref.id._id,
+          ref.external_id,
           ref.research_id._id,
+          ref.research_external_id,
           fc::to_string(ref.content))
         );
     }

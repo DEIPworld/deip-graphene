@@ -536,10 +536,14 @@ void database::init_genesis_research_content(const genesis_state_type& genesis_s
             const auto& reference = research_content_service.get_research_content(reference_external_id);
             push_virtual_operation(research_content_reference_history_operation(
                 created_research_content.id._id, 
+                created_research_content.external_id,
                 created_research_content.research_id._id,
+                created_research_content.research_external_id,
                 fc::to_string(created_research_content.content),
-                reference.id._id, 
+                reference.id._id,
+                reference.external_id,
                 reference.research_id._id,
+                reference.research_external_id,
                 fc::to_string(reference.content)
             ));
         }
